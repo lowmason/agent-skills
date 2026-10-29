@@ -1,0 +1,446 @@
+You are an AI coding agent working with your human partner in their project, on Claude Code.
+
+The writing-plans skill is loaded in this session. Its files sit in ~/.claude/skills/writing-plans/: SKILL.md and the files it names. The text of SKILL.md as it is in your context:
+
+<skill name="writing-plans">
+# Writing Plans
+
+## Overview
+
+Write implementation plans for an engineer who has not seen this codebase or this spec. Assume they write idiomatic code in the project's language once they know the exact interface and the exact test, and that they will make a reasonable choice wherever the plan leaves one open. What they cannot know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. Document those. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+
+**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+
+**Context:** If working in an isolated worktree, it should have been created via the `using-git-worktrees` skill at execution time.
+
+**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header. The script reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
+- (User preferences for plan location override this default)
+
+**A roadmap stage you just finished is never planned past.** If this session
+executed, completed or merged a stage of a `specs/*-roadmap.md`, then even when
+told to keep going or to plan the next stage, do not plan, brainstorm or route
+to it: run the Plan Completion Protocol below (step 3a included) before any
+merge, and end with the resume handoff, routing to no next stage. Step 3a's
+Handoff bullets and stamp still name the later stages they feed. A stage this
+session finds already merged when it starts, with the protocol not yet run,
+runs the protocol on the merged branch now.
+
+## Starting From a Handoff Brief
+
+When the session began from a handoff brief:
+
+- Read the artifact at or after the brief's earliest commit.
+- Log each of the brief's decisions in `## Decisions` with source `brief`,
+  applied where its Home says.
+- Settle each default the brief flags in the plan, and list it for your human
+  partner's review.
+- Honor the brief's owner gates and its leave-alone list.
+
+## Scope Check
+
+If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during design. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+
+## File Structure
+
+Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
+
+- Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
+- You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
+- Files that change together should live together. Split by responsibility, not by technical layer.
+- In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
+
+This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+
+## Task Right-Sizing
+
+A task is the smallest unit that carries its own test cycle and is worth a
+fresh reviewer's gate. When drawing task boundaries: fold setup,
+configuration, scaffolding, and documentation steps into the task whose
+deliverable needs them; split only where a reviewer could meaningfully
+reject one task while approving its neighbor. Each task ends with an
+independently testable deliverable.
+
+## Step Granularity
+
+**Each step is one action with a checkable result:**
+- "Write the failing test" - step
+- "Run it to make sure it fails" - step
+- "Implement the minimal code to make the test pass" - step
+- "Run the tests and make sure they pass" - step
+- "Commit" - step
+
+## Plan Document Header
+
+**Every plan MUST start with this header:**
+
+```markdown
+# [Feature Name] Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** [One sentence describing what this builds]
+
+**Architecture:** [2-3 sentences about approach]
+
+**Tech Stack:** [Key technologies/libraries]
+
+**Spec:** [Path to the spec or design doc this plan implements, or `none`. The plan argues from the spec, so executors read both.]
+
+## Global Constraints
+
+[The spec's project-wide requirements — version floors, dependency limits,
+naming and copy rules, platform requirements — one line each, with exact
+values copied verbatim from the spec. Every task's requirements implicitly
+include this section.]
+
+## Review Focus
+
+[The five input classes or failure modes the spec implies but no task's
+tests exercise that are most likely to bite a person using this software
+— one line each, naming the input or condition and the behavior a
+reasonable person would expect, most likely first. The spec is a vision
+document: it says what the software must do, not everything it will
+meet, and its silence on an input is not permission for that input to
+break the program. Write the list here, once, with the spec in front of
+you. Then, for each line, add the test that pins it, in the task whose
+code the person would see fail, in that task's own step style. The test
+asserts what the person sees (nothing lost, the right output), not a
+value that an earlier task computes on the way. With no spec, the plan is
+the requirement, and the list is what its requirements imply.]
+
+## Decisions
+
+[One line per decision your human partner took after the spec was approved:
+`- **D<n>** (owner, <brief | plan review>, YYYY-MM-DD): <decision>. Applied in: <Task N | Global Constraints | Task N (spec amendment)>.`
+An empty section reads `None.`]
+
+---
+```
+
+## Task Structure
+
+````markdown
+### Task N: [Component Name]
+
+**Files:**
+- Create: `exact/path/to/file.py`
+- Modify: `exact/path/to/existing.py:123-145`
+- Test: `tests/exact/path/to/test.py`
+
+**Interfaces:**
+- Consumes: [what this task uses from earlier tasks — exact signatures]
+- Produces: [what later tasks rely on — exact function names, parameter
+  and return types. A task's implementer sees only their own task; this
+  block is how they learn the names and types neighboring tasks use.]
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+def test_specific_behavior():
+    result = function(input)
+    assert result == expected
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: FAIL with "function not defined"
+
+- [ ] **Step 3: Implement `function(input: InputType) -> ResultType` in `exact/path/to/file.py`**
+
+One line on the approach when the signature and the test leave a choice
+(which library call, which data structure); a code block only for an
+algorithm they do not determine.
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add tests/path/test.py src/path/file.py
+git commit -m "feat: add specific feature"
+```
+````
+
+## What a Step Contains
+
+A step is done when the implementer can write exactly one reasonable thing
+from it. That is the whole requirement: unambiguous, not complete. Each kind
+of step carries what makes it unambiguous and nothing more:
+
+- **A test step:** the test's name and its assertions, as code, with the
+  spec's exact values in them.
+- **A code step:** the exact signature (name, parameters, return type), the
+  file it lives in, and the specific values the spec pins. The implementer
+  writes the body. A body appears only for an algorithm the signature and
+  tests do not determine, or for exact copy the spec fixes.
+- **A verification step:** the command to run and the output that means it
+  passed.
+- **A reference to another task:** that task's Interfaces block says what
+  to use; the plan does not repeat that task's code.
+
+A plan is the set of decisions the implementer cannot make alone. A plan
+longer than the code it describes has written the code instead. Lines that
+decide nothing ("TBD", "handle edge cases", "add appropriate validation",
+"write tests for the above", a type or function no task defines) are the
+opposite failure, and the self-review catches both.
+
+## Remember
+- Exact file paths always
+- Exact commands with expected output
+- DRY, YAGNI, TDD, frequent commits
+
+## Self-Review
+
+After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
+
+**1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
+
+**2. Step scan:** Every step must let the implementer write exactly one reasonable thing, and no step may carry more than that: a line that decides nothing is a gap, a function body the signature and tests already determine is a transcript. Fix both.
+
+**3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+
+**4. Review Focus:** For each input class or failure mode the spec implies, is there a task whose tests exercise it? The five uncovered ones most likely to bite a person go in the Review Focus section, and each line there gets its test added to the owning task. An empty section means you checked and found none, not that you skipped the check.
+
+**5. Proportion:** Compare the plan's length to the spec's. A plan more than about five times as long as the spec it implements is a transcript of the program, not a plan. If code blocks are most of the document, replace bodies with signatures, test names and assertions, and check that each step is still unambiguous. Wording that a micro-test fixed against a no-guidance control is exact copy: keep it word for word, and never count it as transcript.
+
+If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
+
+## Execution Handoff
+
+After saving the plan, hand off to execution. The plan file is a complete
+handoff — you wrote it for an engineer who has not seen this codebase or
+spec — so execution does not need this planning session's history.
+
+### 1. Plan review
+
+**"Plan complete and saved to `specs/plans/<id>-<spec-name>.md`. Please review
+it before anything runs."**
+
+Apply each decision your human partner takes, and log it in `## Decisions`:
+
+- **Plan-level** (it changes tasks or Global Constraints): edit them, and log
+  where it applies.
+- **Spec-level** (it changes what the spec requires): never edit the spec
+  while planning. Add an amendment task: exact replace-this-with-that blocks
+  for the spec, each edit tagged `(owner, plan <id>, YYYY-MM-DD)`, the spec's
+  status line untouched. Show your partner the exact wording; it is approved
+  at this review.
+- **Private** (while planning or handing off, a decision that must stay out of a
+  public repository): log no text of it in the plan; it goes to
+  prepare-handoff, not into the plan and not only into your own memory.
+
+Re-run Self-Review on whatever changed, then move to the execution choice once
+your partner approves the plan.
+
+### 2. Execution choice
+
+**Recommend a fresh session for execution.** A planning session accumulates
+context; carrying it into execution makes every execution turn re-read that
+planning history at cache-read cost. Starting execution fresh drops it. Choose
+the execution model when you launch it: `claude --model <m>`, `codex -m <m>`
+or `gemini -m <m>`. `/clear` keeps the current model, and `/model` saves a new
+default for later sessions.
+
+Recommend one option, with a reason drawn from this plan: Subagent-Driven by
+default, Inline when the tasks are tightly coupled.
+
+**"Recommended: `/clear` (or open a new session) and execute against the saved
+plan** — a fresh session drops this planning conversation. Two execution
+options, either session:
+
+**1. Subagent-Driven** - a fresh subagent per task, two-stage review between tasks
+
+**2. Inline Execution** - I execute the tasks myself, in plan order (executing-plans)
+
+I recommend <1 or 2>, because <a reason drawn from this plan>. Continuing in
+THIS session works too, but costs more on a long plan: every execution turn
+re-reads the full planning history. **Which approach?"**
+
+**If Subagent-Driven chosen:**
+- **REQUIRED SUB-SKILL:** Use subagent-driven-development
+- Fresh subagent per task + two-stage review
+
+**If Inline Execution chosen:**
+- **REQUIRED SUB-SKILL:** Use executing-plans
+- Direct execution in this session, in plan order — its stop-and-ask rules and completion chain apply
+
+## Plan Completion Protocol
+
+Run this after every task is done and the final review is resolved — before
+finishing-a-development-branch. The gate comes first; markup is written only
+once the completed/deferred partition is final.
+
+**1. Resolve-before-defer gate.** Collect the leftovers: plan steps skipped
+or descoped during execution, plus review findings that were not fixed.
+Partition:
+- Stalled because it needed your human partner's input → ask now, as one
+  batched set of questions.
+- Unblocked by an answer → implement it now (the protocol restarts after
+  that work lands).
+- Everything else → defer.
+
+Unanswered gate questions block the rest of the protocol: get the answers
+before marking up, appending, or retiring — in a one-shot run, end your
+turn with the batched questions and resume when your human partner
+answers. The partition is final only once every ask is resolved.
+
+**2. Markup the plan file.** Tick every completed step (`- [x]`). Under any
+step that deviated from the plan, add a one-line `> Deviation: …` note.
+Annotate skipped steps with `> Skipped: <why> → deferred`. Add a status
+header at the top of the plan:
+`**Status: COMPLETE (YYYY-MM-DD)** — executed via <skill>; deferred items in specs/deferred_items.md`
+— or, when the gate deferred nothing:
+`**Status: COMPLETE (YYYY-MM-DD)** — executed via <skill>; nothing deferred`
+Markup happens once, after the gate resolves — per-task progress tracking
+stays in your todo list or ledger.
+
+**3. Update deferred items** in `specs/deferred_items.md`. First, if the
+file exists, tick any earlier items this plan implemented
+(`- [x] … → done in plan <id>`) — run this ticking pass even when the
+current plan deferred nothing. Then append this plan's deferred items, one
+section per plan, newest last. Create the file on first use with a single
+`# Deferred items` title line, no other preamble. Skip the append entirely
+when nothing was deferred — never append an empty section; the ticking
+pass above still runs. Each item follows the **Deferred-item schema** in
+`references/deferred-backlog.md`: self-contained (file paths, why it was
+deferred, what it would take to do), plus a `Size:` of `quick-fix` / `plan` /
+`design` and a closure condition (`Done when:` or `Revisit if:`). An item that
+cannot state a closure condition is not deferrable — resolve it now or drop it.
+
+```markdown
+## 7-rate-limiter — 2026-07-04
+- [ ] Redis-backed counter store (plan Task 4, skipped): needs prod Redis
+      DSN decision. See specs/plans/completed/7-rate-limiter.md; touches
+      src/limiter/store.py. Size: design. Done when: the DSN decision is
+      recorded and the store lands behind it.
+- [ ] Declined review line: retry jitter is fixed-seed in tests only
+      (final review, owner ruled defer). Size: quick-fix. Revisit if: a flake in
+      tests/test_limiter.py traces to jitter.
+```
+
+When a later plan implements an item, tick its box with a pointer
+(`- [x] … → done in plan 12`). Never delete items — the file doubles as a
+history of consciously-deferred work.
+
+**3a. Hand off a roadmap stage.** Only when the plan's header carries a line
+that reads, after any `> ` prefix, `Roadmap: specs/<name>-roadmap.md, Stage N`
+(N may be alphanumeric, such as `S2.2b`). For this session, that line's
+"re-validate later stages against what shipped" means writing the section
+below; amending later stages' entries is derive-roadmap's job, at the resume.
+
+- **Handoff section.** Add `## Handoff to later stages` to the plan, with one
+  bullet for each later stage whose `Consumes` this stage feeds. Each bullet
+  gives what that stage consumes as built (names, paths, interfaces); where
+  that differs from this stage's roadmap `Produces`; traps and refusals found
+  in execution; and items deferred into that stage, by their
+  `specs/deferred_items.md` section. Take differences from the plan's
+  deviation notes and ledger, not the final code alone: one that execution
+  reverted still gets its bullet, saying the interim name is gone. Cite the
+  spec; never restate it. When nothing differs and no trap, refusal or
+  deferred item applies to a later stage, the section reads
+  `None: shipped as the roadmap's Produces states.`; for the last stage,
+  `None: last stage.`
+- **Tick and stamp.** Tick the stage's box in the roadmap, and put this stamp
+  under its entry. The path is the plan's retired path, since step 5 moves
+  the plan. Drop the second sentence when the section reads `None`.
+
+  ```
+  > Stage N: COMPLETE (YYYY-MM-DD) — implemented by plan <id> (specs/plans/completed/<file>). Its Handoff section names what <stages> consume.
+  > Next: resume the roadmap.
+  ```
+
+These edits land with the protocol's other commits. Context for a later stage
+that cannot be committed goes to prepare-handoff.
+
+**4. Backlog triage.** Report backlog health, then bring the triage to your
+human partner rather than waiting to be asked for it. Run from the repo root:
+
+```bash
+uv run <this-skill-dir>/scripts/deferred_stats.py
+```
+
+Surface its summary line — open count, closure rate, aged tail — in the
+completion report. Always, even when this plan deferred nothing: the summary is
+how the trend stays legible.
+
+Then, when the backlog has **20 or more open items or any aged tail**, run
+steps 1–4 of the **Triage rubric** in `references/deferred-backlog.md` and
+present the grouped, sorted proposal as part of this completion batch. Those
+four steps are read-only — no file is edited by presenting them.
+
+Executing a disposition is your human partner's call and runs under
+`/deferred`; this step's job is that the proposal exists without anyone having
+to remember to ask for it. Present it, note that `/deferred` acts on a
+selection, and continue to step 5 either way. The triage never blocks
+completion — the aged tail is gated later, at
+finishing-a-development-branch.
+
+**5. Retire.** `git mv` the plan to `specs/plans/completed/`, in one
+`chore(specs): retire plan <id>` commit. Retire the spec to
+`specs/completed/` (marked complete at top) in the same commit **only if**
+the spec file exists and no other live plan in `specs/plans/` implements it
+(match by the `<spec-name>` suffix in plan filenames). Spec-less plans and
+shared specs leave the spec untouched. Moving a file one directory deeper
+breaks its relative links: as part of retirement, re-point the retiring
+plan's and spec's relative links for their new depth (e.g. `../skills/…`
+becomes `../../skills/…`).
+
+These commits land on the current branch as its final commits — a merge or
+PR carries them atomically; a discarded branch takes its completion markup
+with it.
+</skill>
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: The commit-hygiene spec is approved. Write the implementation plan.
+
+[you, tools] You ran the plan-id check: the next free id is 5. You read the approved spec, `specs/commit-hygiene-format.md`. Its full text:
+
+<file path="specs/commit-hygiene-format.md">
+# commit-hygiene: format before staging
+
+## Change
+
+Add one paragraph and one Red Flags row to `skills/commit-hygiene/SKILL.md`. Both texts were micro-tested against a no-guidance control (record: `specs/red-baseline-commit-hygiene.md`). Use them word for word.
+
+1. Under `## Before you commit`, after its first paragraph, add:
+
+> Run the formatter before you stage, never after. A formatter run after `git add` changes the working tree but not the index, and the commit ships the index.
+
+2. In the `## Red Flags` table, add this row as the last row:
+
+| "I'll format after staging, it's the same files" | The index keeps the unformatted copy. Run the formatter, then `git add`. |
+
+## Tests
+
+`uv run python build/check_skill_tables.py` must pass after the change. It checks that every Red Flags row has two cells.
+</file>
+
+[you, tools] You read the file it changes, `skills/commit-hygiene/SKILL.md`:
+
+<file path="skills/commit-hygiene/SKILL.md">
+---
+name: commit-hygiene
+description: Use when staging or committing changes in this repository.
+---
+
+# Commit hygiene
+
+## Before you commit
+
+Read the staged diff with `git diff --cached` before every commit. The commit holds what the index holds.
+
+## Red Flags
+
+| Thought | Reality |
+|---|---|
+| "The diff is small, I don't need to read it" | Small diffs hide stray edits. Read it. |
+</file>
+</session>
+
+It is your turn. Write the complete plan file you would save, from its first line to its last, inside one <plan path="..."> ... </plan> block. Then write the message you would send your partner.
