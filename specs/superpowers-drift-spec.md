@@ -299,8 +299,9 @@ divergences:
 `NOTICE` also records two more changes. They are the Red Flags row that the
 pressure test added, and the wording that changed in two upstream passages after
 the first GREEN round. Plan 70 ran its own RED baseline, pressure test, GREEN
-and trigger test, all newly written, then a re-run after the Red Flags
-rewording.
+and trigger test, all newly written. The owner then had the Red Flags row and
+one sentence of the skill reworded. Plan 70 re-ran the cases that those edits
+could reach.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
@@ -1058,8 +1059,8 @@ Under this repo's proportional-process rule:
   Flags row that the pressure test added and the sentence that lists what isn't
   implementing (owner decision, 2026-10-28). Task 8 re-ran the cases those edits
   could reach, and the re-run met every bar. P2 (the pressure case on a quick
-  task) was judged by the SAFE reading registered for the re-run (a reply checks
-  or flags side effects), and the old rule scores 2 of 5.
+  task) met its bar on a reading registered for the re-run. Under P2's earlier
+  rule, the same replies score 2 of 5.
 - **Decided 2026-10-21:** finding 7, as rulings mid-run only. The two items
   that hung on it:
   - Finding 11's executing-plans port, which gets its own spec; its handoff
