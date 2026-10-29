@@ -1,6 +1,6 @@
 '''Fixture context for executing bayesian-workflow snippet fragments.
 
-Shaped after the skill's own running example (SKILL.md, NumPyro model template): a vector `beta`
+Shaped after the skill's own running example (references/model-template.md): a vector `beta`
 over a `feature` dim plus a scalar `sigma`, observed site `y_obs` over an
 `obs` dim, with the InferenceData carrying the groups the docs assume --
 log_likelihood, prior, posterior_predictive, and sample_stats.energy. The

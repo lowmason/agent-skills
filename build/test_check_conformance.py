@@ -1137,10 +1137,7 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
 # accepted late headings in ACKNOWLEDGED_LATE. Removing an exception removes
 # its files' rows from both tables; when the last compaction-window exception
 # goes, retire the lint and the test_real_skill_* tests with it.
-CRITICAL_SPANS = {
-    'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
-    'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
-}
+CRITICAL_SPANS = {}
 
 # Late critical headings the owner accepted past the compaction window, by exact
 # text. The register's writing-skills waiver is per file, so it hides a new late

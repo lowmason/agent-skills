@@ -680,20 +680,6 @@ evidence = 'Audit row S-97; owner gate 2026-10-04.'
 revisit = 'When writing-skills is split and rewritten against the guide (a deferred item).'
 
 [[exception]]
-id = 'skill-body-past-compaction'
-type = 'gap'
-check = 'compaction-window'
-sections = ['skills.progressive-disclosure']
-artifacts = [
-    'skills/subagent-driven-development/SKILL.md',
-    'skills/bayesian-workflow/SKILL.md',
-]
-guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'Both bodies run past the first 5,000 tokens. Plan 46 moved their critical sections inside it. The waiver is per check and file, so it also covers a heading finding in these two files; the critical_placement commit lint runs test_real_skill_* in build/test_check_conformance.py to keep those sections inside the window.'
-evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04; owner decision D1, plan 46, 2026-10-15.'
-tracked_in = 'deferred item: fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window'
-
-[[exception]]
 id = 'readonly-agents-hold-bash'
 type = 'deviation'
 sections = ['subagents.tools', 'mechanisms.overview']

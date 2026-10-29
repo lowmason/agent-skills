@@ -349,8 +349,9 @@ Changes from upstream:
     keeping this repo's .sdd rename rather than upstream's
     .superpowers/sdd. The fix-round ladder escalates context, then effort,
     then model, rather than upstream's unconditional "more capable
-    model" — here the model rung is taken only when the failing
-    implementer was dispatched below the capable tier, a property of that
+    model" — here the model rung is taken when the failing
+    implementer was dispatched below the capable tier (plan 71 added a last
+    rung at capable, below), a property of that
     dispatch and not of the controller's own session. task-brief's local
     heading-termination and Global-Constraints rework survives unchanged:
     upstream's own change to that script was only the workspace call, so
@@ -514,6 +515,24 @@ Changes from upstream:
     <this-skill-dir>/ anchor the bundled-script-path entry above gave the
     other skills; upstream's #2301 prefixes bash but still resolves the
     path against the user's repository.
+  - A file map was later adopted FROM upstream (plan 71), read at v7.0.1
+    (2ce8aa1, #2565): subagent-driven-development's situational parts
+    moved into references/ behind pointers at the steps that need them
+    (batching.md, preflight.md, handling-reports.md, cannot-verify.md,
+    fix-loop.md, final-review.md, resuming.md), with upstream's idea that
+    the fix-loop pointer tells the controller to re-read the file before
+    every round. No upstream text was taken: our own text moved verbatim,
+    because upstream's files differ from ours (workspace path and skill
+    prefix, preflight and plan-mandated-finding rulings, model escalation
+    at round 4, one final-review seat). Two moves are ours alone:
+    file-handoffs.md and the Context Checkpoints section, merged into the
+    existing context-checkpoints.md.
+  - Two local behavior changes were also made in plan 71 (owner rulings):
+    a capable-tier implementer whose round 4 was a thorough attempt that
+    still failed gets round 5 at fable where the runtime offers it; and
+    the controller may make a one-file, no-behavior-change fix itself and
+    then run the scoped re-review, narrowing upstream's "Don't try to fix
+    manually".
   - All thirteen skills' SKILL.md files gained `license: MIT` and a
     `metadata` block naming Jesse Vincent as author, Lowell Mason as
     adapter and https://github.com/obra/superpowers as source, placed

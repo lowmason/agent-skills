@@ -44,7 +44,7 @@ time on the model, prefer it.
 
 ## Running the checks
 
-The three checks on the running example's `model(x, y)` from SKILL.md's template:
+The three checks on the running example's `model(x, y)` from the model template ([model-template.md](model-template.md)):
 
 ```python
 from numpyro.infer import SVI, Trace_ELBO, log_likelihood

@@ -69,18 +69,18 @@ NORUN = 'norun'
 NOPARSE = 'noparse'
 TICK_NAME_RE = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)')
 MARKERS = (NORUN, NOPARSE)
-# Optional per SKILL.md:50-53 -- absent from a clean env by design, so an
+# Optional per SKILL.md:61-64 -- absent from a clean env by design, so an
 # unimportable chain rooted in one of these is an advisory, never a failure.
 # Same standing as the blackjax/dynamax norun blocks.
 OPTIONAL_MODULES = frozenset({'funsor', 'blackjax', 'dynamax'})
 # Prose may name an API precisely to say it is GONE (the 0.23 porting table in
-# SKILL.md, the WAIC removal notes). Keyed by NAME, not file:line, so it
+# references/stack-compatibility.md, the WAIC removal notes). Keyed by NAME, not file:line, so it
 # survives every prose edit -- and each entry carries its reason, exactly as a
 # `norun` marker does. PROSE ONLY: the same name inside a code block is an
 # assertion that it runs, and stays checked.
 DOCUMENTED_ABSENT = {
-    'az.plot_ppc': 'removed from the ArviZ 1.x umbrella; SKILL.md porting table',
-    'az.waic': 'removed from ArviZ 1.x, use LOO; SKILL.md Stack compatibility table, model-comparison.md',
+    'az.plot_ppc': 'removed from the ArviZ 1.x umbrella; references/stack-compatibility.md porting table',
+    'az.waic': 'removed from ArviZ 1.x, use LOO; references/stack-compatibility.md, model-comparison.md',
 }
 API_REMEDIATION = versions.runner_command('snippets', 'python build/check_snippets.py --api <paths>')
 RUN_REMEDIATION = versions.runner_command('snippets', 'python build/check_snippets.py --run <paths>')

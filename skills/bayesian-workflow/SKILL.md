@@ -125,254 +125,35 @@ These are battle-tested lessons that save hours of debugging:
 
 ## Stack compatibility (NumPyro + ArviZ)
 
-The inline examples here target the **modern ArviZ ≥ 1.0 stack**: the `arviz` 1.x umbrella plus
-the split packages `arviz-base` (data), `arviz-stats` (statistics), and `arviz-plots` (plotting).
-Install them in one line — `pip install "arviz>=1.0" arviz-base arviz-stats arviz-plots` — and they
-coexist with a classic `arviz` 0.23 install (they even read 0.23-written netCDF), so you do not
-have to uninstall an existing 0.23 environment to use this skill.
-
-The **NumPyro modeling code is version-independent** — only the ArviZ analysis/plotting layer
-differs. The right column below is a **porting reference**, not a promise that the inline code runs
-unchanged on 0.23: the examples assume ArviZ 1.x, and the 1.x idioms here *will raise* on a
-0.23-only environment unless you apply these translations.
-
-| Task | Modern (ArviZ 1.x: `arviz_stats` / `arviz_plots`) | Classic ArviZ 0.23 equivalent (for porting) |
-|---|---|---|
-| NumPyro → InferenceData | `az.from_numpyro(...)` returns an xarray **`DataTree`** | same call, but returns an **`InferenceData`** |
-| JAX→NumPy conversion | `idata.map_over_datasets(lambda ds: ds.as_numpy())` (DataTree method) | `idata.map(lambda ds: ds.as_numpy())` — and it is unnecessary: 0.23 `from_numpyro` already returns NumPy-backed arrays |
-| Posterior-predictive plot | `arviz_plots.plot_ppc_dist(idata)` (imported as `azp`) | `az.plot_ppc(idata)` (removed from the ArviZ 1.x umbrella) |
-| Calibration (PPC-PIT / LOO-PIT) | `azp.plot_ppc_pit(idata)` and **separately** `azp.plot_loo_pit(idata)` | `az.plot_loo_pit(idata, ecdf=True)` |
-| Test-statistic PPC | `azp.plot_ppc_tstat(idata, t_stat="median")` | `az.plot_ppc(idata, ...)` (removed from the ArviZ 1.x umbrella) + manual |
-| Trace / rank plot | `az.plot_trace(idata, var_names=[...])`; rank `az.plot_rank(idata, var_names=[...])` — **pass `var_names`** (ArviZ 1.x errors when the auto-selected set exceeds its subplot cap, e.g. a vector `Deterministic` like `mu` over an `obs` dim). Returns a `PlotCollection` — `.savefig(...)` to save | `az.plot_trace(idata, kind="rank_vlines")` (the `kind=` arg is 0.23-only); returns a NumPy array of Matplotlib `Axes` — save via `plt.gcf().savefig(...)`, not `.savefig` on the return |
-| Summary interval | `az.summary(idata, ci_prob=0.94, ci_kind="hdi")` | `az.summary(idata, hdi_prob=0.94)` |
-| Prior sensitivity | `az.psense_summary(idata)` (on the 1.x umbrella) | not on the 0.23 umbrella — use `arviz_stats.psense_summary(idata)` |
-| Pointwise LOO field | `loo.elpd_i` (and `loo.elpd` / `loo.p`) | `loo.loo_i` (and `loo.elpd_loo` / `loo.p_loo`) |
-| Groups accessor | `idata.groups` is a tuple of paths | `idata.groups()` is a **method** — call it |
-| Model comparison | `az.loo`, `az.compare` — unchanged. **WAIC was removed from ArviZ 1.x** — use LOO | `az.waic` exists on 0.23 only |
-| Sampler output type | xarray `DataTree` | `InferenceData` |
-
-`arviz_plots` (`azp`) and `arviz_stats` (`azs`) install alongside either umbrella, so leading with
-`azp.*` / `azs.*` is the most portable plotting/stats choice. The genuinely version-stable calls are
-`az.summary` (modulo the `ci_prob`/`hdi_prob` kwarg above), `az.compare`, and `idata.to_netcdf()`;
-everything else in the table differs by version, so run the inline examples on the modern stack they
-are written for.
+The inline examples target the ArviZ ≥ 1.0 stack. Before you port code to ArviZ
+0.23, or when an ArviZ call raises, read
+[references/stack-compatibility.md](references/stack-compatibility.md).
 
 ## NumPyro model template
 
-```python
-import jax
-import jax.numpy as jnp
-import numpy as np
-import numpyro
-import numpyro.distributions as dist
-from numpyro.infer import MCMC, NUTS, Predictive
-import arviz as az
-
-numpyro.set_host_device_count(4)   # MUST precede the first JAX op (e.g. PRNGKey) or it silently no-ops
-
-RANDOM_SEED = sum(map(ord, "churn-logistic-v1"))
-rng = np.random.default_rng(RANDOM_SEED)
-rng_key = jax.random.PRNGKey(RANDOM_SEED)
-
-# NumPyro has no Data container: data flows in as function arguments. Use `numpyro.plate`
-# for batch dims, and map those dims to coords/dims when converting to ArviZ.
-coords = {"obs": np.arange(len(df))}
-
-def model(x, y=None):
-    # --- Priors (NumPyro uses scipy-style loc/scale) ---
-    # Always document WHY each prior was chosen
-    mu = numpyro.sample("mu", dist.Normal(0, 10))      # weakly informative: allows wide range
-    sigma = numpyro.sample("sigma", dist.HalfNormal(1))
-
-    # --- Data model ---
-    with numpyro.plate("obs", x.shape[0]):
-        numpyro.sample("y_obs", dist.Normal(mu, sigma), obs=y)   # obs=None at prior-pred time
-
-x = df["x"].to_numpy()
-y = df["y"].to_numpy()
-k_prior, k_mcmc, k_post = jax.random.split(rng_key, 3)
-
-# --- Prior predictive check ---
-prior_pred = Predictive(model, num_samples=500)(k_prior, x)         # no y => draws y_obs
-
-# --- Inference (native NUTS; see Samplers for BlackJAX) ---
-mcmc = MCMC(NUTS(model, target_accept_prob=0.9),
-            num_warmup=1000, num_samples=1000, num_chains=4, chain_method="parallel")
-mcmc.run(k_mcmc, x, y=y,
-         extra_fields=("energy", "diverging", "num_steps", "accept_prob"))  # energy => plot_energy
-
-# --- Posterior predictive check ---
-post_pred = Predictive(model, posterior_samples=mcmc.get_samples())(k_post, x)
-
-# --- Convert to ArviZ. ALWAYS map the observed/predicted variable in `dims`. ---
-idata = az.from_numpyro(
-    mcmc,
-    prior=prior_pred,
-    posterior_predictive=post_pred,
-    log_likelihood=True,                       # builds the log_likelihood group (needed for LOO)
-    coords=coords,
-    dims={"y_obs": ["obs"]},
-)
-# NumPyro returns JAX arrays; convert once so in-session ArviZ ops (e.g. az.loo) don't trip
-# over JAX immutability. (Reloading from netCDF also yields NumPy.)
-idata = idata.map_over_datasets(lambda ds: ds.as_numpy())
-
-# --- Compute log_prior for sensitivity checks (NumPyro does not store it). See sensitivity.md ---
-idata = add_log_prior(idata, model, mcmc, x, y=y)   # helper defined in references/sensitivity.md
-
-# --- Save immediately after sampling ---
-# Late crashes can destroy valid results. Save to disk before any post-processing.
-idata.to_netcdf("model_output.nc")
-```
+Start every model from the canonical template in
+[references/model-template.md](references/model-template.md); read it before you
+write model code.
 
 ## Samplers
 
-NumPyro models are sampled by NUTS implemented in JAX, which is JIT-compiled and runs on
-CPU/GPU/TPU. There are two first-class, co-equal choices. The canonical template uses native
-NUTS; everything downstream (`az.from_numpyro` or `az.from_dict`, diagnostics, plots) is
-identical once you have an InferenceData.
-
-**1. Native NumPyro NUTS (default).** Idiomatic, the least code, and already fast.
-
-```python norun slow: 4 chains x 2000 draws, minutes -- not a pre-commit gate
-numpyro.set_host_device_count(4)                 # required for parallel CPU chains; MUST precede the first JAX op
-mcmc = MCMC(NUTS(model, target_accept_prob=0.9),
-            num_warmup=1000, num_samples=1000, num_chains=4, chain_method="parallel")
-mcmc.run(rng_key, x, y=y, extra_fields=("energy", "diverging", "num_steps", "accept_prob"))
-idata = az.from_numpyro(mcmc, log_likelihood=True, coords=coords, dims=dims)
-```
-
-**2. BlackJAX NUTS (co-equal alternative).** A standalone JAX sampler with explicit, composable
-warmup (window adaptation) and access to variants (e.g. `blackjax.pathfinder` for warm-starts).
-Use it when you want fine control over adaptation or a second independent sampler to cross-check.
-You drive a NumPyro model through it via its log-density, then assemble the InferenceData
-yourself with `az.from_dict`:
-
-```python norun blackjax is optional (SKILL.md:52), not a declared dependency
-import blackjax
-from numpyro.infer.util import initialize_model
-
-init = initialize_model(rng_key, model, model_args=(x,), model_kwargs={"y": y}, dynamic_args=False)
-logdensity = lambda position: -init.potential_fn(position)
-
-def run_chain(key, init_pos, n_warmup=1000, n_samples=1000):
-    wk, sk = jax.random.split(key)
-    warmup = blackjax.window_adaptation(blackjax.nuts, logdensity, target_acceptance_rate=0.9)
-    (state, params), _ = warmup.run(wk, init_pos, num_steps=n_warmup)
-    kernel = blackjax.nuts(logdensity, **params)
-    @jax.jit
-    def step(s, k):
-        s, info = kernel.step(k, s)
-        return s, (s.position, info)
-    _, (positions, infos) = jax.lax.scan(step, state, jax.random.split(sk, n_samples))
-    return positions, infos
-
-n_chains = 4
-keys = jax.random.split(rng_key, n_chains)
-init_pos = jax.tree.map(lambda v: jnp.broadcast_to(v, (n_chains,) + v.shape), init.param_info.z)
-positions, infos = jax.vmap(run_chain)(keys, init_pos)              # leaves: (chain, draw, ...)
-
-# unconstrained -> constrained (incl. deterministics) via the model's postprocess_fn
-constrained = jax.vmap(jax.vmap(init.postprocess_fn))(positions)
-idata = az.from_dict(
-    {
-        "posterior": {k: np.asarray(v) for k, v in constrained.items()},
-        "sample_stats": {
-            "diverging": np.asarray(infos.is_divergent),
-            "energy": np.asarray(infos.energy),
-            "n_steps": np.asarray(infos.num_integration_steps),
-            "acceptance_rate": np.asarray(infos.acceptance_rate),
-        },
-        "observed_data": {"y_obs": y},
-    },
-    coords=coords, dims=dims,
-)
-```
-
-(Compute `log_likelihood` and posterior predictive for BlackJAX runs with `numpyro.infer.log_likelihood`
-and `Predictive(model, posterior_samples=...)`, then add them as groups — see model-comparison.md.)
-
-**SVI as the final fit.** When SVI (stochastic variational inference) replaces NUTS rather than
-warm-starting it, check it before you trust it: a flat ELBO (evidence lower bound) trace that every
-seed reaches, PSIS-LOO for the approximation, and VSBC (variational simulation-based calibration).
-See [references/svi.md](references/svi.md).
-
-**Why not nutpie?** The PyMC-ecosystem sampler nutpie compiles **PyMC and Stan** models, not
-NumPyro — there is no NumPyro entry point. With NumPyro you do not need it: native NUTS is
-already JAX-JIT-compiled, and BlackJAX is the genuine "swap the sampler" alternative.
-
-**Chains.** Unlike PyMC, NumPyro requires you to set `num_chains` explicitly (default is 1).
-Use **at least 4** and call `numpyro.set_host_device_count(num_chains)` so `chain_method="parallel"`
-actually runs them on separate CPU devices. Running more chains is a cheap way to cut Monte
-Carlo variance and to surface multimodality (Gelman et al. 2026, §11.4). `chain_method="vectorized"`
-runs all chains in one `vmap` (fast, single device, no host-count needed); `"sequential"` is the
-low-memory fallback. Size the run to the phase: exploration fits at
-`num_warmup=200, num_samples=200` accept R-hat ≤ 1.1 — a threshold for the keep/change/discard
-decision only, never for numbers that get reported; the 1000/1000 template default is the *final*
-run (Gelman et al. 2026, §11.4, §12.1 — see diagnostics.md → Exploration runs vs. the final run).
+Native NumPyro NUTS is the default and BlackJAX the co-equal alternative. Read
+[references/samplers.md](references/samplers.md) before you set up MCMC: both
+samplers, chain counts, and run sizes for exploration and the final run.
 
 ## Common model families
 
-NumPyro uses scipy-style distribution arguments (`loc`/`scale`, `concentration`/`rate`). See
-[references/priors.md](references/priors.md) for the full PyMC→NumPyro distribution map. For
-time-series / state-space models, settle **marginalize the latent path vs. sample it** first — see
-[references/state-space.md](references/state-space.md).
-
-| Problem | Data model (`numpyro.distributions`) | Typical priors | Reference |
-|---|---|---|---|
-| Continuous outcome | `Normal` / `StudentT` | `Normal`, `Gamma`/`HalfNormal` avoiding 0 for positive-constrained parameters | [references/priors.md](references/priors.md) |
-| Binary outcome | `Bernoulli` (or `Binomial` if aggregated); pass `logits=` for the logit link | `Normal(0, 1.5)` on coeffs | [references/priors.md](references/priors.md) |
-| Count data | `Poisson` / `NegativeBinomial2(mean, concentration)` | `Gamma`/`HalfNormal` on rate, avoiding 0 | [references/priors.md](references/priors.md) |
-| Count data with excess zeros | `ZeroInflatedPoisson(gate, rate)` / `ZeroInflatedNegativeBinomial2` | `Gamma` on rate; `Beta`/`Normal+logit` on the `gate` (= P(structural zero)) | [references/priors.md](references/priors.md) |
-| Count data, zeros from a separate process | Hurdle: `HurdlePoisson(gate, rate)` / `HurdleNegativeBinomial2` (NumPyro ≥ 0.22); `gate` = P(zero), and every zero is structural | Separate gate and count components | [references/priors.md](references/priors.md) |
-| Positive count data (zero cannot occur) | Zero-truncated count likelihood, built by hand (`TruncatedDistribution` rejects discrete bases) | `Gamma`/`HalfNormal` on rate, avoiding 0 | [references/priors.md](references/priors.md) |
-| Ordinal outcome | `OrderedLogistic(predictor, cutpoints)` | `Normal` on coeffs; ordered-transformed `Normal` on cutpoints | [references/priors.md](references/priors.md) |
-| Bounded outcome (a proportion strictly inside 0–1, or k successes out of n) | `BetaProportion(mean, concentration)` with `mean` through `expit`; `BetaBinomial(concentration1, concentration0, total_count)` for an overdispersed k-of-n count | `Normal` on coeffs (logit scale); `Gamma`/`Exponential` on `concentration`, avoiding 0 | [references/priors.md](references/priors.md) |
-| One quantile of the outcome (e.g. the 90th percentile) | `AsymmetricLaplaceQuantile(loc, scale, quantile=τ)` with `loc` the τ-quantile predictor | `Normal` on coeffs; `HalfNormal` on `scale` | [references/priors.md](references/priors.md) |
-| Censored data (survival, limits of detection) | `RightCensoredDistribution(base, censored=flag)` / `LeftCensoredDistribution` / `IntervalCensoredDistribution` | Same as uncensored, applied to the underlying distribution | [references/priors.md](references/priors.md) |
-| Truncated data | `TruncatedNormal(loc, scale, low, high)` / `TruncatedDistribution(base, low, high)` | Same as underlying distribution | [references/priors.md](references/priors.md) |
-| High-dimensional / sparse regression | `Normal` / `StudentT` with sparsity prior on coefficients | Regularized Horseshoe or R2-D2 on coeffs | [references/priors.md](references/priors.md) |
-| Hierarchical / multilevel | Varies | See partial pooling + `LocScaleReparam` | [references/hierarchical.md](references/hierarchical.md) |
-| Time series / state space | Latent path via `scan` (non-Gaussian/non-linear) or Kalman marginalization (linear-Gaussian) | Non-centered innovations; stationary init | [references/state-space.md](references/state-space.md) |
-| Gaussian processes | Exact GP (`MultivariateNormal` over the inputs) for small n; HSGP (`numpyro.contrib.hsgp.approximation`) for large n in 1–3 input dims | `InverseGamma` on the length-scale, `HalfNormal` on the amplitude | [references/gaussian-processes.md](references/gaussian-processes.md) |
+For each problem type's data model, typical priors and reference file, read
+[references/model-families.md](references/model-families.md).
 
 ## Utility scripts
 
-Run these in order — each script's output feeds the next. They operate on the saved
-`inference_data.nc` (backend-agnostic), so they are identical for native-NUTS and BlackJAX runs.
-
-```bash
-# 1. Run convergence + LOO + PPC checks (writes diagnostics.json)
-uv run <this-skill-dir>/scripts/diagnose_model.py --idata <slug>/inference_data.nc --output <slug>/diagnostics.json
-
-# 2. Run calibration check (writes calibration.json + pit_ecdf.png + pit_coverage.png;
-#    with --loo-pit the figures are loo_pit_ecdf.png + loo_pit_coverage.png instead)
-uv run <this-skill-dir>/scripts/calibration_check.py --idata <slug>/inference_data.nc --output <slug>/calibration.json --save-plots --plot-dir <slug>/
-
-# 3. Interpret the JSON outputs into qualitative ratings + suggested next steps
-uv run <this-skill-dir>/scripts/check_diagnostics.py --diagnostics <slug>/diagnostics.json --calibration <slug>/calibration.json --output <slug>/check_report.json
-```
-
-Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header.
-
-Step 3 is what powers the `report.md` Assessment lines and Suggested Next Steps section — never hand-roll those interpretations from raw R-hat / ESS / pareto-k numbers when the harness can produce them consistently.
-
-See [scripts/](scripts/) for all available utilities.
+Three scripts check a saved run in order (diagnostics, calibration, then ratings
+and next steps). Read [references/utility-scripts.md](references/utility-scripts.md)
+for the commands before you write `report.md`.
 
 ## When things go wrong
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| Divergences | Posterior geometry issue | ≤ ~1% of transitions: raise `target_accept_prob` to 0.95–0.99. More than that: don't — first `az.plot_pair` the flagged scale against one of its children, then apply the matching Failure-signatures fix (funnel → non-centered `LocScaleReparam`; ridge → identifiability; uncentered predictors → center them); see diagnostics.md → Failure signatures (Gelman et al. 2026, §12.3) |
-| Low ESS | High autocorrelation | More warmup/draws, reparameterize, reduce correlations |
-| R-hat > 1.01 | Chains haven't mixed | More draws, better init (`init_strategy=init_to_median`), check for multimodality |
-| Prior pred. looks wrong | Bad priors | Tighten or shift priors, use domain knowledge / PreliZ |
-| Post. pred. misses data | Model misspecification | Add complexity (varying slopes, different data model, interaction terms) |
-| `log_likelihood` missing | `from_numpyro` defaults to `log_likelihood=False` | Pass `log_likelihood=True` (or call `numpyro.infer.log_likelihood`) before saving |
-| `log_prior` missing (psense fails) | NumPyro never stores it | Attach it with the `add_log_prior` recipe in [references/sensitivity.md](references/sensitivity.md) |
-| `az.loo` raises "JAX arrays are immutable" | JAX-backed InferenceData | `idata.map_over_datasets(lambda ds: ds.as_numpy())` or reload from netCDF |
-| `plot_energy` AttributeError | energy not collected | `mcmc.run(..., extra_fields=("energy", ...))` |
-| Slow / poor warmup | Bad starting point or geometry | Try `init_strategy=init_to_median`, `dense_mass=True`, or warm-start NUTS from an SVI `AutoNormal` fit / `blackjax.pathfinder` |
-| Prior sensitivity flag | Prior-data conflict or strong prior | Check `psense_summary(idata)` — see [references/sensitivity.md](references/sensitivity.md). Justify or revise the flagged prior |
-
-For the fuller catalog of failure signatures — improper posterior, unused parameter, aliasing, uncentered predictors, multimodality, overflow at init, varying curvature, funnel, unconstrained scale — and what each looks like in the diagnostics, see [references/diagnostics.md](references/diagnostics.md) → Failure signatures.
+Read [references/troubleshooting.md](references/troubleshooting.md) when you see
+divergences, low ESS, R-hat above 1.01, a failing predictive check, or a missing
+`log_likelihood` or `log_prior` group.

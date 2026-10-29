@@ -105,9 +105,9 @@ uv run python build/cc_guide/cli.py probes --claude <path>
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
 
 # Critical-section placement: compaction-window exceptions waive per file, heading findings included, so these tests
-# pin the critical sections of two skills (CRITICAL_SPANS) and the late headings the owner accepted in writing-skills
-# (ACKNOWLEDGED_LATE), both in test_check_conformance.py. Removing an exception removes its files' rows; when the last
-# compaction-window exception goes, retire this lint and these tests with it
+# pin the late headings the owner accepted in writing-skills (ACKNOWLEDGED_LATE, in test_check_conformance.py;
+# CRITICAL_SPANS is empty since plan 71 removed skill-body-past-compaction). Removing an exception removes its files'
+# rows; when the last compaction-window exception goes, retire this lint and these tests with it
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
 
 # Snippet gate: three tiers, cheapest first, run as three separate commands. Every command runs the parse check, but
