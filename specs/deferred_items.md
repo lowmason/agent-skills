@@ -3523,6 +3523,12 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       (#2565) does not re-invoke the skill. It re-reads each step's reference from disk at
       that step. Claude Code's truncation marker already tells the model to read the file, and
       upstream's #2481 controller never did. See drift finding 17. (3) is still not ruled.
+      → progress 2026-10-29 (owner rulings, in conversation): (2) No: a trivial fix need not
+      go to a fix subagent, limited to one file and no change in behavior, with the same
+      scoped re-review afterward and a pressure case in the micro-test. (3) Yes: a short line
+      near the top to re-invoke the skill and re-read the ledger after a compaction, plus
+      upstream's per-step re-read pointers. The line is tested against a control without it
+      first and dropped if the control already recovers. Plan 71 applies (1), (2) and (3).
 - [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
