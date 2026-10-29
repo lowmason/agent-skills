@@ -1138,7 +1138,6 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
 # its files' rows from both tables; when the last compaction-window exception
 # goes, retire the lint and the test_real_skill_* tests with it.
 CRITICAL_SPANS = {
-    'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
     'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
 }
 

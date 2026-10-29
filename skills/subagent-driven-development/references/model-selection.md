@@ -30,6 +30,6 @@ on a genuine toss-up, and defaulting to **standard** when nothing clearly fires
 ## No tier above capable
 
 Fable is not an SDD tier. Not every runtime offers `fable`, and the ladder in
-SKILL.md § Fix Rounds ends at **capable**: a task that still fails there goes to
+[fix-loop.md](fix-loop.md) ends at **capable**: a task that still fails there goes to
 adjudication, where reaching for a stronger model is your human partner's call,
 not a dispatch default.

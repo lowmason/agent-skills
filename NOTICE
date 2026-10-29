@@ -514,6 +514,18 @@ Changes from upstream:
     <this-skill-dir>/ anchor the bundled-script-path entry above gave the
     other skills; upstream's #2301 prefixes bash but still resolves the
     path against the user's repository.
+  - A file map was later adopted FROM upstream (plan 71), read at v7.0.1
+    (2ce8aa1, #2565): subagent-driven-development's situational parts
+    moved into references/ behind pointers at the steps that need them
+    (batching.md, preflight.md, handling-reports.md, cannot-verify.md,
+    fix-loop.md, final-review.md, resuming.md), with upstream's idea that
+    the fix-loop pointer tells the controller to re-read the file before
+    every round. No upstream text was taken: our own text moved verbatim,
+    because upstream's files differ from ours (workspace path and skill
+    prefix, preflight and plan-mandated-finding rulings, model escalation
+    at round 4, one final-review seat). Two moves are ours alone:
+    file-handoffs.md and the Context Checkpoints section, merged into the
+    existing context-checkpoints.md.
   - All thirteen skills' SKILL.md files gained `license: MIT` and a
     `metadata` block naming Jesse Vincent as author, Lowell Mason as
     adapter and https://github.com/obra/superpowers as source, placed

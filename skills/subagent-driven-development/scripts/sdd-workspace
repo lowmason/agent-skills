@@ -35,7 +35,7 @@ plan=$1
 # ids are unique across specs/plans/ and specs/plans/completed/ is what makes
 # that safe; nothing here enforces it. The ledger's first line records the
 # plan path so a collision is visible rather than silent (see SKILL.md,
-# Durable Progress).
+# Durable Progress and references/resuming.md).
 slug=$(basename "$plan" .md)
 [ -n "$slug" ] && [ "$slug" != "." ] && [ "$slug" != ".." ] \
   || { echo "cannot derive a workspace name from: $plan" >&2; exit 2; }

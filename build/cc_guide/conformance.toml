@@ -685,11 +685,10 @@ type = 'gap'
 check = 'compaction-window'
 sections = ['skills.progressive-disclosure']
 artifacts = [
-    'skills/subagent-driven-development/SKILL.md',
     'skills/bayesian-workflow/SKILL.md',
 ]
 guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'Both bodies run past the first 5,000 tokens. Plan 46 moved their critical sections inside it. The waiver is per check and file, so it also covers a heading finding in these two files; the critical_placement commit lint runs test_real_skill_* in build/test_check_conformance.py to keep those sections inside the window.'
+reason = 'The bayesian-workflow body runs past the first 5,000 tokens (plan 71 fit the subagent-driven-development body inside it). Plan 46 moved its critical sections inside it. The waiver is per check and file, so it also covers a heading finding in that file; the critical_placement commit lint runs test_real_skill_* in build/test_check_conformance.py to keep those sections inside the window.'
 evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04; owner decision D1, plan 46, 2026-10-15.'
 tracked_in = 'deferred item: fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window'
 
