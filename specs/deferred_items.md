@@ -2538,6 +2538,9 @@ declined as YAGNI (zero instances in a one-page wiki).
 - [ ] A distilled `references/` file for writing-skills (conformance spec Decision 10).
       Size: plan. Revisit if: writing-skills is split below 500 body lines (a portability
       Out-of-scope item; R1.7's body-length warning).
+      → progress 2026-10-29 (plan 72): the trigger fired. Plan 72 split writing-skills to 434
+      body lines and added `references/{discovery,flowcharts,bulletproofing}.md`. This item is
+      still open: it asks for a distilled file of Claude Code text, which plan 72 did not write.
 
 ## 37-recommend-causal-design (merge review) — 2026-10-04
 - [ ] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
@@ -3799,7 +3802,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       decisions. Size: plan. Done when: each form is reported past the window, with a test
       for each, and any new match is placed or waived; or the owner records the forms as
       accepted limits.
-- [ ] Pin the `_late_headings` parse with a positive control (plan 48 review, reviewer
+- [x] Pin the `_late_headings` parse with a positive control (plan 48 review, reviewer
       Minor; deferred at the completion gate as unneeded today): `_late_headings` in
       `build/test_check_conformance.py` reads the heading out of the check's message with
       `split`, `rsplit` and `ast.literal_eval`. While a row is non-empty, a reworded
@@ -3812,6 +3815,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       lint selects it. Size: quick-fix. Revisit if: the writing-skills rewrite (deferred
       item "Split and rewrite writing-skills against the guide") empties a row while its
       exception stays, or the check's message wording changes.
+      → done in plan 72 (2026-10-29): moot. Task 3 (7c09ef3) deleted `_late_headings`,
+      `ACKNOWLEDGED_LATE`, `CRITICAL_SPANS` and the four `test_real_skill_*` tests, together with
+      the `critical_placement` lint, once the writing-skills body fit the compaction window.
 
 ## fork-mode-fresh-dispatch (no plan; /cc-guide files follow-up, branch claude/elated-solomon-284dad) — 2026-10-18
 
@@ -3863,6 +3869,9 @@ all 20 named a type.
       "so dispatch each as the type its template names, never as a fork". SDD stays held in the
       cc-guide backlog, so no restamp. Words added at :16 move the critical sections below it, so run the
       critical-placement lint after the edit. Size: quick-fix. Revisit at the next SDD edit.
+      → progress 2026-10-29 (plan 72): the placement lint named above is retired. After the edit,
+      run `uv run --with pyyaml python build/check_conformance.py` instead. SDD has no
+      `compaction-window` exception, so that check refuses a late critical heading unaided.
 
 ## 49-claude-code-drift-automation — 2026-10-18
 - [x] Pin `baseline rebaseline` to its packet's head (plan 49, Q1, owner decision D2). A
@@ -5540,6 +5549,13 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       v7.0.1's map" (section `superpowers-drift-v7.0.1`). Once it lands, this item keeps the rewrite:
       the `writing-skills-guide-gaps` gap, the `writing-skills-tdd-for-docs` deviation, and the
       `@`-link claim. The split closes the WARN, the late-heading exception and both tests.
+      → progress 2026-10-29 (plan 72): the body-length and late-heading parts are done. The body
+      is 434 lines; `writing-skills-late-critical-headings` is gone; `ACKNOWLEDGED_LATE` and the
+      frontmatter-warning test are updated. The owner dropped "body length" and `skills.overview`
+      from `writing-skills-guide-gaps` on 2026-10-29 (cba949d). Still open: the rest of that gap
+      (listing budget, critical-rules-first, `@` loading), the `writing-skills-tdd-for-docs`
+      deviation and the "Why no @ links" claim. The rewrite should also fix SKILL.md's "Directory
+      Structure" and "File Organization" sections, which still show no `references/` folder.
 - [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
@@ -6211,6 +6227,9 @@ defer. Anchors are at the end of plan 59's fix wave.
       The SDD edit needs the placement tests rerun (`test_check_conformance.py -k test_real_skill`).
       Plan 63 final review, Minor. Size: quick-fix. Revisit if: another edit touches those
       descriptions or SDD.
+      → progress 2026-10-29 (plan 72): the placement tests named above are retired
+      (`-k test_real_skill` now selects nothing). After the SDD edit, run
+      `uv run --with pyyaml python build/check_conformance.py` instead.
 - [x] Re-run the writing-skills t2 micro-test (push gate) with the fixed `run_arm.sh`; the plan 63
       run leaked prompts through stdin, so its 8/15 vs 0/15 may be contaminated. The kit is in the
       scratch folder `~/.cache/agent-skills/scratch/plan63-micro/`. Size: quick-fix. Done when: the
@@ -6598,7 +6617,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       whole-file byte bar is not adopted. This probe decides the measure: if the cut counts
       the frontmatter, correct the register's window. No execution starts before plan 69's
       execution has ended. Plan 69 adds a probe to the same `build/cc_guide/` files.
-- [ ] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
+- [x] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
       The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
       first as a plan without a spec. It runs after the subagent-driven-development compaction
       plan. Move four parts of `skills/writing-skills/SKILL.md` verbatim into `references/`,
@@ -6620,6 +6639,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       69's execution has ended. Size: plan. Done when: the body is at most 20,000 characters
       and under 500 lines, the exception is removed with `build/check_conformance.py`
       passing, and the micro-test shows each reference read at its step.
+      → done in plan 72 (2026-10-29): the four parts moved verbatim into
+      `skills/writing-skills/references/{discovery,flowcharts,bulletproofing}.md`. The body is 434
+      lines and 18,003 characters. Exception `writing-skills-late-critical-headings` and the
+      `critical_placement` lint are gone (7c09ef3). Micro-test: 5/5 on every `t3` arm, $3.39; see
+      `specs/red-baseline-writing-skills-split.md`.
 
 ## spec-reading-test-check (no plan; owner-approved local design idea from session "Obra superpowers writing-plans mechanism") — 2026-10-28
 - [ ] Spec-reading test check (local design, not an upstream finding, owner-approved
@@ -6787,7 +6811,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Owner decision D18 set the current wording in Task 8.
 
 ## 71-sdd-bayesian-compaction-window — 2026-10-29
-- [ ] Nothing resolves relative links inside `skills/**/references/` (plan 71 final review,
+- [x] Nothing resolves relative links inside `skills/**/references/` (plan 71 final review,
       Important): four links broke when text moved one directory deeper
       (`skills/subagent-driven-development/references/{fix-loop,cannot-verify,final-review}.md`,
       `skills/bayesian-workflow/references/utility-scripts.md`) and no lint, survival check or
@@ -6795,6 +6819,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       links in every `references/*.md` and fails when a target is missing would catch the next
       move, and the same lint could cover each SKILL.md. Size: plan. Done when: such a lint runs
       in `build/run_commit_lints.sh` and fails on a broken `references/` link in a test clone.
+      → done in plan 72 (2026-10-29): `build/check_links.py` runs as the eighth commit lint
+      (2af1c08, b6bd294). `test_broken_reference_link_is_refused` shows it refusing a broken
+      `references/` link in a clone. It checks 213 links and finds none broken.
 - [ ] The trivial-fix exception does not say whether a hand fix counts against the five fix
       attempts (plan 71 final review, Minor): `skills/subagent-driven-development/SKILL.md`
       (Red Flags, "Exception: a fix confined to one file…") and
@@ -6802,3 +6829,40 @@ review and the Plan Completion gate (2026-10-27) add the others.
       dispatches") are silent. Adding a sentence changes SKILL.md after the plan 71
       micro-tests, so C2a and C2b must be re-run on the new SHA (about $1). Size: quick-fix.
       Done when: both copies of the exception say it, and C2a and C2b still pass at 5/5.
+
+## 72-writing-skills-split — 2026-10-29
+- [ ] `build/check_links.py` fails open on forms it does not parse (plan 72 final review, Minor;
+      triaged defer). A misspelled directory argument (`check_links.py skils`) prints
+      `0 relative link(s) checked, 0 broken` and exits 0, because `rglob` on a missing directory
+      yields nothing. A link title in single quotes or in parentheses (`[t](gone.md 'title')`)
+      does not match `LINK`, so the link is never checked. On a case-insensitive file system such
+      as this Mac's, `exists()` accepts a link whose case differs from the file name, while Linux
+      CI would reject it. Reference-style definitions (`[ref]: path.md`) and percent-encoded
+      targets are not handled either. No such link exists in `skills/` today: 213 links checked,
+      0 broken, and a case-sensitive pass is also clean. Indented code blocks and code spans that
+      wrap across lines can only cause false alarms. See
+      `specs/plans/completed/72-writing-skills-split.md`. Size: quick-fix. Done when:
+      `check_links.py` exits non-zero for a named directory that does not exist or when it checks
+      zero links, counts links with single-quoted or parenthesized titles, compares file names
+      case-sensitively, and parses reference-style definitions and percent-encoded targets, and
+      `build/test_check_links.py` has a test for each.
+- [ ] The micro-test kit lets user-level context into its `claude -p` reps (plan 72 final review,
+      Minor; triaged defer). All 45 replies of plan 72's micro-test show an "Insight" box, and
+      W1 Sonnet rep 2 quotes the user's global notes back. So
+      `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, copied from plan 71's kit
+      (`specs/red-baseline-sdd-compaction/kit/run_reps.sh`), does not isolate the reps from the
+      user's output style, hooks or user-level CLAUDE.md. The cause is not identified. That
+      CLAUDE.md tells agents to check for a relevant skill, so the `t3` read-first passes are an
+      upper bound. The same leak may touch plan 71's results. The kit also makes one
+      `/tmp/plan72-rep-*` directory per call, not per rep. See
+      `specs/red-baseline-writing-skills-split.md`. Size: plan. Done when: a kit run shows no
+      Insight box and no quoted user-level file in any reply, plan 72's `t3` arms (30 reps, about
+      $2) re-run under it, and the pass counts are recorded beside the first run's.
+- [ ] The `t3` micro-test passes show less than they appear to (plan 72 final review, Minor;
+      triaged defer). The reps run one turn with no tools, so a read ACTION never returns the
+      reference text. 22 of the 30 `t3` passes came from the registered no-edit clause, and only
+      8 reps wrote a read before a write. A test with tools enabled and the reference files in
+      place would show whether an agent reads a pointer's target and then uses it. See
+      `specs/red-baseline-writing-skills-split.md`. Size: design. Revisit if: an agent is seen
+      skipping a writing-skills reference in real use, or a later pointer change needs evidence
+      beyond "reads first".

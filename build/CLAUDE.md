@@ -26,6 +26,10 @@ open only when uv cannot run, and `../.github/workflows/lints.yml` runs it in
 CI. `test_commit_lints.py` drives the runner and hook through throwaway
 clones and checks the workflow's triggers and pins.
 
+`check_links.py` is a commit lint: it fails on a relative Markdown link under
+`../skills/` whose target is missing, resolving each link from its own file's
+directory, so a move into `references/` cannot leave a stale link behind.
+
 `versions.toml` is the one file where a person sets the dev Python, the freeze date, each pinned
 package version and each cited-only version (design: `specs/completed/package-versions.md`). `versions.py` reads
 it: `sync` writes `.python-version`, `uv.toml` and `skills/uv.toml`, `run` and `verify` install a

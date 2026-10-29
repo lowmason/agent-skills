@@ -74,9 +74,10 @@ uv run python build/run_suites.py <name> [--extras] [-- <pytest args>]
 uv run python build/run_suites.py --all
 uv run python build/run_suites.py --check
 
-# Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test,
-# snippet Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the placement tests (below)
-# and the versions check (versions.py check, below). build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled
+# Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test, snippet
+# Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the link check (check_links.py, below)
+# and the versions check (versions.py check, below). build/run_commit_lints.sh runs all of them;
+# build/githooks/pre-commit runs it on each commit once enabled
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
@@ -104,11 +105,9 @@ uv run python build/cc_guide/cli.py probes --claude <path>
 # change that adds or drops a cross-skill or /command reference)
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
 
-# Critical-section placement: compaction-window exceptions waive per file, heading findings included, so these tests
-# pin the late headings the owner accepted in writing-skills (ACKNOWLEDGED_LATE, in test_check_conformance.py;
-# CRITICAL_SPANS is empty since plan 71 removed skill-body-past-compaction). Removing an exception removes its files'
-# rows; when the last compaction-window exception goes, retire this lint and these tests with it
-cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
+# Relative links: every Markdown link under skills/ must resolve from its own file's directory; a move one
+# directory deeper breaks them silently
+uv run python build/check_links.py
 
 # Snippet gate: three tiers, cheapest first, run as three separate commands. Every command runs the parse check, but
 # --run does not run the --api checks, so a full check runs all three. Tier 1 covers all of skills/; Tiers 2 and 3

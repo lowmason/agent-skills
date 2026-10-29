@@ -266,6 +266,9 @@ enforced_by = 'check_frontmatter'
 # the body should fit and its critical sections should open it. The token
 # estimate is characters / chars_per_token, a rough gauge; headings is the
 # critical-sounding words (matched whole, any case) that flag a heading.
+# An exception waives this whole check for its files, late headings included.
+# Pair any new exception with a guard. Plan 47 added the lint critical_placement
+# for that, and plan 72 retired it because no exception was left.
 [[check]]
 id = 'compaction-window'
 kind = 'skill'
@@ -662,11 +665,11 @@ revisit = 'When the guide documents a way for an instruction file or another ski
 [[exception]]
 id = 'writing-skills-guide-gaps'
 type = 'gap'
-sections = ['skills.overview', 'skills.listing-budget', 'skills.progressive-disclosure']
+sections = ['skills.listing-budget', 'skills.progressive-disclosure']
 artifacts = ['skills/writing-skills/SKILL.md']
-guide = 'A SKILL.md body stays well under 500 lines with critical rules near the top; overflowing descriptions are dropped from the listing; a bundled file loads only when the body points at it.'
-reason = 'writing-skills departs from the guide on body length, the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and the rewrite verifies or drops it.'
-evidence = 'Audit rows S-02, S-58, S-67, S-68, S-107; owner gate 2026-10-04.'
+guide = 'A SKILL.md body has its critical rules near the top; overflowing descriptions are dropped from the listing; a bundled file loads only when the body points at it.'
+reason = 'writing-skills departs from the guide on the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and the rewrite verifies or drops it.'
+evidence = 'Audit rows S-02, S-58, S-67, S-68, S-107; owner gate 2026-10-04. Body length left this entry when plan 72 cut the body to 434 lines; owner decision 2026-10-29.'
 tracked_in = 'deferred item: split and rewrite writing-skills against the guide'
 
 [[exception]]
@@ -817,17 +820,6 @@ revisit = 'When Codex and Gemini can load that content from a rule or a skill.'
 
 # The findings the new skill checks reported on their first run, decided by the
 # owner at the /deferred pass (2026-10-05).
-[[exception]]
-id = 'writing-skills-late-critical-headings'
-type = 'gap'
-check = 'compaction-window'
-sections = ['skills.progressive-disclosure']
-artifacts = ['skills/writing-skills/SKILL.md']
-guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'The body is about 7,200 tokens, and two headings start past the first 5,000: STOP: Before Moving to Next Skill, a real critical section the owner accepted there, and Create Red Flags List, which is authoring advice and a false positive of the heading heuristic. The waiver is per check and file, so it also hides a new late heading; the critical_placement commit lint runs test_real_skill_late_headings_match_the_acknowledged_set in build/test_check_conformance.py, which fails unless exactly those two start past the window.'
-evidence = 'Audit §6 d2; owner decision at the /deferred pass, 2026-10-05.'
-tracked_in = 'deferred item: split and rewrite writing-skills against the guide, with writing-skills-guide-gaps'
-
 [[exception]]
 id = 'descriptions-trigger-list-style'
 type = 'deviation'

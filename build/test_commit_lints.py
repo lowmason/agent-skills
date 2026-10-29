@@ -28,7 +28,7 @@ UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
-          'critical_placement', 'suite_registry', 'versions_check'}
+          'check_links', 'suite_registry', 'versions_check'}
 
 
 def clean_env(**extra):
@@ -177,20 +177,6 @@ def test_late_critical_section_is_refused(clone):
     assert "heading '## Red Flags' starts past the" in result.stdout + result.stderr, result.stderr
 
 
-def test_late_heading_in_acknowledged_file_is_refused(clone):
-    '''The writing-skills waiver is per file, so check_conformance alone passes a new
-    critical heading past the compaction window; the placement tests catch it.'''
-    skill = clone / 'skills' / 'writing-skills' / 'SKILL.md'
-    skill.write_text(skill.read_text() + '\n## Warning\n\nA late critical heading.\n')
-    before = head(clone)
-    result = commit(clone, '-am', 'late warning')
-    assert result.returncode != 0, result.stderr
-    assert head(clone) == before
-    assert failed_names(result) == {'critical_placement'}, result.stderr
-    assert ('FAILED test_check_conformance.py::test_real_skill_late_headings_match_the_acknowledged_set'
-            '[skills/writing-skills/SKILL.md]') in result.stderr, result.stderr
-
-
 def test_unregistered_suite_is_refused(clone):
     '''The ninth lint keeps build/suites.toml complete: a first test file in a
     directory that no suite contains needs a [[suite]] entry before it can be committed.'''
@@ -205,6 +191,20 @@ def test_unregistered_suite_is_refused(clone):
     assert failed_names(result) == {'suite_registry'}, result.stderr
     assert ('tools/scan: holds pytest files, but no suite in build/suites.toml '
             'contains it') in result.stderr, result.stderr
+
+
+def test_broken_reference_link_is_refused(clone):
+    '''The eighth lint resolves relative links in skill Markdown: a link written for
+    SKILL.md breaks when its text moves into references/ (plan 71's four links).'''
+    ref = clone / 'skills' / 'subagent-driven-development' / 'references' / 'fix-loop.md'
+    ref.write_text(ref.read_text() + '\nUse [the re-review prompt](re-review-prompt.md).\n')
+    before = head(clone)
+    result = commit(clone, '-am', 'broken link')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'check_links'}, result.stderr
+    assert ("skills/subagent-driven-development/references/fix-loop.md:" in result.stdout + result.stderr
+            and "broken link 're-review-prompt.md'" in result.stdout + result.stderr), result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):
