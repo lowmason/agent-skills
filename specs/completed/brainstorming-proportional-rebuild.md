@@ -1,8 +1,34 @@
 # Brainstorming: proportional scope, rebuilt on superpowers v7.0.1
 
-**Status: APPROVED (2026-10-28)** by the owner, after a section-by-section design review and a
-review of the written text.
-**Next skill:** writing-plans, in a fresh session, against this file.
+**Status: COMPLETE (2026-10-29)** — implemented by plan 70
+(`specs/plans/completed/70-brainstorming-proportional-rebuild.md`) and retired here. Approved by
+the owner on 2026-10-28, after a section-by-section design review and a review of the written
+text.
+
+**Erratum (2026-10-29), added at retirement.** Two statements in this spec are wrong. The spec
+stays as it was approved, and the plan followed the facts below.
+
+1. The paragraph that begins "These parts did not change from v7.0.0" (section "Upstream since
+   the drift spec") is wrong for three parts. The upstream diff from v7.0.0 to v7.0.1 shows this:
+   - Sizing changed. v7.0.0's "Size the Work" table has three rows: a quick, clear task, a small
+     change and a project. v7.0.1's table has two rows, a small change and a project. It adds an
+     Approaches part. The spec's own table row "A small change is agreed in chat" says so.
+   - Playback changed. v7.0.0 says "Mark anything you're guessing as your guess". v7.0.1 says
+     "Anything you filled in goes in as your proposal, with your reason".
+   - The first Red Flags row changed in its first cell. v7.0.0 has "I'll offer options to save
+     them effort". v7.0.1 has "I'll offer a menu of what they might want". The cell that the
+     paragraph quotes, "Options steer. Ask them to describe it first.", did not change.
+
+   The approval gate is still one gate, but its sentence changed its words. It now names the
+   design doc, short or full. The other parts that the paragraph names did not change.
+   `builder-check-prompt.md` and `visual-companion.md` have the same blob sha in the two releases.
+2. Call C3 says the builder check replaces the inline spec self-review, "as upstream did".
+   Upstream's v7.0.0 release notes say the builder check replaces the spec-document reviewer.
+   They do not mention the self-review. `NOTICE` no longer gives this reason (decision D19 of
+   plan 70).
+
+Requirements R9.2 and R9.3 were superseded before the plan ran. A v7.0.1 drift review landed
+first and reviewed every other v7.0.1 change (decision D11 of plan 70).
 
 This spec closes two items in `specs/deferred_items.md`:
 

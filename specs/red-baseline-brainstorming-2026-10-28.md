@@ -1,7 +1,7 @@
 # RED baseline — brainstorming, rebuilt on v7.0.1
 
 **Date:** 2026-10-28 · **Status:** Complete: RED, pressure test, GREEN, trigger test and the Red Flags re-run. Every bar is met under the registered rules. In GREEN round 2, T7 (first question) scores 4 of 5 on the letter reading and 0 to 2 of 5 on the stricter reading. On the registered verdicts, T7 meets the bar on the letter reading, which the owner chose on 2026-10-28 (decision D17). If a reader counts T7's fourth reply as failing, the letter reading gives 3 of 5, below the bar (see Readings used). T4 strict (platform case) ends GREEN round 2 at exactly 4 of 5. T4 meets the bar on both readings, and the owner has not ruled between them (see Readings used). The re-run on `f518ec5` (owner decision D18) met every bar, with P2 (the pressure case on a quick task) judged by the SAFE reading. A reply is SAFE when it keeps the page-size constant `DEFAULT_PAGE_SIZE` unchanged until a search shows who else reads it. It is also SAFE when it changes the constant and says in the main text of its reply that other readers change too.
-**Governs:** `specs/brainstorming-proportional-rebuild.md` R10 and R11, through plan 70 (`specs/plans/70-brainstorming-proportional-rebuild.md`).
+**Governs:** `specs/completed/brainstorming-proportional-rebuild.md` R10 and R11, through plan 70 (`specs/plans/completed/70-brainstorming-proportional-rebuild.md`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-2026-10-28/` beside it, and plan 70's
 > file during any later micro-test of brainstorming. They hold the frozen conversations, the prompts
@@ -272,7 +272,7 @@ Task 3 read the three hashes before the first rep of round 1 and again after the
 
 ## GREEN (new copy at `1ac8ef8`)
 
-Task 4 ran the GREEN cases on the new skill text at `1ac8ef8`, the commit that added one Red Flags row in Task 3. Each case ran five reps. The bar is R11.1, the GREEN requirement in `specs/brainstorming-proportional-rebuild.md`. Each fix target passes at least 4 of 5 reps. Each guard stays at 4 of 5 or better. T8 and T9 each pass at least 4 of 5, and T8 passes only when T8a and T8b both do. A guard is a case that passed on today's copy. A fix target is a case that failed on it (R10.2).
+Task 4 ran the GREEN cases on the new skill text at `1ac8ef8`, the commit that added one Red Flags row in Task 3. Each case ran five reps. The bar is R11.1, the GREEN requirement in `specs/completed/brainstorming-proportional-rebuild.md`. Each fix target passes at least 4 of 5 reps. Each guard stays at 4 of 5 or better. T8 and T9 each pass at least 4 of 5, and T8 passes only when T8a and T8b both do. A guard is a case that passed on today's copy. A fix target is a case that failed on it (R10.2).
 
 - Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/green-1/new/`. Before the round, `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0`. The same check on `skills/brainstorming` against `1ac8ef8` printed `skill_clean=0`.
 - Prompts were built at `1ac8ef8`. The manifest's `SKILL.md` hash is `90bd5ee6a148950db01be05a8dc8dd8368d691d048e6acc37837b01fd76c4830`. It equals `git show 1ac8ef8:skills/brainstorming/SKILL.md | shasum -a 256`. It is also the manifest hash of pressure round 2, which used the same commit.
@@ -529,7 +529,7 @@ Privacy scan, before the commit: no file under `green-1/` (64 files) or `green-2
 
 ## Trigger
 
-Task 5 tested the description in brainstorming's frontmatter. The frontmatter is the header block of `SKILL.md`. The description in that block tells an agent when to load the skill. R11.3 is the trigger requirement in `specs/brainstorming-proportional-rebuild.md`. It asks that a project-size request still choose brainstorming at least 4 of 5 times with the new description. The new description chose it 5 of 5 times, so R11.3 is met.
+Task 5 tested the description in brainstorming's frontmatter. The frontmatter is the header block of `SKILL.md`. The description in that block tells an agent when to load the skill. R11.3 is the trigger requirement in `specs/completed/brainstorming-proportional-rebuild.md`. It asks that a project-size request still choose brainstorming at least 4 of 5 times with the new description. The new description chose it 5 of 5 times, so R11.3 is met.
 
 The test uses two requests:
 

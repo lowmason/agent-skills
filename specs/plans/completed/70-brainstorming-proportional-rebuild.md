@@ -10,7 +10,7 @@
 
 **Tech Stack:** Markdown skill text; Python 3.13 (stdlib and PyYAML) and bash 3.2 for the kit; `claude` CLI 2.1.304 or later; `gh` for the upstream fetch; this repo's lints (`build/run_commit_lints.sh`).
 
-**Spec:** `specs/brainstorming-proportional-rebuild.md` (approved 2026-10-28).
+**Spec:** `specs/completed/brainstorming-proportional-rebuild.md` (approved 2026-10-28).
 
 > **Execution base.** The spec and this plan exist only on the local, unpushed branch `claude/objective-booth-e14bb4`, which also carries `main` at `ffc521d` (the v7.0.1 drift review, pushed to `origin/main` on 2026-10-28). An execution worktree, which usually branches from `origin/main`, must contain that branch: merge `refs/heads/claude/objective-booth-e14bb4` into it first, and confirm `specs/plans/70-brainstorming-proportional-rebuild.md` and `specs/brainstorming-proportional-rebuild.md` both exist, and that `specs/superpowers-drift-spec.md` has `### 17. Skill bodies run past the compaction re-attach cut`. Never execute on `main`.
 >

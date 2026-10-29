@@ -301,7 +301,10 @@ pressure test added, and the wording that changed in two upstream passages after
 the first GREEN round. Plan 70 ran its own RED baseline, pressure test, GREEN
 and trigger test, all newly written. The owner then had the Red Flags row and
 the sentence that lists what isn't implementing reworded. Plan 70 re-ran the
-cases judged, not measured, to be within reach of those edits.
+cases judged, not measured, to be within reach of those edits. Decisions D1 to
+D4 of the design spec, `specs/completed/brainstorming-proportional-rebuild.md`,
+record the owner's calls on a small change, the opt-out, spikes and question
+style.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
