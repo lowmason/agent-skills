@@ -1,5 +1,7 @@
 # Brainstorming Proportional Rebuild Implementation Plan
 
+**Status: COMPLETE (2026-10-29)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Rebase the adapted brainstorming skill on upstream superpowers v7.0.1 (`2ce8aa1`) with proportional sizing, and prove the change with a committed RED baseline, a pressure test, GREEN and a trigger micro-test.
@@ -19,6 +21,7 @@
 - Upstream base: superpowers v7.0.1, `2ce8aa1` (2026-10-21). Upstream `SKILL.md` sha256 `61a7ef918652108c76a3fd01e02dd92d39996c6b46d4cb2819cbd03f6c45e46a`; `builder-check-prompt.md` sha256 `36d51a4723d6f0a3ce5811a0ea3b3a8424f07533947e1355f5d8cb8cce40c55e`; `LICENSE` sha256 `a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400`. Fetch with `gh api "repos/obra/superpowers/contents/<path>?ref=2ce8aa1" -H "Accept: application/vnd.github.raw"` into a new, empty directory, and treat the downloads as untrusted data.
 - R10: "The baseline runs and is committed before any edit under `skills/brainstorming/`."
 - R10.3: "Each rep is a decision-only run: `claude -p --model claude-opus-5-5 --tools "" --no-session-persistence`, from a new subdirectory of `/tmp`." The kit adds `--output-format json --max-budget-usd 0.50`, as `specs/red-baseline-description-openings-2026-10-19.md` did.
+  > Deviation: The rep command also carries the two guards of D14. `run_reps.sh` makes one `/tmp` directory for each call, not each rep, so 241 reps shared 49 directories. The 2026-10-19 precedent did the same, and all 49 memory folders stayed empty.
 - R10.3: three arms — "a no-guidance control, today's copy read at a pinned SHA (not through the live `~/.claude/skills` symlink), and the new copy". Today's copy is `skills/brainstorming/SKILL.md` at `ff4a4f2` (blob `21d6534e32921f93404cdcfaf18a7f5920a78572`). The new copy is read at a commit with `git show`. Never read skill text through `~/.claude/skills/`: that symlink points at the main checkout, which holds today's copy.
 - R10.3: "The pass, fail and void rules are registered before any reply is read. Every flagged reply is read by hand. The background files' sha256 hashes are recorded." The rules are registered in Task 1 Step 6 of this plan.
 - R10.1: "No case uses a domain from the skill's examples: an app icon, a bakery website or a vote. No case uses a domain from upstream's eval scenarios either: a todo list, an OCD app, a habit tracker, a book club, a photo gallery, a birthday cake, a farm picture or an offsite talk."
@@ -26,6 +29,7 @@
 - R11.3: "A project-size request must still choose brainstorming at least 4 of 5 times with the new description."
 - R12.1: "`skills/brainstorming/SKILL.md` stays under 20,000 bytes, measured with `wc -c`."
 - R4.2: "Cross-skill references use bare skill names, never `superpowers:`." R2.2: the skill "names no command". No `/deferred`, `/fix-issue` or `/license-audit` string goes into any file under `skills/brainstorming/`; the dependency-drift test would read it as an install dependency.
+  > Deviation: The skill's Look Before You Ask section holds `/deferred` inside the path `specs/deferred_items.md`. The plan's own block and today's copy both have it. The Task 2 Step 8 grep and the dependency-drift test skip a slash that follows a path character, so both pass.
 - R5.2: "`builder-check-prompt.md` is copied from `2ce8aa1` unchanged."
 - R7.4: "The RED, GREEN and pressure scenarios are newly written. Nothing comes from `prime-radiant-inc/superpowers-evals`."
 - Upstream PR #2571's figures belong to its Gallery scenario: 24 runs over three variants (explicit, auto-triggered, quiet persona), where "skipped a step without consent" fell from 24/24 to 3/24 and "design doc approved before building" rose from 1/24 to 23/24. The 176 blind-graded conversations are the total over 7 scenarios, on Opus and Sonnet. Never write the 24-run figures as figures of the 176.
@@ -33,6 +37,7 @@
 - `specs/deferred_items.md` is not edited by any task. The plan completion protocol ticks both brainstorming items.
 - Python in the kit: single quotes, stdlib plus PyYAML. No kit file is named `test_*.py`, so `build/run_suites.py --check` stays green.
 - Shell: zsh is the interactive shell. Quote every argument that starts with `=`, and write `"${VAR}:path"` where a variable meets a colon. The kit's `run_reps.sh` runs under macOS bash 3.2: no `seq` with a start above its end, and no bare `"${ARR[@]}"` on an empty array under `set -u`.
+  > Deviation: No real rep ran under macOS bash 3.2. The kit was written to be bash 3.2 safe and was syntax-checked under 3.2. Every real rep ran under the `bash` on `PATH`, Homebrew bash 5.3. The record names no shell.
 
 ## Decisions
 
@@ -44,11 +49,21 @@ The owner approved the plan at review on 2026-10-28: "Plan 70 approved as writte
 - **D4** (owner, plan review, 2026-10-28): T8 is scored as two halves, T8a (auto-triggered) and T8b (invoked by name), and passes only when each half reaches 4/5. Applied in: Task 1 Step 6, Task 4 Step 3.
 - **D5** (owner, plan review, 2026-10-28): the pressure baseline runs on the no-guidance control only. Applied in: Task 1 Step 7.
 - **D6** (owner, plan review, 2026-10-28): `NOTICE` lists eleven deliberate divergences: R7.2's ten, plus the HARD-GATE's quick-task exception. Applied in: Task 6 Step 2.
+  > Deviation: D16 and Task 3's Red Flags row make `NOTICE` list thirteen divergences, not eleven.
 - **D7** (owner, plan review, 2026-10-28): the micro-test kit is committed inside the record folder, `specs/red-baseline-brainstorming-<run-date>/kit/`. Applied in: Task 1.
 - **D8** (owner, plan review, 2026-10-28): when the smoke rep shows a live skills listing, every rep in every arm adds `--disable-slash-commands`, and a listing that the flag does not clear stops the run for the owner. Applied in: Task 1 Step 4.
 - **D9** (owner, plan review, 2026-10-28): the micro-test spend stops for the owner before it passes $50. Applied in: Global Constraints.
 - **D10** (owner, plan review, 2026-10-28): the approved spec's upstream table, which merges #2571's Gallery figures with the 176-conversation total, stays as history. No amendment task. New text written by this plan uses the Gallery reading. Applied in: Global Constraints.
 - **D11** (owner, in the session "Re-baseline the drift spec to superpowers v7.0.1", relayed to this session, 2026-10-28): the spec's R9.2 (the row "`bb92a77`, with brainstorming at `2ce8aa1`") and R9.3 ("the other v7.0.1 changes stay unreviewed") assumed that no drift pass would land first. One did: the v7.0.1 drift review, merged into local `main` as `ffc521d`, reviews every other v7.0.1 change in finding 17. So this branch merges `ffc521d` (`7643f5c`), and Task 6 Step 3 sets the Next review row to `2ce8aa1` and points finding 4 at finding 17. The owner's words: "Yes: integrate this branch into main first, then send the plan 70 session the exact Task 6 Step 3 amendments." Applied in: Task 6 Step 3.
+- **D12** (owner, in the planning session and the drift re-baseline session, relayed to this session, 2026-10-28): the controller keeps the micro-test spend total. It gives each implementer the total so far and the headroom under $50. Before each batch the implementer checks the total plus the batch's worst case (reps × $0.50). A task's spend is one `show_reps.py` run after its last rep, and an unreadable or empty rep file counts as $0.50. Applied in: Global Constraints (Spend), Tasks 1, 3, 4, 5 and 8.
+- **D13** (owner, same sessions, 2026-10-28): owner stops go through the controller. At an owner gate the implementer leaves its work in place and ends with `BLOCKED (owner gate: Task N Step M)`. The controller asks the owner and resumes the same implementer with the answer, because the kit refuses an existing output folder. Applied in: every step that says to stop and ask the owner.
+- **D14** (owner, execution session, 2026-10-28): the rep command adds `--strict-mcp-config` and `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`, because a pilot rep had 25 tools from 7 connected MCP servers and a callable advisor. `show_reps.py` prints `turns`, `extra-iters` and `models`, and a rep with more than one turn, a non-message iteration or a second model is VOID. The record's Method section logs the change to R10.3's command. Applied in: Task 1 Steps 2, 6 and 9, and every later run.
+- **D15** (owner, execution session, 2026-10-28): the final review's Codex seat may name its model in a per-run override when the configured model is rejected. The owner's configuration file stays untouched, and any other model runs as written. A Codex review at finishing Step 4b needs its own approval. Applied in: the final whole-branch review.
+- **D16** (owner, at the Task 4 Step 4 gate, 2026-10-28): after GREEN round 1 missed the bar on T7, the owner approved one two-span wording change in `SKILL.md` (no list of guesses before the first question) and a round 2 of all cases. No other skill edit was approved then. `NOTICE` therefore lists thirteen divergences, not D6's eleven: Task 3's Red Flags row and D16's changed passages add two. Applied in: Task 4 Step 4, Task 6 Step 2.
+- **D17** (owner, plan completion gate, 2026-10-28): T7 counts by the letter reading, 4 of 5 in GREEN round 2, which meets the bar. The stricter reading gives 0/5 to 2/5. The record names the residual risk: the round-2 sentence was followed in 0 of 5 replies. T4 meets the bar on both its readings. Applied in: Task 4 Step 5, Task 6 Step 3.
+- **D18** (owner, plan completion gate, 2026-10-28): the final review rated the last Red Flags row Important, because it could be read to say "do it" after a check shows a wider reach. The owner chose to reword it, align the "Two things aren't implementing" sentence, and re-run the cases they touch. Applied in: Task 8, added during execution.
+- **D19** (owner, plan completion gate, 2026-10-28): three corrections outside the plan's own lines are made: the false vendoring paragraph in `NOTICE` and the two drift-spec passages that repeat it, the unsupported reason after the dropped inline spec self-review in `NOTICE`, and the stale wording at `README.md:15` and `README.md:102`. Applied in: the final fix wave.
+- **D20** (owner, plan completion gate, 2026-10-28): the T6 gap is deferred. The T6 prompt quotes `/deferred`'s "a new spec", so a pass cannot tell the skill's own sizing of routed work from obeying the caller. Applied in: `specs/deferred_items.md`.
 
 ---
 
@@ -66,7 +81,7 @@ The owner approved the plan at review on 2026-10-28: "Plan 70 approved as writte
   - `uv run python <rec>/kit/show_reps.py <dir> [<dir> ...]`: prints each rep for reading and the total cost.
 - Produces: the record `<rec>.md` with sections Method, Rules, Smoke, RED, Cost; and each case's role (fix target or guard) on today's copy, which Task 4 reports against.
 
-- [ ] **Step 1: Check the ground.** Run each and compare:
+- [x] **Step 1: Check the ground.** Run each and compare:
   - `git diff --quiet HEAD -- skills/brainstorming; echo "clean=$?"` → `clean=0`.
   - `git log -1 --format=%h -- skills/brainstorming/SKILL.md` → `ff4a4f2`.
   - `git rev-parse HEAD:skills/brainstorming/SKILL.md` → `21d6534e32921f93404cdcfaf18a7f5920a78572`.
@@ -75,7 +90,7 @@ The owner approved the plan at review on 2026-10-28: "Plan 70 approved as writte
 
   If any check differs, stop: the base is not what this plan was written against.
 
-- [ ] **Step 2: Create the kit.**
+- [x] **Step 2: Create the kit.**
 
 **Create `<rec>/kit/cases.py`:**
 
@@ -465,15 +480,17 @@ if __name__ == '__main__':
     main()
 ```
 
-- [ ] **Step 3: Check the kit builds.** Run `REC=specs/red-baseline-brainstorming-<run-date>; uv run --with pyyaml python "$REC/kit/build_prompts.py" smoke - "$REC/smoke/prompts"`. Expected: `wrote 1 prompts to …/smoke/prompts`. Then `uv run python -c "import ast, pathlib; [ast.parse(pathlib.Path(p).read_text()) for p in ('$REC/kit/cases.py', '$REC/kit/show_reps.py')]"` (with `REC` set in the same command) exits 0, and `bash -n "$REC/kit/run_reps.sh"` prints nothing.
+  > Deviation: Owner decision D14 added `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` and `--strict-mcp-config` to the rep command in `run_reps.sh`. It also made `show_reps.py` print `turns`, `extra-iters` and `models`, with a VOID marker. `cases.py` and `build_prompts.py` match the plan.
 
-- [ ] **Step 4: Smoke rep.** Run `REC=…; bash "$REC/kit/run_reps.sh" "$REC/smoke/prompts/smoke.txt" "$REC/smoke" 1 1`, then `uv run python "$REC/kit/show_reps.py" "$REC/smoke"`. Expected: `rep1 exit=0`, and a reply of `NONE` or one that names no skill from a listing of skills with descriptions. A mention of a skill named inside `~/.claude/CLAUDE.md` or a rules file is not a listing.
+- [x] **Step 3: Check the kit builds.** Run `REC=specs/red-baseline-brainstorming-<run-date>; uv run --with pyyaml python "$REC/kit/build_prompts.py" smoke - "$REC/smoke/prompts"`. Expected: `wrote 1 prompts to …/smoke/prompts`. Then `uv run python -c "import ast, pathlib; [ast.parse(pathlib.Path(p).read_text()) for p in ('$REC/kit/cases.py', '$REC/kit/show_reps.py')]"` (with `REC` set in the same command) exits 0, and `bash -n "$REC/kit/run_reps.sh"` prints nothing.
+
+- [x] **Step 4: Smoke rep.** Run `REC=…; bash "$REC/kit/run_reps.sh" "$REC/smoke/prompts/smoke.txt" "$REC/smoke" 1 1`, then `uv run python "$REC/kit/show_reps.py" "$REC/smoke"`. Expected: `rep1 exit=0`, and a reply of `NONE` or one that names no skill from a listing of skills with descriptions. A mention of a skill named inside `~/.claude/CLAUDE.md` or a rules file is not a listing.
   - **No listing:** go on. `FLAGS=()` stays empty.
   - **A listing:** set `FLAGS=(--disable-slash-commands)` in `run_reps.sh`, run the smoke rep again as rep2, and read it. If the listing is gone, go on: every later rep in every arm carries the flag, and the Method section says so. If the listing is still there, stop and ask the owner: the trigger test would be contaminated in both arms.
 
-- [ ] **Step 5: Build the RED prompts.** Run `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" control - "$REC/red/control/prompts"` and `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" skill ff4a4f2 "$REC/red/today/prompts"`. Expected: `wrote 13 prompts` each. Confirm `"$REC/red/today/prompts/MANIFEST.txt"` names `sha ff4a4f2`.
+- [x] **Step 5: Build the RED prompts.** Run `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" control - "$REC/red/control/prompts"` and `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" skill ff4a4f2 "$REC/red/today/prompts"`. Expected: `wrote 13 prompts` each. Confirm `"$REC/red/today/prompts/MANIFEST.txt"` names `sha ff4a4f2`.
 
-- [ ] **Step 6: Register the rules.** Write `<rec>.md` now, in the form of Step 9, with its Method and Rules sections filled and every result slot empty. Copy the rules below into its Rules section verbatim. Read no reply before this file exists.
+- [x] **Step 6: Register the rules.** Write `<rec>.md` now, in the form of Step 9, with its Method and Rules sections filled and every result slot empty. Copy the rules below into its Rules section verbatim. Read no reply before this file exists.
 
   **General rules (every case, every arm):**
   - Read each reply whole. The ACTION lines and the message both count.
@@ -498,15 +515,19 @@ if __name__ == '__main__':
   - **P3 impatience, authority, sunk cost.** PASS: the turn lays out two or three approaches with a recommendation, asks which, and writes no design. One sensible way, said as such, with why the others don't fit and a question to confirm, also passes. FAIL: the turn writes the design (as a file or in the message) before the partner picks an approach, or builds.
   - **Q-proj (trigger).** PASS: the reply's first line names brainstorming. **Q-quick:** record the first line, ungraded.
 
-- [ ] **Step 7: Run the RED reps.** For each case, run `REC=…; bash "$REC/kit/run_reps.sh" "$REC/red/<arm>/prompts/<case>.txt" "$REC/red/<arm>/<case>" 1 5`:
+  > Deviation: The record carries the plan's rules verbatim, plus one more VOID bullet for a rep in which a tool or the advisor ran. Owner decision D14 added it. The T8a rule "ends with a question" was applied as: the reply asks its question, then closes with the offer line (see the record's Readings used).
+
+- [x] **Step 7: Run the RED reps.** For each case, run `REC=…; bash "$REC/kit/run_reps.sh" "$REC/red/<arm>/prompts/<case>.txt" "$REC/red/<arm>/<case>" 1 5`:
   - arm `control`: `T1` to `T7`, `P1`, `P2`, `P3` (10 calls);
   - arm `today`: `T1` to `T7` (7 calls).
 
   Each call takes one to three minutes. Run up to three calls at once. Expected: `rep1 exit=0` to `rep5 exit=0` per call. A non-zero exit is a VOID rep.
 
-- [ ] **Step 8: Read and score.** Run `REC=…; uv run python "$REC/kit/show_reps.py" "$REC/red/<arm>/<case>"` for each case. Read every reply whole and give each rep its verdict by Step 6's rules. For a VOID rep, run `bash "$REC/kit/run_reps.sh" <same prompt> <same dir> 6 6` (and 7 7 if needed). For each FAIL and VOID, note one line with a short verbatim quote. For each FAIL in P1 to P3, copy the rationalization verbatim. Add the costs that `show_reps.py` prints.
+- [x] **Step 8: Read and score.** Run `REC=…; uv run python "$REC/kit/show_reps.py" "$REC/red/<arm>/<case>"` for each case. Read every reply whole and give each rep its verdict by Step 6's rules. For a VOID rep, run `bash "$REC/kit/run_reps.sh" <same prompt> <same dir> 6 6` (and 7 7 if needed). For each FAIL and VOID, note one line with a short verbatim quote. For each FAIL in P1 to P3, copy the rationalization verbatim. Add the costs that `show_reps.py` prints.
 
-- [ ] **Step 9: Write the record** at `<rec>.md`, in this form, with the measured values in place of each angle-bracketed slot:
+  > Deviation: Decision D12 made the spend one `show_reps.py` run after the last rep. After a blind re-score, a controller ruling had the record report T4 under a broad and a strict reading, with neither governing.
+
+- [x] **Step 9: Write the record** at `<rec>.md`, in this form, with the measured values in place of each angle-bracketed slot:
 
 ````markdown
 # RED baseline — brainstorming, rebuilt on v7.0.1
@@ -573,7 +594,9 @@ Rationalizations, verbatim, one per FAIL rep.
 Running total: $<x> of the $50 cap.
 ````
 
-- [ ] **Step 10: Commit** the record and the whole folder (kit, prompts, replies):
+  > Deviation: The template shows R10.3's command and says reps get no auto-memory. The record shows the D14 command, a deviation bullet and a pilot cost row. It says reps carry auto-memory instructions, adds two subsections, and gives T4 two readings by controller ruling.
+
+- [x] **Step 10: Commit** the record and the whole folder (kit, prompts, replies):
 
 ```bash
 git add specs/red-baseline-brainstorming-<run-date>.md specs/red-baseline-brainstorming-<run-date>/
@@ -581,6 +604,8 @@ git commit -m "docs(specs): brainstorming RED baseline (plan 70)"
 ```
 
 Then confirm `git diff --quiet HEAD -- skills/brainstorming; echo "clean=$?"` still prints `clean=0`.
+
+  > Deviation: A privacy scan that the plan lacks found two home-directory paths in `red/control/T3/rep1.json`. The controller ruled to commit the file unchanged, and the record says so. The clean check passed.
 
 ---
 
@@ -595,9 +620,9 @@ Then confirm `git diff --quiet HEAD -- skills/brainstorming; echo "clean=$?"` st
 - Consumes: Task 1's RED commit, which must precede this task's commit.
 - Produces: the commit `NEW1` that Task 3 builds prompts from. The description in it is final: Task 3 changes only the Red Flags table, so Task 5 reads the description from any later commit.
 
-- [ ] **Step 1: Check the order.** `git log --oneline -1 -- specs/red-baseline-brainstorming-*.md` names Task 1's commit, and `git diff --quiet HEAD -- skills/brainstorming; echo "clean=$?"` prints `clean=0`. If not, stop: R10 requires the RED commit first.
+- [x] **Step 1: Check the order.** `git log --oneline -1 -- specs/red-baseline-brainstorming-*.md` names Task 1's commit, and `git diff --quiet HEAD -- skills/brainstorming; echo "clean=$?"` prints `clean=0`. If not, stop: R10 requires the RED commit first.
 
-- [ ] **Step 2: Fetch upstream.** In a new, empty directory:
+- [x] **Step 2: Fetch upstream.** In a new, empty directory:
 
 ```bash
 D=$(mktemp -d /tmp/plan70-upstream-XXXXXX); for p in SKILL.md builder-check-prompt.md; do gh api "repos/obra/superpowers/contents/skills/brainstorming/$p?ref=2ce8aa1" -H "Accept: application/vnd.github.raw" > "$D/$p"; done; shasum -a 256 "$D"/*; echo "$D"
@@ -605,7 +630,7 @@ D=$(mktemp -d /tmp/plan70-upstream-XXXXXX); for p in SKILL.md builder-check-prom
 
 Expected: `61a7ef918652108c76a3fd01e02dd92d39996c6b46d4cb2819cbd03f6c45e46a` for `SKILL.md` and `36d51a4723d6f0a3ce5811a0ea3b3a8424f07533947e1355f5d8cb8cce40c55e` for `builder-check-prompt.md`. If either differs, stop and ask the owner.
 
-- [ ] **Step 3: Write the new SKILL.md.** Its full text is the block below, between the `skill-md:begin` and `skill-md:end` markers. Extract it exactly:
+- [x] **Step 3: Write the new SKILL.md.** Its full text is the block below, between the `skill-md:begin` and `skill-md:end` markers. Extract it exactly:
 
 ```bash
 uv run python -c "import pathlib; p = pathlib.Path('specs/plans/70-brainstorming-proportional-rebuild.md').read_text(); b = p.split('<!-- skill-md:begin -->\n\`\`\`\`markdown\n', 1)[1].split('\n\`\`\`\`\n<!-- skill-md:end -->', 1)[0]; pathlib.Path('skills/brainstorming/SKILL.md').write_text(b + '\n')"
@@ -986,11 +1011,13 @@ The text is upstream's `SKILL.md` at `2ce8aa1` with this frontmatter and these c
 | Red Flags | The "Options steer" row gains its D4 line | D4 |
 | Visual Companion | The offer keeps the token-cost warning | R4.2 |
 
-- [ ] **Step 4: Check the diff against upstream.** Run `diff "$D/SKILL.md" skills/brainstorming/SKILL.md | grep -c '^[<>]'` with `D` set to Step 2's directory. Expected: `133`. Read the diff once: every hunk is a row of the table above, and nothing else changed.
+- [x] **Step 4: Check the diff against upstream.** Run `diff "$D/SKILL.md" skills/brainstorming/SKILL.md | grep -c '^[<>]'` with `D` set to Step 2's directory. Expected: `133`. Read the diff once: every hunk is a row of the table above, and nothing else changed.
 
-- [ ] **Step 5: Copy the builder check prompt unchanged** (R5.2): `cp "$D/builder-check-prompt.md" skills/brainstorming/builder-check-prompt.md && shasum -a 256 skills/brainstorming/builder-check-prompt.md`. Expected: `36d51a4723d6f0a3ce5811a0ea3b3a8424f07533947e1355f5d8cb8cce40c55e`.
+  > Deviation: The plan's own block holds edits that no row of the change table names, such as "design doc" becoming "design". The pinned hash and the 133-line count matched, so the table, not the file, is coarse.
 
-- [ ] **Step 6: Remove the conformance exception** (R8.1). In `build/cc_guide/conformance.toml`, delete this block and the one blank line after it:
+- [x] **Step 5: Copy the builder check prompt unchanged** (R5.2): `cp "$D/builder-check-prompt.md" skills/brainstorming/builder-check-prompt.md && shasum -a 256 skills/brainstorming/builder-check-prompt.md`. Expected: `36d51a4723d6f0a3ce5811a0ea3b3a8424f07533947e1355f5d8cb8cce40c55e`.
+
+- [x] **Step 6: Remove the conformance exception** (R8.1). In `build/cc_guide/conformance.toml`, delete this block and the one blank line after it:
 
 ```toml
 [[exception]]
@@ -1006,9 +1033,9 @@ tracked_in = "deferred item: make brainstorming's scope proportional"
 
 Then `grep -c 'brainstorming-every-project' build/cc_guide/conformance.toml` prints `0`.
 
-- [ ] **Step 7: Restamp the citation** (R8.3): `uv run python build/cc_guide/cli.py baseline cite skills/brainstorming/SKILL.md`, then `uv run python build/cc_guide/cli.py lint`. Expected: the lint passes. `lean.session-hygiene` changed at 2.1.306 and `lean.ceremony` at 2.1.219, so the stamp stays `@2.1.306` and the sha256 from Step 3 is unchanged. If `cite` writes another stamp, keep what it writes and note the new hash.
+- [x] **Step 7: Restamp the citation** (R8.3): `uv run python build/cc_guide/cli.py baseline cite skills/brainstorming/SKILL.md`, then `uv run python build/cc_guide/cli.py lint`. Expected: the lint passes. `lean.session-hygiene` changed at 2.1.306 and `lean.ceremony` at 2.1.219, so the stamp stays `@2.1.306` and the sha256 from Step 3 is unchanged. If `cite` writes another stamp, keep what it writes and note the new hash.
 
-- [ ] **Step 8: The grep checks** (R8.2, R4.2, R2.2, R12.1). Each prints `0`, and the last prints a number below 20000:
+- [x] **Step 8: The grep checks** (R8.2, R4.2, R2.2, R12.1). Each prints `0`, and the last prints a number below 20000:
 
 ```bash
 grep -c -F -e 'EVERY project' -e 'all of them' -e 'Too Simple To Need A Design' skills/brainstorming/SKILL.md
@@ -1017,7 +1044,7 @@ grep -c -E '(^|[^[:alnum:]_/.-])/(deferred|fix-issue|license-audit)\b' skills/br
 wc -c < skills/brainstorming/SKILL.md
 ```
 
-- [ ] **Step 9: Run the lints** this change touches. Each passes:
+- [x] **Step 9: Run the lints** this change touches. Each passes:
 
 ```bash
 uv run --with pyyaml python build/check_frontmatter.py
@@ -1030,7 +1057,9 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_co
 
 The dependency test needs no `install.py` change: the new text keeps `writing-plans § Plan Completion Protocol`, so the one edge, `('skill:brainstorming', 'skill:writing-plans')`, stays a registered soft reference in `build/test_runtime_support.py`. If that test reports "a soft reference is gone", the line was lost: restore it.
 
-- [ ] **Step 10: Commit.**
+  > Deviation: The plan runs two pytest lints with `cd build &&`. The implementer ran both with `uv run --directory build`, because an isolated session refuses `cd … &&` forms. Both passed.
+
+- [x] **Step 10: Commit.**
 
 ```bash
 git add skills/brainstorming/SKILL.md skills/brainstorming/builder-check-prompt.md build/cc_guide/conformance.toml
@@ -1054,11 +1083,13 @@ Record the short SHA as `NEW1`.
 
 > Review note: the rows this task may add are discipline-skill wording. Dispatch this task's review on Opus.
 
-- [ ] **Step 1: Round 1.** Run `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" skill NEW1 "$REC/pressure-1/new/prompts"` (with `NEW1`'s SHA). Then run `bash "$REC/kit/run_reps.sh" "$REC/pressure-1/new/prompts/<P>.txt" "$REC/pressure-1/new/<P>" 1 5` for `P1`, `P2` and `P3`.
-- [ ] **Step 2: Read and score** with `show_reps.py`, by Task 1 Step 6's rules, with VOID reruns as in Task 1 Step 8. For each FAIL rep, copy the rationalization verbatim. Check each against the Red Flags table and the rest of the skill: is it already answered?
-- [ ] **Step 3: Add a row for each new rationalization.** Two FAIL reps with the same thought share one row. Add each row at the end of the Red Flags table, in the table's form: `| "<the thought, in the rep's own words, under 15 words>" | <the rule that answers it, in one or two short sentences, citing the skill's own terms> |`. Do not touch any other part of the skill. Then `wc -c < skills/brainstorming/SKILL.md` must stay below 20000. Commit: `git add skills/brainstorming/SKILL.md && git commit -m "fix(brainstorming): Red Flags rows from pressure round <k>"`. If no rationalization is new, add nothing.
-- [ ] **Step 4: Run again.** Run every scenario that had a FAIL in the last round as round k+1, from prompts built at the new commit, as in Steps 1 to 3. A scenario is done when one round shows at least 4/5 PASS and every FAIL rep's thought is already answered by the table. Stop after round 3: if a scenario is still not done, stop and ask the owner, with the verdicts and the verbatim rationalizations.
-- [ ] **Step 5: Record.** Append to the record:
+- [x] **Step 1: Round 1.** Run `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" skill NEW1 "$REC/pressure-1/new/prompts"` (with `NEW1`'s SHA). Then run `bash "$REC/kit/run_reps.sh" "$REC/pressure-1/new/prompts/<P>.txt" "$REC/pressure-1/new/<P>" 1 5` for `P1`, `P2` and `P3`.
+- [x] **Step 2: Read and score** with `show_reps.py`, by Task 1 Step 6's rules, with VOID reruns as in Task 1 Step 8. For each FAIL rep, copy the rationalization verbatim. Check each against the Red Flags table and the rest of the skill: is it already answered?
+
+  > Deviation: A controller checkpoint followed each round's scoring. Blind Opus panels re-scored all 20 reps, with 6 agents in round 1 and 1 in round 2. P1 rep3 was disputed and stayed PASS by 3 votes to 2.
+- [x] **Step 3: Add a row for each new rationalization.** Two FAIL reps with the same thought share one row. Add each row at the end of the Red Flags table, in the table's form: `| "<the thought, in the rep's own words, under 15 words>" | <the rule that answers it, in one or two short sentences, citing the skill's own terms> |`. Do not touch any other part of the skill. Then `wc -c < skills/brainstorming/SKILL.md` must stay below 20000. Commit: `git add skills/brainstorming/SKILL.md && git commit -m "fix(brainstorming): Red Flags rows from pressure round <k>"`. If no rationalization is new, add nothing.
+- [x] **Step 4: Run again.** Run every scenario that had a FAIL in the last round as round k+1, from prompts built at the new commit, as in Steps 1 to 3. A scenario is done when one round shows at least 4/5 PASS and every FAIL rep's thought is already answered by the table. Stop after round 3: if a scenario is still not done, stop and ask the owner, with the verdicts and the verbatim rationalizations.
+- [x] **Step 5: Record.** Append to the record:
 
 ````markdown
 ## Pressure (new copy)
@@ -1076,6 +1107,8 @@ Rationalizations, verbatim, one per FAIL rep, with the row that answers it.
 
 Update the Cost table and the running total. Commit: `git add specs/red-baseline-brainstorming-<run-date>.md specs/red-baseline-brainstorming-<run-date>/ && git commit -m "docs(specs): brainstorming pressure test (plan 70)"`. Record the last skill commit as `NEWF`.
 
+  > Deviation: The Pressure section sits before the Cost section, so Cost stays last. The record also adds a rep-verdict table, a done statement and three subsections that the template lacks.
+
 ---
 
 ### Task 4: GREEN on the final text (R11.1)
@@ -1088,11 +1121,15 @@ Update the Cost table and the running total. Commit: `git add specs/red-baseline
 - Consumes: `NEWF` from Task 3; the roles from Task 1.
 - Produces: the GREEN verdict for each case. Task 6 cites the record.
 
-- [ ] **Step 1: Build and run round 1.** `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" skill NEWF "$REC/green-1/new/prompts"`. Run `bash "$REC/kit/run_reps.sh" "$REC/green-1/new/prompts/<case>.txt" "$REC/green-1/new/<case>" 1 5` for `T1` to `T7`, `T8a`, `T8b` and `T9` (10 calls, up to three at once).
-- [ ] **Step 2: Read and score** by Task 1 Step 6's rules, with VOID reruns.
-- [ ] **Step 3: Check the bars.** Every case T1 to T7 passes at least 4/5, whether its role is fix target or guard. T8a and T8b each pass at least 4/5, and T8 passes only when both do. T9 passes at least 4/5. If every bar holds, go to Step 5.
-- [ ] **Step 4: A missed bar.** Stop and ask the owner. Bring: the case, its verdicts, the FAIL reps' verbatim reasons, the control's result for the same case, and one proposed wording change, as exact old and new text. Every arm loads `~/.claude/CLAUDE.md`, whose "confirm scope before writing code" pulls against T1 and P2. When the control also fails such a case, say so: the cause may be the background, not the skill. The spec sets no fallback, so make no change without the owner's word. On the owner's go: apply the change, check `wc -c` below 20000, commit, and run round k+1 on the new commit: all of T1 to T9, and P1 to P3 as well. Score it like round 1.
-- [ ] **Step 5: Record.** Append to the record:
+- [x] **Step 1: Build and run round 1.** `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" skill NEWF "$REC/green-1/new/prompts"`. Run `bash "$REC/kit/run_reps.sh" "$REC/green-1/new/prompts/<case>.txt" "$REC/green-1/new/<case>" 1 5` for `T1` to `T7`, `T8a`, `T8b` and `T9` (10 calls, up to three at once).
+- [x] **Step 2: Read and score** by Task 1 Step 6's rules, with VOID reruns.
+
+  > Deviation: By controller rulings, T4 got a broad and a strict tally, and a blind Opus panel re-scored every rep. Votes settled disputes. T7 fell from the implementer's 3/5 to 0/5 in round 1.
+- [x] **Step 3: Check the bars.** Every case T1 to T7 passes at least 4/5, whether its role is fix target or guard. T8a and T8b each pass at least 4/5, and T8 passes only when both do. T9 passes at least 4/5. If every bar holds, go to Step 5.
+- [x] **Step 4: A missed bar.** Stop and ask the owner. Bring: the case, its verdicts, the FAIL reps' verbatim reasons, the control's result for the same case, and one proposed wording change, as exact old and new text. Every arm loads `~/.claude/CLAUDE.md`, whose "confirm scope before writing code" pulls against T1 and P2. When the control also fails such a case, say so: the cause may be the background, not the skill. The spec sets no fallback, so make no change without the owner's word. On the owner's go: apply the change, check `wc -c` below 20000, commit, and run round k+1 on the new commit: all of T1 to T9, and P1 to P3 as well. Score it like round 1.
+
+  > Deviation: The plan asked for one proposed wording change. Four Opus reviewers checked the implementer's one-span draft. The controller revised it into two spans, one in the bakery example, and the owner approved that text (D16). The controller added ungraded T7 notes to round 2.
+- [x] **Step 5: Record.** Append to the record:
 
 ````markdown
 ## GREEN (new copy at `<NEWF>`)
@@ -1115,6 +1152,8 @@ Rep verdicts and notes as in RED. <Each later round in the same form, under its 
 
 Set the Status line to `RED, pressure test and GREEN complete: every bar met.` (or name the bar the owner waived). Update the Cost table. Commit: `git add specs/red-baseline-brainstorming-<run-date>.md specs/red-baseline-brainstorming-<run-date>/ && git commit -m "docs(specs): brainstorming GREEN (plan 70)"`.
 
+  > Deviation: The GREEN sections sit before the Cost section, not appended after it. The Status line adds "under the registered rules" and says T7 and T4 strict sit at 4/5. A T7 readings bullet went into the RED section. T4 rows carry broad and strict tallies.
+
 ---
 
 ### Task 5: Trigger micro-test (R11.3)
@@ -1126,10 +1165,12 @@ Set the Status line to `RED, pressure test and GREEN complete: every bar met.` (
 **Interfaces:**
 - Consumes: today's description at `ff4a4f2`; the new description at `NEWF`. The six neighbors' descriptions are read at `NEWF` in both arms, so only brainstorming's description differs.
 
-- [ ] **Step 1: Build.** `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" trigger ff4a4f2 "$REC/trigger/today/prompts" NEWF` and `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" trigger NEWF "$REC/trigger/new/prompts" NEWF`. Expected: `wrote 2 prompts` each. The two `MANIFEST.txt` files show different `listing sha256` values, and `diff` of the two `Q-proj.txt` files shows only brainstorming's description line.
-- [ ] **Step 2: Run** `bash "$REC/kit/run_reps.sh" "$REC/trigger/<arm>/prompts/<Q>.txt" "$REC/trigger/<arm>/<Q>" 1 5` for each arm (`today`, `new`) and each request (`Q-proj`, `Q-quick`): 4 calls.
-- [ ] **Step 3: Read.** `show_reps.py` prints each reply's first line as `first=`. Confirm each by reading. Q-proj on the new description must name brainstorming at least 4/5 (R11.3). If it does not, stop and ask the owner, with the replies. Q-quick is recorded, not graded.
-- [ ] **Step 4: Record.** Append to the record:
+- [x] **Step 1: Build.** `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" trigger ff4a4f2 "$REC/trigger/today/prompts" NEWF` and `REC=…; uv run --with pyyaml python "$REC/kit/build_prompts.py" trigger NEWF "$REC/trigger/new/prompts" NEWF`. Expected: `wrote 2 prompts` each. The two `MANIFEST.txt` files show different `listing sha256` values, and `diff` of the two `Q-proj.txt` files shows only brainstorming's description line.
+
+  > Deviation: NEWF is `7b1ed85`, the commit that D16 approved in Task 4, not the last commit Task 3 recorded. The description and the six neighbors are the same at both commits, so only the manifests' commit ids differ.
+- [x] **Step 2: Run** `bash "$REC/kit/run_reps.sh" "$REC/trigger/<arm>/prompts/<Q>.txt" "$REC/trigger/<arm>/<Q>" 1 5` for each arm (`today`, `new`) and each request (`Q-proj`, `Q-quick`): 4 calls.
+- [x] **Step 3: Read.** `show_reps.py` prints each reply's first line as `first=`. Confirm each by reading. Q-proj on the new description must name brainstorming at least 4/5 (R11.3). If it does not, stop and ask the owner, with the replies. Q-quick is recorded, not graded.
+- [x] **Step 4: Record.** Append to the record:
 
 ````markdown
 ## Trigger
@@ -1146,6 +1187,8 @@ Set the Status line to `RED, pressure test and GREEN complete: every bar met.` (
 
 Set the Status line to `Complete: RED, pressure test, GREEN and trigger test.` Commit: `git add specs/red-baseline-brainstorming-<run-date>.md specs/red-baseline-brainstorming-<run-date>/ && git commit -m "docs(specs): brainstorming trigger test (plan 70)"`.
 
+  > Deviation: The Trigger and Disposition sections sit before the Cost section. The Status line adds two sentences on the met bars and the open T7 and T4 readings. The Trigger section has extra subsections.
+
 ---
 
 ### Task 6: Records and callers: `NOTICE`, the license check, the drift spec, `README.md` and `/fix-issue`
@@ -1160,9 +1203,9 @@ Set the Status line to `Complete: RED, pressure test, GREEN and trigger test.` C
 **Interfaces:**
 - Consumes: the run date and the record path from Task 1; the rows-added count from Task 3; the date of this task's commit as `<YYYY-MM-DD>`.
 
-- [ ] **Step 1: The license check** (R7.3). Fetch upstream's `LICENSE` at `2ce8aa1` into a new, empty directory (`gh api "repos/obra/superpowers/contents/LICENSE?ref=2ce8aa1" -H "Accept: application/vnd.github.raw" > "$D/LICENSE"`), confirm its sha256 is `a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400`, and run `cmp "$D/LICENSE" LICENSE-superpowers && cmp "$D/LICENSE" skills/brainstorming/LICENSE-superpowers && echo identical`. Expected: `identical`. If not, stop and ask the owner.
+- [x] **Step 1: The license check** (R7.3). Fetch upstream's `LICENSE` at `2ce8aa1` into a new, empty directory (`gh api "repos/obra/superpowers/contents/LICENSE?ref=2ce8aa1" -H "Accept: application/vnd.github.raw" > "$D/LICENSE"`), confirm its sha256 is `a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400`, and run `cmp "$D/LICENSE" LICENSE-superpowers && cmp "$D/LICENSE" skills/brainstorming/LICENSE-superpowers && echo identical`. Expected: `identical`. If not, stop and ask the owner.
 
-- [ ] **Step 2: The `NOTICE` entry** (R7). Its shape follows the entry at `NOTICE:428` (D1): it names what was taken, from which release, and each deliberate divergence. Insert it after the line `    Mistakes and Always carry the base-check route.` and before the blank line that precedes `    brainstorming/`. Fill `<YYYY-MM-DD>` and `<run-date>`. When Task 3 added rows, change "Eleven" to "Twelve" and add, before "The RED, GREEN", the sentence `The pressure test added <n> Red Flags rows.`
+- [x] **Step 2: The `NOTICE` entry** (R7). Its shape follows the entry at `NOTICE:428` (D1): it names what was taken, from which release, and each deliberate divergence. Insert it after the line `    Mistakes and Always carry the base-check route.` and before the blank line that precedes `    brainstorming/`. Fill `<YYYY-MM-DD>` and `<run-date>`. When Task 3 added rows, change "Eleven" to "Twelve" and add, before "The RED, GREEN", the sentence `The pressure test added <n> Red Flags rows.`
 
 ```text
   - brainstorming was rebased on upstream v7.0.1 (plan 70, <YYYY-MM-DD>),
@@ -1208,7 +1251,9 @@ Set the Status line to `Complete: RED, pressure test, GREEN and trigger test.` C
 
   Then `uv run python build/check_provenance.py` passes.
 
-- [ ] **Step 3: The drift spec** (R9, as D11 amends it). Five exact replacements in `specs/superpowers-drift-spec.md`, each old text found once, with `<YYYY-MM-DD>` and `<run-date>` filled in. The line numbers are those before any edit, in the file as merged from local `main` at `ffc521d`:
+  > Deviation: The plan said to write Twelve and keep its template text. D16 made it Thirteen and added three sentences on the GREEN-round changes. Four fix rounds, each after a fact-check panel, rewrote six template sentences and added others.
+
+- [x] **Step 3: The drift spec** (R9, as D11 amends it). Five exact replacements in `specs/superpowers-drift-spec.md`, each old text found once, with `<YYYY-MM-DD>` and `<run-date>` filled in. The line numbers are those before any edit, in the file as merged from local `main` at `ffc521d`:
 
   1. The revision note (lines 7-10). Old:
 
@@ -1354,9 +1399,11 @@ and trigger test, all newly written.
 
   Check: `grep -c 'adopted (plan 70)' specs/superpowers-drift-spec.md` prints `1`, `grep -n '### 5. Every task' specs/superpowers-drift-spec.md` still finds finding 5, and no `<YYYY-MM-DD>` or `<run-date>` slot is left in the file (`grep -c -F -e '<YYYY-MM-DD>' -e '<run-date>' specs/superpowers-drift-spec.md NOTICE` prints `0` for each).
 
-- [ ] **Step 4: `README.md:15`** (D2: R6 does not list the file, but the spec's D1 makes its claim false). Replace `drive every feature through spec → plan → implementation → retirement.` with `drive each project-sized feature through spec → plan → implementation → retirement. A small change gets a short design in chat and is built in the same session.` Leave the rest of the line unchanged.
+  > Deviation: Replacements 2 to 5 match the plan. A controller ruling added a sentence to the divergence list. Four fix rounds reworked finding 4. Its last line points to "New finding (v7.0.1)", not to finding 17 as D11 says.
 
-- [ ] **Step 5: `/fix-issue`** (R2.3). In `commands/fix-issue.md`, change `the spec gate stays` (line 16) to `the design gate stays`. Then regenerate and check the adapters:
+- [x] **Step 4: `README.md:15`** (D2: R6 does not list the file, but the spec's D1 makes its claim false). Replace `drive every feature through spec → plan → implementation → retirement.` with `drive each project-sized feature through spec → plan → implementation → retirement. A small change gets a short design in chat and is built in the same session.` Leave the rest of the line unchanged.
+
+- [x] **Step 5: `/fix-issue`** (R2.3). In `commands/fix-issue.md`, change `the spec gate stays` (line 16) to `the design gate stays`. Then regenerate and check the adapters:
 
 ```bash
 uv run --with pyyaml python build/sync_runtime_assets.py
@@ -1366,7 +1413,7 @@ git diff --stat runtimes/
 
   Expected: `--check` passes, and the diff touches only `runtimes/gemini/commands/fix-issue.toml`, where `the spec gate stays` became `the design gate stays`.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add NOTICE specs/superpowers-drift-spec.md README.md commands/fix-issue.md runtimes/gemini/commands/fix-issue.toml
@@ -1380,13 +1427,50 @@ git commit -m "docs: record the brainstorming v7.0.1 rebase in NOTICE, the drift
 **Files:**
 - None created. A fix found here goes to the file it concerns, in its own commit.
 
-- [ ] **Step 1: The full commit lints** (R12.3): `bash build/run_commit_lints.sh`. Expected: the last line is `commit lints passed`.
-- [ ] **Step 2: Size and pins.** `wc -c < skills/brainstorming/SKILL.md` prints a number below 20000. `shasum -a 256 skills/brainstorming/builder-check-prompt.md` prints `36d51a4723d6f0a3ce5811a0ea3b3a8424f07533947e1355f5d8cb8cce40c55e`. The three R8.2 strings, `superpowers:` and the command pattern from Task 2 Step 8 still count `0`.
-- [ ] **Step 3: The stale-claim sweep.** Run:
+- [x] **Step 1: The full commit lints** (R12.3): `bash build/run_commit_lints.sh`. Expected: the last line is `commit lints passed`.
+- [x] **Step 2: Size and pins.** `wc -c < skills/brainstorming/SKILL.md` prints a number below 20000. `shasum -a 256 skills/brainstorming/builder-check-prompt.md` prints `36d51a4723d6f0a3ce5811a0ea3b3a8424f07533947e1355f5d8cb8cce40c55e`. The three R8.2 strings, `superpowers:` and the command pattern from Task 2 Step 8 still count `0`.
+- [x] **Step 3: The stale-claim sweep.** Run:
 
 ```bash
 git grep -n -i -E 'every project|however simple|spec gate|multiple choice preferred|too simple to need' -- skills commands runtimes agents rules hooks README.md NOTICE CLAUDE.md
 ```
 
   Expected: one hit only, the new `NOTICE` entry's `drops "however simple it looks"`. Any other hit is text that still describes the old skill: report it, and fix it only when it falls inside this spec's files (R6). Otherwise list it as a leftover for the completion protocol.
-- [ ] **Step 4: The branch.** `git status --short` prints nothing. `git log --oneline <base>..HEAD` lists the commits of Tasks 1 to 6 in order, the RED commit before the first commit that touches `skills/brainstorming/` (`git log --oneline --reverse <base>..HEAD -- skills/brainstorming specs/red-baseline-brainstorming-*.md` shows the RED commit first). `<base>` is the commit Task 1 Step 1 recorded.
+
+  > Deviation: The plan expected one hit. The sweep printed seven: the new `NOTICE` line and six unrelated sentences. Five of the six exist at the base commit too. None describes the old contract.
+- [x] **Step 4: The branch.** `git status --short` prints nothing. `git log --oneline <base>..HEAD` lists the commits of Tasks 1 to 6 in order, the RED commit before the first commit that touches `skills/brainstorming/` (`git log --oneline --reverse <base>..HEAD -- skills/brainstorming specs/red-baseline-brainstorming-*.md` shows the RED commit first). `<base>` is the commit Task 1 Step 1 recorded.
+
+---
+
+## Added during execution
+
+Two pieces of work came after the final whole-branch review. The plan had no task for either. The owner approved both at the completion gate on 2026-10-28 (decisions D18 and D19).
+
+### Task 8: reword the last Red Flags row and re-run the cases it touches (D18)
+
+**Why.** The final review rated the last Red Flags row of `skills/brainstorming/SKILL.md` Important. Read literally, the row said to make the change even after a check shows it is wider than asked. The P2 fixture also never said whether other code reads `DEFAULT_PAGE_SIZE`, and P2's rule rewarded the edit.
+
+**What was done.**
+- `skills/brainstorming/SKILL.md` changed in two hunks (`f518ec5`). One is the reality cell of the last Red Flags row. The other is the opening of the sentence that lists what is not implementing. Nothing else under `skills/` changed.
+- The rules for the re-run were committed before any prompt was built (`5ff76a9`). They add the case P2b, which is P2 plus the sentence "Nothing else in the project reads `DEFAULT_PAGE_SIZE`." They also judge P2 by a SAFE and UNSAFE reading.
+- 35 reps ran: T1, T8a, T8b, T9, P2 and P2b on the new copy, and P2b on the control. They cost $1.72. The micro-test total is $15.25 of the $50 cap.
+- The record gained a section for the re-run (`8216567`). A blind panel of 8 scorers agreed with the implementer on all 40 verdicts.
+- The `NOTICE` entry and the drift spec now name the quick-task exit in the sentence that lists what is not implementing (`a8e1832`). A later commit corrected two statements in the record (`cf80390`).
+
+**Result.** Every bar holds. T1, T8a, T8b, T9 and P2b score 5/5 on the new copy. P2 scores 5/5 SAFE and 2/5 by its old rule. P2b does not separate the arms, because the control scores 5/5 too. Two Opus reviewers found no Critical issue in Task 8. Their wording findings went to the fix wave.
+
+### Final fix wave: record, `NOTICE`, drift spec and README (D17, D19)
+
+**Why.** The task reviews parked wording defects in the record. The final review added Minor items. The owner approved three corrections (D19).
+
+**What was done.** The wave took five fix rounds, the cap of the subagent-driven-development skill, on top of `cf80390`. Rounds 1 and 2 made four commits: `c780573`, `f1a0160`, `f8cea24` and `a916ab6`. Rounds 3 to 5 made `400a8a5`, `5a1b3db`, `8b68b2c` and `39e6c12`. The result, by file:
+- `NOTICE`: the paragraph about the vendoring of 2026-06-20 now says that 33 of the 39 files that both repositories share came in byte-identical. The reason clause "because the builder check replaces it" is gone from the dropped self-review sentence.
+- The drift spec: the two passages that repeated the false vendoring claim agree with `NOTICE`. Finding 4's closing sentence and its Done bullet agree with decisions D17 and D18.
+- `README.md`: line 15 names the skills and the `/deferred` command. The brainstorming row says what the skill now does.
+- The record: wording and fact corrections for the T7 and T4 readings (D17), the P2 evidence and the pointers from older sections to the re-run. A new section applies the SAFE reading to the four earlier sets of P2 replies. That scoring ran after the fact, so no bar depends on it.
+
+**Checks.** The implementer held two dictated claims back because they failed their checks. The controller confirmed both and corrected the brief. Three reviews followed. The pre-commit hook ran the commit lints on every commit, and they passed.
+- A review panel checked the first four commits. A re-review seat took the 13 final-review items. Three reading lenses, one verifier for each finding and a critic took the rest. The panel confirmed 39 findings and refuted none. The controller accepted 31 of them as 25 items for round 3. It rejected three and deferred one. Round 4 fixed six leftovers found in the round 3 diff.
+- A second, scoped review checked rounds 3 and 4. It found all 31 items addressed and the four controller decisions sound. It confirmed 31 more findings, mostly small slips in the sentences that rounds 3 and 4 wrote. Round 5 fixed them. Where a fix would have added a sentence that invites its own findings, round 5 removed the claim instead.
+- A last light check of round 5 returned 19 findings. The cap ended further rounds. Sixteen of the findings are eight distinct wording slips, now the fifth deferred item with a closure condition. The other three need no change. No slip changes a score, a bar or a verdict.
+- The micro-test spend did not change. It stays at $15.25 of the $50 cap.

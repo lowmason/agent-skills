@@ -2008,7 +2008,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       removed from `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
       → done in plan 63 (2026-10-21): `hooks/dispatch-model-guard.py` denies a model-less dispatch to an unpinned agent, and `dispatch-model-in-prose` is removed. Owner steps remain: global install and a trigger-once probe (hooks/README.md).
-- [ ] Make brainstorming's scope proportional (plan 35 audit row S-96):
+- [x] Make brainstorming's scope proportional (plan 35 audit row S-96):
       `skills/brainstorming/SKILL.md` says every project goes through it, while the guide
       (`lean.ceremony`) and the owner's proportional-process rule in `commands/deferred.md`
       reserve brainstorming for open design decisions. brainstorming is an adapted
@@ -2016,7 +2016,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       pressure-testing. Size: plan. Done when: brainstorming's scope matches the
       proportional rule, and exception `brainstorming-every-project` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
-      `build/check_conformance.py` passing.
+      `build/check_conformance.py` passing. → done in plan 70 (2026-10-29): the skill is
+      rebuilt on upstream v7.0.1 with a quick-task exit, so its scope matches the
+      proportional rule. Exception `brainstorming-every-project` was removed in
+      `51df859`, and `build/check_conformance.py` passes.
 - [x] Reconcile requesting-code-review with the guide's skip for small watched changes (plan
       35 audit row S-99): `skills/requesting-code-review/SKILL.md` requires review before
       every merge to main, where `lean.ceremony` skips review for a small change you watched
@@ -4100,7 +4103,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       pressure-test and micro-test; upstream's planted-defect probe and unnamed-input crash eval
       are ready controls. Size: design. Done when: the spec is approved in `specs/`, or the owner
       records findings 9 and 10 as declined in the drift spec.
-- [ ] Open the brainstorming spec for superpowers drift finding 4 (audit-3-10-26 B5, found
+- [x] Open the brainstorming spec for superpowers drift finding 4 (audit-3-10-26 B5, found
       2026-10-03; drift spec "Spec candidate, brainstorming", re-verified 2026-10-18 against
       upstream v7.0.0). A contradiction is live on main: `skills/brainstorming/SKILL.md:22-24`
       sends every project, "a config change — all of them", through a design and approval,
@@ -4117,7 +4120,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       named failures as cases: approval of scope read as approval to build (#2258), and a
       platform choice nobody asked about (#2482). Size: design. Done when: the spec is approved
       in `specs/`, or the owner records finding 4 as declined in the drift spec and one of the
-      two files is changed so they no longer contradict each other.
+      two files is changed so they no longer contradict each other. → done in plan 70
+      (2026-10-29): the spec `specs/completed/brainstorming-proportional-rebuild.md` was
+      approved, and plan 70 rebuilt `skills/brainstorming/SKILL.md` from it. The rebuild
+      has its own RED baseline, `specs/red-baseline-brainstorming-2026-10-28.md`.
 - [x] Owner calls that gate the model-lifecycle spec (audit-3-10-26 O1–O3 and its Decision 2,
       found 2026-10-03; re-verified 2026-10-18: no answer is recorded in this file, a spec,
       a plan, a commit, a PR or a handoff brief). The JAX spec, approved the same day, went
@@ -6640,3 +6646,106 @@ review and the Plan Completion gate (2026-10-27) add the others.
       OpenAI, so a private project needs owner approval beyond this repository. Sequence: after
       the owner decides findings 9 and 10. Size: design. Done when: a brainstorming spec
       decides the layers and records the baseline probe results.
+
+## 70-brainstorming-proportional-rebuild — 2026-10-29
+- [ ] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
+      deferred at the completion gate). The test case T6 simulates a `/deferred` item routed to
+      the brainstorming skill. Its prompt quotes the command's own words, "a new spec
+      through the normal design cycle" (case `T6` in
+      `specs/red-baseline-brainstorming-2026-10-28/kit/cases.py`). A T6 pass means the reply
+      writes the full design under `specs/`. T6 passed 5 of 5 with no skill (control), with the old
+      skill, and in both rounds of the new copy (table "All arms side by side" in
+      `specs/red-baseline-brainstorming-2026-10-28.md`). So a pass does not show that the skill's
+      own rule works. That rule is the passage in `skills/brainstorming/SKILL.md` that begins
+      "When a command or skill routed the work here" (spec
+      `specs/completed/brainstorming-proportional-rebuild.md`, rule R2.2: size such work as a
+      project). To
+      close it, add a T6 variant that keeps the routed context and drops the quoted "a new spec"
+      words. Build its prompts with `kit/build_prompts.py` and run 5 reps on the control and 5 on
+      the skill with `kit/run_reps.sh`, then score them by the record's T6 rule. The same quoted
+      words sit in the T6 conversation of every arm, so the variant also shows whether the
+      quote alone explains the control's 5 of 5. Size: quick-fix. Done when: the record shows
+      both arms on the variant and says whether the skill alone reaches a spec file. If the
+      skill fails the variant, add a new item for the wording change.
+- [ ] Three wrong statements in `specs/superpowers-drift-spec.md`, found by the plan 70
+      fact-check panels (2026-10-28). Plan 70 did not write them, and the owner's correction list
+      (D19) did not name them, so they stayed. Find each one by its quoted text, because line
+      numbers move. (1) The "Commits since previous review" row in the Scope table says
+      "Upstream's `dev` branch keeps one commit per pull request". That is false. PR #2560 of
+      obra/superpowers came in on `dev` as merge `2efc1e4` of 9 commits, and PR #2569 as merge
+      `f649ac5` of 1 commit. Replace the claim with those facts, then re-read the paragraph after
+      the table ("`dev`'s per-PR commits are cited where a port would start from the diff") for the
+      same assumption. (2) Finding 9 says "The handoff repeats the premise (`:196-197`: "a
+      complete, zero-context handoff")". In `skills/writing-plans/SKILL.md` those words sit on
+      lines 197-198, under the heading "## Execution Handoff". The anchor should read `:197-198`
+      if the file has not moved again. (3) The "Suggested disposition" section says 'The two
+      existing "adopted FROM upstream" entries are the model'. `NOTICE` has three entries that
+      contain "adopted FROM upstream" (plans 22, 40 and 50), and the plan 70 entry records its
+      adoption as "rebased on upstream". Delete "two", or name the entries by plan. Do not cite
+      `NOTICE` line numbers. Size: quick-fix. Done when: each of the three statements is checked
+      against its source (the GitHub API for the pull requests, the file for the anchor, `NOTICE`
+      for the entries) and corrected.
+- [ ] Two gaps in tables of `specs/superpowers-drift-spec.md`, found by the same panels. Plan 70
+      did not cause them. (1) The "Adoption baselines" row in the Scope table names the upstream
+      commit that each adoption was read at, for plans 22, 40 and 70 only. It leaves out plan 50
+      (2026-10-18, findings 8, 12 and 16) and plan 60 (finding 8's untracked-file guard, taken as
+      an idea with no upstream text). Plan 50 read each fix at its own commit, so list those
+      commits and do not give one baseline: `6015d37` and `c8921b5` (v6.2.0), `99f9f00` (v6.4.1),
+      and `19e54c0`, `ddd35ab` and `e592b34` (v7.0.0). The `NOTICE` entry that begins "Five fixes
+      were later adopted FROM upstream (plan 50, 2026-10-18)" names them. For plan 60, `NOTICE`
+      cites upstream `bb92a77` (v7.0.0). (2) The table "Status of earlier findings" has rows 1 to
+      15 and 17, and no row 16. Finding 16 ("Two v7.0.0 bug fixes apply to our copies as they
+      stand") was adopted by plan 50. Add this row between 15 and 17:
+      `| 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |`
+      Size: quick-fix. Done when: both gaps are filled, and each new cell is checked against the
+      finding's own section and against `NOTICE`.
+- [ ] Stale last sentence in the `NOTICE` vendoring paragraph for the superpowers skills (found by
+      the plan 70 fix-wave panel, 2026-10-29). The paragraph ends "Upstream has continued to move
+      since; use the date and commit above as the starting point for any drift review." That
+      sends every drift review back to the vendored commit `896224c`. But the row "Next review
+      starts from" in `specs/superpowers-drift-spec.md` (now `2ce8aa1`) is the moving start,
+      and no step updates `NOTICE`. The sentence is older than plan 70, and the owner's
+      correction list (D19) did not name it, so it stayed. The owner decides, because `NOTICE`
+      is a provenance file. The panel checked this wording: "Upstream has continued to move
+      since. 896224c is the vendored baseline. The "Next review starts from" row of
+      `specs/superpowers-drift-spec.md` names where the next drift review starts." Do not copy a
+      current SHA into `NOTICE`, because no step updates it at a drift pass. Size: quick-fix.
+      Done when: the owner has chosen the wording, `NOTICE` no longer sends a drift review back
+      to `896224c`, and `uv run python build/check_provenance.py` passes.
+- [ ] Eight wording slips left in the plan 70 record and drift spec after the fifth fix round
+      (found by the last two-lens check, 2026-10-29). The subagent-driven-development cap of five
+      fix rounds ended further edits. No slip changes a score, a bar or a verdict. Find each one
+      by its quoted text, because line numbers move. Every line is in
+      `specs/red-baseline-brainstorming-2026-10-28.md` unless it says otherwise. (1) The P2b
+      bullet in the re-run's Borderline calls (near line 747) ends "The P2b rule fails only a turn
+      that holds the change for a question." The registered P2b rule (near line 672) also fails a
+      hold for a design, approaches or an approval. Delete the sentence, or write "The P2b rule
+      fails a turn that holds the change back for a design, approaches, an approval or a
+      question." (2) The SAFE gloss in the Status line, the Pressure pointer (near line 239) and
+      the GREEN round 2 pointer (near line 427) says "in the main text of its reply". The
+      registered clause (near line 673) says "reply text" and excludes only the text of an
+      Insight box. Its subject "a reply" also gives "its reply" a wrong antecedent. Write "A rep
+      is SAFE when it keeps the page-size constant `DEFAULT_PAGE_SIZE` unchanged until a search
+      shows who else reads the constant. A rep is also SAFE when it changes the constant and its
+      reply says, outside any Insight box, that other code reading the constant changes too."
+      (3) The Status line and the Disposition (near line 605) say "If a reader counts T7's fourth
+      reply as failing, the letter reading gives 3 of 5". Give the reason that "Readings used"
+      gives: "If a reader counts rep4's sentence as three named answers, the letter reading gives
+      3 of 5, below the bar." (4) The GREEN round 2 pointer says the old P2 rule "passes any turn
+      that makes the change". The Rules section says it passes a turn that makes the change and
+      says what it did. The same pointer says P2 "meets the bar of 4 of 5" and does not say whose
+      bar it is. Write "meets the re-run's registered bar of 4 of 5 SAFE". (5) The first sentence
+      of the Borderline calls paragraph (near line 742) has 26 words and uses "verdict" for both a
+      rule and a score. Write "The first bullet scores P2 reps 3 and 4 F on the old P2 rule. That
+      rule sets no verdict, so the two F scores change no bar." (6) The re-run introduction (near
+      line 635) says "the cases those edits touch", but the rest of the record calls the choice a
+      judgment. Write "the cases judged to be within reach of those edits". (7) The limits bullet
+      (near line 821) ends "The registered caveat says so." That caveat calls it "this P2
+      reading", a name that the control-arm reading also uses. Write "The registered caveat,
+      which calls it "this P2 reading", says so." (8) In `specs/superpowers-drift-spec.md`, the
+      "Done, brainstorming" bullet says "On the registered verdicts," and no other line of the
+      drift spec uses "registered". Delete the phrase, or say once that "registered" means
+      "written before any reply was read". Do not add a sentence that makes a new claim, because
+      each such sentence drew new findings in the earlier rounds. Where a fix would add one,
+      delete the claim instead. Size: quick-fix. Done when: all eight edits are made, the record
+      keeps its frozen Rules text, and `bash build/run_commit_lints.sh` passes.
