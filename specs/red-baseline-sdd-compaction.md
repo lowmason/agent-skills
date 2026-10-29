@@ -290,3 +290,21 @@ subagent instead"; that is a statement with a condition that is not true, not an
   `SKILL.md` and so the final SHA.
 
 Spend after round 1: $3.08 (60 reps, exact sum $3.0761).
+
+### Owner ruling on C1 placement, and round 2 at `fc6cc10`
+
+Owner ruling, 2026-10-29: one ruling (1) line may go into the `SKILL.md` Fix Rounds pointer
+paragraph. This is a recorded deviation from the plan, which put ruling (1) in `references/`
+only. `fc6cc10` adds, at the end of that paragraph: "For an implementer already at
+**capable** whose round 4 was a thorough attempt that still failed, where the runtime offers
+`fable`: dispatch round 5 at `fable`. Where it does not, effort is the last rung." It also
+adds the same thorough-round-4 condition to `references/fix-loop.md`. `model-selection.md`
+already states it and is unchanged. Body 18,921 chars, file 19,767 bytes.
+
+Reading rules, written and committed before any rep at `fc6cc10` was run or read: C1 uses the
+C1 rule registered above under "Reading rules for the treatment reps", unchanged. The final
+confirmation arms of C2a and C2b at `fc6cc10` use their registered rules above, unchanged. The
+C17 final re-run uses the owner-approved C17 reading standard and the registered bar,
+unchanged. The VOID rule applies to every arm.
+
+Spend before this round: $3.08.
