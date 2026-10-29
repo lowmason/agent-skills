@@ -281,13 +281,13 @@ modifications are by Lowell Mason and released under the same MIT terms.
 Vendored on 2026-06-20 (this repo's commit 2f283ae, "Add superpowers
 skills, adapted for standalone use"). Upstream's newest commit at that
 date was 896224c, "Release v6.0.3: SDD artifacts move out of the .git/
-protected path" (2026-06-18). That commit is a retrieval-date record.
-2f283ae added 39 files under the skill directories. Of these, 33 came in
-byte-identical to the same paths under skills/ at 896224c. They include
-brainstorming/SKILL.md and the three subagent-driven-development
-scripts. The other six were adapted on the way in. Upstream has
-continued to move since; use the date and commit above as the starting
-point for any drift review.
+protected path" (2026-06-18). 2f283ae names no upstream commit, so the
+vendoring date picks 896224c. 2f283ae added 39 files under the skill
+directories. Of these, 33 came in byte-identical to the same paths under
+skills/ at 896224c. They include brainstorming/SKILL.md and the three
+subagent-driven-development scripts. The other six were adapted on the
+way in. Upstream has continued to move since; use the date and commit
+above as the starting point for any drift review.
 
 Changes from upstream:
   - Cross-skill references rewritten from the `superpowers:` plugin

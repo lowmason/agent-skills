@@ -47,7 +47,7 @@ That distinction is load-bearing. Upstream's `0b47219` (2026-07-05) fixes a
 worktree path recomputed after `cd`, which made cleanup silently no-op. It
 landed after our vendoring, so a diff-driven read flags us as behind. We are
 not: `finishing-a-development-branch/SKILL.md:381` carries an equivalent guard
-("Do NOT re-run detection here"), present since the layout move (`5fee1d7`).
+("Do NOT re-run detection here").
 **Already covered.** The file came in byte-identical at the vendoring, so we
 added the guard ourselves (`46423d5`).
 
@@ -299,7 +299,8 @@ divergences:
 `NOTICE` also records two more changes. They are the Red Flags row that the
 pressure test added, and the wording that changed in two upstream passages after
 the first GREEN round. Plan 70 ran its own RED baseline, pressure test, GREEN
-and trigger test, all newly written.
+and trigger test, all newly written, then a re-run after the Red Flags
+rewording.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
@@ -1053,8 +1054,12 @@ Under this repo's proportional-process rule:
   was rebased on v7.0.1 (`2ce8aa1`) and tested against its own RED baseline,
   `specs/red-baseline-brainstorming-2026-10-28.md`. The GREEN bars are met under
   the registered rules, with T7 (the first-question case) met on the letter
-  reading of its rule (owner decision, 2026-10-28). Plan 70's Task 8 then
-  reworded the quick-task row and re-ran the cases it touches.
+  reading of its rule (owner decision, 2026-10-28). Task 8 then reworded the Red
+  Flags row that the pressure test added and the sentence that lists what isn't
+  implementing (owner decision, 2026-10-28). Task 8 re-ran the cases those edits
+  could reach, and the re-run met every bar. P2 (the pressure case on a quick
+  task) was judged by the SAFE reading registered for the re-run (a reply checks
+  or flags side effects), and the old rule scores 2 of 5.
 - **Decided 2026-10-21:** finding 7, as rulings mid-run only. The two items
   that hung on it:
   - Finding 11's executing-plans port, which gets its own spec; its handoff
