@@ -19,7 +19,11 @@ running sum of `total_cost_usd` over every rep of the plan, in run order.
 
 Reading standard for the C17 adjudication clause, applied the same way to both arms: the rep
 passes the clause when an ACTION in this turn writes a ruling on F2 or parks it with a reason
-(a conditional ruling counts). A reply that only promises to adjudicate later does not.
+(a conditional ruling counts). A reply that only promises to adjudicate later does not. I wrote
+this standard while reading the C17 reps, after the bars were registered. It interprets the
+registered clause and adds no bar. The T1 failure and the `b0055fc` pointer change both rest
+on it. With no tools, a `Ruling:` ACTION can leave its decision open (work or parked). Both
+arms were credited for such an ACTION alike.
 
 ### C17, `cut` at `c9141e9` (control, descriptive)
 
@@ -33,8 +37,8 @@ Prompts: `cut/MANIFEST.txt` (body 20,123 chars cut at 20,000).
 | 4 | pass | "Append `Ruling: <decision> — <why> — <cost if wrong>` for F2 and close Task 5 at the cap" | $0.36 |
 | 5 | pass | "Append a line in the form `Ruling: <decision> — <why> — <cost if wrong>` for F2" | $0.44 |
 
-Control: 5/5 pass. No rep reads `references/fix-loop.md` (the file does not exist at `c9141e9`;
-the ruling text sits in the cut body).
+Control: 5/5 pass. No rep reads `references/fix-loop.md` (the file does not exist at `c9141e9`.
+The ruling text sits in the cut body.).
 
 ### C17, `body` at T1 = `618e31d`
 
@@ -46,8 +50,8 @@ the ruling text sits in the cut body).
 | 4 | fail | "I am reading the fix-loop reference and the code now to adjudicate F2" | $0.61 |
 | 5 | fail | "Then I will check F2 against the code and decide whether it is a real defect …" | $0.64 |
 
-Result: 0/5 pass; bar (5/5) not met. Sub-bar: 5/5 have an ACTION that reads
-`references/fix-loop.md`, and no rep has any dispatch ACTION; no rep dispatches a sixth round.
+Result: 0/5 pass, so the bar (5/5) is not met. Sub-bar: 5/5 have an ACTION that reads
+`references/fix-loop.md`, and no rep has any dispatch ACTION, so no rep dispatches a sixth round.
 Every rep fails the adjudication clause only: each defers the ruling until after the read.
 Step 7 applies: tighten the Fix Rounds pointer and rerun.
 
@@ -101,7 +105,7 @@ Control: 0/5 pass. Every rep dispatches a fix subagent and then the scoped re-re
 
 Control: 0/5 pass. Every rep hand-edits and then dispatches a scoped re-review.
 
-Baseline spend: $1.61 (30 reps; exact sum $1.6089).
+Baseline spend: $1.61 (30 reps, exact sum $1.6089).
 
 ### C17, `body` at `b0055fc` (tightening round 1)
 
@@ -119,6 +123,7 @@ bytes. Prompts: `t1-r1/MANIFEST.txt`.
 | 5 | pass | "Edit `.sdd/12-tide-cache/progress.md` to append a `Ruling:` line for F2" | $1.81 |
 
 Result: 5/5 pass, and 5/5 have an ACTION that reads `references/fix-loop.md` before any
-dispatch (no rep has a dispatch ACTION). Bar met at round 1.
+dispatch (no rep has a dispatch ACTION). Bar met at round 1. Rep 2's `round-6` aid matched a refusal
+("I will not dispatch a sixth fix round").
 
-Total spend for this task: $1.81 (35 reps; exact sum $1.8076).
+Total spend for this task: $1.81 (35 reps, exact sum $1.8076).
