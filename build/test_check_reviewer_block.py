@@ -55,3 +55,8 @@ def test_missing_block_names_the_file(tmp_path):
     files[FILES[1]] = '# No block here\n'
     write_tree(tmp_path, files)
     assert check(tmp_path) == [f"{FILES[1]}: expected one '## Review scope' line, found 0"]
+
+
+def test_repo_copies_are_identical():
+    from check_reviewer_block import ROOT
+    assert check(ROOT) == []

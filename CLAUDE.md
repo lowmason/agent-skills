@@ -75,9 +75,9 @@ uv run python build/run_suites.py --all
 uv run python build/run_suites.py --check
 
 # Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test, snippet
-# Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the link check (check_links.py, below)
-# and the versions check (versions.py check, below). build/run_commit_lints.sh runs all of them;
-# build/githooks/pre-commit runs it on each commit once enabled
+# Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the link check (check_links.py, below),
+# the versions check (versions.py check, below) and the reviewer-block check (check_reviewer_block.py, below).
+# build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
@@ -108,6 +108,10 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_
 # Relative links: every Markdown link under skills/ must resolve from its own file's directory; a move one
 # directory deeper breaks them silently
 uv run python build/check_links.py
+
+# Reviewer block: the four reviewer surfaces carry one shared block, identical once the
+# template indentation is removed
+uv run python build/check_reviewer_block.py
 
 # Snippet gate: three tiers, cheapest first, run as three separate commands. Every command runs the parse check, but
 # --run does not run the --api checks, so a full check runs all three. Tier 1 covers all of skills/; Tiers 2 and 3

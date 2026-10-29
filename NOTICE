@@ -678,6 +678,20 @@ Changes from upstream:
     (specs/red-baseline-brainstorming-2026-10-28.md). No text comes from
     upstream's eval repository, prime-radiant-inc/superpowers-evals,
     which carries no license.
+  - The reviewers report only correctness and requirement gaps (plan 73).
+    agents/code-reviewer.md, agents/task-reviewer.md, requesting-code-review's
+    code-reviewer.md and subagent-driven-development's task-reviewer-prompt.md
+    carry one shared block, and build/check_reviewer_block.py fails a commit
+    when the copies differ. The block's text on behavior the requirements do
+    not mention, and its Declined to judge list, adapt upstream PR #2319
+    (5feaa15, requesting-code-review's code-reviewer.md). This repo's own
+    work: the scope narrowing to two grades, Critical and Important, with no
+    Minor tier and no Recommendations section; the same reasonable-user text
+    in the two task-reviewer surfaces, which upstream left out; the Codex tag
+    mapping in codex-review.md; and the sync check. No text comes from
+    upstream's eval repository, prime-radiant-inc/superpowers-evals, which
+    carries no license; its unnamed-input crash eval is credited as the idea
+    behind case R1 (specs/red-baseline-reviewer-planning-contract.md).
 
     brainstorming/
     dispatching-parallel-agents/

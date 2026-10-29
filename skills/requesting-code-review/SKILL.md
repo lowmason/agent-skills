@@ -10,7 +10,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.304.1
+# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.306
 ---
 
 # Requesting Code Review
@@ -66,7 +66,7 @@ expensive.
 **3. Act on feedback:**
 - Fix Critical issues immediately
 - Fix Important issues before proceeding
-- Note Minor issues for later
+- Rule on each Declined to judge line: make it a finding, or record why it stays out
 - Push back if reviewer is wrong (with reasoning)
 
 ## Example
@@ -89,10 +89,11 @@ HEAD_SHA=$(git rev-parse HEAD)
   Strengths: Clean architecture, real tests
   Issues:
     Important: Missing progress indicators
-    Minor: Magic number (100) for reporting interval
+  Declined to judge:
+    Repair of indexes written before v2: Task 2 covers new indexes only
   Assessment: Ready to proceed
 
-You: [Fix progress indicators]
+You: [Fix progress indicators; rule that pre-v2 repair stays out of scope]
 [Continue to Task 3]
 ```
 
