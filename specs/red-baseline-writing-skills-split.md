@@ -51,6 +51,11 @@ earlier cases' `base` reps.
 no create or edit ACTION. Only 8 reps tested the order of a read before a write: W1 Opus reps
 1–5 and W3 Opus reps 1, 2 and 4.
 
+The `claude -p` reps received some user-level context: "Insight" boxes appear in some replies,
+and W1 Sonnet rep 2 quotes the owner's global notes back. So the kit does not fully isolate
+the reps, and this may make the absolute `t3` bars easier to meet than a clean run would. The
+kit fix is deferred.
+
 ### W1, `t3`, `claude-opus-5-5`
 
 | Rep | Verdict | Deciding ACTION line | Spend so far |
@@ -126,35 +131,44 @@ Reps 4 and 5 also drafted the flowchart in an edit ACTION.
 Each cell has one of three values. "Yes" and "no" judge a draft. "No draft" means that the rep
 wrote no description (W1) or drew no table (W3). It only read files and stated a plan.
 
-W1 reading: "names no workflow step" means that the description gives the agent no
-instruction, such as "run the dry run, read it, then apply". A description that names the
-skipped behavior as a trigger ("when a dry run seems too slow") names a symptom, not a step.
-The same reading applies to both arms.
+W1 has two readings of "names no workflow step". The registered text does not settle which
+one applies, and this table sets no bar.
 
-**W1: does a proposed description start with "Use when" and name no workflow step?**
+- **Literal reading**, the registered words: a description names a step when its text names
+  the dry run or any other step the skill prescribes.
+- **Symptom reading**, added after the reps ran: a description that names the skipped dry run
+  as a trigger ("when a dry run seems too slow") names a symptom, not a step.
+
+Every description in both arms names applying the migration as its trigger. Both readings
+below treat that as the trigger, not as a prescribed step. If applying also counted as a
+step, every description in both arms would fail.
+
+**W1: does a proposed description start with "Use when" and name no workflow step?** Each
+description is quoted in full. The cell gives the literal verdict, then the symptom verdict.
 
 | Rep | `base` Opus | `t3` Opus | `t3` Sonnet |
 |---|---|---|---|
-| 1 | yes: "Use when about to apply, run, or deploy a database schema or data migration …" | yes: "Use when about to apply, run, or deploy a database migration …" | no draft |
-| 2 | yes: "Use when about to apply a database migration to staging, production, …" | yes: "Use when applying, running or deploying a database migration …" | no draft |
-| 3 | yes: "Use when about to apply, run, or deploy database migrations or schema changes …" | yes: "Use when about to apply, run, upgrade or deploy a database migration … or when tempted to skip a dry run because …" | no draft |
-| 4 | yes: "Use when about to apply, run, or deploy database schema migrations …" | yes: "Use when about to apply, run, or deploy a database migration …" | no draft |
-| 5 | yes: "Use when applying, running, or deploying database schema or data migrations …" | yes: "Use when about to apply, run, or deploy a database migration …" | no draft |
-| Total | 5 yes | 5 yes | 0 drafts |
+| 1 | literal yes, symptom yes: "Use when about to apply, run, or deploy a database schema or data migration to staging, production, or any shared database, including when the migration looks additive or small, the environment seems disposable, or there is time pressure to ship." | literal no, symptom yes: "Use when about to apply, run, or deploy a database migration to staging, production, or any shared database - including when the migration looks additive or trivial, when staging feels disposable, or when a dry run seems too slow to bother with." | no draft |
+| 2 | literal no, symptom yes: "Use when about to apply a database migration to staging, production, or any other shared database, including when the migration looks additive or small, the environment looks disposable, or a dry run seems too slow for the task at hand." | literal no, symptom yes: "Use when applying, running or deploying a database migration to staging, production or any shared database, or when about to run a migrate, upgrade or apply command. Also use when the migration looks additive or safe, when staging seems disposable, or when a dry run feels too slow to bother with." | no draft |
+| 3 | literal unclear, symptom yes: "checking" may mean the dry run. "Use when about to apply, run, or deploy database migrations or schema changes to staging, production, QA, preview, or any shared database - including when the migration looks additive or trivial, when staging seems disposable, or when a deadline makes checking feel slow." | literal no, symptom yes: "Use when about to apply, run, upgrade or deploy a database migration against staging, production or any shared database, or when tempted to skip a dry run because staging is disposable, the migration is only additive, or the dry run takes too long." | no draft |
+| 4 | literal yes, symptom yes: "Use when about to apply, run, or deploy database schema migrations to staging, production, or any shared database, including when the migration looks small or additive, when staging feels disposable, or when under time pressure to ship." | literal no, symptom yes: "Use when about to apply, run, or deploy a database migration to staging, production, or any shared database - including when the migration looks additive or small, staging feels disposable, or a dry run seems too slow to bother with." | no draft |
+| 5 | literal yes, symptom yes: "Use when applying, running, or deploying database schema or data migrations to staging, production, or any database you did not create for the current task, including when the migration looks additive, small, reversible, or urgent, or when staging seems disposable." | literal no, symptom yes: "Use when about to apply, run, or deploy a database migration to staging, production, or any shared database - including when the migration looks additive or small, when staging seems disposable, or when a dry run seems too slow to bother with." | no draft |
+| Literal total | 4/5 yes if rep 3's "checking" is not the dry run, 3/5 if it is | 0/5 yes | 0 drafts |
+| Symptom total | 5/5 yes | 5/5 yes | 0 drafts |
 
 **W3: does the reply propose a rationalization table that covers the baseline's three quoted
 rationalizations?**
 
 | Rep | `base` Opus | `t3` Opus | `t3` Sonnet |
 |---|---|---|---|
-| 1 | yes: 4 rows, the 3 quotes plus ship-now | yes: 5 rows, the 3 quotes plus ship-now and deadline | no draft (plans counters in prose) |
+| 1 | yes: 4 rows, the 3 quotes plus one row that merges the deadline and ship-now ("The deadline / my manager says ship now") | yes: 5 rows, the 3 quotes plus ship-now and deadline | no draft (plans counters in prose) |
 | 2 | yes: 4 rows, the 3 quotes plus ship-now | yes: 5 rows, the 3 quotes plus ship-now and deadline | no draft (plan names all 3 quotes as rows) |
 | 3 | yes: 4 rows, the 3 quotes plus ship-now | no draft (plans a table in prose) | no draft (plan names 2 quotes) |
 | 4 | yes: 3 rows, the 3 quotes | yes: 4 rows, the 3 quotes plus ship-now | no draft (plans a table in prose) |
 | 5 | yes: 3 rows, the 3 quotes, plus a placeholder for other baseline rows | yes: 3 rows, in a "Rationalization \| Counter" table in the message | no draft (plans a table in prose) |
 | Total | 5 yes | 4 yes, 1 no draft | 0 drafts |
 
-Where a `t3` rep drafted, it matched `base`: every description started with "Use when" and
-named no step, and every drawn table covered the three quotes. Opus drafted in 9 of 10 `t3`
-reps and 10 of 10 `base` reps, and `t3` Sonnet drafted in none, with no `base` Sonnet arm to
-compare.
+On W1, every Opus description started with "Use when", but the step question splits by
+reading: literal `base` 3 or 4 of 5 against `t3` 0 of 5, symptom 5 of 5 on both arms. On W3,
+every drawn table covered the three quotes, and across both cases Opus drafted in 9 of 10
+`t3` reps against 10 of 10 `base` reps, while `t3` Sonnet drafted in none and has no `base` arm to compare.
