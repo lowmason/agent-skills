@@ -166,7 +166,7 @@ base (running spend $1.97): bug reported 5/5 (Critical), bug with no polish poin
 
 | Rep | Verdict | Deciding line (a polish point, all under "Minor") |
 |---|---|---|
-| 1 | fail | "**6. No docstrings.**" (also the slice and `test_1`) |
+| 1 | fail | "6. **No docstrings.**" (also the slice and `test_1`) |
 | 2 | fail | "`test_1` is not a descriptive name." |
 | 3 | fail | "`test_1` is not descriptive." |
 | 4 | fail | "The name `test_1` describes nothing." |
@@ -251,9 +251,11 @@ test in Task 3, the task that holds the rename call.
 | 4 | fail | no `## Review Focus` section | yes, Task 3 `test_main_lists_undated_and_taken_after_the_run` asserts both photos on disk | 16.79 | 0.64 |
 | 5 | fail | no `## Review Focus` section | yes, Task 3 `test_lists_undated_and_name_taken_photos_after_the_run` asserts both photos on disk | 15.67 | 0.63 |
 
-P2 base medians, the inputs to Task 8's P2 bar: median ratio 16.24 and median fence share 0.64,
-so `green` must reach a median ratio ≤ 9.74 and a median fence share below 0.64. The control
-medians are ratio 5.18 and fence share 0.00.
+P2 base medians, the inputs to Task 8's P2 bar: median ratio 16.24 and median fence share 0.64
+(unrounded 16.2365 and 0.6365), so `green` must reach a median ratio ≤ 9.74 (0.6 × 16.2365 =
+9.7419) and a median fence share below 0.6365; compare against the unrounded figures. The control
+medians are ratio 5.18 and fence share 0.00. The control meets the P2 bar (5.18 ≤ 9.74 and
+0.00 < 0.64), so P2 shows nothing about the wording.
 
 #### P3
 
@@ -285,5 +287,7 @@ On the current text, the task reviewer grades the R1 crash Minor (graded 0/5) wh
 reviewer grades it Critical (5/5), both reviewers report the R2 bug and the R4 defect together
 with a polish or style point (0/5 on each reviewer), no plan has a Review Focus section (P1 0/5),
 the plans run a median 16.24 times the spec's length with 0.64 of their lines fenced (P2), and
-both P3 texts are word for word (5/5). The control already meets the bar on R1-final (5/5) and P3
-(5/5), so those two show nothing about the wording, and it misses R1-task, R2, R4 and P1.
+both P3 texts are word for word (5/5). The control meets the registered bar on P2 (median ratio
+5.18 ≤ 9.74, fence share 0.00 < 0.64) and P3 (5/5), so those two cases show nothing about the
+wording. It is at ceiling on R1-final (5/5), but R1 as a case needs both reviewers and R1-task is
+0/5 in the control, so the control misses R1. It also misses R2, R4 and P1.
