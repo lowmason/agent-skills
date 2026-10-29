@@ -27,9 +27,10 @@ on a genuine toss-up, and defaulting to **standard** when nothing clearly fires
    integration / pattern-matching → **standard**; open design judgment or
    broad-codebase understanding → **capable**.
 
-## No tier above capable
+## Fable is a fix-loop rung, not a tier
 
-Fable is not an SDD tier. Not every runtime offers `fable`, and the ladder in
-[fix-loop.md](fix-loop.md) ends at **capable**: a task that still fails there goes to
-adjudication, where reaching for a stronger model is your human partner's call,
-not a dispatch default.
+Fable is not a dispatch tier: no task starts there, and not every runtime
+offers `fable`. It is only the last rung of the ladder in
+[fix-loop.md](fix-loop.md), for a task at **capable** whose round 4 was a
+thorough attempt that still failed. Where the runtime has no `fable`, the
+ladder ends at **capable**, and a task that still fails goes to adjudication.

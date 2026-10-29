@@ -66,6 +66,12 @@ manual execution or a separate session:
 **If reviewer finds issues:**
 - Dispatch a fix subagent with the findings — resumed or fresh per **Fix
   Rounds** (prompt per Constructing Reviewer Prompts)
+- Exception: a fix confined to one file that changes no behavior (wording, a
+  typo, a wrong name or path in prose or docs) you may make yourself. Commit it,
+  append to the implementer's report file what you changed and that it changes
+  no behavior, so no test covers it, then dispatch the scoped re-review as
+  usual. A fix that changes what code does, even by one character, goes to a
+  fix subagent.
 - Reviewer reviews again (scoped re-review, not a fresh full review — see Fix Rounds)
 - Repeat up to the five-attempt cap, then adjudicate what's still open (see Fix Rounds)
 - Don't skip the re-review
@@ -73,7 +79,8 @@ manual execution or a separate session:
 **If subagent fails task:**
 - Dispatch a fix subagent with specific instructions — resumed or fresh per
   **Fix Rounds**
-- Don't try to fix manually (context pollution)
+- Don't try to fix manually (context pollution); the one exception is the
+  trivial reviewer finding above
 
 ## The Process
 

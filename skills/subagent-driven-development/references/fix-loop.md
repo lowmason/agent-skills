@@ -21,8 +21,9 @@ working; a fresh one does not. Escalate in the order context, then effort, then
 model, and stop when there is no headroom. Which rungs remain depends on the
 tier **this implementer was dispatched at** — not on your own session's model,
 which it never inherited. An implementer below **capable** still has the model
-rung; one already at **capable** has only fresh context and higher reasoning
-effort left.
+rung. One already at **capable** has fresh context and higher reasoning effort,
+then one last model rung where the runtime offers `fable`: dispatch round 5 at
+`fable`. Where it does not, effort is the last rung.
 
 **Adjudicating** means you rule on each open finding: record the load-bearing
 ones as work, and park the rest in the ledger with your reasoning
@@ -31,6 +32,12 @@ human partner only when every path forward is a guess.
 
 ## Fix dispatches
 
+- Exception: a fix confined to one file that changes no behavior (wording, a
+  typo, a wrong name or path in prose or docs) you may make yourself. Commit it,
+  append to the implementer's report file what you changed and that it changes
+  no behavior, so no test covers it, then dispatch the scoped re-review as
+  usual. A fix that changes what code does, even by one character, goes to a
+  fix subagent.
 - Dispatch fix subagents for Critical and Important findings — rounds 1-3
   resume the same implementer, rounds 4-5 dispatch a fresh one (see **Fix
   Rounds**). Record Minor findings in the progress ledger as you go, and
