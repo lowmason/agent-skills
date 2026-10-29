@@ -296,10 +296,10 @@ divergences:
   isn't implementing
 - the dropped spec self-review
 
-`NOTICE` lists two more deliberate divergences. The pressure test added a Red
-Flags row, and two upstream passages changed after the first GREEN round. Plan
-70 ran its own RED baseline, pressure test, GREEN and trigger test, all newly
-written.
+`NOTICE` also records two more changes. They are the Red Flags row that the
+pressure test added, and the wording that changed in two upstream passages after
+the first GREEN round. Plan 70 ran its own RED baseline, pressure test, GREEN
+and trigger test, all newly written.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
@@ -1051,7 +1051,10 @@ Under this repo's proportional-process rule:
   are ready controls.
 - **Done, brainstorming:** finding 4, through plan 70 (2026-10-28): the skill
   was rebased on v7.0.1 (`2ce8aa1`) and tested against its own RED baseline,
-  `specs/red-baseline-brainstorming-2026-10-28.md`.
+  `specs/red-baseline-brainstorming-2026-10-28.md`. The GREEN bars are met under
+  the registered rules, with T7 (the first-question case) met on the letter
+  reading of its rule (owner decision, 2026-10-28). Plan 70's Task 8 then
+  reworded the quick-task row and re-ran the cases it touches.
 - **Decided 2026-10-21:** finding 7, as rulings mid-run only. The two items
   that hung on it:
   - Finding 11's executing-plans port, which gets its own spec; its handoff
