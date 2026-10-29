@@ -5,6 +5,7 @@ from pathlib import Path
 
 import yaml
 
+import check_frontmatter
 from check_frontmatter import (
     bundled_invocations,
     check_agent_file,
@@ -289,15 +290,23 @@ def test_a_body_over_500_lines_warns_without_an_error(tmp_path):
     assert check_skill(over) == []
 
 
-def test_the_body_warning_goes_to_stderr_and_keeps_exit_zero():
-    # writing-skills is the one body over 500 lines (portability baseline);
-    # revisit this test when it is split, a portability deferred item.
+def test_the_body_warning_goes_to_stderr_and_keeps_exit_zero(monkeypatch, capsys):
+    # No real body runs past 500 lines since plan 72 split writing-skills, so the
+    # warning is stubbed for one skill to check where main sends it.
+    monkeypatch.setattr(check_frontmatter, 'skill_body_warning',
+                        lambda d: f"WARN {d / 'SKILL.md'}: body is 501 lines" if d.name == 'writing-skills' else None)
+    assert check_frontmatter.main([]) == 0
+    out, err = capsys.readouterr()
+    assert 'WARN' not in out
+    assert any(line.startswith('WARN ') and 'skills/writing-skills/SKILL.md: body is' in line
+               for line in err.splitlines()), err
+
+
+def test_no_skill_body_runs_past_500_lines():
     result = subprocess.run([sys.executable, str(REPO / 'build' / 'check_frontmatter.py')],
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stdout
-    assert 'WARN' not in result.stdout
-    assert any(line.startswith('WARN ') and 'skills/writing-skills/SKILL.md: body is' in line
-               for line in result.stderr.splitlines()), result.stderr
+    assert [line for line in result.stderr.splitlines() if line.startswith('WARN ')] == []
 
 
 def test_strict_flags_host_keys_and_reserved_name_words(tmp_path):
