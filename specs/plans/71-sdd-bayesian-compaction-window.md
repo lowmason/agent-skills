@@ -22,16 +22,17 @@
 - **Micro-test rules** (writing-skills, "Micro-Test Wording Before Full Scenarios"): 5 reps per arm; every verdict read by hand from the full reply; pass bars are those written in this plan, recorded in the results file before any rep of that case is read; the reading aids in `show_reps.py` are not verdicts.
 - **Micro-test hygiene** (lessons of plans 69 and 70): a `run_reps.sh` call takes 1–3 minutes, so run it with `timeout: 600000` or in the background; the kit refuses to overwrite a `rep<N>.json`, so a killed call is resumed with the next free rep numbers, never by deleting outputs; reps run from a new empty directory under `/tmp/plan71-rep-*`, outside every repository.
 - **Python style:** single quotes, f-strings, 4-space indentation, stdlib only in the kit scripts.
+- **Owner stops under subagent-driven-development:** an implementer cannot ask the owner. Where a step says "stop and ask the owner", the implementer reports BLOCKED with the reps' quoted phrases and the running spend. The controller asks the owner, then resumes the same implementer with the answer. It never restarts the task, because the kit refuses existing `rep<N>.json` files.
 
 ## Decisions
 
 - **D1** (owner, conversation, 2026-10-20, ruling E3; applied by this plan): fix subagent-driven-development's escalation ladder, which says an implementer at **capable** has no model rung left, against the guide's `subagents.models` (Fable is for the hardest work when Opus at high effort falls short); micro-tested. This plan reads "fix" as: at **capable**, round 5 is dispatched at `fable` where the runtime offers it, and Fable stays out of the dispatch tiers. Applied in: Task 3. **Flagged for plan review:** the reading of "fix" is the planner's default.
 - **D2** (owner, conversation, 2026-10-29): ruling (2) is **No**: a trivial fix need not go to a fix subagent. Limits: one file, no change in behavior, the same scoped re-review afterward, and a pressure case in the micro-test. Applied in: Task 2, Task 3.
 - **D3** (owner, conversation, 2026-10-29): ruling (3) is **Yes**: a short line near the top tells the controller, after a compaction, to re-invoke the skill and re-read the ledger, together with upstream's per-step re-read pointers. Limit: test the line against a control without it first, and drop it if the control already recovers. Applied in: Task 2, Task 3.
-- **D4** (planner default, for plan review): the size gate is the stricter pair in Global Constraints (body ≤ 19,500 characters and file < 20,000 bytes), not only our check's 20,000 body characters. This leaves headroom for the next edit, and it makes the open frontmatter probe irrelevant for these two files. It adopts no new lint, so it stays inside the owner's decision of 2026-10-28 not to adopt upstream's byte bar. A simulation of Tasks 1 and 4 on `c9141e9` gives: subagent-driven-development, body 18,529 characters and file 19,377 bytes before Task 3, about 19,800 bytes after Task 3's ruling text; bayesian-workflow, body 18,424 characters and file 19,671 bytes. So the byte headroom is thin (about 200 and 330 bytes); the next edit that grows either file must move text first. Applied in: Global Constraints, Tasks 1, 3 and 4.
+- **D4** (planner default, for plan review): the size gate is the stricter pair in Global Constraints (body ≤ 19,500 characters and file < 20,000 bytes), not only our check's 20,000 body characters. This leaves headroom for the next edit, and it makes the open frontmatter probe irrelevant for these two files. It adopts no new lint, so it stays inside the owner's decision of 2026-10-28 not to adopt upstream's byte bar. A simulation of Tasks 1 and 4 on `c9141e9` gives: subagent-driven-development, about 18,100 body characters and 18,950 file bytes before Task 3, about 19,570 bytes after Task 3's ruling text; bayesian-workflow, body 18,424 characters and file 19,671 bytes. So the byte headroom is thin (about 430 and 330 bytes); the next edit that grows either file must move text first, and Tasks 3 and 4 name a fallback move. Applied in: Global Constraints, Tasks 1, 3 and 4.
 - **D8** (planner default, for plan review): the deferred item says to remove `test_late_critical_section_is_refused`. Task 5 replaces it instead, with the same move expecting `check_conformance` to fail, so the red-green cycle has a test and the unwaived state stays guarded. Applied in: Task 5.
 - **D5** (planner default, for plan review): micro-test reps run on `claude-sonnet-5-5`, because CLAUDE.md routes plan execution, and so the SDD controller, to Sonnet. Applied in: Task 2.
-- **D6** (planner default, for plan review): beyond upstream's seven parts, the subagent-driven-development move also takes File Handoffs and Context Checkpoints. Without both, the body misses the size gate once the ruling text is in. The roadmap-stage paragraph and Red Flags stay in the body (they are the file's `CRITICAL_SPANS`). Applied in: Task 1.
+- **D6** (planner default, for plan review): beyond upstream's seven parts, the subagent-driven-development move also takes File Handoffs, Context Checkpoints, and Durable Progress's batched-ledger bullet (into `batching.md`). Without all three, the file misses the size gate once the ruling text is in. The roadmap-stage paragraph and Red Flags stay in the body (they are the file's `CRITICAL_SPANS`). Applied in: Task 1.
 - **D7** (planner default, for plan review): bayesian-workflow moves six sections (Stack compatibility, NumPyro model template, Samplers, Common model families, Utility scripts, When things go wrong), each heading kept in the body with a pointer. Workflow overview, Scope, Installation, Critical rules and Common gotchas stay. Applied in: Task 4.
 
 ---
@@ -130,12 +131,12 @@ Each new file starts with a `# <Title>` line, one sentence saying when to read i
 
 | File | Title and first sentence | Moved text (lines at `c9141e9`) |
 |---|---|---|
-| `references/batching.md` | `# Batching small same-shape tasks` / `Read this before you dispatch several small edits of the same kind one by one.` | The Process, from `**Batch small same-shape work.**` (`:128`) to `…fails silently.` (`:154`) |
+| `references/batching.md` | `# Batching small same-shape tasks` / `Read this before you dispatch several small edits of the same kind one by one.` | The Process, from `**Batch small same-shape work.**` (`:128`) to `…fails silently.` (`:154`); then under `## The batch's ledger entry`, Durable Progress's bullet from `- A batched dispatch gets ONE ledger entry` (`:425`) to `…re-dispatches the rest.` (`:431`) |
 | `references/preflight.md` | `# Pre-flight plan review` / `Read this before the first dispatch of a plan.` | Pre-Flight Plan Review body (`:157-169`), without the heading |
 | `references/handling-reports.md` | `# Handling DONE_WITH_CONCERNS, NEEDS_CONTEXT and BLOCKED` / `Read this when an implementer reports one of these three statuses.` | Handling Implementer Status, from `**DONE_WITH_CONCERNS:**` (`:204`) to the end of the section (`:215`) |
 | `references/cannot-verify.md` | `# Reviewer items marked ⚠️` / `Read this when a reviewer marks an item it could not verify.` | Handling Reviewer ⚠️ Items body (`:217-226`), without the heading |
 | `references/fix-loop.md` | `# Fix loop` / `Read this again before every fix round: who fixes, how the re-review runs, and when you stop to adjudicate.` | Fix Rounds body (`:228-255`), then under `## Fix dispatches` the three bullets of Constructing Reviewer Prompts from `- Dispatch fix subagents for Critical and Important findings` (`:323`) to the end of `- Every fix dispatch …` (`:339`) |
-| `references/final-review.md` | `# Final review and plan completion` / `Read this after the last task's review resolves.` | Under `## Final whole-branch review`, the bullets of Constructing Reviewer Prompts from `- The final whole-branch review has two seats` (`:340`) to the end of the section (`:355`); then under `## Plan completion`, Plan Completion's three paragraphs from `After the final whole-branch review resolves` (`:258`) to `…destroys the protocol's input.` (`:280`) |
+| `references/final-review.md` | `# Final review and plan completion` / `Read this when the last task's review resolves, before you dispatch the final whole-branch review.` | Under `## Final whole-branch review`, the bullets of Constructing Reviewer Prompts from `- The final whole-branch review has two seats` (`:340`) to the end of the section (`:355`); then under `## Plan completion`, Plan Completion's three paragraphs from `After the final whole-branch review resolves` (`:258`) to `…destroys the protocol's input.` (`:280`) |
 | `references/resuming.md` | `# Resuming a plan` / `Read this after a /clear, a relaunch or a compaction, before any dispatch.` | Durable Progress's two bullets `- The workspace is per plan…` and `- **On resume after a checkpoint, reconcile before dispatching.**…` (`:408-417`) |
 | `references/file-handoffs.md` | `# File handoffs` / `Read this before your first dispatch: which files carry briefs, reports and diffs, and the BASE rule for the review package.` | File Handoffs body (`:357-394`), without the heading |
 
@@ -203,9 +204,10 @@ when you stop to adjudicate.
 - Under `## Plan Completion`, in place of `:258-280` (the roadmap-stage paragraph `:282-294` stays, unchanged):
 
 ```markdown
-After the final whole-branch review resolves, read
-[references/final-review.md](references/final-review.md) and run what it says:
-the plan-completion protocol first, then the workspace delete.
+When the last task's review resolves, read
+[references/final-review.md](references/final-review.md) before you dispatch the
+final whole-branch review. It holds the review's two seats, then the
+plan-completion protocol and the workspace delete, in that order.
 ```
 
 - In Constructing Reviewer Prompts, in place of `:323-355`:
@@ -222,7 +224,7 @@ Hand artifacts to subagents as files, never pasted into the prompt. Before your
 first dispatch, read [references/file-handoffs.md](references/file-handoffs.md).
 ```
 
-- In Durable Progress, in place of `:408-417` (the first bullet, `- At skill start, run this skill's …`, stays):
+- In Durable Progress, delete `:425-431` (the batched-ledger bullet) with no pointer: the batching pointer covers it. Then, in place of `:408-417` (the first bullet, `- At skill start, run this skill's …`, stays):
 
 ```markdown
 - Resuming after a `/clear`, a relaunch or a compaction: read
@@ -260,7 +262,7 @@ uv run python build/check_snippets.py skills/
 uv run --with pyyaml python build/check_conformance.py
 ```
 
-Expected: the survival check prints only lines you changed as pointer fixes (list each in the report); body chars about 18,530 and file bytes about 19,380 (the planner's simulation), and file bytes ≤ 19,450 so Task 3's roughly 430 bytes of ruling text fit under 20,000; the snippet and conformance checks pass. If the file is over 19,450 bytes, shorten pointer wording, not moved text, and report it.
+Expected: the survival check prints only lines you changed as pointer fixes (list each in the report); body chars about 18,100 and file bytes about 18,950 (the planner's simulation), and file bytes ≤ 19,100 so Task 3's roughly 620 bytes of ruling text fit under 20,000 with room for one tightening round; the snippet and conformance checks pass. If the file is over 19,100 bytes, shorten pointer wording, not moved text, and report it.
 
 - [ ] **Step 7: Add the NOTICE entry**
 
@@ -549,12 +551,23 @@ In `SKILL.md` Red Flags, under `**If reviewer finds issues:**`, insert after the
 
 ```markdown
 - Exception: a fix confined to one file that changes no behavior (wording, a
-  typo, a wrong name or path in prose or docs) you may make yourself; the scoped
-  re-review still follows. A fix that changes what code does, even by one
-  character, goes to a fix subagent.
+  typo, a wrong name or path in prose or docs) you may make yourself. Commit it,
+  append to the implementer's report file what you changed and that it changes
+  no behavior, so no test covers it, then dispatch the scoped re-review as
+  usual. A fix that changes what code does, even by one character, goes to a
+  fix subagent.
 ```
 
-In `references/fix-loop.md`, insert the same four lines as the first bullet under `## Fix dispatches`. The two copies must read the same; the Red Flags copy is the one that survives compaction.
+The appended note stands in for the covering-test evidence that the fix-dispatch bullet in `fix-loop.md` asks for: `re-review-prompt.md` reads the amended diff and the report file, so the hand fix needs a commit (for the review package) and the note (for the report).
+
+In the same Red Flags, under `**If subagent fails task:**`, replace `- Don't try to fix manually (context pollution)` with:
+
+```markdown
+- Don't try to fix manually (context pollution); the one exception is the
+  trivial reviewer finding above
+```
+
+In `references/fix-loop.md`, insert the same six exception lines as the first bullet under `## Fix dispatches`. The two copies must read the same; the Red Flags copy is the one that survives compaction.
 
 - [ ] **Step 2: Ruling (3) — the recovery line (skip if Task 2's C3 stop rule fired)**
 
@@ -606,7 +619,18 @@ git add skills/subagent-driven-development
 git commit -m "feat(sdd): trivial-fix exception, post-compaction recovery line, Fable round-5 rung"
 ```
 
-Expected: body chars ≤ 19,500 and file bytes < 20,000; both checks pass. Record the SHA as `T3_SHA`.
+Expected: body chars ≤ 19,500 and file bytes < 20,000 (about 19,570 by the planner's simulation); both checks pass. Record the SHA as `T3_SHA`.
+
+**Fallback move** if the file is at 20,000 bytes or more, now or after a tightening commit in Step 6: merge the `## Example Workflow` and `## Advantages` sections of `SKILL.md` into one section, keeping both links, and run the size check again:
+
+```markdown
+## Example Workflow and Advantages
+
+A worked pass through the loop: [references/example-workflow.md](references/example-workflow.md).
+What this buys and costs against manual execution: [references/advantages.md](references/advantages.md).
+```
+
+If it still fails, stop and ask the owner (Global Constraints, owner stops).
 
 - [ ] **Step 5: Run the treatment reps (20 reps, or 15 if C3 was dropped)**
 
@@ -624,7 +648,7 @@ Leave out C3 from both commands if its stop rule fired.
 
 - [ ] **Step 6: Read, record, and tighten if needed**
 
-Read every rep with `show_reps.py` and record verdicts under `## Results` as in Task 2. For a treatment below its bar: tighten that ruling's wording only, keep the two ruling (2) copies the same, commit, rebuild that case for the new SHA, and rerun 5 reps. At most two rounds per case; then stop and ask the owner with the reps' quoted phrases. C2b below 5/5 is never resolved by loosening its bar.
+Read every rep with `show_reps.py` and record verdicts under `## Results` as in Task 2. For a treatment below its bar: tighten that ruling's wording only, keep the two ruling (2) copies the same, run Step 4's size check (and its fallback move if needed), commit, rebuild that case for the new SHA, and rerun 5 reps. At most two rounds per case; then stop and ask the owner with the reps' quoted phrases. C2b below 5/5 is never resolved by loosening its bar.
 
 Re-run C17 once on the final SHA (5 reps) to confirm the ruling text did not break the fix-loop pointer; its bar is unchanged.
 
