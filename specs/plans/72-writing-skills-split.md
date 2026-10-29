@@ -1,5 +1,7 @@
 # writing-skills split and relative-link lint Implementation Plan
 
+**Status: COMPLETE (2026-10-29)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fit `skills/writing-skills/SKILL.md` inside the compaction window and under 500 lines by moving four parts into three `references/` files behind step pointers, remove the last `compaction-window` exception and the `critical_placement` lint it needed, and add a commit lint that fails on a broken relative Markdown link under `skills/`.
@@ -71,7 +73,7 @@
 - Consumes: nothing.
 - Produces: `check_links.broken_links(root: Path, dirs: list[Path]) -> tuple[list[str], int]` (messages, links checked); `check_links.main(argv: list[str] | None = None) -> int`; the runner check named `check_links`; `test_broken_reference_link_is_refused` in `build/test_commit_lints.py`, whose docstring Task 3 renumbers.
 
-- [ ] **Step 1: Write the failing unit tests**
+- [x] **Step 1: Write the failing unit tests**
 
 Create `build/test_check_links.py`:
 
@@ -150,12 +152,12 @@ def test_main_defaults_to_skills_and_exits_0_when_clean(tmp_path, monkeypatch, c
     assert capsys.readouterr().out == '1 relative link(s) checked, 0 broken\n'
 ```
 
-- [ ] **Step 2: Run them to see them fail**
+- [x] **Step 2: Run them to see them fail**
 
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_links.py; cd ..`
 Expected: collection error, `ModuleNotFoundError: No module named 'check_links'`.
 
-- [ ] **Step 3: Write the lint**
+- [x] **Step 3: Write the lint**
 
 Create `build/check_links.py`:
 
@@ -230,7 +232,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the tests and the lint on the repository**
+- [x] **Step 4: Run the tests and the lint on the repository**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_check_links.py; cd ..
@@ -239,7 +241,7 @@ uv run python build/check_links.py
 
 Expected: `6 passed`; then `206 relative link(s) checked, 0 broken`, exit 0. A different count means `skills/` changed since `cf83203`: report it; any broken link it prints is fixed in this task, with each fix listed in the report.
 
-- [ ] **Step 5: Commit the script**
+- [x] **Step 5: Commit the script**
 
 The clone tests in Step 6 check out the committed HEAD, so the script must be committed before the runner calls it.
 
@@ -248,7 +250,7 @@ git add build/check_links.py build/test_check_links.py
 git commit -m "build: add check_links.py, a relative-link check for skill Markdown"
 ```
 
-- [ ] **Step 6: Write the failing refusal test**
+- [x] **Step 6: Write the failing refusal test**
 
 In `build/test_commit_lints.py`, add `'check_links'` to `CHECKS` (`:29-31`), so it reads:
 
@@ -278,7 +280,7 @@ def test_broken_reference_link_is_refused(clone):
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k 'broken_reference_link or fails_closed'; cd ..`
 Expected: `2 failed`. `test_broken_reference_link_is_refused` fails at `assert result.returncode != 0` (the commit succeeds: no lint checks links yet), and `test_runner_fails_closed_without_uv` fails because the runner's failure line lacks `check_links`. Read each failure and confirm it is one of these two causes.
 
-- [ ] **Step 7: Wire the runner**
+- [x] **Step 7: Wire the runner**
 
 In `build/run_commit_lints.sh`, after `run versions_check uv run python build/versions.py check` (`:29`), add:
 
@@ -288,7 +290,7 @@ run check_links uv run python build/check_links.py
 
 Task 3 moves this line into the slot `critical_placement` leaves, so it ends up eighth.
 
-- [ ] **Step 8: Document it**
+- [x] **Step 8: Document it**
 
 In `CLAUDE.md`, replace lines 77–79
 
@@ -323,7 +325,7 @@ In `build/CLAUDE.md`, after the paragraph that ends `clones and checks the workf
 directory, so a move into `references/` cannot leave a stale link behind.
 ```
 
-- [ ] **Step 9: Run the tests and the lints**
+- [x] **Step 9: Run the tests and the lints**
 
 ```bash
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py test_check_links.py; cd ..
@@ -332,7 +334,7 @@ bash build/run_commit_lints.sh
 
 Expected: both files pass; the runner prints `== check_links`, then `206 relative link(s) checked, 0 broken`, and ends `commit lints passed`.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add build/run_commit_lints.sh build/test_commit_lints.py CLAUDE.md build/CLAUDE.md
@@ -351,7 +353,7 @@ git commit -m "build: run check_links as a commit lint"
 - Consumes: nothing.
 - Produces: `build_prompts.py <sha> <out-dir> [<case> ...]`; `run_reps.sh <prompt-file> <out-dir> <first> <last> <model>`; `show_reps.py <dir> ...`; case keys `W1`, `W2`, `W3`; the results file with every pass rule and bar, committed before the split exists.
 
-- [ ] **Step 1: Copy two kit scripts**
+- [x] **Step 1: Copy two kit scripts**
 
 ```bash
 mkdir -p specs/red-baseline-writing-skills-split/kit
@@ -379,7 +381,7 @@ AIDS = {
 
 Confirm `show_reps.py` refers to no aid by name outside this dict (`grep -n "'dispatch'\|'fix-loop'\|'ledger'" specs/red-baseline-writing-skills-split/kit/show_reps.py` prints nothing).
 
-- [ ] **Step 2: Write the cases**
+- [x] **Step 2: Write the cases**
 
 Create `specs/red-baseline-writing-skills-split/kit/cases.py`:
 
@@ -437,7 +439,7 @@ Partner: Harden the skill against those.
 }
 ```
 
-- [ ] **Step 3: Write the prompt builder**
+- [x] **Step 3: Write the prompt builder**
 
 Create `specs/red-baseline-writing-skills-split/kit/build_prompts.py`:
 
@@ -498,7 +500,7 @@ if __name__ == '__main__':
 Run: `python3 specs/red-baseline-writing-skills-split/kit/build_prompts.py cf83203 /tmp/plan72-dry W1`
 Expected: `wrote 1 prompts to /tmp/plan72-dry`. Read `/tmp/plan72-dry/W1.txt` once end to end: the body is whole (it ends with `It's the same discipline applied to documentation.`) and the conversation sits inside `<session>`. Then `rm -r /tmp/plan72-dry`.
 
-- [ ] **Step 4: Register the bars**
+- [x] **Step 4: Register the bars**
 
 Create `specs/red-baseline-writing-skills-split.md` with this text:
 
@@ -554,7 +556,7 @@ git commit -m "test(writing-skills): register plan 72 micro-test bars and kit"
 - Consumes: `build/check_links.py` and the runner line `run check_links …` (Task 1); `specs/red-baseline-sdd-compaction/kit/check_moved_lines.py <base-sha> <skill-dir>` (plan 71).
 - Produces: the split body at this task's commit, recorded in the ledger as `T3_SHA`; Task 4 builds its `t3` prompts from it. Reference file names exactly as listed above; Task 4 may tighten the SKILL.md pointer texts only.
 
-- [ ] **Step 1: Write the failing frontmatter test**
+- [x] **Step 1: Write the failing frontmatter test**
 
 In `build/test_check_frontmatter.py`, add `import check_frontmatter` after the `import yaml` line, and replace `test_the_body_warning_goes_to_stderr_and_keeps_exit_zero` (`:292-300`) with:
 
@@ -581,7 +583,7 @@ def test_no_skill_body_runs_past_500_lines():
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py -k 'body_warning or past_500'; cd ..`
 Expected: `1 failed, 1 passed`. `test_no_skill_body_runs_past_500_lines` fails on the `WARN …skills/writing-skills/SKILL.md: body is 701 lines…` line.
 
-- [ ] **Step 2: Create the reference files**
+- [x] **Step 2: Create the reference files**
 
 Each file starts with the title line and the when-to-read sentence given here, a blank line, then the moved text verbatim. Confirm each range with `git show cf83203:skills/writing-skills/SKILL.md | sed -n '<a>,<b>p'` before you move it.
 
@@ -635,7 +637,7 @@ Make exactly these six pointer fixes in the moved text, and no other edit:
 
 The `render-graphs.js` commands (`./render-graphs.js ../some-skill`) stay as they are: the script resolves its argument from the working directory, and the new sentence says to run it from the skill's directory.
 
-- [ ] **Step 3: Put the pointers in SKILL.md**
+- [x] **Step 3: Put the pointers in SKILL.md**
 
 Edit `skills/writing-skills/SKILL.md` so that, in order:
 
@@ -685,7 +687,7 @@ symptoms.
 
 - `:578-716` stay.
 
-- [ ] **Step 4: Run the move checks**
+- [x] **Step 4: Run the move checks**
 
 ```bash
 python3 specs/red-baseline-sdd-compaction/kit/check_moved_lines.py cf83203 skills/writing-skills
@@ -700,7 +702,7 @@ Expected:
 - `213 relative link(s) checked, 0 broken`: the four new pointers and the three new `../` links all resolve.
 - The conformance check fails with exactly one finding, `skills/writing-skills/SKILL.md: stale-waiver (skills.progressive-disclosure): exception writing-skills-late-critical-headings … no longer violates it`. That is the waiver Step 5 removes.
 
-- [ ] **Step 5: Remove the exception and retire `critical_placement`**
+- [x] **Step 5: Remove the exception and retire `critical_placement`**
 
 - `build/cc_guide/conformance.toml`: delete the `[[exception]]` block whose `id = 'writing-skills-late-critical-headings'` (`:820-829`) and the blank line after it (`:830`). Keep the comment above it (`:818-819`): it heads the next exception too.
 - `build/test_check_conformance.py`: delete `:1131-1210`, from the comment line `# Each critical span starts at its marker …` through the blank lines after `test_real_skill_late_headings_match_the_acknowledged_set`, so `PERSON_PARAMS = …` follows `test_compaction_window_ignores_headings_when_the_body_fits` after two blank lines. This removes `CRITICAL_SPANS`, `ACKNOWLEDGED_LATE`, `_window_params`, `_late_headings` and the four `test_real_skill_*` tests. Keep `import ast`: `:2278` still uses it.
@@ -715,7 +717,9 @@ grep -rn -E 'critical_placement|ACKNOWLEDGED_LATE|CRITICAL_SPANS|test_real_skill
 
 Expected: no output.
 
-- [ ] **Step 6: Add the NOTICE entry**
+> Deviation: the sweep's `grep -v -E '^\./specs/…'` filter matched nothing in the executing session, because `grep` there is a shell function that drops the `./` prefix. The implementer and both reviewers ran the same sweep with `git grep` and `/usr/bin/grep`. It printed nothing outside the three exempt spec files.
+
+- [x] **Step 6: Add the NOTICE entry**
 
 In `NOTICE`, after the entry that starts `  - Two local behavior changes were also made in plan 71 (owner rulings):` (it ends with the line `    manually".`), add:
 
@@ -733,7 +737,7 @@ In `NOTICE`, after the entry that starts `  - Two local behavior changes were al
     them as ../<file>.
 ```
 
-- [ ] **Step 7: Run every check and the touched suites**
+- [x] **Step 7: Run every check and the touched suites**
 
 ```bash
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py test_check_conformance.py test_commit_lints.py test_check_links.py test_runtime_support.py; cd ..
@@ -746,7 +750,7 @@ uv run python build/cc_guide/cli.py lint
 
 Expected: the five test files pass, `test_no_skill_body_runs_past_500_lines` included; the conformance check passes with no finding for `skills/writing-skills/SKILL.md`; provenance and Tier 1 snippets pass; the runner lists ten checks, `check_links` eighth and no `critical_placement`, and ends `commit lints passed`; `cc_guide/cli.py lint` passes (STALE lines do not fail it; list any it prints in the report).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/writing-skills build/test_check_frontmatter.py build/cc_guide/conformance.toml build/test_check_conformance.py build/run_commit_lints.sh build/test_commit_lints.py CLAUDE.md NOTICE
@@ -768,7 +772,7 @@ Record this commit's short SHA in the ledger as `T3_SHA`.
 - Consumes: `T3_SHA` (Task 3); the kit and the registered bars (Task 2).
 - Produces: verdict tables for every arm; the finding 17 disposition.
 
-- [ ] **Step 1: Build the prompts**
+- [x] **Step 1: Build the prompts**
 
 ```bash
 python3 specs/red-baseline-writing-skills-split/kit/build_prompts.py <T3_SHA> specs/red-baseline-writing-skills-split/t3
@@ -777,7 +781,7 @@ python3 specs/red-baseline-writing-skills-split/kit/build_prompts.py cf83203 spe
 
 Expected: `wrote 3 prompts to …/t3` and `wrote 3 prompts to …/base`. Confirm `t3/MANIFEST.txt` shows `body chars` near 18,003 and `base/MANIFEST.txt` near 29,717.
 
-- [ ] **Step 2: Run the reps (45 reps, worst case $22.50)**
+- [x] **Step 2: Run the reps (45 reps, worst case $22.50)**
 
 Check the spend rule, then run each line with `timeout: 600000` or in the background:
 
@@ -791,13 +795,15 @@ done
 
 Expected per call: five `repN exit=0` lines. On a nonzero exit, read `repN.err`, rerun with the next free rep numbers, and count only five good reps per arm.
 
-- [ ] **Step 3: Read every rep and record verdicts**
+- [x] **Step 3: Read every rep and record verdicts**
 
 Run `uv run python specs/red-baseline-writing-skills-split/kit/show_reps.py specs/red-baseline-writing-skills-split/t3/*/ specs/red-baseline-writing-skills-split/base/*/` and read each full reply. Under `## Results`, add one table per case and model for `t3`: rep, verdict (pass or fail under the registered reading rule), the ACTION line that decides it, and the spend so far. Add one table per case for `base` and for `t3` with the descriptive W1 and W3 outcomes, then two sentences comparing them.
 
 If a `t3` case misses its bar on a model: tighten that case's pointer wording in `SKILL.md` (the pointer only, never moved text), rerun Task 3 Step 4's size and link commands, commit with `git commit -m "fix(writing-skills): tighten the <reference> pointer"`, rebuild only that case with `build_prompts.py <new-sha> specs/red-baseline-writing-skills-split/t3-r<N> <case>`, and rerun 5 reps on each model that missed. At most two such rounds per case; if the bar is still not met, stop and ask the owner with the reps' quoted ACTION lines.
 
-- [ ] **Step 4: Update drift finding 17's disposition**
+> Deviation: no `t3` case missed its bar (5/5 on every case and model, $3.39 spent), so no pointer was tightened. The first W1 descriptive table rested on a reading of "names no workflow step" that was added after the reps ran. Fix round 1 (`6fe2f68`, `e152168`) quoted each description in full, gave a literal count and a symptom count side by side, and labelled the second as added later. The results file also gained notes the plan did not ask for: the count of passes that rest on the no-edit clause, the leak of user-level context into the reps, and the D9 confounding.
+
+- [x] **Step 4: Update drift finding 17's disposition**
 
 In `specs/superpowers-drift-spec.md`, under `## Suggested disposition`, replace the bullet that starts `- **Fix directly, no spec, after the SDD plan:** finding 17's writing-skills` (through `…stays a spec candidate.`) with:
 
@@ -815,12 +821,14 @@ In `specs/superpowers-drift-spec.md`, under `## Suggested disposition`, replace 
 
 In the same file's Scope table, the "Adoption baselines" row ends with `` `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted``. Append to it: ``, and for its writing-skills file map, which plan 72 adopted``.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/red-baseline-writing-skills-split.md specs/red-baseline-writing-skills-split specs/superpowers-drift-spec.md
 git commit -m "test(writing-skills): plan 72 micro-test results and finding 17 disposition"
 ```
+
+> Deviation: three more commits followed the final review. `b3b608a` and `67764f0` made three wording fixes: a warning comment above the `compaction-window` check, a confounding note in the results file, and a slip in the drift spec. `cba949d` dropped "body length" and `skills.overview` from register entry `writing-skills-guide-gaps`, on the owner's decision of 2026-10-29. The plan called for none of them.
 
 ---
 
