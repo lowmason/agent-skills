@@ -20,7 +20,7 @@
 - **F1 cap: about $80**, summed over both sessions of every F1 rep. Before each F1 rep: if the F1 total plus the highest F1 rep cost so far (or $31, the two session caps, before any rep) exceeds $80, stop and ask the owner.
 - **Isolated kit form (micro-tests):** `claude -p` with `--tools ""`, `--strict-mcp-config` and `--setting-sources ""`; `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`; each rep from a new, empty directory under `/tmp`, outside every repository. Pilot `isolation_probe.txt` on the installed Claude Code version before the first rep (Task 1).
 - **Micro-test rules** (writing-skills, "Micro-Test Wording Before Full Scenarios"): 5 reps per arm; every verdict read by hand from the full reply; bars and reading rules are those registered in Task 1, committed before any rep runs; the aids in `show_reps.py` are not verdicts. If a rep cannot be scored under its registered rule, report BLOCKED with the rep's quoted lines; never write a new reading standard after seeing reps. A case passes when the new arm meets its bar. When the control also meets it, the record says the case shows nothing about the wording (as plan 70's case T6 did).
-- **Micro-test hygiene:** a `run_reps.sh` call takes 1–5 minutes, so run it with `timeout: 600000` or in the background. The kit refuses to overwrite a `rep<N>.json`, so resume a killed call with the next free rep numbers, never by deleting outputs. A VOID rep (the `show_reps.py` header says VOID) is rerun with the next free rep number and does not count.
+- **Micro-test hygiene:** a `run_reps.sh` call takes 1–5 minutes. Run each call as its own Bash command with `timeout: 600000` (one line of a step's command list per command); never chain or loop several calls in one command, which would pass the 10-minute Bash limit. The kit refuses to overwrite a `rep<N>.json`, so resume a killed call with the next free rep numbers, never by deleting outputs. A VOID rep (the `show_reps.py` header says VOID) is rerun with the next free rep number and does not count.
 - **Channel 3:** nothing a rep can read may hold the answer. Before Task 8's and Task 9's first reps, run the fixture-term grep in Task 8 Step 1. The new skill and agent text must not reuse a fixture's domain as an example.
 - **The shared reviewer block:** one block, identical in the four reviewer files after the template indentation is removed. It is plain Markdown with no code fences of its own. Wording rounds may change it only within spec section 1's content rules, and every change goes to all four copies in the same commit.
 - **Size:** `skills/writing-plans/SKILL.md`'s body (the text after the frontmatter's closing `---`) stays within the compaction window, 20,000 characters; `build/check_conformance.py` enforces it. If a change pushes it over, apply spec section 4's fallback (Task 7 Step 6). `skills/subagent-driven-development/SKILL.md`'s body has about 1,080 characters of room; its one edit here adds 2.
@@ -32,6 +32,7 @@
 - **Self-modifying plan:** this plan edits the reviewers, both executors and writing-plans, which run its own execution. Execute in a worktree. The installed skills and agents (`~/.claude/skills`, `~/.claude/agents`) are the main checkout's copies; that checkout must not change during the run, so this plan's per-task reviews run under the old contract, with its Minor tier. Run the SDD scripts as `cd <worktree> && ~/Projects/agent-skills/skills/subagent-driven-development/scripts/<name> …`, so they resolve the worktree's repo and HEAD. For this plan's own final whole-branch review, main's `final-review.md` does not yet pass Review Focus: put this plan's path, the spec path and this plan's `## Review Focus` section, word for word, into the code-reviewer's `[PLAN_OR_REQUIREMENTS]` by hand.
 - **One execution at a time:** no execution of this plan starts while another plan's execution session runs in this repository (owner rule, 2026-10-28).
 - **Owner stops under subagent-driven-development:** an implementer cannot ask the owner. Where a step says "stop and ask the owner", the implementer reports BLOCKED with the evidence and the running spend. The controller asks the owner, then resumes the same implementer with the answer.
+- **Controller-run step:** Task 11 Step 1 runs in the controller's own session, because each F1 rep runs in the background for up to about 90 minutes and only that session is woken when it ends.
 - **The drift spec:** `specs/superpowers-drift-spec.md` changes only in the completion step ("Plan completion additions"), from the file as it stands on `main` at that time.
 - **Python style:** single quotes, f-strings, 4-space indentation, stdlib only in `build/check_reviewer_block.py` and the kit scripts.
 - **Commit messages** end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` (the session's trailer, also for subagent-authored commits).
@@ -1090,16 +1091,25 @@ Expected: `rep1 exit=0`, a header with no VOID, and a reply holding a `<plan` bl
 
 - [ ] **Step 3: Run the reps (79 reps, about $15)**
 
-Check the spend rule, then run each batch with `timeout: 600000` or in the background:
+Check the spend rule before each line, then run each line as its own Bash command with `timeout: 600000` (with `K=specs/red-baseline-reviewer-planning-contract` set in it):
 
 ```bash
-for arm in control base; do
-  for c in R1-task R2-task R4-task; do bash $K/kit/run_reps.sh $K/$arm/$c.txt $K/$arm/$c 1 5 claude-sonnet-5-5; done
-  for c in R1-final R2-final R4-final; do bash $K/kit/run_reps.sh $K/$arm/$c.txt $K/$arm/$c 1 5 claude-opus-5-5; done
-done
+bash $K/kit/run_reps.sh $K/control/R1-task.txt $K/control/R1-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/control/R2-task.txt $K/control/R2-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/control/R4-task.txt $K/control/R4-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/control/R1-final.txt $K/control/R1-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/control/R2-final.txt $K/control/R2-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/control/R4-final.txt $K/control/R4-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/base/R1-task.txt $K/base/R1-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/base/R2-task.txt $K/base/R2-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/base/R4-task.txt $K/base/R4-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/base/R1-final.txt $K/base/R1-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/base/R2-final.txt $K/base/R2-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/base/R4-final.txt $K/base/R4-final 1 5 claude-opus-5-5
 bash $K/kit/run_reps.sh $K/base/P12.txt $K/base/P12 2 5 claude-opus-5-5 1.50
 bash $K/kit/run_reps.sh $K/base/P3.txt $K/base/P3 1 5 claude-opus-5-5 1.50
-for c in P12 P3; do bash $K/kit/run_reps.sh $K/control/$c.txt $K/control/$c 1 5 claude-opus-5-5 1.50; done
+bash $K/kit/run_reps.sh $K/control/P12.txt $K/control/P12 1 5 claude-opus-5-5 1.50
+bash $K/kit/run_reps.sh $K/control/P3.txt $K/control/P3 1 5 claude-opus-5-5 1.50
 ```
 
 Expected per call: one `repN exit=0` line per rep. On a nonzero exit or a VOID header, read `repN.err` and rerun with the next free rep number, until each arm has 5 scored reps.
@@ -2097,12 +2107,17 @@ Expected: `wrote 8 prompts to …/green`. Check `$K/green/MANIFEST.txt`: the R l
 
 - [ ] **Step 3: Run the reps (40 reps, about $8)**
 
-Check the spend rule, then:
+Check the spend rule before each line, then run each line as its own Bash command with `timeout: 600000`:
 
 ```bash
-for c in R1-task R2-task R4-task; do bash $K/kit/run_reps.sh $K/green/$c.txt $K/green/$c 1 5 claude-sonnet-5-5; done
-for c in R1-final R2-final R4-final; do bash $K/kit/run_reps.sh $K/green/$c.txt $K/green/$c 1 5 claude-opus-5-5; done
-for c in P12 P3; do bash $K/kit/run_reps.sh $K/green/$c.txt $K/green/$c 1 5 claude-opus-5-5 1.50; done
+bash $K/kit/run_reps.sh $K/green/R1-task.txt $K/green/R1-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/green/R2-task.txt $K/green/R2-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/green/R4-task.txt $K/green/R4-task 1 5 claude-sonnet-5-5
+bash $K/kit/run_reps.sh $K/green/R1-final.txt $K/green/R1-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/green/R2-final.txt $K/green/R2-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/green/R4-final.txt $K/green/R4-final 1 5 claude-opus-5-5
+bash $K/kit/run_reps.sh $K/green/P12.txt $K/green/P12 1 5 claude-opus-5-5 1.50
+bash $K/kit/run_reps.sh $K/green/P3.txt $K/green/P3 1 5 claude-opus-5-5 1.50
 ```
 
 Rerun VOID reps with the next free numbers until each case has 5 scored reps.
@@ -2148,13 +2163,14 @@ Update `GREEN_SHA` in the ledger to the last commit that changed skill or agent 
 
 - [ ] **Step 1: Build and run (15 reps, about $5)**
 
-Run Task 8 Step 1's grep again (expect no output). Check the spend rule, then:
+Run Task 8 Step 1's grep again (expect no output). Check the spend rule before each `run_reps.sh` line, and run each line below as its own Bash command (`timeout: 600000` for the reps):
 
 ```bash
 K=specs/red-baseline-reviewer-planning-contract
 uv run python $K/kit/build_prompts.py <GREEN_SHA> $K/pressure X1-task X2 X3
 bash $K/kit/run_reps.sh $K/pressure/X1-task.txt $K/pressure/X1-task 1 5 claude-sonnet-5-5
-for c in X2 X3; do bash $K/kit/run_reps.sh $K/pressure/$c.txt $K/pressure/$c 1 5 claude-opus-5-5 1.50; done
+bash $K/kit/run_reps.sh $K/pressure/X2.txt $K/pressure/X2 1 5 claude-opus-5-5 1.50
+bash $K/kit/run_reps.sh $K/pressure/X3.txt $K/pressure/X3 1 5 claude-opus-5-5 1.50
 ```
 
 - [ ] **Step 2: Read and record**
@@ -2190,7 +2206,7 @@ Record the printed SHA as `F1_SHA`, and the final step-recipe commit list, in th
 
 **Interfaces:**
 - Consumes: `F1_SHA` and the step-recipe commit list (Task 9).
-- Produces: `make_scratch.sh <writing-plans-dir> <sha> <dest>`; `run_f1.sh <scratch> <out-dir>`; `score_f1.py <scratch> <out-dir> <hidden-test-file>` (prints and writes `score.json` with `handled`, `ratio`, `cost`, `audit_hits`); the two arms' writing-plans directories and their `SKILL.md` sha256 sums.
+- Produces: `make_scratch.sh <writing-plans-dir> <sha> <dest>`; `run_f1.sh <scratch> <out-dir>`; `score_f1.py <scratch> <out-dir> <hidden-test-file>` (prints and writes `score.json` with `handled`, `ratio`, `cost`, `execute_models`, `audit_error`, `audit_hits`); `sessions_dir(scratch: Path) -> Path` in `score_f1.py`; the two arms' writing-plans directories and their `SKILL.md` sha256 sums.
 
 - [ ] **Step 1: The fixture**
 
@@ -2400,8 +2416,11 @@ Create `specs/red-baseline-reviewer-planning-contract/f1/score_f1.py`:
 Usage, from the repository root:
   uv run --with pytest python <f1>/score_f1.py <scratch> <out-dir> <hidden-test-file>
 Prints one JSON object and writes it to <out-dir>/score.json. `handled` maps each hidden test to
-true when it passed. `audit_hits` lists every transcript line that names a path outside the
-scratch repository that a run must not touch; read each one by hand under the VOID rule.
+true when it passed. `cost` sums both sessions' total_cost_usd, and `execute_models` lists the
+models the execution session's result record names. `audit_hits` lists every transcript line
+that names a path outside the scratch repository that a run must not touch; read each one by
+hand under the VOID rule. `audit_error` is set when the transcripts the audit needs are missing,
+so an empty `audit_hits` never passes for want of files.
 '''
 import json
 import os
@@ -2425,8 +2444,9 @@ def hidden_results(scratch: Path, hidden: Path) -> dict[str, bool]:
     return {name: bool(re.search(rf'^PASSED \S*::{name}\b', run.stdout, re.M)) for name in TESTS}
 
 
-def cost(out: Path) -> float:
-    total = 0.0
+def results(out: Path) -> dict[str, dict]:
+    '''The last `type: result` record of each session's stream, by stream name.'''
+    found = {}
     for name in ('plan.jsonl', 'execute.jsonl'):
         path = out / name
         for line in path.read_text().splitlines() if path.is_file() else []:
@@ -2435,30 +2455,45 @@ def cost(out: Path) -> float:
             except json.JSONDecodeError:
                 continue
             if record.get('type') == 'result':
-                total += float(record.get('total_cost_usd') or 0)
-    return total
+                found[name] = record
+    return found
 
 
-def audit(scratch: Path, out: Path) -> list[str]:
-    encoded = re.sub(r'[^A-Za-z0-9]', '-', os.path.realpath(scratch))
-    files = [out / 'plan.jsonl', out / 'execute.jsonl', *(HOME / '.claude' / 'projects' / encoded).rglob('*.jsonl')]
+def sessions_dir(scratch: Path) -> Path:
+    '''Where Claude Code persists the sessions run from <scratch>.'''
+    return HOME / '.claude' / 'projects' / re.sub(r'[^A-Za-z0-9]', '-', os.path.realpath(scratch))
+
+
+def audit(scratch: Path, out: Path) -> tuple[list[str], str | None]:
+    '''Forbidden-path hits in every stream and transcript, and an error when the transcripts are missing.'''
+    sessions = sessions_dir(scratch)
+    transcripts = sorted(sessions.rglob('*.jsonl')) if sessions.is_dir() else []
+    error = None
+    if not transcripts:
+        error = f'no session transcripts under {sessions}: the audit cannot run'
+    elif not any('subagents' in p.parts for p in transcripts):
+        error = f'no subagent transcripts under {sessions}: the audit cannot see the subagents'
     hits = []
-    for path in files:
+    for path in [out / 'plan.jsonl', out / 'execute.jsonl', *transcripts]:
         if not path.is_file():
             continue
         for n, line in enumerate(path.read_text().splitlines(), 1):
             for forbidden in FORBIDDEN:
                 if forbidden in line:
                     hits.append(f'{path}:{n}: {forbidden}')
-    return hits
+    return hits, error
 
 
 def main() -> None:
     scratch, out, hidden = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve()
     spec = (scratch / 'specs' / 'expense-tally.md').read_text()
     plan = (out / 'plan.md').read_text()
+    records = results(out)
+    hits, error = audit(scratch, out)
     result = {'handled': hidden_results(scratch, hidden), 'ratio': round(len(plan) / len(spec), 2),
-              'cost': round(cost(out), 2), 'audit_hits': audit(scratch, out)}
+              'cost': round(sum(float(r.get('total_cost_usd') or 0) for r in records.values()), 2),
+              'execute_models': sorted((records.get('execute.jsonl') or {}).get('modelUsage') or {}),
+              'audit_error': error, 'audit_hits': hits}
     (out / 'score.json').write_text(json.dumps(result, indent=1) + '\n')
     print(json.dumps(result, indent=1))
 
@@ -2496,9 +2531,14 @@ recs = [json.loads(l) for l in open('/tmp/plan73-f1-probe.jsonl') if l.strip()]
 init = next(r for r in recs if r.get('subtype') == 'init')
 print('agents', init.get('agents')); print('skills', init.get('skills')); print('style', init.get('output_style'), init.get('claude_code_version'))
 print(next(r for r in recs if r.get('type') == 'result').get('result'))"
+uv run python -c "
+import sys; sys.path.insert(0, '$F')
+from pathlib import Path
+from score_f1 import sessions_dir
+d = sessions_dir(Path('$D')); print(d, d.is_dir(), len(list(d.rglob('*.jsonl'))) if d.is_dir() else 0)"
 ```
 
-Expected: `agents` lists `code-reviewer` and `task-reviewer` (and built-in agents) but not `docs-writer`, `debugger` or `security-auditor`; `skills` lists `writing-plans` and `subagent-driven-development` but not `llm-wiki` or `bayesian-workflow`; style `default`; the reply says YES on line 1 quoting only `Expense tally scratch project`, NO on lines 2–6, and on line 7 that the read was refused. If any of these fails, stop and ask the owner with the quoted output: user-level skills, agents or context reach the tool form, and F1 cannot run as designed. Record the version and the answers for the results file. Delete the probe scratch repository with `rm -r "$D"` (it is under `/tmp`).
+Expected from the last command: the directory exists (`True`) and holds at least one `.jsonl`, so `score_f1.py`'s audit finds the persisted sessions. Expected: `agents` lists `code-reviewer` and `task-reviewer` (and built-in agents) but not `docs-writer`, `debugger` or `security-auditor`; `skills` lists `writing-plans` and `subagent-driven-development` but not `llm-wiki` or `bayesian-workflow`; style `default`; the reply says YES on line 1 quoting only `Expense tally scratch project`, NO on lines 2–6, and on line 7 that the read was refused. If any of these fails, stop and ask the owner with the quoted output: user-level skills, agents or context reach the tool form, and F1 cannot run as designed. Record the version and the answers for the results file. Delete the probe scratch repository with `rm -r "$D"` (it is under `/tmp`).
 
 - [ ] **Step 8: Commit the F1 kit (not the hidden tests)**
 
@@ -2527,9 +2567,11 @@ Confirm `git ls-files $F` lists no `test_hidden.py`.
 - Consumes: Task 10's scripts, arms, prompts and hidden tests; `F1_SHA`.
 - Produces: per-arm handled counts and median plan-to-spec ratios; the gate's outcome.
 
-- [ ] **Step 1: Run the four reps, one at a time**
+- [ ] **Step 1: Run the four reps, one at a time (controller-run)**
 
-Order: arm 1 rep 1, arm 2 rep 1, arm 1 rep 2, arm 2 rep 2. Before each, check the F1 cap rule. Each rep takes up to about 90 minutes: run it in the background and wait for its notification. For arm `<a>` and rep `<r>`:
+The controller runs this step in its own session, not an implementer: a rep takes up to about 90 minutes, so it runs in the background (`run_in_background`), and only the controller's session is woken by its notification. A subagent cannot wait across turns. After each rep the controller may dispatch the scoring and the reading to the implementer.
+
+Order: arm 1 rep 1, arm 2 rep 1, arm 1 rep 2, arm 2 rep 2. Before each, check the F1 cap rule. For arm `<a>` and rep `<r>`:
 
 ```bash
 F=specs/red-baseline-reviewer-planning-contract/f1
@@ -2539,7 +2581,9 @@ bash $F/run_f1.sh "$S" $F/runs/arm<a>-rep<r>
 uv run --with pytest python $F/score_f1.py "$S" $F/runs/arm<a>-rep<r> ~/.cache/agent-skills/scratch/plan73-f1/hidden/test_hidden.py
 ```
 
-Expected: `plan exit=0`, `execute exit=0`, and a score JSON. Keep each scratch repository until the rep is scored and its audit read.
+Expected: `plan exit=0`, `execute exit=0`, and a score JSON with `audit_error` null. Keep each scratch repository until the rep is scored and its audit read. A non-null `audit_error` means the audit could not run: do not score the rep; stop and ask the owner.
+
+**Cost check, after arm 1 rep 1 only:** `execute_models` must name a Sonnet model and an Opus model (the Sonnet controller and implementers, and the Opus final code-reviewer), which shows the session's `total_cost_usd`, and so the cap rules, include subagent spend. If it names only one model, stop and ask the owner before rep 2: the F1 cost figures are incomplete.
 
 **VOID rule (D23):** read every `audit_hits` line. A rep is VOID when any tool call's input, or any tool result's content, reads or runs something under one of the four forbidden paths. A hit in a refusal message that only quotes a refused path is not a VOID. A VOID rep, or one that stalled (the execution session ended before the final review ran: no final code-reviewer dispatch in `execute.jsonl`), is rerun once with a fresh scratch repository; a second VOID or stall on the same arm stops the run: ask the owner.
 
