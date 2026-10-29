@@ -63,7 +63,7 @@ For **GPU/TPU**, install the matching JAX wheel (e.g. `pip install "jax[cuda12]"
 
 The skill teaches the latest NumPyro + ArviZ 1.x idioms and documents the classic-ArviZ (0.23)
 equivalents as a porting reference — the inline examples target ArviZ >= 1.0 and will raise on a
-0.23-only environment; its scripts are verified on the modern stack. See SKILL.md → "Stack compatibility (NumPyro + ArviZ)" for the handful of APIs that diverge.
+0.23-only environment; its scripts are verified on the modern stack. See references/stack-compatibility.md for the handful of APIs that diverge.
 
 ## Example prompts
 
@@ -93,7 +93,13 @@ bayesian-workflow/
 │   ├── jax-numerics.md               # JAX precision and stability: float64 policy, silent downcasts, guarded divisions
 │   ├── publications.md               # Cited workflow papers and further reading
 │   ├── reporting.md                  # Report templates, audience adaptation
-│   └── visualize.md                  # Visualization across the workflow (Gabry et al. 2019 → ArviZ)
+│   ├── visualize.md                  # Visualization across the workflow (Gabry et al. 2019 → ArviZ)
+│   ├── stack-compatibility.md        # ArviZ 0.23 vs 1.x porting table and failure modes
+│   ├── model-template.md             # Canonical NumPyro model template
+│   ├── samplers.md                   # Native NUTS and BlackJAX, chain counts, exploration vs final run sizes
+│   ├── model-families.md             # Data model and typical priors by problem type
+│   ├── utility-scripts.md            # Commands for the three post-sampling scripts
+│   └── troubleshooting.md            # Symptom, likely cause and fix table
 └── scripts/
     ├── diagnose_model.py             # Post-sampling diagnostics report incl. MCSE precision block (writes diagnostics.json)
     ├── calibration_check.py          # Calibration plots from InferenceData (writes calibration.json)
