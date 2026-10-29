@@ -74,3 +74,216 @@ that misses its bar gets at most two wording rounds, then the owner decides.
 | X3 | the partner asks for a third of the length and no pasted paragraphs | no reworded version of either P3 text appears; each text is either word for word in the plan or named for the implementer to copy word for word from the spec | ≥ 4/5 |
 
 ## Results
+
+### RED: control and base
+
+Run 2026-10-29 on Claude Code 2.1.312. 80 reps, 5 per case and arm; base P12 rep 1 was the pilot.
+No rep was VOID, none wrote a `.err` file, and none was rerun. The running spend under each table
+is `measure.py spend` after that batch. Batches ran in this order: the base P12 pilot, then
+control R1-task, R2-task, R4-task, R1-final, R2-final and R4-final, then the same six for base, then
+base P12 reps 2-5, base P3, control P12 and control P3. "Declined to judge" is "no" in all 40
+R1 and R2 reps, because no reply has a heading or list of that name.
+
+#### R1-task
+
+control (running spend $0.42): crash graded 0/5.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | not graded | under "Minor observations (non-blocking)": "`read_text()` uses the platform default encoding, so a non-UTF-8 log would raise." |
+| 2 | not graded | under "Minor observations (non-blocking)": "A non-UTF-8 log would raise `UnicodeDecodeError`." |
+| 3 | not graded | under "not blockers unless the spec says otherwise": "A log file with undecodable bytes would raise." |
+| 4 | not graded | under "Minor observations (non-blocking, not required by the brief)": "a non-UTF-8 log could raise." |
+| 5 | not graded | under "not defects in the brief's terms": "a non-UTF-8 log could raise `UnicodeDecodeError`." |
+
+base (running spend $1.21): crash graded 0/5. Reps 1-4 assess "Approved", and rep 5 "Needs fixes" (for the spec it could not see).
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | Minor | "`read_text()` ... raises `UnicodeDecodeError` on a non-UTF-8 log, which would abort the whole summary." |
+| 2 | Minor | "`read_text()` uses the locale encoding and raises `UnicodeDecodeError` on a log with stray bytes." |
+| 3 | Minor | "A non-UTF-8 log raises `UnicodeDecodeError` and aborts the whole summary." |
+| 4 | Minor | "A log with non-UTF-8 bytes would raise `UnicodeDecodeError` and abort the whole summary." |
+| 5 | Minor | "a non-UTF-8 byte in a log raises `UnicodeDecodeError` and aborts the whole summary." |
+
+#### R1-final
+
+control (running spend $0.79): crash graded 5/5.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | blocking | under "Blocking": "**1. A file rotated mid-run crashes the job**" |
+| 2 | blocking | under "Blocking": "**A file rotated mid-run crashes the job**" |
+| 3 | blocking | under "Blocking": "**Rotation mid-run crashes the job**" |
+| 4 | blocking | under "Blocking": "**A file rotated mid-run crashes the job**" |
+| 5 | blocking | under "Blocking issues": "**A file removed between glob and read crashes the run**" |
+
+base (running spend $1.72): crash graded 5/5.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | Critical | "**`logsum.py:7-8`: a file that disappears between `glob` and `read_text` crashes the whole run.**" |
+| 2 | Critical | "**1. A log rotated mid-run crashes the nightly job.**" |
+| 3 | Critical | "**1. A log rotated mid-run crashes the nightly job.**" |
+| 4 | Critical | "**`logsum.py:7-8`: Rotation race crashes the nightly job.**" |
+| 5 | Critical | "**1. Log rotation during the run crashes the whole job**" |
+
+#### R2-task
+
+control (running spend $0.50): bug reported 5/5, bug with no polish point 0/5.
+
+| Rep | Verdict | Deciding line (a polish point) |
+|---|---|---|
+| 1 | fail | "**Test name.** `test_1` says nothing about what it checks." |
+| 2 | fail | "`test_1` is not a descriptive name." |
+| 3 | fail | "**`page_of` is more convoluted than needed.** `items[start:end]` does the same job" |
+| 4 | fail | "`page_of` can be simplified to `items[start:start + per_page]`" |
+| 5 | fail | "**`page_of` is needlessly complicated.** `items[start:end]` does the same thing" |
+
+base (running spend $1.32): bug reported 5/5 (Important in rep 1, Critical in reps 2-5), bug with no polish point 0/5.
+
+| Rep | Verdict | Deciding line (a polish point, all under "Minor") |
+|---|---|---|
+| 1 | fail | "`test_1` is not descriptive." |
+| 2 | fail | "`test_1` is not a descriptive name." |
+| 3 | fail | "The test name `test_1` says nothing." |
+| 4 | fail | "the name `test_1` is non-descriptive." |
+| 5 | fail | "`test_1` is a non-descriptive name" |
+
+#### R2-final
+
+control (running spend $0.95): bug reported 5/5, bug with no polish point 0/5.
+
+| Rep | Verdict | Deciding line (a polish point) |
+|---|---|---|
+| 1 | fail | "**`test_1` is a poor name.**" |
+| 2 | fail | "**5. Style.** `items[start:end]` is the idiomatic way to write `page_of`." |
+| 3 | fail | "**`page_of` could be simpler:** `return items[start:start + per_page]`" |
+| 4 | fail | "**5. Rename `test_1`**" |
+| 5 | fail | "**4. Minor style.** `page_of` could simply be `return items[start:end]`" |
+
+base (running spend $1.97): bug reported 5/5 (Critical), bug with no polish point 0/5.
+
+| Rep | Verdict | Deciding line (a polish point, all under "Minor") |
+|---|---|---|
+| 1 | fail | "**6. No docstrings.**" (also the slice and `test_1`) |
+| 2 | fail | "`test_1` is not a descriptive name." |
+| 3 | fail | "`test_1` is not descriptive." |
+| 4 | fail | "The name `test_1` describes nothing." |
+| 5 | fail | "**6. The test name `test_1` says nothing about what it checks.**" |
+
+R2 note: remarks that fit no registered category do not change a verdict. All 20 R2 reps flag
+`page < 1` in `page_of`, most flag `per_page <= 0`, and all ask for more test cases. 18 of the 20 base
+R2 and R4 reps also flag a SHA mismatch: the dispatch's head `9b8e4d0` is not the diff's commit.
+That is a kit artifact, because `TASK_SHAS` is shared by every case. The control dispatch names
+no SHA, so no control rep flags it.
+
+#### R4-task
+
+control (running spend $0.58): defect graded 5/5 (rep 1 "Needed before approval", reps 2-5 "Must fix"), defect with no style point 0/5.
+
+| Rep | Verdict | Deciding line (a style point) |
+|---|---|---|
+| 1 | fail | "Step 3 is a long passive sentence" |
+| 2 | fail | under "Should fix": "Step 3 is a long passive sentence" |
+| 3 | fail | under "Should fix": "Step 3 is a long passive sentence" |
+| 4 | fail | under "Should fix": "Step 3 is a long, passive sentence" |
+| 5 | fail | under "should fix": "This step is passive and padded" |
+
+base (running spend $1.41): defect graded Important 5/5, defect with no style point 0/5. Every rep grades the style point Important under the task's plain-English Global Constraint; it still counts as a style point.
+
+| Rep | Verdict | Deciding line (a style point, under "Important") |
+|---|---|---|
+| 1 | fail | "step 3: this is not plain English. It is one long sentence in the passive voice" |
+| 2 | fail | "`SKILL.md:12`: rewrite in plain English and drop the pipeline claim." |
+| 3 | fail | "step 3: this breaks the plain-English global constraint." |
+| 4 | fail | "The step is a single run-on sentence in passive, stilted phrasing" |
+| 5 | fail | "step 3: it violates the plain-English constraint" |
+
+#### R4-final
+
+control (running spend $1.11): defect graded 5/5 (blocking or must fix in every rep; rep 2 also labels it Important), defect with no style point 0/5.
+
+| Rep | Verdict | Deciding line (a style point) |
+|---|---|---|
+| 1 | fail | "**2. Should fix: step 3 doesn't match the style of the list.**" |
+| 2 | fail | "### 2. Step 3 doesn't match the checklist's style (Minor)" |
+| 3 | fail | "### 2. Style: step 3 doesn't match the surrounding checklist (should fix)" |
+| 4 | fail | "### 2. Should fix: step 3 doesn't match the surrounding style" |
+| 5 | fail | "### 2. Should fix: step 3 is verbose and adds unrequested content" |
+
+base (running spend $2.22): defect graded 5/5 (Critical, or Important in rep 3), defect with no style point 0/5.
+
+| Rep | Verdict | Deciding line (a style point) |
+|---|---|---|
+| 1 | fail | Important: "the step is much wordier than the rest of the list." |
+| 2 | fail | Important: "step 3: content goes beyond the plan, plus a wordy passive voice." |
+| 3 | fail | Minor: "step 3 is much wordier than the steps around it." |
+| 4 | fail | Important: "step 3: the wording doesn't match the checklist style." |
+| 5 | fail | Minor: "step 3 is wordy and written in the passive voice." |
+
+R4 note: the step 3 pipeline claim (unrequested content) and the logic of step 4's recovery
+advice are not wording remarks. They are flagged in many reps and do not change a verdict.
+
+#### P12 (P1 and P2)
+
+control (running spend $4.13): P1 0/5. No plan has a `## Review Focus` section. Every plan puts
+the same-second collision in an open question and plans a collision test in its own task.
+
+| Rep | Verdict | Deciding line | Collision test (descriptive) | Ratio | Fence share |
+|---|---|---|---|---|---|
+| 1 | fail | no `## Review Focus` section | yes, Task 5, "The expected outcome follows the decision." | 5.00 | 0.00 |
+| 2 | fail | no `## Review Focus` section | yes, Task 6, "No file is lost; the file count is unchanged." | 5.51 | 0.00 |
+| 3 | fail | no `## Review Focus` section | yes, Task 5, "no file is lost or overwritten" | 5.22 | 0.00 |
+| 4 | fail | no `## Review Focus` section | yes, step 6, "Every test checks that no file is lost." | 5.18 | 0.00 |
+| 5 | fail | no `## Review Focus` section | yes, Task 5, "byte-for-byte content checks show no photo was lost" | 5.13 | 0.00 |
+
+base (running spend $3.37 after reps 2-5; the pilot rep 1 cost $0.34): P1 0/5. No plan has a
+`## Review Focus` section; the collision sits in a defaults list ("Defaults pending owner review",
+"Defaults settled in this plan (for review)") or in the partner message. Four plans pin an on-disk
+test in Task 3, the task that holds the rename call.
+
+| Rep | Verdict | Deciding line | Collision test (descriptive) | Ratio | Fence share |
+|---|---|---|---|---|---|
+| 1 | fail | no `## Review Focus` section | yes, Task 3 `test_main_lists_no_date_and_name_taken` asserts both photos on disk | 16.58 | 0.64 |
+| 2 | fail | no `## Review Focus` section | yes, Task 2 only: `test_same_timestamp_gets_numbered_suffix` asserts two distinct planned names | 15.56 | 0.61 |
+| 3 | fail | no `## Review Focus` section | yes, Task 3 `test_name_taken_listed_and_not_overwritten` asserts both photos on disk | 16.24 | 0.65 |
+| 4 | fail | no `## Review Focus` section | yes, Task 3 `test_main_lists_undated_and_taken_after_the_run` asserts both photos on disk | 16.79 | 0.64 |
+| 5 | fail | no `## Review Focus` section | yes, Task 3 `test_lists_undated_and_name_taken_photos_after_the_run` asserts both photos on disk | 15.67 | 0.63 |
+
+P2 base medians, the inputs to Task 8's P2 bar: median ratio 16.24 and median fence share 0.64,
+so `green` must reach a median ratio ≤ 9.74 and a median fence share below 0.64. The control
+medians are ratio 5.18 and fence share 0.00.
+
+#### P3
+
+control (running spend $4.33): both texts word for word 5/5. Every plan drops the spec's `> `
+and inserts a plain paragraph.
+
+| Rep | Verdict | Deciding line (`measure.py verbatim`, confirmed by reading) |
+|---|---|---|
+| 1 | pass | text1=yes text2=yes; Task 1 "After" block, Task 2 "After" block and the expected final file |
+| 2 | pass | text1=yes text2=yes; the step 1 and step 2 fenced blocks and the expected file |
+| 3 | pass | text1=yes text2=yes; the step 1 and step 2 fenced blocks and the expected file |
+| 4 | pass | text1=yes text2=yes; the step 1 and step 2 fenced blocks and the expected file |
+| 5 | pass | text1=yes text2=yes; the step 1 and step 2 fenced blocks and the expected file |
+
+base (running spend $3.75): both texts word for word 5/5. Every plan is one task, with `grep -F`
+presence checks as the failing test.
+
+| Rep | Verdict | Deciding line (`measure.py verbatim`, confirmed by reading) |
+|---|---|---|
+| 1 | pass | text1=yes text2=yes; the Step 3 full-file replacement block |
+| 2 | pass | text1=yes text2=yes; the Step 3 and Step 4 fenced blocks and the full file |
+| 3 | pass | text1=yes text2=yes; the Step 3 full-file replacement block |
+| 4 | pass | text1=yes text2=yes; the Step 3 and Step 4 fenced blocks and the full file |
+| 5 | pass | text1=yes text2=yes; the Step 3 full-file replacement block |
+
+#### Summary
+
+On the current text, the task reviewer grades the R1 crash Minor (graded 0/5) while the final
+reviewer grades it Critical (5/5), both reviewers report the R2 bug and the R4 defect together
+with a polish or style point (0/5 on each reviewer), no plan has a Review Focus section (P1 0/5),
+the plans run a median 16.24 times the spec's length with 0.64 of their lines fenced (P2), and
+both P3 texts are word for word (5/5). The control already meets the bar on R1-final (5/5) and P3
+(5/5), so those two show nothing about the wording, and it misses R1-task, R2, R4 and P1.

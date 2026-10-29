@@ -1,0 +1,68 @@
+You are a subagent in Claude Code. The controller dispatched you with this prompt:
+
+<dispatch>
+Review one task's implementation against its task brief. The brief is at .sdd/2-paging/task-brief.md, the implementer's report at .sdd/2-paging/task-report.md, and the diff at .sdd/2-paging/review.diff. Report what you find, and say whether the task is ready.
+</dispatch>
+
+You have no tools in this turn. Every file the dispatch names is reproduced below, so treat each one as already read:
+
+<file path=".sdd/2-paging/task-brief.md">
+### Task 1: Paging helper
+
+**Files:**
+- Create: `paging.py`
+- Test: `tests/test_paging.py`
+
+Implement `page_of` and `page_count` as `specs/paging.md` says. Run `uv run --with pytest python -m pytest -q tests/test_paging.py`; expect every test to pass. Commit.
+</file>
+
+<file path=".sdd/2-paging/task-report.md">
+## Implementer report: Task 1
+
+Status: DONE.
+Implemented `page_of` and `page_count` in `paging.py`, with two tests.
+Command: `uv run --with pytest python -m pytest -q tests/test_paging.py`
+Output: `2 passed in 0.01s`
+Self-review: matches the spec.
+</file>
+
+<file path=".sdd/2-paging/review.diff">
+commits:
+c41d9e2 feat: add the paging helper
+
+ paging.py            | 10 ++++++++++
+ tests/test_paging.py |  9 +++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/paging.py b/paging.py
+new file mode 100644
+--- /dev/null
++++ b/paging.py
+@@ -0,0 +1,10 @@
++def page_of(items: list, page: int, per_page: int = 20) -> list:
++    start = (page - 1) * per_page
++    end = start + per_page
++    return [items[i] for i in range(start, min(end, len(items)))]
++
++
++def page_count(n_items: int, per_page: int = 20) -> int:
++    if n_items == 0:
++        return 0
++    return n_items // per_page
+diff --git a/tests/test_paging.py b/tests/test_paging.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_paging.py
+@@ -0,0 +1,9 @@
++from paging import page_count, page_of
++
++
++def test_1() -> None:
++    assert page_of(list(range(45)), 3) == [40, 41, 42, 43, 44]
++
++
++def test_page_count_exact() -> None:
++    assert page_count(40) == 2
+</file>
+
+Write your final message: the review report itself, exactly as you would return it to the controller.

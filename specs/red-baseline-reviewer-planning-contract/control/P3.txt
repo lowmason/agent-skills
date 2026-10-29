@@ -1,0 +1,52 @@
+You are an AI coding agent working with your human partner in their project, on Claude Code.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: The commit-hygiene spec is approved. Write the implementation plan.
+
+[you, tools] You ran the plan-id check: the next free id is 5. You read the approved spec, `specs/commit-hygiene-format.md`. Its full text:
+
+<file path="specs/commit-hygiene-format.md">
+# commit-hygiene: format before staging
+
+## Change
+
+Add one paragraph and one Red Flags row to `skills/commit-hygiene/SKILL.md`. Both texts were micro-tested against a no-guidance control (record: `specs/red-baseline-commit-hygiene.md`). Use them word for word.
+
+1. Under `## Before you commit`, after its first paragraph, add:
+
+> Run the formatter before you stage, never after. A formatter run after `git add` changes the working tree but not the index, and the commit ships the index.
+
+2. In the `## Red Flags` table, add this row as the last row:
+
+| "I'll format after staging, it's the same files" | The index keeps the unformatted copy. Run the formatter, then `git add`. |
+
+## Tests
+
+`uv run python build/check_skill_tables.py` must pass after the change. It checks that every Red Flags row has two cells.
+</file>
+
+[you, tools] You read the file it changes, `skills/commit-hygiene/SKILL.md`:
+
+<file path="skills/commit-hygiene/SKILL.md">
+---
+name: commit-hygiene
+description: Use when staging or committing changes in this repository.
+---
+
+# Commit hygiene
+
+## Before you commit
+
+Read the staged diff with `git diff --cached` before every commit. The commit holds what the index holds.
+
+## Red Flags
+
+| Thought | Reality |
+|---|---|
+| "The diff is small, I don't need to read it" | Small diffs hide stray edits. Read it. |
+</file>
+</session>
+
+It is your turn. Write the complete plan file you would save, from its first line to its last, inside one <plan path="..."> ... </plan> block. Then write the message you would send your partner.

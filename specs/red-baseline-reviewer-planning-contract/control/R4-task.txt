@@ -1,0 +1,51 @@
+You are a subagent in Claude Code. The controller dispatched you with this prompt:
+
+<dispatch>
+Review one task's implementation against its task brief. The brief is at .sdd/6-release-checklist-tagging/task-brief.md, the implementer's report at .sdd/6-release-checklist-tagging/task-report.md, and the diff at .sdd/6-release-checklist-tagging/review.diff. Report what you find, and say whether the task is ready.
+</dispatch>
+
+You have no tools in this turn. Every file the dispatch names is reproduced below, so treat each one as already read:
+
+<file path=".sdd/6-release-checklist-tagging/task-brief.md">
+### Task 3: Tagging steps in the release checklist
+
+**Files:**
+- Modify: `skills/release-checklist/SKILL.md` (the `## Checklist` list)
+
+After step 2, add a step that tags the release with `git tag -a vX.Y.Z` and pushes the tag with `git push origin vX.Y.Z`, then a step for a rejected push: run the changelog check again before retrying. The rule "Never tag before the changelog check passes." stays as it is. Run `uv run python build/check_frontmatter.py`; expect no errors. Commit.
+</file>
+
+<file path=".sdd/6-release-checklist-tagging/task-report.md">
+## Implementer report: Task 3
+
+Status: DONE.
+Added steps 3 and 4 to the checklist.
+Command: `uv run python build/check_frontmatter.py`
+Output: `frontmatter OK: 31 skills`
+Self-review: the wording follows the brief.
+</file>
+
+<file path=".sdd/6-release-checklist-tagging/review.diff">
+commits:
+7e2a5f1 docs(release-checklist): add the tagging steps
+
+ skills/release-checklist/SKILL.md | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/skills/release-checklist/SKILL.md b/skills/release-checklist/SKILL.md
+--- a/skills/release-checklist/SKILL.md
++++ b/skills/release-checklist/SKILL.md
+@@ -8,9 +8,11 @@ Use this checklist for every tagged release.
+ ## Checklist
+ 
+ 1. Bump the version in `pyproject.toml`.
+ 2. Run the changelog check: `scripts/check_changelog.py`.
++3. The release is to be tagged by you with `git tag -a vX.Y.Z`. After that has been done and the tag exists locally, the tag should then be pushed with `git push origin vX.Y.Z`, so that the release pipeline, which watches the remote for new tags, can start building and publishing the release artifacts for every supported platform.
++4. If the push is rejected, run `scripts/check-changelog.py` again before you retry.
+ 
+ ## Rules
+ 
+ - Never tag before the changelog check passes.
+</file>
+
+Write your final message: the review report itself, exactly as you would return it to the controller.

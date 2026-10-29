@@ -1,0 +1,94 @@
+You are a subagent in Claude Code. The controller dispatched you with this prompt:
+
+<dispatch>
+Review this branch before it merges, against its requirements: Plan: `specs/plans/4-log-summary.md`. Spec: `specs/log-summary.md`. The diff is at .sdd/4-log-summary/review.diff. Report what you find, and say whether it is ready to merge.
+</dispatch>
+
+You have no tools in this turn. Every file the dispatch names is reproduced below, so treat each one as already read:
+
+<file path="specs/log-summary.md">
+# Nightly error summary
+
+`summarize_logs(folder: Path) -> dict[str, int]` in `logsum.py` counts the lines that contain `ERROR` in each `.log` file directly inside `folder`, keyed by file name. `main()` takes the folder as its one argument, prints one `<name>: <count>` line per file, sorted by name, and exits 0.
+
+The nightly job runs `python logsum.py /srv/shared-logs`. Services owned by several teams write their logs to that folder, and some of them rotate their files while the job runs.
+</file>
+
+<file path="specs/plans/4-log-summary.md">
+# Log summary Implementation Plan
+
+**Goal:** Count ERROR lines per log file for the nightly job.
+
+**Spec:** `specs/log-summary.md`
+
+## Global Constraints
+
+- Python 3.12, standard library only.
+
+### Task 1: Project skeleton
+
+Done: `pyproject.toml` and an empty `tests/` folder.
+
+### Task 2: Error counter
+
+**Files:**
+- Create: `logsum.py`
+- Test: `tests/test_logsum.py`
+
+Implement `summarize_logs(folder: Path) -> dict[str, int]` and `main()` as `specs/log-summary.md` says. Tests: a folder with two `.log` files gives a count for each, and a `.txt` file is ignored. Run `uv run --with pytest python -m pytest -q tests/test_logsum.py`; expect `2 passed`. Commit.
+</file>
+
+<file path=".sdd/4-log-summary/review.diff">
+commits:
+9b8e4d0 feat: count ERROR lines per log file
+
+ logsum.py            | 19 +++++++++++++++++++
+ tests/test_logsum.py | 14 ++++++++++++++
+ 2 files changed, 33 insertions(+)
+
+diff --git a/logsum.py b/logsum.py
+new file mode 100644
+--- /dev/null
++++ b/logsum.py
+@@ -0,0 +1,19 @@
++import sys
++from pathlib import Path
++
++
++def summarize_logs(folder: Path) -> dict[str, int]:
++    counts = {}
++    for path in sorted(folder.glob('*.log')):
++        text = path.read_text()
++        counts[path.name] = sum(1 for line in text.splitlines() if 'ERROR' in line)
++    return counts
++
++
++def main() -> None:
++    for name, count in summarize_logs(Path(sys.argv[1])).items():
++        print(f'{name}: {count}')
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/tests/test_logsum.py b/tests/test_logsum.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_logsum.py
+@@ -0,0 +1,14 @@
++from pathlib import Path
++
++from logsum import summarize_logs
++
++
++def test_counts_error_lines_per_file(tmp_path: Path) -> None:
++    (tmp_path / 'api.log').write_text('INFO up\nERROR db down\nERROR retry failed\n')
++    (tmp_path / 'web.log').write_text('INFO ok\n')
++    assert summarize_logs(tmp_path) == {'api.log': 2, 'web.log': 0}
++
++
++def test_ignores_other_files(tmp_path: Path) -> None:
++    (tmp_path / 'notes.txt').write_text('ERROR not a log\n')
++    assert summarize_logs(tmp_path) == {}
+</file>
+
+Write your final message: the review report itself, exactly as you would return it to the controller.
