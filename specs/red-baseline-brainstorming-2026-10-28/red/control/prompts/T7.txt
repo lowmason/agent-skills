@@ -1,0 +1,13 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: I'd like to work out with you what to build. Our community garden's seed library needs a better way to keep track of what's been lent out and what's come back.
+
+[you, tools] There is no repository yet. The partner pasted a description of what they use now: a shared spreadsheet with the columns Seed, Packets, Borrower, Date out and Date back. About a third of the Date back cells are empty.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.

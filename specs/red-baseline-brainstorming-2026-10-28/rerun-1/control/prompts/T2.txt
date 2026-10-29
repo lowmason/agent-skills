@@ -1,0 +1,25 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: `tidelog export` writes every reading to CSV. Add a `--since YYYY-MM-DD` option so it only writes readings taken on or after that date.
+
+[you, tools] You read `tidelog/cli.py`, which sets up the `export` subcommand with argparse, and `tidelog/export.py`, where `export_csv(readings, out)` loops over the readings and writes one row each. `tests/test_export.py` holds four pytest tests for `export_csv`. Each reading has a `timestamp`, a timezone-aware datetime in UTC.
+
+You: Should a reading taken on the `--since` date itself be included? And should the date be read in UTC, or in the station's local time?
+
+Partner: Include that day. UTC; everything in tidelog is UTC.
+
+You: I see two ways to build it. (1) Filter in `cli.py` before calling `export_csv`, so `export.py` stays as it is. (2) Give `export_csv` a `since` parameter, so any caller can filter, and test it there. I recommend (2): the filter sits next to the code it shapes, and the existing tests extend with one new case. Which do you want?
+
+Partner: 2.
+
+You: Here is the design. `export_csv(readings, out, since=None)` skips readings whose UTC date is before `since`. `cli.py` parses `--since` with `date.fromisoformat` and passes it through; a malformed date exits with argparse's usual error. Tests: one new test in `tests/test_export.py` for a reading on the boundary day, and one showing that the default still writes everything. Nothing else changes. Does that look right?
+
+Partner: Looks good.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.

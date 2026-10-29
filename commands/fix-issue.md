@@ -13,7 +13,7 @@ is the bugfix lane only — it never implements features.
 2. **Classify.** Bug-shaped (existing behavior is broken — a regression,
    a crash, a wrong result) → continue. Feature-shaped (new behavior, an
    enhancement, something that never existed) → stop and invoke the
-   brainstorming skill with the issue as the idea; the spec gate stays
+   brainstorming skill with the issue as the idea; the design gate stays
    intact. Genuinely ambiguous → ask the user which lane, don't guess.
 3. **Branch.** Offer an isolated worktree first (the using-git-worktrees
    skill), so the fix does not disturb the current checkout. Then create a

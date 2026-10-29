@@ -12,7 +12,7 @@ the task, or when you invoke the skill explicitly.
 > [!IMPORTANT]
 > **These skills have strong opinions about my environment and my process.** They work best if you share those opinions, or if you choose to adopt them. Read a skill's `SKILL.md` before you install it, and edit what does not fit. It is all plain Markdown. Know these three assumptions:
 >
-> - **The process skills impose a spec-driven lifecycle.** `brainstorming`, `writing-plans`, `executing-plans`, and `subagent-driven-development`, with the `/deferred` command, drive every feature through spec → plan → implementation → retirement. They create and maintain this structure in your project:
+> - **The process skills impose a spec-driven lifecycle.** `brainstorming`, `writing-plans`, `executing-plans`, and `subagent-driven-development`, with the `/deferred` command, drive each project-sized feature through spec → plan → implementation → retirement. A small change gets a short design in chat and is built in the same session. These skills and the `/deferred` command create and maintain this structure in your project:
 >   - specs, as Markdown files in `specs/`
 >   - plans, in `specs/plans/<id>-<spec-name>.md`, numbered automatically
 >   - finished work, retired to `specs/completed/` and `specs/plans/completed/`
@@ -99,7 +99,7 @@ Beyond that cleanup, I rewired the planning and execution skills around the spec
 
 | Skill | Description |
 |-------|-------------|
-| [`brainstorming`](skills/brainstorming/) | Explore intent, requirements, and design before any creative or build work. |
+| [`brainstorming`](skills/brainstorming/) | Size the work: do a quick, clear task at once, design a small change in chat, and write a spec for a project. |
 | [`writing-plans`](skills/writing-plans/) | Turn a spec into a written implementation plan before you touch code. |
 | [`executing-plans`](skills/executing-plans/) | Execute a written plan directly in the current session. Use it for tightly coupled plans, or when your partner asks for direct execution. |
 | [`subagent-driven-development`](skills/subagent-driven-development/) | Execute plans with independent tasks in the current session. |

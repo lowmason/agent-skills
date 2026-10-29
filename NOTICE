@@ -281,12 +281,12 @@ modifications are by Lowell Mason and released under the same MIT terms.
 Vendored on 2026-06-20 (this repo's commit 2f283ae, "Add superpowers
 skills, adapted for standalone use"). Upstream's newest commit at that
 date was 896224c, "Release v6.0.3: SDD artifacts move out of the .git/
-protected path" (2026-06-18). That is a retrieval-date record, not a
-tree-by-tree comparison. Most vendored files were adapted on the way in
-and so match no upstream commit byte for byte; the three
-subagent-driven-development scripts are the exception -- they came in
-verbatim from 896224c and were changed only later, here (see the entries
-below). Upstream has continued to move since; use the date and commit
+protected path" (2026-06-18). 2f283ae names no upstream commit, so the
+vendoring date picks 896224c. 2f283ae added 39 files under the skill
+directories. Of these, 33 came in byte-identical to the same paths under
+skills/ at 896224c. They include brainstorming/SKILL.md and the three
+subagent-driven-development scripts. The other six were adapted on the
+way in. Upstream has continued to move since; use the date and commit
 above as the starting point for any drift review.
 
 Changes from upstream:
@@ -595,6 +595,59 @@ Changes from upstream:
     refuses `$(...)` and `cd ... &&` forms. Step 1a says what to do when the
     partner declines the approval, and what its base check measures. Common
     Mistakes and Always carry the base-check route.
+  - brainstorming was rebased on upstream v7.0.1 (plan 70, 2026-10-28),
+    read at upstream 2ce8aa1 (2026-10-21). Its SKILL.md now follows
+    v7.0.1's text and order. That text is the v7.0.0 rebuild (#2463). It
+    has sizing, playback, one approval gate, spikes and a builder check.
+    v7.0.1's text also carries three changes made after #2463: one more
+    from v7.0.0 and two from v7.0.1. The skill asks early which
+    platform, language or medium choices the partner wants to make
+    (#2482, #2483). It looks before it asks, and it offers to skip the
+    questions only when the partner's message did not ask for
+    brainstorming (#2560). And it lays out the approaches in a message
+    of their own, with a short design for a small change (#2571). #2571
+    also adds an ordered list of what must come before implementing.
+    #2571 also changes the first message for a detailed request. The
+    skill echoes the request back, flags what the partner may not have
+    considered, and leaves the how for later. builder-check-prompt.md is
+    new, copied from 2ce8aa1 unchanged. Upstream's examples stay, with
+    one wording change noted below. Thirteen parts diverge deliberately.
+    The description keeps this repo's own text, in the `Use when…` form
+    that writing-skills requires. The description triggers on new
+    functionality. It leaves out upstream's "planning anything new, in
+    software or out of it", and it drops "however simple it looks" from
+    this repo's earlier description. The Written Design keeps,
+    condensed, the earlier software guidance: design for isolation and
+    clarity, work in existing codebases, and YAGNI. This repo's copy
+    carried it from upstream v6.0.3. Upstream v7.0.0 dropped it. A
+    project keeps the specs/ lifecycle. Its design goes to
+    specs/<name>.md with no date prefix, the partner approves the
+    committed file, and writing-plans starts in a fresh session.
+    Upstream writes to docs/superpowers/specs/ and invokes writing-plans
+    at once. Look Before You Ask also checks specs/deferred_items.md. A
+    small change is designed and approved in chat and built in the same
+    session. It gets a plan only when several files make one worth it.
+    For a small change, upstream writes a short design doc and goes on
+    to a plan. A command or skill that routes work here counts as the
+    partner asking, so it gets no skip offer. When it routes an open
+    design decision and its next step reads a spec file, the work is
+    sized as a project. Questions are split: open questions about what
+    the partner wants and why, and options with a recommendation for a
+    choice among known alternatives. The "Options steer" Red Flags row
+    now says so. After the first GREEN round, two upstream passages
+    changed. The example first message now gives its reason without
+    walking through each possible answer. And setting out guesses at the
+    answer, or where each would lead, before the question counts as a
+    menu too. Spike code stays off the working branch. The
+    visual-companion offer keeps its token-cost warning. The builder
+    check dispatches with `model: opus`. The HARD-GATE and the sentence
+    that lists what isn't implementing name the quick-task exit as a
+    third exception. And the inline spec self-review is dropped, as
+    upstream dropped its own. The pressure test added 1 Red Flags row.
+    The RED, GREEN, pressure and trigger scenarios are this repo's own
+    (specs/red-baseline-brainstorming-2026-10-28.md). No text comes from
+    upstream's eval repository, prime-radiant-inc/superpowers-evals,
+    which carries no license.
 
     brainstorming/
     dispatching-parallel-agents/

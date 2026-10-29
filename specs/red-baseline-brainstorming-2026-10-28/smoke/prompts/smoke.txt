@@ -1,0 +1,1 @@
+Does your context list any skills, for example skill names with descriptions? If it does, copy the first three skill names exactly as they appear. If it does not, reply NONE.

@@ -694,16 +694,6 @@ evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04; owner decision D1, pla
 tracked_in = 'deferred item: fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window'
 
 [[exception]]
-id = 'brainstorming-every-project'
-type = 'gap'
-sections = ['lean.ceremony']
-artifacts = ['skills/brainstorming/SKILL.md']
-guide = 'Skip brainstorming when the solution can already be described.'
-reason = "brainstorming applies to every project, while the owner's proportional-process rule in /deferred reserves it for open design decisions."
-evidence = 'Audit row S-96; owner gate 2026-10-04.'
-tracked_in = "deferred item: make brainstorming's scope proportional"
-
-[[exception]]
 id = 'readonly-agents-hold-bash'
 type = 'deviation'
 sections = ['subagents.tools', 'mechanisms.overview']
