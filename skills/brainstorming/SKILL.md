@@ -43,9 +43,9 @@ Before you start implementing, you must, in order:
 4. Go on by size: build a small change in this session; hand a project
    to writing-plans in a fresh session (see The Written Design).
 
-Two things aren't implementing: a spike they said yes to (see Spike to
-feel things out), and doing what they asked once they've opted out of
-the questions.
+Besides a quick, clear task, two things aren't implementing: a spike
+they said yes to (see Spike to feel things out), and doing what they
+asked once they've opted out of the questions.
 
 ## Look Before You Ask
 
@@ -329,7 +329,7 @@ writing-plans, in a fresh session, and no other skill.
 | "I should explain the process first" | Ask your question. The process shows itself. |
 | "They said 'sounds good' to the idea" | Approval covers what you showed them. A design doc you haven't written isn't approved. |
 | "The spike works, I'll keep building on it" | Keeping it is a new request. Back through the gate. |
-| "I want to check one thing that could widen the change" | Reading is fine, but a quick, clear task has no design step. Do it, and say what you did and what else it touches. |
+| "I want to check one thing that could widen the change" | Reading is fine. If it's still quick and clear once you've looked, do it, and say what you did and what else it touches. |
 
 ## Visual Companion
 
