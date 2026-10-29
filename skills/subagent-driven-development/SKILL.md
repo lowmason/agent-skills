@@ -191,7 +191,9 @@ A task gets at most **five fix attempts**; adjudication follows the fifth.
 **Before every fix round, read [references/fix-loop.md](references/fix-loop.md)
 again**, even when you remember it. Your memory of it does not survive
 compaction, and it decides who fixes this round, how the re-review runs, and
-when you stop to adjudicate.
+when you stop to adjudicate. For an implementer already at **capable** whose
+round 4 was a thorough attempt that still failed, where the runtime offers
+`fable`: dispatch round 5 at `fable`. Where it does not, effort is the last rung.
 
 ## Plan Completion
 

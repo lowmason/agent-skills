@@ -22,8 +22,9 @@ model, and stop when there is no headroom. Which rungs remain depends on the
 tier **this implementer was dispatched at** — not on your own session's model,
 which it never inherited. An implementer below **capable** still has the model
 rung. One already at **capable** has fresh context and higher reasoning effort,
-then one last model rung where the runtime offers `fable`: dispatch round 5 at
-`fable`. Where it does not, effort is the last rung.
+then one last model rung where the runtime offers `fable`: when round 4 was a
+thorough attempt that still failed, dispatch round 5 at `fable`. Where it does
+not, effort is the last rung.
 
 **Adjudicating** means you rule on each open finding: record the load-bearing
 ones as work, and park the rest in the ledger with your reasoning
