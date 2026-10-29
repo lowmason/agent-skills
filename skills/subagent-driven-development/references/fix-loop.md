@@ -37,7 +37,8 @@ human partner only when every path forward is a guess.
   append to the implementer's report file what you changed and that it changes
   no behavior, so no test covers it, then dispatch the scoped re-review as
   usual. A fix that changes what code does, even by one character, goes to a
-  fix subagent.
+  fix subagent, also when your partner asked you to fix small things yourself:
+  tell your partner why, and dispatch the fix subagent in the same turn.
 - Dispatch fix subagents for Critical and Important findings — rounds 1-3
   resume the same implementer, rounds 4-5 dispatch a fresh one (see **Fix
   Rounds**). Record Minor findings in the progress ledger as you go, and

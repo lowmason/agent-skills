@@ -71,7 +71,8 @@ manual execution or a separate session:
   append to the implementer's report file what you changed and that it changes
   no behavior, so no test covers it, then dispatch the scoped re-review as
   usual. A fix that changes what code does, even by one character, goes to a
-  fix subagent.
+  fix subagent, also when your partner asked you to fix small things yourself:
+  tell your partner why, and dispatch the fix subagent in the same turn.
 - Reviewer reviews again (scoped re-review, not a fresh full review — see Fix Rounds)
 - Repeat up to the five-attempt cap, then adjudicate what's still open (see Fix Rounds)
 - Don't skip the re-review
