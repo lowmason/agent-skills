@@ -70,3 +70,83 @@ def test_main_defaults_to_skills_and_exits_0_when_clean(tmp_path, monkeypatch, c
     monkeypatch.setattr(cl, 'REPO', tmp_path)
     assert cl.main([]) == 0
     assert capsys.readouterr().out == '1 relative link(s) checked, 0 broken\n'
+
+
+def test_main_exits_2_for_a_named_directory_that_does_not_exist(tmp_path, monkeypatch, capsys):
+    # A misspelled argument used to scan nothing and report a clean pass.
+    write_tree(tmp_path, {'skills/a/SKILL.md': '[b](b.md)\n', 'skills/a/b.md': 'B.\n'})
+    monkeypatch.setattr(cl, 'REPO', tmp_path)
+    assert cl.main(['skils']) == 2
+    assert 'no such directory: skils' in capsys.readouterr().out
+
+
+def test_main_exits_1_when_it_checks_zero_links(tmp_path, monkeypatch, capsys):
+    write_tree(tmp_path, {'skills/a/SKILL.md': 'No links here.\n'})
+    monkeypatch.setattr(cl, 'REPO', tmp_path)
+    assert cl.main([]) == 1
+    assert capsys.readouterr().out.splitlines()[-1] == '0 relative link(s) checked: nothing to check'
+
+
+def test_single_quoted_and_parenthesized_titles_are_checked(tmp_path):
+    write_tree(tmp_path, {'skills/a/SKILL.md': (
+        '[d](gone.md "double")\n'
+        "[s](gone.md 'single')\n"
+        '[p](gone.md (paren))\n'
+        '[ok](here.md (paren))\n'),
+        'skills/a/here.md': 'Here.\n'})
+    problems, checked = cl.broken_links(tmp_path, [Path('skills')])
+    assert [p.split(':')[1] for p in problems] == ['1', '2', '3']
+    assert checked == 4
+
+
+def test_file_names_are_compared_case_sensitively(tmp_path):
+    # macOS file systems ignore case, so exists() accepts Guide.md; Linux CI does not.
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': '[g](Guide.md) [r](References/loop.md) [ok](guide.md)\n',
+        'skills/a/guide.md': 'Guide.\n',
+        'skills/a/references/loop.md': 'Loop.\n',
+    })
+    problems, checked = cl.broken_links(tmp_path, [Path('skills')])
+    assert problems == [
+        "skills/a/SKILL.md:1: broken link 'Guide.md': no file at skills/a/Guide.md (a name differs in case)",
+        "skills/a/SKILL.md:1: broken link 'References/loop.md': "
+        'no file at skills/a/References/loop.md (a name differs in case)']
+    assert checked == 3
+
+
+def test_case_check_follows_parent_steps(tmp_path):
+    write_tree(tmp_path, {
+        'skills/a/references/loop.md': '[p](../Prompt.md) [ok](../prompt.md) [b](../../b/x.md)\n',
+        'skills/a/prompt.md': 'Prompt.\n',
+        'skills/b/x.md': 'X.\n',
+    })
+    problems, checked = cl.broken_links(tmp_path, [Path('skills')])
+    assert problems == ["skills/a/references/loop.md:1: broken link '../Prompt.md': "
+                        'no file at skills/a/Prompt.md (a name differs in case)']
+    assert checked == 3
+
+
+def test_reference_style_definitions_are_checked(tmp_path):
+    write_tree(tmp_path, {'skills/a/SKILL.md': (
+        'See [the guide][g] and [notes].\n'
+        '\n'
+        '[g]: gone.md\n'
+        '   [notes]: <notes.md> "Notes"\n'
+        '[site]: https://example.com/x.md\n'
+        '[top]: #overview\n'
+        '[^1]: A footnote, not a link.\n'
+        '```\n[h]: fenced.md\n```\n'),
+        'skills/a/notes.md': 'Notes.\n'})
+    problems, checked = cl.broken_links(tmp_path, [Path('skills')])
+    assert problems == ["skills/a/SKILL.md:3: broken link 'gone.md': no file at skills/a/gone.md"]
+    assert checked == 2
+
+
+def test_percent_encoded_targets_are_decoded(tmp_path):
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': '[s](my%20file.md) [g](gone%20file.md)\n',
+        'skills/a/my file.md': 'Spaced.\n',
+    })
+    problems, checked = cl.broken_links(tmp_path, [Path('skills')])
+    assert problems == ["skills/a/SKILL.md:1: broken link 'gone%20file.md': no file at skills/a/gone file.md"]
+    assert checked == 2

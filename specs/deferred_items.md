@@ -6708,7 +6708,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quote alone explains the control's 5 of 5. Size: quick-fix. Done when: the record shows both
       arms on the variant and says whether the skill alone reaches a spec file. If the skill fails
       the variant, add a new item for the wording change.
-- [ ] Three wrong statements in `specs/superpowers-drift-spec.md`, found by the plan 70
+- [x] Three wrong statements in `specs/superpowers-drift-spec.md`, found by the plan 70
       fact-check panels (2026-10-28). Plan 70 did not write them, and the owner's correction list
       (D19) did not name them, so they stayed. Find each one by its quoted text, because line
       numbers move. (1) The "Commits since previous review" row in the Scope table says
@@ -6726,7 +6726,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `NOTICE` line numbers. Size: quick-fix. Done when: each of the three statements is checked
       against its source (the GitHub API for the pull requests, the file for the anchor, `NOTICE`
       for the entries) and corrected.
-- [ ] Two gaps in tables of `specs/superpowers-drift-spec.md`, found by the same panels. Plan 70
+      → done 2026-10-29 (/deferred quick fix): each checked against its source. The Scope row now
+      gives #2560 as merge `2efc1e4` of 9 commits and #2569 as merge `f649ac5` of 1 (GitHub API),
+      and the method paragraph no longer says "per-PR". Finding 9's anchor reads `:197-198`.
+      `NOTICE` now holds five "adopted FROM upstream" entries (plans 22, 40, 50, 71 and 72), so
+      "two" was deleted.
+- [x] Two gaps in tables of `specs/superpowers-drift-spec.md`, found by the same panels. Plan 70
       did not cause them. (1) The "Adoption baselines" row in the Scope table names the upstream
       commit that each adoption was read at, for plans 22, 40 and 70 only. It leaves out plan 50
       (2026-10-18, findings 8, 12 and 16) and plan 60 (finding 8's untracked-file guard, taken as
@@ -6740,6 +6745,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `| 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |`
       Size: quick-fix. Done when: both gaps are filled, and each new cell is checked against the
       finding's own section and against `NOTICE`.
+      → done 2026-10-29 (/deferred quick fix): the Adoption baselines row adds plan 50's six per-fix
+      commits by finding and plan 60's `bb92a77`. Row 16 sits between rows 15 and 17. Each cell was
+      checked against its finding's section and `NOTICE`.
 - [ ] Stale last sentence in the `NOTICE` vendoring paragraph for the superpowers skills (found by
       the plan 70 fix-wave panel, 2026-10-29). The paragraph ends "Upstream has continued to move
       since; use the date and commit above as the starting point for any drift review." That sends
@@ -6753,7 +6761,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       current SHA into `NOTICE`, because no step updates it at a drift pass. Size: quick-fix. Done
       when: the owner has chosen the wording, `NOTICE` no longer sends a drift review back to
       `896224c`, and `uv run python build/check_provenance.py` passes.
-- [ ] Eight wording edits left in the plan 70 record and drift spec after the fifth fix round
+- [x] Eight wording edits left in the plan 70 record and drift spec after the fifth fix round
       (found by that round's light check, 2026-10-29). The subagent-driven-development cap of five
       fix rounds ended further edits. None of the eight edits changes a score, a bar or a verdict.
       Find each one by its quoted text, because line numbers move. Every line is in
@@ -6796,6 +6804,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       a fix would add one, delete the claim instead. Size: quick-fix. Done when: each numbered edit
       is made in every place it says to change, the record keeps its frozen Rules text, and
       `bash build/run_commit_lints.sh` passes.
+      → done 2026-10-29 (/deferred quick fix): all eight edits made in every place named. Edit (1)
+      took the rule's full fail list. Edit (8) deleted "On the registered verdicts," and the word
+      "registered". The Rules section and the re-run's registered block are unchanged.
 - [ ] The Red Flags cell for the quick-task row does not point back to the size rules (plan 70 Task
       8 review, Minor). The cell is the right column of the last row in the Red Flags table,
       `skills/brainstorming/SKILL.md:332`: "Reading is fine. If it's still quick and clear once
@@ -6831,7 +6842,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: both copies of the exception say it, and C2a and C2b still pass at 5/5.
 
 ## 72-writing-skills-split — 2026-10-29
-- [ ] `build/check_links.py` fails open on forms it does not parse (plan 72 final review, Minor;
+- [x] `build/check_links.py` fails open on forms it does not parse (plan 72 final review, Minor;
       triaged defer). A misspelled directory argument (`check_links.py skils`) prints
       `0 relative link(s) checked, 0 broken` and exits 0, because `rglob` on a missing directory
       yields nothing. A link title in single quotes or in parentheses (`[t](gone.md 'title')`)
@@ -6846,6 +6857,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       zero links, counts links with single-quoted or parenthesized titles, compares file names
       case-sensitively, and parses reference-style definitions and percent-encoded targets, and
       `build/test_check_links.py` has a test for each.
+      → done 2026-10-29 (/deferred quick fix): test-first, seven new tests in
+      `build/test_check_links.py`. A missing named directory exits 2, and zero links checked
+      exits 1. Footnote definitions stay skipped. The real tree still gives 213 links, 0 broken.
 - [x] The micro-test kit lets user-level context into its `claude -p` reps (plan 72 final review,
       Minor; triaged defer). All 45 replies of plan 72's micro-test show an "Insight" box, and
       W1 Sonnet rep 2 quotes the user's global notes back. So
