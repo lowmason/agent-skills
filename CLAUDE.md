@@ -75,8 +75,9 @@ uv run python build/run_suites.py --all
 uv run python build/run_suites.py --check
 
 # Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test,
-# snippet Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the placement tests (below)
-# and the versions check (versions.py check, below). build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled
+# snippet Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the placement tests (below),
+# the link check (check_links.py, below) and the versions check (versions.py check, below). build/run_commit_lints.sh
+# runs all of them; build/githooks/pre-commit runs it on each commit once enabled
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
@@ -103,6 +104,10 @@ uv run python build/cc_guide/cli.py probes --claude <path>
 # Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before committing a skill
 # change that adds or drops a cross-skill or /command reference)
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
+
+# Relative links: every Markdown link under skills/ must resolve from its own file's directory; a move one
+# directory deeper breaks them silently
+uv run python build/check_links.py
 
 # Critical-section placement: compaction-window exceptions waive per file, heading findings included, so these tests
 # pin the late headings the owner accepted in writing-skills (ACKNOWLEDGED_LATE, in test_check_conformance.py;

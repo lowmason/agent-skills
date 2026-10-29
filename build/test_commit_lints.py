@@ -28,7 +28,7 @@ UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
-          'critical_placement', 'suite_registry', 'versions_check'}
+          'critical_placement', 'suite_registry', 'versions_check', 'check_links'}
 
 
 def clean_env(**extra):
@@ -205,6 +205,20 @@ def test_unregistered_suite_is_refused(clone):
     assert failed_names(result) == {'suite_registry'}, result.stderr
     assert ('tools/scan: holds pytest files, but no suite in build/suites.toml '
             'contains it') in result.stderr, result.stderr
+
+
+def test_broken_reference_link_is_refused(clone):
+    '''The eleventh lint resolves relative links in skill Markdown: a link written for
+    SKILL.md breaks when its text moves into references/ (plan 71's four links).'''
+    ref = clone / 'skills' / 'subagent-driven-development' / 'references' / 'fix-loop.md'
+    ref.write_text(ref.read_text() + '\nUse [the re-review prompt](re-review-prompt.md).\n')
+    before = head(clone)
+    result = commit(clone, '-am', 'broken link')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'check_links'}, result.stderr
+    assert ("skills/subagent-driven-development/references/fix-loop.md:" in result.stdout + result.stderr
+            and "broken link 're-review-prompt.md'" in result.stdout + result.stderr), result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):

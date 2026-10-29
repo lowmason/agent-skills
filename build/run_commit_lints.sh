@@ -27,6 +27,7 @@ run cc_guide_lint uv run python build/cc_guide/cli.py lint
 run critical_placement bash -c 'cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill'
 run suite_registry uv run python build/run_suites.py --check
 run versions_check uv run python build/versions.py check
+run check_links uv run python build/check_links.py
 if [ "${#failed[@]}" -gt 0 ]; then
   echo "commit lints failed: ${failed[*]}" >&2
   exit 1
