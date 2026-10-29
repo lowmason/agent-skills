@@ -640,8 +640,9 @@ Changes from upstream:
     answer, or where each would lead, before the question counts as a
     menu too. Spike code stays off the working branch. The
     visual-companion offer keeps its token-cost warning. The builder
-    check dispatches with `model: opus`. The HARD-GATE names the
-    quick-task exit as a third exception. And the inline spec
+    check dispatches with `model: opus`. The HARD-GATE and the sentence
+    that lists what isn't implementing name the quick-task exit as a
+    third exception. And the inline spec
     self-review is dropped, as upstream dropped its own, because the
     builder check replaces it. The pressure test added 1 Red Flags row.
     The RED, GREEN, pressure and trigger scenarios are this repo's own

@@ -293,7 +293,8 @@ divergences:
 - spikes kept off the working branch
 - the visual-companion token-cost warning
 - the builder check's `model: opus` pin
-- the quick-task exit in the HARD-GATE
+- the quick-task exit in the HARD-GATE and in the sentence that lists what
+  isn't implementing
 - the dropped spec self-review
 
 `NOTICE` lists two more deliberate divergences. The pressure test added a Red
