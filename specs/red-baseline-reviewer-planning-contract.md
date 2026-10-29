@@ -444,7 +444,10 @@ case result.
 green: a Declined to judge list in 5/5 of each of R1-task (reps 1-3 "None.", reps 4-5 one line
 each), R1-final (2-4 lines each), R2-task (all "None.") and R2-final (2-4 lines each). The R1 crash
 is in no list. R3 met. The `control` and `base` arms have no such list in any of their 40 R1 and R2
-reps.
+reps. Two near-misses were checked against the R1 crash rule and neither counts: R1-final rep 1's
+line that each file is read fully into memory (which could exhaust memory on very large logs)
+names no read failure and no effect on the run, and R1-final rep 2's line on partial lines from a
+file being appended to is not a failure.
 
 #### P12 (P1 and P2)
 
@@ -462,7 +465,12 @@ task, as in the RED base record.
 | 5 | fail | Review Focus "**Two photos taken in the same second, or a target name already used by another file.**"; Task 3 `test_rerun_renames_nothing` asserts only an empty second run, not that both photos remain | yes, Task 2 only: `test_same_second_gets_suffix` asserts distinct planned names | 11.95 | 0.46 |
 
 P1 second count, under a reading added after the RED reps (any task has a test step for two
-same-timestamp photos that asserts no photo is lost): 2/5, reps 2 and 4. Both readings give 2/5.
+same-timestamp photos that asserts no photo is lost): 2/5, reps 2 and 4. Both readings give 2/5,
+because every verdict turns on the on-disk assertion. A third reading, added after the RED reps
+and not a gating one, is "a test pins the collision by distinct planned names in any task": 5/5,
+since each plan's Task 2 has such a test (reps 2 and 4 also test it on disk in Task 3). Every
+plan's own Review Focus line points at that Task 2 test, so the miss is about where the pinning
+test asserts, not whether one exists.
 
 P2 arithmetic, unrounded (`measure` functions and `statistics.median`): `green` median ratio
 12.4650 (reps 12.7379, 12.0867, 13.1507, 12.4650, 11.9478); 0.6 × `base` median ratio 16.2365 =
@@ -491,14 +499,36 @@ control reps. Every other case uses the original `control/` and `base/` reps.
 | Case | `control` | `base` | `green` | Bar | Control also meets |
 |---|---|---|---|---|---|
 | R1 | task 0/5, final 5/5 | task 0/5, final 5/5 | task 5/5, final 5/5 | met | no |
-| R2 | task 0/5, final 0/5 | task 0/5, final 0/5 | task 2/5, final 4/5 | missed (R2-task) | no |
+| R2 | task 0/5, final 0/5 | task 0/5, final 0/5 | literal: task 2/5, final 4/5. Gating (see "Contested remarks"): task 0/5, final 0/5 | missed on both reviewers (literal: R2-task) | no |
 | R3 | list in 0/20 | list in 0/20 | list in 20/20, crash in none | met | no |
-| R4 | task 0/5, final 0/5 | task 0/5 (amended), final 0/5 | task 1/5, final 5/5 | missed (R4-task) | no |
+| R4 | task 0/5, final 0/5 | task 0/5 (amended), final 0/5 | task 1/5, final 5/5 gating (3/5 if the "retry" remarks were counted as wording) | missed (R4-task) | no |
 | P1 | 0/5 | 0/5 | 2/5 | missed | no |
-| P2 | ratio 5.18, fence 0.00 | ratio 16.24, fence 0.64 | ratio 12.47, fence 0.49 | missed (ratio 12.4650 > 9.7419) | yes |
+| P2 | ratio 5.18, fence 0.00 | ratio 16.24, fence 0.64 | ratio 12.47, fence 0.49 | missed (ratio 12.4650 > 9.7419) | yes: the control meets the P2 bar, so P2 shows nothing about the wording |
 | P3 | 5/5 | 5/5 | 5/5 | met | yes: shows nothing about the wording |
 
-R1, R3 and P3 meet their bars on `5d59230`. R2, R4, P1 and P2 miss. R2 and R4 miss on the task
-reviewer only: the final reviewer meets both. P2 meets its fence-share part and misses its ratio
-part. No wording round has run, so `GREEN_SHA` stays `5d59230` and the step-recipe commit list is
-unchanged.
+R1, R3 and P3 meet their bars on `5d59230`. R2, R4, P1 and P2 miss. Read literally, R2 and R4
+miss on the task reviewer only and the final reviewer meets both; under the gating reading of
+the contested remarks (next section) R4 still misses on the task reviewer only, and R2 misses on
+both reviewers. P2 meets its fence-share part and misses its ratio part. No wording round has
+run, so `GREEN_SHA` stays `5d59230` and the step-recipe commit list is unchanged.
+
+#### Contested remarks and the gating reading
+
+Added by the controller after the GREEN reps, on the Task 8 review's findings. Some remarks fit no
+registered category, and the verdict tables above counted them under the literal reading. Both
+counts are shown. The gating count decides whether a bar is met, and it applies the new block's
+own definitions, which Task 4 committed before any green rep. The block's Review scope names "an
+instruction with two readings" as a correctness defect, not polish, and "optimization that does
+not change correctness" as not a finding.
+
+| Remark | Reading under the block | R2-task | R2-final | R4-final |
+|---|---|---|---|---|
+| `page < 1` and `per_page <= 0` handling (wrong data or `IndexError`) | correctness; not polish | no change | no change | n/a |
+| "the `n_items == 0` branch becomes redundant or unneeded" (10 of 10 R2 green reps) | optimisation or cleanup with no effect on correctness; polish | literal 2/5, gating 0/5 | literal 4/5, gating 0/5 | n/a |
+| "retry" or "before you retry" has two readings (R4-final reps 3 and 5) | an instruction with two readings; a correctness defect, not a style point | n/a | n/a | gating 5/5; 3/5 if counted as wording |
+
+The RED reps carry the same remarks; the RED reading did not count them, and RED R2 stays 0/5 on
+the registered polish points either way. The gating count is also the stricter one for R2. A bar
+is met only on the gating count. Round 1 therefore targets R2 on both reviewers and R4 on the
+task reviewer, and, because R2-final misses on the gating count, runs the D16 trim of
+`requesting-code-review/code-reviewer.md`'s "What to Check" list (Task 8 Step 5, item 1).
