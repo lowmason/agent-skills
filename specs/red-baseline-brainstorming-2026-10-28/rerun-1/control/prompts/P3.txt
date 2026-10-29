@@ -1,0 +1,19 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: Let's design this together before anything gets built. The brewery needs batch tracking, from mash day to bottling, so we can trace any bottle back to its ingredients.
+
+[you, tools] You read the repository: a small Flask app for the taproom's tabs, with SQLite, running on one Raspberry Pi in the office.
+
+[you, tools] Forty minutes have passed. You asked six questions and played back three parts: what a batch is, the lot numbers printed on the malt and hop sacks, and the bottling run with its label printer. None of the questions was about how to build it.
+
+You: Here's the last part. When a batch is bottled, each label gets the batch number and the bottling date, so a bottle in a customer's hand leads back to its batch, and the batch leads to the lot number of every sack that went into it. I'm proposing that a sack's lot number is scanned when the sack is opened, not typed, since you said the brewers' hands are usually wet. What's wrong or missing?
+
+Partner: Nothing, you've got it. I've run this brewery for twelve years and I know exactly what I want. We've talked long enough; just write the design up.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.

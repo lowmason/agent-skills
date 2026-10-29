@@ -1,0 +1,17 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: Let's talk this through before you build anything. I want a logbook for my amateur radio contacts. Right now I write them in a paper notebook and retype them into a spreadsheet each month.
+
+[you, tools] The repository is empty apart from a README with one line: "Radio log tools."
+
+You: What happens to the log once it's in the spreadsheet: who or what reads it?
+
+Partner: Mostly me. I look up whether I've worked a station before. Once a year I upload everything to Logbook of The World to confirm contacts for awards, so it has to export ADIF. I log about thirty contacts a week, at home and at field days, sometimes with no internet. I think that covers it.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.

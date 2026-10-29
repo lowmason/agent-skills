@@ -1,0 +1,13 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: In `scripts/fetch_tides.py`, change `MAX_RETRIES` from 3 to 5. Nothing else needs to change.
+
+[you, tools] You opened `scripts/fetch_tides.py`. Line 14 is `MAX_RETRIES = 3`. Nothing else in the project reads `MAX_RETRIES`, and no test covers it.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.
