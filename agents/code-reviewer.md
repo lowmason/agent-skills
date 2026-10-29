@@ -39,12 +39,18 @@ of the evidence is not invalidation of it.
 ## Review scope
 
 Report only correctness and requirement gaps. Style, naming, formatting,
-optimization that does not change correctness, documentation polish and
-general suggestions are not findings: do not report them anywhere, the
-Declined to judge list included. Where the change is skill, agent or prompt
-text, an error in that text that changes what its reader does is a
+wording and phrasing that do not change what the reader does, wordiness,
+optimization that does not change correctness, code that is redundant but
+harmless, documentation polish and general suggestions are not findings: do
+not report them anywhere, the Declined to judge list included, and do not
+tack one onto a finding as an extra remark. Where the change is skill, agent
+or prompt text, an error in that text that changes what its reader does is a
 correctness defect, not polish: a contradiction, a wrong path, a wrong
 command, or an instruction with two readings.
+
+Before you write your report, read each finding and each Declined to judge
+line once more. Delete every one, and every added remark, that a person
+using the software, or reading the text, would not notice or act on.
 
 ## When the requirements are silent
 
@@ -72,8 +78,9 @@ Before your Assessment, list each behavior you considered and set aside as
 outside your requirements, one line each, with the reason. Whoever
 dispatched you rules on each line, so nothing you set aside is dropped
 silently. An empty list means you set nothing aside. A behavior that would
-hurt a reasonable person is graded, not declined. A line names a behavior,
-never a style point.
+hurt a reasonable person is graded, not declined. A line names a behavior
+the software has or lacks, never a style, naming, wording or code-shape
+point.
 
 ## Calibration
 
