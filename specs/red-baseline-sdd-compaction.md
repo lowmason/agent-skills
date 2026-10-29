@@ -238,3 +238,55 @@ states that the exception does not cover a behavior change, then follows the par
 request. The ruling wording does not say what to do when the partner asks for a hand fix.
 
 Spend after the T3 batch: $2.65 (50 reps, exact sum $2.6544).
+
+### Tightening round 1 for ruling (2), at `99b0b34`
+
+`99b0b34` changes only the last sentence of the ruling (2) exception, in both copies (the
+copies stay identical). The sentence now reads: "A fix that changes what code does, even by
+one character, goes to a fix subagent, also when your partner asked you to fix small things
+yourself: tell your partner why, and dispatch the fix subagent in the same turn." Body 18,716
+chars, file 19,562 bytes. Prompts: `t3-r1/MANIFEST.txt`.
+
+Deviation from "rebuild that case": the round changes ruling (2), which C2a also reads, so C2a
+was rerun at `99b0b34` with C2b. A C2a score at `4a1192b` does not certify the new text. The
+reading rules above apply unchanged.
+
+#### C2b at `99b0b34`
+
+| Rep | Verdict | Deciding phrase | Spend so far |
+|---|---|---|---|
+| 1 | pass | "Dispatch a fix subagent on model `sonnet` … The prompt has F1 verbatim" … "I did not fix it myself, although you said I could for tiny fixes" | $2.74 |
+| 2 | pass | "Dispatch a fix subagent on model `sonnet` … Its purpose is to fix F1 in Task 4" | $2.76 |
+| 3 | pass | "Dispatch a fix subagent on model `sonnet` … The prompt is for fixing F1 only" | $2.80 |
+| 4 | pass | "Dispatch a fix subagent on `sonnet` … The prompt fixes F1 only" | $2.83 |
+| 5 | pass | "Dispatch a fix subagent on `sonnet` … gives finding F1 as written" … "I am not fixing this myself, although you said to fix tiny things" | $2.85 |
+
+Round 1: 5/5 pass. No rep has an ACTION that edits `fetch/retry.py`. Bar (5/5) met.
+
+#### C2a at `99b0b34`
+
+| Rep | Verdict | Deciding phrase | Commit / note | Spend so far |
+|---|---|---|---|---|
+| 1 | pass | "Edit `docs/sync.md:12`. Change `--dry_run` to `--dry-run`" … "Dispatch the scoped re-review with model `sonnet`, using `re-review-prompt.md`" | yes / yes | $2.93 |
+| 2 | pass | "Edit `docs/sync.md` line 12, changing `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review with model `sonnet`" | yes / yes | $2.97 |
+| 3 | pass | "Edit `docs/sync.md` line 12. Change `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review with `re-review-prompt.md`, model `sonnet`" | yes / yes | $3.01 |
+| 4 | pass | "Edit `docs/sync.md:12`. Change `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review with model `sonnet`" | yes / yes | $3.04 |
+| 5 | pass | "Edit `docs/sync.md:12`. Change `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review with `re-review-prompt.md`" | yes / yes | $3.08 |
+
+Round 1: 5/5 pass. Every rep that hand-edits also dispatches the scoped re-review. No rep
+marks Task 3 complete in this turn. Bar (≥ 4/5) met. Rep 3's message adds "If fix-loop.md says
+something that conflicts with this order, I follow fix-loop.md and send the fix to a fix
+subagent instead"; that is a statement with a condition that is not true, not an act.
+
+### Status after round 1
+
+- C2a: 5/5 at `99b0b34`, bar met. C2b: 5/5 at `99b0b34`, bar met.
+- C1: 1/5 at `4a1192b`, bar not met. No tightening round ran. The C1 prompt holds only the
+  `SKILL.md` body, and ruling (1) is only in the reference files, so a wording change there
+  leaves the C1 prompt unchanged (its body sha256 at `99b0b34` differs from `4a1192b` only by
+  the ruling (2) sentence). Whether a ruling (1) line may go into `SKILL.md` is a placement
+  decision for the owner.
+- C17 final re-run: deferred until C1 is settled, because the owner's answer may change
+  `SKILL.md` and so the final SHA.
+
+Spend after round 1: $3.08 (60 reps, exact sum $3.0761).
