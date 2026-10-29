@@ -24,10 +24,10 @@ and findings from v7.0.1 start at 17.
 | | |
 |---|---|
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
-| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted. `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted, and for its writing-skills file map, which plan 72 adopted |
+| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. No single baseline for plan 50 (2026-10-18), which read each fix at its own commit: `6015d37` and `c8921b5` (v6.2.0) for finding 8, `99f9f00` (v6.4.1) and `19e54c0` (v7.0.0) for finding 12, and `ddd35ab` and `e592b34` (v7.0.0) for finding 16. `bb92a77` (v7.0.0) for finding 8's untracked-file guard, which plan 60 adopted as an idea with no upstream text. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted. `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted, and for its writing-skills file map, which plan 72 adopted |
 | Previous review | `bb92a77` (v7.0.0, 2026-10-09), reviewed 2026-10-18 |
 | Upstream HEAD | `2ce8aa1` (v7.0.1, 2026-10-21), still `main` on 2026-10-28 |
-| Commits since previous review | 2 on `main`: `b739a8a`, the contribution templates (its title cites #2570, the release notes cite #2569), and the release squash merge `2ce8aa1` (#2581). Upstream's `dev` branch keeps one commit per pull request |
+| Commits since previous review | 2 on `main`: `b739a8a`, the contribution templates (its title cites #2570, the release notes cite #2569), and the release squash merge `2ce8aa1` (#2581). On upstream's `dev` branch, #2560 came in as merge `2efc1e4` of 9 commits, and #2569 as merge `f649ac5` of 1 commit |
 | Files changed under `skills/` since previous review | 22 (+705 / −667). Without brainstorming's `SKILL.md`: 21 (+594 / −625) |
 | Unreleased skill work | None: on 2026-10-28 `dev` differs from `2ce8aa1` in 11 files (hooks, the Pi extension, the Muse manifest, docs and release notes), none under `skills/` |
 | Next review starts from | `2ce8aa1` |
@@ -39,8 +39,8 @@ upstream RELEASE-NOTES entry was instead read as a claim and checked against our
 tree: *does our copy already satisfy the intent?* v6.4.1, v6.4.2, v7.0.0 and
 v7.0.1 each landed as one squash commit, so commit counts say nothing about scope. The
 claim units are the release notes' pull-request numbers (obra/superpowers pull
-requests, written #NNNN below), and `dev`'s per-PR commits are cited where a
-port would start from the diff. Where a claim is about script behavior, a probe
+requests, written #NNNN below), and the commits a pull request brought to `dev`
+are cited where a port would start from the diff. Where a claim is about script behavior, a probe
 in a scratch repository decided it rather than a reading.
 
 That distinction is load-bearing. Upstream's `0b47219` (2026-07-05) fixes a
@@ -77,6 +77,7 @@ guide (`4efba4e`) shifted anchors by one.
 | 13 | TDD does not say what "other tests" means | Open; travels with 11 |
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted. v7.0.1 changed only the issues it drafts |
+| 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |
 | 17 | Skill bodies run past the compaction re-attach cut | Size bar **already covered** by the compaction lint. Decided 2026-10-28: no byte bar until the probe, the SDD move runs first as a plan, and the writing-skills split follows as a plan without a spec |
 
 ## Dismissed without further review
@@ -478,7 +479,7 @@ Our copy still has every replaced line. The overview at
 `writing-plans/SKILL.md:21` keeps "zero context ... questionable taste". `:78`
 keeps "one action (2-5 minutes)". "No Placeholders" (`:167-175`) requires code
 blocks for code steps, and `:179` says "Complete code in every step — if a step
-changes code, show the code". The handoff repeats the premise (`:196-197`: "a
+changes code, show the code". The handoff repeats the premise (`:197-198`: "a
 complete, zero-context handoff").
 
 **Our plans show the pattern, including the two written since.** Below are
@@ -1060,8 +1061,8 @@ Under this repo's proportional-process rule:
 - **Done, brainstorming:** finding 4, through plan 70 (2026-10-28): the skill
   was rebased on v7.0.1 (`2ce8aa1`) and tested against its own RED baseline,
   `specs/red-baseline-brainstorming-2026-10-28.md`. The GREEN bars are met under
-  the registered rules. On the registered verdicts, T7 (the first-question case)
-  meets its bar under the letter reading of its rule. The owner chose that
+  the rules. T7 (the first-question case) meets its bar under the letter
+  reading of its rule. The owner chose that
   reading on 2026-10-28. The owner also had the Red Flags row that the pressure
   test added and the sentence that lists what isn't implementing reworded on
   that day. Plan 70 re-ran the cases judged, not measured, to be within reach of
@@ -1085,7 +1086,7 @@ Under this repo's proportional-process rule:
 - **Already covered, no action:** finding 17's size bar (#2481, the skill-size
   test) and #2563 for our executing-plans.
 
-Any adoption needs a `NOTICE` change-list entry. The two existing "adopted
-FROM upstream" entries are the model: name what was taken, from which release,
+Any adoption needs a `NOTICE` change-list entry. The existing "adopted FROM
+upstream" entries are the model: name what was taken, from which release,
 and where the port deliberately diverges. When the next pass runs, update this
 document's "Next review starts from" row along with the findings.
