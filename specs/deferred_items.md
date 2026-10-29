@@ -3502,7 +3502,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       owner picks what counts as a loop guard (the flag, a transcript read, an attempt
       counter, or a waiver per hook), the rule and the check agree on it, a test covers each
       accepted form, and both files' contradictions are cleared.
-- [ ] Three subagent-driven-development decisions, outside the register
+- [x] Three subagent-driven-development decisions, outside the register
       (`skills/subagent-driven-development/SKILL.md`). (1) Line 239 (line numbers refreshed after plan 46's reorder): an implementer already
       at `capable` has only fresh context and higher effort left, with no model step; the guide
       names a Fable step above Opus (`subagents.models`). The Agent tool's `model` option
@@ -3529,6 +3529,11 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       near the top to re-invoke the skill and re-read the ledger after a compaction, plus
       upstream's per-step re-read pointers. The line is tested against a control without it
       first and dropped if the control already recovers. Plan 71 applies (1), (2) and (3).
+      → done in plan 71 (2026-10-29): (1) the Fable round-5 rung, with one line in SKILL.md's
+      Fix Rounds paragraph because the micro-test prompt holds only SKILL.md; (2) the
+      trivial-fix exception, tightened once after C2b scored 0/5; (3) tested against a control
+      and dropped, because the control recovered 5/5 (stop rule D3). Results:
+      `specs/red-baseline-sdd-compaction.md`.
 - [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
@@ -3681,7 +3686,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       a non-empty `variables`.
 
 ## 46-sdd-bundle — 2026-10-15
-- [ ] Fit the subagent-driven-development and bayesian-workflow bodies inside the
+- [x] Fit the subagent-driven-development and bayesian-workflow bodies inside the
       compaction window (plan 46 D1): the critical sections now end inside the first
       20,000 body characters, but the bodies are still about 30k and 33k characters, so
       exception `skill-body-past-compaction` in `build/cc_guide/conformance.toml` stays.
@@ -3712,6 +3717,12 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       → progress 2026-10-28 (owner decision, "I approve your recommendations"): this item runs
       first, as a plan without a spec on upstream's map. The item "Split writing-skills along
       upstream v7.0.1's map" follows it. No execution starts before plan 69's execution ends.
+      → done in plan 71 (2026-10-29): subagent-driven-development body 18,921 characters and
+      bayesian-workflow body 18,424, both under the 19,500 gate; exception
+      `skill-body-past-compaction` removed and `build/check_conformance.py` passing.
+      `test_late_critical_section_is_refused` was replaced (not removed) so the unwaived state
+      stays guarded; `CRITICAL_SPANS` is empty; the `critical_placement` lint stays because
+      `writing-skills-late-critical-headings` remains.
 - [x] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
       (`build/check_conformance.py`) waives per check and file, so exception
       `skill-body-past-compaction` also covers a critical heading that slips past the window
@@ -6774,3 +6785,20 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the constant. Size: quick-fix. Revisit if: the owner wants the pointer, or a later pressure
       test shows a rep that edits after a check found a wider reach. The owner chooses the wording.
       Owner decision D18 set the current wording in Task 8.
+
+## 71-sdd-bayesian-compaction-window — 2026-10-29
+- [ ] Nothing resolves relative links inside `skills/**/references/` (plan 71 final review,
+      Important): four links broke when text moved one directory deeper
+      (`skills/subagent-driven-development/references/{fix-loop,cannot-verify,final-review}.md`,
+      `skills/bayesian-workflow/references/utility-scripts.md`) and no lint, survival check or
+      review caught them until the final review. Fixed in 49c8a9f. A lint that parses markdown
+      links in every `references/*.md` and fails when a target is missing would catch the next
+      move, and the same lint could cover each SKILL.md. Size: plan. Done when: such a lint runs
+      in `build/run_commit_lints.sh` and fails on a broken `references/` link in a test clone.
+- [ ] The trivial-fix exception does not say whether a hand fix counts against the five fix
+      attempts (plan 71 final review, Minor): `skills/subagent-driven-development/SKILL.md`
+      (Red Flags, "Exception: a fix confined to one file…") and
+      `skills/subagent-driven-development/references/fix-loop.md` (first bullet under "Fix
+      dispatches") are silent. Adding a sentence changes SKILL.md after the plan 71
+      micro-tests, so C2a and C2b must be re-run on the new SHA (about $1). Size: quick-fix.
+      Done when: both copies of the exception say it, and C2a and C2b still pass at 5/5.

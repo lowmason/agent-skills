@@ -1,5 +1,7 @@
 # SDD and bayesian-workflow compaction-window Implementation Plan
 
+**Status: COMPLETE (2026-10-29)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fit the bodies of `skills/subagent-driven-development/SKILL.md` and `skills/bayesian-workflow/SKILL.md` inside the compaction window by moving situational text into `references/`, apply the owner's three subagent-driven-development rulings, and remove exception `skill-body-past-compaction`.
@@ -79,7 +81,7 @@
 - Consumes: nothing.
 - Produces: `check_moved_lines.py <base-sha> <skill-dir>` (Task 4 reuses it); the moved body at this task's commit, which Task 2 uses as the control arm. Reference file names exactly as the file map gives them; Task 3 edits `fix-loop.md` and `model-selection.md`.
 
-- [ ] **Step 1: Write the line-survival check**
+- [x] **Step 1: Write the line-survival check**
 
 Create `specs/red-baseline-sdd-compaction/kit/check_moved_lines.py`:
 
@@ -118,14 +120,14 @@ if __name__ == '__main__':
     main()
 ```
 
-- [ ] **Step 2: Run it before any move to see it pass on the unchanged file**
+- [x] **Step 2: Run it before any move to see it pass on the unchanged file**
 
 Run: `python3 specs/red-baseline-sdd-compaction/kit/check_moved_lines.py c9141e9 skills/subagent-driven-development`
 Expected: `0 line(s) missing`, exit 0.
 
 Then delete one line from `SKILL.md` by hand, run it again, and expect that line printed and `1 line(s) missing`, exit 1. Restore the line with `git checkout -- skills/subagent-driven-development/SKILL.md`.
 
-- [ ] **Step 3: Create the reference files**
+- [x] **Step 3: Create the reference files**
 
 Each new file starts with a `# <Title>` line, one sentence saying when to read it, a blank line, then the moved text verbatim. Move whole paragraphs and bullets; confirm each range's first and last lines with `git show c9141e9:skills/subagent-driven-development/SKILL.md | sed -n '<a>,<b>p'` and widen the range to the paragraph or bullet edge if it cuts one.
 
@@ -157,7 +159,7 @@ the boundary rules and the handoff to run once it fires.
 
 The moved section's last paragraph points at this same file (`[references/context-checkpoints.md](references/context-checkpoints.md)`) and says "via **Durable Progress** above". Replace that paragraph with `**How:** run the three-step handoff below. The relaunch resumes from the ledger via SKILL.md § Durable Progress.` and list it as a pointer fix.
 
-- [ ] **Step 4: Put the pointers in SKILL.md**
+- [x] **Step 4: Put the pointers in SKILL.md**
 
 Delete each moved range from `SKILL.md` and put the pointer below in its place. Keep every heading that the table in Step 3 says to keep, so "see **Fix Rounds**" and the other in-file references still land.
 
@@ -240,7 +242,7 @@ warning, or context you notice has grown large), run the handoff in
 durable handoff, never a "should I continue?" check-in, and never interrupts a task.
 ```
 
-- [ ] **Step 5: Fix inbound pointers**
+- [x] **Step 5: Fix inbound pointers**
 
 - `references/model-selection.md:33`: `SKILL.md § Fix Rounds ends at **capable**` → `the ladder in [fix-loop.md](fix-loop.md) ends at **capable**` (Task 3 rewrites this section; this keeps it true in between).
 - `references/context-checkpoints.md`, the line that said `SKILL.md § Durable Progress.`: → `SKILL.md § Durable Progress and [resuming.md](resuming.md).`
@@ -253,7 +255,7 @@ grep -rn -E 'Batch small same-shape|Pre-Flight Plan Review|Handling Implementer 
 
 Expected hits that need no change: `skills/requesting-code-review/code-reviewer.md:169` ("that skill's File Handoffs contract" names the contract, and `references/file-handoffs.md` keeps the name); the three "Batching trades subagent cost" lines (a different sentence).
 
-- [ ] **Step 6: Run the checks**
+- [x] **Step 6: Run the checks**
 
 ```bash
 python3 specs/red-baseline-sdd-compaction/kit/check_moved_lines.py c9141e9 skills/subagent-driven-development
@@ -264,7 +266,7 @@ uv run --with pyyaml python build/check_conformance.py
 
 Expected: the survival check prints only lines you changed as pointer fixes (list each in the report); body chars about 18,100 and file bytes about 18,950 (the planner's simulation), and file bytes ≤ 19,100 so Task 3's roughly 620 bytes of ruling text fit under 20,000 with room for one tightening round; the snippet and conformance checks pass. If the file is over 19,100 bytes, shorten pointer wording, not moved text, and report it.
 
-- [ ] **Step 7: Add the NOTICE entry**
+- [x] **Step 7: Add the NOTICE entry**
 
 In `NOTICE`, after the entry that starts `  - Five fixes were later adopted FROM upstream (plan 50, 2026-10-18),`, add:
 
@@ -286,7 +288,9 @@ In `NOTICE`, after the entry that starts `  - Five fixes were later adopted FROM
 Run: `uv run python build/check_provenance.py`
 Expected: PASS.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
+
+  > Deviation: The pre-commit hook failed with a stale-waiver finding once the SDD body fit the window. Owner ruling 2026-10-29: narrow the exception per skill. The commit (618e31d) also replaced `test_late_critical_section_is_refused` (RED then GREEN), removed the SDD file from exception `skill-body-past-compaction` and its row from `CRITICAL_SPANS`. No `--no-verify` anywhere in the plan.
 
 ```bash
 git add skills/subagent-driven-development NOTICE specs/red-baseline-sdd-compaction/kit/check_moved_lines.py
@@ -308,7 +312,7 @@ Record this commit's SHA in the ledger as `T1_SHA`; Task 2 uses it.
 - Consumes: `T1_SHA` from Task 1.
 - Produces: `build_prompts.py <arm> <sha> <out-dir>` with arms `body` and `cut`; `run_reps.sh <prompt-file> <out-dir> <first> <last>`; the results file with each case's bar and baseline verdicts; the C3 stop-rule outcome, which decides whether Task 3 adds the recovery line.
 
-- [ ] **Step 1: Copy the kit**
+- [x] **Step 1: Copy the kit**
 
 ```bash
 mkdir -p specs/red-baseline-sdd-compaction/kit
@@ -333,7 +337,7 @@ AIDS = {
 
 If `show_reps.py` refers to an aid name that this dict drops, remove that reference and list it in the report.
 
-- [ ] **Step 2: Write the cases**
+- [x] **Step 2: Write the cases**
 
 Create `specs/red-baseline-sdd-compaction/kit/cases.py`:
 
@@ -401,7 +405,7 @@ Partner: Execute `specs/plans/14-buoy-sync.md` with subagent-driven-development.
 }
 ```
 
-- [ ] **Step 3: Write the prompt builder**
+- [x] **Step 3: Write the prompt builder**
 
 Create `specs/red-baseline-sdd-compaction/kit/build_prompts.py`:
 
@@ -465,7 +469,7 @@ if __name__ == '__main__':
     main()
 ```
 
-- [ ] **Step 4: Pre-register the bars**
+- [x] **Step 4: Pre-register the bars**
 
 Create `specs/red-baseline-sdd-compaction.md` with this text, before building any prompt:
 
@@ -494,7 +498,7 @@ git add specs/red-baseline-sdd-compaction.md specs/red-baseline-sdd-compaction/k
 git commit -m "test(sdd): register plan 71 micro-test bars and kit"
 ```
 
-- [ ] **Step 5: Build the baseline prompts**
+- [x] **Step 5: Build the baseline prompts**
 
 ```bash
 python3 specs/red-baseline-sdd-compaction/kit/build_prompts.py cut c9141e9 specs/red-baseline-sdd-compaction/cut C17
@@ -503,7 +507,7 @@ python3 specs/red-baseline-sdd-compaction/kit/build_prompts.py body <T1_SHA> spe
 
 Expected: `wrote 1 prompts to …/cut` and `wrote 5 prompts to …/t1`. Read `t1/C17.txt` once end to end and confirm the body has no truncation and the conversation sits inside `<session>`.
 
-- [ ] **Step 6: Run the baselines (30 reps, worst case $15)**
+- [x] **Step 6: Run the baselines (30 reps, worst case $15)**
 
 Check the spend rule, then run each line with `timeout: 600000` or in the background:
 
@@ -518,7 +522,9 @@ bash specs/red-baseline-sdd-compaction/kit/run_reps.sh specs/red-baseline-sdd-co
 
 Expected per call: five `repN exit=0` lines. Any nonzero exit: read `repN.err`, rerun with the next free rep numbers, and count only five good reps per arm.
 
-- [ ] **Step 7: Read every rep and record verdicts**
+- [x] **Step 7: Read every rep and record verdicts**
+
+  > Deviation: C17 at T1 first scored 0/5 under a reading standard written after the reps were read, and tightening commit b0055fc followed. The Task 2 review found both unjustified. Owner ruling 2026-10-29: revert b0055fc (d4fb6d3) and score C17 under the loose reading (refuse a sixth round, read fix-loop.md before any dispatch, commit to adjudicating F2). The C3 stop rule fired (control 5/5).
 
 Run `uv run python specs/red-baseline-sdd-compaction/kit/show_reps.py specs/red-baseline-sdd-compaction/cut/C17 specs/red-baseline-sdd-compaction/t1/*/` and read each full reply. Under `## Results`, add one table per case: rep, verdict (pass or fail), one quoted phrase that decides it, and the spend so far. Then:
 
@@ -526,7 +532,7 @@ Run `uv run python specs/red-baseline-sdd-compaction/kit/show_reps.py specs/red-
 - **C3 control ≥ 4/5:** write `Stop rule fired: the recovery line is dropped (D3).` under the C3 table. Task 3 skips its Step 2.
 - A control that already passes C1, C2a or C2b changes nothing: those rulings change behavior on purpose, and the controls are descriptive.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add specs/red-baseline-sdd-compaction.md specs/red-baseline-sdd-compaction
@@ -545,7 +551,7 @@ git commit -m "test(sdd): plan 71 baselines for the fix-loop pointer and the thr
 - Consumes: the reference files from Task 1; the C3 stop-rule outcome from Task 2.
 - Produces: the ruling wording; `T3_SHA`, the commit the treatment reps read.
 
-- [ ] **Step 1: Ruling (2) — the trivial-fix exception, in both places**
+- [x] **Step 1: Ruling (2) — the trivial-fix exception, in both places**
 
 In `SKILL.md` Red Flags, under `**If reviewer finds issues:**`, insert after the first bullet (`- Dispatch a fix subagent with the findings …`):
 
@@ -569,7 +575,9 @@ In the same Red Flags, under `**If subagent fails task:**`, replace `- Don't try
 
 In `references/fix-loop.md`, insert the same six exception lines as the first bullet under `## Fix dispatches`. The two copies must read the same; the Red Flags copy is the one that survives compaction.
 
-- [ ] **Step 2: Ruling (3) — the recovery line (skip if Task 2's C3 stop rule fired)**
+- [x] **Step 2: Ruling (3) — the recovery line (skip if Task 2's C3 stop rule fired)**
+
+  > Skipped: the C3 control scored 5/5, so the stop rule (D3) dropped the recovery line. This is a designed outcome, not a deferral. → dropped, nothing deferred
 
 In `SKILL.md` Red Flags, directly after the `**Never:**` list and before `**If subagent reports NEEDS_CONTEXT:**`, insert:
 
@@ -578,7 +586,9 @@ In `SKILL.md` Red Flags, directly after the `**Never:**` list and before `**If s
 `git log`, then the reference for the step you are on, before any dispatch.
 ```
 
-- [ ] **Step 3: Ruling (1) — the Fable rung**
+- [x] **Step 3: Ruling (1) — the Fable rung**
+
+  > Deviation: The C1 prompt holds only SKILL.md, so C1 could not pass with ruling (1) only in the references. Owner ruling 2026-10-29: one ruling (1) line also goes into SKILL.md's Fix Rounds paragraph (fc6cc10), with the "round 4 was a thorough attempt that still failed" condition reconciled in fix-loop.md and model-selection.md.
 
 In `references/fix-loop.md`, replace
 
@@ -609,7 +619,7 @@ thorough attempt that still failed. Where the runtime has no `fable`, the
 ladder ends at **capable**, and a task that still fails goes to adjudication.
 ```
 
-- [ ] **Step 4: Check size and lints, then commit**
+- [x] **Step 4: Check size and lints, then commit**
 
 ```bash
 python3 -c "import re,sys;t=open(sys.argv[1]).read();m=re.match(r'---\n.*?\n---\n',t,re.S);print('body chars',len(t)-m.end(),'file bytes',len(t.encode()))" skills/subagent-driven-development/SKILL.md
@@ -632,7 +642,7 @@ What this buys and costs against manual execution: [references/advantages.md](re
 
 If it still fails, stop and ask the owner (Global Constraints, owner stops).
 
-- [ ] **Step 5: Run the treatment reps (20 reps, or 15 if C3 was dropped)**
+- [x] **Step 5: Run the treatment reps (20 reps, or 15 if C3 was dropped)**
 
 Check the spend rule first.
 
@@ -646,13 +656,15 @@ bash specs/red-baseline-sdd-compaction/kit/run_reps.sh specs/red-baseline-sdd-co
 
 Leave out C3 from both commands if its stop rule fired.
 
-- [ ] **Step 6: Read, record, and tighten if needed**
+- [x] **Step 6: Read, record, and tighten if needed**
+
+  > Deviation: Ruling (2) was tightened once (99b0b34) after C2b scored 0/5 at 4a1192b; C2b, C2a, C1 and C17 all scored 5/5 at fc6cc10. Final-SHA C17 rep 1 passes only on a generous reading; the owner ruled it a pass on 2026-10-29 (disclosed in the results file).
 
 Read every rep with `show_reps.py` and record verdicts under `## Results` as in Task 2. For a treatment below its bar: tighten that ruling's wording only, keep the two ruling (2) copies the same, run Step 4's size check (and its fallback move if needed), commit, rebuild that case for the new SHA, and rerun 5 reps. At most two rounds per case; then stop and ask the owner with the reps' quoted phrases. C2b below 5/5 is never resolved by loosening its bar.
 
 Re-run C17 once on the final SHA (5 reps) to confirm the ruling text did not break the fix-loop pointer; its bar is unchanged.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/red-baseline-sdd-compaction.md specs/red-baseline-sdd-compaction skills/subagent-driven-development
@@ -671,12 +683,12 @@ git commit -m "test(sdd): plan 71 treatment reps for the three rulings"
 - Consumes: `check_moved_lines.py` from Task 1.
 - Produces: the bayesian-workflow body within the size gate; Task 5 relies on it.
 
-- [ ] **Step 1: Confirm the survival check passes on the unchanged file**
+- [x] **Step 1: Confirm the survival check passes on the unchanged file**
 
 Run: `python3 specs/red-baseline-sdd-compaction/kit/check_moved_lines.py c9141e9 skills/bayesian-workflow`
 Expected: `0 line(s) missing`.
 
-- [ ] **Step 2: Create the six reference files**
+- [x] **Step 2: Create the six reference files**
 
 Each starts with `# <Title>`, one sentence on when to read it, a blank line, then the section body verbatim (without its `##` heading), fences and their markers included.
 
@@ -691,7 +703,7 @@ Each starts with `# <Title>`, one sentence on when to read it, a blank line, the
 
 Inside the moved text, links of the form `[references/x.md](references/x.md)` now sit in `references/`. Rewrite each to `[x.md](x.md)` and list it as a pointer fix. `<this-skill-dir>/scripts/…` paths stay as they are.
 
-- [ ] **Step 3: Put the pointers in SKILL.md**
+- [x] **Step 3: Put the pointers in SKILL.md**
 
 Keep each `##` heading; replace its body with:
 
@@ -734,7 +746,7 @@ divergences, low ESS, R-hat above 1.01, a failing predictive check, or a missing
 
 The body's other references ("See **Samplers** below", "see **Stack compatibility**", "`np` imported in the model template below") still land on a kept heading; leave them.
 
-- [ ] **Step 4: Fix inbound pointers**
+- [x] **Step 4: Fix inbound pointers**
 
 - `skills/bayesian-workflow/README.md:66`: `See SKILL.md → "Stack compatibility (NumPyro + ArviZ)"` → `See references/stack-compatibility.md`.
 - `skills/bayesian-workflow/README.md:83` (the `references/` tree): add the six new files in the tree's existing order and style.
@@ -743,7 +755,7 @@ The body's other references ("See **Samplers** below", "see **Stack compatibilit
 - Check the two line citations into Installation, `build/check_snippets.py:72` (`SKILL.md:50-53`) and the fence marker `blackjax is optional (SKILL.md:52)` now in `references/samplers.md`: Installation did not move, so confirm with `sed -n 50,56p skills/bayesian-workflow/SKILL.md` that the cited lines still hold the optional-package text, and correct the numbers if they do not.
 - Re-run the sweep: `grep -rn -E 'Stack compatibility|NumPyro model template|Common model families|Utility scripts|When things go wrong' skills agents commands build NOTICE CLAUDE.md --include='*.md' --include='*.py' --include='*.toml' | grep -v '^skills/bayesian-workflow/'` and fix any other hit.
 
-- [ ] **Step 5: Run the checks**
+- [x] **Step 5: Run the checks**
 
 ```bash
 python3 specs/red-baseline-sdd-compaction/kit/check_moved_lines.py c9141e9 skills/bayesian-workflow
@@ -759,7 +771,9 @@ Expected: the survival check prints only listed pointer fixes; body chars ≤ 19
 
 If the size gate fails, move `## Installation` (`:54-69`) to `references/installation.md` the same way, fix the two `SKILL.md:50-53` and `SKILL.md:52` citations to point at it, and report the move.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
+
+  > Deviation: The commit (9a62f64) also deleted the whole exception `skill-body-past-compaction` and set `CRITICAL_SPANS = {}`, because the hook's stale-waiver check fails once bayesian-workflow fits too. The brief's `SKILL.md:50-53` and `:52` citations were already stale (the pip lines are 61-64, blackjax 63); `references/svi.md:47` also got a pointer fix. Four relative links broke by the move and were fixed in the final review (49c8a9f).
 
 ```bash
 git add skills/bayesian-workflow build/check_snippets.py build/snippet_preamble.py
@@ -777,7 +791,9 @@ git commit -m "refactor(bayesian-workflow): move situational sections into refer
 - Consumes: both bodies within the size gate (Tasks 3 and 4).
 - Produces: no compaction-window waiver for either file; `critical_placement` and the eight-lint count stay, because writing-skills' `ACKNOWLEDGED_LATE` remains.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
+
+  > Deviation: Steps 1 to 4 were done in Tasks 1 and 4 (see their notes). Only Steps 5 to 8 ran here (29b0cfa). `build/CLAUDE.md` named none of the removed items and was left unchanged.
 
 Replace `test_late_critical_section_is_refused` in `build/test_commit_lints.py` with:
 
@@ -799,17 +815,17 @@ def test_late_critical_section_is_refused(clone):
     assert "heading '## Red Flags' starts past the" in result.stdout + result.stderr, result.stderr
 ```
 
-- [ ] **Step 2: Run it to see it fail**
+- [x] **Step 2: Run it to see it fail**
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k test_late_critical_section_is_refused; cd ..`
 Expected: FAIL, because the exception still waives the file: the failed set is `{'critical_placement'}`, not `{'check_conformance'}`.
 
-- [ ] **Step 3: Remove the exception and the spans**
+- [x] **Step 3: Remove the exception and the spans**
 
 - In `build/cc_guide/conformance.toml`, delete the whole `[[exception]]` block whose `id = 'skill-body-past-compaction'` (`:682-694`, through its `tracked_in` line, and the blank line after it).
 - In `build/test_check_conformance.py`, replace the two rows of `CRITICAL_SPANS` so it reads `CRITICAL_SPANS = {}`, and replace the comment line above it that names "its files' rows" only if it no longer reads true.
 
-- [ ] **Step 4: Run the tests to see them pass**
+- [x] **Step 4: Run the tests to see them pass**
 
 ```bash
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k test_late_critical_section_is_refused; cd ..
@@ -819,7 +835,7 @@ uv run --with pyyaml python build/check_conformance.py
 
 Expected: the first passes. The second passes `test_real_skill_spans_match_the_compaction_waiver` and the `ACKNOWLEDGED_LATE` tests, and reports the two tests parametrized over `CRITICAL_SPANS` as skipped for an empty parameter set: that is expected, because the unwaived conformance check now guards both files, headings included, which Step 1's test proves. The conformance check passes with no finding for either skill.
 
-- [ ] **Step 5: Update the placement text**
+- [x] **Step 5: Update the placement text**
 
 In `CLAUDE.md`, replace
 
@@ -841,7 +857,7 @@ with
 
 In `build/CLAUDE.md`, find each sentence that names `skill-body-past-compaction`, `CRITICAL_SPANS` or "two skills" for the placement lint (`grep -n -E 'skill-body-past-compaction|CRITICAL_SPANS|critical_placement' build/CLAUDE.md`) and make it say the same as the new `CLAUDE.md` text. Do not change the lint count.
 
-- [ ] **Step 6: Update drift finding 17's disposition**
+- [x] **Step 6: Update drift finding 17's disposition**
 
 In `specs/superpowers-drift-spec.md`, under `## Suggested disposition`, replace the bullet that starts `- **Fix directly, no spec, through an open deferred item:** finding 17's SDD` (through `…prior art for it.`) with:
 
@@ -860,7 +876,7 @@ If Task 2's C3 stop rule fired, change "the trivial-fix exception and the post-c
 
 In the same file's Scope table, the "Adoption baselines" row ends with `` `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted``. Append to it: ``. `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted``.
 
-- [ ] **Step 7: Run every commit lint and the touched suites**
+- [x] **Step 7: Run every commit lint and the touched suites**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -870,7 +886,7 @@ uv run python build/cc_guide/cli.py lint
 
 Expected: every lint passes; the three suites pass (skips only for the empty-`CRITICAL_SPANS` parameter sets); `cc_guide/cli.py lint` passes (STALE lines do not fail it; list any it prints in the report).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add build/cc_guide/conformance.toml build/test_check_conformance.py build/test_commit_lints.py CLAUDE.md build/CLAUDE.md specs/superpowers-drift-spec.md
