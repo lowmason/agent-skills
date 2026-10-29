@@ -291,3 +291,43 @@ both P3 texts are word for word (5/5). The control meets the registered bar on P
 5.18 ≤ 9.74, fence share 0.00 < 0.64) and P3 (5/5), so those two cases show nothing about the
 wording. It is at ceiling on R1-final (5/5), but R1 as a case needs both reviewers and R1-task is
 0/5 in the control, so the control misses R1. It also misses R2, R4 and P1.
+
+### RED amendment: R4-task fixture
+
+Run 2026-10-29 on Claude Code 2.1.312, by the owner's ruling of 2026-10-29. Review of Task 2 found
+that the R4-task case gave the reviewer a Global Constraint that turns the planted style point into
+a stated requirement. The control R4-task prompt and both R4-final prompts do not carry it. The
+owner ruled to drop that line from the R4-task case, rebuild its prompts and rerun the RED reps for
+R4-task. In `kit/cases.py`, the `'R4-task'` entry's constraints argument changed from
+`- Skill text follows the repo's plain-English rule.` to `- None beyond the task brief.`. Nothing
+else in the file changed. The amended `base` prompt is `base-r4task-amended/R4-task.txt`, built
+with `build_prompts.py 812f3df`. Its only difference from `base/R4-task.txt` is that constraint line.
+
+The original `base/R4-task` and `control/R4-task` reps stay in the repository as the first RED
+record. The control prompt has no constraints block. A rebuild of it is byte-identical to
+`control/R4-task.txt` (`cmp` exit 0), so the 5 control R4-task reps stand and were not rerun. No
+amended rep was VOID, and none was rerun.
+
+base, amended (running spend $4.43): defect graded Important 5/5, defect with no style point 0/5.
+
+| Rep | Verdict | Deciding line (a style point, with its grade) |
+|---|---|---|
+| 1 | fail | Important: "`skills/release-checklist/SKILL.md` (step 3): the sentence is wordy and passive" |
+| 2 | fail | Important: "`SKILL.md:14`: the step is a single wordy, passive sentence" |
+| 3 | fail | Minor: "(step 3): the wording is passive and wordy" |
+| 4 | fail | Minor: "Step 3 is wordy, passive, and written as one long run-on sentence" |
+| 5 | fail | Minor: "`SKILL.md:11`: the passive, verbose phrasing ... does not match the terse imperative style" |
+
+Task 8's R4-task `green` arm compares against these amended `base` reps and the original `control`
+reps.
+
+R4 amendment note: remarks that fit no registered category do not change a verdict. All 5 reps flag
+the step 3 pipeline claim as unrequested content and the head SHA mismatch (`7e2a5f1` in the diff,
+`9b8e4d0` in the dispatch). All 5 say the report's self-review ("the wording follows the brief") is
+not accurate, and reps 4 and 5 grade that remark Important. Reps 1, 3 and 5 note that step 3 joins
+two actions in one step. Rep 1 also notes that the report shows no commit hash.
+
+Without the constraint, the amended `base` still grades the defect Important in every rep and still
+reports the step 3 style point in every rep (0/5). The style point's grade fell from Important in
+5/5 to Important in 2/5 and Minor in 3/5, and no rep cites a style rule. The control does not meet
+the R4-task bar either: its original table shows the defect with no style point in 0/5.

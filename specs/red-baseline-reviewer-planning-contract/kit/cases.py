@@ -454,7 +454,7 @@ CASES = {
                            'Plan: `specs/plans/2-paging.md`. Spec: `specs/paging.md`.',
                            {'specs/paging.md': PAGE_SPEC, 'specs/plans/2-paging.md': PAGE_PLAN,
                             'diff': PAGE_DIFF}, '2-paging'),
-    'R4-task': task_case(SONNET, SKILL_TASK, SKILL_REPORT, SKILL_DIFF, '- Skill text follows the repo\'s plain-English rule.',
+    'R4-task': task_case(SONNET, SKILL_TASK, SKILL_REPORT, SKILL_DIFF, '- None beyond the task brief.',
                          '6-release-checklist-tagging'),
     'R4-final': final_case('Added the tagging steps to the release-checklist skill.',
                            'Plan: `specs/plans/6-release-checklist-tagging.md` (Spec: none; the plan is the requirement).',
