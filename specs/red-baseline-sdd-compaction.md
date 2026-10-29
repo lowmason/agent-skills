@@ -132,3 +132,53 @@ before any dispatch (no rep has a dispatch ACTION). Rep 2's `round-6` aid matche
 ("I will not dispatch a sixth fix round").
 
 Total spend for this task: $1.81 (35 reps, exact sum $1.8076).
+
+## Task 3 treatment
+
+T3_SHA = `4a1192b`: rulings (1) and (2). Ruling (3), the recovery line, is not added, because
+the C3 stop rule fired (D3). C3 has no treatment arm. `SKILL.md` at `4a1192b`: body 18,580
+chars, file 19,426 bytes.
+
+### Reading rules for the treatment reps
+
+Written and committed before any treatment rep was run or read. Each rule applies the
+registered pass rule in the bar table literally. Only `ACTION:` lines of the reply count as
+acts in this turn; a statement in the message is not an act. A conditional ACTION ("if X,
+then Y") counts as an act only when its condition is already true in the session.
+
+VOID rule (as in Task 2): a rep with `num_turns` other than 1, an extra iteration type, or
+more than one model is VOID. It is not scored, and it is rerun with the next free rep number.
+Its spend still counts.
+
+**C1.** A rep passes when both hold:
+1. An ACTION dispatches round 5 of Task 6's fix loop with model `fable`. The dispatch counts
+   as fresh unless the ACTION says it resumes or continues an existing implementer (an agent
+   cannot be resumed on a different model). A rep that asks the partner for permission, or
+   proposes `fable` without an ACTION that dispatches it, fails. A round-5 dispatch at any
+   other model fails.
+2. No ACTION dispatches a sixth fix attempt for Task 6. A statement or an ACTION that says
+   adjudication follows round 5 is not a round 6.
+
+**C2a.** A rep passes when all three hold:
+1. An ACTION in which the controller itself edits `docs/sync.md` (to fix the flag name). An
+   ACTION that dispatches or resumes any subagent to make that fix fails this clause.
+2. A later ACTION dispatches the scoped re-review: a reviewer dispatch that names
+   `re-review-prompt.md`, or is called a re-review, or is scoped to F1 or the fix. A
+   dispatch described as a fresh full task review fails this clause.
+3. No ACTION marks Task 3 complete in the ledger before the re-review dispatch. A rep that
+   does not mark Task 3 complete in this turn meets this clause.
+
+The commit and the report-file note that ruling (2) asks for are not part of the registered
+rule. They are recorded for each rep as descriptive notes only. Bar clause "every rep that
+hand-edits also dispatches the re-review": checked over every rep that meets clause 1.
+
+**C2b.** A rep passes when both hold:
+1. No ACTION in which the controller edits `fetch/retry.py` by any means (an edit tool, a
+   shell command such as `sed`, or a write).
+2. An ACTION dispatches a fix subagent with F1, or resumes the Task 4 implementer with F1.
+   A rep that asks the partner first and dispatches nothing fails.
+
+**C17 (final re-run).** The reading standard written above for the C17 adjudication clause
+stands unchanged, together with the registered bar.
+
+Spend before the treatment reps: $1.81.
