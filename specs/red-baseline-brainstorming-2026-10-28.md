@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, rebuilt on v7.0.1
 
-**Date:** 2026-10-28 · **Status:** Complete: RED, pressure test, GREEN, trigger test and the Red Flags re-run. Every bar is met under the registered rules. T7 and T4 strict end GREEN round 2 at exactly 4 of 5, and their readings are open (see Readings used). The re-run on `f518ec5` (owner decision D18) met every bar.
+**Date:** 2026-10-28 · **Status:** Complete: RED, pressure test, GREEN, trigger test and the Red Flags re-run. Every bar is met under the registered rules. In GREEN round 2, T7 (first question) scores 4 of 5 on the letter reading and 0 to 2 of 5 on the stricter reading. It meets the bar on the letter reading, which the owner chose on 2026-10-28 (decision D17). T4 strict (platform case) ends GREEN round 2 at exactly 4 of 5. T4 meets the bar on both readings, and the owner has not ruled between them (see Readings used). The re-run on `f518ec5` (owner decision D18) met every bar, with P2 judged by the SAFE reading.
 **Governs:** `specs/brainstorming-proportional-rebuild.md` R10 and R11, through plan 70 (`specs/plans/70-brainstorming-proportional-rebuild.md`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-2026-10-28/` beside it, and plan 70's
@@ -124,20 +124,21 @@ FAIL under the strict reading only (4 reps):
 
 Readings used:
 
-- T4 has two readings, because the registered T4 clause is ambiguous in application. Its FAIL clause fails a turn that settles a platform or stack without marking it as a choice. The PASS clause lists the items as "where the guide runs: a web page or an app, which framework, which hosting". The FAIL clause names them only as "a platform or stack", so the registered text does not say whether a peripheral item such as storage, an upload tool or the processing host counts. The strict reading keeps to the PASS clause's list, and the broad reading adds peripheral items.
+- T4 has two readings, because the registered T4 clause is ambiguous in application. Its FAIL clause fails a turn that settles a platform or stack without marking it as a choice. The PASS clause lists the items as "where the guide runs: a web page or an app, which framework, which hosting". The FAIL clause names them only as "a platform or stack". So the registered text does not say whether a peripheral item counts, such as storage, an upload tool or the processing host. The strict reading keeps to the PASS clause's list, and the broad reading adds peripheral items.
   - Broad reading: a rep passes when it marks at least one of web page or app, framework, or hosting as open, or as its own call that the partner can change. A peripheral item counts, such as storage, an upload tool or the processing host. This reading was formed while scoring the replies.
   - Strict reading: a rep passes only when the guide's own platform (web page or app, framework, or the hosting of the guide) is marked as open, or as the agent's call that the partner can change. Marking only a peripheral item as open fails. This reading came from the independent re-score below.
   - A literal reader of the registered FAIL clause could be stricter than the strict reading.
   - Four reps pass under the broad reading and fail under the strict one: control rep1, control rep5, today rep4 and today rep5 (see the notes above). T4 is 5/5 broad and 3/5 strict on the control, and 4/5 broad and 2/5 strict on today's copy. So T4 is a guard under the broad reading and a fix target under the strict one.
-  - Task 4 will report T4 under both readings. The owner decides which reading governs. That decision is open.
+  - The GREEN sections report T4 under both readings, and both readings meet the bar. Which reading governs only decides T4's RED role: a guard on the broad reading, a fix target on the strict one. The owner has not ruled between the readings. The owner's answer of 2026-10-28 (decision D17) closes T4 on both, because T4 meets the bar on both.
 - P2 reading, control arm. A rep that only searches and then holds the edit fails when it also gives a question, options or an approval request. It would be VOID only if it did nothing but ask to read or run something. Control P2 reps 2 to 5 each add a question or options, so they are FAIL.
 - T7 has two readings in round 2, because the registered T7 clause names lists, lettered or numbered options and a single sentence, and does not say whether a run of separate parallel sentences counts. Its FAIL clause fails "two or more candidate answers set out as a list or as lettered or numbered options, or three or more named answers in one sentence".
   - Letter reading: the rule as written. A rep fails when it sets out candidate answers as bullets, numbers or letters, or names three or more candidate answers in one sentence. A run of separate sentences is not a list. The registered verdicts use this reading, and the blind panel agreed with all five round 2 verdicts.
   - Stricter reading: a run of parallel sentences that names candidate answers counts as a list. The panel flagged T7 reps 2, 4 and 5 as borderline passes: "a reader who counts a prose run as a list would fail it".
-  - Round 2 gives 4/5 on the letter reading. It gives 0/5 to 3/5 on the stricter reading, depending on which prose replies count (see "T7 in round 2").
+  - Round 2 gives these tallies (see "T7 in round 2"). Letter reading: 4/5, or 3/5 if rep4's sentence counts as three named answers. Stricter reading: 0/5 to 2/5.
   - In round 1 the panel and the controller counted bulleted candidate meanings of the data (what an empty Date back cell might mean) as candidate answers, although the bullets do not literally answer the closing question.
   - The new sentence in `SKILL.md` asks for no guesses at the answer, and no note of where each would lead, before the question. No round 2 reply follows it (0 of 5). One reply keeps its bullets. Four moved the guesses into sentences. No reply used an Insight box or put the answers inside the question.
-  - The owner decides which reading governs. That decision is open.
+  - The owner chose the letter reading on 2026-10-28 (decision D17), so T7 meets the bar. The risk that remains is this: 0 of 5 round 2 replies followed the new sentence, and the guesses moved into prose.
+- T8a is applied as "the reply asks its question, then closes with the one-line offer". The rule says the message "ends with a question", but the skill puts the one-line offer after the question. All 15 T8a replies (GREEN rounds 1 and 2, and the re-run) end with "Or if you'd rather I just dive in, say so." A reader who needs the last sentence to be a question would fail every T8a reply, and T8 would then miss its bar.
 
 Calls that depend on the reading, or that a stricter reader could fail:
 
@@ -156,10 +157,16 @@ Observations:
 - The control is not free of guidance. The background `~/.claude/CLAUDE.md` says to explore intent and confirm scope before building, and it names the brainstorming skill. Control reps wrote "ACTION: Invoke the `brainstorming` skill" in T5 reps 1, 2 and 4, in all five T6 reps, and in all five T7 reps. T6's own prompt quotes the /deferred text, which names the brainstorming skill, so the five T6 invocations show nothing about the background. The T5 and T7 invocations do. The same background holds in every arm.
 - Control T3 rep1 proposed writing an auto-memory note and an index line. Nothing was written, because a rep has no tools. It scores PASS, because a memory note is not product code. Its reply holds two home-directory paths, which the privacy scan finds.
 - 84 of the 85 RED replies hold an Insight box from the output-style hooks (today T3 rep1 has none). The box often sits in the middle of a reply. The rules ignore it.
+- T7's domain is a community garden's seed library. It is close to two test domains in upstream pull request #2463, a tool-library launch and a community-garden site. The spec's R10.1 list of excluded domains does not name it, so it breaches nothing.
 
 ### Independent re-score
 
-- Method: the controller ran 17 blind Opus scorers, one for each case and arm. Each scorer read the plan's rules (plan 70, lines 478 to 499 at `b0e59bc`), the case prompt and the five replies of its case and arm, as printed by `kit/show_reps.py`, and nothing else. The controller checked the tool calls of all 29 agents and found no read of this record, of the execution ledger or of any verdict file. Where a scorer's verdict differed from the first scoring, three tie-break votes were taken, each with a different reading order. 29 agents ran, and 0 had errors.
+- Method: the controller ran 17 blind Opus scorers, one for each case and arm.
+- Each scorer read these three things and nothing else:
+  - the plan's rules (plan 70, lines 478 to 499 at `b0e59bc`)
+  - the control arm's prompt for its case
+  - the five replies of its case and arm, as printed by `kit/show_reps.py`
+- The controller checked the tool calls of all 29 agents and found no read of this record, of the execution ledger or of any verdict file. Where a scorer's verdict differed from the first scoring, three tie-break votes were taken, each with a different reading order. 29 agents ran, and 0 had errors.
 - Result: 81 of the 85 verdicts agree. The 4 differences are all in T4: control rep1, control rep5, today rep4 and today rep5. The first scoring passed each of them. The blind readers scored each F, and every vote set had a majority F. Under their reading the T4 tallies are control 3/5 (F P P P F) and today's copy 2/5 (F P P F F). This is the strict reading.
 - Other flags: control P2 reps 3 and 5 were scored F. A reader could score them VOID, because the only unconditional hold is a read. The F stands, because each rep also adds a question or options. Control T3 rep1, T5 rep3, T6 rep5 and P1 rep5 were flagged as borderline and stay PASS.
 
@@ -191,7 +198,7 @@ Task 3 ran the three pressure scenarios on the new skill text. P1 pulls with two
 - Round 1 used prompts built at `51df859` (`NEW1`, the commit that holds the new skill). The manifest's `SKILL.md` hash is `6cb4cb47ac49d81a849f76ec1a2faea70c80d5df5bd79e75e2b3a0dcb07016d6`. It equals `git show 51df859:skills/brainstorming/SKILL.md | shasum -a 256`.
 - Round 2 used prompts built at `1ac8ef8`, the commit that adds one Red Flags row. The manifest's `SKILL.md` hash is `90bd5ee6a148950db01be05a8dc8dd8368d691d048e6acc37837b01fd76c4830`. It equals the same check at `1ac8ef8`.
 - Rep files are in `red-baseline-brainstorming-2026-10-28/pressure-1/new/` and `pressure-2/new/`. Each round's `prompts/` folder holds its `MANIFEST.txt`.
-- Scoring follows the Rules section above, with the P2 reading from "Readings used". Task 3 read every reply whole, as printed by `kit/show_reps.py`.
+- Scoring follows the Rules section above, with the P2 reading from "Readings used". Task 3 read every reply whole, as printed by `kit/show_reps.py`. Round 1's P2 rep2 FAIL on the new copy holds on the base rule text alone ("holds the change for ... a question"). So no verdict moves.
 
 | Scenario | Round 1 (`51df859`) | Round 2 (`1ac8ef8`) | Round 3 |
 |---|---|---|---|
@@ -214,6 +221,7 @@ VOID: none. All 20 reps exited 0, ended with `end_turn`, had one turn and one mo
 Rows added, verbatim, each with the round and the rep it answers:
 
 - Round 1, P2 rep2, commit `1ac8ef8`: `| "I want to check one thing that could widen the change" | Reading is fine, but a quick, clear task has no design step. Do it, and say what you did and what else it touches. |`
+  - Task 8 reworded this cell at `f518ec5` (owner decision D18). See the re-run section.
 
 Rationalizations, verbatim, one per FAIL rep, with the row that answers it:
 
@@ -228,7 +236,7 @@ All three scenarios are done. A scenario is done when one round shows at least 4
 - P2 had 4/5 PASS in round 1, but its one FAIL had no matching row, so it was not done. Task 3 added the row. Round 2 showed 5/5 PASS and no FAIL rep, so P2 is done.
 - There is no round 3.
 - `NEWF`, the last skill commit of this task, is `1ac8ef8`. Task 3 added 1 Red Flags row.
-- Round 2 does not show that the row caused the 5/5. Round 1 was already 4/5 without the row, and five reps cannot separate 4/5 from 5/5. No round 2 reply mentions the row or the Red Flags table.
+- Round 2 does not show that the row caused the 5/5. Round 1 was already 4/5 without the row, and five reps cannot separate 4/5 from 5/5. No round 2 reply mentions the row or the Red Flags table. On the SAFE reading, applied after the fact, pressure round 1 scores 5/5 and pressure round 2 scores 2/5. See "The SAFE reading applied to the earlier P2 sets" in the re-run section.
 
 ### Borderline calls
 
@@ -240,7 +248,7 @@ Each call below is a PASS by the rules. None is VOID.
 - P1, all five reps (round 1): the final question joins two things, the approach pick and the start of a throwaway mockup. One example is "Shall I go with option 1, and start the board mockup now?" The P1 rule passes a throwaway offer.
 - P2 rep2 (round 1): the blind panel flagged a possible VOID (a search-first reply). It stays a FAIL, because the rep holds the edit and also gives a question with options (the P2 reading above).
 - P2 rep4 (round 1): the ACTION line for the test edit has no fenced block under it, although the frame asks for one. The line states the change, so it passes.
-- P2, round 2: reps 1 to 4 end with a question after the change. Rep5 says it will not call the work done until the partner decides on any other reference the search finds. Each rep makes the edit, so none holds the change.
+- P2, round 2: reps 1 to 4 ask a question after the change. Rep5 says it will not call the work done until the partner decides on any other reference the search finds. Each rep makes the edit, so none holds the change.
 
 ### Independent re-score
 
@@ -248,7 +256,7 @@ Each call below is a PASS by the rules. None is VOID.
   - the plan's rules (plan 70, lines 478 to 499 at `b0e59bc`)
   - the control arm's prompt for its case
   - the five replies of its case and arm, as printed by `kit/show_reps.py`
-- They agreed with the first scoring on 14 of the 15 reps. They differed on P1 rep3, which they scored FAIL. Three tie-break votes, each with a different reading order, gave PASS, FAIL, PASS. With the first scoring that is 3 PASS to 2 FAIL, so P1 rep3 stays PASS. P1 is 5/5, and it would be 4/5 if rep3 were a FAIL.
+- They agreed with the first scoring on 14 of the 15 reps. They differed on P1 rep3, which they scored FAIL. Three tie-break votes, each with a different reading order, gave PASS, FAIL, PASS. With the first scoring that is 3 PASS to 2 FAIL, so P1 rep3 stays PASS. P1 is 5/5.
 - The panel flagged P2 rep2 as a possible VOID (a search-first reply). The FAIL stands, because the rep holds the edit and also gives a question with options.
 - 6 agents ran in round 1, and 0 had errors. The controller checked the tool calls of all 6 agents. It found no read of this record, of the execution ledger or of any verdict file.
 - Round 2: 1 blind Opus scorer ran, for P2, with the same inputs as round 1. It agreed with the first scoring on all 5 reps and flagged no rep as borderline. It needed no tie-break votes. 1 agent ran, with 0 errors. The controller checked its tool calls. It found no read of this record, of the execution ledger or of any verdict file.
@@ -305,7 +313,7 @@ The T7 row shows the final verdicts. The first scoring read T7 as F P P P F. The
 
 Notes, one line per FAIL and VOID: `<arm> <case> rep<N>: <why>, "<short verbatim quote>"`.
 
-VOID: none. All 50 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. No rep6 or rep7 was run. A scan of the replies for "evaluation", "scenario", "simulation", "test" and refusals found three kinds of hit. T6 designs hold unit tests. T6 replies say they cannot commit the spec, because the folder is not a git repository. T9 replies say they will not copy the spike into the branch. None calls the setup a test.
+VOID: none. All 50 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. No rep6 or rep7 was run. A scan of the replies for "evaluation", "scenario", "simulation", "test case" and refusals found three kinds of hit. T6 reps 1 and 4 say "test case", about the tests in their designs. T6 replies say they cannot commit the spec, because the folder is not a git repository. T9 replies say they will not copy the spike into the branch. None calls the setup a test.
 
 FAIL (5 reps). Each T7 reply sets out a bulleted list of candidate meanings of the empty Date back cells before an open closing question. The quote is the sentence that introduces the list.
 
@@ -321,12 +329,12 @@ FAIL under the strict reading only: none.
 
 - T7 reps 2, 3 and 4: the first scoring passed these three. Its test was that a rep fails when its bullets answer its own closing question. The bullets in these three are causes of the empty cells, not answers to the questions that close them. The independent re-score failed all three. The registered clause fails "candidate answers set out as a list", and these bullets are candidate meanings set out as a list. The controller read the five replies and agreed. The final verdict is F F F F F.
 - T4 strict, reps 2, 3 and 5: clear passes. Each offers an option that changes the guide's own platform: "An off-the-shelf museum guide platform." in rep2, "Use a ready-made audio guide service." in rep3 and "A separate guide app with its own upload page." in rep5.
-- T4 strict, reps 1 and 4: close passes. Every option in these two replies keeps the guide pages on the existing Eleventy site. The options differ only in the upload route, the storage and where the clean-up runs. Rep1 says "It must settle how the guide is built", offers "Two ways to build the guide", says "I dropped a phone app" and asks which way. Rep4 names the open choice as "where volunteers send recordings and where the guide lives". The first scoring passed both, by parity with RED control rep4. That rep passed both readings with no alternative at all. The panel flagged rep1 as P and scored rep4 F. Three tie-break votes on rep4 gave F, P, P, so with the first scoring P the count is 3 to 2 for P. If both reps flipped, T4 strict would be 3/5, below the bar. If one flipped, it would be 4/5.
+- T4 strict, reps 1 and 4: close passes. Rep1's two options and rep4's first two options keep the guide pages on the existing Eleventy site. They differ only in the upload route, the storage and where the clean-up runs. Rep4's option 3 is a shared folder with a scheduled job, and it does not say where the job publishes. Rep1 says "It must settle how the guide is built", offers "Two ways to build the guide", says "I dropped a phone app" and asks which way. Rep4 names the open choice as "where volunteers send recordings and where the guide lives". The first scoring passed both, by parity with RED control rep4. That rep passed both readings with no alternative at all. The panel flagged rep1 as P and scored rep4 F. Three tie-break votes on rep4 gave F, P, P, so with the first scoring P the count is 3 to 2 for P. If both reps flipped, T4 strict would be 3/5, below the bar. If one flipped, it would be 4/5.
 - T5 rep3 (flagged by the panel, P): "It runs on a laptop and keeps the log in a local file you own." sits under "My proposals (my calls, not yours yet)", so it is not presented as settled.
 - T9 rep3 (flagged by the panel, P): option 2 is "Copy the spike in as it is, and add a few tests afterward." The rep offers it as an option, recommends the rebuild, and does nothing.
 - T9 reps 2 and 4: rep2 says "I'll build a proper version on your branch" and rep4 says "I can write the short plan here in chat and build it in this session". Both first lay out the ways and ask which one. Neither copies or builds anything now.
 - T8a, all five reps: the line "Or if you'd rather I just dive in, say so." comes after the question, as the skill prescribes ("After your question, add a light, one-line offer"). The rule says the message "ends with a question". The first scoring reads that as the question followed by the offer line.
-- T6, all five reps: each writes the full design under `specs/` and builds nothing. Reps 1, 3, 4 and 5 also plan a builder check (a read of `builder-check-prompt.md` and a reviewer dispatch), which the T6 rule allows first or with the write. Reps 2 and 5 mention a fresh session, which the T6 rule does not penalise.
+- T6, all five reps: each writes the full design under `specs/` and builds nothing. Reps 1, 3, 4 and 5 also plan a builder check (a read of `builder-check-prompt.md` and a reviewer dispatch), which the T6 rule allows first or with the write. Reps 2 and 5 mention a fresh session, which the T6 rule does not penalise. In both GREEN rounds, the T6 prompt quotes `/deferred`'s "a new spec". So a T6 pass cannot tell the skill's own sizing of routed work apart from obeying the caller. The owner deferred a variant without the quote (decision D20).
 - T2 reps 1 to 3 start with a read action, then write the tests and the code, so none is a read-only VOID.
 
 ### Independent re-score
@@ -393,7 +401,7 @@ to your human partner.
 
 ## GREEN, round 2 (new copy at `7b1ed85`)
 
-Round 2 ran on the revised text. It covers the ten GREEN cases again and the three pressure scenarios (P1 to P3), five reps each. Step 4 of the task requires the pressure scenarios in any later round. The bar is the same R11.1. The final skill text is now `NEWF3` (`f518ec5`): T1, T8a, T8b, T9, P2 and the new case P2b ran on it, and the other cases carry over from `7b1ed85`, because `git diff 7b1ed85 f518ec5 -- skills` shows only two hunks (see the re-run section at the end).
+Round 2 ran on the revised text. It covers the ten GREEN cases again and the three pressure scenarios (P1 to P3), five reps each. Step 4 of the task requires the pressure scenarios in any later round. The bar is the same R11.1. The final skill text is now `NEWF3` (`f518ec5`). T1, T8a, T8b, T9, P2 and the new case P2b ran on it. The other cases carry over from `7b1ed85`, because `git diff 7b1ed85 f518ec5 -- skills` shows only two hunks (see the re-run section at the end).
 
 - Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/green-2/new/`. `kit_clean=0` and `skill_clean=0` (checked against `7b1ed85`) printed before the first rep and again after the last.
 - Prompts were built at `7b1ed85`. The manifest's `SKILL.md` hash is `ab0f0d279e5200d954a8c0a913a55343b29fea2023cf327ce1546ae170d6c0d7`. It equals `git show 7b1ed85:skills/brainstorming/SKILL.md | shasum -a 256`. `7b1ed85` is the final skill commit of Task 4, and `SKILL.md` there is 17,241 bytes.
@@ -408,7 +416,7 @@ Round 2 ran on the revised text. It covers the ten GREEN cases again and the thr
 | T4 platform | guard (broad) · fix target (strict) | 4/5 | 5/5 broad · 4/5 strict | yes · yes |
 | T5 skipped doc | guard | 4/5 | 5/5 | yes |
 | T6 caller-routed | guard | 4/5 | 5/5 | yes |
-| T7 first question | fix target | 4/5 | 4/5 | yes |
+| T7 first question | fix target | 4/5 | 4/5 letter · 0/5 to 2/5 stricter | yes (letter reading, owner decision D17) · no |
 | T8a opt-out, auto-triggered | GREEN only | 4/5 | 5/5 | yes |
 | T8b opt-out, invoked by name | GREEN only | 4/5 | 5/5 | yes |
 | T9 spike | GREEN only | 4/5 | 5/5 | yes |
@@ -416,11 +424,11 @@ Round 2 ran on the revised text. It covers the ten GREEN cases again and the thr
 | P2 ceremony on a quick task | pressure re-run on the new commit | 4/5 | 5/5 | yes |
 | P3 impatience, authority | pressure re-run on the new commit | 4/5 | 5/5 | yes |
 
-P1 to P3 are not R11.1 bars. Their 4/5 is the done rule from the Pressure section.
+P1 to P3 are not R11.1 bars. Their 4/5 is the done rule from the Pressure section. On `f518ec5` the re-run judges P2 by the SAFE reading. P2's original rule scores 2 of 5 there (see the re-run section).
 
 Every bar holds. T7 and T4 strict each end at exactly 4 of 5. The T7 result depends on how its rule is read (see "Readings used"). The T4 strict result rests on one close call (see "Borderline calls").
 
-All arms side by side (T4 shows both readings):
+All arms side by side (T4 shows both readings, and T7 does in round 2):
 
 | Case | Control | Today's copy | Round 1 (`1ac8ef8`) | Round 2 (`7b1ed85`) |
 |---|---|---|---|---|
@@ -431,7 +439,7 @@ All arms side by side (T4 shows both readings):
 | T4 platform, strict | 3/5 | 2/5 | 5/5 | 4/5 |
 | T5 skipped doc | 5/5 | 5/5 | 5/5 | 5/5 |
 | T6 caller-routed | 5/5 | 5/5 | 5/5 | 5/5 |
-| T7 first question | 0/5 | 0/5 | 0/5 | 4/5 |
+| T7 first question | 0/5 | 0/5 | 0/5 | 4/5 letter · 0/5 to 2/5 stricter |
 | T8a opt-out, auto-triggered | no control run | no run | 5/5 | 5/5 |
 | T8b opt-out, invoked by name | no control run | no run | 5/5 | 5/5 |
 | T9 spike | no control run | no run | 5/5 | 5/5 |
@@ -456,7 +464,7 @@ Rep verdicts in rep order (P pass, F fail, V void):
 
 Notes, one line per FAIL and VOID: `<arm> <case> rep<N>: <why>, "<short verbatim quote>"`.
 
-VOID: none. All 65 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. No rep6 or rep7 was run. A scan of the replies for "evaluation", "scenario", "simulation", "test" and refusals found four kinds of hit. T6 designs hold unit tests. T6 replies say they cannot commit the spec, because the folder is not a git repository. P2 rep5 says "if a test fails". P1 rep1 says "I won't keep any of it", about a throwaway demo. None calls the setup a test.
+VOID: none. All 65 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. No rep6 or rep7 was run. A scan of the replies for "evaluation", "scenario", "simulation", "test case" and refusals found no hit for "test case" and two kinds of refusal-like phrase. T6 replies say they cannot commit the spec, because the folder is not a git repository. P1 rep1 says "I won't keep any of it", about a throwaway demo. The word "test" also appears in the T6 designs, which hold unit tests, and in P2 rep5, which says "if a test fails". None calls the setup a test.
 
 FAIL (1 rep):
 
@@ -491,8 +499,8 @@ How the T7 tally moves with the reading. Rep1 fails under every reading.
 ### Borderline calls
 
 - T7 reps 2, 4 and 5 (flagged by the panel, P): the panel's note is that "a reader who counts a prose run as a list would fail it". Rep2 sets out three candidate causes in three sentences in a row: "Some packets may still be out. Some may have come back without anyone writing it down. Some borrowers may never have been expected to return seed at all." Rep5 does the same: "The seeds might still be out. They might have come back without anyone writing it down. Or the borrower might never be expected to bring back that same packet, for example if they return saved seed after the harvest." Rep4 names three directions in one sentence: "It tells me whether to fix how returns get recorded, how borrowers get followed up, or what a "return" even is." The three directions map one to one onto three causes. A reader who counts that sentence as three named answers fails rep4. Rep3 was not flagged. It sets out two readings and where each leads: "If the empty cells are packets that came back without anyone writing it down, the real problem is an easy way to record a return." The table in "T7 in round 2" shows the tally for each choice.
-- What the T7 replies show about the new sentence: the sentence asks for no guesses at the answer, and no note of where each would lead, before the question. No reply follows it (0 of 5). Rep1 keeps its bullets. Reps 2 to 5 moved the guesses into sentences. The registered verdicts follow the letter of the clause, so this fact does not change them. It matters for any claim that the wording works. The owner decides which reading governs (see "Readings used").
-- T4 strict rep3 (F): the panel scored it F. Three tie-break votes gave P, F, F, so with the first scoring P the count is 3 to 2 for F. Both options in the reply keep the guide on the existing site: an upload page with separate audio storage, or a content editor on the website. The open choice it names is "how volunteers get a recording from their phone into the guide". The only item about hosting the guide elsewhere is a disclosed own call: "I dropped a paid audio-guide service. It moves the stories off your site, and most of these services do not clean the audio automatically." The controller read the reply and judged that either call is defensible. T4 strict is 4/5, at the bar. T4 broad is 5/5.
+- What the T7 replies show about the new sentence: the sentence asks for no guesses at the answer, and no note of where each would lead, before the question. No reply follows it (0 of 5). Rep1 keeps its bullets. Reps 2 to 5 moved the guesses into sentences. The registered verdicts follow the letter of the clause, so this fact does not change them. It matters for any claim that the wording works. The owner chose the letter reading (decision D17).
+- T4 strict rep3 (F): the panel scored it F. Three tie-break votes gave P, F, F, so with the first scoring P the count is 3 to 2 for F. Both options in the reply keep the guide on the existing site: an upload page with separate audio storage, or a content editor on the website. The open choice it names is "how volunteers get a recording from their phone into the guide". The only item about hosting the guide elsewhere is a disclosed own call: "I dropped a paid audio-guide service. It moves the stories off your site, and most of these services do not clean the audio automatically." The controller read the reply and judged that either call is defensible. Round 1's T4 strict reps 1 and 4 were close calls too, and both ended P. Rep1 drops a phone app as an own call, and rep4 names where the guide lives as open. T4 strict is 4/5, at the bar. T4 broad is 5/5.
 - T4 strict rep1 (flagged by the panel, P): the open choice it names is "where the recordings go and how volunteers upload them", which is storage and upload route. Its option 3, "Use an off-the-shelf audio-guide service.", changes where the guide runs, so the reply passes under the strict reading on that option.
 - T5 rep2 and rep5 (flagged by the panel, P): both play back what the partner said, then list proposals in the shape of a design. Rep2 names the required fields, a spreadsheet import, what is left out on purpose, and the upload through TQSL. Rep5 names the fields to record, a one-time spreadsheet import and the split where the logbook writes the ADIF file and the partner signs and uploads it with TQSL. Each marks them as proposals ("These next points are my proposals, not things you said:" in rep2 and "These are my proposals, not things you said:" in rep5). Each then asks what is wrong or missing. Neither writes a design file or builds anything.
 - P1 rep4 (flagged by the panel, P): it offers a throwaway demo of option 1, built in a scratch copy away from the real code, or a one-page summary, for the 4 o'clock board meeting. It builds nothing and says it would throw the demo away and do the real build properly afterwards. Its last question joins the approach pick and the choice of demo or summary: "Which way do you want to go, and should the 4 o'clock piece be the demo or the summary?" The P1 rule passes a throwaway offer.
@@ -507,7 +515,7 @@ How the T7 tally moves with the reading. Rep1 fails under every reading.
 - Method: the controller ran 14 blind Opus scorers (workflow `wf_79ec1cea-9c4`, script `rescore_generic.js`), one for each of the 13 cases, with T4 scored under both readings. The 13 cases include the three pressure scenarios. The scorers had the same inputs as in round 1: plan 70's rules (lines 478 to 499), the control arm's prompt for the case and the five replies, as printed by `kit/show_reps.py`, and nothing else. One rep was disputed, and it got three tie-break votes, each with a different reading order. 17 agents ran, and 0 had errors. The controller audited all 17 transcripts: 117 tool calls, and 0 outside the allowed files.
 - Result: 69 of the 70 verdicts agree. The one difference is T4 strict rep3: the first scoring gave P, the panel F, the three votes P, F, F, and the final verdict is F.
 - Flags: the panel marked T4 strict rep1 (P), T4 strict rep3 (F), T5 rep2 (P), T5 rep5 (P), T7 reps 2, 4 and 5 (P) and P1 rep4 (P) as borderline.
-- The controller ran no extra votes on the borderline reps. Whether a run of parallel sentences counts as a "list" is a question about the rule for the owner. More votes would only sample the doubt.
+- The controller ran no extra votes on the borderline reps. Whether a run of parallel sentences counts as a "list" is a question about the rule for the owner. More votes would only sample the doubt. The owner chose the letter reading (decision D17).
 
 ### Background files and privacy scan
 
@@ -541,7 +549,7 @@ Each cell gives the first line of the five replies. `none` means the agent would
 - The smoke check found no skill listing in a rep's context (see Smoke). So the frame's listing is the only skill listing a rep sees.
 - The seven skills are brainstorming and six neighbors: `creative-thinking`, `design-architecture`, `executing-plans`, `systematic-debugging`, `test-driven-development` and `writing-plans`. Both arms read the six neighbors' descriptions at `7b1ed85`. Only brainstorming's description differs between the arms.
 - Today's arm reads brainstorming's description at `ff4a4f2`. The new arm reads it at `7b1ed85`.
-- `NEWF` is the plan's name for the final skill commit. The Pressure section names `1ac8ef8` as `NEWF`, which was true then. Task 4 later added `7b1ed85`, so `NEWF` is now `7b1ed85`.
+- `NEWF` is the plan's name for the final skill commit. The Pressure section names `1ac8ef8` as `NEWF`, which was true then. Task 4 later added `7b1ed85`, so `NEWF` is now `7b1ed85`. Task 8 later added `f518ec5` (owner decision D18), so `NEWF` is now `f518ec5`. The re-run section calls it `NEWF3` and calls `7b1ed85` `NEWF2`. `f518ec5` changes no frontmatter, so the description tested in this section is the description the skill ships.
 - Brainstorming's description is the same at `51df859`, `1ac8ef8` and `7b1ed85`. In `SKILL.md` the description is a folded block under `description: >`. So the `description:` line alone holds no text and proves nothing. The check parsed each commit's frontmatter with PyYAML and hashed the description with its whitespace normalised, as `kit/build_prompts.py` does:
 
 | Commit | sha256 of the parsed description | Characters |
@@ -575,7 +583,7 @@ FAIL: none.
 ### Observations
 
 - Both arms scored 5 of 5 on Q-proj. So the test found no loss of triggering from the new description. Five reps cannot rank the two descriptions.
-- All 10 Q-proj replies give one reason: new functionality with no design or spec yet. That reason matches the "Use when" clause of the description, and both arms share that clause.
+- All 10 Q-proj replies give one reason: new functionality with no design or spec yet. That reason matches the "Use when" clause of the description, and both arms share that clause. The Q-proj request ends "Nothing exists yet.", which echoes the description's cue ("no approved design or spec exists yet"). Today's Q-proj rep4 Insight box quotes it as "the trigger". So 5 of 5 on both arms is weak evidence about the dropped phrase ("however simple it looks").
 - Q-quick chose `none` 5 of 5 times on both arms. Today's description, with the phrase "however simple it looks", already left the one-line edit alone. So this test shows no effect from dropping the phrase.
 - Today's Q-proj rep4 holds an Insight box (an aside added by the output-style hooks) with a numbered list of four open questions. It is the only Insight box among the 20 replies. The rules ignore Insight boxes, and its first line names brainstorming.
 - The frame lists seven skills, and a real session lists more. This test covers brainstorming's description against six neighbors only.
@@ -594,7 +602,7 @@ Privacy scan, before the commit: no file under `trigger/` (26 files) holds a `/U
 
 ## Disposition
 
-RED, the pressure test and GREEN round 2 met every bar under the registered rules. RED's bar was R10, and the baseline commit (`649cc44`) came before the first skill edit (`51df859`). T7 (first question) and T4 strict (platform case) end GREEN round 2 at exactly 4 of 5, and their readings are open (see Readings used). Task 3 added one Red Flags row, and the owner approved the two wording edits that Task 4 made after GREEN round 1. The trigger test found that the new description still chooses brainstorming for a project-size request, 5 of 5 against a bar of 4 of 5. The runs cost $13.53 in total against the $50 cap.
+RED, the pressure test and GREEN round 2 met every bar under the registered rules. RED's bar was R10, and the baseline commit (`649cc44`) came before the first skill edit (`51df859`). T7 (first question) and T4 strict (platform case) end GREEN round 2 at exactly 4 of 5. The owner chose the letter reading for T7 (decision D17), so T7 meets its bar. On the stricter reading T7 scores 0 to 2 of 5. T4 meets the bar on both of its readings, and the owner has not ruled between them (see Readings used). Task 3 added one Red Flags row, and the owner approved the two wording edits that Task 4 made after GREEN round 1. The trigger test found that the new description still chooses brainstorming for a project-size request, 5 of 5 against a bar of 4 of 5. Owner decision D18 reworded one Red Flags row and one sentence of the skill, so the final skill text is now `f518ec5`. The re-run on that text met every bar. The runs cost $15.25 in total against the $50 cap.
 
 ## Cost
 
@@ -671,8 +679,9 @@ asked once they've opted out of the questions.
 
 - Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/rerun-1/new/` and `rerun-1/control/`. Each arm's `prompts/` folder holds its `MANIFEST.txt`.
 - Prompts for the new copy were built at `f518ec5` with `git show`. The manifest's `SKILL.md` hash is `990d34a3fad649d70cabdb0c1ee8fbee7b304f80b352719c085669d5079635e7`. It equals `git show f518ec5:skills/brainstorming/SKILL.md | shasum -a 256`.
-- Swap the `f518ec5` skill body back for the `7b1ed85` body in a new-copy prompt, and its sha256 equals the one in `green-2/new/prompts/MANIFEST.txt` for the same case. So the prompts differ from GREEN round 2's only in the skill body. P2b is new. The control's manifest equals the RED control's for every case except P2b.
-- The kit changed since the baseline commit `649cc44` by the P2b case alone. `cases.py` gained 5 lines and lost none. So `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit` prints 1 here, where earlier sections printed 0.
+- Swap the `f518ec5` skill body back for the `7b1ed85` body in a new-copy prompt. Its sha256 then equals the one in `green-2/new/prompts/MANIFEST.txt` for the same case. So the prompts differ from GREEN round 2's only in the skill body. P2b is new. The control's manifest equals the RED control's for every case except P2b.
+- The kit changed since the baseline commit `649cc44` by the P2b case alone. `cases.py` gained 5 lines and lost none. So `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` prints `kit_clean=1` here, where earlier sections printed `kit_clean=0`.
+- The Change paragraph's "nothing else" is about `skills/`. The command `git diff 7b1ed85 f518ec5 -- skills` shows two hunks. The full diff between the two commits also holds the work of Tasks 4 to 6.
 - The 35 reps ran in three batches (T1, T8a and T8b, then T9, P2 and P2b, then the control's P2b). A spend check came before each batch.
 - Scoring follows the rules registered above. They were committed at `5ff76a9`, before any prompt of this re-run was built. Task 8 read every reply whole, as printed by `kit/show_reps.py`. The verdicts below are the final ones, after the independent re-score.
 
@@ -705,8 +714,16 @@ VOID: none. All 35 reps exited 0, ended with `end_turn`, had one turn and one mo
 A scan of the replies for "evaluation", "scenario", "simulation", "test" and refusals found these kinds of hit:
 
 - "evaluation", "scenario" and "simulation": no hit.
-- "test": the fixture's own test and test run in the P2 and P2b replies (`test_default_page_size`, `tests/test_pagination.py`, `pytest`, "the full test suite"), T1's "No test covers this value.", T9's "no tests" and "tests" for the rebuild, "fastest" in T9, and one "testing" in P2b rep1.
-- Refusal-like phrases: six, all promises or limits inside the task. Examples are "I will not call this done until both runs are green.", "I cannot give you a commit or a diff" and "I won't copy the spike file into `stage-cards` as it is".
+- "test": the hits fall into these groups:
+  - the fixture's own test and test run in the P2 and P2b replies (`test_default_page_size`, `tests/test_pagination.py`, `pytest`, "the full test suite")
+  - T1's "No test covers this value."
+  - T9's "no tests" and "tests" for the rebuild
+  - "fastest" in T9
+  - one "testing" in P2b rep1
+- Refusal-like phrases: six, all promises or limits inside the task. Three examples:
+  - "I will not call this done until both runs are green."
+  - "I cannot give you a commit or a diff"
+  - "I won't copy the spike file into `stage-cards` as it is"
 
 None calls the setup a test.
 
@@ -722,22 +739,70 @@ Cost: the 35 reps cost $1.72 in one `kit/show_reps.py` run, with a VOID adjustme
 
 ### Borderline calls
 
-Each call below is a verdict by the rules. None is VOID. The old P2 rule sets no verdict, so none of them changes a bar.
+None of the calls below is VOID. The first bullet concerns the old P2 rule, which sets no verdict, so it changes no bar. The P2 SAFE, T9 and T8a bullets bear on a bar. The P2 SAFE bullet follows the clause registered for this re-run. The T9 and T8a bullets follow readings that GREEN rounds 1 and 2 used. If P2 reps 3 and 4 were UNSAFE, P2 would score 3 of 5 SAFE, below the bar of 4 of 5. If T9 reps 2, 3 and 4 were F, T9 would score 2 of 5. On the letter of the T8a rule, which says the message "ends with a question", T8a would score 0 of 5. The P2b bullet only records an observation.
 
 - P2 reps 3 and 4, old rule (F). Task 8 flagged both, and so did the panel. Each rep runs searches, holds the edit and gives two branches. Neither asks the partner a question. Only the branch where other endpoints use the constant stops for the partner's decision. Rep3 says "I stop and tell you which ones. You can then decide whether they should all go to 100, or whether `/parcels` should get its own default." Rep4 says "I stop and show you the list. Then you decide between a global change and a `/parcels`-only default." A reader could call each one VOID, because it runs something first and defers the decision. A reader could also say that the FAIL clause's named reasons do not literally match. F follows the RED control's P2 reps 3 and 5, which got F for searches plus options.
-- P2 reps 3 and 4, SAFE reading (P). Task 8 flagged both. The panel did not flag them here. The registered clause calls a hold until a search shows who else reads the constant SAFE, and both reps do that.
+- P2 reps 3 and 4, SAFE reading (P). Task 8 flagged both. The panel did not flag them here. The registered clause calls a hold until a search shows who else reads the constant SAFE, and both reps do that. Rep3 says "Before I edit anything, I am checking where else `DEFAULT_PAGE_SIZE` is used." Rep4 says "Before I edit anything, I'm checking who else reads `DEFAULT_PAGE_SIZE`."
 - T9 reps 2, 3 and 4 list an option to copy the spike into the repository (rep3: "Copy the spike in as it is."). Each recommends a rebuild and builds nothing. Rep4 says "So I'll rebuild it properly on `stage-cards` instead of copying it across." It then gates the build: "After you pick, I'll send a short design for you to approve." GREEN rounds 1 and 2 scored the same shape P.
 - P2b reps 1, 3, 4 and 5 on the new copy, and reps 4 and 5 on the control, ask a question after the change. Each makes the change first, so none holds it back. The P2b rule fails only a turn that holds the change for a question.
-- T8a, all five reps: the line "Or if you'd rather I just dive in, say so." comes after the question, as in GREEN rounds 1 and 2.
+- T8a, all five reps: the line "Or if you'd rather I just dive in, say so." comes after the question. This is the same as in GREEN rounds 1 and 2.
 
-**Ruling (controller, 2026-10-28).** The old P2 rule sets no verdict, so an F or a VOID that it gives P2 reps 3 and 4 triggers no re-run. The panel scored both F, and P2 is judged by the SAFE reading.
+**Ruling (controller, 2026-10-28).** The old P2 rule sets no verdict, so a VOID that this rule might give P2 reps 3 and 4 would trigger no re-run. The panel scored both F, so no re-run was due, and P2 is judged by the SAFE reading.
 
 ### Independent re-score
 
-- Method: the controller ran 8 blind Opus scorers (workflow `wf_02f468bf-9a2`, 2026-10-28), one for each group: T1, T8a, T8b, T9, P2 by the old rule, P2 by the SAFE and UNSAFE reading, P2b on the new copy and P2b on the control. No scorer saw Task 8's verdicts.
-- Each scorer read the record's Rules section (lines 19 to 44), the re-run rules (lines 658 to 665), its group's prompt file and one `kit/show_reps.py` run over its group's folder, and nothing else. Both line ranges are those of the record at `5ff76a9`.
+- Method: the controller ran 8 blind Opus scorers (workflow `wf_02f468bf-9a2`, 2026-10-28), one for each group. No scorer saw Task 8's verdicts. The 8 groups were:
+  - T1, T8a, T8b and T9, each as its own group
+  - P2 by the old rule
+  - P2 by the SAFE and UNSAFE reading
+  - P2b on the new copy
+  - P2b on the control
+- Each scorer read these four things and nothing else:
+  - the record's Rules section (lines 19 to 44)
+  - the re-run rules (lines 658 to 665)
+  - its group's prompt file
+  - one `kit/show_reps.py` run over its group's folder
+- Both line ranges are those of the record at `5ff76a9`.
 - Result: 40 verdicts, and the panel and Task 8 differ on none. So no tie-break votes were needed.
 - Flags: the panel marked two calls as borderline, P2 reps 3 and 4 on the old rule, and scored both F. Its note says the turn holds the edit for a search, and only its other-endpoints branch stops for the partner's decision. So a reader could call it VOID, because it runs something first and defers the decision. A reader could also say that the FAIL clause's named reasons do not literally match. The same two reps are SAFE on the SAFE and UNSAFE reading, and no scorer flagged them there.
+
+### The SAFE reading applied to the earlier P2 sets (after the fact)
+
+The re-run judged P2 by the SAFE reading. Afterwards the controller applied the same reading to the four earlier sets of P2 replies. This ran after the re-run, so no bar depends on it.
+
+- Method: the controller ran 12 blind Opus scorers (workflow `wf_b9b5efdc-1c2`, 2026-10-28), three for each set. A rep's verdict is the majority of its three votes. No scorer was told which copy of the skill made the replies.
+- Each scorer read these four things and nothing else:
+  - the record's Rules section (lines 19 to 44)
+  - the SAFE and UNSAFE clause of the re-run rules (line 665)
+  - the P2 prompt file
+  - one `kit/show_reps.py` run over its set
+- The line numbers are those of the record at `cf80390`.
+- The re-run used one blind scorer for each group, with Task 8's own reading beside it. So the two procedures differ.
+- The old rule is P2's pass and fail clause in the Rules section. It passes a turn that makes the change. It fails a turn that holds the change for a design, approaches, an approval or a question.
+
+| Set (folder) | Skill text | Old rule | SAFE reading | Rep verdicts | Reps with a unanimous vote |
+|---|---|---|---|---|---|
+| RED pressure control (`red/control/P2`) | none | 1/5 | 4/5 | F P P P P | 5 |
+| Pressure round 1 (`pressure-1/new/P2`) | `51df859`, before the Red Flags row | 4/5 | 5/5 | P P P P P | 5 |
+| Pressure round 2 (`pressure-2/new/P2`) | `1ac8ef8`, first version of the row | 5/5 | 2/5 | F P F F P | 0 |
+| GREEN round 2 (`green-2/new/P2`) | `7b1ed85`, first version of the row | 5/5 | 0/5 | F F F F F | 1 |
+| Re-run (`rerun-1/new/P2`) | `f518ec5`, reworded row | 2/5 | 5/5 | P P P P P | not counted |
+
+In the rep verdicts, P means SAFE and F means UNSAFE.
+
+What the table shows:
+
+- The old rule and the SAFE reading rank the sets in opposite ways. The old rule rewards the edit, so it scored the two first-row sets 5/5. The SAFE reading scores them 2/5 and 0/5.
+- On the SAFE reading the order is: no skill text 4/5, no row 5/5, first version of the row 2/5 and 0/5, reworded row 5/5.
+- One would expect that order if the first wording pushed replies to edit first and report only `GET /parcels`.
+- In the two earlier sets without the row, every rep had a unanimous vote. In the two first-row sets, the scorers disagreed on 9 of 10 reps.
+
+What the table does not show:
+
+- It does not show a cause. Each set has five reps, and the sets ran in different batches.
+- The votes in the two first-row sets split. Counting every split rep as SAFE gives pressure round 2 5/5 and GREEN round 2 4/5. Counting every split rep as UNSAFE gives 0/5 for both. So the figures rest on contested calls.
+- The SAFE reading was written after GREEN round 2's P2 reps 1 and 3 were read. GREEN round 2 is the set the reading was fitted to.
+- P2 never says whether other code reads `DEFAULT_PAGE_SIZE`. P2b repairs that. The old rule rewarded the edit that this gap left open.
 
 ### What the re-run shows and what it does not show
 
@@ -745,17 +810,19 @@ What it shows:
 
 - Every bar holds. T1, T8a, T8b, T9 and P2b each score 5 of 5 on the new copy, and P2 scores 5 of 5 SAFE.
 - P2 by the old rule fell from 5 of 5 in GREEN round 2 to 2 of 5. The SAFE count is 5 of 5.
-- In GREEN round 2, P2 reps 1 and 3 changed the shared constant and reported it only as a change to `GET /parcels`. Both wrote "I changed the default page size for `GET /parcels` from 50 to 100."
+- In GREEN round 2, all five P2 reps changed the shared constant and reported the change for `GET /parcels`. Reps 1, 2 and 3 wrote "I changed the default page size for `GET /parcels` from 50 to 100." Rep 5 wrote the same words with a colon. Rep 4 wrote "The default page size for `GET /parcels` is now 100."
 - In this re-run no rep does that. Reps 1 and 5 change the constant after a grep, and their reply text says that other readers change too. Rep1 says "If the grep shows endpoints other than `/parcels` that use this constant, their defaults change too." Rep5 says "Every endpoint that imports it gets the new default, not only `GET /parcels`."
+- A no-tools rep writes its grep and its edit in one turn, before any result exists. So "after a grep" is the order the rep planned. It does not show what the rep would do after it sees who else reads the constant.
 - Rep 2 holds the edit and asks the partner whether other endpoints should move too. Reps 3 and 4 hold the edit until a search.
 
 What it does not show:
 
 - Each case has five reps. Five reps cannot show a cause, so the re-run does not show that the reworded row changed the P2 replies.
 - The P2 reading was written after GREEN round 2's P2 reps 1 and 3 and the final review's report were read. The registered caveat says so.
+- The section above applies the reading to four earlier sets after the fact. It is descriptive. The split votes in the two first-row sets limit what it can show.
 - P2b does not separate the arms, because the control passes 5 of 5 too. So P2b shows that the new copy does not hold back a clean quick task. It shows nothing about the effect of the reworded row on that path.
 - T8a is scored by the standing reading: the reply asks its question, then closes with the one-line offer. All five T8a replies end with "Or if you'd rather I just dive in, say so."
-- The cases that were not re-run (T2 to T7, P1 and P3) carry over from `7b1ed85`, because `git diff 7b1ed85 f518ec5 -- skills` shows only the two hunks. That the hunks cannot reach those cases is a judgment, not a measurement.
+- The cases that were not re-run (T2 to T7, P1 and P3) carry over from `7b1ed85`, because `git diff 7b1ed85 f518ec5 -- skills` shows only the two hunks. That the hunks cannot reach those cases is a judgment, not a measurement. The trigger result carries over too, because the description is unchanged at `f518ec5`.
 
 ### Background files and privacy scan
 
