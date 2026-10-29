@@ -54,20 +54,23 @@ The input classes and failure modes this work implies that the tasks' main tests
 - **D9** (owner, brief, 2026-10-29): test changes are stated as +N deltas. Applied in: Global Constraints, Tasks 3–4.
 - **D10** (owner, brief, 2026-10-29): one plan execution at a time; no execution starts while another execution session runs. Applied in: Global Constraints.
 - **D11** (owner, brief, 2026-10-29): the planning branch does not edit `specs/superpowers-drift-spec.md`; the execution branch edits it at completion, as the spec says. Applied in: Plan completion additions.
-- **D12** (planner default, pending plan review): R2 and R4 run on both reviewers, the task reviewer on Sonnet and the final code-reviewer on Opus, as R1 does. Applied in: Task 1, Task 2, Task 8.
-- **D13** (planner default, pending plan review): P1 and P2 share one fixture and one set of reps, case `P12` (a photo-renamer spec with one implied input). Applied in: Task 1.
-- **D14** (planner default, pending plan review): prompt composition. A reviewer rep gets the agent body and the filled dispatch template in its prompt (stdin), with every file the dispatch names inlined; its control gets a plain dispatch with no agent definition and no template. A planner rep gets writing-plans' body (and any `references/step-recipe.md`); its control gets no skill text. Applied in: Task 1.
-- **D15** (planner default, pending plan review): planner reps write the plan inside a `<plan path="…">` block. P2's ratio is plan-block characters over spec characters; its fence share is fenced lines over plan lines. P3's match is word for word after whitespace runs collapse and `> ` quote markers drop. Planner reps cap at $1.50, reviewer reps at $0.50. Applied in: Task 1.
-- **D16** (planner default, pending plan review): requesting-code-review's `code-reviewer.md` "What to Check" list (it asks about DRY, "Documentation complete?" and scalability) stays in round 0, since the spec does not name it. If R2-final or R4-final misses its bar, wording round 1 trims that list by spec D6's rule. Applied in: Task 4, Task 8.
-- **D17** (planner default, pending plan review): `README.md`'s code-reviewer row drops "Minor", under the played-back proposal that every place that counts Minor findings changes. Applied in: Task 4.
-- **D18** (planner default, pending plan review): the sync test is a new eleventh commit lint, `build/check_reviewer_block.py`. It finds the block from its `## Review scope` heading through the end of its `## Declined to judge` section. Applied in: Tasks 3–4.
-- **D19** (planner default, pending plan review): the spec path and Review Focus reach the final code-reviewer through the existing `[PLAN_OR_REQUIREMENTS]` placeholder; the template gets no new placeholder. Applied in: Task 5.
-- **D20** (planner default, pending plan review): round 0 keeps all writing-plans text in the body. A simulation of Tasks 6–7 on `812f3df` gives a body of 18,515 characters after Task 6 and 19,813 after Task 7, 187 under the window. The `references/step-recipe.md` fallback runs only when a later round pushes the body over. Applied in: Tasks 6–7.
-- **D21** (planner default, pending plan review): step-recipe commits are kept apart (Global Constraints). F1's arm 1 is HEAD with those commits reverted; if F1's gate fails, the same revert lands on the branch. Applied in: Task 7, Task 11.
-- **D22** (planner default, pending plan review): the pressure test runs three scenarios on the new text only, 5 reps each, bar ≥ 4/5: X1 (the reviewer, with the report arguing the crash is out of scope, plus authority and time pressure), X2 (the planner asked for complete code to paste, plus a deadline), X3 (the planner asked to cut a plan to a third and not to copy whole paragraphs). Pass rules are registered in Task 1. Applied in: Task 1, Task 9.
-- **D23** (planner default, pending plan review): F1 sessions run with `--setting-sources project`, `--permission-mode acceptEdits` and `--allowedTools Bash`, sessions persisted for an audit, and a rep is VOID if any tool call reads or runs anything under `~/Projects`, `~/.cache/agent-skills`, `~/.claude/skills` or `~/.claude/agents`. Session caps: $6 for the planning session, $25 for the execution session. The launch prompts approve the plan as written, decline the Codex seat, defer every plan-completion gate question, and stop before finishing-a-development-branch. Applied in: Tasks 10–11.
-- **D24** (planner default, pending plan review): the F1 fixture is an expense-tally script spec with three planted defects (a refund in parentheses, which the spec states; a CSV export with a UTF-8 byte-order mark; a file that does not exist). The hidden tests stay outside the repository until the four reps finish. Applied in: Tasks 10–11.
-- **D25** (planner default, pending plan review): the shared block says "your requirements (the spec, the plan or the task brief)" so one copy reads right for both reviewers, and its heading "When the requirements are silent" adapts upstream's "The spec is a vision document". Applied in: Task 4.
+- **D12** (planner default; owner approved it as written at plan review, 2026-10-29): R2 and R4 run on both reviewers, the task reviewer on Sonnet and the final code-reviewer on Opus, as R1 does. Applied in: Task 1, Task 2, Task 8.
+- **D13** (planner default; owner approved it as written at plan review, 2026-10-29): P1 and P2 share one fixture and one set of reps, case `P12` (a photo-renamer spec with one implied input). Applied in: Task 1.
+- **D14** (planner default; owner approved it as written at plan review, 2026-10-29): prompt composition. A reviewer rep gets the agent body and the filled dispatch template in its prompt (stdin), with every file the dispatch names inlined; its control gets a plain dispatch with no agent definition and no template. A planner rep gets writing-plans' body (and any `references/step-recipe.md`); its control gets no skill text. Applied in: Task 1.
+- **D15** (planner default; owner approved it as written at plan review, 2026-10-29): planner reps write the plan inside a `<plan path="…">` block. P2's ratio is plan-block characters over spec characters; its fence share is fenced lines over plan lines. P3's match is word for word after whitespace runs collapse and `> ` quote markers drop. Planner reps cap at $1.50, reviewer reps at $0.50. Applied in: Task 1.
+- **D16** (planner default; owner approved it as written at plan review, 2026-10-29): requesting-code-review's `code-reviewer.md` "What to Check" list (it asks about DRY, "Documentation complete?" and scalability) stays in round 0, since the spec does not name it. If R2-final or R4-final misses its bar, wording round 1 trims that list by spec D6's rule. Applied in: Task 4, Task 8.
+- **D17** (planner default; owner approved it as written at plan review, 2026-10-29): `README.md`'s code-reviewer row drops "Minor", under the played-back proposal that every place that counts Minor findings changes. Applied in: Task 4.
+- **D18** (planner default; owner approved it as written at plan review, 2026-10-29): the sync test is a new eleventh commit lint, `build/check_reviewer_block.py`. It finds the block from its `## Review scope` heading through the end of its `## Declined to judge` section. Applied in: Tasks 3–4.
+- **D19** (planner default; owner approved it as written at plan review, 2026-10-29): the spec path and Review Focus reach the final code-reviewer through the existing `[PLAN_OR_REQUIREMENTS]` placeholder; the template gets no new placeholder. Applied in: Task 5.
+- **D20** (planner default; owner approved it as written at plan review, 2026-10-29): round 0 keeps all writing-plans text in the body. A simulation of Tasks 6–7 on `812f3df` gives a body of 18,515 characters after Task 6 and 19,813 after Task 7, 187 under the window. The `references/step-recipe.md` fallback runs only when a later round pushes the body over. Applied in: Tasks 6–7.
+- **D21** (planner default; owner approved it as written at plan review, 2026-10-29): step-recipe commits are kept apart (Global Constraints). F1's arm 1 is HEAD with those commits reverted; if F1's gate fails, the same revert lands on the branch. Applied in: Task 7, Task 11.
+- **D22** (planner default; owner approved it as written at plan review, 2026-10-29): the pressure test runs three scenarios on the new text only, 5 reps each, bar ≥ 4/5: X1 (the reviewer, with the report arguing the crash is out of scope, plus authority and time pressure), X2 (the planner asked for complete code to paste, plus a deadline), X3 (the planner asked to cut a plan to a third and not to copy whole paragraphs). Pass rules are registered in Task 1. Applied in: Task 1, Task 9.
+- **D23** (planner default; owner approved it as written at plan review, 2026-10-29): F1 sessions run with `--setting-sources project`, `--permission-mode acceptEdits` and `--allowedTools Bash`, sessions persisted for an audit, and a rep is VOID if any tool call reads or runs anything under `~/Projects`, `~/.cache/agent-skills`, `~/.claude/skills` or `~/.claude/agents`. Session caps: $6 for the planning session, $25 for the execution session. The launch prompts approve the plan as written, decline the Codex seat, defer every plan-completion gate question, and stop before finishing-a-development-branch. Applied in: Tasks 10–11.
+- **D24** (planner default; owner approved it as written at plan review, 2026-10-29): the F1 fixture is an expense-tally script spec with three planted defects (a refund in parentheses, which the spec states; a CSV export with a UTF-8 byte-order mark; a file that does not exist). The hidden tests stay outside the repository until the four reps finish. Applied in: Tasks 10–11.
+- **D25** (planner default; owner approved it as written at plan review, 2026-10-29): the shared block says "your requirements (the spec, the plan or the task brief)" so one copy reads right for both reviewers, and its heading "When the requirements are silent" adapts upstream's "The spec is a vision document". Applied in: Task 4.
+- **D26** (owner, plan review, 2026-10-29): the spec's "Proposals played back, not yet confirmed" and its "My calls" are confirmed as written. Applied in: Global Constraints (no task changes).
+- **D27** (owner, plan review, 2026-10-29): SDD's `SKILL.md` also has the controller rule on the Declined to judge lines of a task review that comes back clean, in its clean-review ledger bullet, since the controller reads `references/fix-loop.md` only before a fix round. Applied in: Task 5.
+- **D28** (owner, plan review, 2026-10-29): Tasks 4 and 5 re-read the guide sections that `requesting-code-review/SKILL.md` and SDD's `SKILL.md` cite, and restamp each file with `cli.py baseline cite`, since both are STALE on `subagents.isolation`, the section this plan implements. Applied in: Task 4, Task 5.
 
 ---
 
@@ -1696,6 +1699,10 @@ In `NOTICE`'s superpowers section, after the last bullet of `Changes from upstre
 
 Run `uv run python build/check_provenance.py`; expect exit 0.
 
+- [ ] **Step 10b: Restamp `requesting-code-review/SKILL.md` (D28)**
+
+Run `uv run python build/cc_guide/cli.py lint` and note the `STALE skills/requesting-code-review/SKILL.md` line's section ids. Read each of those sections in `specs/guides/claude-code-customization-guide.md` (each starts at its `<!-- cc: <id> -->` marker) against the file as this task leaves it. If every claim in the file still agrees with them, run `uv run python build/cc_guide/cli.py baseline cite skills/requesting-code-review/SKILL.md`, then `cli.py lint` again: the file's STALE line is gone. If a claim disagrees, do not fix it here: report it in the task report with the guide's quoted line and the file's line, and leave the file unstamped.
+
 - [ ] **Step 11: Commit**
 
 ```bash
@@ -1721,9 +1728,9 @@ Expected: every test passes, `test_drifted_reviewer_block_is_refused` included. 
 **Files:**
 - Modify: `skills/subagent-driven-development/references/fix-loop.md:43-47`
 - Modify: `skills/subagent-driven-development/references/final-review.md:7-16,28-31,43-46`
-- Modify: `skills/subagent-driven-development/SKILL.md:231`
+- Modify: `skills/subagent-driven-development/SKILL.md:231,273-275` (and its citation stamp, Step 6)
 - Modify: `skills/executing-plans/SKILL.md:64-77`
-- Modify: `NOTICE`
+- Modify: `NOTICE`; whatever `cli.py baseline cite` writes (Step 6)
 
 **Interfaces:**
 - Consumes: the term "Declined to judge" and the two grades (Task 4); `[PLAN_OR_REQUIREMENTS]` in requesting-code-review's `code-reviewer.md` (unchanged).
@@ -1768,7 +1775,27 @@ Replace `review findings, deferred-Minor confirmations — to build its batched 
 
 - [ ] **Step 3: `subagent-driven-development/SKILL.md`**
 
-Replace `"at most Minor,"` with `"not Important,"` (line 231). Confirm the body still fits: `uv run --with pyyaml python build/check_conformance.py` exits 0.
+Replace `"at most Minor,"` with `"not Important,"` (line 231).
+
+In the ledger bullets (D27), replace
+
+```markdown
+- When a task's review comes back clean, append one line to the ledger in
+  the same message as your other bookkeeping:
+  `Task N: complete (commits <base7>..<head7>, review clean)`.
+```
+
+with
+
+```markdown
+- When a task's review comes back clean, append one line to the ledger in
+  the same message as your other bookkeeping:
+  `Task N: complete (commits <base7>..<head7>, review clean)`. Rule on its
+  Declined to judge lines there too, one `Ruling:` line each, as
+  [references/fix-loop.md](references/fix-loop.md) describes.
+```
+
+Confirm the body still fits: `uv run --with pyyaml python build/check_conformance.py` exits 0 (the two edits add about 130 characters to a body with about 1,080 of room).
 
 - [ ] **Step 4: `executing-plans/SKILL.md`, Step 3**
 
@@ -1805,7 +1832,11 @@ Expected: no output.
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies && cd .. && uv run python build/check_links.py`
 Expected: the tests pass and `check_links.py` reports no broken link (no new cross-skill path was added).
 
-- [ ] **Step 6: NOTICE**
+- [ ] **Step 6: Restamp SDD's `SKILL.md` (D28)**
+
+Run `uv run python build/cc_guide/cli.py lint` and note the `STALE skills/subagent-driven-development/SKILL.md` line's section ids. Read each of those sections in `specs/guides/claude-code-customization-guide.md` (each starts at its `<!-- cc: <id> -->` marker) against the file as this task leaves it. If every claim in the file still agrees with them, run `uv run python build/cc_guide/cli.py baseline cite skills/subagent-driven-development/SKILL.md`, then `cli.py lint` again: the file's STALE line is gone. If a claim disagrees, do not fix it here: report it in the task report with the guide's quoted line and the file's line, and leave the file unstamped.
+
+- [ ] **Step 7: NOTICE**
 
 After Task 4's NOTICE bullet, add:
 
@@ -1818,11 +1849,11 @@ After Task 4's NOTICE bullet, add:
     gate.
 ```
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
-git add skills/subagent-driven-development skills/executing-plans NOTICE
+git add skills/subagent-driven-development skills/executing-plans NOTICE build/cc_guide
 git commit -m "feat(executors): pass the spec and Review Focus to the final review; rule on declined lines
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
