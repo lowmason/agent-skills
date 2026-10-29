@@ -113,8 +113,10 @@ reasonable person would expect, most likely first. The spec is a vision
 document: it says what the software must do, not everything it will
 meet, and its silence on an input is not permission for that input to
 break the program. Write the list here, once, with the spec in front of
-you. Then, for each line, add the test that pins it to the task that
-owns the code, in that task's own step style. With no spec, the plan is
+you. Then, for each line, add the test that pins it, in the task whose
+code the person would see fail, in that task's own step style. The test
+asserts what the person sees (nothing lost, the right output), not a
+value that an earlier task computes on the way. With no spec, the plan is
 the requirement, and the list is what its requirements imply.]
 
 ## Decisions
