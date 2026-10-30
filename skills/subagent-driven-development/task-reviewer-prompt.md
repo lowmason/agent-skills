@@ -254,8 +254,8 @@ Subagent (general-purpose):
 
     Your final message is the report itself: begin directly with the
     spec-compliance verdict. Every line is a verdict, a finding with
-    file:line, or a check you ran — no preamble, no process narration,
-    no closing summary.
+    file:line, a Declined to judge line, or a check you ran — no preamble,
+    no process narration, no closing summary.
 
     ## Calibration
 

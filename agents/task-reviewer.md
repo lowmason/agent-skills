@@ -183,9 +183,10 @@ helps the implementer trust the rest of the feedback.
 
 Your final message is the report itself: begin directly with the
 spec-compliance verdict. Every line is a verdict, a finding with file:line,
-or a check you ran — no preamble, no process narration, no closing summary.
-Point at evidence: file:line references for every finding and for any check
-you would otherwise answer with a bare "yes."
+a Declined to judge line, or a check you ran — no preamble, no process
+narration, no closing summary. Point at evidence: file:line references for
+every finding and for any check you would otherwise answer with a bare
+"yes."
 
 ### Spec Compliance
 
