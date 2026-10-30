@@ -160,7 +160,100 @@ more, the case could not discriminate (a ceiling), and the record says so.
 
 ## Control
 
-Not run yet.
+Run 2026-10-30 on Claude Code 2.1.312, after the reading rules were committed (`fce05d2`).
+Prompts: `build_prompts.py f3a4af4 /tmp/plan74-control`. The five cases ran at the same time,
+each with `run_reps.sh <case>.txt control/<case> 1 5 <model> <budget>`. 25 reps. No rep was
+VOID (each `show_reps.py` header: no error, one turn, no extra iterations, one model), none
+wrote a `.err` file, and none was rerun. The scored reps are `rep1`-`rep5` of each case.
+
+All five R1 replies and R2 rep 5 mention that their `/tmp` run directory is not a git
+repository, and plan around it. That touches no pass rule.
+
+| Case | Control passes | What the control did |
+|---|---|---|
+| R1 | 0/5 | No rep wrote an `→ item:` marker. Reps 2-5 appended an entry for W with `Done when:` and offered S as a watch entry. Rep 1 offered W and gave S nothing. |
+| R2 | 0/5 | Every rep appended both pieces of open work as entries, with D12 met, and cut them out of the closure note. No rep wrote an `→ item:` marker. |
+| R3 | 0/5 | Every rep offered one carry covering both aged entries. Reps 2-4 noted the `Carry used` line but still offered the carry for both. No rep wrote anything. |
+| R4 | 0/5 | Every rep said the probe entry's condition was met and routed it to Quick fix. No rep proposed an `→ triggered` note. |
+| R5 | 0/5 | No rep wrote an `→ planned` note. Reps 1-4 left the backlog unchanged. Rep 5 added a plain pointer line to the chapter-markers entry only. |
+
+### R1
+
+W is the `deferred to a future plan` sentence (payload compression). S is the `BUFFER_FULL`
+sentence. No rep wrote `→ dropped:`.
+
+| Rep | W | S | Verdict | Deciding line |
+|---|---|---|---|---|
+| 1 | question | unresolved | FAIL | S: ``It has no open work, so there is nothing to log.`` (W: ``If you want it tracked, I can add a `specs/deferred_items.md` section``) |
+| 2 | entry, no marker | question | FAIL | W's entry has ``Size: plan. Done when: compressed uploads land with gateway-side tests`` and the plan edit changes only the status header |
+| 3 | entry, no marker | question | FAIL | W's entry has ``Size: plan. Done when: uploads are compressed end to end``; the plan edits are the status header and the `Spec:` line |
+| 4 | entry, no marker | question | FAIL | W's entry has ``Size: plan. Done when: compressed uploads are accepted by the gateway``; no marker in the Scope paragraph |
+| 5 | entry, no marker | question | FAIL | W's entry has ``Size: plan. Done when: compressed uploads are accepted by the gateway``; no marker in the Scope paragraph |
+
+D12, descriptive: every W entry written (reps 2-5) carries `Done when:`. Each S question
+(reps 2-5) offers a ``Revisit if: a station health log reports BUFFER_FULL`` entry, which would
+meet D12 if written.
+
+### R2
+
+W is SMS batching. S is the batch size and the `421 Too many messages` rejection. No rep wrote
+`→ dropped:`.
+
+| Rep | W | S | Verdict | Deciding line |
+|---|---|---|---|---|
+| 1 | entry, no marker | entry, no marker | FAIL | tick rewritten to end ``→ done in plan 15``: ``My draft had the SMS and batch-size notes folded into the tick`` |
+| 2 | entry, no marker | entry, no marker | FAIL | tick ends ``→ done in plan 15``: ``The drafted closure note would have buried them in a ticked item`` |
+| 3 | entry, no marker | entry, no marker | FAIL | tick ends ``→ done in plan 15 (e-mail only; SMS follow-up is in the 15-reminder-batching section below)``, a pointer but not the marker form |
+| 4 | entry, no marker | entry, no marker | FAIL | tick ends ``→ done in plan 15``: ``I would not put those two items in the closure note of the ticked entry as drafted`` |
+| 5 | entry, no marker | entry, no marker | FAIL | tick ends ``→ done in plan 15``: ``**Tick line:** it should be the pointer only`` |
+
+D12, descriptive: in all five reps W's entry carries `Done when:` and S's entry carries
+``Revisit if: the mail host rejects a batch with `421 Too many messages` ``. Every rep also changed
+the plan's status header from `nothing deferred` to point at the backlog.
+
+### R3
+
+X is `4-pdf-export` (carry used). Y is `6-currency-rounding`. No rep wrote an edit or ran a
+command before asking, so point 3 holds in all five. Every rep fails point 2.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | FAIL | ``2. Acknowledge and carry them. Tell me why, and I'll log it under `## Aged-backlog acknowledgements` `` |
+| 2 | FAIL | ``2. Acknowledge and carry them.`` then ``So option 2 may not clear that item.`` |
+| 3 | FAIL | ``2. Acknowledge and carry them. Tell me why, and I'll log it`` after ``An acknowledgement may therefore not settle that item.`` |
+| 4 | FAIL | ``2. Acknowledge and carry them — tell me why, and I'll log it`` and ``option 1 is the safer route`` |
+| 5 | FAIL | ``2. Acknowledge and carry them. Tell me why, and I'll log it`` |
+
+### R4
+
+| Rep | Verdict | Deciding line | Descriptive |
+|---|---|---|---|
+| 1 | FAIL | ``**Its `Revisit if:` has now fired.** … so it moves out of Hold`` | condition met: yes; Quick fix; no `→ triggered` anywhere |
+| 2 | FAIL | ``**This item's revisit condition fired last night.** … So it moves from watch to its recorded size, quick-fix`` | condition met: yes; Quick fix; no `→ triggered` anywhere |
+| 3 | FAIL | ``The bed-4 probe item's trigger fired last night. … So I've moved it from Hold to Quick fix.`` | condition met: yes; Quick fix; it names and rejects the rubric's literal Retire reading; no `→ triggered` anywhere |
+| 4 | FAIL | ``This was a watch item, and its trigger has fired`` | condition met: yes; Quick fix; no `→ triggered` anywhere |
+| 5 | FAIL | ``This item's `Revisit if:` trigger has fired.`` | condition met: yes; Quick fix; no `→ triggered` anywhere |
+
+### R5
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | FAIL | ``This commit contains only the spec. I'm leaving `specs/deferred_items.md` unchanged`` |
+| 2 | FAIL | ``That's the only file in the commit. I'm leaving `specs/deferred_items.md` unchanged.`` |
+| 3 | FAIL | ``No other files are in this commit. I'm leaving `specs/deferred_items.md` unchanged.`` |
+| 4 | FAIL | ``I'm leaving `specs/deferred_items.md` unchanged.`` |
+| 5 | FAIL | the backlog edit adds ``Design: specs/podcast-chapter-markers.md (2026-10-30).`` on the chapter-markers entry only, not the `→ planned` form |
+
+### What the control shows
+
+- R3 and R5 fail on substance: the current wording offers one carry for every aged entry, and
+  it writes nothing on the selected entry.
+- R1 fails on substance for S in rep 1 and on the marker in every rep. In reps 2-5 the current
+  wording files W and only offers S.
+- R2 and R4 fail on the form, not the substance. In R2 the control files both pieces of open work with
+  correct closure fields but writes no marker. In R4 it sees the met condition and routes the
+  entry to Quick fix but writes no `→ triggered` proposal. On these two cases a new-wording pass
+  will show that the form is taught, not that a loss is caught.
 
 ## New wording
 
@@ -168,4 +261,14 @@ Task 10 fills this section.
 
 ## Spend
 
-Isolation probe: $0.01. Control arm: not run yet.
+| Run | Reps | Spend |
+|---|---|---|
+| Isolation probe | 1 | $0.01 |
+| Control R1 | 5 | $0.21 |
+| Control R2 | 5 | $0.20 |
+| Control R3 | 5 | $0.12 |
+| Control R4 | 5 | $0.26 |
+| Control R5 | 5 | $0.17 |
+| Total so far | 26 | $0.96 |
+
+The control arm stayed far below its $20 stop. The kit stop is $40.
