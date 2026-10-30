@@ -234,8 +234,10 @@ the human's, and runs only under `/deferred`.
    fired, from what the repo and the conversation show. No script can tell
    whether an event such as "a `--skill` install is reported broken" has
    happened, so this is where signals get checked. When the signal has fired,
-   propose `→ triggered` and give the evidence. Write nothing: the owner
-   selects it in step 5.
+   propose `→ triggered` and give the evidence. A fired signal is not a met
+   closure condition (the sort rule above), so it never makes the item **Retire**.
+   The item keeps its disposition, and step 4 shows it there as a proposed
+   `→ triggered`. Write nothing: the owner selects it in step 5.
 4. Present one section per disposition, items within grouped by theme, each
    with plan and date. Lead with the `deferred_stats.py` summary line. Rank
    within **Plan** and **Design** with one-line reasoning, aged items first
@@ -358,23 +360,28 @@ until each aged item is cleared in one of two ways:
 - **One carry**, on the owner's reason. Only an item that has not used its
   carry can take it.
 
-**Ask.** Before the merge or the PR, ask, and wait for an answer. Fill in the
-numbers. Say how many aged items can take a carry, and how many cannot.
+**Ask.** Before the merge or the PR, ask, and wait for an answer. The owner
+answers for each aged item: `/deferred`, or a carry with a reason. An item on
+the `Carry used` line gets only `/deferred`. The owner may carry some items and
+send others to `/deferred`. Fill in the counts, and list each item by section
+and first words.
 
 ```
 29 items are aged past the 45-day review horizon. Before I <merge / open the PR>:
 
-1. Run `/deferred` to triage them
-2. Carry the 25 that have not used their carry — tell me why, and I'll note
-   it on each item
+For each of these 25, choose:
+1. Run `/deferred` on it
+2. Carry it — tell me why, and I'll note it on the item
+<section: first words…, one line per item>
 
-4 items already used their one carry. Only `/deferred` clears those.
+These 4 already used their one carry. Only `/deferred` clears those:
+<section: first words…, one line per item>
 
-Which?
+Which, for each of the 25?
 ```
 
-When the `Carry used` line names every aged item, offer only choice 1. When it
-names none, drop the line about items that already used their carry.
+When the `Carry used` line names every aged item, drop the first block and offer
+only `/deferred`. When it names none, drop the second block.
 
 To find the items that can take a carry, read `specs/deferred_items.md`. They
 are the open items that age under rules 1 and 5 (Item notes), whose aging date
@@ -392,11 +399,16 @@ in a separate log.
       → acknowledged 2026-09-08 (feat/rate-limiter): the platform team owns it
 ```
 
-Commit the notes with the branch's other completion commits, then proceed with
-the merge or the PR. The notes travel with the branch. In this finish, do not
-run the gate again for the items you just carried. They still age, so on any
-later finish they appear on the `Carry used` line and get only `/deferred`
-(Second time, below).
+Commit the notes with the branch's other completion commits. Then check every
+aged item. Each one must be carried in this finish, or have its state changed by
+a `/deferred` pass. An item that was on the `Carry used` line, or that the owner
+sent to `/deferred`, is not carried. The merge or the PR waits for the pass on
+those items (Second time, below). After the pass, re-run the stats. The items
+you carried in this finish show on `Carry used` now. That is expected, and they
+stay cleared for this finish. Proceed with the merge or the PR when no other
+aged item is left. The notes travel with the branch. The carried items still
+age, so on any later finish they appear on the `Carry used` line and get only
+`/deferred`.
 
 The reason is required. "Carried deliberately" with no reason is the silent
 default this gate exists to convert into a conscious one. Never write the
