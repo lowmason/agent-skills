@@ -1,0 +1,36 @@
+You are an AI coding agent working with your human partner in their project, on Claude Code.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: The spec for `rename_photos.py` is approved. Write the implementation plan.
+
+[you, tools] You ran the plan-id check: the next free id is 4. You read the approved spec, `specs/photo-renamer.md`. Its full text:
+
+<file path="specs/photo-renamer.md">
+# Photo renamer
+
+## Purpose
+
+`rename_photos.py` renames the JPEG photos in one folder after the moment each was taken, so that the folder sorts by time in any file browser.
+
+## Behavior
+
+- Run as `python rename_photos.py FOLDER [--dry-run]`.
+- It handles the files directly inside FOLDER whose extension is `.jpg` or `.jpeg`, in any letter case. Subfolders are left alone.
+- The new name is `YYYY-MM-DD_HHMMSS.jpg`, from the photo's EXIF `DateTimeOriginal` tag. Read the tag with Pillow.
+- A photo with no `DateTimeOriginal` tag keeps its name. After the run, the tool prints the names of these photos under the heading `No date:`.
+- A photo that already has its target name is left alone.
+- With `--dry-run`, it prints each planned rename as `old -> new` and changes nothing.
+- Otherwise it prints each rename as `old -> new` as it makes it.
+- The exit status is 0 when the run finishes.
+
+## Tests
+
+pytest. Tests build their photos in a temporary folder with Pillow, and write the EXIF tag where a test needs one.
+</file>
+
+[you, tools] The repository holds only `README.md`, `pyproject.toml` (Python 3.12, Pillow as a dependency, pytest in the dev group) and an empty `tests/` folder.
+</session>
+
+It is your turn. Write the complete plan file you would save, from its first line to its last, inside one <plan path="..."> ... </plan> block. Then write the message you would send your partner.

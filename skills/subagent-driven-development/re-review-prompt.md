@@ -32,8 +32,10 @@ that the fixes introduced nothing new.
       ADDRESSED     — the diff resolves it; say which hunk does
       NOT ADDRESSED — it remains; say what is still missing
 
-    Then report any NEW findings the fixes introduced, at the usual
-    Critical / Important / Minor severities. Do not re-review parts of the
+    Then report any NEW findings the fixes introduced: only correctness and
+    requirement gaps, graded Critical or Important, and a Declined to judge
+    list for them (one line per behavior you set aside, with the reason, or
+    "None."). Do not re-review parts of the
     task no finding touched — that review already happened and its cost is
     not worth paying twice.
 
@@ -56,4 +58,4 @@ can get its own verdict; `<DIFF_FILE>` is the path reported by
 `<REPORT_FILE>` is the implementer's report path.
 
 **Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED) plus
-any new findings.
+any new findings and their Declined to judge list.

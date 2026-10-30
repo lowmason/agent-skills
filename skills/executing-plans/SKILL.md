@@ -63,7 +63,10 @@ partner confirmed.
 
 1. **code-reviewer** — fill requesting-code-review's
    [code-reviewer.md](../requesting-code-review/code-reviewer.md) with the plan
-   file as `[PLAN_OR_REQUIREMENTS]`, BASE as `[BASE_SHA]`, and the capable
+   file, the spec path from its `Spec:` line (or `none: the plan is the
+   requirement` when it has none) and its `## Review Focus` section word for
+   word if it has one as `[PLAN_OR_REQUIREMENTS]` (the reviewer checks each
+   Review Focus line deliberately), BASE as `[BASE_SHA]`, and the capable
    model tier (opus), as for any final whole-branch review. On a platform
    without subagents, work through the same template yourself.
 2. **Codex** — the second-opinion review in
@@ -73,8 +76,9 @@ partner confirmed.
 Touch nothing until both have returned. Then merge the two lists into one, work
 it with the receiving-code-review skill, fix what holds up, re-run the plan's
 tests, and commit the fixes — the plan-completion protocol commits only
-`specs/`, and the branch ships as committed. Findings you leave unfixed carry
-into Step 4, where they feed the resolve-before-defer gate.
+`specs/`, and the branch ships as committed. Findings you leave unfixed, and
+the code-reviewer's Declined to judge lines, carry into Step 4, where they
+feed the resolve-before-defer gate and its questions to your partner.
 
 ### Step 4: Complete the Plan
 

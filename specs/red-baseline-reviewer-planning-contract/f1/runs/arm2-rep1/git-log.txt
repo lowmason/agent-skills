@@ -1,0 +1,8 @@
+cfb8332 chore(specs): retire plan 1
+8193155 docs(specs): mark plan 1 complete and record deferred items
+640cc8c fix: validate header row and report accurate line for invalid UTF-8
+f2941aa feat: add tally.py command-line entry point
+e53669b fix: reject non-YYYY-MM-DD dates and report decode/CSV errors as TallyError
+49e693a feat: parse bank CSVs and total spending per month
+10fbecc docs(specs): add plan 1 for expense tally
+fbc3d5e Scratch repository for plan 73 F1

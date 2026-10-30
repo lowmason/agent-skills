@@ -30,6 +30,12 @@ clones and checks the workflow's triggers and pins.
 `../skills/` whose target is missing, resolving each link from its own file's
 directory, so a move into `references/` cannot leave a stale link behind.
 
+`check_reviewer_block.py` is the eleventh commit lint: it takes the shared
+reviewer block, from `## Review scope` through the `## Declined to judge`
+section, out of the two reviewer agents and the two dispatch templates,
+removes the template indentation, and fails when a copy differs from
+`../agents/code-reviewer.md`'s.
+
 `versions.toml` is the one file where a person sets the dev Python, the freeze date, each pinned
 package version and each cited-only version (design: `specs/completed/package-versions.md`). `versions.py` reads
 it: `sync` writes `.python-version`, `uv.toml` and `skills/uv.toml`, `run` and `verify` install a

@@ -1,0 +1,2 @@
+arm 812f3df
+R4-task.txt sha256 4ba7e10813c8bc2944d418c5c54fa42c9ecb832175072ac9938fef4f97259077 model claude-sonnet-5-5 budget 0.50 uses agents/task-reviewer.md,skills/subagent-driven-development/task-reviewer-prompt.md

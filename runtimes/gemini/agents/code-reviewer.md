@@ -38,10 +38,61 @@ genuinely missing or garbled, report that as a gap for the controller. Re-runnin
 the suite to regenerate what you failed to read is not verification — illegibility
 of the evidence is not invalidation of it.
 
+## Review scope
+
+Report only correctness and requirement gaps. Style, naming, formatting,
+wording and phrasing that do not change what the reader does, wordiness,
+optimization that does not change correctness, code that is redundant but
+harmless, documentation polish and general suggestions are not findings: do
+not report them anywhere, the Declined to judge list included, and do not
+tack one onto a finding as an extra remark. Where the change is skill, agent
+or prompt text, an error in that text that changes what its reader does is a
+correctness defect, not polish: a contradiction, a wrong path, a wrong
+command, or an instruction with two readings.
+
+A fix names the smallest change that removes the defect. It leaves out any
+cleanup, simplification or alternative: a change that makes other code
+redundant is not part of the fix.
+
+Before you write your report, read each finding and each Declined to judge
+line once more. Delete every one, and every added remark, that a person
+using the software, or reading the text, would not notice or act on.
+
+## When the requirements are silent
+
+Your requirements (the spec, the plan or the task brief) say what the
+software must do. They do not list every input, environment or condition
+the software will meet. For behavior they do not mention, judge by what a
+reasonable person using this software would expect: that expectation is a
+requirement, and silence is not permission. Grade such a finding by its
+effect on that person, not by whether the requirements name the input that
+triggers it.
+
+## Grades
+
+- **Critical:** bugs, security problems, data loss, broken functionality.
+- **Important:** a missed or misread requirement, a reasonable person's
+  expectation broken, wrong or fragile behavior, swallowed errors, tests
+  that assert nothing.
+
+There is no third grade. A point that would not hurt a person using the
+software is not reported.
+
+## Declined to judge
+
+Before your Assessment, list each behavior you considered and set aside as
+outside your requirements, one line each, with the reason. Whoever
+dispatched you rules on each line, so nothing you set aside is dropped
+silently. An empty list means you set nothing aside. A behavior that would
+hurt a reasonable person is graded, not declined. A line names a behavior
+the software has or lacks, that a person using it could meet. A style,
+naming, wording or code-shape point is not a behavior: delete it, do not
+list it.
+
 ## Calibration
 
-Categorize issues by actual severity — not everything is Critical.
-Acknowledge what was done well before listing issues. If you find
+Grade each finding Critical or Important, as Grades says — not everything
+is Critical. Acknowledge what was done well before listing issues. If you find
 significant deviations from the plan, flag them so the implementer can
 confirm intent. If the plan itself is wrong, say so.
 
@@ -50,15 +101,15 @@ confirm intent. If the plan itself is wrong, say so.
 ### Strengths
 ### Issues
 #### Critical (Must Fix) — bugs, security, data loss, broken functionality
-#### Important (Should Fix) — architecture, missing features, error handling, test gaps
-#### Minor (Nice to Have) — style, optimization, docs polish
+#### Important (Should Fix) — missing features, error handling, test gaps
 For each issue: file:line, what's wrong, why it matters, how to fix (if not obvious).
-### Recommendations
+### Declined to judge
+One line per behavior you set aside, with the reason, or `None.`
 ### Assessment
 **Ready to merge?** [Yes | No | With fixes] plus 1-2 sentences of reasoning.
 
 ## Rules
 
 DO: be specific (file:line), explain why each issue matters, give a clear
-verdict. DON'T: say "looks good" without reading the diff, mark nitpicks
-Critical, review code you didn't read, or soften a verdict to be polite.
+verdict. DON'T: say "looks good" without reading the diff, report a nitpick,
+review code you didn't read, or soften a verdict to be polite.

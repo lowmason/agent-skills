@@ -1,0 +1,4 @@
+arm f5ef4da
+X1-task.txt sha256 a05e9037ad7da8d86861f56c8d0e0a4097d83316be2d3d0650206e75f8b5f6ef model claude-sonnet-5-5 budget 0.50 uses agents/task-reviewer.md,skills/subagent-driven-development/task-reviewer-prompt.md
+X2.txt sha256 35200ff33a1170a1be5de33f15fbe3231bf8ee088ce20fb7617c083ff2b6f880 model claude-opus-5-5 budget 1.50 uses skills/writing-plans/SKILL.md
+X3.txt sha256 2a8a51949d1b009c532a1b134e77579b2ffe5334e9bae8bb23129a643c3c4a89 model claude-opus-5-5 budget 1.50 uses skills/writing-plans/SKILL.md

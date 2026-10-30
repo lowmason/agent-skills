@@ -14,6 +14,12 @@ Read this when the last task's review resolves, before you dispatch the final wh
   that exact line into the progress ledger too, and back into the
   conversation if you resume from the ledger. Touch nothing until both seats
   have returned.
+- Fill the code-reviewer's `[PLAN_OR_REQUIREMENTS]` with the plan path; the
+  spec path from the plan's `Spec:` line, or `none: the plan is the
+  requirement`; the plan's `## Review Focus` section, word for word, if the
+  plan has one (the inputs and failure modes the plan's tests do not
+  exercise: the reviewer checks each one deliberately); and a pointer to the
+  ledger's `Ruling:` lines.
 - If the final whole-branch review returns findings, merge both seats' lists
   and dispatch ONE fix subagent with the complete list — not one fixer per
   finding.
@@ -27,10 +33,11 @@ protocol from the writing-plans skill (its "Plan Completion Protocol"
 section): resolve-before-defer gate → plan markup → deferred items →
 retire. The gate's batched questions are this skill's one deliberate human
 checkpoint — fold any question sets already pending (plan-mandated
-findings, deferred-Minor confirmations) into the same batch, so your human
-partner gets at most one round-trip. Review findings the final review left
-unfixed feed the gate. This is compatible with Continuous execution: "all
-tasks complete" is a sanctioned stop.
+findings, the final review's Declined to judge lines, each for your human
+partner to rule on) into the same batch, so your human partner gets at most
+one round-trip. Review findings the final review left unfixed feed the gate.
+This is compatible with Continuous execution: "all tasks complete" is a
+sanctioned stop.
 
 When the plan-completion protocol has finished and the final review's fixes
 are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
@@ -42,6 +49,6 @@ directories under `.sdd/` belong to other plans — leave them alone, and never
 
 Order matters. The delete runs **after** the protocol, never before: the
 resolve-before-defer gate reads this run's leftovers — the ledger, unfixed
-review findings, deferred-Minor confirmations — to build its batched questions
+review findings, the final review's Declined to judge lines — to build its batched questions
 and the `specs/deferred_items.md` entries. Deleting the workspace first
 destroys the protocol's input.

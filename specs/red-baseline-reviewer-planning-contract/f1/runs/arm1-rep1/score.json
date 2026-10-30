@@ -1,0 +1,15 @@
+{
+ "handled": {
+  "test_refund_in_parentheses_counts_negative": true,
+  "test_export_with_byte_order_mark_is_read": true,
+  "test_missing_file_is_a_clean_error": true
+ },
+ "ratio": 15.64,
+ "cost": 2.52,
+ "execute_models": [
+  "claude-opus-5-5",
+  "claude-sonnet-5-5"
+ ],
+ "audit_error": null,
+ "audit_hits": []
+}

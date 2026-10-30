@@ -1,0 +1,9 @@
+arm 812f3df
+P12.txt sha256 48679f08c0af0c939655c6d2f87f025d9c8e6b899622aa3583bfc09c46c54b4e model claude-opus-5-5 budget 1.50 uses skills/writing-plans/SKILL.md
+P3.txt sha256 96da23ba39adc97fa364140c751897965832b6e64ffb3b8c3cebfdb8f3dc9ca2 model claude-opus-5-5 budget 1.50 uses skills/writing-plans/SKILL.md
+R1-final.txt sha256 e416939c57c792175e938083a7d13be86cc2417ae965d2518f85ac3d890c71ec model claude-opus-5-5 budget 0.50 uses agents/code-reviewer.md,skills/requesting-code-review/code-reviewer.md
+R1-task.txt sha256 9a3d41ca73e181a016e3af982fb2a9b57cf9773248810f761cfa5e63444842c5 model claude-sonnet-5-5 budget 0.50 uses agents/task-reviewer.md,skills/subagent-driven-development/task-reviewer-prompt.md
+R2-final.txt sha256 a91db71c2dd5accaba1134d16176cd3a7ddad6a69bc2cd3f74c659f80faaa635 model claude-opus-5-5 budget 0.50 uses agents/code-reviewer.md,skills/requesting-code-review/code-reviewer.md
+R2-task.txt sha256 84ab76ebe751b0daec0c293176bb9f6c5d9caa15bc161346f9aaeff347a465c4 model claude-sonnet-5-5 budget 0.50 uses agents/task-reviewer.md,skills/subagent-driven-development/task-reviewer-prompt.md
+R4-final.txt sha256 cad35af3ac09dc76ab8f087620b56a3eff02d5a9a7b6f921c1d5bc4c11b40521 model claude-opus-5-5 budget 0.50 uses agents/code-reviewer.md,skills/requesting-code-review/code-reviewer.md
+R4-task.txt sha256 9cd3a53217a17e15a02bf6c0ffaa32432cc7f0f715b433cde9d8f53136cbefbc model claude-sonnet-5-5 budget 0.50 uses agents/task-reviewer.md,skills/subagent-driven-development/task-reviewer-prompt.md

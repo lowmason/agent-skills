@@ -752,20 +752,6 @@ evidence = 'Drift spec decision 9 and R8.1 pin the verifier to Sonnet; the 2.1.2
 revisit = 'If an Opus verify of the same packet is shown to catch claims a Sonnet verify misses.'
 
 [[exception]]
-id = 'reviewers-flag-beyond-correctness'
-type = 'gap'
-sections = ['subagents.isolation']
-artifacts = [
-    'agents/code-reviewer.md', 'agents/task-reviewer.md',
-    'skills/requesting-code-review/SKILL.md',
-    'skills/subagent-driven-development/SKILL.md',
-]
-guide = 'Tell a reviewer to flag only correctness and requirement gaps.'
-reason = 'Both reviewers, and the two skills that dispatch them, invite findings beyond correctness and requirement gaps.'
-evidence = 'Audit rows A-33, A-34; owner gate 2026-10-04; the two skills added by owner decision after the /cc-guide files pass (requesting-code-review:86, subagent-driven-development:14), 2026-10-13.'
-tracked_in = 'deferred item: scope code-reviewer and task-reviewer findings to correctness and requirement gaps'
-
-[[exception]]
 id = 'commands-stay-command-files'
 type = 'deviation'
 sections = ['commands.overview']
