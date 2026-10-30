@@ -55,6 +55,7 @@ Numbered after the spec's D1-D14.
 - **D15** (owner, brief, 2026-10-30): execution no longer waits for the reviewer-contract plan. Plan 73 completed and merged as lowmason/agent-skills#128 (67758d7). Applied in: the spec's status line (this plan's commit), Global Constraints.
 - **D16** (owner, brief, 2026-10-30): build on the post-plan-73 text of `skills/writing-plans/SKILL.md` and `references/deferred-backlog.md`, and re-measure the three bodies on this tree. Applied in: Global Constraints (measured figures), Tasks 7-9.
 - **D17** (owner, brief, 2026-10-30): name the two overlapping backlog items, and fold each in or leave it as the plan's own call. Applied in: Overlapping backlog items.
+- **D18** (owner, plan review, 2026-10-30): approve Task 0's amendment. The scan must catch the five B1 instances that carry a deferral phrase; the four phraseless fixtures become `xfail` fixtures that record the limit. Applied in: Task 0 (spec amendment), Task 4.
 
 ## Overlapping backlog items
 
@@ -65,7 +66,7 @@ Numbered after the spec's D1-D14.
 
 ## Open for plan review
 
-1. **B1 fixtures with no deferral phrase (spec-level).** Three of the eight B1 instances carry no phrase a scan can match at the audit base `6186635`: plan 29 `:693` (a Task heading) and `:710` (a design for a `floating` tier that was then never built), the audit_9_2_26 scorecard line `:200` (a finding), and audit_1_3_26:139 (a fix list, lost through a re-file). Section 6 requires the scan to catch every B1 instance, and also caps noise at a median of 3. No phrase list can do both. Recommended: Task 0's amendment. If the owner declines it, Task 4 must catch all eight, and the burden check decides whether that is possible.
+1. **B1 fixtures with no deferral phrase (spec-level).** Three of the eight B1 instances carry no phrase a scan can match at the audit base `6186635`: plan 29 `:693` (a Task heading) and `:710` (a design for a `floating` tier that was then never built), the audit_9_2_26 scorecard line `:200` (a finding), and audit_1_3_26:139 (a fix list, lost through a re-file). Section 6 requires the scan to catch every B1 instance, and also caps noise at a median of 3. No phrase list can do both. **Resolved:** the owner approved Task 0's amendment (D18).
 2. **writing-plans body room (my call).** The additions (the step 3 marker sentence, the removal rewording, the step 5 scan sentence, the D13 line) are paid for by three cuts inside sections the spec names: step 3's restatement of the schema (`Each item follows …` to `… resolve it now or drop it.`), which the reference already holds, shrinks to a pointer; step 5's link re-pointing sentence is shortened; and step 5's closing paragraph (`These commits land on the current branch …`) is shortened. The relabeled example and `## What a Step Contains` stay. A scratch draft of all seven edits measured 19,957 characters (base 19,994), so the budget closes with about 35 characters to spare. If the final wording passes the base figure, stop and ask the owner; do not cut elsewhere.
 3. **Pass bar (my call).** A case passes when the new arm passes 4 or more of 5 reps and the control passes at least 2 fewer. When the control also passes 4 or more, the record says the case could not discriminate (a ceiling).
 4. **Rep models (my call).** R1, R2 and R3 run on `claude-sonnet-5-5`, because the completion protocol and finishing run in Sonnet execution sessions. R4 and R5 run on `claude-opus-5-5`, because `/deferred` and brainstorming run in Opus sessions.
@@ -75,7 +76,7 @@ Numbered after the spec's D1-D14.
 
 ---
 
-### Task 0: Spec amendment for the B1 fixtures (only if approved at plan review)
+### Task 0: Spec amendment for the B1 fixtures (approved at plan review, D18)
 
 **Files:**
 - Modify: `specs/backlog-protocol.md` (section 6 Candidates; Done when)
@@ -97,12 +98,12 @@ with:
   fixture. Plan 29's Task 5 (`:693`, `:710`), the audit_9_2_26 scorecard note (`:200`) and
   audit_1_3_26:139 carry no deferral phrase: a design dropped without a word, a finding and a
   fix list. They become fixtures that record what a phrase scan cannot see. (owner, plan 74,
-  <YYYY-MM-DD>)
+  2026-10-30)
 ```
 
 - [ ] **Step 2: Replace in Done when**
 
-Replace `- The scan catches every B1 fixture.` with `- The scan catches every B1 fixture that carries a deferral phrase. (owner, plan 74, <YYYY-MM-DD>)`. Leave the status line alone.
+Replace `- The scan catches every B1 fixture.` with `- The scan catches every B1 fixture that carries a deferral phrase. (owner, plan 74, 2026-10-30)`. Leave the status line alone.
 
 - [ ] **Step 3: Commit**
 
@@ -286,7 +287,7 @@ In `test_deferral_scan.py`, copy each fixture's whole unit from the audit base `
 - [ ] **Step 2: Write the failing tests**
 
 - `test_catches_each_phrase_bearing_b1_fixture`: parametrized over the first five strings; `unmarked(s)` is non-empty.
-- `test_phraseless_b1_fixtures_record_the_limit`: parametrized over the last four, each marked `pytest.mark.xfail(strict=False, reason='no deferral phrase; see plan 74 Task 0')`; assert `unmarked(s)` is non-empty. A phrase list that catches one shows as XPASS, never as a failure. (If Task 0 was declined, move these four into the first test without the mark.)
+- `test_phraseless_b1_fixtures_record_the_limit`: parametrized over the last four, each marked `pytest.mark.xfail(strict=False, reason='no deferral phrase; see plan 74 Task 0')`; assert `unmarked(s)` is non-empty. A phrase list that catches one shows as XPASS, never as a failure.
 - `test_item_marker_resolves_its_unit`: `PLAN_4 + ' → item: 9-x — 2026-01-01'` gives `[]`.
 - `test_dropped_marker_resolves_its_unit`: the same with `→ dropped: landed in abc123`.
 - `test_marker_in_another_unit_does_not_count`: a candidate bullet followed by a second bullet that carries the marker. One candidate.
