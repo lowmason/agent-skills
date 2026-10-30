@@ -49,6 +49,6 @@ directories under `.sdd/` belong to other plans — leave them alone, and never
 
 Order matters. The delete runs **after** the protocol, never before: the
 resolve-before-defer gate reads this run's leftovers — the ledger, unfixed
-review findings, the final review's Declined to judge lines — to build its batched questions
-and the `specs/deferred_items.md` entries. Deleting the workspace first
-destroys the protocol's input.
+review findings, the final review's Declined to judge lines — to build its
+batched questions and the `specs/deferred_items.md` entries. Deleting the
+workspace first destroys the protocol's input.

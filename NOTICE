@@ -318,6 +318,26 @@ Changes from upstream:
     aged-tail gate at Step 1b of finishing-a-development-branch. Those
     three files are original works by Lowell Mason under the same MIT
     terms; the surrounding adapted skills are unchanged in structure.
+    Plan 74 (2026-10-30) extended that contract again. The reference
+    gained item notes (dated `→ held`, `→ triggered`, `→ planned` and
+    other notes on an item's continuation lines), markers for deferral
+    sentences, per-item archive and removal, and the one-carry rule of
+    the aged-tail gate. Two scripts came with it:
+    writing-plans/scripts/deferral_scan.py, an advisory scan that is
+    also the commit lint over newly completed specs and plans, and
+    writing-plans/scripts/archive_deferred.py. Their tests are
+    writing-plans/scripts/test_deferral_scan.py and
+    writing-plans/scripts/test_archive_deferred.py. These four files and
+    the reference changes are original works by Lowell Mason under the
+    same MIT terms. In the adapted skills, step 3 of writing-plans' Plan
+    Completion Protocol now points at the item schema instead of
+    restating it. It asks for a marker on a closure note that names
+    follow-up work, and it says that removal and archiving move an item
+    instead of deleting it. Step 5 runs the scan before the `git mv`.
+    The Execution Handoff writes `→ planned` on the `/deferred` items
+    that a plan settles. brainstorming's The Written Design gained one
+    line: the commit of a spec from a `/deferred` Design pick writes
+    `→ planned` on the picked items only.
   - finishing-a-development-branch's Option 2 creates the PR and Step 3
     detects the base branch. Neither is upstream: as vendored, Option 2
     only pushed the branch and there was no `gh` anywhere in the file. Both

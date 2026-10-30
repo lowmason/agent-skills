@@ -224,7 +224,10 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 After saving the plan, hand off to execution. The plan file is a complete
 handoff — you wrote it for an engineer who has not seen this codebase or
-spec — so execution does not need this planning session's history.
+spec — so execution does not need this planning session's history. When the
+plan settles `/deferred` items, its commit writes
+`→ planned <YYYY-MM-DD>: <plan path>` on each, replacing a spec path
+already there.
 
 ### 1. Plan review
 
@@ -316,11 +319,10 @@ current plan deferred nothing. Then append this plan's deferred items, one
 section per plan, newest last. Create the file on first use with a single
 `# Deferred items` title line, no other preamble. Skip the append entirely
 when nothing was deferred — never append an empty section; the ticking
-pass above still runs. Each item follows the **Deferred-item schema** in
-`references/deferred-backlog.md`: self-contained (file paths, why it was
-deferred, what it would take to do), plus a `Size:` of `quick-fix` / `plan` /
-`design` and a closure condition (`Done when:` or `Revisit if:`). An item that
-cannot state a closure condition is not deferrable — resolve it now or drop it.
+pass above still runs. Items follow the **Deferred-item schema** in
+`references/deferred-backlog.md`. A closure note that names follow-up work
+gets an item and an `→ item:` marker, or `→ dropped:` only as **Markers**
+there allows.
 
 ```markdown
 ## 7-rate-limiter — 2026-07-04
@@ -329,13 +331,14 @@ cannot state a closure condition is not deferrable — resolve it now or drop it
       src/limiter/store.py. Size: design. Done when: the DSN decision is
       recorded and the store lands behind it.
 - [ ] Declined review line: retry jitter is fixed-seed in tests only
-      (final review, owner ruled defer). Size: quick-fix. Revisit if: a flake in
-      tests/test_limiter.py traces to jitter.
+      (final review, owner ruled defer). Size: quick-fix. Revisit if: a
+      flake in tests/test_limiter.py traces to jitter.
 ```
 
 When a later plan implements an item, tick its box with a pointer
-(`- [x] … → done in plan 12`). Never delete items — the file doubles as a
-history of consciously-deferred work.
+(`- [x] … → done in plan 12`). Never delete an item: removal and archiving
+move it to `specs/completed/deferred_items.md` (**Archive and removal**,
+same reference).
 
 **3a. Hand off a roadmap stage.** Only when the plan's header carries a line
 that reads, after any `> ` prefix, `Roadmap: specs/<name>-roadmap.md, Stage N`
@@ -390,16 +393,15 @@ selection, and continue to step 5 either way. The triage never blocks
 completion — the aged tail is gated later, at
 finishing-a-development-branch.
 
-**5. Retire.** `git mv` the plan to `specs/plans/completed/`, in one
+**5. Retire.** First, run
+`uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> <spec>` and
+resolve each line it lists with a marker (**Markers**, same reference).
+Then `git mv` the plan to `specs/plans/completed/`, in one
 `chore(specs): retire plan <id>` commit. Retire the spec to
 `specs/completed/` (marked complete at top) in the same commit **only if**
 the spec file exists and no other live plan in `specs/plans/` implements it
 (match by the `<spec-name>` suffix in plan filenames). Spec-less plans and
-shared specs leave the spec untouched. Moving a file one directory deeper
-breaks its relative links: as part of retirement, re-point the retiring
-plan's and spec's relative links for their new depth (e.g. `../skills/…`
-becomes `../../skills/…`).
+shared specs leave the spec untouched. Re-point moved files' relative links
+(`../skills/…` becomes `../../skills/…`).
 
-These commits land on the current branch as its final commits — a merge or
-PR carries them atomically; a discarded branch takes its completion markup
-with it.
+A merge or PR carries these final commits; a discarded branch takes them.
