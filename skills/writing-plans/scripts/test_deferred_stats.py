@@ -217,6 +217,23 @@ def test_nested_bullet_stays_in_its_item():
     assert items[1].notes == []
 
 
+def test_blank_line_inside_an_item_stays_one_paragraph_break():
+    # Final review, finding 2: the deferral scan reads paragraphs, so a blank line
+    # between continuation lines is kept once; blank lines after the item are not.
+    text = one_section(
+        '- [ ] First item.\n'
+        '      → done 2026-10-01: fixed\n'
+        '\n'
+        '\n'
+        '      Second paragraph.\n'
+        '\n'
+        '- [ ] Second item.'
+    )
+    first, second = parse_items(text)
+    assert first.text == 'First item.\n→ done 2026-10-01: fixed\n\nSecond paragraph.'
+    assert second.text == 'Second item.'
+
+
 def test_note_form_in_backticks_sets_no_state():
     text = one_section(
         '- [ ] Work item that quotes `→ held <date>: <condition>` and\n'

@@ -200,18 +200,25 @@ def parse_items(text: str) -> list[Item]:
     nested bullet, and its notes, with its item. A non-blank line at column 0
     that is neither a heading nor an item (such as a bullet in the
     ``## Aged-backlog acknowledgements`` log) closes the open item.
+
+    A run of blank lines between two of an item's lines stays in ``text`` as one
+    empty line, since the deferral scan reads paragraphs. Blank lines after the
+    item's last line are dropped.
     '''
     items: list[Item] = []
     heading: tuple[str, dt.date | None] | None = None
     checked = False
     lines: list[str] = []
+    gap = False
 
     def close() -> None:
+        nonlocal gap
         if lines and heading is not None:
             body = '\n'.join(lines)
             notes = [note for _, _, note in _find_notes(body, _mask_code(body))]
             items.append(Item(heading[0], heading[1], checked, body, notes))
         lines.clear()
+        gap = False
 
     for line in text.splitlines():
         section = SECTION_RE.match(line)
@@ -225,9 +232,15 @@ def parse_items(text: str) -> list[Item]:
             checked = start.group('mark') != ' '
             lines.append(line[start.end():].strip())
             continue
-        if not lines or not line.strip():
+        if not lines:
+            continue
+        if not line.strip():
+            gap = True
             continue
         if line[0].isspace():
+            if gap:
+                lines.append('')
+                gap = False
             lines.append(line.strip())
         else:
             close()

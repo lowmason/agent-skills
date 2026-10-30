@@ -587,6 +587,30 @@ def test_undated_note_with_a_phrase_counts_as_older_beside_a_new_note():
     assert '- [x] e → done in plan 9: still worth a future item later.\n' in archived
 
 
+# Final review, finding 2: a blank line inside a closure note ends a scan unit, so
+# a `→ item:` marker in the first paragraph does not cover the second.
+PARAGRAPHS = '''# Deferred items
+
+## 12-d — 2026-11-01
+- [x] p: fix the parser
+      → done 2026-11-02: fixed; the edge case is filed as a future item → item: 12-e.
+
+      A second gap is left for later.
+- [x] q: fix the lexer
+      → done 2026-11-02: fixed; the edge case is filed as a future item → item: 12-e.
+'''
+
+
+def test_marker_in_one_paragraph_does_not_cover_the_next():
+    live, archived, held = run(PARAGRAPHS)
+    assert '- [x] p: fix the parser' in live
+    assert '- [x] p' not in archived
+    assert held == ['  held back: 12-d: p: fix the parser A second…: A second gap is left for later.']
+    # Control: a one-paragraph note whose deferral is marked still moves.
+    assert '- [x] q' not in live
+    assert '- [x] q: fix the lexer\n' in archived
+
+
 def _files(tmp_path, live: str = DRY_RUN, archived: str | None = TITLE):
     live_path, archive_path = tmp_path / 'deferred.md', tmp_path / 'archive.md'
     live_path.write_text(live, encoding='utf-8')
@@ -748,7 +772,7 @@ FIXTURES = {
     'dry_run': (DRY_RUN, TITLE), 'tricky': (TRICKY, TITLE),
     'repeated': (REPEATED_LIVE, REPEATED_ARCHIVE), 'odd_spacing': (ODD_SPACING, DATE_ORDER_ARCHIVE),
     'cut_spacing': (CUT_SPACING, TITLE), 'drain_spaced': (DRAIN_SPACED_LIVE, REPEATED_ARCHIVE),
-    'redone': (REDONE, TITLE), 'rescan': (RESCAN, TITLE),
+    'redone': (REDONE, TITLE), 'rescan': (RESCAN, TITLE), 'paragraphs': (PARAGRAPHS, TITLE),
 }
 
 
