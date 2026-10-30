@@ -265,7 +265,141 @@ command before asking, so point 3 holds in all five. Every rep fails point 2.
 
 ## New wording
 
-Task 10 fills this section.
+Run 2026-10-30 on Claude Code 2.1.312, the same version as the control, from the texts at
+`9057df7` (HEAD after Task 9). Prompts: `build_prompts.py 9057df7 /tmp/plan74-green`.
+`MANIFEST.txt` names `arm 9057df7`. Outside the texts under test, every green prompt is
+byte-identical to its control prompt: the kit is unchanged since `fce05d2`, and the green leak
+view is identical to the control's leak view. The leak grep of the `## Leak check` section, repeated on the leak view, printed no line
+and `exit=1` for every case, and the supplementary greps also matched nothing. The isolation
+probe ran again (`run_reps.sh isolation_probe.txt /tmp/plan74-greenprobe 1 1 claude-sonnet-5-5`):
+all five lines `NO`, one turn, no extra iterations, one model, $0.008. The Claude Code version did
+not change, so the init-record check was not repeated. The five cases ran at the same time, each
+with `run_reps.sh <case>.txt green/<case> 1 5 <model> <budget>`, the models and budgets as in the
+control. 25 reps. No rep was VOID (each `show_reps.py` header: no error, one turn, no extra
+iterations, one model, and R1-R3 ran on `claude-sonnet-5-5`, R4-R5 on `claude-opus-5-5`). None
+wrote a `.err` file, and none was rerun. The scored reps are `rep1`-`rep5` of each case.
+
+Summary: the new wording passes every case 5 of 5, against 0 of 5 for the control, so every
+case clears the bar. No case is a ceiling, because the control passed no rep. In R1 and R2 every
+rep filed both deferrals as entries with correct closure fields and wrote an `→ item:` marker
+that names the new section. In R3 every rep offered the carry for the fresh entry only, and
+routed the carry-used entry to `/deferred` alone, with no write before the question. In R4 every
+rep proposed an `→ triggered` note on the probe-timeout entry. In R5 every rep added an
+`→ planned` note to the chapter-markers entry only. The caveat from "What the control shows"
+stands: R2 and R4 discriminate on form, not substance. Their passes show that the new wording
+teaches the marker and note forms. They do not show that a loss is caught, because the control
+already filed the R2 work and saw the met R4 condition.
+
+| Case | Control passes | New passes | What the new wording did |
+|---|---|---|---|
+| R1 | 0/5 | 5/5 | Every rep appended entries for W (`Done when:`) and S (`Revisit if:` a `BUFFER_FULL` report) and wrote an `→ item:` marker in each of the two plan paragraphs. |
+| R2 | 0/5 | 5/5 | Every rep appended both entries, with D12 met, and put one `→ item:` marker naming the new section in the closure note. |
+| R3 | 0/5 | 5/5 | Every rep offered a carry for `6-currency-rounding` only and said only `/deferred` clears `4-pdf-export`. No rep wrote anything before asking. |
+| R4 | 0/5 | 5/5 | Every rep said the probe condition was met and proposed an `→ triggered` note on that entry. Every rep kept it under Quick fix. |
+| R5 | 0/5 | 5/5 | Every rep added `→ planned 2026-10-30: specs/podcast-chapter-markers.md` to the chapter-markers entry only. |
+
+### R1, new wording
+
+No rep wrote `→ dropped:`. Each rep offered to swap S's marker for `→ dropped:` if the partner
+calls the 64 MB decision final, and wrote none. Every rep also changed the status header from
+`nothing deferred` to `deferred items in specs/deferred_items.md`. All five replies mention that
+the `/tmp` run directory is not a git repository, as in the control.
+
+| Rep | W | S | Verdict | Deciding line |
+|---|---|---|---|---|
+| 1 | entry + marker | entry + marker | PASS | both plan paragraphs rewritten to end ``→ item: 12-station-upload-retry — 2026-10-30``; S's entry ends ``Revisit if: a station's health log reports `BUFFER_FULL`.`` |
+| 2 | entry + marker | entry + marker | PASS | ``Line 13 gains this at its end, on the same paragraph:`` and ``Line 36 gains this at its end``, each with ``→ item: 12-station-upload-retry — 2026-10-30`` |
+| 3 | entry + marker | entry + marker | PASS | ``Line 13, append to the end of the line:`` and ``Line 36, append to the end of the line:``, each with ``→ item: 12-station-upload-retry — 2026-10-30`` |
+| 4 | entry + marker | entry + marker | PASS | ``Line 13 now ends: `...but it needs its own tests on the gateway side. → item: 12-station-upload-retry — 2026-10-30` `` and the same on line 36 |
+| 5 | entry + marker | entry + marker | PASS | lines 13 and 36 replaced whole, each ending ``→ item: 12-station-upload-retry — 2026-10-30`` |
+
+D12: every W entry is `Size: plan` with `Done when:` (for example rep 1: ``Done when: station
+uploads are compressed and the gateway-side tests for the compressed payload pass``). Every S
+entry is `Size: quick-fix` with ``Revisit if: a station's health log reports `BUFFER_FULL` ``
+(rep 2 adds ``(none has in the last year of logs)``, rep 3 writes ``a station health log
+reports``). Each condition is one checkable report. No S entry carries `Done when:`.
+
+### R2, new wording
+
+No rep wrote `→ dropped:`. Each rep wrote one marker, ``→ item: 15-reminder-batching —
+2026-10-30``, in the closure note of the ticked entry. It names the new section, which holds
+both entries, so one marker meets the rule for W and for S. Reps 1, 2, 4 and 5 also changed the
+plan's status header from `nothing deferred` to point at the backlog. Rep 3 left it.
+
+| Rep | W | S | Verdict | Deciding line |
+|---|---|---|---|---|
+| 1 | entry + marker | entry + marker | PASS | the drafted note kept whole, then ``→ item: 15-reminder-batching — 2026-10-30`` on its own line |
+| 2 | entry + marker | entry + marker | PASS | the note ends ``` `421 Too many messages`. → item: 15-reminder-batching — 2026-10-30 ``` |
+| 3 | entry + marker | entry + marker | PASS | the note cut to ``→ done in plan 15. Batching covers e-mail only; SMS reminders still make one gateway call per message → item: 15-reminder-batching — 2026-10-30`` |
+| 4 | entry + marker | entry + marker | PASS | ``→ done 2026-10-30 in plan 15. SMS reminders still make one gateway call per message; the batch size of 50 stays as is. → item: 15-reminder-batching — 2026-10-30`` |
+| 5 | entry + marker | entry + marker | PASS | the drafted note kept whole, then ``→ item: 15-reminder-batching — 2026-10-30`` on its own line |
+
+D12: in all five reps W's entry is `Size: plan` with `Done when:` and S's entry is
+`Size: quick-fix` with ``Revisit if: the mail host rejects a batch with `421 Too many messages` ``.
+Rep 4 wraps the field name across a line break (`Revisit` / `if:`), which is still the field.
+Rep 3 removed the batch-size sentence from the closure note. Its marker still names the section
+that holds S's entry, so S counts as resolved. Rep 4 added a date to the done note
+(`→ done 2026-10-30 in plan 15`).
+
+### R3, new wording
+
+X is `4-pdf-export` (carry used). Y is `6-currency-rounding`. No rep wrote an `<edit>` block or
+a `<command>` block, so point 3 holds in all five. Every rep offers Y the choice of `/deferred`
+or a carry (``Carry it. Tell me why, and I'll note it on the item.`` or close to it), and lists X
+apart.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | PASS | ``This 1 already used its one carry. Only `/deferred` clears it:`` |
+| 2 | PASS | ``This 1 already used its one carry, so only `/deferred` clears it:`` |
+| 3 | PASS | ``This one already used its one carry. Only `/deferred` clears it:`` |
+| 4 | PASS | ``This one already used its one carry, so only `/deferred` clears it:`` |
+| 5 | PASS | ``This 1 already used its one carry. Only `/deferred` clears it:`` |
+
+Descriptive: reps 1, 3, 4 and 5 show the note they would write after a carry,
+``→ acknowledged 2026-10-30 (feat/vat-rounding): <your reason>``. Rep 4 also points out that the
+branch's rounding work may already close Y, so `/deferred` could retire it.
+
+### R4, new wording
+
+| Rep | Verdict | Deciding line | Descriptive |
+|---|---|---|---|
+| 1 | PASS | ``**Proposed `→ triggered 2026-10-30: nightly hardware run failed tests/hw/test_moisture.py::test_read_bed_4 — TimeoutError: probe bed-4 did not answer within 2.0 s`.**`` | condition met: yes; Quick fix; for the frost-threshold entry, ``If so, I'll propose `→ triggered` instead``, a conditional offer only |
+| 2 | PASS | ``→ triggered 2026-10-30: nightly hardware run failed tests/hw/test_moisture.py::test_read_bed_4 — TimeoutError: probe bed-4 did not answer within 2.0 s`` | condition met: yes; Quick fix; no `→ triggered` on another entry |
+| 3 | PASS | ``**Proposed `→ triggered`:** last night's hardware run failed `tests/hw/test_moisture.py::test_read_bed_4` `` | condition met: yes; Quick fix; bare form, no date or text; a `→ held` on the frost-threshold entry called optional |
+| 4 | PASS | ``**Proposed:** `→ triggered 2026-10-30: tests/hw/test_moisture.py::test_read_bed_4 timed out in the 2026-10-29 nightly hardware run (…)` `` | condition met: yes; Quick fix; no `→ triggered` on another entry |
+| 5 | PASS | ``**Proposed `→ triggered` (pick to record it)**`` heading the probe-timeout entry | condition met: yes; Quick fix; bare form, no date or text; a `→ held` on the frost-threshold entry called optional |
+
+Reps 3 and 5 write the bare `→ triggered` and give the date and the evidence in prose, not in
+the full `→ triggered <YYYY-MM-DD>: <what happened>` form. The rule counts a proposed note that
+starts `→ triggered`, so both pass, and the record notes the difference. Every rep asks the
+partner to select the note before it is written. No rep proposes Retire for the entry.
+
+### R5, new wording
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | PASS | ``→ planned 2026-10-30: specs/podcast-chapter-markers.md`` after ``survive a transcode.`` in the chapter-markers entry; ``No other items change.`` |
+| 2 | PASS | ``→ planned 2026-10-30: specs/podcast-chapter-markers.md`` under the chapter-markers entry; ``The `<itunes:explicit>` item and the 33-listener-stats item stay unchanged.`` |
+| 3 | PASS | ``→ planned 2026-10-30: specs/podcast-chapter-markers.md`` on ``the chapter-markers item only``; ``The checkbox stays `[ ]`.`` |
+| 4 | PASS | the whole chapter-markers entry shown with ``→ planned 2026-10-30: specs/podcast-chapter-markers.md`` as its last line |
+| 5 | PASS | the whole chapter-markers entry shown with ``→ planned 2026-10-30: specs/podcast-chapter-markers.md`` as its last line, ``on the chapter-markers item only`` |
+
+Descriptive: every note is dated 2026-10-30 and points at `specs/podcast-chapter-markers.md`.
+Every commit message says the entry is marked as planned.
+
+### Verdicts under the bar
+
+| Case | Control passes | New passes | Verdict under the bar | Note |
+|---|---|---|---|---|
+| R1 | 0/5 | 5/5 | PASS | Discriminates on substance and form: the control left S unresolved in rep 1 and wrote no marker in any rep. |
+| R2 | 0/5 | 5/5 | PASS | Form only: the control already filed both pieces of work with D12 met. The pass shows the marker is taught. |
+| R3 | 0/5 | 5/5 | PASS | Substance: the control offered one carry for both entries, X included. |
+| R4 | 0/5 | 5/5 | PASS | Form only: the control already saw the met condition and routed the entry to Quick fix. Reps 3 and 5 write the bare form. |
+| R5 | 0/5 | 5/5 | PASS | Substance: the control wrote no state note on the selected entry. |
+
+No case could fail to discriminate on the numbers, because the control passed no rep in any
+case. No case missed its bar, so no wording changed after the green runs.
 
 ## Spend
 
@@ -278,6 +412,18 @@ Task 10 fills this section.
 | Control R3 | 5 | $0.12 |
 | Control R4 | 5 | $0.26 |
 | Control R5 | 5 | $0.17 |
-| Total so far | 27 | $0.96 |
+| Control arm total | 27 | $0.96 |
+| Isolation probe, green arm | 1 | $0.008 |
+| Green R1 | 5 | $0.290 |
+| Green R2 | 5 | $0.216 |
+| Green R3 | 5 | $0.141 |
+| Green R4 | 5 | $0.328 |
+| Green R5 | 5 | $0.178 |
+| Green arm total | 26 | $1.16 |
+| Kit total | 53 | $2.12 |
 
-The control arm stayed far below its $20 stop. The kit stop is $40.
+The control arm stayed far below its $20 stop. The kit stop is $40, and the kit total is far
+below it. The totals are exact sums of the runs' `total_cost_usd` (control $0.963, green
+$1.160, kit $2.123), rounded once. Each row is rounded on its own: the green rows to a tenth of
+a cent, so they sum to within a tenth of a cent of their total, and the control rows from Task 1
+to the cent, so they differ from their total by about a cent.
