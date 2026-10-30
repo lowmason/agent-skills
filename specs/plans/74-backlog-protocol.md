@@ -672,6 +672,13 @@ git commit -m "test(specs): backlog-protocol GREEN runs R1-R5 (plan 74)"
 
 Run: `uv run skills/writing-plans/scripts/deferred_stats.py --json > /tmp/plan74-before.json` and the text form. Record the text form under this step as a `> Before:` line.
 
+> Before: 2026-10-30, `deferred_stats.py` text form:
+> `Deferred backlog: 143 open, 344 ever closed (closure rate 71%), aged >45d: 0.`
+> `  Watching: 70 (Revisit-if or held; not aged).`
+> `  Oldest open: 32d (readonly-guard-leading-token-bypasses (no plan; branch claude/objective-nash-accd9c)).`
+> `  Age spread — 0-14d: 57  15-30d: 15  31-45d: 1`
+> `  At or above the 20-item volume threshold.`
+
 - [ ] **Step 2: Move the acknowledgement log**
 
 Count the bullets in `## Aged-backlog acknowledgements` and read the last bullet's date. Expected: 31 bullets, the last dated 2026-10-12. Move the section's bullets to the archive under `## Aged-backlog acknowledgements (to 2026-10-12) — 2026-10-12`, in date order. The live `## Aged-backlog acknowledgements` heading leaves too, so `# Deferred items` is followed directly by the first dated section. If the count or the last date differs, record a `> Deviation:` line and stop for the owner before renaming the heading.
@@ -691,6 +698,14 @@ Expected: exit 0, no held-back line.
 Run the stats again. Expected: `removed` = 11; `closed` after = `closed` before + 11; `open` after = `open` before (the 3 restored open items were already out of the counts). Record the text form as a `> After:` line.
 Run: `uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt`
 Expected: `deferral lint: clean`.
+
+> After: 2026-10-30, `deferred_stats.py` text form:
+> `Deferred backlog: 143 open, 355 ever closed (closure rate 71%), aged >45d: 0.`
+> `  Watching: 70 (Revisit-if or held; not aged).`
+> `  Removed: 11 (counted as closed).`
+> `  Oldest open: 32d (readonly-guard-leading-token-bypasses (no plan; branch claude/objective-nash-accd9c)).`
+> `  Age spread — 0-14d: 57  15-30d: 15  31-45d: 1`
+> `  At or above the 20-item volume threshold.`
 
 - [ ] **Step 6: Commit**
 
