@@ -3,6 +3,7 @@
 # project files, with skills/writing-plans replaced by <writing-plans-dir>.
 # Usage, from the repository root: make_scratch.sh <writing-plans-dir> <sha> <dest>
 set -eu
+set -o pipefail
 ARM="$(cd "$1" && pwd)"
 SHA="$2"
 DEST="$3"

@@ -14,11 +14,14 @@ FLAGS=(--strict-mcp-config --setting-sources project --permission-mode acceptEdi
 cd "$S" || exit 2
 env "${ENVS[@]}" claude -p --model claude-opus-5-5 --max-budget-usd 6 "${FLAGS[@]}" \
   < "$F1/prompts/plan.txt" > "$OUT/plan.jsonl" 2> "$OUT/plan.err"
-echo "plan exit=$?"
+PRC=$?
+echo "plan exit=$PRC"
 PLAN="$(git ls-files 'specs/plans/*.md' | head -n 1)"
 [ -n "$PLAN" ] || { echo 'no committed plan'; exit 1; }
 cp "$PLAN" "$OUT/plan.md"
 sed "s|<PLAN>|$PLAN|" "$F1/prompts/execute.txt" | env "${ENVS[@]}" claude -p --model claude-sonnet-5-5 \
   --max-budget-usd 25 "${FLAGS[@]}" > "$OUT/execute.jsonl" 2> "$OUT/execute.err"
-echo "execute exit=$?"
+ERC=$?
+echo "execute exit=$ERC"
 git log --oneline > "$OUT/git-log.txt"
+[ "$PRC" -eq 0 ] && [ "$ERC" -eq 0 ]
