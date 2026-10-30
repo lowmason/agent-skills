@@ -75,15 +75,12 @@ Subagent (code-reviewer if defined, else general-purpose):
     - Is all planned functionality present?
 
     **Code quality:**
-    - Clean separation of concerns?
     - Proper error handling?
     - Type safety where applicable?
-    - DRY without premature abstraction?
     - Edge cases handled?
 
     **Architecture:**
     - Sound design decisions?
-    - Reasonable scalability and performance?
     - Security concerns?
     - Integrates cleanly with surrounding code?
 
@@ -96,12 +93,63 @@ Subagent (code-reviewer if defined, else general-purpose):
     **Production readiness:**
     - Migration strategy if schema changed?
     - Backward compatibility considered?
-    - Documentation complete?
     - No obvious bugs?
+
+    ## Review scope
+
+    Report only correctness and requirement gaps. Style, naming, formatting,
+    wording and phrasing that do not change what the reader does, wordiness,
+    optimization that does not change correctness, code that is redundant but
+    harmless, documentation polish and general suggestions are not findings: do
+    not report them anywhere, the Declined to judge list included, and do not
+    tack one onto a finding as an extra remark. Where the change is skill, agent
+    or prompt text, an error in that text that changes what its reader does is a
+    correctness defect, not polish: a contradiction, a wrong path, a wrong
+    command, or an instruction with two readings.
+
+    A fix names the smallest change that removes the defect. It leaves out any
+    cleanup, simplification or alternative: a change that makes other code
+    redundant is not part of the fix.
+
+    Before you write your report, read each finding and each Declined to judge
+    line once more. Delete every one, and every added remark, that a person
+    using the software, or reading the text, would not notice or act on.
+
+    ## When the requirements are silent
+
+    Your requirements (the spec, the plan or the task brief) say what the
+    software must do. They do not list every input, environment or condition
+    the software will meet. For behavior they do not mention, judge by what a
+    reasonable person using this software would expect: that expectation is a
+    requirement, and silence is not permission. Grade such a finding by its
+    effect on that person, not by whether the requirements name the input that
+    triggers it.
+
+    ## Grades
+
+    - **Critical:** bugs, security problems, data loss, broken functionality.
+    - **Important:** a missed or misread requirement, a reasonable person's
+      expectation broken, wrong or fragile behavior, swallowed errors, tests
+      that assert nothing.
+
+    There is no third grade. A point that would not hurt a person using the
+    software is not reported.
+
+    ## Declined to judge
+
+    Before your Assessment, list each behavior you considered and set aside as
+    outside your requirements, one line each, with the reason. Whoever
+    dispatched you rules on each line, so nothing you set aside is dropped
+    silently. An empty list means you set nothing aside. A behavior that would
+    hurt a reasonable person is graded, not declined. A line names a behavior
+    the software has or lacks, that a person using it could meet. A style,
+    naming, wording or code-shape point is not a behavior: delete it, do not
+    list it.
 
     ## Calibration
 
-    Categorize issues by actual severity. Not everything is Critical.
+    Grade each finding Critical or Important, as Grades says. Not
+    everything is Critical.
     Acknowledge what was done well before listing issues — accurate praise
     helps the implementer trust the rest of the feedback.
 
@@ -121,10 +169,7 @@ Subagent (code-reviewer if defined, else general-purpose):
     [Bugs, security issues, data loss risks, broken functionality]
 
     #### Important (Should Fix)
-    [Architecture problems, missing features, poor error handling, test gaps]
-
-    #### Minor (Nice to Have)
-    [Code style, optimization opportunities, documentation polish]
+    [Missing features, poor error handling, test gaps]
 
     For each issue:
     - File:line reference
@@ -132,8 +177,8 @@ Subagent (code-reviewer if defined, else general-purpose):
     - Why it matters
     - How to fix (if not obvious)
 
-    ### Recommendations
-    [Improvements for code quality, architecture, or process]
+    ### Declined to judge
+    [One line per behavior you set aside, with the reason, or "None."]
 
     ### Assessment
 
@@ -144,7 +189,7 @@ Subagent (code-reviewer if defined, else general-purpose):
     ## Critical Rules
 
     **DO:**
-    - Categorize by actual severity
+    - Grade by the effect on a person using the software
     - Be specific (file:line, not vague)
     - Explain WHY each issue matters
     - Acknowledge strengths
@@ -152,7 +197,7 @@ Subagent (code-reviewer if defined, else general-purpose):
 
     **DON'T:**
     - Say "looks good" without checking
-    - Mark nitpicks as Critical
+    - Report nitpicks or style points
     - Give feedback on code you didn't actually read
     - Be vague ("improve error handling")
     - Avoid giving a clear verdict
@@ -169,7 +214,7 @@ Subagent (code-reviewer if defined, else general-purpose):
   from that skill's File Handoffs contract; optional otherwise — without
   it the reviewer falls back to running git itself.
 
-**Reviewer returns:** Strengths, Issues (Critical / Important / Minor), Recommendations, Assessment
+**Reviewer returns:** Strengths, Issues (Critical / Important), Declined to judge, Assessment
 
 ## Example Output
 
@@ -192,15 +237,9 @@ Subagent (code-reviewer if defined, else general-purpose):
    - Issue: Invalid dates silently return no results
    - Fix: Validate ISO format, throw error with example
 
-#### Minor
-1. **Progress indicators**
-   - File: indexer.ts:130
-   - Issue: No "X of Y" counter for long operations
-   - Impact: Users don't know how long to wait
-
-### Recommendations
-- Add progress reporting for user experience
-- Consider config file for excluded projects (portability)
+### Declined to judge
+- Re-indexing conversations deleted after they were indexed: the plan
+  indexes new conversations only (Task 2), so cleanup is outside it.
 
 ### Assessment
 

@@ -27,6 +27,7 @@ run cc_guide_lint uv run python build/cc_guide/cli.py lint
 run check_links uv run python build/check_links.py
 run suite_registry uv run python build/run_suites.py --check
 run versions_check uv run python build/versions.py check
+run reviewer_block uv run python build/check_reviewer_block.py
 if [ "${#failed[@]}" -gt 0 ]; then
   echo "commit lints failed: ${failed[*]}" >&2
   exit 1

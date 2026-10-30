@@ -93,8 +93,12 @@ code-reviewer's contract forbids it from spawning further reviewers.
 
 Codex opens each finding's title with a priority tag and ends with an overall
 verdict (`patch is correct` / `patch is incorrect`). Map the tags onto
-code-reviewer's scale: `[P0]` → Critical, `[P1]` → Important, `[P2]`/`[P3]` →
-Minor. A clean review may be a single paragraph with no tags.
+code-reviewer's two grades: `[P0]` → Critical, `[P1]` → Important. Grade each
+`[P2]` or `[P3]` finding yourself, by its effect on a reasonable person using
+the software. One that such a person meets is Important. One about a behavior
+outside the plan or spec becomes a Declined to judge line, ruled like the
+code-reviewer's own. Anything else is polish: drop it. A clean review may be a
+single paragraph with no tags.
 
 ## Act on it
 

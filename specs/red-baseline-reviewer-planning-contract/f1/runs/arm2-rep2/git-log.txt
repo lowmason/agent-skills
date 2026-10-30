@@ -1,0 +1,6 @@
+49d69d9 chore(specs): retire plan 1
+aa2683f docs(specs): record deferred items for plan 1
+8607d2d feat: add tally command-line interface
+dbc8780 feat: add amount parsing and monthly totals
+ecd8a2f docs(specs): add plan 1 for expense tally
+038a07e Scratch repository for plan 73 F1

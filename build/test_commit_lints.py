@@ -28,7 +28,7 @@ UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
-          'check_links', 'suite_registry', 'versions_check'}
+          'check_links', 'suite_registry', 'versions_check', 'reviewer_block'}
 
 
 def clean_env(**extra):
@@ -205,6 +205,18 @@ def test_broken_reference_link_is_refused(clone):
     assert failed_names(result) == {'check_links'}, result.stderr
     assert ("skills/subagent-driven-development/references/fix-loop.md:" in result.stdout + result.stderr
             and "broken link 're-review-prompt.md'" in result.stdout + result.stderr), result.stderr
+
+
+def test_drifted_reviewer_block_is_refused(clone):
+    '''The eleventh lint fails a commit when one reviewer copy of the shared block drifts.'''
+    template = clone / 'skills' / 'subagent-driven-development' / 'task-reviewer-prompt.md'
+    template.write_text(template.read_text().replace('There is no third grade.', 'There is no third grade, usually.', 1))
+    before = head(clone)
+    result = commit(clone, '-am', 'drifted block')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'reviewer_block'}, result.stderr
+    assert 'skills/subagent-driven-development/task-reviewer-prompt.md' in result.stdout + result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):

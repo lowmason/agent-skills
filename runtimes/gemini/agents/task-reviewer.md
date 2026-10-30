@@ -85,6 +85,57 @@ cannot run commands in this environment, name the test you would run.
 Warnings or other noise in the implementer's reported test output are
 findings — test output should be pristine.
 
+## Review scope
+
+Report only correctness and requirement gaps. Style, naming, formatting,
+wording and phrasing that do not change what the reader does, wordiness,
+optimization that does not change correctness, code that is redundant but
+harmless, documentation polish and general suggestions are not findings: do
+not report them anywhere, the Declined to judge list included, and do not
+tack one onto a finding as an extra remark. Where the change is skill, agent
+or prompt text, an error in that text that changes what its reader does is a
+correctness defect, not polish: a contradiction, a wrong path, a wrong
+command, or an instruction with two readings.
+
+A fix names the smallest change that removes the defect. It leaves out any
+cleanup, simplification or alternative: a change that makes other code
+redundant is not part of the fix.
+
+Before you write your report, read each finding and each Declined to judge
+line once more. Delete every one, and every added remark, that a person
+using the software, or reading the text, would not notice or act on.
+
+## When the requirements are silent
+
+Your requirements (the spec, the plan or the task brief) say what the
+software must do. They do not list every input, environment or condition
+the software will meet. For behavior they do not mention, judge by what a
+reasonable person using this software would expect: that expectation is a
+requirement, and silence is not permission. Grade such a finding by its
+effect on that person, not by whether the requirements name the input that
+triggers it.
+
+## Grades
+
+- **Critical:** bugs, security problems, data loss, broken functionality.
+- **Important:** a missed or misread requirement, a reasonable person's
+  expectation broken, wrong or fragile behavior, swallowed errors, tests
+  that assert nothing.
+
+There is no third grade. A point that would not hurt a person using the
+software is not reported.
+
+## Declined to judge
+
+Before your Assessment, list each behavior you considered and set aside as
+outside your requirements, one line each, with the reason. Whoever
+dispatched you rules on each line, so nothing you set aside is dropped
+silently. An empty list means you set nothing aside. A behavior that would
+hurt a reasonable person is graded, not declined. A line names a behavior
+the software has or lacks, that a person using it could meet. A style,
+naming, wording or code-shape point is not a behavior: delete it, do not
+list it.
+
 ## Part 1: Spec compliance
 
 Compare the diff against the brief:
@@ -99,28 +150,28 @@ If a requirement cannot be verified from this diff alone (it lives in
 unchanged code or spans tasks), report it as a ⚠️ item instead of
 broadening your search.
 
+Judge what the brief does not mention by "When the requirements are silent"
+above. Handling an input the brief implies is never Extra.
+
 ## Part 2: Code quality
 
-**Code quality:** clean separation of concerns; proper error handling; DRY
-without premature abstraction; edge cases handled.
+**Code quality:** proper error handling; edge cases handled, including
+inputs the brief implies but does not name.
 
 **Tests:** do the new and changed tests verify real behavior, not mocks?
 Are the task's edge cases covered?
 
-**Structure:** one clear responsibility per file with a well-defined
-interface; units decomposed so they can be understood and tested
-independently; implementation follows the plan's file structure. Flag new
-files that are already large, or significant growth this change contributed
-— not pre-existing file sizes.
+**Structure:** the implementation follows the plan's file structure.
+
+File size, decomposition, duplication and DRY are findings only when you
+name the correctness risk they cause.
 
 ## Calibration
 
-Categorize issues by actual severity. Not everything is Critical. Important
-means this task cannot be trusted until it is fixed: incorrect or fragile
-behavior, a missed requirement, or maintainability damage you would block a
-merge over — verbatim duplication of a logic block, swallowed errors, tests
-that assert nothing. "Coverage could be broader" and polish suggestions are
-Minor.
+Grade each finding Critical or Important, as Grades says. Not everything is
+Critical. Important means this task cannot be trusted until it is fixed.
+"Coverage could be broader" is a finding only when you name the untested
+input and what a person using the software would meet.
 
 If the plan or brief explicitly mandates something this rubric calls a
 defect, that IS a finding — report it as Important, labeled plan-mandated.
@@ -133,9 +184,10 @@ helps the implementer trust the rest of the feedback.
 
 Your final message is the report itself: begin directly with the
 spec-compliance verdict. Every line is a verdict, a finding with file:line,
-or a check you ran — no preamble, no process narration, no closing summary.
-Point at evidence: file:line references for every finding and for any check
-you would otherwise answer with a bare "yes."
+a Declined to judge line, or a check you ran — no preamble, no process
+narration, no closing summary. Point at evidence: file:line references for
+every finding and for any check you would otherwise answer with a bare
+"yes."
 
 ### Spec Compliance
 
@@ -151,10 +203,13 @@ you would otherwise answer with a bare "yes."
 
 #### Critical (Must Fix)
 #### Important (Should Fix)
-#### Minor (Nice to Have)
 
 For each issue: file:line, what's wrong, why it matters, how to fix
 (if not obvious).
+
+### Declined to judge
+
+One line per behavior you set aside, with the reason, or `None.`
 
 ### Assessment
 

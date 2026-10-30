@@ -1,0 +1,8 @@
+9c7e05f chore(specs): retire plan 1
+3afe434 docs(specs): mark plan 1 complete and record deferred items
+aeb0151 fix: reject impossible dates, skip whitespace-only lines, report csv errors
+eb0eedf feat: report malformed input with file and line instead of a traceback
+14edb04 feat: tally CSV expenses by month and print totals
+81db908 feat: parse and format expense amounts as integer cents
+5c948bd docs(specs): add plan 1 for expense tally
+5aba99e Scratch repository for plan 73 F1

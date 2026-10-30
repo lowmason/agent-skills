@@ -11,7 +11,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: subagents.frontmatter subagents.models subagents.isolation lean.session-hygiene lean.model-routing @2.1.219
+# cc-guide: subagents.frontmatter subagents.models subagents.isolation lean.session-hygiene lean.model-routing @2.1.306
 ---
 
 # Subagent-Driven Development
@@ -228,7 +228,7 @@ final whole-branch review. When you fill a reviewer template:
   ignore or not flag a specific issue. If you believe a finding would be a
   false positive, let the reviewer raise it and adjudicate it in the review
   loop. If the prompt you are writing contains "do not flag," "don't treat X
-  as a defect," "at most Minor," or "the plan chose" — stop: you are
+  as a defect," "not Important," or "the plan chose" — stop: you are
   pre-judging, usually to spare yourself a review loop.
 - The global-constraints block you hand the reviewer is its attention
   lens. Copy the binding requirements verbatim from the plan's Global
@@ -272,7 +272,9 @@ a ledger file, not only in todos.
   this line is what makes that visible instead of silent.
 - When a task's review comes back clean, append one line to the ledger in
   the same message as your other bookkeeping:
-  `Task N: complete (commits <base7>..<head7>, review clean)`.
+  `Task N: complete (commits <base7>..<head7>, review clean)`. Rule on its
+  Declined to judge lines there too, one `Ruling:` line each, as
+  [references/fix-loop.md](references/fix-loop.md) describes.
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,
   trust the ledger and `git log` over your own recollection.
