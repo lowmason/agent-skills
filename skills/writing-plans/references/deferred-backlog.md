@@ -51,6 +51,10 @@ Report **closure rate and the age spread**, never a bare open count. A bare
 uv run <this-skill-dir>/scripts/deferral_scan.py scan <file>…
 ```
 
+```bash
+uv run <this-skill-dir>/scripts/archive_deferred.py --dry-run
+```
+
 ## Deferred-item schema
 
 Every item is self-contained — it is read months later by someone with none of
