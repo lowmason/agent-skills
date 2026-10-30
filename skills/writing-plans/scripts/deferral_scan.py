@@ -61,8 +61,13 @@ The scan reads prose only:
   a candidate. Known gaps remain, each still exempt: an `and` clause (`X and
   nothing else is deferred`, `X and no other work is deferred`), a bare `no`
   after `;` or a full stop (`Known gap; no backoff is deferred.`, `Known gap.
-  No backoff is deferred.`), and an exception word after the verb that is in
-  neither list, such as `beyond`, `, only`, `save the` or `unless`.
+  No backoff is deferred.`), an exception word after the verb that is in
+  neither list, such as `beyond`, `, only`, `save the` or `unless`, and three
+  exception forms that the second read cannot see: a period inside a token
+  before the exception word (`nothing is deferred in install.py except the
+  scorecard`, `in v2.1 except retry`, `i.e. today, except retry`), a line break
+  between the verb's adverbial and the exception word, and `with one
+  exception`, `with the sole exception` or `with a single exception`.
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
