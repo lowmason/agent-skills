@@ -216,7 +216,7 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **4. Review Focus:** For each input class or failure mode the spec implies, is there a task whose tests exercise it? The five uncovered ones most likely to bite a person go in the Review Focus section, and each line there gets its test, placed as the template says. An empty section means you checked and found none, not that you skipped the check.
 
-**5. Proportion:** Compare the plan's length to the spec's. A plan more than about five times as long as the spec it implements is a transcript of the program, not a plan. If code blocks are most of the document, replace bodies with signatures, test names and assertions, and check that each step is still unambiguous. Wording that a micro-test fixed against a no-guidance control is exact copy: keep it word for word, and never count it as transcript.
+**5. Proportion:** Compare the plan's length to the spec's. A plan more than about five times as long as the spec it implements is a transcript of the program, not a plan: cut it before you save it. Replace code bodies with signatures, test names and assertions, drop a step that repeats an earlier result, and keep each step unambiguous. Wording that a micro-test fixed against a no-guidance control is exact copy: keep it word for word, and never count it as transcript.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
