@@ -76,7 +76,8 @@ uv run python build/run_suites.py --check
 
 # Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test, snippet
 # Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the link check (check_links.py, below),
-# the versions check (versions.py check, below) and the reviewer-block check (check_reviewer_block.py, below).
+# the versions check (versions.py check, below), the reviewer-block check (check_reviewer_block.py, below) and the
+# deferral lint (deferral_scan.py lint, below).
 # build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
@@ -112,6 +113,10 @@ uv run python build/check_links.py
 # Reviewer block: the four reviewer surfaces carry one shared block, identical once the
 # template indentation is removed
 uv run python build/check_reviewer_block.py
+
+# Deferral lint: a file newly added under specs/completed/ or specs/plans/completed/ (not on the frozen
+# build/deferral_baseline.txt) fails on a deferral sentence with no → item: or → dropped: marker in its paragraph
+uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt
 
 # Snippet gate: three tiers, cheapest first, run as three separate commands. Every command runs the parse check, but
 # --run does not run the --api checks, so a full check runs all three. Tier 1 covers all of skills/; Tiers 2 and 3

@@ -28,7 +28,10 @@ UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
-          'check_links', 'suite_registry', 'versions_check', 'reviewer_block'}
+          'check_links', 'suite_registry', 'versions_check', 'reviewer_block', 'deferral_lint'}
+# The text of skills/writing-plans/scripts/test_deferral_scan.py's PLAN_4 fixture: a
+# deferral sentence with no marker, which the deferral lint flags on line 1.
+PLAN_4 = '''**Out of scope (deferred to a future plan):** audit §9 P2 — cross-skill wiring (§6), token-economy trims, personalization passes (§7), and the critic items (§8). The audit doc stays in `specs/` until those land.'''
 
 
 def clean_env(**extra):
@@ -217,6 +220,20 @@ def test_drifted_reviewer_block_is_refused(clone):
     assert head(clone) == before
     assert failed_names(result) == {'reviewer_block'}, result.stderr
     assert 'skills/subagent-driven-development/task-reviewer-prompt.md' in result.stdout + result.stderr
+
+
+def test_unmarked_deferral_is_refused(clone):
+    '''The twelfth lint fails a commit that adds a completed document holding a deferral
+    sentence with no marker, since build/deferral_baseline.txt does not list the file.'''
+    doc = clone / 'specs' / 'completed' / 'x.md'
+    doc.write_text(PLAN_4 + '\n', encoding='utf-8')
+    git(clone, 'add', 'specs/completed/x.md')
+    before = head(clone)
+    result = commit(clone, '-m', 'unmarked deferral')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'deferral_lint'}, result.stderr
+    assert 'specs/completed/x.md:1: ' in result.stdout + result.stderr, result.stdout + result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):

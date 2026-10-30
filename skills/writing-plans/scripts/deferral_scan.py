@@ -74,9 +74,27 @@ reported once.
 
 Usage:
     uv run <this-skill-dir>/scripts/deferral_scan.py scan <file>...
+    uv run <this-skill-dir>/scripts/deferral_scan.py lint --baseline <file> [--root <dir>]
 
 `scan` prints `<file>:<line>: <stripped line>` for each unmarked candidate and
 always exits 0. It is advisory: the caller decides what each hit needs.
+
+`lint` is a commit lint. It reads every `*.md` file under
+`<root>/specs/completed/` and `<root>/specs/plans/completed/`, subfolders
+included, whose path relative to `<root>` (default: the current directory) is
+not a line of the baseline file. The match is exact and case-sensitive, on
+POSIX paths such as `specs/completed/x.md`; blank baseline lines are ignored.
+A baselined file is never opened. A directory whose name ends in `.md` is not
+a file and is skipped, though the files inside it are read. Other files are
+never read. `lint` prints `scan`'s lines, with paths relative to `<root>`,
+then `deferral lint: <n> unmarked candidate(s) in <m> file(s); add a → item:
+or → dropped: marker in each one's paragraph` and exits 1, or prints
+`deferral lint: clean` and exits 0. It fails closed: a file it must read but
+cannot (not valid UTF-8, a broken link, no permission) gets a
+`<path>: cannot read: <error>` line on stderr, then a `deferral lint: <k>
+file(s) could not be read` line, and exit 1, so `clean` is never printed for
+a file that was not scanned. A baseline file that cannot be read is exit 1
+too.
 '''
 from __future__ import annotations
 
@@ -304,12 +322,71 @@ def _scan(paths: list[str]) -> int:
     return 0
 
 
+# The folders `lint` reads, relative to its root: where documents retire.
+COMPLETED_FOLDERS = ('specs/completed', 'specs/plans/completed')
+
+
+def _completed_markdown(root: Path) -> list[str]:
+    '''Return the root-relative POSIX path of each `.md` file under the completed folders.'''
+    found = []
+    for folder in COMPLETED_FOLDERS:
+        base = root / folder
+        if not base.is_dir():
+            continue
+        for path in base.rglob('*'):
+            if path.suffix == '.md' and not path.is_dir():
+                found.append(path.relative_to(root).as_posix())
+    return sorted(found)
+
+
+def _lint(baseline: str, root: str) -> int:
+    try:
+        listed = Path(baseline).read_text(encoding='utf-8').splitlines()
+    except (OSError, UnicodeDecodeError) as error:
+        print(f'deferral lint: cannot read baseline {baseline}: {error}', file=sys.stderr)
+        return 1
+    frozen = {line for line in listed if line}
+    root_path = Path(root)
+    hits, files_hit, unreadable = 0, 0, 0
+    for rel in _completed_markdown(root_path):
+        if rel in frozen:
+            continue
+        try:
+            text = (root_path / rel).read_text(encoding='utf-8')
+        except (OSError, UnicodeDecodeError) as error:
+            print(f'{rel}: cannot read: {error}', file=sys.stderr)
+            unreadable += 1
+            continue
+        candidates = unmarked(text)
+        for candidate in candidates:
+            print(f'{rel}:{candidate.line}: {candidate.text}')
+        hits += len(candidates)
+        files_hit += bool(candidates)
+    if hits:
+        print(f'deferral lint: {hits} unmarked candidate(s) in {files_hit} file(s); '
+              "add a → item: or → dropped: marker in each one's paragraph")
+    if unreadable:
+        print(f'deferral lint: {unreadable} file(s) could not be read')
+    if hits or unreadable:
+        return 1
+    print('deferral lint: clean')
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     commands = parser.add_subparsers(dest='command', required=True)
     scan = commands.add_parser('scan', help='list unmarked deferral lines; always exits 0')
     scan.add_argument('files', nargs='+', metavar='file')
+    lint = commands.add_parser(
+        'lint', help='fail on unmarked deferral lines in completed documents off the baseline')
+    lint.add_argument('--baseline', required=True, metavar='file',
+                      help='repo-relative paths, one per line, that the lint skips')
+    lint.add_argument('--root', default='.', metavar='dir',
+                      help='the tree to read (default: the current directory)')
     args = parser.parse_args(argv)
+    if args.command == 'lint':
+        return _lint(args.baseline, args.root)
     return _scan(args.files)
 
 

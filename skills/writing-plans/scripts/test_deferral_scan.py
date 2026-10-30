@@ -285,3 +285,116 @@ def test_non_utf8_file_does_not_stop_the_scan(tmp_path, capsys):
     captured = capsys.readouterr()
     assert captured.out == f'{good}:1: {PLAN_4.strip()}\n'
     assert f'{bad}: cannot read' in captured.err
+
+
+LINT_FAIL = ("deferral lint: 1 unmarked candidate(s) in 1 file(s); "
+             "add a → item: or → dropped: marker in each one's paragraph\n")
+LINT_CLEAN = 'deferral lint: clean\n'
+
+
+def _lint(tmp_path, files, baseline=()):
+    '''Build a tmp repo of files (repo-relative path -> text), run lint, return the exit code.'''
+    root = tmp_path / 'repo'
+    root.mkdir()
+    for rel, text in files.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(text, bytes):
+            path.write_bytes(text)
+        else:
+            path.write_text(text, encoding='utf-8')
+    listing = tmp_path / 'baseline.txt'
+    listing.write_text(''.join(f'{line}\n' for line in baseline), encoding='utf-8')
+    return main(['lint', '--baseline', str(listing), '--root', str(root)])
+
+
+def test_lint_passes_when_every_file_is_on_the_baseline(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/old.md': PLAN_4 + '\n'},
+                 baseline=['specs/completed/old.md'])
+    assert code == 0
+    assert capsys.readouterr().out == LINT_CLEAN
+
+
+def test_lint_fails_on_a_new_unmarked_file(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/old.md': PLAN_4 + '\n'})
+    assert code == 1
+    assert capsys.readouterr().out == f'specs/completed/old.md:1: {PLAN_4}\n' + LINT_FAIL
+
+
+def test_lint_passes_a_new_marked_file(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/new.md': PLAN_4 + ' → item: x\n'})
+    assert code == 0
+    assert capsys.readouterr().out == LINT_CLEAN
+
+
+def test_lint_reads_markdown_only(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/kit/run.py': PLAN_4 + '\n'})
+    assert code == 0
+    assert capsys.readouterr().out == LINT_CLEAN
+
+
+def test_lint_reads_both_completed_folders(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/plans/completed/new.md': PLAN_4 + '\n'})
+    assert code == 1
+    assert capsys.readouterr().out == f'specs/plans/completed/new.md:1: {PLAN_4}\n' + LINT_FAIL
+
+
+def test_lint_reads_subfolders(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/plans/completed/sub/new.md': PLAN_4 + '\n'})
+    assert code == 1
+    assert capsys.readouterr().out == f'specs/plans/completed/sub/new.md:1: {PLAN_4}\n' + LINT_FAIL
+
+
+def test_lint_ignores_markdown_outside_the_completed_folders(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/live.md': PLAN_4 + '\n', 'specs/plans/9-x.md': PLAN_4 + '\n'})
+    assert code == 0
+    assert capsys.readouterr().out == LINT_CLEAN
+
+
+@pytest.mark.parametrize('line', ['./specs/completed/old.md', 'completed/old.md',
+                                  'specs/completed/old', 'specs/completed/OLD.md'])
+def test_lint_baseline_match_is_exact(tmp_path, capsys, line):
+    code = _lint(tmp_path, {'specs/completed/old.md': PLAN_4 + '\n'}, baseline=[line])
+    assert code == 1
+    assert capsys.readouterr().out.endswith(LINT_FAIL)
+
+
+def test_lint_counts_candidates_and_files(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/a.md': PLAN_4 + '\n\n' + PLAN_4 + '\n',
+                            'specs/completed/b.md': PLAN_4 + '\n',
+                            'specs/completed/c.md': 'Nothing here.\n'})
+    assert code == 1
+    out = capsys.readouterr().out
+    assert out.splitlines()[:3] == [f'specs/completed/a.md:1: {PLAN_4}',
+                                    f'specs/completed/a.md:3: {PLAN_4}',
+                                    f'specs/completed/b.md:1: {PLAN_4}']
+    assert out.endswith('deferral lint: 3 unmarked candidate(s) in 2 file(s); '
+                        "add a → item: or → dropped: marker in each one's paragraph\n")
+
+
+def test_lint_fails_closed_on_an_unreadable_file(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/bad.md': b'\xff\xfe not utf-8 \x80\n'})
+    assert code == 1
+    captured = capsys.readouterr()
+    assert 'specs/completed/bad.md: cannot read' in captured.err
+    assert captured.out == 'deferral lint: 1 file(s) could not be read\n'
+
+
+def test_lint_never_opens_a_baselined_file(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/bad.md': b'\xff\xfe not utf-8 \x80\n'},
+                 baseline=['specs/completed/bad.md'])
+    assert code == 0
+    assert capsys.readouterr().out == LINT_CLEAN
+
+
+def test_lint_skips_a_directory_with_a_markdown_name(tmp_path, capsys):
+    code = _lint(tmp_path, {'specs/completed/notes.md/readme.txt': PLAN_4 + '\n'})
+    assert code == 0
+    assert capsys.readouterr().out == LINT_CLEAN
+
+
+def test_lint_fails_on_a_missing_baseline(tmp_path, capsys):
+    (tmp_path / 'specs' / 'completed').mkdir(parents=True)
+    code = main(['lint', '--baseline', str(tmp_path / 'absent.txt'), '--root', str(tmp_path)])
+    assert code == 1
+    assert 'cannot read baseline' in capsys.readouterr().err
