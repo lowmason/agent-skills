@@ -16,10 +16,10 @@ Read this when the last task's review resolves, before you dispatch the final wh
   have returned.
 - Fill the code-reviewer's `[PLAN_OR_REQUIREMENTS]` with the plan path; the
   spec path from the plan's `Spec:` line, or `none: the plan is the
-  requirement`; the plan's `## Review Focus` section, word for word (the
-  inputs and failure modes the plan's tests do not exercise: the reviewer
-  checks each one deliberately); and a pointer to the ledger's `Ruling:`
-  lines.
+  requirement`; the plan's `## Review Focus` section, word for word, if the
+  plan has one (the inputs and failure modes the plan's tests do not
+  exercise: the reviewer checks each one deliberately); and a pointer to the
+  ledger's `Ruling:` lines.
 - If the final whole-branch review returns findings, merge both seats' lists
   and dispatch ONE fix subagent with the complete list — not one fixer per
   finding.

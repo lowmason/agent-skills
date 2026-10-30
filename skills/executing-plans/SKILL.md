@@ -63,9 +63,10 @@ partner confirmed.
 
 1. **code-reviewer** — fill requesting-code-review's
    [code-reviewer.md](../requesting-code-review/code-reviewer.md) with the plan
-   file, the spec path from its `Spec:` line and its `## Review Focus` section
-   word for word as `[PLAN_OR_REQUIREMENTS]` (the reviewer checks each Review
-   Focus line deliberately), BASE as `[BASE_SHA]`, and the capable
+   file, the spec path from its `Spec:` line (or `none: the plan is the
+   requirement` when it has none) and its `## Review Focus` section word for
+   word if it has one as `[PLAN_OR_REQUIREMENTS]` (the reviewer checks each
+   Review Focus line deliberately), BASE as `[BASE_SHA]`, and the capable
    model tier (opus), as for any final whole-branch review. On a platform
    without subagents, work through the same template yourself.
 2. **Codex** — the second-opinion review in
