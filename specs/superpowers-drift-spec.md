@@ -70,8 +70,8 @@ guide (`4efba4e`) shifted anchors by one.
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; decided 2026-10-21: rulings mid-run only |
 | 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50; the untracked-file guard **adopted** as an idea — plan 60; one item partly covered; the `Spec:` pointer adopted by plan 40 |
-| 9 | writing-plans asks for code transcripts | Open; both plans written since that implement their own spec show the pattern; its tier premise re-sourced |
-| 10 | Reviewers grade the spec's silence | Open; upstream unchanged |
+| 9 | writing-plans asks for code transcripts | **Adopted** — plan 73 (2026-10-30); the step recipe was kept after the F1 comparison |
+| 10 | Reviewers grade the spec's silence | **Adopted** — plan 73 (2026-10-30), as one shared reviewer block in the four reviewer files |
 | 11 | executing-plans was rebuilt as a ledgered native mode | Handoff half adopted by plan 40; the port goes to its own spec (7 decided 2026-10-21); upstream has since fixed `task-done`, and v7.0.1 cut its Example Workflow to fit the compaction window |
 | 12 | SDD script hardening | `review-package` range guards and v7.0.0's create-only `.gitignore` **adopted** — plan 50; the basename collision stays decided (M2) |
 | 13 | TDD does not say what "other tests" means | Open; travels with 11 |
@@ -441,10 +441,21 @@ asks.
 
 ## Findings 9–15 (v6.4.1 and v6.4.2), re-verified
 
-### 9. writing-plans asks for code transcripts, and our plans show it
+### 9. writing-plans asks for code transcripts, and our plans show it — adopted (plan 73)
 
-**Verified gap; the highest-relevance item in the 2026-10-03 pass, and still
-open.** v6.4.2 (#2333) rewrote writing-plans around one claim: *a plan records
+**Adopted by plan 73 (2026-10-30).** `skills/writing-plans/SKILL.md` now writes
+lean plans: a step recipe, a Review Focus section in the plan template, and a
+proportion check in self-review. The F1 comparison (a full-frame run of the old
+and the new skill on one spec, with hidden tests) found both arms handled all
+six planted defects, and the new text wrote plans about half as long (median
+plan-to-spec ratio 7.5 against 16.1). The step-recipe commits stayed. F1 could
+not show a loss, because both arms passed every hidden test. The deferred item
+"Watch the Proportion check" records that limit. The behavior record is
+`specs/red-baseline-reviewer-planning-contract.md`. `NOTICE` names what was
+taken and where the port diverges.
+
+**Before plan 73,** this was a verified gap, the highest-relevance item in the
+2026-10-03 pass. v6.4.2 (#2333) rewrote writing-plans around one claim: *a plan records
 decisions; it is not a transcript of the code.* Its release notes name Opus 5.5
 among the frontier models that "could get overzealous during plan writing",
 sometimes trying to implement the whole project while designing the plan.
@@ -475,12 +486,12 @@ The upstream changes:
   lean plan executed 9/9 against planted-defect probes on Sonnet 5, the same as
   full-code plans.
 
-Our copy still has every replaced line. The overview at
-`writing-plans/SKILL.md:21` keeps "zero context ... questionable taste". `:78`
-keeps "one action (2-5 minutes)". "No Placeholders" (`:167-175`) requires code
-blocks for code steps, and `:179` says "Complete code in every step — if a step
-changes code, show the code". The handoff repeats the premise (`:197-198`: "a
-complete, zero-context handoff").
+Before plan 73, our copy had every replaced line. The overview at
+`writing-plans/SKILL.md:21` kept "zero context ... questionable taste". `:78`
+kept "one action (2-5 minutes)". "No Placeholders" (`:167-175`) required code
+blocks for code steps, and `:179` said "Complete code in every step — if a step
+changes code, show the code". The handoff repeated the premise (`:197-198`: "a
+complete, zero-context handoff"). These line numbers are from that file.
 
 **Our plans show the pattern, including the two written since.** Below are
 plans that implement a spec of their own: plan length against spec length, and
@@ -538,9 +549,22 @@ writes the tests and the code, so a planner's misread of the spec passes every
 later gate. A local design for that gap, not an upstream finding, is deferred
 in `specs/deferred_items.md`, item "Spec-reading test check".
 
-### 10. Reviewers grade the spec's silence, not the user's experience
+### 10. Reviewers grade the spec's silence, not the user's experience — adopted (plan 73)
 
-**Verified gap.** v6.4.1 (#2319) is a three-part change. Its motivating eval:
+**Adopted by plan 73 (2026-10-30).** The four reviewer files
+(`agents/code-reviewer.md`, `agents/task-reviewer.md` and the two templates
+that mirror them) carry one shared block, from `## Review scope` through
+`## Declined to judge`. It sets one scope (correctness and requirement gaps),
+two grades (Critical and Important), the reasonable-user test, and a "Declined
+to judge" list. `build/check_reviewer_block.py` keeps the four copies identical
+as a commit lint. Both executors pass the spec path and the plan's Review Focus
+section to the final review and rule on each Declined line. Two micro-test cases
+missed their bars (R2 gating and R4-task), and the owner ruled on 2026-10-30 to
+ship the block with the misses recorded. Seven Declined lines from the final
+review went to `specs/deferred_items.md`. The behavior record is
+`specs/red-baseline-reviewer-planning-contract.md`.
+
+**Before plan 73,** this was a verified gap. v6.4.1 (#2319) is a three-part change. Its motivating eval:
 every implementer shipped the same crash on an input the spec implied but never
 named.
 
@@ -557,7 +581,7 @@ named.
 - **Executor.** Re-grades the reviewer's severities by effect before gating,
   and rules on each "Declined to judge" line.
 
-None of this is in our tree. There is no "reasonable person", "vision", or
+None of this was in our tree. There was no "reasonable person", "vision", or
 "Declined to judge" text in `requesting-code-review/code-reviewer.md`,
 `subagent-driven-development/task-reviewer-prompt.md`, or either agent
 definition, and no Review Focus section in the plan template.
@@ -1052,12 +1076,16 @@ Under this repo's proportional-process rule:
 - **Not adopted until the probe has run:** upstream's whole-file byte bar
   (finding 17). finishing-a-development-branch is the one skill that passes
   our check and fails the stricter bar. The probe item decides the measure.
-- **Spec candidate, planning surface:** findings 9 and 10. They share the
-  writing-plans plan template and self-review, and finding 10 also reaches
-  the four reviewer surfaces. Both shape
-  discipline-skill behavior, so they need writing-skills' pressure-test and
-  micro-test. Upstream's planted-defect probe and its unnamed-input crash eval
-  are ready controls.
+- **Done, planning surface:** findings 9 and 10, through plan 73 (2026-10-30).
+  The spec is `specs/reviewer-and-planning-contract.md`. The four reviewer files
+  carry one shared block that `build/check_reviewer_block.py` keeps identical.
+  Both executors hand the final review the spec path and the plan's Review Focus
+  section. writing-plans writes lean plans with a Review Focus section. The F1
+  full-frame comparison kept the step recipe. R2 (gating) and R4-task missed
+  their micro-test bars, and the owner ruled on 2026-10-30 to ship them with the
+  misses recorded. Results: `specs/red-baseline-reviewer-planning-contract.md`.
+  Exception `reviewers-flag-beyond-correctness` is gone. The follow-ups are in
+  `specs/deferred_items.md`, section "73-reviewer-and-planning-contract".
 - **Done, brainstorming:** finding 4, through plan 70 (2026-10-28): the skill
   was rebased on v7.0.1 (`2ce8aa1`) and tested against its own RED baseline,
   `specs/red-baseline-brainstorming-2026-10-28.md`. The GREEN bars are met under
