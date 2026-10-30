@@ -85,12 +85,13 @@ included, whose path relative to `<root>` (default: the current directory) is
 not a line of the baseline file. The match is exact and case-sensitive, on
 POSIX paths such as `specs/completed/x.md`; blank baseline lines are ignored.
 A baselined file is never opened. A directory whose name ends in `.md` is not
-a file and is skipped, though the files inside it are read. Other files are
-never read. `lint` prints `scan`'s lines, with paths relative to `<root>`,
+a file and is skipped, though the files inside it are read. A dangling
+symlink, such as an Emacs lock file `.#x.md`, has no text and is skipped. Other
+files are never read. `lint` prints `scan`'s lines, with paths relative to `<root>`,
 then `deferral lint: <n> unmarked candidate(s) in <m> file(s); add a → item:
 or → dropped: marker in each one's paragraph` and exits 1, or prints
 `deferral lint: clean` and exits 0. It fails closed: a file it must read but
-cannot (not valid UTF-8, a broken link, no permission) gets a
+cannot (not valid UTF-8, no permission) gets a
 `<path>: cannot read: <error>` line on stderr, then a `deferral lint: <k>
 file(s) could not be read` line, and exit 1, so `clean` is never printed for
 a file that was not scanned. A baseline file that cannot be read is exit 1
@@ -334,7 +335,8 @@ def _completed_markdown(root: Path) -> list[str]:
         if not base.is_dir():
             continue
         for path in base.rglob('*'):
-            if path.suffix == '.md' and not path.is_dir():
+            dangling = path.is_symlink() and not path.exists()
+            if path.suffix == '.md' and not path.is_dir() and not dangling:
                 found.append(path.relative_to(root).as_posix())
     return sorted(found)
 

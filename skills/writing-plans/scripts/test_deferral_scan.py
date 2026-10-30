@@ -393,6 +393,36 @@ def test_lint_skips_a_directory_with_a_markdown_name(tmp_path, capsys):
     assert capsys.readouterr().out == LINT_CLEAN
 
 
+def test_lint_skips_a_dangling_markdown_symlink(tmp_path, capsys):
+    # An Emacs lock file `.#x.md` is a dangling symlink: it has no text to scan.
+    root = tmp_path / 'repo'
+    folder = root / 'specs' / 'completed'
+    folder.mkdir(parents=True)
+    (folder / 'x.md').write_text('Nothing here.\n', encoding='utf-8')
+    (folder / '.#x.md').symlink_to('nowhere')
+    listing = tmp_path / 'baseline.txt'
+    listing.write_text('', encoding='utf-8')
+    code = main(['lint', '--baseline', str(listing), '--root', str(root)])
+    captured = capsys.readouterr()
+    assert code == 0, captured.err
+    assert captured.out == LINT_CLEAN
+
+
+def test_lint_scans_a_live_markdown_symlink(tmp_path, capsys):
+    # The dangling-link skip must not hide a live link to a flagged file.
+    root = tmp_path / 'repo'
+    folder = root / 'specs' / 'completed'
+    folder.mkdir(parents=True)
+    target = tmp_path / 'outside.txt'
+    target.write_text(PLAN_4 + '\n', encoding='utf-8')
+    (folder / 'link.md').symlink_to(target)
+    listing = tmp_path / 'baseline.txt'
+    listing.write_text('', encoding='utf-8')
+    code = main(['lint', '--baseline', str(listing), '--root', str(root)])
+    assert code == 1
+    assert capsys.readouterr().out == f'specs/completed/link.md:1: {PLAN_4}\n' + LINT_FAIL
+
+
 def test_lint_fails_on_a_missing_baseline(tmp_path, capsys):
     (tmp_path / 'specs' / 'completed').mkdir(parents=True)
     code = main(['lint', '--baseline', str(tmp_path / 'absent.txt'), '--root', str(tmp_path)])
