@@ -60,10 +60,10 @@ uv run <this-skill-dir>/../writing-plans/scripts/deferred_stats.py
 Without uv, run the same path with `python3` in an environment that has the
 dependencies listed in the script's header.
 
-Run it without `--json`: this step needs the human-readable summary, and reading
-`aged >45d:` off that line is all the gate requires. If the script prints
-`no specs/deferred_items.md in this repo`, or reports `0 open`, say nothing and
-continue to Step 2.
+Run it without `--json`: the gate reads `aged >45d:` off the summary line,
+and the `Carry used (only /deferred clears):` line when there is one. If the
+script prints `no specs/deferred_items.md in this repo`, or reports `0 open`,
+say nothing and continue to Step 2.
 
 **If `aged >45d:` is 0:** report the summary line as printed and continue to Step 2.
 
@@ -85,40 +85,26 @@ merging or opening a PR.
 **The gate binds Options 1 and 2 only.** Merge and PR are the paths where the
 work leaves the building. Options 3 (Keep) and 4 (Discard) are never gated:
 nothing ships on either, and gating Discard would force a triage pass onto a
-branch that is about to be deleted — then delete the acknowledgement along with
-it, destroying the very record the gate exists to create.
+branch that is about to be deleted — destroying the notes along with it.
 
-Before executing Option 1 or Option 2, ask, and wait for an answer:
+Before executing Option 1 or Option 2, ask, and wait for an answer. The
+question, with each aged item listed, is in the `## Aged-tail gate` section of
+`../writing-plans/references/deferred-backlog.md`. Follow that section. Your
+partner answers for each aged item, one of two:
 
-```
-29 items are aged past the 45-day review horizon. Before I <merge / open the PR>:
+- **A `/deferred` pass**, which your partner runs. Then re-run the stats.
+- **One carry**, on your partner's reason. Only an item that has not used its
+  carry can take it. Write `→ acknowledged <YYYY-MM-DD> (<branch>): <reason>`
+  on the item, not in a separate log, and commit the notes with the branch's
+  other completion commits.
 
-1. Run `/deferred` to triage them
-2. Acknowledge and carry them — tell me why, and I'll log it
+An item on the `Carry used` line gets only `/deferred`. Your partner may carry
+some items and send others to `/deferred`. Proceed with the merge or the PR when
+no other aged item is left: each one is carried in this finish, or a
+`/deferred` pass changed its state. After the pass, the items you carried show
+on `Carry used`. That is expected, and they stay cleared for this finish.
 
-Which?
-```
-
-- **`/deferred`** is your human partner's to run. When they have, re-run the
-  stats and continue from the new numbers.
-- **Acknowledge** requires a reason. Append one plain bullet — never a
-  checkbox, so it stays out of the backlog counts — under a
-  `## Aged-backlog acknowledgements` section pinned directly beneath the
-  file's `# Deferred items` title, creating that section if absent:
-
-```markdown
-## Aged-backlog acknowledgements
-- 2026-09-08 — finished `feat/rate-limiter` with 29 items aged >45d, carried
-  deliberately: the Redis decision is still with the platform team.
-```
-
-Commit that edit with the branch's other completion commits, then proceed with
-the chosen option — on Options 1 and 2 the branch survives, so the record
-survives with it. The full contract is the **Aged-tail gate** section of
-`../writing-plans/references/deferred-backlog.md`.
-
-"Carried deliberately" with no reason is the silent default this gate exists to
-convert into a conscious one. Never write the acknowledgement without asking —
+The reason is required. Never write the acknowledgement without asking —
 taking the override on your partner's behalf defeats the whole mechanism.
 
 ### Step 2: Detect Environment
@@ -215,8 +201,8 @@ When your partner picks merge or PR — on a detached HEAD, push-as-new-branch �
 get a second model's review before the work leaves the building. Keep and
 Discard ship nothing and skip this step, the same binding as the aged-tail
 gate. Resolve that gate first: both of its outcomes commit to the branch — an
-acknowledgement, or `/deferred` quick fixes — and the review must see the
-branch as it will ship. For the same reason
+`→ acknowledged` note on a carried item, or a `/deferred` pass's edits — and
+the review must see the branch as it will ship. For the same reason
 `git status --porcelain --untracked-files=normal` must print nothing before
 you go on: commit what is part of the work, and ask your
 partner about anything else.
@@ -284,7 +270,7 @@ Record only the findings your partner carries.
 #### Option 1: Merge Locally
 
 **Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
-merging — a `/deferred` pass or a logged acknowledgement.
+merging — a `/deferred` pass, or one carry noted on the item.
 
 **Codex review (Step 4b):** done from the feature worktree, before you leave it.
 
@@ -313,7 +299,7 @@ git branch -d <feature-branch>
 #### Option 2: Push and Create PR
 
 **Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
-pushing — a `/deferred` pass or a logged acknowledgement.
+pushing — a `/deferred` pass, or one carry noted on the item.
 
 **Codex review (Step 4b):** done before the push.
 
@@ -425,7 +411,7 @@ When a step above fails, or before you depart from one, read [references/common-
 - Merge or open a PR without the Step 4b Codex review, or a stated reason it was skipped
 - Report a Codex review that did not complete
 - Report a PR as created when only the branch was pushed
-- Write an aged-backlog acknowledgement your partner did not ask for
+- Write an `→ acknowledged` note your partner did not ask for
 - Merge without verifying tests on result
 - Delete work without confirmation
 - Force-push without explicit request

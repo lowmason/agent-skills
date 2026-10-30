@@ -337,7 +337,15 @@ Changes from upstream:
     The Execution Handoff writes `→ planned` on the `/deferred` items
     that a plan settles. brainstorming's The Written Design gained one
     line: the commit of a spec from a `/deferred` Design pick writes
-    `→ planned` on the picked items only.
+    `→ planned` on the picked items only. finishing-a-development-branch's
+    Step 1b now points at the reference's Aged-tail gate. It offers each
+    aged item a `/deferred` pass or one carry, and an item whose carry is
+    used gets only `/deferred`. A carry is an `→ acknowledged` note on
+    the item instead of a bullet in a separate log. Step 1b dropped its
+    question block, the log bullet with its example and the "Carried
+    deliberately" sentence, which the reference now holds in the new
+    form. Step 4b, Options 1 and 2 and Red Flags name the note on the
+    item.
   - finishing-a-development-branch's Option 2 creates the PR and Step 3
     detects the base branch. Neither is upstream: as vendored, Option 2
     only pushed the branch and there was no `gh` anywhere in the file. Both
