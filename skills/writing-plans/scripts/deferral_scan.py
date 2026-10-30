@@ -34,9 +34,13 @@ The scan reads prose only:
   `→ deferred`, plus an optional parenthetical, final period and closing bold
   marker (`> **Skipped: … → deferred (reason).**`). Any text after that is read,
   so a second deferral on the same line is still found.
-- A passive deferral whose subject is a negation (`nothing`, `none`, or `no`
-  and up to two more words, right before the verb) is a statement that nothing
-  was put off, so it is not a candidate.
+- A passive deferral whose subject is a negation is a statement that nothing
+  was put off, so it is not a candidate. The subject is `nothing`, `none` or
+  `no` and up to three more words, right before the verb, and it must open its
+  clause: at the start of the unit, after `. ! ? ; : , (`, or after a
+  conjunction (`and`, `but`, `so`, `that`, `because`, `since`, `as`, `when`,
+  `if`). When in doubt the scan flags, so `with no tests is deferred` and a
+  negation after a line break inside a sentence are still candidates.
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
@@ -61,10 +65,17 @@ PASSIVE = re.compile(
     r'\b(?:is|are|was|were|be|been|stays?|remains?)\s+deferred\b(?![\s-]*items?\b)',
     re.IGNORECASE,
 )
-# `nothing is deferred`, `none are deferred`, `no new work is deferred`: the
-# negation ends the text right before PASSIVE's verb.
-NEGATED_SUBJECT = re.compile(r'\b(?:nothing|none|no(?:\s+[\w-]+){0,2})\s+$', re.IGNORECASE)
-NEGATION_WINDOW = 80
+# `nothing else is deferred`, `none of this is deferred`, `, and no new work is
+# deferred`: a subject of `nothing`, `none` or `no` and up to three more words,
+# right before PASSIVE's verb, that opens its clause. A clause opens at the start
+# of the unit, after `. ! ? ; : , (`, or after a conjunction. A preposition or a
+# verb does not open one (`with no backoff is deferred`, `has no owner and is
+# deferred`), nor does a line break, so those stay candidates.
+NEGATED_SUBJECT = re.compile(
+    r'(?:^|[.!?;:,(]|\b(?:and|but|so|that|because|since|as|when|if))'
+    r'\s*\b(?:nothing|none|no)(?:\s+[\w-]+){0,3}\s+$',
+    re.IGNORECASE,
+)
 
 # Deferral phrases, matched case-insensitively. `\s+` between words lets a phrase
 # wrap across lines. Bare `defer` and `deferred` are left out on purpose: in plans
@@ -190,8 +201,8 @@ def _without_exempt(line: str) -> str:
 
 
 def _negated(prose: str, match: re.Match[str]) -> bool:
-    before = prose[max(0, match.start() - NEGATION_WINDOW):match.start()]
-    return bool(NEGATED_SUBJECT.search(before))
+    # The whole unit before the match, so `^` is the unit's start.
+    return bool(NEGATED_SUBJECT.search(prose[:match.start()]))
 
 
 def unmarked(text: str) -> list[Candidate]:

@@ -131,16 +131,36 @@ def test_skipped_line_with_second_deferral_is_flagged():
     assert unmarked("> Skipped: Task 9's runs → deferred.") == []
 
 
-def test_negated_deferral_statement_is_not_flagged():
-    assert unmarked('Nothing is deferred.') == []
-    assert unmarked('In this plan nothing was deferred.') == []
-    assert unmarked('No new work is deferred by this task.') == []
-    assert unmarked('None are deferred.') == []
-    # A real deferral stays flagged.
-    assert unmarked('Step 5 is deferred to a later plan.') == [
-        Candidate(1, 'Step 5 is deferred to a later plan.')]
-    assert unmarked('The scorecard fix is deferred.') == [
-        Candidate(1, 'The scorecard fix is deferred.')]
+@pytest.mark.parametrize('text', [
+    'nothing is deferred.',
+    'Nothing is deferred.',
+    'Nothing else is deferred.',
+    'none of this is deferred',
+    'None are deferred.',
+    'nothing that matters is deferred',
+    'no new work is deferred',
+    'No new work is deferred by this task.',
+    'In this plan, nothing was deferred.',
+    'Skip the append if nothing was deferred.',
+    'X is implemented by this plan, and no new work is deferred.',
+])
+def test_negated_deferral_statement_is_not_flagged(text):
+    assert unmarked(text) == []
+
+
+@pytest.mark.parametrize('text', [
+    'Step 5 is deferred to a later plan',
+    'The scorecard fix is deferred.',
+    'The retry logic with no backoff is deferred.',
+    'Cases with no tests are deferred.',
+    'The task has no owner and is deferred.',
+    'The step, with no extra cost, is deferred.',
+    'No work is deferred, but the T6 gap is deferred.',
+    # A line break inside a sentence does not open a clause.
+    'The retry logic with\nno backoff is deferred.',
+])
+def test_negation_not_opening_its_clause_is_still_flagged(text):
+    assert len(unmarked(text)) == 1
 
 
 def test_code_span_neither_flags_nor_marks():
