@@ -39,11 +39,23 @@ The scan reads prose only:
   `no` and up to three more words, right before the verb, and it must open its
   clause. A clause opens at the start of the unit, after an optional list
   marker (`-`, `*`, `+`, `N.` or `N)`), any `>` quote markers and an optional
-  `**`. It also opens after one of `. ! ? ; : , ( —`, or after one of the
-  conjunctions `and`, `but`, `so`, `because`, `since`, `when` and `if`. Nothing
-  else opens a clause. When in doubt the scan flags, so `with no tests is
-  deferred`, `the gap that no test covers is deferred`, `such as no backoff`, a
-  spaced hyphen and a line break inside a sentence all leave a candidate.
+  `**`. It also opens after one of `. ! ?` and `;`, or after one of the
+  conjunctions `and`, `but`, `so`, `because`, `since`, `when` and `if`. After
+  one of `: , ( —` only `nothing` or `none` opens a clause, not `no`, so
+  `Known gap: no backoff is deferred` stays a candidate. Nothing else opens a
+  clause. None of the up-to-three words may be `but`, `except`, `besides`,
+  `beyond`, `apart`, `aside`, `save` or `other than`, so `nothing but the
+  scorecard is deferred` stays a candidate. The exemption also ends when the
+  text right after the verb, past optional whitespace and one optional comma,
+  starts with `except`, `but`, `other than`, `apart from`, `aside from`,
+  `besides` or `save for`: `nothing is deferred except the scorecard` stays a
+  candidate. Only that adjacent text is read, not the rest of the sentence.
+  When in doubt the scan flags, so `with no tests is deferred`, `the gap that
+  no test covers is deferred`, `such as no backoff`, a spaced hyphen and a line
+  break inside a sentence all leave a candidate. Two known gaps remain: an
+  `and` clause such as `X and nothing else is deferred` is exempt, and so is an
+  exception that does not start right after the verb, as in `nothing is
+  deferred here except the scorecard`.
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
@@ -72,15 +84,29 @@ PASSIVE = re.compile(
 # deferred`: a subject of `nothing`, `none` or `no` and up to three more words,
 # right before PASSIVE's verb, that opens its clause. A clause opens at the start
 # of the unit (after an optional list marker, `>` quote markers and `**`), after
-# `. ! ? ; : , ( —`, or after one of the conjunctions below. Anything else does
-# not open one: a preposition or verb (`with no backoff is deferred`, `has no
-# owner and is deferred`), a relative `that` or `such as` (`the gap that no test
-# covers is deferred`), a spaced hyphen, or a line break. Those stay candidates.
+# `. ! ? ;`, or after one of the conjunctions below. After `: , ( —` only
+# `nothing` or `none` opens one, because `Known gap: no backoff is deferred` is
+# an appositive that names deferred work. Anything else does not open a clause:
+# a preposition or verb (`with no backoff is deferred`, `has no owner and is
+# deferred`), a relative `that` or `such as` (`the gap that no test covers is
+# deferred`), a spaced hyphen, or a line break. Those stay candidates. No subject
+# word is an exception word, so `nothing but the scorecard is deferred` stays a
+# candidate too.
 NEGATED_SUBJECT = re.compile(
-    r'(?:^\s*(?:(?:[-*+]|\d+[.)])\s+)?(?:>\s*)*(?:\*\*)?'
-    r'|[.!?;:,(—]'
+    r'(?:(?:^\s*(?:(?:[-*+]|\d+[.)])\s+)?(?:>\s*)*(?:\*\*)?'
+    r'|[.!?;]'
     r'|\b(?:and|but|so|because|since|when|if))'
-    r'\s*\b(?:nothing|none|no)(?:\s+[\w-]+){0,3}\s+$',
+    r'\s*\b(?:nothing|none|no)'
+    r'|[:,(—]\s*\b(?:nothing|none))'
+    r'(?:\s+(?!(?:but|except|besides|beyond|apart|aside|save|other\s+than)\b)[\w-]+){0,3}'
+    r'\s+$',
+    re.IGNORECASE,
+)
+# An exception right after a negated PASSIVE match names the deferred work:
+# `nothing is deferred except the scorecard`, `, except for`, `but the scorecard`.
+# Only the text right after the match is read, never the rest of the sentence.
+EXCEPTION_TAIL = re.compile(
+    r'\s*,?\s*(?:except|but|other\s+than|apart\s+from|aside\s+from|besides|save\s+for)\b',
     re.IGNORECASE,
 )
 
@@ -208,6 +234,8 @@ def _without_exempt(line: str) -> str:
 
 
 def _negated(prose: str, match: re.Match[str]) -> bool:
+    if EXCEPTION_TAIL.match(prose, match.end()):
+        return False
     # The whole unit before the match, so `^` is the unit's start.
     return bool(NEGATED_SUBJECT.search(prose[:match.start()]))
 

@@ -150,6 +150,11 @@ def test_skipped_line_with_second_deferral_is_flagged():
     '**No new work is deferred.**',
     'Review is clean — nothing is deferred.',
     '1. None are deferred.',
+    # `other` alone is not an exception word, and a sentence end stops the tail.
+    'No other work is deferred.',
+    'Nothing is deferred. But the plan was long.',
+    # After `, : — (` the negation word `nothing` or `none` opens a clause.
+    'Result: nothing is deferred.',
 ])
 def test_negated_deferral_statement_is_not_flagged(text):
     assert unmarked(text) == []
@@ -172,8 +177,31 @@ def test_negated_deferral_statement_is_not_flagged(text):
     'Failures such as no backoff are deferred.',
     # A spaced hyphen mid-line is not a Markdown prefix.
     'The retry work - no tests yet - is deferred.',
+    # After `, : — (` a bare `no` is an appositive, not a clause subject.
+    'Known gap: no backoff is deferred.',
+    'Known gap, no backoff is deferred.',
+    'Open item: no owner is deferred.',
+    'Result: no work is deferred.',
+    'In this plan, no work was deferred.',
 ])
 def test_negation_not_opening_its_clause_is_still_flagged(text):
+    assert len(unmarked(text)) == 1
+
+
+@pytest.mark.parametrize('text', [
+    # An exception right after the verb names the work that is deferred.
+    'Nothing is deferred except the scorecard.',
+    'Nothing is deferred, except for the scorecard fix.',
+    'Nothing is deferred but the scorecard.',
+    'Nothing is deferred other than the retry work.',
+    'Nothing is deferred\nexcept the scorecard.',
+    # An exception word is never one of the subject's words.
+    'Nothing but the scorecard is deferred.',
+    'Nothing except retry is deferred.',
+    'Nothing besides the scorecard is deferred.',
+    '- No tests but retry is deferred.',
+])
+def test_negation_with_an_exception_is_still_flagged(text):
     assert len(unmarked(text)) == 1
 
 
