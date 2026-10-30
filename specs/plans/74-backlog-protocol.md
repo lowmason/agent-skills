@@ -66,11 +66,12 @@ Numbered after the spec's D1-D14.
 ## Open for plan review
 
 1. **B1 fixtures with no deferral phrase (spec-level).** Three of the eight B1 instances carry no phrase a scan can match at the audit base `6186635`: plan 29 `:693` (a Task heading) and `:710` (a design for a `floating` tier that was then never built), the audit_9_2_26 scorecard line `:200` (a finding), and audit_1_3_26:139 (a fix list, lost through a re-file). Section 6 requires the scan to catch every B1 instance, and also caps noise at a median of 3. No phrase list can do both. Recommended: Task 0's amendment. If the owner declines it, Task 4 must catch all eight, and the burden check decides whether that is possible.
-2. **writing-plans body room (my call).** The three additions (step 3 marker and removal text, step 5 scan, the D13 line) come from two places inside sections the spec names: step 3's restatement of the schema (`Each item follows …` to `… resolve it now or drop it.`), which the reference already holds, shrinks to a pointer; and step 5's link re-pointing sentence is shortened. The relabeled example and `## What a Step Contains` stay.
+2. **writing-plans body room (my call).** The additions (the step 3 marker sentence, the removal rewording, the step 5 scan sentence, the D13 line) are paid for by three cuts inside sections the spec names: step 3's restatement of the schema (`Each item follows …` to `… resolve it now or drop it.`), which the reference already holds, shrinks to a pointer; step 5's link re-pointing sentence is shortened; and step 5's closing paragraph (`These commits land on the current branch …`) is shortened. The relabeled example and `## What a Step Contains` stay. A scratch draft of all seven edits measured 19,957 characters (base 19,994), so the budget closes with about 35 characters to spare. If the final wording passes the base figure, stop and ask the owner; do not cut elsewhere.
 3. **Pass bar (my call).** A case passes when the new arm passes 4 or more of 5 reps and the control passes at least 2 fewer. When the control also passes 4 or more, the record says the case could not discriminate (a ceiling).
 4. **Rep models (my call).** R1, R2 and R3 run on `claude-sonnet-5-5`, because the completion protocol and finishing run in Sonnet execution sessions. R4 and R5 run on `claude-opus-5-5`, because `/deferred` and brainstorming run in Opus sessions.
 5. **Hold-back cutoff (my call).** `archive_deferred.py`'s `SCAN_FROM` is the date Task 6 is committed, written as a literal.
 6. **Scan unit (my call).** A marker answers a candidate in the same unit. A unit is a run of non-blank lines, split also before each line that starts a list item (`-`, `*` or `N.` after any indent). A heading is its own unit.
+7. **Baseline at merge (my call, a departure from the spec's never-grows rule).** If another session retires a file between Task 5 and this plan's merge, that file was retired before the lint existed on main. Task 11 Step 7 adds it to the baseline and says so in the PR text. The alternative is to give that file markers in this branch.
 
 ---
 
@@ -143,8 +144,8 @@ Adapt plan 73's `build_prompts.py`: texts read with `git show <sha>:<path>`, nev
 
 - [ ] **Step 3: Check for answer leaks**
 
-Run: `/usr/bin/grep -n -i -E 'triggered|planned|carry used|item:|dropped' specs/red-baseline-backlog-protocol/kit/cases.py`
-Expected: matches only inside the pass-rule strings, which `build_prompts.py` never writes into a prompt. Then build the control prompts and grep them for the same words. Expected: no match outside the texts under test.
+Build the control prompts, then grep each case's fixture and task (not the texts under test) for the words of its own answer: R1 and R2 `item:` and `dropped`; R4 `triggered`; R5 `planned`; R3 `acknowledged`. R3's pasted stats line (`Carry used (only /deferred clears): …`) is part of its input and is exempt by name.
+Expected: no match. The pass-rule strings in `cases.py` are never written into a prompt.
 
 - [ ] **Step 4: Pilot the isolation probe**
 
@@ -174,7 +175,7 @@ git commit -m "test(specs): backlog-protocol RED baselines R1-R5 (plan 74)"
 
 **Interfaces:**
 - Produces: `@dataclass Note(kind: str, date: dt.date | None, rest: str)`; `@dataclass Item(section: str, section_date: dt.date | None, checked: bool, text: str, notes: list[Note])`; `parse_items(text: str) -> list[Item]`; `aging_state(item: Item, is_live: Callable[[str], bool]) -> tuple[str, dt.date | None]`, which returns one of `'triggered' | 'held' | 'planned' | 'watch' | 'work'` and the date the item ages from (`None` when not aged); `compute_stats(items: list[Item], today: dt.date, aged_days: int = 45, is_live: Callable[[str], bool] = …) -> dict`.
-- `parse_sections` goes. The existing 14 tests keep their assertions and switch to `compute_stats(parse_items(...), ...)`.
+- `parse_sections` goes. Only `deferred_stats.py` and `test_deferred_stats.py` use it (`git grep parse_sections` outside `specs/plans/completed/`). The three tests that read its section dicts assert the same counts and dates from `parse_items`; the other existing tests switch to `compute_stats(parse_items(...), ...)` and keep their assertions.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -285,7 +286,7 @@ In `test_deferral_scan.py`, copy each fixture's whole unit from the audit base `
 - [ ] **Step 2: Write the failing tests**
 
 - `test_catches_each_phrase_bearing_b1_fixture`: parametrized over the first five strings; `unmarked(s)` is non-empty.
-- `test_phraseless_b1_fixtures_record_the_limit`: parametrized over the last four; assert `unmarked(s) == []`, with a comment citing Task 0. (If Task 0 was declined, move these four into the first test.)
+- `test_phraseless_b1_fixtures_record_the_limit`: parametrized over the last four, each marked `pytest.mark.xfail(strict=False, reason='no deferral phrase; see plan 74 Task 0')`; assert `unmarked(s)` is non-empty. A phrase list that catches one shows as XPASS, never as a failure. (If Task 0 was declined, move these four into the first test without the mark.)
 - `test_item_marker_resolves_its_unit`: `PLAN_4 + ' → item: 9-x — 2026-01-01'` gives `[]`.
 - `test_dropped_marker_resolves_its_unit`: the same with `→ dropped: landed in abc123`.
 - `test_marker_in_another_unit_does_not_count`: a candidate bullet followed by a second bullet that carries the marker. One candidate.
@@ -540,7 +541,7 @@ Rewrap the example's second item as in Task 7 Step 7 (words unchanged).
 
 - [ ] **Step 3: Step 5 of the protocol**
 
-Before the `git mv`, run `uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> <spec>` and resolve each line it lists with a marker (reference `## Markers`). Shorten the link re-pointing sentence, keeping its `../skills/…` to `../../skills/…` example.
+Before the `git mv`, run `uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> <spec>` and resolve each line it lists with a marker (reference `## Markers`). Shorten the link re-pointing sentence, keeping its `../skills/…` to `../../skills/…` example, and shorten the closing paragraph (`These commits land on the current branch …`) to the same meaning: the commits are the branch's last, a merge or PR carries them, and a discarded branch takes them with it.
 
 - [ ] **Step 4: The D13 line**
 
@@ -667,7 +668,7 @@ Run: `uv run skills/writing-plans/scripts/deferred_stats.py --json > /tmp/plan74
 
 - [ ] **Step 2: Move the acknowledgement log**
 
-Count the bullets in `## Aged-backlog acknowledgements` and read the last bullet's date. Expected: 31 bullets, the last dated 2026-10-12. Move the section's bullets to the archive under `## Aged-backlog acknowledgements (to 2026-10-12) — 2026-10-12`, in date order. If the count or the last date differs, record a `> Deviation:` line and stop for the owner before renaming the heading.
+Count the bullets in `## Aged-backlog acknowledgements` and read the last bullet's date. Expected: 31 bullets, the last dated 2026-10-12. Move the section's bullets to the archive under `## Aged-backlog acknowledgements (to 2026-10-12) — 2026-10-12`, in date order. The live `## Aged-backlog acknowledgements` heading leaves too, so `# Deferred items` is followed directly by the first dated section. If the count or the last date differs, record a `> Deviation:` line and stop for the owner before renaming the heading.
 
 - [ ] **Step 3: Restore the 11 deleted items**
 
