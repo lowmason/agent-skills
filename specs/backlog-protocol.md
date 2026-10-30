@@ -307,10 +307,13 @@ skill). It has two modes:
     `test_commit_lints.py` follow, as for every commit lint.
 
 **Candidates.** The phrase list is left to the builder, with these requirements:
-- It catches every file-based instance in the audit's B1 table, taken from the file at the
-  audit's base. Those are plan 4:19, plan 29's Task 5 (`:693`, `:710`),
-  `agents-and-commands-expansion.md:233-234`, the audit_9_2_26 scorecard note (`:200`),
-  audit_1_3_26:139 and the three closure notes. Each becomes a test fixture.
+- It catches every file-based instance in the audit's B1 table that carries a deferral
+  phrase, taken from the file at the audit's base: plan 4:19,
+  `agents-and-commands-expansion.md:233-234` and the three closure notes. Each becomes a test
+  fixture. Plan 29's Task 5 (`:693`, `:710`), the audit_9_2_26 scorecard note (`:200`) and
+  audit_1_3_26:139 carry no deferral phrase: a design dropped without a word, a finding and a
+  fix list. They become fixtures that record what a phrase scan cannot see. (owner, plan 74,
+  2026-10-30)
 - Two forms are exempt:
   - the Plan Completion Protocol's own status header ("deferred items in
     specs/deferred_items.md" and "nothing deferred");
@@ -461,7 +464,7 @@ holds for them.
   - watch, held and triggered items age as section 2 says;
   - both files are read;
   - the summary's first line is unchanged.
-- The scan catches every B1 fixture. The lint passes on the repo as it stands and fails on a
+- The scan catches every B1 fixture that carries a deferral phrase. (owner, plan 74, 2026-10-30) The lint passes on the repo as it stands and fails on a
   new completed file with an unmarked candidate.
 - The archive script's tests cover:
   - eligible and ineligible items, including an undated tick that falls back to its section
