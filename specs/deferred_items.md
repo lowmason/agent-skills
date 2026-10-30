@@ -2049,7 +2049,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       reason. Either way, `build/check_conformance.py` passes.
       → done 2026-10-05 (/deferred quick fix): docs-writer keeps Bash; the gap is
       re-recorded as a deviation with the owner's reason.
-- [ ] Scope code-reviewer and task-reviewer findings to correctness and requirement gaps
+- [x] Scope code-reviewer and task-reviewer findings to correctness and requirement gaps
       (plan 35 audit rows A-33, A-34): `agents/code-reviewer.md` and
       `agents/task-reviewer.md` invite findings beyond correctness and requirement gaps
       (structure, polish), against `subagents.isolation`. Both drive
@@ -2064,6 +2064,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
+      → done in plan 73 (2026-10-30); exception `reviewers-flag-beyond-correctness` removed: the four
+      reviewer files carry one shared block, `build/check_reviewer_block.py` keeps the copies
+      identical as the eleventh commit lint, both skills drop the Minor tier, and
+      `build/check_conformance.py` passes.
 - [x] Fix four hooks/README.md inaccuracies (plan 35 audit rows H-18, H-24, H-27, H-48), as
       of the 2026-10-04 audit: the read-only guard's install command leaves `$HOME` unquoted
       (:121); the README says only exit 2 blocks, beside a hook that blocks by JSON deny
@@ -4107,7 +4111,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       run continues, and upstream's four stops and the scope-fence ask still stop it. Recorded in
       `specs/superpowers-drift-spec.md` finding 7. Findings 11 and 13 are logged as one design item
       (section `owner-calls-2026-10-21`); finding 14 stays declined.
-- [ ] Open the planning-surface spec for superpowers drift findings 9 and 10 (audit-3-10-26 B5,
+- [x] Open the planning-surface spec for superpowers drift findings 9 and 10 (audit-3-10-26 B5,
       found 2026-10-03; drift spec "Spec candidate, planning surface", re-verified 2026-10-18).
       Finding 9: upstream v6.4.2 (#2333) rewrote writing-plans around "a plan records decisions;
       it is not a transcript of the code": a capable reader, "What a Step Contains" in place of
@@ -4129,6 +4133,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       pressure-test and micro-test; upstream's planted-defect probe and unnamed-input crash eval
       are ready controls. Size: design. Done when: the spec is approved in `specs/`, or the owner
       records findings 9 and 10 as declined in the drift spec.
+      → done in plan 73 (2026-10-30): `specs/reviewer-and-planning-contract.md` adopted finding 10
+      and finding 9 (the step recipe, kept after the F1 comparison); the record is
+      `specs/red-baseline-reviewer-planning-contract.md`.
 - [x] Open the brainstorming spec for superpowers drift finding 4 (audit-3-10-26 B5, found
       2026-10-03; drift spec "Spec candidate, brainstorming", re-verified 2026-10-18 against
       upstream v7.0.0). A contradiction is live on main: `skills/brainstorming/SKILL.md:22-24`
@@ -6687,6 +6694,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       OpenAI, so a private project needs owner approval beyond this repository. Sequence: after
       the owner decides findings 9 and 10. Size: design. Done when: a brainstorming spec
       decides the layers and records the baseline probe results.
+      Progress (plan 73, 2026-10-30): layer 5's spec-path handoff landed (spec D3). Both executors
+      pass the spec path and the plan's Review Focus section to the final code-reviewer. The item
+      stays open.
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
 - [ ] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
@@ -6905,3 +6915,99 @@ review and the Plan Completion gate (2026-10-27) add the others.
       plan. Done when: plan 71's control arm for ruling (3), and each plan 70 arm whose verdict
       decided a ruling or a stop rule, re-run under plan 72's fixed kit, and each record states
       whether its verdict holds.
+
+## 73-reviewer-and-planning-contract — 2026-10-30
+- [ ] Test-only findings and the reviewer block's delete pass (plan 73 final review, Important;
+      owner ruled ship-and-defer 2026-10-30). The shared block's sentence "Delete every one, and
+      every added remark, that a person using the software, or reading the text, would not
+      notice or act on" (`agents/code-reviewer.md:55-57`, identical in the four reviewer
+      copies) can be read to drop findings the same block keeps: "tests that assert nothing"
+      (Important), test-output noise (task-reviewer, spec D6), Extra, and "follows the plan's
+      file structure". No micro-test case plants a test-only finding, so the record could not
+      show a regression. See `specs/red-baseline-reviewer-planning-contract.md`. Size: design.
+      Done when: a micro-test case with a test-only defect (a test that asserts nothing) shows
+      both reviewers still report it, and the sentence is reworded in all four copies if they
+      do not.
+- [ ] Declined review line: writing-plans' completion gate does not name Declined to judge
+      lines as leftovers (plan 73 final review, owner ruled defer).
+      `skills/writing-plans/SKILL.md:288-289` lists skipped steps and unfixed findings only;
+      both executors already send the final review's Declined lines to the partner, and spec
+      section 4 left the protocol unedited. The body is 19,994 of 20,000 characters, so the
+      edit needs the `references/step-recipe.md` fallback first (spec section 4). Size: plan.
+      Done when: step 1 of the Plan Completion Protocol names the final review's Declined to
+      judge lines, with room in the body for it.
+- [ ] Declined review line: finishing-a-development-branch Step 4b gives Codex `[P2]` and
+      `[P3]` points that become Declined lines no owner and no place to be recorded (plan 73
+      final review, owner ruled defer). The skill is not one of the surfaces spec section 2
+      lists. Size: quick-fix. Done when: Step 4b says who rules on such a line and where it is
+      written.
+- [ ] Declined review line: the code-reviewer agent and template never say what a Review Focus
+      section is for (plan 73 final review, owner ruled defer). Only the executors'
+      parenthetical does, as in upstream PR #2319, and spec section 5 asked only for the
+      handoff. Files: `agents/code-reviewer.md`, `skills/requesting-code-review/code-reviewer.md`.
+      Size: plan (new wording needs the micro-tests). Revisit if: a final-review rep ignores a
+      Review Focus line, or the handoff changes.
+- [ ] Declined review line: `skills/requesting-code-review/SKILL.md`'s example still grades
+      "Missing progress indicators" Important, while `code-reviewer.md`'s example dropped that
+      item as polish (plan 73 final review, owner ruled defer). Spec section 2 changed only the
+      magic-number nit. Size: quick-fix. Done when: the SKILL.md example matches
+      `code-reviewer.md`'s and grades no polish point.
+- [ ] Declined review line: `skills/requesting-code-review/code-reviewer.md`'s "What to Check"
+      still asks "Sound design decisions?", "Integrates cleanly with surrounding code?" and
+      "Type safety", and both preambles claim architecture expertise (plan 73 final review and
+      Minor M9, owner ruled defer). Decision D16 trimmed only the four lines it named. Size:
+      plan. Revisit if: a code-reviewer rep reports a design-taste point as a finding.
+- [ ] Declined review line: the task reviewer's Full Form
+      (`skills/subagent-driven-development/task-reviewer-prompt.md`) was never micro-tested
+      (plan 73 final review, owner ruled defer). The kit uses the Short Form plus the agent
+      body, as production does when the agent is installed (decision D14). Size: plan.
+      Revisit if: a runtime without the installed `task-reviewer` agent dispatches the Full
+      Form, or its text changes.
+- [ ] Declined review line: `agents/security-auditor.md` keeps its Minor tier (plan 73 final
+      review, owner ruled defer; a spec non-goal). Size: quick-fix. Revisit if:
+      security-auditor is dispatched in a flow that expects the two-grade scale.
+- [ ] Reviewer-block lint gaps left open by plan 73's task reviews (Minors M5-M8): "one line
+      re-indented" is tested only at `extract_block` level, not through `check()`; the
+      `: missing` file path, the "no Declined to judge line" error and a block ended by a
+      dedented non-blank line are untested; when the reference copy
+      (`agents/code-reviewer.md`) is missing or malformed, the other three copies are not
+      compared with each other (the lint still fails); a drift that differs only in a
+      line-separator character such as `\x0c` prints a drift message with an empty diff body,
+      because `show_diff` splits with `splitlines()`. Files: `build/check_reviewer_block.py`,
+      `build/test_check_reviewer_block.py`. Size: quick-fix. Done when: tests cover each
+      branch, the missing-reference case compares the remaining copies, and the diff splits
+      on `\n` only.
+- [ ] Micro-test kit odds and ends (plan 73 Minors M1-M3 and M25, and the final review's
+      minor on `FENCE_RE`): the registered R2 reading rule has no class for a remark on
+      `page < 1` in `page_of`; `run_reps.sh`'s usage-error text omits `[<budget>]`; the VOID
+      criteria exist twice (`kit/measure.py` `rep_reply` and `kit/show_reps.py`) with no
+      regression test; `FENCE_RE` (`kit/measure.py:21`) takes the first three backticks of a
+      four-backtick fence as the marker, so the first inner fence closes the outer one; the F1
+      audit (`f1/score_f1.py`) still misses some spellings of a forbidden path (a quoted
+      `"$HOME"/Projects`, `~lowell/Projects`, a path after `cd ~`). Files:
+      `specs/red-baseline-reviewer-planning-contract/kit/` and `.../f1/`. Size: quick-fix.
+      Revisit if: the kit or F1 is reused for another plan, or a rep uses a four-backtick
+      fence.
+- [ ] Watch the Proportion check's "cut it before you save it" (plan 73 final review
+      recommendation). Every plan measured under the new step recipe exceeds "about five
+      times" the spec (F1 arm 2: 7.26 and 7.71; P12 round 2: 9.66 to 12.27), and in P12 the
+      template's fixed sections alone are 2.55 times a 1,015-character spec, so the check fires
+      on nearly every small plan. F1 showed no loss, but both arms passed 12 of 12 hidden
+      tests, so F1 could not show one (a ceiling), and its byte-order-mark test is passed by
+      any positional reader. See `specs/red-baseline-reviewer-planning-contract.md` ("F1").
+      Size: design. Revisit if: a plan written under the recipe cuts a test or a task the spec
+      needs, or an F1 extension with a harder defect shows arm 2 handling fewer.
+- [ ] Wording observations from plan 73's tests (Minors M14, M20, M22-M24): the Step
+      Granularity list still says "Implement the minimal code to make the test pass"; the
+      Review Focus template's "nothing lost, the right output" sits close to P1's pass phrase,
+      so P1's 5/5 may generalize less than it looks; the Declined to judge ending has no "that
+      does not change what the reader does" qualifier, and R4-task reps used the skill-text
+      clause to grade a passive-voice point Important; X1-task reps 4 and 5 mark spec
+      compliance OK while raising the crash as Important; three X3 plans check the quoted
+      wording only weakly. Size: design. Revisit if: a real run shows a reviewer grading
+      polish as Important, or a plan that dropped a micro-tested text.
+- [ ] Cosmetic wraps from plan 73's task reviews (Minors M11 and M13): the "Order matters"
+      line in `skills/subagent-driven-development/references/final-review.md` is about 92
+      columns; the relabeled deferred example's second line
+      (`skills/writing-plans/SKILL.md:117`, `skills/writing-plans/references/deferred-backlog.md:146`)
+      is about 80. Size: quick-fix. Done when: both wrap near 76 columns.

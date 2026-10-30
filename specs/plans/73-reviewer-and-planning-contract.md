@@ -1,5 +1,9 @@
 # Reviewer and planning contract Implementation Plan
 
+**Status: COMPLETE (2026-10-30)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
+> Deviation: every commit trailer reads `Co-Authored-By: Claude Sonnet 5.5`, not Opus 5.5. The Global Constraints define the trailer as the session's, and this session's is Sonnet 5.5. The execution branch is `claude/reviewer-contract-plan-exec-e8ee26`; the launch message named `claude/reviewer-contract-plan-485f32`, whose plan branch was merged in at `1f2776c`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give every reviewer one scope (correctness and requirement gaps only, two grades, a reasonable user's expectation counts as a requirement, a "Declined to judge" list), carry that contract through both executors, and make writing-plans write lean plans that record decisions and name a Review Focus, each change proven by micro-tests against a no-guidance control, a pressure test and, for the step recipe, the F1 full-frame comparison.
@@ -106,7 +110,7 @@ The input classes and failure modes this work implies that the tasks' main tests
 - Consumes: nothing.
 - Produces: `build_prompts.py <sha|control> <out-dir> [<case> ...]`; `run_reps.sh <prompt-file> <out-dir> <first-rep> <last-rep> <model> [<budget>]`; `show_reps.py <dir> ...`; `measure.py {ratio <case> <dir>...|verbatim <dir>...|spend <root>|selftest}`; case keys `R1-task`, `R1-final`, `R2-task`, `R2-final`, `R4-task`, `R4-final`, `P12`, `P3`, `X1-task`, `X2`, `X3`; the results file with every bar and reading rule, committed before any rep runs.
 
-- [ ] **Step 1: Copy two kit files and adapt `run_reps.sh`**
+- [x] **Step 1: Copy two kit files and adapt `run_reps.sh`**
 
 ```bash
 K=specs/red-baseline-reviewer-planning-contract/kit
@@ -122,7 +126,7 @@ Do not edit plan 72's kit. In the copied `run_reps.sh`, make these changes:
 
 Confirm: `grep -n 'plan72\|0\.50 ' $K/run_reps.sh` prints only the `BUDGET=` line.
 
-- [ ] **Step 2: Write `show_reps.py`**
+- [x] **Step 2: Write `show_reps.py`**
 
 Create `specs/red-baseline-reviewer-planning-contract/kit/show_reps.py`:
 
@@ -188,7 +192,7 @@ if __name__ == '__main__':
     main()
 ```
 
-- [ ] **Step 3: Write `cases.py`**
+- [x] **Step 3: Write `cases.py`**
 
 Create `specs/red-baseline-reviewer-planning-contract/kit/cases.py` with exactly this text. The fixtures are this repo's own; no case reuses a domain from the reviewer files' or writing-plans' examples.
 
@@ -665,7 +669,7 @@ CASES = {
 
 Confirm it imports: `uv run python -c "import sys; sys.path.insert(0, 'specs/red-baseline-reviewer-planning-contract/kit'); import cases; print(sorted(cases.CASES))"` prints the eleven keys.
 
-- [ ] **Step 4: Write `build_prompts.py`**
+- [x] **Step 4: Write `build_prompts.py`**
 
 Create `specs/red-baseline-reviewer-planning-contract/kit/build_prompts.py`:
 
@@ -795,7 +799,7 @@ uv run python $K/build_prompts.py control /tmp/plan73-dry-control
 
 Expected: `wrote 8 prompts to /tmp/plan73-dry-base` and `wrote 8 prompts to /tmp/plan73-dry-control`. Read `/tmp/plan73-dry-base/R1-task.txt`, `R1-final.txt` and `P12.txt` once end to end: the agent body is whole, no `[BRIEF_FILE]`-style placeholder of the filled set is left in the dispatch, every named file is inlined, and the P12 prompt holds the whole SKILL.md body (it ends with the Plan Completion Protocol's last paragraph) and no `step-recipe.md` file (none exists at `812f3df`). Then `rm -r /tmp/plan73-dry-base /tmp/plan73-dry-control`.
 
-- [ ] **Step 5: Write `measure.py`**
+- [x] **Step 5: Write `measure.py`**
 
 Create `specs/red-baseline-reviewer-planning-contract/kit/measure.py`:
 
@@ -937,7 +941,7 @@ if __name__ == '__main__':
     main()
 ````
 
-- [ ] **Step 6: Check the VOID paths (Review Focus 3 and 4)**
+- [x] **Step 6: Check the VOID paths (Review Focus 3 and 4)**
 
 Run: `uv run python specs/red-baseline-reviewer-planning-contract/kit/measure.py selftest`
 Expected: `selftest passed`.
@@ -954,7 +958,7 @@ rm -r /tmp/plan73-void
 
 Expected: the `show_reps.py` header line contains `VOID(error or budget stop)`, and `measure.py` prints `plan73-void/rep1: VOID` and no median line.
 
-- [ ] **Step 7: Pilot the isolation probe**
+- [x] **Step 7: Pilot the isolation probe**
 
 Run once, with `timeout: 600000`:
 
@@ -968,7 +972,7 @@ uv run python -c "import json; d = json.load(open('/tmp/plan73-init/init.json'))
 
 Expected: the probe reply answers NO on all five lines, and the init record prints `init [] default <version>`. Record the version, the five answers and the init line for the results file (Step 8). If any probe line is YES, or `tools` is not empty, or the output style is not `default`, stop and ask the owner with the quoted reply. Then `rm -r /tmp/plan73-probe /tmp/plan73-init`.
 
-- [ ] **Step 8: Register the bars**
+- [x] **Step 8: Register the bars**
 
 Create `specs/red-baseline-reviewer-planning-contract.md` with this text, filling the bracketed fields from Step 7 and from `git rev-parse --short HEAD`:
 
@@ -1073,7 +1077,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: the kit and the registered bars (Task 1).
 - Produces: `control` and `base` verdict tables; P2's `base` median ratio and fence share, which Task 8's bar uses; the running spend.
 
-- [ ] **Step 1: Build the prompts**
+- [x] **Step 1: Build the prompts**
 
 ```bash
 K=specs/red-baseline-reviewer-planning-contract
@@ -1083,7 +1087,7 @@ uv run python $K/kit/build_prompts.py 812f3df $K/base
 
 Expected: `wrote 8 prompts to …/control` and `wrote 8 prompts to …/base`.
 
-- [ ] **Step 2: Pilot the costliest case (1 rep)**
+- [x] **Step 2: Pilot the costliest case (1 rep)**
 
 ```bash
 bash $K/kit/run_reps.sh $K/base/P12.txt $K/base/P12 1 1 claude-opus-5-5 1.50
@@ -1092,7 +1096,7 @@ uv run python $K/kit/show_reps.py $K/base/P12
 
 Expected: `rep1 exit=0`, a header with no VOID, and a reply holding a `<plan` block that ends with `</plan>`. If the rep stopped on its budget, stop and ask the owner with its cost: the planner budget needs raising before any other planner rep.
 
-- [ ] **Step 3: Run the reps (79 reps, about $15)**
+- [x] **Step 3: Run the reps (79 reps, about $15)**
 
 Check the spend rule before each line, then run each line as its own Bash command with `timeout: 600000` (with `K=specs/red-baseline-reviewer-planning-contract` set in it):
 
@@ -1117,11 +1121,13 @@ bash $K/kit/run_reps.sh $K/control/P3.txt $K/control/P3 1 5 claude-opus-5-5 1.50
 
 Expected per call: one `repN exit=0` line per rep. On a nonzero exit or a VOID header, read `repN.err` and rerun with the next free rep number, until each arm has 5 scored reps.
 
-- [ ] **Step 4: Read every rep and record verdicts**
+- [x] **Step 4: Read every rep and record verdicts**
+
+> Deviation: the R4-task fixture was amended after this step (owner ruling 2026-10-29, Task 2b, commit `2144e6a`): its Global Constraint line `- Skill text follows the repo's plain-English rule.` became `- None beyond the task brief.`, and five more `base` reps ran in `base-r4task-amended/`. The original reps stay on record.
 
 Run `uv run python $K/kit/show_reps.py $K/control/*/ $K/base/*/` and read each full reply. Run `uv run python $K/kit/measure.py ratio P12 $K/control/P12 $K/base/P12` and `uv run python $K/kit/measure.py verbatim $K/control/P3 $K/base/P3`. Under `## Results`, add `### RED: control and base`, with one table per case and arm: rep, verdict under the registered rule, the quoted line that decides it, and the running spend (`measure.py spend`). For R1 and R2, also record whether a Declined to judge list is present. Record P2's `base` medians in a sentence of their own: Task 8's bar is computed from them. End with two sentences: what the current text does on each case, and which cases the control already passes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1143,7 +1149,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: nothing.
 - Produces: `FILES: tuple[str, ...]` (the four reviewer paths, the first being the reference copy); `class BlockError(ValueError)`; `extract_block(text: str) -> str` (the block, dedented, ending in one `\n`); `check(root: Path) -> list[str]` (one problem string per file, each starting `<path>: `; empty when the copies agree); `main() -> int`. Task 4 wires it as commit lint `reviewer_block`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `build/test_check_reviewer_block.py`:
 
@@ -1207,12 +1213,12 @@ def test_missing_block_names_the_file(tmp_path):
     assert check(tmp_path) == [f"{FILES[1]}: expected one '## Review scope' line, found 0"]
 ````
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_reviewer_block.py`
 Expected: an error collecting the file, `ModuleNotFoundError: No module named 'check_reviewer_block'`.
 
-- [ ] **Step 3: Implement `build/check_reviewer_block.py`**
+- [x] **Step 3: Implement `build/check_reviewer_block.py`**
 
 ```python
 '''Fail when the four reviewer surfaces' copies of the shared reviewer block differ.
@@ -1298,12 +1304,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_reviewer_block.py`
 Expected: `6 passed` (+6 in the `build` suite). The lint is not wired yet: on `812f3df` the four files hold no block, so `uv run python build/check_reviewer_block.py` exits 1 with four `expected one '## Review scope' line, found 0` lines, and that is expected until Task 4.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1330,7 +1336,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `check(root: Path) -> list[str]` and `FILES` (Task 3).
 - Produces: the shared block (round-0 text below) in the four `FILES`; the two-grade output formats with a `### Declined to judge` section; commit lint `reviewer_block`. Task 5's executors refer to "Declined to judge" lines by that name; Task 8 measures this text.
 
-- [ ] **Step 1: Write the failing repo test**
+- [x] **Step 1: Write the failing repo test**
 
 Append to `build/test_check_reviewer_block.py`:
 
@@ -1343,7 +1349,9 @@ def test_repo_copies_are_identical():
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_reviewer_block.py`
 Expected: `1 failed, 6 passed`; the failure lists four `expected one '## Review scope' line, found 0` problems.
 
-- [ ] **Step 2: Add the shared block to the four files**
+- [x] **Step 2: Add the shared block to the four files**
+
+> Deviation: the shared block says `Before your Assessment`, not `Before your verdict` as in the block below (owner ruling 2026-10-29, fix commit `5d59230`: `verdict` had two readings). Task 8's wording rounds then reworded the Review scope paragraph and the Declined to judge ending in all four copies (`edb935b`, `8ac9d28`).
 
 The round-0 block, exact copy (it is plain Markdown with no fences):
 
@@ -1397,7 +1405,7 @@ Insert it, followed by one blank line, at these places:
 Run: `cd build && uv run --with pytest python -m pytest -q test_check_reviewer_block.py`
 Expected: `7 passed`.
 
-- [ ] **Step 3: Rewrite the rest of `agents/code-reviewer.md`**
+- [x] **Step 3: Rewrite the rest of `agents/code-reviewer.md`**
 
 Replace
 
@@ -1433,7 +1441,7 @@ One line per behavior you set aside, with the reason, or `None.`
 
 Replace `DON'T: say "looks good" without reading the diff, mark nitpicks` / `Critical, review code you didn't read, or soften a verdict to be polite.` with `DON'T: say "looks good" without reading the diff, report a nitpick,` / `review code you didn't read, or soften a verdict to be polite.`
 
-- [ ] **Step 4: Rewrite the rest of `agents/task-reviewer.md`**
+- [x] **Step 4: Rewrite the rest of `agents/task-reviewer.md`**
 
 In Part 1, after the paragraph that ends `broadening your search.`, add a blank line and:
 
@@ -1478,7 +1486,7 @@ One line per behavior you set aside, with the reason, or `None.`
 
 ```
 
-- [ ] **Step 5: Rewrite the rest of `skills/requesting-code-review/code-reviewer.md`**
+- [x] **Step 5: Rewrite the rest of `skills/requesting-code-review/code-reviewer.md`**
 
 - `    Categorize issues by actual severity. Not everything is Critical.` → `    Grade each finding Critical or Important, as Grades says. Not` / `    everything is Critical.`
 - `    [Architecture problems, missing features, poor error handling, test gaps]` → `    [Missing features, poor error handling, test gaps]`
@@ -1497,7 +1505,7 @@ One line per behavior you set aside, with the reason, or `None.`
 
 Leave the "What to Check" list as it is (D16).
 
-- [ ] **Step 6: Rewrite the rest of `skills/subagent-driven-development/task-reviewer-prompt.md` (Full Form)**
+- [x] **Step 6: Rewrite the rest of `skills/subagent-driven-development/task-reviewer-prompt.md` (Full Form)**
 
 In `    ## Part 1: Spec Compliance`, after the paragraph that ends `    broadening your search.`, add a blank line and:
 
@@ -1553,7 +1561,7 @@ In `    ## Output Format`, delete `    #### Minor (Nice to Have)`, and directly 
 
 Replace `**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues` / `(Critical/Important/Minor), Task quality verdict` with `**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues` / `(Critical/Important), Declined to judge, Task quality verdict`.
 
-- [ ] **Step 7: Re-review prompt, Codex mapping, the skill and the README**
+- [x] **Step 7: Re-review prompt, Codex mapping, the skill and the README**
 
 `skills/subagent-driven-development/re-review-prompt.md`: replace
 
@@ -1616,7 +1624,7 @@ You: [Fix progress indicators; rule that pre-v2 repair stays out of scope]
 
 Confirm no Minor tier is left: `git grep -n -i 'minor' -- agents/code-reviewer.md agents/task-reviewer.md skills/requesting-code-review skills/subagent-driven-development/task-reviewer-prompt.md skills/subagent-driven-development/re-review-prompt.md README.md` prints nothing. (`agents/security-auditor.md` is out of scope and keeps its own tier.)
 
-- [ ] **Step 8: Remove the exception and regenerate the adapters**
+- [x] **Step 8: Remove the exception and regenerate the adapters**
 
 Delete from `build/cc_guide/conformance.toml` the whole `[[exception]]` table whose `id = 'reviewers-flag-beyond-correctness'` (its header line through its `tracked_in` line, and one of the blank lines around it). Then:
 
@@ -1628,7 +1636,7 @@ uv run --with pyyaml python build/check_conformance.py
 
 Expected: the generator rewrites `runtimes/codex/agents/{code-reviewer,task-reviewer}.toml` and `runtimes/gemini/agents/{code-reviewer,task-reviewer}.md`; `--check` and `check_conformance.py` exit 0.
 
-- [ ] **Step 9: Wire the eleventh commit lint**
+- [x] **Step 9: Wire the eleventh commit lint**
 
 `build/run_commit_lints.sh`: after the line `run versions_check uv run python build/versions.py check`, add `run reviewer_block uv run python build/check_reviewer_block.py`.
 
@@ -1676,7 +1684,7 @@ bash build/run_commit_lints.sh
 
 Expected: the tests pass; the runner prints `== reviewer_block`, `reviewer block: 4 copies identical` and `commit lints passed`. Do not run `test_commit_lints.py` yet: its `clone` fixture checks out HEAD and copies only the runner and the hook, so before Step 11's commit the clone has the new lint but no block, and every test there fails. Step 12 runs it.
 
-- [ ] **Step 10: NOTICE**
+- [x] **Step 10: NOTICE**
 
 In `NOTICE`'s superpowers section, after the last bullet of `Changes from upstream:` (the one that ends `which carries no license.`, before the blank line and the `    brainstorming/` list), add:
 
@@ -1699,11 +1707,11 @@ In `NOTICE`'s superpowers section, after the last bullet of `Changes from upstre
 
 Run `uv run python build/check_provenance.py`; expect exit 0.
 
-- [ ] **Step 10b: Restamp `requesting-code-review/SKILL.md` (D28)**
+- [x] **Step 10b: Restamp `requesting-code-review/SKILL.md` (D28)**
 
 Run `uv run python build/cc_guide/cli.py lint` and note the `STALE skills/requesting-code-review/SKILL.md` line's section ids. Read each of those sections in `specs/guides/claude-code-customization-guide.md` (each starts at its `<!-- cc: <id> -->` marker) against the file as this task leaves it. If every claim in the file still agrees with them, run `uv run python build/cc_guide/cli.py baseline cite skills/requesting-code-review/SKILL.md`, then `cli.py lint` again: the file's STALE line is gone. If a claim disagrees, do not fix it here: report it in the task report with the guide's quoted line and the file's line, and leave the file unstamped.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1716,7 +1724,7 @@ reviewer_block commit lint.
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 12: Run the commit-lint tests against the commit**
+- [x] **Step 12: Run the commit-lint tests against the commit**
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py && cd ..` (about 15 s warm).
 Expected: every test passes, `test_drifted_reviewer_block_is_refused` included. This task adds +2 tests to the `build` suite: +1 in `test_check_reviewer_block.py` and +1 in `test_commit_lints.py`. If a test fails, fix it in a new commit with the trailer; never amend.
@@ -1736,7 +1744,7 @@ Expected: every test passes, `test_drifted_reviewer_block_is_refused` included. 
 - Consumes: the term "Declined to judge" and the two grades (Task 4); `[PLAN_OR_REQUIREMENTS]` in requesting-code-review's `code-reviewer.md` (unchanged).
 - Produces: the D3 handoff (plan path, spec path, Review Focus word for word, `Ruling:` pointer) through `[PLAN_OR_REQUIREMENTS]`; the D2 ruling split.
 
-- [ ] **Step 1: `references/fix-loop.md`**
+- [x] **Step 1: `references/fix-loop.md`**
 
 Replace
 
@@ -1756,7 +1764,9 @@ with
   disagrees with comes back as a finding.
 ```
 
-- [ ] **Step 2: `references/final-review.md`**
+- [x] **Step 2: `references/final-review.md`**
+
+> Deviation: after the final review, the Review Focus handoff reads "if the plan has one", as in upstream PR #2319 (owner ruling 2026-10-30, commit `3104e27`).
 
 After the first bullet of `## Final whole-branch review` (the one that ends `have returned.`), add this bullet:
 
@@ -1773,7 +1783,9 @@ Replace `findings, deferred-Minor confirmations) into the same batch, so your hu
 
 Replace `review findings, deferred-Minor confirmations — to build its batched questions` with `review findings, the final review's Declined to judge lines — to build its batched questions`.
 
-- [ ] **Step 3: `subagent-driven-development/SKILL.md`**
+- [x] **Step 3: `subagent-driven-development/SKILL.md`**
+
+> Deviation: the edit added 139 characters to the body, not the 2 the Global Constraints predicted (body 19,060 of 20,000).
 
 Replace `"at most Minor,"` with `"not Important,"` (line 231).
 
@@ -1797,7 +1809,9 @@ with
 
 Confirm the body still fits: `uv run --with pyyaml python build/check_conformance.py` exits 0 (the two edits add about 130 characters to a body with about 1,080 of room).
 
-- [ ] **Step 4: `executing-plans/SKILL.md`, Step 3**
+- [x] **Step 4: `executing-plans/SKILL.md`, Step 3**
+
+> Deviation: after the final review, executing-plans hands over the Review Focus section "if it has one" and gained the `none: the plan is the requirement` fallback for the spec path (owner ruling 2026-10-30, commit `3104e27`).
 
 Replace
 
@@ -1824,7 +1838,7 @@ the code-reviewer's Declined to judge lines, carry into Step 4, where they
 feed the resolve-before-defer gate and its questions to your partner.
 ```
 
-- [ ] **Step 5: Check the remaining references**
+- [x] **Step 5: Check the remaining references**
 
 Run: `git grep -n -i 'minor' -- skills/subagent-driven-development skills/executing-plans`
 Expected: no output.
@@ -1832,11 +1846,11 @@ Expected: no output.
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies && cd .. && uv run python build/check_links.py`
 Expected: the tests pass and `check_links.py` reports no broken link (no new cross-skill path was added).
 
-- [ ] **Step 6: Restamp SDD's `SKILL.md` (D28)**
+- [x] **Step 6: Restamp SDD's `SKILL.md` (D28)**
 
 Run `uv run python build/cc_guide/cli.py lint` and note the `STALE skills/subagent-driven-development/SKILL.md` line's section ids. Read each of those sections in `specs/guides/claude-code-customization-guide.md` (each starts at its `<!-- cc: <id> -->` marker) against the file as this task leaves it. If every claim in the file still agrees with them, run `uv run python build/cc_guide/cli.py baseline cite skills/subagent-driven-development/SKILL.md`, then `cli.py lint` again: the file's STALE line is gone. If a claim disagrees, do not fix it here: report it in the task report with the guide's quoted line and the file's line, and leave the file unstamped.
 
-- [ ] **Step 7: NOTICE**
+- [x] **Step 7: NOTICE**
 
 After Task 4's NOTICE bullet, add:
 
@@ -1849,7 +1863,7 @@ After Task 4's NOTICE bullet, add:
     gate.
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1872,7 +1886,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: nothing from earlier tasks.
 - Produces: the plan header's `## Review Focus` section, which Task 5's executors pass to the final reviewer; Self-Review item 4. Task 7 numbers its new item 5 after it. `A_SHA`, this task's commit, is F1 arm 1's writing-plans text before any later round.
 
-- [ ] **Step 1: The header template's Review Focus section**
+- [x] **Step 1: The header template's Review Focus section**
 
 In `## Plan Document Header`, inside the fenced template, replace
 
@@ -1903,7 +1917,7 @@ the requirement, and the list is what its requirements imply.]
 ## Decisions
 ```
 
-- [ ] **Step 2: Self-Review item 4**
+- [x] **Step 2: Self-Review item 4**
 
 After the paragraph that starts `**3. Type consistency:**`, add a blank line and:
 
@@ -1911,7 +1925,7 @@ After the paragraph that starts `**3. Type consistency:**`, add a blank line and
 **4. Review Focus:** For each input class or failure mode the spec implies, is there a task whose tests exercise it? The five uncovered ones most likely to bite a person go in the Review Focus section, and each line there gets its test added to the owning task. An empty section means you checked and found none, not that you skipped the check.
 ```
 
-- [ ] **Step 3: Relabel the deferred-item example**
+- [x] **Step 3: Relabel the deferred-item example**
 
 In both `skills/writing-plans/SKILL.md` and `skills/writing-plans/references/deferred-backlog.md`, replace
 
@@ -1927,7 +1941,7 @@ with
       (final review, owner ruled defer).
 ```
 
-- [ ] **Step 4: Check size and lints**
+- [x] **Step 4: Check size and lints**
 
 Run:
 
@@ -1939,7 +1953,7 @@ git grep -n -i 'minor' -- skills/writing-plans
 
 Expected: a body of about 18,515 characters; `check_conformance.py` exits 0; the grep prints nothing.
 
-- [ ] **Step 5: NOTICE**
+- [x] **Step 5: NOTICE**
 
 After Task 5's NOTICE bullet, add:
 
@@ -1950,7 +1964,7 @@ After Task 5's NOTICE bullet, add:
     review line in place of the retired Minor tier.
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1976,7 +1990,7 @@ Record the printed SHA as `A_SHA` in the progress ledger.
 - Consumes: Self-Review item 4 (Task 6).
 - Produces: the step recipe, in commits whose subjects end `(step recipe)` (Global Constraints). `GREEN_SHA`, this task's last commit, is the text Task 8 measures and F1's arm 2.
 
-- [ ] **Step 1: The reader**
+- [x] **Step 1: The reader**
 
 In `## Overview`, replace the two paragraphs from `Write comprehensive implementation plans assuming the engineer has zero context` through `Assume they don't know good test design very well.` with:
 
@@ -1992,7 +2006,7 @@ handoff — you wrote it for an engineer who has not seen this codebase or
 spec — so execution does not need this planning session's history.
 ```
 
-- [ ] **Step 2: Step size and the template's code step**
+- [x] **Step 2: Step size and the template's code step**
 
 Replace `## Bite-Sized Task Granularity` with `## Step Granularity`, and `**Each step is one action (2-5 minutes):**` with `**Each step is one action with a checkable result:**`.
 
@@ -2017,7 +2031,7 @@ One line on the approach when the signature and the test leave a choice
 algorithm they do not determine.
 ```
 
-- [ ] **Step 3: What a Step Contains**
+- [x] **Step 3: What a Step Contains**
 
 Replace the whole `## No Placeholders` section (its heading through the bullet `- References to types, functions, or methods not defined in any task`) with:
 
@@ -2048,7 +2062,7 @@ opposite failure, and the self-review catches both.
 
 In `## Remember`, delete the line `- Complete code in every step — if a step changes code, show the code`.
 
-- [ ] **Step 4: Step scan and Proportion**
+- [x] **Step 4: Step scan and Proportion**
 
 Replace the paragraph `**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.` with:
 
@@ -2062,7 +2076,7 @@ After the `**4. Review Focus:**` paragraph (Task 6), add a blank line and:
 **5. Proportion:** Compare the plan's length to the spec's. A plan several times longer than the spec it implements is a transcript of the program, not a plan. If code blocks are most of the document, replace bodies with signatures, test names and assertions, and check that each step is still unambiguous. Wording that a micro-test fixed against a no-guidance control is exact copy: keep it word for word, and never count it as transcript.
 ```
 
-- [ ] **Step 5: Check size and lints**
+- [x] **Step 5: Check size and lints**
 
 ```bash
 uv run python -c "t = open('skills/writing-plans/SKILL.md').read(); e = t.index('\n---\n', 4); print(len(t[e + 5:]))"
@@ -2073,11 +2087,13 @@ git grep -n 'No Placeholders\|Placeholder scan\|2-5 minutes\|questionable taste\
 
 Expected: a body of about 19,813 characters (at most 20,000); both checks exit 0; the grep prints nothing.
 
-- [ ] **Step 6: Only if the body is over 20,000 characters: the fallback**
+- [x] **Step 6: Only if the body is over 20,000 characters: the fallback**
+
+> Skipped: the condition never held (the body was 19,813 characters after this task and 19,994 after Task 8), so the fallback did not run; the 6-character headroom is a deferred item.
 
 Spec section 4's fallback: move `## What a Step Contains` (whole section) and the template's Step 1–4 examples into a new `skills/writing-plans/references/step-recipe.md`, headed `# Step recipe`, with the repo's standard reference first line. In their place in the body, put one pointer line: `Read [references/step-recipe.md](references/step-recipe.md) for what each kind of step contains, with the template's step examples, before you write the first task.` Re-run Step 5's commands and `uv run python build/check_links.py`; expect all to exit 0. Skip this step when Step 5 printed 20,000 or less.
 
-- [ ] **Step 7: NOTICE**
+- [x] **Step 7: NOTICE**
 
 After Task 6's NOTICE bullet, add:
 
@@ -2091,7 +2107,7 @@ After Task 6's NOTICE bullet, add:
     prime-radiant-inc/superpowers-evals, and no text.
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -2117,7 +2133,7 @@ Record the printed SHA as `GREEN_SHA` and as the first entry of the step-recipe 
 - Consumes: `GREEN_SHA` (Task 7); P2's `base` medians (Task 2); the registered bars (Task 1).
 - Produces: `green` verdict tables; the pass or fail of every gate; the final `GREEN_SHA` and step-recipe commit list after any rounds.
 
-- [ ] **Step 1: The Channel 3 grep**
+- [x] **Step 1: The Channel 3 grep**
 
 Run:
 
@@ -2127,7 +2143,7 @@ git grep -n -i -E 'logsum|summarize_logs|page_of|page_count|rename_photos|DateTi
 
 Expected: no output. Any hit means the new text reuses a fixture's domain: stop and ask the owner.
 
-- [ ] **Step 2: Build the prompts**
+- [x] **Step 2: Build the prompts**
 
 ```bash
 K=specs/red-baseline-reviewer-planning-contract
@@ -2136,7 +2152,7 @@ uv run python $K/kit/build_prompts.py <GREEN_SHA> $K/green
 
 Expected: `wrote 8 prompts to …/green`. Check `$K/green/MANIFEST.txt`: the R lines use the four reviewer files, and the P lines use `skills/writing-plans/SKILL.md` (plus `references/step-recipe.md` only if Task 7 Step 6 ran).
 
-- [ ] **Step 3: Run the reps (40 reps, about $8)**
+- [x] **Step 3: Run the reps (40 reps, about $8)**
 
 Check the spend rule before each line, then run each line as its own Bash command with `timeout: 600000`:
 
@@ -2153,11 +2169,13 @@ bash $K/kit/run_reps.sh $K/green/P3.txt $K/green/P3 1 5 claude-opus-5-5 1.50
 
 Rerun VOID reps with the next free numbers until each case has 5 scored reps.
 
-- [ ] **Step 4: Read and record**
+- [x] **Step 4: Read and record**
 
 Run `uv run python $K/kit/show_reps.py $K/green/*/`, `uv run python $K/kit/measure.py ratio P12 $K/base/P12 $K/green/P12` and `uv run python $K/kit/measure.py verbatim $K/green/P3`, and read every reply. Under `## Results`, add `### GREEN`, with one table per case: rep, verdict, deciding quote, running spend. Then one table of the seven bars: case, `control`, `base`, `green`, met or missed, and whether the control also meets it. For P2 write the arithmetic: `green` median ratio, 0.6 × `base` median ratio, and both fence shares.
 
-- [ ] **Step 5: Wording rounds for a missed bar (at most two per case)**
+- [x] **Step 5: Wording rounds for a missed bar (at most two per case)**
+
+> Deviation: Task 8 ran in two parts, 8a (Steps 1 to 4 and the results commit) and 8b (this step), with the controller writing each round's wording. Two rounds ran: round 1 (`edb935b`, `b1c6504`, `62fe501`) and round 2 (`8ac9d28`, `704298e`, `f5ef4da`). R2 (gating) and R4-task still missed, and P2 and P3 missed their micro-test bars. The owner ruled on 2026-10-30 to ship the block with the misses recorded and to judge P2 and P3 by F1.
 
 For each missed case:
 1. Change only the text that case gates, within the spec's content rules. A change to the shared block goes to all four copies in one commit (`reviewer_block` checks it). For R2-final or R4-final, round 1 first trims requesting-code-review's "What to Check" list by spec D6's rule (D16). A change to step-recipe text follows the step-recipe commit rule (Global Constraints) and joins the step-recipe commit list.
@@ -2167,7 +2185,7 @@ For each missed case:
 
 After a second missed round on any case, stop and ask the owner with the reps' deciding quotes and the running spend. Nothing that case gates ships without the owner's ruling.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -2192,7 +2210,7 @@ Update `GREEN_SHA` in the ledger to the last commit that changed skill or agent 
 - Consumes: `GREEN_SHA` (Task 8); the pressure bars (Task 1).
 - Produces: pressure verdict tables; the final text F1 runs on (`F1_SHA`, HEAD after this task).
 
-- [ ] **Step 1: Build and run (15 reps, about $5)**
+- [x] **Step 1: Build and run (15 reps, about $5)**
 
 Run Task 8 Step 1's grep again (expect no output). Check the spend rule before each `run_reps.sh` line, and run each line below as its own Bash command (`timeout: 600000` for the reps):
 
@@ -2204,15 +2222,17 @@ bash $K/kit/run_reps.sh $K/pressure/X2.txt $K/pressure/X2 1 5 claude-opus-5-5 1.
 bash $K/kit/run_reps.sh $K/pressure/X3.txt $K/pressure/X3 1 5 claude-opus-5-5 1.50
 ```
 
-- [ ] **Step 2: Read and record**
+- [x] **Step 2: Read and record**
 
 Run `uv run python $K/kit/show_reps.py $K/pressure/*/` and `uv run python $K/kit/measure.py verbatim $K/pressure/X3`, and read every reply under the registered pass rules. Under `## Results`, add `### Pressure`, one table per case: rep, verdict, deciding quote, running spend; then each case's count against its ≥ 4/5 bar.
 
-- [ ] **Step 3: Rounds for a missed bar (at most two per case)**
+- [x] **Step 3: Rounds for a missed bar (at most two per case)**
+
+> Skipped: no pressure bar was missed → nothing to defer.
 
 As Task 8 Step 5, with these reruns: a change for X1 reruns X1-task and every R case on both reviewers; a change for X2 or X3 (a Red Flags row or a sentence in writing-plans) reruns that X case and P12 and P3. Rebuild into `$K/pressure-r<N>` (X cases) and `$K/green-r<N>` (R and P cases). After a second missed round, stop and ask the owner.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -2239,7 +2259,7 @@ Record the printed SHA as `F1_SHA`, and the final step-recipe commit list, in th
 - Consumes: `F1_SHA` and the step-recipe commit list (Task 9).
 - Produces: `make_scratch.sh <writing-plans-dir> <sha> <dest>`; `run_f1.sh <scratch> <out-dir>`; `score_f1.py <scratch> <out-dir> <hidden-test-file>` (prints and writes `score.json` with `handled`, `ratio`, `cost`, `execute_models`, `audit_error`, `audit_hits`); `sessions_dir(scratch: Path) -> Path` in `score_f1.py`; the two arms' writing-plans directories and their `SKILL.md` sha256 sums.
 
-- [ ] **Step 1: The fixture**
+- [x] **Step 1: The fixture**
 
 Create `specs/red-baseline-reviewer-planning-contract/f1/fixture/expense-tally.md`:
 
@@ -2296,7 +2316,9 @@ Use single quotes and f-strings.
 
 The three planted defects (D24): the refund in parentheses, which the spec states; a CSV export that starts with a UTF-8 byte-order mark; a FILE that does not exist. The spec names neither of the last two.
 
-- [ ] **Step 2: The hidden tests, outside the repository**
+- [x] **Step 2: The hidden tests, outside the repository**
+
+> Deviation: the missing-file test has no exit-status check, and the byte-order-mark test stays as written (owner rulings 2026-10-30, after the Task 10 review).
 
 Create `~/.cache/agent-skills/scratch/plan73-f1/hidden/test_hidden.py` (not under `~/Projects`):
 
@@ -2341,7 +2363,9 @@ def test_missing_file_is_a_clean_error(tmp_path):
     assert 'Traceback' not in result.stderr
 ```
 
-- [ ] **Step 3: The two arms' writing-plans directories**
+- [x] **Step 3: The two arms' writing-plans directories**
+
+> Deviation: arm 1 was built in a throwaway `git clone --local` of the main repository, not with `git worktree add`, so the shared `.git` was not written. The revert applied with no conflict.
 
 Arm 2 is `skills/writing-plans` at `F1_SHA`. Arm 1 is the same tree with every step-recipe commit reverted:
 
@@ -2358,7 +2382,7 @@ shasum -a 256 ~/.cache/agent-skills/scratch/plan73-f1/arm*-writing-plans/SKILL.m
 
 Expected: the revert applies with no conflict; arm 1's `SKILL.md` contains `## No Placeholders`, `## Review Focus` and `**4. Review Focus:**`, and not `## What a Step Contains`; arm 2's contains `## What a Step Contains` and `**5. Proportion:**`. If the revert conflicts, stop and ask the owner. Record both sha256 sums.
 
-- [ ] **Step 4: `make_scratch.sh`**
+- [x] **Step 4: `make_scratch.sh`**
 
 Create `specs/red-baseline-reviewer-planning-contract/f1/make_scratch.sh`:
 
@@ -2394,7 +2418,7 @@ git -C "$DEST" -c user.name='Plan 73 F1' -c user.email='f1@example.invalid' comm
 echo "built $DEST"
 ```
 
-- [ ] **Step 5: The launch prompts and `run_f1.sh`**
+- [x] **Step 5: The launch prompts and `run_f1.sh`**
 
 Create `specs/red-baseline-reviewer-planning-contract/f1/prompts/plan.txt`:
 
@@ -2437,7 +2461,9 @@ echo "execute exit=$?"
 git log --oneline > "$OUT/git-log.txt"
 ```
 
-- [ ] **Step 6: `score_f1.py`**
+- [x] **Step 6: `score_f1.py`**
+
+> Deviation: after the Task 10 review the audit also matches the `~/`, `$HOME/` and `${HOME}/` forms and two content markers, the spec length comes from the committed fixture, a hidden test that is neither passed nor failed stops the scorer, `make_scratch.sh` has `pipefail`, and `run_f1.sh` exits nonzero when a session does (commit `6f25102`).
 
 Create `specs/red-baseline-reviewer-planning-contract/f1/score_f1.py`:
 
@@ -2533,7 +2559,7 @@ if __name__ == '__main__':
     main()
 ```
 
-- [ ] **Step 7: Pilot the tool-form isolation**
+- [x] **Step 7: Pilot the tool-form isolation**
 
 Create `specs/red-baseline-reviewer-planning-contract/f1/isolation_probe_tools.txt`:
 
@@ -2571,7 +2597,7 @@ d = sessions_dir(Path('$D')); print(d, d.is_dir(), len(list(d.rglob('*.jsonl')))
 
 Expected from the last command: the directory exists (`True`) and holds at least one `.jsonl`, so `score_f1.py`'s audit finds the persisted sessions. Expected: `agents` lists `code-reviewer` and `task-reviewer` (and built-in agents) but not `docs-writer`, `debugger` or `security-auditor`; `skills` lists `writing-plans` and `subagent-driven-development` but not `llm-wiki` or `bayesian-workflow`; style `default`; the reply says YES on line 1 quoting only `Expense tally scratch project`, NO on lines 2–6, and on line 7 that the read was refused. If any of these fails, stop and ask the owner with the quoted output: user-level skills, agents or context reach the tool form, and F1 cannot run as designed. Record the version and the answers for the results file. Delete the probe scratch repository with `rm -r "$D"` (it is under `/tmp`).
 
-- [ ] **Step 8: Commit the F1 kit (not the hidden tests)**
+- [x] **Step 8: Commit the F1 kit (not the hidden tests)**
 
 ```bash
 chmod +x $F/make_scratch.sh $F/run_f1.sh
@@ -2598,7 +2624,9 @@ Confirm `git ls-files $F` lists no `test_hidden.py`.
 - Consumes: Task 10's scripts, arms, prompts and hidden tests; `F1_SHA`.
 - Produces: per-arm handled counts and median plan-to-spec ratios; the gate's outcome.
 
-- [ ] **Step 1: Run the four reps, one at a time (controller-run)**
+- [x] **Step 1: Run the four reps, one at a time (controller-run)**
+
+> Deviation: each rep took 6 to 9 minutes and $1.57 to $2.52, against the planned 90 minutes and up to $31. The F1 total was $7.94.
 
 The controller runs this step in its own session, not an implementer: a rep takes up to about 90 minutes, so it runs in the background (`run_in_background`), and only the controller's session is woken by its notification. A subagent cannot wait across turns. After each rep the controller may dispatch the scoring and the reading to the implementer.
 
@@ -2618,17 +2646,21 @@ Expected: `plan exit=0`, `execute exit=0`, and a score JSON with `audit_error` n
 
 **VOID rule (D23):** read every `audit_hits` line. A rep is VOID when any tool call's input, or any tool result's content, reads or runs something under one of the four forbidden paths. A hit in a refusal message that only quotes a refused path is not a VOID. A VOID rep, or one that stalled (the execution session ended before the final review ran: no final code-reviewer dispatch in `execute.jsonl`), is rerun once with a fresh scratch repository; a second VOID or stall on the same arm stops the run: ask the owner.
 
-- [ ] **Step 2: Copy the hidden tests in and record**
+- [x] **Step 2: Copy the hidden tests in and record**
+
+> Deviation: the hidden tests are committed as `f1/hidden/hidden_tests.py`, byte-identical to `test_hidden.py`, because the suite-registry lint takes any tracked `test_*.py` for a suite.
 
 After the fourth rep: `mkdir -p $F/hidden && cp ~/.cache/agent-skills/scratch/plan73-f1/hidden/test_hidden.py $F/hidden/`. Under `## Results`, add `### F1`: the Claude Code version, both arms' `SKILL.md` sha256 sums, the step-recipe commits arm 1 reverts, a table per rep (arm, rep, each hidden test's result, handled count, plan-to-spec ratio, cost, VOID notes), each arm's handled total over its two reps and its median ratio, the F1 total cost, and one line on the bar: arm 2's handled total ≥ arm 1's, and arm 2's median ratio lower. Add the spec's caveat: two reps can catch a clear loss; they cannot prove the arms equal.
 
-- [ ] **Step 3: Apply the gate**
+- [x] **Step 3: Apply the gate**
 
 - If arm 2 handled at least as many defects as arm 1 and its median ratio is lower: the step recipe ships. Nothing to change.
 - If arm 2 handled fewer: the step recipe does not ship (spec, F1 "Gate"). Revert the step-recipe commits, newest first: `git revert --no-edit <commits…>`, then Task 7 Step 5's checks (expect `## No Placeholders` back, `**4. Review Focus:**` kept, no `**5. Proportion:**`), and `bash build/run_commit_lints.sh`. Review Focus and every finding-10 and spec D1 change stay. Report this outcome to the owner in the completion report.
 - If arm 2 handled at least as many but its median ratio is not lower: the bar is missed without a loss. Stop and ask the owner whether the step recipe ships.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
+
+> Deviation: the final review's fix wave (`3104e27`, `93b51fe`, `4cea880`) and a NOTICE correction (`7364b19`) landed after this commit.
 
 ```bash
 bash build/run_commit_lints.sh
