@@ -56,6 +56,7 @@ Numbered after the spec's D1-D14.
 - **D16** (owner, brief, 2026-10-30): build on the post-plan-73 text of `skills/writing-plans/SKILL.md` and `references/deferred-backlog.md`, and re-measure the three bodies on this tree. Applied in: Global Constraints (measured figures), Tasks 7-9.
 - **D17** (owner, brief, 2026-10-30): name the two overlapping backlog items, and fold each in or leave it as the plan's own call. Applied in: Overlapping backlog items.
 - **D18** (owner, plan review, 2026-10-30): approve Task 0's amendment. The scan must catch the five B1 instances that carry a deferral phrase; the four phraseless fixtures become `xfail` fixtures that record the limit. Applied in: Task 0 (spec amendment), Task 4.
+- **D19** (owner, plan review, 2026-10-30): approve the plan, including the planner's calls in Open for plan review items 2-7, for execution by subagent-driven-development in a fresh Sonnet session. Applied in: Open for plan review.
 
 ## Overlapping backlog items
 
@@ -65,6 +66,8 @@ Numbered after the spec's D1-D14.
 - **Ticked at completion:** the spec's own item, `audit-3-10-26 routing … — 2026-10-18`, first words `Write the backlog-protocol spec`. No `→ planned` note is written on it now: D13 is not live until Task 8 lands, and the brief bars backlog edits before the owner's yes.
 
 ## Open for plan review
+
+All seven items are settled: item 1 by D18, items 2-7 approved as written by D19 (2026-10-30).
 
 1. **B1 fixtures with no deferral phrase (spec-level).** Three of the eight B1 instances carry no phrase a scan can match at the audit base `6186635`: plan 29 `:693` (a Task heading) and `:710` (a design for a `floating` tier that was then never built), the audit_9_2_26 scorecard line `:200` (a finding), and audit_1_3_26:139 (a fix list, lost through a re-file). Section 6 requires the scan to catch every B1 instance, and also caps noise at a median of 3. No phrase list can do both. **Resolved:** the owner approved Task 0's amendment (D18).
 2. **writing-plans body room (my call).** The additions (the step 3 marker sentence, the removal rewording, the step 5 scan sentence, the D13 line) are paid for by three cuts inside sections the spec names: step 3's restatement of the schema (`Each item follows …` to `… resolve it now or drop it.`), which the reference already holds, shrinks to a pointer; step 5's link re-pointing sentence is shortened; and step 5's closing paragraph (`These commits land on the current branch …`) is shortened. The relabeled example and `## What a Step Contains` stay. A scratch draft of all seven edits measured 19,957 characters (base 19,994), so the budget closes with about 35 characters to spare. If the final wording passes the base figure, stop and ask the owner; do not cut elsewhere.
