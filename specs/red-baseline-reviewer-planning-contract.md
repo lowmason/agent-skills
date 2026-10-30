@@ -609,7 +609,7 @@ decide this remark, so the scored count is 3/5 on both readings. Rep 5's style p
 Declined to judge list, which the "Reported" rule counts. Rep 2 also calls step 3 "a single run-on
 instruction" and accepts it (two actions in one step: no registered category, RED R4 note). Reps
 3-5 flag the step 3 pipeline claim, and all 5 flag the head SHA mismatch. By the RED R4 note
-neither is a wording remark.
+neither is a wording remark. Rep 3's fix also offers "or refer to "the changelog check from step 2"", an alternative wording of the kind the GREEN R4-final note counted for rep 4; with it counted as a wording remark, R4-task round 1 is 2/5, and the bar is missed either way.
 
 #### R1-final (round 1)
 
@@ -725,3 +725,215 @@ R4 misses on the task reviewer only (3/5 against a bar of 4/5). The R4-final res
 the gating count. P2 meets its fence-share part and misses its ratio part again. P1 moves from 2/5
 to 5/5. Every case that misses has had one wording round, so each has one round left. The last
 commit that changed skill or agent text is `62fe501`.
+
+### GREEN round 2
+
+Run 2026-10-29 on Claude Code 2.1.312. This is Task 8 Step 5, wording round 2, the last round the
+stop rule allows, for R2 (both reviewers), R4 (task reviewer) and P2. The controller wrote the new
+wording. Three text commits:
+
+| Commit | Subject | Change (old → new) |
+|---|---|---|
+| `8ac9d28` | fix(reviewers): wording round 2, a fix names only the smallest change, no style point in the declined list | Shared block, all four copies. A new Review scope paragraph: "A fix names the smallest change that removes the defect. It leaves out any cleanup, simplification or alternative: a change that makes other code redundant is not part of the fix." Declined to judge: "A line names a behavior the software has or lacks, never a style, naming, wording or code-shape point." → "A line names a behavior the software has or lacks, that a person using it could meet. A style, naming, wording or code-shape point is not a behavior: delete it, do not list it." |
+| `704298e` | fix(writing-plans): wording round 2, Self-Review item 4 points at the template's test placement | Self-Review item 4: "each line there gets its test added to the owning task" → "each line there gets its test, placed as the template says". |
+| `f5ef4da` | fix(writing-plans): wording round 2, cut an over-long plan before saving it (step recipe) | Self-Review item 5: "not a plan. If code blocks are most of the document, replace bodies with signatures, test names and assertions, and check that each step is still unambiguous." → "not a plan: cut it before you save it. Replace code bodies with signatures, test names and assertions, drop a step that repeats an earlier result, and keep each step unambiguous." NOTICE's step-recipe bullet records it. |
+
+`NEW_SHA` is `f5ef4da`. The step-recipe commit list is now `aaa37f0`, `62fe501`, `f5ef4da`. The
+writing-plans body is 19994 characters. The prompts were built with `build_prompts.py f5ef4da
+green-r2` for all eight cases. `green-r2/MANIFEST.txt` lists the same files per case as
+`green-r1/MANIFEST.txt`, and each `green-r2` prompt differs from its `green-r1` prompt only by the
+changed lines above. The Channel 3 grep printed nothing. 40 reps, 5 per case, in Task 8 Step 3's
+order. No rep was VOID, none wrote a `.err` file, and none was rerun. The running spend under each
+table is `measure.py spend` after that batch. "Literal" and "gating" are as in round 1.
+
+#### R1-task (round 2)
+
+green-r2 (running spend $10.11): crash graded 5/5, all Important.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | Important | "A single log containing a non-UTF-8 byte raises `UnicodeDecodeError`, and the whole summary is lost, with no counts for the other files." |
+| 2 | Important | "A single log file containing a non-UTF-8 byte (common in real logs) raises `UnicodeDecodeError` and aborts the whole summary, so no counts are printed for any file." |
+| 3 | Important | "One log containing a stray non-UTF-8 byte raises `UnicodeDecodeError`, and the whole summary fails with a traceback, so no counts are printed for any file." |
+| 4 | Important | "A single log containing a non-UTF-8 byte (common in real logs) raises `UnicodeDecodeError` and aborts the whole summary, so no counts are printed for any file." |
+| 5 | Important | "A single log file containing a non-UTF-8 byte (common in real logs) raises `UnicodeDecodeError`. That aborts the whole summary, so counts for every other file are lost." |
+
+#### R2-task (round 2)
+
+green-r2 (running spend $10.21): bug reported 5/5 (Critical). Bug with no polish point: literal 4/5,
+gating 1/5 (2/5 if rep 5's line is not counted).
+
+| Rep | Literal | Gating | Deciding quote |
+|---|---|---|---|
+| 1 | pass | fail | Critical fix: "The `n_items == 0` branch then becomes redundant but harmless." |
+| 2 | pass | pass | Critical fix: "`return -(-n_items // per_page)` or `math.ceil(n_items / per_page)`."; no polish point and no redundancy remark |
+| 3 | pass | fail | Critical fix: "The `n_items == 0` branch is then redundant but harmless." |
+| 4 | fail | fail | Important: "`tests/test_paging.py:4`: `test_1` does not describe what it checks. ... Rename it"; Critical fix: "The `n_items == 0` branch is then redundant but harmless, so leave it." |
+| 5 | pass | fail | Critical fix: "The `n_items == 0` branch is then covered by the formula." |
+
+R2-task round 2 note: rep 5's line names the branch and says the formula covers it, so it is scored
+as the gating table's "becomes redundant or unneeded" remark. Not counted, rep 5 passes and gating
+is 2/5. Rep 2's Important line "`test_1` covers only the last partial page" judges the test's
+coverage, not its name, so it is not the registered `test_1` point. `page < 1` handling is
+Important in 5/5 (correctness under the gating table).
+
+#### R4-task (round 2)
+
+green-r2 (running spend $10.30): defect graded Important 5/5. Defect with no style point: literal
+1/5, gating 1/5.
+
+| Rep | Verdict | Deciding quote |
+|---|---|---|
+| 1 | fail | Important: "step 3 packs tagging, pushing, and an unverified pipeline claim into one passive, run-on sentence ("is to be tagged by you… should then be pushed")." |
+| 2 | fail | Important: "step 3: the instruction is ambiguous and hard to act on. "The release is to be tagged by you ... the tag should then be pushed…" is passive and wordy." |
+| 3 | fail | Important: "step 3 (diff line 3): "The release is to be tagged by you ... should then be pushed..." is passive and indirect, and it adds a rationale the brief did not ask for." |
+| 4 | fail | Important: "step 3: "The release is to be tagged by you … the tag should then be pushed" is passive and hedged. ... Fix: state it as two imperative actions" |
+| 5 | pass | Important: "new step 4: the command is `scripts/check-changelog.py` (hyphen), but step 2 uses `scripts/check_changelog.py` (underscore)."; no wording remark |
+
+R4-task round 2 note: reps 1-4 name the passive voice of step 3, a registered style point, inside an
+Important finding. Reps 1, 2 and 4 add a consequence ("the reader has to parse out which actions to
+take", "ambiguous and hard to act on", "never plainly says to run each command"). Since each of
+those findings names the passive voice, crediting the consequence as "an instruction with two
+readings" would not change a count. Rep 3's finding goes on to a separate point (`git tag -a`
+without `-m` opens an editor), which fits no registered category. No rep puts a style point on the
+Declined to judge list. The step 3 pipeline claim and the head SHA mismatch are not wording
+remarks (RED R4 note).
+
+#### R1-final (round 2)
+
+green-r2 (running spend $10.56): crash graded 5/5, all Critical.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | Critical | "**1. A rotated log crashes the whole nightly run** (`logsum.py:7-8`)" |
+| 2 | Critical | "**1. One unreadable or vanished file aborts the whole nightly summary.** `logsum.py:7-8`" |
+| 3 | Critical | "**1. A file rotated away mid-run crashes the whole nightly job.** `logsum.py:7-8`" |
+| 4 | Critical | "**1. A log rotated mid-run crashes the whole nightly job (`logsum.py:7-8`)**" |
+| 5 | Critical | "**1. `logsum.py:8`: a file rotated away mid-run crashes the nightly job.**" |
+
+#### R2-final (round 2)
+
+green-r2 (running spend $10.80): bug reported 5/5 (Critical). Bug with no polish point: literal 5/5,
+gating 3/5 (1/5 if reps 2 and 5 are counted).
+
+| Rep | Literal | Gating | Deciding quote |
+|---|---|---|---|
+| 1 | pass | fail | Critical fix: "The zero check then becomes redundant but harmless." |
+| 2 | pass | pass | Critical fix: "`return (n_items + per_page - 1) // per_page`. The ceiling formula also returns 0 for zero items." |
+| 3 | pass | fail | Critical fix: "With this change the `n_items == 0` branch is no longer needed, but it does no harm." |
+| 4 | pass | pass | Critical fix: "`return (n_items + per_page - 1) // per_page`."; no redundancy remark, no polish point |
+| 5 | pass | pass | Critical fix: "`return (n_items + per_page - 1) // per_page`. The `n_items == 0` branch still returns 0." |
+
+R2-final round 2 note: no rep makes a registered polish point; the slice point of round 1 is gone.
+Rep 2's "the ceiling formula also returns 0 for zero items" and rep 5's "the `n_items == 0` branch
+still returns 0" speak of the zero case after the fix, but neither says the branch becomes
+redundant or unneeded, so neither is scored as that remark. If both were counted, gating would be
+1/5. `page < 1` handling is Important in 5/5.
+
+#### R4-final (round 2)
+
+green-r2 (running spend $10.99): defect graded Important 5/5. Defect with no style point: gating 5/5,
+literal 5/5 (no rep makes the "before you retry" two-readings remark).
+
+| Rep | Verdict | Deciding quote |
+|---|---|---|
+| 1 | pass | Important: "**`skills/release-checklist/SKILL.md:13`: step 4 names the wrong script path.**"; no wording remark |
+| 2 | pass | Important 1: "**`skills/release-checklist/SKILL.md:13`: step 4 names a script that doesn't exist.**"; Important 2 on the stale local tag (recovery logic); no wording remark |
+| 3 | pass | Important: "**`skills/release-checklist/SKILL.md:12` (step 4): wrong script path.**"; no wording remark |
+| 4 | pass | Important: "**`skills/release-checklist/SKILL.md:12`: step 4 names the wrong script path.**"; no wording remark |
+| 5 | pass | Important: "**`skills/release-checklist/SKILL.md:12` (step 4): wrong script path.**"; no wording remark |
+
+Rep 2's stale-tag finding and the Declined lines of reps 3-5 (what to do when the re-check fails,
+or a rejection the check cannot fix) are the logic of step 4's recovery advice (RED R4 note).
+
+#### R3 (round 2)
+
+green-r2: a Declined to judge list in 5/5 of each of R1-task (rep 1 "None.", reps 2-5 2-3 lines),
+R1-final (1-3 lines), R2-task (reps 2-4 "None.", reps 1 and 5 one line) and R2-final (1-2 lines).
+The R1 crash is in no list. R3 met.
+
+R3 round 2 note (both counts): R1-task reps 2-5 and R1-final rep 2 each put "a directory named
+`*.log`" on the Declined list (for example R1-task rep 2: "A directory named `*.log` would make
+`read_text` raise: this is unlikely, and the brief is silent on it."). The R1 crash rule needs a
+`.log` file read failing and its effect on the run. A directory is not a log file, and no such line
+names an effect on the run, so none is counted as the crash, and R3 is met. If these lines were
+counted as the crash, R3 would be missed on R1-task (4 reps) and R1-final (1 rep). In every rep the
+real crash is graded Important or Critical outside the list.
+
+#### P12 (round 2)
+
+green-r2 (running spend $12.08): P1 5/5. Every plan has a `## Review Focus` section that names the
+same-second collision (5/5). Every plan has three tasks, and Task 3 holds the rename call in each
+rep, so Task 3 is the owning task.
+
+| Rep | Verdict | Deciding line | Collision test (descriptive) | Ratio | Fence share |
+|---|---|---|---|---|---|
+| 1 | pass | Review Focus "Two photos taken in the same second (burst shots): both survive."; Task 3 `test_dry_run_prints_what_real_run_does` runs two same-second photos for real and asserts `len(list(tmp_path.iterdir())) == 2     # nothing lost` | yes, Task 2 (planned names) and Task 3 (file count on disk) | 9.66 | 0.40 |
+| 2 | pass | Review Focus "Two photos taken in the same second (burst shots): neither may be lost."; Task 3 `test_same_second_both_kept` asserts both new names on disk | yes, Task 2 and Task 3 | 10.32 | 0.50 |
+| 3 | pass | Review Focus "**Two photos taken in the same second (burst shots).** Both survive."; Task 3 `test_burst_nothing_lost` asserts three names and the bytes | yes, Task 3 only | 12.27 | 0.41 |
+| 4 | pass | Review Focus "**Two photos taken in the same second** ... A person expects both photos to survive."; Task 3 `test_burst_loses_nothing_and_rerun_is_noop` asserts both names on disk | yes, Task 2 and Task 3 | 11.02 | 0.48 |
+| 5 | pass | Review Focus "Two photos taken in the same second, or a target name already held by another file: no photo is overwritten."; Task 3 `test_same_second_loses_nothing` asserts both names on disk | yes, Task 2 and Task 3 | 10.15 | 0.45 |
+
+The non-gating P1 counts: a test step in any task for two same-timestamp photos that asserts no
+photo is lost, 5/5; a test that pins the collision by distinct planned names in any task, 4/5 (rep
+3's Task 2 has no same-second test).
+
+P2 arithmetic, unrounded (`measure` functions and `statistics.median`): `green-r2` median ratio
+10.3212 (reps 9.6581, 10.3212, 12.2700, 11.0197, 10.1547); 0.6 × `base` median ratio 16.2365 =
+9.7419; 10.3212 > 9.7419, so the ratio part is missed. `green-r2` median fence share 0.4545 (reps
+0.3981, 0.5024, 0.4093, 0.4771, 0.4545) < `base` 0.6365, so the fence part is met. P2 missed. The
+median ratio was 12.4650 in GREEN and 11.5764 in round 1. Rep 1 alone is under the limit.
+
+#### P3 (round 2)
+
+green-r2 (running spend $12.52): both texts word for word 4/5. P3 missed.
+
+| Rep | Verdict | Deciding line (`measure.py verbatim`, confirmed by reading) |
+|---|---|---|
+| 1 | pass | text1=yes text2=yes; both texts in the Step 1 `diff` heredoc |
+| 2 | pass | text1=yes text2=yes; the Step 1 check script and the Step 3 fenced lines |
+| 3 | fail | text1=yes text2=no; the row appears only inside the Step 1 Python string, with escaped quotes: `row = "| \"I'll format after staging, it's the same files\" | ...`, and Step 2 says "Use both texts exactly as written in the check above." |
+| 4 | pass | text1=yes text2=yes; the Step 1 `grep -Fxn` heredoc |
+| 5 | pass | text1=yes text2=yes; the Step 1 `grep -Fx` lines and the Step 2 and Step 3 fenced lines |
+
+P3 round 2 note: the registered rule drops whitespace runs and `> ` markers, not backslash escapes,
+so rep 3's row is not word for word. Rep 3's plan has no plain or fenced copy of either text; its
+edit step points back at the check. The control also meets P3, so P3 shows nothing about the
+wording.
+
+#### Non-gating observations (round 2)
+
+1. Redundancy remarks and alternative fixes, anywhere in the reply, the Declined to judge list
+   included. A "makes other code redundant" remark: R2-task 4/5 (round 1: 5/5), R2-final 2/5, or
+   4/5 with reps 2 and 5 counted (round 1: 5/5), R4-task 0/5, R4-final 0/5. An alternative to a
+   fix: R2-task 5/5 (every rep offers "raise `ValueError` ... or return `[]`" for `page < 1`, and
+   reps 2-5 give two forms of the ceiling fix), R2-final 4/5, R4-task 1/5 (rep 3, inside its step
+   3 finding's fix), R4-final 0/5. No rep offers an alternative to the R4 defect's fix.
+2. Red runs in the P12 plans: in 5/5 plans every task has a step that runs its new tests and
+   expects them to fail (Step 2 of each of the 15 tasks). No task lacks one.
+3. Fixed overhead in the P12 plans ("fixed" is the plan block from the `# ... Implementation Plan`
+   title through `## Decisions`, up to the `---` before Task 1). The spec is 1015 characters. The
+   median plan is 10476 characters, and the median fixed part is 2587 characters, a median share
+   of 0.2156 of the plan. The fixed sections alone are a median 2.55 times the spec, and the tasks
+   alone a median 8.16 times. In round 1 the medians were 11750, 2695, 0.2350, 2.66 and 8.70.
+
+#### The seven bars (round 2)
+
+| Case | `green-r1` gating | `green-r2` gating | `green-r2` literal | Round 2 bar | Control also meets |
+|---|---|---|---|---|---|
+| R1 | task 5/5, final 5/5 | task 5/5, final 5/5 | same | met | no |
+| R2 | task 0/5, final 0/5 | task 1/5 (2/5 without rep 5), final 3/5 (1/5 with reps 2 and 5) | task 4/5, final 5/5 | missed on both reviewers on the gating count; met on both on the literal count | no |
+| R3 | list in 20/20, crash in none | list in 20/20, crash in none (missed if the `*.log` directory lines were counted as the crash) | same | met | no |
+| R4 | task 3/5, final 5/5 | task 1/5, final 5/5 | task 1/5, final 5/5 | missed (R4-task), on both counts | no |
+| P1 | 5/5 | 5/5 | same | met | no |
+| P2 | ratio 11.5764, fence 0.4962 | ratio 10.3212, fence 0.4545 | same | missed (ratio 10.3212 > 9.7419) | yes: P2 shows nothing about the wording |
+| P3 | 5/5 | 4/5 | same | missed | yes: shows nothing about the wording |
+
+On `f5ef4da`, R1, R3 and P1 meet their bars. R2, R4, P2 and P3 miss. R2 misses on both reviewers on
+the gating count. On the literal count, the registered polish points only, it meets its bar on both
+reviewers (4/5 and 5/5), so the gating reading of the redundancy remark alone decides the R2
+result. R4 misses on the task reviewer: 4 of 5 reps now grade the passive voice of step 3 Important,
+against 1 in round 1, while none lists a style point under Declined to judge (1 in round 1). P2's
+median ratio fell again but stays above the limit. P3, met in GREEN and round 1, misses on one rep.
+Round 2 was the last round the stop rule allows, so every missed bar goes to the owner. The last
+commit that changed skill or agent text is `f5ef4da`.
