@@ -1078,3 +1078,14 @@ The F1 total is $7.94 against the cap of about $80. The pilots before the reps c
 - Each rep took 6 to 9 minutes (arm 1: 9 and 8, arm 2: 7 and 6, from the plan stream's creation to the score file) and $1.57 to $2.52, far below the plan's budget of about 90 minutes and $31 per rep.
 
 **Gate (Task 11 Step 3).** Arm 2 handled at least as many defects as arm 1 and its median ratio is lower, so the step recipe ships. The step-recipe commits `aaa37f0`, `62fe501` and `f5ef4da` stay. No revert.
+
+### Changes after the tests
+
+Four commits changed skill, agent or lint text after the last micro-test SHA (`f5ef4da`) and after the F1 skill SHA (`f02f958`). The final review caused all four. No test in this record ran against them.
+
+- `3104e27`: both executors (`skills/subagent-driven-development/references/final-review.md`, `skills/executing-plans/SKILL.md`) hand over the Review Focus section "if the plan has one". `executing-plans` also accepts `none: the plan is the requirement` for the spec path. Executor text was never part of a micro-test.
+- `93b51fe`: the task reviewer's report rule now allows a "Declined to judge" line beside a finding and a check. It sits outside the shared block, and the block text is unchanged since `8ac9d28`. It is in `agents/task-reviewer.md`, `skills/subagent-driven-development/task-reviewer-prompt.md` and the two regenerated runtime adapters. The task-reviewer micro-tests ran with the earlier rule.
+- `4cea880`: `build/check_reviewer_block.py` names the drifting reference copy and shows whitespace in its diff. It has its own tests (4 more, 11 in all).
+- `7364b19`: `NOTICE` credits the executor handoff and the Review Focus wording to upstream PR #2319 and to this repo more exactly.
+
+The owner chose all four fixes at the final-review gate on 2026-10-30.
