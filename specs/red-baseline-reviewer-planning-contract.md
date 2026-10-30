@@ -828,7 +828,10 @@ R2-final round 2 note: no rep makes a registered polish point; the slice point o
 Rep 2's "the ceiling formula also returns 0 for zero items" and rep 5's "the `n_items == 0` branch
 still returns 0" speak of the zero case after the fix, but neither says the branch becomes
 redundant or unneeded, so neither is scored as that remark. If both were counted, gating would be
-1/5. `page < 1` handling is Important in 5/5.
+1/5. `page < 1` handling is Important in 5/5. The R2-task rep 5 line "covered by the formula" was
+counted as the remark because it names the branch. The line between counted and not counted was
+drawn after the reps were read. It decides no bar: R2-task is 1/5 or 2/5 and R2-final is 3/5 or
+1/5, all under 4/5.
 
 #### R4-final (round 2)
 
@@ -870,13 +873,13 @@ rep, so Task 3 is the owning task.
 |---|---|---|---|---|---|
 | 1 | pass | Review Focus "Two photos taken in the same second (burst shots): both survive."; Task 3 `test_dry_run_prints_what_real_run_does` runs two same-second photos for real and asserts `len(list(tmp_path.iterdir())) == 2     # nothing lost` | yes, Task 2 (planned names) and Task 3 (file count on disk) | 9.66 | 0.40 |
 | 2 | pass | Review Focus "Two photos taken in the same second (burst shots): neither may be lost."; Task 3 `test_same_second_both_kept` asserts both new names on disk | yes, Task 2 and Task 3 | 10.32 | 0.50 |
-| 3 | pass | Review Focus "**Two photos taken in the same second (burst shots).** Both survive."; Task 3 `test_burst_nothing_lost` asserts three names and the bytes | yes, Task 3 only | 12.27 | 0.41 |
+| 3 | pass | Review Focus "**Two photos taken in the same second (burst shots).** Both survive."; Task 3 `test_burst_nothing_lost` asserts three names and the bytes | yes, Task 2 (`test_selects_jpegs_only`: `a.JPG` and `b.jpeg` dated `T` plan to `S.jpg` and `S_1.jpg`) and Task 3 | 12.27 | 0.41 |
 | 4 | pass | Review Focus "**Two photos taken in the same second** ... A person expects both photos to survive."; Task 3 `test_burst_loses_nothing_and_rerun_is_noop` asserts both names on disk | yes, Task 2 and Task 3 | 11.02 | 0.48 |
 | 5 | pass | Review Focus "Two photos taken in the same second, or a target name already held by another file: no photo is overwritten."; Task 3 `test_same_second_loses_nothing` asserts both names on disk | yes, Task 2 and Task 3 | 10.15 | 0.45 |
 
 The non-gating P1 counts: a test step in any task for two same-timestamp photos that asserts no
-photo is lost, 5/5; a test that pins the collision by distinct planned names in any task, 4/5 (rep
-3's Task 2 has no same-second test).
+photo is lost, 5/5; a test that pins the collision by distinct planned names in any task, 5/5 (rep
+3's Task 2 `test_selects_jpegs_only` plans a same-second pair).
 
 P2 arithmetic, unrounded (`measure` functions and `statistics.median`): `green-r2` median ratio
 10.3212 (reps 9.6581, 10.3212, 12.2700, 11.0197, 10.1547); 0.6 × `base` median ratio 16.2365 =
@@ -898,16 +901,17 @@ green-r2 (running spend $12.52): both texts word for word 4/5. P3 missed.
 
 P3 round 2 note: the registered rule drops whitespace runs and `> ` markers, not backslash escapes,
 so rep 3's row is not word for word. Rep 3's plan has no plain or fenced copy of either text; its
-edit step points back at the check. The control also meets P3, so P3 shows nothing about the
+edit step points back at the check. If an escaped-string copy counted as word for word, P3 would be
+5/5. The control also meets P3, so P3 shows nothing about the
 wording.
 
 #### Non-gating observations (round 2)
 
 1. Redundancy remarks and alternative fixes, anywhere in the reply, the Declined to judge list
-   included. A "makes other code redundant" remark: R2-task 4/5 (round 1: 5/5), R2-final 2/5, or
+   included. A "makes other code redundant" remark: R2-task 4/5, or 3/5 without rep 5's line (round 1: 5/5), R2-final 2/5, or
    4/5 with reps 2 and 5 counted (round 1: 5/5), R4-task 0/5, R4-final 0/5. An alternative to a
-   fix: R2-task 5/5 (every rep offers "raise `ValueError` ... or return `[]`" for `page < 1`, and
-   reps 2-5 give two forms of the ceiling fix), R2-final 4/5, R4-task 1/5 (rep 3, inside its step
+   fix: R2-task 5/5 (reps 1 and 3-5 offer "raise `ValueError` ... or return `[]`" for `page < 1`, rep 2
+   does not, and reps 2-5 give two forms of the ceiling fix, so all 5 count), R2-final 4/5, R4-task 1/5 (rep 3, inside its step
    3 finding's fix), R4-final 0/5. No rep offers an alternative to the R4 defect's fix.
 2. Red runs in the P12 plans: in 5/5 plans every task has a step that runs its new tests and
    expects them to fail (Step 2 of each of the 15 tasks). No task lacks one.
@@ -937,3 +941,14 @@ against 1 in round 1, while none lists a style point under Declined to judge (1 
 median ratio fell again but stays above the limit. P3, met in GREEN and round 1, misses on one rep.
 Round 2 was the last round the stop rule allows, so every missed bar goes to the owner. The last
 commit that changed skill or agent text is `f5ef4da`.
+
+### Owner rulings after round 2
+
+2026-10-30, in the conversation, on the cases that missed their bars after two wording rounds:
+
+- R2 (gating) and R4-task: "Ship it, record the misses". The round-2 block ships as written. The
+  record lists R2 (gating) and R4-task as missed bars, with the literal R2 counts beside them. The
+  spec says nothing ships on a missed case, so this overrides that line for these two cases only.
+- P2 and P3: "Run F1, ship only if it passes". F1 is the gate the spec designed. Arm 2 must handle
+  at least as many planted defects as arm 1, with a lower median ratio. If it fails, `aaa37f0`,
+  `62fe501` and `f5ef4da` are reverted.
