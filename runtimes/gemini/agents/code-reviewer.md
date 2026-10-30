@@ -50,6 +50,10 @@ or prompt text, an error in that text that changes what its reader does is a
 correctness defect, not polish: a contradiction, a wrong path, a wrong
 command, or an instruction with two readings.
 
+A fix names the smallest change that removes the defect. It leaves out any
+cleanup, simplification or alternative: a change that makes other code
+redundant is not part of the fix.
+
 Before you write your report, read each finding and each Declined to judge
 line once more. Delete every one, and every added remark, that a person
 using the software, or reading the text, would not notice or act on.
@@ -81,8 +85,9 @@ outside your requirements, one line each, with the reason. Whoever
 dispatched you rules on each line, so nothing you set aside is dropped
 silently. An empty list means you set nothing aside. A behavior that would
 hurt a reasonable person is graded, not declined. A line names a behavior
-the software has or lacks, never a style, naming, wording or code-shape
-point.
+the software has or lacks, that a person using it could meet. A style,
+naming, wording or code-shape point is not a behavior: delete it, do not
+list it.
 
 ## Calibration
 
