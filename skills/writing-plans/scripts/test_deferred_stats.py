@@ -12,8 +12,10 @@ from pathlib import Path
 from deferred_stats import (
     Note,
     aging_state,
+    carry_used,
     compute_stats,
     format_report,
+    main,
     parse_items,
     path_is_live,
 )
@@ -21,6 +23,8 @@ from deferred_stats import (
 SCRIPT = Path(__file__).with_name('deferred_stats.py')
 TODAY = dt.date(2026, 9, 8)
 NINETY_DAYS_AGO = TODAY - dt.timedelta(days=90)
+# Later than every note date the carry tests write, so the items there are aged.
+LATER = dt.date(2026, 12, 1)
 
 SAMPLE = '''# Deferred items
 
@@ -390,3 +394,222 @@ def test_default_is_live_needs_an_existing_path_outside_completed(tmp_path):
     assert path_is_live(str(plans / '9-x.md')) is True
     assert path_is_live(str(retired_dir / '8-y.md')) is False
     assert path_is_live(str(plans / '7-gone.md')) is False
+
+
+def test_archived_items_count_as_closed_never_open():
+    backlog = one_section('- [ ] Fresh open item.', date=TODAY - dt.timedelta(days=10))
+    archive = one_section(
+        '- [x] First archived item. → done 2026-06-12: shipped\n'
+        '- [x] Second archived item. → done 2026-06-12: shipped',
+        name='7-old',
+    )
+    stats = compute_stats(parse_items(backlog), TODAY, archived=parse_items(archive))
+    assert (stats['open'], stats['closed'], stats['total']) == (1, 2, 3)
+    assert stats['closure_rate'] == round(2 / 3, 4)
+    # The archive's section is 90 days old. None of that age reaches the open figures.
+    assert stats['aged_open'] == 0
+    assert stats['oldest_open_days'] == 10
+    assert sum(b['count'] for b in stats['age_histogram']) == 1
+
+
+def test_unticked_item_in_the_archive_still_counts_as_closed():
+    # Spec section 5: archived items never count as open or aged. A hand-moved item
+    # that lost its tick is closed all the same, and nothing in it is read for a warning.
+    archive = one_section(
+        '- [ ] Unticked archived item.\n'
+        '      → done 2026-06-12: shipped\n'
+        '      → acknowledged 2026-09-01 (b): reason'
+    )
+    stats = compute_stats([], TODAY, archived=parse_items(archive))
+    assert (stats['open'], stats['closed'], stats['aged_open']) == (0, 1, 0)
+    assert stats['open_with_done_note'] == []
+    assert stats['aged_acknowledged'] == []
+
+
+def test_removed_items_count_as_closed_and_are_reported():
+    backlog = one_section('- [ ] Open item.', date=TODAY - dt.timedelta(days=10))
+    archive = one_section('- [x] y → removed 2026-10-27: skill archived', name='7-old')
+    stats = compute_stats(parse_items(backlog), TODAY, archived=parse_items(archive))
+    assert stats['removed'] == 1
+    assert (stats['open'], stats['closed']) == (1, 1)
+    assert '  Removed: 1 (counted as closed).' in format_report(stats).splitlines()
+    # With no removal the line is left out.
+    plain = compute_stats(parse_items(backlog), TODAY)
+    assert plain['removed'] == 0
+    assert 'Removed:' not in format_report(plain)
+
+
+def test_removed_note_counts_only_on_a_closed_item():
+    # A ticked item not yet moved to the archive is still a removal, so archiving it
+    # changes no number. An unticked item stays open: the checkbox decides.
+    backlog = one_section(
+        '- [x] Ticked, still in the live file. → removed 2026-10-27: gone\n'
+        '- [ ] Unticked with a removed note. → removed 2026-10-27: gone'
+    )
+    stats = compute_stats(parse_items(backlog), TODAY)
+    assert (stats['open'], stats['closed'], stats['removed']) == (1, 1, 1)
+
+
+def test_missing_archive_file_is_fine(tmp_path, capsys):
+    backlog = tmp_path / 'deferred_items.md'
+    backlog.write_text(SAMPLE, encoding='utf-8')
+    assert main(['--file', str(backlog), '--archive', str(tmp_path / 'nope.md')]) == 0
+    first = capsys.readouterr().out.splitlines()[0]
+    assert first.startswith('Deferred backlog: 3 open, 2 ever closed')
+
+
+def test_archive_flag_reads_the_archive_file(tmp_path, capsys):
+    backlog = tmp_path / 'deferred_items.md'
+    backlog.write_text(SAMPLE, encoding='utf-8')
+    archive = tmp_path / 'archive.md'
+    archive.write_text(one_section('- [x] A.\n- [x] B.', name='7-old'), encoding='utf-8')
+    assert main(['--file', str(backlog), '--archive', str(archive), '--json']) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert (payload['open'], payload['closed'], payload['total']) == (3, 4, 7)
+
+
+def test_carry_used_after_latest_state_note():
+    text = one_section(
+        '- [ ] Alpha work item.\n'
+        '      Done when: it ships.\n'
+        '      → acknowledged 2026-10-20 (feat/x): reason',
+        name='s1',
+    )
+    (item,) = parse_items(text)
+    assert carry_used(item) is True
+    stats = compute_stats([item], LATER)
+    assert stats['aged_open'] == 1
+    assert stats['aged_acknowledged'] == [
+        {'section': 's1', 'first_words': 'Alpha work item. Done when: it'}
+    ]
+
+
+def test_acknowledgement_before_triggered_note_is_not_a_used_carry():
+    text = one_section(
+        '- [ ] Gate item.\n'
+        '      → acknowledged 2026-09-01 (b): r\n'
+        '      → triggered 2026-10-01: z'
+    )
+    (item,) = parse_items(text)
+    assert carry_used(item) is False
+    stats = compute_stats([item], LATER)
+    # The item is aged, so only the order of the two notes keeps it off the list.
+    assert stats['aged_open'] == 1
+    assert stats['aged_acknowledged'] == []
+
+
+def test_acknowledgement_on_the_state_note_day_is_not_after_it():
+    same_day = one_section(
+        '- [ ] Item.\n'
+        '      → triggered 2026-10-01: z\n'
+        '      → acknowledged 2026-10-01 (b): r'
+    )
+    next_day = one_section(
+        '- [ ] Item.\n'
+        '      → triggered 2026-10-01: z\n'
+        '      → acknowledged 2026-10-02 (b): r'
+    )
+    assert carry_used(parse_items(same_day)[0]) is False
+    assert carry_used(parse_items(next_day)[0]) is True
+
+
+def test_undated_notes_never_break_the_carry_comparison():
+    undated_ack = one_section('- [ ] Item.\n      → acknowledged (b): r')
+    undated_state = one_section(
+        '- [ ] Item.\n'
+        '      → triggered: z\n'
+        '      → acknowledged 2026-09-01 (b): r'
+    )
+    undated_section = (
+        '# Deferred items\n\n## No date\n'
+        '- [ ] Item.\n      → acknowledged 2026-09-01 (b): r\n'
+    )
+    assert carry_used(parse_items(undated_ack)[0]) is False
+    # An undated `triggered` note ages from the section date, so that date is the baseline.
+    assert carry_used(parse_items(undated_state)[0]) is True
+    assert carry_used(parse_items(undated_section)[0]) is False
+
+
+def test_used_carry_on_an_item_that_is_not_aged_is_not_reported():
+    fresh = one_section(
+        '- [ ] Fresh item.\n'
+        '      → acknowledged 2026-09-05 (b): r',
+        date=TODAY - dt.timedelta(days=10),
+    )
+    held = one_section(
+        '- [ ] Held item.\n'
+        '      → held 2026-07-01: upstream\n'
+        '      → acknowledged 2026-09-05 (b): r'
+    )
+    for text in (fresh, held):
+        (item,) = parse_items(text)
+        assert carry_used(item) is True
+        stats = compute_stats([item], TODAY)
+        assert (stats['aged_open'], stats['aged_acknowledged']) == (0, [])
+
+
+def test_carry_line_names_section_and_first_words():
+    text = (
+        '# Deferred items\n\n'
+        '## s1 — 2026-06-10\n'
+        '- [ ] alpha beta gamma delta epsilon zeta eta theta\n'
+        '      → acknowledged 2026-09-01 (a): r\n\n'
+        '## s2 — 2026-06-11\n'
+        '- [ ] one two three four five six seven\n'
+        '      → acknowledged 2026-09-02 (b): r\n'
+    )
+    lines = format_report(compute_stats(parse_items(text), TODAY)).splitlines()
+    assert (
+        '  Carry used (only /deferred clears): '
+        's1: alpha beta gamma delta epsilon zeta…; s2: one two three four five six…'
+    ) in lines
+    plain = format_report(compute_stats(parse_items(SAMPLE), TODAY))
+    assert 'Carry used' not in plain
+
+
+def test_new_lines_print_in_the_contract_order():
+    backlog = one_section(
+        '- [ ] Watch item.\n'
+        '      Revisit if: later.\n'
+        '- [ ] Planned item.\n'
+        '      → planned 2026-09-02: specs/plans/9-x.md\n'
+        '- [ ] Carried item.\n'
+        '      → acknowledged 2026-09-01 (b): r\n'
+        '- [ ] Noted item.\n'
+        '      → done 2026-09-01 (plan 9)'
+    )
+    archive = one_section('- [x] Gone item. → removed 2026-10-27: why', name='7-old')
+    stats = compute_stats(
+        parse_items(backlog), TODAY, is_live=live, archived=parse_items(archive),
+    )
+    prefixes = (
+        'Deferred backlog:', '  Watching:', '  Planned:', '  Carry used', '  Removed:',
+        '  Warning:', '  Oldest open:',
+    )
+    lines = format_report(stats).splitlines()
+    assert [p for line in lines for p in prefixes if line.startswith(p)] == list(prefixes)
+
+
+def test_json_output_carries_the_new_keys(tmp_path, capsys):
+    backlog = tmp_path / 'deferred_items.md'
+    backlog.write_text(SAMPLE, encoding='utf-8')
+    assert main(['--file', str(backlog), '--archive', str(tmp_path / 'nope.md'), '--json']) == 0
+    payload = json.loads(capsys.readouterr().out)
+    for key in (
+        'exists', 'open', 'closed', 'total', 'closure_rate', 'aged_days',
+        'aged_open', 'undated_open', 'open_with_done_note', 'oldest_open_days',
+        'oldest_open_section', 'age_histogram',
+        'watching', 'planned', 'aged_acknowledged', 'removed',
+    ):
+        assert key in payload, f'missing contract key: {key}'
+    assert (payload['watching'], payload['planned'], payload['removed']) == (0, 0, 0)
+    assert payload['aged_acknowledged'] == []
+
+
+def test_absent_backlog_json_carries_the_new_keys(tmp_path, capsys):
+    missing = str(tmp_path / 'nope.md')
+    assert main(['--file', missing, '--archive', missing, '--json']) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['exists'] is False
+    for key in ('watching', 'planned', 'aged_acknowledged', 'removed'):
+        assert key in payload, f'missing contract key: {key}'

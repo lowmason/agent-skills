@@ -3,9 +3,9 @@
 # requires-python = '>=3.11'
 # dependencies = []
 # ///
-'''Report deferred-backlog health from specs/deferred_items.md.
+'''Report deferred-backlog health from specs/deferred_items.md and its archive.
 
-Parses the append-only backlog into items. An item is a column-0 checkbox line
+Parses the backlog into items. An item is a column-0 checkbox line
 plus every line after it up to the next item or `##` heading, so the dated notes
 on its continuation lines belong to it. The report gives open and ever-closed
 counts, closure rate, an age histogram, and the aged tail. An item ages from its
@@ -31,6 +31,17 @@ state, and the latest of those wins. The first rule that matches decides:
 Watching and planned items count as open but stay out of the aged tail, the
 age histogram and the oldest-open figures.
 
+An item leaves the live file only by a move to the archive file
+`specs/completed/deferred_items.md` (spec D4), so the archive is read too. Every
+archived item counts as closed and never as open or aged. A closed item with a
+`→ removed` note is also reported as removed: it left the backlog without being
+done or retired, and it still counts as closed. A missing archive file is fine.
+
+An aged item has spent its one carry when it has an `→ acknowledged` note dated
+after its latest `held`, `triggered` or `planned` note, or after its section
+date when it has none (spec D10). The report names those items by section and
+first words, since only `/deferred` can clear them.
+
 Sections whose heading carries no usable date still contribute to the
 open/closed counts but are excluded from every age figure and reported as
 ``undated_open``. That covers three cases: no date at all (for example the
@@ -43,7 +54,7 @@ Usage:
     python3 <this-skill-dir>/scripts/deferred_stats.py
     python3 <this-skill-dir>/scripts/deferred_stats.py --json
     python3 <this-skill-dir>/scripts/deferred_stats.py \\
-        --file path/to/deferred_items.md --aged-days 60
+        --file path/to/deferred_items.md --archive path/to/archive.md --aged-days 60
 
 Always exits 0. This is a reporter, not a gate: the caller decides what to do
 with ``aged_open``, so a large backlog never fails a script invocation.
@@ -56,7 +67,7 @@ import datetime as dt
 import json
 import re
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -64,6 +75,7 @@ DEFAULT_AGED_DAYS = 45
 VOLUME_THRESHOLD = 20
 FIRST_WORDS_COUNT = 6
 DEFAULT_PATH = Path('specs/deferred_items.md')
+DEFAULT_ARCHIVE_PATH = Path('specs/completed/deferred_items.md')
 
 SECTION_RE = re.compile(r'^##\s+(?P<name>.+?)(?:\s+—\s+(?P<date>\d{4}-\d{2}-\d{2}))?\s*$')
 ITEM_RE = re.compile(r'^- \[(?P<mark>[ xX])\]')
@@ -234,6 +246,36 @@ def _latest_state_note(notes: list[Note]) -> Note | None:
     return max(state_notes)[2] if state_notes else None
 
 
+def carry_used(item: Item) -> bool:
+    '''True when the item has spent its one carry past the aged-backlog gate.
+
+    A carry is used when an `→ acknowledged` note is dated strictly after the
+    item's latest `held`, `triggered` or `planned` note, or after its section date
+    when it has none (spec D10). The latest state note counts even when a
+    `planned` file has since retired, since writing it was a state change. A state
+    note with no date falls back to the section date, as `aging_state` does for a
+    `triggered` note. An undated acknowledgement, or an item with no date to
+    compare against, never counts as a used carry: no order can be shown.
+
+    Whether the item is aged is not decided here. `compute_stats` lists only
+    aged items.
+    '''
+    latest = _latest_state_note(item.notes)
+    baseline = item.section_date
+    if latest is not None and latest.date is not None:
+        baseline = latest.date
+    if baseline is None:
+        return False
+    return any(
+        note.kind == 'acknowledged' and note.date is not None and note.date > baseline
+        for note in item.notes
+    )
+
+
+def _has_note(item: Item, kind: str) -> bool:
+    return any(note.kind == kind for note in item.notes)
+
+
 def _planned_file_is_live(note: Note, is_live: Callable[[str], bool]) -> bool:
     path = MD_PATH_RE.search(note.rest)
     return path is not None and is_live(path.group(0))
@@ -277,22 +319,36 @@ def compute_stats(
     today: dt.date,
     aged_days: int = DEFAULT_AGED_DAYS,
     is_live: Callable[[str], bool] = path_is_live,
+    archived: Sequence[Item] = (),
 ) -> dict:
     '''Aggregate parsed items into the reporting contract.
 
-    ``closure_rate`` is closed / (open + closed) — items are never deleted from
-    the backlog, so currently-closed equals ever-closed. It is ``None`` for an
-    empty backlog rather than 0.0, so "nothing here yet" reads differently from
-    "nothing ever closed".
+    ``items`` are the live file's items and ``archived`` the archive file's. Every
+    archived item counts as closed whatever its checkbox says, and it is never
+    aged, never warned about and never listed as a carry (spec section 5).
+
+    ``closure_rate`` is closed / (open + closed), where closed adds the live
+    file's ticked items to the archive's items. An item can leave the live file,
+    by a move to the archive or by a removal (spec D4), but it stays counted as
+    closed, so closed is still ever-closed. It is ``None`` for an empty backlog
+    rather than 0.0, so "nothing here yet" reads differently from "nothing ever
+    closed".
+
+    ``removed`` counts the closed items, in either file, that carry a
+    `→ removed` note. They are part of ``closed`` too. An unticked item with that
+    note is open, since the checkbox decides.
 
     ``watching`` counts `held` and `watch` items and ``planned`` counts `planned`
     items. Both are open, and neither enters ``aged_open``, the histogram or the
     oldest-open figures. ``open_with_done_note`` lists the open items that carry
-    a `→ done` note, for the report's warning.
+    a `→ done` note, for the report's warning. ``aged_acknowledged`` lists the
+    aged open items whose carry is used (see ``carry_used``), as section and
+    first words.
     '''
     open_items = [item for item in items if not item.checked]
+    closed_items = [item for item in items if item.checked] + list(archived)
     open_count = len(open_items)
-    closed_count = len(items) - open_count
+    closed_count = len(closed_items)
     total = open_count + closed_count
 
     histogram = {label: 0 for label, _, _ in AGE_BUCKETS}
@@ -300,6 +356,7 @@ def compute_stats(
     undated_open = 0
     watching = 0
     planned = 0
+    aged_acknowledged: list[dict[str, str]] = []
     oldest_days: int | None = None
     oldest_section: str | None = None
 
@@ -321,6 +378,10 @@ def compute_stats(
         histogram[_bucket_label(days)] += 1
         if days > aged_days:
             aged_open += 1
+            if carry_used(item):
+                aged_acknowledged.append(
+                    {'section': item.section, 'first_words': first_words(item)}
+                )
         if oldest_days is None or days > oldest_days:
             oldest_days = days
             oldest_section = item.section
@@ -336,9 +397,11 @@ def compute_stats(
         'undated_open': undated_open,
         'watching': watching,
         'planned': planned,
+        'aged_acknowledged': aged_acknowledged,
+        'removed': sum(1 for item in closed_items if _has_note(item, 'removed')),
         'open_with_done_note': [
             {'section': item.section, 'first_words': first_words(item)}
-            for item in open_items if any(note.kind == 'done' for note in item.notes)
+            for item in open_items if _has_note(item, 'done')
         ],
         'oldest_open_days': oldest_days,
         'oldest_open_section': oldest_section,
@@ -370,6 +433,13 @@ def format_report(stats: dict) -> str:
         lines.append(f'  Watching: {stats["watching"]} (Revisit-if or held; not aged).')
     if stats['planned']:
         lines.append(f'  Planned: {stats["planned"]} (in a live plan or spec; not aged).')
+    if stats['aged_acknowledged']:
+        carried = '; '.join(
+            f'{used["section"]}: {used["first_words"]}…' for used in stats['aged_acknowledged']
+        )
+        lines.append(f'  Carry used (only /deferred clears): {carried}')
+    if stats['removed']:
+        lines.append(f'  Removed: {stats["removed"]} (counted as closed).')
     for flagged in stats['open_with_done_note']:
         lines.append(
             f'  Warning: open item has a → done note: '
@@ -403,6 +473,11 @@ def main(argv: list[str] | None = None) -> int:
         help='backlog file (default: specs/deferred_items.md, relative to CWD)',
     )
     parser.add_argument(
+        '--archive', type=Path, default=DEFAULT_ARCHIVE_PATH,
+        help='archive file of items that left the backlog '
+             '(default: specs/completed/deferred_items.md, relative to CWD; may be absent)',
+    )
+    parser.add_argument(
         '--aged-days', type=int, default=DEFAULT_AGED_DAYS,
         help=f'aged-tail horizon in days (default: {DEFAULT_AGED_DAYS})',
     )
@@ -413,7 +488,12 @@ def main(argv: list[str] | None = None) -> int:
         stats = absent_stats(args.aged_days)
     else:
         text = args.file.read_text(encoding='utf-8')
-        stats = compute_stats(parse_items(text), dt.date.today(), args.aged_days)
+        archived = []
+        if args.archive.is_file():
+            archived = parse_items(args.archive.read_text(encoding='utf-8'))
+        stats = compute_stats(
+            parse_items(text), dt.date.today(), args.aged_days, archived=archived,
+        )
 
     print(json.dumps(stats, indent=2) if args.json else format_report(stats))
     return 0
