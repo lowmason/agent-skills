@@ -71,6 +71,8 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from deferral_scan import _blank_code_spans
+
 DEFAULT_AGED_DAYS = 45
 VOLUME_THRESHOLD = 20
 FIRST_WORDS_COUNT = 6
@@ -83,7 +85,6 @@ NOTE_RE = re.compile(
     r'→[ \t]*(?P<kind>[a-z]+(?:-[a-z]+)*)(?![\w-])'
     r'(?:[ \t]+(?P<date>\d{4}-\d{2}-\d{2})(?!\d))?'
 )
-CODE_SPAN_RE = re.compile(r'(`+).+?\1', re.DOTALL)
 MD_PATH_RE = re.compile(r'[\w./-]+\.md(?!\w)')
 
 STATE_KINDS = frozenset({'held', 'triggered', 'planned'})
@@ -146,9 +147,11 @@ def path_is_live(path: str) -> bool:
 def _mask_code(text: str) -> str:
     '''Blank every inline code span (newlines kept), so offsets stay valid.
 
-    A note form quoted in backticks is prose about the protocol, not a note.
+    A note form quoted in backticks is prose about the protocol, not a note. A
+    span closes only on a backtick run of its opening run's length, the deferral
+    scan's own rule, so a longer run inside a span does not end it.
     '''
-    return CODE_SPAN_RE.sub(lambda span: re.sub(r'[^\n]', ' ', span.group(0)), text)
+    return _blank_code_spans(text)
 
 
 def _find_notes(text: str, masked: str) -> list[tuple[int, int, Note]]:

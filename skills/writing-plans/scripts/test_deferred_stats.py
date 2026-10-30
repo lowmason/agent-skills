@@ -246,6 +246,26 @@ def test_note_form_in_backticks_sets_no_state():
     assert (stats['aged_open'], stats['watching']) == (1, 0)
 
 
+# Final review, finding 3: a code span closes only on a backtick run of its own
+# length, so a longer run inside a double-backtick span keeps the delimiters aligned.
+def test_quoted_held_after_a_span_with_a_longer_run_sets_no_state():
+    text = one_section('- [ ] Work ``a```b`` then `→ held 2026-10-01: x` done.')
+    (item,) = parse_items(text)
+    assert item.notes == []
+    assert aging_state(item, retired) == ('work', NINETY_DAYS_AGO)
+
+
+def test_real_held_after_a_span_with_a_longer_run_is_not_masked():
+    text = one_section(
+        '- [ ] Work ``a```b`` item.\n'
+        '      → held 2026-10-01: vendor fix\n'
+        '      Quote `x` here.'
+    )
+    (item,) = parse_items(text)
+    assert item.notes == [Note('held', dt.date(2026, 10, 1), 'vendor fix')]
+    assert aging_state(item, retired) == ('held', None)
+
+
 def test_open_item_with_done_note_stays_open_and_warns():
     text = one_section(
         '- [ ] x → done 2026-10-01 (plan 9)\n'
