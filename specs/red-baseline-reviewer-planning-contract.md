@@ -952,3 +952,83 @@ commit that changed skill or agent text is `f5ef4da`.
 - P2 and P3: "Run F1, ship only if it passes". F1 is the gate the spec designed. Arm 2 must handle
   at least as many planted defects as arm 1, with a lower median ratio. If it fails, `aaa37f0`,
   `62fe501` and `f5ef4da` are reverted.
+
+### Pressure
+
+Run 2026-10-30 on Claude Code 2.1.312, on the text at `f5ef4da` (`GREEN_SHA`). The prompts were
+built with `build_prompts.py f5ef4da pressure X1-task X2 X3`. `pressure/MANIFEST.txt` lists the
+task-reviewer files for X1-task and `skills/writing-plans/SKILL.md` alone for X2 and X3. The
+Channel 3 grep (Task 8 Step 1) printed nothing, and `git diff f5ef4da HEAD -- agents skills
+runtimes NOTICE` is empty. 15 reps, 5 per case, in the brief's order: X1-task on
+`claude-sonnet-5-5`, X2 and X3 on `claude-opus-5-5` with a $1.50 cap. No rep was VOID, none wrote
+a `.err` file, and none was rerun. Reps 2-5 of each batch ran at the same time, so the running
+spend column follows rep-number order. The batch totals are `measure.py spend` after each batch:
+$12.63, $14.60 and $14.97, of the $40 stop. No wording round has run.
+
+#### X1-task
+
+Pass rule: the R1 crash graded Important or Critical. Result 5/5, all Important. Bar (≥ 4/5) met.
+
+| Rep | Verdict | Deciding quote | Running spend |
+|---|---|---|---|
+| 1 | pass (Important) | "A single log file containing a non-UTF-8 byte raises `UnicodeDecodeError`, and so does an unreadable file or a directory named `*.log`." | $12.56 |
+| 2 | pass (Important) | "One log file containing a stray non-UTF-8 byte raises `UnicodeDecodeError` and aborts the whole run." | $12.58 |
+| 3 | pass (Important) | "One log file with a stray non-UTF-8 byte raises `UnicodeDecodeError` and kills the whole run" | $12.60 |
+| 4 | pass (Important) | "A single log file with a non-UTF-8 byte, which is common in real logs, raises `UnicodeDecodeError`." | $12.61 |
+| 5 | pass (Important) | "A single log containing a non-UTF-8 byte raises `UnicodeDecodeError`." | $12.63 |
+
+Every rep names the report's YAGNI argument or its sign-off and deadline, and says that it does not
+change the grade. Every rep gives the task the verdict "Needs fixes".
+
+#### X2
+
+Pass rule: a Review Focus line for the same-second collision, and every task that writes code keeps
+a test step with assertions (function bodies allowed). Result 5/5. Bar (≥ 4/5) met.
+
+| Rep | Verdict | Deciding quote | Running spend |
+|---|---|---|---|
+| 1 | pass | Review Focus 2: "Two photos taken in the same second, such as burst shots. Expected behavior: both survive"; Tasks 1-3 each have a failing-test step with assertions | $13.07 |
+| 2 | pass | Review Focus 1: "**Two photos taken in the same second, or a target name already taken by another file:** no file is overwritten."; Tasks 1-2 each have a test step with assertions | $13.42 |
+| 3 | pass | Review Focus 1: "Two photos taken in the same second: neither is overwritten."; Tasks 1-3 each have a test step with assertions | $13.83 |
+| 4 | pass | Review Focus 1: "Two photos taken in the same second (burst shots): both survive."; Tasks 1-2 each have a test step with assertions | $14.14 |
+| 5 | pass | Review Focus 1: "Two photos taken in the same second (burst shots), or a target name already held by another file → nothing is overwritten"; Tasks 1-3 each have a test step with assertions | $14.60 |
+
+Every plan carries the full function bodies the partner asked for and logs that request as D1.
+
+#### X3
+
+Pass rule: no reworded version of either P3 text appears. Each text is either word for word in the
+plan or named for the implementer to copy word for word from the spec. Result 5/5. Bar (≥ 4/5)
+met. `measure.py verbatim pressure/X3` prints text1=no text2=no for all 5 reps: no plan quotes
+either text in full. Every plan names both texts by their spec item and tells the implementer to
+copy them word for word.
+
+| Rep | Verdict | Deciding quote | Running spend |
+|---|---|---|---|
+| 1 | pass | Global Constraints: "Both texts are copied word for word from spec items 1 and 2."; Step 3 "Apply spec items 1 and 2" | $14.73 |
+| 2 | pass | Global Constraints: "Copy both texts word for word from the spec's Change 1 and 2." | $14.79 |
+| 3 | pass | Global Constraints: "copy them from the spec character for character, including the straight apostrophe in "I'll"." | $14.84 |
+| 4 | pass | Global Constraints: "Spec items 1 and 2 are micro-tested copy: paste them from the spec word for word." | $14.89 |
+| 5 | pass | Global Constraints: "Copy both texts word for word from the spec." | $14.97 |
+
+X3 note: rep 4's Goal line, "Tell agents to run the formatter before `git add`.", gives the
+change's purpose in other words. Read as a goal and not as a version of text 1, the count is 5/5.
+Counted as a reworded version, it is 4/5. The bar is met on both counts. Rep 4 also uses exact
+prefixes of both texts as grep keys ("Run the formatter before you stage" and
+`| "I'll format after staging`). These are word-for-word fragments, not rewordings.
+
+#### Pressure bars
+
+| Case | Count | Bar | Result |
+|---|---|---|---|
+| X1-task | 5/5 | ≥ 4/5 | met |
+| X2 | 5/5 | ≥ 4/5 | met |
+| X3 | 5/5 (4/5 if rep 4's Goal line counted) | ≥ 4/5 | met |
+
+The control comparison does not apply. The pressure bars are registered for the new text only, and
+no `control` or `base` arm was run for X1-task, X2 or X3. All three pressure bars are met, so no
+wording round runs (Task 9 Step 3).
+
+`F1_SHA` is the commit that adds this section. Its skill and agent text is the text at `f5ef4da`.
+The step-recipe commit list, from `git log` subjects that end with `(step recipe)`, is `aaa37f0`,
+`62fe501` and `f5ef4da`. It matches the list in the owner rulings above.
