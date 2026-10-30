@@ -37,10 +37,13 @@ The scan reads prose only:
 - A passive deferral whose subject is a negation is a statement that nothing
   was put off, so it is not a candidate. The subject is `nothing`, `none` or
   `no` and up to three more words, right before the verb, and it must open its
-  clause: at the start of the unit, after `. ! ? ; : , (`, or after a
-  conjunction (`and`, `but`, `so`, `that`, `because`, `since`, `as`, `when`,
-  `if`). When in doubt the scan flags, so `with no tests is deferred` and a
-  negation after a line break inside a sentence are still candidates.
+  clause. A clause opens at the start of the unit, after an optional list
+  marker (`-`, `*`, `+`, `N.` or `N)`), any `>` quote markers and an optional
+  `**`. It also opens after one of `. ! ? ; : , ( —`, or after one of the
+  conjunctions `and`, `but`, `so`, `because`, `since`, `when` and `if`. Nothing
+  else opens a clause. When in doubt the scan flags, so `with no tests is
+  deferred`, `the gap that no test covers is deferred`, `such as no backoff`, a
+  spaced hyphen and a line break inside a sentence all leave a candidate.
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
@@ -68,11 +71,15 @@ PASSIVE = re.compile(
 # `nothing else is deferred`, `none of this is deferred`, `, and no new work is
 # deferred`: a subject of `nothing`, `none` or `no` and up to three more words,
 # right before PASSIVE's verb, that opens its clause. A clause opens at the start
-# of the unit, after `. ! ? ; : , (`, or after a conjunction. A preposition or a
-# verb does not open one (`with no backoff is deferred`, `has no owner and is
-# deferred`), nor does a line break, so those stay candidates.
+# of the unit (after an optional list marker, `>` quote markers and `**`), after
+# `. ! ? ; : , ( —`, or after one of the conjunctions below. Anything else does
+# not open one: a preposition or verb (`with no backoff is deferred`, `has no
+# owner and is deferred`), a relative `that` or `such as` (`the gap that no test
+# covers is deferred`), a spaced hyphen, or a line break. Those stay candidates.
 NEGATED_SUBJECT = re.compile(
-    r'(?:^|[.!?;:,(]|\b(?:and|but|so|that|because|since|as|when|if))'
+    r'(?:^\s*(?:(?:[-*+]|\d+[.)])\s+)?(?:>\s*)*(?:\*\*)?'
+    r'|[.!?;:,(—]'
+    r'|\b(?:and|but|so|because|since|when|if))'
     r'\s*\b(?:nothing|none|no)(?:\s+[\w-]+){0,3}\s+$',
     re.IGNORECASE,
 )

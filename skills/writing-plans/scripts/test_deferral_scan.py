@@ -143,6 +143,13 @@ def test_skipped_line_with_second_deferral_is_flagged():
     'In this plan, nothing was deferred.',
     'Skip the append if nothing was deferred.',
     'X is implemented by this plan, and no new work is deferred.',
+    # A Markdown prefix at the unit start, and an em dash, open a clause too.
+    '- Nothing is deferred.',
+    '* None are deferred.',
+    '> Nothing is deferred.',
+    '**No new work is deferred.**',
+    'Review is clean — nothing is deferred.',
+    '1. None are deferred.',
 ])
 def test_negated_deferral_statement_is_not_flagged(text):
     assert unmarked(text) == []
@@ -158,6 +165,13 @@ def test_negated_deferral_statement_is_not_flagged(text):
     'No work is deferred, but the T6 gap is deferred.',
     # A line break inside a sentence does not open a clause.
     'The retry logic with\nno backoff is deferred.',
+    # A relative clause or `such as` does not open the subject's clause.
+    'The gap that no test covers is deferred.',
+    'The gap that nothing covers is deferred.',
+    'Gaps that no one owns are deferred.',
+    'Failures such as no backoff are deferred.',
+    # A spaced hyphen mid-line is not a Markdown prefix.
+    'The retry work - no tests yet - is deferred.',
 ])
 def test_negation_not_opening_its_clause_is_still_flagged(text):
     assert len(unmarked(text)) == 1
