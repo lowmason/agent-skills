@@ -288,7 +288,10 @@ rep proposed an `→ triggered` note on the probe-timeout entry. In R5 every rep
 `→ planned` note to the chapter-markers entry only. The caveat from "What the control shows"
 stands: R2 and R4 discriminate on form, not substance. Their passes show that the new wording
 teaches the marker and note forms. They do not show that a loss is caught, because the control
-already filed the R2 work and saw the met R4 condition.
+already filed the R2 work and saw the met R4 condition. R1 shares the caveat in part: leave the
+marker out of the count and the control filed W with `Done when:` and routed S to a question in
+reps 2-5 (4 of 5, against 5 of 5 for the new wording), a ceiling on substance. R4 also depends
+on how strictly the note form is read: see the note under "Verdicts under the bar".
 
 | Case | Control passes | New passes | What the new wording did |
 |---|---|---|---|
@@ -371,9 +374,11 @@ branch's rounding work may already close Y, so `/deferred` could retire it.
 | 5 | PASS | ``**Proposed `→ triggered` (pick to record it)**`` heading the probe-timeout entry | condition met: yes; Quick fix; bare form, no date or text; a `→ held` on the frost-threshold entry called optional |
 
 Reps 3 and 5 write the bare `→ triggered` and give the date and the evidence in prose, not in
-the full `→ triggered <YYYY-MM-DD>: <what happened>` form. The rule counts a proposed note that
-starts `→ triggered`, so both pass, and the record notes the difference. Every rep asks the
-partner to select the note before it is written. No rep proposes Retire for the entry.
+the full `→ triggered <YYYY-MM-DD>: <what happened>` form. The frozen rule counts a proposed note
+that starts `→ triggered`, so both pass. Under the exact note form from the plan's Global
+Constraints, only reps 1, 2 and 4 pass, so R4 would score 3 of 5, below the bar of 4. The owner
+rules on which reading stands. Every rep asks the partner to select the note before it is
+written. No rep proposes Retire for the entry.
 
 ### R5, new wording
 
@@ -392,10 +397,10 @@ Every commit message says the entry is marked as planned.
 
 | Case | Control passes | New passes | Verdict under the bar | Note |
 |---|---|---|---|---|
-| R1 | 0/5 | 5/5 | PASS | Discriminates on substance and form: the control left S unresolved in rep 1 and wrote no marker in any rep. |
+| R1 | 0/5 | 5/5 | PASS | Mostly form: the control wrote no marker in any rep. On substance alone only rep 1 failed (S left unresolved), so the substance difference is 1 rep, below the bar. The pass shows the marker is taught. |
 | R2 | 0/5 | 5/5 | PASS | Form only: the control already filed both pieces of work with D12 met. The pass shows the marker is taught. |
 | R3 | 0/5 | 5/5 | PASS | Substance: the control offered one carry for both entries, X included. |
-| R4 | 0/5 | 5/5 | PASS | Form only: the control already saw the met condition and routed the entry to Quick fix. Reps 3 and 5 write the bare form. |
+| R4 | 0/5 | 5/5 under the frozen rule | PASS | Form only: the control already saw the met condition and routed the entry to Quick fix. Reps 3 and 5 write the bare `→ triggered`. Under the exact note form R4 scores 3/5, below the bar: the owner rules on which reading stands. |
 | R5 | 0/5 | 5/5 | PASS | Substance: the control wrote no state note on the selected entry. |
 
 No case could fail to discriminate on the numbers, because the control passed no rep in any
