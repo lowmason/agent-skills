@@ -25,11 +25,12 @@ note moves at any age.
   heading, its preamble and any prose between its items. That prose goes to the
   archive with the items, in its original order, so nothing is lost. A section
   that never held an item, such as the acknowledgement log, never drains.
-- The hold-back (spec D7): the closure note is the item text from its first
-  `→ done`, `→ retired` or `→ removed` note onward. When the latest date on those
-  notes is on or after `SCAN_FROM`, the deferral scan reads the closure note. An
-  item with an unmarked candidate stays live and is reported. Undated notes and
-  notes dated before `SCAN_FROM` are history and are never held back.
+- The hold-back (spec D7): each `→ done`, `→ retired` or `→ removed` note runs
+  from its arrow to the next such note or the item's end. The deferral scan reads
+  each of those notes dated on or after `SCAN_FROM`. An item with an unmarked
+  candidate in one of them stays live and is reported. Undated notes and notes
+  dated before `SCAN_FROM` are history: the scan never reads them, so an old
+  item is never held back or rewritten for its history.
 
 When nothing moves, both texts come back unchanged. When something moves, both
 files are re-spaced: one blank line between sections, one final newline.
@@ -40,10 +41,13 @@ Usage:
         --file path/to/deferred_items.md --archive path/to/archive.md
 
 Prints `archived <n> item(s), held back <k>:` and then one line per held item.
-Always exits 0. A missing backlog file means nothing to archive. A missing
-archive file starts as the `# Deferred items` title line. The archive is written
-before the live file, each through a temporary file and a rename, so a crash
-between the two writes can duplicate a moved item but never loses one.
+Always exits 0; a failure prints a message that names the file on stderr. A
+missing backlog file means nothing to archive. A missing archive file starts as
+the `# Deferred items` title line. Both files are written through temporary
+files and renames, archive first. When the second rename fails, the archive is
+put back, so both files change or neither does, and the count line prints only
+after both are in place. Each file keeps its mode; a new archive gets the mode
+a plain `open` would give it.
 '''
 
 from __future__ import annotations
@@ -51,6 +55,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import os
+import shutil
 import sys
 import tempfile
 from dataclasses import dataclass, field
@@ -64,6 +69,7 @@ from deferred_stats import (
     ITEM_RE,
     SECTION_RE,
     Item,
+    Note,
     _find_notes,
     _mask_code,
     _parse_date,
@@ -209,14 +215,29 @@ def _render(head: list[str], sections: list[Section]) -> str:
     return ''.join(out)
 
 
-def _closure(item: Item) -> tuple[dt.date | None, str | None]:
-    '''The latest date on the item's closure notes, and its closure note text.'''
-    notes = [(start, note) for start, _, note in _find_notes(item.text, _mask_code(item.text))
-             if note.kind in CLOSURE_KINDS]
-    if not notes:
-        return None, None
-    dates = [note.date for _, note in notes if note.date is not None]
-    return (max(dates) if dates else None), item.text[notes[0][0]:]
+def _closure_notes(item: Item) -> list[tuple[int, Note]]:
+    '''Each `done`, `retired` or `removed` note with its offset in `item.text`.'''
+    return [(start, note) for start, _, note in _find_notes(item.text, _mask_code(item.text))
+            if note.kind in CLOSURE_KINDS]
+
+
+def _closure_date(item: Item) -> dt.date | None:
+    '''The latest date on the item's closure notes, or None when none is dated.'''
+    dates = [note.date for _, note in _closure_notes(item) if note.date is not None]
+    return max(dates) if dates else None
+
+
+def _new_closure_texts(item: Item, scan_from: dt.date) -> list[str]:
+    '''The closure notes dated on or after `scan_from`, each up to the next one.
+
+    A closure note runs from its arrow to the next closure note or the item's end.
+    An undated note and a note dated before `scan_from` are history and are left
+    out, wherever they stand.
+    '''
+    notes = _closure_notes(item)
+    ends = [start for start, _ in notes[1:]] + [len(item.text)]
+    return [item.text[start:end] for (start, note), end in zip(notes, ends)
+            if note.date is not None and note.date >= scan_from]
 
 
 def _eligible(item: Item, today: dt.date, days: int) -> bool:
@@ -224,20 +245,17 @@ def _eligible(item: Item, today: dt.date, days: int) -> bool:
         return False
     if any(note.kind == 'removed' for note in item.notes):
         return True
-    closure_date, _ = _closure(item)
-    tick = closure_date or item.section_date
+    tick = _closure_date(item) or item.section_date
     return tick is not None and (today - tick).days > days
 
 
 def _held_line(item: Item, scan_from: dt.date) -> str | None:
-    '''The report line when the item's closure note holds an unmarked candidate.'''
-    closure_date, closure = _closure(item)
-    if closure_date is None or closure_date < scan_from or closure is None:
-        return None
-    candidates = unmarked(closure)
-    if not candidates:
-        return None
-    return f'  held back: {item.section}: {first_words(item)}…: {candidates[0].text}'
+    '''The report line when a new closure note holds an unmarked candidate.'''
+    for text in _new_closure_texts(item, scan_from):
+        candidates = unmarked(text)
+        if candidates:
+            return f'  held back: {item.section}: {first_words(item)}…: {candidates[0].text}'
+    return None
 
 
 def _drop_item(segments: list[Segment], index: int) -> None:
@@ -313,18 +331,84 @@ def archive(
     return _render(live_head, kept), _render(archive_head, archive_sections), held
 
 
+def _default_mode() -> int:
+    '''The mode a plain `open(path, 'w')` gives a new file under the current umask.'''
+    mask = os.umask(0)
+    os.umask(mask)
+    return 0o666 & ~mask
 
-def _write(path: Path, text: str) -> None:
-    '''Replace `path` with `text` through a temporary file in the same folder.'''
-    path.parent.mkdir(parents=True, exist_ok=True)
+
+def _stage(path: Path, data: bytes) -> str:
+    '''Write `data` to a temporary file beside `path`, with the mode `path` has or would get.'''
     handle, temp = tempfile.mkstemp(dir=path.parent, prefix=f'.{path.name}.', suffix='.tmp')
     try:
-        with os.fdopen(handle, 'w', encoding='utf-8', newline='') as out:
-            out.write(text)
+        with os.fdopen(handle, 'wb') as out:
+            out.write(data)
+        if path.exists():
+            shutil.copymode(path, temp)
+        else:
+            os.chmod(temp, _default_mode())
+    except BaseException:
+        Path(temp).unlink(missing_ok=True)
+        raise
+    return temp
+
+
+def _replace(temp: str, path: Path) -> None:
+    try:
         os.replace(temp, path)
     except BaseException:
         Path(temp).unlink(missing_ok=True)
         raise
+
+
+def _write_both(live_path: Path, live: str, archive_path: Path, archived: str) -> str | None:
+    '''Replace the archive, then the live file, or neither; return a failure message.
+
+    Both temporary files are written before either rename. When the live rename
+    fails after the archive's, the archive gets its old bytes back, or is removed
+    when it did not exist before, so a re-run never moves an item twice.
+    '''
+    made_folder = not archive_path.parent.exists()
+    failing, staged = archive_path, []
+    try:
+        before = archive_path.read_bytes() if archive_path.exists() else None
+        archive_path.parent.mkdir(parents=True, exist_ok=True)
+        staged.append(_stage(archive_path, archived.encode('utf-8')))
+        failing = live_path
+        staged.append(_stage(live_path, live.encode('utf-8')))
+        failing = archive_path
+        _replace(staged.pop(0), archive_path)
+    except OSError as error:
+        for temp in staged:
+            Path(temp).unlink(missing_ok=True)
+        if made_folder:
+            _remove_folder(archive_path.parent)
+        return f'{failing}: cannot write: {error}; both files are unchanged'
+    try:
+        _replace(staged.pop(0), live_path)
+        return None
+    except OSError as error:
+        failure = f'{live_path}: cannot write: {error}'
+    try:
+        if before is None:
+            archive_path.unlink()
+            if made_folder:
+                _remove_folder(archive_path.parent)
+        else:
+            _replace(_stage(archive_path, before), archive_path)
+    except OSError as error:
+        return (f'{failure}; the archive could not be restored ({error}): '
+                f'{archive_path} is changed and holds the moved items, '
+                f'{live_path} is unchanged')
+    return f'{failure}; both files are unchanged'
+
+
+def _remove_folder(folder: Path) -> None:
+    try:
+        folder.rmdir()
+    except OSError:
+        pass
 
 
 def main(argv: list[str] | None = None, today: dt.date | None = None) -> int:
@@ -344,14 +428,18 @@ def main(argv: list[str] | None = None, today: dt.date | None = None) -> int:
 
     try:
         live = args.file.read_text(encoding='utf-8')
-        archived = (args.archive.read_text(encoding='utf-8')
-                    if args.archive.exists() else ARCHIVE_TITLE)
     except FileNotFoundError:
         print(f'{args.file}: not found, nothing to archive', file=sys.stderr)
         print('archived 0 item(s), held back 0:')
         return 0
     except (OSError, UnicodeDecodeError) as error:
-        print(f'cannot read the backlog: {error}', file=sys.stderr)
+        print(f'{args.file}: cannot read: {error}; nothing archived', file=sys.stderr)
+        return 0
+    try:
+        archived = (args.archive.read_text(encoding='utf-8')
+                    if args.archive.exists() else ARCHIVE_TITLE)
+    except (OSError, UnicodeDecodeError) as error:
+        print(f'{args.archive}: cannot read: {error}; nothing archived', file=sys.stderr)
         return 0
 
     try:
@@ -359,17 +447,15 @@ def main(argv: list[str] | None = None, today: dt.date | None = None) -> int:
     except ValueError as error:
         print(f'nothing archived: {error}', file=sys.stderr)
         return 0
+    if not args.dry_run and new_live != live:
+        failure = _write_both(args.file, new_live, args.archive, new_archive)
+        if failure:
+            print(failure, file=sys.stderr)
+            return 0
     moved = len(parse_items(live)) - len(parse_items(new_live))
     print(f'archived {moved} item(s), held back {len(held)}:')
     for line in held:
         print(line)
-    if args.dry_run or new_live == live:
-        return 0
-    try:
-        _write(args.archive, new_archive)
-        _write(args.file, new_live)
-    except OSError as error:
-        print(f'cannot write the backlog: {error}', file=sys.stderr)
     return 0
 
 

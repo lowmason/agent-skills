@@ -7,7 +7,10 @@ it is dated 2026-11-15 or earlier.
 from __future__ import annotations
 
 import datetime as dt
+import os
+import stat
 from collections import Counter
+from pathlib import Path
 
 import pytest
 
@@ -547,6 +550,153 @@ def test_cli_prints_one_line_per_held_item(tmp_path, capsys):
     ]
 
 
+# Fix round 1, finding 1: only closure notes dated on or after scan_from are read.
+RESCAN = '''# Deferred items
+
+## 12-d — 2026-09-01
+- [x] a → done 2026-10-01: fixed; still worth a future item later.
+      → done 2026-11-05: redone
+- [x] b → done 2026-10-01: fixed
+      → done 2026-11-05: redone; still worth a future item later.
+- [x] c → done 2026-11-05: redone
+      → done in plan 9: still worth a future item later.
+- [x] e → done in plan 9: still worth a future item later.
+      → done 2026-11-05: redone
+'''
+
+
+def test_phrase_only_in_a_note_before_scan_from_moves():
+    live, archived, held = run(RESCAN)
+    assert '- [x] a' not in live
+    assert '- [x] a → done 2026-10-01: fixed; still worth a future item later.\n' in archived
+    assert not any(': a…:' in line for line in held)
+
+
+def test_phrase_in_a_note_on_or_after_scan_from_is_still_held():
+    live, archived, held = run(RESCAN)
+    assert '- [x] b' in live
+    assert '- [x] b' not in archived
+    assert held == ['  held back: 12-d: b…: → done 2026-11-05: redone; still worth a future item later.']
+
+
+def test_undated_note_with_a_phrase_counts_as_older_beside_a_new_note():
+    live, archived, _ = run(RESCAN)
+    # After the new note and before it, an undated note is history.
+    assert '- [x] c' not in live and '- [x] e' not in live
+    assert '- [x] c → done 2026-11-05: redone\n' in archived
+    assert '- [x] e → done in plan 9: still worth a future item later.\n' in archived
+
+
+def _files(tmp_path, live: str = DRY_RUN, archived: str | None = TITLE):
+    live_path, archive_path = tmp_path / 'deferred.md', tmp_path / 'archive.md'
+    live_path.write_text(live, encoding='utf-8')
+    if archived is not None:
+        archive_path.write_text(archived, encoding='utf-8')
+    return live_path, archive_path, ['--file', str(live_path), '--archive', str(archive_path)]
+
+
+def _fail_replace_into(monkeypatch, targets: dict[Path, int]):
+    '''Make `os.replace` raise for each target once it has had its allowed successes.'''
+    real = os.replace
+    calls = Counter()
+
+    def fake(src, dst):
+        dst = Path(dst)
+        calls[dst] += 1
+        if dst in targets and calls[dst] > targets[dst]:
+            raise OSError(f'simulated failure for {dst}')
+        return real(src, dst)
+
+    monkeypatch.setattr(os, 'replace', fake)
+
+
+# Fix round 1, finding 2: both files are written, or neither.
+def test_failed_live_write_restores_the_archive(tmp_path, capsys, monkeypatch):
+    live_path, archive_path, argv = _files(tmp_path)
+    _fail_replace_into(monkeypatch, {live_path: 0})
+    assert main(argv, today=TODAY) == 0
+    out, err = capsys.readouterr()
+    assert 'archived' not in out
+    assert str(live_path) in err and 'both files are unchanged' in err
+    assert live_path.read_text(encoding='utf-8') == DRY_RUN
+    assert archive_path.read_text(encoding='utf-8') == TITLE
+    assert sorted(path.name for path in tmp_path.iterdir()) == ['archive.md', 'deferred.md']
+    monkeypatch.undo()
+    assert main(argv, today=TODAY) == 0
+    assert archive_path.read_text(encoding='utf-8').count('- [x] a → done 2026-01-02') == 1
+    assert '- [x] a' not in live_path.read_text(encoding='utf-8')
+
+
+def test_failed_live_write_removes_a_new_archive(tmp_path, capsys, monkeypatch):
+    live_path, archive_path, argv = _files(tmp_path, archived=None)
+    _fail_replace_into(monkeypatch, {live_path: 0})
+    assert main(argv, today=TODAY) == 0
+    out, err = capsys.readouterr()
+    assert 'archived' not in out
+    assert str(live_path) in err and 'both files are unchanged' in err
+    assert not archive_path.exists()
+    assert live_path.read_text(encoding='utf-8') == DRY_RUN
+
+
+def test_failed_archive_write_changes_nothing(tmp_path, capsys, monkeypatch):
+    live_path, archive_path, argv = _files(tmp_path)
+    _fail_replace_into(monkeypatch, {archive_path: 0})
+    assert main(argv, today=TODAY) == 0
+    out, err = capsys.readouterr()
+    assert 'archived' not in out
+    assert str(archive_path) in err and 'both files are unchanged' in err
+    assert live_path.read_text(encoding='utf-8') == DRY_RUN
+    assert archive_path.read_text(encoding='utf-8') == TITLE
+
+
+def test_failed_rollback_names_the_changed_archive(tmp_path, capsys, monkeypatch):
+    live_path, archive_path, argv = _files(tmp_path)
+    # The archive's first replace succeeds; the restore after the live failure does not.
+    _fail_replace_into(monkeypatch, {live_path: 0, archive_path: 1})
+    assert main(argv, today=TODAY) == 0
+    out, err = capsys.readouterr()
+    assert 'archived' not in out
+    assert str(live_path) in err
+    assert f'{archive_path} is changed' in err
+    assert 'both files are unchanged' not in err
+
+
+# Fix round 1, finding 3: a write keeps each file's mode.
+@pytest.mark.parametrize('live_mode, archive_mode', [(0o644, 0o664), (0o664, 0o644)])
+def test_write_keeps_both_file_modes(tmp_path, live_mode, archive_mode):
+    live_path, archive_path, argv = _files(tmp_path)
+    live_path.chmod(live_mode)
+    archive_path.chmod(archive_mode)
+    assert main(argv, today=TODAY) == 0
+    assert '- [x] a' in archive_path.read_text(encoding='utf-8')
+    assert stat.S_IMODE(live_path.stat().st_mode) == live_mode
+    assert stat.S_IMODE(archive_path.stat().st_mode) == archive_mode
+
+
+def test_new_archive_gets_the_umask_default_mode(tmp_path):
+    live_path, archive_path, argv = _files(tmp_path, archived=None)
+    mask = os.umask(0o022)
+    try:
+        assert main(argv, today=TODAY) == 0
+    finally:
+        os.umask(mask)
+    assert stat.S_IMODE(archive_path.stat().st_mode) == 0o666 & ~0o022
+
+
+# Fix round 1, finding 4: a read error names the file.
+@pytest.mark.parametrize('bad', ['live', 'archive'])
+def test_unreadable_file_is_named_and_nothing_changes(tmp_path, capsys, bad):
+    live_path, archive_path, argv = _files(tmp_path)
+    broken = live_path if bad == 'live' else archive_path
+    broken.write_bytes(b'# Deferred items\n\xff\xfe\n')
+    before = live_path.read_bytes(), archive_path.read_bytes()
+    assert main(argv, today=TODAY) == 0
+    out, err = capsys.readouterr()
+    assert 'archived' not in out
+    assert str(broken) in err
+    assert (live_path.read_bytes(), archive_path.read_bytes()) == before
+
+
 def _items(text: str) -> Counter:
     return Counter((item.section, item.checked, item.text) for item in parse_items(text))
 
@@ -567,7 +717,7 @@ FIXTURES = {
     'dry_run': (DRY_RUN, TITLE), 'tricky': (TRICKY, TITLE),
     'repeated': (REPEATED_LIVE, REPEATED_ARCHIVE), 'odd_spacing': (ODD_SPACING, DATE_ORDER_ARCHIVE),
     'cut_spacing': (CUT_SPACING, TITLE), 'drain_spaced': (DRAIN_SPACED_LIVE, REPEATED_ARCHIVE),
-    'redone': (REDONE, TITLE),
+    'redone': (REDONE, TITLE), 'rescan': (RESCAN, TITLE),
 }
 
 
