@@ -4133,7 +4133,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       pressure-test and micro-test; upstream's planted-defect probe and unnamed-input crash eval
       are ready controls. Size: design. Done when: the spec is approved in `specs/`, or the owner
       records findings 9 and 10 as declined in the drift spec.
-      → done in plan 73 (2026-10-30): `specs/reviewer-and-planning-contract.md` adopted finding 10
+      → done in plan 73 (2026-10-30): `specs/completed/reviewer-and-planning-contract.md` adopted finding 10
       and finding 9 (the step recipe, kept after the F1 comparison); the record is
       `specs/red-baseline-reviewer-planning-contract.md`.
 - [x] Open the brainstorming spec for superpowers drift finding 4 (audit-3-10-26 B5, found

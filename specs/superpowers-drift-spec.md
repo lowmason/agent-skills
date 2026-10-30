@@ -1077,7 +1077,7 @@ Under this repo's proportional-process rule:
   (finding 17). finishing-a-development-branch is the one skill that passes
   our check and fails the stricter bar. The probe item decides the measure.
 - **Done, planning surface:** findings 9 and 10, through plan 73 (2026-10-30).
-  The spec is `specs/reviewer-and-planning-contract.md`. The four reviewer files
+  The spec is `specs/completed/reviewer-and-planning-contract.md`. The four reviewer files
   carry one shared block that `build/check_reviewer_block.py` keeps identical.
   Both executors hand the final review the spec path and the plan's Review Focus
   section. writing-plans writes lean plans with a Review Focus section. The F1

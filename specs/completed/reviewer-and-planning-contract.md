@@ -3,9 +3,7 @@
 > For agentic workers: REQUIRED NEXT SKILL: writing-plans. Plan this spec in a fresh session.
 > Do not build from this file directly.
 
-**Status: APPROVED (owner, 2026-10-29), as committed, including the F1 change, case R4 and
-the $40 micro-test stop.** Designed with the owner on 2026-10-29 through the brainstorming
-skill, after a `/deferred` Design pick.
+**Status: COMPLETE (2026-10-30)** — implemented by plan 73 (`specs/plans/completed/73-reviewer-and-planning-contract.md`) and retired here. Approved by the owner on 2026-10-29, as committed, including the F1 change, case R4 and the $40 micro-test stop. Designed with the owner through the brainstorming skill, after a `/deferred` Design pick. The behavior record is `specs/red-baseline-reviewer-planning-contract.md`.
 
 ## Intent
 
