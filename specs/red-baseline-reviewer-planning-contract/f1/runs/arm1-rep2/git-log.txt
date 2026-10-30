@@ -1,0 +1,8 @@
+19cb1f4 chore(specs): retire plan 1
+3e002d1 docs(specs): record deferred items for plan 1
+5ccbccb fix: handle csv.Error and spaces after commas in quoted fields
+3b8d6a2 feat: add tally.py command-line entry point
+0953ef0 feat: read CSV files and tally amounts by month
+b3cde5f feat: parse amounts and format totals
+3b84ee2 docs(specs): add plan 1 for expense tally
+eacfbe7 Scratch repository for plan 73 F1

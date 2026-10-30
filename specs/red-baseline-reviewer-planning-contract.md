@@ -1032,3 +1032,49 @@ wording round runs (Task 9 Step 3).
 `F1_SHA` is the commit that adds this section. Its skill and agent text is the text at `f5ef4da`.
 The step-recipe commit list, from `git log` subjects that end with `(step recipe)`, is `aaa37f0`,
 `62fe501` and `f5ef4da`. It matches the list in the owner rulings above.
+
+### F1
+
+The full-frame comparison of the writing-plans step recipe (spec section "F1 full-frame comparison (D4)"). It ran on 2026-10-30 with Claude Code 2.1.312 (the `init` record of every execution stream). `F1_SHA` is `f02f958`. The kit is `f1/`, committed in `3f2ef88` and corrected in `6f25102` before any rep ran. Each rep is one scratch repository built by `f1/make_scratch.sh` from `f02f958` and one arm's writing-plans directory. An Opus session wrote and committed the plan. A Sonnet session then executed it with subagent-driven-development, with the Codex seat declined and the final code-reviewer at its Opus pin.
+
+**Arms.** Both arms carry the same reviewers, executors and Review Focus from `f02f958`. Only the step recipe differs.
+
+- Arm 1 is `skills/writing-plans` at `f02f958` with the step-recipe commits reverted, newest first: `f5ef4da`, `62fe501`, `aaa37f0`. The revert applied with no conflict. `SKILL.md` sha256 `47b3ee5d60c3a37101548d28144aebbede7f1f8cc8790c9476588fdc47f117c5`.
+- Arm 2 is `skills/writing-plans` at `f02f958`. `SKILL.md` sha256 `4697983d27935a4a79f95465c7c44d3c8b47171685a565c413bb34155c5f8cdf`.
+
+**Fixture.** `f1/fixture/expense-tally.md` is 1,192 characters. The hidden tests check three planted defects. They are archived after the fourth rep as `f1/hidden/hidden_tests.py`, byte-identical to the `test_hidden.py` that scored the reps. The plan names the copy `test_hidden.py`, but `build/run_suites.py --check` takes any tracked `test_*.py` for a suite that needs registering, and these tests need `F1_REPO` and run only by explicit path, so the copy has another name. Two are inputs the spec implies but does not name: a byte-order mark at the start of a CSV file, and a file name that does not exist. One is a value the spec states: a refund written in parentheses counts as negative. Order of the reps: arm 1 rep 1, arm 2 rep 1, arm 1 rep 2, arm 2 rep 2.
+
+| Arm | Rep | Refund | Byte-order mark | Missing file | Handled | Plan characters | Plan tasks | Ratio | Cost | VOID |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1 | pass | pass | pass | 3/3 | 18,647 | 3 | 15.64 | $2.52 | no |
+| 1 | 2 | pass | pass | pass | 3/3 | 19,695 | 3 | 16.52 | $2.07 | no |
+| 2 | 1 | pass | pass | pass | 3/3 | 9,189 | 2 | 7.71 | $1.78 | no |
+| 2 | 2 | pass | pass | pass | 3/3 | 8,650 | 2 | 7.26 | $1.57 | no |
+
+The ratio is the plan's character count over the fixture spec's 1,192 characters. The cost sums both sessions' `total_cost_usd`.
+
+| Arm | Handled over two reps | Median ratio | Cost |
+|---|---|---|---|
+| 1 (old step recipe) | 6 of 6 | 16.08 | $4.59 |
+| 2 (full new recipe) | 6 of 6 | 7.485 | $3.35 |
+
+The F1 total is $7.94 against the cap of about $80. The pilots before the reps cost $0.041 (the isolation probe) and $0.13 (the capability probe: with only `--allowedTools Bash`, a rep could invoke the `writing-plans` skill and dispatch a subagent, with no permission denial).
+
+**The bar.** Arm 2 handled 6, at least arm 1's 6, and its median ratio 7.485 is lower than 16.08. The bar is met, with arm 2's median ratio at 0.47 times arm 1's.
+
+**Reading notes.**
+
+- Cost check after arm 1 rep 1: `execute_models` names both `claude-opus-5-5` and `claude-sonnet-5-5`, so the cost figures include the subagents. It named both in every rep.
+- Stall check: every execution stream holds a final `code-reviewer` dispatch ("Final whole-branch review"), so no rep stalled. No rep needed a rerun.
+- Audit: `audit_error` is null and `audit_hits` is empty in all four `score.json` files. By hand, a further search of every stream and every persisted session transcript found no `agent-skills`, `"$HOME`, `cd ~`, `~lowell` or `.cache` in any rep, and no use of `EnterWorktree`, `Workflow` or a `code-review` skill. The only matches for "lowell" and `/Users/` are the account email the app injects as `userEmail` context, the owner column of `ls -la` output inside the rep's own scratch repository, and one `uv python list` listing under `~/.local/` in arm 2 rep 2. None is under the four forbidden paths. No rep is VOID.
+
+**Caveats.**
+
+- The spec's caveat: two reps per arm can catch a clear loss. They cannot prove that the arms are equal.
+- All 12 hidden-test results passed, in both arms. F1 shows no loss from the step recipe on these three defects. It could not have shown a gain, because both arms handled everything.
+- Owner ruling (2026-10-30): the byte-order-mark test stays as written. Any reader that skips the header row by position passes it without handling the mark, so that defect adds no signal for such plans. It applies to both arms equally.
+- Owner ruling (2026-10-30): the missing-file test has no exit-status check. It requires the file name in stderr and no traceback.
+- The VOID audit matches whole strings. It still misses some spellings of a forbidden path (a quoted `"$HOME"/Projects`, `~lowell/Projects`, a path relative to the home directory after `cd ~`). The extra by-hand search above is the backstop, and it found none.
+- Each rep took 6 to 9 minutes (arm 1: 9 and 8, arm 2: 7 and 6, from the plan stream's creation to the score file) and $1.57 to $2.52, far below the plan's budget of about 90 minutes and $31 per rep.
+
+**Gate (Task 11 Step 3).** Arm 2 handled at least as many defects as arm 1 and its median ratio is lower, so the step recipe ships. The step-recipe commits `aaa37f0`, `62fe501` and `f5ef4da` stay. No revert.
