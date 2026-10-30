@@ -1,0 +1,1 @@
+Use the writing-plans skill to write the implementation plan for the approved spec `specs/expense-tally.md`. I approve the plan as you write it: do not ask me questions, and make a reasonable call wherever the spec leaves one open. Commit the plan, then stop. Do not execute it, and do not start another session.
