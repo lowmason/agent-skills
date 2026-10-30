@@ -120,6 +120,29 @@ def test_skipped_line_is_exempt():
     assert unmarked('> Skipped: needs a DSN → deferred (same successor item)') == []
 
 
+def test_skipped_line_with_second_deferral_is_flagged():
+    # Text after the Skipped line's own arrow note is not exempt.
+    line = '> Skipped: needs a DSN → deferred; Step 5 is deferred to a future plan'
+    assert unmarked(line) == [Candidate(1, line)]
+    # The variants found in plans 19, 36 and 49 stay exempt.
+    assert unmarked('> **Skipped: the human-run half → deferred.** Req 12') == []
+    assert unmarked('> **Skipped: the human-run half → deferred.**') == []
+    assert unmarked('> Skipped: no valid reps → deferred (same successor item)') == []
+    assert unmarked("> Skipped: Task 9's runs → deferred.") == []
+
+
+def test_negated_deferral_statement_is_not_flagged():
+    assert unmarked('Nothing is deferred.') == []
+    assert unmarked('In this plan nothing was deferred.') == []
+    assert unmarked('No new work is deferred by this task.') == []
+    assert unmarked('None are deferred.') == []
+    # A real deferral stays flagged.
+    assert unmarked('Step 5 is deferred to a later plan.') == [
+        Candidate(1, 'Step 5 is deferred to a later plan.')]
+    assert unmarked('The scorecard fix is deferred.') == [
+        Candidate(1, 'The scorecard fix is deferred.')]
+
+
 def test_code_span_neither_flags_nor_marks():
     assert unmarked('`deferred to a future plan`') == []
     assert unmarked(PLAN_4 + ' `→ item: x`') == [Candidate(1, PLAN_4 + ' `→ item: x`')]
@@ -143,3 +166,14 @@ def test_scan_cli_prints_path_line_text_and_exits_0(tmp_path, capsys):
     f.write_text(PLAN_4 + '\n', encoding='utf-8')
     assert main(['scan', str(f)]) == 0
     assert capsys.readouterr().out == f'{f}:1: {PLAN_4.strip()}\n'
+
+
+def test_non_utf8_file_does_not_stop_the_scan(tmp_path, capsys):
+    bad = tmp_path / 'bad.md'
+    bad.write_bytes(b'\xff\xfe not utf-8 \x80\n')
+    good = tmp_path / 'good.md'
+    good.write_text(PLAN_4 + '\n', encoding='utf-8')
+    assert main(['scan', str(bad), str(good)]) == 0
+    captured = capsys.readouterr()
+    assert captured.out == f'{good}:1: {PLAN_4.strip()}\n'
+    assert f'{bad}: cannot read' in captured.err

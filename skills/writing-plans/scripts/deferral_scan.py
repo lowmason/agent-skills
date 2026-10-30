@@ -27,11 +27,16 @@ The scan reads prose only:
 - Inline code spans are blanked before matching. A run of N backticks closes
   only on a run of exactly N, and a span may wrap a line. So a note form or a
   quoted phrase in backticks neither flags nor marks anything.
-- Two lines of the Plan Completion Protocol are exempt: its status header
-  (`deferred items in specs/deferred_items.md` or `nothing deferred`) and its
-  `> Skipped: <why> → deferred` lines, which the protocol always files as items.
-  A Skipped line stays exempt with a bold `Skipped:` or with text after the
-  arrow, such as `→ deferred (same successor item)`.
+- Two forms of the Plan Completion Protocol are exempt. Its status header
+  (`deferred items in specs/deferred_items.md` or `nothing deferred`) is exempt
+  as a whole line. Its `> Skipped: <why> → deferred` note, which the protocol
+  always files as an item, is exempt from the line start through the first
+  `→ deferred`, plus an optional parenthetical, final period and closing bold
+  marker (`> **Skipped: … → deferred (reason).**`). Any text after that is read,
+  so a second deferral on the same line is still found.
+- A passive deferral whose subject is a negation (`nothing`, `none`, or `no`
+  and up to two more words, right before the verb) is a statement that nothing
+  was put off, so it is not a candidate.
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
@@ -50,15 +55,26 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+# A passive deferral: `the T6 gap is deferred`; not `is deferred items`. Named,
+# because a negated subject before it (NEGATED_SUBJECT) cancels the match.
+PASSIVE = re.compile(
+    r'\b(?:is|are|was|were|be|been|stays?|remains?)\s+deferred\b(?![\s-]*items?\b)',
+    re.IGNORECASE,
+)
+# `nothing is deferred`, `none are deferred`, `no new work is deferred`: the
+# negation ends the text right before PASSIVE's verb.
+NEGATED_SUBJECT = re.compile(r'\b(?:nothing|none|no(?:\s+[\w-]+){0,2})\s+$', re.IGNORECASE)
+NEGATION_WINDOW = 80
+
 # Deferral phrases, matched case-insensitively. `\s+` between words lets a phrase
 # wrap across lines. Bare `defer` and `deferred` are left out on purpose: in plans
 # and specs most of their hits name the backlog file, an existing item or the
 # `/deferred` command, not new work being put off.
-PHRASES = tuple(re.compile(pattern, re.IGNORECASE) for pattern in (
+PHRASES = (
     # work handed to a later moment: `deferred to a future plan`, `deferred until v2`
-    r'\bdeferred\s+(?:to|until)\b',
-    # a passive deferral: `the T6 gap is deferred`; not `is deferred items`
-    r'\b(?:is|are|was|were|be|been|stays?|remains?)\s+deferred\b(?![\s-]*items?\b)',
+    re.compile(r'\bdeferred\s+(?:to|until)\b', re.IGNORECASE),
+    PASSIVE,
+) + tuple(re.compile(pattern, re.IGNORECASE) for pattern in (
     # work named for a later unit of work: `worth a future item`, `a follow-up plan`
     r'\b(?:future|follow-?up)\s+(?:item|plan|task|pass|pr)\b',
     # a hazard named but not filed: `a separate, unrecorded item`
@@ -79,7 +95,10 @@ STATUS_HEADER = re.compile(
     r'^\*\*Status: COMPLETE \([^)]*\)\*\* — .*'
     r'(?:deferred items in specs/deferred_items\.md|nothing deferred)\s*$'
 )
-SKIPPED_LINE = re.compile(r'^\s*>\s*(?:\*\*)?Skipped:.*→\s*deferred\b')
+# The exempt part of a Skipped note; the rest of its line is read as prose.
+SKIPPED_NOTE = re.compile(
+    r'^\s*>\s*(?:\*\*)?Skipped:.*?→\s*deferred\b(?:\s*\([^)]*\))?\.?(?:\*\*)?'
+)
 FENCE_OPEN = re.compile(r'^\s*(`{3,}|~{3,})(.*)$')
 LIST_ITEM = re.compile(r'^\s*(?:[-*]|\d+\.)\s')
 HEADING = re.compile(r'^\s{0,3}#{1,6}(?:\s|$)')
@@ -160,8 +179,19 @@ def _blank_code_spans(text: str) -> str:
     return ''.join(chars)
 
 
-def _exempt(line: str) -> bool:
-    return bool(STATUS_HEADER.match(line.strip()) or SKIPPED_LINE.match(line))
+def _without_exempt(line: str) -> str:
+    '''Blank the protocol's exempt text in a line, keeping its length.'''
+    if STATUS_HEADER.match(line.strip()):
+        return ' ' * len(line)
+    note = SKIPPED_NOTE.match(line)
+    if note:
+        return ' ' * note.end() + line[note.end():]
+    return line
+
+
+def _negated(prose: str, match: re.Match[str]) -> bool:
+    before = prose[max(0, match.start() - NEGATION_WINDOW):match.start()]
+    return bool(NEGATED_SUBJECT.search(before))
 
 
 def unmarked(text: str) -> list[Candidate]:
@@ -169,7 +199,7 @@ def unmarked(text: str) -> list[Candidate]:
     lines = text.splitlines()
     candidates: list[Candidate] = []
     for unit in _units(lines, _readable_lines(lines)):
-        unit_lines = ['' if _exempt(lines[i]) else lines[i] for i in unit]
+        unit_lines = [_without_exempt(lines[i]) for i in unit]
         prose = _blank_code_spans('\n'.join(unit_lines))
         if MARKER.search(prose):
             continue
@@ -179,7 +209,9 @@ def unmarked(text: str) -> list[Candidate]:
         hit_rows: set[int] = set()
         for phrase in PHRASES:
             for match in phrase.finditer(prose):
-                row = max(r for r, start in enumerate(starts) if start <= match.start())
+                if phrase is PASSIVE and _negated(prose, match):
+                    continue
+                row =max(r for r, start in enumerate(starts) if start <= match.start())
                 hit_rows.add(row)
         for row in sorted(hit_rows):
             index = unit[row]
@@ -191,7 +223,7 @@ def _scan(paths: list[str]) -> int:
     for path in paths:
         try:
             text = Path(path).read_text(encoding='utf-8')
-        except OSError as error:
+        except (OSError, UnicodeDecodeError) as error:
             print(f'{path}: cannot read: {error}', file=sys.stderr)
             continue
         for candidate in unmarked(text):
