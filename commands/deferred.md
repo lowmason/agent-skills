@@ -34,7 +34,7 @@ backlog (derive-roadmap's gap rubric records the same boundary).
    - **A Retire or Quick fix tick note that names follow-up work** carries a
      marker (**Markers** in the same reference). Append the item under the
      schema and add `→ item: <section heading>`, or add `→ dropped: <why>` only
-     on the user's word, or when the work has already landed, citing the check.
+     on the user's word.
    - **Plan** → use the writing-plans skill with the selected items as the
      requirements; name the plan for the theme, since there is no spec.
      Name the picked items in the hand-off, so the session that commits the
@@ -58,5 +58,6 @@ backlog (derive-roadmap's gap rubric records the same boundary).
    End the pass by running the writing-plans skill's
    `scripts/archive_deferred.py` with `uv run`. It moves ticked items more
    than 45 days old, and removed items, to `specs/completed/deferred_items.md`.
-   If it holds an item back, resolve the listed text as **Markers** says and
-   run it again. Commit both files with the pass's other edits.
+   If it holds an item back, tell the user which one. On their word, resolve
+   the listed text as **Markers** says and run it again. Commit both files
+   with the pass's other edits.
