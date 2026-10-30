@@ -5,18 +5,39 @@
 # ///
 '''Report deferred-backlog health from specs/deferred_items.md.
 
-Parses the append-only backlog into per-section items, then reports open and
-ever-closed counts, closure rate, an age histogram, and the aged tail. Age comes
-from each item's ``## <plan> — <YYYY-MM-DD>`` section header, which the Plan
-Completion Protocol has always written, so every existing item already carries
-one and no backfill is needed.
+Parses the append-only backlog into items. An item is a column-0 checkbox line
+plus every line after it up to the next item or `##` heading, so the dated notes
+on its continuation lines belong to it. The report gives open and ever-closed
+counts, closure rate, an age histogram, and the aged tail. An item ages from its
+`## <plan> — <YYYY-MM-DD>` section header, which the Plan Completion Protocol
+has always written, so every existing item already carries one and no backfill
+is needed.
+
+Notes start with `→`, a lowercase word and an optional ISO date. A note inside an
+inline code span is a quotation and sets nothing. The checkbox alone decides open
+or closed: an open item with a `→ done` note stays open and the report warns.
+For an open item only `→ held`, `→ triggered` and `→ planned` set the aging
+state, and the latest of those wins. The first rule that matches decides:
+
+1. `triggered`: ages from the note's date, not the section's date.
+2. `held`: not aged, counted as watching.
+3. `planned`: not aged, counted as planned, while the file the note names is
+   live (it exists and no path part is `completed`). A gone file falls through.
+4. `watch`: the text has `Revisit if:` and no `Done when:`. Not aged, counted as
+   watching.
+5. `work`: everything else, including an item with an `→ owner-only` note. It
+   ages from the section date.
+
+Watching and planned items count as open but stay out of the aged tail, the
+age histogram and the oldest-open figures.
 
 Sections whose heading carries no usable date still contribute to the
 open/closed counts but are excluded from every age figure and reported as
 ``undated_open``. That covers three cases: no date at all (for example the
 ``## Aged-backlog acknowledgements`` log), a date that is not a real calendar
 date (``2026-09-31``), and a date in the future — the last two being typos in a
-hand-written header rather than ages.
+hand-written header rather than ages. The count covers only items that would
+otherwise age, so a watch item in an undated section is not reported.
 
 Usage:
     python3 <this-skill-dir>/scripts/deferred_stats.py
@@ -35,14 +56,27 @@ import datetime as dt
 import json
 import re
 import sys
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
 
 DEFAULT_AGED_DAYS = 45
 VOLUME_THRESHOLD = 20
+FIRST_WORDS_COUNT = 6
 DEFAULT_PATH = Path('specs/deferred_items.md')
 
 SECTION_RE = re.compile(r'^##\s+(?P<name>.+?)(?:\s+—\s+(?P<date>\d{4}-\d{2}-\d{2}))?\s*$')
 ITEM_RE = re.compile(r'^- \[(?P<mark>[ xX])\]')
+NOTE_RE = re.compile(
+    r'→[ \t]*(?P<kind>[a-z]+(?:-[a-z]+)*)(?![\w-])'
+    r'(?:[ \t]+(?P<date>\d{4}-\d{2}-\d{2})(?!\d))?'
+)
+CODE_SPAN_RE = re.compile(r'(`+).+?\1', re.DOTALL)
+MD_PATH_RE = re.compile(r'[\w./-]+\.md(?!\w)')
+
+STATE_KINDS = frozenset({'held', 'triggered', 'planned'})
+WATCH_LINE = 'Revisit if:'
+WORK_LINE = 'Done when:'
 
 AGE_BUCKETS: tuple[tuple[str, int, int | None], ...] = (
     ('0-14d', 0, 14),
@@ -53,14 +87,34 @@ AGE_BUCKETS: tuple[tuple[str, int, int | None], ...] = (
 )
 
 
-def _parse_date(raw: str | None) -> dt.date | None:
-    '''Header date, or None when there is no usable one.
+@dataclass
+class Note:
+    '''One `→ <kind> <date>: <rest>` note, cut at the end of its line.'''
 
-    SECTION_RE only matches the date's *shape*, so `2026-09-31` reaches here and
-    ``fromisoformat`` rejects it. These dates are hand-typed by whoever ran the
-    Plan Completion Protocol, so that typo is the expected failure — and parsing
-    is a single pass before any output, so letting it raise would suppress every
-    other section's counts and exit non-zero, breaking the always-exits-0
+    kind: str
+    date: dt.date | None
+    rest: str
+
+
+@dataclass
+class Item:
+    '''A checkbox item. `text` is everything after the checkbox, notes included.'''
+
+    section: str
+    section_date: dt.date | None
+    checked: bool
+    text: str
+    notes: list[Note] = field(default_factory=list)
+
+
+def _parse_date(raw: str | None) -> dt.date | None:
+    '''Header or note date, or None when there is no usable one.
+
+    SECTION_RE and NOTE_RE only match the date's *shape*, so `2026-09-31` reaches
+    here and ``fromisoformat`` rejects it. These dates are hand-typed by whoever
+    ran the Plan Completion Protocol, so that typo is the expected failure — and
+    parsing is a single pass before any output, so letting it raise would suppress
+    every other section's counts and exit non-zero, breaking the always-exits-0
     contract both callers rely on. Losing one section's age is the cheaper loss.
     '''
     if raw is None:
@@ -71,31 +125,144 @@ def _parse_date(raw: str | None) -> dt.date | None:
         return None
 
 
-def parse_sections(text: str) -> list[dict]:
-    '''Split the backlog into sections, counting checkbox items in each.
+def path_is_live(path: str) -> bool:
+    '''True when `path` exists and no part of it is a `completed` folder.'''
+    target = Path(path)
+    return target.exists() and 'completed' not in target.parts
 
-    Lines before the first ``##`` heading are preamble and are ignored. Only
-    lines starting at column 0 with ``- [ ]`` or ``- [x]`` count as items, so
-    indented continuation lines of a wrapped item are not double-counted.
+
+def _mask_code(text: str) -> str:
+    '''Blank every inline code span (newlines kept), so offsets stay valid.
+
+    A note form quoted in backticks is prose about the protocol, not a note.
     '''
-    sections: list[dict] = []
-    current: dict | None = None
+    return CODE_SPAN_RE.sub(lambda span: re.sub(r'[^\n]', ' ', span.group(0)), text)
+
+
+def _find_notes(text: str, masked: str) -> list[tuple[int, int, Note]]:
+    '''Every note outside a code span, as (start, end, note).
+
+    A note ends at its line's end or at the next note, whichever comes first.
+    `masked` is `_mask_code(text)`; offsets are shared.
+    '''
+    matches = list(NOTE_RE.finditer(masked))
+    found = []
+    for index, match in enumerate(matches):
+        line_end = text.find('\n', match.end())
+        end = len(text) if line_end == -1 else line_end
+        if index + 1 < len(matches):
+            end = min(end, matches[index + 1].start())
+        rest = text[match.end():end].lstrip(' \t:').rstrip()
+        note = Note(match.group('kind'), _parse_date(match.group('date')), rest)
+        found.append((match.start(), end, note))
+    return found
+
+
+def _cut(text: str, spans: list[tuple[int, int]]) -> str:
+    pieces, cursor = [], 0
+    for start, end in spans:
+        pieces.append(text[cursor:start])
+        cursor = end
+    pieces.append(text[cursor:])
+    return ''.join(pieces)
+
+
+def _body(item: Item) -> tuple[str, str]:
+    '''The item's text with every note cut out, plain and with code spans masked.'''
+    masked = _mask_code(item.text)
+    spans = [(start, end) for start, end, _ in _find_notes(item.text, masked)]
+    return _cut(item.text, spans), _cut(masked, spans)
+
+
+def first_words(item: Item) -> str:
+    '''The first words of the item's own text, notes left out.'''
+    return ' '.join(_body(item)[0].split()[:FIRST_WORDS_COUNT])
+
+
+def parse_items(text: str) -> list[Item]:
+    '''Split the backlog into items, each with its continuation lines and notes.
+
+    Lines before the first ``##`` heading are preamble and are ignored. Only a
+    line starting at column 0 with ``- [ ]`` or ``- [x]`` begins an item. Any
+    other line joins the open item, which keeps a wrapped line or an indented
+    nested bullet, and its notes, with its item. A non-blank line at column 0
+    that is neither a heading nor an item (such as a bullet in the
+    ``## Aged-backlog acknowledgements`` log) closes the open item.
+    '''
+    items: list[Item] = []
+    heading: tuple[str, dt.date | None] | None = None
+    checked = False
+    lines: list[str] = []
+
+    def close() -> None:
+        if lines and heading is not None:
+            body = '\n'.join(lines)
+            notes = [note for _, _, note in _find_notes(body, _mask_code(body))]
+            items.append(Item(heading[0], heading[1], checked, body, notes))
+        lines.clear()
+
     for line in text.splitlines():
-        heading = SECTION_RE.match(line)
-        if heading:
-            current = {
-                'name': heading.group('name').strip(),
-                'date': _parse_date(heading.group('date')),
-                'open': 0,
-                'closed': 0,
-            }
-            sections.append(current)
+        section = SECTION_RE.match(line)
+        if section:
+            close()
+            heading = (section.group('name').strip(), _parse_date(section.group('date')))
             continue
-        item = ITEM_RE.match(line)
-        if item and current is not None:
-            key = 'open' if item.group('mark') == ' ' else 'closed'
-            current[key] += 1
-    return sections
+        start = ITEM_RE.match(line)
+        if start and heading is not None:
+            close()
+            checked = start.group('mark') != ' '
+            lines.append(line[start.end():].strip())
+            continue
+        if not lines or not line.strip():
+            continue
+        if line[0].isspace():
+            lines.append(line.strip())
+        else:
+            close()
+    close()
+    return items
+
+
+def _latest_state_note(notes: list[Note]) -> Note | None:
+    '''The `held`, `triggered` or `planned` note with the latest date.
+
+    An undated note sorts before any dated one. A tie goes to the note written
+    later, since the backlog is append-only.
+    '''
+    state_notes = [(note.date or dt.date.min, position, note)
+                   for position, note in enumerate(notes) if note.kind in STATE_KINDS]
+    return max(state_notes)[2] if state_notes else None
+
+
+def _planned_file_is_live(note: Note, is_live: Callable[[str], bool]) -> bool:
+    path = MD_PATH_RE.search(note.rest)
+    return path is not None and is_live(path.group(0))
+
+
+def aging_state(
+    item: Item,
+    is_live: Callable[[str], bool] = path_is_live,
+) -> tuple[str, dt.date | None]:
+    '''The item's aging state and the date it ages from.
+
+    The state is one of `triggered`, `held`, `planned`, `watch` or `work`, decided
+    by the first rule of the module docstring that matches. The date is None for
+    a state that does not age, and for `work` or `triggered` when there is no
+    usable date to age from. A `triggered` note with no date ages from the
+    section date.
+    '''
+    latest = _latest_state_note(item.notes)
+    if latest is not None:
+        if latest.kind == 'triggered':
+            return 'triggered', latest.date or item.section_date
+        if latest.kind == 'held':
+            return 'held', None
+        if _planned_file_is_live(latest, is_live):
+            return 'planned', None
+    flat = ' '.join(_body(item)[1].split())
+    if WATCH_LINE in flat and WORK_LINE not in flat:
+        return 'watch', None
+    return 'work', item.section_date
 
 
 def _bucket_label(days: int) -> str:
@@ -106,46 +273,57 @@ def _bucket_label(days: int) -> str:
 
 
 def compute_stats(
-    sections: list[dict],
+    items: list[Item],
     today: dt.date,
     aged_days: int = DEFAULT_AGED_DAYS,
+    is_live: Callable[[str], bool] = path_is_live,
 ) -> dict:
-    '''Aggregate parsed sections into the reporting contract.
+    '''Aggregate parsed items into the reporting contract.
 
     ``closure_rate`` is closed / (open + closed) — items are never deleted from
     the backlog, so currently-closed equals ever-closed. It is ``None`` for an
     empty backlog rather than 0.0, so "nothing here yet" reads differently from
     "nothing ever closed".
+
+    ``watching`` counts `held` and `watch` items and ``planned`` counts `planned`
+    items. Both are open, and neither enters ``aged_open``, the histogram or the
+    oldest-open figures. ``open_with_done_note`` lists the open items that carry
+    a `→ done` note, for the report's warning.
     '''
-    open_count = sum(s['open'] for s in sections)
-    closed_count = sum(s['closed'] for s in sections)
+    open_items = [item for item in items if not item.checked]
+    open_count = len(open_items)
+    closed_count = len(items) - open_count
     total = open_count + closed_count
 
     histogram = {label: 0 for label, _, _ in AGE_BUCKETS}
     aged_open = 0
     undated_open = 0
+    watching = 0
+    planned = 0
     oldest_days: int | None = None
     oldest_section: str | None = None
 
-    for section in sections:
-        if not section['open']:
+    for item in open_items:
+        state, since = aging_state(item, is_live)
+        if state in ('held', 'watch'):
+            watching += 1
             continue
-        if section['date'] is None:
-            undated_open += section['open']
+        if state == 'planned':
+            planned += 1
             continue
-        days = (today - section['date']).days
-        if days < 0:
-            # Dated in the future: a typo, not an age. Bucketing it would put a
-            # phantom item in the oldest bucket (_bucket_label's fallback), so
-            # it degrades exactly like an unparseable date.
-            undated_open += section['open']
+        days = None if since is None else (today - since).days
+        if days is None or days < 0:
+            # No date, or dated in the future: a typo, not an age. Bucketing it
+            # would put a phantom item in the oldest bucket (_bucket_label's
+            # fallback), so it degrades exactly like an unparseable date.
+            undated_open += 1
             continue
-        histogram[_bucket_label(days)] += section['open']
+        histogram[_bucket_label(days)] += 1
         if days > aged_days:
-            aged_open += section['open']
+            aged_open += 1
         if oldest_days is None or days > oldest_days:
             oldest_days = days
-            oldest_section = section['name']
+            oldest_section = item.section
 
     return {
         'exists': True,
@@ -156,6 +334,12 @@ def compute_stats(
         'aged_days': aged_days,
         'aged_open': aged_open,
         'undated_open': undated_open,
+        'watching': watching,
+        'planned': planned,
+        'open_with_done_note': [
+            {'section': item.section, 'first_words': first_words(item)}
+            for item in open_items if any(note.kind == 'done' for note in item.notes)
+        ],
         'oldest_open_days': oldest_days,
         'oldest_open_section': oldest_section,
         'age_histogram': [
@@ -182,6 +366,15 @@ def format_report(stats: dict) -> str:
         f'Deferred backlog: {stats["open"]} open, {stats["closed"]} ever closed '
         f'(closure rate {rate_text}), aged >{stats["aged_days"]}d: {stats["aged_open"]}.',
     ]
+    if stats['watching']:
+        lines.append(f'  Watching: {stats["watching"]} (Revisit-if or held; not aged).')
+    if stats['planned']:
+        lines.append(f'  Planned: {stats["planned"]} (in a live plan or spec; not aged).')
+    for flagged in stats['open_with_done_note']:
+        lines.append(
+            f'  Warning: open item has a → done note: '
+            f'{flagged["section"]}: {flagged["first_words"]}…'
+        )
     if stats['oldest_open_days'] is not None:
         lines.append(
             f'  Oldest open: {stats["oldest_open_days"]}d '
@@ -220,7 +413,7 @@ def main(argv: list[str] | None = None) -> int:
         stats = absent_stats(args.aged_days)
     else:
         text = args.file.read_text(encoding='utf-8')
-        stats = compute_stats(parse_sections(text), dt.date.today(), args.aged_days)
+        stats = compute_stats(parse_items(text), dt.date.today(), args.aged_days)
 
     print(json.dumps(stats, indent=2) if args.json else format_report(stats))
     return 0
