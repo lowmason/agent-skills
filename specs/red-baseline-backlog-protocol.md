@@ -50,8 +50,16 @@ leak word anyway. The pass-rule strings in `cases.py` are never written into a p
 
 `run_reps.sh isolation_probe.txt /tmp/plan74-probe 1 1 claude-sonnet-5-5` on Claude Code
 2.1.312: all five lines `NO` (no `CLAUDE.md` text, no output style, no rule, no SessionStart
-context, no memory). `show_reps.py`: one turn, no extra iterations, one model, cost $0.008. The
-isolation holds, judged as plan 73's record judges it.
+context, no memory). `show_reps.py`: one turn, no extra iterations, one model, cost $0.008.
+
+`run_reps.sh` writes `--output-format json`, which does not carry the init record, so that half of
+plan 73's check was not made during the control runs. The controller made it afterward with one
+probe on the same Claude Code 2.1.312, the same model, the same flags and the same
+`isolation_probe.txt`, with `--output-format stream-json --verbose` added (cost $0.003). Init record:
+`tools` empty, `output_style` `default`, `mcp_servers` empty, plugins the three built-in ones, skills
+and agents the built-in ones only (none of the user's personal skills or agents). The reply was
+again all five lines `NO`. The isolation holds on both of plan 73's checks. A later Claude Code
+version needs both checks again, and the init check needs the stream-json form.
 
 ## Reading rules
 
@@ -264,11 +272,12 @@ Task 10 fills this section.
 | Run | Reps | Spend |
 |---|---|---|
 | Isolation probe | 1 | $0.01 |
+| Isolation probe, init record (stream-json) | 1 | $0.003 |
 | Control R1 | 5 | $0.21 |
 | Control R2 | 5 | $0.20 |
 | Control R3 | 5 | $0.12 |
 | Control R4 | 5 | $0.26 |
 | Control R5 | 5 | $0.17 |
-| Total so far | 26 | $0.96 |
+| Total so far | 27 | $0.96 |
 
 The control arm stayed far below its $20 stop. The kit stop is $40.
