@@ -42,7 +42,9 @@ Usage:
 
 Prints `archived <n> item(s), held back <k>:` and then one line per held item.
 Always exits 0; a failure prints a message that names the file on stderr. A
-missing backlog file means nothing to archive. A missing archive file starts as
+missing backlog file means nothing to archive. An archive path that names the
+backlog file itself, by any spelling or symlink, is refused before any read or
+write. A missing archive file starts as
 the `# Deferred items` title line. Both files are written through temporary
 files and renames, archive first. When the second rename fails, the archive is
 put back, so both files change or neither does, and the count line prints only
@@ -411,6 +413,20 @@ def _remove_folder(folder: Path) -> None:
         pass
 
 
+def _same_file(first: Path, second: Path) -> bool:
+    '''True when both paths name one file, after symlinks and `..` are resolved.
+
+    A path that cannot be resolved, such as a symlink loop, is left to the read
+    or the write to report.
+    '''
+    try:
+        if first.resolve() == second.resolve():
+            return True
+        return os.path.samefile(first, second)
+    except (OSError, RuntimeError):
+        return False
+
+
 def main(argv: list[str] | None = None, today: dt.date | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -426,6 +442,10 @@ def main(argv: list[str] | None = None, today: dt.date | None = None) -> int:
                         help='print what would move and write nothing')
     args = parser.parse_args(argv)
 
+    if _same_file(args.file, args.archive):
+        print(f'{args.file} and {args.archive} are the same file; nothing archived',
+              file=sys.stderr)
+        return 0
     try:
         live = args.file.read_text(encoding='utf-8')
     except FileNotFoundError:

@@ -697,6 +697,37 @@ def test_unreadable_file_is_named_and_nothing_changes(tmp_path, capsys, bad):
     assert (live_path.read_bytes(), archive_path.read_bytes()) == before
 
 
+# Final review, finding 1: an archive path that is the backlog itself is refused.
+def _same_file_argvs(tmp_path, monkeypatch) -> dict[str, tuple[list[str], Path]]:
+    '''Each way to name the backlog as its own archive, with the file it names.'''
+    monkeypatch.chdir(tmp_path)
+    live_path = tmp_path / 'deferred.md'
+    live_path.write_text(DRY_RUN, encoding='utf-8')
+    (tmp_path / 'link.md').symlink_to(live_path)
+    default_archive = tmp_path / 'specs' / 'completed' / 'deferred_items.md'
+    default_archive.parent.mkdir(parents=True)
+    default_archive.write_text(DRY_RUN, encoding='utf-8')
+    return {
+        'equal': (['--file', str(live_path), '--archive', str(live_path)], live_path),
+        'relative': (['--file', 'deferred.md', '--archive', str(live_path)], live_path),
+        'symlink': (['--file', str(live_path), '--archive', 'link.md'], live_path),
+        'default': (['--file', 'specs/completed/deferred_items.md'], default_archive),
+    }
+
+
+@pytest.mark.parametrize('case', ['equal', 'relative', 'symlink', 'default'])
+@pytest.mark.parametrize('dry_run', [False, True])
+def test_archive_that_is_the_backlog_is_refused(tmp_path, capsys, monkeypatch, case, dry_run):
+    argv, target = _same_file_argvs(tmp_path, monkeypatch)[case]
+    assert main(argv + ['--dry-run'] * dry_run, today=TODAY) == 0
+    out, err = capsys.readouterr()
+    assert 'archived' not in out
+    assert 'same file' in err and len(err.splitlines()) == 1
+    assert target.read_text(encoding='utf-8') == DRY_RUN
+    assert (tmp_path / 'link.md').is_symlink()
+    assert sorted(path.name for path in tmp_path.iterdir()) == ['deferred.md', 'link.md', 'specs']
+
+
 def _items(text: str) -> Counter:
     return Counter((item.section, item.checked, item.text) for item in parse_items(text))
 
