@@ -394,14 +394,14 @@ completion — the aged tail is gated later, at
 finishing-a-development-branch.
 
 **5. Retire.** First, run
-`uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> <spec>` and
-resolve each line it lists with a marker (**Markers**, same reference).
-Then `git mv` the plan to `specs/plans/completed/`, in one
-`chore(specs): retire plan <id>` commit. Retire the spec to
-`specs/completed/` (marked complete at top) in the same commit **only if**
-the spec file exists and no other live plan in `specs/plans/` implements it
-(match by the `<spec-name>` suffix in plan filenames). Spec-less plans and
-shared specs leave the spec untouched. Re-point moved files' relative links
+`uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> [<spec>]` and
+resolve each line it lists with a marker (**Markers**, same reference);
+name the spec only if it retires, below. Then `git mv` the plan to
+`specs/plans/completed/`, in one `chore(specs): retire plan <id>` commit.
+Retire the spec to `specs/completed/` (marked complete at top) in the same
+commit **only if** the spec file exists and no other live plan in
+`specs/plans/` implements it (match by the `<spec-name>` suffix in plan
+filenames); otherwise it stays. Re-point moved files' relative links
 (`../skills/…` becomes `../../skills/…`).
 
 A merge or PR carries these final commits; a discarded branch takes them.
