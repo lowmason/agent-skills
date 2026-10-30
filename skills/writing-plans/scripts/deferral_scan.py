@@ -45,17 +45,24 @@ The scan reads prose only:
   `Known gap: no backoff is deferred` stays a candidate. Nothing else opens a
   clause. None of the up-to-three words may be `but`, `except`, `besides`,
   `beyond`, `apart`, `aside`, `save` or `other than`, so `nothing but the
-  scorecard is deferred` stays a candidate. The exemption also ends when the
-  text right after the verb, past optional whitespace and one optional comma,
-  starts with `except`, `but`, `other than`, `apart from`, `aside from`,
-  `besides` or `save for`: `nothing is deferred except the scorecard` stays a
-  candidate. Only that adjacent text is read, not the rest of the sentence.
-  When in doubt the scan flags, so `with no tests is deferred`, `the gap that
-  no test covers is deferred`, `such as no backoff`, a spaced hyphen and a line
-  break inside a sentence all leave a candidate. Two known gaps remain: an
-  `and` clause such as `X and nothing else is deferred` is exempt, and so is an
-  exception that does not start right after the verb, as in `nothing is
-  deferred here except the scorecard`.
+  scorecard is deferred` stays a candidate. The exemption also ends on an
+  exception after the verb, read two ways. First, the text right after the
+  verb, past optional whitespace (a line break included) and one optional
+  comma, starts with `except`, `but`, `other than`, `apart from`, `aside from`,
+  `besides` or `save for`. Second, the rest of the line, up to the next `.`,
+  `!` or `?`, holds `except`, `excepting`, `excluding`, `other than`, `apart
+  from`, `aside from`, `with the exception` or `barring` as whole words. So
+  `nothing is deferred except the scorecard`, `nothing is deferred here except
+  the scorecard` and `nothing is deferred (except the scorecard)` stay
+  candidates. When in doubt the scan flags, so `with no tests is deferred`,
+  `the gap that no test covers is deferred`, `such as no backoff`, a spaced
+  hyphen, a line break inside a sentence and a later exception word in a second
+  clause (`nothing is deferred; all tests pass except the flaky one`) all leave
+  a candidate. Known gaps remain, each still exempt: an `and` clause (`X and
+  nothing else is deferred`, `X and no other work is deferred`), a bare `no`
+  after `;` or a full stop (`Known gap; no backoff is deferred.`, `Known gap.
+  No backoff is deferred.`), and an exception word after the verb that is in
+  neither list, such as `beyond`, `, only`, `save the` or `unless`.
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
@@ -104,9 +111,22 @@ NEGATED_SUBJECT = re.compile(
 )
 # An exception right after a negated PASSIVE match names the deferred work:
 # `nothing is deferred except the scorecard`, `, except for`, `but the scorecard`.
-# Only the text right after the match is read, never the rest of the sentence.
+# Its `\s*` crosses a line break, so `nothing is deferred` and `except the
+# scorecard` on the next line of the unit are read as one.
 EXCEPTION_TAIL = re.compile(
     r'\s*,?\s*(?:except|but|other\s+than|apart\s+from|aside\s+from|besides|save\s+for)\b',
+    re.IGNORECASE,
+)
+# An exception word later on the same line, before the next `.`, `!` or `?`,
+# names the deferred work too: `nothing is deferred here except the scorecard`,
+# `nothing is deferred (except the scorecard)`. The letter lookarounds keep
+# `exceptional` and `exceptions` out. `but`, `besides` and the like are left out
+# here, because later on a line they mostly join a second, true clause.
+SAME_LINE_EXCEPTION = re.compile(
+    r'[^.!?\n]*?(?<![A-Za-z])'
+    r'(?:except|excepting|excluding|other[^\S\n]+than|apart[^\S\n]+from'
+    r'|aside[^\S\n]+from|with[^\S\n]+the[^\S\n]+exception|barring)'
+    r'(?![A-Za-z])',
     re.IGNORECASE,
 )
 
@@ -235,6 +255,8 @@ def _without_exempt(line: str) -> str:
 
 def _negated(prose: str, match: re.Match[str]) -> bool:
     if EXCEPTION_TAIL.match(prose, match.end()):
+        return False
+    if SAME_LINE_EXCEPTION.match(prose, match.end()):
         return False
     # The whole unit before the match, so `^` is the unit's start.
     return bool(NEGATED_SUBJECT.search(prose[:match.start()]))

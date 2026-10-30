@@ -200,9 +200,55 @@ def test_negation_not_opening_its_clause_is_still_flagged(text):
     'Nothing except retry is deferred.',
     'Nothing besides the scorecard is deferred.',
     '- No tests but retry is deferred.',
+    # An exception word later on the same line, past an adverbial or a mark,
+    # still names the deferred work.
+    'Nothing is deferred here except the scorecard.',
+    'Nothing is deferred in this plan except the scorecard.',
+    'Nothing is deferred by this task except the scorecard.',
+    'Nothing is deferred today except the scorecard.',
+    'Nothing is deferred for now, except the scorecard.',
+    'Nothing is deferred — except the scorecard.',
+    'Nothing is deferred (except the scorecard).',
+    '**Nothing is deferred** except the scorecard.',
+    'Nothing is deferred; except the scorecard.',
+    'Nothing is deferred with the exception of the scorecard.',
+    'Nothing is deferred, excluding the scorecard.',
+    # The safe-direction false flag: a later exception word on the same line
+    # flags the line even when it belongs to another clause.
+    'Nothing is deferred; all tests pass except the flaky one.',
 ])
 def test_negation_with_an_exception_is_still_flagged(text):
     assert len(unmarked(text)) == 1
+
+
+@pytest.mark.parametrize('text', [
+    # An adverbial or a trailing clause with no exception word keeps the exemption.
+    'Nothing is deferred in this plan.',
+    'No new work is deferred by this task.',
+    'Nothing is deferred yet.',
+    'Nothing is deferred (all tasks landed).',
+    'Nothing is deferred; the plan retires.',
+    'Nothing is deferred, and the plan retires.',
+    'Nothing is deferred because every task landed.',
+    'Nothing is deferred from this plan.',
+    'Nothing is deferred during execution.',
+    'Nothing is deferred here.',
+    'Nothing is deferred today.',
+    'Nothing is deferred for now.',
+    'Nothing is deferred — every task landed.',
+    '**Nothing is deferred** in this plan.',
+    'Nothing else is deferred at this stage.',
+    '- Nothing is deferred by this plan.',
+    '> No new work is deferred in this round.',
+    'Nothing was deferred; every task landed with its tests.',
+    'Nothing is deferred, since all four tasks landed.',
+    # An exception word after the sentence ends, or on the next line, is not read.
+    'Nothing is deferred here. Except for style, all is done.',
+    # A longer word that starts with an exception word is not one.
+    'Nothing is deferred, exceptional as that is.',
+])
+def test_negation_with_a_trailing_clause_is_not_flagged(text):
+    assert unmarked(text) == []
 
 
 def test_code_span_neither_flags_nor_marks():
