@@ -4,8 +4,9 @@
 > Do not build from this file directly.
 
 **Status: APPROVED (owner, 2026-10-29), as committed in 2869c93.** Designed with the owner on
-2026-10-29 through the brainstorming skill, after a `/deferred` Design pick. Execution waits
-for the reviewer-contract plan to complete and merge (see Constraints).
+2026-10-29 through the brainstorming skill, after a `/deferred` Design pick. Execution no
+longer waits: the reviewer-contract plan (plan 73) completed and merged on 2026-10-30 as
+lowmason/agent-skills#128. Plan: `specs/plans/74-backlog-protocol.md`.
 
 ## Intent
 
