@@ -693,20 +693,31 @@ Changes from upstream:
     carries no license; its unnamed-input crash eval is credited as the idea
     behind case R1 (specs/red-baseline-reviewer-planning-contract.md).
   - The executors pass the spec path and the plan's Review Focus section to
-    the final code-reviewer (plan 73), the idea of upstream PR #2319's
-    executing-plans hunk (5feaa15). This repo's own work: the split of
-    Declined to judge rulings, where the controller rules on per-task lines
-    and the partner rules on the final review's lines at the plan-completion
-    gate.
+    the final code-reviewer (plan 73). executing-plans adapts the wording of
+    upstream PR #2319's executing-plans hunk (5feaa15), which added the
+    Review Focus clause (upstream already passed the plan and spec paths
+    and a pointer to the ledger's `Ruling:` lines) and the controller's
+    ruling on each Declined to judge line. subagent-driven-development's
+    final-review.md carries the same handoff in this repo's own words. This
+    repo's own work: the split of Declined to judge rulings, where the
+    controller rules on per-task lines and the partner rules on the final
+    review's lines at the plan-completion gate.
   - writing-plans' Review Focus section and self-review item 4 come from
     upstream PR #2319 (5feaa15) (plan 73). The sentence for a plan with no
-    spec is this repo's own. The deferred-item example names a declined
-    review line in place of the retired Minor tier.
+    spec is this repo's own. So are the placement rule for each line's test
+    (in the task whose code the person would see fail, asserting what the
+    person sees) and item 4's pointer to the template, both worded after
+    micro-tests (plan 73, wording round 1 of case P1, and a review fix in
+    round 2). The deferred-item example names a declined review line in
+    place of the retired Minor tier.
   - writing-plans' step recipe comes from upstream PR #2333 (7106932)
     (plan 73): the capable reader, Step Granularity, What a Step Contains,
     the template's code step, the Step scan and the Proportion check. This
     repo's own work: the Remember list drops "Complete code in every step",
-    and the Proportion check keeps micro-tested wording as exact copy. The
+    the Execution Handoff sentence says "for an engineer who has not seen
+    this codebase or spec" where upstream keeps "zero-context … assuming the
+    engineer knows nothing about this codebase", and the Proportion check
+    keeps micro-tested wording as exact copy. The
     Proportion check also names a threshold of about five times, where
     upstream keeps "several times" (plan 73, wording round 1 of case P2). The
     check also tells the planner to cut an over-long plan before saving it
