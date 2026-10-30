@@ -60,11 +60,27 @@ def check(root: Path) -> list[str]:
             problems.append(f'{name}: {err}')
     if FILES[0] in blocks:
         reference = blocks[FILES[0]]
-        for name, block in blocks.items():
+        others = {name: block for name, block in blocks.items() if name != FILES[0]}
+        agreed = set(others.values())
+        if len(others) >= 2 and len(agreed) == 1 and agreed != {reference}:
+            name = next(iter(others))
+            problems.append(f'{FILES[0]}: its reviewer block differs from the other copies, '
+                            f'which agree with each other:\n{show_diff(reference, others[name], name)}')
+            return problems
+        for name, block in others.items():
             if block != reference:
-                diff = difflib.unified_diff(reference.splitlines(), block.splitlines(), FILES[0], name, lineterm='')
-                problems.append(f'{name}: its reviewer block differs from {FILES[0]}:\n' + '\n'.join(diff))
+                problems.append(f'{name}: its reviewer block differs from {FILES[0]}:\n'
+                                f'{show_diff(reference, block, name)}')
     return problems
+
+
+def show_diff(reference: str, block: str, name: str) -> str:
+    '''Diff the two blocks line by line, with each line as its repr so a trailing space or tab shows.'''
+    lines = difflib.unified_diff(
+        [repr(line) for line in reference.splitlines()],
+        [repr(line) for line in block.splitlines()],
+        FILES[0], name, lineterm='')
+    return '\n'.join(lines)
 
 
 def main() -> int:

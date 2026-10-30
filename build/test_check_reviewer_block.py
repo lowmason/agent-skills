@@ -45,6 +45,40 @@ def test_trailing_space_in_one_copy_is_drift(tmp_path):
     assert problems[0].startswith(f'{FILES[3]}: its reviewer block differs from {FILES[0]}')
 
 
+def test_drift_in_the_reference_copy_alone_names_the_reference(tmp_path):
+    files = {name: BLOCK for name in FILES}
+    files[FILES[0]] = BLOCK.replace('Scope text.', 'Scope text, changed.')
+    write_tree(tmp_path, files)
+    problems = check(tmp_path)
+    assert len(problems) == 1
+    assert problems[0].startswith(f'{FILES[0]}: its reviewer block differs from the other copies, '
+                                  'which agree with each other:')
+    for name in FILES[1:]:
+        assert not any(line.startswith(f'{name}:') for line in problems[0].splitlines())
+
+
+@pytest.mark.parametrize('suffix', [' ', '\t'], ids=['space', 'tab'])
+def test_whitespace_drift_shows_the_invisible_character(tmp_path, suffix):
+    files = {name: BLOCK for name in FILES}
+    files[FILES[3]] = BLOCK.replace('Scope text.', f'Scope text.{suffix}')
+    write_tree(tmp_path, files)
+    problems = check(tmp_path)
+    assert len(problems) == 1
+    assert '-' + repr('Scope text.') in problems[0]
+    assert '+' + repr(f'Scope text.{suffix}') in problems[0]
+
+
+def test_two_copies_drifting_differently_get_one_message_each(tmp_path):
+    files = {name: BLOCK for name in FILES}
+    files[FILES[1]] = BLOCK.replace('Scope text.', 'Scope text one.')
+    files[FILES[3]] = BLOCK.replace('Scope text.', 'Scope text two.')
+    write_tree(tmp_path, files)
+    problems = check(tmp_path)
+    assert len(problems) == 2
+    assert problems[0].startswith(f'{FILES[1]}: its reviewer block differs from {FILES[0]}:')
+    assert problems[1].startswith(f'{FILES[3]}: its reviewer block differs from {FILES[0]}:')
+
+
 def test_second_start_heading_is_refused():
     with pytest.raises(BlockError, match="expected one '## Review scope' line, found 2"):
         extract_block(BLOCK + '\n' + BLOCK)
