@@ -47,6 +47,10 @@ Report **closure rate and the age spread**, never a bare open count. A bare
 "69 open" is a number people tolerate; "69 open, 17% closure rate, 29 aged
 >45d" is a decision.
 
+```bash
+uv run <this-skill-dir>/scripts/deferral_scan.py scan <file>…
+```
+
 ## Deferred-item schema
 
 Every item is self-contained — it is read months later by someone with none of

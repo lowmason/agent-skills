@@ -320,6 +320,8 @@ Expected: PASS.
 Run the scan over plans 69-73 in `specs/plans/completed/` and over the spec each names on its `**Spec:**` line (in `specs/completed/`). Count unmarked candidates per document.
 Expected: median ≤ 3. If above 3, tighten `PHRASES` and re-run Steps 5 and 6. Record the per-document counts and the median in this plan, under this step, as a `> Measured:` line.
 
+> Measured: 2026-10-30, 7 documents: plan 69 2, plan 70 2, plan 71 0, plan 72 0, plan 73 0, `specs/completed/brainstorming-proportional-rebuild.md` 0, `specs/completed/reviewer-and-planning-contract.md` 0. Median 0. Plans 69, 71 and 72 name no spec. Plan 73's `**Spec:**` line names `specs/reviewer-and-planning-contract.md`, which now sits in `specs/completed/`.
+
 - [ ] **Step 7: Name the script in the reference and the suite notes**
 
 Add under `## Backlog stats` in `references/deferred-backlog.md`:
