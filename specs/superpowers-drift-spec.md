@@ -75,13 +75,13 @@ guide (`4efba4e`) shifted anchors by one.
 | 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`) |
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
-| 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; decided 2026-10-21: rulings mid-run only |
+| 7 | Pre-flight conflicts stall for a human | **Adopted** — plan 75, rulings mid-run only (F7); fix-round rulings adopted earlier; premise corrected; decided 2026-10-21 |
 | 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50; the untracked-file guard **adopted** as an idea — plan 60; one item partly covered; the `Spec:` pointer adopted by plan 40 |
 | 9 | writing-plans asks for code transcripts | **Adopted** — plan 73 (2026-10-30); the step recipe was kept after the F1 comparison |
 | 10 | Reviewers grade the spec's silence | **Adopted** — plan 73 (2026-10-30), as one shared reviewer block in the four reviewer files |
-| 11 | executing-plans was rebuilt as a ledgered native mode | Handoff half adopted by plan 40; the port goes to its own spec (7 decided 2026-10-21); upstream has since fixed `task-done`, and v7.0.1 cut its Example Workflow to fit the compaction window |
+| 11 | executing-plans was rebuilt as a ledgered native mode | **Adopted** — plan 75 (handoff half by plan 40); the port follows v7.0.1, which fixed `task-done` and cut the Example Workflow to fit the compaction window |
 | 12 | SDD script hardening | `review-package` range guards and v7.0.0's create-only `.gitignore` **adopted** — plan 50; the basename collision stays decided (M2) |
-| 13 | TDD does not say what "other tests" means | Open; travels with 11 |
+| 13 | TDD does not say what "other tests" means | **Adopted** — plan 75 |
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted. v7.0.1 changed only the issues it drafts |
 | 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |
@@ -338,7 +338,11 @@ Parked rulings reach the partner through the plan-completion gate, which reads
 the ledger before the workspace is deleted (`:260-272`); upstream lists them in
 the final message instead ("Rulings I made"). Equivalent in effect; no action.
 
-### 7. Pre-flight conflicts always stall for a human — partly adopted; premise corrected
+### 7. Pre-flight conflicts always stall for a human — partly adopted; premise corrected; mid-run rulings adopted (plan 75)
+
+**Adopted by plan 75 (2026-10-31).** Mid-run rulings only (F7). `skills/subagent-driven-development/references/fix-loop.md`
+and `skills/executing-plans/SKILL.md` carry the five stops and the `Ruling:` line. `NOTICE` names the change.
+The pre-flight gate and `references/preflight.md` stay as they were.
 
 **Correction.** The first pass quoted `SKILL.md:222` as calling the pre-flight
 gate "this skill's one deliberate human [checkpoint]". Re-read at the same
@@ -615,7 +619,12 @@ what the spec does say lands in the tests and the code alike, so it passes
 them. The same local design covers that gap (`specs/deferred_items.md`, item
 "Spec-reading test check").
 
-### 11. executing-plans was rebuilt as a ledgered native mode
+### 11. executing-plans was rebuilt as a ledgered native mode — adopted (plan 75)
+
+**Adopted by plan 75 (2026-10-31).** `skills/executing-plans/SKILL.md`, `skills/executing-plans/references/final-review.md`,
+`skills/executing-plans/scripts/task-start`, `task-done` and their test now follow upstream v7.0.1. `install.py`,
+`build/suites.toml`, `build/test_runtime_support.py` and `NOTICE` carry the matching changes. The behavior record is
+`specs/red-baseline-executing-plans-port.md`.
 
 **A port, not a merge.** v6.4.1 (#2318) rebuilt upstream's 64-line
 `executing-plans` stub, which "measured the same as running with no plugin at
@@ -730,7 +739,10 @@ Four upstream fixes to the scripts plan 22 touched, judged separately:
   `./render-graphs.js` call at `writing-skills/SKILL.md:337-338` is the same
   pattern in an authoring-only context.
 
-### 13. TDD does not say what "other tests" means
+### 13. TDD does not say what "other tests" means — adopted (plan 75)
+
+**Adopted by plan 75 (2026-10-31).** `skills/test-driven-development/SKILL.md` now says the project's documented test
+command defines green. `NOTICE` names the change. The behavior record is `specs/red-baseline-executing-plans-port.md`.
 
 **Partly covered.** v6.4.1 (#2110) found that when a task named one test file,
 sessions ran only that file in 11 of 12 probe runs, so a broken neighbor went
