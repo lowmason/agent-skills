@@ -19,7 +19,7 @@ unit of its own. A marker answers only the candidates in its own unit.
 The scan reads prose only:
 
 - Fenced code blocks are skipped. A fence opens on three or more backticks or
-  tildes after any indent, and closes only on a run of the same character at
+  tildes after any indent and an optional list marker, and closes only on a run of the same character at
   least as long as the opener, with nothing after it. A shorter run inside a
   longer fence is content. An unclosed fence runs to the end of the file. Fence
   lines are not blank, so a fence does not end the unit around it; its lines are
@@ -225,7 +225,8 @@ STATUS_HEADER = re.compile(
 SKIPPED_NOTE = re.compile(
     r'^\s*>\s*(?:\*\*)?Skipped:.*?→\s*deferred\b(?:\s*\([^)]*\))?\.?(?:\*\*)?'
 )
-FENCE_OPEN = re.compile(r'^\s*(`{3,}|~{3,})(.*)$')
+# A fence may open a list item (`- ```text`); its closer then stands on a line of its own.
+FENCE_OPEN = re.compile(r'^\s*(?:(?:[-*]|\d+\.)\s+)?(`{3,}|~{3,})(.*)$')
 LIST_ITEM = re.compile(r'^\s*(?:[-*]|\d+\.)\s')
 HEADING = re.compile(r'^\s{0,3}#{1,6}(?:\s|$)')
 BACKTICK_RUN = re.compile(r'`+')
