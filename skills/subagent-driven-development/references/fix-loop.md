@@ -29,7 +29,7 @@ runtime does not offer `fable`, effort is the last rung.
 **Adjudicating** means you rule on each open finding: record the load-bearing
 ones as work, and park the rest in the ledger with your reasoning
 (`Ruling: <what you decided> — <why> — <what it costs if wrong>`). Stop for your
-human partner only when every path forward is a guess.
+human partner only for the five stops listed under Fix dispatches.
 
 ## Fix dispatches
 
