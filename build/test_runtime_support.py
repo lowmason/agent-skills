@@ -479,6 +479,9 @@ SOFT_REFERENCES = {
   # Points a forecast ranking at track's score-mode reference; the time-series
   # section's snippets run without track installed.
   ('skill:bayesian-workflow', 'skill:track-model-experiments'),
+  # Names the /deferred Design pick whose items the spec's commit marks as
+  # planned; never runs the command.
+  ('skill:brainstorming', 'command:deferred'),
   # Says where the plan-completion protocol retires specs; never runs it.
   ('skill:brainstorming', 'skill:writing-plans'),
   # Names the routing header its input spec carries; never reads the file.

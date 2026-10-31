@@ -269,7 +269,10 @@ refactoring.
 
 **Where it goes:** in a software repo, `specs/<descriptive-name>.md`
 (no date prefix), committed. Otherwise, ask. Your human partner's
-preferences override both. When its work is done, the plan-completion
+preferences override both. When the spec comes from a `/deferred` Design
+pick, the spec's commit writes `→ planned <YYYY-MM-DD>: <spec path>` in
+`specs/deferred_items.md` on the picked items, and on no other. When its
+work is done, the plan-completion
 protocol (writing-plans § Plan Completion Protocol) retires it to
 `specs/completed/`.
 

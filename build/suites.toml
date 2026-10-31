@@ -157,4 +157,4 @@ notes = ['Tests for the vendored linter: its pinned bytes, its self-test under t
 name = 'writing-plans'
 dir = 'skills/writing-plans/scripts'
 with = ['pytest']
-notes = ['Deferred-backlog stats and entry-check tests (stdlib only; the entry-check tests build throwaway git repos).']
+notes = ['Deferred-backlog stats, deferral scan and entry-check tests (stdlib only; the entry-check tests build throwaway git repos).']
