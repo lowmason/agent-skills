@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 LINTER = Path(__file__).resolve().parent / 'ste-lint.py'
-PINNED_SHA256 = 'fff04bf85c1e8bd8dc69dcedc63a5d88ed513dfa24e505f9cb8318a4596c99cd'
+PINNED_SHA256 = '90a1d6b84c7708b56a8e6ad139e303c8e668af122a5140fe57614444eeff1ff7'
 SYSTEM_PYTHON = Path('/usr/bin/python3')
 FENCE = '`' * 3
 
@@ -51,4 +51,17 @@ def test_hedges_and_fenced_code_are_never_flagged():
     text = f'The request may have failed.\n\n{FENCE}\nx = 1; y = 2\n{FENCE}\n'
     result = lint('--json', stdin=text)
     assert result.returncode == 0, result.stdout
+    assert json.loads(result.stdout)['violations'] == []
+
+
+def test_a_hedge_with_an_adverb_before_have_is_never_flagged():
+    text = 'The job might already have run. It could not possibly have stopped.\n'
+    result = lint('--json', stdin=text)
+    assert json.loads(result.stdout)['violations'] == []
+
+
+def test_skill_front_matter_is_not_read_as_prose():
+    description = ' '.join(['word'] * 30)
+    text = f'---\nname: x\ndescription: {description}.\n---\nThe job runs.\n'
+    result = lint('--json', stdin=text)
     assert json.loads(result.stdout)['violations'] == []
