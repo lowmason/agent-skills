@@ -5660,7 +5660,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-10-31 (plan 74)
 
 ## 74-backlog-protocol — 2026-10-31
-- [ ] **Archive layout polish and loose ends (plan 74 reviews).** Archive
+- [x] **Archive layout polish and loose ends (plan 74 reviews).** Archive
       sections that share a date (20 and 21, dated 2026-09-03) sort in script
       order, a restored item stands first in its archive section (12), the
       archive script replaces a symlink at `--archive` with a regular file when
@@ -5673,6 +5673,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: quick-fix. Revisit if: a reader is misled by the archive order, an
       archive is a symlink, or a same-date Hold and trigger collide in a
       `/deferred` pass.
+      → done 2026-10-31 (quick fix): 6e220b5 fixes all five. Same-date archive
+      sections sort by plan id, then sections with no id, then heading text. A
+      symlink at either path stays a link. A code span pairs only inside one
+      paragraph; parsed notes for all 502 items are unchanged. /deferred writes
+      the trigger before the Hold. The archive now has section 20 before 21 and
+      the QCEW item last in section 12.
 - [ ] **Micro-tests that discriminate on substance (plan 74 R1, R2, R4).** The
       control already files the R2 work and sees the R4 condition, and on
       substance alone the R1 control scored 4 of 5, so the passes show that the
