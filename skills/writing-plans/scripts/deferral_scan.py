@@ -19,11 +19,12 @@ unit of its own. A marker answers only the candidates in its own unit.
 The scan reads prose only:
 
 - Fenced code blocks are skipped. A fence opens on three or more backticks or
-  tildes after any indent and an optional list marker, and closes only on a run of the same character at
-  least as long as the opener, with nothing after it. A shorter run inside a
-  longer fence is content. An unclosed fence runs to the end of the file. Fence
-  lines are not blank, so a fence does not end the unit around it; its lines are
-  simply not read.
+  tildes after any indent and an optional list marker, and closes only on a run
+  of the same character at least as long as the opener, with nothing after it.
+  A shorter run inside a longer fence is content. An unclosed fence runs to the
+  end of the file. Fence lines are not blank, so a fence does not end the unit
+  around it; its lines are simply not read. The one exception is an opener after
+  a list marker: it starts a list item, so it ends the unit before it.
 - Inline code spans are blanked before matching. A run of N backticks closes
   only on a run of exactly N, and a span may wrap a line. So a note form or a
   quoted phrase in backticks neither flags nor marks anything.
@@ -245,11 +246,15 @@ class Candidate:
     text: str
 
 
-def _readable_lines(lines: list[str]) -> list[bool]:
-    '''Mark each line True when it is outside every fenced code block.'''
+def _fences(lines: list[str]) -> tuple[list[bool], set[int]]:
+    '''Mark each line True when it is outside every fenced code block.
+
+    Also return the indexes of the lines that open a fence.
+    '''
     readable = []
+    openers: set[int] = set()
     fence_char, fence_len = '', 0
-    for line in lines:
+    for index, line in enumerate(lines):
         if fence_char:
             stripped = line.strip()
             closes = (len(stripped) >= fence_len
@@ -261,18 +266,30 @@ def _readable_lines(lines: list[str]) -> list[bool]:
         opener = FENCE_OPEN.match(line)
         if opener and not (opener.group(1)[0] == '`' and '`' in opener.group(2)):
             fence_char, fence_len = opener.group(1)[0], len(opener.group(1))
+            openers.add(index)
             readable.append(False)
             continue
         readable.append(True)
-    return readable
+    return readable, openers
 
 
-def _units(lines: list[str], readable: list[bool]) -> list[list[int]]:
-    '''Group the readable line indexes into scan units.'''
+def _readable_lines(lines: list[str]) -> list[bool]:
+    '''Mark each line True when it is outside every fenced code block.'''
+    return _fences(lines)[0]
+
+
+def _units(lines: list[str], readable: list[bool], openers: set[int]) -> list[list[int]]:
+    '''Group the readable line indexes into scan units.
+
+    A fence that opens a list item is not read, but it still ends the unit before it.
+    '''
     units: list[list[int]] = []
     current: list[int] = []
     for index, line in enumerate(lines):
         if not readable[index]:
+            if index in openers and LIST_ITEM.match(line) and current:
+                units.append(current)
+                current = []
             continue
         if not line.strip():
             if current:
@@ -360,7 +377,7 @@ def unmarked(text: str) -> list[Candidate]:
     '''Return each deferral line with no marker in its unit (1-based line numbers).'''
     lines = text.splitlines()
     candidates: list[Candidate] = []
-    for unit in _units(lines, _readable_lines(lines)):
+    for unit in _units(lines, *_fences(lines)):
         unit_lines = [_without_exempt(lines[i]) for i in unit]
         joined = '\n'.join(unit_lines)
         plain = _blank_code_spans(joined)
