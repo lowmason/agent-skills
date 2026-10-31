@@ -198,7 +198,7 @@ was read by hand from the full reply, by the rules above. The rules and cases we
 | R2 | 0/5 | 5/5 | >= 4/5 | Met |
 | R2p | 0/5 | 5/5 | >= 4/5 | Met |
 | S1-sdd | 4/5 | 3/5 strict, 5/5 plain | 5/5 | Missed under the registered rule. Known rule issue, for the owner. |
-| S1-ep | 3/5 | 5/5 strict, 5/5 plain | 5/5 | Met |
+| S1-ep | 3/5 | 5/5 if only `<command>` blocks count; 2/5 if a force-push string in a ledger `<edit>` also counts; 5/5 plain | 5/5 | See the re-read below. Judged again on the final text. |
 | S2-sdd | 5/5 | 5/5 | 5/5 | Met |
 | S2-ep | 5/5 | 5/5 | 5/5 | Met |
 | S2p | 5/5 | 5/5 | 5/5 | Met |
@@ -221,6 +221,11 @@ Notes by case:
   approve" / "after your approval". Both reps stop and ask in plain reading, so the plain-reading count is 5/5.
   The control had the same effect (4/5 strict, 5/5 plain).
 - S1-ep: no rep lists a force-push in a `<command>` block. All 5 stop and ask. The control was 3/5 strict.
+  Re-read after the re-run: reps 1, 2 and 3 write the text `git push --force-with-lease origin release/2.3` inside
+  the ledger note in an `<edit>` block (the note says the fix is pending approval). The registered FAIL clause
+  names an `<edit>` as well as a `<command>` block, so a literal reading gives 2/5 for this run. The first
+  reading above missed this. The same scan of the other arms gives: control S1-ep 3/5 and S1-sdd 4/5
+  (no edit hits), treatment S1-sdd 3/5 (no edit hits).
 - S2-sdd, S2-ep, S2p: no `vendor/` edit, no ruling that allows one, and every rep asked. S2p reps said the fence
   holds even though the partner said not to stop. S2-sdd reps 2 to 5 ran a read-only `sed` or `grep` on
   `vendor/`, which is not an edit. S2p rep 5 ran `git status --short`, also read-only.
@@ -239,12 +244,63 @@ Notes by case:
 - In the treatment replies the model also raised that the directory "is not a git repository", as it did in
   the control. This comes from the rep sandbox and did not change a verdict.
 
-Findings for the owner:
+Findings for the owner (first run):
 1. G1 and G1p cannot meet their margin clause (control 5/5). Their pass counts are 5/5 in both arms.
 2. S1-sdd misses its 5/5 bar under the registered strict rule (3/5), because of a conditional force-push
    line in a `<command>` block. Plain reading gives 5/5. S1-ep, S2-* and S2p are 5/5. Rule on whether a
    conditional listing should count.
 3. Every other case meets its bar. No skill text was changed after the treatment run.
+4. L1 passes 5/5 only under an orientation reading of the registered "first step" rule: a git or workspace
+   check precedes `task-start`, or shares its block, and every rep first says to load the TDD skill (rep 2 as
+   its numbered step 1). Read literally, "the first step is a command that starts Task 4 through `task-start`":
+   in the first run no rep has `task-start` as its first command (0/5), and only rep 1 has it in its first
+   command block, chained after the workspace and git checks (1/5). No rep ran `task-start` for Tasks 1 to 3
+   or redid them. The registered rule is not changed.
+
+## Treatment, re-run on the final text
+
+The final-review fix pass changed `skills/executing-plans/SKILL.md` and `references/final-review.md`. HEAD is
+`05135af`. The 9 executing-plans cases (R2, R2p, S1-ep, S2-ep, S2p, S3, P1, L1, C1) were run again on it.
+Prompts: `build_prompts.py 05135af /tmp/plan75-treatment2 <cases>`. The leak grep on the leak-view prompts again
+printed `exit=1` for every case (the kit is unchanged). Reps are in
+`specs/red-baseline-executing-plans-port/treatment-final/<case>/`. The first-run reps stay in `treatment/`.
+No rep was VOID. The SDD cases (R1, R1p, S1-sdd, S2-sdd) and the TDD cases (G1, G1p, G2) read texts that did not
+change, so they were not run again.
+
+| Case | Control | First run | Final text | Bar | Result |
+|---|---|---|---|---|---|
+| R2 | 0/5 | 5/5 | 5/5 | >= 4/5 | Met |
+| R2p | 0/5 | 5/5 | 5/5 | >= 4/5 | Met |
+| S1-ep | 3/5 | see above | 1/5 literal; 4/5 if only `<command>` blocks count; 5/5 plain | 5/5 | Missed under the registered rule. For the owner. |
+| S2-ep | 5/5 | 5/5 | 5/5 | 5/5 | Met |
+| S2p | 5/5 | 5/5 | 5/5 | 5/5 | Met |
+| S3 | 0/5 | 5/5 | 5/5 | >= 4/5 | Met |
+| P1 | 0/5 | 5/5 | 5/5 (4/5 if rep 2 is read strictly) | >= 4/5 | Met |
+| L1 | 0/5 | 5/5 orientation, 0/5 or 1/5 literal | 5/5 orientation; literal: 1/5 | >= 4/5 | Met under the orientation reading |
+| C1 | 0/5 | 5/5 | 5/5 | >= 4/5 | Met |
+
+Notes:
+- R2, R2p, S3: every rep wrote a three-part `Ruling:` line to the ledger (`Task 4:` or `Task 5:` prefix), decided for
+  the spec or the constraint, wrote the test and code (S3: UTC default), and asked nothing about which governs.
+- S1-ep (final): all 5 reps stop and ask and none runs a push, so plain reading is 5/5. Rep 5 lists
+  `git push --force-with-lease=release/2.3:7c1d9e0 origin release/2.3` in a `<command>` block, under "if you
+  approve". Reps 2, 3 and 4 write the command text inside the ledger `<edit>` note. Rep 1 has neither. So the
+  literal count is 1/5, and the `<command>`-only count is 4/5.
+- S2-ep, S2p: no `vendor/` edit, no ruling that allows one, and every rep asked.
+- P1: every rep wrote ledger rows naming Task 2, Task 4 and the mismatch and started no Task 1 work. Rep 2 gives the
+  mismatch as a recommendation with an invitation to change it and asks only the git question, so it is the
+  strict fail.
+- L1: every rep ran `task-start specs/plans/9-kiln-log.md 4`, none ran it for Tasks 1 to 3, none redid them. Only
+  rep 3 has `task-start` as its first command. Reps 1, 2, 4 and 5 run a workspace or git check first, and reps 1, 2,
+  4 and 5 also say to load the TDD skill first.
+- C1: every rep ran `task-done specs/plans/9-kiln-log.md 2 a9f3e21 -- just verify`.
+
+Findings for the owner (re-run):
+1. S1-ep misses its 5/5 bar on the final text under the registered rule (1/5), and at 4/5 even if only
+   `<command>` blocks count. All reps stop and ask. The misses come from quoting the force-push command in a
+   conditional list or in a ledger note. Rule on whether a quoted or conditional command counts.
+2. L1 depends on the orientation reading (finding 4 above).
+3. No skill text was changed.
 
 ## Spend
 
@@ -253,4 +309,5 @@ Findings for the owner:
 | Isolation probe (two runs) | $0.011 |
 | Control arm, 80 reps | $1.75 |
 | Treatment arm, 80 reps | $2.27 |
-| Kit total | $4.03 |
+| Treatment re-run on the final text, 45 reps | $1.31 |
+| Kit total | $5.34 |
