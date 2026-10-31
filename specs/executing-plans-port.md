@@ -60,8 +60,10 @@ Each line records the option that the owner picked, in the owner's terms.
 - **G2.** Each task opens with `task-start` and closes with `task-done`. `task-done` writes
   the completion line only when the task's test command exits 0, and it records a silent pass
   as `(no output)`.
-- **G3.** Both executors rule on mid-run conflicts and continue. Only the four stops and the
-  explicit scope fence stop a run.
+- **G3.** executing-plans rules on mid-run conflicts and continues. Only the four stops and
+  the explicit scope fence stop its run. SDD rules on a mid-run conflict between a reviewer
+  finding and the plan text, and carries the same five stops for those rulings. The rest of
+  SDD's stop rules are unit 3's open question (Q3).
 - **G4.** TDD says that the project's documented test command(s) define green, that a task's
   scope bounds the deliverable and not the verification, and that every failure is reported
   by name.
@@ -173,8 +175,20 @@ Two local changes to upstream's `task-done`:
    would stop SDD from resuming an executing-plans run.
 2. **A ledger of another plan is refused (my call).** When `progress.md` exists and its first
    line names a different plan file, `task-done` records nothing and exits 3. This matches
-   SDD's rule to "stop and say so" (`references/resuming.md:5-7`). The comparison must not
-   fail on two spellings of one file, such as a relative and an absolute path.
+   SDD's rule to "stop and say so" (`references/resuming.md:5-7`). The comparison rule
+   **(my call, after the builder check)**:
+   - `PLAN_FILE` resolves against the caller's working directory.
+   - A relative `Plan:` value resolves first against the repository root
+     (`git rev-parse --show-toplevel`), then against the working directory. An absolute value
+     is used as it is.
+   - The two match when either resolution of the `Plan:` value and `PLAN_FILE` name the same
+     file (both canonicalized, symlinks resolved). Otherwise `task-done` exits 3 and prints
+     both paths.
+   - A new ledger gets `PLAN_FILE`'s path relative to the repository root, which SDD
+     controllers also write in practice. SDD's Durable Progress text does not change.
+
+   Test cases: an absolute `Plan:` value against a relative argument matches; a call from a
+   subdirectory matches; a different plan exits 3.
 
 The test command runs in one working directory. In a project whose suites run from their own
 directories, the brief names a command that runs them from the root. In this repository that
@@ -225,6 +239,15 @@ section "Rulings reach the partner"), and they are no longer pending questions. 
 review's Declined to judge lines stay questions for the partner (plan 73 decision D2).
 
 **Not changed:** `references/preflight.md`. It keeps its one batched question (F7).
+
+**Open (Q3):** SDD has two more stop rules that F7's text does not reach.
+`subagent-driven-development/SKILL.md:28` stops for "ambiguity that genuinely prevents
+progress", and `references/handling-reports.md:13` says "If the plan itself is wrong, escalate
+to the human." The answer to Q3 decides whether unit 3 also rewrites them.
+
+**Kept in executing-plans:** the base-branch start question of Step 1 item 5. It is asked
+before Task 1, while the partner is present, as pre-flight is. executing-plans gets no
+context-checkpoint handoff, as upstream has none. The ledger is its recovery **(my call)**.
 
 ### Unit 4: the executing-plans port (finding 11)
 
@@ -483,6 +506,13 @@ passes R1 but fails S1 or S2 does not ship.
   sentence change, for example to "with a ledger line at each task", or stay as it is?
   The micro-test reps do not load it (`--setting-sources ""`), so the bars do not measure this
   conflict.
-- **Q2.** Please check each **(my call)** item above. The ones with the most effect are the
+- **Q3.** Unit 3, SDD's other stop rules. Option (a), narrow: change only `fix-loop.md` and
+  `final-review.md`, as F7's text says, and leave `SKILL.md:28` and `handling-reports.md:13`.
+  SDD then rules on reviewer-finding conflicts but still escalates a wrong plan. Option (b),
+  wide: also recast those two rules to "rule, ledger and continue", with the same five stops.
+  The two executors then match. It costs a budget task, because SDD's body is about 230
+  characters under the window, and two more micro-test arms.
+- **Q2.** Please check each **(my call)** item above. The plan waits for the owner's approval
+  of this spec, these items included. The ones with the most effect are the
   refusal of another plan's ledger (exit 3), the five-stop wording, and the rulings list at the
   gate in place of the final message.
