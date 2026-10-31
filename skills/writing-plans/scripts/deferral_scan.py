@@ -49,25 +49,30 @@ The scan reads prose only:
   exception after the verb, read two ways. First, the text right after the
   verb, past optional whitespace (a line break included) and one optional
   comma, starts with `except`, `but`, `other than`, `apart from`, `aside from`,
-  `besides` or `save for`. Second, the rest of the line, up to the next `.`,
-  `!` or `?`, holds `except`, `excepting`, `excluding`, `other than`, `apart
-  from`, `aside from`, `with the exception` or `barring` as whole words. So
-  `nothing is deferred except the scorecard`, `nothing is deferred here except
-  the scorecard` and `nothing is deferred (except the scorecard)` stay
-  candidates. When in doubt the scan flags, so `with no tests is deferred`,
+  `besides` or `save for`. Second, the rest of the sentence holds `except`,
+  `excepting`, `excluding`, `other than`, `apart from`, `aside from`,
+  `barring`, or `with` then `the`, `one`, `a` or `an`, an optional `sole`,
+  `only` or `single`, and `exception`, as whole words. The sentence ends at a
+  `.`, `!` or `?`, then any closing `* _ ) ]` or quotes, then whitespace and a
+  capital letter, or at the end of the unit. So a line break does not end it,
+  and neither does a period inside a token (`install.py`, `v2.1`, `i.e.
+  today`). So `nothing is deferred except the scorecard`, `nothing is deferred
+  here except the scorecard`, `nothing is deferred (except the scorecard)`,
+  `nothing is deferred in v2.1 except retry`, `nothing is deferred in this plan`
+  with `except the scorecard` on the next line, and `nothing is deferred, with
+  one exception: retry` stay candidates, while `nothing is deferred, with no
+  exceptions` and `**Nothing is deferred.** Except for style, all is done`
+  stay exempt. When in doubt the scan flags, so `with no tests is deferred`,
   `the gap that no test covers is deferred`, `such as no backoff`, a spaced
-  hyphen, a line break inside a sentence and a later exception word in a second
-  clause (`nothing is deferred; all tests pass except the flaky one`) all leave
-  a candidate. Known gaps remain, each still exempt: an `and` clause (`X and
-  nothing else is deferred`, `X and no other work is deferred`), a bare `no`
-  after `;` or a full stop (`Known gap; no backoff is deferred.`, `Known gap.
-  No backoff is deferred.`), an exception word after the verb that is in
-  neither list, such as `beyond`, `, only`, `save the` or `unless`, and three
-  exception forms that the second read cannot see: a period inside a token
-  before the exception word (`nothing is deferred in install.py except the
-  scorecard`, `in v2.1 except retry`, `i.e. today, except retry`), a line break
-  between the verb's adverbial and the exception word, and `with one
-  exception`, `with the sole exception` or `with a single exception`.
+  hyphen, a line break right before the subject and a later exception word in a
+  second clause (`nothing is deferred; all tests pass except the flaky one`)
+  all leave a candidate. Known gaps remain, each still exempt: an `and` clause
+  (`X and nothing else is deferred`, `X and no other work is deferred`), a bare
+  `no` after `;` or a full stop (`Known gap; no backoff is deferred.`, `Known
+  gap. No backoff is deferred.`), an exception word after the verb that is in
+  neither list, such as `beyond`, `, only`, `save the` or `unless`, and an
+  exception word after an abbreviation that a capital follows, which reads as a
+  sentence end (`nothing is deferred, e.g. Task 3, except retry`).
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
@@ -141,15 +146,23 @@ EXCEPTION_TAIL = re.compile(
     r'\s*,?\s*(?:except|but|other\s+than|apart\s+from|aside\s+from|besides|save\s+for)\b',
     re.IGNORECASE,
 )
-# An exception word later on the same line, before the next `.`, `!` or `?`,
-# names the deferred work too: `nothing is deferred here except the scorecard`,
-# `nothing is deferred (except the scorecard)`. The letter lookarounds keep
-# `exceptional` and `exceptions` out. `but`, `besides` and the like are left out
-# here, because later on a line they mostly join a second, true clause.
-SAME_LINE_EXCEPTION = re.compile(
-    r'[^.!?\n]*?(?<![A-Za-z])'
-    r'(?:except|excepting|excluding|other[^\S\n]+than|apart[^\S\n]+from'
-    r'|aside[^\S\n]+from|with[^\S\n]+the[^\S\n]+exception|barring)'
+# The end of the sentence a negated PASSIVE match stands in: `.`, `!` or `?`,
+# then any closing `* _ ) ]` or quotes, then whitespace and a capital letter, or
+# the end of the unit. A period inside a token (`install.py`, `v2.1`, `i.e. today`)
+# is not followed by whitespace and a capital, so it does not end the sentence. A
+# line break does not end it either.
+SENTENCE_END = re.compile(r'[.!?][*_)\]"\'”’]*(?:\s+(?=[A-Z])|\s*\Z)')
+# An exception word later in the same sentence names the deferred work too:
+# `nothing is deferred here except the scorecard`, `nothing is deferred (except
+# the scorecard)`, `nothing is deferred in this plan` and `except the scorecard`
+# on the next line, `nothing is deferred, with one exception: retry`. The letter
+# lookarounds keep `exceptional` and `exceptions` out, so `with no exceptions` is
+# not one. `but`, `besides` and the like are left out here, because later in a
+# sentence they mostly join a second, true clause.
+SENTENCE_EXCEPTION = re.compile(
+    r'(?<![A-Za-z])'
+    r'(?:except|excepting|excluding|other\s+than|apart\s+from|aside\s+from'
+    r'|with\s+(?:the|one|a|an)\s+(?:(?:sole|only|single)\s+)?exception|barring)'
     r'(?![A-Za-z])',
     re.IGNORECASE,
 )
@@ -280,7 +293,8 @@ def _without_exempt(line: str) -> str:
 def _negated(prose: str, match: re.Match[str]) -> bool:
     if EXCEPTION_TAIL.match(prose, match.end()):
         return False
-    if SAME_LINE_EXCEPTION.match(prose, match.end()):
+    end = SENTENCE_END.search(prose, match.end())
+    if SENTENCE_EXCEPTION.search(prose, match.end(), end.start() if end else len(prose)):
         return False
     # The whole unit before the match, so `^` is the unit's start.
     return bool(NEGATED_SUBJECT.search(prose[:match.start()]))

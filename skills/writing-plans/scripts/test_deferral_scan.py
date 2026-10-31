@@ -242,12 +242,51 @@ def test_negation_with_an_exception_is_still_flagged(text):
     '> No new work is deferred in this round.',
     'Nothing was deferred; every task landed with its tests.',
     'Nothing is deferred, since all four tasks landed.',
-    # An exception word after the sentence ends, or on the next line, is not read.
+    # An exception word after the sentence ends is not read.
     'Nothing is deferred here. Except for style, all is done.',
     # A longer word that starts with an exception word is not one.
     'Nothing is deferred, exceptional as that is.',
 ])
 def test_negation_with_a_trailing_clause_is_not_flagged(text):
+    assert unmarked(text) == []
+
+
+@pytest.mark.parametrize('text', [
+    # A period inside a token does not end the sentence, so the exception is read.
+    'Nothing is deferred in install.py except the scorecard.',
+    'Nothing is deferred in v2.1 except retry.',
+    'Nothing is deferred (see section 3.2), except retry.',
+    'Nothing is deferred, i.e. today, except retry.',
+    # A line break inside the sentence does not end it either.
+    'Nothing is deferred\nhere except the scorecard.',
+    'Nothing is deferred in this plan\nexcept the scorecard.',
+    'Nothing is deferred\nexcluding the scorecard.',
+    'Nothing is deferred\nwith the exception of retry.',
+    'Nothing is deferred here, other\nthan retry.',
+    # The counted and the sole exception forms name the deferred work too.
+    'Nothing is deferred, with one exception: retry.',
+    'Nothing is deferred, with the sole exception of retry.',
+    'Nothing is deferred, with a single exception.',
+    'Nothing is deferred, with the only exception being retry.',
+    'Nothing is deferred, with an exception for retry.',
+])
+def test_negation_with_an_exception_later_in_the_sentence_is_still_flagged(text):
+    assert len(unmarked(text)) == 1
+
+
+@pytest.mark.parametrize('text', [
+    'Nothing is deferred in install.py.',
+    'Nothing is deferred in v2.1; every task landed.',
+    '**Nothing is deferred.** Except for style, all is done.',
+    'Nothing is deferred.) Except for style, all is done.',
+    'Nothing is deferred, with no exceptions.',
+    'Nothing is deferred in this plan\nand every task landed.',
+    'Nothing is deferred in this plan.\nExcept for style, all is done.',
+    'Nothing is deferred today! Except for style, all is done.',
+    'Nothing is deferred? Apart from style, yes.',
+    'Nothing is deferred."\nExcept for style, all is done.',
+])
+def test_negation_ends_at_the_sentence_end_across_lines(text):
     assert unmarked(text) == []
 
 
