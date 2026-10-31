@@ -61,9 +61,10 @@ Without uv, run the same path with `python3` in an environment that has the
 dependencies listed in the script's header.
 
 Run it without `--json`: the gate reads `aged >45d:` off the summary line,
-and the `Carry used (only /deferred clears):` line when there is one. If the
-script prints `no specs/deferred_items.md in this repo`, or reports `0 open`,
-say nothing and continue to Step 2.
+and the `Aged, carry unused:` and `Carry used (only /deferred clears):`
+lines when they print. If the script prints
+`no specs/deferred_items.md in this repo`, or reports `0 open`, say nothing
+and continue to Step 2.
 
 **If `aged >45d:` is 0:** report the summary line as printed and continue to Step 2.
 
@@ -76,6 +77,7 @@ present the menu normally.
 
 ```
 Deferred backlog: 44 open, 61 ever closed (closure rate 58%), aged >45d: 29.
+Aged, carry unused: 12-audit_7_20_26: <first words>…; …
 Oldest open: 71d (12-audit_7_20_26).
 
 29 items are aged past the 45-day review horizon — I'll ask about those before
@@ -98,9 +100,10 @@ partner answers for each aged item, one of two:
   on the item, not in a separate log, and commit the notes with the branch's
   other completion commits.
 
-An item on the `Carry used` line gets only `/deferred`. Your partner may carry
-some items and send others to `/deferred`. Proceed with the merge or the PR when
-no other aged item is left: each one is carried in this finish, or a
+An item on the `Aged, carry unused:` line gets both choices. An item on the
+`Carry used` line gets only `/deferred`. Your partner may carry some items
+and send others to `/deferred`. Proceed with the merge or the PR when no
+other aged item is left: each one is carried in this finish, or a
 `/deferred` pass changed its state. After the pass, the items you carried show
 on `Carry used`. That is expected, and they stay cleared for this finish.
 

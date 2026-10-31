@@ -47,7 +47,8 @@ uv run <this-skill-dir>/scripts/deferred_stats.py
 
 Add `--json` when you need the raw numbers (`open`, `closed`, `closure_rate`,
 `aged_open`, `oldest_open_days`, `age_histogram`, `watching`, `planned`,
-`aged_acknowledged` (a list), `removed`, `open_with_done_note`) rather than
+`aged_carryable` (a list), `aged_acknowledged` (a list), `removed`,
+`open_with_done_note`) rather than
 the text summary. The script always exits 0 — it reports, it does not gate.
 It reads `specs/deferred_items.md` and the archive file
 `specs/completed/deferred_items.md` by default; `--file` and `--archive` point
@@ -72,6 +73,7 @@ the first 6 words of the item's text after the checkbox.
 |---|---|
 | `  Watching: <n> (Revisit-if or held; not aged).` | Open items that do not age: watch items and `→ held` items. |
 | `  Planned: <n> (in a live plan or spec; not aged).` | Open items whose latest state note is `→ planned` and whose file is live. |
+| `  Aged, carry unused: <section>: <first words>…; <section>: <first words>…` | Aged items that can still take their one carry (see Aged-tail gate). |
 | `  Carry used (only /deferred clears): <section>: <first words>…; <section>: <first words>…` | Aged items that already used their one carry (see Aged-tail gate). |
 | `  Removed: <n> (counted as closed).` | Items with a `→ removed` note, in either file. They count as closed. |
 | `  Warning: open item has a → done note: <section>: <first words>…` | One line per item. The note is there, but the box is still unticked. The checkbox decides, so the item stays open. Check it, and tick the box when the work is done. |
@@ -349,8 +351,10 @@ neglect**, so only the aged tail gates. An item that does not age (Item notes:
 a watch item, a held item, a planned item) never gates.
 
 The gate reads the stats text (Backlog stats). `aged >45d:` on the first line
-is the count. The `Carry used` line, when there is one, names the aged items
-that cannot be carried again.
+is the count. The `Aged, carry unused:` line, when there is one, names the
+aged items that can still take a carry. The `Carry used` line, when there is
+one, names the aged items that cannot be carried again. Each aged item is on
+one of the two lines.
 
 The gate binds the **merge and PR options only**. Keep and Discard are never
 gated — nothing ships on either, and gating Discard would force a triage pass
@@ -367,9 +371,10 @@ until each aged item is cleared in one of two ways:
 
 **Ask.** Before the merge or the PR, ask, and wait for an answer. The owner
 answers for each aged item: `/deferred`, or a carry with a reason. An item on
-the `Carry used` line gets only `/deferred`. The owner may carry some items and
-send others to `/deferred`. Fill in the counts, and list each item by section
-and first words.
+the `Aged, carry unused:` line gets both choices. An item on the
+`Carry used` line gets only `/deferred`. The owner may carry some items and
+send others to `/deferred`. Fill in the counts, and list each item by
+section and first words.
 
 ```
 29 items are aged past the 45-day review horizon. Before I <merge / open the PR>:
@@ -385,13 +390,11 @@ These 4 already used their one carry. Only `/deferred` clears those:
 Which, for each of the 25?
 ```
 
-When the `Carry used` line names every aged item, drop the first block and offer
-only `/deferred`. When it names none, drop the second block.
-
-To find the items that can take a carry, read `specs/deferred_items.md`. They
-are the open items that age under rules 1 and 5 (Item notes), whose aging date
-(the section date, or the `→ triggered` date) is more than 45 days back, and
-that the `Carry used` line does not name.
+The first block lists the items on the `Aged, carry unused:` line. The
+second block lists the items on the `Carry used` line. The two counts add
+up to `aged >45d:`. When there is no `Aged, carry unused:` line, drop the
+first block and offer only `/deferred`. When there is no `Carry used` line,
+drop the second block.
 
 **First carry.** The owner gives a reason. Write this note on each aged item
 the owner carries, with today's date and the branch being finished:

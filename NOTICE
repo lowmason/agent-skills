@@ -341,7 +341,8 @@ Changes from upstream:
     `→ planned` on the picked items only. finishing-a-development-branch's
     Step 1b now points at the reference's Aged-tail gate. It offers each
     aged item a `/deferred` pass or one carry, and an item whose carry is
-    used gets only `/deferred`. A carry is an `→ acknowledged` note on
+    used gets only `/deferred`. The stats now list the aged items that
+    can still take a carry. A carry is an `→ acknowledged` note on
     the item instead of a bullet in a separate log. Step 1b dropped its
     question block, the log bullet with its example and the "Carried
     deliberately" sentence, which the reference now holds in the new

@@ -17,6 +17,7 @@
 - New stats lines, exact text, each printed only when its count or list is non-empty, in this order after the first line and before `Oldest open:`:
   - `  Watching: <n> (Revisit-if or held; not aged).`
   - `  Planned: <n> (in a live plan or spec; not aged).`
+  - `  Aged, carry unused: <section>: <first words>…; <section>: <first words>…`
   - `  Carry used (only /deferred clears): <section>: <first words>…; <section>: <first words>…`
   - `  Removed: <n> (counted as closed).`
   - `  Warning: open item has a → done note: <section>: <first words>…` (one line per item)
@@ -26,7 +27,7 @@
 - The checkbox alone decides open or closed. For an open item only `→ held`, `→ triggered` and `→ planned` set aging state, and the latest of those wins.
 - `deferred_stats.py`, `deferral_scan.py scan` and `archive_deferred.py` always exit 0. `deferral_scan.py lint` exits 1 on any unmarked candidate.
 - New scripts carry a PEP 723 header like `deferred_stats.py` (`requires-python = '>=3.11'`, `dependencies = []`), use the stdlib only, single quotes, and take `--file` and `--archive` paths, so the later one-file-per-section design can re-point them.
-- The archive file is `specs/completed/deferred_items.md`. Stats `--json` gains `watching`, `planned`, `aged_acknowledged` (a list) and `removed`.
+- The archive file is `specs/completed/deferred_items.md`. Stats `--json` gains `watching`, `planned`, `aged_carryable` (a list), `aged_acknowledged` (a list) and `removed`.
 - Body budgets, measured with `build/check_conformance.py`'s `skill_body` (Task 8 gives the command): writing-plans body ≤ 20,000 characters (19,994 at the plan's base) and finishing-a-development-branch body ≤ 20,000 (19,970 at the base), both net zero or less against the base. brainstorming gains one line (16,634 at the base).
 - Do not change the relabeled deferred example's words in `skills/writing-plans/SKILL.md` or `references/deferred-backlog.md` (the cosmetic rewrap below moves a line break only).
 - Do not move `## What a Step Contains` (micro-tested exact copy from plan 73) out of the writing-plans body.
