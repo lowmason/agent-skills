@@ -256,6 +256,9 @@ the claim. If any item is missing, the task is not complete: finish it.
 
 Run this skill's `scripts/task-done PLAN_FILE N BASE -- <test command>`
 with the project's documented test command(s) that the change can reach.
+`task-done` takes one command, run from the current directory: put several
+documented commands, or suites that run from their own directories, into
+one call (`-- sh -c '<cmd1> && <cmd2>'`), never one call each.
 It runs the
 tests, keeps the full output in the workspace, prints the tail, and — only
 if they pass — appends the completion line to the ledger:

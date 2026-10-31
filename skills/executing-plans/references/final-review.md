@@ -35,7 +35,8 @@ weaker than a fresh reviewer, and your human partner decides whether that
 is enough before merge. The Codex seat still runs when the Codex CLI is present.
 
 Touch nothing until both have returned. When the Codex run completes, copy
-its `Codex reviewed <sha>` line into the ledger too, as
+its `Codex reviewed <sha>` line into the ledger too, and back into the
+conversation if you resume from the ledger, as
 subagent-driven-development's final review does.
 
 ## Fix pass
@@ -82,9 +83,8 @@ partner to rule on, into the same batch, so your human partner gets at most
 one round-trip. Findings the fix pass left unfixed feed the gate.
 
 When the protocol has finished, delete this plan's workspace — the
-directory `sdd-workspace` printed at setup; re-run
-`../../subagent-driven-development/scripts/sdd-workspace <plan-file>` if you
-lost it. Sibling directories under `.sdd/` belong to other plans; leave them
+directory `sdd-workspace` printed at setup; if you lost it, re-run the
+`sdd-workspace` command that Setup ran. Sibling directories under `.sdd/` belong to other plans; leave them
 alone. The delete runs after the protocol, never before, because the
 resolve-before-defer gate reads the ledger, the unfixed findings and the
 Declined to judge lines to build its questions and deferred items.
