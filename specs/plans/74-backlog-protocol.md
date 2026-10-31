@@ -1,5 +1,7 @@
 # Backlog Protocol Implementation Plan
 
+**Status: COMPLETE (2026-10-31)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make deferrals outside `specs/deferred_items.md` reach the backlog, and let the backlog shrink by rule, through item notes, new aging rules, a one-carry gate, a deferral scan and lint, a per-item archive script and a one-time migration.
@@ -63,6 +65,8 @@ Numbered after the spec's D1-D14.
 - **D22** (owner, completion batch, 2026-10-31): accept the R4 pass under the reading rule frozen before the runs (5/5; under the exact note form it scores 3/5). No wording change. Applied in: `specs/red-baseline-backlog-protocol.md`.
 - **D23** (owner, completion batch, 2026-10-31): do four leftovers now: the twelfth commit lint line in `build/CLAUDE.md`, the scan negation follow-up (E3), a stats list of the aged items that can still take a carry, and the scan recall gaps. Applied in: Tasks 13 and 14 (completion additions; no task text), plus `build/CLAUDE.md`.
 
+Deviation: the owner rulings D20-D23 added four tasks at completion, with no task text in this plan. Task 12: the dated tick note, the owner's-word-only rule for `→ dropped:`, and the build guide line (commits 8500c83, 836cc9a, a4568fa). Task 13: the scan's negation and recall gaps (commits f5d0b86, ba759aa, 6792479, ec19e3b, 798de98). Task 14: the stats line `Aged, carry unused:` (commits 21952c9, c8b56e6). Task 15: the micro-test re-run on the final text (commit 21417f8).
+
 ## Overlapping backlog items
 
 - **Folded in:** `73-reviewer-and-planning-contract — 2026-10-30`, item `Cosmetic wraps from plan 73's task reviews`. Its line numbers are stale: the example's long line is now `skills/writing-plans/SKILL.md:332` and `skills/writing-plans/references/deferred-backlog.md:71`, and the third site is the `Order matters` line in `skills/subagent-driven-development/references/final-review.md:50`. Tasks 7 and 8 rewrap all three (whitespace only, so the body budget is unchanged). The completion protocol ticks the item.
@@ -89,7 +93,7 @@ All seven items are settled: item 1 by D18, items 2-7 approved as written by D19
 **Files:**
 - Modify: `specs/backlog-protocol.md` (section 6 Candidates; Done when)
 
-- [ ] **Step 1: Replace in section 6**
+- [x] **Step 1: Replace in section 6**
 
 Replace:
 ```
@@ -109,11 +113,11 @@ with:
   2026-10-30)
 ```
 
-- [ ] **Step 2: Replace in Done when**
+- [x] **Step 2: Replace in Done when**
 
 Replace `- The scan catches every B1 fixture.` with `- The scan catches every B1 fixture that carries a deferral phrase. (owner, plan 74, 2026-10-30)`. Leave the status line alone.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add specs/backlog-protocol.md
@@ -133,7 +137,7 @@ git commit -m "docs(specs): amend backlog-protocol B1 fixture scope (plan 74)"
 - Produces: `build_prompts.py <sha> <out-dir> [<case> …]`, which reads each case's texts at `<sha>` with `git show` and writes `<case>.txt` plus `MANIFEST.txt` (sha256, model, budget, files per prompt). Task 10 runs it again at the new wording's sha.
 - Produces: the record's sections `## Reading rules`, `## Control`, `## New wording`, `## Spend`.
 
-- [ ] **Step 1: Write `cases.py`**
+- [x] **Step 1: Write `cases.py`**
 
 One entry per case, with its texts, model, fixture, task and pass rule. Texts are SKILL.md bodies plus whole reference or command files.
 
@@ -147,29 +151,31 @@ One entry per case, with its texts, model, fixture, task and pass rule. Texts ar
 
 Write each fixture in a domain unrelated to this repo's backlog (no item text from `specs/deferred_items.md`, no word of the pass rule).
 
-- [ ] **Step 2: Write `build_prompts.py`**
+- [x] **Step 2: Write `build_prompts.py`**
 
 Adapt plan 73's `build_prompts.py`: texts read with `git show <sha>:<path>`, never through `~/.claude`; frontmatter stripped from SKILL.md files.
 
-- [ ] **Step 3: Check for answer leaks**
+- [x] **Step 3: Check for answer leaks**
 
 Build the control prompts, then grep each case's fixture and task (not the texts under test) for the words of its own answer: R1 and R2 `item:` and `dropped`; R4 `triggered`; R5 `planned`; R3 `acknowledged`. R3's pasted stats line (`Carry used (only /deferred clears): …`) is part of its input and is exempt by name.
 Expected: no match. The pass-rule strings in `cases.py` are never written into a prompt.
 
-- [ ] **Step 4: Pilot the isolation probe**
+- [x] **Step 4: Pilot the isolation probe**
 
 Run: `bash specs/red-baseline-backlog-protocol/kit/run_reps.sh specs/red-baseline-backlog-protocol/kit/isolation_probe.txt /tmp/plan74-probe 1 1 claude-sonnet-5-5`
 Expected: the reply shows no output style, no `~/.claude/CLAUDE.md` text, no rules and no memory, judged as plan 73's record judges it (`specs/red-baseline-reviewer-planning-contract.md`).
 
-- [ ] **Step 5: Register the reading rules**
+> Deviation: the controller made the init-record half of the probe check after the control runs, with one `--output-format stream-json --verbose` probe (commit a5bf1ee).
+
+- [x] **Step 5: Register the reading rules**
 
 Write each case's pass rule and void rules into the record's `## Reading rules` before any rep runs. Commit.
 
-- [ ] **Step 6: Run the control arm**
+- [x] **Step 6: Run the control arm**
 
 Run `build_prompts.py <base-sha> /tmp/plan74-control` with `<base-sha>` = `git rev-parse HEAD` at this task's start (the current wording), then 5 reps per case into `specs/red-baseline-backlog-protocol/control/<case>/`. Expected: 25 rep files. Record each verdict and the spend. Stop if the spend reaches $20, so the new arm has the other half of the $40.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/red-baseline-backlog-protocol specs/red-baseline-backlog-protocol.md
@@ -186,7 +192,7 @@ git commit -m "test(specs): backlog-protocol RED baselines R1-R5 (plan 74)"
 - Produces: `@dataclass Note(kind: str, date: dt.date | None, rest: str)`; `@dataclass Item(section: str, section_date: dt.date | None, checked: bool, text: str, notes: list[Note])`; `parse_items(text: str) -> list[Item]`; `aging_state(item: Item, is_live: Callable[[str], bool]) -> tuple[str, dt.date | None]`, which returns one of `'triggered' | 'held' | 'planned' | 'watch' | 'work'` and the date the item ages from (`None` when not aged); `compute_stats(items: list[Item], today: dt.date, aged_days: int = 45, is_live: Callable[[str], bool] = …) -> dict`.
 - `parse_sections` goes. Only `deferred_stats.py` and `test_deferred_stats.py` use it (`git grep parse_sections` outside `specs/plans/completed/`). The three tests that read its section dicts assert the same counts and dates from `parse_items`; the other existing tests switch to `compute_stats(parse_items(...), ...)` and keep their assertions.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Each test builds a small backlog string. Assertions:
 - `test_continuation_notes_belong_to_their_item`: two items, the first with `      → held 2026-10-01: vendor fix` on a continuation line. `parse_items` gives the first item one `held` note dated 2026-10-01, the second none.
@@ -206,26 +212,26 @@ Each test builds a small backlog string. Assertions:
 
 Watch, held and planned items count as open and are left out of `aged_open`, `age_histogram` and `oldest_open_*`.
 
-- [ ] **Step 2: Run the tests and see them fail**
+- [x] **Step 2: Run the tests and see them fail**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: the new tests FAIL (`ImportError` for `parse_items` collects the whole module as an error first). Read each failure.
 
-- [ ] **Step 3: Implement the parsing and aging rules**
+- [x] **Step 3: Implement the parsing and aging rules**
 
 A note is `→` followed by a lowercase word (letters and hyphens) and an optional ISO date, matched only outside inline code spans. `→ planned`'s path is the first `.md` token after its colon. The default `is_live(path)` is true when `Path(path)` exists and no path part is `completed`. Rules apply in the spec's section 2 order.
 
-- [ ] **Step 4: Run the tests and see them pass**
+- [x] **Step 4: Run the tests and see them pass**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: PASS, all tests.
 
-- [ ] **Step 5: Check the live backlog**
+- [x] **Step 5: Check the live backlog**
 
 Run: `uv run skills/writing-plans/scripts/deferred_stats.py`
 Expected: exit 0, the first line in the unchanged shape, a `Watching:` line near 63 (the spec's count of watch items on 2026-10-29), and no traceback.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/writing-plans/scripts/deferred_stats.py skills/writing-plans/scripts/test_deferred_stats.py
@@ -242,7 +248,7 @@ git commit -m "feat(writing-plans): stats read item notes and age watch, held an
 - Consumes: Task 2's `parse_items`, `aging_state`, `compute_stats`.
 - Produces: `compute_stats(items, today, aged_days=45, is_live=…, archived: list[Item] = ())`; `carry_used(item: Item) -> bool`; CLI flag `--archive` (default `specs/completed/deferred_items.md`); JSON keys `watching: int`, `planned: int`, `aged_acknowledged: list[{'section': str, 'first_words': str}]`, `removed: int`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 - `test_archived_items_count_as_closed_never_open`: a live file with 1 open item and an archive with 2 ticked items. `open == 1`, `closed == 2`, `aged_open` ignores the archive.
 - `test_removed_items_count_as_closed_and_are_reported`: one `- [x] y → removed 2026-10-27: skill archived` in the archive. `removed == 1`, it is in `closed`, and `format_report` holds `  Removed: 1 (counted as closed).`
@@ -252,21 +258,21 @@ git commit -m "feat(writing-plans): stats read item notes and age watch, held an
 - `test_carry_line_names_section_and_first_words`: two aged items with used carries. `format_report` holds `  Carry used (only /deferred clears): s1: alpha beta gamma delta epsilon zeta…; s2: …`.
 - `test_json_output_carries_the_new_keys`: `--json` output has `watching`, `planned`, `aged_acknowledged` and `removed`, plus every existing key.
 
-- [ ] **Step 2: Run the tests and see them fail**
+- [x] **Step 2: Run the tests and see them fail**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: the seven new tests FAIL, each on the missing key, line or flag.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 A carry is used when the item has an `→ acknowledged` note dated after its latest `held`, `triggered` or `planned` note, or after its section date when it has none (spec D10). Update the module docstring and the `compute_stats` docstring, whose line about items never being deleted no longer holds.
 
-- [ ] **Step 4: Run the tests and see them pass**
+- [x] **Step 4: Run the tests and see them pass**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/writing-plans/scripts/deferred_stats.py skills/writing-plans/scripts/test_deferred_stats.py
@@ -284,7 +290,7 @@ git commit -m "feat(writing-plans): stats read the archive file, count removals 
 **Interfaces:**
 - Produces: `@dataclass Candidate(line: int, text: str)`; `unmarked(text: str) -> list[Candidate]` (1-based line numbers into `text`); `main(argv) -> int` with subcommand `scan <file>…`, printing `<file>:<line>: <stripped line>` per unmarked candidate and always returning 0. Task 6 imports `unmarked`.
 
-- [ ] **Step 1: Write the B1 fixtures as literal strings**
+- [x] **Step 1: Write the B1 fixtures as literal strings**
 
 In `test_deferral_scan.py`, copy each fixture's whole unit from the audit base `6186635` (`git show 6186635:<path>`), as a module-level string with a comment naming its source:
 - `PLAN_4` (`specs/plans/completed/4-audit_1_3_26.md:19`);
@@ -292,7 +298,7 @@ In `test_deferral_scan.py`, copy each fixture's whole unit from the audit base `
 - `TASK_BRIEF_NOTE`, `SBC_RANK_NOTE`, `SESS8_NOTE` (`specs/deferred_items.md:999`, `:857`, `:382`, each the closure note from its `→` line to its item's end);
 - `PLAN_29_HEADING`, `PLAN_29_FLOATING` (`specs/plans/completed/29-snippet-execution-gate.md:693`, `:710`), `SCORECARD_200` (`specs/completed/audit_9_2_26.md:200`), `AUDIT_1_3_139` (`specs/completed/audit_1_3_26.md:139`).
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 - `test_catches_each_phrase_bearing_b1_fixture`: parametrized over the first five strings; `unmarked(s)` is non-empty.
 - `test_phraseless_b1_fixtures_record_the_limit`: parametrized over the last four, each marked `pytest.mark.xfail(strict=False, reason='no deferral phrase; see plan 74 Task 0')`; assert `unmarked(s)` is non-empty. A phrase list that catches one shows as XPASS, never as a failure.
@@ -306,28 +312,28 @@ In `test_deferral_scan.py`, copy each fixture's whole unit from the audit base `
 - `test_nested_fence_is_ignored`: a four-backtick fence holding a three-backtick fence and `PLAN_4` gives `[]`, and a `PLAN_4` line after the outer fence closes is flagged.
 - `test_scan_cli_prints_path_line_text_and_exits_0`: `main(['scan', str(f)])` returns 0 and prints `f'{f}:1: …'`.
 
-- [ ] **Step 3: Run the tests and see them fail**
+- [x] **Step 3: Run the tests and see them fail**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: `ModuleNotFoundError: deferral_scan` collects as an error.
 
-- [ ] **Step 4: Implement `deferral_scan.py`**
+- [x] **Step 4: Implement `deferral_scan.py`**
 
 The phrase list is the builder's (spec section 6), case-insensitive, as one module constant `PHRASES`. Units as in Open for plan review item 6. A fence closes only on a run of the same character at least as long as its opener. Copy the module docstring style of `deferred_stats.py`.
 
-- [ ] **Step 5: Run the tests and see them pass**
+- [x] **Step 5: Run the tests and see them pass**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: PASS.
 
-- [ ] **Step 6: Burden check**
+- [x] **Step 6: Burden check**
 
 Run the scan over plans 69-73 in `specs/plans/completed/` and over the spec each names on its `**Spec:**` line (in `specs/completed/`). Count unmarked candidates per document.
 Expected: median ≤ 3. If above 3, tighten `PHRASES` and re-run Steps 5 and 6. Record the per-document counts and the median in this plan, under this step, as a `> Measured:` line.
 
 > Measured: 2026-10-30, 7 documents: plan 69 2, plan 70 2, plan 71 0, plan 72 0, plan 73 0, `specs/completed/brainstorming-proportional-rebuild.md` 0, `specs/completed/reviewer-and-planning-contract.md` 0. Median 0. Plans 69, 71 and 72 name no spec. Plan 73's `**Spec:**` line names `specs/reviewer-and-planning-contract.md`, which now sits in `specs/completed/`.
 
-- [ ] **Step 7: Name the script in the reference and the suite notes**
+- [x] **Step 7: Name the script in the reference and the suite notes**
 
 Add under `## Backlog stats` in `references/deferred-backlog.md`:
 ```bash
@@ -335,12 +341,14 @@ uv run <this-skill-dir>/scripts/deferral_scan.py scan <file>…
 ```
 Add `deferral scan` to the `writing-plans` suite's notes in `build/suites.toml`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/writing-plans/scripts/deferral_scan.py skills/writing-plans/scripts/test_deferral_scan.py skills/writing-plans/references/deferred-backlog.md build/suites.toml specs/plans/74-backlog-protocol.md
 git commit -m "feat(writing-plans): advisory deferral scan with B1 fixtures"
 ```
+
+> Deviation: the negation exemption took five fix attempts. The controller parked the remaining case (`E3`, the exemption's exception tail) as recorded work, and it was closed at completion in the owner-approved Task 13 additions (D23).
 
 ### Task 5: Deferral lint and its commit-lint wiring
 
@@ -354,7 +362,7 @@ git commit -m "feat(writing-plans): advisory deferral scan with B1 fixtures"
 - Consumes: Task 4's `unmarked`.
 - Produces: subcommand `lint --baseline <file> [--root <dir>]`. It reads every `*.md` under `<root>/specs/completed/` and `<root>/specs/plans/completed/` (recursive) whose repo-relative path is not a line of the baseline. It prints `scan`'s lines, then either `deferral lint: <n> unmarked candidate(s) in <m> file(s); add a → item: or → dropped: marker in each one's paragraph` (exit 1) or `deferral lint: clean` (exit 0).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 - `test_lint_passes_when_every_file_is_on_the_baseline`: a tmp root with one flagged file listed in the baseline; exit 0, `deferral lint: clean`.
 - `test_lint_fails_on_a_new_unmarked_file`: the same file not listed; exit 1, the summary line names 1 candidate in 1 file.
@@ -362,25 +370,27 @@ git commit -m "feat(writing-plans): advisory deferral scan with B1 fixtures"
 - `test_lint_reads_markdown_only`: a flagged `kit/run.py` under `specs/completed/`; exit 0.
 - `test_lint_reads_both_completed_folders`: a flagged new file under `specs/plans/completed/`; exit 1.
 
-- [ ] **Step 2: Run them and see them fail**
+- [x] **Step 2: Run them and see them fail**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: the five new tests FAIL (`lint` is an invalid choice).
 
-- [ ] **Step 3: Implement `lint`**
+- [x] **Step 3: Implement `lint`**
 
-- [ ] **Step 4: Run them and see them pass**
+> Deviation: the lint skips dangling `.md` symlinks (commit eb5a18b), because an editor lock file blocked every commit.
+
+- [x] **Step 4: Run them and see them pass**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: PASS.
 
-- [ ] **Step 5: Freeze the baseline**
+- [x] **Step 5: Freeze the baseline**
 
 Run: `git ls-files 'specs/completed/*.md' 'specs/plans/completed/*.md' | sort > build/deferral_baseline.txt`
 Then: `uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt`
 Expected: `deferral lint: clean`, exit 0. The baseline holds `specs/completed/deferred_items.md`.
 
-- [ ] **Step 6: Wire the lint**
+- [x] **Step 6: Wire the lint**
 
 In `build/run_commit_lints.sh`, after `reviewer_block`:
 ```bash
@@ -394,7 +404,7 @@ uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/defer
 ```
 Add `test_unmarked_deferral_is_refused(clone)` to `build/test_commit_lints.py`, in the style of `test_drifted_reviewer_block_is_refused`: write `specs/completed/x.md` holding `PLAN_4`'s text, commit, expect the hook to refuse with `deferral_lint` named.
 
-- [ ] **Step 7: Run the lints, then commit**
+- [x] **Step 7: Run the lints, then commit**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -404,7 +414,7 @@ git add skills/writing-plans/scripts/deferral_scan.py skills/writing-plans/scrip
 git commit -m "feat(build): deferral lint over newly completed specs and plans"
 ```
 
-- [ ] **Step 8: Run the clone tests after the commit**
+- [x] **Step 8: Run the clone tests after the commit**
 
 `test_commit_lints.py` clones HEAD, so it sees the lint only now.
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py`
@@ -421,7 +431,7 @@ Expected: PASS, including `test_unmarked_deferral_is_refused`.
 - Consumes: Task 2's `parse_items`/`Item`/`Note` (import from `deferred_stats`), Task 4's `unmarked`.
 - Produces: `SCAN_FROM: dt.date` (the date this task is committed, as a literal); `archive(live: str, archived: str, today: dt.date, scan_from: dt.date = SCAN_FROM, days: int = 45) -> tuple[str, str, list[str]]`, returning the new live text, the new archive text and the held-back report lines; CLI `--file`, `--archive`, `--dry-run`, printing `archived <n> item(s), held back <k>:` and then one `  held back: <section>: <first words>…: <candidate line>` per held item; always exit 0.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Fixed `today = dt.date(2026, 12, 31)`, `scan_from = dt.date(2026, 11, 1)`.
 - `test_tick_older_than_45_days_moves`: `- [x] a → done 2026-10-01 (plan 9)`. It leaves the live text and sits under the same heading in the archive.
@@ -440,26 +450,26 @@ Fixed `today = dt.date(2026, 12, 31)`, `scan_from = dt.date(2026, 11, 1)`.
 - `test_dry_run_writes_nothing`: `main(['--file', live, '--archive', arch, '--dry-run'])` prints the counts and leaves both files byte-identical.
 - `test_second_run_moves_nothing`: running `archive` on its own output returns the same two texts.
 
-- [ ] **Step 2: Run them and see them fail**
+- [x] **Step 2: Run them and see them fail**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: `ModuleNotFoundError: archive_deferred` collects as an error.
 
-- [ ] **Step 3: Implement `archive_deferred.py`**
+- [x] **Step 3: Implement `archive_deferred.py`**
 
 The tick date is the date of the latest `done`, `retired` or `removed` note, or the section date when that note has none. The closure note is the item text from its first such note onward. The archive keeps its `# Deferred items` title line; undated sections sort last.
 
-- [ ] **Step 4: Run them and see them pass**
+- [x] **Step 4: Run them and see them pass**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: PASS.
 
-- [ ] **Step 5: Dry-run on the live backlog**
+- [x] **Step 5: Dry-run on the live backlog**
 
 Run: `uv run skills/writing-plans/scripts/archive_deferred.py --dry-run`
 Expected: exit 0, an `archived <n> item(s)` count, and no held-back line (all history predates `SCAN_FROM`). Both files unchanged (`git status --porcelain specs/` prints nothing).
 
-- [ ] **Step 6: Name the script in the reference, then commit**
+- [x] **Step 6: Name the script in the reference, then commit**
 
 Add under `## Backlog stats` in `references/deferred-backlog.md`:
 ```bash
@@ -480,37 +490,37 @@ git commit -m "feat(writing-plans): per-item archive script with a closure-note 
 - Consumes: the output lines and flags of Tasks 2-6 (Global Constraints).
 - Produces: the sections Tasks 8 and 9 point to, by these exact headings: `## Item notes`, `## Markers`, `## Archive and removal`, `## Aged-tail gate`.
 
-- [ ] **Step 1: Callers and stats**
+- [x] **Step 1: Callers and stats**
 
 The `Three callers` list becomes four or more: add the archive script's caller (`/deferred`, end of pass) and the scan's (Protocol step 5, the lint). In `## Backlog stats`, add the new `--json` keys, the `--archive` file, and the meaning of the `Watching`, `Planned`, `Carry used`, `Removed` and `Warning` lines.
 
-- [ ] **Step 2: `## Item notes`**
+- [x] **Step 2: `## Item notes`**
 
 Add the note table of spec section 1 and the state rules (checkbox precedence, the three state notes, latest wins, old firing notes are not read as `→ triggered`), then spec section 2's five aging rules in order.
 
-- [ ] **Step 3: Schema additions**
+- [x] **Step 3: Schema additions**
 
 In `## Deferred-item schema`, after the closure-condition bullet: spec section 7's two rules for new watch items (one concrete signal, a triage can answer yes or no; `Revisit if:` only for work nobody wants until the signal), and spec section 8's re-filed phrase `first found in <doc>, <date>`. Keep the old-items rule as it is.
 
-- [ ] **Step 4: Triage rubric**
+- [x] **Step 4: Triage rubric**
 
 Step 3: for each watch item and each held item, check whether its signal has fired, from what the repo and the conversation show, and propose `→ triggered` when it has. Step 5: point to `/deferred` for the note forms each disposition writes.
 
-- [ ] **Step 5: `## Markers` and `## Archive and removal`**
+- [x] **Step 5: `## Markers` and `## Archive and removal`**
 
 Markers: the two forms, who writes each (the agent writes `→ item:` and appends the item; `→ dropped:` only on the owner's word or with the landed work cited), the scan command, and the four moments of spec section 6's table. Archive and removal: spec section 5's rule, the 45-day tick age, the removal form, the hold-back and its `SCAN_FROM` cutoff, and that the script runs only from `/deferred`. Replace any `never delete` wording with: removal and archiving move the item to `specs/completed/deferred_items.md`.
 
 > Deviation: `→ dropped:` is written only on the owner's word (D21). The spec and this step also allowed it with the landed work cited. The owner removed that exception at completion.
 
-- [ ] **Step 6: `## Aged-tail gate`**
+- [x] **Step 6: `## Aged-tail gate`**
 
 Rewrite the section to spec section 3: the gate reads the stats; a first carry writes `→ acknowledged <YYYY-MM-DD> (<branch>): <reason>` on each carried item, on the owner's reason; an item named on the `Carry used` line gets only `/deferred`, and the merge waits for a state change (done, retired, held, triggered or planned; `→ owner-only` is not one). Move here, from finishing Step 1b, the question template, the acknowledgement example (rewritten as a note on an item) and the paragraph on why a reason is required. The `## Aged-backlog acknowledgements` section is no longer written.
 
-- [ ] **Step 7: Rewrap the relabeled example**
+- [x] **Step 7: Rewrap the relabeled example**
 
 Move the line break in the example's second item so no line passes 76 columns (`:71` today). Words unchanged.
 
-- [ ] **Step 8: Check and commit**
+- [x] **Step 8: Check and commit**
 
 Run: `uv run python build/check_links.py && uv run --with pyyaml python build/check_conformance.py && uv run python build/check_snippets.py skills/`
 Expected: each exits 0.
@@ -528,10 +538,12 @@ git commit -m "docs(writing-plans): backlog reference gains item notes, markers,
 - Modify: `skills/subagent-driven-development/references/final-review.md:50` (rewrap only)
 - Modify: `NOTICE` (superpowers change list)
 
+> Deviation: `build/test_runtime_support.py` gained `('skill:brainstorming', 'command:deferred')` in `SOFT_REFERENCES`, because brainstorming now names `/deferred` without running it.
+
 **Interfaces:**
 - Consumes: Task 7's headings `## Markers`, `## Archive and removal`; Task 4's scan command.
 
-- [ ] **Step 1: Measure the bodies before**
+- [x] **Step 1: Measure the bodies before**
 
 Run:
 ```bash
@@ -543,7 +555,7 @@ for f in ('skills/writing-plans/SKILL.md', 'skills/finishing-a-development-branc
 ```
 Expected: `19994`, `19970`, `16634`. A different figure means main moved: record it as a deviation and budget from it.
 
-- [ ] **Step 2: Step 3 of the protocol**
+- [x] **Step 2: Step 3 of the protocol**
 
 Three edits:
 - shrink the schema restatement to a pointer to the reference's schema (Open for plan review item 2);
@@ -554,32 +566,32 @@ Rewrap the example's second item as in Task 7 Step 7 (words unchanged).
 
 > Deviation: step 3 no longer spells the tick form. The form moved to the reference's `## Item notes` with a date, `→ done <YYYY-MM-DD> (plan <id>)` (D20).
 
-- [ ] **Step 3: Step 5 of the protocol**
+- [x] **Step 3: Step 5 of the protocol**
 
 Before the `git mv`, run `uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> <spec>` and resolve each line it lists with a marker (reference `## Markers`). Shorten the link re-pointing sentence, keeping its `../skills/…` to `../../skills/…` example, and shorten the closing paragraph (`These commits land on the current branch …`) to the same meaning: the commits are the branch's last, a merge or PR carries them, and a discarded branch takes them with it.
 
-- [ ] **Step 4: The D13 line**
+- [x] **Step 4: The D13 line**
 
 One sentence in the opening paragraph of `## Execution Handoff` (spec: Plan Document Header or Execution Handoff): when the plan settles `/deferred` items, its commit writes `→ planned <YYYY-MM-DD>: <plan path>` on each, replacing a spec path already there.
 
-- [ ] **Step 5: brainstorming**
+- [x] **Step 5: brainstorming**
 
 One line in `## The Written Design`, in the `**Where it goes:**` paragraph: when the spec comes from a `/deferred` Design pick, the spec's commit writes `→ planned <YYYY-MM-DD>: <spec path>` on the picked items, and on no other. No path into `writing-plans/references/` (no new install dependency).
 
-- [ ] **Step 6: Rewrap `final-review.md:50`**
+- [x] **Step 6: Rewrap `final-review.md:50`**
 
 Move line breaks in the `Order matters` paragraph so no line passes 76 columns. Words unchanged.
 
-- [ ] **Step 7: Measure the bodies after**
+- [x] **Step 7: Measure the bodies after**
 
 Run Step 1's command.
 Expected: writing-plans ≤ 20000 and ≤ its Step 1 figure; finishing unchanged; brainstorming ≤ 20000.
 
-- [ ] **Step 8: NOTICE**
+- [x] **Step 8: NOTICE**
 
 In the superpowers change list's deferred-backlog paragraph (`NOTICE`, the bullet that begins `The planning/execution skills`), name the two new scripts and their tests, the item notes and the one-carry gate, and brainstorming's `→ planned` line.
 
-- [ ] **Step 9: Check and commit**
+- [x] **Step 9: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -600,20 +612,20 @@ git commit -m "feat(writing-plans): completion protocol scans retiring documents
 **Interfaces:**
 - Consumes: Task 3's `Carry used (only /deferred clears):` line; Task 6's archive command; Task 7's `## Aged-tail gate`.
 
-- [ ] **Step 1: Step 1b**
+- [x] **Step 1: Step 1b**
 
 Keep the stats run and the two summary examples. Move the acknowledgement bullet, its example block and the `Carried deliberately` paragraph to the reference (Task 7 placed them), leaving a pointer to `## Aged-tail gate`. The question offers two choices per item: `/deferred`, or a carry noted on the item with a reason. An item on the `Carry used` line is offered `/deferred` only. Keep `Never write the acknowledgement without asking` in the body.
 
-- [ ] **Step 2: The other finishing sites**
+- [x] **Step 2: The other finishing sites**
 
 Step 4b (`an acknowledgement, or /deferred quick fixes`), Options 1 and 2 (`a /deferred pass or a logged acknowledgement`) and Red Flags (`Write an aged-backlog acknowledgement your partner did not ask for`) name the note on the item instead of the log.
 
-- [ ] **Step 3: Measure finishing**
+- [x] **Step 3: Measure finishing**
 
 Run Task 8 Step 1's command.
 Expected: finishing ≤ 19970.
 
-- [ ] **Step 4: `/deferred`**
+- [x] **Step 4: `/deferred`**
 
 - Preamble: edits happen only in step 5, for selected items, in the forms step 5 names (no longer `two tick forms`).
 - `description`: unchanged unless it names the tick forms (it does not today).
@@ -623,17 +635,19 @@ Expected: finishing ≤ 19970.
 - Step 5, Plan and Design: the hand-off names the picked items, so the session that commits the plan or spec writes `→ planned`; `/deferred` writes it only when that file is committed in the same pass.
 - A closing line: end the pass with `uv run <writing-plans-dir>/scripts/archive_deferred.py` and commit its moves with the pass's other edits. Use the path form `commands/deferred.md` already uses for the writing-plans skill.
 
-- [ ] **Step 5: Regenerate the adapters**
+> Deviation: the review changed `commands/deferred.md` step 5 so a held-back item is resolved only on the user's word, and `→ dropped:` is written only on the user's word (commit 9057df7).
+
+- [x] **Step 5: Regenerate the adapters**
 
 Run: `uv run --with pyyaml python build/sync_runtime_assets.py && uv run --with pyyaml python build/sync_runtime_assets.py --check`
 Expected: the second command exits 0.
 
-- [ ] **Step 6: Dependency drift**
+- [x] **Step 6: Dependency drift**
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies`
 Expected: PASS. If `/deferred` gained a path into the skill that `install.py`'s `DEPENDENCIES` lacks, add it.
 
-- [ ] **Step 7: NOTICE, lints, commit**
+- [x] **Step 7: NOTICE, lints, commit**
 
 Add finishing's line (the acknowledgement moved onto the item, one carry). Run `bash build/run_commit_lints.sh`; expected `commit lints passed`.
 
@@ -648,28 +662,30 @@ git commit -m "feat(finishing): one carry per aged item, noted on the item; /def
 - Create: `specs/red-baseline-backlog-protocol/green/`
 - Modify: `specs/red-baseline-backlog-protocol.md`
 
-- [ ] **Step 1: Build and check the new-wording prompts**
+- [x] **Step 1: Build and check the new-wording prompts**
 
 Run `build_prompts.py <new-sha> /tmp/plan74-green` with `<new-sha>` = HEAD after Task 9. Repeat Task 1 Step 3's leak grep on them.
 
-- [ ] **Step 2: Run 5 reps per case**
+- [x] **Step 2: Run 5 reps per case**
 
 Expected: 25 rep files under `green/<case>/`. Stop if the kit's total spend reaches $40.
 
-- [ ] **Step 3: Judge and record**
+- [x] **Step 3: Judge and record**
 
 Judge each rep by the registered reading rules. Record per case: control passes, new passes, the verdict under Open for plan review item 3, and the total spend.
 
-- [ ] **Step 4: Handle a miss**
+- [x] **Step 4: Handle a miss**
 
 A case that misses its bar: change the wording it tests, re-run Task 8 or 9's checks, and re-run that case only, within the $40. A case that still misses goes to the owner with the record. Never ship a miss without the owner's ruling.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/red-baseline-backlog-protocol specs/red-baseline-backlog-protocol.md
 git commit -m "test(specs): backlog-protocol GREEN runs R1-R5 (plan 74)"
 ```
+
+> Deviation: the first GREEN run passed 5 of 5 in every case. Its record was corrected for two honesty findings (commit 9e7930f). The final-review fixes changed the texts, so R1-R4 were run again on the final text (commit 21417f8), and the R3 fixture gained the `Aged, carry unused:` line. Both runs are in `specs/red-baseline-backlog-protocol.md`.
 
 ### Task 11: One-time migration
 
@@ -677,7 +693,7 @@ git commit -m "test(specs): backlog-protocol GREEN runs R1-R5 (plan 74)"
 - Modify: `specs/deferred_items.md`, `specs/completed/deferred_items.md`
 - Modify: `specs/plans/74-backlog-protocol.md` (the before and after figures)
 
-- [ ] **Step 1: Stats before**
+- [x] **Step 1: Stats before**
 
 Run: `uv run skills/writing-plans/scripts/deferred_stats.py --json > /tmp/plan74-before.json` and the text form. Record the text form under this step as a `> Before:` line.
 
@@ -688,21 +704,21 @@ Run: `uv run skills/writing-plans/scripts/deferred_stats.py --json > /tmp/plan74
 > `  Age spread — 0-14d: 57  15-30d: 15  31-45d: 1`
 > `  At or above the 20-item volume threshold.`
 
-- [ ] **Step 2: Move the acknowledgement log**
+- [x] **Step 2: Move the acknowledgement log**
 
 Count the bullets in `## Aged-backlog acknowledgements` and read the last bullet's date. Expected: 31 bullets, the last dated 2026-10-12. Move the section's bullets to the archive under `## Aged-backlog acknowledgements (to 2026-10-12) — 2026-10-12`, in date order. The live `## Aged-backlog acknowledgements` heading leaves too, so `# Deferred items` is followed directly by the first dated section. If the count or the last date differs, record a `> Deviation:` line and stop for the owner before renaming the heading.
 
-- [ ] **Step 3: Restore the 11 deleted items**
+- [x] **Step 3: Restore the 11 deleted items**
 
 Take the 11 items `git show 3abd782 -- specs/deferred_items.md` deletes, from `3abd782^`. Append each to the archive under its original section heading, adding `→ removed 2026-10-27: skill archived (lowmason/agent-skills#121)`. Tick the 3 open ones (`- [ ]` to `- [x]`) by that note.
 Expected: `/usr/bin/grep -c 'removed 2026-10-27' specs/completed/deferred_items.md` prints 11.
 
-- [ ] **Step 4: Run the archive script once**
+- [x] **Step 4: Run the archive script once**
 
 Run: `uv run skills/writing-plans/scripts/archive_deferred.py`
 Expected: exit 0, no held-back line.
 
-- [ ] **Step 5: Stats after, and the checks**
+- [x] **Step 5: Stats after, and the checks**
 
 Run the stats again. Expected: `removed` = 11; `closed` after = `closed` before + 11; `open` after = `open` before (the 3 restored open items were already out of the counts). Record the text form as a `> After:` line.
 Run: `uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt`
@@ -716,13 +732,17 @@ Expected: `deferral lint: clean`.
 > `  Age spread — 0-14d: 57  15-30d: 15  31-45d: 1`
 > `  At or above the 20-item volume threshold.`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/deferred_items.md specs/completed/deferred_items.md specs/plans/74-backlog-protocol.md
 git commit -m "chore(specs): migrate the acknowledgement log, restore removed items and archive old ticks (plan 74)"
 ```
 
-- [ ] **Step 7: Before the merge, confirm the baseline**
+- [x] **Step 7: Before the merge, confirm the baseline**
 
 If `origin/main` moved since Task 5, merge it, then re-run Task 5 Step 5's lint. A file another session retired in between and that the lint flags was retired before the lint existed: add its path to `build/deferral_baseline.txt` and say so in the PR text. This plan's own spec and plan never go on the baseline.
+
+> Deviation: the stats before and after are recorded above. The archive run moved 89 items and held back none.
+
+> Deviation: the final whole-branch review (after this task) had a fix wave, commits d360bb6, 0e97e03 and aeb16b6. It closed three Codex findings: the archive refuses the same path for `--file` and `--archive`, the hold-back scan keeps paragraph breaks, and code spans are masked by whole backtick runs.
