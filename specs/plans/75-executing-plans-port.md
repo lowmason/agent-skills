@@ -16,7 +16,7 @@
 - Never edit `skills/subagent-driven-development/SKILL.md`, `skills/subagent-driven-development/references/handling-reports.md` (owner decision O3), `skills/subagent-driven-development/references/preflight.md` (F7) or `~/.claude/CLAUDE.md`.
 - No upstream text crosses with these words: `.superpowers/sdd` (ours is `.sdd`), a `superpowers:` skill prefix (bare names only), `# SDD ledger — plan:` (ours is `Plan: <plan-file-path>`), `../using-superpowers/` (no such skill here), "Deferred minors" or a Minor tier, "Rulings I made", "Tasks are mostly independent".
 - The ledger's first line is `Plan: <plan-file-path>` in both executors. A ruling line is `Ruling: <what you decided> — <why> — <what it costs if wrong>`, prefixed `Task <N>: ` inside a task and `Final: ` at the final review.
-- The five stops are this exact list in both `skills/executing-plans/SKILL.md` and `skills/subagent-driven-development/references/fix-loop.md` (lead-in sentence free per file; Task 7 may revise the list only to fix a missed bar, in both files at once):
+- The five stops are this exact list in both `skills/executing-plans/SKILL.md` and `skills/subagent-driven-development/references/fix-loop.md` (lead-in sentence free per file; Task 6 may revise the list only to fix a missed bar, in both files at once):
 
   ```markdown
   1. An irreversible or destructive operation.
@@ -32,6 +32,8 @@
 - Scripts are bash 3.2-safe: no GNU-only flags (`realpath -m`, `readlink -f`, `sed -i` without a suffix). Canonicalize with `cd … && pwd -P`.
 - Every ported change gets a `NOTICE` change-list line in the task that makes it. `runtimes/` is not touched (no agent or command changes).
 - Run `bash build/run_commit_lints.sh` before each commit; expected `commit lints passed`. Commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- Only one plan executes at a time in this repository: execution starts only when no other plan is executing.
+- Prose for people (the record file, commit messages, NOTICE lines) follows the plain-technical-English rule. Skill text follows the skill's own register.
 - The repository is public: the kit, record and plan hold no private detail. `build/.scratch/` is never committed.
 - Shell: zsh. Quote any `===` or `====` in an echo. Use `/usr/bin/grep` for sweeps.
 
@@ -62,6 +64,9 @@ Each item is the planner's call unless marked. All wait for the owner's approval
 9. **Orphan check.** `check_conformance.py` exits 1 on any finding, and test files do not count as namers. So each script's header comment names its partner script (one line each, a local change credited in NOTICE). Without it, Task 4's commit fails `orphan-bundled-file`.
 10. **Spend.** 16 cases × 2 arms × 5 reps = 160 reps. Plan 74 paid $0.96 for 27 control reps on shorter texts. At up to $0.15 a rep this is about $24, under the $40 stop. The control arm stops at $20.
 
+11. **Cost framing (owner question).** Three upstream passages kept by the port justify inline execution by cost: the "Why inline" paragraph, the Continuous execution paragraph ("They chose inline execution to spend less"), and the check-in row's reality ("They chose inline to spend less"). Under O1 the partner chooses inline for tight coupling, so these read against O1. Proposed: reword the three to the O1 reason (one shared context for coupled tasks; the partner chose it), keeping their claims about stalls and check-ins. Task 5 Step 3 applies the owner's answer.
+12. **SDD ask text (checked).** A grep of `skills/subagent-driven-development/` for `plan-mandated`, `without asking`, `ask which governs` and `human's decision` finds only `fix-loop.md:51-55` and `final-review.md:35`, which Task 3 changes, and `task-reviewer-prompt.md:268`, which labels a finding and asks nothing. No other SDD text contradicts the new bullet.
+
 ## Overlapping backlog items
 
 - **Left:** `Settle the wording and the test gap of the reworded roadmap-stage guard (plan 46 review)` (open). It cites `skills/executing-plans/SKILL.md` Step 6, which Task 5 moves into `references/final-review.md` as `## Hand off a roadmap stage`, with the wording otherwise verbatim. The item still applies and is not settled. Any rewording reopens its gate, so this plan does not reword it. At completion, the item's path note is re-anchored to the new file.
@@ -78,7 +83,7 @@ Each item is the planner's call unless marked. All wait for the owner's approval
 - Create: `specs/red-baseline-executing-plans-port/control/<case>/` (rep output)
 
 **Interfaces:**
-- Produces: `build_prompts.py <sha> <out-dir> [<case> …]` writes `<case>.txt` and `MANIFEST.txt`; `build_prompts.py leakview <out-dir>` writes the prompts with each text under test replaced by a placeholder. Task 7 runs both at the treatment SHA.
+- Produces: `build_prompts.py <sha> <out-dir> [<case> …]` writes `<case>.txt` and `MANIFEST.txt`; `build_prompts.py leakview <out-dir>` writes the prompts with each text under test replaced by a placeholder. Task 6 runs both at the treatment SHA.
 - Produces: the record's sections `## Leak check`, `## Isolation probe`, `## Reading rules`, `## Control`, `## Treatment`, `## Spend`.
 
 - [ ] **Step 1: Write `cases.py`**
@@ -269,7 +274,7 @@ notes = ['task-start and task-done tests (stdlib only; they drive the bash scrip
 
 - [ ] **Step 1: Write the `task-start` tests**
 
-Module setup as `skills/subagent-driven-development/scripts/test_sdd_scripts.py`: its `GIT_ENV`, `run()`, `git()` helpers and `repo` fixture, with a two-task plan (`### Task 1: First thing`, `### Task 2: Second thing`) committed. Compare printed paths with `Path(...).resolve()`, as `test_task_brief_writes_to_and_prints_the_default_workspace_path` does.
+Module setup as `skills/subagent-driven-development/scripts/test_sdd_scripts.py`: its `GIT_ENV`, `run()`, `git()` helpers and `repo` fixture, with a two-task plan (`### Task 1: First thing`, `### Task 2: Second thing`) committed. The test file names no SDD path (no `subagent-driven-development/scripts/` string): the dependency-drift scan reads `.py` files, and the dependency lands only in Task 5. It reaches SDD only through the executing-plans scripts. Compare printed paths with `Path(...).resolve()`, as `test_task_brief_writes_to_and_prints_the_default_workspace_path` does.
 
 ```python
 def test_task_start_rejects_bad_arguments(repo):           # ('plan.md',) and ('plan.md', 1, 'x') → returncode 2
@@ -282,7 +287,7 @@ def test_task_start_handles_a_plan_path_with_a_space(repo):# plan at repo/'my pl
 - [ ] **Step 2: Run them to see RED**
 
 Run: `uv run python build/run_suites.py executing-plans`
-Expected: 5 errors, each `FileNotFoundError` naming `task-start`. A `PermissionError` means the file exists without its exec bit and is not RED.
+Expected: 5 failed, each with `FileNotFoundError` naming `task-start`. A `PermissionError` means the file exists without its exec bit and is not RED.
 
 - [ ] **Step 3: Implement `task-start`**
 
@@ -328,7 +333,7 @@ def test_task_done_rejects_a_bad_base(repo):                        # BASE 'nope
 - [ ] **Step 6: Run them to see RED**
 
 Run: `uv run python build/run_suites.py executing-plans`
-Expected: 5 passed (task-start), and every `task-done` test errors with `FileNotFoundError` naming `task-done`.
+Expected: 5 passed (task-start) and 13 failed, each with `FileNotFoundError` naming `task-done`.
 
 - [ ] **Step 7: Implement `task-done`**
 
@@ -372,7 +377,7 @@ git commit -m "feat(executing-plans): task-start and task-done ledger scripts"
 **Files:**
 - Modify: `skills/executing-plans/SKILL.md` (body rewritten; frontmatter unchanged)
 - Create: `skills/executing-plans/references/final-review.md`
-- Modify: `install.py` (`DEPENDENCIES`)
+- Modify: `install.py` (`DEPENDENCIES`), `build/test_runtime_support.py` (the executing-plans install case)
 - Modify: `NOTICE`
 
 **Interfaces:**
@@ -389,7 +394,7 @@ Write the body from `2ce8aa1:skills/executing-plans/SKILL.md` lines 6-321, keepi
 
 - [ ] **Step 3: Opening, When to Use and the graph**
 
-- Opening: replace "Four things stop you … For those, stop and ask." with a lead-in ("Five things stop you, and only these. For them, stop and ask:") and the five stops of Global Constraints.
+- Opening and kept passages: apply the owner's answer to Open for plan review item 11. Replace "Four things stop you … For those, stop and ask." with a lead-in ("Five things stop you, and only these. For them, stop and ask:") and the five stops of Global Constraints.
 - When to Use: three bullets for O1's routing: the tasks are tightly coupled; your human partner asked for direct execution; your harness has no subagent tool ("Never fabricate a dispatch; run the plan here."). Drop the `../using-superpowers/` sentence and the "mostly independent" bullet. Keep the mid-tier paragraph. In the "Prefer subagent-driven-development …" paragraph, use bare names.
 - The graph: the final-review node reads `Final review: code-reviewer + Codex (references/final-review.md)`; the re-grade node reads `ONE fix pass, each fix RED→GREEN + documented suite green; unfixed → ruling`; the delete node reads `Plan-completion protocol, then delete this plan's workspace`. Edges unchanged.
 
@@ -450,8 +455,9 @@ Expected: no output.
 - [ ] **Step 11: Dependency**
 
 Add `'skill:subagent-driven-development'` to `'skill:executing-plans'` in `install.py`'s `DEPENDENCIES` (the body names `../subagent-driven-development/scripts/`).
-Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies`
-Expected: `passed`, none failed.
+In `build/test_runtime_support.py`, `test_skill_brings_its_hard_dependencies`'s `('claude', 'executing-plans', …)` case gains `'.claude/skills/subagent-driven-development'` in its expected set.
+Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py`
+Expected: all passed, none failed.
 
 - [ ] **Step 12: NOTICE**
 
@@ -461,31 +467,25 @@ Expected: `passed`, none failed.
 - Add: upstream's evaluation repository, prime-radiant-inc/superpowers-evals, is credited as an idea only; it carries no license, and no text or fixture comes from it.
 - Read the line near 726 (plan 73's executing-plans hunk) and confirm it still holds; adjust only a stale location.
 
-- [ ] **Step 13: Check and commit**
+- [ ] **Step 13: Both script suites and an end-to-end run**
+
+Run: `uv run python build/run_suites.py executing-plans subagent-driven-development`
+Expected: both pass, with no failures and no unexpected skips.
+
+In a new directory under `/tmp/plan75-e2e/` with `git init`, a two-task plan and one commit, run `skills/executing-plans/scripts/task-start plan.md 1` and then `task-done plan.md 1 <base> -- true` by absolute path. Then run `skills/subagent-driven-development/scripts/sdd-workspace plan.md`.
+Expected: the ledger at the printed workspace reads `Plan: plan.md` then `Task 1: complete (commits …, tests: true → (no output))`, the form subagent-driven-development's resume reads.
+
+- [ ] **Step 14: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed` (the compaction window, links, provenance, dependency drift, suites check and snippet Tier 1 among them).
 
 ```bash
-git add skills/executing-plans install.py NOTICE
+git add skills/executing-plans install.py build/test_runtime_support.py NOTICE
 git commit -m "feat(executing-plans): port upstream v7.0.1's ledgered executor"
 ```
 
-### Task 6: Whole-suite check of the changed scripts
-
-**Files:** none changed.
-
-- [ ] **Step 1: Run both script suites**
-
-Run: `uv run python build/run_suites.py executing-plans subagent-driven-development`
-Expected: both pass, with no failures and no unexpected skips.
-
-- [ ] **Step 2: End-to-end on a scratch repository**
-
-In a new directory under `/tmp/plan75-e2e/` with `git init`, a two-task plan and one commit, run `skills/executing-plans/scripts/task-start plan.md 1` and then `task-done plan.md 1 <base> -- true` by absolute path. Then run `skills/subagent-driven-development/scripts/sdd-workspace plan.md`.
-Expected: the ledger at the printed workspace reads `Plan: plan.md` then `Task 1: complete (commits …, tests: true → (no output))`, the form subagent-driven-development's resume reads.
-
-### Task 7: Treatment arm, the record and the drift spec
+### Task 6: Treatment arm, the record and the drift spec
 
 **Files:**
 - Create: `specs/red-baseline-executing-plans-port/treatment/<case>/`
@@ -494,7 +494,7 @@ Expected: the ledger at the printed workspace reads `Plan: plan.md` then `Task 1
 
 - [ ] **Step 1: Build and leak-check the treatment prompts**
 
-`<new-sha>` = HEAD after Task 6. Run `build_prompts.py <new-sha> /tmp/plan75-treatment` and repeat Task 1 Step 3's leak grep.
+`<new-sha>` = HEAD after Task 5. Run `build_prompts.py <new-sha> /tmp/plan75-treatment` and repeat Task 1 Step 3's leak grep.
 
 - [ ] **Step 2: Run 5 reps per case**
 
@@ -506,7 +506,7 @@ Read every verdict by hand from the full reply, by the registered rules. Record 
 
 - [ ] **Step 4: Handle a miss**
 
-A case that misses its bar: change only the wording it tests, re-run that task's checks and lints, and re-run that case's treatment arm only, within the $40. S1-*, S2-* and S2p must be 5/5; a treatment that passes R1 or R2 and misses one of them does not ship. A case that still misses goes to the owner with the record. Never ship a miss without the owner's ruling.
+A case that misses its bar: change only the wording it tests and re-run that task's checks and lints. Then re-run the treatment arm of every case whose texts changed (a change to the five stops touches every R*, S* and P1 case), within the $40. S1-*, S2-* and S2p are always judged on the final text. S1-*, S2-* and S2p must be 5/5; a treatment that passes R1 or R2 and misses one of them does not ship. A case that still misses goes to the owner with the record. Never ship a miss without the owner's ruling. If the final whole-branch review's fixes later touch a text under test, re-run the affected cases on the final text before the plan-completion protocol, and record both runs.
 
 - [ ] **Step 5: The drift spec**
 
