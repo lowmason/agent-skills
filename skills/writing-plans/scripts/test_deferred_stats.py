@@ -296,6 +296,22 @@ def test_real_held_after_a_closed_fence_is_not_masked():
     assert aging_state(item, retired) == ('held', None)
 
 
+@pytest.mark.parametrize('marker', ['- ', '1. '])
+@pytest.mark.parametrize('fence', ['```', '~~~'])
+def test_fence_opened_after_a_list_marker_masks_only_its_block(marker, fence):
+    # Codex review of 5b57b40: a list-prefixed opener was missed, so its bare closer
+    # opened a new fence that hid the real note and left the quoted one readable.
+    text = one_section(
+        '- [ ] Work item with an example.\n'
+        f'      {marker}{fence}text\n'
+        '        → held 2026-09-01: quoted\n'
+        f'        {fence}\n'
+        '      → held 2026-10-01: vendor fix'
+    )
+    (item,) = parse_items(text)
+    assert item.notes == [Note('held', dt.date(2026, 10, 1), 'vendor fix')]
+
+
 def test_open_item_with_done_note_stays_open_and_warns():
     text = one_section(
         '- [ ] x → done 2026-10-01 (plan 9)\n'

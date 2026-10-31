@@ -401,6 +401,22 @@ def test_fenced_block_is_ignored():
     assert unmarked('~~~\n~~~ x\n' + PLAN_4 + '\n~~~\n') == []
 
 
+@pytest.mark.parametrize('marker', ['- ', '* ', '1. ', '  - '])
+@pytest.mark.parametrize('fence', ['```', '~~~'])
+def test_fence_opened_after_a_list_marker_is_ignored(marker, fence):
+    # Its bare closer closes it, so the line after the block is read again.
+    text = f'{marker}{fence}text\n  {PLAN_4}\n  {fence}\n{PLAN_4}\n'
+    assert unmarked(text) == [Candidate(4, PLAN_4)]
+
+
+@pytest.mark.parametrize('fence', ['```', '~~~'])
+def test_fence_opened_after_a_list_marker_still_starts_a_unit(fence):
+    # Codex review of 1ad8165: the masked opener must still end the bullet before it,
+    # or the marker after the block resolves that bullet's deferral too.
+    text = f'- {PLAN_4}\n- {fence}text\n  x\n  {fence}\n  → item: y\n'
+    assert unmarked(text) == [Candidate(1, f'- {PLAN_4}')]
+
+
 def test_nested_fence_is_ignored():
     text = '````\n```\n' + PLAN_4 + '\n```\n````\n' + PLAN_4 + '\n'
     assert unmarked(text) == [Candidate(6, PLAN_4)]
