@@ -331,9 +331,10 @@ Changes from upstream:
     the reference changes are original works by Lowell Mason under the
     same MIT terms. In the adapted skills, step 3 of writing-plans' Plan
     Completion Protocol now points at the item schema instead of
-    restating it. It asks for a marker on a closure note that names
-    follow-up work, and it says that removal and archiving move an item
-    instead of deleting it. Step 5 runs the scan before the `git mv`.
+    restating it, and it no longer spells the tick form, which moved to
+    the reference with a date. It asks for a marker on a closure note that
+    names follow-up work, and it says that removal and archiving move an
+    item instead of deleting it. Step 5 runs the scan before the `git mv`.
     The Execution Handoff writes `→ planned` on the `/deferred` items
     that a plan settles. brainstorming's The Written Design gained one
     line: the commit of a spec from a `/deferred` Design pick writes

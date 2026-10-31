@@ -400,7 +400,7 @@ Every commit message says the entry is marked as planned.
 | R1 | 0/5 | 5/5 | PASS | Mostly form: the control wrote no marker in any rep. On substance alone only rep 1 failed (S left unresolved), so the substance difference is 1 rep, below the bar. The pass shows the marker is taught. |
 | R2 | 0/5 | 5/5 | PASS | Form only: the control already filed both pieces of work with D12 met. The pass shows the marker is taught. |
 | R3 | 0/5 | 5/5 | PASS | Substance: the control offered one carry for both entries, X included. |
-| R4 | 0/5 | 5/5 under the frozen rule | PASS | Form only: the control already saw the met condition and routed the entry to Quick fix. Reps 3 and 5 write the bare `→ triggered`. Under the exact note form R4 scores 3/5, below the bar: the owner rules on which reading stands. |
+| R4 | 0/5 | 5/5 under the frozen rule | PASS | Form only: the control already saw the met condition and routed the entry to Quick fix. Reps 3 and 5 write the bare `→ triggered`. Under the exact note form R4 scores 3/5, below the bar: the owner rules on which reading stands. On 2026-10-31 the owner accepted the pass under the frozen rule (plan 74, D22). |
 | R5 | 0/5 | 5/5 | PASS | Substance: the control wrote no state note on the selected entry. |
 
 No case could fail to discriminate on the numbers, because the control passed no rep in any

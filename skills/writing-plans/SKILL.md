@@ -313,8 +313,8 @@ Markup happens once, after the gate resolves — per-task progress tracking
 stays in your todo list or ledger.
 
 **3. Update deferred items** in `specs/deferred_items.md`. First, if the
-file exists, tick any earlier items this plan implemented
-(`- [x] … → done in plan <id>`) — run this ticking pass even when the
+file exists, tick any earlier items this plan implemented with a dated
+`→ done` note — run this ticking pass even when the
 current plan deferred nothing. Then append this plan's deferred items, one
 section per plan, newest last. Create the file on first use with a single
 `# Deferred items` title line, no other preamble. Skip the append entirely
@@ -335,10 +335,10 @@ there allows.
       flake in tests/test_limiter.py traces to jitter.
 ```
 
-When a later plan implements an item, tick its box with a pointer
-(`- [x] … → done in plan 12`). Never delete an item: removal and archiving
-move it to `specs/completed/deferred_items.md` (**Archive and removal**,
-same reference).
+When a later plan implements an item, tick its box with the dated note
+(**Item notes**, same reference). Never delete an item: removal and
+archiving move it to `specs/completed/deferred_items.md` (**Archive and
+removal**, same reference).
 
 **3a. Hand off a roadmap stage.** Only when the plan's header carries a line
 that reads, after any `> ` prefix, `Roadmap: specs/<name>-roadmap.md, Stage N`

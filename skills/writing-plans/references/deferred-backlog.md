@@ -101,11 +101,15 @@ line.
 | `→ triggered <YYYY-MM-DD>: <what happened>` | `/deferred` step 5, on the owner's selection | The watch or held condition has fired. The item ages from this date, like work. |
 | `→ planned <YYYY-MM-DD>: <path>` | The session that commits the spec or plan for a `/deferred` Plan or Design pick. writing-plans changes the path from the spec to the plan. | The item is in a live plan or spec. It does not age while the file at `<path>` exists and is not under a `completed/` folder. When the file retires without ticking the item, the item ages from its section date again. |
 | `→ acknowledged <YYYY-MM-DD> (<branch>): <reason>` | finishing Step 1b, on the owner's word and reason | The one carry past the gate (see Aged-tail gate). |
+| `- [x] … → done <YYYY-MM-DD> (plan <id>)` | Protocol step 3, when a plan implements an item. `/deferred` writes `→ done <YYYY-MM-DD> (/deferred quick fix)`. | The item is done. The date starts the 45-day wait before the archive, and the hold-back scan reads this note. |
 | `- [x] … → removed <YYYY-MM-DD>: <why>` | Whoever removes an item | The item left the backlog without being done or retired. It moves to the archive file (see Archive and removal). |
 
 The `→ planned` note records an earlier `/deferred` pick. It is not a new
 disposition. `/deferred` itself writes it only when it commits the spec or
 plan in the same pass.
+
+An older undated `→ done in plan 12` is history. The archive dates its item
+by the section date, and the hold-back never reads it.
 
 **Which notes set state.**
 - The checkbox alone decides open or closed. A `- [ ]` item with a `→ done`
@@ -259,9 +263,8 @@ own paragraph.
 
 **Who writes them.** The agent writes `→ item:` and appends the item, with a
 closure condition (see the schema). It writes `→ dropped:` only on the
-owner's word, or when the work has already landed, and then it cites the
-check (a path, a `git log -S`). When neither applies, ask the owner. Never
-write `→ dropped:` to quiet the scan.
+owner's word. Without that word, it asks the owner. Never write
+`→ dropped:` to quiet the scan.
 
 **Find the unmarked sentences.** Run `deferral_scan.py scan <file>…` (the
 command is under Backlog stats). It prints
@@ -303,8 +306,10 @@ counted as closed.
 **Archive.** A ticked item moves when its tick is more than 45 days old, the
 same figure as the aged tail.
 - The tick's date is the latest date on its `→ done`, `→ retired` or
-  `→ removed` notes. An item with no dated note of that kind, such as a
-  `→ done in plan 12`, uses its section date. An item with neither stays.
+  `→ removed` notes. The archive reads the protocol's dated form,
+  `→ done <YYYY-MM-DD> (plan <id>)`. An item with no dated note of that
+  kind, such as the old undated `→ done in plan 12`, uses its section date.
+  An item with neither stays.
 - The item moves, byte for byte, to the end of its section in the archive
   file. The archive gets the section heading, copied unchanged, when it lacks
   it, so the stats still date the item. A heading may stand in both
