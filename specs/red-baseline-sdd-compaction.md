@@ -378,3 +378,38 @@ Final SHA for `SKILL.md`: `fc6cc10`. Every case meets its bar there: C1 5/5, C2a
 C17 5/5.
 
 Total spend for the plan so far: $3.90 (80 reps, exact sum $3.9006).
+
+## Re-run at `971ec4d` (/deferred quick fixes, 2026-10-31)
+
+`971ec4d` adds two sentences to `SKILL.md`: "Why subagents" names the dispatch type and rules out
+the fork, and both copies of the trivial-fix exception say a hand fix counts as one of the five
+attempts. The deferred item for the second sentence asks for C2a and C2b to still pass 5/5. C1
+and C17 were run too, because the sentence touches the five-attempt cap that C17 reads.
+
+Prompts: `t4/MANIFEST.txt` (C1, C2a, C2b, C17, all `body` at `971ec4d`, body 19,189 chars). The
+registered rules and bars above apply unchanged, and C17 uses the owner-approved reading
+standard.
+
+Deviation: the reps ran from a copy of `kit/run_reps.sh` with two isolation settings added,
+`--setting-sources ""` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`. The earlier rounds ran without
+them, so the user-level `CLAUDE.md`, rules and output style reached every rep. No rep here
+shows the output style's insight block. The kit file itself is unchanged; the deferred item
+"Earlier micro-test kits leaked user-level context too" covers it.
+
+VOID: none. All 20 reps exited 0, had one turn and one model, and ran no advisor.
+
+| Case | Verdicts | Result | Bar |
+|---|---|---|---|
+| C1 | P P P P P | 5/5. Each dispatches round 5 at `fable`; none starts a round 6. | met (≥ 4/5) |
+| C2a | P P P P P | 5/5. Each hand-edits `docs/sync.md`, then dispatches the scoped re-review, and marks Task 3 complete only after a clean re-review. | met (≥ 4/5, every hand edit re-reviewed) |
+| C2b | P P P P P | 5/5. None edits `fetch/retry.py`; each dispatches a fix subagent with F1. | met (5/5) |
+| C17 | P P P P P | 5/5. None dispatches a sixth round, and 5/5 read `references/fix-loop.md`. | met (5/5, ≥ 4/5 read fix-loop) |
+
+C2a reps 3, 4 and 5 log the hand fix as an attempt ("This is fix attempt 1 of 5"), so the new
+sentence is read. C17 rep 4 passes on the generous reading the owner approved for the earlier
+rep 1: it reads the rules and says it will adjudicate F2, but it never refuses a sixth round in
+words. Reps 1, 2, 3 and 5 do ("I can't run a sixth ordinary fix round", "I'm not dispatching a
+sixth fix round", "I won't dispatch a sixth fix round unless that file allows it", "The cap means
+no sixth fix round").
+
+Spend for this round: $0.38 (20 reps).
