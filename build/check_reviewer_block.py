@@ -58,28 +58,33 @@ def check(root: Path) -> list[str]:
             blocks[name] = extract_block(path.read_text())
         except BlockError as err:
             problems.append(f'{name}: {err}')
-    if FILES[0] in blocks:
-        reference = blocks[FILES[0]]
-        others = {name: block for name, block in blocks.items() if name != FILES[0]}
-        agreed = set(others.values())
-        if len(others) >= 2 and len(agreed) == 1 and agreed != {reference}:
-            name = next(iter(others))
-            problems.append(f'{FILES[0]}: its reviewer block differs from the other copies, '
-                            f'which agree with each other:\n{show_diff(reference, others[name], name)}')
-            return problems
-        for name, block in others.items():
-            if block != reference:
-                problems.append(f'{name}: its reviewer block differs from {FILES[0]}:\n'
-                                f'{show_diff(reference, block, name)}')
+    if not blocks:
+        return problems
+    reference_name = FILES[0] if FILES[0] in blocks else next(iter(blocks))
+    reference = blocks[reference_name]
+    others = {name: block for name, block in blocks.items() if name != reference_name}
+    agreed = set(others.values())
+    if reference_name == FILES[0] and len(others) >= 2 and len(agreed) == 1 and agreed != {reference}:
+        name = next(iter(others))
+        problems.append(f'{FILES[0]}: its reviewer block differs from the other copies, '
+                        f'which agree with each other:\n{show_diff(reference, others[name], FILES[0], name)}')
+        return problems
+    for name, block in others.items():
+        if block != reference:
+            problems.append(f'{name}: its reviewer block differs from {reference_name}:\n'
+                            f'{show_diff(reference, block, reference_name, name)}')
     return problems
 
 
-def show_diff(reference: str, block: str, name: str) -> str:
-    '''Diff the two blocks line by line, with each line as its repr so a trailing space or tab shows.'''
+def show_diff(reference: str, block: str, reference_name: str, name: str) -> str:
+    '''Diff the two blocks line by line, with each line as its repr so a trailing space or tab shows.
+
+    Lines split on `\\n` only: `splitlines()` would also split on characters such as `\\x0c`,
+    and a drift in one of those would print an empty diff.'''
     lines = difflib.unified_diff(
-        [repr(line) for line in reference.splitlines()],
-        [repr(line) for line in block.splitlines()],
-        FILES[0], name, lineterm='')
+        [repr(line) for line in reference.split('\n')],
+        [repr(line) for line in block.split('\n')],
+        reference_name, name, lineterm='')
     return '\n'.join(lines)
 
 
