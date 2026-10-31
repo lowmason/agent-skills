@@ -406,6 +406,187 @@ Every commit message says the entry is marked as planned.
 No case could fail to discriminate on the numbers, because the control passed no rep in any
 case. No case missed its bar, so no wording changed after the green runs.
 
+## New wording, final text (second run)
+
+Run 2026-10-31 on Claude Code 2.1.312, the same version as the control and the first GREEN
+run, from the texts at `c8b56e6` (HEAD when Task 15 started). The section above stays unchanged as the
+record of the first GREEN run at `9057df7`.
+
+**Why it was re-run.** Texts under test changed after `9057df7`:
+`skills/writing-plans/references/deferred-backlog.md` (tick form, drop rule, stats line, gate),
+the `skills/writing-plans/SKILL.md` body (step 3 tick form) and the
+`skills/finishing-a-development-branch/SKILL.md` body (Step 1b reads a new stats line). R1, R2
+and R3 read the first two or the last two. R4 reads `deferred-backlog.md`, so it was re-run too.
+`git log 9057df7..c8b56e6 -- commands/deferred.md` prints nothing, so the command file did not
+change. `skills/brainstorming/SKILL.md` did not change, so R5 was not re-run.
+
+**The R3 fixture change.** The stats script now prints a line
+`  Aged, carry unused: <section>: <first words>…; …` just before the `Carry used` line when an
+aged item can still take a carry. A real finishing run would print it for the R3 fixture, so
+`R3_STATS` in `kit/cases.py` gains one line for Y, before the `Carry used` line:
+
+```
+  Aged, carry unused: 6-currency-rounding: Round each line total before summing,…
+```
+
+The line was not typed by hand. It is the output of the real `deferred_stats.format_report` at
+`c8b56e6`, run on a literal two-item backlog: X under `## 4-pdf-export — 2026-09-02` with
+`→ acknowledged 2026-10-01`, Y under `## 6-currency-rounding — 2026-09-10`, both with the
+fixture's first lines, today 2026-10-30. Every other word of the fixture, the task and the R3
+pass rule is unchanged. Both arms must see the same input, so the control R3 ran again on the
+new fixture (`control2/R3`). The reading rules are unchanged.
+
+Two old lines of the R3 fixture do not match what the script prints, and they stay as they
+were. The `Carry used` line reads `4-pdf-export — 2026-09-02: Retry failed PDF renders with
+backoff…`, where the script prints `4-pdf-export: Retry failed PDF renders with backoff;…` (no
+section date, and a `;` before the ellipsis). The `Age spread` line has a `46-60d` bucket, where
+the script's bucket is `46-90d`. The new line therefore uses a slightly different form from the
+`Carry used` line under it.
+
+**How it was run.** Prompts: `build_prompts.py c8b56e6 /tmp/plan74-green2` (all five, R5 not
+run) and `build_prompts.py f3a4af4 /tmp/plan74-control2 R3`. The manifests name `arm c8b56e6`
+and `arm f3a4af4`, with the models and budgets of the first run. `build_prompts.py leakview
+/tmp/plan74-green2leak`, diffed against the first run's green leak view, shows one difference
+only: the added line in `R3.txt` (and R3's sha256 in `MANIFEST.txt`). Outside the texts under
+test, every prompt is therefore the same as in the first run except for that line, and the
+control2 R3 prompt shares green2's R3 leak view because both come from the same `cases.py`. The
+leak grep of the `## Leak check` section, repeated on the new leak view, printed no line and
+`exit=1` for every case. The supplementary greps also matched nothing. In R3, `carry` matches
+only the two stats lines, which are exempt by name. The isolation probe ran again
+(`run_reps.sh isolation_probe.txt /tmp/plan74-green2probe 1 1 claude-sonnet-5-5`): all five
+lines `NO`, one turn, no extra iterations, one model, $0.008. The version did not change, so the
+init-record check was not repeated. The five runs went at the same time, each with
+`run_reps.sh <case>.txt green2/<case> 1 5 <model> <budget>` (and `control2/R3` for the control),
+from the record directory: R1-R3 on `claude-sonnet-5-5` at $0.75, R4 on `claude-opus-5-5` at
+$1.50. 25 reps. No rep was VOID (each `show_reps.py` header: no error, one turn, no extra
+iterations, one model, the right model by `jq '.modelUsage|keys[]'`). None wrote a `.err` file,
+and none was rerun. The scored reps are `rep1`-`rep5` of each run.
+
+Summary: the final text passes every re-run case 5 of 5, as the first GREEN run did. The control
+R3 on the new fixture passes 0 of 5, so the added `Aged, carry unused` line alone does not teach
+the per-entry carry: every control2 rep still offered one carry for both entries. R1, R2 and R4
+compare against the first control (0 of 5), whose fixtures did not change. The caveats of the
+first run stand: R2 and R4 discriminate on form, and R1 mostly on form. The run date is
+2026-10-31 while the fixtures say 2026-10-30. Several replies name the gap, and R1 reps 2-5 date
+their new backlog section 2026-10-31. No pass rule reads that date.
+
+| Case | Control passes | Second-run passes | What the final text did |
+|---|---|---|---|
+| R1 | 0/5 | 5/5 | Every rep appended W (`Done when:`) and S (`Revisit if:` a `BUFFER_FULL` report) and wrote an `→ item:` marker in both plan paragraphs. |
+| R2 | 0/5 | 5/5 | Every rep appended both entries with D12 met, put one `→ item:` marker in the closure note, and wrote the dated tick `→ done 2026-10-30 (plan 15)`. |
+| R3 | 0/5 (control2) | 5/5 | Every rep offered a carry for `6-currency-rounding` only and said only `/deferred` clears `4-pdf-export`. No rep wrote anything before asking. |
+| R4 | 0/5 | 5/5 | Every rep proposed an `→ triggered` note on the probe-timeout entry and kept it under Quick fix. |
+
+### R1, final text
+
+No rep wrote `→ dropped:`. Each rep offered to swap S for `→ dropped:` on the partner's word and
+wrote none. Every rep changed the status header from `nothing deferred` to
+`deferred items in specs/deferred_items.md`. Rep 1 dates the section 2026-10-30, reps 2-5 date it
+2026-10-31.
+
+| Rep | W | S | Verdict | Deciding line |
+|---|---|---|---|---|
+| 1 | entry + marker | entry + marker | PASS | ``Line 13, append to the end of the paragraph:`` and ``Line 36, append to the end of the paragraph:``, each `` → item: 12-station-upload-retry — 2026-10-30`` |
+| 2 | entry + marker | entry + marker | PASS | ``Line 13, append to the end of the paragraph:`` and the same for line 36, each `` → item: 12-station-upload-retry — 2026-10-31`` |
+| 3 | entry + marker | entry + marker | PASS | both plan paragraphs rewritten whole, each ending ``→ item: 12-station-upload-retry — 2026-10-31`` |
+| 4 | entry + marker | entry + marker | PASS | ``Edit 2: line 13, marker added in the same paragraph.`` and ``Edit 3: line 36``, each ending ``→ item: 12-station-upload-retry — 2026-10-31`` |
+| 5 | entry + marker | entry + marker | PASS | ``Line 13, append to the end of the paragraph:`` and the same for line 36, each `` → item: 12-station-upload-retry — 2026-10-31`` |
+
+D12: every W entry is `Size: plan` with `Done when:` (for example rep 1: ``Done when: the station
+compresses upload payloads, the gateway accepts them, and the gateway-side tests pass``). Every
+S entry is `Size: quick-fix` with a single `BUFFER_FULL` condition: ``Revisit if: a station
+health log reports `BUFFER_FULL` `` (reps 1, 3, 5), ``any station's health log reports`` (rep 2),
+``a station's health log reports`` (rep 4). No S entry carries `Done when:`.
+
+### R2, final text
+
+No rep wrote `→ dropped:`. Each rep wrote one marker, ``→ item: 15-reminder-batching —
+2026-10-30``, in the closure note of the ticked entry. It names the new section that holds both
+entries, so one marker meets the rule for W and for S, as in the first run. Every rep changed the
+drafted `→ done in plan 15` to the dated `→ done 2026-10-30 (plan 15)`, and every rep changed the
+plan's status header from `nothing deferred` to point at the backlog.
+
+| Rep | W | S | Verdict | Deciding line |
+|---|---|---|---|---|
+| 1 | entry + marker | entry + marker | PASS | ``→ done 2026-10-30 (plan 15): e-mail only; SMS batching and the e-mail batch size of 50 are filed as items → item: 15-reminder-batching — 2026-10-30`` |
+| 2 | entry + marker | entry + marker | PASS | ``→ done 2026-10-30 (plan 15)`` then ``→ item: 15-reminder-batching — 2026-10-30 (SMS reminders still send one call per message)`` |
+| 3 | entry + marker | entry + marker | PASS | the full drafted note kept after ``→ done 2026-10-30 (plan 15).``, ending ``→ item: 15-reminder-batching — 2026-10-30`` |
+| 4 | entry + marker | entry + marker | PASS | the full drafted note kept after ``→ done 2026-10-30 (plan 15).``, ending ``→ item: 15-reminder-batching — 2026-10-30`` |
+| 5 | entry + marker | entry + marker | PASS | ``→ done 2026-10-30 (plan 15). Batching covers e-mail only; SMS batching and the batch-size follow-up are filed as items. → item: 15-reminder-batching — 2026-10-30`` |
+
+D12: in all five reps W's entry is `Size: plan` with `Done when:` and S's entry is
+`Size: quick-fix` with ``Revisit if: the mail host rejects a batch with `421 Too many messages` ``.
+Reps 3 and 4 put a `<command>` grep for the SMS sender's path before their edits and leave a
+placeholder path in W's entry. Neither touches a pass rule.
+
+### R3, final text
+
+X is `4-pdf-export` (carry used). Y is `6-currency-rounding`. No rep wrote an `<edit>` block or
+a `<command>` block, so point 3 holds in all five. Each rep offers Y the choice
+``1. Run `/deferred` on it`` or ``2. Carry it. Tell me why, and I'll note it on the item.``, and
+lists X apart.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | PASS | ``This 1 already used its one carry, so only `/deferred` clears it:`` |
+| 2 | PASS | ``This 1 already used its one carry, so only `/deferred` clears it:`` |
+| 3 | PASS | ``This 1 already used its one carry. Only `/deferred` clears it:`` |
+| 4 | PASS | ``This 1 already used its one carry, so only `/deferred` clears it:`` |
+| 5 | PASS | ``This 1 already used its one carry. Only `/deferred` clears it:`` |
+
+Descriptive: reps 2, 4 and 5 show the note they would write after a carry,
+``→ acknowledged <date> (feat/vat-rounding): <your reason>``. Rep 4 lists the steps it would take
+after the answer (``Once you answer, I would:``). That is a plan in prose, with no edit or command
+block, so it is not a write.
+
+### R3, control on the new fixture
+
+The control (texts at `f3a4af4`) saw the same new fixture. No rep wrote an edit or ran a command
+before asking, so point 3 holds in all five. Every rep fails point 2: its one carry option covers
+both entries. Reps 2, 4 and 5 read the new line (``The other is marked unused.``,
+`` `6-currency-rounding` shows "carry unused" ``) but still offer the carry for both. Rep 2 is
+the closest call: it says only `/deferred` clears X, then offers the one carry for both, which
+fails point 2 as written. Scored as a pass, it would make the control 1 of 5, and R3 would still
+clear the bar.
+
+| Rep | Verdict | Deciding line |
+|---|---|---|
+| 1 | FAIL | ``2. Acknowledge and carry them. Tell me why, and I'll log it under `## Aged-backlog acknowledgements` ``, then ``an acknowledgement may not be enough for it`` |
+| 2 | FAIL | ``2. Acknowledge and carry them.`` after ``The stats output marks the `4-pdf-export` carry as used, so only `/deferred` clears it. The other is marked unused.`` |
+| 3 | FAIL | ``2. Acknowledge and carry them — tell me why, and I'll log it`` in the drafted message |
+| 4 | FAIL | ``2. **Acknowledge and carry them.**`` then ``Option 1 is likely the cleaner route, but it's your call.`` |
+| 5 | FAIL | ``2. **Acknowledge and carry them.**`` then ``For `4-pdf-export`, I'd go with option 1.``, a recommendation, not an exclusion |
+
+### R4, final text
+
+| Rep | Verdict | Deciding line | Note form | Descriptive |
+|---|---|---|---|---|
+| 1 | PASS | ``I propose writing `→ triggered <date>: test_read_bed_4 timed out at 2.0 s in the nightly hardware run`.`` | full, date left as `<date>` | condition met: yes; Quick fix; asks whether to date it 2026-10-30 or 2026-10-31 |
+| 2 | PASS | ``**Proposed `→ triggered 2026-10-30: nightly hw run timed out reading bed-4 (tests/hw/test_moisture.py::test_read_bed_4, 2.0 s)`**`` | full, dated | condition met: yes; Quick fix; for the frost-threshold entry, ``If yes, I'll propose `→ triggered` ``, a conditional offer only |
+| 3 | PASS | ``**Proposed `→ triggered`.**`` then ``I'd write `→ triggered 2026-10-30: nightly hw run, test_read_bed_4 timed out at 2.0 s` `` | full, dated | condition met: yes; Quick fix; a `→ held` on the frost-threshold entry called optional |
+| 4 | PASS | ``**Proposed `→ triggered`:** last night's run failed `test_read_bed_4` with `TimeoutError: probe bed-4 did not answer within 2.0 s` `` | bare | condition met: yes; Quick fix; for the frost-threshold entry, ``If so, I'll propose `→ triggered` instead``, a conditional offer only |
+| 5 | PASS | ``**Proposed `→ triggered`: the bed-4 probe timeout.**`` then ``I'll write `→ triggered <date>: nightly hw run, test_read_bed_4 TimeoutError at 2.0 s` `` | full, date left as `<date>` | condition met: yes; Quick fix; says it will use 2026-10-30 unless told otherwise |
+
+The frozen rule counts a proposed note that starts `→ triggered`, so all five pass. The owner
+accepted that reading on 2026-10-31 (plan 74, D22). For information only, under the exact
+`→ triggered <YYYY-MM-DD>: <what happened>` form: reps 2 and 3 write it with a real date (2 of 5).
+Reps 1 and 5 write the full shape with `<date>` left open, because each saw two candidate dates.
+Count those and 4 of 5 have the full form. Rep 4 writes only the bare `→ triggered`, with the
+evidence in prose. The first run had 3 of 5 in the full form. Every rep asks the partner to select
+the note before it is written, and no rep proposes Retire for the entry.
+
+### Verdicts under the bar, second run
+
+| Case | Control passes | First GREEN run | Second GREEN run | Verdict under the bar | Note |
+|---|---|---|---|---|---|
+| R1 | 0/5 | 5/5 | 5/5 | PASS | Control reused (fixture unchanged). Mostly form, as in the first run. |
+| R2 | 0/5 | 5/5 | 5/5 | PASS | Control reused (fixture unchanged). Form only, as in the first run. Every rep now writes the dated tick. |
+| R3 | 0/5 (control2, new fixture) | 5/5 (old fixture) | 5/5 | PASS | Substance: on the same new input the control still offered one carry for both entries. No ceiling. |
+| R4 | 0/5 | 5/5 under the frozen rule | 5/5 under the frozen rule | PASS | Control reused (fixture unchanged). Form only. Exact dated form 2/5, full shape 4/5 (information only, D22). |
+
+No case missed its bar, and no case is a ceiling. No skill, command or reference text changed
+after the second run.
+
 ## Spend
 
 | Run | Reps | Spend |
@@ -425,10 +606,18 @@ case. No case missed its bar, so no wording changed after the green runs.
 | Green R4 | 5 | $0.328 |
 | Green R5 | 5 | $0.178 |
 | Green arm total | 26 | $1.16 |
-| Kit total | 53 | $2.12 |
+| Isolation probe, second run | 1 | $0.008 |
+| Green2 R1 | 5 | $0.286 |
+| Green2 R2 | 5 | $0.258 |
+| Green2 R3 | 5 | $0.134 |
+| Green2 R4 | 5 | $0.351 |
+| Control2 R3 | 5 | $0.126 |
+| Second run total | 26 | $1.16 |
+| Kit total | 79 | $3.29 |
 
 The control arm stayed far below its $20 stop. The kit stop is $40, and the kit total is far
 below it. The totals are exact sums of the runs' `total_cost_usd` (control $0.963, green
-$1.160, kit $2.123), rounded once. Each row is rounded on its own: the green rows to a tenth of
-a cent, so they sum to within a tenth of a cent of their total, and the control rows from Task 1
+$1.160, second run $1.162, kit $3.285), rounded once. Each row is rounded on its own: the green
+and second-run rows to a tenth of a cent, so each group sums to within a tenth of a cent of its
+total, and the control rows from Task 1
 to the cent, so they differ from their total by about a cent.

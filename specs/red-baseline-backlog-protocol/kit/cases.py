@@ -159,6 +159,7 @@ R2_PASS = '''Two follow-ups in the closure note: W, SMS batching (the partner wa
 # R3: the aged-tail gate, finishing Step 1b --------------------------------------------------
 
 R3_STATS = '''Deferred backlog: 27 open, 64 ever closed (closure rate 70%), aged >45d: 2.
+  Aged, carry unused: 6-currency-rounding: Round each line total before summing,…
   Carry used (only /deferred clears): 4-pdf-export — 2026-09-02: Retry failed PDF renders with backoff…
   Oldest open: 58d (4-pdf-export).
   Age spread — 0-14d: 15  15-30d: 8  31-45d: 2  46-60d: 2
