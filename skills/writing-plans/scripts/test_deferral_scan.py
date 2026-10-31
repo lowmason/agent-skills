@@ -285,6 +285,12 @@ def test_negation_with_an_exception_later_in_the_sentence_is_still_flagged(text)
     'Nothing is deferred today! Except for style, all is done.',
     'Nothing is deferred? Apart from style, yes.',
     'Nothing is deferred."\nExcept for style, all is done.',
+    # A sentence may open with a mark, a digit or a code span.
+    'Nothing is deferred. **Except for style**, all is done.',
+    'Nothing is deferred. (Except for style, all is done.)',
+    'Nothing is deferred. "Except for style," he said.',
+    'Nothing is deferred. 3 tasks landed, other than T5 which was dropped.',
+    'Nothing is deferred. `deferral_scan.py` flags everything except code spans.',
 ])
 def test_negation_ends_at_the_sentence_end_across_lines(text):
     assert unmarked(text) == []
@@ -322,20 +328,24 @@ def test_emphasis_around_a_negation_still_reads_its_exception():
 
 
 @pytest.mark.parametrize('text', [
-    # A noun joined to the negation by a bare `and` is the deferred work.
-    'The scorecard and nothing else is deferred.',
-    'X and no other work is deferred.',
-    'Retry and none other is deferred.',
-    'The scorecard and none else is deferred.',
-    # A real deferral coordinated with a negated clause is flagged on its own.
-    'Nothing is deferred in the parser and the retry fix is deferred.',
+    # Only a unit-start opener lets emphasis through; mid-unit, `_no` opens no clause.
+    'Known gap; _no backoff_ is deferred.',
+    'Known gap. _No backoff_ is deferred.',
 ])
-def test_noun_and_nothing_else_is_still_flagged(text):
+def test_emphasis_on_a_negation_mid_unit_is_still_flagged(text):
+    assert len(unmarked(text)) == 1
+
+
+def test_real_deferral_coordinated_with_a_negation_is_flagged():
+    text = 'Nothing is deferred in the parser and the retry fix is deferred.'
     assert len(unmarked(text)) == 1
 
 
 @pytest.mark.parametrize('text', [
     'Every task landed and nothing is deferred.',
+    'Every task landed and nothing else is deferred.',
+    'Every task landed\nand nothing else is deferred.',
+    'The scorecard is filed as item 12 and nothing else is deferred.',
     'Every task landed, and nothing else is deferred.',
     'The plan retires; and no other work is deferred.',
     # After a sentence end, a colon, a bracket or a dash, `and` starts a clause.
@@ -367,6 +377,12 @@ def test_unless_after_the_verb_is_an_exception():
     # A bare `no` after `;` or a full stop opens a clause, as at the unit start.
     'Review is clean; no work is deferred.',
     'All landed. No work is deferred.',
+    # A noun joined by `and` to `nothing else` reads like a clause join, so these
+    # stay exempt too (a known gap: here the noun is the deferred work).
+    'The scorecard and nothing else is deferred.',
+    'X and no other work is deferred.',
+    'Retry and none other is deferred.',
+    'The scorecard and none else is deferred.',
 ])
 def test_ambiguous_words_keep_the_exemption(text):
     assert unmarked(text) == []
