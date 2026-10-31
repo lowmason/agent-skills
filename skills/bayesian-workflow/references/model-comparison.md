@@ -6,7 +6,7 @@
 - LOO-CV comparison
 - Stacking weights
 - Pointwise comparison
-- Time-series and forecast comparison: LFO and blocked K-fold
+- Time-series and forecast comparison
 - Predictive accuracy on one model: `loo_expectations`, `loo_metrics`, `loo_r2`
 - Bayes factors (and the reference-value trap)
 - WAIC (and why LOO)
@@ -251,8 +251,8 @@ Path("ar1/scores.json").write_text(json.dumps(
 `ar1/scores.json`, so pick one route per ledger. `az.compare` runs PSIS-LOO on InferenceData.
 It also ranks precomputed `lfo_cv(..., pointwise=True)` results that share one
 `forecast_horizon` and `min_observations`. It cannot take the joint block scores of the
-blocked-K-fold route, because they are plain numbers and not `ELPDData`. It cannot mix model
-classes, and it cannot stamp an experiments ledger. For those cases, write each variant's
+blocked-K-fold route, because they are plain numbers and not `ELPDData`. It cannot rank a
+Bayesian variant against one with no InferenceData, and it cannot stamp an experiments ledger. For those cases, write each variant's
 per-unit scores to its own `scores.json`, as both blocks above do, and rank them with
 track-model-experiments' score mode. [track-model-experiments/references/predictive-evaluation.md](../../track-model-experiments/references/predictive-evaluation.md)
 gives the file's contract, the paired-difference rule, and its limits. Every variant in one
