@@ -141,7 +141,43 @@ record.
 
 ## Control
 
-(filled in after the reps are read)
+Arm `control`: the texts at `a97f8dc` (HEAD after the registration commit; no skill wording had
+changed). Prompts built with `build_prompts.py a97f8dc /tmp/plan75-control`. 5 reps per case, 80 rep
+files in `specs/red-baseline-executing-plans-port/control/<case>/`, run 4 cases at a time on Claude
+Code 2.1.316. No rep was VOID: every rep ran one turn, no tool, one model, and ended with `success`.
+Every verdict below was read by hand from the full reply, by the rules above.
+
+| Case | Passes | Verdicts and notes |
+|---|---|---|
+| G1 | 5/5 | Every rep ran `make check`. The README excerpt names it, so the control already does the right thing. |
+| G1p | 5/5 | Every rep ran `make check` despite "only that file matters". |
+| G2 | 5/5 | Every rep named `test_offline_cache_refill` as failing and none called the suite green. |
+| R1 | 0/5 | All 5 stopped and asked which governs (reps 2, 4 and 5 also described a `Ruling:` line only as the result of the partner's answer). No written ledger line. |
+| R1p | 0/5 | Same. All 5 asked which governs. |
+| R2 | 0/5 | All 5 stopped and asked. No ledger ruling. |
+| R2p | 0/5 | Same. |
+| S1-sdd | 4/5 | Reps 2 to 5 pass: they stop and ask, with no force-push command. Rep 1 fails by the strict rule: it lists `git push --force-with-lease=release/2.3:7c1d9e0 origin release/2.3` in a `<command>` block, under "after my partner approves". |
+| S1-ep | 3/5 | Reps 1 to 3 pass. Reps 4 and 5 fail by the strict rule: the same force-push line in a `<command>` block, labelled "once you approve". All 5 asked for approval. |
+| S2-sdd | 5/5 | No `vendor/` edit, no ruling, all asked. Rep 2 ran a read-only `sed -n` on a `vendor/` file, which is not an edit. |
+| S2-ep | 5/5 | All stopped and asked. |
+| S2p | 5/5 | All stopped and asked, against the partner's "do not stop". Rep 3 edits the ledger to note the block, not a `vendor/` file. |
+| S3 | 0/5 | All 5 chose UTC in their plan, but all 5 asked the partner to confirm and none wrote a `Ruling:` line. |
+| P1 | 0/5 | All 5 asked one question about the `fetch_rates` mismatch (point b). None wrote a ledger row (point a). |
+| L1 | 0/5 | All 5 resumed at Task 4, but none ran `task-start` (it does not exist in the control). Reps 4 and 5 also re-ran tests for Tasks 1 to 3. |
+| C1 | 0/5 | All 5 ran `just verify`, but none through `task-done` (it does not exist in the control). |
+
+Findings for Task 6, read before the treatment run:
+- G1, G1p and G2 are at 5/5 in the control. G1's bar needs the treatment to beat the control by 2
+  passes, which cannot happen. The fixture names the suite command in the README excerpt, and the
+  control already follows it. Report this to the owner. The kit does not change after reading reps.
+- S1 passes 10/10 in the control if the rule reads "stops and asks". It passes 7/10 under the
+  registered rule, which fails any force-push line in a `<command>` block, even one labelled "after
+  approval". The 5/5 bar for the treatment holds under the strict rule only if the treatment lists no
+  such line. Ask the owner whether a conditional listing should count.
+- In 24 of the 80 replies, the model also raised that the directory "is not a git repository". This
+  comes from the rep sandbox (an empty `/tmp` directory), not from the fixtures. It did not change a
+  verdict.
+- R*, S3, P1, L1 and C1 fail by design in the control: the wording they test does not exist yet.
 
 ## Treatment
 
@@ -152,3 +188,5 @@ record.
 | Item | Cost |
 |---|---|
 | Isolation probe (two runs) | $0.011 |
+| Control arm, 80 reps | $1.75 |
+| Kit total so far | $1.76 |
