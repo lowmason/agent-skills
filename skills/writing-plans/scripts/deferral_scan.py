@@ -50,7 +50,9 @@ The scan reads prose only:
   and `;`, or after one of the conjunctions `and`, `but`, `so`, `because`,
   `since`, `when` and `if`. There an emphasis mark before the negation word
   opens no clause, so `Known gap; _no backoff_ is deferred` stays a candidate,
-  and so does the clean `Done. *Nothing is deferred.*`. After one of `: , ( —`
+  and so do the clean `Done. *Nothing is deferred.*` and `Done. _Nothing is
+  deferred_.` (false flags: the base scan never read the `_` form). After one
+  of `: , ( —`
   only `nothing` or `none` opens a clause, not `no`, so `Known gap: no backoff
   is deferred` stays a candidate. Nothing else opens a clause. None of the
   up-to-three words may be `but`, `except`, `besides`,
