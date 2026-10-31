@@ -259,6 +259,21 @@ def test_task_done_matches_a_plan_reached_through_a_file_symlink(repo):
     assert 'Task 1: complete' in ledger.read_text()
 
 
+def test_task_done_resolves_a_file_symlink_beneath_a_directory_symlink(repo):
+    # alias -> real/nested, and real/nested/plan.md -> ../plan.md: the target is
+    # real/plan.md, a different plan from the root plan.md that owns the ledger.
+    (repo / 'real' / 'nested').mkdir(parents=True)
+    (repo / 'real' / 'plan.md').write_text(PLAN)
+    (repo / 'real' / 'nested' / 'plan.md').symlink_to(Path('..') / 'plan.md')
+    (repo / 'alias').symlink_to(Path('real') / 'nested')
+    ws = workspace(repo)
+    ws.mkdir(parents=True)
+    ledger = ws / 'progress.md'
+    ledger.write_text('Plan: plan.md\n')
+    result = run(TASK_DONE, 'alias/plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    assert result.returncode == 3, result.stderr
+
+
 def test_task_done_refuses_another_plans_ledger(repo):
     ws = workspace(repo)
     ws.mkdir(parents=True)

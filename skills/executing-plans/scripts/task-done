@@ -44,7 +44,12 @@ canon() {
     t=$(readlink "$p") || return 1
     case "$t" in
       /*) p=$t ;;
-      *) p="$(dirname "$p")/$t" ;;
+      *)
+        # A relative target starts from the link's physical directory; a
+        # lexical "alias/.." would collapse before the symlink resolved.
+        d=$(cd -P "$(dirname "$p")" 2>/dev/null && pwd -P) || return 1
+        p="$d/$t"
+        ;;
     esac
   done
   d=$(cd "$(dirname "$p")" 2>/dev/null && pwd -P) || return 1
