@@ -1,9 +1,10 @@
 ---
 name: writing-plans
 description: >
-  Use when a spec, design doc, or requirements for a multi-step task exist and an implementation plan is needed before touching code — "write a plan", "plan this feature", "break this
-  into tasks", a finished spec in specs/ awaiting its plan, before handing work to subagents
-  or a separate execution session, or when an executed plan is to be completed, retired or merged
+  Use when a spec, design doc, or requirements for a multi-step task exist and an implementation
+  plan is needed before touching code — "write a plan", "plan this feature", "break this into
+  tasks", a finished spec in specs/ awaiting its plan, before handing work to subagents or a
+  separate execution session, or when an executed plan is to be completed, retired or merged
   ("complete the plan"), including a roadmap stage's handoff.
 license: MIT
 compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
