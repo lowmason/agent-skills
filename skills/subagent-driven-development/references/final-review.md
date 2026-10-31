@@ -30,14 +30,16 @@ Read this when the last task's review resolves, before you dispatch the final wh
 
 After the final whole-branch review resolves, run the plan-completion
 protocol from the writing-plans skill (its "Plan Completion Protocol"
-section): resolve-before-defer gate → plan markup → deferred items →
-retire. The gate's batched questions are this skill's one deliberate human
-checkpoint — fold any question sets already pending (plan-mandated
-findings, the final review's Declined to judge lines, each for your human
-partner to rule on) into the same batch, so your human partner gets at most
-one round-trip. Review findings the final review left unfixed feed the gate.
-This is compatible with Continuous execution: "all tasks complete" is a
-sanctioned stop.
+section): resolve-before-defer gate → plan markup → deferred items → retire.
+The gate's batched questions are this skill's one deliberate human
+checkpoint — list every `Ruling:` line in the ledger first, all of them, in
+the order made, each with what it costs if wrong — decisions already taken,
+shown so your partner sees them, not questions — then fold the final
+review's Declined to judge lines, each for your human partner to rule on,
+into the same batch, so your human partner gets at most one round-trip.
+Review findings the final review left unfixed feed the gate. This is
+compatible with Continuous execution: "all tasks complete" is a sanctioned
+stop.
 
 When the plan-completion protocol has finished and the final review's fixes
 are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at

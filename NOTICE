@@ -760,6 +760,10 @@ Changes from upstream:
     command(s)" where upstream names bare `pytest`, `npm test` and
     `cargo test`. It also names documented skips and known environment
     failures as things to report.
+  - subagent-driven-development's references/fix-loop.md plan-mandated
+    bullet adapts upstream's v7.0.1 wording, read at 2ce8aa1 (plan 75). The
+    scope-fence stop is local. The gate in references/final-review.md,
+    which lists every ruling before the open questions, is local too.
 
     brainstorming/
     dispatching-parallel-agents/

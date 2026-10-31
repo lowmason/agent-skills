@@ -49,10 +49,18 @@ human partner only when every path forward is a guess.
   the final whole-branch review at these `Ruling:` lines; a ruling it
   disagrees with comes back as a finding.
 - A finding labeled plan-mandated — or any finding that conflicts with
-  what the plan's text requires — is the human's decision, like any plan
-  contradiction: present the finding and the plan text, ask which governs.
-  Do not dismiss the finding because the plan mandates it, and do not
-  dispatch a fix that contradicts the plan without asking.
+  what the plan's text requires — is yours to rule on: weigh the finding
+  against the plan text, decide with the spec as the binding authority,
+  and ledger `Ruling: <what you decided> — <why> — <what it costs if
+  wrong>` before you act on it. Do not dismiss the finding because the
+  plan mandates it, and do not dispatch a fix that contradicts the plan
+  without a recorded ruling. Five things stop such a ruling, and only
+  these; for them, stop and ask your human partner:
+  1. An irreversible or destructive operation.
+  2. A security-sensitive action.
+  3. A side effect outside this worktree that norms say you ask about first: a merge, a push to a shared branch, a publish.
+  4. A plan so broken that every path forward is a guess.
+  5. The explicit scope fence: a line in the plan (its Global Constraints, its header or a task) or in your partner's launch message that puts a file, a directory, a system or a kind of change out of bounds for this run — "Do not edit `skills/`", "No changes outside `build/`", "Do not change the public API". A ruling never crosses a fence: when the only fix crosses one, stop and ask. A task's text that contradicts a Global Constraint that is not a fence is not a stop: the constraint wins, and that is a ruling.
 - Every fix dispatch — resumed for rounds 1-3, fresh for 4-5 (see **Fix
   Rounds**) — carries the implementer contract: the fix subagent re-runs the
   tests covering its change and reports the results. Name the covering test
