@@ -48,6 +48,7 @@
 ## Decisions
 
 - **D1** (owner, plan review, 2026-10-31): approve plan 75 as written, with every Open for plan review item, including item 11's proposed rewording of the three cost-framed passages to the O1 reason. Applied in: Open for plan review, Task 5 Step 3.
+- **D2** (owner, plan review, 2026-10-31): execute by subagent-driven-development in a fresh Sonnet session, launched from this planning session. Applied in: execution handoff.
 
 ## Open for plan review
 
