@@ -1,5 +1,7 @@
 # executing-plans Port Implementation Plan
 
+**Status: COMPLETE (2026-10-31)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Port upstream v7.0.1's ledgered executing-plans with its `task-start` and `task-done` scripts, apply the owner's "rulings mid-run only" decision to SDD's fix loop, and make TDD say the project's documented test command(s) define green.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** bash 3.2-safe scripts (`set -euo pipefail`), pytest through `build/run_suites.py`, Markdown skill text, the `claude -p` micro-test kit.
 
-**Spec:** `specs/executing-plans-port.md`
+**Spec:** `specs/completed/executing-plans-port.md`
 
 ## Global Constraints
 
@@ -87,7 +89,7 @@ All twelve items were approved as written by D1 (2026-10-31).
 - Produces: `build_prompts.py <sha> <out-dir> [<case> …]` writes `<case>.txt` and `MANIFEST.txt`; `build_prompts.py leakview <out-dir>` writes the prompts with each text under test replaced by a placeholder. Task 6 runs both at the treatment SHA.
 - Produces: the record's sections `## Leak check`, `## Isolation probe`, `## Reading rules`, `## Control`, `## Treatment`, `## Spend`.
 
-- [ ] **Step 1: Write `cases.py`**
+- [x] **Step 1: Write `cases.py`**
 
 One entry per case: texts under test (repository paths, read at a SHA), fixture, task, pass rule (reader only, never written into a prompt). Use plan 74's `TASK_TAIL` and `VOID` rules. Texts: TDD cases read `skills/test-driven-development/SKILL.md`. SDD cases read `skills/subagent-driven-development/SKILL.md` and `references/fix-loop.md`. EP cases read `skills/executing-plans/SKILL.md`, plus `skills/executing-plans/references/*.md` when present at the SHA.
 
@@ -112,21 +114,21 @@ One entry per case: texts under test (repository paths, read at a SHA), fixture,
 
 Every fixture uses a domain unrelated to this repository. S1-sdd, S2-sdd and R1 carry the same fixture shape as their EP twins, so the pair compares executors. A treatment that passes R1 or R2 but misses S1-* or S2-* does not ship.
 
-- [ ] **Step 2: Write `build_prompts.py`**
+- [x] **Step 2: Write `build_prompts.py`**
 
 Adapt plan 74's: texts read with `git show <sha>:<path>`, never through `~/.claude`; SKILL.md frontmatter stripped; a reference glob that matches nothing at the SHA adds nothing; `leakview` mode as plan 74's.
 
-- [ ] **Step 3: Leak check**
+- [x] **Step 3: Leak check**
 
 Build the leakview prompts. Grep each case's fixture and task (not the texts under test) for its answer words: G* `documented`, `whole suite`; R* and S3 `Ruling`, `rule on`; S1-*, S2-*, S2p `fence`, `stop and ask`; P1 `batched`, `Pre-flight`; L1 `task-start`; C1 `task-done`. A ledger line pasted as input (L1's `Task 3: complete (…)`) is exempt by name.
 Expected: no match. Record the command and result under `## Leak check`.
 
-- [ ] **Step 4: Pilot the isolation probe**
+- [x] **Step 4: Pilot the isolation probe**
 
 Run: `bash specs/red-baseline-executing-plans-port/kit/run_reps.sh specs/red-baseline-executing-plans-port/kit/isolation_probe.txt /tmp/plan75-probe 1 1 claude-sonnet-5-5`
 Expected: the reply shows no output style, no `~/.claude/CLAUDE.md` text, no rules and no memory, judged as plan 74's record judges it. Record it under `## Isolation probe`.
 
-- [ ] **Step 5: Register reading rules and bars, then commit**
+- [x] **Step 5: Register reading rules and bars, then commit**
 
 Write each case's pass rule, bar and the VOID rule under `## Reading rules`, before any rep runs.
 
@@ -135,12 +137,12 @@ git add specs/red-baseline-executing-plans-port specs/red-baseline-executing-pla
 git commit -m "test(specs): register executing-plans port micro-test cases (plan 75)"
 ```
 
-- [ ] **Step 6: Run the control arm**
+- [x] **Step 6: Run the control arm**
 
 `<base-sha>` = `git rev-parse HEAD` after Step 5 (no wording has changed). Run `build_prompts.py <base-sha> /tmp/plan75-control`, then 5 reps per case into `specs/red-baseline-executing-plans-port/control/<case>/`.
 Expected: 80 rep files. Read every verdict by hand from the full reply, and record each verdict and the spend. Stop if the spend reaches $20.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/red-baseline-executing-plans-port specs/red-baseline-executing-plans-port.md
@@ -153,7 +155,7 @@ git commit -m "test(specs): executing-plans port control arm (plan 75)"
 - Modify: `skills/test-driven-development/SKILL.md` (after `**Other tests fail?** Fix now.`, line 176)
 - Modify: `NOTICE` (superpowers change list)
 
-- [ ] **Step 1: Insert the paragraph**
+- [x] **Step 1: Insert the paragraph**
 
 After line 176, add one blank line and this paragraph (adapted from `2ce8aa1:skills/test-driven-development/SKILL.md:185-193`):
 
@@ -174,11 +176,11 @@ omission.
 
 The bare-`pytest` examples at `:120`, `:166`, `:296` and `:310` stay.
 
-- [ ] **Step 2: NOTICE**
+- [x] **Step 2: NOTICE**
 
 Add a change-list line: TDD's "other tests" paragraph adapts upstream #2110 at `2ce8aa1`, with "documented test command(s)" in place of "bare `pytest`, `npm test`, `cargo test`", and names documented skips and known environment failures.
 
-- [ ] **Step 3: Check and commit**
+- [x] **Step 3: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -198,7 +200,7 @@ git commit -m "feat(test-driven-development): the documented test command define
 **Interfaces:**
 - Produces: the gate wording "list every `Ruling:` line …" that Task 5 reuses in `skills/executing-plans/references/final-review.md`.
 
-- [ ] **Step 1: Replace the plan-mandated bullet in `fix-loop.md`**
+- [x] **Step 1: Replace the plan-mandated bullet in `fix-loop.md`**
 
 Replace lines 51-55 with (adapted from `2ce8aa1:skills/subagent-driven-development/references/fix-loop.md:14-19`):
 
@@ -215,7 +217,7 @@ Replace lines 51-55 with (adapted from `2ce8aa1:skills/subagent-driven-developme
 
 followed by the five stops of Global Constraints, indented as a nested list under the bullet.
 
-- [ ] **Step 2: The gate in `final-review.md`**
+- [x] **Step 2: The gate in `final-review.md`**
 
 In `## Plan completion`, replace `fold any question sets already pending (plan-mandated findings, the final review's Declined to judge lines, each for your human partner to rule on) into the same batch` with:
 
@@ -229,16 +231,16 @@ same batch
 
 Rewrap the paragraph so no line passes 76 columns.
 
-- [ ] **Step 3: Check that nothing else in SDD changed**
+- [x] **Step 3: Check that nothing else in SDD changed**
 
 Run: `git diff --stat`
 Expected: only `fix-loop.md` and `final-review.md` under `skills/subagent-driven-development/`.
 
-- [ ] **Step 4: NOTICE**
+- [x] **Step 4: NOTICE**
 
 Add a change-list line: SDD's `references/fix-loop.md` plan-mandated bullet adapts upstream's v7.0.1 wording at `2ce8aa1`; the scope-fence stop and the gate's list of rulings are local.
 
-- [ ] **Step 5: Check and commit**
+- [x] **Step 5: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -261,7 +263,7 @@ git commit -m "feat(subagent-driven-development): rule on mid-run plan conflicts
 - Produces: `task-start PLAN_FILE N` → stdout `brief: <path>` and `base: <40-hex>`; exit 2 bad arguments, 3 missing task, 1 no path printed.
 - Produces: `task-done PLAN_FILE N BASE -- CMD [ARGS...]` → on pass, appends `Task <N>: complete (commits <base7>..<head7>, tests: <cmd> → <last non-blank line | (no output)>)` to `<workspace>/progress.md` and prints `ledger: <line>`; exit 2 bad arguments or bad BASE, 3 another plan's ledger, else the command's status.
 
-- [ ] **Step 0: Register the suite**
+- [x] **Step 0: Register the suite**
 
 Add after the `brainstorming` entry in `build/suites.toml`:
 
@@ -273,7 +275,7 @@ with = ['pytest']
 notes = ['task-start and task-done tests (stdlib only; they drive the bash scripts and call SDD scripts by relative path).']
 ```
 
-- [ ] **Step 1: Write the `task-start` tests**
+- [x] **Step 1: Write the `task-start` tests**
 
 Module setup as `skills/subagent-driven-development/scripts/test_sdd_scripts.py`: its `GIT_ENV`, `run()`, `git()` helpers and `repo` fixture, with a two-task plan (`### Task 1: First thing`, `### Task 2: Second thing`) committed. The test file names no SDD path (no `subagent-driven-development/scripts/` string): the dependency-drift scan reads `.py` files, and the dependency lands only in Task 5. It reaches SDD only through the executing-plans scripts. Compare printed paths with `Path(...).resolve()`, as `test_task_brief_writes_to_and_prints_the_default_workspace_path` does.
 
@@ -285,21 +287,21 @@ def test_task_start_fails_on_a_missing_task(repo):         # N=9 → returncode 
 def test_task_start_handles_a_plan_path_with_a_space(repo):# plan at repo/'my plan.md' → returncode 0; brief under .sdd/'my plan'/
 ```
 
-- [ ] **Step 2: Run them to see RED**
+- [x] **Step 2: Run them to see RED**
 
 Run: `uv run python build/run_suites.py executing-plans`
 Expected: 5 failed, each with `FileNotFoundError` naming `task-start`. A `PermissionError` means the file exists without its exec bit and is not RED.
 
-- [ ] **Step 3: Implement `task-start`**
+- [x] **Step 3: Implement `task-start`**
 
 Upstream's `2ce8aa1:skills/executing-plans/scripts/task-start`, with one header-comment line naming `task-done` as the script that closes the task (orphan check, Open for plan review item 9). Keep `set -e`, so a `task-brief` exit 3 passes through. `chmod +x`.
 
-- [ ] **Step 4: Run to see GREEN**
+- [x] **Step 4: Run to see GREEN**
 
 Run: `uv run python build/run_suites.py executing-plans`
 Expected: `5 passed`.
 
-- [ ] **Step 5: Write the `task-done` tests**
+- [x] **Step 5: Write the `task-done` tests**
 
 Same module. `ok_cmd = ['sh', '-c', 'echo "Ran 3 tests"; echo OK']`.
 
@@ -331,12 +333,14 @@ def test_task_done_rejects_bad_arguments(repo, argv):               # returncode
 def test_task_done_rejects_a_bad_base(repo):                        # BASE 'nope' → 2; 'bad BASE' in stderr
 ```
 
-- [ ] **Step 6: Run them to see RED**
+- [x] **Step 6: Run them to see RED**
 
 Run: `uv run python build/run_suites.py executing-plans`
 Expected: 5 passed (task-start) and 13 failed, each with `FileNotFoundError` naming `task-done`.
 
-- [ ] **Step 7: Implement `task-done`**
+- [x] **Step 7: Implement `task-done`**
+
+> Deviation: the ledger-path match is root-relative only, with no working-directory fallback, and a symlinked plan file is followed (ruling in the ledger; Codex P2 findings). The spec line was amended.
 
 Start from upstream's `2ce8aa1:skills/executing-plans/scripts/task-done` (the #2388 fix is already in it: `|| last="(no output)"`). Add a header-comment line naming `task-start` as the script that opens the task. Local changes:
 
@@ -346,21 +350,21 @@ Start from upstream's `2ce8aa1:skills/executing-plans/scripts/task-done` (the #2
 
 `chmod +x`.
 
-- [ ] **Step 8: Run to see GREEN**
+- [x] **Step 8: Run to see GREEN**
 
 Run: `uv run python build/run_suites.py executing-plans`
 Expected: every test passes (18 with the parametrized cases).
 
-- [ ] **Step 9: Suite check**
+- [x] **Step 9: Suite check**
 
 Run: `uv run python build/run_suites.py --check`
 Expected: exit 0.
 
-- [ ] **Step 10: NOTICE**
+- [x] **Step 10: NOTICE**
 
 Add a change-list line: `executing-plans/scripts/task-start` and `task-done` adapt upstream's scripts at `2ce8aa1` (MIT), with `task-done` as fixed in v7.0.0 (#2388, `907ad21`). Local changes: the ledger's first line is `Plan: <plan-file-path>`, a ledger of another plan is refused with exit 3, and each script's header names the other. The pytest file is this repository's own; its cases adapt upstream's `tests/claude-code/test-executing-plans-scripts.sh`.
 
-- [ ] **Step 11: Check and commit**
+- [x] **Step 11: Check and commit**
 
 Run: `git ls-files -s skills/executing-plans/scripts/` after `git add`.
 Expected: both scripts at mode `100755`.
@@ -385,21 +389,21 @@ git commit -m "feat(executing-plans): task-start and task-done ledger scripts"
 - Consumes: Task 4's script signatures and ledger line; Task 3's gate wording; Task 2's paragraph (the completion contract cites it).
 - Produces: `references/final-review.md` headings `## Review the whole plan`, `## Fix pass`, `## Complete the plan`, `## Complete development`, `## Hand off a roadmap stage`.
 
-- [ ] **Step 1: Record the base**
+- [x] **Step 1: Record the base**
 
 Run: `git rev-parse HEAD` and keep it as `<port-base>` for Step 9.
 
-- [ ] **Step 2: Body from upstream, in upstream's order**
+- [x] **Step 2: Body from upstream, in upstream's order**
 
 Write the body from `2ce8aa1:skills/executing-plans/SKILL.md` lines 6-321, keeping the frontmatter lines 1-13 of the current file unchanged. Then apply Steps 3-6. No phrase on Global Constraints' no-upstream-text list survives.
 
-- [ ] **Step 3: Opening, When to Use and the graph**
+- [x] **Step 3: Opening, When to Use and the graph**
 
 - Opening and kept passages: reword the three cost-framed passages to the O1 reason (Open for plan review item 11, approved by D1). Replace "Four things stop you … For those, stop and ask." with a lead-in ("Five things stop you, and only these. For them, stop and ask:") and the five stops of Global Constraints.
 - When to Use: three bullets for O1's routing: the tasks are tightly coupled; your human partner asked for direct execution; your harness has no subagent tool ("Never fabricate a dispatch; run the plan here."). Drop the `../using-superpowers/` sentence and the "mostly independent" bullet. Keep the mid-tier paragraph. In the "Prefer subagent-driven-development …" paragraph, use bare names.
 - The graph: the final-review node reads `Final review: code-reviewer + Codex (references/final-review.md)`; the re-grade node reads `ONE fix pass, each fix RED→GREEN + documented suite green; unfixed → ruling`; the delete node reads `Plan-completion protocol, then delete this plan's workspace`. Edges unchanged.
 
-- [ ] **Step 4: Setup**
+- [x] **Step 4: Setup**
 
 Upstream's Setup, with:
 - workspace path `<repo-root>/.sdd/<plan-basename>/`;
@@ -408,21 +412,21 @@ Upstream's Setup, with:
 - the old Step 1 item 5 as a paragraph, with Open for plan review item 4's word changes;
 - pre-flight: upstream's scan and ledger rows unchanged, but replace "Rule on each conflict a row surfaces … record the ruling beside its row, and start Task 1." with "A conflict a row surfaces goes to your human partner in one batched question before Task 1, while they are present at launch; record their answer beside its row. No conflict: start Task 1."
 
-- [ ] **Step 5: The Task Loop**
+- [x] **Step 5: The Task Loop**
 
 - §2 "The plan is wrong": the ledger form becomes `Task <N>: Ruling: <what you decided> — <why> — <what it costs if wrong>`.
 - §3 completion contract, second bullet: "The final test run for the task passed: `task-done` is that run, with the project's documented test command(s) (test-driven-development's "other tests"), not only the files the brief names."
 - §4: "with the test command the brief names for the whole task" becomes "with the project's documented test command(s) that the change can reach".
 - After §4, the pointer: "When the last task's ledger line is written, read [references/final-review.md](references/final-review.md) and follow it. Read it again after a compaction."
 
-- [ ] **Step 6: Final review, Finish, Rationalizations, Integration**
+- [x] **Step 6: Final review, Finish, Rationalizations, Integration**
 
 - Delete upstream's `## Final Review` and `## Finish` from the body.
 - Common Rationalizations: drop the two Minor rows. Recast the check-in row's reality to "… Only the five stops stop you." Add the row: `| "The plan says to touch that file, the fence says no, the plan is newer" | A fence is not a conflict to rule on. Stop and ask. |`.
 - Keep `## Integration` (the current list), adding `subagent-driven-development - its scripts give the workspace and briefs; its ledger format is shared`.
 - Delete the old `## Overview`, Steps 1-2, `## When to Stop and Ask for Help`, `## When to Revisit Earlier Steps` and `## Remember`. Neither "Ask for clarification rather than guessing" nor "Stop when blocked, don't guess" remains.
 
-- [ ] **Step 7: `references/final-review.md`**
+- [x] **Step 7: `references/final-review.md`**
 
 Opening line: "Read this when the last task's ledger line is written, and again after a compaction." Then, in order:
 
@@ -432,7 +436,7 @@ Opening line: "Read this when the last task's ledger line is written, and again 
 4. `## Complete development`: old Step 5 verbatim.
 5. `## Hand off a roadmap stage`: old Step 6 verbatim, "end at Step 5" becoming "end at Complete development".
 
-- [ ] **Step 8: Measure the body**
+- [x] **Step 8: Measure the body**
 
 Run:
 ```bash
@@ -443,24 +447,24 @@ print(len(skill_body(open('skills/executing-plans/SKILL.md').read())[0]))"
 ```
 Expected: at most `18500`, about 16,100. Over the bar: stop and ask (Open for plan review item 6).
 
-- [ ] **Step 9: Moved-lines check**
+- [x] **Step 9: Moved-lines check**
 
 Run: `python3 specs/red-baseline-sdd-compaction/kit/check_moved_lines.py <port-base> skills/executing-plans`
 Expected: every printed line is one of: the old Overview (lines 17-23); Step 1 items 1-4 and the item 5 lines Open for plan review item 4 rewords; Step 2 (44-50); the `### Step 3:`-`### Step 6:` headings; the re-pointed link lines and step cross-references; the old Step 3 sentences replaced by the fix pass ("Then merge …" through "… questions to your partner."); and lines 117-143. List them in the task report. Any other line is a lost line: restore it.
 
-- [ ] **Step 10: Sweeps**
+- [x] **Step 10: Sweeps**
 
 Run: `/usr/bin/grep -rn "superpowers:\|\.superpowers\|SDD ledger\|using-superpowers\|Deferred minors\|Rulings I made\|mostly independent\|Ask for clarification rather\|Stop when blocked" skills/executing-plans/`
 Expected: no output.
 
-- [ ] **Step 11: Dependency**
+- [x] **Step 11: Dependency**
 
 Add `'skill:subagent-driven-development'` to `'skill:executing-plans'` in `install.py`'s `DEPENDENCIES` (the body names `../subagent-driven-development/scripts/`).
 In `build/test_runtime_support.py`, `test_skill_brings_its_hard_dependencies`'s `('claude', 'executing-plans', …)` case gains `'.claude/skills/subagent-driven-development'` in its expected set.
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py`
 Expected: all passed, none failed.
 
-- [ ] **Step 12: NOTICE**
+- [x] **Step 12: NOTICE**
 
 - Rewrite the clause "And there is no Native mode: this repo's executing-plans is not ported (finding 11 of specs/superpowers-drift-spec.md)." to say executing-plans was ported (below).
 - Line 447's "at a new whole-plan review step (Step 3) in executing-plans" becomes "at executing-plans' whole-plan review (now in its `references/final-review.md`)".
@@ -468,7 +472,7 @@ Expected: all passed, none failed.
 - Add: upstream's evaluation repository, prime-radiant-inc/superpowers-evals, is credited as an idea only; it carries no license, and no text or fixture comes from it.
 - Read the line near 726 (plan 73's executing-plans hunk) and confirm it still holds; adjust only a stale location.
 
-- [ ] **Step 13: Both script suites and an end-to-end run**
+- [x] **Step 13: Both script suites and an end-to-end run**
 
 Run: `uv run python build/run_suites.py executing-plans subagent-driven-development`
 Expected: both pass, with no failures and no unexpected skips.
@@ -476,7 +480,7 @@ Expected: both pass, with no failures and no unexpected skips.
 In a new directory under `/tmp/plan75-e2e/` with `git init`, a two-task plan and one commit, run `skills/executing-plans/scripts/task-start plan.md 1` and then `task-done plan.md 1 <base> -- true` by absolute path. Then run `skills/subagent-driven-development/scripts/sdd-workspace plan.md`.
 Expected: the ledger at the printed workspace reads `Plan: plan.md` then `Task 1: complete (commits …, tests: true → (no output))`, the form subagent-driven-development's resume reads.
 
-- [ ] **Step 14: Check and commit**
+- [x] **Step 14: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed` (the compaction window, links, provenance, dependency drift, suites check and snippet Tier 1 among them).
@@ -493,27 +497,31 @@ git commit -m "feat(executing-plans): port upstream v7.0.1's ledgered executor"
 - Modify: `specs/red-baseline-executing-plans-port.md`
 - Modify: `specs/superpowers-drift-spec.md` (status table rows 7, 11, 13; their section headings)
 
-- [ ] **Step 1: Build and leak-check the treatment prompts**
+- [x] **Step 1: Build and leak-check the treatment prompts**
 
 `<new-sha>` = HEAD after Task 5. Run `build_prompts.py <new-sha> /tmp/plan75-treatment` and repeat Task 1 Step 3's leak grep.
 
-- [ ] **Step 2: Run 5 reps per case**
+- [x] **Step 2: Run 5 reps per case**
 
 Expected: 80 rep files under `treatment/<case>/`. Stop if the kit's total spend reaches $40.
 
-- [ ] **Step 3: Judge and record**
+- [x] **Step 3: Judge and record**
 
 Read every verdict by hand from the full reply, by the registered rules. Record per case: control passes, treatment passes, bar met or missed, total spend.
 
-- [ ] **Step 4: Handle a miss**
+- [x] **Step 4: Handle a miss**
+
+> Deviation: G1 and G1p could not meet their bar (control 5/5), and the registered S1 rule failed conditional listings (S1-sdd 3/5, S1-ep 1/5 strict; 5/5 each on a plain reading). The owner ruled: accept G1 as unmeetable, ship under the plain reading, log the rule as too strict. Nine executing-plans cases were re-run on the final text (d732d66).
 
 A case that misses its bar: change only the wording it tests and re-run that task's checks and lints. Then re-run the treatment arm of every case whose texts changed (a change to the five stops touches every R*, S* and P1 case), within the $40. S1-*, S2-* and S2p are always judged on the final text. S1-*, S2-* and S2p must be 5/5; a treatment that passes R1 or R2 and misses one of them does not ship. A case that still misses goes to the owner with the record. Never ship a miss without the owner's ruling. If the final whole-branch review's fixes later touch a text under test, re-run the affected cases on the final text before the plan-completion protocol, and record both runs.
 
-- [ ] **Step 5: The drift spec**
+- [x] **Step 5: The drift spec**
+
+> Deviation: rows 7, 11 and 13 stay Adopted under the owner's rulings above.
 
 In `specs/superpowers-drift-spec.md`: status rows 7, 11 and 13 read `**Adopted** — plan 75`, with row 7 adding "rulings mid-run only (F7)". Section 11 and 13 headings gain `— adopted (plan 75)`. Section 7's heading keeps "partly adopted" and gains "; mid-run rulings adopted (plan 75)". Add one bold `**Adopted by plan 75 (<date>).**` line under each of the three headings, naming the files changed.
 
-- [ ] **Step 6: Check and commit**
+- [x] **Step 6: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.

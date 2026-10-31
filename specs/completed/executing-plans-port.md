@@ -3,7 +3,9 @@
 > For agentic workers: REQUIRED NEXT SKILL: writing-plans. Plan this spec in a fresh session.
 > Do not build from this file directly.
 
-**Status: APPROVED (2026-10-31)** by the owner, as committed, including every **(my call)**
+**Status: COMPLETE (2026-10-31)** — implemented by plan 75 (specs/plans/completed/75-executing-plans-port.md).
+
+**Approval: APPROVED (2026-10-31)** by the owner, as committed, including every **(my call)**
 item. Designed with the owner through the brainstorming skill. The owner chose the routing
 (O1), the approach (O2) and the narrow SDD scope (O3) in the design session. Items marked
 **(my call)** were the designer's choices. Owner question Q1, on the global `~/.claude/CLAUDE.md`,
@@ -189,6 +191,10 @@ Two local changes to upstream's `task-done`:
    - The two match when either resolution of the `Plan:` value and `PLAN_FILE` name the same
      file (both canonicalized, symlinks resolved). Otherwise `task-done` exits 3 and prints
      both paths.
+   > Amended by plan 75 (2026-10-31): as built, a relative `Plan:` value resolves against the
+   > repository root only, with no working-directory fallback, and a symlinked plan file is
+   > followed. A fallback let a same-basename plan in a subdirectory write into another
+   > plan's ledger (Codex review, plan 75 ledger rulings).
    - A new ledger gets `PLAN_FILE`'s path relative to the repository root, which SDD
      controllers also write in practice. SDD's Durable Progress text does not change.
 
