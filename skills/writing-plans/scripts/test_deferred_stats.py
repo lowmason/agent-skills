@@ -415,7 +415,9 @@ def test_watching_and_planned_lines():
     planned = '  Planned: 1 (in a live plan or spec; not aged).'
     assert lines.index(watching) == 1
     assert lines.index(planned) == 2
-    assert lines[3].startswith('  Oldest open:')
+    # The aged work item has no carry, so its line comes next.
+    assert lines[3] == '  Aged, carry unused: 9-test: Aged work item.…'
+    assert lines[4].startswith('  Oldest open:')
     # Both lines are left out when their counts are zero.
     plain = format_report(compute_stats(parse_items(SAMPLE), TODAY))
     assert 'Watching:' not in plain
@@ -619,9 +621,10 @@ def test_new_lines_print_in_the_contract_order():
     stats = compute_stats(
         parse_items(backlog), TODAY, is_live=live, archived=parse_items(archive),
     )
+    # The noted item is aged with no carry, so it prints on `Aged, carry unused:`.
     prefixes = (
-        'Deferred backlog:', '  Watching:', '  Planned:', '  Carry used', '  Removed:',
-        '  Warning:', '  Oldest open:',
+        'Deferred backlog:', '  Watching:', '  Planned:', '  Aged, carry unused:',
+        '  Carry used', '  Removed:', '  Warning:', '  Oldest open:',
     )
     lines = format_report(stats).splitlines()
     assert [p for line in lines for p in prefixes if line.startswith(p)] == list(prefixes)
@@ -648,5 +651,141 @@ def test_absent_backlog_json_carries_the_new_keys(tmp_path, capsys):
     assert main(['--file', missing, '--archive', missing, '--json']) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload['exists'] is False
-    for key in ('watching', 'planned', 'aged_acknowledged', 'removed'):
+    for key in ('watching', 'planned', 'aged_carryable', 'aged_acknowledged', 'removed'):
         assert key in payload, f'missing contract key: {key}'
+    assert payload['aged_carryable'] == []
+
+
+# Task 14: the aged items that can still take a carry are listed on their own line.
+CARRY_LINE = '  Carry used (only /deferred clears):'
+CARRYABLE_LINE = '  Aged, carry unused:'
+
+
+def test_aged_item_with_no_carry_is_listed_as_carryable():
+    text = one_section(
+        '- [ ] alpha beta gamma delta epsilon zeta eta\n'
+        '      Done when: it ships.',
+        name='s1',
+    )
+    stats = compute_stats(parse_items(text), TODAY)
+    assert stats['aged_open'] == 1
+    assert stats['aged_carryable'] == [
+        {'section': 's1', 'first_words': 'alpha beta gamma delta epsilon zeta'}
+    ]
+    assert stats['aged_acknowledged'] == []
+    lines = format_report(stats).splitlines()
+    assert '  Aged, carry unused: s1: alpha beta gamma delta epsilon zeta…' in lines
+    assert not any(line.startswith(CARRY_LINE) for line in lines)
+
+
+def test_aged_item_with_a_used_carry_is_only_on_the_carry_used_line():
+    text = one_section(
+        '- [ ] Alpha work item.\n'
+        '      → acknowledged 2026-10-20 (feat/x): reason',
+        name='s1',
+    )
+    stats = compute_stats(parse_items(text), LATER)
+    assert stats['aged_open'] == 1
+    assert stats['aged_carryable'] == []
+    lines = format_report(stats).splitlines()
+    assert '  Carry used (only /deferred clears): s1: Alpha work item.…' in lines
+    assert not any(line.startswith(CARRYABLE_LINE) for line in lines)
+
+
+def test_carryable_and_carried_lists_split_the_aged_tail():
+    backlog = (
+        '# Deferred items\n\n'
+        '## s1 — 2026-06-10\n'
+        '- [ ] Plain aged work item.\n'
+        '- [ ] Carried aged item.\n'
+        '      → acknowledged 2026-10-20 (b): reason\n'
+        '- [ ] Acknowledged then triggered item.\n'
+        '      → acknowledged 2026-09-01 (b): r\n'
+        '      → triggered 2026-10-01: z\n'
+        '- [ ] Held item.\n'
+        '      → held 2026-09-01: upstream\n'
+        '- [ ] Watch item.\n'
+        '      Revisit if: the vendor ships.\n'
+        '- [ ] Planned item.\n'
+        '      → planned 2026-09-02: specs/plans/9-x.md\n\n'
+        '## No date here\n'
+        '- [ ] Undated item.\n'
+    )
+    archive = one_section('- [ ] Archived aged item.', name='7-old')
+    stats = compute_stats(
+        parse_items(backlog), LATER, is_live=live, archived=parse_items(archive),
+    )
+    carryable = stats['aged_carryable']
+    carried = stats['aged_acknowledged']
+    assert stats['aged_open'] == len(carryable) + len(carried) == 3
+    assert carryable == [
+        {'section': 's1', 'first_words': 'Plain aged work item.'},
+        {'section': 's1', 'first_words': 'Acknowledged then triggered item.'},
+    ]
+    assert carried == [{'section': 's1', 'first_words': 'Carried aged item.'}]
+    listed = {entry['first_words'] for entry in carryable + carried}
+    for absent in ('Held item.', 'Watch item.', 'Planned item.', 'Undated item.',
+                   'Archived aged item.'):
+        assert absent not in listed
+    lines = format_report(stats).splitlines()
+    assert lines[0] == (
+        'Deferred backlog: 7 open, 1 ever closed (closure rate 12%), aged >45d: 3.'
+    )
+    assert (
+        '  Aged, carry unused: s1: Plain aged work item.…; '
+        's1: Acknowledged then triggered item.…'
+    ) in lines
+    carryable_at = next(i for i, line in enumerate(lines) if line.startswith(CARRYABLE_LINE))
+    carried_at = next(i for i, line in enumerate(lines) if line.startswith(CARRY_LINE))
+    assert carried_at == carryable_at + 1
+
+
+def test_no_aged_item_prints_neither_carry_line():
+    text = one_section(
+        '- [ ] Fresh item.\n'
+        '- [ ] Fresh carried item.\n'
+        '      → acknowledged 2026-09-05 (b): r',
+        date=TODAY - dt.timedelta(days=10),
+    )
+    stats = compute_stats(parse_items(text), TODAY)
+    assert (stats['aged_open'], stats['aged_carryable'], stats['aged_acknowledged']) == (0, [], [])
+    report = format_report(stats)
+    assert 'Aged, carry unused' not in report
+    assert 'Carry used' not in report
+
+
+def test_json_carryable_key_is_present_and_empty_when_nothing_is_aged(tmp_path, capsys):
+    backlog = tmp_path / 'deferred_items.md'
+    backlog.write_text(
+        one_section('- [ ] Fresh item.', date=dt.date.today() - dt.timedelta(days=3)),
+        encoding='utf-8',
+    )
+    assert main(['--file', str(backlog), '--archive', str(tmp_path / 'nope.md'), '--json']) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['aged_open'] == 0
+    assert payload['aged_carryable'] == []
+    keys = list(payload)
+    assert keys.index('aged_carryable') + 1 == keys.index('aged_acknowledged')
+
+
+def test_first_summary_line_shape_unchanged_with_carry_lines():
+    shape = re.compile(
+        r'^Deferred backlog: \d+ open, \d+ ever closed '
+        r'\(closure rate (\d+%|n/a)\), aged >\d+d: \d+\.$'
+    )
+    text = one_section(
+        '- [ ] Plain aged item.\n'
+        '- [ ] Carried item.\n'
+        '      → acknowledged 2026-10-20 (b): r'
+    )
+    first = format_report(compute_stats(parse_items(text), LATER)).splitlines()[0]
+    assert shape.match(first), first
+    assert first == 'Deferred backlog: 2 open, 0 ever closed (closure rate 0%), aged >45d: 2.'
+
+
+def test_absent_backlog_prints_no_carryable_line(tmp_path, capsys):
+    missing = str(tmp_path / 'nope.md')
+    assert main(['--file', missing, '--archive', missing]) == 0
+    out = capsys.readouterr().out
+    assert 'nothing deferred' in out
+    assert 'Aged, carry unused' not in out

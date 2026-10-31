@@ -40,7 +40,8 @@ done or retired, and it still counts as closed. A missing archive file is fine.
 An aged item has spent its one carry when it has an `→ acknowledged` note dated
 after its latest `held`, `triggered` or `planned` note, or after its section
 date when it has none (spec D10). The report names those items by section and
-first words, since only `/deferred` can clear them.
+first words, since only `/deferred` can clear them. It names the other aged
+items the same way, on a line of their own, since each can still take a carry.
 
 Sections whose heading carries no usable date still contribute to the
 open/closed counts but are excluded from every age figure and reported as
@@ -358,8 +359,11 @@ def compute_stats(
     items. Both are open, and neither enters ``aged_open``, the histogram or the
     oldest-open figures. ``open_with_done_note`` lists the open items that carry
     a `→ done` note, for the report's warning. ``aged_acknowledged`` lists the
-    aged open items whose carry is used (see ``carry_used``), as section and
-    first words.
+    aged open items whose carry is used (see ``carry_used``), and
+    ``aged_carryable`` the aged open items whose carry is not, both as section
+    and first words. Every aged item is on exactly one of the two lists, so
+    ``aged_open`` is the sum of their lengths. An item that does not age, or an
+    archived one, is on neither, and an empty backlog gives two empty lists.
     '''
     open_items = [item for item in items if not item.checked]
     closed_items = [item for item in items if item.checked] + list(archived)
@@ -372,6 +376,7 @@ def compute_stats(
     undated_open = 0
     watching = 0
     planned = 0
+    aged_carryable: list[dict[str, str]] = []
     aged_acknowledged: list[dict[str, str]] = []
     oldest_days: int | None = None
     oldest_section: str | None = None
@@ -394,10 +399,11 @@ def compute_stats(
         histogram[_bucket_label(days)] += 1
         if days > aged_days:
             aged_open += 1
+            entry = {'section': item.section, 'first_words': first_words(item)}
             if carry_used(item):
-                aged_acknowledged.append(
-                    {'section': item.section, 'first_words': first_words(item)}
-                )
+                aged_acknowledged.append(entry)
+            else:
+                aged_carryable.append(entry)
         if oldest_days is None or days > oldest_days:
             oldest_days = days
             oldest_section = item.section
@@ -413,6 +419,7 @@ def compute_stats(
         'undated_open': undated_open,
         'watching': watching,
         'planned': planned,
+        'aged_carryable': aged_carryable,
         'aged_acknowledged': aged_acknowledged,
         'removed': sum(1 for item in closed_items if _has_note(item, 'removed')),
         'open_with_done_note': [
@@ -428,10 +435,18 @@ def compute_stats(
 
 
 def absent_stats(aged_days: int = DEFAULT_AGED_DAYS) -> dict:
-    '''The contract shape for a backlog file that does not exist yet.'''
+    '''The contract shape for a backlog file that does not exist yet.
+
+    Every count is zero and every list, ``aged_carryable`` included, is empty.
+    '''
     stats = compute_stats([], dt.date.today(), aged_days)
     stats['exists'] = False
     return stats
+
+
+def _entries(listed: list[dict[str, str]]) -> str:
+    '''Listed items as `<section>: <first words>…`, joined by `; `.'''
+    return '; '.join(f'{entry["section"]}: {entry["first_words"]}…' for entry in listed)
 
 
 def format_report(stats: dict) -> str:
@@ -449,11 +464,12 @@ def format_report(stats: dict) -> str:
         lines.append(f'  Watching: {stats["watching"]} (Revisit-if or held; not aged).')
     if stats['planned']:
         lines.append(f'  Planned: {stats["planned"]} (in a live plan or spec; not aged).')
+    if stats['aged_carryable']:
+        lines.append(f'  Aged, carry unused: {_entries(stats["aged_carryable"])}')
     if stats['aged_acknowledged']:
-        carried = '; '.join(
-            f'{used["section"]}: {used["first_words"]}…' for used in stats['aged_acknowledged']
+        lines.append(
+            f'  Carry used (only /deferred clears): {_entries(stats["aged_acknowledged"])}'
         )
-        lines.append(f'  Carry used (only /deferred clears): {carried}')
     if stats['removed']:
         lines.append(f'  Removed: {stats["removed"]} (counted as closed).')
     for flagged in stats['open_with_done_note']:
