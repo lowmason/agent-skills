@@ -325,6 +325,7 @@ def installed_links(root: Path) -> set[str]:
     ('claude', 'executing-plans', (), {
       '.claude/skills/executing-plans',
       '.claude/skills/requesting-code-review',
+      '.claude/skills/subagent-driven-development',
       '.claude/skills/writing-plans',
       '.claude/commands/deferred.md',
     }),

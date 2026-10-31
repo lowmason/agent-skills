@@ -175,6 +175,19 @@ Confirm:
 
 **Other tests fail?** Fix now.
 
+**"Other tests" means the project's documented suite, not just your file.**
+A green run of the test you wrote is not a green suite. Before you call
+the change done, run the project's documented test command(s) — what its
+`CLAUDE.md`, `AGENTS.md`, README or CI runs — even when your task named
+only one test file. Where the project documents per-directory suites, run
+each documented suite your change can reach; a bare `pytest` at the root
+is not that command unless the project says it is. A scope statement in
+your task bounds the deliverable, not your verification. Any failure that
+run shows — including one you didn't cause — goes in your report by name,
+and so does each documented skip or known environment failure; a red test
+you watched scroll past and didn't mention is a report falsified by
+omission.
+
 ### REFACTOR - Clean Up
 
 After green only:

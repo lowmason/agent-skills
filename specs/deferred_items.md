@@ -2360,8 +2360,8 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       expects only that lint to fail. The waiver semantics are unchanged, so the exception
       stays until the previous item removes it.
 - [ ] Settle the wording and the test gap of the reworded roadmap-stage guard (plan 46
-      review): (a) `skills/executing-plans/SKILL.md` Step 6 says "step 3a's Handoff bullets
-      and stamp" without naming writing-plans' Plan Completion Protocol, and executing-plans
+      review): (a) `skills/executing-plans/references/final-review.md` (moved there by plan 75) says
+      "step 3a's Handoff bullets and stamp" without naming writing-plans' Plan Completion Protocol, and executing-plans
       numbers its own steps; (b) "runs the protocol on the merged branch now", in
       writing-plans, subagent-driven-development and executing-plans, can mean the deleted
       feature branch or the branch it merged into, and "when it starts" has two possible
@@ -4809,7 +4809,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       verified through `/cc-guide`, or records the facts as deliberately uncovered.
 
 ## owner-calls-2026-10-21 (no plan; owner decisions on drift finding 7 and audit O1–O3, branch claude/owner-calls-2026-10-21) — 2026-10-21
-- [ ] Write the executing-plans port spec (superpowers drift findings 11 and 13; finding 7
+- [x] Write the executing-plans port spec (superpowers drift findings 11 and 13; finding 7
       decided 2026-10-21 as rulings mid-run only). Finding 11: port upstream's ledgered
       native-mode executing-plans, with new `task-start` and `task-done` scripts (take
       `task-done` as fixed in v7.0.0, #2388, `907ad21`), so a mid-run conflict takes a recorded
@@ -4821,6 +4821,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       NOTICE change-list line. See `specs/superpowers-drift-spec.md` findings 7, 11 and 13.
       Size: design. Done when: the spec is approved in `specs/`, or the owner records findings
       11 and 13 as declined in the drift spec.
+      → done 2026-10-31 (spec approved): `specs/completed/executing-plans-port.md`, approved by the owner;
+      writing-plans plans it next.
 
 ## 63-conformance-gaps — 2026-10-21
 - [x] Probe `BUILTIN_PINNED` and the Agent payload shape in the drift detector (plan 63 Task 6, review
@@ -5705,3 +5707,38 @@ review and the Plan Completion gate (2026-10-27) add the others.
       own merge. Touches build/deferral_baseline.txt and
       skills/finishing-a-development-branch/SKILL.md. Size: quick-fix.
       Revisit if: a branch merge trips the deferral lint on a pre-lint file.
+
+## 75-executing-plans-port — 2026-10-31
+- [ ] **No micro-test reaches the reworded gates (plan 75 final review, owner ruled defer).**
+      The SDD `final-review.md` gate (rulings listed first, then Declined to judge lines as
+      questions) and the executing-plans fix pass load no fixture in the kit, so the wording
+      ships untested. See specs/red-baseline-executing-plans-port.md (Findings for the
+      owner); touches specs/red-baseline-executing-plans-port/kit/cases.py. Size: design.
+      Revisit if: a run lists rulings late or asks a question the ledger already answers.
+- [ ] **Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The
+      registered S1 rule fails any force-push line inside a `<command>` or `<edit>` block,
+      even one labelled "after approval", and G1 and G1p had control at 5/5. Both shipped on
+      a plain reading. Touches specs/red-baseline-executing-plans-port/kit/cases.py. Size:
+      quick-fix. Revisit if: the kit is reused for a later plan.
+- [ ] **`SKILL.md` resume sentence overstates `resuming.md` (plan 75 Task 5).** The sentence
+      says `resuming.md` describes `Ruling:` lines but it covers only deviation lines; the
+      brief mandated the wording. Touches skills/executing-plans/SKILL.md and
+      skills/subagent-driven-development/references/resuming.md. Size: quick-fix. Revisit
+      if: a resumed run misreads a `Ruling:` line.
+- [ ] **TDD "run the documented suite" against `fix-loop.md`'s one-line-fix rule (plan 75
+      Task 2).** The new TDD paragraph asks for the project's whole documented suite, while
+      `fix-loop.md` says a one-line fix needs only its covering tests. Touches
+      skills/test-driven-development/SKILL.md and
+      skills/subagent-driven-development/references/fix-loop.md. Size: quick-fix. Revisit
+      if: an implementer reports the two as conflicting.
+- [ ] **`task-start` writes into a shared workspace and `task-done` refuses an empty ledger
+      (plan 75 Task 4 and final review).** `task-start` writes a brief into a workspace that
+      same-basename plans share (spec non-goal M2), and an empty `progress.md` is refused as
+      another plan's ledger with a blank name. Touches
+      skills/executing-plans/scripts/task-start and task-done. Size: quick-fix. Revisit if:
+      two plans with one basename run in one repo, or a ledger is created empty by hand.
+- [ ] **Bash 3.2 checked by reading, not by the default run (plan 75 Task 4).** The
+      implementer ran the suite once with `/bin/bash` 3.2.57 first on PATH (20 passed); the
+      final 23-test suite has no such run. Touches
+      skills/executing-plans/scripts/test_executing_plans_scripts.py. Size: quick-fix.
+      Revisit if: a script change adds a Bash 4 feature.

@@ -54,6 +54,7 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
   'skill:derive-roadmap': ('command:deferred',),
   'skill:executing-plans': (
     'skill:requesting-code-review',
+    'skill:subagent-driven-development',
     'skill:writing-plans',
   ),
   'skill:finishing-a-development-branch': (
