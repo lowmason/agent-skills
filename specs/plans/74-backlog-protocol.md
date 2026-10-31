@@ -57,6 +57,10 @@ Numbered after the spec's D1-D14.
 - **D17** (owner, brief, 2026-10-30): name the two overlapping backlog items, and fold each in or leave it as the plan's own call. Applied in: Overlapping backlog items.
 - **D18** (owner, plan review, 2026-10-30): approve Task 0's amendment. The scan must catch the five B1 instances that carry a deferral phrase; the four phraseless fixtures become `xfail` fixtures that record the limit. Applied in: Task 0 (spec amendment), Task 4.
 - **D19** (owner, plan review, 2026-10-30): approve the plan, including the planner's calls in Open for plan review items 2-7, for execution by subagent-driven-development in a fresh Sonnet session. Applied in: Open for plan review.
+- **D20** (owner, completion batch, 2026-10-31): date the tick note. Protocol step 3 no longer spells the undated `→ done in plan <id>`, which skipped the archive hold-back and moved by its section date. It points at the reference, which gives the dated form `→ done <YYYY-MM-DD> (plan <id>)`. Applied in: the reference's `## Item notes` and `## Archive and removal`, protocol step 3 in `skills/writing-plans/SKILL.md`.
+- **D21** (owner, completion batch, 2026-10-31): the agent writes `→ dropped:` only on the owner's word. This departs from spec section 6, which also allowed it when the work had already landed and the check was cited. Applied in: the reference's `## Markers`.
+- **D22** (owner, completion batch, 2026-10-31): accept the R4 pass under the reading rule frozen before the runs (5/5; under the exact note form it scores 3/5). No wording change. Applied in: `specs/red-baseline-backlog-protocol.md`.
+- **D23** (owner, completion batch, 2026-10-31): do four leftovers now: the twelfth commit lint line in `build/CLAUDE.md`, the scan negation follow-up (E3), a stats list of the aged items that can still take a carry, and the scan recall gaps. Applied in: Tasks 13 and 14 (completion additions; no task text), plus `build/CLAUDE.md`.
 
 ## Overlapping backlog items
 
@@ -495,6 +499,8 @@ Step 3: for each watch item and each held item, check whether its signal has fir
 
 Markers: the two forms, who writes each (the agent writes `→ item:` and appends the item; `→ dropped:` only on the owner's word or with the landed work cited), the scan command, and the four moments of spec section 6's table. Archive and removal: spec section 5's rule, the 45-day tick age, the removal form, the hold-back and its `SCAN_FROM` cutoff, and that the script runs only from `/deferred`. Replace any `never delete` wording with: removal and archiving move the item to `specs/completed/deferred_items.md`.
 
+> Deviation: `→ dropped:` is written only on the owner's word (D21). The spec and this step also allowed it with the landed work cited. The owner removed that exception at completion.
+
 - [ ] **Step 6: `## Aged-tail gate`**
 
 Rewrite the section to spec section 3: the gate reads the stats; a first carry writes `→ acknowledged <YYYY-MM-DD> (<branch>): <reason>` on each carried item, on the owner's reason; an item named on the `Carry used` line gets only `/deferred`, and the merge waits for a state change (done, retired, held, triggered or planned; `→ owner-only` is not one). Move here, from finishing Step 1b, the question template, the acknowledgement example (rewritten as a note on an item) and the paragraph on why a reason is required. The `## Aged-backlog acknowledgements` section is no longer written.
@@ -544,6 +550,8 @@ Three edits:
 - replace `Never delete items — the file doubles as a history of consciously-deferred work.` with a sentence saying an item is never deleted: removal and archiving move it to `specs/completed/deferred_items.md` (reference `## Archive and removal`).
 
 Rewrap the example's second item as in Task 7 Step 7 (words unchanged).
+
+> Deviation: step 3 no longer spells the tick form. The form moved to the reference's `## Item notes` with a date, `→ done <YYYY-MM-DD> (plan <id>)` (D20).
 
 - [ ] **Step 3: Step 5 of the protocol**
 

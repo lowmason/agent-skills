@@ -36,6 +36,14 @@ section, out of the two reviewer agents and the two dispatch templates,
 removes the template indentation, and fails when a copy differs from
 `../agents/code-reviewer.md`'s.
 
+`../skills/writing-plans/scripts/deferral_scan.py lint` is the twelfth
+commit lint: it reads each Markdown file under `../specs/completed/` and
+`../specs/plans/completed/` that `deferral_baseline.txt` does not list, and
+fails on a deferral sentence with no `→ item:` or `→ dropped:` marker in its
+paragraph. The baseline is frozen, so never add a file to it.
+`run_commit_lints.sh` runs the lint, and `deferral_scan.py scan <file>…` is
+the advisory form.
+
 `versions.toml` is the one file where a person sets the dev Python, the freeze date, each pinned
 package version and each cited-only version (design: `specs/completed/package-versions.md`). `versions.py` reads
 it: `sync` writes `.python-version`, `uv.toml` and `skills/uv.toml`, `run` and `verify` install a
