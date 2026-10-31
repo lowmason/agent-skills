@@ -1647,6 +1647,7 @@
       at least 4 of 5 valid reps; or (b) the owner revises the R2 rubric to score the critique's asks
       (Recommendations, governance, change-asking caveats, numbered Details asks) and records the revised
       bar.
+      → progress 2026-10-31 (owner ruling): fork (a). The skill defines a point as every distinct claim, with a compound point split and a coverage check against the critique's own enumeration (a writing-skills RED→GREEN cycle), and a re-run on this fixture holds B1 in at least 4 of 5 valid reps.
 - [ ] Synthesize mode's staleness check is a second path to a VOID rep in a scenario verification. Step 1 of
       `skills/describe-critique-methodology/SKILL.md` § Synthesize mode has the rep check the "git log
       touching the described system", and on this machine that system lives in `alt-nfp-model` and
@@ -2121,6 +2122,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       owner picks what counts as a loop guard (the flag, a transcript read, an attempt
       counter, or a waiver per hook), the rule and the check agree on it, a test covers each
       accepted form, and both files' contradictions are cleared.
+      → progress 2026-10-31 (owner ruling): a loop guard is the flag (a read of `stop_hook_active`) or a waiver per hook, recorded in `build/cc_guide/conformance.toml`, that names the guard the hook uses instead.
 - [x] Three subagent-driven-development decisions, outside the register
       (`skills/subagent-driven-development/SKILL.md`). (1) Line 239 (line numbers refreshed after plan 46's reorder): an implementer already
       at `capable` has only fresh context and higher effort left, with no model step; the guide
@@ -2199,7 +2201,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       row; writing-skills:109's `haiku` claim is noted on the same rewrite item.
 
 ## 45-claude-code-drift-automation — 2026-10-14
-- [ ] A files verifier may rate one of two checkable statements on a source line and leave
+- [x] A files verifier may rate one of two checkable statements on a source line and leave
       the other unrated (plan 45, DF17, deferred at planning). Evidence: `README.md:163` in
       `~/.cache/agent-skills/cc-guide/packets/20261013T205255-files/README.md/`, whose report
       rated one of the line's two claims and left its trigger clause unrated (`report.md:21`).
@@ -2210,6 +2212,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       record's Diagnosis. Size: design. Done when: the owner has decided whether files rows go
       one per checkable statement, and, if so, the rule is in the verifier's files contract
       with a test in `build/cc_guide/test_skill_files.py` and a scored run on the README packet.
+      → retired 2026-10-31: owner chose "No, keep current contract": files rows do not go one per checkable statement, and the verifier's files contract stays as it is.
 - [x] A files-mode miss that settle does not hold leads to `baseline cite`, which clears the
       file's STALE flag and hides the miss until its guide section changes again (plan 45,
       deferred at planning; Planning record, "Diagnosis" in
@@ -2533,6 +2536,7 @@ all 20 named a type.
       `build/CLAUDE.md`. Size: design. Done when: the owner decides the channel, and a new
       Desktop session shows the notice at its start, or terminal-only is recorded as the
       accepted scope.
+      → progress 2026-10-31 (owner ruling): a Desktop channel via SessionStart's plain stdout, which reaches Claude as context in both the CLI and Desktop, so the first reply can name the notice.
 - [x] Does `startup` fire under `claude -p`? (plan 49 Task 1 Step 5, skipped by the owner;
       a Stage 5 probe candidate.) If it does, every `claude -p` run with this repo or one of
       its worktrees as the working directory runs `show` and `refresh`: a live docs
@@ -3260,7 +3264,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the SKILL.md row, with new sections for committed model artifacts and pandas/PyMC
       migration debt. The new test_scan.py (suite tech-debt) flags each pattern under rg and
       under grep. The optional explore-data pointer was skipped.
-- [ ] Owner call: should Codex and Gemini session histories feed the research wiki?
+- [x] Owner call: should Codex and Gemini session histories feed the research wiki?
       (audit-3-10-26 G16 and its Decision 12, found 2026-10-03; re-verified 2026-10-18.)
       `skills/llm-wiki/scripts/distill_sessions.py:16` reads only the `claude-code` and
       `claude-ai` sources, while the repo installs for Codex and Gemini and this machine
@@ -3268,6 +3272,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       reader per runtime, with the same privacy redaction, through brainstorming. Size:
       design. Done when: the owner decides, and a yes has an approved spec or a no is
       recorded here.
+      → retired 2026-10-31: owner chose "No": `distill_sessions.py` keeps reading only its `claude-code` and `claude-ai` sources, and Codex and Gemini session histories do not feed the research wiki.
 - [x] Document `distill_sessions.py --source claude-ai` (audit-3-10-26 G16, found 2026-10-03;
       re-verified 2026-10-18). The script accepts `--source claude-ai` with a
       `conversations.json` export (`skills/llm-wiki/scripts/distill_sessions.py:16`), but no
@@ -3528,7 +3533,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       removal as the evidence for the two narrative deletions; each change to a ported skill
       gets a NOTICE change-list line. Size: plan. Done when: the owner has picked the keepers,
       they are fixed, and the rest are recorded here as dropped.
-- [ ] Owner design calls from audit_1_3_26 §8 (audit-3-10-26 B4, found 2026-10-03; first raised
+      → progress 2026-10-31 (owner ruling): keepers are (1), (2), (3), (4), (6) with the pip lines becoming uv, (8), (9) with upstream's removal standing in for a micro-test, (10) and (11). Drop (5) and (7) → dropped: (5) the naming examples show a pattern and do not claim that the skills exist here. (7) the PyMC seed advice is correct for PyMC users.
+- [x] Owner design calls from audit_1_3_26 §8 (audit-3-10-26 B4, found 2026-10-03; first raised
       2026-07-03; re-verified 2026-10-18: no decision recorded). (a) A pressure-test ledger:
       no central record of skill tests exists, and NOTICE records that upstream's
       pressure-test transcripts were dropped at vendoring; RED-baseline records exist one by
@@ -3540,6 +3546,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       scrapers and ingest are now uncovered. Options: new
       skills, or accept those. Size: design. Done when: the owner decides each, recorded here,
       and a "build" answer has a brainstorming item or a spec.
+      → retired 2026-10-31: owner ruled (a) "Per-skill records enough": the per-skill RED-baseline records are enough, and no central pressure-test ledger is kept. (b) "Accept as uncovered": no skill covers building scrapers and ingest pipelines.
 - [x] Make the root README agree with the read-only agent guard's global install
       (audit-3-10-26 D3, found 2026-10-03; re-verified 2026-10-18). `README.md` never names
       `hooks/readonly-agent-guard.py`. Its layout line (`:30`) and Hooks intro (`:137-140`)
@@ -3697,7 +3704,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       for Alexandre Andorra's upstream (Learning-Bayesian-Statistics/baygent-skills), but it
       does not touch this README. Size: quick-fix. Revisit if: plan 53's Task 9 is merged.
       Done when: the skill README names the upstream notice file. → done in plan 53
-- [ ] Owner call: keep the JAX trial artifacts tracked, or archive them (audit-3-10-26 I6
+- [x] Owner call: keep the JAX trial artifacts tracked, or archive them (audit-3-10-26 I6
       and its Decision 9, found 2026-10-03; re-verified 2026-10-18). PR #20 (`110bd99`)
       landed `specs/verification/32-jax-trials/`, now 891 files and 10.97 MB, 39% of the
       repo's 28.30 MB of tracked files (508 files and 4.56 MB when the audit measured the
@@ -3710,6 +3717,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `specs/verification/32-jax-integration.md` links into the tree and its review checked
       759 manifest hashes. Size: design. Done when: the owner decides, and the decision is
       applied or recorded here.
+      → retired 2026-10-31: owner chose "Keep them tracked": `specs/verification/32-jax-trials/` stays tracked as it is. Untracking would make clones no smaller and would not hide the `/Users/lowell` paths, which are in pushed history.
 - [ ] Check the skill listing after the four 2026-10-04 skill merges (audit-3-10-26 I7, found
       2026-10-03). No `/context` or `/doctor` reading has been recorded since the JAX and
       causal-design merges; the last is 2026-07-30 (30 skills, in section
@@ -3781,7 +3789,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       for the vendored linter and `3944283c` for the adapted text, and prithivrajmu/asd-ste100
       against `d9323767`. Size: quick-fix. Revisit if: either repository changes its linter,
       rule sets or license after those commits.
-- [ ] The always-on rule's pointer line reaches work that the spec leaves out of scope
+- [x] The always-on rule's pointer line reaches work that the spec leaves out of scope
       (final review). `rules/write-with-asd-ste100.md` ends "To rewrite a text or a
       document, to write text for an agent reader, or to apply strict STE, use the
       write-with-asd-ste100 skill", and the skill's agent mode names subagent briefs. Once
@@ -3795,6 +3803,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       or accept the reach and record it. Size: design. Done when: the owner has chosen, and
       the rule, the skill description and the spec say the same thing. Task 11, Step 1 of
       specs/plans/completed/52-write-with-asd-ste100.md raises it again at the install gate.
+      → retired 2026-10-31: owner chose "Accept and record". The rule's pointer and the skill's agent mode may reach this repo's own dispatches and handoff briefs. The spec's Out of scope line (`specs/completed/write-with-asd-ste100.md:505`, under "Out of scope (deferred items)") names work the spec did not do: a design pass that puts agent mode into other skills, which is the open watch item at the top of this section. It does not bar a session from using the skill.
 - [x] `install.py` has no way to skip the always-on rule in a full Claude install, and
       `--rule` says nothing on Codex and Gemini (final review). A full Claude install places
       every rule in `USER_RULES`, and only `--skill` selection leaves it out (plan 52, DF1,
@@ -3946,6 +3955,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       call: should a partial-run report also say what did not run? Size: design. Done when: the
       owner decides, and either every run's steps and summary name the unchecked checks, or the
       decision to keep D2's wording is recorded here.
+      → progress 2026-10-31 (owner ruling): name them in every run. Every run's steps and summary name the unchecked checks (tree depth, E-BFMI, divergences), not only the all-clear.
 - [x] `SKILL.md` calls `calibration_check.py` optional, but plan 56's DF1 withholds the all-clear
       without `--calibration` (final-review Minor, 2026-10-19).
       `skills/bayesian-workflow/SKILL.md:77` reads "(and optionally `calibration_check.py` …". The
@@ -4117,10 +4127,11 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: design. Done
       when: a detector for the `references/` files that need a table of contents exists, and
       every file it flags has one.
-- [ ] A versioning policy (plan 53's spec, Out of scope): a CHANGELOG, git tags, and
+- [x] A versioning policy (plan 53's spec, Out of scope): a CHANGELOG, git tags, and
       `metadata.version` bumps. See `specs/completed/agent-skills-portability-spec.md`, "Out
       of scope". Size: design. Done when: the owner records a versioning policy and the repo
       follows it, or records that the repo needs none.
+      → retired 2026-10-31: owner chose "None needed": the repo needs no versioning policy. It installs by symlink from a live checkout, and no distribution channel ships yet.
 - [ ] Skill security scanning (plan 53's spec, Out of scope), for example Cisco's
       `skill-scanner`. "The repo has no CI" no longer holds: the repo now has advisory CI,
       `.github/workflows/lints.yml` (plan 41), but it runs the commit lints only, so no
@@ -4536,6 +4547,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       Files: `build/cc_guide/baseline.py`, `build/cc_guide/lint.py`, drift spec R2.4. Size:
       design. Done when: the owner picks a remedy and a test shows that two such branches,
       merged in either order, leave the file STALE, or the owner records the gap as accepted.
+      → progress 2026-10-31 (owner ruling): `text_hash` at cite time. Record each cited section's text hash when the file is cited, in the citation or beside it, and let the lint compare hashes.
 - [x] Each probe run inherits the caller's whole environment (`probes.execute` passes
       `env={**os.environ, **inv.env}`). The guide says `CLAUDE_CODE_EFFORT_LEVEL` outranks an
       agent's `effort` field and a per-spawn effort (subagents.frontmatter, guide line 184). So
@@ -4573,6 +4585,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       probe's row. Files: `build/cc_guide/probes.py` and `build/cc_guide/test_probes.py`. Size:
       design. Done when: the owner picks scrub or record, and a test shows that an inherited
       remap is either absent from the run or named in its row.
+      → progress 2026-10-31 (owner ruling): record them in the row. Name each of the four remaps that is set in the probe's row, so that a DIVERGES can be read against it.
 
 ## 61-hook-template-fixes — 2026-10-21
 - [ ] `hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61
