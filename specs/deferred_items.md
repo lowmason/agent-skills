@@ -5584,7 +5584,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       final review, owner ruled defer). The skill is not one of the surfaces spec section 2
       lists. Size: quick-fix. Done when: Step 4b says who rules on such a line and where it is
       written.
-      → done 2026-10-31 (/deferred quick fix): e544b1e has Step 4b show the partner each Declined to judge line with what was left unfixed, so the partner rules and a carried line goes to the backlog.
+      → done 2026-10-31 (/deferred quick fix): e544b1e has Step 4b show the partner each Declined to judge line, and 34cec3e extends its carry step to those lines, so the partner rules and a carried line is recorded here.
 - [ ] Declined review line: the code-reviewer agent and template never say what a Review Focus
       section is for (plan 73 final review, owner ruled defer). Only the executors'
       parenthetical does, as in upstream PR #2319, and spec section 5 asked only for the
