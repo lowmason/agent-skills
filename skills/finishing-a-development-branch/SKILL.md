@@ -242,8 +242,8 @@ If your partner declined the Codex run at its approval gate, skip the Codex run,
 
 Work its findings — merged with code-reviewer's, if that ran — with the
 receiving-code-review skill: fix what holds up, re-run the tests, commit. Show
-your partner anything you left unfixed, and execute the chosen option only
-after they have seen it.
+your partner anything you left unfixed and each Declined to judge line, and
+execute the chosen option only after they have seen it.
 
 **If you left any finding unfixed,** ask your partner which of them to carry,
 and offer to record each one they carry in `specs/deferred_items.md`. On their
