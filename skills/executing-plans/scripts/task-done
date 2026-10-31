@@ -34,10 +34,21 @@ log="$dir/task-${n}-tests.log"
 ledger="$dir/progress.md"
 
 # Canonical absolute form of a path whose directory exists; fails otherwise.
+# A final component that is a symlink is followed too (plain readlink, no -f,
+# for bash 3.2), at most 40 hops.
 canon() {
-  local d
-  d=$(cd "$(dirname "$1")" 2>/dev/null && pwd -P) || return 1
-  printf '%s/%s\n' "$d" "$(basename "$1")"
+  local p=$1 d t hops=0
+  while [ -L "$p" ]; do
+    [ "$hops" -lt 40 ] || return 1
+    hops=$((hops + 1))
+    t=$(readlink "$p") || return 1
+    case "$t" in
+      /*) p=$t ;;
+      *) p="$(dirname "$p")/$t" ;;
+    esac
+  done
+  d=$(cd "$(dirname "$p")" 2>/dev/null && pwd -P) || return 1
+  printf '%s/%s\n' "$d" "$(basename "$p")"
 }
 
 root=$(cd "$(git rev-parse --show-toplevel)" && pwd -P)
@@ -54,14 +65,10 @@ if [ -f "$ledger" ]; then
       case "$value" in
         /*) candidates=$(canon "$value" || true) ;;
         *)
-          # The ledger line is relative to the repository root. Fall back to
-          # the working directory only when no such file exists there, so a
-          # same-named plan elsewhere in the tree cannot claim this ledger.
-          if [ -e "$root/$value" ]; then
-            candidates=$(canon "$root/$value" || true)
-          else
-            candidates=$(canon "$PWD/$value" || true)
-          fi
+          # The ledger line is relative to the repository root, and only to
+          # it: a same-named plan elsewhere in the tree never claims this
+          # ledger, even when the root's plan has moved.
+          candidates=$(canon "$root/$value" || true)
           ;;
       esac
       while IFS= read -r c; do

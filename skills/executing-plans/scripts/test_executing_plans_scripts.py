@@ -224,6 +224,41 @@ def test_task_done_refuses_a_same_basename_plan_in_a_subdirectory(repo):
     assert not (sub / 'ran').exists()
 
 
+def test_task_done_refuses_when_the_ledger_plan_has_moved(repo):
+    sub = repo / 'sub'
+    sub.mkdir()
+    (sub / 'plan.md').write_text(PLAN.replace('Demo', 'Other'))
+    ws = workspace(repo)
+    ws.mkdir(parents=True)
+    ledger = ws / 'progress.md'
+    log = ws / 'task-1-tests.log'
+    ledger.write_text('Plan: plan.md\n')
+    log.write_text('old\n')
+    base = head(repo)
+    (repo / 'plan.md').unlink()
+    before = (ledger.read_bytes(), log.read_bytes())
+    cmd = ['sh', '-c', 'touch ran']
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *cmd, cwd=sub)
+    assert result.returncode == 3
+    assert (ledger.read_bytes(), log.read_bytes()) == before
+    assert not (sub / 'ran').exists()
+
+
+def test_task_done_matches_a_plan_reached_through_a_file_symlink(repo):
+    (repo / 'specs').mkdir()
+    (repo / 'plan.md').rename(repo / 'specs' / 'plan.md')
+    (repo / 'alias').mkdir()
+    (repo / 'alias' / 'plan.md').symlink_to(Path('..') / 'specs' / 'plan.md')
+    # Both paths share the basename, so both map to the workspace .sdd/plan.
+    ws = workspace(repo)
+    ws.mkdir(parents=True)
+    ledger = ws / 'progress.md'
+    ledger.write_text('Plan: specs/plan.md\n')
+    result = run(TASK_DONE, 'alias/plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert 'Task 1: complete' in ledger.read_text()
+
+
 def test_task_done_refuses_another_plans_ledger(repo):
     ws = workspace(repo)
     ws.mkdir(parents=True)
