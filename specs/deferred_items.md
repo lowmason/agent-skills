@@ -4809,7 +4809,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       verified through `/cc-guide`, or records the facts as deliberately uncovered.
 
 ## owner-calls-2026-10-21 (no plan; owner decisions on drift finding 7 and audit O1–O3, branch claude/owner-calls-2026-10-21) — 2026-10-21
-- [ ] Write the executing-plans port spec (superpowers drift findings 11 and 13; finding 7
+- [x] Write the executing-plans port spec (superpowers drift findings 11 and 13; finding 7
       decided 2026-10-21 as rulings mid-run only). Finding 11: port upstream's ledgered
       native-mode executing-plans, with new `task-start` and `task-done` scripts (take
       `task-done` as fixed in v7.0.0, #2388, `907ad21`), so a mid-run conflict takes a recorded
@@ -4821,6 +4821,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       NOTICE change-list line. See `specs/superpowers-drift-spec.md` findings 7, 11 and 13.
       Size: design. Done when: the spec is approved in `specs/`, or the owner records findings
       11 and 13 as declined in the drift spec.
+      → done 2026-10-31 (spec approved): `specs/executing-plans-port.md`, approved by the owner;
+      writing-plans plans it next.
 
 ## 63-conformance-gaps — 2026-10-21
 - [x] Probe `BUILTIN_PINNED` and the Agent payload shape in the drift detector (plan 63 Task 6, review

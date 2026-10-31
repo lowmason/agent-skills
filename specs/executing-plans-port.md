@@ -3,9 +3,11 @@
 > For agentic workers: REQUIRED NEXT SKILL: writing-plans. Plan this spec in a fresh session.
 > Do not build from this file directly.
 
-**Status: DRAFT (2026-10-31), for owner review.** Designed with the owner through the
-brainstorming skill. The owner chose the routing (O1) and the approach (O2) in this session.
-Items marked **(my call)** are the designer's choices, for the owner to check at review.
+**Status: APPROVED (2026-10-31)** by the owner, as committed, including every **(my call)**
+item. Designed with the owner through the brainstorming skill. The owner chose the routing
+(O1), the approach (O2) and the narrow SDD scope (O3) in the design session. Items marked
+**(my call)** were the designer's choices. Owner question Q1, on the global `~/.claude/CLAUDE.md`,
+is outside this repository and does not gate the plan.
 
 ## Intent
 
