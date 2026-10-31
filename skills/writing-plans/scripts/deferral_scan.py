@@ -27,6 +27,10 @@ The scan reads prose only:
 - Inline code spans are blanked before matching. A run of N backticks closes
   only on a run of exactly N, and a span may wrap a line. So a note form or a
   quoted phrase in backticks neither flags nor marks anything.
+- An underscore with a character other than a letter or digit on either side
+  is emphasis and is blanked before matching, so `_the fix is deferred_` is
+  read like `the fix is deferred`. An underscore between two letters or digits
+  is part of the word (`is_deferred`).
 - Two forms of the Plan Completion Protocol are exempt. Its status header
   (`deferred items in specs/deferred_items.md` or `nothing deferred`) is exempt
   as a whole line. Its `> Skipped: <why> → deferred` note, which the protocol
@@ -38,18 +42,23 @@ The scan reads prose only:
   was put off, so it is not a candidate. The subject is `nothing`, `none` or
   `no` and up to three more words, right before the verb, and it must open its
   clause. A clause opens at the start of the unit, after an optional list
-  marker (`-`, `*`, `+`, `N.` or `N)`), any `>` quote markers and an optional
-  `**`. It also opens after one of `. ! ?` and `;`, or after one of the
-  conjunctions `and`, `but`, `so`, `because`, `since`, `when` and `if`. After
-  one of `: , ( —` only `nothing` or `none` opens a clause, not `no`, so
-  `Known gap: no backoff is deferred` stays a candidate. Nothing else opens a
-  clause. None of the up-to-three words may be `but`, `except`, `besides`,
+  marker (`-`, `*`, `+`, `N.` or `N)`), any `>` quote markers and any run of
+  `*` (so `*Nothing is deferred.*` and `**Nothing is deferred.**` are exempt,
+  and an emphasis `_` is already blanked). It also opens after one of `. ! ?`
+  and `;`, or after one of the conjunctions `and`, `but`, `so`, `because`,
+  `since`, `when` and `if`. After one of `: , ( —` only `nothing` or `none`
+  opens a clause, not `no`, so `Known gap: no backoff is deferred` stays a
+  candidate. Nothing else opens a clause. A bare `and`, with no `,` or `;`
+  before it, does not open a clause when `else` or `other` follows the
+  negation word: `the scorecard and nothing else is deferred` and `X and no
+  other work is deferred` name `X` as the deferred work, so they stay
+  candidates. None of the up-to-three words may be `but`, `except`, `besides`,
   `beyond`, `apart`, `aside`, `save` or `other than`, so `nothing but the
   scorecard is deferred` stays a candidate. The exemption also ends on an
   exception after the verb, read two ways. First, the text right after the
   verb, past optional whitespace (a line break included) and one optional
   comma, starts with `except`, `but`, `other than`, `apart from`, `aside from`,
-  `besides` or `save for`. Second, the rest of the sentence holds `except`,
+  `besides`, `save` or `unless`. Second, the rest of the sentence holds `except`,
   `excepting`, `excluding`, `other than`, `apart from`, `aside from`,
   `barring`, or `with` then `the`, `one`, `a` or `an`, an optional `sole`,
   `only` or `single`, and `exception`, as whole words. The sentence ends at a
@@ -67,12 +76,12 @@ The scan reads prose only:
   hyphen, a line break right before the subject and a later exception word in a
   second clause (`nothing is deferred; all tests pass except the flaky one`)
   all leave a candidate. Known gaps remain, each still exempt: an `and` clause
-  (`X and nothing else is deferred`, `X and no other work is deferred`), a bare
-  `no` after `;` or a full stop (`Known gap; no backoff is deferred.`, `Known
-  gap. No backoff is deferred.`), an exception word after the verb that is in
-  neither list, such as `beyond`, `, only`, `save the` or `unless`, and an
-  exception word after an abbreviation that a capital follows, which reads as a
-  sentence end (`nothing is deferred, e.g. Task 3, except retry`).
+  with a `,` or `;` before it (`X, and nothing else is deferred`), a bare `no` after
+  `;` or a full stop (`Known gap; no backoff is deferred.`, `Known gap. No
+  backoff is deferred.`), an exception word after the verb that is in neither
+  list, such as `beyond` or `, only`, and an exception word after an
+  abbreviation that a capital follows, which reads as a sentence end (`nothing
+  is deferred, e.g. Task 3, except retry`).
 
 A phrase may wrap across lines of one unit. Each line that a match starts on is
 reported once.
@@ -119,7 +128,8 @@ PASSIVE = re.compile(
 # `nothing else is deferred`, `none of this is deferred`, `, and no new work is
 # deferred`: a subject of `nothing`, `none` or `no` and up to three more words,
 # right before PASSIVE's verb, that opens its clause. A clause opens at the start
-# of the unit (after an optional list marker, `>` quote markers and `**`), after
+# of the unit (after an optional list marker, `>` quote markers and any run of
+# `*`; an emphasis `_` is already blanked to a space), after
 # `. ! ? ;`, or after one of the conjunctions below. After `: , ( —` only
 # `nothing` or `none` opens one, because `Known gap: no backoff is deferred` is
 # an appositive that names deferred work. Anything else does not open a clause:
@@ -129,7 +139,7 @@ PASSIVE = re.compile(
 # word is an exception word, so `nothing but the scorecard is deferred` stays a
 # candidate too.
 NEGATED_SUBJECT = re.compile(
-    r'(?:(?:^\s*(?:(?:[-*+]|\d+[.)])\s+)?(?:>\s*)*(?:\*\*)?'
+    r'(?:(?:^\s*(?:(?:[-*+]|\d+[.)])\s+)?(?:>\s*)*\**'
     r'|[.!?;]'
     r'|\b(?:and|but|so|because|since|when|if))'
     r'\s*\b(?:nothing|none|no)'
@@ -138,12 +148,23 @@ NEGATED_SUBJECT = re.compile(
     r'\s+$',
     re.IGNORECASE,
 )
+# A noun joined to the negation by a bare `and` is itself the deferred work:
+# `the scorecard and nothing else is deferred`, `X and no other work is deferred`.
+# Only `else` or `other` right after the negation word marks this form, and only
+# with no `,` or `;` before the `and`: `every task landed and nothing is deferred`
+# and `every task landed, and nothing else is deferred` join two clauses.
+NOUN_AND_NOTHING_ELSE = re.compile(
+    r'(?<![,;\s])\s+and\s+(?:nothing\s+else|(?:none|no)\s+other)(?:\s+[\w-]+){0,2}\s+$',
+    re.IGNORECASE,
+)
 # An exception right after a negated PASSIVE match names the deferred work:
-# `nothing is deferred except the scorecard`, `, except for`, `but the scorecard`.
-# Its `\s*` crosses a line break, so `nothing is deferred` and `except the
-# scorecard` on the next line of the unit are read as one.
+# `nothing is deferred except the scorecard`, `, except for`, `but the scorecard`,
+# `save the scorecard`, `unless retry counts`. Its `\s*` crosses a line break, so
+# `nothing is deferred` and `except the scorecard` on the next line of the unit
+# are read as one. `beyond` and `only` are left out: right after the verb they
+# also name a scope or a manner (`beyond this plan`, `, only reordered`).
 EXCEPTION_TAIL = re.compile(
-    r'\s*,?\s*(?:except|but|other\s+than|apart\s+from|aside\s+from|besides|save\s+for)\b',
+    r'\s*,?\s*(?:except|but|other\s+than|apart\s+from|aside\s+from|besides|save|unless)\b',
     re.IGNORECASE,
 )
 # The end of the sentence a negated PASSIVE match stands in: `.`, `!` or `?`,
@@ -204,6 +225,11 @@ FENCE_OPEN = re.compile(r'^\s*(`{3,}|~{3,})(.*)$')
 LIST_ITEM = re.compile(r'^\s*(?:[-*]|\d+\.)\s')
 HEADING = re.compile(r'^\s{0,3}#{1,6}(?:\s|$)')
 BACKTICK_RUN = re.compile(r'`+')
+# An underscore with a non-alphanumeric character on either side opens or closes
+# emphasis (`_the fix is deferred_`); one between two letters or digits is part of
+# a word (`is_deferred`). `\b` counts `_` as a word character, so emphasis
+# underscores are blanked before matching.
+EMPHASIS_UNDERSCORE = re.compile(r'(?<![^\W_])_|_(?![^\W_])')
 
 
 @dataclass
@@ -297,7 +323,10 @@ def _negated(prose: str, match: re.Match[str]) -> bool:
     if SENTENCE_EXCEPTION.search(prose, match.end(), end.start() if end else len(prose)):
         return False
     # The whole unit before the match, so `^` is the unit's start.
-    return bool(NEGATED_SUBJECT.search(prose[:match.start()]))
+    before = prose[:match.start()]
+    if NOUN_AND_NOTHING_ELSE.search(before):
+        return False
+    return bool(NEGATED_SUBJECT.search(before))
 
 
 def unmarked(text: str) -> list[Candidate]:
@@ -306,7 +335,7 @@ def unmarked(text: str) -> list[Candidate]:
     candidates: list[Candidate] = []
     for unit in _units(lines, _readable_lines(lines)):
         unit_lines = [_without_exempt(lines[i]) for i in unit]
-        prose = _blank_code_spans('\n'.join(unit_lines))
+        prose = EMPHASIS_UNDERSCORE.sub(' ', _blank_code_spans('\n'.join(unit_lines)))
         if MARKER.search(prose):
             continue
         starts = [0]

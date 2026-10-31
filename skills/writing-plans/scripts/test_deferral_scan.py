@@ -290,6 +290,82 @@ def test_negation_ends_at_the_sentence_end_across_lines(text):
     assert unmarked(text) == []
 
 
+@pytest.mark.parametrize('text', [
+    # An underscore that opens or closes emphasis is not part of a word.
+    '_The scorecard fix is deferred_ for now.',
+    'The retry work is _left for later_.',
+    'Retry goes to _a future plan_.',
+    '_The fix is deferred._',
+])
+def test_underscore_emphasis_does_not_hide_a_deferral(text):
+    assert len(unmarked(text)) == 1
+
+
+@pytest.mark.parametrize('text', [
+    # A single `*`, `***` or `_` around a negation opens its clause like `**` does.
+    '*Nothing is deferred.*',
+    '***Nothing is deferred.***',
+    '_No new work is deferred in this round._',
+    '__Nothing is deferred.__',
+    '- *Nothing is deferred.*',
+    '> _None are deferred._',
+    # An underscore inside a word stays part of it.
+    'The is_deferred flag is set.',
+])
+def test_emphasis_around_a_negation_is_not_flagged(text):
+    assert unmarked(text) == []
+
+
+def test_emphasis_around_a_negation_still_reads_its_exception():
+    assert len(unmarked('*Nothing is deferred except retry.*')) == 1
+    assert len(unmarked('_Nothing is deferred_ except retry.')) == 1
+
+
+@pytest.mark.parametrize('text', [
+    # A noun joined to the negation by a bare `and` is the deferred work.
+    'The scorecard and nothing else is deferred.',
+    'X and no other work is deferred.',
+    'Retry and none other is deferred.',
+    # A real deferral coordinated with a negated clause is flagged on its own.
+    'Nothing is deferred in the parser and the retry fix is deferred.',
+])
+def test_noun_and_nothing_else_is_still_flagged(text):
+    assert len(unmarked(text)) == 1
+
+
+@pytest.mark.parametrize('text', [
+    'Every task landed and nothing is deferred.',
+    'Every task landed, and nothing else is deferred.',
+    'The plan retires; and no other work is deferred.',
+])
+def test_clause_and_nothing_else_is_not_flagged(text):
+    assert unmarked(text) == []
+
+
+def test_bare_save_after_the_verb_is_an_exception():
+    assert len(unmarked('Nothing is deferred save the scorecard.')) == 1
+    assert len(unmarked('Nothing is deferred, save retry.')) == 1
+    assert unmarked('Nothing is deferred, saving a round.') == []
+
+
+def test_unless_after_the_verb_is_an_exception():
+    assert len(unmarked('Nothing is deferred unless retry counts.')) == 1
+    assert len(unmarked('Nothing is deferred, unless the probe fails.')) == 1
+
+
+@pytest.mark.parametrize('text', [
+    # `beyond` and `only` after the verb also name a scope or a manner, so they
+    # are not read as exceptions: these clean statements stay exempt.
+    'Nothing is deferred beyond this plan.',
+    'Nothing is deferred, only reordered.',
+    # A bare `no` after `;` or a full stop opens a clause, as at the unit start.
+    'Review is clean; no work is deferred.',
+    'All landed. No work is deferred.',
+])
+def test_ambiguous_words_keep_the_exemption(text):
+    assert unmarked(text) == []
+
+
 def test_code_span_neither_flags_nor_marks():
     assert unmarked('`deferred to a future plan`') == []
     assert unmarked(PLAN_4 + ' `→ item: x`') == [Candidate(1, PLAN_4 + ' `→ item: x`')]
