@@ -326,6 +326,7 @@ def test_emphasis_around_a_negation_still_reads_its_exception():
     'The scorecard and nothing else is deferred.',
     'X and no other work is deferred.',
     'Retry and none other is deferred.',
+    'The scorecard and none else is deferred.',
     # A real deferral coordinated with a negated clause is flagged on its own.
     'Nothing is deferred in the parser and the retry fix is deferred.',
 ])
@@ -337,6 +338,11 @@ def test_noun_and_nothing_else_is_still_flagged(text):
     'Every task landed and nothing is deferred.',
     'Every task landed, and nothing else is deferred.',
     'The plan retires; and no other work is deferred.',
+    # After a sentence end, a colon, a bracket or a dash, `and` starts a clause.
+    'All tasks landed. And nothing else is deferred.',
+    'Every task landed — and nothing else is deferred.',
+    'Done: and nothing else is deferred.',
+    'All landed (and nothing else is deferred).',
 ])
 def test_clause_and_nothing_else_is_not_flagged(text):
     assert unmarked(text) == []

@@ -29,8 +29,9 @@ The scan reads prose only:
   quoted phrase in backticks neither flags nor marks anything.
 - An underscore with a character other than a letter or digit on either side
   is emphasis and is blanked before matching, so `_the fix is deferred_` is
-  read like `the fix is deferred`. An underscore between two letters or digits
-  is part of the word (`is_deferred`).
+  read like `the fix is deferred`, and an emphasized negation is exempt exactly
+  when the same text without the underscores is. An underscore between two
+  letters or digits is part of the word (`is_deferred`).
 - Two forms of the Plan Completion Protocol are exempt. Its status header
   (`deferred items in specs/deferred_items.md` or `nothing deferred`) is exempt
   as a whole line. Its `> Skipped: <why> → deferred` note, which the protocol
@@ -48,10 +49,10 @@ The scan reads prose only:
   and `;`, or after one of the conjunctions `and`, `but`, `so`, `because`,
   `since`, `when` and `if`. After one of `: , ( —` only `nothing` or `none`
   opens a clause, not `no`, so `Known gap: no backoff is deferred` stays a
-  candidate. Nothing else opens a clause. A bare `and`, with no `,` or `;`
-  before it, does not open a clause when `else` or `other` follows the
-  negation word: `the scorecard and nothing else is deferred` and `X and no
-  other work is deferred` name `X` as the deferred work, so they stay
+  candidate. Nothing else opens a clause. A bare `and`, with none of `, ; : .
+  ! ? ( —` before it, does not open a clause when `else` or `other` follows
+  the negation word: `the scorecard and nothing else is deferred` and `X and
+  no other work is deferred` name `X` as the deferred work, so they stay
   candidates. None of the up-to-three words may be `but`, `except`, `besides`,
   `beyond`, `apart`, `aside`, `save` or `other than`, so `nothing but the
   scorecard is deferred` stays a candidate. The exemption also ends on an
@@ -76,7 +77,7 @@ The scan reads prose only:
   hyphen, a line break right before the subject and a later exception word in a
   second clause (`nothing is deferred; all tests pass except the flaky one`)
   all leave a candidate. Known gaps remain, each still exempt: an `and` clause
-  with a `,` or `;` before it (`X, and nothing else is deferred`), a bare `no` after
+  with one of those marks before it (`X, and nothing else is deferred`), a bare `no` after
   `;` or a full stop (`Known gap; no backoff is deferred.`, `Known gap. No
   backoff is deferred.`), an exception word after the verb that is in neither
   list, such as `beyond` or `, only`, and an exception word after an
@@ -151,10 +152,12 @@ NEGATED_SUBJECT = re.compile(
 # A noun joined to the negation by a bare `and` is itself the deferred work:
 # `the scorecard and nothing else is deferred`, `X and no other work is deferred`.
 # Only `else` or `other` right after the negation word marks this form, and only
-# with no `,` or `;` before the `and`: `every task landed and nothing is deferred`
-# and `every task landed, and nothing else is deferred` join two clauses.
+# when none of `, ; : . ! ? ( —` comes right before the `and` and its whitespace:
+# `every task landed and nothing is deferred`, `every task
+# landed, and nothing else is deferred` and `all landed. And nothing else is
+# deferred` join two clauses.
 NOUN_AND_NOTHING_ELSE = re.compile(
-    r'(?<![,;\s])\s+and\s+(?:nothing\s+else|(?:none|no)\s+other)(?:\s+[\w-]+){0,2}\s+$',
+    r'(?<![,;:.!?(—\s])\s+and\s+(?:nothing|none|no)\s+(?:else|other)(?:\s+[\w-]+){0,2}\s+$',
     re.IGNORECASE,
 )
 # An exception right after a negated PASSIVE match names the deferred work:
