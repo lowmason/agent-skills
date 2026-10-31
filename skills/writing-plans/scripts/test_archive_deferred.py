@@ -815,3 +815,47 @@ def test_archive_loses_and_duplicates_nothing(live, archived):
     assert _body_lines(new_live) + _body_lines(new_archive) == (
         _body_lines(live) + _body_lines(archived))
     assert run(new_live, new_archive)[:2] == (new_live, new_archive)
+
+
+# Plan 74 loose ends: archive sections that share a date sort by plan id, not by
+# the order the script meets them (sections 20 and 21 are both dated 2026-09-03).
+SAME_DATE_LIVE = '''# Deferred items
+
+## 20-y — 2026-09-03
+- [x] y → done 2026-09-04
+'''
+
+SAME_DATE_ARCHIVE = '''# Deferred items
+
+## 19-w — 2026-09-03
+- [x] w → done 2026-09-04
+
+## 21-x — 2026-09-03
+- [x] x → done 2026-09-04
+
+## 22-z — 2026-09-05
+- [x] z → done 2026-09-06
+'''
+
+
+def test_same_date_heading_lands_in_plan_id_order():
+    _, archived, _ = run(SAME_DATE_LIVE, SAME_DATE_ARCHIVE)
+    headings = [line for line in archived.splitlines() if line.startswith('## ')]
+    assert headings == ['## 19-w — 2026-09-03', '## 20-y — 2026-09-03',
+                        '## 21-x — 2026-09-03', '## 22-z — 2026-09-05']
+
+
+# Plan 74 loose ends: a write goes through a symlink to its target, so the link stays.
+@pytest.mark.parametrize('linked', ['file', 'archive'])
+def test_write_keeps_a_symlink_and_updates_its_target(tmp_path, linked):
+    live_path, archive_path, _ = _files(tmp_path)
+    path = live_path if linked == 'file' else archive_path
+    target = tmp_path / f'real-{path.name}'
+    path.rename(target)
+    path.symlink_to(target.name)
+    assert main(['--file', str(live_path), '--archive', str(archive_path)], today=TODAY) == 0
+    assert path.is_symlink()
+    assert sorted(p.name for p in tmp_path.iterdir()) == sorted(
+        ['deferred.md', 'archive.md', target.name])
+    assert '- [x] a' in archive_path.read_text(encoding='utf-8')
+    assert '- [x] a' not in live_path.read_text(encoding='utf-8')

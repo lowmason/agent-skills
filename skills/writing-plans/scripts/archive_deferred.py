@@ -19,7 +19,8 @@ note moves at any age.
   next item, heading or column-0 line. Its lines move byte for byte.
 - A moved item goes to the end of its section in the archive, matched by the
   whole heading line. A heading the archive lacks is created in date order, and
-  undated headings sort last. A heading may stand in both files while its section
+  undated headings sort last. On a shared date, plan ids sort first as numbers,
+  then headings with no id, each tie broken by the heading text. A heading may stand in both files while its section
   drains.
 - When a section's last item leaves, the whole section leaves the live file: its
   heading, its preamble and any prose between its items. That prose goes to the
@@ -49,7 +50,8 @@ the `# Deferred items` title line. Both files are written through temporary
 files and renames, archive first. When the second rename fails, the archive is
 put back, so both files change or neither does, and the count line prints only
 after both are in place. Each file keeps its mode; a new archive gets the mode
-a plain `open` would give it.
+a plain `open` would give it. A symlink at either path is written at its target
+and stays a link.
 '''
 
 from __future__ import annotations
@@ -57,6 +59,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -84,6 +87,7 @@ from deferred_stats import (
 SCAN_FROM = dt.date(2026, 10, 30)
 CLOSURE_KINDS = frozenset({'done', 'retired', 'removed'})
 ARCHIVE_TITLE = '# Deferred items\n'
+PLAN_ID = re.compile(r'##\s+(\d+)-')
 
 
 @dataclass
@@ -104,13 +108,27 @@ class Section:
         return _content(self.heading).rstrip()
 
     @property
-    def sort_key(self) -> tuple[int, dt.date]:
+    def sort_key(self) -> tuple[int, dt.date, tuple]:
         match = SECTION_RE.match(_content(self.heading))
         date = _parse_date(match.group('date')) if match else None
-        return (1, dt.date.max) if date is None else (0, date)
+        return (1, dt.date.max, ()) if date is None else (0, date, _same_date_order(self.key))
 
     def lines(self) -> list[str]:
         return [line for segment in self.segments for line in segment.lines]
+
+
+def _same_date_order(heading: str) -> tuple:
+    '''The order of archive sections that share a date, from the heading line.
+
+    Headings look like `## 20-bayesian-workflow-book-integration — 2026-09-03`
+    (a plan id first) or `## audit-3-10-26 routing (no plan; …) — 2026-10-18`
+    (no id). Numbered sections come first, by id as an integer (`9` before
+    `10`); sections with no id follow them, as pass sections follow the plans
+    in the live file. The heading text breaks any tie left, so the order never
+    depends on the order the script meets the sections.
+    '''
+    match = PLAN_ID.match(heading)
+    return (0, int(match.group(1)), heading) if match else (1, 0, heading)
 
 
 def _content(line: str) -> str:
@@ -369,8 +387,10 @@ def _write_both(live_path: Path, live: str, archive_path: Path, archived: str) -
 
     Both temporary files are written before either rename. When the live rename
     fails after the archive's, the archive gets its old bytes back, or is removed
-    when it did not exist before, so a re-run never moves an item twice.
+    when it did not exist before, so a re-run never moves an item twice. A path
+    that is a symlink is written at its target, so the link stays.
     '''
+    live_path, archive_path = _link_target(live_path), _link_target(archive_path)
     made_folder = not archive_path.parent.exists()
     failing, staged = archive_path, []
     try:
@@ -404,6 +424,14 @@ def _write_both(live_path: Path, live: str, archive_path: Path, archived: str) -
                 f'{archive_path} is changed and holds the moved items, '
                 f'{live_path} is unchanged')
     return f'{failure}; both files are unchanged'
+
+
+def _link_target(path: Path) -> Path:
+    '''The file a symlink names, or `path` itself when it is not a symlink.
+
+    Only a link is resolved, so a plain path keeps its spelling in messages.
+    '''
+    return path.resolve() if path.is_symlink() else path
 
 
 def _remove_folder(folder: Path) -> None:

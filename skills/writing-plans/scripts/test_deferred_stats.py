@@ -268,6 +268,23 @@ def test_real_held_after_a_span_with_a_longer_run_is_not_masked():
     assert aging_state(item, retired) == ('held', None)
 
 
+# Plan 74 loose ends: a blank line ends a paragraph, and a code span never crosses
+# one, so a stray backtick on each side of a blank line pairs with nothing.
+@pytest.mark.parametrize('gap, notes', [
+    ('\n', [Note('held', dt.date(2026, 10, 1), 'vendor fix')]),
+    ('', []),  # control: inside one paragraph the two backticks make one span
+])
+def test_backtick_pairs_only_inside_its_paragraph(gap, notes):
+    text = one_section(
+        '- [ ] Work with a stray ` backtick.\n'
+        f'{gap}'
+        '      → held 2026-10-01: vendor fix\n'
+        '      A second ` stray.'
+    )
+    (item,) = parse_items(text)
+    assert item.notes == notes
+
+
 # Step 4b review: a fenced block is masked as a block, by the deferral scan's own fence
 # rule, so a fence closed by a longer run (valid Markdown) keeps its quoted notes quoted.
 @pytest.mark.parametrize('opener, closer', [('```', '````'), ('~~~', '~~~~')])

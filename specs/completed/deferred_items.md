@@ -123,27 +123,6 @@
       specs/completed/delegation-frontmatter-rollout.md Req 3/Req 5.
 
 ## 12-audit_7_20_26 — 2026-07-20
-- [x] QCEW datatype-05 label unverified (final-review Minor (f), partially resolved):
-      the hub's claim that datatype 05 is "average annual pay" was dropped to the verified
-      "its annual-only datatype carries `A01`" (period structure confirmed live via BLS API
-      v1: `ENUUS00050010` returns only `A01`). The *label* remains unconfirmed because
-      `download.bls.gov` returns 403 from this environment and `references/qcew.md` documents
-      no datatype codes. Restore the specific label once BLS is reachable, or add a datatype
-      table to `qcew.md` so the hub has a quotable line to derive from.
-      → done 2026-09-03 (/deferred quick fix): verified and restored. The owner authorised
-      using their contact email in the User-Agent, which cleared the 403. Two independent
-      sources agree that **datatype 5 = Average Annual Pay**: the live CEW classifications
-      table (bls.gov/cew/classifications/datatype/datatype-titles.htm, fetched 2026-09-03)
-      and `en.type` inside the archived `en_meta.zip`. `references/qcew.md` gained a datatype
-      table with both sources, and the hub's reference index advertises it. The hub now names
-      average annual pay as the annual-only datatype, code `5`, whose cells carry `A01` — the
-      datatype and the period code are deliberately kept distinct, since `A01` is a period code
-      and an earlier draft of this fix conflated the two. Two corrections the item did not anticipate:
-      the code is `5`, **one character at series-ID position 9, not the zero-padded `05`**;
-      and the old routes are gone, not merely blocked — `/pub/time.series/en/` 404s (no `en`
-      directory at all, and Wayback has no `en.datatype` capture) and `help/hlpforma.htm` no
-      longer documents the ENU format.
-      → removed 2026-10-27: skill archived (lowmason/agent-skills#121)
 - [x] Deep-ensembles notebook mispairing (final-review Minor (h), gate-batch deferred):
       `skills/recommend-probabilistic-model/references/families/classification.md`'s
       "Deep ensembles" row cites `PML2 §17.3.9` (a Bayesian-NN posterior-approximation
@@ -183,6 +162,27 @@
       then it draws review attention on every pass.
       → done 2026-09-02 (/deferred quick fix): recorded in KNOWN_GOOD_FALLBACKS in
       build/verify_citations.py, test-first; Gate A now runs with no stderr.
+- [x] QCEW datatype-05 label unverified (final-review Minor (f), partially resolved):
+      the hub's claim that datatype 05 is "average annual pay" was dropped to the verified
+      "its annual-only datatype carries `A01`" (period structure confirmed live via BLS API
+      v1: `ENUUS00050010` returns only `A01`). The *label* remains unconfirmed because
+      `download.bls.gov` returns 403 from this environment and `references/qcew.md` documents
+      no datatype codes. Restore the specific label once BLS is reachable, or add a datatype
+      table to `qcew.md` so the hub has a quotable line to derive from.
+      → done 2026-09-03 (/deferred quick fix): verified and restored. The owner authorised
+      using their contact email in the User-Agent, which cleared the 403. Two independent
+      sources agree that **datatype 5 = Average Annual Pay**: the live CEW classifications
+      table (bls.gov/cew/classifications/datatype/datatype-titles.htm, fetched 2026-09-03)
+      and `en.type` inside the archived `en_meta.zip`. `references/qcew.md` gained a datatype
+      table with both sources, and the hub's reference index advertises it. The hub now names
+      average annual pay as the annual-only datatype, code `5`, whose cells carry `A01` — the
+      datatype and the period code are deliberately kept distinct, since `A01` is a period code
+      and an earlier draft of this fix conflated the two. Two corrections the item did not anticipate:
+      the code is `5`, **one character at series-ID position 9, not the zero-padded `05`**;
+      and the old routes are gone, not merely blocked — `/pub/time.series/en/` 404s (no `en`
+      directory at all, and Wayback has no `en.datatype` capture) and `help/hlpforma.htm` no
+      longer documents the ENU format.
+      → removed 2026-10-27: skill archived (lowmason/agent-skills#121)
 
 ## 13-llm-wiki — 2026-07-22
 Deferred from the final adversarial linter audit (all in the plan's verbatim regexes;
@@ -769,6 +769,47 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       alt-nfp as of 2026-08-02 (f87a134, 89c8b7f) and now live under
       `specs/completed/`. `git -C ../alt-nfp status --short -- specs/` is clean.
 
+## 20-bayesian-workflow-book-integration — 2026-09-03
+- [x] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
+      (final-review Minor, triaged defer): the "What that call actually draws" paragraph in
+      `skills/bayesian-workflow/references/model-criticism.md` (SBC section, ~line 189) is one
+      ~10-sentence block of version-pinned detail (the `rcParams["stats.envelope_prob"]` fallback,
+      the `method="envelope"` deprecation warning, a TypeError seen on this stack). Accurate
+      today, and its accuracy is the point; when the pot_c/envelope situation settles upstream,
+      keep the one durable instruction (read the p-value and the highlighted points, not a
+      picture of a band) and shrink the version notes to a clause.
+      **Widened 2026-09-28 (/deferred, owner's call to fold it in here):** the same
+      pot_c/envelope split reaches `skills/bayesian-workflow/scripts/calibration_check.py`.
+      On arviz-plots 1.3.2 (1.3.2 is out; the snippet preamble still pins 1.3.1)
+      `plot_ppc_pit` and `plot_loo_pit` both default to `method="pot_c"`, and
+      `save_pit_plot` passes `envelope_prob` but never `method`, so the saved figures run the
+      pot_c uniformity test while the JSON's `*_inside_bands` verdicts come from the
+      envelope band (`difference_ecdf_pit` / `ecdf_pit`). The two can disagree near the
+      edge. Two docstrings claim otherwise: `assess_calibration` ("the same ΔECDF +
+      simultaneous bands as the plots") and `save_pit_plot` ("the bounds themselves feed
+      the *_inside_bands values"). Settle both sites together with the model-criticism.md
+      paragraph once upstream settles: either correct the docstrings to name the split, or
+      move the JSON verdict to the method the plots use.
+      → done in plan 34 (the calibration_check.py half); the model-criticism.md half carries
+      forward as the SBC-paragraph item under § 34-calibration-check-verdicts
+- [x] `sbc_rank` sketch breaks on scalar parameters (final-review Minor; pre-existing and
+      re-shipped verbatim by plan 20's own replacement text): in
+      `skills/bayesian-workflow/references/model-criticism.md`, `draws[..., idx]` and
+      `theta_true[idx]` assume a vector site — for a scalar site `draws` is 1-D and
+      `theta_true[idx]` raises on a 0-d array. Fix by running it (this skill's history,
+      c707a48, is a recipe that shipped unrun): e.g. `np.atleast_1d` on both, plus the scalar
+      case in the prose.
+      → done 2026-09-03 (/deferred quick fix): fixed and, per the item's own instruction,
+      actually run. **The recorded remedy above is wrong — do not follow it.** `np.atleast_1d`
+      on both is a no-op on a scalar site's `(L,)` draws array, so `draws[..., idx]` still
+      indexes the *draw* axis: 200 replications returned only {0, 1} (chi2 = 1901.9, p = 0.000).
+      Shipping it verbatim would have traded a loud crash for a silently wrong SBC conclusion.
+      The fix needs a second guard, `draws.reshape(draws.shape[0], -1)`, alongside the
+      `atleast_1d`. Verified by extracting the sketch text from the edited file and executing
+      it: scalar and vector sites both return well-spread ints in [0, L]. The 11 bayesian-
+      workflow script tests still pass. Standing gap, not closed: no bundled suite covers this
+      reference file, so the recipe can regress silently again.
+
 ## 21-audit_9_2_26 — 2026-09-03
 - [x] Audit H2 — `skills/geographic-codes/scripts/build.py:210` emits 7 polars
       `FutureWarning`s through the fastexcel engine (`pl.read_excel(...).select(...)`;
@@ -886,47 +927,6 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       changing `<= tlvl` to `< tlvl` leaves all 14 green, because `### Task 2` is terminated
       by the Task-heading rule before the level comparison is consulted. `CLAUDE.md`'s test
       counts were synced in the same pass (this suite 11 → 14, design-architecture 8 → 9).
-
-## 20-bayesian-workflow-book-integration — 2026-09-03
-- [x] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
-      (final-review Minor, triaged defer): the "What that call actually draws" paragraph in
-      `skills/bayesian-workflow/references/model-criticism.md` (SBC section, ~line 189) is one
-      ~10-sentence block of version-pinned detail (the `rcParams["stats.envelope_prob"]` fallback,
-      the `method="envelope"` deprecation warning, a TypeError seen on this stack). Accurate
-      today, and its accuracy is the point; when the pot_c/envelope situation settles upstream,
-      keep the one durable instruction (read the p-value and the highlighted points, not a
-      picture of a band) and shrink the version notes to a clause.
-      **Widened 2026-09-28 (/deferred, owner's call to fold it in here):** the same
-      pot_c/envelope split reaches `skills/bayesian-workflow/scripts/calibration_check.py`.
-      On arviz-plots 1.3.2 (1.3.2 is out; the snippet preamble still pins 1.3.1)
-      `plot_ppc_pit` and `plot_loo_pit` both default to `method="pot_c"`, and
-      `save_pit_plot` passes `envelope_prob` but never `method`, so the saved figures run the
-      pot_c uniformity test while the JSON's `*_inside_bands` verdicts come from the
-      envelope band (`difference_ecdf_pit` / `ecdf_pit`). The two can disagree near the
-      edge. Two docstrings claim otherwise: `assess_calibration` ("the same ΔECDF +
-      simultaneous bands as the plots") and `save_pit_plot` ("the bounds themselves feed
-      the *_inside_bands values"). Settle both sites together with the model-criticism.md
-      paragraph once upstream settles: either correct the docstrings to name the split, or
-      move the JSON verdict to the method the plots use.
-      → done in plan 34 (the calibration_check.py half); the model-criticism.md half carries
-      forward as the SBC-paragraph item under § 34-calibration-check-verdicts
-- [x] `sbc_rank` sketch breaks on scalar parameters (final-review Minor; pre-existing and
-      re-shipped verbatim by plan 20's own replacement text): in
-      `skills/bayesian-workflow/references/model-criticism.md`, `draws[..., idx]` and
-      `theta_true[idx]` assume a vector site — for a scalar site `draws` is 1-D and
-      `theta_true[idx]` raises on a 0-d array. Fix by running it (this skill's history,
-      c707a48, is a recipe that shipped unrun): e.g. `np.atleast_1d` on both, plus the scalar
-      case in the prose.
-      → done 2026-09-03 (/deferred quick fix): fixed and, per the item's own instruction,
-      actually run. **The recorded remedy above is wrong — do not follow it.** `np.atleast_1d`
-      on both is a no-op on a scalar site's `(L,)` draws array, so `draws[..., idx]` still
-      indexes the *draw* axis: 200 replications returned only {0, 1} (chi2 = 1901.9, p = 0.000).
-      Shipping it verbatim would have traded a loud crash for a silently wrong SBC conclusion.
-      The fix needs a second guard, `draws.reshape(draws.shape[0], -1)`, alongside the
-      `atleast_1d`. Verified by extracting the sketch text from the edited file and executing
-      it: scalar and vector sites both return well-spread ints in [0, L]. The 11 bayesian-
-      workflow script tests still pass. Standing gap, not closed: no bundled suite covers this
-      reference file, so the recipe can regress silently again.
 
 ## 22-sdd-hardening — 2026-09-03
 - [x] M1 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py:89-144`:
