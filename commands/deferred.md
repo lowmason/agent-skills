@@ -53,7 +53,10 @@ backlog (derive-roadmap's gap rubric records the same boundary).
    - **Triggered** → not a disposition. For each item the user selects from
      the proposed `→ triggered` notes (rubric step 3), whatever its
      disposition, write `→ triggered <YYYY-MM-DD>: <what happened>`. A fired
-     signal never makes the item Retire.
+     signal never makes the item Retire. When the pass also holds that item,
+     write `→ triggered` first and the Hold note after it. On a date tie the
+     note written later sets the item's state, and the Hold is the decision
+     made with the signal in view.
 
    End the pass by running the writing-plans skill's
    `scripts/archive_deferred.py` with `uv run`. It moves ticked items more

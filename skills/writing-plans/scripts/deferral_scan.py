@@ -231,6 +231,8 @@ FENCE_OPEN = re.compile(r'^\s*(?:(?:[-*]|\d+\.)\s+)?(`{3,}|~{3,})(.*)$')
 LIST_ITEM = re.compile(r'^\s*(?:[-*]|\d+\.)\s')
 HEADING = re.compile(r'^\s{0,3}#{1,6}(?:\s|$)')
 BACKTICK_RUN = re.compile(r'`+')
+# A blank line, kept by `re.split` through the group, so the parts rejoin unchanged.
+PARAGRAPH_BREAK = re.compile(r'(\n[ \t]*\n)')
 # An underscore with a non-alphanumeric character on either side opens or closes
 # emphasis (`_the fix is deferred_`); one between two letters or digits is part of
 # a word (`is_deferred`). `\b` counts `_` as a word character, so emphasis
@@ -337,12 +339,14 @@ def blank_code(text: str) -> str:
     '''Replace each fenced block, then each inline code span, with spaces.
 
     Offsets and newlines stay. The scan's own fence rule decides where a block
-    ends, so a fence closed by a longer run is closed.
+    ends, so a fence closed by a longer run is closed. A span never crosses a
+    blank line, which ends a Markdown paragraph, so each paragraph pairs its
+    own backticks.
     '''
     lines = text.split('\n')
     kept = [line if readable else ' ' * len(line)
             for line, readable in zip(lines, _readable_lines(lines))]
-    return _blank_code_spans('\n'.join(kept))
+    return ''.join(_blank_code_spans(part) for part in PARAGRAPH_BREAK.split('\n'.join(kept)))
 
 
 def _without_exempt(line: str) -> str:
