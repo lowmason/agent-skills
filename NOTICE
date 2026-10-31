@@ -443,10 +443,11 @@ Changes from upstream:
   - A Codex second-opinion review seat was added: a concurrent Codex CLI
     review (`codex exec review --base`, pinned to a read-only sandbox)
     beside the code-reviewer subagent at subagent-driven-development's
-    final whole-branch review; at a new whole-plan review step (Step 3) in
-    executing-plans, which as vendored ran no code review at all -- only a
-    critical read of the plan; and as a merge/PR gate at Step 4b of
-    finishing-a-development-branch. The recipe all three follow,
+    final whole-branch review; at executing-plans' whole-plan review (now
+    in its `references/final-review.md`), a skill which as vendored ran no
+    code review at all -- only a critical read of the plan; and as a
+    merge/PR gate at Step 4b of finishing-a-development-branch. The
+    recipe all three follow,
     requesting-code-review/codex-review.md, is an original work by Lowell
     Mason under the same MIT terms.
   - writing-plans gained a second reporter not present upstream:
@@ -467,9 +468,9 @@ Changes from upstream:
     section of the plan, saying who took each, when, and where it
     applies, beside a local section for starting from a handoff brief.
     A decision that changes the spec becomes a tagged amendment task,
-    never an edit made during planning. And there is no Native mode:
-    this repo's executing-plans is not ported (finding 11 of
-    specs/superpowers-drift-spec.md).
+    never an edit made during planning. And there is no Native mode.
+    executing-plans was later ported from upstream (plan 75, finding 11
+    of specs/superpowers-drift-spec.md), as the entry below records.
   - writing-plans' Plan Completion Protocol gained a step 3a, and
     subagent-driven-development and executing-plans a closing handoff,
     for a plan that is a stage of a derive-roadmap roadmap. The plan
@@ -771,6 +772,20 @@ Changes from upstream:
     Each script's header names the other. The pytest file is this
     repository's own. Its cases adapt upstream's
     tests/claude-code/test-executing-plans-scripts.sh.
+  - executing-plans was rebuilt from upstream v7.0.1, read at 2ce8aa1
+    (#2318, with #2563's cut) (plan 75). It keeps these local parts. Its
+    routing is by tight coupling, not by cost. Its workspace is under
+    `.sdd/`, and its ledger starts with the `Plan:` line. It refuses the
+    ledger of another plan. Pre-flight conflicts go to the partner in one
+    batched question. It keeps the base-branch start record. Its final
+    review has two seats, code-reviewer and Codex. The partner rules on the
+    final review's Declined to judge lines. There is no Minor tier. The
+    gate lists every ruling. The five stops include the scope fence. The
+    plan-completion, finishing and roadmap-handoff steps stay, now in
+    executing-plans/references/final-review.md.
+  - Upstream's evaluation repository, prime-radiant-inc/superpowers-evals,
+    is credited for plan 75 as an idea only. It carries no license, and no
+    text or fixture comes from it.
 
     brainstorming/
     dispatching-parallel-agents/
