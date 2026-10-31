@@ -5674,8 +5674,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       a clause such as `X and nothing else is deferred`, a bare `no` after a
       semicolon or full stop, `beyond` and `, only` after the verb, and an
       abbreviation followed by a sentence start; it also flags the clean
-      `Done. *Nothing is deferred.*` and its underscore form. Closing each
-      flagged clean prose or the Task 4 probes. Touches
+      `Done. *Nothing is deferred.*` and its underscore form. Closing any of
+      those gaps would flag clean prose or a Task 4 probe. Touches
       skills/writing-plans/scripts/deferral_scan.py (its docstring lists the
       gaps). Size: design. Revisit if: a retired file loses a deferral through
       one of these gaps, or the lint blocks clean prose more than once.
