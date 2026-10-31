@@ -13,6 +13,13 @@ Plan 70 (2026-10-28) re-baselined finding 4 (brainstorming) to v7.0.1
 anchor. The 2026-10-03 revision brought it to v6.4.2; the first pass
 (2026-09-03, against v6.3.0) lived at `specs/superpowers-drift-2026-09-03.md`
 until that revision renamed it.
+A re-anchor on 2026-10-31 re-took the local anchors of findings 7, 11 and 13,
+which plans 71–73 had moved by splitting SDD into `references/` files and adding
+to executing-plans' Step 3. Upstream had not changed those three skills on
+`main` or `dev` since v7.0.1, so their upstream anchors stand, and every local
+claim still held at its new place. It also re-took finding 12's ledger-collision
+anchor, which the port's shared workspace depends on. New local anchors name the
+file, and the line numbers are hints.
 Finding numbers never change, because other documents cite them (`NOTICE`,
 `specs/completed/sdd-hardening.md`, `specs/completed/handoff-briefs.md`,
 `specs/completed/audit-3-10-26.md`).
@@ -26,7 +33,7 @@ and findings from v7.0.1 start at 17.
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
 | Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. No single baseline for plan 50 (2026-10-18), which read each fix at its own commit: `6015d37` and `c8921b5` (v6.2.0) for finding 8, `99f9f00` (v6.4.1) and `19e54c0` (v7.0.0) for finding 12, and `ddd35ab` and `e592b34` (v7.0.0) for finding 16. `bb92a77` (v7.0.0) for finding 8's untracked-file guard, which plan 60 adopted as an idea with no upstream text. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted. `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted, and for its writing-skills file map, which plan 72 adopted |
 | Previous review | `bb92a77` (v7.0.0, 2026-10-09), reviewed 2026-10-18 |
-| Upstream HEAD | `2ce8aa1` (v7.0.1, 2026-10-21), still `main` on 2026-10-28 |
+| Upstream HEAD | `2ce8aa1` (v7.0.1, 2026-10-21), still `main` on 2026-10-31 |
 | Commits since previous review | 2 on `main`: `b739a8a`, the contribution templates (its title cites #2570, the release notes cite #2569), and the release squash merge `2ce8aa1` (#2581). On upstream's `dev` branch, #2560 came in as merge `2efc1e4` of 9 commits, and #2569 as merge `f649ac5` of 1 commit |
 | Files changed under `skills/` since previous review | 22 (+705 / −667). Without brainstorming's `SKILL.md`: 21 (+594 / −625) |
 | Unreleased skill work | None: on 2026-10-28 `dev` differs from `2ce8aa1` in 11 files (hooks, the Pi extension, the Muse manifest, docs and release notes), none under `skills/` |
@@ -337,18 +344,26 @@ the final message instead ("Rulings I made"). Equivalent in effect; no action.
 gate "this skill's one deliberate human [checkpoint]". Re-read at the same
 commit (`5e5983d`), that sentence is about the plan-completion protocol's
 resolve-before-defer gate — the batch that pending plan-mandated questions fold
-into (now `:250-258`). Asking at pre-flight is still a local design choice, but
-not the one that quote named, so the tension is narrower than first stated.
+into (now
+`skills/subagent-driven-development/references/final-review.md:30-36`). Asking
+at pre-flight is still a local design choice, but not the one that quote named,
+so the tension is narrower than first stated.
 
-**What plan 22 brought.** Rulings now exist in one place: fix-round
-adjudication records `Ruling: <what you decided> — <why> — <what it costs if
-wrong>` and stops for the partner "only when every path forward is a guess"
-(`:243-246`) — upstream's format and one of its four stops.
+**What plan 22 brought.** Rulings now exist in one place: fix-round adjudication
+records `Ruling: <what you decided> — <why> — <what it costs if wrong>` and
+stops for the partner "only when every path forward is a guess"
+(`skills/subagent-driven-development/references/fix-loop.md:29-32`) — upstream's
+format and one of its four stops.
 
-**What still asks.** Pre-flight (`:149-161`) presents conflicts as one batched
-question before execution, and a clean scan proceeds "without comment" where
-upstream's #2080 records the scan's checks in the ledger. Mid-run, a reviewer
-finding that conflicts with plan text is "the human's decision" (`:320-324`).
+**What still asks.** Pre-flight
+(`skills/subagent-driven-development/references/preflight.md:5-15`, which
+`SKILL.md:140-142` points to) presents conflicts as one batched question before
+execution, and a clean scan proceeds "without comment" where upstream's #2080
+records the scan's checks in the ledger. Mid-run, a reviewer finding that
+conflicts with plan text is "the human's decision"
+(`skills/subagent-driven-development/references/fix-loop.md:51-55`). On
+2026-10-31 that text was unchanged: the owner's ruling below is not yet applied,
+and the port spec carries it.
 
 Upstream v6.3.0 lets non-catastrophic conflicts take a recorded ruling so work
 continues, with the spec as binding authority and the plan its argument.
@@ -626,16 +641,17 @@ adopted this handoff half without Native mode
 (`specs/completed/handoff-briefs.md` R2.2–R2.4); the executing-plans port below
 stays open.
 
-Ours (`executing-plans/SKILL.md`, 146 lines) has no workspace or ledger.
+Ours (`skills/executing-plans/SKILL.md`, 151 lines) has no workspace or ledger.
 Progress lives in todos, so a `/clear` or compaction mid-plan loses its place —
 the failure plan 22 fixed for SDD. It stops on any unclear instruction, and its
 description routes it to tightly coupled plans rather than to cost.
 
 It also carries local work upstream lacks:
 
-- Step 1's record of the base-branch start (item 5, `:31-41`).
+- Step 1's record of the base-branch start (item 5, `:32-43`).
 - Step 3's two-seat whole-plan review (code-reviewer plus Codex, worked through
-  receiving-code-review; `:51-77`).
+  receiving-code-review; `:52-83`). Plan 73 (`6b2033b`) added its hand-over
+  of the spec, the Review Focus section and the Declined to judge lines.
 - The plan-completion protocol (Step 4) and the roadmap-stage handoff (Step 6,
   added by plan 40).
 
@@ -656,12 +672,12 @@ the rebuilt skill's 52-line Example Workflow, which repeated rules stated above
 it and left the file 405 bytes over 20,000. Its eval found no change: 8 of 8
 inline runs passed on each arm, on Opus 5.5. Our copy is the pre-rebuild file
 and never had that section, so #2563 needs no action on it. It does constrain
-the port. Upstream's body is now 17,783 characters. Our local pieces above
-(Step 1's item 5 and Steps 3, 4 and 6) come to about 3,600 more, about 21,400
-in all. Our two-seat review would replace part of upstream's 3,248-character
-Final Review, which wins some of that back, but the port has little headroom
-or none. Its spec should plan a `references/` split from the start (finding
-17).
+the port. Upstream's body is now 17,783 characters. Our local pieces above (Step
+1's item 5 and Steps 3, 4 and 6) come to about 3,900 more (3,889 measured
+2026-10-31), about 21,700 in all. Our two-seat review would replace part of
+upstream's 3,248-character Final Review, which wins some of that back, but the
+port has little headroom or none. Its spec should plan a `references/` split
+from the start (finding 17).
 
 Native mode on a mid-tier session model matches this repo's routing, where
 execution runs in a fresh session on a model chosen at launch.
@@ -697,15 +713,15 @@ Four upstream fixes to the scripts plan 22 touched, judged separately:
   The probe confirms that `docs/alpha/plan.md` and `docs/beta/plan.md` both
   resolve to `.sdd/plan`. The 2026-09-03 completion gate handled this as
   deferred item M2. It recorded the assumption in `sdd-workspace:31-38`, and
-  relies on the ledger's `Plan:` first line to make a collision visible
-  rather than silent, with "stop and say so" on a mismatch (`SKILL.md:400-402`,
-  `:410-413`). Upstream (#2138, #2045) prevents the collision outright: a
-  `plan-path` marker, disambiguation by parent directory and then a counter,
-  and legacy workspaces adopted in place. Exposure here stays low, because a
-  collision needs the same `<id>-<spec-name>` in the same working tree.
-  Upstream's scheme is the ready port if M2 is revisited, together with
-  v7.0.0's Git Bash fix to its markers (`2b7893a`), which spells the
-  repository root the way it spells the plan path.
+  relies on the ledger's `Plan:` first line to make a collision visible rather
+  than silent, with "stop and say so" on a mismatch (SDD `SKILL.md:270-273` and
+  `references/resuming.md:5-7`; re-anchored 2026-10-31). Upstream (#2138, #2045)
+  prevents the collision outright: a `plan-path` marker, disambiguation by
+  parent directory and then a counter, and legacy workspaces adopted in place.
+  Exposure here stays low, because a collision needs the same `<id>-<spec-name>`
+  in the same working tree. Upstream's scheme is the ready port if M2 is
+  revisited, together with v7.0.0's Git Bash fix to its markers (`2b7893a`),
+  which spells the repository root the way it spells the plan path.
 - **Interpreter invocation (#2301) — low.** Upstream prefixes `bash` and `node`
   because some marketplace packagers strip exec bits. Our installs keep them:
   symlinks do, and `install.py --copy` uses `shutil.copy2`. The live issue in
@@ -725,8 +741,9 @@ unseen. TDD now says three things:
 - Every failure is reported by name, including ones the session didn't cause.
 
 Our SDD implementer already runs "the full suite once before committing"
-(`implementer-prompt.md:50-51`). Standalone TDD stops at "Other tests fail? Fix
-now." (`test-driven-development/SKILL.md:171`), and executing-plans names no
+(`skills/subagent-driven-development/implementer-prompt.md:50-51`). Standalone
+TDD stops at "Other tests fail? Fix now."
+(`skills/test-driven-development/SKILL.md:176`), and executing-plans names no
 suite at all.
 
 **Upstream's wording is wrong for this repo.** It says to run "bare `pytest`".
