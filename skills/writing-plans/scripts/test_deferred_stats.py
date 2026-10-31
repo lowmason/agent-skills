@@ -9,6 +9,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+import pytest
+
 from deferred_stats import (
     Note,
     aging_state,
@@ -260,6 +262,34 @@ def test_real_held_after_a_span_with_a_longer_run_is_not_masked():
         '- [ ] Work ``a```b`` item.\n'
         '      → held 2026-10-01: vendor fix\n'
         '      Quote `x` here.'
+    )
+    (item,) = parse_items(text)
+    assert item.notes == [Note('held', dt.date(2026, 10, 1), 'vendor fix')]
+    assert aging_state(item, retired) == ('held', None)
+
+
+# Step 4b review: a fenced block is masked as a block, by the deferral scan's own fence
+# rule, so a fence closed by a longer run (valid Markdown) keeps its quoted notes quoted.
+@pytest.mark.parametrize('opener, closer', [('```', '````'), ('~~~', '~~~~')])
+def test_quoted_held_in_a_fence_closed_by_a_longer_run_sets_no_state(opener, closer):
+    text = one_section(
+        '- [ ] Work item with a quoted example.\n'
+        f'      {opener}\n'
+        '      → held 2026-10-01: example\n'
+        f'      {closer}'
+    )
+    (item,) = parse_items(text)
+    assert item.notes == []
+    assert aging_state(item, retired) == ('work', NINETY_DAYS_AGO)
+
+
+def test_real_held_after_a_closed_fence_is_not_masked():
+    text = one_section(
+        '- [ ] Work item with an example.\n'
+        '      ```\n'
+        '      → held 2026-09-01: quoted\n'
+        '      ````\n'
+        '      → held 2026-10-01: vendor fix'
     )
     (item,) = parse_items(text)
     assert item.notes == [Note('held', dt.date(2026, 10, 1), 'vendor fix')]

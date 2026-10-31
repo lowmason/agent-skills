@@ -72,7 +72,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from deferral_scan import _blank_code_spans
+from deferral_scan import blank_code
 
 DEFAULT_AGED_DAYS = 45
 VOLUME_THRESHOLD = 20
@@ -146,13 +146,14 @@ def path_is_live(path: str) -> bool:
 
 
 def _mask_code(text: str) -> str:
-    '''Blank every inline code span (newlines kept), so offsets stay valid.
+    '''Blank every fenced block and inline code span (newlines kept), so offsets stay valid.
 
-    A note form quoted in backticks is prose about the protocol, not a note. A
-    span closes only on a backtick run of its opening run's length, the deferral
-    scan's own rule, so a longer run inside a span does not end it.
+    A note form quoted in code is prose about the protocol, not a note. The
+    deferral scan's own rules decide where code ends: a fence closes on a run at
+    least as long as its opener, and a span closes only on a backtick run of its
+    opening run's length, so a longer run inside a span does not end it.
     '''
-    return _blank_code_spans(text)
+    return blank_code(text)
 
 
 def _find_notes(text: str, masked: str) -> list[tuple[int, int, Note]]:

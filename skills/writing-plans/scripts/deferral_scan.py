@@ -315,6 +315,18 @@ def _blank_code_spans(text: str, keep_opener: bool = False) -> str:
     return ''.join(chars)
 
 
+def blank_code(text: str) -> str:
+    '''Replace each fenced block, then each inline code span, with spaces.
+
+    Offsets and newlines stay. The scan's own fence rule decides where a block
+    ends, so a fence closed by a longer run is closed.
+    '''
+    lines = text.split('\n')
+    kept = [line if readable else ' ' * len(line)
+            for line, readable in zip(lines, _readable_lines(lines))]
+    return _blank_code_spans('\n'.join(kept))
+
+
 def _without_exempt(line: str) -> str:
     '''Blank the protocol's exempt text in a line, keeping its length.'''
     if STATUS_HEADER.match(line.strip()):

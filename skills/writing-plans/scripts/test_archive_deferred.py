@@ -144,6 +144,22 @@ def test_removed_item_moves_at_any_age():
     assert '- [x] i → done 2026-12-30: fixed' in live
 
 
+FENCED_REMOVED = '''# Deferred items
+
+## 9-a — 2026-12-30
+- [x] j → done 2026-12-30: fixed
+  ```
+  → removed 2026-12-30: a quoted example
+  ````
+'''
+
+
+def test_removed_note_quoted_in_a_fence_closed_by_a_longer_run_does_not_move_the_item():
+    live, archived, _ = run(FENCED_REMOVED)
+    assert '- [x] j → done 2026-12-30: fixed' in live
+    assert '- [x] j' not in archived
+
+
 MIXED_SECTION = '''# Deferred items
 
 ## 9-a — 2026-09-01
