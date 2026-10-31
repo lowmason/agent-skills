@@ -47,11 +47,11 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-10-31): approve plan 75 as written, with every Open for plan review item, including item 11's proposed rewording of the three cost-framed passages to the O1 reason. Applied in: Open for plan review, Task 5 Step 3.
 
 ## Open for plan review
 
-Each item is the planner's call unless marked. All wait for the owner's approval at plan review.
+All twelve items were approved as written by D1 (2026-10-31).
 
 1. **One plan (default flagged by the brief).** Units 1 and 3 are the first wording tasks (Tasks 2 and 3), after Task 1 takes every control arm at the plan's base. A second plan would add a second completion protocol and buys no parallelism, since one execution runs at a time.
 2. **Controls at one base.** Every control arm reads its texts at the plan's base SHA (Task 1 Step 6). The spec's "the commit before the change" is the same SHA for every unit, because no wording lands before Task 2.
@@ -64,7 +64,7 @@ Each item is the planner's call unless marked. All wait for the owner's approval
 9. **Orphan check.** `check_conformance.py` exits 1 on any finding, and test files do not count as namers. So each script's header comment names its partner script (one line each, a local change credited in NOTICE). Without it, Task 4's commit fails `orphan-bundled-file`.
 10. **Spend.** 16 cases × 2 arms × 5 reps = 160 reps. Plan 74 paid $0.96 for 27 control reps on shorter texts. At up to $0.15 a rep this is about $24, under the $40 stop. The control arm stops at $20.
 
-11. **Cost framing (owner question).** Three upstream passages kept by the port justify inline execution by cost: the "Why inline" paragraph, the Continuous execution paragraph ("They chose inline execution to spend less"), and the check-in row's reality ("They chose inline to spend less"). Under O1 the partner chooses inline for tight coupling, so these read against O1. Proposed: reword the three to the O1 reason (one shared context for coupled tasks; the partner chose it), keeping their claims about stalls and check-ins. Task 5 Step 3 applies the owner's answer.
+11. **Cost framing (owner question).** Three upstream passages kept by the port justify inline execution by cost: the "Why inline" paragraph, the Continuous execution paragraph ("They chose inline execution to spend less"), and the check-in row's reality ("They chose inline to spend less"). Under O1 the partner chooses inline for tight coupling, so these read against O1. Proposed: reword the three to the O1 reason (one shared context for coupled tasks; the partner chose it), keeping their claims about stalls and check-ins. Approved by D1: Task 5 Step 3 applies the rewording.
 12. **SDD ask text (checked).** A grep of `skills/subagent-driven-development/` for `plan-mandated`, `without asking`, `ask which governs` and `human's decision` finds only `fix-loop.md:51-55` and `final-review.md:35`, which Task 3 changes, and `task-reviewer-prompt.md:268`, which labels a finding and asks nothing. No other SDD text contradicts the new bullet.
 
 ## Overlapping backlog items
@@ -394,7 +394,7 @@ Write the body from `2ce8aa1:skills/executing-plans/SKILL.md` lines 6-321, keepi
 
 - [ ] **Step 3: Opening, When to Use and the graph**
 
-- Opening and kept passages: apply the owner's answer to Open for plan review item 11. Replace "Four things stop you … For those, stop and ask." with a lead-in ("Five things stop you, and only these. For them, stop and ask:") and the five stops of Global Constraints.
+- Opening and kept passages: reword the three cost-framed passages to the O1 reason (Open for plan review item 11, approved by D1). Replace "Four things stop you … For those, stop and ask." with a lead-in ("Five things stop you, and only these. For them, stop and ask:") and the five stops of Global Constraints.
 - When to Use: three bullets for O1's routing: the tasks are tightly coupled; your human partner asked for direct execution; your harness has no subagent tool ("Never fabricate a dispatch; run the plan here."). Drop the `../using-superpowers/` sentence and the "mostly independent" bullet. Keep the mid-tier paragraph. In the "Prefer subagent-driven-development …" paragraph, use bare names.
 - The graph: the final-review node reads `Final review: code-reviewer + Codex (references/final-review.md)`; the re-grade node reads `ONE fix pass, each fix RED→GREEN + documented suite green; unfixed → ruling`; the delete node reads `Plan-completion protocol, then delete this plan's workspace`. Edges unchanged.
 
