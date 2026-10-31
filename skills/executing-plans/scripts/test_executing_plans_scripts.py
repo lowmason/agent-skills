@@ -41,9 +41,13 @@ PLAN = """\
 OK_CMD = ['sh', '-c', 'echo "Ran 3 tests"; echo OK']
 
 
-def run(*argv, cwd=None):
+def run(*argv, cwd=None, env=None):
     return subprocess.run(
-        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True, env=GIT_ENV
+        [str(a) for a in argv],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        env=GIT_ENV if env is None else env,
     )
 
 
@@ -195,10 +199,29 @@ def test_task_done_matches_through_a_symlinked_repo_path(repo, tmp_path_factory)
     assert first.returncode == 0, first.stderr
     link = tmp_path_factory.mktemp('links') / 'link'
     link.symlink_to(repo)
-    second = run(TASK_DONE, 'plan.md', 2, base, '--', 'true', cwd=link)
+    # Bash keeps an inherited PWD only when it names the cwd, so set it to the
+    # symlinked path; otherwise the shell would silently use the physical path.
+    env = {**GIT_ENV, 'PWD': str(link)}
+    second = run(TASK_DONE, 'plan.md', 2, base, '--', 'true', cwd=link, env=env)
     assert second.returncode == 0, second.stderr
     lines = (workspace(repo) / 'progress.md').read_text().splitlines()
     assert sum(l.startswith('Task ') and 'complete' in l for l in lines) == 2
+
+
+def test_task_done_refuses_a_same_basename_plan_in_a_subdirectory(repo):
+    sub = repo / 'sub'
+    sub.mkdir()
+    (sub / 'plan.md').write_text(PLAN.replace('Demo', 'Other'))
+    ws = workspace(repo)
+    ws.mkdir(parents=True)
+    ledger = ws / 'progress.md'
+    ledger.write_text('Plan: plan.md\n')
+    before = ledger.read_bytes()
+    cmd = ['sh', '-c', 'touch ran']
+    result = run(TASK_DONE, 'plan.md', 1, head(repo), '--', *cmd, cwd=sub)
+    assert result.returncode == 3
+    assert ledger.read_bytes() == before
+    assert not (sub / 'ran').exists()
 
 
 def test_task_done_refuses_another_plans_ledger(repo):

@@ -53,7 +53,16 @@ if [ -f "$ledger" ]; then
       value=${first#Plan: }
       case "$value" in
         /*) candidates=$(canon "$value" || true) ;;
-        *) candidates=$(canon "$root/$value" || true; canon "$PWD/$value" || true) ;;
+        *)
+          # The ledger line is relative to the repository root. Fall back to
+          # the working directory only when no such file exists there, so a
+          # same-named plan elsewhere in the tree cannot claim this ledger.
+          if [ -e "$root/$value" ]; then
+            candidates=$(canon "$root/$value" || true)
+          else
+            candidates=$(canon "$PWD/$value" || true)
+          fi
+          ;;
       esac
       while IFS= read -r c; do
         [ -n "$c" ] && [ "$c" = "$plan_canon" ] && matched=1
