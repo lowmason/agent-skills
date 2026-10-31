@@ -245,9 +245,9 @@ receiving-code-review skill: fix what holds up, re-run the tests, commit. Show
 your partner anything you left unfixed and each Declined to judge line, and
 execute the chosen option only after they have seen it.
 
-**If you left any finding unfixed,** ask your partner which of them to carry,
-and offer to record each one they carry in `specs/deferred_items.md`. On their
-yes:
+**If you left any finding or Declined to judge line unfixed,** ask your partner
+which of them to carry, and offer to record each one they carry in
+`specs/deferred_items.md`. On their yes:
 
 - Append one item per carried finding, in the **Deferred-item schema** of
   `../writing-plans/references/deferred-backlog.md`: the file paths, the

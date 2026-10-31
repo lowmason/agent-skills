@@ -591,6 +591,7 @@ def test_a_wide_row_holding_a_stale_marker_is_named(tmp_path, capsys, marker):
     notes = [ln for ln in capsys.readouterr().err.splitlines() if 'do not line up' in ln]
     assert len(notes) == 1 and 'still holds a best marker' in notes[0]
     assert _row(out, 'm-intercept') == stale          # the note is the remedy, not a rewrite
+    assert compare_experiments.BEST in _row(out, 'm-full')  # the top row still gets the marker
 
 
 def test_ranked_variants_without_a_row_are_named(tmp_path, capsys):
