@@ -313,8 +313,8 @@ Markup happens once, after the gate resolves — per-task progress tracking
 stays in your todo list or ledger.
 
 **3. Update deferred items** in `specs/deferred_items.md`. First, if the
-file exists, tick any earlier items this plan implemented with a dated
-`→ done` note — run this ticking pass even when the
+file exists, tick any earlier items this plan implemented with
+`→ done <YYYY-MM-DD>` — run this ticking pass even when the
 current plan deferred nothing. Then append this plan's deferred items, one
 section per plan, newest last. Create the file on first use with a single
 `# Deferred items` title line, no other preamble. Skip the append entirely
