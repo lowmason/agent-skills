@@ -8,6 +8,8 @@
 longer waits: the reviewer-contract plan (plan 73) completed and merged on 2026-10-30 as
 lowmason/agent-skills#128. Plan: `specs/plans/74-backlog-protocol.md`.
 
+**Status: COMPLETE (2026-10-31)** — implemented by plan 74 (specs/plans/completed/74-backlog-protocol.md)
+
 ## Intent
 
 This spec settles one backlog item: "Write the backlog-protocol spec: deferrals outside this
@@ -15,7 +17,7 @@ file get lost, and the file only grows". The item is in `specs/deferred_items.md
 `audit-3-10-26 routing (no plan; re-verification pass, …) — 2026-10-18`. It carries two audit
 findings from `specs/completed/audit-3-10-26.md`:
 
-- **B1, lost deferrals.** A "deferred to …" sentence in a spec, plan or findings document never
+- **B1, lost deferrals.** A `deferred to …` sentence in a spec, plan or findings document never
   reaches a backlog item. The same is true of a follow-up named only in a closure note. A
   re-filed finding starts again at age 0. The audit counted seven such losses.
 - **B6, the file only grows.** The `## Aged-backlog acknowledgements` log only grows, and it
@@ -291,7 +293,8 @@ the backlog. Archived items never count as open or aged.
 - `→ dropped: <why>`: the work will not be done.
 
 The agent writes `→ item:` and appends the item. It writes `→ dropped:` only on the owner's
-word, or when the work has already landed, with the check cited (a path, a `git log -S`).
+word. (Amended at completion by plan 74 D21, 2026-10-31: the earlier exception for work that
+had already landed was removed.)
 
 **The scan script** (in `skills/writing-plans/scripts/`, so other repos get it with the
 skill). It has two modes:
@@ -409,7 +412,7 @@ The plan's last task does these, so the change is visible at once:
   discipline skills. Every wording change is micro-tested with a no-guidance control, under
   the writing-skills
   skill. Cases:
-  - **R1, retirement.** A fixture plan holds an unmarked "deferred to a future plan" sentence
+  - **R1, retirement.** A fixture plan holds an unmarked `deferred to a future plan` sentence
     and one deferral inside a task's prose. The scan output is pasted into the prompt. Pass:
     the agent appends an item and an `→ item:` marker for each, or asks the owner. It never
     writes `→ dropped:` unasked.

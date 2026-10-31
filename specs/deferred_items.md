@@ -3341,7 +3341,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
       (a)–(c) land, with the new tests passing on both interpreters. → done in plan 61
-- [ ] Write the backlog-protocol spec: deferrals outside this file get lost, and the file
+- [x] Write the backlog-protocol spec: deferrals outside this file get lost, and the file
       only grows (audit-3-10-26 B1 and B6, found 2026-10-03; re-verified 2026-10-18 — no
       commit has touched `skills/writing-plans/references/deferred-backlog.md`,
       `skills/writing-plans/scripts/deferred_stats.py` or the Plan Completion Protocol,
@@ -3364,6 +3364,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       finishing-a-development-branch are micro-tested. The aged-tail gate is quiet today and
       re-arms on 2026-11-13. Size: design. Done when: the spec is approved, or the owner
       records each rule as declined.
+      → done 2026-10-31 (plan 74)
 - [x] Make finishing-a-development-branch work under Claude Code's worktree isolation
       (audit-3-10-26 D1, found 2026-10-03; re-verified 2026-10-18: the skill is
       byte-identical to the audit's copy, and using-git-worktrees is unchanged since
@@ -5639,8 +5640,50 @@ review and the Plan Completion gate (2026-10-27) add the others.
       compliance OK while raising the crash as Important; three X3 plans check the quoted
       wording only weakly. Size: design. Revisit if: a real run shows a reviewer grading
       polish as Important, or a plan that dropped a micro-tested text.
-- [ ] Cosmetic wraps from plan 73's task reviews (Minors M11 and M13): the "Order matters"
+- [x] Cosmetic wraps from plan 73's task reviews (Minors M11 and M13): the "Order matters"
       line in `skills/subagent-driven-development/references/final-review.md` is about 92
       columns; the relabeled deferred example's second line
       (`skills/writing-plans/SKILL.md:117`, `skills/writing-plans/references/deferred-backlog.md:146`)
       is about 80. Size: quick-fix. Done when: both wrap near 76 columns.
+      → done 2026-10-31 (plan 74)
+
+## 74-backlog-protocol — 2026-10-31
+- [ ] **Archive layout polish and loose ends (plan 74 reviews).** Archive
+      sections that share a date (20 and 21, dated 2026-09-03) sort in script
+      order, a restored item stands first in its archive section (12), the
+      archive script replaces a symlink at `--archive` with a regular file when
+      it writes, code-span masking in `deferred_stats.py` can pair across a
+      blank line inside one item, and `/deferred` does not say which of a
+      same-date `→ held` and `→ triggered` to write first. No item was lost.
+      See specs/plans/completed/74-backlog-protocol.md (Decisions, Tasks 6 and
+      11); touches skills/writing-plans/scripts/archive_deferred.py,
+      skills/writing-plans/scripts/deferred_stats.py and commands/deferred.md.
+      Size: quick-fix. Revisit if: a reader is misled by the archive order, an
+      archive is a symlink, or a same-date Hold and trigger collide in a
+      `/deferred` pass.
+- [ ] **Micro-tests that discriminate on substance (plan 74 R1, R2, R4).** The
+      control already files the R2 work and sees the R4 condition, and on
+      substance alone the R1 control scored 4 of 5, so the passes show that the
+      marker and note forms are taught, not that a lost deferral is caught. A
+      fixture where the control loses real work would test the protocol
+      itself. See specs/red-baseline-backlog-protocol.md (Control, Verdicts
+      under the bar); touches specs/red-baseline-backlog-protocol/kit/cases.py.
+      Size: design. Revisit if: the marker or note wording changes again and
+      needs a test that can fail.
+- [ ] **Scan gaps kept open (plan 74 Task 13).** The deferral scan still misses
+      a clause such as `X and nothing else is deferred`, a bare `no` after a
+      semicolon or full stop, `beyond` and `, only` after the verb, and an
+      abbreviation followed by a sentence start; it also flags the clean
+      `Done. *Nothing is deferred.*` and its underscore form. Closing each
+      flagged clean prose or the Task 4 probes. Touches
+      skills/writing-plans/scripts/deferral_scan.py (its docstring lists the
+      gaps). Size: design. Revisit if: a retired file loses a deferral through
+      one of these gaps, or the lint blocks clean prose more than once.
+- [ ] **Sibling-branch retirements before the lint (plan 74 review).** A
+      branch that retired a file under specs/completed/ or
+      specs/plans/completed/ before the deferral lint landed, and merges after
+      it, fails the hook on main until the file gets markers or joins
+      build/deferral_baseline.txt. Plan 74 handled only the window before its
+      own merge. Touches build/deferral_baseline.txt and
+      skills/finishing-a-development-branch/SKILL.md. Size: quick-fix.
+      Revisit if: a branch merge trips the deferral lint on a pre-lint file.
