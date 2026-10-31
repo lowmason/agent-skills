@@ -755,6 +755,11 @@ Changes from upstream:
     own wording (plan 73, wording round 2 of case P2). The
     F1 comparison takes only the idea of upstream's planted-defect probe in
     prime-radiant-inc/superpowers-evals, and no text.
+  - test-driven-development's "other tests" paragraph adapts upstream
+    PR #2110, read at 2ce8aa1 (plan 75). It says "documented test
+    command(s)" where upstream names bare `pytest`, `npm test` and
+    `cargo test`. It also names documented skips and known environment
+    failures as things to report.
 
     brainstorming/
     dispatching-parallel-agents/
