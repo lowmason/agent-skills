@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Close one task of an inline plan execution in a single call: run the task's
+# test command, keep its full output in the workspace, print the tail, and —
+# only if the command succeeded — append the completion line to the ledger.
+# A failing command records nothing: the task is not complete.
+#
+# task-start opens the task this script closes.
+#
+# The ledger's first line is "Plan: <plan-file-path>". A ledger that names a
+# different plan is refused before the command runs (exit 3), so one plan's
+# progress is never recorded under another's.
+#
+# Usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
+#   BASE is the SHA task-start printed; the completion line records BASE..HEAD.
+# Exit: the test command's exit status; 2 for bad arguments or BASE; 3 when
+# the ledger belongs to another plan.
+set -euo pipefail
+
+if [ $# -lt 5 ] || [ "$4" != "--" ]; then
+  echo "usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
+  exit 2
+fi
+
+plan=$1
+n=$2
+base=$3
+shift 4
+sdd="$(cd "$(dirname "$0")/../../subagent-driven-development/scripts" && pwd)"
+
+git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
+
+dir=$("$sdd/sdd-workspace" "$plan")
+log="$dir/task-${n}-tests.log"
+ledger="$dir/progress.md"
+
+# Canonical absolute form of a path whose directory exists; fails otherwise.
+canon() {
+  local d
+  d=$(cd "$(dirname "$1")" 2>/dev/null && pwd -P) || return 1
+  printf '%s/%s\n' "$d" "$(basename "$1")"
+}
+
+root=$(cd "$(git rev-parse --show-toplevel)" && pwd -P)
+plan_canon=$(canon "$plan")
+
+# Refuse a ledger that belongs to another plan, before the command runs.
+if [ -f "$ledger" ]; then
+  first=$(head -n 1 "$ledger")
+  value=$first
+  matched=0
+  case "$first" in
+    "Plan: "*)
+      value=${first#Plan: }
+      case "$value" in
+        /*) candidates=$(canon "$value" || true) ;;
+        *) candidates=$(canon "$root/$value" || true; canon "$PWD/$value" || true) ;;
+      esac
+      while IFS= read -r c; do
+        [ -n "$c" ] && [ "$c" = "$plan_canon" ] && matched=1
+      done <<EOF2
+$candidates
+EOF2
+      ;;
+  esac
+  if [ "$matched" -ne 1 ]; then
+    echo "task-done: $ledger belongs to $value, not $plan; Task $n NOT recorded" >&2
+    exit 3
+  fi
+fi
+
+# Render the command the way a person would type it, for the ledger line.
+cmd=""
+for a in "$@"; do
+  case "$a" in
+    *[[:space:]\"\;\|\&]*) cmd="$cmd '$a'" ;;
+    *) cmd="$cmd $a" ;;
+  esac
+done
+cmd=${cmd# }
+
+rc=0
+"$@" > "$log" 2>&1 || rc=$?
+
+tail -n 5 "$log"
+if [ "$rc" -ne 0 ]; then
+  echo "task-done: test command exited $rc; Task $n NOT recorded (full output: $log)" >&2
+  exit "$rc"
+fi
+
+last=$(grep -v '^[[:space:]]*$' "$log" | tail -n 1) || last="(no output)"
+if [ ! -f "$ledger" ]; then
+  case "$plan_canon" in
+    "$root"/*) plan_line=${plan_canon#"$root"/} ;;
+    *) plan_line=$plan_canon ;;
+  esac
+  printf 'Plan: %s\n' "$plan_line" > "$ledger"
+fi
+line="Task $n: complete (commits $(git rev-parse --short=7 "$base")..$(git rev-parse --short=7 HEAD), tests: $cmd → $last)"
+printf '%s\n' "$line" >> "$ledger"
+echo "ledger: $line"

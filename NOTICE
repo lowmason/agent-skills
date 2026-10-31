@@ -764,6 +764,13 @@ Changes from upstream:
     bullet adapts upstream's v7.0.1 wording, read at 2ce8aa1 (plan 75). The
     scope-fence stop is local. The gate in references/final-review.md,
     which lists every ruling before the open questions, is local too.
+  - executing-plans/scripts/task-start and task-done adapt upstream's
+    scripts, read at 2ce8aa1 (MIT), with task-done as fixed in v7.0.0
+    (#2388, 907ad21) (plan 75). The ledger's first line is `Plan:
+    <plan-file-path>`. A ledger of another plan is refused with exit 3.
+    Each script's header names the other. The pytest file is this
+    repository's own. Its cases adapt upstream's
+    tests/claude-code/test-executing-plans-scripts.sh.
 
     brainstorming/
     dispatching-parallel-agents/

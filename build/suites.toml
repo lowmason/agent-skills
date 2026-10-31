@@ -65,6 +65,12 @@ with = ['pytest']
 notes = ['Preflight tests, stdlib only. The fetch tests clone a local bare repository through a file:// URL.']
 
 [[suite]]
+name = 'executing-plans'
+dir = 'skills/executing-plans/scripts'
+with = ['pytest']
+notes = ['task-start and task-done tests (stdlib only; they drive the bash scripts and call SDD scripts by relative path).']
+
+[[suite]]
 name = 'explore-data'
 dir = 'skills/explore-data/scripts'
 with = ['pytest', 'polars']
