@@ -94,3 +94,55 @@ def test_missing_block_names_the_file(tmp_path):
 def test_repo_copies_are_identical():
     from check_reviewer_block import ROOT
     assert check(ROOT) == []
+
+
+def test_one_re_indented_line_in_a_template_copy_is_drift(tmp_path):
+    files = {name: BLOCK for name in FILES}
+    files[FILES[3]] = '```\n  prompt: |\n' + indented(BLOCK).replace('    Scope text.', '     Scope text.') + '\n```\n'
+    write_tree(tmp_path, files)
+    problems = check(tmp_path)
+    assert len(problems) == 1
+    assert problems[0].startswith(f'{FILES[3]}: its reviewer block differs from {FILES[0]}:')
+
+
+def test_missing_file_is_named(tmp_path):
+    files = {name: BLOCK for name in FILES if name != FILES[2]}
+    write_tree(tmp_path, files)
+    assert check(tmp_path) == [f'{FILES[2]}: missing']
+
+
+def test_missing_last_heading_is_refused():
+    with pytest.raises(BlockError, match="no '## Declined to judge' line after '## Review scope'"):
+        extract_block('## Review scope\n\nScope text.\n')
+
+
+def test_dedented_non_blank_line_ends_an_indented_block():
+    text = '  prompt: |\n' + indented(BLOCK) + '\n  next_key: value\n'
+    assert extract_block(text) == BLOCK
+
+
+def test_missing_reference_still_compares_the_other_copies(tmp_path):
+    files = {name: BLOCK for name in FILES if name != FILES[0]}
+    files[FILES[3]] = BLOCK.replace('Scope text.', 'Scope text, changed.')
+    write_tree(tmp_path, files)
+    problems = check(tmp_path)
+    assert problems[0] == f'{FILES[0]}: missing'
+    assert len(problems) == 2
+    assert problems[1].startswith(f'{FILES[3]}: its reviewer block differs from {FILES[1]}:')
+
+
+def test_malformed_reference_with_agreeing_copies_reports_only_the_reference(tmp_path):
+    files = {name: BLOCK for name in FILES}
+    files[FILES[0]] = '# No block here\n'
+    write_tree(tmp_path, files)
+    assert check(tmp_path) == [f"{FILES[0]}: expected one '## Review scope' line, found 0"]
+
+
+def test_drift_in_a_line_separator_character_shows_a_diff_body(tmp_path):
+    files = {name: BLOCK for name in FILES}
+    files[FILES[3]] = BLOCK.replace('Scope text.', 'Scope\x0ctext.')
+    write_tree(tmp_path, files)
+    problems = check(tmp_path)
+    assert len(problems) == 1
+    assert '-' + repr('Scope text.') in problems[0]
+    assert '+' + repr('Scope\x0ctext.') in problems[0]

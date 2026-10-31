@@ -3,12 +3,15 @@ name: explore-data
 description: >
   Use when profiling a new dataset with Polars before analysis or modeling — first contact with a
   parquet/CSV/scrape whose shape, schema, null rates, or cardinality is unknown; when checking
-  whether a candidate key (series_id + ref_date) is actually unique; when duplicates, sentinel codes (-1, 9999, "", "N/A", "."), constant or high-null columns, or mixed types from a raw ingest are suspected; when confirming the as-of/vintage layout on revised series (one row per
+  whether a candidate key (series_id + ref_date) is actually unique; when duplicates, sentinel
+  codes (-1, 9999, "", "N/A", "."), constant or high-null columns, or mixed types from a raw
+  ingest are suspected; when confirming the as-of/vintage layout on revised series (one row per
   series-period-vintage) before tagging or joining; when panel diagnostics are needed — coverage
   by period/geography/industry, balance, entry/exit; or when comparing provider microdata against
-  QCEW/CES/JOLTS/BED. The pre-flight before bayesian-workflow, recommend-probabilistic-model, recommend-causal-design, or recommend-visualization. Trigger on new microdata, "explore/profile this dataset",
-  null/duplicate/quality checks, schema inspection, scan_parquet, .describe(), value_counts,
-  .null_count(), n_unique, or "is this column a key?".
+  QCEW/CES/JOLTS/BED. The pre-flight before bayesian-workflow, recommend-probabilistic-model,
+  recommend-causal-design, or recommend-visualization. Trigger on new microdata, "explore/profile
+  this dataset", null/duplicate/quality checks, schema inspection, scan_parquet, .describe(),
+  value_counts, .null_count(), n_unique, or "is this column a key?".
 license: MIT
 compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:

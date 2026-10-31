@@ -835,3 +835,36 @@ Task 8 read the three hashes before the first rep and again after the last rep. 
 `git diff --quiet f518ec5 -- skills/brainstorming; echo skill_clean=$?` printed `skill_clean=0` after the last rep.
 
 Privacy scan, before the commit: no file under `rerun-1/` (65 files) holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
+
+## T6 variant without the quoted command text (T6v, /deferred quick fix, 2026-10-31)
+
+The deferred item "Caller-sizing gap in the tests for the brainstorming rebuild" (owner decision
+D20) asked for a T6 variant that keeps the routed context but drops the quote of `/deferred`'s
+Design text ("a new spec through the normal design cycle"). T6v is T6 with that one sentence
+removed (`kit/cases.py`, case `T6v`). The `/deferred` listing, the Design pick, item 7 and the
+approved design stay. The skill arm still says "A command routed the work to it."
+
+Prompts: `t6v-control/MANIFEST.txt` (control) and `t6v-skill/MANIFEST.txt` (brainstorming
+`SKILL.md` at `971ec4d`, unchanged since `fdf9f47`). Scored by the T6 rule above, unchanged.
+
+Deviation: the reps ran from a copy of `kit/run_reps.sh` with `--setting-sources ""` and
+`CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` added. So, unlike every earlier arm, the control saw no
+`~/.claude/CLAUDE.md`, which names the brainstorming skill. No rep shows the output style.
+
+VOID: none. All 10 reps exited 0, had one turn and one model, and ran no advisor.
+
+| Arm | Verdicts | Result |
+|---|---|---|
+| control | P P P P P | 5/5. Each writes the design to a file under `specs/` (rep 3 under `specs/design/`), builds nothing, and asks whether to implement now. |
+| skill | P P P P P | 5/5. Each writes `specs/release-notes-breaking-flag.md`, dispatches the builder check, and builds nothing. |
+
+Findings:
+- The skill alone reaches a spec file: 5/5. No wording change is needed.
+- The quote does not explain the control's 5/5. Without the quote and without the background
+  `CLAUDE.md`, the control still writes a spec 5/5. The Design pick and the "Here is the design"
+  turn are enough. T6 stays a guard, not a fix target.
+- The arms differ in what the skill adds. Every skill rep dispatches the builder check from
+  `builder-check-prompt.md` and holds the `→ planned` note on item 7 for the spec's commit. No
+  control rep does either: each edits item 7 with a status line of its own ("designed").
+
+Spend for this round: $0.48 (10 reps).

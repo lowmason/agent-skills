@@ -111,6 +111,24 @@ You: Here is the design. `release-notes` starts a bullet with `[breaking]` when 
 
 Partner: Looks good.
 '''},
+    # T6 without the quoted /deferred text (deferred item: caller-sizing gap, plan 70 D20).
+    'T6v': {'how': 'routed', 'conversation': '''
+Partner: /deferred
+
+[you, tools] The /deferred command listed the open items in `specs/deferred_items.md`. The partner picked item 7 with the disposition Design. Item 7 reads: "`release-notes` writes one bullet per merged pull request. Give each bullet a `breaking:` flag. `changelog-check` and `announce` parse that output and must accept the new field." You read `skills/release-notes/SKILL.md`, `skills/changelog-check/parse.py` and `skills/announce/SKILL.md`. `parse.py` splits each bullet on " — " and rejects a bullet with more than two parts.
+
+You: Who acts on the `breaking:` flag once it's there: a person reading the notes, or `announce` deciding what to post?
+
+Partner: Both. `announce` should put breaking changes first in its post, and readers should see them at a glance.
+
+You: I see two ways to carry the flag. (1) Append " — breaking: yes" as a third part of the bullet, and teach `parse.py` to accept three parts. (2) Start the bullet with a `[breaking]` tag, which `parse.py` reads before it splits. I recommend (2): bullets without the tag parse exactly as before, so older notes stay valid. Which do you want?
+
+Partner: 2.
+
+You: Here is the design. `release-notes` starts a bullet with `[breaking]` when the pull request carries the `breaking` label. `parse.py` strips a leading `[breaking]` before it splits, and sets `breaking=True` on the entry. `announce` lists breaking entries first. A test in `skills/changelog-check/` covers a tagged and an untagged bullet. Does that look right?
+
+Partner: Looks good.
+'''},
     'T7': {'how': 'auto', 'conversation': '''
 Partner: I'd like to work out with you what to build. Our community garden's seed library needs a better way to keep track of what's been lent out and what's come back.
 

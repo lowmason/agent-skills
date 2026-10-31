@@ -39,7 +39,8 @@ human partner only when every path forward is a guess.
   no behavior, so no test covers it, then dispatch the scoped re-review as
   usual. A fix that changes what code does, even by one character, goes to a
   fix subagent, also when your partner asked you to fix small things yourself:
-  tell your partner why, and dispatch the fix subagent in the same turn.
+  tell your partner why, and dispatch the fix subagent in the same turn. A
+  hand fix counts as one of the five attempts.
 - Dispatch fix subagents for Critical and Important findings — rounds 1-3
   resume the same implementer, rounds 4-5 dispatch a fresh one (see **Fix
   Rounds**). Rule on each Declined to judge line from a task review as you

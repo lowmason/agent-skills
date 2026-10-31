@@ -88,12 +88,12 @@ HEAD_SHA=$(git rev-parse HEAD)
 [Subagent returns]:
   Strengths: Clean architecture, real tests
   Issues:
-    Important: Missing progress indicators
+    Important: repairIndex() reports success when a repair fails
   Declined to judge:
     Repair of indexes written before v2: Task 2 covers new indexes only
   Assessment: Ready to proceed
 
-You: [Fix progress indicators; rule that pre-v2 repair stays out of scope]
+You: [Fix the false success report; rule that pre-v2 repair stays out of scope]
 [Continue to Task 3]
 ```
 

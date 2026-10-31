@@ -1156,6 +1156,7 @@
       → progress 2026-10-29 (plan 72): the trigger fired. Plan 72 split writing-skills to 434
       body lines and added `references/{discovery,flowcharts,bulletproofing}.md`. This item is
       still open: it asks for a distilled file of Claude Code text, which plan 72 did not write.
+      → triggered 2026-10-31: plan 72 split writing-skills to 434 body lines, under 500 (its own 2026-10-29 note).
 
 ## 37-recommend-causal-design (merge review) — 2026-10-04
 - [ ] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
@@ -2472,7 +2473,7 @@ all 20 named a type.
       or any type that inherits this conversation), with no model pinned". Size: quick-fix.
       Revisit if: a session or a micro-test rep is seen picking the fork, as for the
       writing-skills item.
-- [ ] Rule out the fork in subagent-driven-development's "Why subagents" line once SDD is next
+- [x] Rule out the fork in subagent-driven-development's "Why subagents" line once SDD is next
       edited (`skills/subagent-driven-development/SKILL.md:16`): it says subagents "should
       never inherit your session's context or history" but does not name the `fork` type.
       Owner ruling: defer, untested, because its dispatch templates already name a type:
@@ -2487,6 +2488,7 @@ all 20 named a type.
       → progress 2026-10-29 (plan 72): the placement lint named above is retired. After the edit,
       run `uv run --with pyyaml python build/check_conformance.py` instead. SDD has no
       `compaction-window` exception, so that check refuses a late critical heading unaided.
+      → done 2026-10-31 (/deferred quick fix): 971ec4d adds the clause; check_conformance.py passes.
 
 ## 49-claude-code-drift-automation — 2026-10-18
 - [x] Pin `baseline rebaseline` to its packet's head (plan 49, Q1, owner decision D2). A
@@ -4838,7 +4840,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       `test_pinned_roster_reports_a_missing_guard_instead_of_raising` and
       `test_real_pinned_roster_matches_the_real_agents` to `build/test_check_frontmatter.py`. A
       mutation that drops the guard's exception handling fails the first.
-- [ ] Re-wrap the long single-line `description` scalars in `skills/clean-coder/SKILL.md`,
+- [x] Re-wrap the long single-line `description` scalars in `skills/clean-coder/SKILL.md`,
       `skills/executing-plans/SKILL.md`, `skills/explore-data/SKILL.md` and
       `skills/writing-plans/SKILL.md` (not re-wrapped when made third person; explore-data's is
       1005 of 1024 characters). Also reword "(this repo)" at the hook sentence in
@@ -4849,6 +4851,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       → progress 2026-10-29 (plan 72): the placement tests named above are retired
       (`-k test_real_skill` now selects nothing). After the SDD edit, run
       `uv run --with pyyaml python build/check_conformance.py` instead.
+      → triggered 2026-10-31: SDD was edited on 2026-10-29 (4a1192b, 99b0b34, fc6cc10, 6b2033b).
+      → done 2026-10-31 (/deferred quick fix): 114e233 re-wraps the four scalars (values unchanged) and 971ec4d rewords "(this repo)"; check_conformance.py passes.
 - [x] Re-run the writing-skills t2 micro-test (push gate) with the fixed `run_arm.sh`; the plan 63
       run leaked prompts through stdin, so its 8/15 vs 0/15 may be contaminated. The kit is in the
       scratch folder `~/.cache/agent-skills/scratch/plan63-micro/`. Size: quick-fix. Done when: the
@@ -5006,7 +5010,7 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       description changed, T3 routed 5 of 5, and the description still names ELPD/LOO ranking,
       experiment ledgers and "which model fits best". A restored trigger would need a new
       routing micro-test.
-- [ ] bayesian-workflow model-comparison polish (plan 65 reviews). (a) The sentence "It cannot mix
+- [x] bayesian-workflow model-comparison polish (plan 65 reviews). (a) The sentence "It cannot mix
       model classes" in the "Ranking the variants" paragraph can read as "`az.compare` cannot compare
       an AR(1) with an AR(2)", which is false. The intent is a Bayesian variant against one with no
       InferenceData: say so. (b) The Contents entry "Time-series and forecast comparison: LFO and
@@ -5014,6 +5018,8 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       `in_block` ledger fixture in `test_compare_experiments.py` holds two COMPARISON blocks, where
       a real ledger has one. (d) The new wide-row-note test covers only the plain `**best**` marker.
       Size: quick-fix. Revisit if: someone edits `model-comparison.md` or those tests again.
+      → triggered 2026-10-31: ad865e2 (2026-10-28) edited `test_compare_experiments.py`.
+      → done 2026-10-31 (/deferred quick fix): 2a3ccd6 fixes (a) to (d).
 
 ## 67-model-lifecycle — 2026-10-22
 
@@ -5049,6 +5055,7 @@ the end of plan 67.
       `specs/verification/67-tune-noise-rule-probe.md`. A fixture with a real mean gain and one
       opposite-sign fold is the likely separator. Size: plan. Revisit if: the noise rule is edited
       again, or an agent keeps a gain under 2·SE(Δ) in practice.
+      → triggered 2026-10-31: 9905e4d (2026-10-27) reworded the noise-rule sentence in tune-hyperparameters (wording only).
 - [x] Reword the noise rule's "|Δ|, the absolute mean of d" in `skills/tune-hyperparameters/SKILL.md`
       (the "paired difference is noise" bullet) as "the absolute value of the mean of d". Read as the
       mean of |d|, `V2-noise` flips to REAL (0.032 against 2·SE = 0.0283). All five variant reps
@@ -5311,7 +5318,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       stays open.
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
-- [ ] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
+- [x] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
       deferred at the completion gate). The test case T6 simulates a `/deferred` item routed to the
       brainstorming skill. Its prompt quotes the command's own words, "a new spec through the
       normal design cycle" (case `T6` in
@@ -5330,6 +5337,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quote alone explains the control's 5 of 5. Size: quick-fix. Done when: the record shows both
       arms on the variant and says whether the skill alone reaches a spec file. If the skill fails
       the variant, add a new item for the wording change.
+      → done 2026-10-31 (/deferred quick fix): T6v run, both arms 5/5; the skill alone reaches a spec file, so no wording item (specs/red-baseline-brainstorming-2026-10-28.md, "T6 variant").
 - [x] Three wrong statements in `specs/superpowers-drift-spec.md`, found by the plan 70
       fact-check panels (2026-10-28). Plan 70 did not write them, and the owner's correction list
       (D19) did not name them, so they stayed. Find each one by its quoted text, because line
@@ -5455,13 +5463,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done in plan 72 (2026-10-29): `build/check_links.py` runs as the eighth commit lint
       (2af1c08, b6bd294). `test_broken_reference_link_is_refused` shows it refusing a broken
       `references/` link in a clone. It checks 213 links and finds none broken.
-- [ ] The trivial-fix exception does not say whether a hand fix counts against the five fix
+- [x] The trivial-fix exception does not say whether a hand fix counts against the five fix
       attempts (plan 71 final review, Minor): `skills/subagent-driven-development/SKILL.md`
       (Red Flags, "Exception: a fix confined to one file…") and
       `skills/subagent-driven-development/references/fix-loop.md` (first bullet under "Fix
       dispatches") are silent. Adding a sentence changes SKILL.md after the plan 71
       micro-tests, so C2a and C2b must be re-run on the new SHA (about $1). Size: quick-fix.
       Done when: both copies of the exception say it, and C2a and C2b still pass at 5/5.
+      → done 2026-10-31 (/deferred quick fix): 971ec4d says a hand fix counts as one of the five attempts, in both copies; C2a and C2b 5/5 at 971ec4d (specs/red-baseline-sdd-compaction.md, "Re-run at `971ec4d`").
 
 ## 72-writing-skills-split — 2026-10-29
 - [x] `build/check_links.py` fails open on forms it does not parse (plan 72 final review, Minor;
@@ -5570,22 +5579,24 @@ review and the Plan Completion gate (2026-10-27) add the others.
       edit needs the `references/step-recipe.md` fallback first (spec section 4). Size: plan.
       Done when: step 1 of the Plan Completion Protocol names the final review's Declined to
       judge lines, with room in the body for it.
-- [ ] Declined review line: finishing-a-development-branch Step 4b gives Codex `[P2]` and
+- [x] Declined review line: finishing-a-development-branch Step 4b gives Codex `[P2]` and
       `[P3]` points that become Declined lines no owner and no place to be recorded (plan 73
       final review, owner ruled defer). The skill is not one of the surfaces spec section 2
       lists. Size: quick-fix. Done when: Step 4b says who rules on such a line and where it is
       written.
+      → done 2026-10-31 (/deferred quick fix): e544b1e has Step 4b show the partner each Declined to judge line, and 34cec3e extends its carry step to those lines, so the partner rules and a carried line is recorded here.
 - [ ] Declined review line: the code-reviewer agent and template never say what a Review Focus
       section is for (plan 73 final review, owner ruled defer). Only the executors'
       parenthetical does, as in upstream PR #2319, and spec section 5 asked only for the
       handoff. Files: `agents/code-reviewer.md`, `skills/requesting-code-review/code-reviewer.md`.
       Size: plan (new wording needs the micro-tests). Revisit if: a final-review rep ignores a
       Review Focus line, or the handoff changes.
-- [ ] Declined review line: `skills/requesting-code-review/SKILL.md`'s example still grades
+- [x] Declined review line: `skills/requesting-code-review/SKILL.md`'s example still grades
       "Missing progress indicators" Important, while `code-reviewer.md`'s example dropped that
       item as polish (plan 73 final review, owner ruled defer). Spec section 2 changed only the
       magic-number nit. Size: quick-fix. Done when: the SKILL.md example matches
       `code-reviewer.md`'s and grades no polish point.
+      → done 2026-10-31 (/deferred quick fix): e544b1e grades a user-facing defect Important instead.
 - [ ] Declined review line: `skills/requesting-code-review/code-reviewer.md`'s "What to Check"
       still asks "Sound design decisions?", "Integrates cleanly with surrounding code?" and
       "Type safety", and both preambles claim architecture expertise (plan 73 final review and
@@ -5600,7 +5611,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [ ] Declined review line: `agents/security-auditor.md` keeps its Minor tier (plan 73 final
       review, owner ruled defer; a spec non-goal). Size: quick-fix. Revisit if:
       security-auditor is dispatched in a flow that expects the two-grade scale.
-- [ ] Reviewer-block lint gaps left open by plan 73's task reviews (Minors M5-M8): "one line
+- [x] Reviewer-block lint gaps left open by plan 73's task reviews (Minors M5-M8): "one line
       re-indented" is tested only at `extract_block` level, not through `check()`; the
       `: missing` file path, the "no Declined to judge line" error and a block ended by a
       dedented non-blank line are untested; when the reference copy
@@ -5611,6 +5622,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `build/test_check_reviewer_block.py`. Size: quick-fix. Done when: tests cover each
       branch, the missing-reference case compares the remaining copies, and the diff splits
       on `\n` only.
+      → done 2026-10-31 (/deferred quick fix): a3ee531 adds the tests, compares the remaining copies when the reference fails, and diffs on `\n` only.
 - [ ] Micro-test kit odds and ends (plan 73 Minors M1-M3 and M25, and the final review's
       minor on `FENCE_RE`): the registered R2 reading rule has no class for a remark on
       `page < 1` in `page_of`; `run_reps.sh`'s usage-error text omits `[<budget>]`; the VOID

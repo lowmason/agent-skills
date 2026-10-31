@@ -580,16 +580,18 @@ def test_a_wide_top_row_note_says_no_row_carries_the_marker(tmp_path, capsys):
     assert '**best' not in out
 
 
-def test_a_wide_row_holding_a_stale_marker_is_named(tmp_path, capsys):
+@pytest.mark.parametrize('marker', compare_experiments.MARKERS)
+def test_a_wide_row_holding_a_stale_marker_is_named(tmp_path, capsys, marker):
     text = _ledger_with('m-full', 'm-intercept')
     row = _row(text, 'm-intercept')
-    stale = row.replace('| h |', '| h | x |').replace('| candidate |', '| **best** |')
+    stale = row.replace('| h |', '| h | x |').replace('| candidate |', f'| {marker} |')
     ledger = tmp_path / 'experiments.md'
     ledger.write_text(text.replace(row, stale))
     out = _stamp(ledger, RANKED)
     notes = [ln for ln in capsys.readouterr().err.splitlines() if 'do not line up' in ln]
     assert len(notes) == 1 and 'still holds a best marker' in notes[0]
-    assert out.count('**best**') == 2                 # the note is the remedy, not a rewrite
+    assert _row(out, 'm-intercept') == stale          # the note is the remedy, not a rewrite
+    assert compare_experiments.BEST in _row(out, 'm-full')  # the top row still gets the marker
 
 
 def test_ranked_variants_without_a_row_are_named(tmp_path, capsys):
@@ -860,10 +862,11 @@ def test_ledger_criterion_ignores_a_bare_line_below_the_variants_table():
 
 
 def test_ledger_criterion_skips_a_bare_line_inside_the_comparison_block():
-    in_block = SCORE_LEDGER.replace(
+    in_block = SCORE_LEDGER.replace('<!-- COMPARISON:BEGIN -->\n<!-- COMPARISON:END -->\n\n', '').replace(
         'Criterion: cv-mse\n',
         '<!-- COMPARISON:BEGIN -->\nCriterion: elpd-loo\n<!-- COMPARISON:END -->\n\n'
         'Criterion: cv-mse\n', 1)
+    assert in_block.count('<!-- COMPARISON:BEGIN -->') == 1  # a real ledger holds one block
     assert in_block.index('Criterion: elpd-loo') < in_block.index('Criterion: cv-mse')
     assert in_block.index('Criterion: cv-mse') < in_block.index('| id (slug)')
     assert compare_experiments.ledger_criterion(in_block) == 'cv-mse'
@@ -884,10 +887,11 @@ def test_ledger_criterion_stops_at_the_decision_log_when_there_is_no_variants_ta
     assert compare_experiments.ledger_criterion(text) == 'elpd-loo'
 
 
-def test_a_wide_top_row_that_holds_a_marker_gets_one_consistent_note(tmp_path, capsys):
+@pytest.mark.parametrize('marker', compare_experiments.MARKERS)
+def test_a_wide_top_row_that_holds_a_marker_gets_one_consistent_note(tmp_path, capsys, marker):
     text = _ledger_with('m-full', 'm-intercept')
     row = _row(text, 'm-full')
-    wide = row.replace('| h |', '| h | x |').replace('| candidate |', '| **best** |')
+    wide = row.replace('| h |', '| h | x |').replace('| candidate |', f'| {marker} |')
     ledger = tmp_path / 'experiments.md'
     ledger.write_text(text.replace(row, wide))
     _stamp(ledger, RANKED)
