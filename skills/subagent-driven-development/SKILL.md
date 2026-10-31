@@ -18,7 +18,7 @@ metadata:
 
 Execute plan by dispatching a fresh implementer subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end.
 
-**Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
+**Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need, so dispatch each as the type its template names, never as a fork. This also preserves your own context for coordination work.
 
 **Core principle:** Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration
 
@@ -72,7 +72,8 @@ manual execution or a separate session:
   no behavior, so no test covers it, then dispatch the scoped re-review as
   usual. A fix that changes what code does, even by one character, goes to a
   fix subagent, also when your partner asked you to fix small things yourself:
-  tell your partner why, and dispatch the fix subagent in the same turn.
+  tell your partner why, and dispatch the fix subagent in the same turn. A
+  hand fix counts as one of the five attempts.
 - Reviewer reviews again (scoped re-review, not a fresh full review — see Fix Rounds)
 - Repeat up to the five-attempt cap, then adjudicate what's still open (see Fix Rounds)
 - Don't skip the re-review
@@ -162,7 +163,7 @@ tier choice: on Claude Code a model-pinned agent runs at its pin, never
 escalated, and any other agent inherits your session's model — usually the most
 capable and most expensive; the Codex and Gemini adapters drop the pins, so
 there every omission inherits. Either way it silently defeats this section.
-On Claude Code, `hooks/dispatch-model-guard.py` (this repo) denies a dispatch with no model to an unpinned agent, once installed. It cannot tell when a pinned reviewer needed escalating: that choice stays yours.
+On Claude Code, `hooks/dispatch-model-guard.py` (the agent-skills repo's) denies a dispatch with no model to an unpinned agent, once installed. It cannot tell when a pinned reviewer needed escalating: that choice stays yours.
 
 When nothing clearly fires, default to **standard**. **Reviews** floor at
 **standard** and scale up with the diff: a small mechanical diff reviews at
