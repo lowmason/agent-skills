@@ -3777,10 +3777,12 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       owner chose to re-pin the linter: `scripts/ste-lint.py` is now byte-identical to
       `cd62d297` (its pin test and self-test pass under 3.13 and `/usr/bin/python3`), and
       `NOTICE` and both sources files credit Yuri Perin's fixes (upstream PRs #25 and #26).
-- [ ] The next drift review of both upstreams: danyuchn/asd-ste100-skill against `cd62d297`
+- [x] The next drift review of both upstreams: danyuchn/asd-ste100-skill against `cd62d297`
       for the vendored linter and `3944283c` for the adapted text, and prithivrajmu/asd-ste100
       against `d9323767`. Size: quick-fix. Revisit if: either repository changes its linter,
       rule sets or license after those commits.
+      → triggered 2026-10-31: danyuchn/asd-ste100-skill is 12 commits past `cd62d297` and 20 past `3944283c` (HEAD `255631a3`). They change `scripts/ste-lint.py` (+322/−39), `README.md` and `examples/before-after.md`, and add plugin packaging. prithivrajmu/asd-ste100 is 3 commits past `d9323767`, all in `.github/workflows/`. No LICENSE changed.
+      → done 2026-10-31 (/deferred quick fix): no rule-set file or LICENSE changed, and the README, Example D and plugin changes do not touch the adapted text. The linter fixes remove false findings here: SKILL.md front matter read as a long sentence, and hedges such as "might already have" flagged as present-perfect. The owner chose to re-vendor. `scripts/ste-lint.py` is now byte-identical to `255631a3` (mode kept 100644, upstream is 100755). Its pin test, its self-test under 3.13 and `/usr/bin/python3` and two new tests for those false findings pass. `NOTICE` and both sources files credit Mathias Nielsen (#30 to #35) and Artur Bańkowski (#40). The next review is a watch item. → item: 52-write-with-asd-ste100 — 2026-10-18
 - [ ] The always-on rule's pointer line reaches work that the spec leaves out of scope
       (final review). `rules/write-with-asd-ste100.md` ends "To rewrite a text or a
       document, to write text for an agent reader, or to apply strict STE, use the
@@ -3825,6 +3827,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       take a document case in the kit's `cases.py` that names a tracked symbolic link, and a
       run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
       reason, and add the case then.
+- [ ] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
+      2026-10-31 read danyuchn/asd-ste100-skill through `255631a3` and prithivrajmu/asd-ste100
+      through `058c1f58`. Size: quick-fix. Revisit if: a compare from `255631a3` (danyuchn) or
+      `058c1f58` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
+      references/) or a LICENSE.
 
 ## 55-test-suite-registry — 2026-10-18
 - [ ] Run the registered suites in CI (the spec's Out of scope).
@@ -3852,6 +3859,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       stdlib-only. The fix is one stdlib-only module in `build/`. `check_conformance.py` and
       `run_suites.py` would import it. `install.py` can stay standalone. Size: plan. Revisit
       if: a fourth copy appears, or `check_conformance.py` changes its git helpers.
+      → triggered 2026-10-31: plan 66 (Task 9) added a fourth copy of the `git ls-files --cached --others --exclude-standard -z` listing at `build/versions_check.py:47`. The item for that copy is in section `66-package-versions — 2026-10-27`.
 - [x] Replace the commit-lint count "nine" with count-free wording (final review of plan
       55). The count is written in four places: `CLAUDE.md:77`, `build/CLAUDE.md:23`,
       `build/run_commit_lints.sh:2` and `build/githooks/pre-commit:2`. A tenth lint needs
@@ -5380,7 +5388,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-10-29 (/deferred quick fix): the Adoption baselines row adds plan 50's six per-fix
       commits by finding and plan 60's `bb92a77`. Row 16 sits between rows 15 and 17. Each cell was
       checked against its finding's section and `NOTICE`.
-- [ ] Stale last sentence in the `NOTICE` vendoring paragraph for the superpowers skills (found by
+- [x] Stale last sentence in the `NOTICE` vendoring paragraph for the superpowers skills (found by
       the plan 70 fix-wave panel, 2026-10-29). The paragraph ends "Upstream has continued to move
       since; use the date and commit above as the starting point for any drift review." That sends
       every drift review back to the vendored commit `896224c`. But the row "Next review starts
@@ -5393,6 +5401,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       current SHA into `NOTICE`, because no step updates it at a drift pass. Size: quick-fix. Done
       when: the owner has chosen the wording, `NOTICE` no longer sends a drift review back to
       `896224c`, and `uv run python build/check_provenance.py` passes.
+      → done 2026-10-31 (/deferred quick fix): the owner chose the panel's wording, verbatim. `NOTICE` now names `896224c` as the vendored baseline and points the next drift review to the "Next review starts from" row of `specs/superpowers-drift-spec.md`. No current SHA went into `NOTICE`. `uv run python build/check_provenance.py` passes.
 - [x] Eight wording edits left in the plan 70 record and drift spec after the fifth fix round
       (found by that round's light check, 2026-10-29). The subagent-driven-development cap of five
       fix rounds ended further edits. None of the eight edits changes a score, a bar or a verdict.

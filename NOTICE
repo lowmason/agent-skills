@@ -291,8 +291,9 @@ vendoring date picks 896224c. 2f283ae added 39 files under the skill
 directories. Of these, 33 came in byte-identical to the same paths under
 skills/ at 896224c. They include brainstorming/SKILL.md and the three
 subagent-driven-development scripts. The other six were adapted on the
-way in. Upstream has continued to move since; use the date and commit
-above as the starting point for any drift review.
+way in. Upstream has continued to move since. 896224c is the vendored
+baseline. The "Next review starts from" row of
+`specs/superpowers-drift-spec.md` names where the next drift review starts.
 
 Changes from upstream:
   - Cross-skill references rewritten from the `superpowers:` plugin
