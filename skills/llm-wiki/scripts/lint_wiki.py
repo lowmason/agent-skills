@@ -308,8 +308,12 @@ SECRET_PATTERNS = [
   ('github-pat', re.compile(r'github_pat_[A-Za-z0-9_]{50,}')),
   ('aws-key', re.compile(r'AKIA[0-9A-Z]{16}')),
   ('pem-block', re.compile(r'-----BEGIN [A-Z ]*PRIVATE KEY-----')),
+  ('aws-secret-key', re.compile(
+    r'(?i)secret[\s_-]?access[\s_-]?key[\'"]?\]?(?:\s*\[[^\]\n]*\])?'
+    r'(?:\s*[:=]\s*|\s+)[\'"]?[A-Za-z0-9/+]{40}')),
   ('assignment', re.compile(
-    r'(?i)(password|secret|token)\s*[:=]\s*[\'"]?[A-Za-z0-9/+_-]{12,}')),
+    r'(?i)(?:password|token|api[_-]?key|secret(?:[_-]?(?:access[_-]?)?key)?)'
+    r'[\'"]?\]?\s*[:=]\s*[\'"]?[A-Za-z0-9/+_-]{12,}')),
 ]
 # `kind: decision` capture metadata line must carry an approved basis.
 # Leading whitespace and a markdown list bullet are tolerated: an indented or
