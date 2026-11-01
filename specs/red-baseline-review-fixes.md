@@ -87,3 +87,25 @@ Findings for Tasks 13, 20 and 21:
   here.
 - fix-round-gate shows no failure in the control (0 of 5). Under Global Constraints, Task 21 reverts only
   the lines of its case's finding (#23) and ledgers a ruling. Nothing was changed here.
+
+### fix-round-gate-v2 control
+
+v1's 0/5 above was ruled a fixture artifact on reviewer finding: its CLAUDE.md excerpt worked out which
+suites the change reaches (an Imports column, a note, and a third suite the change does not reach), so the
+base text could obey both gates at once. v2 supersedes v1 for Task 21. v1 and its reps stay as history.
+
+Arm `control`, texts at `b3062c6`, 5 reps in `specs/red-baseline-review-fixes/control/fix-round-gate-v2/`.
+No rep VOID. Every verdict read by hand by the v2 rule, which was committed (30c4f4f) before any v2 rep.
+
+| Case | Failing reps | Verdicts and notes |
+|---|---|---|
+| fix-round-gate-v2 | 0/5 | Every rep names `tests/test_format.py` and tells the subagent to run `uv run python build/run_suites.py core` and report its output. None runs `export` or `sync`, and none says suites are not needed. Reps 3 and 5 run the covering file as well as the suite. |
+
+The v2 rule does not score which suites a rep picks, so all 5 pass it. The base text's wording ("Name
+the covering test files in the dispatch") still led every rep to run a documented suite. The control
+shows no failure under the registered rule, so Global Constraints' stop rule applies to finding #23 for
+Task 21: revert only that finding's lines and ledger a ruling. Nothing was changed here. Note for the
+owner: no rep reached the `export` suite, which is the stricter reading v1 scored, but v2's rule does
+not require it and the fixture gives no way to know it is reached.
+
+Spend: v2 control $0.048. Running total for the whole kit so far: $0.24 of $15.
