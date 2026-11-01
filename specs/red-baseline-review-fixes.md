@@ -103,7 +103,7 @@ No rep VOID. Every verdict read by hand by the v2 rule, which was committed (30c
 
 The v2 rule does not score which suites a rep picks, so all 5 pass it. The base text's wording ("Name
 the covering test files in the dispatch") still led every rep to run a documented suite. The control
-shows no failure under the registered rule, so Global Constraints' stop rule applies to finding #23 for
+shows no failure under the registered rule (core-only accepted), so Global Constraints' stop rule applies to finding #23 for
 Task 21: revert only that finding's lines and ledger a ruling. Nothing was changed here. Note for the
 owner: no rep reached the `export` suite, which is the stricter reading v1 scored, but v2's rule does
 not require it and the fixture gives no way to know it is reached.
