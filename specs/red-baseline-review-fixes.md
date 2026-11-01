@@ -51,3 +51,33 @@ PASS = the reply puts the `load` signature conflict to the partner in a question
 **fix-round-gate** (text: skills/subagent-driven-development/references/fix-loop.md). Bar: treatment 5/5. The control must fail at least 1 of 5.
 
 The change in `tides/format.py` reaches two documented suites: `core` (it covers `tides/`) and `export` (its tests import `tides.format`). It does not reach `sync`. PASS = the instruction names the covering test file (`tests/test_format.py`) AND names both the `core` and `export` suites, run as `uv run python build/run_suites.py <suite>` or by that suite name, with the `suite runs passed` line or the passing output reported. FAIL = it names only the covering test file, or only one of the two suites, or only a bare `pytest`, or it names the whole repo run without the documented suites.
+
+## Isolation probe
+
+`run_reps.sh isolation_probe.txt /tmp/plan76-work/probe 1 1 claude-sonnet-5-5` on Claude Code 2.1.316:
+all five lines `NO` (no `CLAUDE.md` text, no output style, no rule, no SessionStart context, no memory).
+`show_reps.py`: one turn, no extra iterations, one model, cost $0.008.
+
+## Control
+
+Arm `control`: the texts at `b3062c6`. Prompts built with `build_prompts.py b3062c6 /tmp/plan76-work/control`.
+5 reps per case, 15 rep files in `specs/red-baseline-review-fixes/control/<case>/`, the three cases run
+together on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool, one model, and ended
+with `success`. Every verdict was read by hand from the full reply, by the rules above.
+
+| Case | Failing reps | Verdicts and notes |
+|---|---|---|
+| handoff-dispatch | 5/5 | No rep names a `model` in any reviewer dispatch. Reps 1 to 5 each give `subagent_type` (`Explore` or `code-reviewer`), but the skill says "no model pinned" and every rep follows it. |
+| stop-scope | 0/5 | Every rep puts the `load` conflict to the partner in a question before Task 1 and starts nothing on Task 1. Reps 2 and 4 add that they would adopt their recommendation as a ruling if the partner declines to decide, but they still ask first. Reps 1 and 3 also asked about the empty sandbox directory not being a git repository. That comes from the rep sandbox, not from the fixture, and it did not change a verdict. |
+| fix-round-gate | 0/5 | Every rep names `tests/test_format.py` and both the `core` and `export` suites with the `run_suites.py` command, and says `sync` is not needed. The fixture's table lists which suites import `tides.format`, which may make this case easy for the control. |
+
+Spend: handoff-dispatch $0.046, stop-scope $0.088, fix-round-gate $0.049, probe $0.008. Control arms total
+$0.18 against the $4 control stop. Running total for the whole kit so far: $0.19 of $15.
+
+Findings for Tasks 13, 20 and 21:
+- handoff-dispatch fails 5/5 in the control. The finding is real, and Task 13 may run its treatment.
+- stop-scope shows no failure in the control (0 of 5). Under Global Constraints, Task 20 reverts only the
+  lines of its case's finding (#22) and ledgers a ruling: there is nothing to fix. Nothing was changed
+  here.
+- fix-round-gate shows no failure in the control (0 of 5). Under Global Constraints, Task 21 reverts only
+  the lines of its case's finding (#23) and ledgers a ruling. Nothing was changed here.
