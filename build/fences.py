@@ -1,14 +1,17 @@
 '''CommonMark-correct fenced-block handling, shared by build/ gates.
 
-A fence closes only on a line of the same fence character whose run length is
->= the opener's, with nothing else on the line but whitespace. A naive
-non-greedy regex closes on the FIRST ``` it sees, which desynchronizes on
-nested fences (e.g. a ````markdown fence wrapping a literal ```python fence).
+An opener is any run of leading spaces, then three or more backticks or three
+or more tildes, then the info string. A fence closes only on a line of the same
+fence character whose run length is >= the opener's, with nothing else on the
+line but whitespace. A body line loses up to the opener's indent in leading
+spaces. A naive non-greedy regex closes on the FIRST ``` it sees, which
+desynchronizes on nested fences (e.g. a ````markdown fence wrapping a literal
+```python fence). All three functions share one scanner, so they agree.
 '''
 import re
-from typing import NamedTuple
+from typing import Iterator, NamedTuple
 
-FENCE_OPEN_RE = re.compile(r'^(`{3,})(.*)$')
+FENCE_OPEN_RE = re.compile(r'^( *)(`{3,}|~{3,})(.*)$')
 
 
 class CodeBlock(NamedTuple):
@@ -18,22 +21,46 @@ class CodeBlock(NamedTuple):
     code: str
 
 
+class _Fence(NamedTuple):
+    start: int
+    end: int | None  # None when the fence is never closed
+    info: str
+    body: list[str]
+
+
+def _closes(line: str, char: str, length: int) -> bool:
+    stripped = line.strip()
+    return stripped.startswith(char * length) and set(stripped) == {char}
+
+
+def _scan(text: str) -> Iterator[_Fence]:
+    '''Yield each outermost fence; an unclosed fence runs to the end.'''
+    lines = text.split('\n')
+    i = 0
+    while i < len(lines):
+        m = FENCE_OPEN_RE.match(lines[i])
+        if not m:
+            i += 1
+            continue
+        indent, run, info = len(m.group(1)), m.group(2), m.group(3)
+        if run[0] == '`' and '`' in info:
+            i += 1  # CommonMark: a backtick info string holds no backtick
+            continue
+        body: list[str] = []
+        j = i + 1
+        while j < len(lines) and not _closes(lines[j], run[0], len(run)):
+            line = lines[j]
+            body.append(line[min(indent, len(line) - len(line.lstrip(' '))):])
+            j += 1
+        yield _Fence(i + 1, j + 1 if j < len(lines) else None, info, body)
+        i = j + 1
+
+
 def strip_fenced_blocks(text: str) -> str:
     '''Remove fenced code blocks, honoring CommonMark fence-matching rules.'''
-    kept: list[str] = []
-    open_len: int | None = None
-    for line in text.split('\n'):
-        if open_len is None:
-            m = FENCE_OPEN_RE.match(line)
-            if m:
-                open_len = len(m.group(1))
-                continue
-            kept.append(line)
-        else:
-            stripped = line.strip()
-            if stripped.startswith('`' * open_len) and set(stripped) == {'`'}:
-                open_len = None
-    return '\n'.join(kept)
+    lines = text.split('\n')
+    drop = fenced_lines(text)
+    return '\n'.join(l for n, l in enumerate(lines, start=1) if n not in drop)
 
 
 def iter_code_blocks(text: str,
@@ -41,33 +68,18 @@ def iter_code_blocks(text: str,
     '''Outermost-level fenced blocks whose info string opens with one of langs.
 
     Nested fences are content, never blocks: a ```python inside a ````markdown
-    wrapper is template text. Returns blocks in document order.
+    wrapper is template text. An unclosed fence is not a block. Returns blocks
+    in document order.
     '''
     out: list[CodeBlock] = []
-    open_len: int | None = None
-    info_word = ''
-    info_rest = ''
-    start = 0
-    body: list[str] = []
-    for i, line in enumerate(text.split('\n'), start=1):
-        if open_len is None:
-            m = FENCE_OPEN_RE.match(line)
-            if m:
-                open_len = len(m.group(1))
-                parts = m.group(2).strip().split(None, 1)
-                info_word = parts[0] if parts else ''
-                info_rest = parts[1].strip() if len(parts) > 1 else ''
-                start = i
-                body = []
+    for fence in _scan(text):
+        parts = fence.info.strip().split(None, 1)
+        word = parts[0] if parts else ''
+        if fence.end is None or word not in langs:
             continue
-        stripped = line.strip()
-        if stripped.startswith('`' * open_len) and set(stripped) == {'`'}:
-            if info_word in langs:
-                out.append(CodeBlock(info_word, info_rest, start,
-                                     '\n'.join(body) + '\n' if body else ''))
-            open_len = None
-            continue
-        body.append(line)
+        rest = parts[1].strip() if len(parts) > 1 else ''
+        code = '\n'.join(fence.body) + '\n' if fence.body else ''
+        out.append(CodeBlock(word, rest, fence.start, code))
     return out
 
 
@@ -76,17 +88,8 @@ def fenced_lines(text: str) -> set[int]:
 
     Same matching rule as strip_fenced_blocks; an unclosed fence runs to the end.
     '''
+    n_lines = len(text.split('\n'))
     out: set[int] = set()
-    open_len: int | None = None
-    for i, line in enumerate(text.split('\n'), start=1):
-        if open_len is None:
-            m = FENCE_OPEN_RE.match(line)
-            if m:
-                open_len = len(m.group(1))
-                out.add(i)
-            continue
-        out.add(i)
-        stripped = line.strip()
-        if stripped.startswith('`' * open_len) and set(stripped) == {'`'}:
-            open_len = None
+    for fence in _scan(text):
+        out.update(range(fence.start, (fence.end or n_lines) + 1))
     return out
