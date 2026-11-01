@@ -19,6 +19,15 @@
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# A value-taking option with no value left would loop forever (shift 2 fails
+# without consuming anything), so stop with a JSON error instead.
+need_value() {
+  if [[ "$2" -lt 2 ]]; then
+    echo "{\"error\": \"$1 needs a value\"}"
+    exit 1
+  fi
+}
+
 # Parse arguments
 PROJECT_DIR=""
 FOREGROUND="false"
@@ -29,18 +38,22 @@ IDLE_TIMEOUT_MINUTES=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --project-dir)
+      need_value "$1" "$#"
       PROJECT_DIR="$2"
       shift 2
       ;;
     --host)
+      need_value "$1" "$#"
       BIND_HOST="$2"
       shift 2
       ;;
     --url-host)
+      need_value "$1" "$#"
       URL_HOST="$2"
       shift 2
       ;;
     --idle-timeout-minutes)
+      need_value "$1" "$#"
       IDLE_TIMEOUT_MINUTES="$2"
       shift 2
       ;;
@@ -62,6 +75,16 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Make a relative project dir absolute now: the script cd's to SCRIPT_DIR later,
+# which would otherwise break the session, log and pid paths.
+if [[ -n "$PROJECT_DIR" ]]; then
+  if ! mkdir -p "$PROJECT_DIR" 2>/dev/null || ! ABS_PROJECT_DIR="$(cd "$PROJECT_DIR" 2>/dev/null && pwd -P)"; then
+    echo "{\"error\": \"Cannot use project directory: $PROJECT_DIR\"}"
+    exit 1
+  fi
+  PROJECT_DIR="$ABS_PROJECT_DIR"
+fi
 
 if [[ -z "$URL_HOST" ]]; then
   if [[ "$BIND_HOST" == "127.0.0.1" || "$BIND_HOST" == "localhost" ]]; then
