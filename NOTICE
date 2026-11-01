@@ -814,7 +814,10 @@ Changes from upstream:
     subagent-driven-development writes the workspace path out literally
     in each later command instead of holding it in a shell variable,
     and uses `specs/plans/completed/<file>` as the plan path after
-    retirement, in SKILL.md and in references/final-review.md.
+    retirement, in SKILL.md and in references/final-review.md. Its
+    references/fix-loop.md has one fix-round gate: a fix round runs its
+    covering tests while it iterates, then runs the documented suite(s)
+    the change can reach once before it writes the fix report.
 
     brainstorming/
     dispatching-parallel-agents/
