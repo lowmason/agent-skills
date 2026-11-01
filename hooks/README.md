@@ -7,7 +7,11 @@ copying anything.
 | category | scripts | install |
 |---|---|---|
 | **Project tooling hooks** | `ruff-fix.sh`, `ruff-check.sh`, `uv-guard.sh` | per work-repo `cp`, **never** global |
-| **Agent contract hooks** | `readonly-agent-guard.py` | one global install in `~/.claude` |
+| **Agent contract hooks** | `readonly-agent-guard.py`, `dispatch-model-guard.py` | one global install in `~/.claude` |
+
+`dispatch-model-guard.py` runs on `PreToolUse` for `Agent`. It denies a dispatch with no `model`
+to an agent type that pins none. Model-pinned agents, built-in agents that pin their own model,
+and `fork` pass. Install it globally, like the read-only guard.
 
 # Project tooling hooks
 
