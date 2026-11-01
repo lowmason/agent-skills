@@ -87,6 +87,14 @@ def run(repo, tmp_path, claude, fake, *, only=None, force=False, allow_old=False
                       newest='2.1.902', today=TODAY, now=NOW, execute=fake, version_of=lambda path: version)
 
 
+def test_a_log_with_no_probe_table_refuses_before_any_probe_runs(repo, tmp_path, claude):
+    write_tree(repo, {state.PROBES: '# Probes\n\n| Term | Meaning |\n|---|---|\n| PASS | ok |\n'})
+    calls = []
+    with pytest.raises(state.SetupError, match='no probe log table'):
+        run(repo, tmp_path, claude, lambda *a, **k: calls.append(a))
+    assert calls == []
+
+
 def test_the_command_line_follows_r10_4():
     argv = probes.claude_args('/bin/claude', 'Say OK.', turns=2, sources='project', mode='default')
     assert argv[:3] == ['/bin/claude', 'Say OK.', '-p']
