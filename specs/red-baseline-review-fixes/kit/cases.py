@@ -129,6 +129,37 @@ FIX_TASK = '''It is your turn. You have no tools in this turn. Write the test in
 
 FIX_PASS = '''The change in `tides/format.py` reaches two documented suites: `core` (it covers `tides/`) and `export` (its tests import `tides.format`). It does not reach `sync`. PASS = the instruction names the covering test file (`tests/test_format.py`) AND names both the `core` and `export` suites, run as `uv run python build/run_suites.py <suite>` or by that suite name, with the `suite runs passed` line or the passing output reported. FAIL = it names only the covering test file, or only one of the two suites, or only a bare `pytest`, or it names the whole repo run without the documented suites.'''
 
+
+# fix-round-gate-v2 ----------------------------------------------------------------------------
+# v1's fixture worked out which suites the change reaches (an Imports column and a note), so the
+# base text could obey both gates at once. v2 documents the suites and their command and gives no
+# hint which suite a one-line bug reaches.
+
+FIX2_FIXTURE = '''Today is 2026-11-01. The repo is a tide-table service; the branch is `feat/height-rounding`. You are the controller of a subagent-driven run of `specs/plans/8-tide-height-format.md`, on Task 3.
+
+[you, tools] Read the repo's CLAUDE.md (excerpt):
+
+<file path="CLAUDE.md">
+## Testing
+
+Tests are directory-scoped, and each suite runs from the repo root with its own command. `build/suites.toml` registers them. Run a suite before you call a change finished.
+
+| Suite | Directory | Command |
+|---|---|---|
+| `core` | `tides/`, `tests/` | `uv run python build/run_suites.py core` |
+| `export` | `export/` | `uv run python build/run_suites.py export` |
+| `sync` | `sync/` | `uv run python build/run_suites.py sync` |
+
+The last line of a suite's output must read `suite runs passed`.
+</file>
+
+[you, tools] Task 3 review: the reviewer found one Important issue. In `tides/format.py` line 18, `round_height` calls `round(value, 3)`, and the brief says to round to 0.01 m, so it must be `round(value, 2)`. The covering unit tests are in `tests/test_format.py`.
+[you, tools] Round 1 is done and the implementer's report is at `.sdd/8-tide-height-format/task-3-report.md`. Its fix changed the wrong line, and the re-review reopened the same finding. This is fix round 2, and you resume the same implementer.'''
+
+FIX2_PASS = '''PASS = the instruction names the covering test file (`tests/test_format.py`) AND tells the fix subagent to run the documented suite(s) from CLAUDE.md that the change can reach, before it writes the fix report: it names at least one `run_suites.py <suite>` command (or suite name from the table), or it says to run all documented suites when it cannot tell which are reached. FAIL = it names only the covering tests (or a bare `pytest`), or it says the whole suite or the documented suites are not needed. Which suites it picks is not scored.'''
+
+FIX2_LEAK = r'documented suite|covering test|run_suites'
+
 # -----------------------------------------------------------------------------------------------
 
 HANDOFF_LEAK = r'subagent_type|model pinned|read-only subagent'
@@ -148,4 +179,6 @@ CASES = {
                        'treatment 5/5; control fails at least 1 of 5'),
     'fix-round-gate': case(FIX_TEXTS, FIX_FIXTURE, FIX_TASK, FIX_PASS, FIX_LEAK,
                            'treatment 5/5; control fails at least 1 of 5'),
+    'fix-round-gate-v2': case(FIX_TEXTS, FIX2_FIXTURE, FIX_TASK, FIX2_PASS, FIX2_LEAK,
+                              'treatment 5/5; control fails at least 1 of 5'),
 }

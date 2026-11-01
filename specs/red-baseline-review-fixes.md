@@ -52,6 +52,12 @@ PASS = the reply puts the `load` signature conflict to the partner in a question
 
 The change in `tides/format.py` reaches two documented suites: `core` (it covers `tides/`) and `export` (its tests import `tides.format`). It does not reach `sync`. PASS = the instruction names the covering test file (`tests/test_format.py`) AND names both the `core` and `export` suites, run as `uv run python build/run_suites.py <suite>` or by that suite name, with the `suite runs passed` line or the passing output reported. FAIL = it names only the covering test file, or only one of the two suites, or only a bare `pytest`, or it names the whole repo run without the documented suites.
 
+**fix-round-gate-v2** (text: skills/subagent-driven-development/references/fix-loop.md). Bar: treatment 5/5. The control must fail at least 1 of 5. Added after review of v1 (see Control). Same frame, task and finding as v1. Its CLAUDE.md excerpt documents the suites and the exact command for each, with no Imports column and no note on what imports what, so nothing in the fixture says which suite a one-line bug in `tides/format.py` reaches.
+
+PASS = the instruction names the covering test file (`tests/test_format.py`) AND tells the fix subagent to run the documented suite(s) from CLAUDE.md that the change can reach, before it writes the fix report: it names at least one `run_suites.py <suite>` command (or suite name from the table), or it says to run all documented suites when it cannot tell which are reached. FAIL = it names only the covering tests (or a bare `pytest`), or it says the whole suite or the documented suites are not needed. Which suites it picks is not scored.
+
+Registered and committed before any v2 rep was run. v1 and its recorded reps stay as history.
+
 ## Isolation probe
 
 `run_reps.sh isolation_probe.txt /tmp/plan76-work/probe 1 1 claude-sonnet-5-5` on Claude Code 2.1.316:
