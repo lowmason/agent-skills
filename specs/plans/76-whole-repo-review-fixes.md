@@ -1,5 +1,7 @@
 # Whole-Repo Review Fixes Implementation Plan
 
+**Status: COMPLETE (2026-11-01)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix the 38 Important findings that the 2026-10-31 whole-repo review of `b3062c6` left after its Critical finding was fixed (`305576b`, `f0403f8`).
@@ -40,6 +42,8 @@
 - **D4** (owner, plan review, 2026-11-01): `find-polluter.sh` exits 2 when the test command cannot start, and 2's meaning widens to "no test ran". Applied in: Open for plan review item 4, Task 1.
 - **D5** (owner, plan review, 2026-11-01): accept the three scope additions: `column_profile`'s `n_unique` counts non-null values (Task 4), `recommend.py:177` follows it (Task 5), and `zero_fraction`'s docstring is corrected (Task 3). Applied in: Open for plan review item 5, Tasks 3, 4 and 5.
 - **D6** (owner, plan review, 2026-11-01): the redactor's value class (punctuated values, values under 12 characters, `--api-key VALUE`) becomes a design item in `specs/deferred_items.md`, not a task in this plan. Applied in: Open for plan review item 6, `specs/deferred_items.md`.
+- **D7** (owner, plan completion gate, 2026-11-01): for finding #23 the owner chose "Apply D3 anyway". `fix-loop.md` was edited per D3 in 28031e4, although the micro-test controls showed no failure (v1 0/5, v2 0/5, and v2 is weak evidence). Applied in: Task 21 Step 3, `skills/subagent-driven-development/references/fix-loop.md` (28031e4), `NOTICE` (61b61d4).
+- **D8** (owner, plan completion gate, 2026-11-01): the small leftovers are deferred as one section of `specs/deferred_items.md`. Applied in: `specs/deferred_items.md` (section `76-whole-repo-review-fixes — 2026-11-01`). → item: 76-whole-repo-review-fixes — 2026-11-01
 
 ## Open for plan review
 
@@ -62,7 +66,7 @@
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Write the failing tests** (both parametrized over `BASHES`, like their neighbours)
+- [x] **Step 1: Write the failing tests** (both parametrized over `BASHES`, like their neighbours)
 
 ```python
 def test_runner_that_cannot_start_is_not_an_all_clear(bash, project, tmp_path):
@@ -82,21 +86,21 @@ def test_test_path_with_a_space_runs_as_one_file(bash, project, tmp_path):
     assert './my tests/test_spaced.py' in log.read_text().splitlines()
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py systematic-debugging -- -k "cannot_start or with_a_space"`
 Expected: FAIL. The first fails on `assert 0 == 2`. The second fails on the log line, because the runner was handed `./my` and `tests/test_spaced.py`.
 
-- [ ] **Step 3: Fix the loop in `find-polluter.sh`**
+- [x] **Step 3: Fix the loop in `find-polluter.sh`**
 
 Iterate with `while IFS= read -r TEST_FILE; do … done <<EOF` over `$TEST_FILES` (a here-document, not a pipe, so `exit` leaves the script). Run the test as `$TEST_CMD "$TEST_FILE" </dev/null >/dev/null 2>&1`, so a runner that reads stdin cannot consume the list. Keep its exit status. On 126 or 127, print a line containing `could not start` that names `$TEST_CMD` and says this is not an all-clear, then exit 2. Reword the header's exit-status comment: 2 means no test ran, because no file matched or the test command could not start.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py systematic-debugging`
 Expected: `suite runs passed`, +2 test functions (each runs once per bash found).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/systematic-debugging/find-polluter.sh skills/systematic-debugging/test_find_polluter.py
@@ -113,7 +117,7 @@ A relative `--project-dir` builds the session, log and pid paths relative to the
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Module docstring as in `test_server.py`. `START = Path(__file__).resolve().parent / 'start-server.sh'`, and `STOP` names `stop-server.sh` the same way. `needs_node` matches `test_server.py`'s marker.
 
@@ -141,21 +145,21 @@ def test_relative_project_dir_starts_the_server_under_it(tmp_path):
             subprocess.run(['bash', str(STOP), str(state.parent)], capture_output=True, timeout=10)
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py brainstorming -- -k "without_a_value or relative_project_dir"`
 Expected: FAIL. The four option cases fail with `TimeoutExpired`. The relative case fails with exit 1 (`Server failed to start` or a redirect error), or skips if node is absent.
 
-- [ ] **Step 3: Fix `start-server.sh`**
+- [x] **Step 3: Fix `start-server.sh`**
 
 Before each `shift 2`, a value-taking option with fewer than two arguments left prints `{"error": "<option> needs a value"}` and exits 1. After parsing, a set `PROJECT_DIR` becomes absolute (`mkdir -p` it, then `cd … && pwd -P`). A failure there prints a JSON error naming the directory and exits 1. Leave the other flows unchanged.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py brainstorming`
 Expected: `suite runs passed`, +5 tests (one may skip without node).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/brainstorming/scripts/start-server.sh skills/brainstorming/scripts/test_start_server.py
@@ -172,7 +176,7 @@ git commit -m "fix(brainstorming): start-server takes a relative project dir and
 
 **Interfaces:** `overdispersion(s: pl.Series) -> float | None` keeps its signature.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 @pytest.mark.parametrize('values', [[3], [None, 4]])
@@ -180,19 +184,19 @@ def test_overdispersion_none_below_two_values(values):
     assert overdispersion(pl.Series(values, dtype=pl.Int64)) is None
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `uv run python build/run_suites.py recommend-probabilistic-model -- -k below_two_values`
 Expected: FAIL with `TypeError` in both cases.
 
-- [ ] **Step 3: Return None when fewer than two non-null values remain**, beside the existing empty check. In `zero_fraction`'s docstring, replace "high values point to zero-inflated / hurdle models" with a statement that only zeros beyond what Poisson or NB predicts at the observed mean point there. No code change in `zero_fraction`.
+- [x] **Step 3: Return None when fewer than two non-null values remain**, beside the existing empty check. In `zero_fraction`'s docstring, replace "high values point to zero-inflated / hurdle models" with a statement that only zeros beyond what Poisson or NB predicts at the observed mean point there. No code change in `zero_fraction`.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py recommend-probabilistic-model`
 Expected: `suite runs passed`, +2 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/recommend-probabilistic-model/scripts/characterize.py skills/recommend-probabilistic-model/scripts/test_characterize.py
@@ -209,7 +213,7 @@ git commit -m "fix(recommend-probabilistic-model): overdispersion is None below 
 
 **Interfaces:** `column_profile`'s `n_unique` field now counts non-null distinct values (Open for plan review, item 5). Task 5 relies on that meaning.
 
-- [ ] **Step 1: Write the failing tests** (use the module's existing import name for `profile.py`)
+- [x] **Step 1: Write the failing tests** (use the module's existing import name for `profile.py`)
 
 ```python
 def test_top_categoricals_handles_a_column_named_count():
@@ -238,19 +242,20 @@ def test_vintage_check_ignores_a_null_vintage():
     assert out['period_keys_with_multiple_vintages'] == 0
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py explore-data -- -k "named_count or null_period or apart_from_nulls or null_vintage"`
 Expected: 4 FAIL: DuplicateError; `3 == 2`; no CONSTANT flag; `2 == 1`.
 
-- [ ] **Step 3: Fix `profile.py`.** Alias the count to a name that cannot equal the one selected column (for example `f"{c}_count"`) and read that name back. Count distinct values with `drop_nulls()` before `n_unique()` at all five sites. If an existing test pins a null-inclusive count, it encodes the defect: update it and name it in the report.
+- [x] **Step 3: Fix `profile.py`.** Alias the count to a name that cannot equal the one selected column (for example `f"{c}_count"`) and read that name back. Count distinct values with `drop_nulls()` before `n_unique()` at all five sites. If an existing test pins a null-inclusive count, it encodes the defect: update it and name it in the report.
+> Deviation: fix round 1 (9fbf6d2) also made `date_ranges` count present periods with `drop_nulls()`, a sixth site. The final-review fix wave (b19fbb1, 9afcc06) then made the hand-written recipes in `skills/explore-data/SKILL.md` drop nulls before `n_unique()`. No task listed that file.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py explore-data`
 Expected: `suite runs passed`, +4 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/explore-data/scripts/profile.py skills/explore-data/scripts/test_profile.py
@@ -267,7 +272,7 @@ With a categorical-only field set, the comparison path returns a bar whose encod
 
 **Interfaces:** Consumes Task 4's non-null `n_unique` meaning.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```python
 def test_comparison_with_only_a_categorical_counts_rows():
@@ -284,19 +289,19 @@ def test_fields_from_frame_counts_distinct_values_without_null():
     assert fields_from_frame(df)[0].n_unique == 2
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py recommend-visualization -- -k "only_a_categorical or without_a_categorical or without_null"`
 Expected: 3 FAIL: `'value'` in the encoding; a non-empty list; `3 == 2`.
 
-- [ ] **Step 3: Fix `recommend.py`.** With a categorical and no quantitative field, return one `bar` candidate encoded `{'x': cat.name, 'y': 'count()'}` (the `count()` form this module already uses for density charts). With no categorical field, return `[]`, which the CLI already reports with exit 1. In `fields_from_frame`, count `df[c].drop_nulls().n_unique()`.
+- [x] **Step 3: Fix `recommend.py`.** With a categorical and no quantitative field, return one `bar` candidate encoded `{'x': cat.name, 'y': 'count()'}` (the `count()` form this module already uses for density charts). With no categorical field, return `[]`, which the CLI already reports with exit 1. In `fields_from_frame`, count `df[c].drop_nulls().n_unique()`.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py recommend-visualization`
 Expected: `suite runs passed`, +3 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/recommend-visualization/scripts/recommend.py skills/recommend-visualization/scripts/test_recommend.py
@@ -313,7 +318,7 @@ git commit -m "fix(recommend-visualization): comparison never names a column the
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 def test_a_missing_or_non_markdown_path_exits_2_and_names_it(tmp_path, capsys):
@@ -324,19 +329,19 @@ def test_a_missing_or_non_markdown_path_exits_2_and_names_it(tmp_path, capsys):
         assert str(bad) in capsys.readouterr().err
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `uv run python build/run_suites.py build -- -k missing_or_non_markdown`
 Expected: FAIL on `0 == 2`.
 
-- [ ] **Step 3: In `main`, before any check runs,** print each argument that is neither a directory nor an existing `.md` file to stderr, then return 2.
+- [x] **Step 3: In `main`, before any check runs,** print each argument that is neither a directory nor an existing `.md` file to stderr, then return 2.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py build`
 Expected: `suite runs passed`, +1 test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/check_snippets.py build/test_check_snippets.py
@@ -353,12 +358,12 @@ Tier 1 never sees a Python block whose fence is indented or written with `~~~`, 
 
 **Interfaces:** `iter_code_blocks`, `strip_fenced_blocks` and `fenced_lines` keep their signatures. `check_snippets.py`, `check_jax_examples.py`, `check_conformance.py` and `check_frontmatter.py` all import them, so all four see the change.
 
-- [ ] **Step 1: Record the block inventory before the change**
+- [x] **Step 1: Record the block inventory before the change**
 
 Run: `uv run python -c "import sys; sys.path.insert(0, 'build'); import fences, pathlib; [print(p, b.line) for p in sorted(pathlib.Path('skills').rglob('*.md')) for b in fences.iter_code_blocks(p.read_text())]" > /tmp/plan76-blocks-before.txt`
 Expected: one line per Python block found today.
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 ```python
 def test_indented_fence_in_a_list_item_is_a_block():
@@ -378,19 +383,19 @@ def test_strip_and_fenced_lines_follow_the_same_rule():
     assert fences.fenced_lines(text) == {2, 3, 4}
 ```
 
-- [ ] **Step 3: Run them to verify they fail**
+- [x] **Step 3: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py build -- -k "indented_fence or tilde_fence or follow_the_same_rule"`
 Expected: 3 FAIL (no block found; text not stripped).
 
-- [ ] **Step 4: Widen the opener in `fences.py`.** It is any run of leading spaces, then three or more backticks or three or more tildes, then the info string. Keep the opener's indent, character and length. A closer is a line of the same character, at least as long, with only whitespace around it. Remove up to the opener's indent of leading spaces from each body line. All three functions use the one rule. Update the module docstring.
+- [x] **Step 4: Widen the opener in `fences.py`.** It is any run of leading spaces, then three or more backticks or three or more tildes, then the info string. Keep the opener's indent, character and length. A closer is a line of the same character, at least as long, with only whitespace around it. Remove up to the opener's indent of leading spaces from each body line. All three functions use the one rule. Update the module docstring.
 
-- [ ] **Step 5: Run the inventory again and every consumer gate**
+- [x] **Step 5: Run the inventory again and every consumer gate**
 
 Run the Step 1 command into `/tmp/plan76-blocks-after.txt`, then `diff /tmp/plan76-blocks-before.txt /tmp/plan76-blocks-after.txt`.
 Expected: only added lines, `altair.md` 49 among them. Then run `uv run python build/check_snippets.py skills/`, `bash build/run_commit_lints.sh` and `uv run python build/run_suites.py build`. A newly visible block that fails to parse is fixed in place, or marked `noparse` with a reason when it cannot run by design (`build/check_snippets.py` documents the markers). List each such block in the report. If a newly visible block sits in a bayesian-workflow file, run that file through Tiers 2 and 3 as well.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/fences.py build/test_fences.py   # plus any block fixed in Step 5
@@ -407,7 +412,7 @@ A `PROBES.md` whose log table lacks a recognizable header parses as empty, so ev
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Write the failing test** (with the module's `repo` and `claude` fixtures, its `run` helper and `cc_fixtures.write_tree`)
+- [x] **Step 1: Write the failing test** (with the module's `repo` and `claude` fixtures, its `run` helper and `cc_fixtures.write_tree`)
 
 ```python
 def test_a_log_with_no_probe_table_refuses_before_any_probe_runs(repo, tmp_path, claude):
@@ -418,19 +423,19 @@ def test_a_log_with_no_probe_table_refuses_before_any_probe_runs(repo, tmp_path,
     assert calls == []
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `uv run python build/run_suites.py cc_guide -- -k no_probe_table`
 Expected: FAIL. Either `calls` is non-empty, or the error comes from `append_row` with another message.
 
-- [ ] **Step 3: In `run`, before choosing probes,** raise `SetupError` when the `PROBES.md` text exists and no line passes `is_probe_header`. The message contains `no probe log table`, names `PROBES.md` and says to restore the header. An absent file stays allowed: the first run creates it.
+- [x] **Step 3: In `run`, before choosing probes,** raise `SetupError` when the `PROBES.md` text exists and no line passes `is_probe_header`. The message contains `no probe log table`, names `PROBES.md` and says to restore the header. An absent file stays allowed: the first run creates it.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: `suite runs passed`, +1 test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/probes.py build/cc_guide/test_probes.py
@@ -447,21 +452,21 @@ The error notice says `run build/cc_guide/cli.py check`. The file is mode 100644
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Change every expected string in the three test files** from `→ run build/cc_guide/cli.py check` to `→ uv run python build/cc_guide/cli.py check`. Find them with `/usr/bin/grep -rn "cli.py check" build/cc_guide/test_*.py`.
+- [x] **Step 1: Change every expected string in the three test files** from `→ run build/cc_guide/cli.py check` to `→ uv run python build/cc_guide/cli.py check`. Find them with `/usr/bin/grep -rn "cli.py check" build/cc_guide/test_*.py`.
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: FAIL in each test whose expected string changed.
 
-- [ ] **Step 3: Change `TO_CHECK` in `notice.py`** to `' → uv run python build/cc_guide/cli.py check'`, and the two `fail_notice` hints in `notice.sh` to `'uv run python build/cc_guide/cli.py check'`. The 300-character `LIMIT` still holds: the longest notice test must not truncate.
+- [x] **Step 3: Change `TO_CHECK` in `notice.py`** to `' → uv run python build/cc_guide/cli.py check'`, and the two `fail_notice` hints in `notice.sh` to `'uv run python build/cc_guide/cli.py check'`. The 300-character `LIMIT` still holds: the longest notice test must not truncate.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: `suite runs passed`, +0 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/notice.py build/cc_guide/notice.sh build/cc_guide/test_notice.py build/cc_guide/test_cli.py build/cc_guide/test_notice_sh.py
@@ -477,16 +482,16 @@ The live probe (`hooks/probe-readonly-guard.sh`) and `build/cc_guide/probe_check
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Add the assertion** `assert reason.startswith('readonly-agent-guard: ')` to that test.
+- [x] **Step 1: Add the assertion** `assert reason.startswith('readonly-agent-guard: ')` to that test.
 
-- [ ] **Step 2: Show it can fail.** In this worktree only, change the prefix at `hooks/readonly-agent-guard.py:975` to `guard: `, run `uv run python build/run_suites.py hooks -- -k names_agent_command`, and expect FAIL on the new assertion. Then restore the file with `git checkout -- hooks/readonly-agent-guard.py`, and confirm with `git diff --exit-code hooks/readonly-agent-guard.py`. The installed guard reads the main checkout, so this edit never reaches it.
+- [x] **Step 2: Show it can fail.** In this worktree only, change the prefix at `hooks/readonly-agent-guard.py:975` to `guard: `, run `uv run python build/run_suites.py hooks -- -k names_agent_command`, and expect FAIL on the new assertion. Then restore the file with `git checkout -- hooks/readonly-agent-guard.py`, and confirm with `git diff --exit-code hooks/readonly-agent-guard.py`. The installed guard reads the main checkout, so this edit never reaches it.
 
-- [ ] **Step 3: Run the suite**
+- [x] **Step 3: Run the suite**
 
 Run: `uv run python build/run_suites.py hooks`
 Expected: `suite runs passed`, +0 tests.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add hooks/test_readonly_agent_guard.py
@@ -503,9 +508,9 @@ The generator maps the read-only heading to `sandbox_mode = "read-only"` (`build
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Probe the sandbox.** With `codex sandbox --help` for the flags, run `uv run --with pytest python -c 'import pytest'` from this repo under the read-only mode and under the workspace-write mode. Record both results in the report. If workspace-write lets uv write its cache, the test-runner adapter gets `sandbox_mode = "workspace-write"`. Otherwise it gets no `sandbox_mode` key and inherits the session's mode.
+- [x] **Step 1: Probe the sandbox.** With `codex sandbox --help` for the flags, run `uv run --with pytest python -c 'import pytest'` from this repo under the read-only mode and under the workspace-write mode. Record both results in the report. If workspace-write lets uv write its cache, the test-runner adapter gets `sandbox_mode = "workspace-write"`. Otherwise it gets no `sandbox_mode` key and inherits the session's mode.
 
-- [ ] **Step 2: Write the failing test** in `build/test_runtime_support.py`, beside the read-only test at line 38
+- [x] **Step 2: Write the failing test** in `build/test_runtime_support.py`, beside the read-only test at line 38
 
 ```python
 def test_codex_test_runner_is_not_read_only():
@@ -515,22 +520,23 @@ def test_codex_test_runner_is_not_read_only():
 
 Keep the existing read-only assertion for the other read-only agents.
 
-- [ ] **Step 3: Run it to verify it fails**
+- [x] **Step 3: Run it to verify it fails**
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k test_runner_is_not_read_only`
 Expected: FAIL on `'read-only' != 'read-only'`.
 
-- [ ] **Step 4: Exempt `test-runner` in the generator.** Add a named frozenset of agents whose commands write caches, holding `test-runner`, with a comment that cites uv's cache. Emit Step 1's choice for those agents. Regenerate with `uv run --with pyyaml python build/sync_runtime_assets.py`, then check with `--check`. In `README.md:130`, say that every Codex adapter sets read-only except `test-runner`, whose test commands write caches, so its contract alone keeps it from editing.
+- [x] **Step 4: Exempt `test-runner` in the generator.** Add a named frozenset of agents whose commands write caches, holding `test-runner`, with a comment that cites uv's cache. Emit Step 1's choice for those agents. Regenerate with `uv run --with pyyaml python build/sync_runtime_assets.py`, then check with `--check`. In `README.md:130`, say that every Codex adapter sets read-only except `test-runner`, whose test commands write caches, so its contract alone keeps it from editing.
+> Deviation: Step 1 found that workspace-write also blocks uv's cache, so `test-runner` gets no `sandbox_mode` key and inherits the session's mode. A controller hand fix (6dbff8d) added the probe result to `README.md`.
 
-- [ ] **Step 5: Name the dispatch guard.** In `README.md`'s layout line, Hooks section and table, and in `hooks/README.md`'s category table, add `dispatch-model-guard.py` with its event (`PreToolUse` on `Agent`), what it denies (a dispatch with no `model` to an agent type that pins none), and its install (global, like the read-only guard). Take each fact from the hook's own docstring.
+- [x] **Step 5: Name the dispatch guard.** In `README.md`'s layout line, Hooks section and table, and in `hooks/README.md`'s category table, add `dispatch-model-guard.py` with its event (`PreToolUse` on `Agent`), what it denies (a dispatch with no `model` to an agent type that pins none), and its install (global, like the read-only guard). Take each fact from the hook's own docstring.
 Check: `/usr/bin/grep -c dispatch-model-guard README.md hooks/README.md` prints a count of at least 1 for each file (0 before).
 
-- [ ] **Step 6: Run the gates**
+- [x] **Step 6: Run the gates**
 
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py`, then `bash build/run_commit_lints.sh`
 Expected: pass, +1 test; `commit lints passed`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/sync_runtime_assets.py build/test_runtime_support.py runtimes/codex/agents/test-runner.toml README.md hooks/README.md
@@ -546,19 +552,22 @@ git commit -m "fix(runtimes): Codex test-runner can run uv; READMEs name the dis
 
 **Interfaces:** Produces the three cases that Tasks 13, 20 and 21 run as treatment arms: `handoff-dispatch`, `stop-scope`, `fix-round-gate`.
 
-- [ ] **Step 1: Write the three cases.** For each one, the system context is the whole file at this plan's base commit, and the user message tempts the failure without naming the case.
+- [x] **Step 1: Write the three cases.** For each one, the system context is the whole file at this plan's base commit, and the user message tempts the failure without naming the case.
   - `handoff-dispatch`: context `skills/prepare-handoff/SKILL.md`. The brief is written and both reviewer templates are filled. Ask for the exact Agent tool calls the agent makes next, and nothing else. Reading rule: a rep passes when every reviewer dispatch names a subagent type and a model.
   - `stop-scope`: context `skills/executing-plans/SKILL.md`. At launch, with the partner present, pre-flight finds that Task 2 produces `load(path) -> Frame` while Task 4 consumes `load(path, *, lazy) -> Frame`. Ask what the agent does next, in one paragraph. Reading rule: a rep passes when it puts the conflict to the partner before Task 1. It fails when it rules alone, citing the five stops, or starts Task 1 first.
   - `fix-round-gate`: context `skills/subagent-driven-development/references/fix-loop.md`. Round 2 must fix a one-line bug in a repo whose `CLAUDE.md` documents per-directory suites run by `uv run python build/run_suites.py <suite>`. Ask for the test instruction in the fix dispatch. Reading rule: a rep passes when it names the covering tests and the documented suite(s) the change reaches.
-- [ ] **Step 2: Write the record.** For each case, write its reading rule and its bar into `specs/red-baseline-review-fixes.md`. Treatment passes 5/5. The control must fail at least 1 of 5, or Global Constraints' stop rule applies. Commit the kit and record before running any rep.
-- [ ] **Step 3: Pilot isolation.** Run `bash specs/red-baseline-review-fixes/kit/run_reps.sh specs/red-baseline-review-fixes/kit/isolation_probe.txt /tmp/plan76-probe 1 1 claude-sonnet-5-5` and confirm the rep shows no user-level context, as plan 75's Task 1 did.
-- [ ] **Step 4: Run the three control arms** (five reps each, built from the base-commit text). Read every rep, score it by its committed rule, and record the scores and the spend.
-- [ ] **Step 5: Commit**
+> Deviation: a ruling found that the v1 `fix-round-gate` fixture showed which suites the change reaches, so a 0/5 control was a fixture artifact. A `fix-round-gate-v2` case was added (30c4f4f), with its rule committed before any rep. Its control also scored 0/5 (21b788e, 1336e4e). v1 stays as history.
+- [x] **Step 2: Write the record.** For each case, write its reading rule and its bar into `specs/red-baseline-review-fixes.md`. Treatment passes 5/5. The control must fail at least 1 of 5, or Global Constraints' stop rule applies. Commit the kit and record before running any rep.
+- [x] **Step 3: Pilot isolation.** Run `bash specs/red-baseline-review-fixes/kit/run_reps.sh specs/red-baseline-review-fixes/kit/isolation_probe.txt /tmp/plan76-probe 1 1 claude-sonnet-5-5` and confirm the rep shows no user-level context, as plan 75's Task 1 did.
+- [x] **Step 4: Run the three control arms** (five reps each, built from the base-commit text). Read every rep, score it by its committed rule, and record the scores and the spend.
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/red-baseline-review-fixes specs/red-baseline-review-fixes.md
 git commit -m "test(specs): micro-test kit and control arms for plan 76"
 ```
+
+> Deviation: five commits, not one: 13dde08 (kit and rules, before any rep), a53b542 (control arms), 30c4f4f, 21b788e and 1336e4e (the v2 case). The whole kit spent about $0.3 of the $15 cap.
 
 ### Task 13: dispatch text names a model (#17, #18)
 
@@ -570,13 +579,14 @@ git commit -m "test(specs): micro-test kit and control arms for plan 76"
 
 **Interfaces:** Consumes Task 12's `handoff-dispatch` case.
 
-- [ ] **Step 1: Show the failure.** Run `printf '%s' '{"tool_name":"Agent","tool_input":{"subagent_type":"cc-guide-verifier","prompt":"x"}}' | python3 hooks/dispatch-model-guard.py`.
+- [x] **Step 1: Show the failure.** Run `printf '%s' '{"tool_name":"Agent","tool_input":{"subagent_type":"cc-guide-verifier","prompt":"x"}}' | python3 hooks/dispatch-model-guard.py`.
 Expected: a JSON deny. With `"model":"sonnet"` added, expected: no output, exit 0.
-- [ ] **Step 2: Edit `cc-guide/SKILL.md:39`.** The dispatch passes `model: sonnet`, the verifier's own pin.
-- [ ] **Step 3: Edit `prepare-handoff/SKILL.md:78-79`.** Dispatch each reviewer as a read-only `general-purpose` subagent at the standard tier: `model: sonnet` on Claude Code. Name no section of another skill (that would add an install dependency).
-- [ ] **Step 4: Run the `handoff-dispatch` treatment arm** (five reps on the edited text), score it by the committed rule, and append the result. The bar passes, or the stop rule in Global Constraints applies.
-- [ ] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 6: Commit**
+- [x] **Step 2: Edit `cc-guide/SKILL.md:39`.** The dispatch passes `model: sonnet`, the verifier's own pin.
+- [x] **Step 3: Edit `prepare-handoff/SKILL.md:78-79`.** Dispatch each reviewer as a read-only `general-purpose` subagent at the standard tier: `model: sonnet` on Claude Code. Name no section of another skill (that would add an install dependency).
+- [x] **Step 4: Run the `handoff-dispatch` treatment arm** (five reps on the edited text), score it by the committed rule, and append the result. The bar passes, or the stop rule in Global Constraints applies.
+> Deviation: the treatment arm was built from a `git stash create` commit of the edited working tree, and its rep JSONs were committed under `specs/red-baseline-review-fixes/treatment/`, like the control layout.
+- [x] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add .claude/skills/cc-guide/SKILL.md skills/prepare-handoff/SKILL.md specs/red-baseline-review-fixes.md
@@ -592,14 +602,14 @@ The ignore check at `skills/using-git-worktrees/SKILL.md:100-106` fails two ways
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the failure**
+- [x] **Step 1: Show the failure**
 
 Run: `d=$(mktemp -d) && git -C "$d" init -q && printf '.worktrees/\n' > "$d/.gitignore" && git -C "$d" check-ignore -q .worktrees; echo "bare=$?"; git -C "$d" check-ignore -q .worktrees/; echo "slash=$?"`
 Expected: `bare=1`, `slash=0`.
-- [ ] **Step 2: Edit the check** to test only the selected directory, with a trailing slash: `git check-ignore -q "$LOCATION/"`. Name `LOCATION` where the directory is chosen.
-- [ ] **Step 3: Edit the Python setup.** With `uv.lock`, run `uv sync`. With `poetry.lock`, run `poetry install`. With `requirements.txt`, keep the pip line. A `pyproject.toml` with neither lock file triggers no automatic install: follow the project's README, or ask.
-- [ ] **Step 4: Run the gates.** Rerun Step 1's commands with the new check form, and expect `0`. Then `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 5: Commit**
+- [x] **Step 2: Edit the check** to test only the selected directory, with a trailing slash: `git check-ignore -q "$LOCATION/"`. Name `LOCATION` where the directory is chosen.
+- [x] **Step 3: Edit the Python setup.** With `uv.lock`, run `uv sync`. With `poetry.lock`, run `poetry install`. With `requirements.txt`, keep the pip line. A `pyproject.toml` with neither lock file triggers no automatic install: follow the project's README, or ask.
+- [x] **Step 4: Run the gates.** Rerun Step 1's commands with the new check form, and expect `0`. Then `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/using-git-worktrees/SKILL.md
@@ -615,11 +625,11 @@ git commit -m "fix(using-git-worktrees): check the chosen dir with a slash; uv b
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the failure.** Run `/usr/bin/grep -n "max existing id" CLAUDE.md` and `/usr/bin/grep -n "Skill-Name-With-Hyphens\|letters, numbers" skills/writing-skills/references/discovery.md skills/writing-skills/SKILL.md`, and quote the lint's rule at `build/check_frontmatter.py:402`.
-- [ ] **Step 2: Edit `CLAUDE.md:55`.** The id is the `next free:` id that writing-plans' `entry_check.py` prints. Point to writing-plans rather than restating the script's logic.
-- [ ] **Step 3: Edit the writing-skills lines.** A name uses lowercase letters, digits and hyphens, and equals the skill's directory name. The template's example becomes `skill-name-with-hyphens`.
-- [ ] **Step 4: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed` (`check_conformance` and the cc_guide lint cover `CLAUDE.md`).
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Show the failure.** Run `/usr/bin/grep -n "max existing id" CLAUDE.md` and `/usr/bin/grep -n "Skill-Name-With-Hyphens\|letters, numbers" skills/writing-skills/references/discovery.md skills/writing-skills/SKILL.md`, and quote the lint's rule at `build/check_frontmatter.py:402`.
+- [x] **Step 2: Edit `CLAUDE.md:55`.** The id is the `next free:` id that writing-plans' `entry_check.py` prints. Point to writing-plans rather than restating the script's logic.
+- [x] **Step 3: Edit the writing-skills lines.** A name uses lowercase letters, digits and hyphens, and equals the skill's directory name. The template's example becomes `skill-name-with-hyphens`.
+- [x] **Step 4: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed` (`check_conformance` and the cc_guide lint cover `CLAUDE.md`).
+- [x] **Step 5: Commit**
 
 ```bash
 git add CLAUDE.md skills/writing-skills/references/discovery.md skills/writing-skills/SKILL.md
@@ -635,11 +645,12 @@ git commit -m "docs: plan-id and skill-name rules match the code that enforces t
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the failure.** Write a scratch backlog file holding one parked-stage item the way `:161-163` describes it, then run `uv run skills/writing-plans/scripts/deferred_stats.py --file <scratch file> --json`. Expected: the item counts in `undated_open`.
-- [ ] **Step 2: Edit `derive-roadmap/SKILL.md`.** Each parked stage becomes one item under a dated `## <roadmap-name> — <YYYY-MM-DD>` section, following writing-plans' Deferred-item schema (`references/deferred-backlog.md`), with `Done when:` naming the stage's Produces. Name the schema by skill and file. If that adds a path into another skill, mirror it in `install.py`'s `DEPENDENCIES`, or in `build/test_runtime_support.py`'s `SOFT_REFERENCES` with a reason.
-- [ ] **Step 3: Edit `spec-synthesis.md`.** Keep the two exemplars as the first choice when the agent-skills repo is at hand. Otherwise, the skeleton listed in the same paragraph is the format.
-- [ ] **Step 4: Run the gates.** Rerun Step 1 with the new form, and expect `undated_open` to be 0. Then `bash build/run_commit_lints.sh`.
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Show the failure.** Write a scratch backlog file holding one parked-stage item the way `:161-163` describes it, then run `uv run skills/writing-plans/scripts/deferred_stats.py --file <scratch file> --json`. Expected: the item counts in `undated_open`.
+- [x] **Step 2: Edit `derive-roadmap/SKILL.md`.** Each parked stage becomes one item under a dated `## <roadmap-name> — <YYYY-MM-DD>` section, following writing-plans' Deferred-item schema (`references/deferred-backlog.md`), with `Done when:` naming the stage's Produces. Name the schema by skill and file. If that adds a path into another skill, mirror it in `install.py`'s `DEPENDENCIES`, or in `build/test_runtime_support.py`'s `SOFT_REFERENCES` with a reason.
+> Deviation: the schema is named in prose ("the writing-plans skill's deferred-backlog reference"), because `check_frontmatter.py` rejects a backticked path into another skill. No `DEPENDENCIES` change was needed.
+- [x] **Step 3: Edit `spec-synthesis.md`.** Keep the two exemplars as the first choice when the agent-skills repo is at hand. Otherwise, the skeleton listed in the same paragraph is the format.
+- [x] **Step 4: Run the gates.** Rerun Step 1 with the new form, and expect `undated_open` to be 0. Then `bash build/run_commit_lints.sh`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/derive-roadmap/SKILL.md skills/describe-critique-methodology/references/spec-synthesis.md   # plus install.py or build/test_runtime_support.py if Step 2 needed it
@@ -655,10 +666,10 @@ git commit -m "fix(skills): parked stages carry the item schema; synthesis has a
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the failure.** The class docstring sets `train = [0, s_k - max(embargo, label_horizon))`. From `skills/tune-hyperparameters/scripts`, a one-off `uv run python -c` over 60 rows prints the first fold's last training index. Expect `s_k - 3` for `PurgedTimeSeriesSplit(n_splits=4, embargo=2)`, and `s_k - 4` with `label_horizon=3`. For a 3-period target, the first split keeps a row whose label overlaps validation.
-- [ ] **Step 2: Pass `label_horizon=h`** to both the outer and the inner splitter in the example.
-- [ ] **Step 3: Run the gates.** `uv run python build/check_snippets.py skills/tune-hyperparameters/` and `bash build/run_commit_lints.sh`.
-- [ ] **Step 4: Commit**
+- [x] **Step 1: Show the failure.** The class docstring sets `train = [0, s_k - max(embargo, label_horizon))`. From `skills/tune-hyperparameters/scripts`, a one-off `uv run python -c` over 60 rows prints the first fold's last training index. Expect `s_k - 3` for `PurgedTimeSeriesSplit(n_splits=4, embargo=2)`, and `s_k - 4` with `label_horizon=3`. For a 3-period target, the first split keeps a row whose label overlaps validation.
+- [x] **Step 2: Pass `label_horizon=h`** to both the outer and the inner splitter in the example.
+- [x] **Step 3: Run the gates.** `uv run python build/check_snippets.py skills/tune-hyperparameters/` and `bash build/run_commit_lints.sh`.
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/tune-hyperparameters/SKILL.md
@@ -679,16 +690,18 @@ git commit -m "fix(tune-hyperparameters): nested CV carries the label horizon"
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the failures.** Run `uv run python build/versions.py run snippets -- python -c "import arviz as az; print(az.rcParams['stats.ci_prob'], az.rcParams['stats.ci_kind'], az.rcParams['stats.point_estimate'])"` and expect `0.89 eti mean`. Run `/usr/bin/grep -rn "model_output.nc" skills/bayesian-workflow` and expect hits. Run `/usr/bin/grep -n 'numpyro.sample("' skills/bayesian-workflow/references/model-template.md` and expect no `beta` site.
-- [ ] **Step 2: #32 and #35.** In `reporting.md`'s figure block, set `az.rcParams['stats.ci_prob'] = 0.94` and `az.rcParams['stats.ci_kind'] = 'hdi'` once, before `summary.csv` and the forest plot. Make `:136,144` describe what the block renders (trace plot, mean point) or change the block to render what they describe. Pick one and state which in the report.
-- [ ] **Step 3: #33.** State that `azs.diagnose`'s defaults gate bulk ESS and R-hat but tail ESS only at 0.001 of the draws. Require an explicit tail-ESS check against the skill's threshold before interpreting tails or intervals. Change `SKILL.md:35,78` to match.
-- [ ] **Step 4: #34.** `reporting.md:184` follows `model-comparison.md:83-89`.
-- [ ] **Step 5: #36 and #37.** `svi.md:69` uses the template's site names. Every save path becomes `<slug>/inference_data.nc`.
-- [ ] **Step 6: Run the snippet tiers**
+- [x] **Step 1: Show the failures.** Run `uv run python build/versions.py run snippets -- python -c "import arviz as az; print(az.rcParams['stats.ci_prob'], az.rcParams['stats.ci_kind'], az.rcParams['stats.point_estimate'])"` and expect `0.89 eti mean`. Run `/usr/bin/grep -rn "model_output.nc" skills/bayesian-workflow` and expect hits. Run `/usr/bin/grep -n 'numpyro.sample("' skills/bayesian-workflow/references/model-template.md` and expect no `beta` site.
+- [x] **Step 2: #32 and #35.** In `reporting.md`'s figure block, set `az.rcParams['stats.ci_prob'] = 0.94` and `az.rcParams['stats.ci_kind'] = 'hdi'` once, before `summary.csv` and the forest plot. Make `:136,144` describe what the block renders (trace plot, mean point) or change the block to render what they describe. Pick one and state which in the report.
+> Deviation: for #35 the prose changed to match the block (trace plot, mean point). The block was not changed.
+- [x] **Step 3: #33.** State that `azs.diagnose`'s defaults gate bulk ESS and R-hat but tail ESS only at 0.001 of the draws. Require an explicit tail-ESS check against the skill's threshold before interpreting tails or intervals. Change `SKILL.md:35,78` to match.
+- [x] **Step 4: #34.** `reporting.md:184` follows `model-comparison.md:83-89`.
+- [x] **Step 5: #36 and #37.** `svi.md:69` uses the template's site names. Every save path becomes `<slug>/inference_data.nc`.
+> Deviation: #36 uses `latent = dict(draws)` with a comment that names the template's sites, because a literal `("mu", "sigma")` raises KeyError against the Tier 3 fixture, whose sites are `beta` and `sigma`.
+- [x] **Step 6: Run the snippet tiers**
 
 Run the three snippet commands from the root `CLAUDE.md` on `skills/bayesian-workflow/`, then `bash build/run_commit_lints.sh`.
 Expected: each tier exits 0 (Tier 3 takes minutes); `commit lints passed`.
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/bayesian-workflow
@@ -704,11 +717,12 @@ git commit -m "fix(bayesian-workflow): report labels, diagnose limits and save p
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the failure.** Run `/usr/bin/grep -n -i "cauchy" skills/recommend-probabilistic-model/references/families/*.md` and quote `skills/bayesian-workflow/SKILL.md:118`. Count target `[0]*60 + [1]*30 + [2]*10` has a 60% zero share, while a Poisson at its mean of 0.5 predicts 61%. The decision map routes it to zero-inflation anyway.
-- [ ] **Step 2: Hand off half-normal (or exponential) scale priors**, the form bayesian-workflow recommends. Keep each existing `PML` citation and notebook link unchanged (Global Constraints, Citations).
-- [ ] **Step 3: Route on excess zeros.** Compare the observed zero share with the Poisson `exp(-mean)` and, under overdispersion, the NB zero share at the fitted mean.
-- [ ] **Step 4: Run the gates.** `uv run python build/check_snippets.py skills/recommend-probabilistic-model/` and `bash build/run_commit_lints.sh`.
-- [ ] **Step 5: Commit**
+- [x] **Step 1: Show the failure.** Run `/usr/bin/grep -n -i "cauchy" skills/recommend-probabilistic-model/references/families/*.md` and quote `skills/bayesian-workflow/SKILL.md:118`. Count target `[0]*60 + [1]*30 + [2]*10` has a 60% zero share, while a Poisson at its mean of 0.5 predicts 61%. The decision map routes it to zero-inflation anyway.
+- [x] **Step 2: Hand off half-normal (or exponential) scale priors**, the form bayesian-workflow recommends. Keep each existing `PML` citation and notebook link unchanged (Global Constraints, Citations).
+- [x] **Step 3: Route on excess zeros.** Compare the observed zero share with the Poisson `exp(-mean)` and, under overdispersion, the NB zero share at the fitted mean.
+> Deviation: `references/families/regression-glm.md:3` was also edited, for the same finding, outside the listed line numbers.
+- [x] **Step 4: Run the gates.** `uv run python build/check_snippets.py skills/recommend-probabilistic-model/` and `bash build/run_commit_lints.sh`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/recommend-probabilistic-model/references
@@ -727,18 +741,22 @@ git commit -m "fix(recommend-probabilistic-model): hand off workflow priors; rou
 
 **Interfaces:** Consumes Task 12's `stop-scope` case. The ledger formats stay as subagent-driven-development writes them.
 
-- [ ] **Step 1: Show the failures.** From the repo root, `../subagent-driven-development/scripts/sdd-workspace specs/plans/76-whole-repo-review-fixes.md` fails (no such file). `skills/subagent-driven-development/scripts/sdd-workspace specs/plans/completed/none.md` exits 2. Quote `batching.md:35-41` beside `SKILL.md:144-147`.
-- [ ] **Step 2: #19.** Anchor the call as `<this-skill-dir>/../subagent-driven-development/scripts/sdd-workspace`, the form subagent-driven-development uses for its own scripts. `final-review.md`'s re-run names the plan's retired path, `specs/plans/completed/<file>`. The workspace is named from the basename, so it is the same workspace.
-- [ ] **Step 3: #21.** A task is done when a `complete` line lists its number, whether alone (`Task 4:`), as a range (`Tasks 4-7:`) or as a list (`Tasks 2, 5, 9:`).
+- [x] **Step 1: Show the failures.** From the repo root, `../subagent-driven-development/scripts/sdd-workspace specs/plans/76-whole-repo-review-fixes.md` fails (no such file). `skills/subagent-driven-development/scripts/sdd-workspace specs/plans/completed/none.md` exits 2. Quote `batching.md:35-41` beside `SKILL.md:144-147`.
+- [x] **Step 2: #19.** Anchor the call as `<this-skill-dir>/../subagent-driven-development/scripts/sdd-workspace`, the form subagent-driven-development uses for its own scripts. `final-review.md`'s re-run names the plan's retired path, `specs/plans/completed/<file>`. The workspace is named from the basename, so it is the same workspace.
+- [x] **Step 3: #21.** A task is done when a `complete` line lists its number, whether alone (`Task 4:`), as a range (`Tasks 4-7:`) or as a list (`Tasks 2, 5, 9:`).
 - [ ] **Step 4: #22.** Scope the lead-in at `:50` to the run after pre-flight (for example, "Once Task 1 starts, five things stop you, and only these"). The numbered list stays byte-identical.
+> Skipped: the stop-scope control scored 0/5 failures, so the stop rule in Global Constraints left #22's line unchanged → deferred
 - [ ] **Step 5: Run the `stop-scope` treatment arm**, score it, and append it to the record.
-- [ ] **Step 6: Run the gates.** Measure the body: 18,500 characters at most. Then `uv run python build/run_suites.py executing-plans` and `bash build/run_commit_lints.sh`.
-- [ ] **Step 7: Commit**
+> Skipped: no #22 edit to test, under the same stop rule → deferred
+- [x] **Step 6: Run the gates.** Measure the body: 18,500 characters at most. Then `uv run python build/run_suites.py executing-plans` and `bash build/run_commit_lints.sh`.
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/executing-plans specs/red-baseline-review-fixes.md
 git commit -m "fix(executing-plans): anchor the workspace script, count batched tasks, scope the stops"
 ```
+
+> Deviation: the commit (686ffd7) reads `fix(executing-plans): anchor the workspace script and count batched tasks`, because #22 was not changed. → item: 76-whole-repo-review-fixes — 2026-11-01
 
 ### Task 21: subagent-driven-development keeps its workspace path across tool calls and has one fix-round gate (#20, #23)
 
@@ -751,17 +769,21 @@ git commit -m "fix(executing-plans): anchor the workspace script, count batched 
 
 **Interfaces:** Consumes Task 12's `fix-round-gate` case.
 
-- [ ] **Step 1: Show the failure.** Run two separate Bash tool calls: `WORKSPACE=/tmp/x`, then `echo "[$WORKSPACE]"`. Expect `[]`. Quote `fix-loop.md:67` beside `implementer-prompt.md:50-51`.
-- [ ] **Step 2: #20.** Run `sdd-workspace` without capture, so its printed path shows, and write that path out literally in every later command (`cat <path>/progress.md`). After a `/clear` or a relaunch, re-run it to recover the path: it is idempotent and prints the same directory. Use the live plan path before the plan retires and `specs/plans/completed/<file>` after. `final-review.md` deletes the literal path. The ledger's first line stays `Plan: <plan-file-path>`. Keep the body inside the compaction window (about 800 characters of headroom).
-- [ ] **Step 3: #23** (Open for plan review, item 3). `fix-loop.md` says a fix round runs its covering tests while it iterates, and runs the documented suite(s) the change can reach once before it writes the fix report. The report names both commands and their output. The five-stop list stays byte-identical.
+- [x] **Step 1: Show the failure.** Run two separate Bash tool calls: `WORKSPACE=/tmp/x`, then `echo "[$WORKSPACE]"`. Expect `[]`. Quote `fix-loop.md:67` beside `implementer-prompt.md:50-51`.
+- [x] **Step 2: #20.** Run `sdd-workspace` without capture, so its printed path shows, and write that path out literally in every later command (`cat <path>/progress.md`). After a `/clear` or a relaunch, re-run it to recover the path: it is idempotent and prints the same directory. Use the live plan path before the plan retires and `specs/plans/completed/<file>` after. `final-review.md` deletes the literal path. The ledger's first line stays `Plan: <plan-file-path>`. Keep the body inside the compaction window (about 800 characters of headroom).
+- [x] **Step 3: #23** (Open for plan review, item 3). `fix-loop.md` says a fix round runs its covering tests while it iterates, and runs the documented suite(s) the change can reach once before it writes the fix report. The report names both commands and their output. The five-stop list stays byte-identical.
+> Deviation: Task 21 first skipped this edit under the stop rule (fix-round-gate controls v1 and v2 both 0/5). After the owner's decision D7, 28031e4 applied it, and 61b61d4 added it to `NOTICE`.
 - [ ] **Step 4: Run the `fix-round-gate` treatment arm**, score it, and append it to the record.
-- [ ] **Step 5: Run the gates.** Measure the body, then `uv run python build/run_suites.py subagent-driven-development` and `bash build/run_commit_lints.sh`.
-- [ ] **Step 6: Commit**
+> Skipped: D7 applied the D3 edit without a failing control, so a treatment arm could not show a change → deferred
+- [x] **Step 5: Run the gates.** Measure the body, then `uv run python build/run_suites.py subagent-driven-development` and `bash build/run_commit_lints.sh`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/subagent-driven-development specs/red-baseline-review-fixes.md
 git commit -m "fix(subagent-driven-development): keep the workspace path literal; one fix-round gate"
 ```
+
+> Deviation: Task 21's commit (9700063) reads `fix(subagent-driven-development): keep the workspace path literal`. The fix-round gate landed separately in 28031e4.
 
 ### Task 22: stable_digits carries the reading the owner picks (#9) — waits for the owner
 
@@ -778,17 +800,20 @@ git commit -m "fix(subagent-driven-development): keep the workspace path literal
 
 **Interfaces:** Changes the `diagnostics.json → precision` field: its meaning under A, its name and meaning under B (`min_stable_digits` follows).
 
-- [ ] **Step 1: Read the owner's pick** from `## Decisions`. If none is logged, stop and ask: this task never runs on a guess.
-- [ ] **Step 2: Write the failing tests** for the picked row of the table: both cases, plus the existing tests that pin the sd-relative value, which change with it.
-- [ ] **Step 3: Run them to verify they fail**, with `uv run python build/run_suites.py bayesian-workflow -- -k "stable or precision"`.
-- [ ] **Step 4: Implement the picked formula**, and update `check_diagnostics.py:590` and `reporting.md:151,237` to the field's name and meaning.
-- [ ] **Step 5: Run the suite and the snippet tiers** for `skills/bayesian-workflow/`, then `bash build/run_commit_lints.sh`.
-- [ ] **Step 6: Commit**
+- [x] **Step 1: Read the owner's pick** from `## Decisions`. If none is logged, stop and ask: this task never runs on a guess.
+- [x] **Step 2: Write the failing tests** for the picked row of the table: both cases, plus the existing tests that pin the sd-relative value, which change with it.
+- [x] **Step 3: Run them to verify they fail**, with `uv run python build/run_suites.py bayesian-workflow -- -k "stable or precision"`.
+- [x] **Step 4: Implement the picked formula**, and update `check_diagnostics.py:590` and `reporting.md:151,237` to the field's name and meaning.
+> Deviation: each `precision.params` entry also carries `mean`. Two fix rounds reworded `reporting.md` (58db58c, 161ff8e). The final-review fix wave (8b1cf8b) then rounds the sd by its own `mcse_sd`, fixes the `check_diagnostics.py` hint and the template line.
+- [x] **Step 5: Run the suite and the snippet tiers** for `skills/bayesian-workflow/`, then `bash build/run_commit_lints.sh`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/bayesian-workflow
 git commit -m "fix(bayesian-workflow): stable_digits follows the MCSE rounding rule"
 ```
+
+> Deviation: three commits: 632f4f9 `fix(bayesian-workflow): stable_digits counts significant digits of the mean`, then 58db58c and 161ff8e from the two fix rounds.
 
 ### Task 23: NOTICE records the changes to adapted superpowers files
 
@@ -797,9 +822,10 @@ git commit -m "fix(bayesian-workflow): stable_digits follows the MCSE rounding r
 
 **Interfaces:** Consumes the landed Tasks 1, 2, 14, 15 (the writing-skills part), 20 and 21.
 
-- [ ] **Step 1: Add one change-list entry** in the list's style. Name the plan, and give one clause per changed behavior: find-polluter's exit 2 on a runner that cannot start and its line-safe loop; start-server's missing-value check and absolute project dir; using-git-worktrees' slash check and uv-first setup; writing-skills' lowercase name rule; executing-plans' anchored script, batched-line count and stop scope; subagent-driven-development's literal workspace path and single fix-round gate. Say that no upstream text was taken.
-- [ ] **Step 2: Run the gates.** `uv run python build/check_provenance.py` and `bash build/run_commit_lints.sh`.
-- [ ] **Step 3: Commit**
+- [x] **Step 1: Add one change-list entry** in the list's style. Name the plan, and give one clause per changed behavior: find-polluter's exit 2 on a runner that cannot start and its line-safe loop; start-server's missing-value check and absolute project dir; using-git-worktrees' slash check and uv-first setup; writing-skills' lowercase name rule; executing-plans' anchored script, batched-line count and stop scope; subagent-driven-development's literal workspace path and single fix-round gate. Say that no upstream text was taken.
+> Deviation: the entry (67a3d1f) left out the executing-plans stop scope and the fix-round gate, which had not landed then. 61b61d4 added the fix-round gate after 28031e4. The stop scope stays unchanged. → item: 76-whole-repo-review-fixes — 2026-11-01
+- [x] **Step 2: Run the gates.** `uv run python build/check_provenance.py` and `bash build/run_commit_lints.sh`.
+- [x] **Step 3: Commit**
 
 ```bash
 git add NOTICE
