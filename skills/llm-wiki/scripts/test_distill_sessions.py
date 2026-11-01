@@ -868,6 +868,12 @@ _NAMED_SECRET_FORMS = [
   f"{{'client_secret': '{_VALUE}'}}",
   f'aws_secret_access_key = {_AWS_SECRET}',
   f'"SecretAccessKey": "{_AWS_SECRET}"',
+  # review of 305576b: whitespace, subscript and prompt forms
+  f'aws configure set aws_secret_access_key {_AWS_SECRET}',
+  f'os.environ["AWS_SECRET_ACCESS_KEY"] = "{_AWS_SECRET}"',
+  f'AWS Secret Access Key [None]: {_AWS_SECRET}',
+  f'os.environ["DB_PASSWORD"] = "{_VALUE}"',
+  f"cfg['api_key'] = '{_VALUE}'",
 ]
 
 
@@ -900,11 +906,25 @@ def test_aws_secret_key_gets_its_own_label():
     assert counts == {'aws-secret-key': 1}
 
 
+def test_longer_secret_access_key_value_is_redacted_whole():
+  '''Codex review of 305576b: a value past 40 characters whose next one is
+  "_" or "-" lost only its first 40 to aws-secret-key, and the tail stayed
+  in the digest with its name already gone, so neither assignment nor the
+  lint could see it. Such a value must fall through to assignment whole.'''
+  for tail in ('_TailPart123', '-TailPart123'):
+    out, counts = ds.redact(f"SECRET_ACCESS_KEY={'aB3c' * 10}{tail}")
+    assert 'TailPart123' not in out
+    assert counts == {'assignment': 1}
+
+
 @pytest.mark.parametrize('text', [
   'password_file = /etc/secrets/db_password',
   'primary_key = series_id_ref_date_vintage',
   'max_tokens = 1234567890123456',
   'token_count: 123456789012345',
+  'the secret access key is rotated every ninety days by policy',
+  'see /srv/config/secret_access_key/README.md',
+  "cfg['max_tokens'] = 1234567890123456",
 ])
 def test_named_secret_guard_leaves_lookalike_names_alone(text):
   '''Guard, green before and after the fix: a name that only contains a

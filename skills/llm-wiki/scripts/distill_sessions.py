@@ -426,18 +426,21 @@ _REDACTORS = [
   ('github-token', re.compile(r'ghp_[A-Za-z0-9]{30,}')),
   ('aws-key', re.compile(r'AKIA[0-9A-Z]{16}')),
   # An AWS secret key is 40 base64 characters, often with the '/' that
-  # high-entropy leaves out, so only its variable name can find it. Exactly 40:
-  # a longer value falls through to assignment.
+  # high-entropy leaves out, so only its variable name can find it: as an
+  # assignment, a subscript (os.environ["..."] = ...), `aws configure set NAME
+  # VALUE`, or the `aws configure` prompt with its [default]. Exactly 40: a
+  # longer value, "_" and "-" included, falls through to assignment whole.
   ('aws-secret-key', re.compile(
-    r'(?i)secret[_-]?access[_-]?key[\'"]?\s*[:=]\s*[\'"]?'
-    r'[A-Za-z0-9/+]{40}(?![A-Za-z0-9/+])[\'"]?')),
+    r'(?i)secret[\s_-]?access[\s_-]?key[\'"]?\]?(?:\s*\[[^\]\n]*\])?'
+    r'(?:\s*[:=]\s*|\s+)[\'"]?[A-Za-z0-9/+]{40}(?![A-Za-z0-9/+_-])[\'"]?')),
   # No leading boundary: \b never fires between '_' and a letter, which let
   # DB_PASSWORD= and GITHUB_TOKEN= through, and PGPASSWORD= is a secret too.
-  # The separator right after the name (an optional closing quote, for JSON
-  # and dict literals) keeps password_file and max_tokens out.
+  # The separator right after the name (an optional closing quote and "]",
+  # for JSON, dict literals and subscripts) keeps password_file and max_tokens
+  # out.
   ('assignment', re.compile(
     r'(?i)(?:password|token|api[_-]?key|secret(?:[_-]?(?:access[_-]?)?key)?)'
-    r'[\'"]?\s*[:=]\s*[\'"]?[A-Za-z0-9/+_-]{12,}[\'"]?')),
+    r'[\'"]?\]?\s*[:=]\s*[\'"]?[A-Za-z0-9/+_-]{12,}[\'"]?')),
   # `/` is deliberately OUT of this class: with it, long file paths cleared the
   # 40-char bar and every one of the 558 redactions in the real corpus was a
   # destroyed locator, not a secret.
