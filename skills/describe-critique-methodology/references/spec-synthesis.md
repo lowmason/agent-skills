@@ -29,11 +29,12 @@ the critique) default to reject here; overturn only with a rationale.
 The synthesized spec uses the house skeleton: summary paragraph, Motivation,
 Core principle (when one exists), numbered Requirements with
 (chosen)/(rejected) alternatives inline, Verification (observable outcomes),
-Out of scope, Rollout note. Do not reinvent the skeleton — before writing
-your first synthesized spec, read two retired exemplars in the agent-skills
-repo's `specs/completed/` directory, `delegation-frontmatter-rollout.md` and
-`skill-model-pin-removal.md` (that repo owns the house format; this file
-cites it rather than restating it).
+Out of scope, Rollout note. Do not reinvent the skeleton. When the agent-skills
+repo is at hand, read two retired exemplars in its `specs/completed/`
+directory before writing your first synthesized spec:
+`delegation-frontmatter-rollout.md` and `skill-model-pin-removal.md`. In any
+other repo those files do not exist, so the skeleton listed above is the
+format.
 
 A third inline marker, **(open)**, carries a decision that turns on a matter
 of fact about a system outside this repo — settled by checking, not by
