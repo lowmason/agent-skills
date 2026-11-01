@@ -155,7 +155,7 @@ def date_ranges(lf: pl.LazyFrame, schema: pl.Schema) -> dict[str, dict[str, Any]
             expected = pl.date_range(lo, hi, interval="1mo", eager=True)
             missing = expected.filter(~expected.is_in(present.implode()))
             info["expected_monthly_periods"] = expected.len()
-            info["present_periods"] = present.n_unique()
+            info["present_periods"] = present.drop_nulls().n_unique()
             info["missing_monthly_periods"] = missing.len()
             if 0 < missing.len() <= 12:
                 info["missing_examples"] = [str(d) for d in missing.to_list()]

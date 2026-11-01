@@ -201,3 +201,9 @@ def test_vintage_check_ignores_a_null_vintage():
     out = P.vintage_check(lf, ["series", "period", "vintage"], lf.collect_schema())
     assert out["n_vintages"] == 1
     assert out["period_keys_with_multiple_vintages"] == 0
+
+
+def test_date_ranges_present_periods_ignores_a_null_date():
+    lf = pl.LazyFrame({"d": [dt.date(2024, 1, 1), dt.date(2024, 2, 1), None]})
+    out = P.date_ranges(lf, lf.collect_schema())
+    assert out["d"]["present_periods"] == 2
