@@ -122,3 +122,9 @@ model, and ended with `success`. Every verdict was read by hand by the committed
 | handoff-dispatch | 5/5 | Every rep makes two dispatches (fact-checker, cold reader), each with `subagent_type: general-purpose` and `model: sonnet`. The control failed 5/5. Bar met. |
 
 Spend: $0.04. Running total for the whole kit so far: $0.28 of $15.
+
+## stop-scope (Task 20)
+
+The Task 12 `stop-scope` control arm showed 0/5 failures. Under the stop rule in Global Constraints there is
+nothing to fix for finding #22, so the lead-in at `skills/executing-plans/SKILL.md:50` was left unchanged. No
+treatment arm ran and nothing was spent. The mechanically checked fixes (#19 and #21) stay.

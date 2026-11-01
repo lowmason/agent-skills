@@ -84,7 +84,10 @@ one round-trip. Findings the fix pass left unfixed feed the gate.
 
 When the protocol has finished, delete this plan's workspace — the
 directory `sdd-workspace` printed at setup; if you lost it, re-run the
-`sdd-workspace` command that Setup ran. Sibling directories under `.sdd/` belong to other plans; leave them
+`sdd-workspace` command that Setup ran, with the plan's retired path
+`specs/plans/completed/<file>` (protocol step 5 moved the plan there, and the
+script exits 2 on a missing plan file; the workspace is named from the
+basename, so it is the same workspace). Sibling directories under `.sdd/` belong to other plans; leave them
 alone. The delete runs after the protocol, never before, because the
 resolve-before-defer gate reads the ledger, the unfixed findings and the
 Declined to judge lines to build its questions and deferred items.
