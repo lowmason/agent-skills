@@ -34,7 +34,12 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-01): micro-test only the three fixes that change what an agent chooses (Task 13's prepare-handoff dispatch, Task 20's stop-rule scope, Task 21's fix-round test gate); every other text fix uses a mechanical failing check. Applied in: Open for plan review item 1, Tasks 12, 13, 20 and 21.
+- **D2** (owner, plan review, 2026-11-01): `stable_digits` takes reading A, significant digits of the mean: `max(0, floor(log10(abs(mean))) + 1 + floor(-log10(2 * mcse)))`. The field keeps its name. Applied in: Open for plan review item 2, Task 22.
+- **D3** (owner, plan review, 2026-11-01): `fix-loop.md` follows test-driven-development. A fix round runs its covering tests while it iterates, and runs the documented suite(s) the change can reach once before it writes the fix report. Applied in: Open for plan review item 3, Task 21.
+- **D4** (owner, plan review, 2026-11-01): `find-polluter.sh` exits 2 when the test command cannot start, and 2's meaning widens to "no test ran". Applied in: Open for plan review item 4, Task 1.
+- **D5** (owner, plan review, 2026-11-01): accept the three scope additions: `column_profile`'s `n_unique` counts non-null values (Task 4), `recommend.py:177` follows it (Task 5), and `zero_fraction`'s docstring is corrected (Task 3). Applied in: Open for plan review item 5, Tasks 3, 4 and 5.
+- **D6** (owner, plan review, 2026-11-01): the redactor's value class (punctuated values, values under 12 characters, `--api-key VALUE`) becomes a design item in `specs/deferred_items.md`, not a task in this plan. Applied in: Open for plan review item 6, `specs/deferred_items.md`.
 
 ## Open for plan review
 

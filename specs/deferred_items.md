@@ -5764,3 +5764,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       final 23-test suite has no such run. Touches
       skills/executing-plans/scripts/test_executing_plans_scripts.py. Size: quick-fix.
       Revisit if: a script change adds a Bash 4 feature.
+
+## whole-repo-review-b3062c6 (no plan; plan 76 review item 6, branch claude/repo-code-review-ff9362) — 2026-11-01
+- [ ] **llm-wiki redactor value class misses short and punctuated secrets (plan 76 D6).**
+      After 305576b and f0403f8, a secret value with punctuation (`P@ss…`), a value under 12
+      characters, and the `--api-key VALUE` flag form still pass both llm-wiki layers (the
+      redactor and the lint secret patterns). The gap predates the Critical fix. Widening the
+      value class trades against the file-path lesson in the `high-entropy` comment, so it
+      needs a design decision first. Touches skills/llm-wiki/scripts/distill_sessions.py and
+      skills/llm-wiki/scripts/lint_wiki.py. Size: design. Revisit if: a real short or
+      punctuated secret reaches a wiki page or capture.
