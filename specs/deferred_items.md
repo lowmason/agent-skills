@@ -5791,11 +5791,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `skills/bayesian-workflow/references/reporting.md` (lines 68 and 72 at retirement,
       about 227 and 232 in the review) calls `az.plot_trace(idata, var_names=["beta",
       "sigma"])` and `az.plot_forest(idata, var_names=["beta"])`, labelled "adjust to your
-      parameters". The model template's sites are `mu` and `sigma`, so a reader who copies
-      the lines verbatim gets KeyError. Tier 3 runs these blocks against the fixture model,
+      parameters". The "Parameter posteriors" block (about lines 365-371) does the same in
+      `plot_forest`, `plot_dist` and `plot_pair`. The model template's sites are `mu` and
+      `sigma`, so a reader who copies the lines verbatim gets KeyError. Tier 3 runs these blocks against the fixture model,
       whose sites are `beta` and `sigma`, so a fix must keep Tier 3 green (for example the
       `dict(draws)` pattern Task 18 used in svi.md). See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix. Done when: the
-      figure block's `var_names` match the template's sites or are derived from the
+      `var_names` in both blocks match the template's sites or are derived from the
       posterior, and the three snippet tiers pass on skills/bayesian-workflow/.
 - [ ] **find-polluter.sh false all-clear through a wrapper command (plan 76 final review,
       Declined to judge).** With a wrapper `TEST_CMD` such as `python -m pytest` or `uv run
