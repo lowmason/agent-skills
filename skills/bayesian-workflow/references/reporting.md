@@ -53,6 +53,12 @@ import numpyro
 import arviz as az
 import arviz_plots as azp
 
+# Interval default: ArviZ 1.x uses an 89% equal-tailed interval (ETI). Set the report's 94% HDI
+# once, before the summary table and the forest plot, so both match the report's labels.
+az.rcParams["stats.ci_prob"] = 0.94
+az.rcParams["stats.ci_kind"] = "hdi"
+az.summary(idata).to_csv(os.path.join(results_dir, "summary.csv"))  # columns hdi94_lb, hdi94_ub
+
 # Model graph — render_model needs the `graphviz` package and the system `dot` binary.
 g = numpyro.render_model(model, model_args=(x,), model_kwargs={"y": y})
 g.render(os.path.join(results_dir, "model_graph"), format="png", cleanup=True)
@@ -62,7 +68,7 @@ g.render(os.path.join(results_dir, "model_graph"), format="png", cleanup=True)
 pc = az.plot_trace(idata, var_names=["beta", "sigma"])  # adjust to your parameters
 pc.savefig(os.path.join(results_dir, "trace.png"))
 
-# Forest
+# Forest — posterior mean points (rcParams stats.point_estimate), 50% and 94% HDI intervals
 pc = az.plot_forest(idata, var_names=["beta"], combined=True)
 pc.savefig(os.path.join(results_dir, "forest.png"))
 
@@ -133,7 +139,7 @@ The prior predictive distribution shows the data the model would generate before
 
 ![Trace](trace.png)
 
-Rank-vline trace plots check chain mixing. Well-mixed chains show overlapping rank distributions across chains — the vertical lines (one per chain) sit close to the uniform expectation. Visible separation between chains, monotone drift, or stuck chains indicate non-convergence and the posterior should not be interpreted.
+The trace plot checks chain mixing. It draws the sampled values against the iteration number, one line per chain, and marks divergent transitions as a rug when any occurred. Well-mixed chains overlap and look like stationary noise around the same level. Visible separation between chains, monotone drift, or stuck chains indicate non-convergence and the posterior should not be interpreted.
 
 **Assessment:** <1–2 sentences from `check_diagnostics()` convergence section — state whether all diagnostics pass and flag any parameters with R-hat > 1.01, ESS < threshold, or divergences concentrated in their posterior.>
 
@@ -141,7 +147,7 @@ Rank-vline trace plots check chain mixing. Well-mixed chains show overlapping ra
 
 ![Forest](forest.png)
 
-The forest plot shows posterior medians (points) and credible intervals (lines) for the parameters of interest. Wide intervals indicate parameters the data are only weakly informative for; narrow intervals concentrated away from zero indicate strong evidence in a direction.
+The forest plot shows posterior means (points), 50% credible intervals (thick lines) and 94% HDIs (thin lines) for the parameters of interest. Wide intervals indicate parameters the data are only weakly informative for; narrow intervals concentrated away from zero indicate strong evidence in a direction.
 
 | Parameter | Mean | SD | 94% HDI | P(>0) |
 |-----------|------|----|---------|-------|
@@ -181,7 +187,7 @@ The coverage plot tests the same idea in coverage units: it asks whether nominal
 | <model_a> | <elpd> | <se> | <delta> | <weight> |
 | <model_b> | <elpd> | <se> | <delta> | <weight> |
 
-**Assessment:** <1–3 sentences — which model is preferred, by how much, and whether the preference is robust (ΔELPD > 2 × SE) or marginal.>
+**Assessment:** <1–3 sentences — which model is preferred, by how much, and whether the preference is clear or small. Follow [model-comparison.md](model-comparison.md) → Interpreting differences: |ΔELPD| < 4 is small whatever the SE, so prefer the simpler model. Above 4, compare |ΔELPD| with its SE, which is reliable only with more than 100 observations and no badly misspecified model.>
 
 ## [IF SENSITIVITY] Prior Sensitivity
 
@@ -229,7 +235,7 @@ Use these as a reference when filling in the final section. The harness in `scri
 
 Bayesian results are inherently richer than frequentist results -- use that richness.
 
-1. **Report full posteriors**, not just point estimates, with the HDI (Highest Density Interval) as the default summary. **No interval width is magic — 95% least of all.** Choose the width from the decision context rather than convention, and report several when it matters (e.g. a 50% interval for the typical case alongside 89%/94% for a robust range). The default 94% is deliberately off-95 to signal that the number is a *choice*, not a law of nature; a wider interval isn't "more rigorous," it just trades a tighter claim for more coverage.
+1. **Report full posteriors**, not just point estimates, with the HDI (Highest Density Interval) as the default summary. **No interval width is magic — 95% least of all.** Choose the width from the decision context rather than convention, and report several when it matters (e.g. a 50% interval for the typical case alongside 89%/94% for a robust range). This skill's default 94% HDI is deliberately off-95 to signal that the number is a *choice*, not a law of nature; a wider interval isn't "more rigorous," it just trades a tighter claim for more coverage. ArviZ 1.x's own default is an 89% ETI, so set the rcParams as the figure block above does, or the labels misreport the numbers.
 2. **Visualize uncertainty**. Every parameter estimate should have a visual representation of its posterior. See [references/visualize.md](visualize.md).
 3. **Show the model**. Include a model specification section -- readers should know exactly what was assumed. Use `numpyro.render_model(model, model_args=..., model_kwargs=...)` to visualize the model graph.
 4. **Report diagnostics**. Convergence and model criticism results build trust.

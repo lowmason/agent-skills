@@ -3,6 +3,7 @@
 Start every model from this template; read it before you write model code.
 
 ```python
+import os
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -13,7 +14,8 @@ import arviz as az
 
 numpyro.set_host_device_count(4)   # MUST precede the first JAX op (e.g. PRNGKey) or it silently no-ops
 
-RANDOM_SEED = sum(map(ord, "churn-logistic-v1"))
+results_dir = "churn-logistic-v1"  # the <slug> folder of references/reporting.md
+RANDOM_SEED = sum(map(ord, results_dir))
 rng = np.random.default_rng(RANDOM_SEED)
 rng_key = jax.random.PRNGKey(RANDOM_SEED)
 
@@ -65,5 +67,6 @@ idata = add_log_prior(idata, model, mcmc, x, y=y)   # helper defined in referenc
 
 # --- Save immediately after sampling ---
 # Late crashes can destroy valid results. Save to disk before any post-processing.
-idata.to_netcdf("model_output.nc")
+os.makedirs(results_dir, exist_ok=True)
+idata.to_netcdf(os.path.join(results_dir, "inference_data.nc"))   # the path reporting and comparison read
 ```
