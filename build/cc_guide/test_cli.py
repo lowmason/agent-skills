@@ -149,7 +149,7 @@ def test_check_hook_turns_a_setup_error_into_the_error_line(tmp_path, docs_dir, 
     assert hook(cache, '--run', 'r1', '--docs', str(docs_dir)) == 2
     assert capsys.readouterr() == ('', '')
     assert shown(cache) == (f'cc-guide · check failed: {state.MANIFEST}: not found in main · '
-                            'last good check 3 d ago → run build/cc_guide/cli.py check')
+                            'last good check 3 d ago → uv run python build/cc_guide/cli.py check')
     record = notice.read_last_check(cache)
     assert (record['run'], record['exit'], record['ok_epoch']) == ('r1', 2, int(earlier.timestamp()))
 
@@ -163,7 +163,7 @@ def test_check_hook_turns_a_crash_into_the_error_line(world, monkeypatch, capsys
     assert hook(cache, '--run', 'r1', '--docs', str(docs)) == 2
     assert capsys.readouterr() == ('', '')
     assert shown(cache) == ('cc-guide · check failed: RuntimeError: boom · no good check yet'
-                            ' → run build/cc_guide/cli.py check')
+                            ' → uv run python build/cc_guide/cli.py check')
     assert notice.read_last_check(cache)['run'] == 'r1'
 
 

@@ -80,9 +80,9 @@ def test_the_error_line_names_the_reason_and_the_age_of_the_last_good_check():
     assert notice.error_message('https://example.invalid/changelog.md: timed out',
                                 EPOCH - 3 * notice.DAY - 5, EPOCH) == (
         'cc-guide · check failed: https://example.invalid/changelog.md: timed out · '
-        'last good check 3 d ago → run build/cc_guide/cli.py check')
+        'last good check 3 d ago → uv run python build/cc_guide/cli.py check')
     assert notice.error_message('boom', None, EPOCH) == (
-        'cc-guide · check failed: boom · no good check yet → run build/cc_guide/cli.py check')
+        'cc-guide · check failed: boom · no good check yet → uv run python build/cc_guide/cli.py check')
 
 
 def test_a_long_reason_is_cut_to_keep_the_line_under_the_limit():
@@ -150,7 +150,7 @@ def test_after_check_writes_the_notice_for_each_exit_then_the_record(tmp_path):
     notice.after_check(tmp_path, 2, failing, NOW + timedelta(days=2), date(2026, 10, 19), 'r3')
     assert json.loads((tmp_path / notice.NOTICE).read_text())['systemMessage'] == (
         'cc-guide · check failed: https://example.invalid/llms.txt: HTTP 503 · '
-        'last good check 2 d ago → run build/cc_guide/cli.py check')
+        'last good check 2 d ago → uv run python build/cc_guide/cli.py check')
     assert notice.read_last_check(tmp_path)['run'] == 'r3'
 
 
@@ -158,6 +158,6 @@ def test_after_failure_writes_the_error_line_and_records_an_exit_two(tmp_path):
     notice.after_failure(tmp_path, 'RuntimeError: boom', NOW, 'r9')
     assert json.loads((tmp_path / notice.NOTICE).read_text())['systemMessage'] == (
         'cc-guide · check failed: RuntimeError: boom · no good check yet'
-        ' → run build/cc_guide/cli.py check')
+        ' → uv run python build/cc_guide/cli.py check')
     record = notice.read_last_check(tmp_path)
     assert (record['run'], record['exit']) == ('r9', 2)

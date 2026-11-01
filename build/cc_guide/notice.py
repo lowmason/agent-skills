@@ -33,7 +33,7 @@ DAY = 86400                 # seconds; notice.sh measures a day the same way
 HEAD = 'cc-guide'
 SEP = ' · '
 TO_SKILL = ' → /cc-guide'
-TO_CHECK = ' → run build/cc_guide/cli.py check'
+TO_CHECK = ' → uv run python build/cc_guide/cli.py check'
 
 
 def plural(count: int, noun: str) -> str:

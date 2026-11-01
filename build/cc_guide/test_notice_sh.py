@@ -262,7 +262,7 @@ def test_an_exit_two_the_check_records_is_a_finished_run_and_clears_the_count(fa
     record = notice.read_last_check(cache)
     assert (record['exit'], record['run']) == (2, (home / 'uv-args').read_text().splitlines()[-1])
     assert shown(sh(home, 'show')) == (f'cc-guide · check failed: {CHECK_ERROR} · no good check yet → '
-                                       'run build/cc_guide/cli.py check')
+                                       'uv run python build/cc_guide/cli.py check')
 
 
 def test_three_unfinished_runs_in_a_row_leave_the_error_notice_and_a_finished_run_clears_them(fake_uv):
@@ -274,7 +274,7 @@ def test_three_unfinished_runs_in_a_row_leave_the_error_notice_and_a_finished_ru
         assert not (cache / notice.NOTICE).exists()
     quiet(sh(home, 'refresh', env={**env, 'FAKE_UV': 'fail'}))
     assert shown(sh(home, 'show')) == ('cc-guide · the drift check did not finish 3 times in a row · '
-                                       'no good check yet → run build/cc_guide/cli.py check')
+                                       'no good check yet → uv run python build/cc_guide/cli.py check')
     quiet(sh(home, 'refresh', env=env))
     assert not (cache / 'unfinished').exists()
     assert shown(sh(home, 'show')) == FOUND
@@ -356,7 +356,7 @@ def test_three_unfinished_runs_leave_the_error_notice_before_the_next_check_star
     quiet(proc)
     assert stopped
     assert shown(sh(home, 'show')) == ('cc-guide · the drift check did not finish 3 times in a row · '
-                                       'no good check yet → run build/cc_guide/cli.py check')
+                                       'no good check yet → uv run python build/cc_guide/cli.py check')
     assert (cache / 'unfinished').read_text() == '4\n'
 
 

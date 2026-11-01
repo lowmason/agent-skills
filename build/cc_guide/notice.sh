@@ -106,7 +106,7 @@ check_now() {
     before=$(cat "$cache/unfinished" 2>/dev/null)
     case $before in ''|*[!0-9]*) before=0 ;; esac
     if [ "$before" -ge "$UNFINISHED_LIMIT" ]; then
-        fail_notice "the drift check did not finish $before times in a row" 'run build/cc_guide/cli.py check'
+        fail_notice "the drift check did not finish $before times in a row" 'uv run python build/cc_guide/cli.py check'
     fi
     count=$((before + 1))
     { printf '%s\n' "$count" > "$cache/.unfinished.$$.tmp" && mv -f "$cache/.unfinished.$$.tmp" "$cache/unfinished"; } 2>/dev/null || rm -f "$cache/.unfinished.$$.tmp" 2>/dev/null
@@ -129,7 +129,7 @@ check_now() {
         return 0
     fi
     if [ "$count" -ge "$UNFINISHED_LIMIT" ]; then
-        fail_notice "the drift check did not finish $count times in a row" 'run build/cc_guide/cli.py check'
+        fail_notice "the drift check did not finish $count times in a row" 'uv run python build/cc_guide/cli.py check'
     fi
     return 0
 }
