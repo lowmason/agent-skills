@@ -109,3 +109,16 @@ owner: no rep reached the `export` suite, which is the stricter reading v1 score
 not require it and the fixture gives no way to know it is reached.
 
 Spend: v2 control $0.048. Running total for the whole kit so far: $0.24 of $15.
+
+## handoff-dispatch treatment (Task 13)
+
+Arm `treatment`: the edited `skills/prepare-handoff/SKILL.md` (working tree, built through a `git stash create`
+commit before the edit was committed). 5 reps in `specs/red-baseline-review-fixes/treatment/handoff-dispatch/`,
+same isolation recipe and Claude Code version as the control. No rep VOID: each ran one turn, no tool, one
+model, and ended with `success`. Every verdict was read by hand by the committed rule.
+
+| Case | Passing reps | Verdicts and notes |
+|---|---|---|
+| handoff-dispatch | 5/5 | Every rep makes two dispatches (fact-checker, cold reader), each with `subagent_type: general-purpose` and `model: sonnet`. The control failed 5/5. Bar met. |
+
+Spend: $0.04. Running total for the whole kit so far: $0.28 of $15.

@@ -75,8 +75,9 @@ Check each claim against its source yourself. Then add reviewers by content:
 - **Cold reader** (`references/cold-reader.md`), when the brief carries a
   scope-changing decision or an owner gate.
 
-Fill each template's `[BRIEF_PATH]`, and dispatch the reviewers in parallel as
-read-only subagents, with no model pinned. Where the runtime cannot dispatch
+Fill each template's `[BRIEF_PATH]`, and dispatch the reviewers in parallel, each as
+a read-only `general-purpose` subagent at the standard tier (`model: sonnet` on
+Claude Code). Name the model in every dispatch. Where the runtime cannot dispatch
 subagents, ask your human partner to open a fresh session with the filled
 template. Fix what they find, and put every ambiguity to your partner as one
 batched question before the brief goes out. There is one round: a slot
