@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import distill_sessions as ds
+import lint_wiki
 
 
 def test_main_unknown_source_exits_nonzero(capsys, tmp_path):
@@ -846,6 +847,68 @@ def test_redaction_still_catches_github_pat_and_base64():
 
 def test_redaction_leaves_plain_project_paths_alone():
   text = 'see /Users/lowell/Projects/agent-skills/skills/llm-wiki/SKILL.md'
+  out, counts = ds.redact(text)
+  assert out == text
+  assert counts == {}
+
+
+# --- 2026-11-01 whole-repo review, Critical: named secret forms --------------
+
+_VALUE = 'Hj3Kl5Zx' * 2           # 16 chars, three character classes
+_AWS_SECRET = 'aB3/' * 9 + 'cD4+'  # 40 chars, with the '/' high-entropy excludes
+
+_NAMED_SECRET_FORMS = [
+  f'DB_PASSWORD={_VALUE}',
+  f'export GITHUB_TOKEN={_VALUE}',
+  f'api_secret: {_VALUE}',
+  f'PGPASSWORD={_VALUE}',
+  f"SECRET_KEY = '{_VALUE}'",
+  f'API_KEY={_VALUE}',
+  f'"password": "{_VALUE}"',
+  f"{{'client_secret': '{_VALUE}'}}",
+  f'aws_secret_access_key = {_AWS_SECRET}',
+  f'"SecretAccessKey": "{_AWS_SECRET}"',
+]
+
+
+@pytest.mark.parametrize('text', _NAMED_SECRET_FORMS)
+def test_named_secret_forms_are_redacted(text):
+  '''The assignment pattern opened with \\b, which never fires between "_" and
+  a letter, so DB_PASSWORD= and GITHUB_TOKEN= passed unredacted. It also had
+  no *_KEY name, no quote between name and separator (JSON, dict literals)
+  and no AWS form, whose value carries the "/" high-entropy leaves out.'''
+  secret = _AWS_SECRET if _AWS_SECRET in text else _VALUE
+  out, counts = ds.redact(text)
+  assert secret not in out
+  assert counts
+
+
+@pytest.mark.parametrize('text', _NAMED_SECRET_FORMS)
+def test_named_secret_forms_are_linted(text):
+  '''Backstop contract (see _REDACTORS): whatever redact() targets, a
+  lint_wiki SECRET_PATTERNS entry must also catch in the raw text.'''
+  assert any(p.search(text) for _, p in lint_wiki.SECRET_PATTERNS)
+
+
+def test_aws_secret_key_gets_its_own_label():
+  '''A slash-free AWS secret would count as high-entropy and one with "/"
+  as a generic assignment. Its own label keeps the redactions: header
+  readable.'''
+  for value in (_AWS_SECRET, 'aB3c' * 10):
+    out, counts = ds.redact(f'AWS_SECRET_ACCESS_KEY={value}')
+    assert value not in out
+    assert counts == {'aws-secret-key': 1}
+
+
+@pytest.mark.parametrize('text', [
+  'password_file = /etc/secrets/db_password',
+  'primary_key = series_id_ref_date_vintage',
+  'max_tokens = 1234567890123456',
+  'token_count: 123456789012345',
+])
+def test_named_secret_guard_leaves_lookalike_names_alone(text):
+  '''Guard, green before and after the fix: a name that only contains a
+  secret word, or a bare *_key, does not assign a secret.'''
   out, counts = ds.redact(text)
   assert out == text
   assert counts == {}
