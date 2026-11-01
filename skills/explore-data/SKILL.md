@@ -206,13 +206,13 @@ coverage and balance, not just columns:
 ```python
 # Coverage by period — counts and totals over time (watch for ragged endpoints)
 coverage = (lf.group_by("ref_date").agg(
-    pl.col("client_id").n_unique().alias("n_entities"),
+    pl.col("client_id").drop_nulls().n_unique().alias("n_entities"),
     pl.col("qualified_employment").sum().alias("total_emp"),
 ).sort("ref_date").collect())
 
 # Coverage by dimension — geography / industry / size_class
 by_geo = (lf.group_by(["ref_date", "state_fips"])
-            .agg(pl.col("client_id").n_unique().alias("n")).collect())
+            .agg(pl.col("client_id").drop_nulls().n_unique().alias("n")).collect())
 
 # Panel balance — obs per entity vs the number of periods present
 n_periods = lf.select(pl.col("ref_date").drop_nulls().n_unique()).collect().item()
