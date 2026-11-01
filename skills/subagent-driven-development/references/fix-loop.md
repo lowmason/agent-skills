@@ -7,7 +7,7 @@ is not itself an attempt.
 
 | Round | Action |
 |---|---|
-| 1-3 | Resume the same implementer with the findings. It appends a fix report to its existing report file: what changed, the covering tests it ran, the command, and the output. |
+| 1-3 | Resume the same implementer with the findings. It appends a fix report to its existing report file: what changed, the covering tests it ran, the documented suite(s) it ran, both commands, and the output. |
 | 4-5 | Dispatch a **fresh** implementer with the task brief and the findings. Raise reasoning effort when the prior rounds show a thorough attempt rather than a missing-context failure. |
 | after 5 | The cap is reached. Adjudicate every still-open finding; dispatch no further fix rounds for this task. |
 
@@ -62,9 +62,11 @@ human partner only for the five stops listed under Fix dispatches.
   4. A plan so broken that every path forward is a guess.
   5. The explicit scope fence: a line in the plan (its Global Constraints, its header or a task) or in your partner's launch message that puts a file, a directory, a system or a kind of change out of bounds for this run — "Do not edit `skills/`", "No changes outside `build/`", "Do not change the public API". A ruling never crosses a fence: when the only fix crosses one, stop and ask. A task's text that contradicts a Global Constraint that is not a fence is not a stop: the constraint wins, and that is a ruling.
 - Every fix dispatch — resumed for rounds 1-3, fresh for 4-5 (see **Fix
-  Rounds**) — carries the implementer contract: the fix subagent re-runs the
-  tests covering its change and reports the results. Name the covering test
-  files in the dispatch — a one-line fix does not need the whole suite.
+  Rounds**) — carries the implementer contract and follows
+  test-driven-development. Name the covering test files in the dispatch. The
+  fix subagent runs them while it iterates. It then runs the documented
+  suite(s) the change can reach once, before it writes the fix report. The
+  report names both commands and their output.
   Before re-dispatching the reviewer, confirm the fix report contains the
-  covering tests, the command run, and the output; dispatch the re-review
-  once all three are present.
+  covering tests, both commands run, and the output; dispatch the re-review
+  once all are present.
