@@ -792,6 +792,29 @@ Changes from upstream:
   - Upstream's evaluation repository, prime-radiant-inc/superpowers-evals,
     is credited for plan 75 as an idea only. It carries no license, and no
     text or fixture comes from it.
+  - Plan 76 (2026-11-01) changed these adapted files from a whole-repo
+    review. No upstream text was taken. Each change is local.
+    systematic-debugging/find-polluter.sh exits 2, with a message that is
+    not an all-clear, when the test command cannot start (exit 126 or
+    127), and its loop reads the file list line by line, so a name with
+    a space stays whole and the runner cannot consume the list.
+    brainstorming/scripts/start-server.sh stops with a JSON error when an
+    option that takes a value has none, and it makes a relative
+    `--project-dir` absolute before it changes directory. The tests for
+    both scripts are this repository's own. using-git-worktrees checks
+    that the chosen directory is ignored with a trailing slash, and its
+    Python setup tries uv.lock first, then poetry.lock, then
+    requirements.txt, with no automatic install for a pyproject.toml
+    that has no lock file. writing-skills requires a lowercase skill
+    name that equals the directory name, in its checklist and in
+    references/discovery.md. executing-plans calls sdd-workspace through
+    the `<this-skill-dir>/` anchor, counts a task as done when a
+    `complete` line lists it alone, in a range or in a list, and names
+    the retired plan path in references/final-review.md.
+    subagent-driven-development writes the workspace path out literally
+    in each later command instead of holding it in a shell variable,
+    and uses `specs/plans/completed/<file>` as the plan path after
+    retirement, in SKILL.md and in references/final-review.md.
 
     brainstorming/
     dispatching-parallel-agents/
