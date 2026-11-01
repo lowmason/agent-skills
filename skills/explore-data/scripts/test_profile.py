@@ -25,6 +25,7 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+import profile as P
 from profile import column_profile, duplicate_check, quality_flags, scan
 
 SCRIPT = Path(__file__).resolve().parent / "profile.py"
@@ -174,3 +175,29 @@ def test_cli_profiles_a_csv_glob(tmp_path):
     (tmp_path / "b.csv").write_text("id,v\n3,30\n")
     summary = _run_json(tmp_path / "*.csv", tmp_path)
     assert summary["n_rows"] == 3
+
+
+def test_top_categoricals_handles_a_column_named_count():
+    lf = pl.LazyFrame({"count": ["a", "a", "b"]})
+    assert P.top_categoricals(lf, lf.collect_schema())["count"] == [("a", 2), ("b", 1)]
+
+
+def test_panel_balance_ignores_a_null_period():
+    lf = pl.LazyFrame({"firm": ["a", "a", "b", "b", "c"], "month": [1, 2, 1, 2, None]})
+    out = P.panel_balance(lf, "firm", "month", lf.collect_schema())
+    assert out["n_periods"] == 2
+    assert out["balanced_entities"] == 2
+
+
+def test_constant_apart_from_nulls_is_flagged_constant():
+    lf = pl.LazyFrame({"k": [1, 2, 3, 4], "unit": ["usd", None, "usd", "usd"]})
+    schema = lf.collect_schema()
+    flags = P.quality_flags(P.column_profile(lf, 4, schema), 4, lf, schema)
+    assert any(f.startswith("CONSTANT: unit") for f in flags)
+
+
+def test_vintage_check_ignores_a_null_vintage():
+    lf = pl.LazyFrame({"series": ["s", "s"], "period": [1, 1], "vintage": ["v1", None]})
+    out = P.vintage_check(lf, ["series", "period", "vintage"], lf.collect_schema())
+    assert out["n_vintages"] == 1
+    assert out["period_keys_with_multiple_vintages"] == 0
