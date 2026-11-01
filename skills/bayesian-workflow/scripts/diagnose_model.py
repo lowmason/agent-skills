@@ -358,6 +358,20 @@ def check_posterior_predictive(idata):
     return results
 
 
+def _stable_digits(mean, mcse):
+    """Significant digits of ``mean`` that a re-run with a new seed would keep.
+
+    The rounding unit stays at or above ``2 * mcse``, so the count is the position of the
+    mean's leading digit minus the position of that unit. Returns 0 when no digit is stable
+    and for inputs with no digit position: a zero or non-finite mean, a non-positive or
+    non-finite MCSE.
+    """
+    if not (np.isfinite(mean) and np.isfinite(mcse)) or mean == 0 or mcse <= 0:
+        return 0
+    leading_place = math.floor(math.log10(abs(mean))) + 1
+    return int(max(0, leading_place + math.floor(-math.log10(2 * mcse))))
+
+
 def check_precision(idata):
     """Monte Carlo precision per parameter: how many significant digits of the
     posterior mean are stable under a re-run with a new seed.
@@ -366,8 +380,9 @@ def check_precision(idata):
     error (MCSE) beside the posterior sd. The rounding rule applied here — keep
     the rounding unit above ~2 * MCSE — is this skill's; the book's own
     digit-stability reasoning runs in +/-3 * MCSE (the 99.7% range).
-    The relative MCSE ``mcse_mean / sd`` maps to stable
-    significant digits as ``floor(-log10(rel))``: 10% -> 1 digit, 1% -> 2.
+    ``stable_digits`` counts the significant digits of the posterior mean that survive
+    that unit (see ``_stable_digits``): mean 2.31 with MCSE 0.0011 -> 3; mean 0.004 -> 0.
+    ``rel_mcse`` (``mcse_mean / sd``) still ranks the parameters.
     Parameters with a non-positive or non-finite sd or MCSE (deterministic
     quantities, constants) are skipped. Interval endpoints are usually less
     precise than the mean; check ``az.mcse(idata, method="quantile", prob=...)``
@@ -378,17 +393,19 @@ def check_precision(idata):
     summary = az.summary(idata, round_to="none")
     params = {}
     for name, row in summary.iterrows():
+        mean = float(row["mean"])
         sd = float(row["sd"])
         mcse = float(row["mcse_mean"])
         if not (np.isfinite(sd) and np.isfinite(mcse)) or sd <= 0 or mcse <= 0:
             continue
         rel = mcse / sd
         params[str(name)] = {
+            "mean": mean,
             "sd": sd,
             "mcse_mean": mcse,
             "mcse_sd": float(row["mcse_sd"]) if np.isfinite(row["mcse_sd"]) else None,
             "rel_mcse": round(rel, 4),
-            "stable_digits": int(max(0, math.floor(-math.log10(rel)))),
+            "stable_digits": _stable_digits(mean, mcse),
         }
     if not params:
         return {
