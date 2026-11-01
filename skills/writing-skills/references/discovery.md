@@ -10,7 +10,7 @@ description. The description rule itself stays in SKILL.md § Skill Discovery Op
 - `description`: max 1024 characters — the Agent Skills spec cap, enforced by `build/check_frontmatter.py`. It applies to the description field, **not** to the whole frontmatter block; several shipped skills exceed 1024 chars of total frontmatter and pass the lint correctly.
 - Optional keys the lint accepts: `compatibility`, `metadata`, `allowed-tools`, `when_to_use`, the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at; a Haiku `model` is not portable, since auto mode drops Haiku 4.5 and the `haiku` alias means Haiku 5.5 on the Anthropic API but 4.5 on other providers, so the lint fails it, and cheap work belongs on a model-pinned subagent), `context` (sole value `fork`: runs the skill in an isolated subagent, so the main session sees only what the skill returns), `agent` (the agent type a `context: fork` skill runs on), and `disable-model-invocation` (a YAML boolean; `true` makes the skill manual-only). Any other key fails `build/check_frontmatter.py`. The spec's own keys are `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`; the rest are Claude Code extensions, which a claude.ai upload or a spec-only validator rejects.
 - Fork a skill whose value is a **verdict or artifact** you act on (`tech-debt` returns a prioritized backlog). Do **not** fork a skill whose value is **guidance** — it has to stay resident to shape what the main thread writes next — nor one that dispatches subagents itself, nor one with a mix of artifact and question-answering operations, since `context` is all-or-nothing per skill.
-- `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
+- `name`: Use lowercase letters, digits, and hyphens only, and equal the skill's directory name (no parentheses, special chars)
 - `description`: Third-person, describes ONLY when to use (NOT what it does)
   - Start with "Use when..." to focus on triggering conditions
   - Include specific symptoms, situations, and contexts
@@ -19,7 +19,7 @@ description. The description rule itself stays in SKILL.md § Skill Discovery Op
 
 ```markdown
 ---
-name: Skill-Name-With-Hyphens
+name: skill-name-with-hyphens
 description: Use when [specific triggering conditions and symptoms]
 license: MIT
 ---
