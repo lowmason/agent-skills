@@ -128,3 +128,10 @@ Spend: $0.04. Running total for the whole kit so far: $0.28 of $15.
 The Task 12 `stop-scope` control arm showed 0/5 failures. Under the stop rule in Global Constraints there is
 nothing to fix for finding #22, so the lead-in at `skills/executing-plans/SKILL.md:50` was left unchanged. No
 treatment arm ran and nothing was spent. The mechanically checked fixes (#19 and #21) stay.
+
+## fix-round-gate (Task 21)
+
+The Task 12 `fix-round-gate` controls (v1 and v2) showed 0/5 failures. Under the stop rule in Global Constraints
+there is nothing to fix for finding #23, so `skills/subagent-driven-development/references/fix-loop.md` was left
+unchanged. No treatment arm ran and nothing was spent. The v2 rule accepted a core-only run, which is a caveat
+on how strong the 0/5 evidence is. The mechanically checked fix (#20, the literal workspace path) stays.
