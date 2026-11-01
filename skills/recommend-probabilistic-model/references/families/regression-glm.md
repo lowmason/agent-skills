@@ -1,6 +1,6 @@
 # Regression, GLMs & count models
 
-**When this family fits:** The target is continuous or an integer count and you want its (link-transformed) mean as a linear function of inputs. Route here on counts (`var ≫ mean` → NegBinom over Poisson; high zero-fraction → zero-inflated), or continuous targets with heavy-tailed noise / outliers → StudentT or Laplace likelihood. (Binary/categorical targets are the logistic GLM case — see `classification.md`.)
+**When this family fits:** The target is continuous or an integer count and you want its (link-transformed) mean as a linear function of inputs. Route here on counts (`var ≫ mean` → NegBinom over Poisson; zeros beyond the Poisson/NB prediction at the mean → zero-inflated), or continuous targets with heavy-tailed noise / outliers → StudentT or Laplace likelihood. (Binary/categorical targets are the logistic GLM case — see `classification.md`.)
 
 ## Methods & defaults
 
@@ -21,7 +21,7 @@ Complexity knobs: which features enter and how hard their coefficients shrink. S
 
 ## Gotchas
 - **Don't default to Poisson.** Poisson forces `var = mean`; real counts are usually overdispersed. Check the dispersion ratio first — if `var ≫ mean`, Poisson SEs are too small and you want NegBinom (PML2 §2.2.1.4).
-- **Excess zeros ≠ overdispersion.** A pile of zeros (sold out vs. unpopular) needs a zero-inflated/hurdle structure, not just a fatter-tailed count likelihood (PML2 §15.1.1).
+- **Excess zeros ≠ overdispersion.** A high raw zero share alone does not justify zero-inflation: compare the observed zero share with Poisson `exp(-mean)` and, under overdispersion, with the NB zero share at the fitted mean (a target with 60% zeros and mean 0.5 matches Poisson at 61%). Only zeros beyond that prediction (sold out vs. unpopular) need a zero-inflated/hurdle structure, not just a fatter-tailed count likelihood (PML2 §15.1.1).
 - **Log link is multiplicative.** In Poisson/NB regression coefficients act on `exp(wᵀx)`; a unit change in x scales the rate, it doesn't add to it. Interpret and set priors on the log scale.
 - **Outliers vs. heteroskedasticity.** Heavy-tailed likelihoods (StudentT/Laplace) absorb a few outliers (PML1 §11.6); they do not fix variance that grows with the mean — model that directly.
 - **Ordinal is not metric.** Coding a 1–5 rating as a number assumes equal gaps and can reverse effect signs; fit the ordinal model, then report predicted category probabilities.

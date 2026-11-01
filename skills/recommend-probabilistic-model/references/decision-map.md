@@ -30,7 +30,7 @@ The signal (from `characterize.py` / `explore-data`) usually decides *which memb
 |-----------------|-----------|--------|
 | Count target, `var ≈ mean` | Poisson GLM | regression-glm |
 | Count target, `var ≫ mean` (overdispersion) | NegativeBinomial | regression-glm |
-| Count target, high zero-fraction | Zero-inflated / hurdle | regression-glm |
+| Count target, zeros beyond what Poisson/NB predicts at the mean | Zero-inflated / hurdle | regression-glm |
 | Continuous target, heavy tails / outliers | Robust (Student-t) regression | regression-glm |
 | Target is an ordered category (ratings, grades, stages) | Ordinal regression (cumulative logit / probit) | regression-glm |
 | Target bounded in (0, 1): a proportion or rate | Beta regression; BetaBinomial for k-of-n counts | regression-glm |
