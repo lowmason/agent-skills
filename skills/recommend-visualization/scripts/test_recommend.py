@@ -16,6 +16,7 @@ import pytest
 import recommend as R
 from recommend import (
     Field,
+    fields_from_frame,
     fields_from_profile,
     kind_from_dtype,
     outlier_ratio,
@@ -32,6 +33,20 @@ def top(intent, fields, n_rows, **kw):
     cands = recommend(intent, fields, n_rows, **kw)
     assert cands, 'recommend returned no candidates'
     return cands[0]
+
+
+def test_comparison_with_only_a_categorical_counts_rows():
+    c = top('comparison', [Field('region', 'categorical', n_unique=4)], 100)
+    assert c.chart == 'bar' and c.encodings == {'x': 'region', 'y': 'count()'}
+
+
+def test_comparison_without_a_categorical_has_no_candidate():
+    assert recommend('comparison', [Field('emp', 'quantitative')], 100) == []
+
+
+def test_fields_from_frame_counts_distinct_values_without_null():
+    df = pl.DataFrame({'period': ['2024', '2025', None]})
+    assert fields_from_frame(df)[0].n_unique == 2
 
 
 # ---- intent x signal -> chart (the differentiator) -----------------------------------------------
