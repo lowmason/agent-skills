@@ -92,8 +92,8 @@ n_rows = lf.select(pl.len()).collect().item()
 # Null count per column, one pass
 nulls = lf.select(pl.all().null_count()).collect()
 
-# Distinct count per column, one pass
-nunq = lf.select(pl.all().n_unique()).collect()
+# Distinct count per column, one pass (nulls are not counted as a value)
+nunq = lf.select(pl.all().drop_nulls().n_unique()).collect()
 
 # value_counts on a categorical-ish column (sort kwarg / count-col name have churned across
 # releases — group_by + len is the portable form)
@@ -188,7 +188,7 @@ layout, consult the program's own documentation.)
 # own key (geographic_code, ref_date), not here.
 chk = (lf.filter(pl.col("series_id").is_not_null())
          .group_by(["series_id", "ref_date"])
-         .agg(pl.col("vintage_date").n_unique().alias("n_vint")).collect())
+         .agg(pl.col("vintage_date").drop_nulls().n_unique().alias("n_vint")).collect())
 revised = chk.filter(pl.col("n_vint") > 1).height        # periods with revisions
 full_key_dups = (lf.group_by(["series_id", "ref_date", "vintage_date"])
                    .agg(pl.len().alias("n")).filter(pl.col("n") > 1).collect())
@@ -215,8 +215,8 @@ by_geo = (lf.group_by(["ref_date", "state_fips"])
             .agg(pl.col("client_id").n_unique().alias("n")).collect())
 
 # Panel balance — obs per entity vs the number of periods present
-n_periods = lf.select(pl.col("ref_date").n_unique()).collect().item()
-per_entity = lf.group_by("client_id").agg(pl.col("ref_date").n_unique().alias("n_obs")).collect()
+n_periods = lf.select(pl.col("ref_date").drop_nulls().n_unique()).collect().item()
+per_entity = lf.group_by("client_id").agg(pl.col("ref_date").drop_nulls().n_unique().alias("n_obs")).collect()
 balanced_pct = 100 * (per_entity["n_obs"] == n_periods).sum() / per_entity.height
 
 # Entry / exit — entities first/last seen mid-panel (uses explicit entry_month / exit_month
