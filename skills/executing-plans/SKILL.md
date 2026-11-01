@@ -136,15 +136,17 @@ The workspace and ledger are shared with subagent-driven-development
 and the new one resumes from the same ledger.
 
 - Each plan owns a workspace: at skill start, run
-  `../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` — it
+  `<this-skill-dir>/../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` — it
   prints the plan's git-ignored directory
   (`<repo-root>/.sdd/<plan-basename>/`), home to every
   artifact for THIS plan: ledger, briefs, review packages. Another plan's
   directory is never yours to read or write.
 - Check for this plan's ledger at `<workspace>/progress.md`. If its first
-  line names your plan file, tasks with a `Task <N>: complete` line are
-  DONE — do not redo them; resume at the first task without one. On
-  resume, read the ledger's `Ruling:` and `deviation` lines for any
+  line names your plan file, a task is DONE when a `complete` line lists its
+  number: alone (`Task 4:`), in a range (`Tasks 4-7:`) or in a list
+  (`Tasks 2, 5, 9:`), as a batched dispatch of
+  subagent-driven-development writes. Do not redo done tasks. Resume at
+  the first task without one. On resume, read the ledger's `Ruling:` and `deviation` lines for any
   interface a coming task consumes, as subagent-driven-development's
   `../subagent-driven-development/references/resuming.md` describes. Their
   commits exist in git even when your context no longer remembers making

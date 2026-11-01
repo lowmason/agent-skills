@@ -379,7 +379,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 - [ ] Identify patterns in rationalizations/failures
 
 **GREEN Phase - Write Minimal Skill:**
-- [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
+- [ ] Name uses only lowercase letters, digits, hyphens, and equals the directory name
 - [ ] YAML frontmatter with required `name`, `description` and `license` fields (`description` max 1024 chars — the field, not the whole block; see [spec](https://agentskills.io/specification))
 - [ ] Description starts with "Use when..." and includes specific triggers/symptoms
 - [ ] Description written in third person

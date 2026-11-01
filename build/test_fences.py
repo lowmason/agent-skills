@@ -58,3 +58,20 @@ def test_fenced_lines_run_an_unclosed_fence_to_the_end():
 def test_fenced_lines_count_the_blank_last_line_of_an_unclosed_fence():
     '''A trailing newline leaves an empty last line, and the fence still holds it.'''
     assert fences.fenced_lines('```bash\nbody\n') == {1, 2, 3}
+
+
+def test_indented_fence_in_a_list_item_is_a_block():
+    text = '1. Item:\n\n   ```python\n   x = 1\n   ```\n'
+    (block,) = fences.iter_code_blocks(text)
+    assert block.code == 'x = 1\n' and block.line == 3
+
+
+def test_tilde_fence_is_a_block_and_closes_only_on_tildes():
+    (block,) = fences.iter_code_blocks('~~~python\ny = 2\n```\n~~~\n')
+    assert block.code == 'y = 2\n```\n'
+
+
+def test_strip_and_fenced_lines_follow_the_same_rule():
+    text = 'a\n  ~~~\n  b\n  ~~~\nc'
+    assert fences.strip_fenced_blocks(text) == 'a\nc'
+    assert fences.fenced_lines(text) == {2, 3, 4}

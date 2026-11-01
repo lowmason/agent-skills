@@ -14,9 +14,9 @@
 # several only the all-or-none variants are tried: run mixed ones separately.
 #
 # Exit status: 1 when a test creates the pollution (or on a usage error), 2
-# when no test file matches the pattern, so no test ran, 3 when the pollution
-# already exists, so no test can be blamed for it, 0 when every test ran
-# clean. Only a 0 prints the all-clear.
+# when no test ran, because no file matched the pattern or the test command
+# could not start, 3 when the pollution already exists, so no test can be
+# blamed for it, 0 when every test ran clean. Only a 0 prints the all-clear.
 
 set -e
 
@@ -71,7 +71,7 @@ if [ -e "$POLLUTION_CHECK" ]; then
 fi
 
 COUNT=0
-for TEST_FILE in $TEST_FILES; do
+while IFS= read -r TEST_FILE; do
   COUNT=$((COUNT + 1))
 
   # Pollution that appears between two tests (a test that left a background
@@ -84,8 +84,20 @@ for TEST_FILE in $TEST_FILES; do
 
   echo "[$COUNT/$TOTAL] Testing: $TEST_FILE"
 
-  # Run the test
-  $TEST_CMD "$TEST_FILE" > /dev/null 2>&1 || true
+  # Run the test. stdin is closed so a runner cannot consume the file list.
+  # A failing test is normal here, but 126 or 127 means the runner never started.
+  # set +e around the run: bash 3.2 reports 1, not 127, for a missing command
+  # inside || or if under set -e.
+  set +e
+  $TEST_CMD "$TEST_FILE" </dev/null >/dev/null 2>&1
+  STATUS=$?
+  set -e
+  if [ "$STATUS" -eq 126 ] || [ "$STATUS" -eq 127 ]; then
+    echo ""
+    echo "❌ The test command could not start: $TEST_CMD (exit $STATUS), so no test ran."
+    echo "   This is not an all-clear. Check that the command is installed and on PATH."
+    exit 2
+  fi
 
   # Check if pollution appeared
   if [ -e "$POLLUTION_CHECK" ]; then
@@ -102,7 +114,9 @@ for TEST_FILE in $TEST_FILES; do
     echo "  cat $TEST_FILE         # Review test code"
     exit 1
   fi
-done
+done <<EOF
+$TEST_FILES
+EOF
 
 echo ""
 echo "✅ No polluter found - all tests clean!"

@@ -159,7 +159,11 @@ what actually shipped:
 Then hand off the next stage (§4). With every stage ticked, go to §6.
 
 **Parking is a first-class exit.** Remaining unticked stages append to
-`specs/deferred_items.md` as self-contained items; the roadmap moves to
+`specs/deferred_items.md`, one item per stage, under a dated
+`## <roadmap-name> — <YYYY-MM-DD>` section. Each item follows the
+Deferred-item schema in the writing-plans skill's deferred-backlog reference
+(self-contained, with `Size:` and a `Done when:` naming the stage's Produces),
+so the item ages and reaches the aged-tail gate. The roadmap moves to
 `specs/completed/` marked `PARKED (date) — N of M stages complete`. The
 methodology and critique files retire alongside the synthesized spec — they
 are its inputs.

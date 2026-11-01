@@ -40,6 +40,11 @@ def test_codex_agent_adapter_is_valid_and_read_only():
   assert 'model' not in data
 
 
+def test_codex_test_runner_is_not_read_only():
+  data = tomllib.loads((REPO / 'runtimes/codex/agents/test-runner.toml').read_text())
+  assert data.get('sandbox_mode') != 'read-only'
+
+
 def test_gemini_agent_adapter_maps_tools_and_inherits_model():
   sync = load_sync_module()
   frontmatter, body = sync.read_frontmatter(

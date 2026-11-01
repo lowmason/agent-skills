@@ -66,7 +66,7 @@ print("noise over the tail:", [round(float(t.std()), 2) for t in tails])
 # 2. PSIS-LOO for the approximation: log p(theta, y) and log q(theta) at each guide draw.
 params = runs[0].params
 draws = Predictive(guide, params=params, num_samples=1000)(jax.random.PRNGKey(10), x)
-latent = {site: draws[site] for site in ("beta", "sigma")}
+latent = dict(draws)                 # the guide draws only the latent sites: mu and sigma in the template
 log_p = jax.vmap(lambda s: log_density(model, (x,), {"y": y}, s)[0])(latent)
 log_q = jax.vmap(lambda s: log_density(guide, (x,), {"y": y}, {**params, **s})[0])(latent)
 idata_svi = az.from_dict({

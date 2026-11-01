@@ -42,10 +42,12 @@ compatible with Continuous execution: "all tasks complete" is a sanctioned
 stop.
 
 When the plan-completion protocol has finished and the final review's fixes
-are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
-skill start: `rm -rf "$WORKSPACE"`. If a `/clear` and relaunch since then left
-you without that variable, re-run `<this-skill-dir>/scripts/sdd-workspace <plan-file>`; it is
-idempotent and reprints the same path. Git history is the record now. Sibling
+are merged, delete this plan's workspace by its literal path, the one
+`sdd-workspace` printed at skill start: `rm -rf <path>`. If a `/clear` and
+relaunch since then left you without that path, re-run
+`<this-skill-dir>/scripts/sdd-workspace <plan-file>`, naming
+`specs/plans/completed/<file>`, since protocol step 5 has already moved the
+plan. It is idempotent and reprints the same path. Git history is the record now. Sibling
 directories under `.sdd/` belong to other plans — leave them alone, and never
 `rm -rf .sdd` itself.
 

@@ -27,7 +27,8 @@ import arviz_stats as azs
 
 # 1. One-call diagnostics: R-hat, ESS, divergences
 # Prints a human-readable summary and returns True if any check failed.
-# Defaults already enforce our thresholds (rhat_max=1.01, ESS ratio, etc.).
+# Defaults gate R-hat at 1.01 and bulk ESS at 100 * chains, but tail ESS only at
+# ess_min_ratio=0.001 of the draws: check tail ESS yourself (step 4).
 has_errors = azs.diagnose(idata)
 
 # 2. If you need the detailed breakdown programmatically:
@@ -36,12 +37,20 @@ has_errors, diagnostics = azs.diagnose(idata, return_diagnostics=True, show_diag
 
 # 3. Visual check — pass var_names; ArviZ 1.x caps the subplot count
 az.plot_trace(idata, var_names=["param1", "param2"])
+
+# 4. Tail ESS against the skill's threshold, on fixed 5%/95% quantiles (diagnose_model.py's ess_tail)
+tail_ess = az.ess(idata, method="tail", prob=(0.05, 0.95))
+tail_ok = all(bool((tail_ess[v] >= 100 * idata.posterior.sizes["chain"]).all()) for v in tail_ess.data_vars)
 ```
 
 `arviz_stats.diagnose` (>= 1.0.0) checks **R-hat, ESS, divergences, AND E-BFMI (energy)** in one
 call whenever the `energy` sample stat is present — which our sampling flow guarantees via
 `extra_fields=("energy", ...)`. So you do NOT need a separate manual E-BFMI inspection on this
-path; a clean `azs.diagnose` result already covers energy. (Earlier PyMC-stack guidance also
+path; a clean `azs.diagnose` result already covers energy. Its ESS check is not the skill's
+threshold for the tails, though: with the defaults (arviz-stats 1.3) it gates R-hat at 1.01 and
+bulk ESS at 100 × chains, but tail ESS only at `ess_min_ratio=0.001` of the draws. Before you
+interpret tails or intervals, check tail ESS ≥ 100 × chains explicitly (step 4 above, or
+`diagnose_model.py`'s `ess_tail` block). (Earlier PyMC-stack guidance also
 mentioned tree-depth here. Tree-depth is the one check `diagnose` skips on the
 numpyro/`az.from_numpyro` path: it looks for a `reached_max_treedepth` sample stat, but
 `az.from_numpyro` emits `reached_max_tree_depth` instead, so the tree-depth branch never fires.
@@ -200,12 +209,12 @@ Without `extra_fields=("energy", ...)`, `az.plot_energy(idata)` raises `Attribut
 
 ## Automated diagnostics workflow
 
-The recommended approach is `arviz_stats.diagnose()` (see Quick diagnostic checklist above). It checks R-hat, ESS, and divergences in one call — with sensible defaults that match our thresholds.
+The recommended approach is `arviz_stats.diagnose()` (see Quick diagnostic checklist above). It checks R-hat, ESS, and divergences in one call. Its defaults match our R-hat and bulk-ESS thresholds but gate tail ESS only at 0.001 of the draws, so add the explicit tail-ESS check (step 4).
 
 For a script-based workflow, use `diagnose_model.py`:
 
 ```bash
-uv run <this-skill-dir>/scripts/diagnose_model.py --idata model_output.nc
+uv run <this-skill-dir>/scripts/diagnose_model.py --idata <slug>/inference_data.nc
 ```
 
 Or inline (this last approach doesn't require `arviz_stats.diagnose()`):

@@ -64,7 +64,7 @@ def column_profile(lf: pl.LazyFrame, n_rows: int, schema: pl.Schema) -> list[dic
     """Per-column null %, n_unique, and a sample value — computed in one lazy pass."""
     names = list(schema.names())
     null_df = lf.select([pl.col(c).null_count().alias(c) for c in names]).collect()
-    nunq_df = lf.select([pl.col(c).n_unique().alias(c) for c in names]).collect()
+    nunq_df = lf.select([pl.col(c).drop_nulls().n_unique().alias(c) for c in names]).collect()
     sample = lf.select(names).head(5).collect()
 
     rows: list[dict[str, Any]] = []
@@ -131,14 +131,14 @@ def top_categoricals(lf: pl.LazyFrame, schema: pl.Schema, k: int = 5) -> dict[st
             lf.select(pl.col(c))
             .drop_nulls()  # null is not a "top value": skip it so an all-null column reports nothing
             .group_by(c)
-            .agg(pl.len().alias("count"))
-            .sort("count", descending=True)
+            .agg(pl.len().alias(f"{c}_count"))
+            .sort(f"{c}_count", descending=True)
             .head(k)
             .collect()
         )
         if vc.height == 0:  # no non-null values (e.g. an all-null or empty column): nothing to report
             continue
-        out[c] = [(str(v), int(n)) for v, n in zip(vc[c], vc["count"])]
+        out[c] = [(str(v), int(n)) for v, n in zip(vc[c], vc[f"{c}_count"])]
     return out
 
 
@@ -155,7 +155,7 @@ def date_ranges(lf: pl.LazyFrame, schema: pl.Schema) -> dict[str, dict[str, Any]
             expected = pl.date_range(lo, hi, interval="1mo", eager=True)
             missing = expected.filter(~expected.is_in(present.implode()))
             info["expected_monthly_periods"] = expected.len()
-            info["present_periods"] = present.n_unique()
+            info["present_periods"] = present.drop_nulls().n_unique()
             info["missing_monthly_periods"] = missing.len()
             if 0 < missing.len() <= 12:
                 info["missing_examples"] = [str(d) for d in missing.to_list()]
@@ -203,10 +203,10 @@ def vintage_check(lf: pl.LazyFrame, cols: list[str], schema: pl.Schema) -> dict[
     per_key = id_cols + [period]
     full_key = id_cols + [period, vintage]
 
-    n_vintages = lf.select(pl.col(vintage).n_unique()).collect().item()
+    n_vintages = lf.select(pl.col(vintage).drop_nulls().n_unique()).collect().item()
     multi = (
         lf.group_by(per_key)
-        .agg(pl.col(vintage).n_unique().alias("n_vint"))
+        .agg(pl.col(vintage).drop_nulls().n_unique().alias("n_vint"))
         .select((pl.col("n_vint") > 1).sum().alias("revised"), pl.len().alias("total"))
         .collect()
         .row(0, named=True)
@@ -229,10 +229,10 @@ def panel_balance(lf: pl.LazyFrame, entity: str, period: str, schema: pl.Schema)
     for c in (entity, period):
         if c not in schema.names():
             return {"entity": entity, "period": period, "error": f"{c} not in data"}
-    n_periods = lf.select(pl.col(period).n_unique()).collect().item()
+    n_periods = lf.select(pl.col(period).drop_nulls().n_unique()).collect().item()
     per_entity = (
         lf.group_by(entity)
-        .agg(pl.col(period).n_unique().alias("n_obs"))
+        .agg(pl.col(period).drop_nulls().n_unique().alias("n_obs"))
         .collect()
     )
     n_entities = per_entity.height

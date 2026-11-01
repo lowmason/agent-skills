@@ -174,7 +174,7 @@ def fields_from_frame(df) -> list[Field]:
         Field(
             name=c,
             kind=kind_from_dtype(str(df.schema[c])),
-            n_unique=df[c].n_unique(),
+            n_unique=df[c].drop_nulls().n_unique(),
             null_pct=round(100 * df[c].null_count() / n, 2) if n else 0.0,
         )
         for c in df.columns
@@ -247,9 +247,11 @@ def _comparison(fields, n_rows, top_n):
     cat = cats[0] if cats else None
     val = quants[0] if quants else None
     extra = cats[1] if len(cats) > 1 else None
-    if not (cat and val):
-        return [CC('bar', 'bar', {'x': (cat.name if cat else 'category'), 'y': (val.name if val else 'value')},
-                   'Default bar comparison.', 0.6)]
+    if not cat:
+        return []
+    if not val:
+        return [CC('bar', 'bar', {'x': cat.name, 'y': 'count()'},
+                   'No measure column -> count rows per category as bars.', 0.6)]
     card = cat.n_unique or (BAR_CARD_MAX + 1)
     out: list[ChartCandidate] = []
     if card <= LOW_CARD_MAX:

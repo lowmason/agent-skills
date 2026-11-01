@@ -259,12 +259,15 @@ controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
-- At skill start, run this skill's `scripts/sdd-workspace <plan-file>` once and
-  keep the directory it prints — it creates this plan's workspace and the
-  self-ignoring .gitignore that covers every plan's:
-  `WORKSPACE=$(<this-skill-dir>/scripts/sdd-workspace <plan-file>)`. Then check for a ledger:
-  `cat "$WORKSPACE/progress.md"`. Tasks listed there as complete are DONE — do
-  not re-dispatch them; resume at the first task not marked complete.
+- At skill start, run `<this-skill-dir>/scripts/sdd-workspace <plan-file>`
+  with no capture, so its printed directory shows. It creates this plan's
+  workspace and the self-ignoring .gitignore that covers every plan's. Shell
+  state does not persist across tool calls, so write that path out literally
+  in every later command. Check for a ledger: `cat <path>/progress.md`. Tasks
+  listed there as complete are DONE — do not re-dispatch them; resume at the
+  first task not marked complete. After a `/clear` or relaunch, re-run the
+  script to recover the path (it is idempotent). Pass the live plan path, or
+  `specs/plans/completed/<file>` once the plan has retired.
 - Resuming after a `/clear`, a relaunch or a compaction: read
   [references/resuming.md](references/resuming.md) before you dispatch anything.
 - When you create the ledger, write its first line as

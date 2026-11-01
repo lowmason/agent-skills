@@ -13,7 +13,7 @@ import pytest
 
 import check_diagnostics as cd
 import diagnose_model
-from diagnose_model import _json_default, check_precision, generate_report
+from diagnose_model import _json_default, _stable_digits, check_precision, generate_report
 # The reader's inputs, shared with its own tests; check_diagnostics reads only the assessment.
 from test_check_diagnostics import LOW_PSENSE, WELL_CALIBRATED
 
@@ -53,17 +53,40 @@ def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
     return _from_groups({"posterior": post, "sample_stats": stats})
 
 
-def test_check_precision_iid_draws_give_one_stable_digit():
-    prec = check_precision(_idata())
+def _shifted(mean, seed=1):
+    """A unit-sd i.i.d. ``mu`` centred on ``mean``, so its digits are not those of a zero mean."""
+    return {"mu": mean + np.random.default_rng(seed).normal(size=(4, 500))}
+
+
+@pytest.mark.parametrize(
+    ("mean", "mcse", "expected"),
+    [
+        (2.31, 0.0011, 3),  # unit digit + floor(-log10(0.0022)) = 1 + 2
+        (0.004, 0.0011, 0),  # the rounding unit 0.002 swallows the leading digit
+        (-2.31, 0.0011, 3),  # the sign does not matter
+        (0.0, 0.0011, 0),  # log10(0) has no leading digit
+        (2.31, 0.0, 0),  # an exact MCSE has no stable-digit count
+        (2.31, 5.0, 0),  # a huge MCSE never goes negative
+        (float("nan"), 0.0011, 0),
+        (2.31, float("nan"), 0),
+        (float("inf"), 0.0011, 0),
+    ],
+)
+def test_stable_digits_counts_significant_digits_of_the_mean(mean, mcse, expected):
+    assert _stable_digits(mean, mcse) == expected
+
+
+def test_check_precision_iid_draws_give_stable_digits_of_the_mean():
+    prec = check_precision(_idata(extra=_shifted(2.31)))
     mu = prec["params"]["mu"]
-    # 2000 independent draws -> relative MCSE ~ 1/sqrt(2000) ~ 0.022 -> floor(-log10) == 1
+    # 2000 independent draws -> MCSE ~ 0.022 -> unit digit + floor(-log10(0.044)) = 1 + 1
     assert 0.01 < mu["rel_mcse"] < 0.05
-    assert mu["stable_digits"] == 1
+    assert mu["stable_digits"] == 2
     assert mu["sd"] > 0 and mu["mcse_mean"] > 0 and mu["mcse_sd"] > 0
     # vector params are flattened the way az.summary labels them
     assert {"beta[0]", "beta[1]"} <= set(prec["params"])
     assert prec["max_rel_mcse_param"] in prec["params"]
-    assert prec["min_stable_digits"] == 1
+    assert prec["min_stable_digits"] == 0  # beta is mean ~0: no stable digit
 
 
 def _ar1(n_chains=4, n_draws=500, seed=7, rho=0.97):
@@ -78,14 +101,15 @@ def _ar1(n_chains=4, n_draws=500, seed=7, rho=0.97):
 
 
 def test_check_precision_names_the_least_precise_parameter():
-    prec = check_precision(_idata(extra={"sticky": _ar1()}))
+    prec = check_precision(_idata(extra={"sticky": 5 + _ar1(), "beta": 5 + np.zeros((4, 500, 2)) + np.random.default_rng(3).normal(size=(4, 500, 2)), **_shifted(5)}))
     sticky, mu = prec["params"]["sticky"], prec["params"]["mu"]
     # rho=0.97 -> relative MCSE ~ 0.2, an order of magnitude worse than the i.i.d. params
     assert sticky["rel_mcse"] > 0.1 > mu["rel_mcse"]
-    assert sticky["stable_digits"] == 0 and mu["stable_digits"] == 1
+    # mean 5: sticky MCSE ~ 0.2 -> 1 + floor(0.4) = 1; i.i.d. mu MCSE ~ 0.022 -> 1 + 1
+    assert sticky["stable_digits"] == 1 and mu["stable_digits"] == 2
     # the *identity* of the limiting parameter, not just membership in the table
     assert prec["max_rel_mcse_param"] == "sticky"
-    assert prec["min_stable_digits"] == 0
+    assert prec["min_stable_digits"] == 1
 
 
 def test_check_precision_skips_constant_params():
@@ -103,13 +127,14 @@ def _posterior_only(post):
 def test_check_precision_keeps_a_small_scale_parameter():
     # Classic ArviZ 0.23's az.summary rounds to three decimals by default, so sd 0.01
     # showed mcse_mean 0.000 and the parameter was skipped. Run on both stacks.
-    small = 0.01 * np.random.default_rng(0).normal(size=(4, 500))
+    small = 0.5 + 0.01 * np.random.default_rng(0).normal(size=(4, 500))
     prec = check_precision(_posterior_only({"small": small}))
     assert "small" in prec["params"], prec
     assert 0.009 < prec["params"]["small"]["sd"] < 0.011
     # 2000 i.i.d. draws: relative MCSE ~ 1/sqrt(2000), the same digit as a unit-scale parameter
     assert 0.01 < prec["params"]["small"]["rel_mcse"] < 0.05
-    assert prec["params"]["small"]["stable_digits"] == 1
+    # mean 0.5, MCSE ~ 0.00022: leading digit at 1e-1 (0) + floor(-log10(0.00044)) = 3 -> 3
+    assert prec["params"]["small"]["stable_digits"] == 3
 
 
 def test_check_precision_empty_when_nothing_usable():
@@ -121,9 +146,9 @@ def test_check_precision_empty_when_nothing_usable():
 
 
 def test_generate_report_carries_precision_and_serializes():
-    report = generate_report(_idata())
+    report = generate_report(_idata(extra=_shifted(2.31)))
     assert "precision" in report
-    assert report["precision"]["params"]["mu"]["stable_digits"] == 1
+    assert report["precision"]["params"]["mu"]["stable_digits"] == 2
     json.dumps(report, default=_json_default)  # must not raise
 
 

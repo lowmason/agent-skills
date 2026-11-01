@@ -53,6 +53,12 @@ import numpyro
 import arviz as az
 import arviz_plots as azp
 
+# Interval default: ArviZ 1.x uses an 89% equal-tailed interval (ETI). Set the report's 94% HDI
+# once, before the summary table and the forest plot, so both match the report's labels.
+az.rcParams["stats.ci_prob"] = 0.94
+az.rcParams["stats.ci_kind"] = "hdi"
+az.summary(idata).to_csv(os.path.join(results_dir, "summary.csv"))  # columns hdi94_lb, hdi94_ub
+
 # Model graph — render_model needs the `graphviz` package and the system `dot` binary.
 g = numpyro.render_model(model, model_args=(x,), model_kwargs={"y": y})
 g.render(os.path.join(results_dir, "model_graph"), format="png", cleanup=True)
@@ -62,7 +68,7 @@ g.render(os.path.join(results_dir, "model_graph"), format="png", cleanup=True)
 pc = az.plot_trace(idata, var_names=["beta", "sigma"])  # adjust to your parameters
 pc.savefig(os.path.join(results_dir, "trace.png"))
 
-# Forest
+# Forest — posterior mean points (rcParams stats.point_estimate), 50% and 94% HDI intervals
 pc = az.plot_forest(idata, var_names=["beta"], combined=True)
 pc.savefig(os.path.join(results_dir, "forest.png"))
 
@@ -133,7 +139,7 @@ The prior predictive distribution shows the data the model would generate before
 
 ![Trace](trace.png)
 
-Rank-vline trace plots check chain mixing. Well-mixed chains show overlapping rank distributions across chains — the vertical lines (one per chain) sit close to the uniform expectation. Visible separation between chains, monotone drift, or stuck chains indicate non-convergence and the posterior should not be interpreted.
+The trace plot checks chain mixing. It draws the sampled values against the iteration number, one line per chain, and marks divergent transitions as a rug when any occurred. Well-mixed chains overlap and look like stationary noise around the same level. Visible separation between chains, monotone drift, or stuck chains indicate non-convergence and the posterior should not be interpreted.
 
 **Assessment:** <1–2 sentences from `check_diagnostics()` convergence section — state whether all diagnostics pass and flag any parameters with R-hat > 1.01, ESS < threshold, or divergences concentrated in their posterior.>
 
@@ -141,14 +147,14 @@ Rank-vline trace plots check chain mixing. Well-mixed chains show overlapping ra
 
 ![Forest](forest.png)
 
-The forest plot shows posterior medians (points) and credible intervals (lines) for the parameters of interest. Wide intervals indicate parameters the data are only weakly informative for; narrow intervals concentrated away from zero indicate strong evidence in a direction.
+The forest plot shows posterior means (points), 50% credible intervals (thick lines) and 94% HDIs (thin lines) for the parameters of interest. Wide intervals indicate parameters the data are only weakly informative for; narrow intervals concentrated away from zero indicate strong evidence in a direction.
 
 | Parameter | Mean | SD | 94% HDI | P(>0) |
 |-----------|------|----|---------|-------|
 | <param_1> | <m> | <s> | [<lo>, <hi>] | <prob> |
 | <param_2> | <m> | <s> | [<lo>, <hi>] | <prob> |
 
-Round every cell to the parameter's `stable_digits` from `diagnostics.json → precision` — and usually to fewer, since the posterior sd sets the meaningful digits and the MCSE only sets the *stable* ones (see Reporting principles → 6). Interval endpoints are less precise than the mean: before quoting a tail quantile to two digits, check `az.mcse(idata, method="quantile", prob=0.05)` (and `prob=0.95`).
+Round the Mean cell to the parameter's `stable_digits` from `diagnostics.json → precision` (significant digits of the mean, so a mean of 2.31 with MCSE 0.0011 gives 3, and a mean near 0 gives 0: report it as indistinguishable from zero at that precision). Round the SD, and each HDI endpoint, to no finer than the rounding unit that `stable_digits` implies: the smallest power of ten at or above 2 × MCSE (0.01 for MCSE 0.0011, and 0.01 for MCSE 0.005). For the SD use the parameter's own `mcse_sd` from the same precision block (it can exceed `mcse_mean` several-fold for heavy tails, and it is `null` when not finite: then compute `az.mcse(idata, var_names=[...], method="sd")`). For an endpoint use the quantile MCSE from the check below. A zero-centred row then keeps its spread and interval. Usually use fewer digits in both, since the posterior sd sets the meaningful digits and the MCSE only sets the *stable* ones (see Reporting principles → 6). Interval endpoints are less precise than the mean: before quoting a tail quantile to two digits, check `az.mcse(idata, method="quantile", prob=0.05)` (and `prob=0.95`).
 
 **Substantive interpretation.** <2–4 sentences on what the posteriors mean in domain terms — effect sizes in original units, practical significance, what the posterior probability of direction implies for the question. Avoid frequentist language ("significant", "rejected").>
 
@@ -181,7 +187,7 @@ The coverage plot tests the same idea in coverage units: it asks whether nominal
 | <model_a> | <elpd> | <se> | <delta> | <weight> |
 | <model_b> | <elpd> | <se> | <delta> | <weight> |
 
-**Assessment:** <1–3 sentences — which model is preferred, by how much, and whether the preference is robust (ΔELPD > 2 × SE) or marginal.>
+**Assessment:** <1–3 sentences — which model is preferred, by how much, and whether the preference is clear or small. Follow [model-comparison.md](model-comparison.md) → Interpreting differences: |ΔELPD| < 4 is small whatever the SE, so prefer the simpler model. Above 4, compare |ΔELPD| with its SE, which is reliable only with more than 100 observations and no badly misspecified model.>
 
 ## [IF SENSITIVITY] Prior Sensitivity
 
@@ -229,12 +235,12 @@ Use these as a reference when filling in the final section. The harness in `scri
 
 Bayesian results are inherently richer than frequentist results -- use that richness.
 
-1. **Report full posteriors**, not just point estimates, with the HDI (Highest Density Interval) as the default summary. **No interval width is magic — 95% least of all.** Choose the width from the decision context rather than convention, and report several when it matters (e.g. a 50% interval for the typical case alongside 89%/94% for a robust range). The default 94% is deliberately off-95 to signal that the number is a *choice*, not a law of nature; a wider interval isn't "more rigorous," it just trades a tighter claim for more coverage.
+1. **Report full posteriors**, not just point estimates, with the HDI (Highest Density Interval) as the default summary. **No interval width is magic — 95% least of all.** Choose the width from the decision context rather than convention, and report several when it matters (e.g. a 50% interval for the typical case alongside 89%/94% for a robust range). This skill's default 94% HDI is deliberately off-95 to signal that the number is a *choice*, not a law of nature; a wider interval isn't "more rigorous," it just trades a tighter claim for more coverage. ArviZ 1.x's own default is an 89% ETI, so set the rcParams as the figure block above does, or the labels misreport the numbers.
 2. **Visualize uncertainty**. Every parameter estimate should have a visual representation of its posterior. See [references/visualize.md](visualize.md).
 3. **Show the model**. Include a model specification section -- readers should know exactly what was assumed. Use `numpyro.render_model(model, model_args=..., model_kwargs=...)` to visualize the model graph.
 4. **Report diagnostics**. Convergence and model criticism results build trust.
 5. **Use probability language**, not p-value language. "There is a 94% probability that θ lies in [a, b]" — not "the interval [a, b] is significant."
-6. **Round to what the posterior and the Monte Carlo error support** (Gelman et al. 2026, §11.4–11.6). Two separate limits: the posterior *sd* decides how many digits are *meaningful* — a mean of 1.97 with a 90% interval of [0.7, 3.2] is honestly "about 2", or "1 to 3" — and the *MCSE* decides how many are *stable* under a new seed (the rounding rule here is ours: keep the rounding unit ≳ 2 × MCSE, where the book's own digit-stability reasoning runs in ±3 × MCSE, the 99.7% range). `diagnostics.json → precision` carries both per parameter as `rel_mcse` and `stable_digits`; `max_rel_mcse_param` is the parameter that limits the whole table. Never print more significant digits than `stable_digits`; usually print fewer. If you want another digit, halving the MCSE costs four times the draws (§11.4) — it is almost always better to report fewer digits or a rounder interval than to run longer. A fixed seed does not make a number reproducible in the sense that matters (§11.7): the test is whether a *different* seed gives the same *reported* digits, and that is exactly what the MCSE check certifies — so a report built from an exploration-sized run (see diagnostics.md → Exploration runs vs. the final run) must say so.
+6. **Round to what the posterior and the Monte Carlo error support** (Gelman et al. 2026, §11.4–11.6). Two separate limits: the posterior *sd* decides how many digits are *meaningful* — a mean of 1.97 with a 90% interval of [0.7, 3.2] is honestly "about 2", or "1 to 3" — and the *MCSE* decides how many are *stable* under a new seed (the rounding rule here is ours: keep the rounding unit ≳ 2 × MCSE, where the book's own digit-stability reasoning runs in ±3 × MCSE, the 99.7% range). `diagnostics.json → precision` carries both per parameter as `rel_mcse` (MCSE ÷ sd) and `stable_digits`; `max_rel_mcse_param` is the parameter that limits the whole table. `stable_digits` counts the significant digits of the posterior mean that keep the rounding unit at or above 2 × MCSE: `max(0, floor(log10(|mean|)) + 1 + floor(-log10(2 × MCSE)))`. Never print a mean with more significant digits than `stable_digits`, and never print an sd or interval endpoint finer than the smallest power of ten at or above 2 × its own MCSE (`mcse_sd` for the sd, the quantile MCSE for an endpoint); usually print fewer. If you want another digit, halving the MCSE costs four times the draws (§11.4) — it is almost always better to report fewer digits or a rounder interval than to run longer. A fixed seed does not make a number reproducible in the sense that matters (§11.7): the test is whether a *different* seed gives the same *reported* digits, and that is exactly what the MCSE check certifies — so a report built from an exploration-sized run (see diagnostics.md → Exploration runs vs. the final run) must say so.
 
 ## Analysis report template
 
@@ -280,7 +286,7 @@ Use this structure for written reports. Adapt sections as needed.
 - ESS (bulk): minimum [X] ✓
 - ESS (tail): minimum [X] ✓
 - Divergences: [N] [✓ or ✗]
-- Relative MCSE: max [X] on [param] → [N] stable significant digit(s) ✓
+- Relative MCSE: max [X] on [param] ✓
 [Figure: trace/rank plots for key parameters]
 
 ### Parameter estimates

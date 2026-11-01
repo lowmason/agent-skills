@@ -95,12 +95,14 @@ Follow this priority order. Explicit user preference always beats observed files
 
 3. **If there is no other guidance available**, default to `.worktrees/` at the project root.
 
+Call the chosen directory `LOCATION` (for example `.worktrees`).
+
 #### Safety Verification (project-local directories only)
 
-**MUST verify directory is ignored before creating worktree:**
+**MUST verify the chosen `LOCATION` is ignored before creating worktree.** Keep the trailing slash: a bare path never matches a directory-only pattern while the directory is absent.
 
 ```bash
-git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
+git check-ignore -q "$LOCATION/"
 ```
 
 **If NOT ignored:** Add to .gitignore, commit the change, then proceed.
@@ -131,8 +133,11 @@ if [ -f package.json ]; then npm install; fi
 if [ -f Cargo.toml ]; then cargo build; fi
 
 # Python
-if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-if [ -f pyproject.toml ]; then poetry install; fi
+if [ -f uv.lock ]; then uv sync
+elif [ -f poetry.lock ]; then poetry install
+elif [ -f requirements.txt ]; then pip install -r requirements.txt
+fi
+# A pyproject.toml with no lock file: no automatic install. Follow the README, or ask.
 
 # Go
 if [ -f go.mod ]; then go mod download; fi

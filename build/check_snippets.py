@@ -547,6 +547,14 @@ def main(argv=None) -> int:
     ap.add_argument('--timeout', type=int, default=300,
                     help='per-block execution timeout in seconds (default: 300)')
     args = ap.parse_args(argv)
+    unchecked = [p for p in args.paths
+                 if not (Path(p).is_dir()
+                         or (Path(p).is_file() and Path(p).suffix == '.md'))]
+    if unchecked:
+        for p in unchecked:
+            print(f'not a directory or an existing .md file: {p}',
+                  file=sys.stderr)
+        return 2
     failures = [e for md in _iter_md(args.paths)
                 for e in parse_errors(md) + fixture_errors(md)]
     advisories = [ln for md in _iter_md(args.paths) for ln in exempt_report(md)]

@@ -150,3 +150,22 @@ def test_pollution_that_exists_before_the_first_test_is_not_an_all_clear(bash, p
     # message must not tell the reader to delete it outright.
     assert 'Remove it and run again' not in result.stdout
     assert 'before you remove it' in result.stdout
+
+
+@pytest.mark.parametrize('bash', BASHES)
+def test_runner_that_cannot_start_is_not_an_all_clear(bash, project, tmp_path):
+    proc = find_polluter(bash, project, '*/test_*.py', tmp_path / 'no-such-runner')
+    assert proc.returncode == 2
+    assert 'No polluter found' not in proc.stdout
+    assert 'could not start' in proc.stdout
+
+
+@pytest.mark.parametrize('bash', BASHES)
+def test_test_path_with_a_space_runs_as_one_file(bash, project, tmp_path):
+    spaced = project / 'my tests'
+    spaced.mkdir()
+    (spaced / 'test_spaced.py').write_text('def test_s():\n    pass\n')
+    runner, log = make_runner(tmp_path, polluter='test_spaced.py')
+    proc = find_polluter(bash, project, '*/test_*.py', runner)
+    assert proc.returncode == 1
+    assert './my tests/test_spaced.py' in log.read_text().splitlines()

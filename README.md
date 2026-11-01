@@ -34,7 +34,7 @@ agent-skills/
 ├── agents/      # subagent definitions (reviewers + security/search/test/debug/docs — see Agents below)
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
 ├── runtimes/    # generated Codex/Gemini agent and command adapters
-├── hooks/       # Claude Code hooks: gates for Python/uv work repos + the read-only agent guard (see Hooks below)
+├── hooks/       # Claude Code hooks: gates for Python/uv work repos + the read-only agent guard and the dispatch model guard (see Hooks below)
 ├── rules/       # rule files: path-scoped via .claude/rules/, one user-level (see Rules below)
 ├── build/       # lints and commit gates, the adapter generator, the Claude Code guide's drift detector, citation checks
 ├── specs/       # design records + implementation plans (retired work under completed/)
@@ -127,7 +127,7 @@ Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`,
 - **Claude Code:** their `tools:` lists hold no `Write` or `Edit`. The read-only agent guard, once
   you install it (see [Hooks](#hooks)), denies Bash commands that change files or git state. The
   guard is a guardrail against drift from the contract, not a sandbox.
-- **Codex:** each adapter sets `sandbox_mode = "read-only"`.
+- **Codex:** every adapter sets `sandbox_mode = "read-only"` except `test-runner`. Its test commands write caches (uv writes `~/.cache/uv`), and a read-only sandbox blocks that. It sets no sandbox mode and inherits the session's mode. Its contract alone keeps it from editing. A probe with `codex sandbox` on 2026-11-01 showed that both the read-only and the workspace-write modes block `~/.cache/uv`. In those modes `test-runner` can run only commands that write no cache, unless you start Codex with a wider mode.
 - **Gemini CLI:** each adapter lists `run_shell_command` with no restriction.
 
 | Agent | Description |
@@ -164,6 +164,10 @@ fall into two groups, which install differently:
 - The **read-only agent guard** (`readonly-agent-guard.py`) is an agent contract hook. It enforces
   the contract of the five read-only agents (see [Agents](#agents)). You install it once, globally,
   in `~/.claude`.
+- The **dispatch model guard** (`dispatch-model-guard.py`) is also an agent contract hook. It makes
+  every agent dispatch name its `model`, so an agent never silently inherits the session's costly
+  model. `subagent-driven-development` relies on it. You install it once, globally, like the
+  read-only guard.
 
 | Hook | Event | What it does |
 |------|-------|--------------|
@@ -171,6 +175,7 @@ fall into two groups, which install differently:
 | [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`. Exit 2 feeds back to Claude whatever `--fix` could not resolve. `stop_hook_active` guards it against loops. When ruff cannot run, it exits 1 with "ruff unavailable", which does not block. |
 | [`uv-guard.sh`](hooks/uv-guard.sh) | `PreToolUse` (`Bash`) | Blocks `pip install` and bare `python` / `pytest`, and injects the `uv …` form instead. Escape hatch: `no-uv-guard` anywhere in the command. |
 | [`readonly-agent-guard.py`](hooks/readonly-agent-guard.py) | `PreToolUse` (`Bash`) | For the five read-only agents, denies Bash commands that change files or git state, such as `git checkout`, `git stash`, `git reset`, and `sed -i`. For every other agent, and for the main session, it exits at once and does nothing. Install it globally, by symlink. Then run [`probe-readonly-guard.sh`](hooks/probe-readonly-guard.sh) once, because a wrong path or a missing execute bit fails open. |
+| [`dispatch-model-guard.py`](hooks/dispatch-model-guard.py) | `PreToolUse` (`Agent`) | Denies an `Agent` call with no `model`. It allows model-pinned agents, built-in agents that pin their own model, and `fork`. An unknown agent type, plugin agents included, must name a model. Install it globally, like the read-only guard. |
 
 The three project tooling hooks read the hook JSON payload from stdin with `jq`. The guard is
 Python and needs no `jq`. To block, a hook uses **exit 2**, which feeds stderr back to Claude, or

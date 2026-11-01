@@ -587,7 +587,9 @@ def suggest_next_steps(report: dict) -> list[str]:
             f"{prec['max_rel_mcse']:.3f} on {prec['max_rel_mcse_param']}, above {REL_MCSE_OK} "
             "(references/reporting.md, Sampling and Convergence). Run more draws before "
             "reporting — halving the MCSE costs about four times the draws — and round each "
-            "reported value to its stable_digits in diagnostics.json → precision."
+            "posterior mean to its stable_digits in diagnostics.json → precision, and each sd and interval "
+            "endpoint to no finer than the smallest power of ten at or above 2 x its own MCSE "
+            "(references/reporting.md)."
         )
     elif prec.get("rating") == "not computed":
         steps.append(

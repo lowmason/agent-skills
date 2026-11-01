@@ -576,7 +576,11 @@ def run(repo: Path, cache: Path, claude: Path, *, only: list[str] | None, force:
     newest cached changelog release, without --allow-old (R10.3).'''
     tree = Source(repo)
     manifest = parse_manifest(tree.require(MANIFEST))
-    rows = parse_probes(tree.read(PROBES))
+    log = tree.read(PROBES)
+    if log is not None and not any(is_probe_header(line) for line in log.splitlines()):
+        raise SetupError(f'{PROBES}: no probe log table, so every probe would read as due and a row could not be '
+                         'appended: restore the header row naming the date, version, probe and outcome columns')
+    rows = parse_probes(log)
     unbuilt = sorted(set(manifest.probes) - set(PROBE_RUNS))
     if unbuilt:
         raise SetupError(f"{MANIFEST} registers {', '.join(unbuilt)}, which probes.py does not run")

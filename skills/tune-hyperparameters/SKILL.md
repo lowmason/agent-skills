@@ -190,11 +190,11 @@ the search never touched (verified against Optuna 5.0.0 and scikit-learn
 1.9.1):
 
 ```python
-outer = PurgedTimeSeriesSplit(n_splits=4, embargo=2)
+outer = PurgedTimeSeriesSplit(n_splits=4, embargo=2, label_horizon=h)
 outer_scores = []
 for tr, te in outer.split(X):            # a panel: outer.split(X, groups=period)
     X_tr, y_tr = X[tr], y[tr]
-    inner = PurgedTimeSeriesSplit(n_splits=5, embargo=2)
+    inner = PurgedTimeSeriesSplit(n_splits=5, embargo=2, label_horizon=h)
 
     def objective(trial):
         alpha = trial.suggest_float('alpha', 1e-3, 1e3, log=True)

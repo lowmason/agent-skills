@@ -25,6 +25,11 @@ def test_overdispersion_none_for_floats():
     assert overdispersion(pl.Series([1.0, 2.0, 3.0])) is None
 
 
+@pytest.mark.parametrize('values', [[3], [None, 4]])
+def test_overdispersion_none_below_two_values(values):
+    assert overdispersion(pl.Series(values, dtype=pl.Int64)) is None
+
+
 def test_zero_fraction():
     assert zero_fraction(pl.Series([0, 0, 1, 2, 0])) == 0.6
 

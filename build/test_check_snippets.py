@@ -602,3 +602,11 @@ def test_the_remediation_commands_use_the_runner_and_spell_no_version():
 def test_the_preamble_module_no_longer_pins_packages():
     import snippet_preamble
     assert not hasattr(snippet_preamble, 'PINNED')
+
+
+def test_a_missing_or_non_markdown_path_exits_2_and_names_it(tmp_path, capsys):
+    txt = tmp_path / 'notes.txt'
+    txt.write_text('x')
+    for bad in (tmp_path / 'nope', txt):
+        assert check_snippets.main([str(bad)]) == 2
+        assert str(bad) in capsys.readouterr().err

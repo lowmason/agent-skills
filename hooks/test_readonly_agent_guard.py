@@ -1179,6 +1179,7 @@ def test_deny_payload_has_the_exact_documented_shape(guard_env):
 def test_denial_reason_names_agent_command_clause_and_alternative(guard_env):
     proc = run_guard(payload_for('git checkout main', agent='task-reviewer'), guard_env)
     reason = json.loads(proc.stdout)['hookSpecificOutput']['permissionDecisionReason']
+    assert reason.startswith('readonly-agent-guard: ')   # the prefix the live probe greps
     assert 'task-reviewer' in reason
     assert 'git checkout main' in reason
     assert 'worktree list' in reason          # the quoted contract clause

@@ -5747,12 +5747,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       brief mandated the wording. Touches skills/executing-plans/SKILL.md and
       skills/subagent-driven-development/references/resuming.md. Size: quick-fix. Revisit
       if: a resumed run misreads a `Ruling:` line.
-- [ ] **TDD "run the documented suite" against `fix-loop.md`'s one-line-fix rule (plan 75
+- [x] **TDD "run the documented suite" against `fix-loop.md`'s one-line-fix rule (plan 75
       Task 2).** The new TDD paragraph asks for the project's whole documented suite, while
       `fix-loop.md` says a one-line fix needs only its covering tests. Touches
       skills/test-driven-development/SKILL.md and
       skills/subagent-driven-development/references/fix-loop.md. Size: quick-fix. Revisit
       if: an implementer reports the two as conflicting.
+      → done 2026-11-01 (plan 76): 28031e4 makes `fix-loop.md` follow test-driven-development: a fix round runs its covering tests while it iterates, then the documented suite(s) the change can reach once before the fix report (owner decision D7). → item: 76-whole-repo-review-fixes — 2026-11-01
 - [ ] **`task-start` writes into a shared workspace and `task-done` refuses an empty ledger
       (plan 75 Task 4 and final review).** `task-start` writes a brief into a workspace that
       same-basename plans share (spec non-goal M2), and an empty `progress.md` is refused as
@@ -5764,3 +5765,77 @@ review and the Plan Completion gate (2026-10-27) add the others.
       final 23-test suite has no such run. Touches
       skills/executing-plans/scripts/test_executing_plans_scripts.py. Size: quick-fix.
       Revisit if: a script change adds a Bash 4 feature.
+
+## whole-repo-review-b3062c6 (no plan; plan 76 review item 6, branch claude/repo-code-review-ff9362) — 2026-11-01
+- [ ] **llm-wiki redactor value class misses short and punctuated secrets (plan 76 D6).**
+      After 305576b and f0403f8, a secret value with punctuation (`P@ss…`), a value under 12
+      characters, and the `--api-key VALUE` flag form still pass both llm-wiki layers (the
+      redactor and the lint secret patterns). The gap predates the Critical fix. Widening the
+      value class trades against the file-path lesson in the `high-entropy` comment, so it
+      needs a design decision first. Touches skills/llm-wiki/scripts/distill_sessions.py and
+      skills/llm-wiki/scripts/lint_wiki.py. Size: design. Revisit if: a real short or
+      punctuated secret reaches a wiki page or capture.
+
+## 76-whole-repo-review-fixes — 2026-11-01
+- [ ] **Stale fixture notes in the snippet build (plan 76 Task 18, outside its files).**
+      `build/check_snippets.py:494` and `build/test_check_snippets.py:204` still say blocks
+      write `model_output.nc`, while bayesian-workflow now saves `<slug>/inference_data.nc`.
+      The `build/snippet_preamble.py` docstring says its fixture is shaped after
+      `references/model-template.md`'s running example with a vector `beta`, but the
+      template's sites are `mu` and `sigma`. The fixture's `beta` and `sigma` sites are
+      correct and must stay: svi.md, reporting.md and sensitivity.md blocks read them under
+      Tier 3. Only the comment and docstring text are stale. See specs/plans/completed/76-whole-repo-review-fixes.md (Task 18).
+      Size: quick-fix. Done when: the two comments name `<slug>/inference_data.nc` and the
+      docstring no longer says the fixture mirrors the template's sites.
+- [ ] **reporting.md plot calls name sites the template lacks (plan 76 Task 18 ruling).**
+      `skills/bayesian-workflow/references/reporting.md` (lines 68 and 72 at retirement,
+      about 227 and 232 in the review) calls `az.plot_trace(idata, var_names=["beta",
+      "sigma"])` and `az.plot_forest(idata, var_names=["beta"])`, labelled "adjust to your
+      parameters". The "Parameter posteriors" block (about lines 365-371) does the same in
+      `plot_forest`, `plot_dist` and `plot_pair`. The model template's sites are `mu` and
+      `sigma`, so a reader who copies the lines verbatim gets KeyError. Tier 3 runs these blocks against the fixture model,
+      whose sites are `beta` and `sigma`, so a fix must keep Tier 3 green (for example the
+      `dict(draws)` pattern Task 18 used in svi.md). See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix. Done when: the
+      `var_names` in both blocks match the template's sites or are derived from the
+      posterior, and the three snippet tiers pass on skills/bayesian-workflow/.
+- [ ] **find-polluter.sh false all-clear through a wrapper command (plan 76 final review,
+      Declined to judge).** With a wrapper `TEST_CMD` such as `python -m pytest` or `uv run
+      pytest` whose inner runner is missing, the wrapper exits with its own code (not 126 or
+      127), so the run can still end on "No polluter found". Exit codes alone cannot tell
+      this from failing tests. Touches skills/systematic-debugging/find-polluter.sh. See specs/plans/completed/76-whole-repo-review-fixes.md
+      (Task 1). Size: design. Revisit if: a user reports a false all-clear with a wrapper
+      command.
+- [ ] **SDD resuming check after the plan retires (plan 76 final review, Declined to
+      judge).** After protocol step 5 moves the plan, subagent-driven-development's resuming
+      check compares the ledger's first line (`Plan: specs/plans/<file>`) with the retired
+      path `specs/plans/completed/<file>`. A `/clear` in that window stops with one question,
+      though the workspace is the same. Touches skills/subagent-driven-development/SKILL.md
+      (Durable Progress) and references/resuming.md. See specs/plans/completed/76-whole-repo-review-fixes.md (Task 21). Size: quick-fix. Done
+      when: the resuming check accepts the retired path of the same basename as a match.
+- [ ] **executing-plans stop list not scoped to the run after pre-flight (plan 76 finding
+      #22, left unchanged).** `skills/executing-plans/SKILL.md:50` says "Five things stop
+      you, and only these", while pre-flight sends a conflict to the partner before Task 1.
+      The stop-scope control scored 0/5 failures, so the plan's stop rule left the line
+      unchanged (Task 20 Steps 4 and 5). See specs/red-baseline-review-fixes.md. See specs/plans/completed/76-whole-repo-review-fixes.md.
+      Size: quick-fix. Revisit if: a run rules alone on a pre-flight conflict.
+- [ ] **Codex test-runner cannot write uv's cache (plan 76 Task 11).** Under Codex's
+      read-only and workspace-write sandbox modes, uv cannot write ~/.cache/uv, so the Codex
+      `test-runner` adapter cannot run uv suites in those sessions. Task 11 left the adapter
+      with no `sandbox_mode` key, and README.md states the limit. Touches
+      build/sync_runtime_assets.py and runtimes/codex/agents/test-runner.toml. See specs/plans/completed/76-whole-repo-review-fixes.md.
+      Size: design. Revisit if: Codex adds a sandbox mode with a writable cache directory.
+- [ ] **Inline run_diagnostics tail-ESS moves with stats.ci_prob (plan 76 Task 18
+      ruling).** The inline `run_diagnostics` in
+      skills/bayesian-workflow/references/diagnostics.md (about line 231) gates on
+      `az.summary`'s `ess_tail`, which moves about 5% with `rcParams["stats.ci_prob"]`
+      (1069.9 at 0.89, 1122.7 at 0.94 in a probe). A session that sets the report's 94%
+      rcParams moves the gate. The skill's recommended step 4 and `diagnose_model.py` pin
+      the quantiles, so they are unaffected. See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix. Done when: the inline
+      gate computes tail ESS at fixed 5%/95% quantiles, as step 4 does.
+- [ ] **fix-round-gate micro-test did not test finding #23 (plan 76 Tasks 12 and 21).**
+      The v2 fixture's CLAUDE.md says "Run a suite before you call a change finished", so a
+      0/5 control did not show whether fix-loop.md's old one-line-fix rule misled an agent.
+      The owner applied D3 to fix-loop.md by decision D7 without a failing control, and no
+      treatment arm ran. See specs/red-baseline-review-fixes.md and
+      specs/red-baseline-review-fixes/kit/cases.py. See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix (closure note
+      only). Revisit if: a fix round skips the documented suites in a real run.
