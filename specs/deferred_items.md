@@ -5777,7 +5777,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       punctuated secret reaches a wiki page or capture.
 
 ## 76-whole-repo-review-fixes — 2026-11-01
-- [ ] **Stale fixture notes in the snippet build (plan 76 Task 18, outside its files).**
+- [x] **Stale fixture notes in the snippet build (plan 76 Task 18, outside its files).**
       `build/check_snippets.py:494` and `build/test_check_snippets.py:204` still say blocks
       write `model_output.nc`, while bayesian-workflow now saves `<slug>/inference_data.nc`.
       The `build/snippet_preamble.py` docstring says its fixture is shaped after
@@ -5787,7 +5787,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Tier 3. Only the comment and docstring text are stale. See specs/plans/completed/76-whole-repo-review-fixes.md (Task 18).
       Size: quick-fix. Done when: the two comments name `<slug>/inference_data.nc` and the
       docstring no longer says the fixture mirrors the template's sites.
-- [ ] **reporting.md plot calls name sites the template lacks (plan 76 Task 18 ruling).**
+      → done 2026-11-02 (/deferred quick fix): cc458b1 has both comments name `<slug>/inference_data.nc` and the preamble docstring say the fixture keeps the template's groups and observed site, not its latent sites.
+- [x] **reporting.md plot calls name sites the template lacks (plan 76 Task 18 ruling).**
       `skills/bayesian-workflow/references/reporting.md` (lines 68 and 72 at retirement,
       about 227 and 232 in the review) calls `az.plot_trace(idata, var_names=["beta",
       "sigma"])` and `az.plot_forest(idata, var_names=["beta"])`, labelled "adjust to your
@@ -5798,6 +5799,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `dict(draws)` pattern Task 18 used in svi.md). See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix. Done when: the
       `var_names` in both blocks match the template's sites or are derived from the
       posterior, and the three snippet tiers pass on skills/bayesian-workflow/.
+      → done 2026-11-02 (/deferred quick fix): cc458b1 takes `var_names` from `list(idata.posterior.data_vars)` in both blocks (mu and sigma on the template), and the three snippet tiers pass on skills/bayesian-workflow/.
 - [ ] **find-polluter.sh false all-clear through a wrapper command (plan 76 final review,
       Declined to judge).** With a wrapper `TEST_CMD` such as `python -m pytest` or `uv run
       pytest` whose inner runner is missing, the wrapper exits with its own code (not 126 or
@@ -5805,13 +5807,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       this from failing tests. Touches skills/systematic-debugging/find-polluter.sh. See specs/plans/completed/76-whole-repo-review-fixes.md
       (Task 1). Size: design. Revisit if: a user reports a false all-clear with a wrapper
       command.
-- [ ] **SDD resuming check after the plan retires (plan 76 final review, Declined to
+- [x] **SDD resuming check after the plan retires (plan 76 final review, Declined to
       judge).** After protocol step 5 moves the plan, subagent-driven-development's resuming
       check compares the ledger's first line (`Plan: specs/plans/<file>`) with the retired
       path `specs/plans/completed/<file>`. A `/clear` in that window stops with one question,
       though the workspace is the same. Touches skills/subagent-driven-development/SKILL.md
       (Durable Progress) and references/resuming.md. See specs/plans/completed/76-whole-repo-review-fixes.md (Task 21). Size: quick-fix. Done
       when: the resuming check accepts the retired path of the same basename as a match.
+      → done 2026-11-02 (/deferred quick fix): cc458b1 has references/resuming.md accept `specs/plans/completed/<file>` as the same plan as `specs/plans/<file>`.
 - [ ] **executing-plans stop list not scoped to the run after pre-flight (plan 76 finding
       #22, left unchanged).** `skills/executing-plans/SKILL.md:50` says "Five things stop
       you, and only these", while pre-flight sends a conflict to the partner before Task 1.
@@ -5824,7 +5827,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       with no `sandbox_mode` key, and README.md states the limit. Touches
       build/sync_runtime_assets.py and runtimes/codex/agents/test-runner.toml. See specs/plans/completed/76-whole-repo-review-fixes.md.
       Size: design. Revisit if: Codex adds a sandbox mode with a writable cache directory.
-- [ ] **Inline run_diagnostics tail-ESS moves with stats.ci_prob (plan 76 Task 18
+- [x] **Inline run_diagnostics tail-ESS moves with stats.ci_prob (plan 76 Task 18
       ruling).** The inline `run_diagnostics` in
       skills/bayesian-workflow/references/diagnostics.md (about line 231) gates on
       `az.summary`'s `ess_tail`, which moves about 5% with `rcParams["stats.ci_prob"]`
@@ -5832,6 +5835,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       rcParams moves the gate. The skill's recommended step 4 and `diagnose_model.py` pin
       the quantiles, so they are unaffected. See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix. Done when: the inline
       gate computes tail ESS at fixed 5%/95% quantiles, as step 4 does.
+      → done 2026-11-02 (/deferred quick fix): cc458b1 gates on `az.ess(idata, method="tail", prob=(0.05, 0.95))`. A probe on the template model gave a tail-ESS minimum of 387 at both 0.89 and 0.94, while summary's ess_tail moved 440 to 402.
 - [ ] **fix-round-gate micro-test did not test finding #23 (plan 76 Tasks 12 and 21).**
       The v2 fixture's CLAUDE.md says "Run a suite before you call a change finished", so a
       0/5 control did not show whether fix-loop.md's old one-line-fix rule misled an agent.

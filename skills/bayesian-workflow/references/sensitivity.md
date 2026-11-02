@@ -96,7 +96,8 @@ This returns a per-variable table with prior and likelihood power-scaling sensit
 change in prior or likelihood strength. Scope it with `var_names` to get tidy per-parameter rows:
 
 ```python
-az.psense_summary(idata, var_names=["beta", "sigma"])
+params = list(idata.posterior.data_vars)  # the posterior's sites: mu and sigma in the template
+az.psense_summary(idata, var_names=params)
 ```
 
 ## Interpreting results
@@ -135,8 +136,8 @@ Not every parameter needs sensitivity analysis. Focus on what matters:
 For hierarchical models, sensitivity of the hyperprior (e.g., the group-level standard deviation) is more informative than sensitivity of individual group effects.
 
 ```python
-# Check only specific variables
-summary = az.psense_summary(idata, var_names=["beta", "sigma"])
+# Check only specific variables: name the sites you interpret (here the noise scale)
+summary = az.psense_summary(idata, var_names=["sigma"])
 ```
 
 ## Visual diagnostics
@@ -148,7 +149,8 @@ Shows posterior marginals at several power-scaling levels. Use this to see the *
 ```python
 from arviz_plots import plot_psense_dist
 
-plot_psense_dist(idata, var_names=["beta"])
+params = list(idata.posterior.data_vars)  # the posterior's sites: mu and sigma in the template
+plot_psense_dist(idata, var_names=params)
 ```
 
 Requires `arviz-plots` (`pip install arviz-plots`).

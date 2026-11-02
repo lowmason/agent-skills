@@ -491,7 +491,7 @@ def runnable(block) -> bool:
 def run_errors(path: Path, timeout: int = 300) -> list[str]:
     '''Execute every runnable block in an isolated temp cwd; report raises.
 
-    Isolation is mandatory, not tidiness: blocks write model_output.nc, create
+    Isolation is mandatory, not tidiness: blocks write <slug>/inference_data.nc, create
     a literal <slug>/ directory, and save PNGs. Warnings are not failures --
     the skill documents several as expected -- so this asserts "did not
     raise", never -W error. A block's named fixture runs between the preamble

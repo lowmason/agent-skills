@@ -4,7 +4,9 @@ Read this after a /clear, a relaunch or a compaction, before any dispatch.
 
 - The workspace is per plan, so that ledger is always this plan's. Its first
   line names the plan it belongs to; if that name is not the plan in your hand,
-  stop and say so rather than resuming against it.
+  stop and say so rather than resuming against it. A plan that has retired
+  since the ledger began is still the same plan: `specs/plans/<file>` and
+  `specs/plans/completed/<file>` match, so resume.
 - **On resume after a checkpoint, reconcile before dispatching.** Before
   dispatching the first incomplete task, replay the ledger's `deviation` lines:
   for any interface a coming task consumes, trust the ledger's actual signature
