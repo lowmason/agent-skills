@@ -8,7 +8,7 @@ InferenceData carrying the groups the docs assume --
 log_likelihood, prior, posterior_predictive, and sample_stats.energy. The
 variable NAMES are load-bearing, not decoration: priors.md reads
 idata.posterior["beta"].values as (chains, draws, D), so `beta` must be a
-vector, and sensitivity.md asks for `beta`/`sigma` by name.
+vector, and sensitivity.md asks for `sigma` by name.
 
 Sized to be fast: 1 chain, 100 warmup / 200 draws, purely so `mcmc` and
 `idata` exist with realistic structure -- it is NOT a model worth
