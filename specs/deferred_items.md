@@ -3955,7 +3955,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `good_k` as the cutoff and the Tier 1 snippet check passes.
       → done 2026-10-19 (/deferred quick fix): both files name good_k as the cutoff. Tier 1
       passes.
-- [ ] A run with R-hat flags and an unchecked sampler check never names the unchecked check
+- [x] A run with R-hat flags and an unchecked sampler check never names the unchecked check
       (final-review item G4, 2026-10-19). Plan 56's "Not checked:" step comes only from
       `_closing_steps` in `skills/bayesian-workflow/scripts/check_diagnostics.py`, which runs when
       no other step exists, and the fair or poor convergence line omits it as well. Decision D2
@@ -3964,6 +3964,8 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       owner decides, and either every run's steps and summary name the unchecked checks, or the
       decision to keep D2's wording is recorded here.
       → progress 2026-10-31 (owner ruling): name them in every run. Every run's steps and summary name the unchecked checks (tree depth, E-BFMI, divergences), not only the all-clear.
+      → done 2026-11-02 (/deferred quick fix): every run with a step now gets a "Not checked:" step
+      for the sampler checks, and the good, fair and poor summaries name them. Tests pin both.
 - [x] `SKILL.md` calls `calibration_check.py` optional, but plan 56's DF1 withholds the all-clear
       without `--calibration` (final-review Minor, 2026-10-19).
       `skills/bayesian-workflow/SKILL.md:77` reads "(and optionally `calibration_check.py` …". The
