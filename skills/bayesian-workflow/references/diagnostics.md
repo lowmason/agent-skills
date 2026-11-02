@@ -224,12 +224,15 @@ def run_diagnostics(idata):
     """Run all convergence diagnostics. Returns dict of results."""
     summary = az.summary(idata)
     num_chains = int(idata.posterior.sizes["chain"])
+    # Tail ESS on fixed 5%/95% quantiles, as in step 4: summary's ess_tail moves with stats.ci_prob
+    tail_ess = az.ess(idata, method="tail", prob=(0.05, 0.95))
+    ess_tail_min = min(float(tail_ess[v].min()) for v in tail_ess.data_vars)
     results = {
         "rhat_max": float(summary["r_hat"].max()),
         "rhat_ok": bool((summary["r_hat"] <= 1.01).all()),
         "ess_bulk_min": int(summary["ess_bulk"].min()),
-        "ess_tail_min": int(summary["ess_tail"].min()),
-        "ess_ok": bool((summary["ess_bulk"] >= 100 * num_chains).all() and (summary["ess_tail"] >= 100 * num_chains).all()),
+        "ess_tail_min": int(ess_tail_min),
+        "ess_ok": bool((summary["ess_bulk"] >= 100 * num_chains).all()) and ess_tail_min >= 100 * num_chains,
         "n_divergences": int(idata.sample_stats["diverging"].sum()),
         "divergences_ok": int(idata.sample_stats["diverging"].sum()) == 0,
     }

@@ -201,7 +201,7 @@ def test_raising_block_is_reported(tmp_path):
 
 @requires_stack
 def test_block_side_effects_do_not_touch_cwd(tmp_path, monkeypatch):
-    '''Blocks write model_output.nc and a literal <slug>/ dir. The runner must
+    '''Blocks write <slug>/inference_data.nc and a literal <slug>/ dir. The runner must
     execute elsewhere or the gate pollutes the repo it guards.'''
     p = tmp_path / 'i.md'
     p.write_text('```python\nopen("sentinel.txt", "w").write("x")\n```\n')

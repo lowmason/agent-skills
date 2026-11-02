@@ -63,13 +63,15 @@ az.summary(idata).to_csv(os.path.join(results_dir, "summary.csv"))  # columns hd
 g = numpyro.render_model(model, model_args=(x,), model_kwargs={"y": y})
 g.render(os.path.join(results_dir, "model_graph"), format="png", cleanup=True)
 
-# Trace — pass var_names to focus on parameters (ArviZ 1.x caps the subplot count,
-# so a vector Deterministic over `obs` would error). Rank view: az.plot_rank(idata, var_names=...).
-pc = az.plot_trace(idata, var_names=["beta", "sigma"])  # adjust to your parameters
+# Trace — pass var_names to focus on parameters: the posterior's sites, mu and sigma in the
+# template. ArviZ 1.x caps the subplot count, so drop any vector Deterministic over `obs`
+# from params. Rank view: az.plot_rank(idata, var_names=params).
+params = list(idata.posterior.data_vars)
+pc = az.plot_trace(idata, var_names=params)
 pc.savefig(os.path.join(results_dir, "trace.png"))
 
 # Forest — posterior mean points (rcParams stats.point_estimate), 50% and 94% HDI intervals
-pc = az.plot_forest(idata, var_names=["beta"], combined=True)
+pc = az.plot_forest(idata, var_names=params, combined=True)
 pc.savefig(os.path.join(results_dir, "forest.png"))
 
 # Posterior predictive — arviz_plots (az.plot_ppc was removed from the ArviZ 1.x umbrella)
@@ -361,14 +363,16 @@ workflow. The essentials:
 ```python
 import arviz as az
 
+params = list(idata.posterior.data_vars)  # the posterior's sites: mu and sigma in the template
+
 # Forest plot (multiple parameters)
-az.plot_forest(idata, var_names=["beta"], combined=True)
+az.plot_forest(idata, var_names=params, combined=True)
 
 # Distribution plot (densities for individual parameters)
-az.plot_dist(idata, var_names=["beta"])
+az.plot_dist(idata, var_names=params)
 
 # Pair plot (correlations between parameters; divergences marked automatically)
-az.plot_pair(idata, var_names=["beta", "sigma"])
+az.plot_pair(idata, var_names=params)
 ```
 
 ### Predictions with uncertainty
