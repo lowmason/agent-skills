@@ -350,6 +350,7 @@ def _build_summary(report: dict) -> dict:
         r = report["convergence"]
         named, flags = _split_flags(r["problematic_params"])
         unchecked = r.get("unchecked", [])
+        not_checked = f" Not checked: {', '.join(unchecked)}." if unchecked else ""
         if r["rating"] == "not computed":
             s["convergence"] = "Convergence diagnostics: not computed."
         elif r["rating"] == "excellent":
@@ -362,13 +363,15 @@ def _build_summary(report: dict) -> dict:
             else:
                 s["convergence"] = f"All convergence diagnostics passed ({passed})."
         elif r["rating"] == "good":
-            s["convergence"] = "Convergence diagnostics broadly pass; minor flags worth noting."
+            s["convergence"] = f"Convergence diagnostics broadly pass; minor flags worth noting.{not_checked}"
         elif r["rating"] == "fair":
             flagged = _flag_phrase(named, flags) or "flags on some parameters"
-            s["convergence"] = f"Convergence is fair — {flagged}. Inspect before trusting the posterior."
+            s["convergence"] = f"Convergence is fair — {flagged}. Inspect before trusting the posterior.{not_checked}"
         else:
             flagged = _flag_phrase(named, flags) or "flags on multiple parameters"
-            s["convergence"] = f"Poor convergence — {flagged}. Posterior should not be interpreted until resolved."
+            s["convergence"] = (
+                f"Poor convergence — {flagged}. Posterior should not be interpreted until resolved.{not_checked}"
+            )
 
     if "precision" in report:
         r = report["precision"]
@@ -467,13 +470,29 @@ def _calibration_steps(cal: dict) -> list[str]:
     return steps
 
 
+def _sampler_not_checked(report: dict) -> list[str]:
+    """'check (how to run it)' for each sampler check that did not run.
+
+    A convergence section that never ran lists all three, but its own next step
+    already says so, so it adds nothing here.
+    """
+    conv = report.get("convergence", {})
+    if conv.get("rating", "not computed") == "not computed":
+        return []
+    return [f"{label} ({remedy})" for _, label, remedy in SAMPLER_CHECKS if label in conv.get("unchecked", [])]
+
+
 def _not_checked(report: dict) -> list[str]:
-    """'check (how to run it)' for each optional check that did not run."""
-    unchecked = report.get("convergence", {}).get("unchecked", [])
-    missing = [f"{label} ({remedy})" for _, label, remedy in SAMPLER_CHECKS if label in unchecked]
+    """The sampler checks that did not run, then prior sensitivity if it did not run."""
+    missing = _sampler_not_checked(report)
     if report.get("psense", {}).get("rating", "not computed") == "not computed":
         missing.append(f"prior sensitivity ({PSENSE_REMEDY})")
     return missing
+
+
+def _not_checked_step(missing: list[str]) -> list[str]:
+    """The 'Not checked:' step, or no step when every check in `missing` ran."""
+    return [f"Not checked: {'; '.join(missing)}. Say so in the report."] if missing else []
 
 
 def _closing_steps(report: dict) -> list[str]:
@@ -481,7 +500,8 @@ def _closing_steps(report: dict) -> list[str]:
 
     Reached only when no other step was added, so a required section that is
     missing, or that did not pass without adding a step of its own, still
-    blocks the all-clear.
+    blocks the all-clear. Prior sensitivity is named only beside the all-clear,
+    which it could undercut; a blocked run names the sampler checks alone.
     """
     unresolved = [
         f"{label} ({report.get(key, {}).get('rating', 'not run')})"
@@ -491,17 +511,15 @@ def _closing_steps(report: dict) -> list[str]:
     if unresolved:
         return [
             "No specific next step applies, but not every required check ran and passed: "
-            f"{', '.join(unresolved)}. Resolve these before interpreting the posterior."
+            f"{', '.join(unresolved)}. Resolve these before interpreting the posterior.",
+            *_not_checked_step(_sampler_not_checked(report)),
         ]
-    steps = [
+    return [
         "All diagnostics are within acceptable bounds — proceed to "
         "interpretation. Translate posteriors into decision-relevant terms "
-        "and document the model assumptions in the report."
+        "and document the model assumptions in the report.",
+        *_not_checked_step(_not_checked(report)),
     ]
-    missing = _not_checked(report)
-    if missing:
-        steps.append(f"Not checked: {'; '.join(missing)}. Say so in the report.")
-    return steps
 
 
 def suggest_next_steps(report: dict) -> list[str]:
@@ -673,8 +691,11 @@ def suggest_next_steps(report: dict) -> list[str]:
             "Conclusions for those parameters depend partly on the prior."
         )
 
-    # ── Closing: the all-clear only when every required check ran and passed ──
-    if not steps:
+    # ── Closing: every run names the sampler checks that did not run; with no other
+    # step, the all-clear (only when every required check ran and passed) does it ──
+    if steps:
+        steps.extend(_not_checked_step(_sampler_not_checked(report)))
+    else:
         steps.extend(_closing_steps(report))
 
     return steps

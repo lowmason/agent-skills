@@ -402,6 +402,92 @@ def test_an_unchecked_divergence_count_is_not_reported_as_zero():
     assert "no divergences" not in check_diagnostics(diagnostics=diag)["summary"]["convergence"]
 
 
+def _with_rhat_flags(max_rhat, **blocks):
+    """A run whose R-hat flags parameter a, with the named convergence blocks replaced."""
+    diag = _clean_diagnostics()
+    diag["convergence"].update(
+        all_ok=False, rhat={"ok": False, "max": max_rhat, "problematic_params": ["a"]}, **blocks
+    )
+    return diag
+
+
+def _not_checked_steps(steps):
+    return [s for s in steps if s.startswith("Not checked:")]
+
+
+@pytest.mark.parametrize("max_rhat, rating", [(1.02, "fair"), (1.08, "poor")])
+@pytest.mark.parametrize(
+    "block, label",
+    [("treedepth", "tree depth"), ("bfmi", "E-BFMI"), ("divergences", "divergences")],
+)
+def test_a_flagged_run_names_a_sampler_check_that_never_ran(max_rhat, rating, block, label):
+    report, steps = _report_and_steps(_with_rhat_flags(max_rhat, **{block: {"checked": False}}))
+    assert report["convergence"]["rating"] == rating
+    assert "R-hat or ESS flags on a" in _one_step(steps, "R-hat or ESS flags")
+    assert label in _one_step(steps, "Not checked:")
+    assert f"Not checked: {label}." in report["summary"]["convergence"]
+    assert not _proceeds(steps)
+
+
+def test_a_flagged_run_names_every_sampler_check_that_never_ran_with_its_remedy():
+    diag = _with_rhat_flags(1.02, treedepth={"checked": False}, bfmi={"checked": False})
+    report, steps = _report_and_steps(diag)
+    step = _one_step(steps, "Not checked:")
+    assert "tree depth (collect num_steps" in step and "E-BFMI (collect energy" in step
+    assert "divergences" not in step
+    assert "Not checked: tree depth, E-BFMI." in report["summary"]["convergence"]
+
+
+def test_a_flagged_run_whose_sampler_checks_all_ran_names_none():
+    report, steps = _report_and_steps(_with_rhat_flags(1.02))
+    assert not _not_checked_steps(steps)
+    assert "Not checked" not in report["summary"]["convergence"]
+
+
+def test_an_excellent_run_with_another_step_still_names_a_sampler_check_that_never_ran():
+    # The common partial run: clean convergence, no --calibration, tree depth never collected.
+    diag = _clean_diagnostics()
+    diag["convergence"]["treedepth"] = {"checked": False}
+    report = check_diagnostics(diagnostics=diag, psense=LOW_PSENSE)
+    steps = suggest_next_steps(report)
+    assert report["convergence"]["rating"] == "excellent"
+    assert "--calibration" in _one_step(steps, "Calibration was not checked")
+    assert "tree depth" in _one_step(steps, "Not checked:")
+    assert not _proceeds(steps)
+
+
+def test_a_flagged_run_leaves_prior_sensitivity_to_the_all_clear():
+    # The ruling covers the sampler checks. A run that is not cleared has no claim for psense to undercut.
+    steps = _steps(_with_rhat_flags(1.02, treedepth={"checked": False}), psense=None)
+    assert "prior sensitivity" not in _one_step(steps, "Not checked:")
+
+
+def test_a_good_convergence_summary_names_a_sampler_check_that_never_ran():
+    diag = _clean_diagnostics()
+    diag["convergence"].update(all_ok=False, treedepth={"checked": False})
+    report = check_diagnostics(diagnostics=diag)
+    assert report["convergence"]["rating"] == "good"
+    assert report["summary"]["convergence"].endswith("Not checked: tree depth.")
+
+
+def test_the_blocked_closing_step_names_a_sampler_check_that_never_ran():
+    diag = _clean_diagnostics()
+    diag["convergence"]["treedepth"] = {"checked": False}
+    steps = _steps(diag, calibration=_legacy_calibration("", FAIR_OVER))
+    assert "calibration (fair)" in _one_step(steps, "No specific next step applies")
+    assert "tree depth" in _one_step(steps, "Not checked:")
+    assert not _proceeds(steps)
+
+
+def test_a_missing_convergence_section_adds_no_redundant_not_checked_step():
+    # Its own step already says the sampler checks never ran.
+    diag = _clean_diagnostics()
+    del diag["convergence"]
+    _, steps = _report_and_steps(diag)
+    assert "sampler checks never ran" in _one_step(steps, "Convergence was not checked")
+    assert not _not_checked_steps(steps)
+
+
 def test_the_convergence_summary_names_parameters_and_sampler_flags():
     diag = _clean_diagnostics()
     diag["convergence"].update(

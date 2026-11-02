@@ -143,7 +143,7 @@ The prior predictive distribution shows the data the model would generate before
 
 The trace plot checks chain mixing. It draws the sampled values against the iteration number, one line per chain, and marks divergent transitions as a rug when any occurred. Well-mixed chains overlap and look like stationary noise around the same level. Visible separation between chains, monotone drift, or stuck chains indicate non-convergence and the posterior should not be interpreted.
 
-**Assessment:** <1–2 sentences from `check_diagnostics()` convergence section — state whether all diagnostics pass and flag any parameters with R-hat > 1.01, ESS < threshold, or divergences concentrated in their posterior.>
+**Assessment:** <1–2 sentences from `check_diagnostics()` convergence section — state whether all diagnostics pass and flag any parameters with R-hat > 1.01, ESS < threshold, or divergences concentrated in their posterior. Name any sampler check the summary lists as not checked (tree depth, E-BFMI, divergences).>
 
 ## Posterior
 
@@ -225,6 +225,7 @@ This section is mandatory. Rank threats by severity. For each: state the assumpt
 Use these as a reference when filling in the final section. The harness in `scripts/check_diagnostics.py` emits these automatically based on what it finds — only override when problem-specific context warrants it.
 
 - All diagnostics healthy, calibration good → "Proceed to interpretation. If decision-stakes warrant, run prior sensitivity (`psense_summary`) and report alongside results."
+- A sampler check did not run (tree depth, E-BFMI or divergences) → "Not checked: …" with the way to collect its stat. Every run gets this step, not only the all-clear. Prior sensitivity joins it only beside the all-clear. Say so in the report.
 - Divergences concentrated near a boundary parameter → "Reparameterize the affected parameter as non-centered (`LocScaleReparam`), or replace `HalfCauchy` with `Gamma(2, …)` for scale priors."
 - High R-hat with bimodal trace → "Run more draws and use `init_strategy=init_to_median`; consider whether the posterior is genuinely multimodal (label-switching, ordering identifiability)."
 - Poor PIT calibration with good convergence → "Likelihood is misspecified — consider StudentT for heavy tails, NegBinomial for overdispersed counts, or hierarchical structure for grouped variation."
