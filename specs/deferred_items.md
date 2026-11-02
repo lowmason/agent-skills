@@ -4578,7 +4578,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       deferred-2026-10-21.
 
 ## deferred-2026-10-21 (no plan; /deferred pass, branch claude/deferred-111d78) — 2026-10-21
-- [ ] A model-alias remap in the caller's shell can make the `agent-model-pins` probe report a
+- [x] A model-alias remap in the caller's shell can make the `agent-model-pins` probe report a
       false DIVERGES. The guide says `ANTHROPIC_DEFAULT_OPUS_MODEL`, `_SONNET_MODEL`,
       `_HAIKU_MODEL` and `_FABLE_MODEL` decide what each alias resolves to (section
       `lean.model-routing`, guide line 431). The Explore and test-runner agents pin `model:
@@ -4594,6 +4594,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       design. Done when: the owner picks scrub or record, and a test shows that an inherited
       remap is either absent from the run or named in its row.
       → progress 2026-10-31 (owner ruling): record them in the row. Name each of the four remaps that is set in the probe's row, so that a DIVERGES can be read against it.
+      → done 2026-11-02 (/deferred quick fix): a run's rows name each set remap in the Flags cell after `--allow-old`, never its value (`probes.inherited_remaps`; `test_an_inherited_alias_remap_is_named_in_the_row_and_its_value_is_not` in `test_probes.py`). The remaps stay out of `SCRUBBED_ENV`.
 
 ## 61-hook-template-fixes — 2026-10-21
 - [ ] `hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61
