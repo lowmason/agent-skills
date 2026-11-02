@@ -83,7 +83,10 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
       from a fresh temporary directory outside every repo and keeps its raw
       output under the cache's probes/. A binary older than the newest cached
       changelog release is refused unless --allow-old is given, which each row
-      records. Live runs spend about $0.05-0.30 a probe. Exit 0 when every
+      records. A row's Flags cell also names each model-alias remap
+      (ANTHROPIC_DEFAULT_OPUS_MODEL, _SONNET_MODEL, _HAIKU_MODEL, _FABLE_MODEL)
+      set in the caller's shell, never its value. Live runs spend about
+      $0.05-0.30 a probe. Exit 0 when every
       probe passed or none was due, 1 when any DIVERGES or is ERROR, 2 on a
       setup error.
   binaries

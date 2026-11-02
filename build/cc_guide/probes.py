@@ -21,7 +21,7 @@ import sys
 import tempfile
 from datetime import date, datetime
 from pathlib import Path
-from typing import Callable, NamedTuple
+from typing import Callable, NamedTuple, Sequence
 
 import probe_checks
 from check import due_probes
@@ -50,6 +50,11 @@ PROBE_FAILURES = (OSError, subprocess.SubprocessError, ValueError, TypeError, Ke
 # Variables a run never inherits from the caller. CLAUDE_CODE_EFFORT_LEVEL outranks an agent's effort
 # field (subagents.frontmatter), so a value in the caller's shell would decide the effort agent-model-pins reads.
 SCRUBBED_ENV = frozenset({'CLAUDE_CODE_EFFORT_LEVEL'})
+# Variables that decide what each model alias resolves to (guide, lean.model-routing). A run keeps them, since on
+# Bedrock, Google Cloud or Foundry a remap can be the owner's own setup, and its row names each one it inherits, so a
+# DIVERGES from agent-model-pins can be read against them (owner ruling, 2026-10-31).
+ALIAS_REMAPS = ('ANTHROPIC_DEFAULT_OPUS_MODEL', 'ANTHROPIC_DEFAULT_SONNET_MODEL', 'ANTHROPIC_DEFAULT_HAIKU_MODEL',
+                'ANTHROPIC_DEFAULT_FABLE_MODEL')
 BUDGET_USD = '0.50'  # --max-budget-usd for one probe invocation
 PINS_BUDGET_USD = '0.75'  # three agents, one of them Opus at xhigh
 TOOLS_TURNS, STOP_TURNS, PINS_TURNS, PAYLOAD_TURNS = 1, 6, 8, 6
@@ -82,6 +87,19 @@ Execute = Callable[[Invocation, Path, Path, Path], int | None]
 Read = Callable[[str], str | None]
 
 
+def inherited_env() -> dict[str, str]:
+    '''The caller's environment less SCRUBBED_ENV: what every run starts from.'''
+    return {name: value for name, value in os.environ.items() if name not in SCRUBBED_ENV}
+
+
+def inherited_remaps() -> list[str]:
+    '''The ALIAS_REMAPS names that a run inherits with a value, in ALIAS_REMAPS order.
+    Names only: a value can be a provider's model path, and the log is public. An empty
+    value remaps nothing, so it is not named.'''
+    env = inherited_env()
+    return [name for name in ALIAS_REMAPS if env.get(name)]
+
+
 def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
     '''R10.4: the prompt goes first and stdin is /dev/null, since claude -p
     waits on a piped stdin. The run gets its own process group, so a timeout
@@ -90,7 +108,7 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
     the run starts is held until `proc` is bound, so it cannot orphan it.
     The run inherits the caller's environment less SCRUBBED_ENV, then
     takes what the invocation adds.'''
-    env = {name: value for name, value in os.environ.items() if name not in SCRUBBED_ENV} | inv.env
+    env = inherited_env() | inv.env
     with out.open('wb') as stdout, err.open('wb') as stderr:
         proc = None
         try:
@@ -514,17 +532,19 @@ def cell(text: str) -> str:
     return ' '.join(text.split()).replace('|', '\\|')
 
 
-def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, allow_old: bool) -> str:
+def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, allow_old: bool,
+            remaps: Sequence[str] = ()) -> str:
     '''One log row. PROBES.md is committed to a public repo, and a finding can
     carry a home or temporary path, the login name or an MCP tool name, so
     the finding is scrubbed as a fixture is (owner, plan 58 decision D3). The
     MCP pass runs first: a private string inside an MCP name would otherwise
     become <private>, and the pass would stop at its > and leave the rest of
-    the name in the log.'''
+    the name in the log. The Flags cell holds `--allow-old` when used, then
+    the names of the alias remaps the run inherited (inherited_remaps).'''
     finding = probe_checks.redact(probe_checks.MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding),
                                   private_strings())
-    cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding,
-             '--allow-old' if allow_old else '']
+    flags = [*(['--allow-old'] if allow_old else []), *remaps]
+    cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding, ' '.join(flags)]
     return '| ' + ' | '.join(map(cell, cells)) + ' |'
 
 
@@ -598,11 +618,12 @@ def run(repo: Path, cache: Path, claude: Path, *, only: list[str] | None, force:
     if not chosen:
         return 0, ['probes: none due']
     lines, outcomes = [f'probes: {version} at {shown_path(claude)}'], []
+    remaps = inherited_remaps()
     with term_as_exit():
         for pid in dict.fromkeys(chosen):
             run_dir = new_run_dir(cache / 'probes', f"{now.strftime('%Y%m%dT%H%M%S')}-{pid}")
             verdict = run_probe(pid, str(claude), repo, run_dir, execute)
-            append_row(repo / PROBES, log_row(today, version, claude, pid, verdict, allow_old))
+            append_row(repo / PROBES, log_row(today, version, claude, pid, verdict, allow_old, remaps))
             outcomes.append(verdict.outcome)
             lines += [f'{pid}: {verdict.outcome}: {verdict.finding}', f'  raw output: {run_dir}']
     lines.append(f'appended {len(outcomes)} row(s) to {PROBES}; nothing is committed')

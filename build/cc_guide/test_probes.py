@@ -82,6 +82,13 @@ def claude(tmp_path):
     return path
 
 
+@pytest.fixture(autouse=True)
+def no_alias_remaps(monkeypatch):
+    '''A remap in the machine running the suite would add its name to every row; each test starts without one.'''
+    for name in probes.ALIAS_REMAPS:
+        monkeypatch.delenv(name, raising=False)
+
+
 def run(repo, tmp_path, claude, fake, *, only=None, force=False, allow_old=False, version='2.1.902'):
     return probes.run(repo, tmp_path / 'cache', claude, only=only, force=force, allow_old=allow_old,
                       newest='2.1.902', today=TODAY, now=NOW, execute=fake, version_of=lambda path: version)
@@ -167,6 +174,47 @@ def test_an_old_binary_is_refused_unless_allowed_and_the_row_records_the_flag(re
     assert (repo / state.PROBES).read_text().split('\n')[-2].endswith('| agent-tools | PASS |'
                                                                      ' with Bash: Bash, Read; without Bash: Glob, Grep,'
                                                                      ' Read | --allow-old |')
+
+
+TOOLS_ROW_TAIL = '| agent-tools | PASS | with Bash: Bash, Read; without Bash: Glob, Grep, Read |'
+
+
+def last_row(repo) -> str:
+    return (repo / state.PROBES).read_text().split('\n')[-2]
+
+
+def test_a_run_with_no_alias_remap_leaves_the_flags_cell_empty(repo, tmp_path, claude):
+    run(repo, tmp_path, claude, FakeRuns(TOOLS_PASS), only=['agent-tools'])
+    assert last_row(repo).endswith(f'{TOOLS_ROW_TAIL}  |')
+
+
+def test_an_inherited_alias_remap_is_named_in_the_row_and_its_value_is_not(repo, tmp_path, claude, monkeypatch):
+    '''A remap decides which model an alias serves (guide, lean.model-routing), so a DIVERGES from
+    agent-model-pins can only be read against it. The log is committed to a public repo: the name goes in
+    the row and the value, which can be a provider's model path, never does.'''
+    monkeypatch.setenv('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'arn:aws:bedrock:zz:123456789012:profile/not-haiku')
+    run(repo, tmp_path, claude, FakeRuns(TOOLS_PASS), only=['agent-tools'])
+    assert last_row(repo).endswith(f'{TOOLS_ROW_TAIL} ANTHROPIC_DEFAULT_HAIKU_MODEL |')
+    assert 'bedrock' not in (repo / state.PROBES).read_text()
+    assert [r.outcome for r in state.parse_probes((repo / state.PROBES).read_text())] == [PASS]
+
+
+def test_every_inherited_alias_remap_is_named_after_the_allow_old_flag(repo, tmp_path, claude, monkeypatch):
+    for name in probes.ALIAS_REMAPS:
+        monkeypatch.setenv(name, 'a-model')
+    monkeypatch.setenv('ANTHROPIC_DEFAULT_MODEL', 'a-model')  # the default model, not an alias remap
+    monkeypatch.setenv('CLAUDE_CODE_SUBAGENT_MODEL', 'a-model')  # outranked by an agent's model field
+    run(repo, tmp_path, claude, FakeRuns(TOOLS_PASS), only=['agent-tools'], version='2.1.901', allow_old=True)
+    assert last_row(repo).endswith(f'{TOOLS_ROW_TAIL} --allow-old ANTHROPIC_DEFAULT_OPUS_MODEL '
+                                   'ANTHROPIC_DEFAULT_SONNET_MODEL ANTHROPIC_DEFAULT_HAIKU_MODEL '
+                                   'ANTHROPIC_DEFAULT_FABLE_MODEL |')
+
+
+def test_an_empty_alias_remap_remaps_nothing_and_is_not_named(repo, tmp_path, claude, monkeypatch):
+    monkeypatch.setenv('ANTHROPIC_DEFAULT_HAIKU_MODEL', '')
+    monkeypatch.setenv('ANTHROPIC_DEFAULT_OPUS_MODEL', 'a-model')
+    run(repo, tmp_path, claude, FakeRuns(TOOLS_PASS), only=['agent-tools'])
+    assert last_row(repo).endswith(f'{TOOLS_ROW_TAIL} ANTHROPIC_DEFAULT_OPUS_MODEL |')
 
 
 def test_only_force_and_the_due_rules_choose_the_probes(repo, tmp_path, claude):
@@ -559,6 +607,17 @@ def test_a_run_never_inherits_the_effort_override(tmp_path, monkeypatch):
     inv = probes.Invocation('echo', [str(executable(tmp_path / 'echo', ENV_ECHO))], {'PROBE_ADDED': 'yes'}, 30)
     assert probes.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
     assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'unset yes'
+
+
+def test_a_run_keeps_an_inherited_alias_remap(tmp_path, monkeypatch):
+    '''Owner ruling, 2026-10-31: record a remap, never scrub it. On Bedrock, Google Cloud or Foundry it can be the
+    owner's own setup, so the probe tests the model the owner runs.'''
+    monkeypatch.setenv('ANTHROPIC_DEFAULT_HAIKU_MODEL', 'a-model')
+    echo = executable(tmp_path / 'echo', '#!/bin/sh\nprintf "%s" "${ANTHROPIC_DEFAULT_HAIKU_MODEL-unset}"\n')
+    inv = probes.Invocation('echo', [str(echo)], {}, 30)
+    assert probes.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
+    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'a-model'
+    assert not set(probes.ALIAS_REMAPS) & probes.SCRUBBED_ENV
 
 
 # A run whose leader starts a child, as Gate B's bash starts claude. It writes "<leader> <child>" to $1.
