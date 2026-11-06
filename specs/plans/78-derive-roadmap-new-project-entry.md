@@ -62,6 +62,7 @@ The owner approved the plan at review on 2026-11-06: "Approved." D1 to D11 are t
 - **D9** (owner, plan review, 2026-11-06): brainstorming → derive-roadmap and describe-critique-methodology → derive-roadmap are soft edges, each with a fallback line. Applied in: Global Constraints (Cross-skill references), Tasks 5 and 6.
 - **D10** (owner, plan review, 2026-11-06): the derive-roadmap and describe-critique-methodology README rows gain one sentence each, and "four classes" becomes five. Applied in: Task 4 Step 4, Task 5 Step 5.
 - **D11** (owner, plan review, 2026-11-06): fixtures are read from local clones through `CASE_REPOS`, the ces-revisions drafts go in as excerpts, and embedding-data's first gap table is the V1b state with its stage pointers removed. Applied in: Global Constraints (Fixtures), Task 1 Steps 2 and 3.
+- **D12** (owner, plan review, 2026-11-06): "Approved.", in answer to the recommendation of subagent-driven-development. Execute with subagent-driven-development in a fresh session. Applied in: the execution handoff.
 
 ## Open for plan review
 
