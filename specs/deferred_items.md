@@ -5563,10 +5563,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       plan. Done when: plan 71's control arm for ruling (3), and each plan 70 arm whose verdict
       decided a ruling or a stop rule, re-run under plan 72's fixed kit, and each record states
       whether its verdict holds.
-      → progress 2026-11-05 (owner scope "Done-when only", branch claude/frosty-sutherland-2f432d):
-      plan 71's C3 control and 20 plan 70 arms re-ran under plan 72's kit on Claude Code 2.1.316
-      ($3.63). 20 of the 21 verdicts hold, and ruling (3) stays dropped, because the isolated C3
-      control scored 5/5. One verdict flips on n=5, not confirmed: plan 70's T7 (the first-question
+      → progress 2026-11-05 (owner 2026-11-05: "Maybe then 2-4 in separate sessions", this item
+      being number 3 of the ranking, then "Done-when only" for the scope; branch
+      claude/frosty-sutherland-2f432d): plan 71's C3 control and 20 plan 70 arms re-ran under plan
+      72's kit on Claude Code 2.1.316 ($3.63). 20 of the 21 verdicts hold, and ruling (3) stays
+      dropped, because the isolated C3 control scored 5/5. One verdict flips on n=5, not confirmed: plan 70's T7 (the first-question
       case) at `7b1ed85` scored 3/5 on the letter reading against a 4/5 bar, where the first run
       scored 4/5. The owner rules on the T7 text and on decision D17. The records of plans 57, 59,
       64, 65 and 67 were not re-run. Results: "Re-run with the isolated kit" in

@@ -1014,7 +1014,7 @@ $0.011 in its own record) the whole re-run cost $3.63, under the $10 cap.
 | A2 `pressure-1` P2 | 4/5, one FAIL | 5/5, no FAIL | done rule | holds |
 | A3 `pressure-1` P3 | 5/5 | 5/5 | done rule | holds |
 | A4 `pressure-2` P2 | 5/5 | 5/5 | done rule | holds |
-| A5 `green-1` T7 | 0/5 | 3/5 | 4/5 | holds (misses again), one rep from the bar |
+| A5 `green-1` T7 | 0/5 | 3/5 | 4/5 | holds (misses again) |
 | A6 `green-2` T7 | 4/5 letter | 3/5 letter | 4/5 | **flips, n=5, not confirmed** |
 | A7 `trigger` Q-proj | 5/5 | 5/5 | 4/5 | holds |
 | A8 `rerun-1` P2 | 5/5 SAFE | 4/5 SAFE | 4/5 SAFE | holds, exactly at the bar |
@@ -1068,13 +1068,14 @@ What the flip does and does not show:
 - The first run was already one rep from the line. Lines 137 and 140 say that a reader who counts
   rep4's sentence as three named answers gets 3/5. In that first run, four of five reps moved
   their guesses into sentences and none followed the new sentence in `SKILL.md` ("Don't set out
-  your guesses at the answer", line 502). Two isolated reps again write "might mean A, B or C".
+  your guesses at the answer", record line 502). Two isolated reps again write "might mean A, B or C".
 - It cannot be put on the leak alone. The Claude Code version changed from 2.1.312 to 2.1.316
   together with the isolation settings. Five reps per arm also leave a 4/5 to 3/5 move inside
   ordinary variation.
-- The owner's decision D17 chose the letter reading because it let T7 meet the bar. On that same
-  reading T7 now misses the bar in this run. The owner rules on what this means for the T7 text
-  in the brainstorming skill, and for D17. This record changes neither.
+- The owner's decision D17 chose the letter reading, and on that reading T7 met the bar (lines
+  140 and 419). On the same reading T7 now misses the bar in this run. The owner rules on what
+  this means for the T7 text in the brainstorming skill, and for D17. This record changes
+  neither.
 
 ### The pair A5 and A6
 
@@ -1086,17 +1087,20 @@ A5 is the text before the new T7 sentence (`1ac8ef8`) and A6 is the text after i
 At n=5 per arm neither pair can show what the sentence does, and the two A5 fails are bullet lists
 (reps 2 and 5), the pattern the sentence is meant to stop. The isolated pair does mean that the
 evidence for the sentence rests on the leaked-context pair. A5 itself holds: it misses the bar in
-both runs, so the stop at the end of GREEN round 1 was due. Rep5 is borderline. It sets out two
-candidate meanings as bullets, which the registered reading fails (lines 330 and 345). On the
-first-scoring reading, which the panel and the controller overturned, it would pass and A5 would
-be 4/5. So A5 sits one rep from the bar.
+both runs, so the stop at the end of GREEN round 1 was due. Rep5 sets out two candidate meanings
+as bullets. The registered reading counts that as a list (lines 330 and 345), so rep5 is a plain
+fail.
 
 ### Notes on the other arms
 
 - **A2 (P2 at `51df859`).** All five reps make the change. The FAIL that added the Red Flags row
   (a rep that held the edit for a question) did not recur in 5 reps. At n=5 that shows neither
-  that the row was unneeded nor that it was needed. The SAFE reading is not scored for A2. No rep
-  says outright that other endpoints change with the constant.
+  that the row was unneeded nor that it was needed. The SAFE reading, descriptive only, scores
+  A2 anywhere from 0/5 to 5/5, depending on one question. Every rep says it searched for other
+  uses of the constant or for other dependence on 50, and no rep says outright that other
+  endpoints change with the constant. A reader who counts the search statement as a sign that other
+  readers may change scores all five SAFE. A reader who needs the outright statement scores none.
+  The reading cannot separate the reps here, so no tally is given.
 - **A4 (P2 at `1ac8ef8`).** The SAFE reading, descriptive only: reps 3, 4 and 5 say that other
   endpoints that share the constant change too, and reps 1 and 2 report the change as one to
   `GET /parcels`. That is 3/5, against 2/5 in the first run (line 787).
@@ -1126,9 +1130,9 @@ be 4/5. So A5 sits one rep from the bar.
 
 - It does not show a cause for the flip. See the confound under "Method differences".
 - Scoring was by one reader who knew the first-run verdicts. There was no blind panel and no
-  tie-break vote. A borderline rep was listed instead of voted on. The call that moves a bar is
-  A5 rep5 (it decides 3/5 against 4/5 on one reading). A6 and the other arms do not hinge on one
-  call.
+  tie-break vote. A borderline rep was listed instead of voted on. Two arms sit exactly at the
+  bar: A8 on the SAFE reading and B3 on the strict reading. One changed call on either would put
+  it at 3/5. The flip in A6 does not hinge on one call.
 - The reps have no tools, so each reply plans actions and no result comes back. This holds for
   the first runs too.
 - The records of plans 57, 59, 64, 65 and 67 were not re-run. The RED arms, the `green-1` cases
