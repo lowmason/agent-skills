@@ -37,8 +37,12 @@ yes. A probe gathers information. It does not design the stage.
   rates per route for one real month of trip records" is an outcome. "A
   pipeline with a manifest layer" is not.
 - Put outcomes in separate tracks when they answer unrelated questions or
-  serve different uses, even when one request names them together. Joined,
-  the first outcome waits on the machinery of the second. Say why in one line.
+  serve different uses, even when one request names them together. Two
+  questions are unrelated when either answer stands without the other, even
+  when both explain the same result. Whether late trips follow the weather
+  and whether they follow the age of the buses are two questions, though both
+  explain lateness. Joined, the first outcome waits on the machinery of the
+  second. Say why in one line.
 - A track is a known progression when your partner can name its stages from
   first to last, and research when the method or the answer is open. One
   project may hold tracks of both kinds. When the kind is unclear, propose one
@@ -88,10 +92,13 @@ gave, or else by the list order, and label the ranking provisional.
 - **Later qualities.** A quality the project needs eventually but not to work
   goes to a named later stage in a known progression, or to a Ranked-list item
   in a research track. Examples: manifests, traceability, point-in-time
-  awareness, full validation suites, scheduling and deployment. A core stage's
+  awareness, full validation suites, scheduling and deployment. Check the
+  project against each one, and place every one it will need. A core stage's
   Exit never requires one. Each stage entry's `Leaves out` field names what
   that stage leaves out and which later stage or item picks it up, so the
   stage's own brainstorming session or plan does not pull the quality back in.
+  The later stage or item that picks a quality up names it in its own fields,
+  by the name that `Leaves out` gives it.
 - **Order.** Sequence by SKILL.md §2. A core stage is the cheap information
   about its track, so the core stages come first, in your partner's track
   ranking, unless a dependency says otherwise.

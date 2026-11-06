@@ -82,11 +82,12 @@ gates before stage 1.
 partition. Add one item to the batched question set: what you found (which
 rows are implemented, and why none of them is a working outcome), and an
 offer to stage the project through the New-Project Entry (§7), with the
-spec's requirements as outcome candidates. Then wait for the answer: never
-switch on your own. On a yes, go to §7. On a no, partition as below. When the
-session cannot ask, the offer goes in the questions block and the provisional
-file partitions as below. The table is the whole test: no other check decides
-that a repository is only a scaffold.
+spec's requirements as outcome candidates. The offer names no stage, core or
+later: stages come only after your partner ranks the outcomes. Then wait for
+the answer: never switch on your own. On a yes, go to §7. On a no, partition
+as below. When the session cannot ask, the offer goes in the questions block
+and the provisional file partitions as below. The table is the whole test: no
+other check decides that a repository is only a scaffold.
 
 **SINGLE-STAGE EXIT.** If the gaps fit one spec→plan cycle, write NO roadmap
 file. Say so, hand directly to brainstorming (open design space) or
@@ -223,9 +224,11 @@ inputs, the checks you may run, and each rule below in full.
    an outcome on their own.
 2. **Tracks.** Group the outcomes into tracks. Outcomes that answer unrelated
    questions, or serve different uses, go in separate tracks, and you say why
-   you split them. Catching a bundled request is your job, not your
-   partner's. Each track is a known progression (your partner can name its
-   stages from first to last) or research (the method or the answer is open).
+   you split them. Two questions are unrelated when either answer stands
+   without the other, even when both explain the same result. Catching a
+   bundled request is your job, not your partner's. Each track is a known
+   progression (your partner can name its stages from first to last) or
+   research (the method or the answer is open).
 3. **Cost.** Each outcome whose cost is material gets a rough estimate and its
    basis. When only running the work can tell, say so.
 4. **One message.** Before any roadmap text, send one message: the outcome
