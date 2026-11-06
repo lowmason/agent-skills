@@ -1,0 +1,6 @@
+{
+  "note": "Hand scores of the T7 reps by one reader, letter reading (line 135 of the record), written before the blind panel ran. A5 = green-1 T7, A6 = green-2 T7. One letter per rep, rep1 first, in groups of five. Reps 1-5 are the scores in the re-run Results above. Reps 6-25 were scored for the confirmation step.",
+  "A5": "PFPPF FFPFP FFFPP FPFPP PFPFF",
+  "A6": "FPPFP FFPPF PFFPP FFPFP FFPPP",
+  "borderline_prose_runs": {"A5": [14, 15, 17, 20], "A6": [8, 11, 14, 15, 20, 23]}
+}

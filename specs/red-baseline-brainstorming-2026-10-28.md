@@ -1048,6 +1048,8 @@ Rep verdicts in rep order (P pass, F fail). For A8 on the SAFE reading, P means 
 
 ### The flip: A6, T7 at `7b1ed85`
 
+**Update, same day:** 20 more reps for each of A5 and A6 confirm this flip. See "Confirmation reps for A5 and A6" and its results below. The text of this section is the record of the n=5 result as it stood.
+
 The first run scored 4/5 on the letter reading (line 419). The isolated run scores 3/5, below the
 bar of 4/5. The letter clause fails "three or more named answers in one sentence". Two reps do
 exactly that.
@@ -1197,3 +1199,55 @@ round 1 (lines 138, 330 and 345).
   The gap is "shown" at p below 0.05 and "not shown" otherwise.
 - This record states the outcome and changes no skill text. The owner rules on the T7 text and on
   decision D17.
+
+#### Confirmation results
+
+Run 2026-11-05 on Claude Code 2.1.316 with `claude-opus-5-5`. The 40 new reps (rep6 to rep25 of
+A5 and A6) all exited 0, ended with one turn and one model, and ran no advisor. No rep is VOID and
+no replacement ran. No reply has an Insight box or quotes a user-level file. The rep files are in
+`green-1/new-isolated/T7/` and `green-2/new-isolated/T7/`. The panel inputs, labels, outputs and
+verdicts are in `t7-confirm-panel/`, with my hand scores written before the panel ran.
+
+Spend: $0.61 for the 40 reps and $0.54 for the three panel votes ($0.18 each). The running total
+for this whole re-run is $4.79, under the $10 cap.
+
+**The hand scores and the blind panel agree on all 50 reps.** The panel is 3 votes per rep. All
+25 A5 reps and 23 of the 25 A6 reps got a unanimous vote. The two split reps are A6 rep3 and
+rep14, each 2 to 1. No arm is unresolved.
+
+| Arm | Reps 1 to 5 | Reps 6 to 25 | Pooled | 95% interval | Bar | Outcome |
+|---|---|---|---|---|---|---|
+| A5 `1ac8ef8`, before the new sentence | 3/5 | 9/20 | 12/25 (48%) | 30% to 67% | 20/25 | holds as a miss |
+| A6 `7b1ed85`, after the new sentence | 3/5 | 10/20 | 13/25 (52%) | 33% to 70% | 20/25 | **flip confirmed** |
+
+Pair gap, one-sided Fisher exact test, A6 above A5: p = 0.50. The gap is not shown.
+
+Rep verdicts in rep order (P pass, F fail), the panel majority, in groups of five:
+- A5: `PFPPF FFPFP FFFPP FPFPP PFPFF`
+- A6: `FPPFP FFPPF PFFPP FFPFP FFPPP`
+
+**What the confirmation shows.**
+- The flip is confirmed under the registered rule. On the letter reading, T7 at `7b1ed85` passes
+  about half the time, 13 of 25. Even the top of the interval, 70%, is below the bar of 80%.
+- The first run's 4/5 is not out of reach of chance. If the true rate is 50%, a draw of 4 or
+  more in 5 comes up about 19% of the time. This record cannot say whether context from the
+  leak, the version change or chance lifted that first run.
+- The new sentence shows no measurable effect on the pass rate: 52% after it and 48% before it.
+  With 25 reps per arm this rules out a large effect and does not rule out a modest one.
+- The sentence changes how the replies fail. Among the failed reps, A5 has 10 bullet or numbered
+  lists and 3 with no list (three or more candidate answers in one sentence). A6 has 2 lists and
+  10 with no list. The sentence removes most of the lists and the replies move their guesses into
+  one sentence instead ("might mean A, B, or C"). That is the pattern the sentence tells the agent
+  to avoid. This split is a descriptive count and sets no verdict.
+- Prose runs: ten of the passing reps state two or three guesses in separate sentences. They
+  pass on the letter reading and fail on the stricter reading. They are A5 reps 14, 15, 17 and 20,
+  and A6 reps 8, 11, 14, 15, 20 and 23. On the stricter reading those reps fail, and the
+  tallies fall to at most 8/25 for A5 and 7/25 for A6.
+- The passage of `skills/brainstorming/SKILL.md` that holds the sentence (the "Each message"
+  paragraph, line 102) is unchanged since `7b1ed85`. The later commits touch other lines only.
+  So the result applies to the T7 wording that ships today.
+
+**What it does not show.** It does not say why T7 fell from the first run. It also does not show
+that the T7 text needs a particular fix, and this record changes no skill text. The owner rules on
+the T7 text in the brainstorming skill and on decision D17. D17 chose the letter reading, and
+under that reading T7 does not reach the bar in 25 reps.
