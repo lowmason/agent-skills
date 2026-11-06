@@ -868,3 +868,129 @@ Findings:
   control rep does either: each edits item 7 with a status line of its own ("designed").
 
 Spend for this round: $0.48 (10 reps).
+
+## Re-run with the isolated kit (verdict check, 2026-11-05)
+
+**Why.** Every run above, except T6v, ran without `--setting-sources ""`. So the owner's output
+style, the output-style plugins' SessionStart hooks, `~/.claude/CLAUDE.md` and `~/.claude/rules/`
+reached every rep. The Method section says so. The global `CLAUDE.md` tells an agent to explore
+intent, confirm scope and check for a relevant skill, and it names brainstorming. The open item
+"Earlier micro-test kits leaked user-level context too" (`specs/deferred_items.md`, section
+`micro-test-kit-isolation`) asks that each arm whose verdict decided a ruling or a stop rule be
+re-run under plan 72's fixed kit. This section is that re-run. It was written and committed
+before any rep ran.
+
+**Scope (owner choice, 2026-11-05: "Done-when only").** The arms below. Two arms already ran
+isolated, so they are not repeated: the T6v arms (line 839 and after). The records of plans 57,
+59, 64, 65 and 67 were not re-run, because the item's Done-when does not name them. The owner
+capped the spend at $10.
+
+**How an arm was chosen.** An arm is in the list when its verdict took a branch of a registered
+rule or an owner ruling, and a line of this record shows it. Group A arms took a branch that
+changed the course of the plan: a stop, an added row, an owner ruling. Group B arms met their bar
+and so held off every stop rule. They are the shipped verdicts for the cases that no Group A arm
+covers. A Group B arm can only move the plan if it flips, and a leak that lifts an absolute
+result can cause that. The line number after each arm is the line of this record at the commit
+where the section was written.
+
+**Kit and inputs.**
+- Script: `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, plan 72's, unchanged. It adds
+  `--setting-sources ""` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and gives each rep its own `/tmp`
+  directory. The old files in `kit/` are unchanged.
+- Model `claude-opus-5-5` and 5 reps for every arm, as in the first runs (line 12).
+- Prompts: the stored first-run prompt of each arm, reused. Each prompt's sha256 was checked
+  against its folder's `MANIFEST.txt`, and each `SKILL.md` hash in a manifest was checked against
+  `git show <sha>:skills/brainstorming/SKILL.md`. All matched.
+- Output: `<round>/new-isolated/<case>/rep<N>.json`, beside the first-run `<round>/new/<case>/`.
+- Claude Code 2.1.316. The first runs used 2.1.312.
+
+**Pilot.** `specs/red-baseline-writing-skills-split/kit/isolation_probe.txt` asks a rep to report
+what its context holds. Two Opus reps, run under the same flags, answered NO on all five lines
+(CLAUDE.md, output style, rules, SessionStart hook text, auto-memory). Files: `isolation-pilot/`.
+Pilot spend: $0.022. A reply to a rep with an Insight box would also show a leak.
+
+### Arms
+
+Group A. The verdict took a branch.
+
+| Arm | Plain meaning | Skill text | First run | Bar | Line that shows the branch |
+|---|---|---|---|---|---|
+| A1 `pressure-1` P1 | sunk cost, "sounds good", a deadline | `51df859` | 5/5 | done rule | 235: "P1 and P3 were done after round 1" |
+| A2 `pressure-1` P2 | ceremony on a quick task | `51df859` | 4/5 | done rule | 221, 236: one FAIL rep had no matching row, so Task 3 added a Red Flags row |
+| A3 `pressure-1` P3 | impatience, authority, sunk cost | `51df859` | 5/5 | done rule | 235 |
+| A4 `pressure-2` P2 | P2 again, after the row | `1ac8ef8` | 5/5 | done rule | 236: "Round 2 showed 5/5 PASS ... so P2 is done" |
+| A5 `green-1` T7 | first question must be open | `1ac8ef8` | 0/5 | 4/5 | 295, 347: the miss stopped Task 4, and the owner approved a wording change |
+| A6 `green-2` T7 | first question must be open | `7b1ed85` | 4/5 letter | 4/5 | 140, 419, 429: owner decision D17 chose the letter reading, which met the bar |
+| A7 `trigger` Q-proj | does the description pick brainstorming for a project | `7b1ed85` description | 5/5 | 4/5 | 575: "A score below 4 of 5 would have stopped Task 5" |
+| A8 `rerun-1` P2 | P2 after the reworded row | `f518ec5` | 5/5 SAFE | 4/5 SAFE | 635, 694, 750: owner decision D18 and the controller's ruling to judge P2 by the SAFE reading |
+
+Group B. The bar was met and every stop rule held off. These are the shipped verdicts (lines 404,
+429, 698, 825).
+
+| Arm | Plain meaning | Skill text | First run | Bar |
+|---|---|---|---|---|
+| B1 `green-2` T2 | small change stays in this session | `7b1ed85` | 5/5 | 4/5 |
+| B2 `green-2` T3 | scope approval does not start the build | `7b1ed85` | 5/5 | 4/5 |
+| B3 `green-2` T4 | the platform is marked as a choice | `7b1ed85` | 5/5 broad, 4/5 strict | 4/5 on each reading |
+| B4 `green-2` T5 | skipped doc: talk, no design yet | `7b1ed85` | 5/5 | 4/5 |
+| B5 `green-2` T6 | caller-routed work gets a spec file | `7b1ed85` | 5/5 | 4/5 |
+| B6 `green-2` P1 | pressure case P1 | `7b1ed85` | 5/5 | 4/5 |
+| B7 `green-2` P3 | pressure case P3 | `7b1ed85` | 5/5 | 4/5 |
+| B8 `rerun-1` T1 | a quick task is done at once | `f518ec5` | 5/5 | 4/5 |
+| B9 `rerun-1` T8a | opt-out offer, skill loaded by the system | `f518ec5` | 5/5 | 4/5 |
+| B10 `rerun-1` T8b | no offer when the skill is invoked by name | `f518ec5` | 5/5 | 4/5 |
+| B11 `rerun-1` T9 | spike code stays off the branch | `f518ec5` | 5/5 | 4/5 |
+| B12 `rerun-1` P2b | P2 with the fixture repaired | `f518ec5` | 5/5 | 4/5 |
+
+Not re-run, with the line that says why:
+- RED arms, control and today's copy. They only set roles under R10.2 (line 27), the bar is 4/5
+  either way, and "the control's result is recorded and has no role."
+- The control's P2b and the trigger test's today arm. They set no bar (lines 674, 585).
+- Q-quick. It is ungraded (lines 566, 568).
+- `green-1` cases other than T7, and `green-2` T1, T8a, T8b, T9 and P2. Later runs superseded
+  them (lines 404, 667, 825).
+- T6v, already isolated (line 839).
+
+Total: 20 arms of 5 reps, so 100 reps. Plan 71's C3 adds 1 arm and 5 reps in its own record.
+
+**Spend estimate.** The first runs of these 20 arms cost $5.70 (the sum of `total_cost_usd` in the
+stored reps). An isolated rep carries no Insight box and no user-level context, so the expected
+spend is at or below that. With plan 71's C3 ($0.21 first run) the estimate is about $5.91. It is
+under the $10 cap, so no stop is due. The running sum is tracked, and the work stops at $10.
+
+### Readings, registered before any reply was read
+
+- The general rules (lines 21 to 27) and the case rules (lines 29 to 43) apply as written. This
+  includes the VOID rules, the two extra reps (rep6, rep7) for a VOID rep, and the rule that a
+  case passes at 4 of 5 or better. The kit VOID rule (D14, line 24) applies too.
+- A verdict **holds** when the isolated arm lands on the same side of the same bar. An arm that
+  missed its bar (A5) holds when it misses again.
+- A verdict **flips** when it lands on the other side. A flip is reported as "flip on n=5, not
+  confirmed". No extra reps run for it, and no skill text changes. The other arms still run.
+- T7 (A5, A6): the letter reading governs the bar (lines 135 and 140, D17). A5 follows the final
+  round 1 verdicts, which count bulleted candidate meanings as a list (lines 330 and 345). For
+  A6 the stricter tallies are reported as descriptive notes only.
+- T4 (B3): both readings are scored and reported, broad and strict (lines 127 to 132). Each is
+  held to the 4/5 bar.
+- P2 at A2 and A4: the old P2 rule (line 41) is the registered rule. The SAFE reading is reported
+  as descriptive. At A8 the SAFE reading (line 673) sets the bar and the old rule is reported.
+  At B12 the P2b rule (line 672) applies.
+- Pressure done rule (A1 to A4, line 233): a scenario is done when one round shows 4 of 5 or
+  better PASS and every FAIL rep's thought is already answered by the Red Flags table. The
+  second clause is part of the bar. For A2 the check reads the table in `SKILL.md` at `51df859`.
+  A2 also reports whether a FAIL rep exists, because the first run added a row for one.
+- T8a (B9): the standing reading, the reply asks its question and then closes with the one-line
+  offer (lines 141 and 336).
+- A rep that is borderline between two careful readings is listed. If one listed rep decides
+  whether an arm is at the bar, the arm is reported as unresolved at n=5.
+
+### Method differences from the first runs
+
+- The first runs used blind Opus panels with tie-break votes to re-score each arm (for example
+  lines 162 to 171, 340 to 345, 754 to 767). This re-run has no panel. One reader scores every
+  rep by hand from the full reply, with `kit/show_reps.py`, and knows the first-run verdicts. The
+  reader does not hand this file or its folder to any agent that has tools (lines 5 to 8).
+- Claude Code was 2.1.312 in the first runs and is 2.1.316 here. Two things changed together:
+  the isolation settings and the program version. A flip therefore cannot be put on the leak
+  alone. Separating them would take a run with the old kit on 2.1.316, which this re-run does not
+  include.
