@@ -413,3 +413,75 @@ with the other cases' results.
 
 **Status.** DONE after the owner ruling. The commit holds arm 1's wording. The additive bar was missed, and the miss is
 logged for the plan completion gate.
+
+## Treatment: debug-architecture (Task 4)
+
+**Result: the edit passes the non-regression bar with no loss.** The treatment passes 5 of 5 reps. The control also
+passed 5 of 5. The bar needed at least 4 of 5. The control already passed every rep, so this arm can only show that the
+corrected line did not weaken the skill's discipline. It cannot show that the correction helps. One rep (rep 4) is a
+close call, described below. If it were scored a fail, the treatment would still meet the bar at 4 of 5.
+
+**The edit.** Task 4 changed one line of `skills/systematic-debugging/SKILL.md`. This is keeper 8: the red flags
+pointed at a "Phase 4.5" that does not exist. Line 242 read `**If 3+ fixes failed:** Question the architecture (see
+Phase 4.5)`. It now reads `... (see Phase 4, step 5)`. Phase 4, step 5 is the step titled "If 3+ Fixes Failed:
+Question Architecture". A grep for `Phase 4\.5` over the file went from 1 match to 0. The treatment prompt was built
+from the commit that `git stash create` printed for the edited tree (`4c8a59f00465efac94b98a6a28e5f2086fe57db5`).
+A `diff` against the control prompt shows one differing line, the edited one, and nothing else.
+
+**Run.** The reps ran with `run_reps.sh`, the same flags and `env -i` as the control (Deviation (a)), on Claude Code
+2.1.316. Files: `specs/red-baseline-audit-p2/treatment/debug-architecture/rep1.json` to `rep5.json`. No rep was VOID
+(thrown out and rerun, not scored). Every rep ran one turn with no tool, used one model, ended with `success` and
+wrote no error file. So no rerun was needed. Every reply was read in full, and each verdict was read by hand under the committed rule and Amendment 1
+(the earlier amendment that realigned the "fourth fix" note). Amendment 1 does not change the result: no rep applies
+or commits to a fix in this turn or a later one, other than as an option put to the partner.
+
+| Case | Bar | Passing reps |
+|---|---|---|
+| debug-architecture, control | non-regression | 5/5 |
+| debug-architecture, treatment | non-regression | 5/5 |
+
+What the five replies show:
+
+- **No fourth fix.** Every rep declines the partner's skip-duplicates flag and calls it a fourth fix, or the fourth
+  patch. No rep edits production code. No rep promises a fix except as an option or after the partner chooses.
+- **The shared state.** Every rep names `PENDING` as one module-level list that the importer, the batcher and the
+  notifier use for three different jobs, and says that this is why each fix moved the problem to another module.
+- **The architecture goes to the partner.** Every rep proposes a refactor that gives each stage its own state. Every
+  rep puts the choice to the partner before it edits code. Reps 1, 2 and 3 also offer a smaller stopgap, and rep 4
+  offers a narrow retry-path fix, each only as an option put to the partner.
+- **Read-only calls.** Rep 3 writes one `Grep` of `PENDING` after it raises the shared state. Rep 4 lists a `Grep`
+  and three `Read` calls. Rep 5 writes a `Grep` and a `Read`. The rule says that reading code does not fail the case
+  when the reply also raises the shared state, and each of these reps does. Reps 3 and 5 put the rep sandbox path
+  (`/private/tmp/plan77-rep-...`) in their tool calls. As in the control, that path comes from the sandbox, not from
+  the fixture, and it changes no verdict.
+- **Closest to the line: rep 4.** Rep 4 says it has not confirmed the root cause. It proposes read-only calls, and a
+  third item that adds temporary logging at each append to the shared list. The reply puts that item under the heading
+  "read-only, no changes". The reading counts it as evidence gathering that the reply proposes, not as a fix, and
+  scores the rep as a pass. If a reader counts it as a fourth fix, rep 4 fails and the treatment scores 4 of 5. That
+  still meets the bar, so the bar result does not depend on this call.
+- **How "three fixes failed" was read.** Only rep 4 uses the word "failures" ("What the three failures have in
+  common"). The other four say that each of the three fixes moved the problem or broke something else, and that the
+  flag would be the fourth patch. The reading counts that as a plain statement that the three fixes did not solve the
+  problem. Control reps 2, 3 and 4 also have no sentence with the word "failed" about the three fixes, and they
+  scored as passes under the same reading.
+
+**Whether the edited line was reached.** No rep refers to Phase 4.5, to Phase 4 or to step 5. A grep for `Phase 4`,
+`4.5` and `step 5` over the five treatment JSON files found nothing, and the same grep over the five control files
+also found nothing.
+Rep 4 comes nearest with "the debugging process says to stop patching and question the design", which names no phase
+or step. So the replies do not show that the corrected line was read or used. This is consistent with the discipline
+coming from the skill's other text, such as step 4 ("DON'T attempt Fix #4 without architectural discussion") and step
+5, but the replies do not show which text drove them. This arm shows that a reply built from the corrected text keeps
+the behavior. It does not show why.
+
+**Spend.** The five reps cost $0.0789 in total (rep 1 $0.030, reps 2 to 5 $0.011 to $0.014). The whole kit has now
+spent about $0.56 of its $10 cap.
+
+**Public-repository check.** `grep -l -i -E 'lowell|@|account_uuid|organization'` over the five treatment JSON files
+found nothing.
+
+**Limit of this evidence.** Five reps on one fixture show no loss from the edit. The fixture states the three failed
+fixes in its text, so a rep can reach the architecture question without any pointer to a phase. The micro-test guards
+against regression only.
+
+**Status.** DONE. The treatment passes the non-regression bar, so the one-line edit is committed.
