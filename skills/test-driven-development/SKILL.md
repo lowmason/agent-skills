@@ -33,7 +33,7 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
-**Choosing what to test** in a scraper, a Polars pipeline or a Bayesian model, or adding the first tests to one, is test strategy: use the develop-testing-strategy skill first. Every test it calls for still starts here, as a failing test.
+**Choosing what to test** in a scraper, a Polars pipeline or a Bayesian model, or adding the first tests to one, is test strategy: use the develop-testing-strategy skill first. Every test it calls for of new behavior still starts here, as a failing test.
 
 ## The Iron Law
 

@@ -414,6 +414,17 @@ with the other cases' results.
 **Status.** DONE after the owner ruling. The commit holds arm 1's wording. The additive bar was missed, and the miss is
 logged for the plan completion gate.
 
+**After the final review.** The final whole-branch review found that the pointer's last sentence ("Every test it calls
+for still starts here, as a failing test.") conflicts with TDD's own rule for tests of existing behavior. The pointer
+covers adding the first tests to an existing scraper, pipeline or model. The tests that develop-testing-strategy calls
+for there (golden-master parity, schema and row-count checks, seed determinism) pass on their first run against working
+code. TDD says "**Test passes?** You're testing existing behavior. Fix test." (`skills/test-driven-development/SKILL.md`
+line 130) and lists "Test passes immediately" as a red flag (line 284). A reader cannot meet both instructions. The
+owner ruled on 2026-11-06 to scope the sentence to new behavior. The sentence now reads "Every test it calls for of new
+behavior still starts here, as a failing test." The committed text therefore differs from the text that arm 1 tested by
+three words (`of new behavior`), so the 0 of 5 score of arm 1 belongs to the earlier wording. No new reps were run. No rep
+reached that sentence, so the change has no measured effect either way.
+
 ## Treatment: debug-architecture (Task 4)
 
 **Result: the edit passes the non-regression bar with no loss.** The treatment passes 5 of 5 reps. The control also
