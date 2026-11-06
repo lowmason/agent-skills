@@ -1150,3 +1150,50 @@ depend on them.
 Privacy scan, before the commit: no file under any `new-isolated/` folder (100 rep files) or
 `isolation-pilot/` holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`,
 `AKIA`, `xox`).
+
+### Confirmation reps for A5 and A6 (owner approval, 2026-11-05)
+
+This subsection was written and committed before any confirmation rep ran. The owner approved the
+step after reading the flip in A6. It lifts the "no extra reps" limit for these two arms only.
+
+**What runs.**
+- Arms: A5 (T7 at `1ac8ef8`, the text before the new sentence) and A6 (T7 at `7b1ed85`, the text
+  after it). 20 new reps each, numbered rep6 to rep25, in the same `new-isolated/T7/` folders.
+  Pooled with the first 5 reps, each arm has 25 reps.
+- Prompts, model, script and Claude Code version are the same as in the re-run above: the stored
+  first-run prompts (hashes checked), `claude-opus-5-5`, plan 72's `run_reps.sh`, version 2.1.316.
+- VOID rule as before. A VOID rep is replaced by the next free number, at most two per arm.
+- Estimated spend: $1.00 for the 40 reps (an isolated T7 rep cost $0.024) and about $0.50 for
+  the scoring panel. The running total is $3.63 and the cap is $10.
+
+**Reading.** One reading for both arms. The T7 case rule (line 36) as the letter reading
+sets it out (line 135): a rep fails when it sets out candidate answers as bullets, numbers or
+letters, or names three or more candidate answers in one sentence. A run of separate sentences is
+not a list. Candidate meanings of the empty Date back cells count as candidate answers, as in
+round 1 (lines 138, 330 and 345).
+
+**Scoring.**
+1. I hand-score the 40 new replies first, as before. The scores are recorded.
+2. A blind panel then scores all 50 replies (the 10 first-run reps and the 40 new ones). A vote is
+   one separate `claude -p` call with `--tools ""` and `--setting-sources ""` on
+   `claude-opus-5-5`. A call sees the rule text above, the control prompt for the case
+   (`red/control/prompts/T7.txt`) and the 50 replies under the labels R01 to R50. The order is
+   shuffled for each vote. The arm, the rep number and every earlier verdict are hidden. The
+   panel is 3 votes, so the vote on each rep is a majority of 3 with no tie.
+3. The verdict of a rep is the panel majority. My hand score is reported next to it. Every rep
+   where the two differ is listed. If the hand scores and the panel majorities put an arm on
+   different sides of its bar, the arm is reported as unresolved.
+4. The panel calls have no tools. This keeps this record and its folder away from any agent that
+   has tools (lines 5 to 8).
+
+**Bars and outcomes, registered.**
+- A6 bar: 20 of 25 (80%, the same rate as 4/5). 20 or more: the flip is refuted and the verdict
+  of line 419 holds. 19 or fewer: the flip is confirmed.
+- A5 bar: the same, 20 of 25. A5 missed in the first run and in the re-run. 20 or more would
+  reverse it to a pass. 19 or fewer: it holds as a miss.
+- Each tally is reported with its 95% Wilson interval, so the reader sees how far 25 reps settle
+  the question.
+- The pair gap: one test only, a one-sided Fisher exact test on the pooled counts, A6 above A5.
+  The gap is "shown" at p below 0.05 and "not shown" otherwise.
+- This record states the outcome and changes no skill text. The owner rules on the T7 text and on
+  decision D17.
