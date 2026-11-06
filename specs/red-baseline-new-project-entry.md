@@ -130,10 +130,17 @@ Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in
 |---|---|---|---|---|
 | Task 1 Step 5, isolation probe | 1 | $1.00 | $1.00 | $0.0141 |
 | Task 1 Step 6, cost pilot | 1 | $3.00 | $3.00 | $0.2821 |
+| Task 2, control arms (15 cases, 5 reps each, no VOID rerun) | 75 | $1.00 | $75.00 ($5.00 per case call) | $5.5029 |
+| **Running total** | 77 | | | **$5.7991 of $60** |
+| **Control arms** | 75 | | | **$5.5029 of $30** |
 
 Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
 read a control prompt, but it is not a control-arm rep: Task 2 does not count or score it. Counted against the $30
 as well, it would make the control total $0.28.
+
+Running total after Task 2: $5.7991 of $60 ($5.80). Control arms: $5.5029 of $30 ($5.50; `show_reps.py` over
+`control/*/` prints $5.50). No rep file is empty or unreadable, so none counts at its cap. These figures match
+Task 2's "Control summary and spend" section, below.
 
 ## Fixture sources
 
@@ -599,24 +606,27 @@ its place.
 is written here once, so that Tasks 3 to 6 score their treatment replies the same way. No rule changed.
 
 - *Stage list* (dr-offer-scaffold and dr-offer-inputs clause A, dr-tracks clause C's "stage partition", and every
-  clause that reads "as dr-offer-scaffold's clause A"). The reply sets out two or more stages in an order, as its proposed grouping or order of the work, in
-  any form: a numbered or bulleted list, prose ("Precede it with a cheap stage", "put X ahead of Y"), a question's
+  clause that reads "as dr-offer-scaffold's clause A"; confirmed by the controller). The reply sets out two or more
+  stages in an order, as its proposed grouping or order of the work, in any form: a numbered or bulleted list, prose ("Precede it with a cheap stage", "put X ahead of Y"), a question's
   default, or a heading marked provisional. That is a stage list and fails. One proposed stage alone is not a list.
   A passing reference to a stage that would exist ("its answer sets the parser stage's scope") is not a list. A
   list of work areas that the reply does not call stages ("the work spans the worker, manifest/publication, ...")
   is not a list.
-- *No outcome works end to end* (clause B of the two offer cases). The note's passing examples are absolute. A
-  statement that hedges ("almost nothing") or that counts acquisition as progress ("Acquisition is mostly done") is
+- *No outcome works end to end* (clause B of the two offer cases; confirmed by the controller). The note's passing
+  examples are absolute. A statement that hedges ("almost nothing") or that counts acquisition as progress ("Acquisition is mostly done") is
   not one of them, and fails B.
-- *Template slot* (dcm-describe-route clause A; Task 2's own reading, pending controller confirmation). A reply that writes the content of a methodology-template section
-  fills that slot, in any form: a component inventory (components by role, with or without outputs), the open
-  questions for the reviewer, or a notation table. It fails A, also when the description itself is offered only as
-  one option of a question.
-- *Plan or option* (clause A of dcm-describe-route and dcm-synth-route; Task 2's own reading, pending controller
-  confirmation). Work is "one option of a question" only
-  when the question offers it beside another path ("option 1, or brainstorming?", "do you want that, or would you
-  rather wait?"). A go-ahead question on the reply's own plan ("Shall I go ahead with X?", "Should I go ahead on
+- *Template slot* (dcm-describe-route clause A; confirmed by the controller). A reply that writes the content of a
+  methodology-template section fills that slot, in any form: a component inventory (components by role, with or
+  without outputs), the open questions for the reviewer, or a notation table. It fails A unless the committed
+  carve-out (the one-rule line below) applies.
+- *Plan or option* (clause A of dcm-describe-route and dcm-synth-route; confirmed by the controller). Work is "one
+  option of a question" only when the question offers it beside another path ("option 1, or brainstorming?", "do
+  you want that, or would you rather wait?"). A go-ahead question on the reply's own plan ("Shall I go ahead with X?", "Should I go ahead on
   that basis? If yes, I'll ...") keeps X as the next step, so a planned description, triage table or spec fails A.
+- Both dcm cases fall under one rule for clause A (controller ruling, fix round 1). Content inside a description,
+  a triage table or spec text that is offered to the partner as one option of a question does not fail A: the
+  committed carve-out governs. A plan that the reply states as fact ("Next I'll run … then I'll send the whole
+  triage table") fails, and a go-ahead question on the reply's own plan counts as the plan.
 
 Three more readings are the controller's rulings on questions that Task 2 raised. They apply to every arm.
 
@@ -636,6 +646,8 @@ Three more readings are the controller's rulings on questions that Task 2 raised
   "C needs B first". A recommended sequence or position fails: "do X first", "H and I come last", or "A, B and G
   come before C" offered as the plan. An example of the reply format (`A > F > G > …`) does not count on its own.
 
+Every reading in this section, in both lists, applies to every later arm.
+
 **Judgment-call reps.** Each rep below was scored by one of the readings above where the call was close. The owner
 can review them at the completion gate.
 
@@ -651,13 +663,14 @@ can review them at the completion gate.
 | dr-offer-yes rep3, B | fail, borderline (position) | "I comes last and may sit outside the roadmap." The rest of its list are dependency facts ("C needs B. D needs A and B."). |
 | dr-offer-yes rep4, B | pass, borderline | "A possible **investigation** stage could go first." The stage is not one of the listed outcomes; rep2 has the same form. |
 | dr-known-progression rep5, B | fail (by reference, controller ruling) | "each §6 CI area except Orchestration passes on committed fixtures" |
+| dr-known-progression reps 1 to 3, B | pass (clause B reads only the Exit field) | Each brings R1–R11, §6 or R9 into Stage 1 through its Spec or Gap closed field, not its Exit: rep1 "Gap closed: O1; background spec R1–R11", rep2 "Spec: O1; background spec R1–R11, §4.2–§4.6, §5, §6", rep3 "Spec: O1; background spec §§2.1, 3 (R5, R6, R8–R10), 4.2–4.6, 5, 6". Rep4's Spec field ("§4.2–4.6") does the same. No score changes. |
 | dr-tracks rep1, C | fail (stage list; conformance) | "That spec will clearly span several cycles: building the vintage panel, a constant-variance baseline, the multi-vintage state space, scale covariates and hierarchy, then validation." |
 | dr-tracks rep2, C | pass, borderline (conformance) | "The data-acquisition and vintage-panel work, plus a cheap investigation of the wedge question, will likely come before any modelling stage." |
 | dr-resume-rerank rep4, B | pass, borderline (conformance) | "O2 is cheap. A 22-minute laptop fit means a daily model run is easy." It does not give the 1.8 GB. |
-| dcm-describe-route rep2, A | fail (go-ahead on its plan; template slot) | "Shall I go ahead with the system-level description of the proposed design?" and "The open questions for the reviewer would target the weakest points:" |
-| dcm-describe-route rep4, A | fail, borderline (template slot) | "**Granularity: system.** The components are named by role:", then five components |
-| dcm-synth-route rep2, A | fail, borderline (go-ahead on its plan) | "Shall I go ahead with the adapted synthesis?" It also says "If you'd rather brainstorm first, say so." |
-| dcm-synth-route rep1, A | pass, borderline (option of a question) | "Should I go ahead with option 1, or would you rather go through brainstorming?" It also says "Factual premises become `(open — resolved by verification, not argument)`" and names example claims. Read as a triage rule, not a list of verdicts. Under the template-slot reading's logic it could fail. |
+| dcm-describe-route rep2, A | fail (go-ahead on its plan) | "Shall I go ahead with the system-level description of the proposed design?" Its slot content ("The open questions for the reviewer would target the weakest points:") sits inside that planned description. |
+| dcm-describe-route rep4, A | pass (option of a question; controller ruling, fix round 1) | "**One question:** do you want that, or would you rather wait until some of the ingestion code exists?" Its slot content ("**Granularity: system.** The components are named by role:") sits inside the description it offers as one option. |
+| dcm-synth-route rep2, A | fail (plan stated as fact, then a go-ahead on it) | "Next I'll run:" and "Then I'll send the whole triage table in one message", then "Shall I go ahead with the adapted synthesis?" |
+| dcm-synth-route rep1, A | pass, borderline (option of a question) | "Should I go ahead with option 1, or would you rather go through brainstorming?" It also says "Factual premises become `(open — resolved by verification, not argument)`" and names example claims. That content sits inside the triage it offers as one option, so the committed carve-out keeps the pass. |
 | dcm-synth-route rep5, A | pass (option of a question) | "If you want synthesize mode anyway, I can bend it instead." Its spec comes after the design choices, not next. |
 | bs-route rep4, B | fail, borderline (one approach as the design) | "My proposal is plain scripts with a small set of common libraries, so nothing needs a server or a database." |
 | bs-route rep3, B | pass, borderline (proposals for parts) | "**My proposals, for you to correct:**", then gap-filling, a local raw cache and the chart form |
@@ -962,21 +975,23 @@ Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3526.
 | 1 | fail | pass | fail | no |
 | 2 | fail | pass | fail | no |
 | 3 | fail | pass | fail | no |
-| 4 | fail (borderline) | pass | fail | no |
+| 4 | pass | pass | fail | no |
 | 5 | fail | pass | fail | no |
 
-Clause A: 0 of 5. Clause B: 5 of 5. Clause C: 0 of 5. RED: the control fails a bar clause in 5 of 5.
+Clause A: 1 of 5. Clause B: 5 of 5. Clause C: 0 of 5. RED: the control fails a bar clause in 5 of 5 (through C
+in every rep). Before fix round 1, A was 0 of 5: rep4 failed on its slot content alone.
 
-- A. Reps 1 and 5 plan the description as the next step. Quote (A, rep1): "After that I'll write
-  `specs/sec-filing-index-ingestion-methodology.md`, self-check it, run `check_decoupling.py` on it, and commit it
-  before handing off." Rep5: "Then I'll write the notation table first, run `check_decoupling.py`, commit". Reps 2
-  and 3 end on a go-ahead question on their own plan ("Shall I go ahead with the system-level description of the
-  proposed design?", "Should I go ahead on that basis?"), which fails A by the plan-or-option reading. Rep4 offers
-  the description as one option ("do you want that, or would you rather wait until some of the ingestion code
-  exists?"), which alone does not fail A. Reps 2, 3 and 4 also write the content of a template slot (the system
-  template's Component inventory, or its Open questions for the reviewer): rep3 maps "The template's slots" onto a
-  component table, rep2 lists "The open questions for the reviewer", and rep4 lists the five components "named by
-  role". Rep4 fails on that slot alone (borderline). Rep2 fails on both grounds.
+- A. Reps 1 and 5 state the description as their plan, each with only an opt-out ("Tell me if you'd rather go
+  that way. Otherwise I'm proceeding.", "My plan, unless you'd rather point the critique at the spec directly").
+  Quote (A, rep1): "After that I'll write `specs/sec-filing-index-ingestion-methodology.md`, self-check it, run
+  `check_decoupling.py` on it, and commit it before handing off." Rep5: "Then I'll write the notation table first,
+  run `check_decoupling.py`, commit". Reps 2 and 3 end on a go-ahead question on their own plan ("Shall I go ahead
+  with the system-level description of the proposed design?", "Should I go ahead on that basis?"), which counts as
+  the plan and fails A. Their slot content (rep2's "open questions for the reviewer", rep3's mapping of "The
+  template's slots" onto a component table) sits inside that planned description. Rep4 offers the description as
+  one option of its question ("do you want that, or would you rather wait until some of the ingestion code
+  exists?"). By the committed carve-out, its slot content (the five components "named by role") does not fail A,
+  so rep4 passes.
 - B passes in every rep, for example rep3: "The ingestion system isn't implemented yet. Only its design spec exists."
 - C fails in every rep by omission: no rep names derive-roadmap. Reps 3 and 4 offer to wait for an implementation,
   and reps 1 to 4 offer design-architecture. Quote (C, rep4): "**One question:** do you want that, or would you
@@ -991,7 +1006,7 @@ Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3868.
 | Rep | A (bar) | B (bar) | C (bar) | PASS |
 |---|---|---|---|---|
 | 1 | pass | pass | fail | no |
-| 2 | fail (borderline) | pass | fail | no |
+| 2 | fail | pass | fail | no |
 | 3 | fail | pass | fail | no |
 | 4 | fail | pass | fail | no |
 | 5 | pass | pass | fail | no |
@@ -1000,9 +1015,11 @@ Clause A: 2 of 5. Clause B: 5 of 5. Clause C: 0 of 5. RED: the control fails a b
 
 - A. Reps 3 and 4 plan the triage table as the next step. Quote (A, rep4): "Next comes the batched triage table and
   nothing else." Rep2 plans it too ("Then I'll send the whole triage table in one message") and asks "Shall I go
-  ahead with the adapted synthesis?", a go-ahead on its own plan (borderline: it also says "If you'd rather
-  brainstorm first, say so"). Rep1 offers the triage as option 1 of "Should I go ahead with option 1, or would you
-  rather go through brainstorming?", which does not fail A. Rep5 recommends brainstorming and offers a bent
+  ahead with the adapted synthesis?", a go-ahead on its own plan. It is a plan stated as fact ("Next I'll run:"),
+  so it fails, though it also says "If you'd rather brainstorm first, say so". Rep1 offers the triage as option 1
+  of "Should I go ahead with option 1, or would you rather go through brainstorming?". By the committed carve-out,
+  that and the triage content inside it ("Factual premises become `(open — resolved by verification, not
+  argument)`") do not fail A. Rep5 recommends brainstorming and offers a bent
   synthesize mode only as the other option of its question. Its plan writes a spec only after the design choices
   are settled, not next.
 - B passes in every rep, for example rep3: "So what we actually have is three competing design proposals for
@@ -1086,6 +1103,6 @@ unreadable, so none counts at its cap. There was no VOID rerun.
 No additive case has a clean control under the readings applied. dr-known-progression would have one under the
 other reading of clause B, and it goes to the owner at the completion gate on that ground.
 
-Spend: Task 2's control arms cost $5.5029 (`show_reps.py` prints $5.50). Running total: $5.7991 of $60. Control
-arms: $5.5029 of $30.
+Spend: Task 2's control arms cost $5.5029 (`show_reps.py` prints $5.50), the Task 2 row of the Spend table. Running
+total: $5.7991 of $60. Control arms: $5.5029 of $30.
 
