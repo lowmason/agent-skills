@@ -103,10 +103,13 @@ Describe mode.
    method.
 2. **Critique triage.** First establish whether the critique was adjudicated
    or taken as a first pass with no push-back, and say which. Then build the
-   per-point table per `references/spec-synthesis.md` — accept / reject /
-   needs-user-adjudication with a one-line rationale each — and present it in
-   ONE message, carrying every needs-user-adjudication question with it,
-   before writing any spec text.
+   per-point table per `references/spec-synthesis.md`: one row per distinct
+   claim the critique makes (its findings and cited evidence as well as its
+   asks), stated in words, with compound points split and coverage checked
+   against the critique's own structure; accept / reject /
+   needs-user-adjudication with a one-line rationale each. Present it in ONE
+   message, carrying every needs-user-adjudication question with it, before
+   writing any spec text.
 3. **Synthesize the spec** at `specs/<name>.md` in the target repo, per
    `references/spec-synthesis.md`: house skeleton, a Design provenance
    paragraph declaring the locator scheme, per-claim locators back to

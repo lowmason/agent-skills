@@ -19,6 +19,38 @@ point:
 | # | Critique point (one line) | Verdict | Rationale (one line) |
 |---|---|---|---|
 
+**A critique point is one distinct claim**, wherever the critique makes it.
+Its asks are some of the points; its findings, the evidence it cites and the
+gaps it names in passing are points too. Build the rows this way:
+
+1. **One claim, one row, stated in words.** The one-line point says what the
+   critique claims or asks, so a reader can judge the row without opening
+   the critique. A claim that asks for nothing (a finding about how others
+   do it, a figure offered as evidence) gets its own row too; its verdict is
+   usually accept, as context.
+2. **Split compound points.** When one sentence, bullet or numbered item
+   carries two claims, give each claim its own row. When two places in the
+   critique make the same claim, one row carries both locators.
+3. **Check coverage against the critique's own enumeration** before you
+   send the table. Walk the critique once more, top to bottom: every
+   numbered or lettered item and every section maps to at least one row,
+   and every claim inside a multi-claim paragraph has its own row. Add the
+   rows that are missing.
+
+*Example, from a different domain.* A critique of a churn model says, in one
+paragraph: "The holdout overlaps the March price change, which inflates the
+reported lift, and the tenure buckets are too coarse. A vendor benchmark puts
+lift at 3–5% for this segment." That paragraph gives three rows:
+
+| # | Critique point (one line) | Verdict | Rationale (one line) |
+|---|---|---|---|
+| 7 | The holdout overlaps the March price change, which inflates the reported lift (§3) | accept | … |
+| 8 | The tenure buckets are too coarse (§3) | accept | … |
+| 9 | A vendor benchmark puts lift at 3–5% for this segment (§3) | accept, as context | … |
+
+One row, "§3: fix the holdout and tenure buckets", would state the first
+claim, blur the second and lose the third.
+
 Verdicts: **accept** / **reject** / **needs-user-adjudication**. Ask every
 needs-user-adjudication question in the same message as the table — one
 batched set, never a drip. Rejected-by-Chat points (recorded as rejected in
