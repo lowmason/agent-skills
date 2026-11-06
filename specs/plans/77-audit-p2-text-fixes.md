@@ -146,7 +146,7 @@ git commit -m "feat(test-driven-development): point to develop-testing-strategy 
 
 ### Task 4: systematic-debugging's red flags point at a real step (keeper 8)
 
-`:242` says "(see Phase 4.5)". No Phase 4.5 exists. The target is Phase 4, step 5, "If 3+ Fixes Failed: Question Architecture" (`:207`).
+`:242` says "(see Phase 4.5)". No Phase 4.5 exists. The target is Phase 4, step 5, "If 3+ Fixes Failed: Question Architecture" (`:209`).
 
 **Files:**
 - Modify: `skills/systematic-debugging/SKILL.md:242`
@@ -299,7 +299,7 @@ git commit -m "docs(explore-data): say which skill reads the profile JSON and wh
 design-architecture names neither brainstorming nor writing-plans. brainstorming never names creative-thinking, whose description claims its propose-approaches step. tech-debt names neither develop-testing-strategy nor validate-data. No micro-test (Open for plan review, item 1).
 
 **Files:**
-- Modify: `skills/design-architecture/SKILL.md:48` (insert after it), `skills/brainstorming/SKILL.md:161`, `skills/tech-debt/SKILL.md:108`, `:140`
+- Modify: `skills/design-architecture/SKILL.md:49` (insert after it), `skills/brainstorming/SKILL.md:161`, `skills/tech-debt/SKILL.md:108`, `:140`
 
 **Interfaces:** none.
 
