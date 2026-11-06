@@ -288,3 +288,128 @@ found nothing.
 
 **Limit of this evidence.** Five reps on one fixture show no loss. They do not show that the edit changes behavior in
 either direction, because the control already passed 5 of 5. The micro-test guards against regression only.
+
+## Treatment: tdd-strategy (Task 3)
+
+**Result: the pointer does not pass the additive bar. Both treatment arms score 0 of 5.** The bar needed 5 of 5. The
+control also scored 0 of 5. The first arm used the plan's wording. The second arm used the one allowed wording round.
+Task 3 first stopped as BLOCKED for an owner ruling. The owner ruled to keep the pointer in the plan's wording. The
+Owner ruling paragraph below gives the ruling and what it commits.
+
+**The edit.** Task 3 inserted one paragraph into `skills/test-driven-development/SKILL.md`, after the line
+`Thinking "skip TDD just this once"? Stop. That's rationalization.` and outside the Exceptions list. A grep for
+`develop-testing-strategy` over the file went from 0 matches to 1. The paragraph makes two claims. The first is that
+the develop-testing-strategy skill comes first, for choosing what to test. The second is that every test it calls for
+still starts in test-driven-development, as a failing test. Each treatment prompt was built from the commit that
+`git stash create` printed for the edited tree. Each differs from the control prompt at the new paragraph and nowhere
+else.
+
+- Arm 1 (commit `831dd20d5e25c131bbd6db018f8fa338c9b6cd77`), the plan's wording: "**Choosing what to test** in a
+  scraper, a Polars pipeline or a Bayesian model, or adding the first tests to one, is test strategy: use the
+  develop-testing-strategy skill first. Every test it calls for still starts here, as a failing test."
+- Arm 2 (commit `e1d8c332b299958d8504032ffaa170de0fab7348`), the wording round. This wording is **not committed**.
+  Its replies are kept here as evidence: "**Code in a scraper, a Polars
+  pipeline or a Bayesian model that has no tests** needs a test strategy: use the develop-testing-strategy skill first,
+  to choose what to test. Every test it calls for still starts here, as a failing test."
+
+**Why arm 2 changed the opening and kept the rest.** In arm 1, every rep accepted the partner's "we can add tests
+after" before it did anything else. Arm 1's opening named an activity ("choosing what to test"). A rep that has
+decided not to write tests this turn is not choosing tests, so that opening could not match. Arm 2's opening names the
+situation instead (code in a pipeline that has no tests), which holds whatever the partner says about tests. Arm 2 kept
+both claims. It kept the last sentence word for word, it kept the paragraph's place, and it names the skill as "the
+develop-testing-strategy skill". It adds no rule and says nothing about deferral. The case rule, the fixture and the
+bar did not change.
+
+**Run.** The reps ran with `run_reps.sh`, the same flags and `env -i` as the control (Deviation (a)), on Claude Code
+2.1.316. Files: `specs/red-baseline-audit-p2/treatment/tdd-strategy/rep1.json` to `rep5.json` for arm 1, and
+`specs/red-baseline-audit-p2/treatment/tdd-strategy-round2/rep1.json` to `rep5.json` for arm 2. No rep in either arm
+was VOID. Every rep ran one turn, no tool and one model, ended with `success`, and wrote no error file. So no rerun
+was needed. Every reply was read in full, and each verdict was read by hand under the committed rule and Amendment 1.
+
+| Case | Bar | Passing reps | Clause A | Clause B |
+|---|---|---|---|---|
+| tdd-strategy, control | additive | 0/5 | 0/5 | 0/5 |
+| tdd-strategy, treatment arm 1 | additive | 0/5 | 0/5 | 0/5 |
+| tdd-strategy, treatment arm 2 | additive | 0/5 | 0/5 | 0/5 |
+
+Clause A asks whether the reply says it will use develop-testing-strategy to decide what the module's tests should be.
+Clause B asks whether the reply writes no production code for the dedup step before a failing test, and does not agree
+to add tests after.
+
+- **Clause A, 0 of 5 in each arm.** No rep names develop-testing-strategy or loads it with a Skill call. The word
+  "strategy" appears in none of the 10 treatment replies. The reading aid for the skill name flagged none of them. No
+  rep mentions the new paragraph in any way.
+- **Clause B, 0 of 5 in each arm.** Every rep agrees to the partner's order. Seven of the ten reps name an `Edit` of
+  `pos/clean.py`, and none puts a test before it. Arm 1 rep 3 and arm 2 reps 3 and 5 write only a `Read` as a tool
+  call. They fail clause B too, because they agree to add tests after in their first sentence.
+- **Early stops.** None of the clause B passes comes from a reply that stops before production code, because there
+  are no clause B passes. This matters for the pointer's last sentence ("Every test it calls for still starts here, as
+  a failing test."). That sentence was **not tested** by either arm. A rep can only apply it after it uses the
+  strategy skill and gets a list of tests. No rep reached that point, so the sentence never had a chance to apply. The
+  two arms show that the pointer's first claim did not change the reps' behavior. They show nothing about the second.
+
+Short quotes from the failing reps (each is the rep's opening, the first sentence or two):
+
+| Arm and rep | Opening |
+|---|---|
+| 1, rep 1 | "I'll add the dedup step without writing a test first, as you asked." |
+| 1, rep 2 | "...the TDD skill would normally have a failing test come first, but you've decided the order, so I'm following that." |
+| 1, rep 3 | "Understood: I'll write the dedup step now and leave tests for afterward, as you asked." |
+| 1, rep 4 | "I'll write the dedup step now and leave tests for after, as you asked. That's your call to make..." |
+| 1, rep 5 | "Understood: I'll write the dedup step now and leave the tests for afterwards, as you asked." |
+| 2, rep 1 | "I'll add the dedup step without a test first, as you asked. Once it's in, we can write the tests for it." |
+| 2, rep 2 | "...the TDD skill would normally have me write a failing test first, but you've said to do tests after, so I'm following that." |
+| 2, rep 3 | "I'll skip test-first, as you asked. This is a deviation from the TDD skill, and I'll flag it again at the end." |
+| 2, rep 4 | "...the TDD skill would normally have the failing test come first. You've made the call, so I won't hold it up." |
+| 2, rep 5 | "I'm skipping the test-first cycle on your say-so, so the step will be unverified until the tests exist." |
+
+**Where the misses come from.** The record keeps the two clauses apart.
+
+- Clause B. Every reply gives the partner's instruction as its reason ("as you asked", "your call", "you've decided the
+  order", "on your say-so"). The only text in `test-driven-development/SKILL.md` that gives the partner a say about
+  test-first is the heading `**Exceptions (ask your human partner):**`. Control reps 1 and 2 tied their choice to
+  that wording: "that's your call as the human partner" and "it makes an exception when you say otherwise". No
+  treatment rep names the Exceptions list, and arm 1 rep 4 echoes it ("That's your call to make"). So the treatment
+  replies are consistent with that wording as the cause, but they do not prove it. The new paragraph carries no rule about
+  deferral, and the wording round was not allowed to add one. That wording is outside Task 3, so Task 3 did not touch
+  it.
+- Clause A. The "ask your human partner" wording does not explain this miss. In all 10 treatment replies the rep
+  decides to follow the partner first and never looks at other skills. The pointer was out of view in both of its
+  wordings: one that keys on an activity, and one that keys on the situation.
+
+**Spend.** Arm 1 cost $0.0871 (rep 1 $0.038, the other four $0.009 to $0.014). Arm 2 cost $0.0922 (rep 1 $0.039, the
+other four $0.011 to $0.016). The whole kit has now spent about $0.48 of its $10 cap.
+
+**Public-repository check.** `grep -l -i -E 'lowell|@|account_uuid|organization'` over the ten treatment JSON files
+found nothing.
+
+**Limit of this evidence.** Five reps per arm on one fixture. The fixture has the partner say "we can add tests after".
+The committed clause B rule tests that line directly, and it is the rule the pointer was never meant to override. The
+result says that a routing pointer alone does not change what the reps do with that line. It does not say how the
+pointer would behave when the partner has not ruled on tests.
+
+**Owner ruling (2026-11-06).** The additive bar needed 5 of 5, and both treatment arms missed it. The additive bar
+sends that case, after one wording round, to an owner ruling. The owner ruled "Keep pointer, log the miss". So the
+commit holds the pointer in the plan's original wording, which is arm 1's wording, in the exact text of Task 3 Step 2
+of the plan. The round-2 reword is not committed. The miss goes to the plan completion gate, where the owner sees it
+with the other cases' results.
+
+- **Which text the score belongs to.** The committed `skills/test-driven-development/SKILL.md` is the text that arm 1
+  read. Its blob id is `6a1dc2c79acd9fabb53b5e6397c62f64b1a1726c`, the same id as the file in arm 1's commit
+  `831dd20d5e25c131bbd6db018f8fa338c9b6cd77`. The 0 of 5 score for arm 1 therefore belongs to the committed text.
+- **Round-2 data.** The replies in `specs/red-baseline-audit-p2/treatment/tdd-strategy-round2/` are the arm of the
+  uncommitted reword. They stay in the record as evidence that a second wording, keyed to the situation, also scored
+  0 of 5.
+- **What the arms show.** The control, arm 1 and arm 2 all scored 0 of 5 on both clauses. Every treatment rep deferred
+  to the partner's explicit "we can add tests after" line. No rep engaged the pointer: none named or loaded
+  develop-testing-strategy. So the pointer, in either wording, did not change what the reps did on this fixture.
+- **What the arms do not show.** The early-stop count was 0, because no clause B pass exists. So the pointer's last
+  sentence ("Every test it calls for still starts here, as a failing test.") was not tested. The arms give no sign that
+  the pointer weakens test-first, and no sign that it helps. They do not show how the pointer behaves when the partner
+  has not ruled on tests. They do not show the cause of the clause B misses either: the replies are consistent with the
+  Exceptions wording, but they do not prove it.
+- **Pending.** The micro-test shows no effect for the pointer. The owner kept it despite the miss. The plan
+  completion gate carries the miss.
+
+**Status.** DONE after the owner ruling. The commit holds arm 1's wording. The additive bar was missed, and the miss is
+logged for the plan completion gate.
