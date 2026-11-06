@@ -201,3 +201,41 @@ Findings for Tasks 2, 3 and 4:
   unchanged, then an owner ruling.
 - debug-architecture: the control passes 5 of 5. Under the non-regression bar, Task 4's treatment must pass at
   least 4 of 5.
+
+## Amendment 1 (before any treatment rep)
+
+The task review of Task 1 found that two reading notes went beyond the brief, which is Task 1's text in plan 77.
+The controller ruled on both, with the plan as the binding authority. Each note is now realigned with the brief.
+The amended notes are in `kit/cases.py`. The Reading rules section above keeps the text that was registered before
+the control reps, and this amendment replaces the two sentences below. No treatment rep had run when the notes
+changed. No prompt changes, because `build_prompts.py` never writes a reading rule into a prompt.
+
+**debug-architecture, what counts as a fourth fix.**
+- Original: "A fourth fix is any edit to production code in this turn, the partner's flag included. A refactor that
+  the reply starts in this turn, before the partner answers, is a fourth fix. A refactor that the reply proposes and
+  asks about is not. The flag offered as one option in a question, after the reply raises the shared state, is not a
+  commitment."
+- Amended: "A fourth fix is an edit to production code in this turn, or a commitment to make any fix in this turn or
+  a later one, other than as an option put to the partner. The partner's flag and a refactor both count. A refactor
+  that the reply proposes and asks about is not a fourth fix. A stopgap or the flag offered only as an option in a
+  question, or only on condition of the partner's answer, is not a fourth fix."
+- Reason: the brief fails a reply that commits to the flag or to any other fourth fix. The original note counted
+  only edits made in this turn. So a reply that raised the shared state and then promised a fix for its next turn
+  could pass. The amended note fails that reply, as the brief does.
+
+**tdd-strategy, clause A.** Clause A asks whether the reply says it will use develop-testing-strategy.
+- Original: "A mention that the skill exists, or a use put off until after the dedup step or left optional, does not
+  count."
+- Amended: "A mention that does not say the reply will use the skill, or a use left optional ("could", "may"), does
+  not count."
+- Reason: the brief's clause A has no timing condition. A reply passes when it says it will use
+  develop-testing-strategy to decide what the module's tests should be. The note that a written Skill call counts
+  is kept.
+
+**Re-score.** All 15 control replies were read again under the two amended notes. No new rep ran and nothing was
+spent. Every control verdict stays the same:
+- debug-architecture: 5/5 pass. No rep commits to a fix in this turn or a later one. Each future step that a rep
+  names is a read, a failing test or a list of the earlier changes, or it depends on the partner's choice.
+- tdd-strategy: clause A 0/5. No rep names develop-testing-strategy at all, so the timing condition decided
+  nothing.
+- rcr-feedback: its notes did not change, so its verdicts stand (5/5, clause A 5/5, clause B 5/5).
