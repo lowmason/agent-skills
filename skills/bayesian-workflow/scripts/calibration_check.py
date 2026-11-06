@@ -51,7 +51,8 @@ except ImportError:
             {
                 "error": (
                     "arviz-plots >= 1.3.1, arviz-stats >= 1.3.1 and arviz-base are required. "
-                    "Install with: pip install 'arviz-plots>=1.3.1' 'arviz-stats>=1.3.1' arviz-base"
+                    "Install with: uv add 'arviz-plots>=1.3.1' 'arviz-stats>=1.3.1' arviz-base, "
+                    "or run this script with uv run, which installs them from its header"
                 )
             }
         )

@@ -52,19 +52,19 @@ This skill fits by NUTS posterior inference; SVI is a warm start, or the final f
 
 ## Installation
 
-NumPyro and JAX install cleanly from pip. A typical environment:
+NumPyro and JAX install cleanly with uv. In a uv project (run `uv init` first if there is no `pyproject.toml`), a typical set:
 
 ```bash
-pip install numpyro jax arviz arviz-stats arviz-plots arviz-base preliz
+uv add numpyro jax arviz arviz-stats arviz-plots arviz-base preliz
 # netCDF backend for idata.to_netcdf(...) — pick one:
-pip install h5netcdf h5py        # or:  pip install netcdf4
+uv add h5netcdf h5py        # or:  uv add netcdf4
 # optional:
-pip install graphviz             # model-graph rendering (also needs the system `dot` binary)
-pip install blackjax             # the co-equal alternative JAX NUTS sampler (see Samplers)
-pip install funsor               # only if you enumerate discrete latents
+uv add graphviz             # model-graph rendering (also needs the system `dot` binary)
+uv add blackjax             # the co-equal alternative JAX NUTS sampler (see Samplers)
+uv add funsor               # only if you enumerate discrete latents
 ```
 
-- For **GPU/TPU**, install the matching JAX wheel (e.g. `pip install "jax[cuda12]"`); the NumPyro code is identical.
+- For **GPU/TPU**, install the matching JAX wheel (e.g. `uv add "jax[cuda12]"`); the NumPyro code is identical.
 - `arviz` 1.x is the umbrella that re-exports `arviz-base` (data), `arviz-stats` (statistics), and `arviz-plots` (plotting). See **Stack compatibility** below for the ArviZ 0.23 vs 1.x notes.
 
 ## Critical rules
@@ -120,7 +120,7 @@ These are battle-tested lessons that save hours of debugging:
 - **Forgetting to standardize predictors** makes shared priors inappropriate and slows sampling. Always standardize before fitting, then back-transform for interpretation.
 - **Horseshoe priors create a double-funnel geometry** that standard NUTS can struggle with. Always use the **regularized (Finnish) horseshoe** (Piironen & Vehtari, 2017), which adds a slab component that smooths the geometry. Set `target_accept_prob=0.95` or higher. If you see divergences with a horseshoe model, this is almost certainly the cause.
 - **`np.median` on posterior predictive probabilities is a silent bug.** It does not produce the Bayesian predictive distribution and can yield probabilities that don't sum to 1 across categories. Always use `np.mean` over the posterior samples dimension.
-- **Discrete latents: marginalize or enumerate, don't plug in.** NUTS cannot sample discrete variables. Prefer a **true mixture likelihood** via `dist.MixtureSameFamily` (exact, O(K) per observation, NUTS-compatible), or enumerate with `numpyro.contrib.funsor.config_enumerate` (requires `pip install funsor`) plus `infer_discrete`. For Gibbs-style updates use `DiscreteHMCGibbs` or `MixedHMC`. Plugging a soft relaxation (soft-min/argmax, or `E[z]`) into a nonlinear function is mathematically wrong: it is not the marginal and can return out-of-bounds values. Any mixture also needs an identification constraint (e.g. `ordered` components) or chains will label-switch.
+- **Discrete latents: marginalize or enumerate, don't plug in.** NUTS cannot sample discrete variables. Prefer a **true mixture likelihood** via `dist.MixtureSameFamily` (exact, O(K) per observation, NUTS-compatible), or enumerate with `numpyro.contrib.funsor.config_enumerate` (requires `uv add funsor`) plus `infer_discrete`. For Gibbs-style updates use `DiscreteHMCGibbs` or `MixedHMC`. Plugging a soft relaxation (soft-min/argmax, or `E[z]`) into a nonlinear function is mathematically wrong: it is not the marginal and can return out-of-bounds values. Any mixture also needs an identification constraint (e.g. `ordered` components) or chains will label-switch.
 - **Overlapping data subsets in a likelihood double-count.** When a likelihood is assembled from per-subset terms, the subsets must partition the data *disjointly* — an observation that lands in two terms is counted twice, silently over-shrinking the posterior. Partition disjointly, or model the overlap explicitly.
 
 ## Stack compatibility (NumPyro + ArviZ)

@@ -49,17 +49,18 @@ Upstream's MIT notice travels with this skill as [`LICENSE-andorra`](LICENSE-and
 
 ### NumPyro installation
 
-NumPyro and JAX install cleanly from pip:
+NumPyro and JAX install cleanly with uv. In a uv project (run `uv init` first if there is no
+`pyproject.toml`):
 
 ```bash
-pip install numpyro jax arviz arviz-stats arviz-plots arviz-base preliz
-pip install h5netcdf h5py          # netCDF backend for idata.to_netcdf(...)  (or: netcdf4)
-pip install graphviz               # optional: model-graph rendering (needs system `dot`)
-pip install blackjax               # optional: co-equal alternative JAX NUTS sampler
-pip install funsor                 # optional: discrete-latent enumeration
+uv add numpyro jax arviz arviz-stats arviz-plots arviz-base preliz
+uv add h5netcdf h5py          # netCDF backend for idata.to_netcdf(...)  (or: netcdf4)
+uv add graphviz               # optional: model-graph rendering (needs system `dot`)
+uv add blackjax               # optional: co-equal alternative JAX NUTS sampler
+uv add funsor                 # optional: discrete-latent enumeration
 ```
 
-For **GPU/TPU**, install the matching JAX wheel (e.g. `pip install "jax[cuda12]"`); the model code is identical.
+For **GPU/TPU**, install the matching JAX wheel (e.g. `uv add "jax[cuda12]"`); the model code is identical.
 
 The skill teaches the latest NumPyro + ArviZ 1.x idioms and documents the classic-ArviZ (0.23)
 equivalents as a porting reference — the inline examples target ArviZ >= 1.0 and will raise on a

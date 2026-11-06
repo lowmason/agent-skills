@@ -153,7 +153,7 @@ params = list(idata.posterior.data_vars)  # the posterior's sites: mu and sigma 
 plot_psense_dist(idata, var_names=params)
 ```
 
-Requires `arviz-plots` (`pip install arviz-plots`).
+Requires `arviz-plots` (`uv add arviz-plots`).
 
 ### `plot_psense_quantities` — Sensitivity of derived quantities
 

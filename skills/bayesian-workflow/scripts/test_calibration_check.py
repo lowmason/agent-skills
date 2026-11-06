@@ -776,4 +776,4 @@ def test_the_version_floor_reads_the_same_in_the_header_the_docstring_and_the_im
     assert pinned == {'arviz-plots': FLOOR, 'arviz-stats': FLOOR}
     assert f'Requires arviz-stats >= {FLOOR} and arviz-plots >= {FLOOR}.' in source
     assert f'arviz-plots >= {FLOOR}, arviz-stats >= {FLOOR} and arviz-base are required.' in source
-    assert f"pip install 'arviz-plots>={FLOOR}' 'arviz-stats>={FLOOR}' arviz-base" in source
+    assert f"uv add 'arviz-plots>={FLOOR}' 'arviz-stats>={FLOOR}' arviz-base" in source
