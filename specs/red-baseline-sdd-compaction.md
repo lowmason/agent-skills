@@ -465,3 +465,42 @@ Pilot spend: $0.011.
   this re-run does not include one.
 - Spend: the first run of C3 cost $0.21 for 5 reps. An isolated rep carries less context, so the
   expected spend is at or below that. It is far under the $10 cap.
+
+### Result: C3 control, isolated
+
+Prompts: `t1/C3.txt`, unchanged. Output: `t1-isolated/C3/`. The reps ran on 2026-11-05 with Claude Code
+2.1.316 and model `claude-sonnet-5-5`. All 5 exited 0, ended with one turn and one model, and
+ran no advisor. No rep is VOID. No reply has an Insight box or quotes a user-level file.
+Spend: $0.091 for the 5 reps.
+
+| Rep | Verdict | ACTION order before the dispatch |
+|---|---|---|
+| 1 | pass | read `references/resuming.md`, read `references/fix-loop.md`, `cat .sdd/12-tide-cache/progress.md` with `git log`, read `re-review-prompt.md`, run `review-package`, then dispatch |
+| 2 | pass | read `resuming.md`, read `progress.md`, `git log`, read `fix-loop.md`, run `review-package`, then dispatch |
+| 3 | pass | read `progress.md`, read `resuming.md`, read `fix-loop.md`, `git log`, read `re-review-prompt.md`, run `review-package`, then dispatch |
+| 4 | pass | read `resuming.md`, read `fix-loop.md`, `cat progress.md` with `git log`, run `review-package`, then dispatch |
+| 5 | pass | read `resuming.md`, `cat progress.md`, `git log`, read `fix-loop.md`, run `review-package`, then dispatch |
+
+C3 control, isolated: 5/5 pass. The first run scored 5/5. The bar is 4 of 5 or better, so the stop
+rule still fires.
+
+**Verdict: holds.** Ruling (3), the recovery line, stays dropped (D3). No flip, so the sentence at
+`specs/superpowers-drift-spec.md:1091-1094` needs no change.
+
+Why the control recovers, read from the prompt and not from the replies: the `SKILL.md` body at
+`618e31d` already carries both pointers. Line 172 of `t1/C3.txt` says "Before every fix round, read
+`references/fix-loop.md`". Line 247 says to read `references/resuming.md` before any dispatch.
+A rep that follows its own body recovers with no outside help. Every rep reads `fix-loop.md`
+and the ledger, and every rep reads `resuming.md` too. The leaked `CLAUDE.md` is not needed to
+explain the result. This is a reading of the prompt, not a measurement.
+
+What the result does not cover:
+- The reps have no tools. A read ACTION never returns the file text, so the test shows that the
+  rep plans the right reads. It does not show what a rep does with the text.
+- One reader scored all five reps and knew the first-run verdicts. All five reps follow one clear
+  pattern, so the score is not sensitive to the reader.
+- The version changed from 2.1.312 to 2.1.316 together with the isolation settings. The verdict
+  is the same either way, so the confound does not change the conclusion here.
+- The plan 57, 59, 64, 65 and 67 records were not re-run.
+
+Spend of this re-run: $0.091 for the reps and $0.011 for the pilot.

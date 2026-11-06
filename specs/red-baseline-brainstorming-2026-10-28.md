@@ -994,3 +994,155 @@ under the $10 cap, so no stop is due. The running sum is tracked, and the work s
   the isolation settings and the program version. A flip therefore cannot be put on the leak
   alone. Separating them would take a run with the old kit on 2.1.316, which this re-run does not
   include.
+
+### Results
+
+Run 2026-11-05 on Claude Code 2.1.316 with `claude-opus-5-5`, 5 reps for each of the 20 arms. The
+rep files are in `<round>/new-isolated/<case>/`. `kit/show_reps.py` printed all 100 headers. Each
+shows `is_error=False`, `turns=1`, `extra-iters=-` and `models=1`. No rep is VOID, and no rep6 or
+rep7 ran. No reply has an Insight box or quotes a user-level file. No reply calls the setup a test.
+One reply (`pressure-1/new-isolated/P2` rep5) names a scratch path under `/private/tmp`. That path
+is the rep's own run directory, not user-level context. Spend: $3.51 for the 100 reps, against
+$5.70 for the first runs of the same arms. With the pilot ($0.022) and plan 71's C3 ($0.091 and
+$0.011 in its own record) the whole re-run cost $3.63, under the $10 cap.
+
+**One verdict flips, on n=5 and not confirmed: A6, T7 at `7b1ed85`. The other 19 arms hold.**
+
+| Arm | First run | Isolated | Bar | Verdict |
+|---|---|---|---|---|
+| A1 `pressure-1` P1 | 5/5 | 5/5 | done rule | holds |
+| A2 `pressure-1` P2 | 4/5, one FAIL | 5/5, no FAIL | done rule | holds |
+| A3 `pressure-1` P3 | 5/5 | 5/5 | done rule | holds |
+| A4 `pressure-2` P2 | 5/5 | 5/5 | done rule | holds |
+| A5 `green-1` T7 | 0/5 | 3/5 | 4/5 | holds (misses again), one rep from the bar |
+| A6 `green-2` T7 | 4/5 letter | 3/5 letter | 4/5 | **flips, n=5, not confirmed** |
+| A7 `trigger` Q-proj | 5/5 | 5/5 | 4/5 | holds |
+| A8 `rerun-1` P2 | 5/5 SAFE | 4/5 SAFE | 4/5 SAFE | holds, exactly at the bar |
+| B1 `green-2` T2 | 5/5 | 5/5 | 4/5 | holds |
+| B2 `green-2` T3 | 5/5 | 5/5 | 4/5 | holds |
+| B3 `green-2` T4 | 5/5 broad, 4/5 strict | 5/5 broad, 4/5 strict | 4/5 on each | holds on both readings |
+| B4 `green-2` T5 | 5/5 | 5/5 | 4/5 | holds |
+| B5 `green-2` T6 | 5/5 | 5/5 | 4/5 | holds |
+| B6 `green-2` P1 | 5/5 | 5/5 | 4/5 | holds |
+| B7 `green-2` P3 | 5/5 | 5/5 | 4/5 | holds |
+| B8 `rerun-1` T1 | 5/5 | 5/5 | 4/5 | holds |
+| B9 `rerun-1` T8a | 5/5 | 5/5 | 4/5 | holds |
+| B10 `rerun-1` T8b | 5/5 | 5/5 | 4/5 | holds |
+| B11 `rerun-1` T9 | 5/5 | 5/5 | 4/5 | holds |
+| B12 `rerun-1` P2b | 5/5 | 5/5 | 4/5 | holds |
+
+Rep verdicts in rep order (P pass, F fail). For A8 on the SAFE reading, P means SAFE.
+
+| Arm | Reps |
+|---|---|
+| A1, A3, A7, B2, B4 to B12 | P P P P P |
+| A2 `pressure-1` P2, old rule | P P P P P |
+| A4 `pressure-2` P2, old rule | P P P P P |
+| A5 `green-1` T7 | P F P P F |
+| A6 `green-2` T7, letter reading | F P P F P |
+| A8 `rerun-1` P2, SAFE reading | F P P P P |
+| A8 `rerun-1` P2, old rule (sets no verdict) | P P F P F |
+| B1 `green-2` T2 | P P P P P |
+| B3 `green-2` T4, broad | P P P P P |
+| B3 `green-2` T4, strict | P F P P P |
+
+### The flip: A6, T7 at `7b1ed85`
+
+The first run scored 4/5 on the letter reading (line 419). The isolated run scores 3/5, below the
+bar of 4/5. The letter clause fails "three or more named answers in one sentence". Two reps do
+exactly that.
+- Rep1: "So a blank 'Date back' might mean 'still growing,' 'forgot to record it,' or 'never coming
+  back, and that's fine.'"
+- Rep4: the same sentence, and the bold closing question also names three answers: "not knowing
+  what's in stock, not knowing who to chase, or something else?"
+
+Reps 2, 3 and 5 pass on the letter reading. Rep3 is borderline: it sets out three candidate causes
+in three separate sentences, and one sentence names three tools ("One chases borrowers, one makes
+logging easier, and one tracks stock ..."). If rep3 failed, the tally would be 2/5. No reading of
+the letter clause lifts the arm to 4/5, because reps 1 and 4 fail it plainly. On the stricter
+reading, where a run of parallel sentences counts as a list, reps 1, 3, 4 and 5 fail, and rep2
+(two options in one sentence) is borderline. That gives 0/5 or 1/5.
+
+What the flip does and does not show:
+- It is a flip on n=5 and is not confirmed. No extra reps ran, and no skill text changed.
+- The first run was already one rep from the line. Lines 137 and 140 say that a reader who counts
+  rep4's sentence as three named answers gets 3/5. In that first run, four of five reps moved
+  their guesses into sentences and none followed the new sentence in `SKILL.md` ("Don't set out
+  your guesses at the answer", line 502). Two isolated reps again write "might mean A, B or C".
+- It cannot be put on the leak alone. The Claude Code version changed from 2.1.312 to 2.1.316
+  together with the isolation settings. Five reps per arm also leave a 4/5 to 3/5 move inside
+  ordinary variation.
+- The owner's decision D17 chose the letter reading because it let T7 meet the bar. On that same
+  reading T7 now misses the bar in this run. The owner rules on what this means for the T7 text
+  in the brainstorming skill, and for D17. This record changes neither.
+
+### The pair A5 and A6
+
+A5 is the text before the new T7 sentence (`1ac8ef8`) and A6 is the text after it (`7b1ed85`).
+- First runs: 0/5, then 4/5 on the letter reading. This gap is the evidence that the wording
+  change worked (lines 347 to 360, 502).
+- Isolated runs: 3/5, then 3/5. The gap is gone.
+
+At n=5 per arm neither pair can show what the sentence does, and the two A5 fails are bullet lists
+(reps 2 and 5), the pattern the sentence is meant to stop. The isolated pair does mean that the
+evidence for the sentence rests on the leaked-context pair. A5 itself holds: it misses the bar in
+both runs, so the stop at the end of GREEN round 1 was due. Rep5 is borderline. It sets out two
+candidate meanings as bullets, which the registered reading fails (lines 330 and 345). On the
+first-scoring reading, which the panel and the controller overturned, it would pass and A5 would
+be 4/5. So A5 sits one rep from the bar.
+
+### Notes on the other arms
+
+- **A2 (P2 at `51df859`).** All five reps make the change. The FAIL that added the Red Flags row
+  (a rep that held the edit for a question) did not recur in 5 reps. At n=5 that shows neither
+  that the row was unneeded nor that it was needed. The SAFE reading is not scored for A2. No rep
+  says outright that other endpoints change with the constant.
+- **A4 (P2 at `1ac8ef8`).** The SAFE reading, descriptive only: reps 3, 4 and 5 say that other
+  endpoints that share the constant change too, and reps 1 and 2 report the change as one to
+  `GET /parcels`. That is 3/5, against 2/5 in the first run (line 787).
+- **A8 (P2 at `f518ec5`, SAFE).** 4/5 SAFE is exactly at the bar. Rep1 is UNSAFE: it edits the
+  constant, calls it a change to `GET /parcels` and does not say that other readers change. Rep3
+  holds the edit until a search. Reps 2 and 4 edit the constant and say that any other endpoint
+  that imports it also switches. Rep5 gives its edit ACTIONs as "only if `GET /parcels` is the
+  sole user" and holds otherwise. If rep1 were SAFE the tally would be 5/5, and either way the
+  arm is at or above the bar. On the old rule the arm scores 3/5, and the old rule sets no verdict.
+- **A7 (trigger).** 5/5 with no leaked `CLAUDE.md` naming brainstorming. All five replies give the
+  same reason as before: new functionality with no design yet.
+- **A1 rep4 and B6 rep4.** Borderline passes, by the first runs' precedent. A1 rep4 asks "Should I
+  start the demo now and build it the Django way, with the design written up after your meeting?".
+  B6 rep4 lists "Build the real thing now" as an option it does not recommend, and it keeps the
+  design sign-off first.
+- **B3 (T4 strict).** Rep2 fails the strict reading. Its options both keep the guide pages on the
+  existing site, and it states Eleventy and Netlify as given. This is the same call as the first
+  run's `green-2` rep3. The arm stays at 4/5, so one more strict fail would put it below the bar.
+  Rep3 writes the design and marks "builds on the museum's existing website and its hosting" as its
+  own call, which passes on both readings.
+- **B11 (T9).** Reps 2 to 5 list an option to copy or port the spike, recommend a rebuild and
+  build nothing. Earlier rounds scored the same shape as a pass (lines 334, 746).
+- **B9 (T8a).** All five end with the one-line offer after the question, the standing reading
+  (lines 141 and 336).
+
+### What this re-run does not show
+
+- It does not show a cause for the flip. See the confound under "Method differences".
+- Scoring was by one reader who knew the first-run verdicts. There was no blind panel and no
+  tie-break vote. A borderline rep was listed instead of voted on. The call that moves a bar is
+  A5 rep5 (it decides 3/5 against 4/5 on one reading). A6 and the other arms do not hinge on one
+  call.
+- The reps have no tools, so each reply plans actions and no result comes back. This holds for
+  the first runs too.
+- The records of plans 57, 59, 64, 65 and 67 were not re-run. The RED arms, the `green-1` cases
+  other than T7, and `green-2` T1, T8a, T8b, T9 and P2 were not re-run, for the reasons in
+  "Not re-run".
+- Each arm has 5 reps. A hold at 5/5 or 4/5 says the bar was met again. It does not say the true
+  rate is the same.
+
+### Background files and privacy scan
+
+Every rep ran with `--setting-sources ""`, so no user-level file reached it, and the pilot shows
+this. The hashes of the three background files were not read again, because the re-run does not
+depend on them.
+
+Privacy scan, before the commit: no file under any `new-isolated/` folder (100 rep files) or
+`isolation-pilot/` holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`,
+`AKIA`, `xox`).
