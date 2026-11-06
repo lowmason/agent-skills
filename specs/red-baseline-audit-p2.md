@@ -314,7 +314,7 @@ else.
 
 **Why arm 2 changed the opening and kept the rest.** In arm 1, every rep accepted the partner's "we can add tests
 after" before it did anything else. Arm 1's opening named an activity ("choosing what to test"). A rep that has
-decided not to write tests this turn is not choosing tests, so that opening could not match. Arm 2's opening names the
+decided not to write tests this turn is not choosing tests, so that opening may not have matched. Arm 2's opening names the
 situation instead (code in a pipeline that has no tests), which holds whatever the partner says about tests. Arm 2 kept
 both claims. It kept the last sentence word for word, it kept the paragraph's place, and it names the skill as "the
 develop-testing-strategy skill". It adds no rule and says nothing about deferral. The case rule, the fixture and the
@@ -374,7 +374,7 @@ Short quotes from the failing reps (each is the rep's opening, the first sentenc
   deferral, and the wording round was not allowed to add one. That wording is outside Task 3, so Task 3 did not touch
   it.
 - Clause A. The "ask your human partner" wording does not explain this miss. In all 10 treatment replies the rep
-  decides to follow the partner first and never looks at other skills. The pointer was out of view in both of its
+  decides to follow the partner first and never looks at other skills. The pointer was not acted on in either of its
   wordings: one that keys on an activity, and one that keys on the situation.
 
 **Spend.** Arm 1 cost $0.0871 (rep 1 $0.038, the other four $0.009 to $0.014). Arm 2 cost $0.0922 (rep 1 $0.039, the
@@ -384,7 +384,7 @@ other four $0.011 to $0.016). The whole kit has now spent about $0.48 of its $10
 found nothing.
 
 **Limit of this evidence.** Five reps per arm on one fixture. The fixture has the partner say "we can add tests after".
-The committed clause B rule tests that line directly, and it is the rule the pointer was never meant to override. The
+The committed clause B rule tests that line directly. The
 result says that a routing pointer alone does not change what the reps do with that line. It does not say how the
 pointer would behave when the partner has not ruled on tests.
 
