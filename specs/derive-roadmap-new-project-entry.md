@@ -1,7 +1,7 @@
 # derive-roadmap new-project entry — Design Spec
 
-**Status:** PROPOSED (2026-11-06). The design was approved in a brainstorming session on
-2026-11-06. This file waits for the owner's review.
+**Status:** APPROVED (2026-11-06). The design came from a brainstorming session on 2026-11-06,
+and the owner approved this file, its designer's calls included, the same day.
 
 derive-roadmap gets a second way in, for a project with nothing built yet. The owner states the
 outcomes or the stage progression in plain words. The skill splits unrelated outcomes into
