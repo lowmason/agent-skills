@@ -49,9 +49,23 @@
 
 ## Decisions
 
-None.
+The owner approved the plan at review on 2026-11-06: "Approved." D1 to D11 are the eleven defaults of Open for plan review that this approval covers, each as proposed.
+
+- **D1** (owner, plan review, 2026-11-06): reps run on Opus 5.5; spend stops at $60 total and $30 for the controls; a pilot sets the per-rep cap. Applied in: Global Constraints (Micro-tests, Spend), Task 1 Step 6.
+- **D2** (owner, plan review, 2026-11-06): fifteen cases, as Task 1 lists them. Applied in: Task 1 Step 3.
+- **D3** (owner, plan review, 2026-11-06): additive bars at 4 of 5 with conformance clauses, non-regression at the control minus one, and no revert on a clean control. Applied in: Global Constraints (Bars).
+- **D4** (owner, plan review, 2026-11-06): the names §7 "New-Project Entry", `references/new-project-entry.md`, `O1`…, `Outcomes`, `Track`, `Leaves out`, `## Ranked list — Track <X>`, and a roadmap name the owner confirms. Applied in: Tasks 3 and 4.
+- **D5** (owner, plan review, 2026-11-06): a core stage's `Produces` names `specs/<name>-stage-<N>-findings.md`, which the research-track resume reads. Applied in: Task 3 Steps 3 and 4, Task 4 Step 2.
+- **D6** (owner, plan review, 2026-11-06): the owner may stop a research track at the re-rank question, and its items park. Applied in: Task 4 Step 2.
+- **D7** (owner, plan review, 2026-11-06): core stages come first, in the owner's track ranking, unless a dependency says otherwise. Applied in: Task 3 Step 3.
+- **D8** (owner, plan review, 2026-11-06): no scaffold detector beyond the gap table and the definition. Applied in: Task 3 Step 2 (§1).
+- **D9** (owner, plan review, 2026-11-06): brainstorming → derive-roadmap and describe-critique-methodology → derive-roadmap are soft edges, each with a fallback line. Applied in: Global Constraints (Cross-skill references), Tasks 5 and 6.
+- **D10** (owner, plan review, 2026-11-06): the derive-roadmap and describe-critique-methodology README rows gain one sentence each, and "four classes" becomes five. Applied in: Task 4 Step 4, Task 5 Step 5.
+- **D11** (owner, plan review, 2026-11-06): fixtures are read from local clones through `CASE_REPOS`, the ces-revisions drafts go in as excerpts, and embedding-data's first gap table is the V1b state with its stage pointers removed. Applied in: Global Constraints (Fixtures), Task 1 Steps 2 and 3.
 
 ## Open for plan review
+
+Resolved at plan review on 2026-11-06: the owner approved each item as proposed (D1 to D11).
 
 Defaults this plan settles where the spec leaves a call to the builder, or where a choice costs money. The owner approves or amends them as one batch.
 
