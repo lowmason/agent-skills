@@ -44,6 +44,8 @@
 - **D4** (owner, plan review, 2026-11-05): restate (1)'s two rules in house wording, drop (2)'s parenthetical, use `uv add` with a `uv init` lead-in for (6), and change only the wording for (10). Applied in: Open for plan review item 3, Tasks 2, 6 and 8.
 - **D5** (owner, plan review, 2026-11-05): (6) includes `scripts/calibration_check.py`'s import-error message and its test, red-first. Applied in: Open for plan review item 4, Task 6.
 - **D6** (owner, plan review, 2026-11-05): (9) deletes only the two blocks that the item names. Upstream's four other deletions stay out. Applied in: Open for plan review item 5, Task 5.
+- **D7** (owner, plan review, 2026-11-05): execute with subagent-driven-development. Applied in: the execution handoff.
+- **D8** (owner, plan review, 2026-11-05): at completion, record the item's three unpicked "your human partner's" lines (`skills/test-driven-development/testing-anti-patterns.md:37`, `:247` and `skills/systematic-debugging/SKILL.md:244`) as dropped: they show sample remarks a partner might make, not rules attributed to the owner. Applied in: Plan Completion Protocol step 3, the item's notes in `specs/deferred_items.md`.
 
 ## Open for plan review
 
