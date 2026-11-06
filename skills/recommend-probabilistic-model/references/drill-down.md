@@ -12,7 +12,7 @@ procedure covers the mechanics of causal models in the books, not the choice of 
 This is the only runtime branch that touches the PDFs, and it is the exception, not the rule. The
 local PDFs are **optional**: if they are absent, fall back to pyprobml + the public book site.
 
-## Source access (the C2 finding)
+## Source access
 
 | Source | How to read it |
 |--------|----------------|
@@ -35,7 +35,7 @@ Local PDF directory (if present): `~/Documents/Bayesian/Probabilistic Machine Le
    pdftotext -f <p> -l <p+8> "$PDF2" -
    ```
    Murphy's books cover the standard treatment in Book 1 and the advanced/extended treatment in
-   Book 2 (C3) — check both when the topic spans them.
+   Book 2 — check both when the topic spans them.
 3. **Find runnable code in pyprobml.** Notebooks are flat under `notebooks/book1/` and
    `notebooks/book2/` (master branch), with descriptive names — paths do **not** follow chapter
    numbers, so list and grep rather than construct:
@@ -45,7 +45,7 @@ Local PDF directory (if present): `~/Documents/Bayesian/Probabilistic Machine Le
      | grep -iE "reinforce|policy|bandit"
    ```
 4. **Synthesize** the recommendation into the `reporting.md` template.
-5. **Cite carefully and verify (C1).** Record the exact §number + title and the pyprobml path, and
+5. **Cite carefully and verify.** Record the exact §number + title and the pyprobml path, and
    **read the cited section** to confirm it supports the claim (Gate B by hand). Append a
    *verification date* to the citation — books and notebooks drift over time.
 

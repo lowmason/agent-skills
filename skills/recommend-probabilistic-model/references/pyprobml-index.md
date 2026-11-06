@@ -1,7 +1,7 @@
 # pyprobml notebook index
 
 Runnable companions for each family, from [`pyprobml`](https://github.com/probml/pyprobml) (MIT,
-probml). Built from the **real repo listing** (C5) — notebooks live under
+probml). Built from the **real repo listing** — notebooks live under
 `notebooks/book1/<ch>/` and `notebooks/book2/<ch>/` with descriptive names, so paths do **not**
 follow §-numbers; always list/grep rather than construct. To extend this index, see
 `drill-down.md` (the `gh api … | grep` recipe).
