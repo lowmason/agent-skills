@@ -1629,7 +1629,7 @@
       if: one of the six checks starts running git in a temporary repository.
 
 ## 42-synthesize-mode-verification-rerun — 2026-10-12
-- [ ] Synthesize mode never defines what a "critique point" is for the triage table, so the table covers the
+- [x] Synthesize mode never defines what a "critique point" is for the triage table, so the table covers the
       critique's asks and drops claims that live only in its Key Findings or Details (B1 failed, held 0/5 as
       scored of 5 valid reps, in plan 42's re-run; 1/5 on a lenient reading).
       `skills/describe-critique-methodology/SKILL.md` § Synthesize mode step 2 and `references/spec-synthesis.md` § Critique triage table ("ONE batched table
@@ -1648,6 +1648,7 @@
       (Recommendations, governance, change-asking caveats, numbered Details asks) and records the revised
       bar.
       → progress 2026-10-31 (owner ruling): fork (a). The skill defines a point as every distinct claim, with a compound point split and a coverage check against the critique's own enumeration (a writing-skills RED→GREEN cycle), and a re-run on this fixture holds B1 in at least 4 of 5 valid reps.
+      → done 2026-11-05 (no plan; writing-skills RED→GREEN cycle run in its own session on the owner's 2026-11-05 ranking): `fb5f940` defines a critique point as one distinct claim, with a compound point split and a coverage check against the critique's own enumeration. On this fixture, isolated and on HEAD's text, RED held B1 in 0 of 5 valid reps and GREEN in 4 of 5 (one rep missed pay-frequency composition). Record: `specs/completed/synthesize-mode-critique-point-2026-11-05.md`.
 - [ ] Synthesize mode's staleness check is a second path to a VOID rep in a scenario verification. Step 1 of
       `skills/describe-critique-methodology/SKILL.md` § Synthesize mode has the rep check the "git log
       touching the described system", and on this machine that system lives in `alt-nfp-model` and
@@ -5564,6 +5565,24 @@ review and the Plan Completion gate (2026-10-27) add the others.
       plan. Done when: plan 71's control arm for ruling (3), and each plan 70 arm whose verdict
       decided a ruling or a stop rule, re-run under plan 72's fixed kit, and each record states
       whether its verdict holds.
+      → progress 2026-11-05 (owner 2026-11-05: "Maybe then 2-4 in separate sessions", this item
+      being number 3 of the ranking, then "Done-when only" for the scope; branch
+      claude/frosty-sutherland-2f432d): plan 71's C3 control and 20 plan 70 arms re-ran under plan
+      72's kit on Claude Code 2.1.316. 20 of the 21 verdicts hold, and ruling (3) stays dropped,
+      because the isolated C3 control scored 5/5. One verdict flips, and 20 more reps for each of
+      the two T7 arms (owner-approved) confirm it: plan 70's T7 (the first-question case) at
+      `7b1ed85` passes 13 of 25 reps on the letter reading (95% interval 33% to 70%) against an
+      80% bar, where the first run scored 4/5. The new T7 sentence shows no measurable effect
+      (52% after it, 48% before it, p = 0.50). It moves the failures from bullet lists to three
+      guesses in one sentence. A further owner-approved test of three T7 wordings (25 reps each)
+      found none that clears the bar (the shipped wording 13/25, deleted 8/25, no example 14/25, positive
+      10/25). The wording moves the form of the failure and not its rate, so T7 is a known gap at
+      about 50% and no skill text changes. The owner rules on the T7 text and on decision D17. The
+      records of plans 57, 59, 64, 65 and 67 were not re-run. Spend $7.32. Results: "Re-run with
+      the isolated kit" in `specs/red-baseline-sdd-compaction.md` and
+      `specs/red-baseline-brainstorming-2026-10-28.md`.
+      → progress 2026-11-06 (owner ruling): accept T7 as a known gap near 50%, keep the text, and
+      leave D17's letter reading in place. No skill text changes.
 
 ## backlog-protocol-design (no plan; brainstorming, branch claude/backlog-protocol-design-aa6201) — 2026-10-29
 - [ ] Split `specs/deferred_items.md` into one file per section, to cut merge conflicts

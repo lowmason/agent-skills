@@ -413,3 +413,94 @@ sixth fix round", "I won't dispatch a sixth fix round unless that file allows it
 no sixth fix round").
 
 Spend for this round: $0.38 (20 reps).
+
+## Re-run with the isolated kit (verdict check, 2026-11-05)
+
+**Why.** The first rounds of this record ran without `--setting-sources ""`. So the owner's output
+style, the output-style plugins' SessionStart hooks, `~/.claude/CLAUDE.md` and `~/.claude/rules/`
+reached every rep. The global `CLAUDE.md` tells an agent to check for a relevant skill. That can
+lift a control arm, and a control arm decided ruling (3) here. The open item "Earlier micro-test
+kits leaked user-level context too" (`specs/deferred_items.md`, section `micro-test-kit-isolation`)
+asks for a re-run of that arm under plan 72's fixed kit. This section is that re-run.
+
+**Scope (owner choice, 2026-11-05: "Done-when only").** One arm: C3 (the context-recovery case),
+control, `body` at T1 = `618e31d`. The arms C1, C2a, C2b and C17 already ran isolated, in the round
+at `971ec4d` above, so they are not repeated. The records of plans 57, 59, 64, 65 and 67 were not
+re-run, because the item's Done-when does not name them. The owner capped the spend at $10.
+
+**Kit and inputs.**
+- Script: `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, plan 72's, unchanged. It adds
+  `--setting-sources ""` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and gives each rep its own `/tmp`
+  directory. The old kit files in `kit/` are unchanged.
+- Model `claude-sonnet-5-5` and 5 reps, as in the first run (line 3).
+- Prompt: `t1/C3.txt`, reused. Its sha256 `59f26f40b6f0a298ed576271d1c6f4b8c755439cfb986b15c1eeb5677b3f3bf2`
+  equals the C3 line of `t1/MANIFEST.txt`.
+- Output: `t1-isolated/C3/`.
+- Claude Code 2.1.316. The first run used 2.1.312.
+
+**Pilot.** `specs/red-baseline-writing-skills-split/kit/isolation_probe.txt` asks a rep to report
+what its context holds. Two Sonnet reps, run under the same flags, answered NO on all five lines
+(CLAUDE.md, output style, rules, SessionStart hook text, auto-memory). Files: `isolation-pilot/`.
+Pilot spend: $0.011.
+
+**Registered before any rep ran.**
+- Pass rule for one rep: the C3 row of the bar table (line 10). Before any dispatch ACTION, one
+  ACTION reads the ledger and one ACTION reads `references/fix-loop.md` or re-invokes the skill.
+- Reading rules: the rules written for the treatment reps (lines 142 to 147) apply to C3 too.
+  Only `ACTION:` lines count as acts. A conditional ACTION counts only when its condition is
+  already true in the session. The VOID rule applies: `num_turns` other than 1, an extra
+  iteration type or more than one model is VOID, and the rep is rerun with the next free number.
+- Bar and stop rule (line 10, D3): the control scores 4 of 5 or better, so the recovery line is
+  dropped.
+- The verdict holds when the isolated control again scores 4 of 5 or better. It flips when the
+  control scores 3 of 5 or worse.
+- A flip is reported as "flip on n=5, not confirmed". No extra reps run. No skill text changes.
+  A flip would also make the shipped sentence at `specs/superpowers-drift-spec.md:1091-1094`
+  doubtful. That sentence says the recovery line was dropped because the control already
+  recovered. This record would name it and not edit it.
+- Scoring is by hand, from the full reply. One reader scores all five reps and knows the
+  first-run verdicts. The first run was also scored by hand.
+- Confound: the first run used Claude Code 2.1.312 and this run uses 2.1.316. A flip therefore
+  cannot be put on the leak alone. A run with the old kit on 2.1.316 would separate the two, and
+  this re-run does not include one.
+- Spend: the first run of C3 cost $0.21 for 5 reps. An isolated rep carries less context, so the
+  expected spend is at or below that. It is far under the $10 cap.
+
+### Result: C3 control, isolated
+
+Prompts: `t1/C3.txt`, unchanged. Output: `t1-isolated/C3/`. The reps ran on 2026-11-05 with Claude Code
+2.1.316 and model `claude-sonnet-5-5`. All 5 exited 0, ended with one turn and one model, and
+ran no advisor. No rep is VOID. No reply has an Insight box or quotes a user-level file.
+Spend: $0.091 for the 5 reps.
+
+| Rep | Verdict | ACTION order before the dispatch |
+|---|---|---|
+| 1 | pass | read `references/resuming.md`, read `references/fix-loop.md`, `cat .sdd/12-tide-cache/progress.md` with `git log`, read `re-review-prompt.md`, run `review-package`, then dispatch |
+| 2 | pass | read `resuming.md`, read `progress.md`, `git log`, read `fix-loop.md`, run `review-package`, then dispatch |
+| 3 | pass | read `progress.md`, read `resuming.md`, read `fix-loop.md`, `git log`, read `re-review-prompt.md`, run `review-package`, then dispatch |
+| 4 | pass | read `resuming.md`, read `fix-loop.md`, `cat progress.md` with `git log`, run `review-package`, then dispatch |
+| 5 | pass | read `resuming.md`, `cat progress.md`, `git log`, read `fix-loop.md`, run `review-package`, then dispatch |
+
+C3 control, isolated: 5/5 pass. The first run scored 5/5. The bar is 4 of 5 or better, so the stop
+rule still fires.
+
+**Verdict: holds.** Ruling (3), the recovery line, stays dropped (D3). No flip, so the sentence at
+`specs/superpowers-drift-spec.md:1091-1094` needs no change.
+
+Why the control recovers, read from the prompt and not from the replies: the `SKILL.md` body at
+`618e31d` already carries both pointers. Line 172 of `t1/C3.txt` says "Before every fix round, read
+`references/fix-loop.md`". Line 247 says to read `references/resuming.md` before any dispatch.
+A rep that follows its own body recovers with no outside help. Every rep reads `fix-loop.md`
+and the ledger, and every rep reads `resuming.md` too. The leaked `CLAUDE.md` is not needed to
+explain the result. This is a reading of the prompt, not a measurement.
+
+What the result does not cover:
+- The reps have no tools. A read ACTION never returns the file text, so the test shows that the
+  rep plans the right reads. It does not show what a rep does with the text.
+- One reader scored all five reps and knew the first-run verdicts. All five reps follow one clear
+  pattern, so the score is not sensitive to the reader.
+- The version changed from 2.1.312 to 2.1.316 together with the isolation settings. The verdict
+  is the same either way, so the confound does not change the conclusion here.
+- The plan 57, 59, 64, 65 and 67 records were not re-run.
+
+Spend of this re-run: $0.091 for the reps and $0.011 for the pilot.

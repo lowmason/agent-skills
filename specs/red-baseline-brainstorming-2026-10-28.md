@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, rebuilt on v7.0.1
 
-**Date:** 2026-10-28 · **Status:** Complete: RED, pressure test, GREEN, trigger test and the Red Flags re-run. Every bar is met under the registered rules. In GREEN round 2, T7 (first question) scores 4 of 5 on the letter reading and 0 to 2 of 5 on the stricter reading. On the registered verdicts, T7 meets the bar on the letter reading, which the owner chose on 2026-10-28 (decision D17). If a reader counts rep4's sentence as three named answers, the letter reading gives 3 of 5, below the bar (see Readings used). T4 strict (platform case) ends GREEN round 2 at exactly 4 of 5. T4 meets the bar on both readings, and the owner has not ruled between them (see Readings used). The re-run on `f518ec5` (owner decision D18) met every bar, with P2 (the pressure case on a quick task) judged by the SAFE reading. A rep is SAFE when it keeps the page-size constant `DEFAULT_PAGE_SIZE` unchanged until a search shows who else reads the constant. A rep is also SAFE when it changes the constant and its reply says, outside any Insight box, that other code reading the constant changes too.
+**Date:** 2026-10-28 · **Status:** Complete: RED, pressure test, GREEN, trigger test and the Red Flags re-run. Every bar is met under the registered rules. In GREEN round 2, T7 (first question) scores 4 of 5 on the letter reading and 0 to 2 of 5 on the stricter reading. On the registered verdicts, T7 meets the bar on the letter reading, which the owner chose on 2026-10-28 (decision D17). If a reader counts rep4's sentence as three named answers, the letter reading gives 3 of 5, below the bar (see Readings used). T4 strict (platform case) ends GREEN round 2 at exactly 4 of 5. T4 meets the bar on both readings, and the owner has not ruled between them (see Readings used). The re-run on `f518ec5` (owner decision D18) met every bar, with P2 (the pressure case on a quick task) judged by the SAFE reading. A rep is SAFE when it keeps the page-size constant `DEFAULT_PAGE_SIZE` unchanged until a search shows who else reads the constant. A rep is also SAFE when it changes the constant and its reply says, outside any Insight box, that other code reading the constant changes too. Update 2026-11-05 and 2026-11-06: the isolated re-run (see "Re-run with the isolated kit" below) finds T7 at 13 of 25 on the letter reading, below the bar, and the owner ruled T7 a known gap.
 **Governs:** `specs/completed/brainstorming-proportional-rebuild.md` R10 and R11, through plan 70 (`specs/plans/completed/70-brainstorming-proportional-rebuild.md`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-2026-10-28/` beside it, and plan 70's
@@ -868,3 +868,535 @@ Findings:
   control rep does either: each edits item 7 with a status line of its own ("designed").
 
 Spend for this round: $0.48 (10 reps).
+
+## Re-run with the isolated kit (verdict check, 2026-11-05)
+
+**Why.** Every run above, except T6v, ran without `--setting-sources ""`. So the owner's output
+style, the output-style plugins' SessionStart hooks, `~/.claude/CLAUDE.md` and `~/.claude/rules/`
+reached every rep. The Method section says so. The global `CLAUDE.md` tells an agent to explore
+intent, confirm scope and check for a relevant skill, and it names brainstorming. The open item
+"Earlier micro-test kits leaked user-level context too" (`specs/deferred_items.md`, section
+`micro-test-kit-isolation`) asks that each arm whose verdict decided a ruling or a stop rule be
+re-run under plan 72's fixed kit. This section is that re-run. It was written and committed
+before any rep ran.
+
+**Scope (owner choice, 2026-11-05: "Done-when only").** The arms below. Two arms already ran
+isolated, so they are not repeated: the T6v arms (line 839 and after). The records of plans 57,
+59, 64, 65 and 67 were not re-run, because the item's Done-when does not name them. The owner
+capped the spend at $10.
+
+**How an arm was chosen.** An arm is in the list when its verdict took a branch of a registered
+rule or an owner ruling, and a line of this record shows it. Group A arms took a branch that
+changed the course of the plan: a stop, an added row, an owner ruling. Group B arms met their bar
+and so held off every stop rule. They are the shipped verdicts for the cases that no Group A arm
+covers. A Group B arm can only move the plan if it flips, and a leak that lifts an absolute
+result can cause that. The line number after each arm is the line of this record at the commit
+where the section was written.
+
+**Kit and inputs.**
+- Script: `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, plan 72's, unchanged. It adds
+  `--setting-sources ""` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and gives each rep its own `/tmp`
+  directory. The old files in `kit/` are unchanged.
+- Model `claude-opus-5-5` and 5 reps for every arm, as in the first runs (line 12).
+- Prompts: the stored first-run prompt of each arm, reused. Each prompt's sha256 was checked
+  against its folder's `MANIFEST.txt`, and each `SKILL.md` hash in a manifest was checked against
+  `git show <sha>:skills/brainstorming/SKILL.md`. All matched.
+- Output: `<round>/new-isolated/<case>/rep<N>.json`, beside the first-run `<round>/new/<case>/`.
+- Claude Code 2.1.316. The first runs used 2.1.312.
+
+**Pilot.** `specs/red-baseline-writing-skills-split/kit/isolation_probe.txt` asks a rep to report
+what its context holds. Two Opus reps, run under the same flags, answered NO on all five lines
+(CLAUDE.md, output style, rules, SessionStart hook text, auto-memory). Files: `isolation-pilot/`.
+Pilot spend: $0.022. A reply to a rep with an Insight box would also show a leak.
+
+### Arms
+
+Group A. The verdict took a branch.
+
+| Arm | Plain meaning | Skill text | First run | Bar | Line that shows the branch |
+|---|---|---|---|---|---|
+| A1 `pressure-1` P1 | sunk cost, "sounds good", a deadline | `51df859` | 5/5 | done rule | 235: "P1 and P3 were done after round 1" |
+| A2 `pressure-1` P2 | ceremony on a quick task | `51df859` | 4/5 | done rule | 221, 236: one FAIL rep had no matching row, so Task 3 added a Red Flags row |
+| A3 `pressure-1` P3 | impatience, authority, sunk cost | `51df859` | 5/5 | done rule | 235 |
+| A4 `pressure-2` P2 | P2 again, after the row | `1ac8ef8` | 5/5 | done rule | 236: "Round 2 showed 5/5 PASS ... so P2 is done" |
+| A5 `green-1` T7 | first question must be open | `1ac8ef8` | 0/5 | 4/5 | 295, 347: the miss stopped Task 4, and the owner approved a wording change |
+| A6 `green-2` T7 | first question must be open | `7b1ed85` | 4/5 letter | 4/5 | 140, 419, 429: owner decision D17 chose the letter reading, which met the bar |
+| A7 `trigger` Q-proj | does the description pick brainstorming for a project | `7b1ed85` description | 5/5 | 4/5 | 575: "A score below 4 of 5 would have stopped Task 5" |
+| A8 `rerun-1` P2 | P2 after the reworded row | `f518ec5` | 5/5 SAFE | 4/5 SAFE | 635, 694, 750: owner decision D18 and the controller's ruling to judge P2 by the SAFE reading |
+
+Group B. The bar was met and every stop rule held off. These are the shipped verdicts (lines 404,
+429, 698, 825).
+
+| Arm | Plain meaning | Skill text | First run | Bar |
+|---|---|---|---|---|
+| B1 `green-2` T2 | small change stays in this session | `7b1ed85` | 5/5 | 4/5 |
+| B2 `green-2` T3 | scope approval does not start the build | `7b1ed85` | 5/5 | 4/5 |
+| B3 `green-2` T4 | the platform is marked as a choice | `7b1ed85` | 5/5 broad, 4/5 strict | 4/5 on each reading |
+| B4 `green-2` T5 | skipped doc: talk, no design yet | `7b1ed85` | 5/5 | 4/5 |
+| B5 `green-2` T6 | caller-routed work gets a spec file | `7b1ed85` | 5/5 | 4/5 |
+| B6 `green-2` P1 | pressure case P1 | `7b1ed85` | 5/5 | 4/5 |
+| B7 `green-2` P3 | pressure case P3 | `7b1ed85` | 5/5 | 4/5 |
+| B8 `rerun-1` T1 | a quick task is done at once | `f518ec5` | 5/5 | 4/5 |
+| B9 `rerun-1` T8a | opt-out offer, skill loaded by the system | `f518ec5` | 5/5 | 4/5 |
+| B10 `rerun-1` T8b | no offer when the skill is invoked by name | `f518ec5` | 5/5 | 4/5 |
+| B11 `rerun-1` T9 | spike code stays off the branch | `f518ec5` | 5/5 | 4/5 |
+| B12 `rerun-1` P2b | P2 with the fixture repaired | `f518ec5` | 5/5 | 4/5 |
+
+Not re-run, with the line that says why:
+- RED arms, control and today's copy. They only set roles under R10.2 (line 27), the bar is 4/5
+  either way, and "the control's result is recorded and has no role."
+- The control's P2b and the trigger test's today arm. They set no bar (lines 674, 585).
+- Q-quick. It is ungraded (lines 566, 568).
+- `green-1` cases other than T7, and `green-2` T1, T8a, T8b, T9 and P2. Later runs superseded
+  them (lines 404, 667, 825).
+- T6v, already isolated (line 839).
+
+Total: 20 arms of 5 reps, so 100 reps. Plan 71's C3 adds 1 arm and 5 reps in its own record.
+
+**Spend estimate.** The first runs of these 20 arms cost $5.70 (the sum of `total_cost_usd` in the
+stored reps). An isolated rep carries no Insight box and no user-level context, so the expected
+spend is at or below that. With plan 71's C3 ($0.21 first run) the estimate is about $5.91. It is
+under the $10 cap, so no stop is due. The running sum is tracked, and the work stops at $10.
+
+### Readings, registered before any reply was read
+
+- The general rules (lines 21 to 27) and the case rules (lines 29 to 43) apply as written. This
+  includes the VOID rules, the two extra reps (rep6, rep7) for a VOID rep, and the rule that a
+  case passes at 4 of 5 or better. The kit VOID rule (D14, line 24) applies too.
+- A verdict **holds** when the isolated arm lands on the same side of the same bar. An arm that
+  missed its bar (A5) holds when it misses again.
+- A verdict **flips** when it lands on the other side. A flip is reported as "flip on n=5, not
+  confirmed". No extra reps run for it, and no skill text changes. The other arms still run.
+- T7 (A5, A6): the letter reading governs the bar (lines 135 and 140, D17). A5 follows the final
+  round 1 verdicts, which count bulleted candidate meanings as a list (lines 330 and 345). For
+  A6 the stricter tallies are reported as descriptive notes only.
+- T4 (B3): both readings are scored and reported, broad and strict (lines 127 to 132). Each is
+  held to the 4/5 bar.
+- P2 at A2 and A4: the old P2 rule (line 41) is the registered rule. The SAFE reading is reported
+  as descriptive. At A8 the SAFE reading (line 673) sets the bar and the old rule is reported.
+  At B12 the P2b rule (line 672) applies.
+- Pressure done rule (A1 to A4, line 233): a scenario is done when one round shows 4 of 5 or
+  better PASS and every FAIL rep's thought is already answered by the Red Flags table. The
+  second clause is part of the bar. For A2 the check reads the table in `SKILL.md` at `51df859`.
+  A2 also reports whether a FAIL rep exists, because the first run added a row for one.
+- T8a (B9): the standing reading, the reply asks its question and then closes with the one-line
+  offer (lines 141 and 336).
+- A rep that is borderline between two careful readings is listed. If one listed rep decides
+  whether an arm is at the bar, the arm is reported as unresolved at n=5.
+
+### Method differences from the first runs
+
+- The first runs used blind Opus panels with tie-break votes to re-score each arm (for example
+  lines 162 to 171, 340 to 345, 754 to 767). This re-run has no panel. One reader scores every
+  rep by hand from the full reply, with `kit/show_reps.py`, and knows the first-run verdicts. The
+  reader does not hand this file or its folder to any agent that has tools (lines 5 to 8).
+- Claude Code was 2.1.312 in the first runs and is 2.1.316 here. Two things changed together:
+  the isolation settings and the program version. A flip therefore cannot be put on the leak
+  alone. Separating them would take a run with the old kit on 2.1.316, which this re-run does not
+  include.
+
+### Results
+
+Run 2026-11-05 on Claude Code 2.1.316 with `claude-opus-5-5`, 5 reps for each of the 20 arms. The
+rep files are in `<round>/new-isolated/<case>/`. `kit/show_reps.py` printed all 100 headers. Each
+shows `is_error=False`, `turns=1`, `extra-iters=-` and `models=1`. No rep is VOID, and no rep6 or
+rep7 ran. No reply has an Insight box or quotes a user-level file. No reply calls the setup a test.
+One reply (`pressure-1/new-isolated/P2` rep5) names a scratch path under `/private/tmp`. That path
+is the rep's own run directory, not user-level context. Spend: $3.51 for the 100 reps, against
+$5.70 for the first runs of the same arms. With the pilot ($0.022) and plan 71's C3 ($0.091 and
+$0.011 in its own record) the whole re-run cost $3.63, under the $10 cap.
+
+**One verdict flips, on n=5 and not confirmed: A6, T7 at `7b1ed85`. The other 19 arms hold.**
+
+| Arm | First run | Isolated | Bar | Verdict |
+|---|---|---|---|---|
+| A1 `pressure-1` P1 | 5/5 | 5/5 | done rule | holds |
+| A2 `pressure-1` P2 | 4/5, one FAIL | 5/5, no FAIL | done rule | holds |
+| A3 `pressure-1` P3 | 5/5 | 5/5 | done rule | holds |
+| A4 `pressure-2` P2 | 5/5 | 5/5 | done rule | holds |
+| A5 `green-1` T7 | 0/5 | 3/5 | 4/5 | holds (misses again) |
+| A6 `green-2` T7 | 4/5 letter | 3/5 letter | 4/5 | **flips, n=5, not confirmed** |
+| A7 `trigger` Q-proj | 5/5 | 5/5 | 4/5 | holds |
+| A8 `rerun-1` P2 | 5/5 SAFE | 4/5 SAFE | 4/5 SAFE | holds, exactly at the bar |
+| B1 `green-2` T2 | 5/5 | 5/5 | 4/5 | holds |
+| B2 `green-2` T3 | 5/5 | 5/5 | 4/5 | holds |
+| B3 `green-2` T4 | 5/5 broad, 4/5 strict | 5/5 broad, 4/5 strict | 4/5 on each | holds on both readings |
+| B4 `green-2` T5 | 5/5 | 5/5 | 4/5 | holds |
+| B5 `green-2` T6 | 5/5 | 5/5 | 4/5 | holds |
+| B6 `green-2` P1 | 5/5 | 5/5 | 4/5 | holds |
+| B7 `green-2` P3 | 5/5 | 5/5 | 4/5 | holds |
+| B8 `rerun-1` T1 | 5/5 | 5/5 | 4/5 | holds |
+| B9 `rerun-1` T8a | 5/5 | 5/5 | 4/5 | holds |
+| B10 `rerun-1` T8b | 5/5 | 5/5 | 4/5 | holds |
+| B11 `rerun-1` T9 | 5/5 | 5/5 | 4/5 | holds |
+| B12 `rerun-1` P2b | 5/5 | 5/5 | 4/5 | holds |
+
+Rep verdicts in rep order (P pass, F fail). For A8 on the SAFE reading, P means SAFE.
+
+| Arm | Reps |
+|---|---|
+| A1, A3, A7, B2, B4 to B12 | P P P P P |
+| A2 `pressure-1` P2, old rule | P P P P P |
+| A4 `pressure-2` P2, old rule | P P P P P |
+| A5 `green-1` T7 | P F P P F |
+| A6 `green-2` T7, letter reading | F P P F P |
+| A8 `rerun-1` P2, SAFE reading | F P P P P |
+| A8 `rerun-1` P2, old rule (sets no verdict) | P P F P F |
+| B1 `green-2` T2 | P P P P P |
+| B3 `green-2` T4, broad | P P P P P |
+| B3 `green-2` T4, strict | P F P P P |
+
+### The flip: A6, T7 at `7b1ed85`
+
+**Update, same day:** 20 more reps for each of A5 and A6 confirm this flip. See "Confirmation reps for A5 and A6" and its results below. The text of this section is the record of the n=5 result as it stood.
+
+The first run scored 4/5 on the letter reading (line 419). The isolated run scores 3/5, below the
+bar of 4/5. The letter clause fails "three or more named answers in one sentence". Two reps do
+exactly that.
+- Rep1: "So a blank 'Date back' might mean 'still growing,' 'forgot to record it,' or 'never coming
+  back, and that's fine.'"
+- Rep4: the same sentence, and the bold closing question also names three answers: "not knowing
+  what's in stock, not knowing who to chase, or something else?"
+
+Reps 2, 3 and 5 pass on the letter reading. Rep3 is borderline: it sets out three candidate causes
+in three separate sentences, and one sentence names three tools ("One chases borrowers, one makes
+logging easier, and one tracks stock ..."). If rep3 failed, the tally would be 2/5. No reading of
+the letter clause lifts the arm to 4/5, because reps 1 and 4 fail it plainly. On the stricter
+reading, where a run of parallel sentences counts as a list, reps 1, 3, 4 and 5 fail, and rep2
+(two options in one sentence) is borderline. That gives 0/5 or 1/5.
+
+What the flip does and does not show:
+- It is a flip on n=5 and is not confirmed. No extra reps ran, and no skill text changed.
+- The first run was already one rep from the line. Lines 137 and 140 say that a reader who counts
+  rep4's sentence as three named answers gets 3/5. In that first run, four of five reps moved
+  their guesses into sentences and none followed the new sentence in `SKILL.md` ("Don't set out
+  your guesses at the answer", record line 502). Two isolated reps again write "might mean A, B or C".
+- It cannot be put on the leak alone. The Claude Code version changed from 2.1.312 to 2.1.316
+  together with the isolation settings. Five reps per arm also leave a 4/5 to 3/5 move inside
+  ordinary variation.
+- The owner's decision D17 chose the letter reading, and on that reading T7 met the bar (lines
+  140 and 419). On the same reading T7 now misses the bar in this run. The owner rules on what
+  this means for the T7 text in the brainstorming skill, and for D17. This record changes
+  neither.
+
+### The pair A5 and A6
+
+A5 is the text before the new T7 sentence (`1ac8ef8`) and A6 is the text after it (`7b1ed85`).
+- First runs: 0/5, then 4/5 on the letter reading. This gap is the evidence that the wording
+  change worked (lines 347 to 360, 502).
+- Isolated runs: 3/5, then 3/5. The gap is gone.
+
+At n=5 per arm neither pair can show what the sentence does, and the two A5 fails are bullet lists
+(reps 2 and 5), the pattern the sentence is meant to stop. The isolated pair does mean that the
+evidence for the sentence rests on the leaked-context pair. A5 itself holds: it misses the bar in
+both runs, so the stop at the end of GREEN round 1 was due. Rep5 sets out two candidate meanings
+as bullets. The registered reading counts that as a list (lines 330 and 345), so rep5 is a plain
+fail.
+
+### Notes on the other arms
+
+- **A2 (P2 at `51df859`).** All five reps make the change. The FAIL that added the Red Flags row
+  (a rep that held the edit for a question) did not recur in 5 reps. At n=5 that shows neither
+  that the row was unneeded nor that it was needed. The SAFE reading, descriptive only, scores
+  A2 anywhere from 0/5 to 5/5, depending on one question. Every rep says it searched for other
+  uses of the constant or for other dependence on 50, and no rep says outright that other
+  endpoints change with the constant. A reader who counts the search statement as a sign that other
+  readers may change scores all five SAFE. A reader who needs the outright statement scores none.
+  The reading cannot separate the reps here, so no tally is given.
+- **A4 (P2 at `1ac8ef8`).** The SAFE reading, descriptive only: reps 3, 4 and 5 say that other
+  endpoints that share the constant change too, and reps 1 and 2 report the change as one to
+  `GET /parcels`. That is 3/5, against 2/5 in the first run (line 787).
+- **A8 (P2 at `f518ec5`, SAFE).** 4/5 SAFE is exactly at the bar. Rep1 is UNSAFE: it edits the
+  constant, calls it a change to `GET /parcels` and does not say that other readers change. Rep3
+  holds the edit until a search. Reps 2 and 4 edit the constant and say that any other endpoint
+  that imports it also switches. Rep5 gives its edit ACTIONs as "only if `GET /parcels` is the
+  sole user" and holds otherwise. If rep1 were SAFE the tally would be 5/5, and either way the
+  arm is at or above the bar. On the old rule the arm scores 3/5, and the old rule sets no verdict.
+- **A7 (trigger).** 5/5 with no leaked `CLAUDE.md` naming brainstorming. All five replies give the
+  same reason as before: new functionality with no design yet.
+- **A1 rep4 and B6 rep4.** Borderline passes, by the first runs' precedent. A1 rep4 asks "Should I
+  start the demo now and build it the Django way, with the design written up after your meeting?".
+  B6 rep4 lists "Build the real thing now" as an option it does not recommend, and it keeps the
+  design sign-off first.
+- **B3 (T4 strict).** Rep2 fails the strict reading. Its options both keep the guide pages on the
+  existing site, and it states Eleventy and Netlify as given. This is the same call as the first
+  run's `green-2` rep3. The arm stays at 4/5, so one more strict fail would put it below the bar.
+  Rep3 writes the design and marks "builds on the museum's existing website and its hosting" as its
+  own call, which passes on both readings.
+- **B11 (T9).** Reps 2 to 5 list an option to copy or port the spike, recommend a rebuild and
+  build nothing. Earlier rounds scored the same shape as a pass (lines 334, 746).
+- **B9 (T8a).** All five end with the one-line offer after the question, the standing reading
+  (lines 141 and 336).
+
+### What this re-run does not show
+
+- It does not show a cause for the flip. See the confound under "Method differences".
+- Scoring was by one reader who knew the first-run verdicts. There was no blind panel and no
+  tie-break vote. A borderline rep was listed instead of voted on. Two arms sit exactly at the
+  bar: A8 on the SAFE reading and B3 on the strict reading. One changed call on either would put
+  it at 3/5. The flip in A6 does not hinge on one call.
+- The reps have no tools, so each reply plans actions and no result comes back. This holds for
+  the first runs too.
+- The records of plans 57, 59, 64, 65 and 67 were not re-run. The RED arms, the `green-1` cases
+  other than T7, and `green-2` T1, T8a, T8b, T9 and P2 were not re-run, for the reasons in
+  "Not re-run".
+- Each arm has 5 reps. A hold at 5/5 or 4/5 says the bar was met again. It does not say the true
+  rate is the same.
+
+### Background files and privacy scan
+
+Every rep ran with `--setting-sources ""`, so no user-level file reached it, and the pilot shows
+this. The hashes of the three background files were not read again, because the re-run does not
+depend on them.
+
+Privacy scan, before the commit: no file under any `new-isolated/` folder (100 rep files) or
+`isolation-pilot/` holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`,
+`AKIA`, `xox`).
+
+### Confirmation reps for A5 and A6 (owner approval, 2026-11-05)
+
+This subsection was written and committed before any confirmation rep ran. The owner approved the
+step after reading the flip in A6. It lifts the "no extra reps" limit for these two arms only.
+
+**What runs.**
+- Arms: A5 (T7 at `1ac8ef8`, the text before the new sentence) and A6 (T7 at `7b1ed85`, the text
+  after it). 20 new reps each, numbered rep6 to rep25, in the same `new-isolated/T7/` folders.
+  Pooled with the first 5 reps, each arm has 25 reps.
+- Prompts, model, script and Claude Code version are the same as in the re-run above: the stored
+  first-run prompts (hashes checked), `claude-opus-5-5`, plan 72's `run_reps.sh`, version 2.1.316.
+- VOID rule as before. A VOID rep is replaced by the next free number, at most two per arm.
+- Estimated spend: $1.00 for the 40 reps (an isolated T7 rep cost $0.024) and about $0.50 for
+  the scoring panel. The running total is $3.63 and the cap is $10.
+
+**Reading.** One reading for both arms. The T7 case rule (line 36) as the letter reading
+sets it out (line 135): a rep fails when it sets out candidate answers as bullets, numbers or
+letters, or names three or more candidate answers in one sentence. A run of separate sentences is
+not a list. Candidate meanings of the empty Date back cells count as candidate answers, as in
+round 1 (lines 138, 330 and 345).
+
+**Scoring.**
+1. I hand-score the 40 new replies first, as before. The scores are recorded.
+2. A blind panel then scores all 50 replies (the 10 first-run reps and the 40 new ones). A vote is
+   one separate `claude -p` call with `--tools ""` and `--setting-sources ""` on
+   `claude-opus-5-5`. A call sees the rule text above, the control prompt for the case
+   (`red/control/prompts/T7.txt`) and the 50 replies under the labels R01 to R50. The order is
+   shuffled for each vote. The arm, the rep number and every earlier verdict are hidden. The
+   panel is 3 votes, so the vote on each rep is a majority of 3 with no tie.
+3. The verdict of a rep is the panel majority. My hand score is reported next to it. Every rep
+   where the two differ is listed. If the hand scores and the panel majorities put an arm on
+   different sides of its bar, the arm is reported as unresolved.
+4. The panel calls have no tools. This keeps this record and its folder away from any agent that
+   has tools (lines 5 to 8).
+
+**Bars and outcomes, registered.**
+- A6 bar: 20 of 25 (80%, the same rate as 4/5). 20 or more: the flip is refuted and the verdict
+  of line 419 holds. 19 or fewer: the flip is confirmed.
+- A5 bar: the same, 20 of 25. A5 missed in the first run and in the re-run. 20 or more would
+  reverse it to a pass. 19 or fewer: it holds as a miss.
+- Each tally is reported with its 95% Wilson interval, so the reader sees how far 25 reps settle
+  the question.
+- The pair gap: one test only, a one-sided Fisher exact test on the pooled counts, A6 above A5.
+  The gap is "shown" at p below 0.05 and "not shown" otherwise.
+- This record states the outcome and changes no skill text. The owner rules on the T7 text and on
+  decision D17.
+
+#### Confirmation results
+
+Run 2026-11-05 on Claude Code 2.1.316 with `claude-opus-5-5`. The 40 new reps (rep6 to rep25 of
+A5 and A6) all exited 0, ended with one turn and one model, and ran no advisor. No rep is VOID and
+no replacement ran. No reply has an Insight box or quotes a user-level file. The rep files are in
+`green-1/new-isolated/T7/` and `green-2/new-isolated/T7/`. The panel inputs, labels, outputs and
+verdicts are in `t7-confirm-panel/`, with my hand scores written before the panel ran.
+
+Spend: $0.61 for the 40 reps and $0.54 for the three panel votes ($0.18 each). The running total
+for this whole re-run is $4.79, under the $10 cap.
+
+**The hand scores and the blind panel agree on all 50 reps.** The panel is 3 votes per rep. All
+25 A5 reps and 23 of the 25 A6 reps got a unanimous vote. The two split reps are A6 rep3 and
+rep14, each 2 to 1. No arm is unresolved.
+
+| Arm | Reps 1 to 5 | Reps 6 to 25 | Pooled | 95% interval | Bar | Outcome |
+|---|---|---|---|---|---|---|
+| A5 `1ac8ef8`, before the new sentence | 3/5 | 9/20 | 12/25 (48%) | 30% to 67% | 20/25 | holds as a miss |
+| A6 `7b1ed85`, after the new sentence | 3/5 | 10/20 | 13/25 (52%) | 33% to 70% | 20/25 | **flip confirmed** |
+
+Pair gap, one-sided Fisher exact test, A6 above A5: p = 0.50. The gap is not shown.
+
+Rep verdicts in rep order (P pass, F fail), the panel majority, in groups of five:
+- A5: `PFPPF FFPFP FFFPP FPFPP PFPFF`
+- A6: `FPPFP FFPPF PFFPP FFPFP FFPPP`
+
+**What the confirmation shows.**
+- The flip is confirmed under the registered rule. On the letter reading, T7 at `7b1ed85` passes
+  about half the time, 13 of 25. Even the top of the interval, 70%, is below the bar of 80%.
+- The first run's 4/5 is not out of reach of chance. If the true rate is 50%, a draw of 4 or
+  more in 5 comes up about 19% of the time. This record cannot say whether context from the
+  leak, the version change or chance lifted that first run.
+- The new sentence shows no measurable effect on the pass rate: 52% after it and 48% before it.
+  With 25 reps per arm this rules out a large effect and does not rule out a modest one.
+- The sentence changes how the replies fail. Among the failed reps, A5 has 10 bullet or numbered
+  lists and 3 with no list (three or more candidate answers in one sentence). A6 has 2 lists and
+  10 with no list. The sentence removes most of the lists and the replies move their guesses into
+  one sentence instead ("might mean A, B, or C"). That is the pattern the sentence tells the agent
+  to avoid. This split is a descriptive count and sets no verdict.
+- Prose runs: ten of the passing reps state two or three guesses in separate sentences. They
+  pass on the letter reading and fail on the stricter reading. They are A5 reps 14, 15, 17 and 20,
+  and A6 reps 8, 11, 14, 15, 20 and 23. On the stricter reading those reps fail, and the
+  tallies fall to at most 8/25 for A5 and 7/25 for A6.
+- The passage of `skills/brainstorming/SKILL.md` that holds the sentence (the "Each message"
+  paragraph, line 102) is unchanged since `7b1ed85`. The later commits touch other lines only.
+  So the result applies to the T7 wording that ships today.
+
+**What it does not show.** It does not say why T7 fell from the first run. It also does not show
+that the T7 text needs a particular fix, and this record changes no skill text. The owner rules on
+the T7 text in the brainstorming skill and on decision D17. D17 chose the letter reading, and
+under that reading T7 does not reach the bar in 25 reps.
+
+### T7 wording test (owner approval, 2026-11-05)
+
+This subsection was written and committed before any rep of the test ran. The owner approved the
+test after reading the confirmation results above. It tests wordings only. It changes no shipped
+skill text and does not touch this branch's skill files.
+
+**Question.** Can another wording of the "Each message" paragraph lift T7 from about 50% to 80%
+or better on the isolated kit? The paragraph is in `skills/brainstorming/SKILL.md` (line 102 at
+HEAD). Three guesses about why the shipped sentence fails, none verified: H1, the quoted example
+"this could mean A, B or C" primes the failure. H2, a positive instruction works better than a
+prohibition. H3, the earlier line "Add what you found that bears on it" invites a list of readings.
+H3 is not tested here.
+
+**Arms.** Each variant is one commit that changes only that paragraph in the `7b1ed85` text. The
+commits are on local branches `claude/t7-wording-<name>`, built with git plumbing, so this branch
+and its working tree are untouched. The branches are not pushed.
+
+| Arm | Commit | Change to the `7b1ed85` paragraph | `SKILL.md` sha256 | T7 prompt sha256 |
+|---|---|---|---|---|
+| control | `7b1ed85` | none. The reps are the 25 reps of A6 in `green-2/new-isolated/T7/` | `ab0f0d27…c0d7` | `ca294ebd…7c55` |
+| V1 delete | `f9251cb67b2fa99ddc5c1ad2e68b587daeec696a` | the sentence "Don't set out your guesses ... (see Get them describing)." is removed | `8649270d…f1b0` | `c73ec8c0…d413` |
+| V2 no example | `f1a6c6d74bfaa32b9fd3c92f4789e2e747214abe` | the quoted example "(this could mean A, B or C)" is removed | `60abc638…80cb` | `7fac63f8…15d4` |
+| V3 positive | `833fa3a2c85cc8228af72575c69c81db93e7e94e` | the sentence becomes the instruction below | `b4d04c16…7915` | `c7aa3b8a…19c9` |
+
+V3 text, which replaces the shipped sentence: "When something they gave you is unclear, say so and ask about it.
+Don't list what it might mean or where each reading leads; that's a menu too (see Get them
+describing)." V3 has no example drawn from the T7 fixture, so the text is not fitted to the test.
+Full hashes are in `t7-wording/prompts/<arm>/MANIFEST.txt`. Rebuilding the control prompt at
+`7b1ed85` with plan 70's `kit/build_prompts.py` gives the stored T7 prompt hash, so the builder
+reproduces the control exactly.
+
+**What runs.** 25 reps for each of V1, V2 and V3 (rep1 to rep25), in `t7-wording/<arm>/`. Model
+`claude-opus-5-5`, plan 72's `run_reps.sh`, Claude Code 2.1.316, the same flags as the re-run. A
+VOID rep is replaced by the next free number, at most two per arm. The control is not re-run. It
+ran on the same day with the same kit and an identical prompt builder.
+
+**Reading and scoring.** The letter reading of the confirmation step, unchanged. I hand-score the 75
+new replies first and record the scores. Then a blind panel scores one pool of 100 replies: the 25
+control replies and the 75 new ones, shuffled together. A vote is one tool-less, isolated
+`claude -p` call on `claude-opus-5-5` with the same rule text as in `t7-confirm-panel/`. The pool
+is shuffled differently for each of 3 votes, and the arm and rep are hidden. The panel majority is
+the verdict of a rep. The control is scored again in this pool, so every arm gets the same votes.
+The earlier 13/25 for the control is reported next to the new tally. Reps where the hand score and
+the panel differ are listed. If they put an arm on different sides of the bar, it is unresolved.
+
+**Bar, registered.** A variant clears when both hold: at least 20 of 25 reps pass (80%, the rate of
+4/5), and a one-sided Fisher exact test against the control tally of this pool gives p below 0.05.
+For scale, 20/25 against 13/25 gives p = 0.036 and 19/25 against 13/25 gives p = 0.070. The record
+also reports the p value multiplied by 3, because three variants are compared with one control. One
+clearing variant out of three is weaker evidence than its single p value suggests. Each tally is
+reported with its 95% Wilson interval. A descriptive count of how the failed reps fail (a list, or
+three or more answers in one sentence) is reported for each arm and sets no verdict.
+
+**Outcomes, registered.**
+- No variant clears: change nothing, and record T7 as a known gap at about the control's rate.
+- One variant clears: it is a candidate. Run the neighbour cases T4, T5, T8a, T9, P1 and P3 on it
+  at 5 reps each, as plan 70 did, with the bar of 4/5 on each. The T4 strict reading is reported
+  too. Prompts for these cases already exist in `t7-wording/prompts/<arm>/`.
+- More than one variant clears: the neighbour cases run on the one with the highest count. A tie
+  goes to the shorter text. The others are reported.
+- A candidate is not applied to the shipped skill. The owner decides. The edit would go on its own
+  branch and needs a `NOTICE` check, because this paragraph is upstream-derived text.
+
+**Spend.** Estimate: $1.90 for the 75 reps (an isolated T7 rep cost $0.025), $1.00 for 3 panel
+votes on 100 replies, and up to $1.50 for the neighbour cases if a variant clears. The running
+total is $4.79. This test is stopped for the owner if its own spend passes $6.
+
+**Limits, stated now.** T7 is one fixture (the seed library), one turn and no tools. A rep scores
+the planned message, not what an agent does in a real session. Three variants against one control
+at n=25 can find a large effect and will miss a modest one.
+
+#### T7 wording test results
+
+Run 2026-11-05 on Claude Code 2.1.316 with `claude-opus-5-5`. The 75 reps (25 each for V1, V2 and V3)
+all exited 0, ended with one turn and one model, and ran no advisor. No rep is VOID and no
+replacement ran. No reply has an Insight box or quotes a user-level file. The reps are in
+`t7-wording/<arm>/`. The panel inputs, labels, outputs and verdicts, with my hand scores written
+before the panel ran, are in `t7-wording/panel/`.
+
+Spend: $1.49 for the reps and $1.04 for the three panel votes ($0.34 to $0.37 each), so $2.53 for
+this test, under the $6 stop. The running total for the whole re-run is $7.32 of the $10 cap.
+
+**No variant clears the bar.** The panel scored all 100 replies (the 25 control replies and the 75
+new ones, shuffled together). Every one of the 100 replies got a unanimous vote. My hand scores
+differ from the panel on one rep, V2 rep24 (hand P, panel F in all 3 votes: its closing question
+names "the same packet, seeds they saved from their own harvest, or something else"). The panel
+governs. No arm sits on different sides of the bar under the two scorings.
+
+| Arm | Passes | Rate | 95% interval | One-sided Fisher p against the control | p × 3 | Clears |
+|---|---|---|---|---|---|---|
+| control (`7b1ed85`, A6 reps) | 13/25 | 52% | 33% to 70% | | | |
+| V1 delete | 8/25 | 32% | 17% to 52% | 0.96 | 1.00 | no |
+| V2 no example | 14/25 | 56% | 37% to 73% | 0.50 | 1.00 | no |
+| V3 positive | 10/25 | 40% | 23% to 59% | 0.87 | 1.00 | no |
+
+The control scores 13/25 in this pool, the same as the earlier panel gave it.
+
+Rep verdicts in rep order (P pass, F fail), the panel majority, in groups of five:
+- control: `FPPFP FFPPF PFFPP FFPFP FFPPP`
+- V1: `PFPFF FFFFF PFFPF FFFPF PPFPF`
+- V2: `FPPFP PPFFP PFPFP FPFPP FPPFF`
+- V3: `FFPFF PPFPP PFFPF FFFFF FPPFP`
+
+**Registered outcome: no variant clears, so nothing changes and T7 is recorded as a known gap at
+about the control's rate, near 50%.** No candidate exists, so the neighbour-case guards did not run.
+
+What the test shows:
+- H1 (the quoted example primes the failure) is not supported. Removing it moves the rate from
+  13/25 to 14/25.
+- H2 (a positive instruction works better than a prohibition) is not supported. V3 scores 10/25,
+  lower than the control.
+- The wording changes the form of the failure and not its rate. Among the failed reps:
+
+  | Arm | Fails | A list (bullets or numbers) | No list: three or more guesses in one sentence |
+  |---|---|---|---|
+  | control | 12 | 2 | 10 |
+  | V1 delete | 17 | 11 | 6 |
+  | V2 no example | 11 | 1 | 10 |
+  | V3 positive | 15 | 0 | 15 |
+
+  With the sentence deleted (V1), lists are the main failure. With any of the three forms of the
+  sentence, lists nearly vanish and the failures are all guesses packed into one sentence. This is
+  a descriptive count and sets no verdict.
+- About half of the replies set out three or more possible meanings in one sentence, whatever the
+  wording of this paragraph. The pass rates of 32% to 56% all sit inside overlapping intervals.
+- V1 (deleted) is lower than the control, 8/25 against 13/25. An unregistered one-sided test for
+  "lower" gives p = 0.126, so the gap is within the noise at n=25. The registered tests look only
+  for gains. I had recommended deleting the sentence if no variant cleared. This result no longer
+  supports that. Deleting it is the one change that raises the rate of bullet lists, and it does
+  not raise the pass rate. The sentence should stay unless another reason is found.
+- H3 (the line "Add what you found that bears on it", lines 68 to 72 of the skill, invites a list
+  of readings) was not tested. I have no tested lead for a wording that works. A crude phrase
+  count shows that 12 to 17 of 25 replies in each arm explain why the answer matters. Those
+  replies do not fail more often than the others in the control (5 of 13 against 7 of 12), so
+  this record does not support a link between the "why I ask" explanation and the failures.
+
+**What this does not show.** T7 is one fixture, the seed library, with one turn and no tools.
+A different fixture could give a different rate. Three variants at n=25 can find a large effect
+and miss a modest one, such as 52% against 65%. The owner rules on the T7 text and on decision D17.
+This record changes no skill text. The variant commits stay on the local branches
+`claude/t7-wording-v1-delete`, `claude/t7-wording-v2-no-example` and
+`claude/t7-wording-v3-positive`, none pushed. Delete them when the record no longer needs the
+shas, or push them with this branch so the prompts can be rebuilt.
+
+**Owner ruling (2026-11-06).** The owner chose "Known gap, keep text". T7 is accepted as a known
+gap near 50%. The text of `skills/brainstorming/SKILL.md` stays as shipped at `7b1ed85`, and
+decision D17 (the letter reading) stays in place. The owner chose this over testing the
+"Add what you found that bears on it" line first. The line stays untested. No skill text changes.
