@@ -1271,7 +1271,7 @@ and its working tree are untouched. The branches are not pushed.
 
 | Arm | Commit | Change to the `7b1ed85` paragraph | `SKILL.md` sha256 | T7 prompt sha256 |
 |---|---|---|---|---|
-| control | `7b1ed85` | none. The reps are the 25 reps of A6 in `green-2/new-isolated/T7/` | `ab0f0d27…c6d7` | `ca294ebd…7c55` |
+| control | `7b1ed85` | none. The reps are the 25 reps of A6 in `green-2/new-isolated/T7/` | `ab0f0d27…c0d7` | `ca294ebd…7c55` |
 | V1 delete | `f9251cb67b2fa99ddc5c1ad2e68b587daeec696a` | the sentence "Don't set out your guesses ... (see Get them describing)." is removed | `8649270d…f1b0` | `c73ec8c0…d413` |
 | V2 no example | `f1a6c6d74bfaa32b9fd3c92f4789e2e747214abe` | the quoted example "(this could mean A, B or C)" is removed | `60abc638…80cb` | `7fac63f8…15d4` |
 | V3 positive | `833fa3a2c85cc8228af72575c69c81db93e7e94e` | the sentence becomes the instruction below | `b4d04c16…7915` | `c7aa3b8a…19c9` |
@@ -1322,3 +1322,76 @@ total is $4.79. This test is stopped for the owner if its own spend passes $6.
 **Limits, stated now.** T7 is one fixture (the seed library), one turn and no tools. A rep scores
 the planned message, not what an agent does in a real session. Three variants against one control
 at n=25 can find a large effect and will miss a modest one.
+
+#### T7 wording test results
+
+Run 2026-11-05 on Claude Code 2.1.316 with `claude-opus-5-5`. The 75 reps (25 each for V1, V2 and V3)
+all exited 0, ended with one turn and one model, and ran no advisor. No rep is VOID and no
+replacement ran. No reply has an Insight box or quotes a user-level file. The reps are in
+`t7-wording/<arm>/`. The panel inputs, labels, outputs and verdicts, with my hand scores written
+before the panel ran, are in `t7-wording/panel/`.
+
+Spend: $1.49 for the reps and $1.04 for the three panel votes ($0.34 to $0.37 each), so $2.53 for
+this test, under the $6 stop. The running total for the whole re-run is $7.32 of the $10 cap.
+
+**No variant clears the bar.** The panel scored all 100 replies (the 25 control replies and the 75
+new ones, shuffled together). Every one of the 100 replies got a unanimous vote. My hand scores
+differ from the panel on one rep, V2 rep24 (hand P, panel F in all 3 votes: its closing question
+names "the same packet, seeds they saved from their own harvest, or something else"). The panel
+governs. No arm sits on different sides of the bar under the two scorings.
+
+| Arm | Passes | Rate | 95% interval | One-sided Fisher p against the control | p × 3 | Clears |
+|---|---|---|---|---|---|---|
+| control (`7b1ed85`, A6 reps) | 13/25 | 52% | 33% to 70% | | | |
+| V1 delete | 8/25 | 32% | 17% to 52% | 0.96 | 1.00 | no |
+| V2 no example | 14/25 | 56% | 37% to 73% | 0.50 | 1.00 | no |
+| V3 positive | 10/25 | 40% | 23% to 59% | 0.87 | 1.00 | no |
+
+The control scores 13/25 in this pool, the same as the earlier panel gave it.
+
+Rep verdicts in rep order (P pass, F fail), the panel majority, in groups of five:
+- control: `FPPFP FFPPF PFFPP FFPFP FFPPP`
+- V1: `PFPFF FFFFF PFFPF FFFPF PPFPF`
+- V2: `FPPFP PPFFP PFPFP FPFPP FPPFF`
+- V3: `FFPFF PPFPP PFFPF FFFFF FPPFP`
+
+**Registered outcome: no variant clears, so nothing changes and T7 is recorded as a known gap at
+about the control's rate, near 50%.** No candidate exists, so the neighbour-case guards did not run.
+
+What the test shows:
+- H1 (the quoted example primes the failure) is not supported. Removing it moves the rate from
+  13/25 to 14/25.
+- H2 (a positive instruction works better than a prohibition) is not supported. V3 scores 10/25,
+  lower than the control.
+- The wording changes the form of the failure and not its rate. Among the failed reps:
+
+  | Arm | Fails | A list (bullets or numbers) | No list: three or more guesses in one sentence |
+  |---|---|---|---|
+  | control | 12 | 2 | 10 |
+  | V1 delete | 17 | 11 | 6 |
+  | V2 no example | 11 | 1 | 10 |
+  | V3 positive | 15 | 0 | 15 |
+
+  With the sentence deleted (V1), lists are the main failure. With any of the three forms of the
+  sentence, lists nearly vanish and the failures are all guesses packed into one sentence. This is
+  a descriptive count and sets no verdict.
+- About half of the replies set out three or more possible meanings in one sentence, whatever the
+  wording of this paragraph. The pass rates of 32% to 56% all sit inside overlapping intervals.
+- V1 (deleted) is lower than the control, 8/25 against 13/25. An unregistered one-sided test for
+  "lower" gives p = 0.126, so the gap is within the noise at n=25. The registered tests look only
+  for gains. I had recommended deleting the sentence if no variant cleared. This result no longer
+  supports that. Deleting it is the one change that raises the rate of bullet lists, and it does
+  not raise the pass rate. The sentence should stay unless another reason is found.
+- H3 (the line "Add what you found that bears on it", lines 68 to 72 of the skill, invites a list
+  of readings) was not tested. I have no tested lead for a wording that works. A crude phrase
+  count shows that 12 to 17 of 25 replies in each arm explain why the answer matters. Those
+  replies do not fail more often than the others in the control (5 of 13 against 7 of 12), so
+  this record does not support a link between the "why I ask" explanation and the failures.
+
+**What this does not show.** T7 is one fixture, the seed library, with one turn and no tools.
+A different fixture could give a different rate. Three variants at n=25 can find a large effect
+and miss a modest one, such as 52% against 65%. The owner rules on the T7 text and on decision D17.
+This record changes no skill text. The variant commits stay on the local branches
+`claude/t7-wording-v1-delete`, `claude/t7-wording-v2-no-example` and
+`claude/t7-wording-v3-positive`, none pushed. Delete them when the record no longer needs the
+shas, or push them with this branch so the prompts can be rebuilt.
