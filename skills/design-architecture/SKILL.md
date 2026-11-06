@@ -48,6 +48,10 @@ Reach for an ADR when a decision is **costly to reverse, affects more than one p
 constrains future choices**. Skip it for reversible, local calls (a function signature, a plot
 style) — over-documenting trivia trains readers to ignore the record.
 
+An ADR records a decision. To design new functionality before there is a decision to record, use
+the brainstorming skill. To turn an accepted decision into implementation steps, use the
+writing-plans skill.
+
 ## The mechanism that actually solves re-litigation
 
 A template alone does not stop a decision from being re-argued. Two properties do:

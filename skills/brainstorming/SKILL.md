@@ -158,12 +158,13 @@ decide whether you go.
 before you write anything up, put the ways of building it in a message
 of its own. Come up with several real alternatives and drop the weak
 ones, including any that work against why they want it and any the
-existing work rules out. Present the two or three that remain, grounding
-each in what the project actually does and saying what it trades off.
-Recommend one and say why, then ask which way they want to go. When
-there's genuinely one sensible way, say so and explain why the others
-don't fit. This is for how it gets built; for what they want, get them
-describing first.
+existing work rules out. If they all turn out to be flavors of one idea,
+use the creative-thinking skill to widen the set. Present the two or
+three that remain, grounding each in what the project actually does and
+saying what it trades off. Recommend one and say why, then ask which way
+they want to go. When there's genuinely one sensible way, say so and
+explain why the others don't fit. This is for how it gets built; for
+what they want, get them describing first.
 
 **Show, don't tell.** Offer the visual companion (below) whenever seeing
 would help more than reading:

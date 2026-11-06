@@ -105,7 +105,7 @@ impact.
 - **Correctness-risk** — could make a *published number wrong*. Duplicated scripts where
   the wrong one is canonical; an as-of join that silently uses revised data; a hardcoded
   path pointing at a stale parquet. Weight these highest — a wrong nowcast is worse than
-  an ugly one.
+  an ugly one. Before a number from such code ships, gate it with the validate-data skill.
 - **Reproducibility-risk** — the result can't be regenerated. Missing seeds, wall-clock
   leakage, scratch notebooks holding undocumented transforms, hardcoded absolute paths.
   In a research shop this is nearly as bad as correctness: an unreproducible result is one
@@ -137,7 +137,8 @@ If **yes** → **HARDEN**, proportionally to how load-bearing it is:
 - Add a derived, descriptive seed (see `bayesian-workflow`).
 - Add the *one* test that pins the behavior you actually depend on — characterization
   first, exhaustive coverage never. A model module needs a test that the pipeline runs
-  end-to-end and the output schema is stable, not 100% line coverage.
+  end-to-end and the output schema is stable, not 100% line coverage. To plan the tests past
+  that first one, use the develop-testing-strategy skill.
 - Tighten the types only where a wrong type would cause a wrong number.
 
 A few rules of thumb for the ambiguous middle:

@@ -84,6 +84,9 @@ bayesian-workflow/
     Gaussian likelihood, by author-year only and in original wording; its
     examples are original and were run against the snippet gate's pinned
     NumPyro.
+    The install lines in SKILL.md, README.md and three references, and
+    the import error of scripts/calibration_check.py, use `uv add` where
+    they used `pip install` (plan 77).
 
 recommend-causal-design/ selectively adapts the planning workflows of
 Robson Tigre's causal-planner in everyday-causal-skills (MIT, Copyright (c)
@@ -818,6 +821,19 @@ Changes from upstream:
     references/fix-loop.md has one fix-round gate: a fix round runs its
     covering tests while it iterates, then runs the documented suite(s)
     the change can reach once before it writes the fix report.
+  - Plan 77 (2026-11-06) changed these adapted files from audit_1_3_26's
+    P2 tier. receiving-code-review states its two rules in its own words,
+    where it quoted them as the partner's rules, and its Forbidden
+    Responses list no longer cites an instruction-file ban.
+    test-driven-development points to develop-testing-strategy for
+    choosing what to test. systematic-debugging's red flags point at
+    Phase 4, step 5, where they named a Phase 4.5 that does not exist.
+    brainstorming points to creative-thinking when every approach is a
+    flavor of one idea. These changes are local, and no upstream text was
+    taken. verification-before-completion drops its "Why This Matters"
+    section and dispatching-parallel-agents its "Real-World Impact"
+    section, as upstream did in 3be5aad and 6dbbbda (first released in
+    v6.2.0).
 
     brainstorming/
     dispatching-parallel-agents/

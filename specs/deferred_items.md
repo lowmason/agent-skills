@@ -3491,7 +3491,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       slow`, so no snippet tier executes it, and its recorded first fix was itself wrong (a
       scalar site indexed the draw axis). Size: quick-fix. Revisit if: the sketch is edited, a
       slow snippet tier is added, or a user reports SBC ranks bunched at 0 and L.
-- [ ] Owner picks the keepers from audit_1_3_26's never-logged P2 tier; one text batch then
+- [x] Owner picks the keepers from audit_1_3_26's never-logged P2 tier; one text batch then
       fixes them (audit-3-10-26 B4 and its Decision 3, found 2026-10-03; the tier dates from
       audit_1_3_26, 2026-07-03, and plan 4 deferred it "to a future plan" that was never
       written, `specs/plans/completed/4-audit_1_3_26.md:19`). Re-verified 2026-10-18: no
@@ -3535,6 +3535,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       gets a NOTICE change-list line. Size: plan. Done when: the owner has picked the keepers,
       they are fixed, and the rest are recorded here as dropped.
       → progress 2026-10-31 (owner ruling): keepers are (1), (2), (3), (4), (6) with the pip lines becoming uv, (8), (9) with upstream's removal standing in for a micro-test, (10) and (11). Drop (5) and (7) → dropped: (5) the naming examples show a pattern and do not claim that the skills exist here. (7) the PyMC seed advice is correct for PyMC users.
+      → planned 2026-11-05: specs/plans/77-audit-p2-text-fixes.md
+      → done 2026-11-06 (plan 77): keepers (1), (2), (3), (4), (6), (8), (9), (10) and (11) landed; see specs/plans/completed/77-audit-p2-text-fixes.md. The micro-test for (3) missed its bar, the owner kept the pointer, and the final review then scoped its last sentence to new behavior. Three review leftovers are filed → item: 77-audit-p2-text-fixes — 2026-11-06
+      → dropped: the three unpicked "your human partner's" lines (`skills/test-driven-development/testing-anti-patterns.md:37` and `:247`, and the heading at `skills/systematic-debugging/SKILL.md:244`) show sample remarks a partner might make, not rules attributed to the owner (owner, plan 77 review, 2026-11-05).
 - [x] Owner design calls from audit_1_3_26 §8 (audit-3-10-26 B4, found 2026-10-03; first raised
       2026-07-03; re-verified 2026-10-18: no decision recorded). (a) A pressure-test ledger:
       no central record of skill tests exists, and NOTICE records that upstream's
@@ -5865,3 +5868,36 @@ review and the Plan Completion gate (2026-10-27) add the others.
       treatment arm ran. See specs/red-baseline-review-fixes.md and
       specs/red-baseline-review-fixes/kit/cases.py. See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix (closure note
       only). Revisit if: a fix round skips the documented suites in a real run.
+
+## 77-audit-p2-text-fixes — 2026-11-06
+- [ ] **bayesian-workflow's three references say `uv add` with no `uv init` lead-in (plan 77
+      final review, owner ruled defer).** Plan 77 changed `pip install` to `uv add` in
+      `skills/bayesian-workflow/references/stack-compatibility.md:7`,
+      `references/sensitivity.md:156` and `references/state-space.md:77`. SKILL.md and
+      README.md carry the lead-in "run `uv init` first if there is no `pyproject.toml`", but a
+      reader who starts in a reference with no `pyproject.toml` gets uv's "No `pyproject.toml`
+      found" error. Decision D4 of the plan limited the lead-in to the two install blocks.
+      See specs/plans/completed/77-audit-p2-text-fixes.md. Size: quick-fix. Done when: each of
+      the three references carries the lead-in or points to SKILL.md's install block.
+- [ ] **tech-debt and test-driven-development give two routes for the first test (plan 77
+      final review, owner ruled defer).** `skills/tech-debt/SKILL.md:140-141` (HARDEN) says to
+      add the one characterization test, then use the develop-testing-strategy skill for "the
+      tests past that first one". `skills/test-driven-development/SKILL.md:36` sends "adding
+      the first tests" to a scraper, pipeline or model to that same skill first. An agent that
+      loads both skills while hardening a pipeline gets two orders. Both texts are plan 77's
+      verbatim wording, and they apply at different moments (debt triage against feature
+      work). See specs/plans/completed/77-audit-p2-text-fixes.md. Size: quick-fix. Done when:
+      the two texts agree on which skill plans the first test, or one says why the other
+      applies.
+- [ ] **Re-test the test-driven-development pointer on a fixture without the partner's
+      override line (plan 77 Task 3 and final review).** The `tdd-strategy` micro-test missed
+      its 5-of-5 bar: the control, the plan's wording and one reworded arm all scored 0 of 5,
+      because every rep obeyed the fixture's "Just write the step; we can add tests after"
+      line. No rep reached the pointer, so its effect and its last sentence are untested. The
+      two non-regression cases (`rcr-feedback`, `debug-architecture`) also have little power:
+      both controls scored 5 of 5 on fixtures that state the facts plainly. The owner kept the
+      pointer. See specs/red-baseline-audit-p2.md and
+      specs/plans/completed/77-audit-p2-text-fixes.md. Size: plan. Revisit if: a real session
+      shows an agent that loaded the test-driven-development skill skip the
+      develop-testing-strategy skill when adding the first tests to a scraper, pipeline or
+      model.

@@ -62,7 +62,7 @@ and points — it does not fit, evaluate, or report on a fitted model.**
    + the handoff payload.
 8. **Persist.** Write `<slug>/recommendation.md` from [references/reporting.md](references/reporting.md).
 
-## Which book (C3)
+## Which book
 
 Topics in both books: **Book 1 = standard treatment** (default pointer); **Book 2 = advanced/extended**
 (point when the problem needs the extension). Family files name both where both exist.

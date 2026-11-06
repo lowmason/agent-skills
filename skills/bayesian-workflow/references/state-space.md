@@ -74,7 +74,7 @@ this skill's sibling `recommend-probabilistic-model` routes linear-Gaussian SSM 
 marginal likelihood, ready to drop into a NumPyro model:
 
 ```python norun HANDOFF SKETCH; dynamax is not a bayesian-workflow dependency
-# HANDOFF SKETCH — dynamax must be installed separately (`pip install dynamax`); it is not a
+# HANDOFF SKETCH — dynamax must be installed separately (`uv add dynamax`); it is not a
 # bayesian-workflow dependency. The marginal_log_prob CALL below is the verified API; the params
 # CONTAINER is a dynamax ParamsLGSSM pytree whose construction is dynamax-version-specific — build
 # it per the dynamax docs (https://probml.github.io/dynamax/), not from memory.
