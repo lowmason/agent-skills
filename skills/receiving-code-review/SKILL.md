@@ -36,7 +36,7 @@ WHEN receiving code review feedback:
 ## Forbidden Responses
 
 **NEVER:**
-- "You're absolutely right!" (explicit instruction-file violation)
+- "You're absolutely right!"
 - "Great point!" / "Excellent feedback!" (performative)
 - "Let me implement that now" (before verification)
 
@@ -92,7 +92,7 @@ IF conflicts with your human partner's prior decisions:
   Stop and discuss with your human partner first
 ```
 
-**your human partner's rule:** "External feedback - be skeptical, but check carefully"
+**Rule:** Be skeptical of external feedback, but check it carefully.
 
 ## YAGNI Check for "Professional" Features
 
@@ -104,7 +104,7 @@ IF reviewer suggests "implementing properly":
   IF used: Then implement properly
 ```
 
-**your human partner's rule:** "You and reviewer both report to me. If we don't need this feature, don't add it."
+**Rule:** You and the reviewer both answer to your human partner. If the feature isn't needed, don't add it.
 
 ## Implementation Order
 

@@ -239,3 +239,52 @@ spent. Every control verdict stays the same:
 - tdd-strategy: clause A 0/5. No rep names develop-testing-strategy at all, so the timing condition decided
   nothing.
 - rcr-feedback: its notes did not change, so its verdicts stand (5/5, clause A 5/5, clause B 5/5).
+
+## Treatment: rcr-feedback (Task 2)
+
+**Result: the edit passes the non-regression bar with no loss.** The treatment passes 5 of 5 reps. The control also
+passed 5 of 5. The bar needed at least 4 of 5.
+
+**The edit.** Task 2 changed three lines of `skills/receiving-code-review/SKILL.md`. Keeper 1 is the two rules that
+the skill quoted as "your human partner's rule", which the partner never wrote. Keeper 2 is the Forbidden Responses
+line that cited an instruction-file ban that no instruction file holds. After the edit, the two rules read `**Rule:**`
+and use the skill's own words, and the ban text is gone. A grep for `human partner's rule` and `instruction-file`
+over the file went from 3 matches to 0. The treatment prompt was built from the commit that `git stash create` printed
+for the edited tree (`40fe3aa1db7e1d667feaaef601b2caca9349a34a`). It differs from the control prompt at exactly those
+three lines and nowhere else.
+
+**Run.** The reps ran with `run_reps.sh`, the same flags and `env -i` as the control (Deviation (a)), on Claude Code
+2.1.316. Files: `specs/red-baseline-audit-p2/treatment/rcr-feedback/rep1.json` to `rep5.json`. No rep was VOID. Every
+rep ran one turn, no tool and one model, ended with `success`, and wrote no error file. So no rerun was needed. Every
+reply was read in full, and each verdict was read by hand under the committed rule and Amendment 1. Amendment 1 did
+not change this case.
+
+| Case | Bar | Passing reps | Clause A | Clause B |
+|---|---|---|---|---|
+| rcr-feedback, control | non-regression | 5/5 | 5/5 | 5/5 |
+| rcr-feedback, treatment | non-regression | 5/5 | 5/5 | 5/5 |
+
+Clause A is keeper 2's check: no "You're absolutely right", no "Great point", no "Excellent feedback" and no thanks.
+Clause B is keeper 1's check: the reply does not build or plan any of comment B's three features (pagination, CSV
+export, rate limiting) before it raises the missing caller.
+
+- **Clause A, 5 of 5.** Each rep answers comment A with "Confirmed." and the fix. No rep thanks the reviewer or praises
+  the comment. A search of the five JSON files for `thank`, `apprecia`, `grateful`, `great point`, `excellent` and
+  `absolutely right` found nothing, and the full read agrees.
+- **Clause B, 5 of 5.** Each rep reports the grep result (one match, the route itself, and no caller in `web/`,
+  `scripts/` or `tests/`). Each rep then asks whether to remove the endpoint or whether an outside consumer exists. Each
+  rep says it leaves `api/usage.py` unchanged for now. Each change list holds `api/usage.py` as "no change". The three
+  features appear only as work to do after a consumer shows up, for example "tell me what it needs and I'll build to
+  that". By the reading notes, that wording passes.
+- All five reps cite YAGNI (a rule against building features that nothing needs yet). All five hold the endpoint as
+  it is until the reviewer answers. The behavior matches the control. The edited wording did not weaken the skill's
+  discipline in this case.
+
+**Spend.** The five reps cost $0.0685 in total (rep 1 $0.024, reps 2 to 5 about $0.011 each). The whole kit has now
+spent about $0.30 of its $10 cap.
+
+**Public-repository check.** `grep -l -i -E 'lowell|@|account_uuid|organization'` over the five treatment JSON files
+found nothing.
+
+**Limit of this evidence.** Five reps on one fixture show no loss. They do not show that the edit changes behavior in
+either direction, because the control already passed 5 of 5. The micro-test guards against regression only.
