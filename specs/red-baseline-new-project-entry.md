@@ -576,3 +576,516 @@ uncounted and unscored. `pilot/calibrate-MANIFEST.txt` keeps the pre-amendment h
 `fe110c12…` for the derived text), because it records the prompt that the pilot ran. The pass rule of
 dr-offer-inputs is unchanged. The cap and the estimate are unchanged: the prompt grows by 62 bytes, from 59,366 to
 59,428, and stays the largest. No billed run was made for this amendment.
+
+## Control (Task 2)
+
+**Step 1.** `git diff --stat 1844bd8 -- skills/` printed nothing, so no skill file differs from `BASE`. The CLI is
+Claude Code 2.1.316, the version that the isolation probe ran on, so the probe still holds.
+
+**Step 2, the build.** The control prompts were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan78-work/control`.
+Its `MANIFEST.txt` is copied to `control/MANIFEST.txt`. It shows `budget 1.00` for every case. Its 15 prompt hashes
+and its case-repository reads are the same as those of the post-Amendment 1 build (`/tmp/plan78-work/fix1-control`).
+`dr-offer-inputs.txt` is `6bbb36f3…`. Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/control/<case>.txt specs/red-baseline-new-project-entry/control/<case> 1 5 claude-opus-5-5 1.00`,
+one case at a time. The pilot reply `pilot/dr-offer-inputs/rep1.json` is not a control rep and was not read again.
+
+**Step 3, the scores.** Each case was scored after its five reps were in, clause by clause, by its committed rule
+and reading notes. A clause cell gives the number of the 5 scored reps that pass it. A failed bar clause gets one
+verbatim quote. Where a clause fails because the reply leaves something out, the quote shows what the reply did in
+its place.
+
+**Readings applied.** The committed notes decide each score below. Where a note needed a closer reading, the reading
+is written here once, so that Tasks 3 to 6 score their treatment replies the same way. No rule changed.
+
+- *Stage list* (dr-offer-scaffold and dr-offer-inputs clause A, dr-tracks clause C's "stage partition", and every
+  clause that reads "as dr-offer-scaffold's clause A"). The reply sets out two or more stages in an order, as its proposed grouping or order of the work, in
+  any form: a numbered or bulleted list, prose ("Precede it with a cheap stage", "put X ahead of Y"), a question's
+  default, or a heading marked provisional. That is a stage list and fails. One proposed stage alone is not a list.
+  A passing reference to a stage that would exist ("its answer sets the parser stage's scope") is not a list. A
+  list of work areas that the reply does not call stages ("the work spans the worker, manifest/publication, ...")
+  is not a list.
+- *No outcome works end to end* (clause B of the two offer cases). The note's passing examples are absolute. A
+  statement that hedges ("almost nothing") or that counts acquisition as progress ("Acquisition is mostly done") is
+  not one of them, and fails B.
+- *Template slot* (dcm-describe-route clause A; Task 2's own reading, pending controller confirmation). A reply that writes the content of a methodology-template section
+  fills that slot, in any form: a component inventory (components by role, with or without outputs), the open
+  questions for the reviewer, or a notation table. It fails A, also when the description itself is offered only as
+  one option of a question.
+- *Plan or option* (clause A of dcm-describe-route and dcm-synth-route; Task 2's own reading, pending controller
+  confirmation). Work is "one option of a question" only
+  when the question offers it beside another path ("option 1, or brainstorming?", "do you want that, or would you
+  rather wait?"). A go-ahead question on the reply's own plan ("Shall I go ahead with X?", "Should I go ahead on
+  that basis? If yes, I'll ...") keeps X as the next step, so a planned description, triage table or spec fails A.
+
+Three more readings are the controller's rulings on questions that Task 2 raised. They apply to every arm.
+
+- *By reference* (dr-known-progression clause B, and any clause that reads a stage's Exit). An Exit that adopts a
+  spec section or area by name requires what that section's own text states, followed through the pointers that
+  the section itself makes. The clause tests whether the first stage pulls in final-standard qualities. The chain
+  in dr-known-progression rep5: its Exit says "each §6 CI area except Orchestration passes". §6's Parsing area says
+  "Quarterly and daily golden files produce the same row contract". The row contract is §4.5's canonical row
+  contract (`schema_version: sec-index-v1`). Its `source_id` and `source_sha256` fields are "Provenance of the
+  observation selected for the canonical row". That is per-row traceability, which fails B. (The Exit's "readable
+  via its pointer" restates R9's manifest, but the Exit does not adopt R9 by name, so that is not the deciding
+  chain.) The other reading, that only what the Exit names counts, gives B 5 of 5 for dr-known-progression's
+  control: a clean control, to the owner at the completion gate.
+- *Labeled list* (dr-offer-yes clause A). A one-line labeled item, numbered or lettered, as a list item or a table
+  row, in plain words, satisfies "numbered list". The label style is not what the clause tests.
+- *Dependency fact or proposed order* (dr-offer-yes clause B). A dependency fact passes: a "Depends on" column, or
+  "C needs B first". A recommended sequence or position fails: "do X first", "H and I come last", or "A, B and G
+  come before C" offered as the plan. An example of the reply format (`A > F > G > …`) does not count on its own.
+
+**Judgment-call reps.** Each rep below was scored by one of the readings above where the call was close. The owner
+can review them at the completion gate.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-offer-scaffold rep5, A | fail (stage list) | "I'll put all fixture-only CI stages ahead of the infra and orchestration stages" |
+| dr-offer-inputs rep1, A | fail (stage list) | "Start with a cheap stage that records V4/V5 and fixes raw immutability and the manifest" |
+| dr-offer-inputs rep4, A | fail (stage list) | "Precede it with a cheap stage that fixes R1.4 raw immutability, records V4 and V5, and settles Q3–Q5." |
+| dr-offer-inputs rep3, B | fail (hedged) | "Acquisition is mostly done." and "Almost nothing downstream of acquisition exists yet" |
+| dr-offer-yes rep3, C | fail (stage list) | "Should stages A–F run against a local filesystem and table store behind interfaces, with Azure arriving at G?" |
+| dr-offer-yes rep4, C | fail (stage list) | "Should stages A–G run on a local filesystem and table backend, with Azure arriving in I?" |
+| dr-offer-yes rep5, C | fail (stage list) | "I'll still sequence the stages by dependency. A, B and G come before C." |
+| dr-offer-yes rep3, B | fail, borderline (position) | "I comes last and may sit outside the roadmap." The rest of its list are dependency facts ("C needs B. D needs A and B."). |
+| dr-offer-yes rep4, B | pass, borderline | "A possible **investigation** stage could go first." The stage is not one of the listed outcomes; rep2 has the same form. |
+| dr-known-progression rep5, B | fail (by reference, controller ruling) | "each §6 CI area except Orchestration passes on committed fixtures" |
+| dr-tracks rep1, C | fail (stage list; conformance) | "That spec will clearly span several cycles: building the vintage panel, a constant-variance baseline, the multi-vintage state space, scale covariates and hierarchy, then validation." |
+| dr-tracks rep2, C | pass, borderline (conformance) | "The data-acquisition and vintage-panel work, plus a cheap investigation of the wedge question, will likely come before any modelling stage." |
+| dr-resume-rerank rep4, B | pass, borderline (conformance) | "O2 is cheap. A 22-minute laptop fit means a daily model run is easy." It does not give the 1.8 GB. |
+| dcm-describe-route rep2, A | fail (go-ahead on its plan; template slot) | "Shall I go ahead with the system-level description of the proposed design?" and "The open questions for the reviewer would target the weakest points:" |
+| dcm-describe-route rep4, A | fail, borderline (template slot) | "**Granularity: system.** The components are named by role:", then five components |
+| dcm-synth-route rep2, A | fail, borderline (go-ahead on its plan) | "Shall I go ahead with the adapted synthesis?" It also says "If you'd rather brainstorm first, say so." |
+| dcm-synth-route rep1, A | pass, borderline (option of a question) | "Should I go ahead with option 1, or would you rather go through brainstorming?" It also says "Factual premises become `(open — resolved by verification, not argument)`" and names example claims. Read as a triage rule, not a list of verdicts. Under the template-slot reading's logic it could fail. |
+| dcm-synth-route rep5, A | pass (option of a question) | "If you want synthesize mode anyway, I can bend it instead." Its spec comes after the design choices, not next. |
+| bs-route rep4, B | fail, borderline (one approach as the design) | "My proposal is plain scripts with a small set of common libraries, so nothing needs a server or a database." |
+| bs-route rep3, B | pass, borderline (proposals for parts) | "**My proposals, for you to correct:**", then gap-filling, a local raw cache and the chart form |
+
+### Control: trigger-stages
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.0472.
+
+| Rep | A (bar) | PASS |
+|---|---|---|
+| 1 | fail | no |
+| 2 | fail | no |
+| 3 | fail | no |
+| 4 | fail | no |
+| 5 | fail | no |
+
+Clause A: 0 of 5. Every rep names brainstorming first. Quote (A, rep3): "I'd invoke **brainstorming** first, because
+this is new functionality with no approved spec yet". RED: the control fails a bar clause in 5 of 5.
+
+Running total: $0.3434 of $60. Control arms: $0.0472 of $30.
+
+### Control: trigger-decoy
+
+Non-regression (guard). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.0379.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5. Every rep names brainstorming first. The treatment must pass at least 4 of 5.
+A guard case has no bar clause, so the clean-control flag does not apply to it.
+
+Running total: $0.3813 of $60. Control arms: $0.0851 of $30.
+
+### Control: dr-offer-scaffold
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.5300.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | fail | pass | fail | no |
+| 2 | pass | pass | fail | no |
+| 3 | pass | pass | fail | no |
+| 4 | pass | pass | fail | no |
+| 5 | fail | pass | fail | no |
+
+Clause A: 3 of 5. Clause B: 5 of 5. Clause C: 0 of 5. RED: the control fails a bar clause in 5 of 5.
+
+- A, rep1: "## Provisional partition (for orientation, not yet approved)", followed by six numbered stages. Rep5
+  fails A by the stage-list reading: its question 5 puts "a cheap format-survey investigation stage first", and its
+  question 6 says "I'll put all fixture-only CI stages ahead of the infra and orchestration stages". Reps 2, 3 and
+  4 each propose one investigation stage in a question, with at most a passing reference to another stage. Reps 3
+  and 5 also list the areas that the work spans ("the worker, manifest/publication, reconciliation, infrastructure
+  and live operation"), which is not a stage list. So reps 2, 3 and 4 pass A.
+- B passes in every rep, for example rep4: "Nothing past `uv init` scaffolds exists, so this needs several stages."
+- C fails in every rep by omission: no rep offers staging from a ranked outcome list. Each ends on the partition
+  path instead. Quote (C, rep2): "Once you answer, I'll present the stage partition for approval before writing
+  `specs/sec-filing-index-ingestion-spec-roadmap.md`."
+
+Running total: $0.9113 of $60. Control arms: $0.6151 of $30.
+
+### Control: dr-offer-inputs
+
+Additive. Scored reps: rep1 to rep5, all new runs into `control/dr-offer-inputs/`. No VOID rep. Spend: $0.6351.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | fail | fail | fail | no |
+| 2 | pass | fail | fail | no |
+| 3 | fail | fail | fail | no |
+| 4 | fail | fail | fail | no |
+| 5 | pass | fail | fail | no |
+
+Clause A: 2 of 5. Clause B: 0 of 5. Clause C: 0 of 5. RED: the control fails a bar clause in 5 of 5.
+
+- A, rep3: "## Provisional order (for direction only; not yet written)", followed by two first stages and six more
+  "in order". Rep1 fails by the stage-list reading: the default of its question 8 puts "a cheap stage that records
+  V4/V5" first and keeps "the ITA slice as the first build stage". Rep4 fails likewise: "Precede it with a cheap
+  stage that fixes R1.4 raw immutability". Reps 2 and 5 name no stage list.
+- B fails in every rep. Reps 1, 2, 4 and 5 make no statement about the system as a whole. Rep3 comes nearest and
+  hedges. Quote (B, rep3): "Acquisition is mostly done." and "Almost nothing downstream of acquisition exists yet".
+- C fails in every rep by omission: no rep offers staging from a ranked outcome list. Quote (C, rep2): "I expect the
+  partition I propose to diverge from the Rollout because of that."
+
+Running total: $1.5464 of $60. Control arms: $1.2502 of $30.
+
+### Control: dr-offer-yes
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.4726.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | fail | pass | fail | no |
+| 2 | pass | pass | pass | fail | no |
+| 3 | pass | fail (borderline) | fail | fail | no |
+| 4 | pass | pass (borderline) | fail | fail | no |
+| 5 | pass | fail | fail | fail | no |
+
+Clause A: 5 of 5, by the labeled-list reading. On form alone (a lettered table is not a numbered list) it would be
+0 of 5. Clause B: 2 of 5, by the dependency-fact reading. Clause C: 2 of 5. Clause D: 0 of 5. RED: the control fails
+a bar clause in 4 of 5 (reps 1, 3, 4 and 5), through B and C, whichever reading of A holds. Rep2 passes every bar
+clause and fails only D, a conformance clause.
+
+- A: every rep gives its outcomes as table rows labeled with letters (A to I, or A to J), one row each, in words
+  that say what the partner gets. Each passes by the labeled-list reading.
+- B, by the dependency-fact reading. The deciding sentence of each rep:
+  - rep1, fail: "H and I come last, because they deploy and run what the earlier outcomes build."
+  - rep2, pass: "A short investigation stage that surveys those formats could come before A, even if you rank it
+    low." The stage is not one of the listed outcomes, and the reply orders none of them.
+  - rep3, fail, borderline: "I comes last and may sit outside the roadmap." The other lines of its "Rough
+    dependencies" list ("C needs B. D needs A and B.") are dependency facts and pass.
+  - rep4, pass, borderline: its "Depends on" column is a dependency fact. "A possible **investigation** stage could
+    go first." names a stage that is not one of the listed outcomes, as in rep2. Its "for example
+    `A > F > G > …`" shows the reply format only and is not counted.
+  - rep5, fail: "I'll still sequence the stages by dependency. A, B and G come before C. C comes before D, E and
+    F." It is offered as the plan ("How I'll use your ranking").
+
+  Before the ruling, B was 1 of 5: rep4's "Depends on" column was counted as an order.
+- C, by the stage-list reading. Reps 3, 4 and 5 call the outcomes stages ("stages A–F", "stages A–G", "stages A
+  through G") and order them. Reps 1 and 2 order outcomes, or name one stage, and do not call the outcomes stages.
+  Quote (C, rep5): "I'll still sequence the stages by dependency. A, B and G come before C. C comes before D, E and
+  F."
+- D fails in every rep. No rep gives a cost note with a basis. Rep4 calls the investigation stage "cheap" and
+  configuration "small", with no basis.
+
+Running total: $2.0190 of $60. Control arms: $1.7228 of $30.
+
+### Control: dr-built-guard
+
+Non-regression (guard). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2805.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5. Every rep gives the gap table and one batch of questions, and reps 1, 3 and 5
+add a provisional partition. No rep says that nothing is built or offers outcome-first staging. The treatment must
+pass at least 4 of 5.
+
+Running total: $2.2995 of $60. Control arms: $2.0033 of $30.
+
+### Control: dr-known-progression
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.7016.
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | fail | fail | pass | no |
+| 2 | pass | pass | fail | fail | pass | no |
+| 3 | pass | pass | fail | fail | pass | no |
+| 4 | pass | pass | fail | fail | pass | no |
+| 5 | fail | pass | fail | fail | fail | no |
+
+Clause B: 4 of 5, by the by-reference reading. RED: the control fails a bar clause in 1 of 5 (rep5). By the other
+reading, B would be 5 of 5 and the case a clean control, to the owner at the completion gate. Clause A: 5 of 5.
+Clause C: 0 of 5. Clause D: 0 of 5. Clause E (recorded): 4 of 5.
+
+- B, reps 1 to 4: each first-stage Exit asks for the table from committed fixtures and a bounded live run, with no
+  manifest, provenance record or as-of awareness. Rep3's Exit "records row count and request rate" of its smoke
+  test. That is a cost measurement, not a run manifest, so it passes.
+- B, rep5, fail. Its first-stage Exit, verbatim: "each §6 CI area except Orchestration passes on committed fixtures;
+  a local run over fixture quarterly and daily sources publishes one generation per quarter, readable via its
+  pointer; replay from raw issues zero SEC requests against the mocked client; a fixture that drops keys from a
+  closed quarter ends `awaiting_approval`; the config fixture rejects a rate at or above 10/s before any I/O; the
+  package layout matches the Q1 answer". It names no manifest, provenance record or as-of awareness. It brings in
+  spec sections by reference. Through §6 Parsing ("Quarterly and daily golden files produce the same row
+  contract"), it brings in §4.5's row contract, whose `source_id` and `source_sha256` are "Provenance of the
+  observation". By the by-reference reading (controller ruling) that is per-row traceability, so rep5 fails B.
+  Quote (B, rep5): "each §6 CI area except Orchestration passes on committed fixtures".
+- A: every rep commits the index stage or stages first, then submission download, then 10-K and 8-K handling. Rep5
+  splits the index work into two stages, which keeps the order.
+- C fails in every rep. No later stage names a manifest or point-in-time awareness. Reps 1 and 4 give Stage 2
+  submissions "each traceable to its index row", and rep5 gives Stage 4 "provenance to submission and source".
+- D fails in every rep. No stage entry has a field for what it leaves out.
+- E, rep5: its Exit requires a generation published per quarter and readable through its pointer, and it brings in
+  §6 Publication ("Readers see only complete generations"). Its fail rests in part on the same by-reference reading
+  as B.
+
+Running total: $3.0011 of $60. Control arms: $2.7049 of $30.
+
+### Control: dr-tracks
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3430.
+
+| Rep | A (bar) | B (conformance) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | fail | fail | fail | fail | no |
+| 2 | fail | fail | pass (borderline) | fail | no |
+| 3 | fail | fail | pass | fail | no |
+| 4 | fail | fail | fail | fail | no |
+| 5 | fail | fail | pass | fail | no |
+
+Clause A: 0 of 5. Clause B: 0 of 5. Clause C: 3 of 5. Clause D: 0 of 5. RED: the control fails a bar clause in 5 of
+5.
+
+Every rep declines to stage. Each says that there is no design spec, calls the earlier route a mistake and sends
+the partner to brainstorming. That is the decision under test, given in a message to the partner, so no rep is VOID:
+none refuses the task.
+
+- A fails in every rep by omission: no rep groups outcomes into tracks. Quote (A, rep1): "# I can't stage this yet:
+  there's no spec".
+- B fails in every rep: no rep asks the partner to rank.
+- C, by the stage-list reading. Rep4 fails: "This project will almost certainly need several stages: data and
+  vintage panel, then a baseline state-space model, then a scale model with covariates, then validation." Rep1
+  fails: "That spec will clearly span several cycles: building the vintage panel, a constant-variance baseline, the
+  multi-vintage state space, scale covariates and hierarchy, then validation." Rep2 passes, borderline: "The
+  data-acquisition and vintage-panel work, plus a cheap investigation of the wedge question, will likely come before
+  any modelling stage." It calls only the modelling work a stage. Rep3 names one early stage. Rep5 lists work areas
+  that it does not call stages.
+- D fails in every rep: no cost note for model fitting or compute.
+
+Running total: $3.3441 of $60. Control arms: $3.0479 of $30.
+
+### Control: dr-research-depth
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.9185.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | fail | fail | pass | fail | fail | no |
+| 2 | fail | fail | pass | fail | fail | no |
+| 3 | fail | fail | pass | fail | fail | no |
+| 4 | fail | fail | pass | fail | fail | no |
+| 5 | fail | fail | pass | fail | fail | no |
+
+Clause A: 0 of 5. Clause B: 0 of 5. Clause C: 5 of 5. Clause D: 0 of 5. Clause E: 0 of 5. RED: the control fails a
+bar clause in 5 of 5.
+
+- A fails in every rep: each commits all six outcomes as six stage entries, three per track, with no ranked list.
+  Quote (A, rep2): "Committed `specs/ces-revisions-prompt-roadmap.md`, six research stages (Track A O1→O3→O2, then
+  Track B O6→O4→O5)".
+- B fails in every rep: at most the first stage's Exit records a measured cost (the fit time, in reps 1, 2, 3 and
+  5), and Stages 2 to 6 record none. Rep4 puts the fit time in Stage 1's Produces only. Quote (B, rep3, Stage 2's
+  Exit): "A committed finding reports the share of one- and two-month revision variance from each component, by
+  period, with intervals."
+- C passes in every rep: each stage entry holds one outcome of one track.
+- D fails in every rep: no stage entry names what it leaves out.
+- E fails in every rep: no stage's Produces names a file that records the result and the measured cost. Rep5's
+  Stage 1 names "a committed finding under `specs/`" in its Exit, not its Produces.
+
+Running total: $4.2626 of $60. Control arms: $3.9664 of $30.
+
+### Control: dr-resume-rerank
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2674.
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | fail | pass | no |
+| 3 | pass | pass | fail | pass | no |
+| 4 | fail | pass | pass (borderline) | pass | no |
+| 5 | pass | pass | fail | pass | no |
+
+Clause A: 4 of 5. Clause C: 5 of 5. Clause B: 2 of 5. Clause D: 5 of 5. RED: the control fails a bar clause in 1 of
+5 (rep4).
+
+- A, rep4, fail. Quote: "**Every stage is now ticked, so I ran the completion review (§6) against the Outcomes
+  list:**", followed by a status table of O1 to O4. Reps 2, 3 and 5 offer parking only as one option of the
+  question, which is not parking.
+- C passes in every rep: each ends on one approve-or-amend question with a proposed default for the next stage or
+  stages. Rep5's default puts O3 before O2 against the list, which is still a proposed next stage from it.
+- B: reps 2, 3 and 5 report the 22-minute, 1.8 GB run but not the 3.1 m level or the steep rise. Each reports only
+  that the four longest-record locks share one curve. Rep1 reports both. Rep4 reports the 3.1 m level and "A
+  22-minute laptop fit", but not the 1.8 GB, so it passes, borderline.
+- D passes in every rep: each proposes stages in its question and writes no stage entry.
+
+Running total: $4.5300 of $60. Control arms: $4.2338 of $30.
+
+### Control: dr-resume-legacy
+
+Non-regression (guard). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.1981.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5. Every rep says that all three stages are ticked, starts the completion review
+over R1 to R6 with a list of reads, and asks no re-ranking question. Rep1 ends on "Shall I go ahead with the
+reads?", which is not a re-ranking question. The treatment must pass at least 4 of 5.
+
+Running total: $4.7281 of $60. Control arms: $4.4319 of $30.
+
+### Control: dcm-describe-route
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3526.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | fail | pass | fail | no |
+| 2 | fail | pass | fail | no |
+| 3 | fail | pass | fail | no |
+| 4 | fail (borderline) | pass | fail | no |
+| 5 | fail | pass | fail | no |
+
+Clause A: 0 of 5. Clause B: 5 of 5. Clause C: 0 of 5. RED: the control fails a bar clause in 5 of 5.
+
+- A. Reps 1 and 5 plan the description as the next step. Quote (A, rep1): "After that I'll write
+  `specs/sec-filing-index-ingestion-methodology.md`, self-check it, run `check_decoupling.py` on it, and commit it
+  before handing off." Rep5: "Then I'll write the notation table first, run `check_decoupling.py`, commit". Reps 2
+  and 3 end on a go-ahead question on their own plan ("Shall I go ahead with the system-level description of the
+  proposed design?", "Should I go ahead on that basis?"), which fails A by the plan-or-option reading. Rep4 offers
+  the description as one option ("do you want that, or would you rather wait until some of the ingestion code
+  exists?"), which alone does not fail A. Reps 2, 3 and 4 also write the content of a template slot (the system
+  template's Component inventory, or its Open questions for the reviewer): rep3 maps "The template's slots" onto a
+  component table, rep2 lists "The open questions for the reviewer", and rep4 lists the five components "named by
+  role". Rep4 fails on that slot alone (borderline). Rep2 fails on both grounds.
+- B passes in every rep, for example rep3: "The ingestion system isn't implemented yet. Only its design spec exists."
+- C fails in every rep by omission: no rep names derive-roadmap. Reps 3 and 4 offer to wait for an implementation,
+  and reps 1 to 4 offer design-architecture. Quote (C, rep4): "**One question:** do you want that, or would you
+  rather wait until some of the ingestion code exists?"
+
+Running total: $5.0807 of $60. Control arms: $4.7845 of $30.
+
+### Control: dcm-synth-route
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3868.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | fail | no |
+| 2 | fail (borderline) | pass | fail | no |
+| 3 | fail | pass | fail | no |
+| 4 | fail | pass | fail | no |
+| 5 | pass | pass | fail | no |
+
+Clause A: 2 of 5. Clause B: 5 of 5. Clause C: 0 of 5. RED: the control fails a bar clause in 5 of 5.
+
+- A. Reps 3 and 4 plan the triage table as the next step. Quote (A, rep4): "Next comes the batched triage table and
+  nothing else." Rep2 plans it too ("Then I'll send the whole triage table in one message") and asks "Shall I go
+  ahead with the adapted synthesis?", a go-ahead on its own plan (borderline: it also says "If you'd rather
+  brainstorm first, say so"). Rep1 offers the triage as option 1 of "Should I go ahead with option 1, or would you
+  rather go through brainstorming?", which does not fail A. Rep5 recommends brainstorming and offers a bent
+  synthesize mode only as the other option of its question. Its plan writes a spec only after the design choices
+  are settled, not next.
+- B passes in every rep, for example rep3: "So what we actually have is three competing design proposals for
+  something not yet built."
+- C fails in every rep: no rep gives the files to derive-roadmap as background for staging. Reps 1 and 2 put the
+  derive-roadmap header on the spec that synthesis would write. Quote (C, rep5): "If the resulting spec is large
+  enough to need staging, it can still go to derive-roadmap afterwards."
+
+Running total: $5.4675 of $60. Control arms: $5.1713 of $30.
+
+### Control: bs-route
+
+Additive. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.1659.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | fail | pass | pass | no |
+| 2 | fail | pass | pass | no |
+| 3 | fail | pass (borderline) | pass | no |
+| 4 | fail | fail (borderline) | pass | no |
+| 5 | fail | pass | pass | no |
+
+Clause A: 0 of 5. Clause B: 4 of 5. Clause C: 5 of 5. RED: the control fails a bar clause in 5 of 5.
+
+- A fails in every rep by omission: no rep names derive-roadmap. Each sums up what it heard, raises the
+  gap-filling and extremes question, and asks which four stations and feeds. Quote (A, rep2): "Correct me if I've
+  got any of that wrong. Which four stations are these, and whose feeds do they come from?"
+- B. Rep4 presents one way to build the whole tool as its proposal (borderline). Quote (B, rep4): "My proposal is
+  plain scripts with a small set of common libraries, so nothing needs a server or a database." Rep3's "My
+  proposals, for you to correct" cover parts of the tool (gap-filling, a local raw cache, the chart form), not a way
+  to build the whole of it, so it passes (borderline). Reps 1, 2 and 5 restate the partner's steps and language.
+- C passes in every rep: no rep writes a design file, and each asks only about the stations and feeds, or asks the
+  partner to correct its summary.
+
+Running total: $5.6334 of $60. Control arms: $5.3372 of $30.
+
+### Control: bs-guard
+
+Non-regression (guard). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.1657.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | fail | no |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 4 of 5. Every rep lays out two or three ways to build the script with a
+recommendation, and none hands off to derive-roadmap. Rep1 fails because its one question also asks about its
+defaults: "Do you want approach A, and do those defaults match what you want, especially elapsed time rather than
+moving time?" Rep4 states its defaults with "Unless you say otherwise" and asks only which approach, so it passes.
+The treatment must pass at least 3 of 5.
+
+Running total: $5.7991 of $60. Control arms: $5.5029 of $30.
+
+### Control summary and spend
+
+`uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/control/*/`
+ran once after the last rep. It shows 75 reps, none VOID, and prints `total cost $5.50`. No rep file is empty or
+unreadable, so none counts at its cap. There was no VOID rerun.
+
+| Case | Bar | Result | Clean control |
+|---|---|---|---|
+| trigger-stages | additive | RED, bar fail in 5 of 5 | no |
+| trigger-decoy | guard | 5 of 5 pass the rule | n/a |
+| dr-offer-scaffold | additive | RED, 5 of 5 | no |
+| dr-offer-inputs | additive | RED, 5 of 5 | no |
+| dr-offer-yes | additive | RED, 4 of 5 | no |
+| dr-built-guard | guard | 5 of 5 pass the rule | n/a |
+| dr-known-progression | additive | RED, 1 of 5 (by the by-reference reading; the other reading gives a clean control) | no |
+| dr-tracks | additive | RED, 5 of 5 | no |
+| dr-research-depth | additive | RED, 5 of 5 | no |
+| dr-resume-rerank | additive | RED, 1 of 5 | no |
+| dr-resume-legacy | guard | 5 of 5 pass the rule | n/a |
+| dcm-describe-route | additive | RED, 5 of 5 | no |
+| dcm-synth-route | additive | RED, 5 of 5 | no |
+| bs-route | additive | RED, 5 of 5 | no |
+| bs-guard | guard | 4 of 5 pass the rule | n/a |
+
+No additive case has a clean control under the readings applied. dr-known-progression would have one under the
+other reading of clause B, and it goes to the owner at the completion gate on that ground.
+
+Spend: Task 2's control arms cost $5.5029 (`show_reps.py` prints $5.50). Running total: $5.7991 of $60. Control
+arms: $5.5029 of $30.
+
