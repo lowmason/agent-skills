@@ -120,12 +120,16 @@ The controller keeps the running total here. Stop and ask the owner before the t
 control arms alone pass **$30**. An unreadable or empty rep file counts at its cap. Task 1 Step 6 sets the per-rep
 cap from a cost pilot.
 
+Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in `cases.py`.
+
 | Item | Reps | Cap per rep | Worst case | Spent |
 |---|---|---|---|---|
-| Task 1 Step 5, isolation probe | 1 | $1.00 | $1.00 | not run at the Step 4 commit |
-| Task 1 Step 6, cost pilot | 1 | $3.00 | $3.00 | not run at the Step 4 commit |
+| Task 1 Step 5, isolation probe | 1 | $1.00 | $1.00 | $0.0141 |
+| Task 1 Step 6, cost pilot | 1 | $3.00 | $3.00 | $0.2821 |
 
-Running total at the Step 4 commit: $0.00 of $60. Control arms: $0.00 of $30.
+Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
+read a control prompt, but it is not a control-arm rep: Task 2 does not count or score it. Counted against the $30
+as well, it would make the control total $0.28.
 
 ## Fixture sources
 
@@ -500,3 +504,31 @@ Leak words: `New-Project`, `roadmap`, `nothing built`.
 PASS (guard): the reply lays out two or three ways to build it, in this message, with a recommendation and one question asking which way to go. It does not hand off to derive-roadmap.
 
 Reading notes. A way to build it is an approach to the whole script, such as a choice of parsing library or of structure. The message asks one question, which way to go; a message with further questions fails.
+
+## Isolation probe (Task 1 Step 5)
+
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh specs/red-baseline-new-project-entry/kit/isolation_probe.txt specs/red-baseline-new-project-entry/pilot/probe 1 1 claude-opus-5-5 1.00`
+ran on Claude Code 2.1.316 (`claude --version` prints `2.1.316 (Claude Code)`), under `env -i`. The rep file is
+`pilot/probe/rep1.json`.
+
+All five probe lines read `NO`: no CLAUDE.md text, no output style, no rule, no SessionStart context and no memory.
+`show_reps.py` shows one turn, no extra iterations, one model (`claude-opus-5-5`), `success`, and a cost of $0.014.
+`claude -p` signed in under `env -i` with the CLI's stored login, so the kit keeps the `env -i` form for every rep.
+
+## Spend calibration (Task 1 Step 6)
+
+1. The control prompts were built with
+   `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan78-work/calibrate`.
+   Its `MANIFEST.txt` is copied to `pilot/calibrate-MANIFEST.txt`. It shows `budget None`, because the cap did not
+   exist yet. Its prompt hashes are the same as those of the sanity build made before the Step 4 commit.
+2. The largest prompt by bytes is `dr-offer-inputs.txt`: 59,366 bytes, sha256
+   `9f53553c8d454b55b038db6397ecd18f213dc5775a9e89169dd44e0d37fd1377`. The next two are `dr-known-progression.txt`
+   (57,687 bytes) and `dr-offer-yes.txt` (57,194 bytes).
+3. One uncounted rep of it ran with a $3.00 cap, into `pilot/dr-offer-inputs/rep1.json`. It ended with `success`, in
+   one turn, with no tool and one model. Its `total_cost_usd` is 0.2821344. The prompt wrote 23,336 tokens to the
+   cache and read 1,592 from it. The reply had 4,756 output tokens, 2,116 of them thinking. The reply is not scored.
+4. Per-rep cap: the larger of $1.00 and 3 × $0.2821 = $0.846, rounded up to the next $0.25. That is **$1.00**. It is
+   written into every case's `budget` (`BUDGET` in `cases.py`).
+5. Estimate for the full run: 150 × $0.2821344 = **$42.32**, where 150 is 15 cases × 5 reps × 2 arms. The control
+   arms alone: 75 × $0.2821 = $21.16. Both are under their stops ($60 and $30), so no owner stop is needed before
+   the counted reps. VOID reruns and wording rounds come on top of the estimate.

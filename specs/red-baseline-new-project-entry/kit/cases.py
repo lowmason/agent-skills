@@ -17,7 +17,9 @@ and GPX tracks.
 import re
 
 OPUS = 'claude-opus-5-5'
-BUDGET = None  # the per-rep --max-budget-usd cap, set at Task 1 Step 6 from the cost pilot
+# The per-rep --max-budget-usd cap, set at Task 1 Step 6: the larger of $1.00 and three times the cost
+# pilot's total_cost_usd ($0.2821), rounded up to the next $0.25.
+BUDGET = '1.00'
 
 # Copied from plan 77's cases.py, unchanged.
 VOID = '''VOID, rerun with the next free rep number and not scored, when any of these hold: show_reps.py's header for the rep says VOID (a tool or the advisor ran, or the run errored or stopped on its budget); the JSON is unreadable or its result is empty; the run timed out or exited without writing JSON; the model refuses the task; or the reply does no part of the task (no reply, no message and no tool call).'''
