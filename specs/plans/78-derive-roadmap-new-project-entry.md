@@ -64,6 +64,13 @@ The owner approved the plan at review on 2026-11-06: "Approved." D1 to D11 are t
 - **D11** (owner, plan review, 2026-11-06): fixtures are read from local clones through `CASE_REPOS`, the ces-revisions drafts go in as excerpts, and embedding-data's first gap table is the V1b state with its stage pointers removed. Applied in: Global Constraints (Fixtures), Task 1 Steps 2 and 3.
 - **D12** (owner, plan review, 2026-11-06): "Approved.", in answer to the recommendation of subagent-driven-development. Execute with subagent-driven-development in a fresh session. Applied in: the execution handoff.
 
+D13 to D16 come from the owner's "Approved." (2026-11-06), the reply to four handoff points the planning session proposed after the brief's review.
+
+- **D13** (owner, handoff, 2026-11-06): an owner stop in a task (a spend stop, a bar miss, a wording-round ruling) is not a subagent-driven-development blocker. The implementer leaves its files in place and ends with `BLOCKED (owner gate: Task N Step M)`. The controller does not re-dispatch or escalate: it asks the owner, then continues the same implementer from that step with SendMessage. A task never restarts at Step 1, because the kit refuses an existing build folder or rep file. Applied in: Global Constraints (Bars, Spend).
+- **D14** (owner, handoff, 2026-11-06): every billed run counts toward the $60 total, the isolation probe and the cost pilot included, and the $30 stop counts Task 2's control reps. Each implementer dispatch carries the running total and the headroom under both stops. Before each `run_reps.sh` call, the implementer checks the total plus that call's worst case (its reps × its cap). A task's spend is one `show_reps.py` run after its last rep, and an unreadable or empty rep file counts at its cap. Applied in: Global Constraints (Spend), Tasks 1 to 6.
+- **D15** (owner, handoff, 2026-11-06): when the execution session starts in the planning worktree, on `claude/roadmap-methodology-scope-c00eab` at `7ceefbb` (a `/clear` there), it executes on that branch. Otherwise a fresh worktree fast-forwards to `7ceefbb`. `BASE` (Task 1 Step 1) is `7ceefbb` either way. Applied in: Execution base, Task 1 Step 1.
+- **D16** (owner, handoff, 2026-11-06): the plan-review approval covers the whole plan as written, its exact skill text (Tasks 3 to 6) and its pass rules (Task 1 Step 3) included. A text change found during execution goes through the Bars' wording round or to the owner. Applied in: D1 to D11.
+
 ## Open for plan review
 
 Resolved at plan review on 2026-11-06: the owner approved each item as proposed (D1 to D11).
