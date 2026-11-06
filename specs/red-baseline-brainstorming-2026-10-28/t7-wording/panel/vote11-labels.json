@@ -1,0 +1,402 @@
+{
+"R001": [
+"v3-positive",
+8
+],
+"R002": [
+"v2-no-example",
+23
+],
+"R003": [
+"v2-no-example",
+2
+],
+"R004": [
+"v2-no-example",
+9
+],
+"R005": [
+"v2-no-example",
+5
+],
+"R006": [
+"v1-delete",
+23
+],
+"R007": [
+"v1-delete",
+25
+],
+"R008": [
+"v3-positive",
+13
+],
+"R009": [
+"v2-no-example",
+20
+],
+"R010": [
+"v2-no-example",
+4
+],
+"R011": [
+"v3-positive",
+16
+],
+"R012": [
+"v1-delete",
+13
+],
+"R013": [
+"v2-no-example",
+3
+],
+"R014": [
+"v1-delete",
+3
+],
+"R015": [
+"v1-delete",
+4
+],
+"R016": [
+"v1-delete",
+10
+],
+"R017": [
+"control",
+20
+],
+"R018": [
+"control",
+10
+],
+"R019": [
+"v2-no-example",
+13
+],
+"R020": [
+"control",
+11
+],
+"R021": [
+"v2-no-example",
+24
+],
+"R022": [
+"control",
+22
+],
+"R023": [
+"v1-delete",
+15
+],
+"R024": [
+"v1-delete",
+24
+],
+"R025": [
+"v3-positive",
+10
+],
+"R026": [
+"control",
+3
+],
+"R027": [
+"v1-delete",
+22
+],
+"R028": [
+"v3-positive",
+17
+],
+"R029": [
+"control",
+23
+],
+"R030": [
+"v3-positive",
+12
+],
+"R031": [
+"control",
+16
+],
+"R032": [
+"v3-positive",
+7
+],
+"R033": [
+"v1-delete",
+9
+],
+"R034": [
+"control",
+14
+],
+"R035": [
+"v2-no-example",
+25
+],
+"R036": [
+"v1-delete",
+20
+],
+"R037": [
+"v1-delete",
+19
+],
+"R038": [
+"v2-no-example",
+21
+],
+"R039": [
+"v3-positive",
+14
+],
+"R040": [
+"v2-no-example",
+6
+],
+"R041": [
+"v2-no-example",
+15
+],
+"R042": [
+"control",
+7
+],
+"R043": [
+"v1-delete",
+12
+],
+"R044": [
+"v3-positive",
+24
+],
+"R045": [
+"v3-positive",
+20
+],
+"R046": [
+"v2-no-example",
+12
+],
+"R047": [
+"v1-delete",
+8
+],
+"R048": [
+"control",
+15
+],
+"R049": [
+"v3-positive",
+5
+],
+"R050": [
+"control",
+17
+],
+"R051": [
+"v1-delete",
+21
+],
+"R052": [
+"v3-positive",
+3
+],
+"R053": [
+"v1-delete",
+11
+],
+"R054": [
+"v1-delete",
+2
+],
+"R055": [
+"control",
+18
+],
+"R056": [
+"v2-no-example",
+17
+],
+"R057": [
+"v2-no-example",
+14
+],
+"R058": [
+"v3-positive",
+15
+],
+"R059": [
+"v1-delete",
+18
+],
+"R060": [
+"control",
+1
+],
+"R061": [
+"v1-delete",
+7
+],
+"R062": [
+"v3-positive",
+9
+],
+"R063": [
+"v1-delete",
+16
+],
+"R064": [
+"v1-delete",
+5
+],
+"R065": [
+"v1-delete",
+1
+],
+"R066": [
+"v2-no-example",
+7
+],
+"R067": [
+"v1-delete",
+17
+],
+"R068": [
+"v3-positive",
+23
+],
+"R069": [
+"control",
+4
+],
+"R070": [
+"v1-delete",
+6
+],
+"R071": [
+"v3-positive",
+19
+],
+"R072": [
+"control",
+5
+],
+"R073": [
+"control",
+8
+],
+"R074": [
+"control",
+9
+],
+"R075": [
+"v2-no-example",
+18
+],
+"R076": [
+"control",
+2
+],
+"R077": [
+"control",
+21
+],
+"R078": [
+"v3-positive",
+11
+],
+"R079": [
+"v2-no-example",
+1
+],
+"R080": [
+"v3-positive",
+2
+],
+"R081": [
+"control",
+6
+],
+"R082": [
+"v2-no-example",
+19
+],
+"R083": [
+"control",
+12
+],
+"R084": [
+"control",
+19
+],
+"R085": [
+"v1-delete",
+14
+],
+"R086": [
+"v3-positive",
+22
+],
+"R087": [
+"control",
+13
+],
+"R088": [
+"v3-positive",
+18
+],
+"R089": [
+"v3-positive",
+4
+],
+"R090": [
+"v3-positive",
+6
+],
+"R091": [
+"v2-no-example",
+11
+],
+"R092": [
+"v3-positive",
+21
+],
+"R093": [
+"control",
+24
+],
+"R094": [
+"control",
+25
+],
+"R095": [
+"v3-positive",
+1
+],
+"R096": [
+"v2-no-example",
+16
+],
+"R097": [
+"v3-positive",
+25
+],
+"R098": [
+"v2-no-example",
+10
+],
+"R099": [
+"v2-no-example",
+22
+],
+"R100": [
+"v2-no-example",
+8
+]
+}

@@ -1,0 +1,902 @@
+{
+"control-rep1": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep2": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep3": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep4": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep5": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep6": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep7": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep8": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep9": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep10": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep11": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep12": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep13": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep14": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep15": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep16": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep17": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep18": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep19": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep20": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep21": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep22": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"control-rep23": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep24": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"control-rep25": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep1": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep2": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep3": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep4": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep5": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep6": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep7": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep8": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep9": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep10": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep11": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep12": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep13": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep14": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep15": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep16": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep17": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep18": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep19": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep20": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep21": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep22": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep23": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v1-delete-rep24": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v1-delete-rep25": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep1": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep2": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep3": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep4": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep5": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep6": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep7": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep8": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep9": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep10": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep11": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep12": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep13": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep14": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep15": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep16": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep17": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep18": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep19": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep20": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep21": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v2-no-example-rep22": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep23": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v2-no-example-rep24": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "P"
+},
+"v2-no-example-rep25": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep1": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep2": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep3": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep4": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep5": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep6": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep7": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep8": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep9": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep10": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep11": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep12": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep13": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep14": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep15": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep16": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep17": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep18": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep19": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep20": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep21": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep22": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep23": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+},
+"v3-positive-rep24": {
+"panel": "F",
+"votes": [
+"F",
+"F",
+"F"
+],
+"hand": "F"
+},
+"v3-positive-rep25": {
+"panel": "P",
+"votes": [
+"P",
+"P",
+"P"
+],
+"hand": "P"
+}
+}
