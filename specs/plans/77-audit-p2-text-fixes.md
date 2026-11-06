@@ -39,8 +39,15 @@
 ## Decisions
 
 - **D1** (owner, brief, 2026-11-05): plan the audit P2 keeper batch in its own session, and stop at plan review. Applied in: `specs/deferred_items.md` (the item's `→ planned` note), Global Constraints (One execution at a time).
+- **D2** (owner, plan review, 2026-11-05): micro-test keepers (1) and (2) in one receiving-code-review case scored by clause, and (3) and (8) in one case each. No case for (9) or (11). Applied in: Open for plan review item 1, Tasks 1-4.
+- **D3** (owner, plan review, 2026-11-05): non-regression bars for (1), (2) and (8), and an additive bar with no automatic revert for (3). Applied in: Open for plan review item 2, Global Constraints (Two kinds of bar), Tasks 1-4.
+- **D4** (owner, plan review, 2026-11-05): restate (1)'s two rules in house wording, drop (2)'s parenthetical, use `uv add` with a `uv init` lead-in for (6), and change only the wording for (10). Applied in: Open for plan review item 3, Tasks 2, 6 and 8.
+- **D5** (owner, plan review, 2026-11-05): (6) includes `scripts/calibration_check.py`'s import-error message and its test, red-first. Applied in: Open for plan review item 4, Task 6.
+- **D6** (owner, plan review, 2026-11-05): (9) deletes only the two blocks that the item names. Upstream's four other deletions stay out. Applied in: Open for plan review item 5, Task 5.
 
 ## Open for plan review
+
+Resolved at plan review on 2026-11-05: the owner approved each item as proposed (D2-D6).
 
 1. **Which edits get a micro-test** (the brief's default). Proposed: follow the item's list. One case covers keepers (1) and (2), receiving-code-review's misattributed quotes and its nonexistent ban, and scores each in its own clause. One case covers (3), the new test-driven-development pointer, and one covers (8), systematic-debugging's dead "Phase 4.5" pointer. No case for (9), the two narrative blocks: the ruling accepts upstream's removal. dispatching-parallel-agents is also manual-only (`disable-model-invocation`). No case for (11), the cross-skill pointers: brainstorming is not on the list, plan 70 pressure-tested it, and its new sentence applies only when every approach is a flavor of one idea. The cheaper alternative is plan 76's D1 rule, a micro-test only where an edit changes what an agent chooses. That keeps only `tdd-strategy` and drops Task 1's other two cases and Step 4 of Tasks 2 and 4.
 2. **Two kinds of bar** (new, not in the brief). Plan 76's stop rule reverts a fix when its control shows no failure. Keepers (1), (2) and (8) correct false text: misattributed quotes, a ban that no instruction file contains, and a "Phase 4.5" that does not exist. Their controls will likely pass, so that rule would undo the keeper ruling. Proposed: non-regression bars for those three, and an additive bar with no automatic revert for (3). Global Constraints give both.
