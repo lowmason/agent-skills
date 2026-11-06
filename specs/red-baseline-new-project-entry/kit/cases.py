@@ -47,9 +47,11 @@ NO_TEXTS: list[str] = []
 ARROW = '→'
 STAGE_REF = re.compile(r'\bS\d+\b|\bstages?\b', re.I)
 STATEMENT_WORDS = 4
-# The three in-code-but-not-in-spec rows: their notes record the owner's answers to the batched
-# questions of 2026-10-12, given after the gap analysis ran, and one is a verdict (`acquir`).
-OWNER_ANSWER_ROWS = {'—'}
+# Rows whose whole note is emptied, keyed by their Evidence cell. The plan's leak rule for
+# dr-offer-inputs keeps a note hit only where it is historical evidence and not a verdict. The osha
+# case-detail row's note, "Kept; recorded in spec as acquired, feeding no target", is a verdict
+# (leak word `acquir`), so it goes. Every other row goes through note_segment() only.
+LEAK_VERDICT_ROWS = {'`osha` case-detail command'}
 
 
 def note_segment(segment: str) -> str:
@@ -70,13 +72,14 @@ def note_segment(segment: str) -> str:
 
 def gap_table_without_stages(text: str) -> str:
     '''The roadmap's Gap analysis section, key and table, with every stage pointer removed from
-    the Note column and nothing after the table. Refuses when a stage reference survives.'''
+    the Note column, the notes of LEAK_VERDICT_ROWS emptied, and nothing after the table. Refuses
+    when a stage reference survives or a row of LEAK_VERDICT_ROWS is missing.'''
     lines = text.splitlines()
     start = lines.index('## Gap analysis') + 1
     end = next(i for i in range(start, len(lines)) if lines[i].startswith('## '))
     section = lines[start:end]
     last = max(i for i, line in enumerate(section) if line.startswith('|'))
-    out = []
+    out, emptied = [], set()
     for line in section[:last + 1]:
         if not line.startswith('|') or line.startswith(('|---', '| Req ')):
             out.append(line)
@@ -84,12 +87,18 @@ def gap_table_without_stages(text: str) -> str:
         cells = line.split('|')
         if len(cells) != 6:
             raise SystemExit(f'refusing: gap table row does not have four cells: {line}')
-        req, note = cells[1].strip(), cells[4]
-        kept = [] if req in OWNER_ANSWER_ROWS else [s for s in map(note_segment, note.split(';')) if s]
+        req, evidence, note = cells[1].strip(), cells[3].strip(), cells[4]
+        if evidence in LEAK_VERDICT_ROWS:
+            emptied.add(evidence)
+            kept = []
+        else:
+            kept = [s for s in map(note_segment, note.split(';')) if s]
         cells[4] = f' {"; ".join(kept)} ' if kept else ' '
         if ARROW in cells[4] or STAGE_REF.search(cells[4]):
             raise SystemExit(f'refusing: a stage reference survives in the note of {req}')
         out.append('|'.join(cells))
+    if emptied != LEAK_VERDICT_ROWS:
+        raise SystemExit(f'refusing: rows to empty not found: {sorted(LEAK_VERDICT_ROWS - emptied)}')
     return '\n'.join(out).strip('\n')
 
 

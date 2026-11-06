@@ -55,6 +55,10 @@ Kit: `specs/red-baseline-new-project-entry/kit/`. Three files are copies of plan
     case file with a `derive` function adds a second line, the sha256 of the derived text. The leak view keeps these
     files, because they are fixture, not text under test.
   - **No texts.** A case whose `texts` list is empty (the two trigger cases) gets no text block.
+
+  One further change is not in Step 2: every `git` call decodes its output as UTF-8, and every prompt and
+  `MANIFEST.txt` is written as UTF-8. Plan 77's builder used the platform's default encoding. The prompts hold
+  non-ASCII text (`→`, `—`, `§`), so the builder names the encoding and does not depend on the locale.
 - `cases.py` is new. It holds the 15 cases, the VOID rule (when a rep is thrown out and rerun, not scored), the two
   bars and the derivation of the embedding-data gap table.
 
@@ -175,10 +179,14 @@ of the `4bc8cda` roadmap, with its key, as the gap analysis that the agent ran. 
    delete the pointer. Keep the text before the arrow when it is a statement (4 words or more) or reports a check as
    unrecorded. A shorter text is the label of the pointed-to stage's work (`build`, `V1`, `Codes`), so it goes with
    the pointer. Delete a segment with no arrow that names a stage (`first in S6`, `Seeded S6`).
-3. Empty the notes of the three `in-code-but-not-in-spec` rows (Req `—`). Each records the owner's answer to the
-   batched questions of 2026-10-12, which came after the gap analysis ran. One of them, "recorded in spec as
-   acquired, feeding no target", is also a verdict that the case scores (leak word `acquir`).
-4. Refuse the build when an arrow or a stage reference (`S<n>`, `stage`) survives in a note.
+3. Empty the whole note of one row: the `in-code-but-not-in-spec` row whose Evidence cell is
+   `` `osha` case-detail command `` (`LEAK_VERDICT_ROWS` in `cases.py`). The reason is the plan's leak rule for this
+   case. A hit in the table's notes stays only where it is historical evidence and not a verdict. That note, "Kept;
+   recorded in spec as acquired, feeding no target", is a verdict that clause B scores (leak word `acquir`). The
+   other two `in-code-but-not-in-spec` rows go through rule 2 only, as every other row does. Their notes become
+   "Moves out of `data/raw`" and "Retained; R4.4 motivates later starts". (Amendment 1 changed this rule.)
+4. Refuse the build when an arrow or a stage reference (`S<n>`, `stage`) survives in a note, or when the row of
+   rule 3 is not found.
 
 **The lock-closures roadmap.** `dr-resume-rerank` needs a new-project roadmap before Task 3 adds that format. Its
 fixture follows the format text of plan 78 Task 3 Step 4. Stage 1's Handoff reads `None`, so its COMPLETE stamp has
@@ -223,11 +231,14 @@ hits in its notes:
   evidence of what the code at `af7bf21` downloads.
 - R9.1, "Names `acs`, `cps` only" (`only`): kept. It is the historical evidence of the CLI's command names.
 - The `osha` case-detail row (Req `—`), "Kept; recorded in spec as acquired, feeding no target" (`acquir`): removed
-  by rule 3 of the derivation. It is the owner's later answer, and "feeding no target" is a verdict that clause B
-  scores.
+  by rule 3 of the derivation, because "feeding no target" is a verdict that clause B scores.
 
 Three more hits sit in the Evidence column, outside the notes: R2.4 "2025 only", R3.4 "US samples only" and R8.2
 "README links terms only". Each is the historical evidence of its row and is kept. `end to end` has no hit.
+
+After Amendment 1, the leak view of dr-offer-inputs was rebuilt into `/tmp/plan78-work/leak-2` and grepped again.
+The hits are the same 26 in the spec text and the same 5 in the table. The two restored notes, "Moves out of
+`data/raw`" and "Retained; R4.4 motivates later starts", have no hit. No hit is in a hand-written line.
 
 ## Reading rules
 
@@ -520,7 +531,8 @@ All five probe lines read `NO`: no CLAUDE.md text, no output style, no rule, no 
 1. The control prompts were built with
    `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan78-work/calibrate`.
    Its `MANIFEST.txt` is copied to `pilot/calibrate-MANIFEST.txt`. It shows `budget None`, because the cap did not
-   exist yet. Its prompt hashes are the same as those of the sanity build made before the Step 4 commit.
+   exist yet. Its prompt hashes are the same as those of the sanity build made before the Step 4 commit. It holds
+   the hashes of dr-offer-inputs from before Amendment 1, because those are the prompt that the pilot ran.
 2. The largest prompt by bytes is `dr-offer-inputs.txt`: 59,366 bytes, sha256
    `9f53553c8d454b55b038db6397ecd18f213dc5775a9e89169dd44e0d37fd1377`. The next two are `dr-known-progression.txt`
    (57,687 bytes) and `dr-offer-yes.txt` (57,194 bytes).
@@ -532,3 +544,35 @@ All five probe lines read `NO`: no CLAUDE.md text, no output style, no rule, no 
 5. Estimate for the full run: 150 × $0.2821344 = **$42.32**, where 150 is 15 cases × 5 reps × 2 arms. The control
    arms alone: 75 × $0.2821 = $21.16. Both are under their stops ($60 and $30), so no owner stop is needed before
    the counted reps. VOID reruns and wording rounds come on top of the estimate.
+
+## Amendment 1 (before any counted rep)
+
+The task review of Task 1 found that rule 3 of the gap-table derivation went past the plan. It emptied the notes of
+all three `in-code-but-not-in-spec` rows and said that each records the owner's answers of 2026-10-12. That holds
+for the `osha` row and the `data/raw` row. It does not hold for the `cps --start` row: its note is not among the
+four owner answers that the `4bc8cda` roadmap records. The plan's fixture rule removes only stage pointers and
+stage-naming phrases, and its leak rule removes the `acquir` verdict. The controller ruled:
+
+- The `data/raw` row and the `cps --start` row go through rule 2 only. Each loses its `→ S1` pointer and the label
+  before it, and keeps the statement before the arrow.
+- The `osha` row's note stays empty, under the plan's leak rule. The code now finds that row by its own Evidence
+  cell, not by Req `—`.
+- R1.3 and every other row stay as they were.
+
+`cases.py` (`LEAK_VERDICT_ROWS`) and rule 3 above now say this.
+
+- Original rule 3: "Empty the notes of the three `in-code-but-not-in-spec` rows (Req `—`). Each records the owner's
+  answer to the batched questions of 2026-10-12, which came after the gap analysis ran. One of them, "recorded in
+  spec as acquired, feeding no target", is also a verdict that the case scores (leak word `acquir`)."
+- Effect: in the dr-offer-inputs prompt, the `data/raw` row's note changes from empty to "Moves out of `data/raw`",
+  and the `cps --start` row's note changes from empty to "Retained; R4.4 motivates later starts". Nothing else in
+  any prompt changes. A rebuild at `BASE` into `/tmp/plan78-work/fix1-control` gives a new sha256 for
+  `dr-offer-inputs.txt`, `6bbb36f3fbf6ae2b9e0d4e4c500ff8eff7be59a045832350aae109f8d4d5eb4e`. Its derived text is now
+  `05fde81b400b1049ddbb02c77b9d3ddb4b0c70d407dfe301f678576bd2bd6b80`. The other 14 prompt hashes are unchanged.
+
+The pilot reply for dr-offer-inputs (`pilot/dr-offer-inputs/rep1.json`) was read in full before this change. The
+change moves the fixture toward the brief's literal rule, not toward any outcome of a case. The pilot rep stays
+uncounted and unscored. `pilot/calibrate-MANIFEST.txt` keeps the pre-amendment hashes (`9f53553c…` for the prompt,
+`fe110c12…` for the derived text), because it records the prompt that the pilot ran. The pass rule of
+dr-offer-inputs is unchanged. The cap and the estimate are unchanged: the prompt grows by 62 bytes, from 59,366 to
+59,428, and stays the largest. No billed run was made for this amendment.
