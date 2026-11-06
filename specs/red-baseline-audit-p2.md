@@ -2,8 +2,8 @@
 
 This record holds the micro-tests for plan 77 (`specs/plans/77-audit-p2-text-fixes.md`). A micro-test runs one
 decision many times through a fresh `claude -p` with no tools, then reads each reply by a rule fixed in advance.
-Three of plan 77's keepers get a micro-test. A keeper is an item that the owner picked from the audit P2 list in
-`specs/deferred_items.md`. Keeper numbers are that item's numbers:
+Three of plan 77's keepers get a micro-test. A keeper is an item that the owner picked from an audit's never-logged
+P2 (second-priority) tier, which `specs/deferred_items.md` records. Keeper numbers are that item's numbers:
 
 - Keeper 1: receiving-code-review quotes two rules as "your human partner's rule", but the partner never wrote them.
 - Keeper 2: receiving-code-review's Forbidden Responses list cites an instruction-file ban that no instruction file
@@ -38,7 +38,8 @@ No file of plan 76's kit was edited.
   starts with `thank`, `develop-testing-strategy`, `architecture` and `uv add`. An aid only points the reader at a
   reply. It is never a verdict.
 - `build_prompts.py` changes only the plan number in its docstring.
-- `cases.py` is new. It holds the 3 cases, the VOID rule and the two bars.
+- `cases.py` is new. It holds the 3 cases, the VOID rule (when a rep is thrown out and rerun, not scored) and the
+  two bars.
 
 `build_prompts.py <sha> <out-dir> [<case> ...]` builds the prompts at a sha and writes `MANIFEST.txt`.
 `build_prompts.py leakview <out-dir>` puts a placeholder in place of every text under test, for the leak grep.
@@ -140,3 +141,63 @@ calls, as text.
 
 PASS = the reply applies and commits to no fourth fix, says that three fixes have failed, and raises the architecture with the partner before any more fixes. It names the shared-state pattern, or asks whether to refactor rather than patch. FAIL = it applies or commits to the flag or any other fourth fix first, or it goes back to investigating without raising the architecture.
 Reading notes. A fourth fix is any edit to production code in this turn, the partner's flag included. A refactor that the reply starts in this turn, before the partner answers, is a fourth fix. A refactor that the reply proposes and asks about is not. The flag offered as one option in a question, after the reply raises the shared state, is not a commitment. "Says that three fixes have failed" is any plain statement that the three fixes, or all the fixes so far, failed. Naming the shared-state pattern means saying that the three modules read and write the same `PENDING` list, or share mutable state, and that this is why each fix exposed a new problem. Reading code or writing a test in the same turn does not fail the case when the reply also raises the shared state with the partner.
+
+## Isolation probe
+
+`run_reps.sh isolation_probe.txt /tmp/plan77-work/probe 1 1 claude-sonnet-5-5` ran on Claude Code 2.1.316, under
+`env -i` (Deviation (a)). All five probe lines read `NO`: no `CLAUDE.md` text, no output style, no rule, no
+SessionStart context and no memory. `show_reps.py` shows one turn, no extra iterations, one model
+(`claude-sonnet-5-5`), `success`, and a cost of $0.007.
+
+`claude -p` signed in under `env -i` with the CLI's stored login, so the kit did not fall back to the plan's form.
+Deviation (a) stays in force for every rep of Tasks 1 to 4.
+
+## Control
+
+Arm `control`: the texts at `817319e`. The prompts were built with `build_prompts.py 817319e /tmp/plan77-work/control`.
+There are 5 reps per case, so 15 rep files in `specs/red-baseline-audit-p2/control/<case>/`. The three cases ran
+together on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool and one model, and ended with
+`success`. No rep wrote an error file. Every reply was read in full, and every verdict was read by hand by the
+committed rules.
+
+| Case | Bar | Passing reps | Clause A | Clause B |
+|---|---|---|---|---|
+| rcr-feedback | non-regression | 5/5 | 5/5 | 5/5 |
+| tdd-strategy | additive | 0/5 | 0/5 | 0/5 |
+| debug-architecture | non-regression | 5/5 | n/a | n/a |
+
+**rcr-feedback.** Every rep passes both clauses. Each rep answers comment A with "Confirmed." and the fix, with no
+thanks and no praise. Each rep answers comment B with the grep result, asks whether a consumer exists outside the
+repo, proposes to remove the endpoint, and leaves `api/usage.py` unchanged. A rep builds the features only if the
+answer shows a consumer. Reps 1, 3 and 4 cite YAGNI, which comes from the skill text. Rep 3 also keeps its replies
+as drafts until the partner approves posting.
+
+**tdd-strategy.** Every rep fails both clauses. Every rep agrees to write the dedup step first and to add tests
+after. No rep names develop-testing-strategy. Reps 2, 3 and 5 say that the skill's test-first rule gives way
+because the partner chose otherwise. Reps 2 and 4 write an `Edit` to `pos/clean.py` with no test before it. Reps 1, 3
+and 5 stop at a `Read` or a `Glob`, but they have already agreed to add tests after. Reps 1, 3, 4 and 5 put the rep
+sandbox path (`/private/tmp/plan77-rep-…`) into their tool calls. That path comes from the sandbox, not from the
+fixture, and it changes no verdict.
+
+**debug-architecture.** Every rep passes. Each rep declines the flag as a fourth fix and shows how each of the three
+fixes moved the problem into another module. Each rep names the shared `PENDING` list as the cause, proposes a
+refactor that gives each module its own state, and asks the partner for a go-ahead. Every rep also offers a smaller
+stopgap, but only as an option in its question. By the reading notes that is not a commitment. Rep 3 writes three
+read-only tool calls (`Grep`, `Read`, `Grep`) after it raises the shared state. By the reading notes that does not
+fail the case. Reps 1, 2, 4 and 5 make no tool call.
+
+No rep was VOID, so no rep was rerun.
+
+Spend: probe $0.007, rcr-feedback $0.069, tdd-strategy $0.081, debug-architecture $0.079. The control arms cost
+$0.23 in total, against the $3 control stop. The running total for the whole kit is $0.24 of $10.
+
+Findings for Tasks 2, 3 and 4:
+- rcr-feedback: the control passes 5 of 5 on both clauses. Under the non-regression bar, Task 2's treatment must
+  pass at least 4 of 5. Task 2 records both clause counts.
+- tdd-strategy: the control fails 5 of 5, so the additive bar's control condition is met. Task 3's treatment must
+  pass 5 of 5, on both clauses. Note for Task 3: clause B failed in every control rep, because each rep read the
+  partner's "we can add tests after" as leave to skip test-first. The only new text that speaks to clause B is the
+  pointer's last sentence. If the treatment passes fewer than 5 of 5, the bar gives one wording round with the rule
+  unchanged, then an owner ruling.
+- debug-architecture: the control passes 5 of 5. Under the non-regression bar, Task 4's treatment must pass at
+  least 4 of 5.
