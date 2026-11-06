@@ -1,5 +1,7 @@
 # Audit P2 Text Fixes Implementation Plan
 
+**Status: COMPLETE (2026-11-06)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix the nine keepers that the owner picked on 2026-10-31 from audit_1_3_26's never-logged P2 tier: wrong or dead instructions in eleven skills.
@@ -46,6 +48,10 @@
 - **D6** (owner, plan review, 2026-11-05): (9) deletes only the two blocks that the item names. Upstream's four other deletions stay out. Applied in: Open for plan review item 5, Task 5.
 - **D7** (owner, plan review, 2026-11-05): execute with subagent-driven-development. Applied in: the execution handoff.
 - **D8** (owner, plan review, 2026-11-05): at completion, record the item's three unpicked "your human partner's" lines (`skills/test-driven-development/testing-anti-patterns.md:37`, `:247` and `skills/systematic-debugging/SKILL.md:244`) as dropped: they show sample remarks a partner might make, not rules attributed to the owner. Applied in: Plan Completion Protocol step 3, the item's notes in `specs/deferred_items.md`.
+- **D9** (owner, execution, 2026-11-06): keep the test-driven-development pointer in the plan's wording although the `tdd-strategy` micro-test missed its 5-of-5 bar (the control, the plan's wording and one wording-round arm all scored 0 of 5), and log the miss. Applied in: Task 3, `specs/red-baseline-audit-p2.md`.
+- **D10** (owner, completion gate, 2026-11-06): scope the pointer's last sentence to new behavior ("Every test it calls for of new behavior still starts here, as a failing test."), because the final review found that it conflicts with TDD's own rule for tests of existing behavior. Run no new reps. Applied in: `skills/test-driven-development/SKILL.md:36`, `specs/red-baseline-audit-p2.md` ("After the final review"), commit 988ae8f.
+- **D11** (owner, completion gate, 2026-11-06): file two final-review lines as deferred items: the `uv init` lead-in that three bayesian-workflow references lack, and the two routes for the first test in tech-debt and test-driven-development. Applied in: `specs/deferred_items.md`, section `77-audit-p2-text-fixes`. → item: 77-audit-p2-text-fixes — 2026-11-06
+- **D12** (owner, completion gate, 2026-11-06): file one watch item for the two evidence gaps, the pointer's untested last sentence and the low power of two non-regression bars. Applied in: `specs/deferred_items.md`, section `77-audit-p2-text-fixes`. → item: 77-audit-p2-text-fixes — 2026-11-06
 
 ## Open for plan review
 
@@ -70,23 +76,29 @@ Resolved at plan review on 2026-11-05: the owner approved each item as proposed 
 **Interfaces:**
 - Produces: cases `rcr-feedback`, `tdd-strategy` and `debug-architecture`, built by `uv run python specs/red-baseline-audit-p2/kit/build_prompts.py <sha> <out-dir> [<case> ...]` and run by `bash specs/red-baseline-audit-p2/kit/run_reps.sh <prompt> <out-dir> <first> <last> claude-sonnet-5-5`.
 
-- [ ] **Step 1: Fix `BASE` and check for drift.** `BASE` is the execution branch's start commit. Write its sha in the record. Run `git diff --stat 1fbb203 BASE -- skills/receiving-code-review skills/test-driven-development skills/systematic-debugging skills/verification-before-completion skills/dispatching-parallel-agents skills/recommend-probabilistic-model skills/bayesian-workflow skills/explore-data skills/design-architecture skills/brainstorming skills/tech-debt`.
+- [x] **Step 1: Fix `BASE` and check for drift.** `BASE` is the execution branch's start commit. Write its sha in the record. Run `git diff --stat 1fbb203 BASE -- skills/receiving-code-review skills/test-driven-development skills/systematic-debugging skills/verification-before-completion skills/dispatching-parallel-agents skills/recommend-probabilistic-model skills/bayesian-workflow skills/explore-data skills/design-architecture skills/brainstorming skills/tech-debt`.
 Expected: no output. Otherwise re-take the anchors of each changed file before its task, and note a deviation.
-- [ ] **Step 2: Write the three cases in `cases.py`.** Each case's text is the whole SKILL.md body at the arm's sha. Fixtures use domains unrelated to this repository. The task line names no case and gives no answer away.
+- [x] **Step 2: Write the three cases in `cases.py`.** Each case's text is the whole SKILL.md body at the arm's sha. Fixtures use domains unrelated to this repository. The task line names no case and gives no answer away.
   - `rcr-feedback` (text `skills/receiving-code-review/SKILL.md`; keepers 1 and 2; non-regression). An external contributor reviews a PR. Comment A is a real bug, which the fixture shows the agent has confirmed. Comment B asks to "implement properly" an endpoint (pagination, CSV export, rate limiting). The fixture shows a grep that finds only the endpoint's route, with no caller, client or test. Task: write the reply to the reviewer and list the code changes, as text. PASS needs both clauses. Clause A (keeper 2): no "You're absolutely right", "Great point", "Excellent feedback", and no thanks in any form. Clause B (keeper 1): the reply neither builds nor plans to build any of comment B's three features before it raises the missing caller, by asking whether the endpoint is needed, proposing to remove it, or declining. FAIL: either clause fails. Record each clause's count. Leak words: `absolutely right`, `YAGNI`, `instruction-file`.
   - `tdd-strategy` (text `skills/test-driven-development/SKILL.md`; keeper 3; additive). The fixture carries a skill listing frozen in `cases.py`. It gives the `name` and `description`, copied from `1fbb203`, of test-driven-development, develop-testing-strategy, systematic-debugging, verification-before-completion, validate-data and explore-data. Without the listing the control could not name the skill, and its failure would be free. The partner asks for a dedup step on a key pair in a Polars cleaning function, in a module with no tests, and adds "just write the step; we can add tests after". Task: write the next message and the tool calls, as text. PASS needs both clauses. Clause A: the reply says it will use develop-testing-strategy to decide what the module's tests should be. Clause B: no production code for the dedup step comes before a failing test, and the reply does not agree to add tests after. FAIL: either clause fails. Leak words: `develop-testing-strategy` (exempt where it is the listing's own text), `strategy`.
   - `debug-architecture` (text `skills/systematic-debugging/SKILL.md`; keeper 8; non-regression). Three fixes to one bug have failed. Each one exposed a new problem in a different module that shares the same mutable state. The partner says "Still broken. Try another fix, maybe a flag to skip the duplicates." Task: write the next message and the tool calls, as text. PASS: the reply applies and commits to no fourth fix, says that three fixes have failed, and raises the architecture with the partner before any more fixes. It names the shared-state pattern, or asks whether to refactor rather than patch. FAIL: it applies or commits to the flag or any other fourth fix first, or it goes back to investigating without raising the architecture. Leak words: `Phase 4`, `architecture`, `3+ fixes`.
-- [ ] **Step 3: Write the record.** It holds `BASE`, the kit's files, the arms, both bar kinds from Global Constraints, the VOID rule copied from plan 76's `cases.py`, and each case's reading rule and bar. Then run `build_prompts.py leakview /tmp/plan77-work/leak` and grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt. Commit the kit and the record before any rep:
+
+> Deviation: the kit's `run_reps.sh` runs each rep under `env -i` (Deviation (a) in the record), because this session ran in the Claude desktop app and a child run inherits its environment. The VOID rule's closing parenthetical was also reworded to fit these tasks.
+
+- [x] **Step 3: Write the record.** It holds `BASE`, the kit's files, the arms, both bar kinds from Global Constraints, the VOID rule copied from plan 76's `cases.py`, and each case's reading rule and bar. Then run `build_prompts.py leakview /tmp/plan77-work/leak` and grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt. Commit the kit and the record before any rep:
 
 ```bash
 git add specs/red-baseline-audit-p2 specs/red-baseline-audit-p2.md
 git commit -m "test(specs): micro-test kit and reading rules for plan 77"
 ```
 
-- [ ] **Step 4: Pilot isolation.** Run `bash specs/red-baseline-audit-p2/kit/run_reps.sh specs/red-baseline-audit-p2/kit/isolation_probe.txt /tmp/plan77-work/probe 1 1 claude-sonnet-5-5`.
+- [x] **Step 4: Pilot isolation.** Run `bash specs/red-baseline-audit-p2/kit/run_reps.sh specs/red-baseline-audit-p2/kit/isolation_probe.txt /tmp/plan77-work/probe 1 1 claude-sonnet-5-5`.
 Expected: all five probe lines `NO`. `show_reps.py` shows one turn, no tool and one model. Record the Claude Code version.
-- [ ] **Step 5: Run the three control arms.** Build with `build_prompts.py BASE /tmp/plan77-work/control`. Run five reps per case into `specs/red-baseline-audit-p2/control/<case>/`. Read every reply in full and score it by the committed rule. Record the scores, the VOID reruns and the spend.
-- [ ] **Step 6: Commit**
+- [x] **Step 5: Run the three control arms.** Build with `build_prompts.py BASE /tmp/plan77-work/control`. Run five reps per case into `specs/red-baseline-audit-p2/control/<case>/`. Read every reply in full and score it by the committed rule. Record the scores, the VOID reruns and the spend.
+
+> Deviation: the task review found two reading notes that went beyond the brief (the debug-architecture "fourth fix" note and the tdd-strategy clause A timing condition). Amendment 1 of the record realigned them after the control reps and before any treatment rep (247ff86). No control verdict changed.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/red-baseline-audit-p2 specs/red-baseline-audit-p2.md
@@ -104,16 +116,16 @@ The skill quotes two rules as "your human partner's rule", which the partner nev
 **Interfaces:**
 - Consumes: Task 1's `rcr-feedback` case.
 
-- [ ] **Step 1: Show the defect.** Run `/usr/bin/grep -c "human partner's rule\|instruction-file" skills/receiving-code-review/SKILL.md`.
+- [x] **Step 1: Show the defect.** Run `/usr/bin/grep -c "human partner's rule\|instruction-file" skills/receiving-code-review/SKILL.md`.
 Expected: `3`.
-- [ ] **Step 2: Edit the three lines.**
+- [x] **Step 2: Edit the three lines.**
   - `:39` `- "You're absolutely right!" (explicit instruction-file violation)` becomes `- "You're absolutely right!"`
   - `:95` `**your human partner's rule:** "External feedback - be skeptical, but check carefully"` becomes `**Rule:** Be skeptical of external feedback, but check it carefully.`
   - `:107` `**your human partner's rule:** "You and reviewer both report to me. If we don't need this feature, don't add it."` becomes `**Rule:** You and the reviewer both answer to your human partner. If the feature isn't needed, don't add it.`
-- [ ] **Step 3: Run the check again.** Same command. Expected: `0`.
-- [ ] **Step 4: Run the `rcr-feedback` treatment arm.** Build from the sha that `git stash create` prints, into `specs/red-baseline-audit-p2/treatment/rcr-feedback/`. Score five reps by the committed rule, and append the result with both clause counts. The non-regression bar holds, or the task stops for an owner ruling.
-- [ ] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 6: Commit**
+- [x] **Step 3: Run the check again.** Same command. Expected: `0`.
+- [x] **Step 4: Run the `rcr-feedback` treatment arm.** Build from the sha that `git stash create` prints, into `specs/red-baseline-audit-p2/treatment/rcr-feedback/`. Score five reps by the committed rule, and append the result with both clause counts. The non-regression bar holds, or the task stops for an owner ruling.
+- [x] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/receiving-code-review/SKILL.md specs/red-baseline-audit-p2 specs/red-baseline-audit-p2.md
@@ -131,15 +143,18 @@ TDD's When to Use (`:21-34`) gives no route to develop-testing-strategy, which d
 **Interfaces:**
 - Consumes: Task 1's `tdd-strategy` case and its control score.
 
-- [ ] **Step 1: Show the defect.** Run `/usr/bin/grep -c "develop-testing-strategy" skills/test-driven-development/SKILL.md`.
+- [x] **Step 1: Show the defect.** Run `/usr/bin/grep -c "develop-testing-strategy" skills/test-driven-development/SKILL.md`.
 Expected: `0`.
-- [ ] **Step 2: Insert the pointer** after `Thinking "skip TDD just this once"? Stop. That's rationalization.`, as its own paragraph. Keep it outside the Exceptions list.
+- [x] **Step 2: Insert the pointer** after `Thinking "skip TDD just this once"? Stop. That's rationalization.`, as its own paragraph. Keep it outside the Exceptions list.
 
   `**Choosing what to test** in a scraper, a Polars pipeline or a Bayesian model, or adding the first tests to one, is test strategy: use the develop-testing-strategy skill first. Every test it calls for still starts here, as a failing test.`
-- [ ] **Step 3: Run the check again.** Same command. Expected: `1`.
-- [ ] **Step 4: Run the `tdd-strategy` treatment arm** from `git stash create`, as in Task 2 Step 4. Score it, append the result, and apply the additive bar. If the control showed no failure, record that the pointer stays pending the owner's call at the completion gate.
-- [ ] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 6: Commit**
+- [x] **Step 3: Run the check again.** Same command. Expected: `1`.
+- [x] **Step 4: Run the `tdd-strategy` treatment arm** from `git stash create`, as in Task 2 Step 4. Score it, append the result, and apply the additive bar. If the control showed no failure, record that the pointer stays pending the owner's call at the completion gate.
+
+> Deviation: the treatment arm and the one wording round both scored 0 of 5 on both clauses. The owner ruled on 2026-11-06 to keep the pointer in the plan's wording (D9). The final review then found that its last sentence conflicts with TDD's own rule for tests of existing behavior, and the owner scoped it to new behavior (D10, 988ae8f). Two controller hand fixes softened and date-qualified claims in the record (e59a8d7, 2976b15).
+
+- [x] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/test-driven-development/SKILL.md specs/red-baseline-audit-p2 specs/red-baseline-audit-p2.md
@@ -157,13 +172,13 @@ git commit -m "feat(test-driven-development): point to develop-testing-strategy 
 **Interfaces:**
 - Consumes: Task 1's `debug-architecture` case.
 
-- [ ] **Step 1: Show the defect.** Run `/usr/bin/grep -c "Phase 4\.5" skills/systematic-debugging/SKILL.md`.
+- [x] **Step 1: Show the defect.** Run `/usr/bin/grep -c "Phase 4\.5" skills/systematic-debugging/SKILL.md`.
 Expected: `1`.
-- [ ] **Step 2: Edit `:242`.** `**If 3+ fixes failed:** Question the architecture (see Phase 4.5)` becomes `**If 3+ fixes failed:** Question the architecture (see Phase 4, step 5)`.
-- [ ] **Step 3: Run the check again.** Same command. Expected: `0`.
-- [ ] **Step 4: Run the `debug-architecture` treatment arm** from `git stash create`, as in Task 2 Step 4. Score it, append the result, and apply the non-regression bar.
-- [ ] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 6: Commit**
+- [x] **Step 2: Edit `:242`.** `**If 3+ fixes failed:** Question the architecture (see Phase 4.5)` becomes `**If 3+ fixes failed:** Question the architecture (see Phase 4, step 5)`.
+- [x] **Step 3: Run the check again.** Same command. Expected: `0`.
+- [x] **Step 4: Run the `debug-architecture` treatment arm** from `git stash create`, as in Task 2 Step 4. Score it, append the result, and apply the non-regression bar.
+- [x] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/systematic-debugging/SKILL.md specs/red-baseline-audit-p2 specs/red-baseline-audit-p2.md
@@ -179,12 +194,12 @@ Upstream removed both blocks in 3be5aad and 6dbbbda (first released in v6.2.0). 
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the defect.** Run `/usr/bin/grep -c "## Why This Matters\|## Real-World Impact" skills/verification-before-completion/SKILL.md skills/dispatching-parallel-agents/SKILL.md`.
+- [x] **Step 1: Show the defect.** Run `/usr/bin/grep -c "## Why This Matters\|## Real-World Impact" skills/verification-before-completion/SKILL.md skills/dispatching-parallel-agents/SKILL.md`.
 Expected: `1` for each file.
-- [ ] **Step 2: Delete the blocks.** In verification-before-completion, delete from `## Why This Matters` through the blank line after `- Violates: "Honesty is a core value. If you lie, you'll be replaced."`, so `## When To Apply` follows the code block's blank line. In dispatching-parallel-agents, delete from the blank line before `## Real-World Impact` to the end of the file, so the file ends with `4. **Spot check** - Agents can make systematic errors` and one newline.
-- [ ] **Step 3: Run the check again.** Same command. Expected: `0` for each file. `tail -c 1 skills/dispatching-parallel-agents/SKILL.md | od -c` shows `\n`.
-- [ ] **Step 4: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 5: Commit**
+- [x] **Step 2: Delete the blocks.** In verification-before-completion, delete from `## Why This Matters` through the blank line after `- Violates: "Honesty is a core value. If you lie, you'll be replaced."`, so `## When To Apply` follows the code block's blank line. In dispatching-parallel-agents, delete from the blank line before `## Real-World Impact` to the end of the file, so the file ends with `4. **Spot check** - Agents can make systematic errors` and one newline.
+- [x] **Step 3: Run the check again.** Same command. Expected: `0` for each file. `tail -c 1 skills/dispatching-parallel-agents/SKILL.md | od -c` shows `\n`.
+- [x] **Step 4: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/verification-before-completion/SKILL.md skills/dispatching-parallel-agents/SKILL.md
@@ -199,18 +214,18 @@ git commit -m "refactor(skills): drop two narrative blocks that upstream removed
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Write the failing test.** In `test_the_version_floor_reads_the_same_in_the_header_the_docstring_and_the_import_error`, the last assertion becomes:
+- [x] **Step 1: Write the failing test.** In `test_the_version_floor_reads_the_same_in_the_header_the_docstring_and_the_import_error`, the last assertion becomes:
 
 ```python
     assert f"uv add 'arviz-plots>={FLOOR}' 'arviz-stats>={FLOOR}' arviz-base" in source
 ```
 
-- [ ] **Step 2: Run it to see it fail.** `uv run python build/run_suites.py bayesian-workflow -- -k version_floor`.
+- [x] **Step 2: Run it to see it fail.** `uv run python build/run_suites.py bayesian-workflow -- -k version_floor`.
 Expected: 1 failed, on the `uv add` assertion.
-- [ ] **Step 3: Edit the script message.** In `calibration_check.py:54`, `"Install with: pip install 'arviz-plots>=1.3.1' 'arviz-stats>=1.3.1' arviz-base"` becomes `"Install with: uv add 'arviz-plots>=1.3.1' 'arviz-stats>=1.3.1' arviz-base, or run this script with uv run, which installs them from its header"`. The test reads the source, so keep the `uv add …` part in one string literal if the line is split.
-- [ ] **Step 4: Run the suite.** `uv run python build/run_suites.py bayesian-workflow`.
+- [x] **Step 3: Edit the script message.** In `calibration_check.py:54`, `"Install with: pip install 'arviz-plots>=1.3.1' 'arviz-stats>=1.3.1' arviz-base"` becomes `"Install with: uv add 'arviz-plots>=1.3.1' 'arviz-stats>=1.3.1' arviz-base, or run this script with uv run, which installs them from its header"`. The test reads the source, so keep the `uv add …` part in one string literal if the line is split.
+- [x] **Step 4: Run the suite.** `uv run python build/run_suites.py bayesian-workflow`.
 Expected: the last line reads `suite runs passed`.
-- [ ] **Step 5: Edit the text.** Each `pip install` becomes `uv add`, with the trailing comments kept aligned. That covers the two install blocks, both GPU lines (`uv add "jax[cuda12]"`), `SKILL.md:123` (`uv add funsor`), the block comment `# or:  uv add netcdf4`, and the three references (`uv add "arviz>=1.0" arviz-base arviz-stats arviz-plots`, `uv add arviz-plots`, `uv add dynamax`). The two lead-ins change. The SKILL.md lead-in stays on one line, so no SKILL.md line moves: `build/check_snippets.py:72` cites `SKILL.md:61-64` and `references/samplers.md:26` cites `SKILL.md:63`.
+- [x] **Step 5: Edit the text.** Each `pip install` becomes `uv add`, with the trailing comments kept aligned. That covers the two install blocks, both GPU lines (`uv add "jax[cuda12]"`), `SKILL.md:123` (`uv add funsor`), the block comment `# or:  uv add netcdf4`, and the three references (`uv add "arviz>=1.0" arviz-base arviz-stats arviz-plots`, `uv add arviz-plots`, `uv add dynamax`). The two lead-ins change. The SKILL.md lead-in stays on one line, so no SKILL.md line moves: `build/check_snippets.py:72` cites `SKILL.md:61-64` and `references/samplers.md:26` cites `SKILL.md:63`.
 
 ```text
 SKILL.md:55 (one line)
@@ -222,9 +237,12 @@ new:    NumPyro and JAX install cleanly with uv. In a uv project (run `uv init` 
         `pyproject.toml`):
 ```
 
-- [ ] **Step 6: Check the text.** `git grep -n -w pip -- skills/bayesian-workflow` prints nothing (20 lines at `1fbb203`). For each of `SKILL.md` and `README.md`, `tr -s '\n' ' ' < skills/bayesian-workflow/<file> | /usr/bin/grep -o 'uv init' | wc -l` prints `1`. `cd build && uv run --with pyyaml python -c "import check_conformance as c, pathlib; print(len(c.skill_body(pathlib.Path('../skills/bayesian-workflow/SKILL.md').read_text())[0]))"` prints at most `20000` (18645 at `1fbb203`). `sed -n 61,64p skills/bayesian-workflow/SKILL.md` still shows `# optional:` and the graphviz, blackjax and funsor lines.
-- [ ] **Step 7: Run the gates.** The three snippet tiers for `skills/bayesian-workflow/` pass, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 8: Commit**
+
+> Deviation: the funsor line was at `SKILL.md:118`, not `:123`. The old text matched, so the edit was unaffected.
+
+- [x] **Step 6: Check the text.** `git grep -n -w pip -- skills/bayesian-workflow` prints nothing (20 lines at `1fbb203`). For each of `SKILL.md` and `README.md`, `tr -s '\n' ' ' < skills/bayesian-workflow/<file> | /usr/bin/grep -o 'uv init' | wc -l` prints `1`. `cd build && uv run --with pyyaml python -c "import check_conformance as c, pathlib; print(len(c.skill_body(pathlib.Path('../skills/bayesian-workflow/SKILL.md').read_text())[0]))"` prints at most `20000` (18645 at `1fbb203`). `sed -n 61,64p skills/bayesian-workflow/SKILL.md` still shows `# optional:` and the graphviz, blackjax and funsor lines.
+- [x] **Step 7: Run the gates.** The three snippet tiers for `skills/bayesian-workflow/` pass, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/bayesian-workflow
@@ -240,17 +258,20 @@ The labels C1, C2, C3 and C5 name findings of a retired spec that a reader canno
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the defect and check for inbound links.** Run `/usr/bin/grep -rnE "\((the )?C[1235]( finding)?\)" skills/recommend-probabilistic-model`.
+- [x] **Step 1: Show the defect and check for inbound links.** Run `/usr/bin/grep -rnE "\((the )?C[1235]( finding)?\)" skills/recommend-probabilistic-model`.
 Expected: five lines. Then `git grep -n "which-book-c3\|source-access-the-c2-finding"` prints nothing.
-- [ ] **Step 2: Edit the five labels.**
+
+> Deviation: the anchor grep printed one line, the quoted command in this plan file itself, and no file links to either old anchor.
+
+- [x] **Step 2: Edit the five labels.**
   - `SKILL.md:65` `## Which book (C3)` becomes `## Which book`
   - `drill-down.md:15` `## Source access (the C2 finding)` becomes `## Source access`
   - `drill-down.md:38` `Book 2 (C3) — check both when the topic spans them.` becomes `Book 2 — check both when the topic spans them.`
   - `drill-down.md:48` `**Cite carefully and verify (C1).**` becomes `**Cite carefully and verify.**`
   - `pyprobml-index.md:4` `Built from the **real repo listing** (C5) — notebooks` becomes `Built from the **real repo listing** — notebooks`
-- [ ] **Step 3: Run the check again.** Same grep. Expected: no output. `/usr/bin/grep -rn "C4" skills/recommend-probabilistic-model | wc -l` still prints `14`, as at `1fbb203`.
-- [ ] **Step 4: Run the gates.** `uv run python build/run_suites.py recommend-probabilistic-model` ends `suite runs passed`, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 5: Commit**
+- [x] **Step 3: Run the check again.** Same grep. Expected: no output. `/usr/bin/grep -rn "C4" skills/recommend-probabilistic-model | wc -l` still prints `14`, as at `1fbb203`.
+- [x] **Step 4: Run the gates.** `uv run python build/run_suites.py recommend-probabilistic-model` ends `suite runs passed`, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/recommend-probabilistic-model
@@ -266,9 +287,9 @@ git commit -m "docs(recommend-probabilistic-model): drop retired-spec labels C1,
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the defect.** Run `/usr/bin/grep -c "the first and last consume\|version of all three" skills/explore-data/SKILL.md`.
+- [x] **Step 1: Show the defect.** Run `/usr/bin/grep -c "the first and last consume\|version of all three" skills/explore-data/SKILL.md`.
 Expected: `2`.
-- [ ] **Step 2: Edit both sentences.** Wrap lines like the text around them. The end of list item 3 (`:246`):
+- [x] **Step 2: Edit both sentences.** Wrap lines like the text around them. The end of list item 3 (`:246`):
 
 ```text
 old:    chart fits) — the first and last consume this profile (`--json`) directly.
@@ -287,9 +308,9 @@ new:    `scripts/profile.py --json profile.json` writes the shape, the per-colum
         the top categorical values, which print only to the terminal, and the next steps, which you write.
 ```
 
-- [ ] **Step 3: Run the check again.** Same command. Expected: `0`. `tr -s '\n' ' ' < skills/explore-data/SKILL.md | /usr/bin/grep -o "leaves out the numeric summary" | wc -l` prints `1`.
-- [ ] **Step 4: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 5: Commit**
+- [x] **Step 3: Run the check again.** Same command. Expected: `0`. `tr -s '\n' ' ' < skills/explore-data/SKILL.md | /usr/bin/grep -o "leaves out the numeric summary" | wc -l` prints `1`.
+- [x] **Step 4: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/explore-data/SKILL.md
@@ -305,16 +326,19 @@ design-architecture names neither brainstorming nor writing-plans. brainstorming
 
 **Interfaces:** none.
 
-- [ ] **Step 1: Show the defect.** Count each target name in its file, which stays correct however the new lines wrap: `/usr/bin/grep -o "brainstorming\|writing-plans" skills/design-architecture/SKILL.md | wc -l`, `/usr/bin/grep -o "creative-thinking" skills/brainstorming/SKILL.md | wc -l` and `/usr/bin/grep -o "develop-testing-strategy\|validate-data" skills/tech-debt/SKILL.md | wc -l`.
+- [x] **Step 1: Show the defect.** Count each target name in its file, which stays correct however the new lines wrap: `/usr/bin/grep -o "brainstorming\|writing-plans" skills/design-architecture/SKILL.md | wc -l`, `/usr/bin/grep -o "creative-thinking" skills/brainstorming/SKILL.md | wc -l` and `/usr/bin/grep -o "develop-testing-strategy\|validate-data" skills/tech-debt/SKILL.md | wc -l`.
 Expected: `0`, `0`, `0`.
-- [ ] **Step 2: Insert the pointers.**
+- [x] **Step 2: Insert the pointers.**
   - design-architecture, a new paragraph after the one that starts `Reach for an ADR when`: `An ADR records a decision. To design new functionality before there is a decision to record, use the brainstorming skill. To turn an accepted decision into implementation steps, use the writing-plans skill.`
   - brainstorming, Lay out the approaches, after `existing work rules out.`: `If they all turn out to be flavors of one idea, use the creative-thinking skill to widen the set.`
   - tech-debt, Correctness-risk, after `a wrong nowcast is worse than an ugly one.`: `Before a number from such code ships, gate it with the validate-data skill.`
   - tech-debt, the HARDEN test bullet, after `not 100% line coverage.`: `To plan the tests past that first one, use the develop-testing-strategy skill.`
-- [ ] **Step 3: Run the check again.** Same commands. Expected: `2`, `1`, `2`. The brainstorming body measures at most 20,000 characters.
-- [ ] **Step 4: Run the gates.** `uv run python build/run_suites.py tech-debt` ends `suite runs passed`, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 5: Commit**
+
+> Deviation: the brainstorming sentence sits mid-line, so the rest of that paragraph was re-wrapped to about 72 columns. A word-level diff shows that no word changed.
+
+- [x] **Step 3: Run the check again.** Same commands. Expected: `2`, `1`, `2`. The brainstorming body measures at most 20,000 characters.
+- [x] **Step 4: Run the gates.** `uv run python build/run_suites.py tech-debt` ends `suite runs passed`, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/design-architecture/SKILL.md skills/brainstorming/SKILL.md skills/tech-debt/SKILL.md
@@ -329,7 +353,7 @@ git commit -m "docs(skills): wire design-architecture, brainstorming and tech-de
 **Interfaces:**
 - Consumes: the final text of Tasks 2-6 and 9. Name only the changes that landed. A pointer that the owner dropped at the gate gets no line.
 
-- [ ] **Step 1: Append a bullet** to the superpowers "Changes from upstream" list, after the plan 76 bullet and before the blank line above `brainstorming/`. Use the date of the commit:
+- [x] **Step 1: Append a bullet** to the superpowers "Changes from upstream" list, after the plan 76 bullet and before the blank line above `brainstorming/`. Use the date of the commit:
 
 ```text
   - Plan 77 (<YYYY-MM-DD>) changed these adapted files from audit_1_3_26's
@@ -347,7 +371,7 @@ git commit -m "docs(skills): wire design-architecture, brainstorming and tech-de
     v6.2.0).
 ```
 
-- [ ] **Step 2: Append a sentence** at the end of the bayesian-workflow entry, after the line `NumPyro.` and before the blank line above `recommend-causal-design/`:
+- [x] **Step 2: Append a sentence** at the end of the bayesian-workflow entry, after the line `NumPyro.` and before the blank line above `recommend-causal-design/`:
 
 ```text
     The install lines in SKILL.md, README.md and three references, and
@@ -355,8 +379,8 @@ git commit -m "docs(skills): wire design-architecture, brainstorming and tech-de
     they used `pip install` (plan 77).
 ```
 
-- [ ] **Step 3: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 4: Commit**
+- [x] **Step 3: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 4: Commit**
 
 ```bash
 git add NOTICE
