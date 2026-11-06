@@ -57,6 +57,27 @@ frozen 50-point key, `~/.cache/ctl-q9/coverage-key.md`) and R3 (every needs-user
 question in the table's message, none later). M2 to M5 are recorded from `grade.py`. B2 and B3's
 manual parts are not scored (new: out of scope for this item; plan 42 held both 5 of 5).
 
+**Key-point labels used in this record** (from the frozen key; KF = Key Finding, A-D = the
+critique's Details sections):
+- **KF1:** CES screening constants (X/K factors) vary by industry and data type, so the uniform
+  screen and clip are less adaptive than CES itself.
+- **KF2:** CES treats atypical reports through analysts and per cell; the description borrows the
+  CES label but not that per-domain, data-driven practice.
+- **KF3a:** Hidiroglou-Berthelot screens period-to-period ratios with an acceptance region that
+  scales with unit size and is estimated from current data.
+- **KF4:** FRB and ADP both weight to QCEW industry × state × size cells over matched continuers,
+  which validates the architecture; neither publishes uniform count floors.
+- **A1:** industry volatility differs about tenfold, so one threshold is too loose for smooth
+  industries and too tight for volatile ones.
+- **A7:** consider collapsing size before geography where size is the main confounder.
+- **A9:** the QCEW-weighting principle stays global (marginal).
+- **B3:** QWI's evidence that tabulations of 10 or more jobs are accurate and 3-9 is a transition
+  zone, so the effective threshold is about ten times below 250.
+- **B7:** a variance or n_eff test admits a small-employer provider's small cells (marginal).
+- **C3c:** pay-frequency composition (weekly, biweekly, semimonthly, monthly) affects volatility
+  and is untreated, the first clause of the gap whose asks are paid-or-active and
+  multi-establishment records.
+
 **R2, plan 42's strict reading, written out.**
 1. A point counts when a row of the triage table states its distinct claim in words. Any cell of
    the row counts, the rationale column included (calibrated on plan 42's hand-checked rep-4

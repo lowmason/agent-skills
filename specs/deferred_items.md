@@ -1648,7 +1648,7 @@
       (Recommendations, governance, change-asking caveats, numbered Details asks) and records the revised
       bar.
       → progress 2026-10-31 (owner ruling): fork (a). The skill defines a point as every distinct claim, with a compound point split and a coverage check against the critique's own enumeration (a writing-skills RED→GREEN cycle), and a re-run on this fixture holds B1 in at least 4 of 5 valid reps.
-      → done 2026-11-05 (no plan; writing-skills RED→GREEN cycle, owner D1 2026-11-05): `fb5f940` defines a critique point as one distinct claim, with a compound point split and a coverage check against the critique's own enumeration. On this fixture, isolated and on HEAD's text, RED held B1 in 0 of 5 valid reps and GREEN in 4 of 5 (one rep missed pay-frequency composition). Record: `specs/completed/synthesize-mode-critique-point-2026-11-05.md`.
+      → done 2026-11-05 (no plan; writing-skills RED→GREEN cycle run in its own session on the owner's 2026-11-05 ranking): `fb5f940` defines a critique point as one distinct claim, with a compound point split and a coverage check against the critique's own enumeration. On this fixture, isolated and on HEAD's text, RED held B1 in 0 of 5 valid reps and GREEN in 4 of 5 (one rep missed pay-frequency composition). Record: `specs/completed/synthesize-mode-critique-point-2026-11-05.md`.
 - [ ] Synthesize mode's staleness check is a second path to a VOID rep in a scenario verification. Step 1 of
       `skills/describe-critique-methodology/SKILL.md` § Synthesize mode has the rep check the "git log
       touching the described system", and on this machine that system lives in `alt-nfp-model` and
