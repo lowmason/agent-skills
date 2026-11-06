@@ -1251,3 +1251,74 @@ Rep verdicts in rep order (P pass, F fail), the panel majority, in groups of fiv
 that the T7 text needs a particular fix, and this record changes no skill text. The owner rules on
 the T7 text in the brainstorming skill and on decision D17. D17 chose the letter reading, and
 under that reading T7 does not reach the bar in 25 reps.
+
+### T7 wording test (owner approval, 2026-11-05)
+
+This subsection was written and committed before any rep of the test ran. The owner approved the
+test after reading the confirmation results above. It tests wordings only. It changes no shipped
+skill text and does not touch this branch's skill files.
+
+**Question.** Can another wording of the "Each message" paragraph lift T7 from about 50% to 80%
+or better on the isolated kit? The paragraph is in `skills/brainstorming/SKILL.md` (line 102 at
+HEAD). Three guesses about why the shipped sentence fails, none verified: H1, the quoted example
+"this could mean A, B or C" primes the failure. H2, a positive instruction works better than a
+prohibition. H3, the earlier line "Add what you found that bears on it" invites a list of readings.
+H3 is not tested here.
+
+**Arms.** Each variant is one commit that changes only that paragraph in the `7b1ed85` text. The
+commits are on local branches `claude/t7-wording-<name>`, built with git plumbing, so this branch
+and its working tree are untouched. The branches are not pushed.
+
+| Arm | Commit | Change to the `7b1ed85` paragraph | `SKILL.md` sha256 | T7 prompt sha256 |
+|---|---|---|---|---|
+| control | `7b1ed85` | none. The reps are the 25 reps of A6 in `green-2/new-isolated/T7/` | `ab0f0d27…c6d7` | `ca294ebd…7c55` |
+| V1 delete | `f9251cb67b2fa99ddc5c1ad2e68b587daeec696a` | the sentence "Don't set out your guesses ... (see Get them describing)." is removed | `8649270d…f1b0` | `c73ec8c0…d413` |
+| V2 no example | `f1a6c6d74bfaa32b9fd3c92f4789e2e747214abe` | the quoted example "(this could mean A, B or C)" is removed | `60abc638…80cb` | `7fac63f8…15d4` |
+| V3 positive | `833fa3a2c85cc8228af72575c69c81db93e7e94e` | the sentence becomes the instruction below | `b4d04c16…7915` | `c7aa3b8a…19c9` |
+
+V3 text, which replaces the shipped sentence: "When something they gave you is unclear, say so and ask about it.
+Don't list what it might mean or where each reading leads; that's a menu too (see Get them
+describing)." V3 has no example drawn from the T7 fixture, so the text is not fitted to the test.
+Full hashes are in `t7-wording/prompts/<arm>/MANIFEST.txt`. Rebuilding the control prompt at
+`7b1ed85` with plan 70's `kit/build_prompts.py` gives the stored T7 prompt hash, so the builder
+reproduces the control exactly.
+
+**What runs.** 25 reps for each of V1, V2 and V3 (rep1 to rep25), in `t7-wording/<arm>/`. Model
+`claude-opus-5-5`, plan 72's `run_reps.sh`, Claude Code 2.1.316, the same flags as the re-run. A
+VOID rep is replaced by the next free number, at most two per arm. The control is not re-run. It
+ran on the same day with the same kit and an identical prompt builder.
+
+**Reading and scoring.** The letter reading of the confirmation step, unchanged. I hand-score the 75
+new replies first and record the scores. Then a blind panel scores one pool of 100 replies: the 25
+control replies and the 75 new ones, shuffled together. A vote is one tool-less, isolated
+`claude -p` call on `claude-opus-5-5` with the same rule text as in `t7-confirm-panel/`. The pool
+is shuffled differently for each of 3 votes, and the arm and rep are hidden. The panel majority is
+the verdict of a rep. The control is scored again in this pool, so every arm gets the same votes.
+The earlier 13/25 for the control is reported next to the new tally. Reps where the hand score and
+the panel differ are listed. If they put an arm on different sides of the bar, it is unresolved.
+
+**Bar, registered.** A variant clears when both hold: at least 20 of 25 reps pass (80%, the rate of
+4/5), and a one-sided Fisher exact test against the control tally of this pool gives p below 0.05.
+For scale, 20/25 against 13/25 gives p = 0.036 and 19/25 against 13/25 gives p = 0.070. The record
+also reports the p value multiplied by 3, because three variants are compared with one control. One
+clearing variant out of three is weaker evidence than its single p value suggests. Each tally is
+reported with its 95% Wilson interval. A descriptive count of how the failed reps fail (a list, or
+three or more answers in one sentence) is reported for each arm and sets no verdict.
+
+**Outcomes, registered.**
+- No variant clears: change nothing, and record T7 as a known gap at about the control's rate.
+- One variant clears: it is a candidate. Run the neighbour cases T4, T5, T8a, T9, P1 and P3 on it
+  at 5 reps each, as plan 70 did, with the bar of 4/5 on each. The T4 strict reading is reported
+  too. Prompts for these cases already exist in `t7-wording/prompts/<arm>/`.
+- More than one variant clears: the neighbour cases run on the one with the highest count. A tie
+  goes to the shorter text. The others are reported.
+- A candidate is not applied to the shipped skill. The owner decides. The edit would go on its own
+  branch and needs a `NOTICE` check, because this paragraph is upstream-derived text.
+
+**Spend.** Estimate: $1.90 for the 75 reps (an isolated T7 rep cost $0.025), $1.00 for 3 panel
+votes on 100 replies, and up to $1.50 for the neighbour cases if a variant clears. The running
+total is $4.79. This test is stopped for the owner if its own spend passes $6.
+
+**Limits, stated now.** T7 is one fixture (the seed library), one turn and no tools. A rep scores
+the planned message, not what an agent does in a real session. Three variants against one control
+at n=25 can find a large effect and will miss a modest one.
