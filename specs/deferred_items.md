@@ -3534,6 +3534,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       gets a NOTICE change-list line. Size: plan. Done when: the owner has picked the keepers,
       they are fixed, and the rest are recorded here as dropped.
       → progress 2026-10-31 (owner ruling): keepers are (1), (2), (3), (4), (6) with the pip lines becoming uv, (8), (9) with upstream's removal standing in for a micro-test, (10) and (11). Drop (5) and (7) → dropped: (5) the naming examples show a pattern and do not claim that the skills exist here. (7) the PyMC seed advice is correct for PyMC users.
+      → planned 2026-11-05: specs/plans/77-audit-p2-text-fixes.md
 - [x] Owner design calls from audit_1_3_26 §8 (audit-3-10-26 B4, found 2026-10-03; first raised
       2026-07-03; re-verified 2026-10-18: no decision recorded). (a) A pressure-test ledger:
       no central record of skill tests exists, and NOTICE records that upstream's
