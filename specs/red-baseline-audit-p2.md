@@ -390,13 +390,15 @@ pointer would behave when the partner has not ruled on tests.
 
 **Owner ruling (2026-11-06).** The additive bar needed 5 of 5, and both treatment arms missed it. The additive bar
 sends that case, after one wording round, to an owner ruling. The owner ruled "Keep pointer, log the miss". So the
-commit holds the pointer in the plan's original wording, which is arm 1's wording, in the exact text of Task 3 Step 2
-of the plan. The round-2 reword is not committed. The miss goes to the plan completion gate, where the owner sees it
+Task 3 commit (`8fa5b70`) held the pointer in the plan's original wording, which is arm 1's wording, in the exact text
+of Task 3 Step 2 of the plan. The round-2 reword is not committed. The miss goes to the plan completion gate, where the owner sees it
 with the other cases' results.
 
-- **Which text the score belongs to.** The committed `skills/test-driven-development/SKILL.md` is the text that arm 1
-  read. Its blob id is `6a1dc2c79acd9fabb53b5e6397c62f64b1a1726c`, the same id as the file in arm 1's commit
-  `831dd20d5e25c131bbd6db018f8fa338c9b6cd77`. The 0 of 5 score for arm 1 therefore belongs to the committed text.
+- **Which text the score belongs to.** At commit `8fa5b70`, the committed `skills/test-driven-development/SKILL.md`
+  was the text that arm 1 read. Its blob id was `6a1dc2c79acd9fabb53b5e6397c62f64b1a1726c`, the same id as the file in
+  arm 1's commit `831dd20d5e25c131bbd6db018f8fa338c9b6cd77`. The 0 of 5 score for arm 1 therefore belonged to the
+  committed text at that commit. The change described under "After the final review" below came later and differs from
+  it by three words.
 - **Round-2 data.** The replies in `specs/red-baseline-audit-p2/treatment/tdd-strategy-round2/` are the arm of the
   uncommitted reword. They stay in the record as evidence that a second wording, keyed to the situation, also scored
   0 of 5.
@@ -411,8 +413,8 @@ with the other cases' results.
 - **Pending.** The micro-test shows no effect for the pointer. The owner kept it despite the miss. The plan
   completion gate carries the miss.
 
-**Status.** DONE after the owner ruling. The commit holds arm 1's wording. The additive bar was missed, and the miss is
-logged for the plan completion gate.
+**Status.** DONE after the owner ruling. Commit `8fa5b70` held arm 1's wording. The additive bar was missed, and the miss
+is logged for the plan completion gate.
 
 **After the final review.** The final whole-branch review found that the pointer's last sentence ("Every test it calls
 for still starts here, as a failing test.") conflicts with TDD's own rule for tests of existing behavior. The pointer
