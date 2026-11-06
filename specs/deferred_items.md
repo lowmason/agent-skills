@@ -5579,6 +5579,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       records of plans 57, 59, 64, 65 and 67 were not re-run. Spend $7.32. Results: "Re-run with
       the isolated kit" in `specs/red-baseline-sdd-compaction.md` and
       `specs/red-baseline-brainstorming-2026-10-28.md`.
+      → progress 2026-11-06 (owner ruling): accept T7 as a known gap near 50%, keep the text, and
+      leave D17's letter reading in place. No skill text changes.
 
 ## backlog-protocol-design (no plan; brainstorming, branch claude/backlog-protocol-design-aa6201) — 2026-10-29
 - [ ] Split `specs/deferred_items.md` into one file per section, to cut merge conflicts
