@@ -243,10 +243,13 @@ A profiling pass produces three things, in this order:
    `develop-testing-strategy`. Once the data is clean, the profile-driven next steps are
    `recommend-probabilistic-model` (which model fits), `recommend-causal-design` (which research
    design can identify an effect, for a causal question) and `recommend-visualization` (which
-   chart fits) — the first and last consume this profile (`--json`) directly.
+   chart fits). `recommend-visualization` reads this profile's JSON (`--json`) directly, and
+   `recommend-probabilistic-model` reads the dataset itself.
 
-`scripts/profile.py --json profile.json` writes a machine-readable version of all three so you can
-diff two vintages of the same dataset or attach the profile to a report.
+`scripts/profile.py --json profile.json` writes the shape, the per-column table, the date ranges,
+the quality flags and any key, vintage or panel check as JSON, so you can diff two vintages of
+the same dataset or attach the profile to a report. The JSON leaves out the numeric summary and
+the top categorical values, which print only to the terminal, and the next steps, which you write.
 
 ## Common mistakes
 
