@@ -3146,8 +3146,8 @@ Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.py`.
 | Task 3, wording round 1 (5 cases, 5 reps each, no VOID rerun) | 25 | $1.00 | $25.00 ($5.00 per case call) | $1.5993 |
 | Task 3, fix round 1 for a review finding (5 cases, 5 reps each, no VOID rerun) | 25 | $1.00 | $25.00 ($5.00 per case call) | $1.6102 |
 | Task 3, fix round 2 for a review finding (5 cases, 5 reps each, no VOID rerun; holds the owner's dr-park-ranked re-run) | 25 | $1.00 | $25.00 ($5.00 per case call) | $1.6062 |
-| Task 4, re-runs (6 runs of 5 reps each) | 30 | $1.00 | $30.00 ($5.00 per run) | not run |
-| **Running total** | 135 | | | **$8.6200 of $30** |
+| Task 4, re-runs (6 runs of 5 reps each, no VOID rerun) | 30 | $1.00 | $30.00 ($5.00 per run) | $3.4439 |
+| **Running total** | 165 | | | **$12.0639 of $30** |
 
 The worst cases are an upper bound and not a forecast. Plan 79's own estimate is about $15 in all, a wording round
 included. A wording round adds a row.
@@ -3173,6 +3173,8 @@ none counts at its cap. These figures match the "Plan 79 Task 3 round 2 summary 
 Running total after the Task 3 fix round for the second review finding: $8.6200 of $30. The round's five `-p79-r3`
 folders hold 25 reps, none VOID, and cost $1.6062 (`show_reps.py` over all five prints $1.61). No rep file is empty or
 unreadable, so none counts at its cap. These figures match the "Plan 79 Task 3 round 3 summary and spend" section, below.
+
+Running total after Task 4: $12.0639 of $30. Task 4's six folders hold 30 reps, none VOID, and cost $3.4439 (`show_reps.py` over all six prints $3.44). No rep file is empty or unreadable, so none counts at its cap. These figures match the "Plan 79 Task 4 summary and spend" section, below. No wording round ran. The largest pre-call sum (running total plus $5.00) was $16.38.
 
 ## Plan 79: control
 
@@ -5233,3 +5235,328 @@ folders after its last rep, and once over all five together (25 reps, none VOID,
 empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per case, from each rep's
 `total_cost_usd`, are dr-stop-track $0.3265, dr-park-ranked $0.3368, dr-rerank-second $0.2932, dr-resume-marker $0.2999
 and dr-resume-blocked $0.3498. The round cost $1.6062. Running total: $8.6200 of $30.
+
+## Plan 79: re-runs
+
+Task 4 runs six re-runs at the final skill text. A re-run has a treatment arm only. Each arm compares with the plan 78 arm that the plan names. A rep is one fresh `claude -p` run with no tools. Each rep was scored by hand from its full reply, by the case's committed rule and by the readings below. No fixture, rule or `cases.py` line changed.
+
+**`T-final` is `T3-r3`**, `5f52dfc`, the full sha `5f52dfc75f7e55658b1f7eeb237845af7da06d54`, subject `fix(derive-roadmap): count a Consumes from an unticked stage as unmet`. It is the last skill commit. The brief names `T3-r1` as the text to read. That is out of date, because Task 3 ran two more rounds after `T3-r1` (`T3-r2` and `T3-r3`). `git diff --stat 5f52dfc -- skills/` prints nothing, so no skill file changed after `T-final`.
+
+**Checks before any rep.**
+
+- The CLI is Claude Code 2.1.316, the version that the isolation probe ran on, so the probe still holds.
+- A case-insensitive grep of the five prompts and the manifest for `red-baseline`, `plan 7[89]`, `micro-test` and `task-4` found 0 hits (the quarantine).
+- Each prompt holds the `T3-r3` Ask sentence ("or when the stage that is to produce it is unticked") once. The dr-offer-yes prompt holds "with no spec, a proposed roadmap name" once.
+- The case-repository reads (the sec-edgar spec for two cases and the four ces-revisions files for dr-tracks) have the same sha256 as the reads in `control/MANIFEST.txt`.
+- `git show 5f52dfc:skills/derive-roadmap/references/roadmap-format.md` holds "or the whole roadmap parks (SKILL.md §5)". `git show 5f52dfc:skills/derive-roadmap/SKILL.md` holds "and, with no spec, a proposed roadmap name" in §7 step 4.
+
+**Build.**
+
+```
+CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 5f52dfc75f7e55658b1f7eeb237845af7da06d54 /tmp/plan79-work/t4 dr-known-progression-79 dr-tracks dr-resume-rerank dr-resume-legacy dr-offer-yes
+```
+
+It wrote 5 prompts. `MANIFEST.txt` is copied to `treatment/p79-t4-MANIFEST.txt`. It shows `budget 1.00` for every case.
+
+**Reps.** Each folder ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t4/<case>.txt specs/red-baseline-new-project-entry/treatment/<folder> 1 5 claude-opus-5-5 1.00`.
+The six calls ran in this order: dr-known-progression-79 into `dr-known-progression-79-p79`, dr-tracks into `dr-tracks-p79a`, dr-tracks again into `dr-tracks-p79b`, dr-resume-rerank into `dr-resume-rerank-p79`, dr-resume-legacy into `dr-resume-legacy-p79` and dr-offer-yes into `dr-offer-yes-p79`. The two dr-tracks runs are separate calls from the same prompt, so they are independent runs. Each call ran alone, as a background job. The next call started while the previous folder was being scored. No wording round could follow a score in this task, so the order did not change any result. Before each call, the running total plus the call's worst case ($5.00) stayed under $30. The largest such sum was $16.38, before the last call. No rep was VOID, so no rerun was needed. No `.err` file was left.
+
+**Readings applied.**
+
+- *Date.* No clause of these five cases fixes a date. The Date reading of the Plan 79 control section was not needed. Every fixture says "Today is 2026-11-06" and the CLI date line gives 2026-11-07. No clause scores a date.
+- *Plan 79's own readings.* Review by table, Another name, Carried citation, Pending bullet, Item by description and Stage 2's live feed belong to the six route and resume cases of Tasks 2 and 3. They do not apply here.
+- *dr-tracks, reading of record.* Open for plan review item 4: an order of outcomes inside a known-progression track, not called stages, is not a stage list. The other reading of item 4 is that such an order is a stage list. It is reported under "Other readings" and never counts toward a bar.
+- *Every other case.* The readings of plan 78's record apply: By reference, Labeled list, Dependency fact or proposed order, and Stage list (all in the Control section). The owner's ruling of 2026-11-07 also applies: a reply that names a core stage and later stages for the hardening, inside the offer or the one message, counts as a stage list (the retired dr-offer-yes item in `specs/deferred_items.md`). It applies to dr-tracks too. The 2026-11-07 item of `specs/deferred_items.md` that names the ruling says that dr-offer-scaffold and dr-tracks read the same text and need a re-run.
+- *Stage word* (dr-tracks clause C, new and not confirmed). Item 4 says "not called stages". The test used here is the one plan 78's round 2 rep5 applied: does the reply use the word "stages" for its own proposed order? If it does, the order is a stage list and clause C fails. The skill's own definition of a known-progression track is "your partner can name its stages from first to last" (`references/new-project-entry.md`, Outcomes and tracks, in the text at `T-final`). Several replies repeat that definition next to their order. This reading counts such a reply as calling its order stages. The reading was set when the close call first appeared (run a rep4). It was then applied to every rep of both runs.
+- *Provenance on bytes* (dr-known-progression-79 clause C on traceability, new and not confirmed). Traceability is "a provenance or lineage record per row" (the rule's clause B). A stage that keeps provenance on retained bytes and links no row to its source does not name traceability. This is plan 78's fix round 1 call on rep2 ("no trace from a row to its source"), applied by the same face-value test as the Stage word reading.
+
+### Plan 79 Task 4: dr-known-progression-79
+
+Additive. Texts at `5f52dfc` (`T-final`). Rule `DR_KNOWN_PROGRESSION_PASS_79`. Scored reps: rep1 to rep5. No VOID rep. Spend: $1.0925.
+
+The reply writes the full roadmap file for SEC filing ingestion, and the one-line message. Clause B (bar): the first stage's Exit requires no manifest, no traceability and no point-in-time awareness. Clause A (conformance): stages cover the index files, the submissions and 10-K and 8-K handling, in order. Clause C (conformance): a manifest and traceability each appear in a named later stage. Point-in-time awareness is not scored for this fixture (owner ruling, 2026-11-07). Clause D (conformance): every stage entry has a field for what it leaves out. Clause E (recorded): the first stage's Exit does not require atomic publication of complete generations.
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass (borderline) | pass | pass | pass | pass | yes |
+| 2 | pass (borderline) | pass (borderline) | fail | pass | pass | no |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass (borderline) | pass (borderline) | fail | pass | pass | no |
+
+Clause B: 5 of 5 (plan 78 control 4 of 5 by the by-reference reading). Clause A: 5 of 5 (control 5 of 5). Clause C: 3 of 5, which is manifest 4 of 5 and traceability 4 of 5 (control 0 of 5, scored with point-in-time, and no control rep names a manifest). Clause D: 5 of 5 (control 0 of 5). Clause E (recorded): 5 of 5 (control 4 of 5). PASS: 3 of 5.
+
+Compared with plan 78's "Control: dr-known-progression": RED in 1 of 5 (rep5 fails bar clause B, by the by-reference reading). The control is RED, so the additive bar needs the treatment to pass every clause in at least 4 of 5 reps. Bar: **missed** (PASS 3 of 5), through conformance clause C. Bar clause B is 5 of 5.
+
+- B. No first-stage Exit names a manifest, a per-row provenance record, as-of awareness or a spec section. Reps 1 and 5 ask for a count per source file ("with row counts reported per source", "with a row count per source"), and rep2 asks that "its row count matches the source files". Each is a count and not a manifest, as Task 7 rep5 and fix round 1 rep2 read it. In each, `Leaves out` sends the manifest and provenance to a later stage.
+- A. Every rep puts the index work first, then the submissions, then 10-K and 8-K handling. Rep2 and rep5 do not run each outcome to its full range in turn. Rep2 gives each outcome a core stage on one quarter (Stages 1 to 3) and then the full-history stages (Stages 5 to 7). Rep5 puts a one-quarter 10-K and 8-K stage (Stage 4) before the full-history submissions (Stage 5) and says so: "Full-history submission download (Stage 5) comes after 10-K/8-K handling on one quarter (Stage 4)." Both pass on the order of the first stage for each outcome.
+- C, manifest. Reps 1 to 4 name a manifest in a later stage, for example rep4's Stage 5: "a manifest of sources, snapshots and processing states". Rep5 names no manifest of any kind in any stage. Its Stage 6 holds "Provenance, replay, reconciliation and validation". Quote (C, rep5): "Make every output traceable to retained source bytes, add quarterly reconciliation, and cover the system with a full validation suite."
+- C, traceability. Reps 1, 3, 4 and 5 link each output to its source. Rep4's Stage 5 Exit: "each output row names its source file and content hash". Rep2 does not. Quote (C, rep2, Stage 4 Objective): "Retain original bytes with provenance and make parsing and extraction replayable without SEC requests". Its later stages hold no per-row link to a source file. Its `Produces` line says "hash-addressed raw index files" and its Stage 8 says "withdrawal approvals bound to source hashes". Neither links a row.
+- D and E pass in every rep. No Stage 1 Exit requires a publication pointer or an atomic generation.
+- Point-in-time awareness (not scored). Rep3 names "point-in-time generations and reconciliation" in Stage 6. No other rep names it.
+- Name (not scored). All five write `specs/sec-filing-ingestion-roadmap.md`, the name that the partner confirmed.
+
+Other readings:
+
+- The other reading of Provenance on bytes. If rep2's "with provenance" and its citation of spec §4.5 name traceability, rep2 passes C. PASS is then 4 of 5 and the bar is met.
+- Order of the stages (clause A). If a stage for one outcome that follows a stage for the next outcome is out of order, rep2 and rep5 fail A. Rep5 already fails C. With the other reading of Provenance on bytes, rep2 passes C. It would then fail A, and PASS stays 3 of 5.
+- By reference (clause B of the control). By the other reading, plan 78's control is clean (B 5 of 5), so there is no RED to beat. Open for plan review item 2 asks that this be said here.
+
+### Plan 79 Task 4: dr-tracks, run a
+
+Additive. Texts at `5f52dfc`. Folder `dr-tracks-p79a`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6731.
+
+The partner says "Go ahead and stage it." for the CES revisions brief. Clause A (bar): the collection-interval outcome and the budget and staffing outcome sit in different tracks, and the reply says why. Clause B (conformance): no ranking is given as settled, and the reply asks the partner to rank. Clause C (conformance): one message with no roadmap text and no stage list. Clause D (conformance): a cost note for model fitting, with a basis or a statement that a run measures it.
+
+| Rep | A (bar) | B (conformance) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass (borderline) | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass (borderline) | pass | yes |
+| 4 | pass | pass | fail (borderline) | pass | no |
+| 5 | pass | pass (borderline) | fail (borderline) | pass | no |
+
+Clause A: 5 of 5 (control 0 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 3 of 5 (control 3 of 5). Clause D: 5 of 5 (control 0 of 5). PASS: 3 of 5 (control 0 of 5, Task 7 5 of 5, both Task 3 rounds 2 of 5).
+
+Compared with plan 78's "Control: dr-tracks": RED in 5 of 5 (bar clause A fails in every rep). The bar for each run is at least 4 of 5. Bar: **missed** (PASS 3 of 5), through conformance clause C. Bar clause A is 5 of 5.
+
+- A. Every rep puts the collection-interval outcome in one track and the budget and staffing outcome in another, with a reason. Rep4: "I split C from D because a collection-interval answer stands without a capacity answer, and vice versa." Rep5: "B through E each answer a question that stands without the others."
+- B. Every rep asks the partner to rank, and no rep states an order as decided. Rep5 passes, borderline, by the dependency-fact reading: "Every other track consumes A's panel, so A's core stage goes first regardless of ranking."
+- C, reps 1, 2 and 3 pass. Rep1 and rep3 order the outcomes of Track A without calling them stages. Rep1: "Known progression: get the vintages, compute revisions by stage, report how their size changes over time." Rep3: "Known progression: total nonfarm first, then supersectors. Is that the right order?" Rep2 gives no order.
+- C, rep4 fails, borderline (Stage word). Quote: "Known progression, if you can name its stages first to last (total nonfarm → supersectors → NSA)." The reply uses "stages" for its own order, as round 2 rep5 did.
+- C, rep5 fails, borderline (the owner's core-and-later ruling). It names the later qualities and sends them to later stages next to a core stage. Quote: "O8–O10 also carry later qualities: the full validation suite (prior and posterior predictive checks, LOO against constant variance, pseudo-real-time) and data provenance/vintage manifests. Those go into later stages, not into any core stage." Round 2 rep1 failed the same kind of text. The qualities sentence of Task 7 rep1 and round 2 rep2 added "or Ranked-list items", which this one does not.
+- D. Every rep says that a run measures the fit cost. Rep3: "Compute can only be known by running it." and "Compute is measured by the core stage."
+- Name (not scored). All five propose the name `ces-revisions` (`specs/ces-revisions-roadmap.md`) and ask the partner to confirm or change it.
+
+Other readings:
+
+- Echo of the skill's definition. If "name its stages first to last" only repeats the kind's definition and does not label the order as stages, rep4 passes. Rep5 still fails. PASS is 4 of 5 and the bar is met.
+- Core and later text as Task 7 rep1 read it. If rep5's later-qualities sentence sets out no stage, rep5 passes too. With the Echo reading, PASS is 5 of 5.
+- Item 4's other reading (any order inside a known-progression track is a stage list, called stages or not). Reps 1, 3, 4 and 5 fail. Rep2 passes. PASS is 1 of 5 and the bar is missed.
+
+### Plan 79 Task 4: dr-tracks, run b
+
+Additive. Texts at `5f52dfc`. Folder `dr-tracks-p79b`. A second, independent run of the same prompt. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.4561. The clauses are those of run a.
+
+| Rep | A (bar) | B (conformance) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | fail | pass | no |
+| 2 | pass | pass | pass (borderline) | pass | yes |
+| 3 | pass | pass | fail (borderline) | pass | no |
+| 4 | pass | pass (borderline) | pass | pass | yes |
+| 5 | pass | pass | fail (borderline) | pass | no |
+
+Clause A: 5 of 5 (control 0 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 2 of 5 (control 3 of 5). Clause D: 5 of 5 (control 0 of 5). PASS: 2 of 5 (control 0 of 5, run a 3 of 5).
+
+Compared with plan 78's "Control: dr-tracks": RED in 5 of 5. The bar for each run is at least 4 of 5. Bar: **missed** (PASS 2 of 5), through conformance clause C. Bar clause A is 5 of 5.
+
+- A. Every rep separates the collection-interval outcome from the budget and staffing outcome, with a reason. Rep1: "Split from C because O4's answer holds without O7's. Joining them would make the collection-interval result wait on the hand-built annual covariates and their identification problems."
+- B. Every rep asks the partner to rank. Rep4 passes, borderline, by the dependency-fact reading: "Every other track consumes O1, so A's core stage goes first whatever the ranking."
+- C, rep1 fails (Stage word). Quote: "You can likely name its stages: total nonfarm first, then benchmark and wedge-back, then supersectors."
+- C, rep3 fails, borderline (Stage word). Quote: "Proposed as a known progression, from total nonfarm to supersector to NSA. Please confirm you can name its stages first to last." The order and the word are in adjacent sentences about the same track.
+- C, rep5 fails, borderline (Stage word). Quote: "Known progression, *if* you can name its stages. My guess is total nonfarm SA, then NSA, then supersectors." Its closing request also says "Track A's stage sequence".
+- C, rep2 passes, borderline. It orders work steps without the word: "I propose a known progression: acquire vintages, compute the stage series, then add supersectors." Its later qualities go "in later stages or Ranked-list items", with the alternative that round 2 rep2 had. Rep4 passes. It gives no order: "Known progression, if you can name its stages."
+- D. Every rep says that a run measures the fit cost. Rep4: "NUTS compute can't be estimated without a real fit, so its core stage measures it".
+- Name (not scored). All five propose the name `ces-revisions` (`specs/ces-revisions-roadmap.md`) and ask the partner to confirm or change it.
+
+Other readings:
+
+- Echo of the skill's definition. Reps 1, 3 and 5 pass. PASS is 5 of 5 and the bar is met.
+- Item 4's other reading (any order inside a known-progression track is a stage list). Reps 1, 2, 3 and 5 fail. Only rep4 passes. PASS is 1 of 5 and the bar is missed.
+
+**dr-tracks, both runs.** Both runs fix bar clause A (5 of 5 each, against 0 of 5 in the control) and miss through conformance clause C. Clause C fails in 5 of the 10 reps. In 4 of them the reply repeats the skill's "name its stages first to last" next to an order. In the fifth it sets out later qualities as later stages. The skill's definition of a known-progression track is in `references/new-project-entry.md`, which is on plan 79's Leave-alone list. The question for the owner is the Echo reading. If it holds, run a is 4 of 5 and run b is 5 of 5, and both runs meet the bar. If it does not, both runs miss.
+
+### Plan 79 Task 4: dr-resume-rerank
+
+Additive in `cases.py`, read as a guard here. Texts at `5f52dfc`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2775.
+
+Plan 4 shipped the core stage of a research track. The partner says "Resume the roadmap." Clause A (bar): no completion review starts, and the roadmap is not parked or retired. Clause C (bar): one question that asks for a re-ranking or the approval of a proposed next stage, with a default. Clause B (conformance): the reply reports the core's finding and its measured cost. Clause D (conformance): no new stage entry is written before the answer.
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+PASS: 5 of 5. Compared with plan 78's "Fix round 1: dr-resume-rerank": PASS 5 of 5. The guard needs at least 5 − 1 = 4. Bar: **met**.
+
+- A. No rep starts a completion review. Each offers a stop as one option of its question. Rep1: "Stopping would park O2–O4 in `specs/deferred_items.md`." Each rep says the next step is a re-rank, not the completion review.
+- C. Each rep ends on one approve-or-amend question with a default. Reps 1, 3, 4 and 5 promote O2 as Stage 2. Rep2 proposes O3 first: "Do you approve this re-ranking, **O3 → O2 → O4**, with O3 promoted to Stage 2 (Track A)? Or would you rather amend it ...?" Rep3 and rep4 add their alternatives after the default, inside one question.
+- B. Every rep reports the 3.1 m level with the steep rise above it, and the 22-minute, 1.8 GB fit.
+- D. No rep writes a stage entry. Rep5 describes the promoted stage inside its question: "Its entry would name `specs/lock-closures-stage-2-findings.md` in Produces and the measured cost of its real run in Exit."
+
+### Plan 79 Task 4: dr-resume-legacy
+
+Non-regression (guard). Texts at `5f52dfc`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2579.
+
+The roadmap is in the older format and every stage is ticked. Plan 5's Handoff reads `None`. The partner says "Resume the roadmap."
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5. Compared with plan 78's "Fix round 1: dr-resume-legacy": 5 of 5. The guard needs at least 4. Bar: **met**.
+
+Every rep reconciles with no amendment, says that all three stages are ticked and that no Ranked list waits, goes to the completion review (§6) and lists the reads of the audit over R1 to R6. No rep asks a re-ranking question. Reps 1, 3 and 5 end on a go-ahead question ("Do you want me to go ahead with these reads?", "Shall I run the audit reads?", "Shall I run the audit?"). That is not a re-ranking question. The new resume marker does not change this path: plan 5's `None` Handoff is read again and changes nothing.
+
+### Plan 79 Task 4: dr-offer-yes
+
+Additive in `cases.py`, read as a guard here. Texts at `5f52dfc`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6869.
+
+The partner says "Yes, do that." to the offer of outcome-first staging for the SEC spec. Clause A (bar): a numbered list of outcomes in plain words, one line each. Clause B (bar): no ranking of its own, and a request to rank. Clause C (bar): no roadmap text and no stage list. Clause D (conformance): a cost note with a basis, or a statement that only a run can measure it.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass (borderline) | fail (borderline) | pass | no |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 5 of 5, Task 7 5 of 5). Clause B: 5 of 5 (control 2 of 5, Task 7 4 of 5). Clause C: 4 of 5 (control 2 of 5, Task 7 3 of 5). Clause D: 5 of 5 (control 0 of 5, Task 7 5 of 5). PASS: 4 of 5 (Task 7 3 of 5).
+
+Compared with plan 78's "Task 7: dr-offer-yes": PASS 3 of 5. The guard needs at least 3 − 1 = 2. Bar: **met**.
+
+- A. Every rep gives O-numbered table rows, one plain line each, from the spec's requirements (labeled-list reading).
+- B. Every rep asks the partner to rank, and none orders the outcomes. Rep3 passes, borderline: "known progression; spec §7 and §4 give its order". It cites the spec's order and labels it. Rep4's sentence below places the Azure work in later stages. It does not pick an order among the outcomes, so B passes, borderline.
+- C. Rep4 fails, borderline (the owner's core-and-later ruling, with no core stage named). Quote: "Under this plan, deployment and scheduling become named later stages in the track, not separate work." No other rep sets out stages. Reps 1, 2, 3 and 5 mention one stage at most, in passing ("The core stage measures it", "The first Azure stage would measure them"). That is not a list.
+- D. Every rep gives a cost note with a basis. Rep1: "about 136 quarters and roughly 300 requests, under 2 min of request budget at 3 req/s".
+- Name (not scored). All five give the stem of the spec, `specs/sec-filing-index-ingestion-spec-roadmap.md`, and no rep asks the partner to confirm or change the name. Rep5: "The name comes from the spec's filename, so you don't need to pick one."
+
+Other reading: if rep4's sentence is a passing reference to later stages and not a list, rep4 passes C and PASS is 5 of 5. The bar is met either way.
+
+### Plan 79 Task 4 summary and spend
+
+| Case | Bar | Compared with | Treatment (`T-final`, `5f52dfc`) | Result |
+|---|---|---|---|---|
+| dr-known-progression-79 | additive, rule `DR_KNOWN_PROGRESSION_PASS_79` | plan 78's control: RED in 1 of 5 (rep5, clause B, by-reference reading) | PASS 3 of 5 (4 of 5 by the other reading of Provenance on bytes) | **MISSED**, owner gate (needs 4 of 5, through clause C) |
+| dr-tracks, run a | additive, 4 of 5 | plan 78's control: RED in 5 of 5 (A 0 of 5, PASS 0 of 5) | PASS 3 of 5 (4 of 5 by the Echo reading) | **MISSED**, owner gate (through clause C) |
+| dr-tracks, run b | additive, 4 of 5 | plan 78's control: RED in 5 of 5 | PASS 2 of 5 (5 of 5 by the Echo reading) | **MISSED**, owner gate (through clause C) |
+| dr-resume-rerank | guard, at least 4 of 5 | plan 78's Fix round 1 arm: 5 of 5 | PASS 5 of 5 | met |
+| dr-resume-legacy | guard, at least 4 of 5 | plan 78's Fix round 1 arm: 5 of 5 | 5 of 5 | met |
+| dr-offer-yes | guard, at least 2 of 5 | plan 78's Task 7 arm: 3 of 5 | PASS 4 of 5 (5 of 5 by the other reading of rep4) | met |
+
+No rep was VOID. Three arms miss their bar, all through conformance clause C. In each, the bar clause that the case targets passes (dr-known-progression-79 clause B 5 of 5, dr-tracks clause A 5 of 5 in both runs). No wording round ran, as the controller directed. The three misses go to the owner (Task 4 Step 2).
+
+**Judgment-call reps.** The owner can review them at the completion gate. The quote column gives the other reading's effect where it changes a count.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-known-progression-79 reps 1 and 5, B | pass, borderline (a count, not a manifest, as Task 7 rep5) | rep1: "with row counts reported per source". rep5: "with a row count per source". |
+| dr-known-progression-79 rep2, B | pass, borderline (a count check, as fix round 1 rep2) | "its row count matches the source files" |
+| dr-known-progression-79 rep2, C (traceability) | fail (Provenance on bytes) | "Retain original bytes with provenance and make parsing and extraction replayable without SEC requests". The other reading passes C, which makes PASS 4 of 5 and the bar met. |
+| dr-known-progression-79 reps 2 and 5, A | pass, borderline (the first stage for each outcome is in order) | rep5: "Full-history submission download (Stage 5) comes after 10-K/8-K handling on one quarter (Stage 4)." |
+| dr-tracks a rep1, C | pass, borderline (work steps, not called stages) | "Known progression: get the vintages, compute revisions by stage, report how their size changes over time." |
+| dr-tracks a rep3, C | pass, borderline (outcomes ordered, not called stages, as Task 7 reps 2 to 4) | "Known progression: total nonfarm first, then supersectors. Is that the right order?" |
+| dr-tracks a rep4, C | fail, borderline (Stage word) | "Known progression, if you can name its stages first to last (total nonfarm → supersectors → NSA)." The Echo reading passes C. |
+| dr-tracks a rep5, C | fail, borderline (core and later stages) | "Those go into later stages, not into any core stage." The other reading passes C. |
+| dr-tracks a rep5, B | pass, borderline (dependency fact) | "A's core stage goes first regardless of ranking." |
+| dr-tracks b rep1, C | fail (Stage word) | "You can likely name its stages: total nonfarm first, then benchmark and wedge-back, then supersectors." The Echo reading passes C. |
+| dr-tracks b rep2, C | pass, borderline (work steps, and the Ranked-list alternative) | "acquire vintages, compute the stage series, then add supersectors" and "I'll place them in later stages or Ranked-list items". |
+| dr-tracks b rep3, C | fail, borderline (Stage word, adjacent sentences) | "Proposed as a known progression, from total nonfarm to supersector to NSA. Please confirm you can name its stages first to last." The Echo reading passes C. |
+| dr-tracks b rep4, B | pass, borderline (dependency fact) | "A's core stage goes first whatever the ranking." |
+| dr-tracks b rep5, C | fail, borderline (Stage word) | "Known progression, *if* you can name its stages. My guess is total nonfarm SA, then NSA, then supersectors." The Echo reading passes C. |
+| dr-resume-rerank rep2, C | pass (a re-rank as the default, then one question with its alternative) | "Do you approve this re-ranking, **O3 → O2 → O4**, with O3 promoted to Stage 2 (Track A)? Or would you rather amend it ...?" |
+| dr-offer-yes rep3, B | pass, borderline (the spec's order cited and labeled) | "known progression; spec §7 and §4 give its order" |
+| dr-offer-yes rep4, B and C | B pass, borderline. C fail, borderline (later stages, no core stage named) | "Under this plan, deployment and scheduling become named later stages in the track, not separate work." The other reading passes C and PASS is 5 of 5. |
+
+**Questions for the owner (Task 4 Step 2).**
+
+1. dr-tracks. Do the words "name its stages first to last", next to an order of outcomes, count as calling the order stages? The skill's own definition of a known-progression track uses them (`references/new-project-entry.md`, on plan 79's Leave-alone list). If they do not, run a is 4 of 5 and run b is 5 of 5. Both runs meet the bar, and item (e) is met. If they do, the skill text pulls the phrase into the one message, and a fix needs a wording change to that file.
+2. dr-tracks rep5 of run a. Does a sentence that sends named later qualities "into later stages, not into any core stage" count as a stage list? The owner ruled that it does for dr-offer-yes. The deferred item for that ruling also names dr-tracks for a re-run of the same text.
+3. dr-known-progression-79. Does "Retain original bytes with provenance", with no per-row link, name traceability? If it does, the case passes 4 of 5. Plan 78's control is also RED only by the by-reference reading of rep5's clause B. By the other reading it is clean.
+
+**Task 4 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the six folders after its last rep, and once over all six together. The last run shows 30 reps, none VOID, and prints `total cost $3.44`. No rep file is empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per folder, from each rep's `total_cost_usd`, are dr-known-progression-79 $1.0925, dr-tracks run a $0.6731, dr-tracks run b $0.4561, dr-resume-rerank $0.2775, dr-resume-legacy $0.2579 and dr-offer-yes $0.6869. Task 4 cost $3.4439. Running total: $12.0639 of $30.
+
+## Plan 79: summary
+
+Plan 79 closes two resume gaps and two wording gaps in derive-roadmap, gives plan 78's four routes their first micro-tests, and re-runs two older cases. This summary lists every arm, the spend and the verdict on each of items (a) to (e). It edits no item in `specs/deferred_items.md`. The plan completion protocol does that later.
+
+### Every arm
+
+"Met" means the additive bar (every clause in at least 4 of 5 reps, against a control that fails a bar clause in at least 1 of 5) or the guard bar. "Clean control" means no clause fails in the control, so the additive bar cannot be met and the change reverts nothing. The owner sees each clean control at the completion gate. "Missed, owner gate" means the treatment is below its bar and no wording round ran.
+
+| Arm (text) | Case | Bar | Control | Treatment | Result |
+|---|---|---|---|---|---|
+| Task 3, `T3` (`c500e14`) | dr-stop-track | additive | RED, A fails 5 of 5 (PASS 0 of 5) | PASS 2 of 5 | missed |
+| Task 3, `T3` | dr-park-ranked | additive | RED, A fails 5 of 5 (PASS 0 of 5) | PASS 2 of 5 | missed |
+| Task 3, `T3` | dr-name-collision | additive | RED, B fails 5 of 5 (PASS 0 of 5) | PASS 4 of 5 | met, narrowly (not re-run later) |
+| Task 3, `T3` | dr-rerank-second | additive | RED, a bar clause fails in 4 of 5 (PASS 1 of 5) | PASS 5 of 5 | met |
+| Task 3, `T3` | dr-resume-marker | additive | clean (PASS 5 of 5) | PASS 5 of 5 | clean control, owner gate |
+| Task 3, `T3` | dr-resume-blocked | additive | clean (PASS 5 of 5) | PASS 5 of 5 | clean control, owner gate |
+| Task 3 wording round, `T3-r1` (`43fca10`) | dr-stop-track | additive | RED, as above | PASS 5 of 5 | met |
+| `T3-r1` | dr-park-ranked | additive | RED, as above | PASS 5 of 5 | met |
+| `T3-r1` | dr-rerank-second | additive | RED, as above | PASS 5 of 5 | met |
+| `T3-r1` | dr-resume-marker | additive | clean | PASS 5 of 5 | clean control, owner gate |
+| `T3-r1` | dr-resume-blocked | additive | clean | PASS 5 of 5 | clean control, owner gate |
+| Task 3 fix round 1, `T3-r2` (`99265a5`) | dr-stop-track | additive | RED, as above | PASS 4 of 5 | met |
+| `T3-r2` | dr-park-ranked | additive | RED, as above | PASS 3 of 5 | missed (owner gate, closed by the owner's re-run rule at `T3-r3`) |
+| `T3-r2` | dr-rerank-second | additive | RED, as above | PASS 5 of 5 | met |
+| `T3-r2` | dr-resume-marker | additive | clean | PASS 5 of 5 | clean control, owner gate |
+| `T3-r2` | dr-resume-blocked | additive | clean | PASS 5 of 5 | clean control, owner gate |
+| Task 3 fix round 2, `T3-r3` (`5f52dfc`, `T-final`) | dr-stop-track | additive | RED, as above | PASS 5 of 5 | met |
+| `T3-r3` | dr-park-ranked | additive | RED, as above | PASS 4 of 5 | met by the owner's re-run rule, with both runs shown |
+| `T3-r3` | dr-rerank-second | additive | RED, as above | PASS 5 of 5 | met |
+| `T3-r3` | dr-resume-marker | additive | clean | PASS 5 of 5 | clean control, owner gate |
+| `T3-r3` | dr-resume-blocked | additive | clean | PASS 5 of 5 | clean control, owner gate |
+| Task 4, `T-final` | dr-known-progression-79 | additive | plan 78's control: RED in 1 of 5 (rep5, clause B, by-reference reading) | PASS 3 of 5 (4 of 5 by the other reading of Provenance on bytes) | missed, owner gate (clause C) |
+| Task 4, `T-final` | dr-tracks, run a | additive, 4 of 5 | plan 78's control: RED in 5 of 5 | PASS 3 of 5 (4 of 5 by the Echo reading) | missed, owner gate (clause C) |
+| Task 4, `T-final` | dr-tracks, run b | additive, 4 of 5 | plan 78's control: RED in 5 of 5 | PASS 2 of 5 (5 of 5 by the Echo reading) | missed, owner gate (clause C) |
+| Task 4, `T-final` | dr-resume-rerank | guard, at least 4 of 5 | plan 78's Fix round 1 arm: 5 of 5 | PASS 5 of 5 | met |
+| Task 4, `T-final` | dr-resume-legacy | guard, at least 4 of 5 | plan 78's Fix round 1 arm: 5 of 5 | PASS 5 of 5 | met |
+| Task 4, `T-final` | dr-offer-yes | guard, at least 2 of 5 | plan 78's Task 7 arm: 3 of 5 | PASS 4 of 5 | met |
+
+At `T-final`, the four route cases are met (dr-name-collision only at `T3`, where it was run once). The two resume-gap cases are clean controls. In Task 4, three guards are met and three arms miss their bar. dr-known-progression-79 has a count of 3 of 5 that rests on one rep's reading (rep2's traceability). The two dr-tracks runs miss on a reading that the owner can change (the Echo reading, in "Plan 79 Task 4 summary and spend"). The other Task 3 rows are as the Task 3 sections recorded them.
+
+### Spend
+
+| Task | Spent |
+|---|---|
+| Task 1 (cases and leak check, no rep) | $0.0000 |
+| Task 2 (control arms) | $1.7765 |
+| Task 3 (four rounds: $2.0278, $1.5993, $1.6102 and $1.6062) | $6.8435 |
+| Task 4 (re-runs) | $3.4439 |
+| **Total** | **$12.0639 of $30** |
+
+The total is under the $30 stop and under plan 79's own estimate of about $15. No rep was VOID in any task. No rep file was empty or unreadable.
+
+### Items (a) to (e)
+
+**(a) Four routes that plan 78 added have no micro-test. Done when: cases for the four paths exist in `cases.py`, each with a control run and a treatment run. Met.**
+
+The four cases are dr-stop-track, dr-park-ranked, dr-name-collision and dr-rerank-second. Each is in `cases.py`. Each has a control run in Task 2 (5 reps at `1844bd8`) and a treatment run in Task 3. dr-name-collision has one treatment run, at `T3`. The other three have a run at every Task 3 text. This `Done when:` asks for the runs and not for a bar met. Where the arms rest on a reading: dr-name-collision at `T3` is 4 of 5 on rep2's reading (3 of 5 by the other reading). dr-park-ranked at `T3-r3` is 4 of 5 by the owner's re-run rule, and it was 3 of 5 at `T3-r2`.
+
+**(b) Two wording gaps left by plan 78's final review. Done when: the roadmap-format paragraph also names a whole-roadmap park and §7 step 4 says "with no spec". Met.**
+
+The basis is the text at `T-final`. `references/roadmap-format.md` says "or parks when the track stops or the whole roadmap parks (SKILL.md §5)". `SKILL.md` §7 step 4 says "and, with no spec, a proposed roadmap name". The `Done when:` is text only. The unscored name records of Task 4 agree with the new phrase. dr-offer-yes (a spec exists) gives the spec's stem in 5 of 5 reps and asks for no confirmation. dr-tracks (no spec) proposes a name in 10 of 10 reps.
+
+**(c) `SKILL.md` §5 (the resume) has two gaps found in review. Done when: both are specified in the skill and `references/roadmap-format.md` and a fixture shows each behaving as specified. Met as written, with three caveats.**
+
+Both gaps are specified at `T-final`. The marker is "no roadmap entry yet cites" a stamped stage's Handoff (§5, with the matching sentence in `roadmap-format.md`). The blocked-roadmap rule is the Ask bullet ("unticked stages remain and none has all its `Consumes` met", and a `Consumes` is unmet when a Handoff or stamp shows its input missing or when the stage that is to produce it is unticked). A fixture shows each: dr-resume-marker is 5 of 5 and dr-resume-blocked is 5 of 5 at all four Task 3 texts. At `T-final`, dr-resume-rerank (5 of 5) and dr-resume-legacy (5 of 5) show that the resume path still works in the cases around them. The caveats:
+
+- Both controls are clean. The text before the change already gave the same behavior, so the two fixtures show that the specified behavior holds. They do not show that the new text caused it.
+- dr-resume-marker rests on the Carried citation reading. By the other reading it is 3 of 5 at `T3-r3`. dr-resume-blocked rests on the one-question reading and is 4 of 5 by the other.
+- No arm tests the `T3-r3` clause about an unticked producer. No fixture has a blocked chain. A test would need a roadmap where one stage's input is missing and a later stage consumes that stage's output.
+
+**(d) dr-known-progression fails conformance clause C. Done when: the owner decides whether the skill text must prompt for point-in-time awareness or whether clause C should fit the fixture, and the case is re-run under that decision. Met as written. The re-run missed its bar on the readings applied.**
+
+The owner decided on 2026-11-07 that clause C fits the fixture (D1). `dr-known-progression-79` is the case re-run under the new clause C. It ran at `T-final`. Its PASS is 3 of 5 and the bar needs 4 of 5. Clause B, the bar clause, is 5 of 5. The two failing reps fail clause C: rep5 names no manifest in any stage, and rep2 keeps provenance on retained bytes with no per-row link. By the other reading of Provenance on bytes, rep2 passes, and PASS is 4 of 5. This result goes to the owner at the gate. Open for plan review item 2 asks the summary to say two more things. Plan 78's control is RED in 1 of 5 only because of the by-reference reading of rep5's clause B. By the other reading plan 78's control is clean, so the case has no RED to beat. And the `Done when:` here asks for the decision and the re-run, which exist.
+
+**(e) dr-tracks passes unstably. Done when: two independent five-rep runs of the case each pass 4 of 5 under the kit, or the owner accepts the Task 7 result as it stands. Not met. Owner gate.**
+
+Run a is 3 of 5 and run b is 2 of 5, on the reading of record (Open for plan review item 4) and the Stage word test. Each needs 4 of 5. Both runs fix bar clause A (5 of 5 each, against 0 of 5 in the control). They miss through conformance clause C. The owner already ruled (D2, 2026-11-07) that the Task 7 result is not accepted as it stands, so the second branch of the `Done when:` is closed. The count depends on one reading. By the Echo reading (the phrase "name its stages first to last" only repeats the skill's definition of a known-progression track), run a is 4 of 5 and run b is 5 of 5, and the item is met. By item 4's other reading (any order of outcomes inside a known-progression track is a stage list), both runs are 1 of 5. The questions for the owner are in "Plan 79 Task 4 summary and spend".
+
+### Owner gate
+
+The plan completion gate needs these owner decisions:
+
+1. Task 4 Step 2: dr-tracks (both runs) and dr-known-progression-79 miss their bar through clause C. The three questions are in "Plan 79 Task 4 summary and spend".
+2. The two clean controls, dr-resume-marker and dr-resume-blocked (Task 2). Each reverts nothing.
+3. Items (a) to (d) are met as written. Item (e) is not met and stays open with a dated note.
