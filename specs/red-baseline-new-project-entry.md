@@ -134,7 +134,8 @@ Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in
 | Task 3, treatment arms (9 cases in round 1 and 7 in round 2, 5 reps each, no VOID rerun) | 80 | $1.00 | $80.00 ($5.00 per case call) | $8.4719 |
 | Task 4, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5190 |
 | Task 5, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5031 |
-| **Running total** | 177 | | | **$15.2931 of $60** |
+| Task 6, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.3376 |
+| **Running total** | 187 | | | **$15.6307 of $60** |
 | **Control arms** | 75 | | | **$5.5029 of $30** |
 
 Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
@@ -154,6 +155,10 @@ Task 4's two folders prints $0.52 for its 10 reps. These figures match the "Task
 
 Running total after Task 5: $15.2931 of $60 ($15.29). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
 Task 5's two folders prints $0.50 for its 10 reps. These figures match the "Task 5 summary" section, below.
+
+Running total after Task 6: $15.6307 of $60 ($15.63). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
+Task 6's two folders prints $0.34 for its 10 reps. These figures match the "Task 6 summary" section and the spend
+total under "All arms side by side", below.
 
 ## Fixture sources
 
@@ -1971,3 +1976,189 @@ the route, or lists to check and to discuss. They do not meet those definitions.
 ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.50`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.2633 and $0.2398, so Task 5 cost
 $0.5031. Running total: $15.2931 of $60. Control arms: $5.5029 of $30, unchanged.
+
+## Treatment: Task 6
+
+Task 6 teaches brainstorming to hand a new project of several stages, with nothing built yet, to derive-roadmap's
+New-Project Entry in the same session. The skill text was committed as `1f64a61` (`feat(brainstorming): hand a new
+multi-stage project with nothing built to derive-roadmap`). Task 6 runs the treatment of two cases: bs-route
+(additive) and bs-guard (guard). Each rep is scored by its case's committed rule and by every reading in the Control
+section. No rule and no reading changed.
+
+**Other cases are not re-run.** Task 6 edits only the brainstorming SKILL.md body. Its description is unchanged, so
+every skill listing is unchanged, and no other case reads the brainstorming body. This was checked, not only
+argued. The prompts of the two trigger cases, of dr-resume-rerank and dr-resume-legacy, and of dcm-describe-route and
+dcm-synth-route were rebuilt at `1f64a61` into `/tmp/plan78-work/t6-check` (no rep ran). Each prompt has the same
+sha256 as in its earlier arm: the trigger cases as in `t3-MANIFEST.txt`, the two resume cases as in
+`t4-MANIFEST.txt`, and the two dcm cases as in `t5-MANIFEST.txt`. The other DR cases carry no brainstorming text and
+the same listing, so the change cannot reach them either.
+
+**Build.** The prompts were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1f64a61 /tmp/plan78-work/t6 bs-route bs-guard`.
+Its `MANIFEST.txt` is copied to `treatment/t6-MANIFEST.txt`. Two checks ran on the build before any rep:
+
+- Each prompt holds the paragraph "A new project of several stages goes to a roadmap" once and the name
+  `derive-roadmap's New-Project Entry` four times, each within one line. (The skill's fifth `derive-roadmap` is "If
+  derive-roadmap is not installed", and the several-projects sentence says only "the New-Project Entry".) The
+  derive-roadmap line of each listing holds the description at `1f64a61`.
+- No prompt holds `red-baseline`, `plan 78` or the spec's file name (the quarantine).
+
+Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t6/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t6 1 5 claude-opus-5-5 1.00`,
+one case at a time, into folders with a `-t6` suffix, so earlier folders are untouched. Before each call, the running
+total plus the call's worst case ($5.00) stayed under $60.
+
+### Task 6: bs-route
+
+Additive. Arm `1f64a61`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.1725.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | fail | pass (borderline) | pass | no |
+| 3 | pass | pass | pass | yes |
+| 4 | pass (borderline) | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 4 of 5 (control 0 of 5). Clause B: 5 of 5 (control 4 of 5). Clause C: 5 of 5 (control 5 of 5). PASS: 4 of
+5. Bar: met on the readings applied (see Other readings, below). The treatment passes every clause in 4 of 5 reps,
+and the control failed a bar clause in 5 of 5.
+
+- A, rep2, fail. It plans the roadmap, names no skill and asks a question first. A handoff that is put off, or only
+  asked about, fails. Quote (A, rep2): "Before I do that, one thing would change the first stage a lot. Is the year
+  a past one, like 2025, that we can pull from the stations' archives today?"
+- A, reps 1, 3, 4 and 5. Each says it hands the outcomes over and writes the call. Reps 1, 3 and 4 say "now", for
+  example rep3: "Handing it to the roadmap step now, with your outcomes in your words:". Rep5 says "I'm handing this
+  to the roadmap step with your outcomes as you stated them:". Each is followed by a block that begins
+  `Skill: derive-roadmap (New-Project Entry)`. Each block gives the outcomes in the partner's words, in their order,
+  with the harbor-master group, the one-year success line and the Python-on-a-laptop constraint.
+- B passes in every rep. No rep lays out ways to build the whole project. Each says that each stage gets its own
+  design when it is reached, and reps 1, 3, 4 and 5 add that questions such as which four stations and how to fill
+  gaps wait for those sessions. Every rep gives the partner's order as the stages (collect, clean and fill, publish),
+  which is not an approach.
+- C passes in every rep. No rep writes a design document, a spec or any roadmap text. Reps 1, 3, 4 and 5 hand over
+  a call block with the outcomes and the partner's answers, and reps 3 and 4 add the questions left open for the
+  stage. Rep2's question (past year or a year collected from now) is not answered by the conversation, so it is not
+  a question that the conversation already answers. No other rep asks a question. Reps 1, 3 and 5 only say that the
+  partner can ask for a single design instead.
+
+Running total: $15.4656 of $60.
+
+### Task 6: bs-guard
+
+Non-regression (guard). Arm `1f64a61`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.1651.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | fail | no |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 4 of 5 (control 4 of 5). Bar: met. The guard needs at least 3 of 5. Every rep lays out
+two or three ways to build the script (reps 2 to 5 give two, rep1 gives three), recommends one and asks which way to
+go. No rep names derive-roadmap or hands off to it. Rep1 fails the rule for the reason that control rep1 failed: its
+one question also asks about its defaults. Quote (guard, rep1): "Which approach do you want, and do those defaults
+match how you'd count a track with a long stop in it?" Rep5 states its defaults as ones "which you can override" and
+asks only "Which way do you want to go?", so it passes. Its closing line, "after you pick I'll write a short design
+here for your OK and then build it with tests", is a plan and not a question.
+
+Running total: $15.6307 of $60.
+
+### Task 6 summary
+
+| Case | Bar | Control | Treatment (`1f64a61`) | Result |
+|---|---|---|---|---|
+| bs-route | additive | RED, 5 of 5 (A in every rep) | 4 of 5 pass (A 4 of 5) | met on the readings applied (A would be 3 of 5 and the bar missed if rep4 fails A) |
+| bs-guard | guard | 4 of 5 | 4 of 5 | met |
+
+Both cases meet their bar in the first round, so no wording round ran. No rep was VOID.
+
+**Judgment-call reps (Task 6).** These rows extend the Judgment-call lists in the Control section and in Tasks 3 to
+5. Each rep was scored on a close reading. The row for bs-route rep4, clause A, rests on a reading that, ruled the
+other way, would change the bar. Other readings, below, gives the counts.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| bs-route rep4, A | pass, borderline (the handoff is stated as now and written; the closing line offers a chance to object) | "I'm handing this to the roadmap step now, with your outcomes in your words:", then `Skill: derive-roadmap (New-Project Entry)`. The reply ends: "If any of that is off, tell me before the roadmap is written. Otherwise I'll go ahead." The reading notes pass a written Skill call or a statement that it hands over now. This rep has both. |
+| bs-route rep2, A | fail (the handoff is put off by a question, and the skill is not named) | "Before I do that, one thing would change the first stage a lot." |
+| bs-route rep2, B | pass, borderline (two readings of one outcome, not two ways to build the whole project) | "A past year means fetching a large batch of history once. A year going forward means a small collector that runs regularly on their laptop for twelve months without missing data." The two readings bear on the first stage only. If they counted as approaches, B would be 4 of 5. PASS would not change, because rep2 already fails A. |
+| bs-route all reps, B | pass (the partner's own order, said back, is not an approach) | "Rather than design the whole thing now, I'll lay out those four stages, in your order, in a roadmap file." (rep5) |
+| bs-route rep2, C | pass (a question the conversation does not answer) | "Is the year a past one, like 2025, that we can pull from the stations' archives today?" The partner said "one year of clean monthly extremes", and did not say whether that year is past or to come. |
+| bs-guard rep1, guard | fail (a second question) | "Which approach do you want, and do those defaults match how you'd count a track with a long stop in it?" |
+| bs-guard rep5, guard | pass, borderline (defaults offered as overridable, one question) | "A few defaults I'd use either way, which you can override:", then "Which way do you want to go?" |
+| bs-guard reps 2 to 5, guard | pass (two ways meet "two or three") | "Two ways to build it:" (rep2) |
+
+**Other readings (Task 6).** Every score above stands, and both cases meet their bar on the readings applied. One
+reading decides the bs-route bar. The counts below were re-read from the raw replies in
+`treatment/bs-route-t6/`. The owner can rule on this reading at the plan completion gate. The bar needs the treatment
+to pass every clause in at least 4 of 5 reps.
+
+- bs-route, reading 1: a handoff that ends "tell me before the roadmap is written. Otherwise I'll go ahead" is a
+  handoff put to the partner for approval, not a handoff now. Rep4 then fails A. Clause A is 3 of 5 (reps 1, 3 and 5)
+  and PASS is 3 of 5. The bar is missed. Control dcm-describe-route reps 1 and 5 ("Tell me if you'd rather go that
+  way. Otherwise I'm proceeding.") were read as stating the plan, so the description stayed as their next step and
+  failed A. The same plan-or-option reading applied here keeps the handoff as rep4's next step, and it says "now"
+  and writes the call before its closing line. So the score stands as a pass. Reading 1 is the owner's alternative.
+
+Why the score stands: the reading notes for clause A name two ways to pass, a written Skill call and a statement of
+handing over now, and fail only a handoff put off to a later or fresh session or asked about as a question. Rep4's
+reply makes the call and says it is making it now. Its closing line does not move the call to a later session and
+asks no question.
+
+**Task 6 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/bs-route-t6/ specs/red-baseline-new-project-entry/treatment/bs-guard-t6/`
+ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.34`. No rep file is empty or
+unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.1725 and $0.1651, so Task 6
+cost $0.3376. Running total: $15.6307 of $60. Control arms: $5.5029 of $30, unchanged.
+
+## All arms side by side
+
+One row per case. Every figure is taken from this record's own tables. Each count is the number of the 5 scored reps
+that pass the clause. The control columns give the control arm at `BASE` (`1844bd8`) and the treatment columns give
+the arm of record of the case's task: Task 3's derive-roadmap cases use round 2 (`3ca7344`), Task 3's two trigger
+cases use round 1 (`48d9847`, their prompts did not change), Task 4 uses `a98ff27`, Task 5 uses `abc1ecb` and Task 6
+uses `1f64a61`. Only bar clauses are counted in the clause columns. A conformance clause can still decide the bar
+result, and the Bar result column says so where it does. A guard case has no bar clause, so its columns give the
+reps that pass the whole rule.
+
+| Case | Kind | Control, bar clauses | Treatment, bar clauses | Treatment PASS | Bar result | Clean control |
+|---|---|---|---|---|---|---|
+| trigger-stages | additive | A 0 | A 5 | 5 of 5 | met | no (RED, 5 of 5) |
+| trigger-decoy | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (needs 4 of 5) | n/a |
+| dr-offer-scaffold | additive | A 3, B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met in round 2. Round 1 (`48d9847`) missed (PASS 2 of 5, A 2 of 5), so the one wording round ran | no (RED, 5 of 5) |
+| dr-offer-inputs | additive | A 2, B 0, C 0 | A 5, B 5, C 5 | 5 of 5 | met (B rep5 borderline in round 2). Round 1 also met, 5 of 5 | no (RED, 5 of 5) |
+| dr-offer-yes | additive | A 5 (by the labeled-list reading; 0 on form alone), B 2, C 2 | A 5, B 3, C 3 | 3 of 5 | **missed**: PASS 3 of 5, and 4 of 5 by the other reading of the core-and-later-stages text. Round 1 met (4 of 5), so this was an owner gate. Owner ruling at the Task 3 gate: "Record and continue" | no (RED, 4 of 5) |
+| dr-built-guard | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (needs 4 of 5) | n/a |
+| dr-known-progression | additive | B 4 (by the by-reference reading; B 5 by the other reading) | B 5 | 0 of 5 | **missed** through conformance clause C (point-in-time awareness 0 of 5, though manifest 5 of 5 and traceability 4 of 5), although bar clause B is 5 of 5 | no by the by-reference reading (RED, 1 of 5); yes by the other reading of B (B 5 of 5) |
+| dr-tracks | additive | A 0 | A 4 | 2 of 5 | **missed**: PASS 2 of 5, and 3 of 5 by the other reading. Rep2 fails bar clause A (two covariate outcomes in one track). Reps 1 and 5 fail conformance clause C (stage lists in the one message). Round 1 also missed (PASS 2 of 5) | no (RED, 5 of 5) |
+| dr-research-depth | additive | A 0, B 0 | A 5, B 5 | 5 of 5 | met. Round 1 also met, 5 of 5 | no (RED, 5 of 5) |
+| dr-resume-rerank | additive | A 4, C 5 | A 5, C 5 | 5 of 5 | met against a thin control: the control failed a bar clause in 1 of 5 reps (rep4, A) | no (thin: RED in 1 of 5) |
+| dr-resume-legacy | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (needs 4 of 5) | n/a |
+| dcm-describe-route | additive | A 1 (0 before fix round 1), B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met on the readings applied. Under the other readings (Task 5, Other readings) A is 3 of 5 or fewer, and the bar is missed | no (RED, 5 of 5) |
+| dcm-synth-route | additive | A 2, B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met on the readings applied. A is 3 of 5, and the bar is missed, if reps 1 and 5 both fail A (Task 5, Other readings) | no (RED, 5 of 5) |
+| bs-route | additive | A 0, B 4, C 5 | A 4, B 5, C 5 | 4 of 5 | met on the readings applied. A is 3 of 5, PASS is 3 of 5 and the bar is missed, if rep4 fails A (Task 6, Other readings) | no (RED, 5 of 5) |
+| bs-guard | guard | 4 of 5 pass | 4 of 5 pass | 4 of 5 | met (needs 3 of 5) | n/a |
+
+**Counts.** 12 of the 15 cases meet their bar and 3 miss it: dr-offer-yes, dr-known-progression and dr-tracks. All
+three are Task 3 derive-roadmap cases that missed after the one wording round. The owner ruled "Record and continue"
+at the Task 3 gate, so all three go to the plan completion gate with the other items below. Of the 12 that meet their
+bar, three meet it only on the readings applied (dcm-describe-route, dcm-synth-route and bs-route), and one meets it
+against a thin control (dr-resume-rerank). dr-offer-scaffold meets it only after a wording round. The four guard
+cases (trigger-decoy, dr-built-guard, dr-resume-legacy, bs-guard) all meet their bar and have no clean-control flag.
+
+**Clean controls.** No additive case has a clean control under the readings applied. dr-known-progression would have
+one under the other reading of its clause B, and it goes to the owner at the completion gate on that ground. Two
+additive controls are thin, with a bar clause that fails in 1 of 5 reps: dr-resume-rerank (rep4, clause A) and
+dr-known-progression (rep5, clause B, by the by-reference reading).
+
+**For the owner at the plan completion gate.** The three misses and their causes (Task 3 summary). The
+dr-known-progression clean control (Control summary). The other-reading counts that decide dcm-describe-route,
+dcm-synth-route and bs-route (Task 5 and Task 6, Other readings). The review findings parked from Task 3 (entry item
+2) and Task 4 ("stop the track"). No Task 6 edit is parked.
+
+**Spend total.** Spend by task: Task 1 $0.2962 (isolation probe $0.0141 and cost pilot $0.2821), Task 2 $5.5029
+(control arms), Task 3 $8.4719, Task 4 $0.5190, Task 5 $0.5031 and Task 6 $0.3376. These sum to **$15.6307 of $60**.
+The control arms alone cost $5.5029 of $30, unchanged: treatment reps count toward the $60 only. The per-case figures
+in this record sum to the same total, except Task 3's, which are rounded and sum to $0.0001 less (Task 3 summary). No rep was VOID and there was no VOID rerun in any task, and no rep file was
+empty or unreadable. The Spend table, the "Running total after Task 6" paragraph and this total agree.
