@@ -1541,6 +1541,7 @@
       Consumes met. Size: plan. Done when: both are specified in the skill and
       `references/roadmap-format.md` and a fixture shows each behaving as
       specified.
+      → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
 - [x] `skills/prepare-handoff/references/cold-reader.md` has no output form for a
       clean read (`fact-checker.md` has `VERIFIED OK`), so a sender cannot tell a
       clean read from a truncated one. Add a "NO FINDINGS" line after the report
@@ -5903,7 +5904,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       model.
 
 ## 78-derive-roadmap-new-project-entry — 2026-11-06
-- [ ] **dr-offer-yes misses its bar after plan 78's wording round (3 of 5; owner ruled accept and
+- [x] **dr-offer-yes misses its bar after plan 78's wording round (3 of 5; owner ruled accept and
       file at the completion gate).** `skills/derive-roadmap/SKILL.md` §1 NOTHING BUILT and
       `references/new-project-entry.md` (Later qualities, The one message). The case passed 4 of 5
       in Task 3 round 1, then 3 of 5 after the wording round, and 3 of 5 again in the Task 7 re-run.
@@ -5913,6 +5914,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       gate; Task 7) and specs/plans/completed/78-derive-roadmap-new-project-entry.md. Size: design.
       Done when: the owner rules on that reading, or a re-run of the case passes 4 of 5 under the
       kit in specs/red-baseline-new-project-entry/kit/.
+      → retired 2026-11-07: the owner ruled that the core-and-later-stages text counts as a stage list, so plan 78's committed reading stands and the case stays at 3 of 5. The skill wording that would stop this text is filed → item: deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
 - [ ] **dr-tracks passes unstably (owner ruled accept and file at the completion gate).**
       `skills/derive-roadmap/SKILL.md` §7 step 2 and `references/new-project-entry.md` (Outcomes and
       tracks). Task 3 rounds 1 and 2 scored 2 of 5 each. The Task 7 re-run scored 5 of 5 on the
@@ -5921,6 +5923,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/red-baseline-new-project-entry.md (Treatment: Task 3 and Task 7). Size: plan. Done when:
       two independent five-rep runs of the case each pass 4 of 5 under the kit, or the owner accepts
       the Task 7 result as it stands.
+      → progress 2026-11-07 (owner ruling): the Task 7 result is not accepted as it stands. The item stays open for the two independent five-rep runs.
+      → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
 - [ ] **dr-known-progression fails conformance clause C: point-in-time awareness appears in 0 of 5
       reps (owner ruled accept and file at the completion gate).** The fixture's background spec
       never raises as-of reads, so the skill's Later-qualities example list in
@@ -5929,6 +5933,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (Task 3 summary and owner gate; Task 7). Size: design. Done when: the owner decides whether
       the skill text must prompt for point-in-time awareness or whether clause C should fit the
       fixture, and the case is re-run under that decision.
+      → progress 2026-11-07 (owner ruling): clause C fits the fixture. Clause C drops point-in-time awareness for this fixture, and the case is re-run under the new clause, not re-scored. The re-run joins the plan for the "Four routes that plan 78 added have no micro-test" item below.
+      → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
 - [ ] **A new-project roadmap built from a spec maps each outcome to no spec section reference
       (plan 78 final review, owner ruled file).** Spec R10 sets this substitution (`Outcomes` in
       place of `Spec` and `Gap closed`). A stage plan from `writing-plans` is then scoped to
@@ -5937,6 +5943,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/completed/derive-roadmap-new-project-entry.md. Size: design. Done when: one stage plan built from
       a new-project roadmap with a spec has been checked against that spec, and the format either
       carries the spec section or states why it does not.
+      → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
 - [ ] **A later quality in a research track's Ranked list has no O-number and no partner rank
       (plan 78 final review, owner ruled file).** `skills/derive-roadmap/references/roadmap-format.md`
       (Ranked list) gives a list item an O-number and the partner's order. A quality that
@@ -5944,6 +5951,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/red-baseline-new-project-entry.md. Size: design. Done when: the format states how a
       later quality is listed in a Ranked list (for example an O-number and a rank request, or a
       named unranked class).
+      → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
 - [ ] **Four routes that plan 78 added have no micro-test (plan 78 Task 7 and final review).** A
       "stop the track" answer and a whole-roadmap park with Ranked lists (`skills/derive-roadmap/SKILL.md`
       §5 and its Parking paragraph), a name collision when a spec exists (`references/roadmap-format.md`,
@@ -5952,6 +5960,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/red-baseline-new-project-entry.md (Untested by micro-tests). Size: plan. Done when:
       cases for the four paths exist in specs/red-baseline-new-project-entry/kit/cases.py, each
       with a control run and a treatment run.
+      → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
 - [ ] **Two wording gaps left by plan 78's final review (owner ruled file).**
       `skills/derive-roadmap/references/roadmap-format.md` (Ranked list, last paragraph) names only a
       promotion and a track stop as ways an item leaves a Ranked list, and a whole-roadmap park also
@@ -5960,3 +5969,22 @@ review and the Plan Completion gate (2026-10-27) add the others.
       one-phrase edits to owner-approved text, so they need a micro-test pass under the plan 78
       kit. Size: quick-fix. Done when: the roadmap-format paragraph also names a whole-roadmap park
       and §7 step 4 says "with no spec".
+      → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
+
+## deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
+- [ ] **The derive-roadmap new-project offer still draws core-and-later-stages text before the
+      partner ranks (owner ruling, 2026-11-07).** `skills/derive-roadmap/SKILL.md` §1 NOTHING BUILT
+      and `references/new-project-entry.md` (Later qualities, The one message). Some replies name a
+      core stage and later stages for the hardening, inside the offer or the one message, for
+      example "Stage 1 would be the core: O1 on one real quarter plus one real daily file". The
+      owner ruled that this text counts as a stage list, so `dr-offer-yes` stays at 3 of 5 (bar 4
+      of 5). The record names a likely cause: the round-2 edit to the later-qualities rule ("Check
+      the project against each one, and place every one it will need") may have drawn this text in.
+      It would take a wording change to those sections and a re-run of `dr-offer-yes` under the kit
+      in specs/red-baseline-new-project-entry/kit/. `dr-offer-scaffold` and `dr-tracks` read the
+      same text, so they need a re-run too. It was first found in
+      specs/red-baseline-new-project-entry.md (Task 3 summary and owner gate, and Task 7),
+      2026-11-06. Size: design. Done when: the skill wording that stops this text lands, and a
+      re-run of `dr-offer-yes` under the kit passes 4 of 5 by plan 78's core-and-later-stages
+      reading.
+      → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
