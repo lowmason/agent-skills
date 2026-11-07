@@ -164,9 +164,10 @@ For each stage stamped COMPLETE since the last resume, read the stamp and its
 plan's `## Handoff to later stages`. Re-validate every unticked stage against
 what actually shipped:
 
-- **Amend.** When a Handoff bullet changes a later stage's `Spec`, `Consumes`,
-  `Produces` or `Exit`, amend that entry: cite `plan <id>, Handoff`, mark each
-  settled point `(Resolved at resume, YYYY-MM-DD)`, and never restate.
+- **Amend.** When a Handoff bullet changes a later stage's `Spec` (or
+  `Outcomes`), `Consumes`, `Produces`, `Exit` or `Leaves out`, amend that
+  entry: cite `plan <id>, Handoff`, mark each settled point
+  `(Resolved at resume, YYYY-MM-DD)`, and never restate.
   Amend only from Handoff bullets: a section reading `None`, or a plan with
   none, changes no later entry; a shipped difference no bullet names goes to
   the Ask.
@@ -180,14 +181,26 @@ what actually shipped:
   fresh session reads them. Context for a later stage that cannot be
   committed goes to prepare-handoff.
 
-Then hand off the next stage (§4). With every stage ticked, go to §6.
+**A research track waiting on its Ranked list** (a new-project roadmap). When
+every committed stage of a research track is ticked and its Ranked list is
+not empty, do not go to §6 for that track. Read the findings file that its
+core stage's `Produces` names, and report what the core found and its
+measured cost. Then, inside the ONE question of the Ask, put a re-ranking of
+the list and your proposed next stage (one item to promote), or stopping the
+track. A promoted item becomes a stage entry only after the answer. When your
+partner stops the track, its remaining items park, one deferred item each,
+under the Parking rule below.
 
-**Parking is a first-class exit.** Remaining unticked stages append to
-`specs/deferred_items.md`, one item per stage, under a dated
-`## <roadmap-name> — <YYYY-MM-DD>` section. Each item follows the
-Deferred-item schema in the writing-plans skill's deferred-backlog reference
-(self-contained, with `Size:` and a `Done when:` naming the stage's Produces),
-so the item ages and reaches the aged-tail gate. The roadmap moves to
+Then hand off the next stage (§4). With every stage ticked and no Ranked list
+waiting, go to §6.
+
+**Parking is a first-class exit.** Remaining unticked stages, and the items of
+a stopped track's Ranked list, append to `specs/deferred_items.md`, one item
+per stage or list item, under a dated `## <roadmap-name> — <YYYY-MM-DD>`
+section. Each item follows the Deferred-item schema in the writing-plans
+skill's deferred-backlog reference (self-contained, with `Size:` and a
+`Done when:` naming the stage's Produces or the item's outcome), so the item
+ages and reaches the aged-tail gate. The roadmap moves to
 `specs/completed/` marked `PARKED (date) — N of M stages complete`. The
 methodology and critique files retire alongside the synthesized spec — they
 are its inputs.
@@ -197,6 +210,8 @@ are its inputs.
 Retirement is gated behind a conformance audit of the ACCUMULATED system:
 re-run the gap rubric over every numbered requirement, with evidence per
 verdict (implementing stage/plan, Deviation notes, deferred_items entries).
+In a new-project roadmap, run it over the Outcomes list in place of spec
+requirements. Ranked-list items your partner never promoted have parked (§5).
 
 Unmet requirements exit exactly two ways: a new stage (roadmap stays live),
 or conscious deferral with a written why.
