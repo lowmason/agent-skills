@@ -43,7 +43,9 @@ these fields and nothing else:
 completed stage plan's `## Handoff to later stages` section are the ONLY
 cross-stage carriers — a stage's implementer sees neither the previous stage's
 session nor the rest of its plan. A field may cite `plan <id>, Handoff`, and a
-point settled at a resume carries `(Resolved at resume, YYYY-MM-DD)`.
+point settled at a resume carries `(Resolved at resume, YYYY-MM-DD)`. A resume
+treats a stamped stage as new while no entry cites its plan's Handoff, and it
+asks when unticked stages remain and none has its `Consumes` met (SKILL.md §5).
 
 **ROUTING** is `brainstorming` when the stage's design space is open, and
 `writing-plans` when the spec fully determines it. Name the skill bare.
@@ -124,4 +126,4 @@ Each research track's Ranked list keeps your partner's order:
 ```
 
 An item leaves the list when your partner promotes it to a stage at a resume,
-or parks when the track stops (SKILL.md §5).
+or parks when the track stops or the whole roadmap parks (SKILL.md §5).
