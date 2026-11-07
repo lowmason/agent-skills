@@ -198,16 +198,18 @@ Then hand off the next stage (§4). With every stage ticked and no Ranked list
 waiting, go to §6.
 
 **Parking is a first-class exit.** When your partner parks the roadmap, its
-remaining unticked stages append to `specs/deferred_items.md`, one item per
-stage, under a dated `## <roadmap-name> — <YYYY-MM-DD>` section. When your
-partner stops a research track, only the items of that track's Ranked list
-append, one item per list item, and the roadmap stays live. Each item follows
-the Deferred-item schema in the writing-plans skill's deferred-backlog
-reference (self-contained, with `Size:` and a `Done when:` naming the stage's
-Produces or the item's outcome), so the item ages and reaches the aged-tail
-gate. A parked roadmap moves to `specs/completed/` marked
-`PARKED (date) — N of M stages complete`. The methodology and critique files
-retire alongside the synthesized spec — they are its inputs.
+remaining unticked stages and the items of every Ranked list append to
+`specs/deferred_items.md`, one item per stage or list item, under a dated
+`## <roadmap-name> — <YYYY-MM-DD>` section. When your partner stops a
+research track, only the items of that track's Ranked list append, one item
+per list item, under a dated `## <roadmap-name> — <YYYY-MM-DD>` section, and
+the roadmap stays live. Each item follows the Deferred-item schema in the
+writing-plans skill's deferred-backlog reference (self-contained, with
+`Size:` and a `Done when:` naming the stage's Produces or the item's
+outcome), so the item ages and reaches the aged-tail gate. A parked roadmap
+moves to `specs/completed/` marked `PARKED (date) — N of M stages complete`.
+The methodology and critique files retire alongside the synthesized spec —
+they are its inputs.
 
 ## 6. Roadmap-completion review
 

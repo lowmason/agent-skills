@@ -73,9 +73,9 @@ checkboxes, the stamps and the resume above, with these differences.
 `<name>` is the spec's stem when there is a spec. With no spec, it is the
 kebab-case name your partner confirmed in the one message. With a spec,
 SKILL.md §3's scan applies first: a roadmap that names this spec as its
-source goes to Resume (§5). With no spec, check before writing that
-`specs/<name>-roadmap.md` does not exist. If it does, ask for another name:
-never overwrite it.
+source goes to Resume (§5). Then, with or without a spec, check before
+writing that `specs/<name>-roadmap.md` does not exist. If it does, ask for
+another name: never overwrite it.
 
 After the header, in order:
 
@@ -110,7 +110,7 @@ of `Spec` and `Gap closed`:
       Track: <letter> (omit with one track)
       Consumes: <as above>
       Produces: <as above; a core stage, and any stage of a research track, names specs/<name>-stage-<N>-findings.md>
-      Exit: <one observable outcome per O-number; a core stage adds the measured cost of its real run>
+      Exit: <one observable outcome per O-number; a core stage, and any stage of a research track, adds the measured cost of its real run>
       Leaves out: <each quality this stage does not need, with the stage or Ranked-list item that picks it up> | nothing
       ROUTING: brainstorming | writing-plans
 ```

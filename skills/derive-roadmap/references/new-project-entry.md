@@ -92,8 +92,8 @@ gave, or else by the list order, and label the ranking provisional.
   its Ranked list, in your partner's order, until the core has run on real
   data, because the first results may change the ranking (SKILL.md §5). A
   stage that your partner later promotes from the list also names its own
-  findings file in `Produces`, so the next re-rank reads what that stage
-  found.
+  findings file in `Produces` and the measured cost of its real run in
+  `Exit`, so the next re-rank reads what that stage found and cost.
 - **Later qualities.** A quality the project needs eventually but not to work
   goes to a named later stage in a known progression, or to a Ranked-list item
   in a research track. Examples: manifests, traceability, point-in-time
