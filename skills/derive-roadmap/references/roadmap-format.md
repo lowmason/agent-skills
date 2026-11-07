@@ -71,9 +71,11 @@ A roadmap from the New-Project Entry (SKILL.md §7) keeps the header, the stage
 checkboxes, the stamps and the resume above, with these differences.
 
 `<name>` is the spec's stem when there is a spec. With no spec, it is the
-kebab-case name your partner confirmed in the one message. Before writing,
-check that `specs/<name>-roadmap.md` does not exist. If it does, ask for
-another name: never overwrite it.
+kebab-case name your partner confirmed in the one message. With a spec,
+SKILL.md §3's scan applies first: a roadmap that names this spec as its
+source goes to Resume (§5). With no spec, check before writing that
+`specs/<name>-roadmap.md` does not exist. If it does, ask for another name:
+never overwrite it.
 
 After the header, in order:
 
@@ -107,7 +109,7 @@ of `Spec` and `Gap closed`:
       Outcomes: <the O-numbers this stage delivers>
       Track: <letter> (omit with one track)
       Consumes: <as above>
-      Produces: <as above; a core stage names specs/<name>-stage-<N>-findings.md>
+      Produces: <as above; a core stage, and any stage of a research track, names specs/<name>-stage-<N>-findings.md>
       Exit: <one observable outcome per O-number; a core stage adds the measured cost of its real run>
       Leaves out: <each quality this stage does not need, with the stage or Ranked-list item that picks it up> | nothing
       ROUTING: brainstorming | writing-plans

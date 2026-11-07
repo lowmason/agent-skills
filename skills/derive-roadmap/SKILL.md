@@ -40,9 +40,10 @@ being one, so resolve by header, not by name:
    scratch. When a document could be read either way, resuming first is the
    safe direction — routing a live roadmap into fresh entry discards the
    reconciliation §5 exists to do.
-2. Your partner asks for a roadmap for a project that has nothing built
-   (below), or gives its outcomes or its stages in their own words, with or
-   without a spec → §7, New-Project Entry.
+2. Your partner says the project has nothing built (below) and asks for a
+   roadmap, or gives its outcomes or its stages in their own words, with or
+   without a spec → §7, New-Project Entry. A request that only names a spec
+   is not this case: §1 runs the gap analysis and makes the offer.
 3. The document carries the Synthesize-mode routing header ("REQUIRED NEXT
    SKILL: derive-roadmap", describe-critique-methodology's
    `spec-synthesis.md`) → §1, Gap analysis.
@@ -183,27 +184,30 @@ what actually shipped:
 
 **A research track waiting on its Ranked list** (a new-project roadmap). When
 every committed stage of a research track is ticked and its Ranked list is
-not empty, do not go to §6 for that track. Read the findings file that its
-core stage's `Produces` names, and report what the core found and its
-measured cost. Then, inside the ONE question of the Ask, put a re-ranking of
-the list and your proposed next stage (one item to promote), or stopping the
-track. A promoted item becomes a stage entry only after the answer. When your
-partner stops the track, its remaining items park, one deferred item each,
-under the Parking rule below.
+not empty, do not go to §6 for that track. Read the findings file that the
+`Produces` of the track's most recently ticked stage names, and report what
+that stage found and its measured cost. Then, inside the ONE question of the
+Ask, put a re-ranking of the list and your proposed next stage (one item to
+promote), or stopping the track. A promoted item becomes a stage entry only
+after the answer. When your partner stops the track, only that track's
+remaining items park, one deferred item each, under the Parking rule below.
+The roadmap stays live: it moves only through §6, or when your partner parks
+the whole roadmap.
 
 Then hand off the next stage (§4). With every stage ticked and no Ranked list
 waiting, go to §6.
 
-**Parking is a first-class exit.** Remaining unticked stages, and the items of
-a stopped track's Ranked list, append to `specs/deferred_items.md`, one item
-per stage or list item, under a dated `## <roadmap-name> — <YYYY-MM-DD>`
-section. Each item follows the Deferred-item schema in the writing-plans
-skill's deferred-backlog reference (self-contained, with `Size:` and a
-`Done when:` naming the stage's Produces or the item's outcome), so the item
-ages and reaches the aged-tail gate. The roadmap moves to
-`specs/completed/` marked `PARKED (date) — N of M stages complete`. The
-methodology and critique files retire alongside the synthesized spec — they
-are its inputs.
+**Parking is a first-class exit.** When your partner parks the roadmap, its
+remaining unticked stages append to `specs/deferred_items.md`, one item per
+stage, under a dated `## <roadmap-name> — <YYYY-MM-DD>` section. When your
+partner stops a research track, only the items of that track's Ranked list
+append, one item per list item, and the roadmap stays live. Each item follows
+the Deferred-item schema in the writing-plans skill's deferred-backlog
+reference (self-contained, with `Size:` and a `Done when:` naming the stage's
+Produces or the item's outcome), so the item ages and reaches the aged-tail
+gate. A parked roadmap moves to `specs/completed/` marked
+`PARKED (date) — N of M stages complete`. The methodology and critique files
+retire alongside the synthesized spec — they are its inputs.
 
 ## 6. Roadmap-completion review
 
@@ -269,7 +273,7 @@ inputs, the checks you may run, and each rule below in full.
 | A spec carrying the Synthesize-mode header (`REQUIRED NEXT SKILL`) | Gap analysis → partition → roadmap, or single-stage exit |
 | Your partner's outcomes or stages for a project with nothing built | §7: outcomes, tracks, cost notes, one message, then stages |
 | A gap table that shows nothing built | Offer §7 in the batched questions, then wait for the answer |
-| A research track with its committed stages ticked and a Ranked list waiting | Report the core's finding and cost, then one re-rank question (§5) |
+| A research track with its committed stages ticked and a Ranked list waiting | Report the latest stage's finding and cost, then one re-rank question (§5) |
 | Gaps that fit one cycle | NO roadmap file — hand to brainstorming or writing-plans |
 | A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps and Handoff sections, amend and commit, then hand off the next stage |
 | Every stage ticked | Completion review, then retire |

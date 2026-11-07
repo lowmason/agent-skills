@@ -64,9 +64,11 @@ Before any roadmap text, send one message that holds:
 1. the numbered outcome list, unranked, each line with its cost note;
 2. the proposed tracks, each with its kind and, for a split, the reason;
 3. the choices already made, one line each;
-4. a proposed roadmap name, the `<name>` in `specs/<name>-roadmap.md`;
+4. with no spec, a proposed roadmap name, the `<name>` in
+   `specs/<name>-roadmap.md` (with a spec, the name is its stem);
 5. one request: rank the outcomes within each track and the tracks among
-   themselves, and confirm or change the tracks, their kinds and the name.
+   themselves, and confirm or change the tracks, their kinds and, with no
+   spec, the name.
 
 Do not rank for your partner unless they ask: the ranking is their judgment of
 value. A list or a table both work. When the session cannot ask, write the
@@ -88,7 +90,10 @@ gave, or else by the list order, and label the ranking provisional.
   built, not before.
 - **Research.** Commit the core stage only. The track's other outcomes go in
   its Ranked list, in your partner's order, until the core has run on real
-  data, because the first results may change the ranking (SKILL.md §5).
+  data, because the first results may change the ranking (SKILL.md §5). A
+  stage that your partner later promotes from the list also names its own
+  findings file in `Produces`, so the next re-rank reads what that stage
+  found.
 - **Later qualities.** A quality the project needs eventually but not to work
   goes to a named later stage in a known progression, or to a Ranked-list item
   in a research track. Examples: manifests, traceability, point-in-time
