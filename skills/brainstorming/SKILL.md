@@ -47,6 +47,10 @@ Besides a quick, clear task, two things aren't implementing: a spike
 they said yes to (see Spike to feel things out), and doing what they
 asked once they've opted out of the questions.
 
+One kind of work takes a different path. A new project of several stages,
+with nothing built yet, goes to derive-roadmap's New-Project Entry once its
+outcomes are clear, in place of steps 1 to 4 (see Size the Work).
+
 ## Look Before You Ask
 
 In an existing project, or when they've given you context (a spec, a plan,
@@ -215,6 +219,7 @@ how big the work is in plain words. They can override it.
 |------|------------|-----------------------|
 | A small change | a short one in chat: what you already covered together, written down | build it in this session |
 | A project | the full written design, committed to `specs/` (below) | writing-plans, in a fresh session |
+| A new project of several stages, with nothing built yet | none here: the roadmap file is the record | no design to approve: derive-roadmap's New-Project Entry, in this session |
 
 Short or full, the design has an **Approaches** part: the two or
 three ways you considered building it, what each trades off, which one
@@ -227,6 +232,15 @@ it in this session through the normal workflow: test-driven-development,
 verification-before-completion, and writing-plans only when several
 files make a plan worth it. No `specs/` file, no fresh session.
 
+**A new project of several stages goes to a roadmap.** When nothing of
+it works end to end on real data yet and your human partner's outcomes
+are clear, don't lay out approaches for the whole project or write a
+full design. Hand it to derive-roadmap's New-Project Entry in this
+session, with their outcomes in their own words. The roadmap file is the
+only written record. How each stage gets built is settled later, in that
+stage's own brainstorming session or plan. If derive-roadmap is not
+installed, size it as a project.
+
 **When a command or skill routed the work here** because a design
 decision is open, and its next step reads a spec file, size it as a
 project.
@@ -234,7 +248,9 @@ project.
 If it grows mid-task, stop, say so, and step up a size.
 
 If this is really several independent projects, say so, agree on an
-order, and brainstorm them one at a time.
+order, and brainstorm them one at a time. A new project of several
+stages with nothing built goes to the New-Project Entry whole, and it
+splits unrelated outcomes into tracks.
 
 ## The Written Design
 
@@ -320,7 +336,10 @@ what it produced is a new request that comes back through this gate.
 
 After a small change's design is approved, build it in this session.
 After a project's spec is approved, the next step is the plan:
-writing-plans, in a fresh session, and no other skill.
+writing-plans, in a fresh session, and no other skill. A new project of
+several stages with nothing built has no spec: it goes to
+derive-roadmap's New-Project Entry in this session, which builds
+nothing.
 </HARD-GATE>
 
 ## Red Flags

@@ -488,6 +488,10 @@ SOFT_REFERENCES = {
   # Names the /deferred Design pick whose items the spec's commit marks as
   # planned; never runs the command.
   ('skill:brainstorming', 'command:deferred'),
+  # Hands a new project of several stages with nothing built to the New-Project
+  # Entry; every other path works without it, and the text sizes the work as a
+  # project when it is absent.
+  ('skill:brainstorming', 'skill:derive-roadmap'),
   # Says where the plan-completion protocol retires specs; never runs it.
   ('skill:brainstorming', 'skill:writing-plans'),
   # Names the routing header its input spec carries; never reads the file.

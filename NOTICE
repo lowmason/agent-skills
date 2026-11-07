@@ -834,6 +834,14 @@ Changes from upstream:
     section and dispatching-parallel-agents its "Real-World Impact"
     section, as upstream did in 3be5aad and 6dbbbda (first released in
     v6.2.0).
+  - Plan 78 (2026-11-06) gave brainstorming a route for a new project
+    of several stages with nothing built yet. Once the outcomes are
+    clear, it hands the project to derive-roadmap's New-Project Entry in
+    the same session, in place of the approaches, the written design and
+    writing-plans. The paragraph after the ordered list, Size the Work
+    (its table and one paragraph), the several-projects sentence and the
+    HARD-GATE carry it. The change is local, and no upstream text was
+    taken.
 
     brainstorming/
     dispatching-parallel-agents/
