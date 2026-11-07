@@ -3144,8 +3144,9 @@ Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.py`.
 | Task 2, control arms (6 cases, 5 reps each, no VOID rerun) | 30 | $1.00 | $30.00 ($5.00 per case call) | $1.7765 |
 | Task 3, treatment arms (6 cases, 5 reps each, no wording round) | 30 | $1.00 | $30.00 ($5.00 per case call) | $2.0278 |
 | Task 3, wording round 1 (5 cases, 5 reps each, no VOID rerun) | 25 | $1.00 | $25.00 ($5.00 per case call) | $1.5993 |
+| Task 3, fix round 1 for a review finding (5 cases, 5 reps each, no VOID rerun) | 25 | $1.00 | $25.00 ($5.00 per case call) | $1.6102 |
 | Task 4, re-runs (6 runs of 5 reps each) | 30 | $1.00 | $30.00 ($5.00 per run) | not run |
-| **Running total** | 85 | | | **$5.4036 of $30** |
+| **Running total** | 110 | | | **$7.0138 of $30** |
 
 The worst cases are an upper bound and not a forecast. Plan 79's own estimate is about $15 in all, a wording round
 included. A wording round adds a row.
@@ -3163,6 +3164,10 @@ match the "Plan 79 Task 3 summary and spend" section, below. No wording round ra
 Running total after the Task 3 wording round: $5.4036 of $30. The round's five `-p79-r1` folders hold 25 reps, none
 VOID, and cost $1.5993 (`show_reps.py` over all five prints $1.60). No rep file is empty or unreadable, so none counts at
 its cap. These figures match the "Plan 79 Task 3 round 1 summary and spend" section, below.
+
+Running total after the Task 3 fix round for the review finding: $7.0138 of $30. The round's five `-p79-r2` folders hold
+25 reps, none VOID, and cost $1.6102 (`show_reps.py` over all five prints $1.61). No rep file is empty or unreadable, so
+none counts at its cap. These figures match the "Plan 79 Task 3 round 2 summary and spend" section, below.
 
 ## Plan 79: control
 
@@ -4408,3 +4413,415 @@ folders after its last rep, and once over all five together (25 reps, none VOID,
 empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per case, from each rep's
 `total_cost_usd`, are dr-stop-track $0.3148, dr-park-ranked $0.3336, dr-rerank-second $0.3091, dr-resume-marker $0.2931
 and dr-resume-blocked $0.3486. The round cost $1.5993. Running total: $5.4036 of $30.
+
+## Plan 79: Task 3 fix round 1 (review finding)
+
+The task review found one Important defect in the Ask text that the wording round added at `T3-r1`. The controller accepted
+it as a review-found defect, not as a second bar-driven wording round. This round fixes the text by the controller's
+direction, re-runs the five cases that the Ask text reaches, and scores each rep by hand from its full reply. No fixture,
+rule or `cases.py` line changed. The sections below are headed "round 2" because they are the second set of arms at a
+reworded text.
+
+**The finding.** `T3-r1` said "A `Consumes` that no stage's `Produces` names comes from outside the roadmap: it counts as
+met, and the receiving session checks it." §5 Amend changes only unticked stages, so a ticked stage's `Produces` keeps
+an old name after a rename. In dr-resume-marker round 1, reps 3 to 5 left Stage 2's `Produces` as `occupancy_hourly` while
+they amended Stages 3 and 4 to `occupancy_by_hour`. By the sentence, that renamed internal output came "from outside the
+roadmap". The parenthetical ("one that an earlier stage was to produce and, as its Handoff or stamp shows, did not") and
+the last sentence could then give opposite answers. The reviewer named two harm paths that no arm tests. In the first, a
+Handoff says that an output shipped under a new name but is empty or unusable, and the last sentence calls it met. In the
+second, a Handoff says that an outside input is missing, the parenthetical leaves it out of the question, and the stage
+is handed off. The reviewer re-scored every round-1 arm and agreed with every score.
+
+**The controller's direction.** The unmet test rests on Handoff or stamp evidence only, and never on `Produces` names. A
+`Consumes` is unmet when a Handoff or stamp shows its input missing or not built. With no such evidence it counts as met,
+and the receiving session checks it. One rule, stated once, replaces the parenthetical and the last sentence. D4 (owner)
+still holds: the question names each unmet `Consumes` and the stages it blocks, with a proposed default, and nothing is
+handed off before the answer. The trigger "none has all its `Consumes` met" is the plan's exact copy and stays.
+
+**`T3-r2` is `99265a5`**, the full sha `99265a5ca9b783f5506b3b074a4645e3c1371b47`, subject `fix(derive-roadmap): tie the
+unmet-Consumes test to Handoff evidence`. It follows `5945283` and changes two files: `skills/derive-roadmap/SKILL.md`
+(§5 only) and `skills/derive-roadmap/references/roadmap-format.md` (the one sentence of Task 3's edit 4). No description
+changed. No example and no fixture detail is in the new text. The Parking heading of `T3-r1` is unchanged.
+
+**The Ask bullet, `SKILL.md` §5.**
+
+Old (`T3-r1`), from its fourth sentence:
+
+> When unticked stages remain and none has all its `Consumes` met, the same question names each unmet `Consumes` (one
+> that an earlier stage was to produce and, as its Handoff or stamp shows, did not) and the stages it blocks, with your
+> proposed default: a stage added to produce it, or the `Consumes` amended. Hand off nothing before the answer. Name no
+> stage's routing in it; route only after the answer. A `Consumes` that no stage's `Produces` names comes from outside
+> the roadmap: it counts as met, and the receiving session checks it.
+
+New (`T3-r2`):
+
+> When unticked stages remain and none has all its `Consumes` met, the same question names each unmet `Consumes` and the
+> stages it blocks, with your proposed default: a stage added to produce it, or the `Consumes` amended. Hand off nothing
+> before the answer. Name no stage's routing in it; route only after the answer. A `Consumes` is unmet when a Handoff or
+> stamp shows its input missing or not built. With no such evidence it counts as met, and the receiving session checks
+> it.
+
+**`references/roadmap-format.md`, edit 4** (kept one sentence):
+
+- Old (`T3-r1`): "..., and it asks when unticked stages remain and none has its `Consumes` met, where a `Consumes` that no
+  stage's `Produces` names counts as met (SKILL.md §5)."
+- New (`T3-r2`): "..., and it asks when unticked stages remain and none has its `Consumes` met, where a `Consumes` is
+  unmet only when a Handoff or stamp shows its input missing or not built (SKILL.md §5)."
+
+Why this wording:
+
+- It is the controller's rule, with no added clause. The parenthetical is gone, so the Ask sentence is again the plan's
+  exact text of edit 2 (`git diff c500e14` shows only the added rule in that bullet).
+- The rule comes after "Name no stage's routing in it; route only after the answer", so that "it" in that clause still
+  means the question.
+- No `Produces` name appears in either file's rule.
+
+**Checks after the edit.** Each check joins the file's lines (`tr '\n' ' ' | tr -s ' '`) and counts the phrase.
+
+| File | Phrase | Expected | Got |
+|---|---|---|---|
+| `SKILL.md` | `no roadmap entry yet cites` | 1 | 1 |
+| `SKILL.md` | `unticked stages remain and none has all its` | 1 | 1 |
+| `SKILL.md` | ``names each unmet `Consumes` and the stages it blocks`` | 1 | 1 |
+| `SKILL.md` | `Hand off nothing before the answer` | 1 | 1 |
+| `SKILL.md` | `and, with no spec, a proposed roadmap name` | 1 | 1 |
+| `SKILL.md` | `since the last resume` | 0 | 0 |
+| `SKILL.md` | `<roadmap-name>` | 0 | 0 |
+| `SKILL.md` | `## <name>-roadmap — <YYYY-MM-DD>` | 2 | 2 |
+| `SKILL.md` | ``no stage's `Produces` `` | 0 | 0 |
+| `SKILL.md` | `as its Handoff or stamp shows, did not` | 0 | 0 |
+| `SKILL.md` | ``A `Consumes` is unmet when a Handoff or stamp shows its input missing or not built`` | 1 | 1 |
+| `SKILL.md` | `With no such evidence it counts as met, and the receiving session checks it` | 1 | 1 |
+| `roadmap-format.md` | `or the whole roadmap parks` | 1 | 1 |
+| `roadmap-format.md` | `treats a stamped stage as new` | 1 | 1 |
+| `roadmap-format.md` | ``no stage's `Produces` `` | 0 | 0 |
+| `roadmap-format.md` | `is unmet only when a Handoff or stamp shows its input missing or not built` | 1 | 1 |
+
+The derive-roadmap body measures 16,082 characters (`len(check_conformance.skill_body(text)[0])`; 16,143 at `T3-r1`,
+15,917 at `T3`, at most 20,000 allowed). `bash build/run_commit_lints.sh` printed `commit lints passed`, and the
+pre-commit hook printed it again at the commit.
+
+**Checks before any rep.**
+
+- The CLI is Claude Code 2.1.316, the version that the isolation probe ran on, so the probe still holds.
+- A `diff` of each `/tmp/plan79-work/t3-r1/<case>.txt` against its `/tmp/plan79-work/t3-r2/<case>.txt` shows two hunks,
+  the same in all five prompts: the Ask bullet and the `roadmap-format.md` sentence. Against `/tmp/plan79-work/t3/`, each
+  prompt differs in four places: the added rule, the two heading lines and the `roadmap-format.md` sentence.
+- A case-insensitive grep of the five prompts for `red-baseline`, `plan 7[89]`, `micro-test` and `task-3` found 0 hits
+  (the quarantine).
+
+**Build.**
+
+```
+CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 99265a5ca9b783f5506b3b074a4645e3c1371b47 /tmp/plan79-work/t3-r2 dr-stop-track dr-park-ranked dr-rerank-second dr-resume-marker dr-resume-blocked
+```
+
+It wrote 5 prompts. `MANIFEST.txt` is copied to `treatment/p79-t3-r2-MANIFEST.txt`. It shows `budget 1.00` for every
+case. No case of this round reads a case-repository file.
+
+**Reps.** Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3-r2/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-p79-r2 1 5 claude-opus-5-5 1.00`,
+one case at a time, in this order: dr-stop-track, dr-park-ranked, dr-rerank-second, dr-resume-marker, dr-resume-blocked.
+Each call finished before the next began. Before each call, the running total plus the call's worst case ($5.00) stayed
+under $30. The largest such sum was $11.67, before the last call. Each case's replies were read in full from
+`show_reps.py` over that case's folder alone. No rep was VOID, so no rerun was needed. No `.err` file was left.
+
+**Why each case re-ran.** The new rule decides when a `Consumes` is met, and so it can decide whether a resume asks or
+hands off a stage.
+
+| Case | Re-run | Reason |
+|---|---|---|
+| dr-stop-track | yes | The rule decides clause E: Stage 2's input from outside the roadmap must count as met, so that Stage 2 is handed off. |
+| dr-park-ranked | yes | The rule makes Stage 2's outside input count as met, so Stage 2 is ready for a handoff under the rule. Clause E checks that a park still hands off nothing. In round 1 the Ask did not reach this case. The new rule's "counts as met" now does. |
+| dr-rerank-second | yes | §5's research-track paragraph puts the re-rank inside "the ONE question of the Ask", so the Ask bullet frames clause C. |
+| dr-resume-marker | yes | The rule decides clause C: a renamed output that a Handoff says shipped must not read as missing, so that Stage 3 is handed off. |
+| dr-resume-blocked | yes | The rule decides clauses A, B and C: "was not built" must still make the one question fire. |
+| dr-name-collision | no | Not reached. §3, §7 and the New-project name rule are unchanged, and the reply stops at the name question before the Ask or Parking. Its `T3` result (4 of 5, MET narrowly) stands. |
+
+**Readings applied (round 2).** Every reading of the Control section applies: Review by table, Another name, Carried
+citation, Pending bullet, Item by description, Date and Stage 2's live feed. The Task 3 readings Name and Conditional
+handoff are reported as other readings. Neither touches any rep of this round. Two earlier practices apply again: inline
+`Size:` and `Done when:` fields count as the two lines of clause D, and the one question may close with its alternatives.
+One close call is new:
+
+- *Table items* (dr-park-ranked clause D; new, not confirmed, scored by the committed text). Clause D needs "a `Size:` line
+  and a `Done when:` line" in each item. A table row under columns headed Size and Done when has neither label. In both
+  such reps the reply also defers the item text to the schema's form after a read ("I'll fit them to the schema once I've
+  read it"). So a table row fails D. Inline fields pass, because the labels are present. The T3 implementer's test for a
+  draft item was the same: "Each item has its `Size:` and `Done when:`". The controller scored the Name reading by the
+  committed text, and the lenient reading here also decides a bar, so it is treated the same way. The other reading (a
+  table row with Size and Done-when columns writes the item's text) passes D, never counts toward a bar, and is reported
+  below. Clause A still passes in these reps: A counts the items, and the control's dr-park-ranked rep1 was counted as
+  appending one item although it only described that item.
+
+**Judgment-call reps.** The owner can review them at the completion gate. The quote column gives the other reading's
+effect where it changes a count.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-park-ranked reps 1 and 3, D | fail (Table items, by the committed text) | rep3: "I'll fit them to the schema once I've read it.", then a table headed `\| Item \| From \| Size \| Done when \|`. rep1: "There will be one item each, in the schema's format.", then a table headed `\| Item \| Size \| Done when \|`. The other reading passes D in both reps, which makes D and PASS 5 of 5 and the bar met. The verdict depends on this reading. |
+| dr-stop-track rep4, C | fail (the Date reading: a placeholder heading) | "## lock-closures-roadmap — <date>". The reply says "I'll use whatever `date` returns." The other reading passes C, which makes C and PASS 5 of 5. The bar is met either way. |
+| dr-rerank-second rep5, C | pass (one question with its alternatives) | "Do you approve that? Or would you rather re-rank (promote O4 first, since it is cheap and operator-facing), promote something else, or stop Track A?" The other reading (two questions) fails C in rep5, which makes C and PASS 4 of 5. The bar is still met. |
+| dr-resume-marker reps 1, 2 and 5, B | pass (old citation carried over) | rep5: "Consumes: Stage 1's `bay_events` table, with the car park in its `lot_id` column (plan 3, Handoff; Resolved at resume, 2026-10-12); Stage 2's `occupancy_by_hour` table (plan 5, Handoff; Resolved at resume, 2026-11-06)". The other reading fails B in these reps, which makes B and PASS 2 of 5 (control 3 of 5 on that reading). |
+
+### Plan 79 Task 3 round 2: dr-stop-track
+
+Additive. Texts at `99265a5` (`T3-r2`). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3294.
+
+The partner answers "Stop Track A" in a roadmap with two tracks. Clause A (bar) appends one item each for O2, O3 and O4
+to `specs/deferred_items.md` and none for Stage 2 or O5. Clause B (bar) keeps the roadmap live. Clause C (conformance)
+puts the items under one dated heading. Clause D (conformance) gives each item a `Size:` and a `Done when:`. Clause E
+(conformance) hands off Stage 2 with a "Next:" line and starts no completion review.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | fail (placeholder date) | pass | pass | no |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 0 of 5, `T3-r1` 5 of 5). Clause B: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). Clause C: 4 of 5
+(control 0 of 5, `T3-r1` 5 of 5). Clause D: 5 of 5 (control 0 of 5, `T3-r1` 5 of 5). Clause E: 5 of 5 (control 5 of 5,
+`T3-r1` 5 of 5). PASS: 4 of 5 (control 0 of 5, `T3-r1` 5 of 5; 5 of 5 by the other Date reading).
+
+**Bar verdict: MET.** The treatment passes every clause in 4 of 5 reps, and the control fails clause A, a bar clause, in 5
+of 5. The one failure is a date placeholder in rep4's heading, not an effect of the new rule.
+
+- A passes in every rep. Each writes three items, one each for O2, O3 and O4, as the content of an append to
+  `specs/deferred_items.md`, and none for Stage 2 or O5.
+- B passes in every rep. Each replaces the body of `## Ranked list — Track A` with a stop note and commits. None moves
+  the roadmap or marks it PARKED, and Stage 2's entry stays.
+- C fails in rep4 only. Rep4 heads the section `## lock-closures-roadmap — <date>` and runs `date +%F` first. The Date
+  reading fails a placeholder heading. The other four reps head it `## lock-closures-roadmap — 2026-11-06`.
+- D passes in every rep. Each item has a `Size:` and a `Done when:` that names its outcome. Rep2 writes them as labeled
+  sub-bullets, for example "Done when: boat operators can view a map of each lock's closure history."
+- E passes in every rep. Each ends with an unconditional "Next: /clear (or a fresh session), then writing-plans on Stage 2
+  of `specs/lock-closures-roadmap.md`." (rep5 sets "Next:" in bold) and plans nothing. No rep starts a completion review.
+  Rep2 says that the next resume after Stage 2 runs the review, which starts none now.
+- Stage 2's live feed. All five apply the new rule, and none asks about the feed. Rep1: "Stage 2's `Consumes` (the closure
+  log's live feed) has no evidence against it, so it counts as met, and the session that picks it up will check it."
+  Rep4: "Nothing in plan 4 or its stamp shows that feed missing, so it counts as met".
+
+Other readings: Date: rep4's placeholder heading passes C on the other reading, so C and PASS are 5 of 5. Name: no heading
+reads `lock-closures`, no effect. Conditional handoff: no "Next:" line is conditional, so the strict reading also passes E
+in reps 1 to 5. No effect. Item by description: no effect.
+
+Running total: $5.7330 of $30.
+
+### Plan 79 Task 3 round 2: dr-park-ranked
+
+Additive. Texts at `99265a5` (`T3-r2`). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3252.
+
+The partner answers "Park the whole roadmap" in the same roadmap. Clause A (bar) appends four items, one each for Stage 2,
+O2, O3 and O4. Clause B (bar) moves the roadmap to `specs/completed/` marked PARKED with the date and "1 of 2 stages
+complete". Clause C (conformance) puts the items under one heading `## <roadmap name> — 2026-11-06`. Clause D
+(conformance) gives each item a `Size:` and a `Done when:`. Clause E (conformance) starts no completion review and hands
+off no stage.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | fail (table items) | pass | no |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | fail (table items) | pass | no |
+| 4 | pass | pass | pass (run-day date) | pass | pass | yes |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 0 of 5, `T3-r1` 5 of 5). Clause B: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). Clause C: 5 of 5
+(control 4 of 5, `T3-r1` 5 of 5). Clause D: 3 of 5 (control 4 of 5, `T3-r1` 5 of 5; 5 of 5 by the other Table items
+reading). Clause E: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). PASS: 3 of 5 (control 0 of 5, `T3-r1` 5 of 5; 5 of 5 by the
+other Table items reading).
+
+**Bar verdict: MISSED.** The additive bar needs 4 of 5 passing reps, and the treatment passes 3 of 5. The control half
+holds: the control fails clause A in 5 of 5. Failing clause: D (conformance), in reps 1 and 3. Quote (D, rep3): "I'll fit
+them to the schema once I've read it.", followed by a table headed `| Item | From | Size | Done when |`. By the other Table
+items reading, D and PASS are 5 of 5 and the bar is met. That reading is not confirmed, and it never counts toward a bar.
+
+**What drove the miss.** It is not the new rule. The `T3-r1` and `T3-r2` prompts differ only in the Ask bullet and the
+`roadmap-format.md` sentence. The Parking text and the item rule are the same in both. No earlier dr-park-ranked rep used
+a table: 0 of 15 in the control, at `T3` and at `T3-r1`. Two reps of this arm wrote the items as table rows, which is
+format variance. No rep of this arm hands off Stage 2, so the rule's "counts as met" did not reach clause E.
+
+- A passes in every rep. Each appends four items: one for Stage 2 (the notices) and one each for O2, O3 and O4. Reps 1
+  and 3 give the four as table rows, one row each, none bundled (see Readings applied).
+- B passes in every rep. Each runs `git mv` to `specs/completed/` and adds a PARKED line with "1 of 2 stages complete".
+  Reps 1, 2, 3 and 5 date it 2026-11-06, and rep4 dates it 2026-11-07. Clause B passes any date. Quote (B, rep2): "PARKED
+  (2026-11-06) — 1 of 2 stages complete."
+- C passes in every rep. Reps 1, 2, 3 and 5 head the section `## lock-closures-roadmap — 2026-11-06`. Rep4 heads it
+  `## lock-closures-roadmap — 2026-11-07`, the run day's date, which passes by the Date reading.
+- D fails in reps 1 and 3 (Table items). Reps 2 and 4 write each item as a block with `Size:` and `Done when:` lines.
+  Rep5 writes them as labeled sub-bullets, for example "Done when: the notice job and its operator mailing list exist".
+  Each `Done when:` in those three reps names Stage 2's Produces or the item's outcome.
+- E passes in every rep. No rep starts a completion review and none hands off a stage. Rep5: "Nothing is handed off. The
+  roadmap is closed."
+- Stage 2's live feed. No rep treats it as unmet or asks about it. Reps 1, 2 and 5 carry it into the Stage 2 item as its
+  source. Rep2 adds to the item's Size line: "The live feed's existence is unverified."
+
+Other readings: Table items: reps 1 and 3 pass D on the other reading, so D and PASS are 5 of 5 and the bar is met. Date:
+on a reading that allowed only 2026-11-06, rep4's C would fail and PASS would be 2 of 5. That reading is not the
+controller's ruling. Name: no effect. Item by description: no effect beyond the Table items call.
+
+Running total: $6.0582 of $30.
+
+### Plan 79 Task 3 round 2: dr-rerank-second
+
+Additive. Texts at `99265a5` (`T3-r2`). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3123.
+
+A second re-rank question, after Stage 2 (the 7-day outlook) is ticked and stamped. Clause A (bar) starts no completion
+review and does not park or retire the roadmap. Clause B (bar) reports Stage 2's finding and its measured cost. Clause C
+(bar) is one question with a default that asks for a re-ranking of O3 and O4 or approval of a proposed next stage.
+Clause D (conformance) writes no stage entry and does not offer O2 again.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass (borderline, alternatives) | pass | yes |
+
+Clause A: 5 of 5 (control 2 of 5, `T3-r1` 5 of 5). Clause B: 5 of 5 (control 2 of 5, `T3-r1` 5 of 5). Clause C: 5 of 5
+(control 5 of 5, `T3-r1` 5 of 5). Clause D: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). PASS: 5 of 5 (control 1 of 5, `T3-r1`
+5 of 5).
+
+**Bar verdict: MET.** The treatment passes every clause in 5 of 5 reps, and the control fails a bar clause in 4 of 5.
+
+- A passes in every rep. Each says that the roadmap stays live and the step is not the completion review (rep4: "So the
+  roadmap stays live: I'm not running the completion review."). No rep gives a table over the Outcomes list.
+- B passes in every rep, and each gives both parts. Rep2: "the 7-day outlook flagged 81% of closures at least 2 days ahead,
+  with one false alarm in 9." and "14 minutes a day on one small VM, using 0.3 GB of forecasts."
+- C passes in every rep. Each puts one approve-or-amend question with a default. Rep1's default re-ranks O4 first and
+  promotes it. Reps 2 to 5 keep the order and promote O3. Rep3 lists its options as bullets under "Do you approve, or would
+  you change it?". Rep5 closes with "Do you approve that? Or would you rather ...?" (see the judgment-call table).
+- D passes in every rep. Each writes the stage entry only after the answer, and no rep offers O2 again. Rep5 compares
+  Stage 2's cost with O2's estimate and proposes nothing for O2.
+- The new rule at work. Reps 3 and 5 note that no unticked stage remains to re-check. No rep names an unmet `Consumes`.
+
+Other readings: One question: rep5's C fails on the other reading, so C and PASS are 4 of 5, and the bar is still met.
+Review by table: no effect.
+
+Running total: $6.3705 of $30.
+
+### Plan 79 Task 3 round 2: dr-resume-marker
+
+Additive. Texts at `99265a5` (`T3-r2`). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2965.
+
+Stage 3's entry already cites plan 3's Handoff, marked "Resolved at resume, 2026-10-12". Only plan 5's Handoff bullet is
+new. Clause A (bar) amends the Consumes of Stage 3 and Stage 4 from plan 5's bullet and cites plan 5, Handoff. Clause B
+(bar) does not apply or restate plan 3's bullet again. Clause C (conformance) commits and hands off Stage 3 with a
+"Next:" line and plans nothing.
+
+| Rep | A (bar) | B (bar) | C (conformance) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass (borderline, carried citation) | pass | yes |
+| 2 | pass | pass (borderline, carried citation) | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass (borderline, carried citation) | pass | yes |
+
+Clause A: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). Clause B: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5; 2 of 5 by the other
+reading, control 3 of 5). Clause C: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). PASS: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5;
+2 of 5 by the other reading).
+
+**Bar verdict: control clean: owner gate.** The control fails no clause, so the additive bar cannot be met. The treatment
+passes in 5 of 5 reps, which is not fewer than 4 of 5, so it does not miss its bar. The new rule reverts nothing.
+
+- A passes in every rep. Each amends both entries to `occupancy_by_hour` and cites "plan 5, Handoff" with a Resolved
+  marker. Quote (A, rep4): "new: Stage 2's `occupancy_by_hour` table (plan 5, Handoff; Resolved at resume, 2026-11-06)".
+- B passes in every rep. Each says that plan 3's point is already in Stage 3 and changes nothing for it. Reps 1, 2 and 5
+  write the whole Stage 3 line with plan 3's citation carried over unchanged (see the judgment-call table). Reps 3 and 4
+  show only the changed part.
+- C passes in every rep. Each commits on `main` and ends with "Next: /clear (or a fresh session), then brainstorming on
+  Stage 3 of `specs/parking-occupancy-spec-roadmap.md`." (rep4 sets "Next:" in bold) and plans nothing.
+- The new rule at work. No rep reads the rename as a missing input, and no rep asks. Rep4: "No Handoff or stamp shows a
+  missing input, so every `Consumes` counts as met." Rep5: "nothing in a Handoff or stamp shows an input missing." Reps 3
+  and 4 leave Stage 2's ticked `Produces` as shipped history. Rep4: "Stage 2's own `Produces` line still says
+  `occupancy_hourly`. I'm leaving it alone because it is a completed stage". The review finding's path, a renamed output
+  read as outside the roadmap, does not occur.
+- Dates. Rep1 dates the new marker 2026-11-07, and reps 2 to 5 date it 2026-11-06. Reps 1 and 3 say that the session and
+  the environment disagree. No clause scores the date.
+
+Other readings: Carried citation: reps 1, 2 and 5 fail B on the other reading, so B and PASS are 2 of 5. That reading
+gives the control 3 of 5. It is not counted.
+
+Running total: $6.6670 of $30.
+
+### Plan 79 Task 3 round 2: dr-resume-blocked
+
+Additive. Texts at `99265a5` (`T3-r2`). Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3468.
+
+Plan 5's Handoff says that `occupancy_hourly` was not built, and Stage 3 and Stage 4 consume it. Plan 3's bullet is still
+pending. Clause A (bar) hands off no stage before the answer. Clause B (bar) is one question that names the unmet
+Consumes and the stages that it blocks, with a proposed default. Clause C (conformance) has a default that adds a stage
+that produces the table or amends the Consumes. Clause D (conformance) starts no completion review and parks nothing.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). Clause B: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). Clause C: 5 of 5
+(control 5 of 5, `T3-r1` 5 of 5). Clause D: 5 of 5 (control 5 of 5, `T3-r1` 5 of 5). PASS: 5 of 5 (control 5 of 5, `T3-r1`
+5 of 5).
+
+**Bar verdict: control clean: owner gate.** The control fails no clause, so the additive bar cannot be met. The treatment
+passes in 5 of 5 reps, which is not fewer than 4 of 5, so it does not miss its bar. The new rule reverts nothing.
+
+- A passes in every rep. No rep writes a "Next:" line that names a stage. Reps 2 and 5 say that the "Next:" line comes
+  after the answer, and name no stage in it. Reps 2 and 3 write a commit of plan 3's amendment before the answer, which is
+  not a handoff (the Pending bullet reading).
+- B passes in every rep. Each puts one approve-or-amend question, names `occupancy_hourly` and Stages 3 and 4, and gives a
+  default. Quote (B, rep2): "Do you approve the new stage, or would you rather amend the two `Consumes` (and if so, to
+  what)?", after "Stage 3 has an unmet `Consumes`: Stage 2's `occupancy_hourly` table." and "Stage 4 has the same unmet
+  `Consumes`."
+- C passes in every rep. The default adds a stage, before Stages 3 and 4, that produces `occupancy_hourly`.
+- D passes in every rep. No rep starts a completion review or parks the roadmap.
+- The new rule at work. Each rep reads plan 5's "was not built" as Handoff evidence that the input is missing. Rep5: "It
+  shows the input is missing, so the remaining stages are blocked". Rep3: "The table is therefore missing". No rep calls
+  `occupancy_hourly` met or external.
+- Plan 3's pending bullet. All five apply it as an amendment (the `lot_id` column). Rep1 dates it 2026-11-06, and reps 2
+  to 5 date it 2026-11-07. It is not scored.
+
+Other readings: Pending bullet: no effect. No other reading applies.
+
+Running total: $7.0138 of $30.
+
+### Plan 79 Task 3 round 2 summary and spend
+
+| Case | Bar | Control | `T3-r1` (`43fca10`) | `T3-r2` (`99265a5`) | Result |
+|---|---|---|---|---|---|
+| dr-stop-track | additive | RED, A fails 5 of 5 (PASS 0 of 5) | PASS 5 of 5 | PASS 4 of 5 (5 of 5 by the other Date reading) | **MET** |
+| dr-park-ranked | additive | RED, A fails 5 of 5 (PASS 0 of 5) | PASS 5 of 5 | PASS 3 of 5 (5 of 5 by the other Table items reading) | **MISSED** (needs 4 of 5) |
+| dr-rerank-second | additive | RED, a bar clause fails in 4 of 5 (PASS 1 of 5) | PASS 5 of 5 | PASS 5 of 5 (4 of 5 by the other reading of rep5's C) | **MET** |
+| dr-resume-marker | additive | clean (PASS 5 of 5) | PASS 5 of 5 | PASS 5 of 5 (2 of 5 by the other Carried citation reading) | control clean: owner gate; not below 4 of 5 |
+| dr-resume-blocked | additive | clean (PASS 5 of 5) | PASS 5 of 5 | PASS 5 of 5 | control clean: owner gate; not below 4 of 5 |
+| dr-name-collision | additive | RED, B fails 5 of 5 (PASS 0 of 5) | not re-run | not re-run (not reached) | **MET**, narrowly, at `T3` |
+
+No rep was VOID.
+
+**Owner gate: Task 3 Step 4.** dr-park-ranked falls below its bar: PASS 3 of 5. The failing clause is D, a conformance
+clause, in reps 1 and 3, on the new Table items call (scored by the committed text). Quote (rep3): "I'll fit them to the
+schema once I've read it.", followed by a table headed `| Item | From | Size | Done when |`. The cause is not this
+round's text: the Parking text and the item rule did not change from `T3-r1`, and no earlier dr-park-ranked rep (0 of 15)
+used a table. By the other Table items reading the case passes 5 of 5. No further round ran, as the controller directed.
+The owner rules on the Table items reading and on the case.
+
+- The review finding is fixed in the text. Neither file's rule uses a `Produces` name. In dr-resume-marker no rep reads the
+  renamed output as missing or as an outside input, and every rep hands off Stage 3. In dr-resume-blocked every rep reads
+  "was not built" as Handoff evidence and asks the one question.
+- dr-stop-track passes 4 of 5. The one failure is a `<date>` placeholder heading (the Date reading). Every rep counts the
+  live feed as met on the new rule and hands off Stage 2 with no condition.
+- Two edge cases of the new rule are open, and no arm tests either. (1) The output of an unticked earlier stage has no
+  Handoff or stamp, so the rule counts it as met. If that earlier stage is blocked, §4 could hand off a later stage that
+  consumes its output, and "none has all its `Consumes` met" might not fire. (2) An output that a Handoff says shipped but
+  is empty or unusable is caught only if "missing or not built" is read to include it.
+- `T3-r2` (`99265a5`) is the last skill commit. Task 4's `T-final` waits on the owner's ruling at this gate.
+
+**Spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the five `-p79-r2`
+folders after its last rep, and once over all five together (25 reps, none VOID, `total cost $1.61`). No rep file is
+empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per case, from each rep's
+`total_cost_usd`, are dr-stop-track $0.3294, dr-park-ranked $0.3252, dr-rerank-second $0.3123, dr-resume-marker $0.2965
+and dr-resume-blocked $0.3468. The round cost $1.6102. Running total: $7.0138 of $30.
