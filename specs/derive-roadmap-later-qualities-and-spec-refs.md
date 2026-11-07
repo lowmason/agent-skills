@@ -1,8 +1,8 @@
 # derive-roadmap: later qualities and spec references — Design Spec
 
-**Status:** DRAFT (2026-11-07). The design came from a brainstorming session on 2026-11-07, opened by a `/deferred`
-Design pick. Decisions D1–D8 are the owner's, from that session. Text marked *(designer's call)* is a choice the
-owner has not yet confirmed, listed for review in the Rollout note.
+**Status:** APPROVED (2026-11-07). The design came from a brainstorming session on 2026-11-07, opened by a
+`/deferred` Design pick. Decisions D1–D8 are the owner's, from that session. Text marked *(designer's call)* was the
+designer's choice. The owner approved this file, its designer's calls included, on 2026-11-07 ("Spec approved").
 
 Three follow-ups to plan 78's New-Project Entry in `skills/derive-roadmap/`. First, the one message keeps
 stage text out and records the later qualities in one fixed line. Second, a later quality joins a research track's
