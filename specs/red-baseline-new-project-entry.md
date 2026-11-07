@@ -1694,3 +1694,7 @@ scored on a close reading.
 ran once after the last rep. It shows 80 reps, none VOID, and prints `total cost $8.47`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. Round 1 cost $4.1340 (45 reps) and round 2 cost
 $4.3379 (35 reps), so Task 3 cost $8.4719. Running total: $14.2710 of $60. Control arms: $5.5029 of $30, unchanged.
+
+**Owner ruling at the Task 3 gate (2026-11-06).** The owner chose "Record and continue": keep the current skill text
+(`3ca7344`), record the three misses with their causes, run Tasks 4 to 6, and rule on all misses together at the plan
+completion gate, as plan 77 did.
