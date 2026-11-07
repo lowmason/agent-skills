@@ -133,7 +133,8 @@ Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in
 | Task 2, control arms (15 cases, 5 reps each, no VOID rerun) | 75 | $1.00 | $75.00 ($5.00 per case call) | $5.5029 |
 | Task 3, treatment arms (9 cases in round 1 and 7 in round 2, 5 reps each, no VOID rerun) | 80 | $1.00 | $80.00 ($5.00 per case call) | $8.4719 |
 | Task 4, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5190 |
-| **Running total** | 167 | | | **$14.7900 of $60** |
+| Task 5, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5031 |
+| **Running total** | 177 | | | **$15.2931 of $60** |
 | **Control arms** | 75 | | | **$5.5029 of $30** |
 
 Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
@@ -150,6 +151,9 @@ toward the $60 only. `show_reps.py` over `treatment/*/` prints $8.47 for Task 3'
 
 Running total after Task 4: $14.7900 of $60 ($14.79). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
 Task 4's two folders prints $0.52 for its 10 reps. These figures match the "Task 4 summary" section, below.
+
+Running total after Task 5: $15.2931 of $60 ($15.29). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
+Task 5's two folders prints $0.50 for its 10 reps. These figures match the "Task 5 summary" section, below.
 
 ## Fixture sources
 
@@ -1820,3 +1824,111 @@ track and no rep receives a "stop" answer. No edit was made. The reviewer's smal
 a stopped track's items append to `specs/deferred_items.md` under the Parking rule's item schema, and that the roadmap
 itself moves only through §6 or when the partner parks the whole roadmap. Task 4's treatment arms met their bars in
 round 1, with a thin control for `dr-resume-rerank` (the control failed a bar clause in 1 of 5 reps).
+
+## Treatment: Task 5
+
+Task 5 teaches describe-critique-methodology, in both modes, to stop on a system with nothing built and to route it to
+derive-roadmap's New-Project Entry. The skill text was committed as `abc1ecb` (`feat(describe-critique-methodology):
+route a system with nothing built to derive-roadmap`). Task 5 runs the treatment of two cases: dcm-describe-route and
+dcm-synth-route. Both are additive. Each rep is scored by its case's committed rule and by every reading in the Control
+section, including the corrected template-slot reading and the plan-or-option reading. No rule and no reading changed.
+
+**Other cases are not re-run.** Task 5 edits only describe-critique-methodology's SKILL.md body (its description is
+unchanged, so every skill listing is unchanged). The derive-roadmap and brainstorming cases read neither the changed
+body nor a changed description, so their prompts and their scores are the same as before.
+
+**Build.** The prompts were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py abc1ecb /tmp/plan78-work/t5 dcm-describe-route dcm-synth-route`.
+Its `MANIFEST.txt` is copied to `treatment/t5-MANIFEST.txt`. Two checks ran on the build before any rep:
+
+- Each prompt holds the paragraph "Built systems only" once, the Synthesize paragraph "First, check what the files
+  are" once, and the name `derive-roadmap's New-Project Entry` five times (the five places that the plan lists).
+- No prompt holds `red-baseline`, `plan 78`, or the file name of the spec (the quarantine).
+
+Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t5/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t5 1 5 claude-opus-5-5 1.00`,
+one case at a time, into folders with a `-t5` suffix, so earlier folders are untouched. Before each call, the running
+total plus the call's worst case ($5.00) stayed under $60.
+
+### Task 5: dcm-describe-route
+
+Additive. Arm `abc1ecb`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2633.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 1 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 0 of 5). Bar: met. The
+treatment passes every clause in 5 of 5 reps, and the control failed a bar clause in 5 of 5.
+
+No bar clause fails in any rep, so there is no failure quote. What the reps do, for the record:
+
+- A: no rep writes a description, a notation table or any template section, and none plans one as the next step. Each
+  lists what the repo holds (stub packages, the proposed spec) and stops. Reps 2 and 4 name the parts that a later
+  description could cover, once the system is built. That is a later step, not the next one.
+- B: each rep says in its first sentence or heading that the system is not built: "nothing is built yet" (reps 1 and
+  4), "nothing in this system is built yet" (reps 2 and 5), "isn't built yet" (rep3).
+- C: each rep names derive-roadmap's New-Project Entry as the next step, with the spec and its ADR as input, and
+  tells the partner to start a fresh session (reps 1 to 4 quote the prompt to say). Each puts the critique after the
+  build. No rep offers brainstorming or
+  design-architecture in place of derive-roadmap. Rep3 offers design-architecture only as the path for a design
+  review that the partner may want now, beside the route.
+
+### Task 5: dcm-synth-route
+
+Additive. Arm `abc1ecb`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2398.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 2 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 0 of 5). Bar: met. The
+treatment passes every clause in 5 of 5 reps, and the control failed a bar clause in 5 of 5.
+
+No bar clause fails in any rep, so there is no failure quote. What the reps do, for the record:
+
+- A: every rep says it wrote no triage table and no spec, and gives the reason (the research proposes designs and
+  critiques no built method). No rep plans either one as a next step.
+- B: every rep calls `specs/ces-revisions-prompt.md` a research brief, and says that nothing is built. Rep3 and rep4
+  add that no part of the system runs end to end on real data.
+- C: every rep names derive-roadmap's New-Project Entry and gives it the brief and the three research files as
+  background. Each hands the partner a fresh-session prompt that lists the four files.
+
+Running total: $15.2931 of $60.
+
+### Task 5 summary
+
+| Case | Bar | Control | Treatment (`abc1ecb`) | Result |
+|---|---|---|---|---|
+| dcm-describe-route | additive | RED, 5 of 5 (C in every rep) | 5 of 5 pass | met |
+| dcm-synth-route | additive | RED, 5 of 5 (C in every rep) | 5 of 5 pass | met |
+
+Both cases meet their bar in the first round, so no wording round ran. No rep was VOID.
+
+**Judgment-call reps (Task 5).** These rows extend the Judgment-call lists in the Control section and in Task 4. Each
+rep was scored on a close reading. None changes a verdict.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dcm-describe-route rep2, A | pass, borderline (a pointer to a later description, not a slot's content written now and not the next step) | "Come back to describe-critique-methodology once at least one outcome runs end to end on real data. Good candidates are the parse → canonical catalog path with its identity and precedence rules (§4.4), or the reconciliation and withdrawal gate." The template's "Open questions for the reviewer" slot is numbered questions addressed to the reviewer. This line asks none and sits under the heading "**After it's built**", so it is a pointer to what a later module-level description could cover. |
+| dcm-describe-route rep2, C | pass (critique placed after the build, by the reply's own heading) | "**After it's built**", then "Come back to describe-critique-methodology once at least one outcome runs end to end on real data." |
+| dcm-describe-route rep3, C | pass, borderline (critique placed after a working slice) | "The external critique fits better once a working slice exists, such as backfill plus publication running on real indexes." The reply also says "A description written now would describe the spec's intentions." |
+| dcm-describe-route reps 2, 4 and 5, A | pass (a list of parts inside a statement of absence, not a Component inventory) | rep2: "No outcome of the filing-index ingestion system (discovery, collection, parsing, reconciliation or publication) works end to end on real data." rep4: "No discovery, collection, parsing, reconciliation or publication code exists." rep5: "discovery, collection, parsing, reconciliation and publication running end to end on real index files". Each names the parts only to say that none works or exists. None gives a component with its output or inputs, so none writes the slot's content, unlike control rep4 ("The components are named by role:"). |
+| dcm-describe-route rep3, A | pass, borderline (a design review offered beside the route; no questions to the reviewer, no slot written) | "If you mainly want outside review of the *design* now, especially the identity key `(cik, archive_path)`, the withdrawal gate, and the per-quarter atomicity contract, that would be a design or ADR review (the design-architecture skill), not this round-trip." The line names where a design review would look. It is not the "Open questions for the reviewer" slot (no numbered questions, and it sends that review to another skill, not to a description). |
+| dcm-describe-route rep4, A | pass, borderline (a pointer to a later description, not a slot's content written now and not the next step) | "The design to critique will then be its record identity and precedence rules, withdrawal gating and per-quarter publication." "Then" is after the build ("Once the system works end to end on real data, come back and ask for the methodology description again"). The line asks no question of a reviewer. |
+| dcm-synth-route rep1, A | pass, borderline (items to check, not accept, reject or defer verdicts) | "Some things to check before treating any of them as settled:", then three items on the research files' figures and one claim. Control rep1's "Factual premises become `(open — resolved by verification, not argument)`" was triage content, a verdict label. It kept its pass only because the committed carve-out covers content inside a triage that is offered as one option of a question. Treatment rep1 offers no triage. Its items sort no research point into accept, reject or defer. Even if this rep failed A, the case would keep 4 of 5. |
+| dcm-synth-route rep5, A | pass, borderline (a list of points the reports agree on, no verdicts) | "They agree on a lot that a roadmap can stage. Examples:", then seven points |
+| dcm-describe-route rep3 and dcm-synth-route reps 3 and 4, not scored (stage lists) | not a clause of these cases | dcm-describe-route rep3: "for example: shared downloader with one request budget, then parse and validate, then manifest and publication, then reconciliation". dcm-synth-route rep3: "likely the vintage-data acquisition first, then a constant-variance baseline, then the scale model". Both cases' clause A reads a methodology description, triage or spec, not a stage list. The reps describe what derive-roadmap would do. |
+
+**Task 5 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/dcm-describe-route-t5/ specs/red-baseline-new-project-entry/treatment/dcm-synth-route-t5/`
+ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.50`. No rep file is empty or
+unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.2633 and $0.2398, so Task 5 cost
+$0.5031. Running total: $15.2931 of $60. Control arms: $5.5029 of $30, unchanged.
