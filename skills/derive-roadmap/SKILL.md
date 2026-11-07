@@ -178,13 +178,12 @@ shipped:
   every such change to your human partner as ONE question, not a numbered
   list: state the changes with your proposed default and ask for a single
   approve-or-amend. When unticked stages remain and none has all its
-  `Consumes` met, the same question names each unmet `Consumes` (one that an
-  earlier stage was to produce and, as its Handoff or stamp shows, did not)
-  and the stages it blocks, with your proposed default: a stage added to
-  produce it, or the `Consumes` amended. Hand off nothing before the answer.
-  Name no stage's routing in it; route only after the answer. A `Consumes`
-  that no stage's `Produces` names comes from outside the roadmap: it counts
-  as met, and the receiving session checks it.
+  `Consumes` met, the same question names each unmet `Consumes` and the stages
+  it blocks, with your proposed default: a stage added to produce it, or the
+  `Consumes` amended. Hand off nothing before the answer. Name no stage's
+  routing in it; route only after the answer. A `Consumes` is unmet when a
+  Handoff or stamp shows its input missing or not built. With no such
+  evidence it counts as met, and the receiving session checks it.
 - **Commit** the amendments, and whatever your partner approved at the Ask,
   on the current branch before the handoff, so the
   fresh session reads them. Context for a later stage that cannot be
