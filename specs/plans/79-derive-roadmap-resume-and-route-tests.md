@@ -1,5 +1,7 @@
 # derive-roadmap: resume gaps, route micro-tests and re-runs Implementation Plan
 
+**Status: COMPLETE (2026-11-07)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Quarantine.** This plan, the record `specs/red-baseline-new-project-entry.md` and its folder name the cases, the
@@ -153,14 +155,16 @@ Defaults this plan settles. The owner approves or amends them as one batch.
 - Produces: `CASES` keys `dr-stop-track`, `dr-park-ranked`, `dr-name-collision`, `dr-rerank-second`,
   `dr-resume-marker`, `dr-resume-blocked` and `dr-known-progression-79`. Every one is `additive` with texts `DR`.
 
-- [ ] **Step 1: Record the base**
+- [x] **Step 1: Record the base**
 
 Append `## Plan 79: base, cases and leak check` to the record. Give `BASE79` (`git rev-parse HEAD` at the start, short
 and full sha, and branch). Run
 `git diff --stat a849bd2 BASE79 -- skills/derive-roadmap specs/red-baseline-new-project-entry`. Expected: no line for
 a skill file. If one prints, stop and report it: the anchors may have moved.
 
-- [ ] **Step 2: Write the fixtures and rules in `cases.py`**
+- [x] **Step 2: Write the fixtures and rules in `cases.py`**
+
+> Deviation: the fixtures needed judgment calls the brief did not give (a new four-stage `OCCUPANCY_ROADMAP`, two extra `PROMOTED_ROADMAP` edits, a reworded Completion line), recorded in the record under `Plan 79: fixture judgment calls`. A review round (`fee932a`) removed two additions (an untracked-file sentence in dr-name-collision and a changed plan 3 Handoff in dr-resume-blocked).
 
 Each fixture is a `lines(...)` call that starts with `TODAY` and a repository line, as `DR_RESUME_RERANK_FIXTURE`
 does. The state each one must hold is below. The implementer writes the fixture text. The pass rules are exact copy.
@@ -291,21 +295,23 @@ The amended case:
    Clause C (conformance): manifests and traceability each appear in a named later stage. Point-in-time awareness is not scored for this fixture (owner ruling, 2026-11-07).
    ```
 
-- [ ] **Step 3: Check the cases load and build**
+- [x] **Step 3: Check the cases load and build**
 
 Run `uv run python -c "import sys; sys.path.insert(0, 'specs/red-baseline-new-project-entry/kit'); import cases; print(len(cases.CASES))"`.
 Expected: `22`. Then
 `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan79-work/leak dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second dr-resume-marker dr-resume-blocked dr-known-progression-79`.
 Expected: `wrote 7 prompts to /tmp/plan79-work/leak`.
 
-- [ ] **Step 4: Run the leak check**
+- [x] **Step 4: Run the leak check**
 
 As the record's `## Leak check` does: grep each new case's hand-written fixture lines and task line, then its
 leak-view prompt, case-insensitively, for its leak words. Expected: 0 hits in hand-written lines. Trace every
 leak-view hit to its source and add the table to the record. Reword a hand-written line that hits, then rebuild into
 `/tmp/plan79-work/leak-2`.
 
-- [ ] **Step 5: Start the spend table and commit**
+- [x] **Step 5: Start the spend table and commit**
+
+> Deviation: two commits, `abe5ec3` and the review fix `fee932a`.
 
 Append `## Plan 79: spend` with the stop ($30), the per-rep cap ($1.00) and a row per task. Then:
 
@@ -325,7 +331,7 @@ git commit -m "test(specs): add plan 79's derive-roadmap resume and route cases"
 - Consumes: the six new `CASES` keys (Task 1).
 - Produces: one control verdict per case (RED, or clean), which Task 3 reads.
 
-- [ ] **Step 1: Build the controls**
+- [x] **Step 1: Build the controls**
 
 ```bash
 CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan79-work/control-routes dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second
@@ -335,19 +341,21 @@ CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/k
 Expected: `wrote 4 prompts …` and `wrote 2 prompts …`. Join the two `MANIFEST.txt` files into
 `control/p79-MANIFEST.txt`, each under a line that names its sha.
 
-- [ ] **Step 2: Run five reps per case**
+- [x] **Step 2: Run five reps per case**
 
 For each case: `bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/<build>/<case>.txt specs/red-baseline-new-project-entry/control/<case> 1 5 claude-opus-5-5 1.00`.
 Check the spend headroom before each call. Rerun a VOID rep with the next free rep number.
 
-- [ ] **Step 3: Score and record**
+- [x] **Step 3: Score and record**
 
 Run `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/control/<case>/`
 for each case. Score each rep by hand, clause by clause. Write one `### Plan 79 control: <case>` section per case in
 the record's Task 7 form (table, clause counts, one quote per failed clause, judgment calls). Name each case RED or
 clean. Add the spend row.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
+
+> Deviation: the plan's `git add specs/red-baseline-new-project-entry` stages the folder only, so the commit also staged the sibling record file. A second commit (`b4bf196`) recorded the controller's rulings on the readings and on the date conflict.
 
 ```bash
 git add specs/red-baseline-new-project-entry
@@ -367,7 +375,9 @@ git commit -m "test(specs): run plan 79's control arms"
 - Consumes: Task 2's verdicts.
 - Produces: the skill commit `T3`, which Task 4's re-runs read.
 
-- [ ] **Step 1: Edit the skill text**
+- [x] **Step 1: Edit the skill text**
+
+> Deviation: three further skill commits followed the plan's five edits (`c500e14`, `T3`): `T3-r1` `43fca10` (the wording round of Step 4), and `T3-r2` `99265a5` and `T3-r3` `5f52dfc` (review-found fixes to the unmet-`Consumes` text and the Parking heading). The final skill text is `5f52dfc`.
 
 Exact copy. Rewrap to the file's width. Change nothing else.
 
@@ -383,7 +393,7 @@ Exact copy. Rewrap to the file's width. Change nothing else.
 5. `roadmap-format.md`, Ranked list. Replace `or parks when the track stops (SKILL.md §5).` with
    `or parks when the track stops or the whole roadmap parks (SKILL.md §5).`
 
-- [ ] **Step 2: Check the edits**
+- [x] **Step 2: Check the edits**
 
 Run each and expect `1`:
 `tr '\n' ' ' < skills/derive-roadmap/SKILL.md | tr -s ' ' | /usr/bin/grep -c 'no roadmap entry yet cites'`,
@@ -398,19 +408,21 @@ git commit -m "fix(derive-roadmap): specify the resume marker and the blocked-ro
 
 Record the sha as `T3` in the record.
 
-- [ ] **Step 3: Build and run the treatments**
+- [x] **Step 3: Build and run the treatments**
 
 `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py <T3> /tmp/plan79-work/t3 dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second dr-resume-marker dr-resume-blocked`.
 Expected: `wrote 6 prompts …`. Copy its `MANIFEST.txt` to `treatment/p79-t3-MANIFEST.txt`. Run five reps per case
 into `treatment/<case>-p79/`, as Task 2 Step 2 does.
 
-- [ ] **Step 4: Score, apply the bars, record**
+- [x] **Step 4: Score, apply the bars, record**
+
+> Deviation: dr-stop-track and dr-park-ranked missed their bar at `T3`. The wording round closed dr-stop-track. dr-park-ranked took the owner's ruling to re-run once more (3 of 5, then 4 of 5), and its met result rests on the inline-fields reading of clause D.
 
 Score as Task 2 Step 3, in `### Plan 79 Task 3: <case>` sections, each ending with its bar verdict against its
 control. For a miss, follow the Bars' wording round: the new text, its commit as `T3-r1`, the re-run cases with
 `-r1`, and why each other case was not re-run. A second miss is an owner gate. Add the spend row.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/red-baseline-new-project-entry
@@ -428,13 +440,17 @@ git commit -m "test(specs): run plan 79's treatment arms"
 - Consumes: `T3`, or `T3-r1` when Task 3 ran a wording round (the last skill commit). Call it `T-final`.
 - Produces: the verdicts the plan completion protocol reads to tick items (a) to (e).
 
-- [ ] **Step 1: Build and run**
+- [x] **Step 1: Build and run**
+
+> Deviation: `T-final` is `T3-r3` (`5f52dfc`), not `T3-r1`, because two review-found fixes followed the wording round.
 
 `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py <T-final> /tmp/plan79-work/t4 dr-known-progression-79 dr-tracks dr-resume-rerank dr-resume-legacy dr-offer-yes`.
 Copy its `MANIFEST.txt` to `treatment/p79-t4-MANIFEST.txt`. Run five reps into each folder above. The two dr-tracks
 runs are separate `run_reps.sh` calls from the same prompt, into `dr-tracks-p79a` and `dr-tracks-p79b`.
 
-- [ ] **Step 2: Score and apply the bars**
+- [x] **Step 2: Score and apply the bars**
+
+> Skipped: no wording round for the three Task 4 misses (dr-tracks runs a and b, dr-known-progression-79), because a fix would edit files on the plan's leave-alone list → deferred. → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
 
 Each verdict uses the case's rule and its reading of record (dr-tracks: Open for plan review item 4; every other case:
 the reading plan 78's record applied to it). Other readings go under "Other readings", as the record's Task 7 sections
@@ -452,12 +468,14 @@ For each dr-offer-yes and dr-tracks rep, also record, unscored, whether the repl
 phrase). With a spec (dr-offer-yes) the expected form is the stem. With no spec (dr-tracks) it is a proposed name. A
 miss here takes no wording round of its own: Task 3's phrase is reworded only when a scored case misses.
 
-- [ ] **Step 3: Write the summary**
+- [x] **Step 3: Write the summary**
 
 `## Plan 79: summary`: one table of every plan 79 arm (case, bar, control, treatment, result), the spend total, and
 for each of items (a) to (e) whether its `Done when:` is met. Add the spend row.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
+
+> Deviation: record-only commits followed the review and the final review (`9e4e89d`, `ad807f9`, `b30f3c9`).
 
 ```bash
 git add specs/red-baseline-new-project-entry
