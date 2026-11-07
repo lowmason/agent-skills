@@ -64,3 +64,64 @@ addition to its fields, and it is authoritative:
 
 The second sentence points at the plan's `## Handoff to later stages`. Drop it
 when the plan has no such section, or when the section reads `None`.
+
+## New-project roadmaps
+
+A roadmap from the New-Project Entry (SKILL.md §7) keeps the header, the stage
+checkboxes, the stamps and the resume above, with these differences.
+
+`<name>` is the spec's stem when there is a spec. With no spec, it is the
+kebab-case name your partner confirmed in the one message. With a spec,
+SKILL.md §3's scan applies first: a roadmap that names this spec as its
+source goes to Resume (§5). Then, with or without a spec, check before
+writing that `specs/<name>-roadmap.md` does not exist. If it does, ask for
+another name: never overwrite it.
+
+After the header, in order:
+
+1. **Outcomes**, in place of the Gap analysis. With no spec, this section is
+   the roadmap's source of truth.
+2. **Open questions**, as above.
+3. **Stages**, the entries below.
+4. **Ranked list — Track <X>**, one section for each research track.
+5. **Stage-spec stamp**, as above.
+6. **Completion**: SKILL.md §6, run over the Outcomes list.
+
+The Outcomes section keeps one line per outcome:
+
+```
+Source: <your partner's words, YYYY-MM-DD> | <spec path>. Background: <paths> | none.
+Choices made: <one line each> | none.
+
+| # | Outcome | Track | Rank | Cost (estimate; basis) |
+|---|---|---|---|---|
+| O1 | <what your partner gets> | A | 1 | <estimate; basis> or "measured by Stage 1" |
+
+Tracks: A — <name> (known progression | research). <Split from B because …>
+```
+
+Stage entries carry these fields and nothing else. `Outcomes` takes the place
+of `Spec` and `Gap closed`:
+
+```
+- [ ] Stage N: <short name>
+      Objective: <one sentence>
+      Outcomes: <the O-numbers this stage delivers>
+      Track: <letter> (omit with one track)
+      Consumes: <as above>
+      Produces: <as above; a core stage, and any stage of a research track, names specs/<name>-stage-<N>-findings.md>
+      Exit: <one observable outcome per O-number; a core stage, and any stage of a research track, adds the measured cost of its real run>
+      Leaves out: <each quality this stage does not need, with the stage or Ranked-list item that picks it up> | nothing
+      ROUTING: brainstorming | writing-plans
+```
+
+Each research track's Ranked list keeps your partner's order:
+
+```
+## Ranked list — Track B
+1. O4 — <cost note>
+2. O6 — <cost note>
+```
+
+An item leaves the list when your partner promotes it to a stage at a resume,
+or parks when the track stops (SKILL.md §5).

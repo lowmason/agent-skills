@@ -42,12 +42,24 @@ hyphens or underscores either way (`<name>-critique.md` is what this skill's
 own handoff asks for; real critiques predating it will not match). Otherwise,
 Describe mode.
 
+**Nothing built** means that no outcome of the system the spec or request
+describes works end to end on real data yet. Judge that system, not the whole
+repository, and do not count code that only acquires inputs, such as
+downloads, as a working outcome.
+
+**Built systems only.** When the system has nothing built, there is no method
+to critique yet. Route the work to derive-roadmap's New-Project Entry, as each
+mode's first step says, and stop: the critique comes after the system is
+built. If derive-roadmap is not installed, say so and stop.
+
 ## Describe mode
 
-1. **Choose granularity up front** — module (one estimand, one procedure) or
-   system (composed components) — and announce the choice and the target.
-   If `$LLM_WIKI_ROOT` is set, run the pre-flight in
-   `references/wiki-touchpoints.md` first.
+1. **Check that something is built, then choose granularity.** If the system
+   you would describe has nothing built, say so, write no description, and
+   route to derive-roadmap's New-Project Entry. Otherwise choose granularity
+   up front — module (one estimand, one procedure) or system (composed
+   components) — and announce the choice and the target. If `$LLM_WIKI_ROOT`
+   is set, run the pre-flight in `references/wiki-touchpoints.md` first.
 2. **Write `specs/<name>-methodology.md` in the target repo** using the
    matching template shape in `references/methodology-template.md`. Every
    slot is REQUIRED. Write from the notation table outward: define every
@@ -96,6 +108,11 @@ Describe mode.
 
 ## Synthesize mode
 
+**First, check what the files are.** When the "description" is a brief or a
+design for something with nothing built, or the "critique" is research
+written in answer to such a brief, say so. Write no triage table and no spec.
+Route the files to derive-roadmap's New-Project Entry as background, and stop.
+
 1. **Staleness check** (scripted): say "Description committed <date/sha> —
    has the methodology moved since? Checking git log touching the described
    system since that commit." If it has moved materially, refresh via
@@ -137,6 +154,7 @@ Describe mode.
 | A system/module to describe for external critique | Describe | `specs/<name>-methodology.md` + handoff message |
 | A returned critique or review beside its methodology description | Synthesize | Triage table → `specs/<name>.md` with derive-roadmap header |
 | A new-functionality idea | — | brainstorming, not this skill |
+| A system with nothing built, or a brief and research written for one | — | derive-roadmap's New-Project Entry, not this skill |
 | Code or a spec to review | — | code-review skills, not this skill |
 
 ## Common mistakes
@@ -156,6 +174,9 @@ Describe mode.
 - **Treating the critique as a to-do list** — it synthesizes into a spec;
   staging and implementation belong to derive-roadmap and the chain after
   it. Never implement critique points directly.
+- **Describing or synthesizing a system with nothing built** — there is no
+  method to critique yet. Route it to derive-roadmap's New-Project Entry; the
+  critique comes after the system is built.
 - **Reading a first-pass critique as adjudicated** — no push-back means no
   Chat-side rejections, not agreement. Say so, and carry the adjudication
   yourself in triage.

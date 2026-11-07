@@ -1,0 +1,4 @@
+arm 1f64a61 (1f64a618bc587d92a034ea87c855cea16e11f65b)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+bs-route.txt sha256 c62c46f6f2c9f475b578db9f6b90af1d3a23dc220c08869dcd05d1d28b01e30f model claude-opus-5-5 budget 1.00 uses skills/brainstorming/SKILL.md
+bs-guard.txt sha256 8f8cc196346d5f1ae7287569ef965def11a883145b029afbfb93e055dc4c29e7 model claude-opus-5-5 budget 1.00 uses skills/brainstorming/SKILL.md

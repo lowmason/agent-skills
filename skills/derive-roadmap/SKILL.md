@@ -3,9 +3,12 @@ name: derive-roadmap
 description: >
   Use when a spec opens with a header naming derive-roadmap as the required
   next skill, when resuming staged work ("resume the roadmap", a
-  specs/*-roadmap.md file), or when comparing a spec against the current
-  implementation to stage what remains. Partitions gaps into staged
-  spec-to-plan cycles. Never plans or brainstorms a stage itself.
+  specs/*-roadmap.md file), when comparing a spec against the current
+  implementation to stage what remains, or when a project with nothing built
+  yet needs its stages laid out ("lay out the stages", "roadmap this new
+  project", outcomes or a progression to rank and stage). Partitions gaps or
+  outcomes into staged spec-to-plan cycles. Never plans or brainstorms a stage
+  itself.
 license: MIT
 metadata:
   author: Lowell Mason
@@ -24,7 +27,8 @@ question rather than builds, a written finding (§2).
 
 **Core principle:** the roadmap routes; it never designs. Every stage exits
 to brainstorming or writing-plans by bare name. This skill does not plan a
-stage, and does not brainstorm one.
+stage, and does not brainstorm one. Listing, splitting, ranking and costing
+a new project's outcomes is partitioning, not design.
 
 **Entry, in this order** — a spec's filename can echo a roadmap's without
 being one, so resolve by header, not by name:
@@ -36,14 +40,23 @@ being one, so resolve by header, not by name:
    scratch. When a document could be read either way, resuming first is the
    safe direction — routing a live roadmap into fresh entry discards the
    reconciliation §5 exists to do.
-2. The document carries the Synthesize-mode routing header ("REQUIRED NEXT
+2. Your partner says the project has nothing built (below) and asks for a
+   roadmap, or gives its outcomes or its stages in their own words, with or
+   without a spec → §7, New-Project Entry. A request that only names a spec
+   is not this case: §1 runs the gap analysis and makes the offer.
+3. The document carries the Synthesize-mode routing header ("REQUIRED NEXT
    SKILL: derive-roadmap", describe-critique-methodology's
    `spec-synthesis.md`) → §1, Gap analysis.
-3. An explicit request to compare a spec against the implementation, with no
+4. An explicit request to compare a spec against the implementation, with no
    roadmap header present → §1, Gap analysis.
 
 A filename ending in `_roadmap`, or merely resembling `specs/*-roadmap.md`,
 does not make a document a roadmap — only the header does.
+
+**Nothing built** means that no outcome of the system the spec or request
+describes works end to end on real data yet. Judge that system, not the whole
+repository, and do not count code that only acquires inputs, such as
+downloads, as a working outcome.
 
 ## 1. Gap analysis — ONCE, at entry
 
@@ -65,6 +78,17 @@ writing any roadmap text. When the session cannot ask (a non-interactive or
 sub-agent run), put the questions in a clearly marked block at the top of
 the artifact and label the artifact provisional; the §4 checkpoint still
 gates before stage 1.
+
+**NOTHING BUILT.** When the table shows nothing built (Overview), do not
+partition. Add one item to the batched question set: what you found (which
+rows are implemented, and why none of them is a working outcome), and an
+offer to stage the project through the New-Project Entry (§7), with the
+spec's requirements as outcome candidates. The offer names no stage, core or
+later: stages come only after your partner ranks the outcomes. Then wait for
+the answer: never switch on your own. On a yes, go to §7. On a no, partition
+as below. When the session cannot ask, the offer goes in the questions block
+and the provisional file partitions as below. The table is the whole test: no
+other check decides that a repository is only a scaffold.
 
 **SINGLE-STAGE EXIT.** If the gaps fit one spec→plan cycle, write NO roadmap
 file. Say so, hand directly to brainstorming (open design space) or
@@ -123,7 +147,8 @@ volunteer a stage outside a resume.
   - ROUTING brainstorming: the new stage spec's Rollout note carries the
     `Roadmap:` line.
   - ROUTING writing-plans: the plan header carries it, and the plan is scoped
-    to the stage entry's `Spec` refs. This covers a stage with no stage spec.
+    to the stage entry's `Spec` refs, or its `Outcomes` refs in a new-project
+    roadmap. This covers a stage with no stage spec.
 - Then stop. Launching that session is your human partner's go/no-go. A
   go-ahead, or a request to keep going, approves that fresh session and
   nothing more: never plan, spec or brainstorm the stage in a resume session.
@@ -140,9 +165,10 @@ For each stage stamped COMPLETE since the last resume, read the stamp and its
 plan's `## Handoff to later stages`. Re-validate every unticked stage against
 what actually shipped:
 
-- **Amend.** When a Handoff bullet changes a later stage's `Spec`, `Consumes`,
-  `Produces` or `Exit`, amend that entry: cite `plan <id>, Handoff`, mark each
-  settled point `(Resolved at resume, YYYY-MM-DD)`, and never restate.
+- **Amend.** When a Handoff bullet changes a later stage's `Spec` (or
+  `Outcomes`), `Consumes`, `Produces`, `Exit` or `Leaves out`, amend that
+  entry: cite `plan <id>, Handoff`, mark each settled point
+  `(Resolved at resume, YYYY-MM-DD)`, and never restate.
   Amend only from Handoff bullets: a section reading `None`, or a plan with
   none, changes no later entry; a shipped difference no bullet names goes to
   the Ask.
@@ -156,23 +182,42 @@ what actually shipped:
   fresh session reads them. Context for a later stage that cannot be
   committed goes to prepare-handoff.
 
-Then hand off the next stage (§4). With every stage ticked, go to §6.
+**A research track waiting on its Ranked list** (a new-project roadmap). When
+every committed stage of a research track is ticked and its Ranked list is
+not empty, do not go to §6 for that track. Read the findings file that the
+`Produces` of the track's most recently ticked stage names, and report what
+that stage found and its measured cost. Then, inside the ONE question of the
+Ask, put a re-ranking of the list and your proposed next stage (one item to
+promote), or stopping the track. A promoted item becomes a stage entry only
+after the answer. When your partner stops the track, only that track's
+remaining items park, one deferred item each, under the Parking rule below.
+The roadmap stays live: it moves only through §6, or when your partner parks
+the whole roadmap.
 
-**Parking is a first-class exit.** Remaining unticked stages append to
-`specs/deferred_items.md`, one item per stage, under a dated
-`## <roadmap-name> — <YYYY-MM-DD>` section. Each item follows the
-Deferred-item schema in the writing-plans skill's deferred-backlog reference
-(self-contained, with `Size:` and a `Done when:` naming the stage's Produces),
-so the item ages and reaches the aged-tail gate. The roadmap moves to
-`specs/completed/` marked `PARKED (date) — N of M stages complete`. The
-methodology and critique files retire alongside the synthesized spec — they
-are its inputs.
+Then hand off the next stage (§4). With every stage ticked and no Ranked list
+waiting, go to §6.
+
+**Parking is a first-class exit.** When your partner parks the roadmap, its
+remaining unticked stages and the items of every Ranked list append to
+`specs/deferred_items.md`, one item per stage or list item, under a dated
+`## <roadmap-name> — <YYYY-MM-DD>` section. When your partner stops a
+research track, only the items of that track's Ranked list append, one item
+per list item, under a dated `## <roadmap-name> — <YYYY-MM-DD>` section, and
+the roadmap stays live. Each item follows the Deferred-item schema in the
+writing-plans skill's deferred-backlog reference (self-contained, with
+`Size:` and a `Done when:` naming the stage's Produces or the item's
+outcome), so the item ages and reaches the aged-tail gate. A parked roadmap
+moves to `specs/completed/` marked `PARKED (date) — N of M stages complete`.
+The methodology and critique files retire alongside the synthesized spec —
+they are its inputs.
 
 ## 6. Roadmap-completion review
 
 Retirement is gated behind a conformance audit of the ACCUMULATED system:
 re-run the gap rubric over every numbered requirement, with evidence per
 verdict (implementing stage/plan, Deviation notes, deferred_items entries).
+In a new-project roadmap, run it over the Outcomes list in place of spec
+requirements. Ranked-list items your partner never promoted have parked (§5).
 
 Unmet requirements exit exactly two ways: a new stage (roadmap stays live),
 or conscious deferral with a written why.
@@ -187,11 +232,50 @@ input to the next critique round.
 
 When improvement directions are diffuse, route to creative-thinking.
 
+## 7. New-Project Entry
+
+For a project with nothing built (Overview). Read
+`references/new-project-entry.md` before your first message: it holds the
+inputs, the checks you may run, and each rule below in full.
+
+1. **Outcomes.** Write the outcomes as a numbered list (O1, O2, …), one line
+   each, in plain words: what your partner gets, not how it is built. They
+   come from your partner's words, or from a spec's requirements as
+   candidates. Background files give facts, options and costs, and never add
+   an outcome on their own.
+2. **Tracks.** Group the outcomes into tracks. Outcomes that answer unrelated
+   questions, or serve different uses, go in separate tracks, and you say why
+   you split them. Two questions are unrelated when either answer stands
+   without the other, even when both explain the same result. Catching a
+   bundled request is your job, not your partner's. Each track is a known
+   progression (your partner can name its stages from first to last) or
+   research (the method or the answer is open).
+3. **Cost.** Each outcome whose cost is material gets a rough estimate and its
+   basis. When only running the work can tell, say so.
+4. **One message.** Before any roadmap text, send one message: the outcome
+   list, unranked, with the cost notes, the tracks and their kinds, and a
+   proposed roadmap name. It makes one request: rank the outcomes within each
+   track and the tracks among themselves, and confirm the tracks. Do not rank
+   for your partner unless they ask.
+5. **Stages.** Each track's first stage is its core stage: it works on real
+   data at the smallest standard that gives a usable result, and its Exit
+   names the measured cost of the real run. A known-progression track commits
+   every stage, first to last, its later hardening stages included. A research
+   track commits its core stage only, and its other outcomes wait in its
+   Ranked list until the core has run on real data. A quality the project
+   needs eventually but not to work goes to a named later stage or a
+   Ranked-list item, never into a core stage's Exit.
+6. **Write, then §4.** Write the roadmap per `references/roadmap-format.md`
+   (New-project roadmaps), then present the partition for approval (§4).
+
 ## Quick reference
 
 | You have | Do |
 |---|---|
 | A spec carrying the Synthesize-mode header (`REQUIRED NEXT SKILL`) | Gap analysis → partition → roadmap, or single-stage exit |
+| Your partner's outcomes or stages for a project with nothing built | §7: outcomes, tracks, cost notes, one message, then stages |
+| A gap table that shows nothing built | Offer §7 in the batched questions, then wait for the answer |
+| A research track with its committed stages ticked and a Ranked list waiting | Report the latest stage's finding and cost, then one re-rank question (§5) |
 | Gaps that fit one cycle | NO roadmap file — hand to brainstorming or writing-plans |
 | A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps and Handoff sections, amend and commit, then hand off the next stage |
 | Every stage ticked | Completion review, then retire |
@@ -212,3 +296,10 @@ When improvement directions are diffuse, route to creative-thinking.
   observable outcomes, not intentions.
 - **Writing a roadmap for one stage** — take the single-stage exit.
 - **Trusting a fuzzy plan-name match over a stage stamp** — the stamp wins.
+- **Switching to §7 on your own** — when the table shows nothing built,
+  offer it and wait for a yes.
+- **Ranking outcomes for your partner** — show the list unranked; the ranking
+  is their judgment of value.
+- **A final-standard quality in a core stage's Exit** — manifests,
+  traceability and the like go to a named later stage or a Ranked-list item,
+  recorded in `Leaves out`.
