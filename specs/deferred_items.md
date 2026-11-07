@@ -5903,7 +5903,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       model.
 
 ## 78-derive-roadmap-new-project-entry — 2026-11-06
-- [ ] **dr-offer-yes misses its bar after plan 78's wording round (3 of 5; owner ruled accept and
+- [x] **dr-offer-yes misses its bar after plan 78's wording round (3 of 5; owner ruled accept and
       file at the completion gate).** `skills/derive-roadmap/SKILL.md` §1 NOTHING BUILT and
       `references/new-project-entry.md` (Later qualities, The one message). The case passed 4 of 5
       in Task 3 round 1, then 3 of 5 after the wording round, and 3 of 5 again in the Task 7 re-run.
@@ -5913,6 +5913,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       gate; Task 7) and specs/plans/completed/78-derive-roadmap-new-project-entry.md. Size: design.
       Done when: the owner rules on that reading, or a re-run of the case passes 4 of 5 under the
       kit in specs/red-baseline-new-project-entry/kit/.
+      → retired 2026-11-07: the owner ruled that the core-and-later-stages text counts as a stage list, so plan 78's committed reading stands and the case stays at 3 of 5. The skill wording that would stop this text is filed → item: deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
 - [ ] **dr-tracks passes unstably (owner ruled accept and file at the completion gate).**
       `skills/derive-roadmap/SKILL.md` §7 step 2 and `references/new-project-entry.md` (Outcomes and
       tracks). Task 3 rounds 1 and 2 scored 2 of 5 each. The Task 7 re-run scored 5 of 5 on the
@@ -5921,6 +5922,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/red-baseline-new-project-entry.md (Treatment: Task 3 and Task 7). Size: plan. Done when:
       two independent five-rep runs of the case each pass 4 of 5 under the kit, or the owner accepts
       the Task 7 result as it stands.
+      → progress 2026-11-07 (owner ruling): the Task 7 result is not accepted as it stands. The item stays open for the two independent five-rep runs.
 - [ ] **dr-known-progression fails conformance clause C: point-in-time awareness appears in 0 of 5
       reps (owner ruled accept and file at the completion gate).** The fixture's background spec
       never raises as-of reads, so the skill's Later-qualities example list in
@@ -5960,3 +5962,20 @@ review and the Plan Completion gate (2026-10-27) add the others.
       one-phrase edits to owner-approved text, so they need a micro-test pass under the plan 78
       kit. Size: quick-fix. Done when: the roadmap-format paragraph also names a whole-roadmap park
       and §7 step 4 says "with no spec".
+
+## deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
+- [ ] **The derive-roadmap new-project offer still draws core-and-later-stages text before the
+      partner ranks (owner ruling, 2026-11-07).** `skills/derive-roadmap/SKILL.md` §1 NOTHING BUILT
+      and `references/new-project-entry.md` (Later qualities, The one message). Some replies name a
+      core stage and later stages for the hardening, inside the offer or the one message, for
+      example "Stage 1 would be the core: O1 on one real quarter plus one real daily file". The
+      owner ruled that this text counts as a stage list, so `dr-offer-yes` stays at 3 of 5 (bar 4
+      of 5). The record names a likely cause: the round-2 edit to the later-qualities rule ("Check
+      the project against each one, and place every one it will need") may have drawn this text in.
+      It would take a wording change to those sections and a re-run of `dr-offer-yes` under the kit
+      in specs/red-baseline-new-project-entry/kit/. `dr-offer-scaffold` and `dr-tracks` read the
+      same text, so they need a re-run too. It was first found in
+      specs/red-baseline-new-project-entry.md (Task 3 summary and owner gate, and Task 7),
+      2026-11-06. Size: design. Done when: the skill wording that stops this text lands, and a
+      re-run of `dr-offer-yes` under the kit passes 4 of 5 by plan 78's core-and-later-stages
+      reading.
