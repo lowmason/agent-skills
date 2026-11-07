@@ -10,7 +10,7 @@
 
 **Tech Stack:** bash (scripts must also run under macOS's `/bin/bash` 3.2), Node (CommonJS, `server.cjs`), Python 3.13 + pytest through `uv run`.
 
-**Spec:** none. The requirements are the "Fix directly, no spec" disposition of `specs/superpowers-drift-spec.md`: findings 8 (`find-polluter.sh`), 12 (`review-package` range guards; `sdd-workspace`'s `.gitignore`, optional) and 16 (the companion server's `String.replace`; the debugging example that prints a secret). Finding 16 and finding 12's `.gitignore` item exist only in the spec's 2026-10-18 revision, `f9ae68d` on branch `claude/superpowers-spec-staleness-f6b72d`, unmerged when this plan was written; main's copy is the 2026-10-03 revision. Tasks 1 and 2 also close item X3 of the 2026-10-03 repo audit (`specs/audit-3-10-26.md:656`). The session brief that started this plan carries the same items, with each upstream fix's commit.
+**Spec:** none. The requirements are the "Fix directly, no spec" disposition of `specs/completed/superpowers-drift-spec-v7-0-1.md`: findings 8 (`find-polluter.sh`), 12 (`review-package` range guards; `sdd-workspace`'s `.gitignore`, optional) and 16 (the companion server's `String.replace`; the debugging example that prints a secret). Finding 16 and finding 12's `.gitignore` item exist only in the spec's 2026-10-18 revision, `f9ae68d` on branch `claude/superpowers-spec-staleness-f6b72d`, unmerged when this plan was written; main's copy is the 2026-10-03 revision. Tasks 1 and 2 also close item X3 of the 2026-10-03 repo audit (`specs/audit-3-10-26.md:656`). The session brief that started this plan carries the same items, with each upstream fix's commit.
 
 ## Global Constraints
 
@@ -673,7 +673,7 @@ The message body names upstream `19e54c0` (#2399, v7.0.0) and the trailer.
 
 **Files:**
 - Modify: `NOTICE` (the superpowers block's "Changes from upstream" list, after its last entry, the `# cc-guide:` one)
-- Modify, only if D7's condition holds: `specs/superpowers-drift-spec.md`
+- Modify, only if D7's condition holds: `specs/completed/superpowers-drift-spec-v7-0-1.md`
 
 **Interfaces:**
 - Consumes: the upstream commits, releases and divergences Tasks 1–5 name.
@@ -730,7 +730,7 @@ git merge-base --is-ancestor f9ae68d main && echo merged-local || echo not-merge
 git merge-base --is-ancestor f9ae68d origin/main && echo merged-origin || echo not-merged-origin
 ```
 
-If neither prints `merged-…`, leave `specs/superpowers-drift-spec.md` alone and record that in the completion report. If either does, bring the branch up to date with the base branch first (`sync_with_base_branch` in an app worktree), then mark findings 8 (the `find-polluter.sh` item), 12 (the range guards and the `.gitignore` item) and 16 adopted by plan 50, in their sections, in the status table and in the Suggested disposition's "Done" line, and commit that with the `NOTICE` entry.
+If neither prints `merged-…`, leave `specs/completed/superpowers-drift-spec-v7-0-1.md` alone and record that in the completion report. If either does, bring the branch up to date with the base branch first (`sync_with_base_branch` in an app worktree), then mark findings 8 (the `find-polluter.sh` item), 12 (the range guards and the `.gitignore` item) and 16 adopted by plan 50, in their sections, in the status table and in the Suggested disposition's "Done" line, and commit that with the `NOTICE` entry.
 
 - [x] **Step 3: Lint and commit**
 

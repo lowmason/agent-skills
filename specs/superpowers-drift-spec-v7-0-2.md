@@ -3,14 +3,23 @@
 **Status:** findings only. No skill files were edited. This document exists to
 decide *what, if anything, becomes a spec*.
 
-It is a living record: each review re-baselines it in place rather than adding a
-dated copy. This revision (2026-11-07) brings it to upstream v7.0.2 for every
-skill. It edits the status table, the Scope and method table, findings 4, 8, 11,
-15 and 17, and adds findings 18 to 33. Findings 1–3, 5–7, 9–10, 12–14 and 16
+This versioned assessment continues the
+[archived v7.0.1 record](completed/superpowers-drift-spec-v7-0-1.md), formerly
+`specs/superpowers-drift-spec.md`. This revision (2026-11-07) brings it to
+upstream v7.0.2 for every skill. It edits the status table, the Scope and method table, findings 4, 8, 11,
+15 and 17, and adds findings 18 to 33. Findings 1–2, 5–7, 9–10, 12–14 and 16
 stand as the 2026-10-28 revision wrote them, at the anchors the 2026-10-31
-re-anchor took; this revision does not reprint them. Every anchor this revision
+re-anchor took; this revision does not reprint them, so the archived record is
+part of this assessment. Retirement preserves that source; it does not close
+its open findings. Every anchor this revision
 takes is at upstream `22f0b46` and at our `5beacf5` (2026-11-07). New local
 anchors name the file, and the line numbers are hints.
+
+The verification pass also carries unfinished earlier work into this file:
+finding 3's prospective test guidance; finding 8's two small considerations;
+the post-adoption follow-ups to findings 9–11; and finding 17's uncompleted
+writing-skills guide rewrite and compaction probe. Recommendations below are
+assessment content, not instructions to implement them in this audit.
 
 Two things are new in kind. Findings 19–24 are the six pushbacks a review of
 upstream's spec-driven workflow (brainstorming → writing-plans → subagent-driven-
@@ -42,8 +51,8 @@ from the 2026-11-07 workflow review.
 | Adoption baselines | Unchanged from the 2026-10-28 revision: `b36e082` (v6.3.0) for plan 22; `8ca22db` (v6.4.2) for plan 40; per-fix commits for plan 50; `bb92a77` (v7.0.0) for plan 60's idea; `2ce8aa1` (v7.0.1) for plans 70, 71, 72 and 75. Nothing was adopted in this revision |
 | Previous review | `2ce8aa1` (v7.0.1, 2026-10-21), reviewed 2026-10-28, re-anchored 2026-10-31 |
 | Upstream HEAD | `22f0b46` (v7.0.2, 2026-11-03), still `main` on 2026-11-07 |
-| Our tree | `5beacf5` (2026-11-07). This file is byte-identical in that tree to the copy this revision started from |
-| Commits since previous review | 1 on `main`: the release squash merge `22f0b46` (#2657). On upstream's `dev` branch the skill-relevant pull requests merged on 2026-11-02 and brought these commits: #2644 (`e8cc5c9`), #2654 (`4eb73b6`), #2604 (`f75c01f`, `750ba92`), #2605 (`3735a50`), #2606 (`614d80c`, `de67241`, `0d61007`, `8b0eefc`), #2607 (`6ab1c79`, `74500c1`, `402cfde`), #2602 (`bb3a5aa`), #2608 (`fa50d83`), #2609 (`f713233`) |
+| Our tree | `5beacf5` (2026-11-07). Its unversioned assessment is byte-identical to the v7.0.1 copy before archival annotations; the v7.0.2 file was added later, in `44554e1` |
+| Commits since previous review | 1 on `main`: the release squash merge `22f0b46` (#2657). On upstream's `dev` branch the skill-relevant pull requests merged on 2026-11-02. Their change commits, excluding shared bases of stacked PRs, are: #2644 (`e8cc5c9`), #2654 (`4eb73b6`), #2604 (`f75c01f`, `750ba92`), #2605 (`3735a50`), #2606 (`614d80c`, `de67241`, `0d61007`, `8b0eefc`), #2607 (`6ab1c79`, `74500c1`, `402cfde`), #2602 (`bb3a5aa`), #2608 (`fa50d83`), #2609 (`f713233`) |
 | Files changed under `skills/` since previous review | 19 (+282 / −411). Without brainstorming's `SKILL.md`: 18 (+222 / −373). Five of the 19 are systematic-debugging files that moved out to `tests/` (−328), so the live change to skill text and scripts is 14 files, +282 / −83 |
 | Unreleased skill work | None: on 2026-11-07 `dev` (`df2e996`, the merge of `main` back into `dev`) has the same tree as `22f0b46`, byte for byte |
 | Next review starts from | `22f0b46` |
@@ -120,21 +129,21 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted. v7.0.2 did not touch it |
 | 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |
-| 17 | Skill bodies run past the compaction re-attach cut | SDD and writing-skills halves **done** — plans 71, 72. Sizes re-taken 2026-11-07: three of our files now fail upstream's byte bar, all pass ours, writing-plans by 10 characters. The byte bar stays not adopted until the probe |
+| 17 | Skill bodies run past the compaction re-attach cut | SDD and writing-skills splits **done** — plans 71, 72; the writing-skills guide rewrite remains open. Sizes re-taken 2026-11-07: three of our files fail upstream's byte bar, all pass ours, writing-plans by 6 characters. The byte bar stays not adopted until the probe |
 | 18 | v7.0.2 helper hardening: repository, task IDs, fences, invocation | **New.** One local defect by probe (`task-start` in a repo with no commit); two shared gaps by probe (#2604, #2605); invocation wording partly covered |
 | 19 | The autonomy dial is set hard | **New**, workflow. Decided by finding 7; we keep a wider human loop; record only |
 | 20 | No durable record of what wasn't built | **New**, workflow. **Already covered** by the plan-completion protocol; the upstreamable core is three rules |
 | 21 | Per-task test evidence is self-reported in SDD | **New**, workflow. Gap on both sides; a local design item that the tester-seat work also needs |
 | 22 | Spec drift is unaddressed | **New**, workflow. Partly covered by the `## Decisions` log and amendment tasks; a local design item for mid-run rulings |
 | 23 | "Tasks mostly independent" is stated for both executors | **New**, workflow. **Already covered**: our executing-plans routes coupled plans inline |
-| 24 | The Iron Law is mostly moot inside planned execution | **New**, workflow. Open; the spec-derived tester seat is the design candidate, handoff written 2026-11-07, brainstorm not yet run |
+| 24 | Planner-authored tests can share a spec misreading | **New**, workflow. Open; a spec-derived tester seat is a design candidate. The reported 2026-11-07 handoff and session state have no repository artifact to verify |
 | 25 | requesting-code-review still leads with `HEAD~1` | **New.** **Already covered**; record |
 | 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low |
 | 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides |
 | 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone |
 | 29 | using-git-worktrees sets up Python projects wrongly and drops isolation silently | **New.** Setup half **already covered** (`169942a`); the sandbox fallback is a shared design choice |
 | 30 | systematic-debugging's `find-polluter.sh` is still invoked by a relative path upstream | **New.** **Already covered** here (plan 50); upstream's #2607 test does not reach it |
-| 31 | verification-before-completion asserts without naming the command | **New.** Wording item on both sides, low |
+| 31 | verification-before-completion lacks the documented-test-command pointer | **New.** Claim-specific command selection exists; the more explicit pointer is a wording proposal on both sides, low |
 | 32 | test-driven-development | **New.** Nothing new at v7.0.2; findings 3, 13 and 24 carry it |
 | 33 | writing-skills says nothing about where test scenarios live | **New.** Record; a one-line placement rule on both sides, low |
 
@@ -155,7 +164,7 @@ path fix in the helpers (#2602, `bb3a5aa`: `cygpath -m` on the printed
 workspace path) goes with the earlier Windows work: it changes only what the
 scripts print on Git Bash, MSYS2 and Cygwin, and the markers keep `pwd -P`'s
 spelling, so it has no effect on a macOS install. The systematic-debugging
-test files that #2654 moved to `tests/claude-code/pressure-scenarios/` are
+test files that #2654 moved to `tests/systematic-debugging/pressure-scenarios/` are
 dismissed as files; the claim behind the move is under Already covered.
 `proving-it-works-with-a-movie` still has not shipped.
 
@@ -172,7 +181,7 @@ dismissed as files; the claim behind the move is under Already covered.
   the fix as this repository's own. Upstream's new
   `tests/brainstorm-server/start-server.test.sh` is the same case in bash.
 - **systematic-debugging no longer installs its test scenarios (#2277,
-  #2654, `4eb1ee9`).** Upstream moved `CREATION-LOG.md` and four
+  #2654, `4eb73b6`).** Upstream moved `CREATION-LOG.md` and four
   `test-*.md` pressure prompts out of the skill, because an agent that greps
   the installed directory mid-task can find "This is a real scenario. You
   must choose and act" and take it as live instructions. Our
@@ -181,8 +190,8 @@ dismissed as files; the claim behind the move is under Already covered.
   git history shows no commit that ever added them. Upstream's new
   `tests/skill-layout/test-no-dev-files-in-skills.sh` fails on exactly those
   two names. It would pass here as written, but the rule behind it
-  ("files meant for developing the skill don't ship") would not: 26 of our
-  skills keep their `test_*.py` beside the scripts they test, by this
+  ("files meant for developing the skill don't ship") would not: 17 of our
+  skills keep 26 `test_*.py` modules beside the scripts they test, by this
   repository's directory-scoped convention, and `install.py` installs them.
   Those files are pytest modules, not prompts, so the #2277 failure cannot
   happen through them. Deliberate divergence; not adopted as a test.
@@ -198,8 +207,28 @@ dismissed as files; the claim behind the move is under Already covered.
 
 ## Findings 1–8 (first pass), re-verified
 
-Findings 1, 2, 3, 5, 6 and 7 stand as the 2026-10-28 revision wrote them;
+Findings 1, 2, 5, 6 and 7 stand as the 2026-10-28 revision wrote them;
 v7.0.2 changed nothing they rest on.
+
+### 3. TDD reference has no falsifiability discipline — open, prospective
+
+The prospective port remains upstream's positive `writing-good-tests.md`
+guidance: name the behavior that would break, exercise the real thing, and
+check that tests can distinguish working behavior from a defect. Our
+`testing-anti-patterns.md` still lacks the two named traps: **string-presence**
+assertions that check source wording instead of behavior, and **change-detector**
+assertions that fail on an implementation change without protecting a useful
+outcome. The candidate includes gate functions, mutation checks and warning
+signs. This is guidance to evaluate, not a claim that all source-text tests
+are invalid or that existing suites need blanket replacement.
+
+Retain our full **Why Order Matters** section unless a separately tested
+compression preserves its behavior under pressure. Upstream's first deletion
+regressed test-first behavior (reported control 8/10, treatment 5/10); its
+eventual rewrite retained the rebuttals in rationalization rows. Findings 13
+and 24 do not close this prospective item. The archived finding 3 holds the
+historical evidence; its assurance about the then-existing test suites is not
+a fresh audit of today's suites.
 
 ### 4. Brainstorming ceremony does not scale — adopted (plan 70), rebased on v7.0.1; v7.0.2's retune open
 
@@ -258,7 +287,7 @@ v7.0.1 phrase that v7.0.2 replaced, the change has seven parts:
 - **Never reopen what they've already decided** joins Look Before You Ask
   (upstream `:46-49`). Ours does not say it (`:54-61`).
 
-**The measured bar (#2644).** Blind-graded conversations on the same scenarios:
+**The upstream-reported measured bar (#2644).** Blind-graded conversations on the same scenarios:
 filler questions fell from 41 with v7.0.1 to 23; the reason behind the request
 came out before any approach in 33 of 33 conversations (28 of 33 on v7.0.1);
 nothing got built before approval (4 times on v7.0.1). Against v6.4.2's
@@ -285,14 +314,19 @@ disagree before it, which is exactly the line upstream draws. This is a
 behavior-shaping change to a discipline skill, so writing-skills' micro-test
 and pressure test apply; plan 70's RED baseline is the control, and its
 question-style cases re-run (T7, the first-question case, decided under a
-letter reading on 2026-10-28, is the one most likely to move). The nine
-defaults in the tester-seat handoff written on 2026-11-07 are the practical
-reason to port before running that brainstorm: on our copy they are nine
-question round-trips; on v7.0.2's they are proposals to correct.
+letter reading on 2026-10-28, is the one most likely to move). That original
+GREEN result is not the latest evidence: the isolated 2026-11-05 rerun scored
+T7 13/25 against an 80% bar, with no measured wording effect (52% after,
+48% before). On 2026-11-06 the owner accepted that known gap and kept D17's
+letter reading; see `specs/red-baseline-brainstorming-2026-10-28.md`,
+"Re-run with the isolated kit" and "Owner ruling (2026-11-06)". Reuse the
+isolated kit and this result rather than treating the original pass as current.
+The reported nine-default tester-seat handoff has no artifact path here, so
+its claimed question-round-trip saving is a hypothesis, not measured evidence.
 
 ### 8. Smaller items
 
-The 2026-10-28 text stands, with two updates:
+The 2026-10-28 text stands, with these updates and retained considerations:
 
 - **`find-polluter.sh`** was hardened again on 2026-11-01 (`98c453e`): it exits
   2, with a message that is not an all-clear, when the test command cannot
@@ -301,14 +335,34 @@ The 2026-10-28 text stands, with two updates:
 - **`start-server.sh --project-dir`** is under Already covered: our fix
   (`3ad94f8`, 2026-11-01) preceded upstream's release of the same fix (#2608,
   2026-11-03) by two days.
+- **Discard menu placement remains an open consideration.** Both local
+  completion menus still advertise "Discard this work"
+  (`finishing-a-development-branch/SKILL.md:182`, `:194`). The earlier
+  recommendation was to make discard explicit-request-only, as upstream did.
+  Typed confirmation already protects the operation; the unresolved question
+  is whether the menus should offer it. No change is adopted by this audit.
+- **Worktree-guard format remains optional convergence.** Our guard uses
+  Problem/Fix prose (`using-git-worktrees/SKILL.md:205-220`); the earlier
+  suggestion was the house Excuse/Reality table. No behavioral gap was
+  established, so this is a format consideration, not an implementation defect.
 
-The discard menu (`finishing-a-development-branch/SKILL.md`, finding 8's
-third item), the worktree-guard format and the `gh`-optional PR path stand
-unchanged on both sides.
+Those two local considerations remain unresolved; the `gh`-optional PR path
+already covers the earlier forge-agnostic recommendation.
 
 ## Findings 9–15 (v6.4.1 and v6.4.2), re-verified
 
 Findings 9, 10, 12, 13 and 14 stand as the 2026-10-28 revision wrote them.
+
+**Adoption is not closure of the follow-ups.** Findings 9 and 10's mechanism
+landed in plan 73, but the earlier record also carried its unmet R2 and
+R4-task micro-test bars and the unresolved review findings. The existing
+`specs/deferred_items.md` section `73-reviewer-and-planning-contract` owns
+the remaining test-only/delete-pass check, completion-gate handling of
+Declined lines, Review Focus explanation, Full Form test coverage, kit and
+wording observations, and **Watch the Proportion check**. The last item asks
+whether cutting plans to about five times the spec removes needed work; its
+F1 comparison had a ceiling and did not settle that risk. Keep those backlog
+items rather than marking the whole adopted finding unfinished again.
 
 ### 11. executing-plans was rebuilt as a ledgered native mode — adopted (plan 75); v7.0.2 items under finding 18
 
@@ -329,6 +383,12 @@ three helpers by absolute path from the working tree (`:125-127`, `:173-174`,
 `:226-227`, `:238-239`). Both are finding 18's; one of them is a local defect
 our port carried from v7.0.1.
 
+Plan 75's remaining review and test caveats are still owned by the existing
+backlog sections `75-executing-plans-port` and `76-whole-repo-review-fixes`
+(including reworded-gate coverage, strict S1/G1 scoring, resume wording,
+basename/empty-ledger assumptions, Bash 3.2 coverage and the stop-list scope).
+The v7.0.2 helper fixes do not automatically close those older follow-ups.
+
 ### 15. diagnosing-superpowers — not adopted
 
 v7.0.2 did not touch the skill. The disposition does not change.
@@ -340,13 +400,13 @@ following update to 17.
 
 ### 17. Skill bodies run past the compaction re-attach cut — sizes re-taken
 
-Plans 71 and 72 did the two moves. **Sizes, 2026-11-07,** by the same loop as
-the 2026-10-28 probe (`wc -c` on the whole file; body characters counted after
-the closing `---` under a UTF-8 locale):
+Plans 71 and 72 did the two moves. **Sizes, 2026-11-07,** by the same byte
+measure as the 2026-10-28 probe (`wc -c` on the whole file), with body characters
+recounted using `build/check_conformance.py`'s exact `skill_body` extraction:
 
 | Skill | Bytes | Body characters | Upstream's bar (≥ 20,000 bytes fails) | Our check (> 20,000 body characters fails) |
 |---|---|---|---|---|
-| writing-plans | 20,845 | 19,990 | fails | passes, 10 characters inside |
+| writing-plans | 20,845 | 19,994 | fails | passes, 6 characters inside |
 | finishing-a-development-branch | 20,741 | 19,924 | fails | passes, 76 inside (19,970 on 2026-10-28) |
 | subagent-driven-development | 20,253 | 19,409 | fails | passes (30,268 before plan 71) |
 | bayesian-workflow | 19,917 | 18,667 | passes | passes (35,223 before plan 71) |
@@ -359,8 +419,8 @@ body characters and `writing-skills` 11,705, and exceptions
 `skill-body-past-compaction` and `writing-skills-late-critical-headings` are
 gone. **writing-plans is new to the list.** It was not among the four files the
 2026-10-28 probe named; plan 73's Review Focus section and the completion
-protocol's growth since (`fdf9f47`, `6e220b5`) brought it to 10 characters
-inside our window, so its next edit of any size fails the commit lint. The
+protocol's growth since (`fdf9f47`, `6e220b5`) brought it to 6 characters
+inside our window, so a net addition of 7 body characters fails that check. The
 2026-10-28 text's observation about finishing-a-development-branch applies to
 it now. **Where the two bars disagree, they disagree more.** On 2026-10-28 one
 file passed ours and failed upstream's; now three do. The probe item in
@@ -370,10 +430,37 @@ until it runs stands. A `references/` split of writing-plans, on the pattern
 of plans 71 and 72, is the next move whichever bar wins, and it would also
 answer the local design items under findings 21 and 22 if those add text.
 
-The conformance lint itself was not run for this probe: `check_conformance.py`
-needs `yaml` and this session's environment lacks it. The counts above come
-from the loop, so treat the body-character column as approximate to a few
-characters.
+The original review's approximate loop undercounted writing-plans by four
+characters. The verification pass uses the lint's frontmatter boundary
+(`^---\n(.*?)\n---\n`, DOTALL), so the body-character column now gives the
+exact count used by that check. The byte gate and body-character gate remain
+different measures; neither establishes how the runtime actually truncates.
+
+**The compaction-cut probe remains unfinished.** The existing open item in
+`specs/deferred_items.md`, section `superpowers-drift-v7.0.1`, asks whether
+the actual cut counts characters or tokens and includes frontmatter or a
+runtime-added header. Done when a forced-compaction probe records the
+boundary and the register and guide agree with it. The earlier sequencing
+blocker, plan 69, is complete; the probe itself has not been implemented.
+
+**The writing-skills split did not complete its guide rewrite.** The open
+item **Split and rewrite writing-skills against the guide**, in backlog
+section `53-agent-skills-portability`, retains the work the archived finding
+17 explicitly excluded from the split:
+
+- Resolve `writing-skills-guide-gaps` in `build/cc_guide/conformance.toml`:
+  listing budget, critical rules first and `@` loading.
+- Revisit the recorded `writing-skills-tdd-for-docs` deviation; a renewed
+  owner decision may reaffirm it rather than remove the discipline.
+- Verify or drop the unsupported **Why no @ links** claim that `@` links
+  immediately force-load files and consume large amounts of context
+  (`skills/writing-skills/references/discovery.md:200-202`).
+- Update the skill's Directory Structure and File Organization examples,
+  which still omit the `references/` layout that plan 72 installed.
+
+The body split, WARN removal, late-heading exception removal and associated
+test updates are done. The guide gaps and deviation remain in the register,
+so retiring v7.0.1 must not remove this residual design item from the backlog.
 
 ## New finding (v7.0.2)
 
@@ -426,9 +513,10 @@ Probe, 2026-11-07, our scripts:
   $(git rev-parse HEAD)"` (`scripts/task-start:30`): with no commit, `git
   rev-parse HEAD` prints the literal `HEAD` to stdout and its error to stderr,
   and `echo`'s exit status is what `set -e` sees. An inline execution in a new
-  project therefore starts its first task with the string `HEAD` as BASE and
-  no warning; `task-done` then refuses it at its own `:30`, after the task is
-  built. Upstream's `task-start:23-29` cannot do this: BASE is `base=$(git -C
+  project therefore starts its first task with the string `HEAD` as BASE,
+  despite git's fatal diagnostic on stderr; it does not stop or give an
+  actionable new-project message. `task-done` then refuses it at its own `:30`,
+  after the task is built. Upstream's `task-start:23-29` cannot do this: BASE is `base=$(git -C
   "$repo" rev-parse --verify HEAD)` as an assignment, behind
   `sdd-repo --with-commit`. `test_executing_plans_scripts.py:104`
   (`test_task_start_prints_head_as_base`) runs in a repository with a commit,
@@ -495,11 +583,12 @@ bundled-script-path entry (`47dc45c`) replaced the four runnable calls that
 descended from that text with the `<this-skill-dir>/scripts/…` anchor, which
 resolves to the absolute skill path and runs from the repository root. Five
 invocations carry it today (`subagent-driven-development/SKILL.md:55`, `:177`,
-`:262`; `references/final-review.md:48`; `executing-plans/SKILL.md:139`). Nine
+`:262`; `references/final-review.md:48`; `executing-plans/SKILL.md:139`). Ten
 do not: `executing-plans/SKILL.md:205` and `:259` ("this skill's
 `scripts/task-start`", "`scripts/task-done`"), `references/file-handoffs.md:10`
 and `:21`, `references/batching.md:13` and `:22`, `task-reviewer-prompt.md:306`
-and `:319`, `re-review-prompt.md:56`. `NOTICE` calls those "prose that only
+and `:319`, `re-review-prompt.md:56`, and the descriptive
+`subagent-driven-development/SKILL.md:47` mention. `NOTICE` calls those "prose that only
 names a script, or already calls it 'this skill's'", and left them; executing-plans'
 two are runnable steps, added by plan 75 from v7.0.1 text. Nothing here says to
 `cd` into the skill, and no incident has been seen, so the gap is the
@@ -520,13 +609,14 @@ carries the anchor or the phrase would hold the line that `47dc45c` drew.
   regex, the shaped-headings hint, the hidden-heading refusal with exit 4 and
   the warning. Our Global Constraints prepend (`task-brief:58-78`) is
   untouched by either. The test cases are the probe above.
-- **#2607: fix directly, no spec**, for the nine bare references, plus a lint.
+- **#2607: fix directly, no spec**, for the ten bare references, plus a lint.
   Prose only; the anchor is established text.
 - **#2602: dismissed** (Windows).
 
-No execution of these starts before the tester-seat work is sequenced. The
-owner's order from the 2026-11-07 review session was: this drift pass, then
-the brainstorm for the spec-derived tester seat, then its plan. The seat's plan
+**Reported session context, not independently verified:** the original author
+reports an owner order from a 2026-11-07 review session: this drift pass, then
+the brainstorm for the spec-derived tester seat, then its plan. No transcript
+or handoff path accompanies that report in this repository. The proposed seat's plan
 touches `task-brief` and a `task-done`-shaped helper for SDD (finding 21), so
 the helper fixes land first or the two collide in our tree.
 
@@ -581,8 +671,8 @@ file or annotates a deviation in it. Git history records what shipped, not
 what was decided against. Over several plans, the decisions not to build
 something exist nowhere.
 
-**Ours.** This is the repository's first stated difference, and it is
-complete. writing-plans' Plan Completion Protocol
+**Ours.** This is an established local mechanism, with one known gate omission
+below. writing-plans' Plan Completion Protocol
 (`skills/writing-plans/SKILL.md:286-316`): the resolve-before-defer gate
 collects the leftovers (`:292`); each deviated step gets `> Deviation: …` and
 each skipped one `> Skipped: <why> → deferred` (`:307-308`); a status line
@@ -591,12 +681,19 @@ closure condition (`:316-355`). Both executors run the protocol before deleting
 the workspace, and the gate reads the ledger, the unfixed findings and the
 rulings first (`subagent-driven-development/references/final-review.md:29-33`,
 `:45-46`, `:55`; `executing-plans/references/final-review.md:74-75`, `:85`,
-`:92`). The backlog on 2026-11-07 is 144 open and 279 closed items, a working
+`:92`). At the audited `5beacf5` baseline, the backlog is 144 open and 279
+closed items in the live file, plus 106 closed items in the archive
+(385 ever closed), a working
 record rather than a graveyard. The review's one reservation is weight: three
 scripts, markers, a commit lint, an archive migration and an aged-tail gate
 that blocks merges (finding 28) is a lot of machinery around a protocol whose
 core is three rules: tick and annotate the plan; file every deferral with a
 closure condition; never delete the ledger before filing.
+
+The existing plan 73 backlog item still records that the completion gate does
+not explicitly list **Declined to judge** lines as leftovers. Both executors
+send those lines to the partner, but the gate's wording has not been updated.
+The protocol is present; that residual is not closed by finding 20.
 
 **Disposition: already covered.** If any of it is ever sent upstream, send
 the core.
@@ -607,10 +704,11 @@ the core.
 same breath, "Do not re-run the suite to confirm their report"
 (`task-reviewer-prompt.md:64-80`). The implementer's report is the test
 evidence ("Reviewers will not re-run tests for you — your report is the test
-evidence", `implementer-prompt.md:124-125`), and the controller never runs the
-task's tests itself (`SKILL.md:283` forbids asking the reviewer to). The
-reviewer can verify the diff against the brief; it cannot verify that the
-tests passed. The mechanical gate exists only at branch finish
+evidence", `implementer-prompt.md:124-125`). The workflow does not require an
+independent controller run of the task's tests; `SKILL.md:283` forbids asking
+the reviewer to repeat the existing run, not the controller from checking.
+The reviewer can inspect the diff and reported results, but a passed run is
+not mechanically established at this gate. The mandatory mechanical gate is at branch finish
 (finishing-a-development-branch Step 1) and, for inline execution, in
 `task-done`, which writes the ledger line only when the command passes.
 
@@ -668,19 +766,20 @@ handoff recommends one with a reason drawn from the plan (finding 11).
 
 **Disposition: already covered; no action.**
 
-### 24. The Iron Law is mostly moot inside planned execution
+### 24. Planner-authored tests can share a spec misreading
 
 **Upstream.** Inside the workflow the planner has already written each test's
 name and assertions (writing-plans, "What a Step Contains"; finding 9), and the
-implementer transcribes them. TDD's RED step is then a transcription, not a
-design act, and the Iron Law (`test-driven-development/SKILL.md:31-34`) guards
-against a failure the workflow has already prevented. The risk that remains is
-the one it does not guard: tests that encode the planner's misreading of the
-spec, and an implementer that makes wrong tests pass. Review Focus and the
-reviewer's "the spec is a vision document" rule (finding 10) address spec
-silence, not spec misreading. No reviewer in either system is positioned to
-catch a misreading that landed in the tests and the code alike, because it
-passes both.
+implementer transcribes them. That reduces the implementer's test-design
+independence, but does not make TDD's RED step redundant: an assertion can
+still pass before the change or fail for the wrong reason. The Iron Law
+(`test-driven-development/SKILL.md:31-34`) checks that failure; it does not
+establish that the assertion reflects the spec. A test and implementation can
+therefore share the planner's misreading. Review Focus addresses spec silence,
+and the whole-branch reviewer can also flag a bad plan or a misread requirement.
+What neither workflow requires is a separate agent deriving execution tests
+independently from the spec. That is the supported gap, not an inability of
+existing reviewers to detect it.
 
 **Ours.** The same, and already named: `specs/deferred_items.md`'s item
 "Spec-reading test check" (recorded under findings 9 and 10). The 2026-11-07
@@ -689,7 +788,10 @@ code and another writing tests, and found it is not in the tree: our
 implementer prompt's step 2 is still "write tests", no tester agent exists in
 `agents/` or `skills/`, and no commit in the history introduced one (`git log
 -S` on test-writer and tester). The split exists only as planner-authored tests
-in the plan, which both repositories have. A second execution-time
+in the plan, which both repositories have. Our final-review handoffs also pass
+the spec path (`subagent-driven-development/references/final-review.md:17-22`;
+`executing-plans/references/final-review.md:18-25`), so the final reviewer can
+compare the implementation with the spec directly. A second execution-time
 test-writer that sees the plan's test code buys independence from the
 implementer but not from the planner, who is the party most likely to be
 wrong. The version that earns its cost is a spec-derived tester seat: after
@@ -697,8 +799,9 @@ the implementer reports DONE, a subagent that has seen the spec and the
 brief's Interfaces block but not the plan's test code writes additional
 failing tests from the spec's requirements and Review Focus; the controller
 runs them mechanically (finding 21's helper); failures enter the fix loop. A
-handoff brief for the brainstorm, with nine defaults, was written in that
-session on 2026-11-07; the brainstorm has not run.
+handoff brief for the brainstorm, with nine defaults, was reportedly written
+in that session on 2026-11-07. No artifact path or transcript is available here
+to verify the handoff or whether that brainstorm has run.
 
 **Disposition: open; the tester-seat brainstorm decides it**, after this
 drift pass and finding 18's helper fixes land. Finding 3's falsifiability
@@ -847,36 +950,42 @@ helpers and added a test that fails any relative `scripts/<helper>` reference.
 the exact class of bug #2607 named, and the new test's pattern lists only the
 five helpers, so it cannot catch this one. The 2026-10-28 text of finding 8
 already said upstream's `bash ./` prefix (#2301) does not fix resolution; v7.0.2
-confirms it. Two figures in the skill are unsourced: "95% of 'no root cause'
-cases are incomplete investigation" (`SKILL.md:275`) and the first-time fix
-rate at the end.
+confirms it. The figure "95% of 'no root cause' cases are incomplete
+investigation" (`SKILL.md:275`) is unsourced. Upstream's file ends at line 283
+and has no first-time fix-rate statistic.
 
 **Ours.** The invocation is anchored (`root-cause-tracing.md:102`:
 `<this-skill-dir>/find-polluter.sh`, plan 50), the script was hardened twice
 (finding 8), and `457fdbe` (2026-11-06) pointed the Red Flags at Phase 4,
-step 5. The two figures are kept verbatim (`SKILL.md:286`, `:305`).
+step 5. The shared 95% figure remains (`SKILL.md:286`); our retained Real-World
+Impact section also gives unsourced figures, including a first-time fix rate
+(`:305`), which upstream no longer carries.
 
 **Disposition: already covered for the path; record the figures.** The
 figures are rhetoric in a discipline skill; cutting them is a micro-tested
 change for no measured gain. No action.
 
-### 31. verification-before-completion asserts without naming the command
+### 31. verification-before-completion lacks the documented-test-command pointer
 
 **Upstream.** "If you haven't run the verification command in this message,
 you cannot claim it passes" (`SKILL.md:20`); "RUN: Execute the FULL command
-(fresh, complete)" (`:27-28`). The skill never says what the full command is,
-and the rule that answers it, the project's documented test command, lives in
-TDD since #2110 and nowhere else. The Common Failures row "Agent completed |
+(fresh, complete)" (`:27-28`). Its first gate step already says "IDENTIFY:
+What command proves this claim?" (`:26`); the Common Failures table also covers
+builds and lints, so the command depends on the claim. For a test-suite claim,
+it lacks TDD's explicit pointer to the project's documented test command
+(#2110). The Common Failures row "Agent completed |
 VCS diff shows changes | Agent reports 'success'" (`:47`) names the weakest
 evidence in the table: a diff proves that files changed, not that they are
-right, which is finding 21's hole stated as a check. The skill is all
-assertion; its only mechanical form is `task-done` and finishing's Step 1.
+right. The table separately requires tests for a "Tests pass" claim, so this
+row should not be read as a substitute for execution evidence. The proposed
+documented-command pointer is a wording improvement, not the introduction of
+command selection into a skill that has none.
 
 **Ours.** The description was broadened to the moments that matter in this
 workflow (marking a task or todo complete, moving to the next task, relaying
 a subagent's success report) and a Bottom Line section closes it; `226ab9f`
-dropped two narrative blocks upstream had removed. The command is still not
-named.
+dropped two narrative blocks upstream had removed. The claim-specific IDENTIFY
+step remains (`SKILL.md:38`); the documented-test-command pointer is absent.
 
 **Disposition: fix directly, no spec, low**: one pointer at the documented
 test command rule where "FULL command" appears, on our side. A wording change
@@ -932,23 +1041,31 @@ Under this repo's proportional-process rule:
   - Finding 18: the `task-start` no-commit guard (a defect), the no-repository
     message with exit 2 in `sdd-workspace`, `task-brief`'s ID grammar and
     hidden-fence refusal (#2604, #2605) with the probe's cases as tests, and
-    the nine bare helper references plus a `build/` lint on the anchor
+    the ten bare helper references plus a `build/` lint on the anchor
     (#2607). `-C DIR` optional.
   - Finding 28: finishing-a-development-branch Step 1 names the documented
     test command.
   - Finding 31: verification-before-completion points "FULL command" at the
     same rule, with one micro-test case.
+- **Earlier work still open:** finding 3's prospective falsifiability
+  guidance; finding 8's discard-menu consideration and optional guard-format
+  convergence; finding 17's compaction-cut probe and residual writing-skills
+  guide rewrite. The latter two retain their existing backlog items; the
+  completed splits do not close them. Findings 9–11's post-adoption review and
+  test follow-ups retain the backlog owners named above.
 - **Port candidate, a plan with micro-tests and no spec:** finding 4's #2644
   retune, applied as upstream's diff against our v7.0.1-derived copy with plan
   70's divergences held, tested against plan 70's RED baseline with the
   question-style cases re-run. The owner decides whether it runs before the
-  tester-seat brainstorm; the review session's recommendation was yes, because
-  the brainstorm's nine defaults are nine round-trips on our copy.
-- **Order (owner, 2026-11-07 session):** this drift pass; then the tester-seat
-  brainstorm (finding 24, handoff written); then its plan. Finding 18's helper
+  tester-seat brainstorm. The original author reports that recommendation
+  from a review session; the claimed saving on nine defaults is unverified.
+  Plan 70's isolated T7 rerun, rather than its original GREEN claim, is the
+  current local baseline evidence.
+- **Reported order (unverified 2026-11-07 session context):** this drift pass; then the tester-seat
+  brainstorm (finding 24, handoff reported without an artifact path); then its plan. Finding 18's helper
   fixes land before the seat's plan, since both touch `task-brief` and the
   helper finding 21 asks for.
-- **Local design items, logged in `specs/deferred_items.md`, no spec yet:**
+- **Local design proposals, not yet logged in `specs/deferred_items.md`, no spec yet:**
   finding 21 (the controller runs the task's tests before the review; one
   design with the tester seat); finding 22 (a ruling that contradicts spec
   text becomes an amendment or a deferred item); finding 26's worktree half;
@@ -958,7 +1075,7 @@ Under this repo's proportional-process rule:
   sandbox fallback; finding 30's figures; finding 32.
 - **Not adopted until the probe has run:** upstream's whole-file byte bar
   (finding 17). Three of our files now fail it and pass ours; writing-plans is
-  10 characters inside our window, so its `references/` split is the next
+  6 characters inside our window, so its `references/` split is the next
   move under either bar.
 - **Not adopted, recorded:** finding 12's basename collision (M2) and
   interpreter prefixes, finding 14, finding 15 (unchanged at v7.0.2), the
@@ -972,3 +1089,28 @@ upstream" entries are the model: name what was taken, from which release,
 and where the port deliberately diverges. When the next pass runs, update this
 document's "Next review starts from" row along with the findings, and
 re-take the anchors the helper plan and the brainstorming port move.
+
+## Verification and retirement record (2026-11-07)
+
+This pass checked upstream claims against the pinned
+[v7.0.1 → v7.0.2 comparison](https://github.com/obra/superpowers/compare/2ce8aa1...22f0b46)
+and the source files at `22f0b46`. The release delta, all thirteen upstream
+byte counts, and the main/dev tree equality were verified. The brainstorming
+evaluation figures are [upstream-reported results in #2644](https://github.com/obra/superpowers/pull/2644),
+not an independent rerun. The pressure-scenario move is
+[#2654, commit `4eb73b6`](https://github.com/obra/superpowers/commit/4eb73b6b70e66a5e1c535f4f579e720b82a3c5de);
+the originally cited `4eb1ee9` does not resolve.
+
+The local skill tree is unchanged from `5beacf5`. Fresh isolated probes
+reproduced finding 18's no-commit, task-ID and unclosed-fence behavior. Exact
+size counts, test-module counts and baseline backlog totals were recomputed.
+Review judgments about workflow costs and proposed designs remain judgments;
+the claimed 2026-11-07 handoff and owner sequencing remain unverified session
+reports. This audit implements no proposed skill or script changes.
+
+The full v7.0.1 record is retired to `specs/completed/` as a historical source,
+not marked as fully implemented. All unfinished considerations identified in
+it are carried here; already implemented and consciously declined portions
+stay historical. Earlier citations now point to that archive, and `NOTICE`'s
+next-review pointer names this file. The two duplicate unversioned/versioned
+copies no longer need to remain in the live specs directory.

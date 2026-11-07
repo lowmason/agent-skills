@@ -1404,9 +1404,10 @@ declined as YAGNI (zero instances in a one-page wiki).
   wait on a real DL/NLP target, and the synthesize-mode checks wait on their own
   plan." The items are the same two `18-methodology-pipeline-skills` items (69d:
   the DL/NLP template extension, synthesize-mode scenario verification). This
-  branch renames the superpowers drift assessment to
-  specs/superpowers-drift-spec.md and brings it to upstream v6.4.2; it touches
-  neither aged item.
+  branch renames the superpowers drift assessment to the then-unversioned
+  drift-spec filename (now archived at
+  `specs/completed/superpowers-drift-spec-v7-0-1.md`) and brings it to upstream
+  v6.4.2; it touches neither aged item.
 - 2026-10-03 — finished `claude/repo-audit-deferred-items-cc29b8` with 2 items
   aged >45d, carried on the partner's 2026-09-28 reason, which they chose again
   for this branch, verbatim: "Unrelated to this branch: the DL/NLP slots wait on

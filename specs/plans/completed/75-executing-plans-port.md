@@ -466,7 +466,7 @@ Expected: all passed, none failed.
 
 - [x] **Step 12: NOTICE**
 
-- Rewrite the clause "And there is no Native mode: this repo's executing-plans is not ported (finding 11 of specs/superpowers-drift-spec.md)." to say executing-plans was ported (below).
+- Rewrite the clause "And there is no Native mode: this repo's executing-plans is not ported (finding 11 of specs/completed/superpowers-drift-spec-v7-0-1.md)." to say executing-plans was ported (below).
 - Line 447's "at a new whole-plan review step (Step 3) in executing-plans" becomes "at executing-plans' whole-plan review (now in its `references/final-review.md`)".
 - Add a line: executing-plans was rebuilt from upstream v7.0.1 `2ce8aa1` (#2318, with #2563's cut), keeping as local: the tight-coupling routing, `.sdd/` and the `Plan:` ledger line, the refusal of another plan's ledger, the batched pre-flight question, the base-branch start record, the two-seat final review with code-reviewer and Codex, the partner's ruling on final Declined to judge lines, no Minor tier, the rulings list at the gate, the five stops with the scope fence, and the plan-completion, finishing and roadmap-handoff steps.
 - Add: upstream's evaluation repository, prime-radiant-inc/superpowers-evals, is credited as an idea only; it carries no license, and no text or fixture comes from it.
@@ -495,7 +495,7 @@ git commit -m "feat(executing-plans): port upstream v7.0.1's ledgered executor"
 **Files:**
 - Create: `specs/red-baseline-executing-plans-port/treatment/<case>/`
 - Modify: `specs/red-baseline-executing-plans-port.md`
-- Modify: `specs/superpowers-drift-spec.md` (status table rows 7, 11, 13; their section headings)
+- Modify: `specs/completed/superpowers-drift-spec-v7-0-1.md` (status table rows 7, 11, 13; their section headings)
 
 - [x] **Step 1: Build and leak-check the treatment prompts**
 
@@ -519,7 +519,7 @@ A case that misses its bar: change only the wording it tests and re-run that tas
 
 > Deviation: rows 7, 11 and 13 stay Adopted under the owner's rulings above.
 
-In `specs/superpowers-drift-spec.md`: status rows 7, 11 and 13 read `**Adopted** — plan 75`, with row 7 adding "rulings mid-run only (F7)". Section 11 and 13 headings gain `— adopted (plan 75)`. Section 7's heading keeps "partly adopted" and gains "; mid-run rulings adopted (plan 75)". Add one bold `**Adopted by plan 75 (<date>).**` line under each of the three headings, naming the files changed.
+In `specs/completed/superpowers-drift-spec-v7-0-1.md`: status rows 7, 11 and 13 read `**Adopted** — plan 75`, with row 7 adding "rulings mid-run only (F7)". Section 11 and 13 headings gain `— adopted (plan 75)`. Section 7's heading keeps "partly adopted" and gains "; mid-run rulings adopted (plan 75)". Add one bold `**Adopted by plan 75 (<date>).**` line under each of the three headings, naming the files changed.
 
 - [x] **Step 6: Check and commit**
 
@@ -527,6 +527,6 @@ Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
 
 ```bash
-git add specs/red-baseline-executing-plans-port specs/red-baseline-executing-plans-port.md specs/superpowers-drift-spec.md
+git add specs/red-baseline-executing-plans-port specs/red-baseline-executing-plans-port.md specs/completed/superpowers-drift-spec-v7-0-1.md
 git commit -m "test(specs): executing-plans port treatment arm; drift findings 7, 11, 13 adopted (plan 75)"
 ```

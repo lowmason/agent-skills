@@ -2334,7 +2334,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       → progress 2026-10-28 (superpowers drift review, branch claude/practical-hugle-86bb56):
       upstream v7.0.1 (#2565) did the subagent-driven-development half for its own copy. It
       moved seven situational parts into `references/`, each read from disk at the step that
-      needs it. Drift finding 17 (`specs/superpowers-drift-spec.md`) maps them onto our
+      needs it. Drift finding 17 (`specs/completed/superpowers-drift-spec-v7-0-1.md`) maps them onto our
       sections. They move about 11,200 characters, but pointers bring the body back to about
       20,400, so File Handoffs or Context Checkpoints must move too. Port the map and our own
       text, not upstream's files, which differ from ours in five ways that finding 17 lists.
@@ -2408,7 +2408,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       the STOP section inside the window.
 
 ## 48-compaction-late-heading-ratchet — 2026-10-16
-- [ ] Close the blind spots of the `compaction-window` heading heuristic (plan 48 review,
+- [x] Close the blind spots of the `compaction-window` heading heuristic (plan 48 review,
       reviewer recommendation; deferred at the completion gate because the spec's
       non-goals bar any change to `check_compaction_window`):
       `check_compaction_window` in `build/check_conformance.py` reports a late heading only
@@ -2423,6 +2423,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       decisions. Size: plan. Done when: each form is reported past the window, with a test
       for each, and any new match is placed or waived; or the owner records the forms as
       accepted limits.
+      → retired 2026-11-07 (drift-record reconciliation): the waiver exposure is moot. Plan 72 removed the last compaction-window exception and the CRITICAL_SPANS/ACKNOWLEDGED_LATE machinery (7c09ef3); check_compaction_window now refuses every body over 20,000 characters regardless of heading form, and conformance.toml records that any new exception must have a guard. The listed heading forms were not implemented; the unwaived body-size gate supersedes this item.
 - [x] Pin the `_late_headings` parse with a positive control (plan 48 review, reviewer
       Minor; deferred at the completion gate as unneeded today): `_late_headings` in
       `build/test_check_conformance.py` reads the heading out of the check's message with
@@ -2710,7 +2711,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
 
 - [x] Decide superpowers drift finding 7: may a plan conflict take a recorded ruling so execution
       continues, instead of stopping for the owner? (audit-3-10-26 B5, found 2026-10-03; drift
-      spec `specs/superpowers-drift-spec.md` finding 7, "Decide first", re-verified there
+      spec `specs/completed/superpowers-drift-spec-v7-0-1.md` finding 7, "Decide first", re-verified there
       2026-10-18 against upstream v7.0.0.) Today `skills/subagent-driven-development/SKILL.md`'s
       Pre-Flight Plan Review (`:149`) asks one batched question before execution, and a mid-run
       reviewer finding that conflicts with the plan's text is "the human's decision" (`:321`).
@@ -2728,7 +2729,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → done 2026-10-21 (owner decision, in conversation): rulings mid-run only. Pre-flight keeps
       its one batched question; a mid-run conflict with plan text takes a recorded `Ruling:` and the
       run continues, and upstream's four stops and the scope-fence ask still stop it. Recorded in
-      `specs/superpowers-drift-spec.md` finding 7. Findings 11 and 13 are logged as one design item
+      `specs/completed/superpowers-drift-spec-v7-0-1.md` finding 7. Findings 11 and 13 are logged as one design item
       (section `owner-calls-2026-10-21`); finding 14 stays declined.
 - [x] Open the planning-surface spec for superpowers drift findings 9 and 10 (audit-3-10-26 B5,
       found 2026-10-03; drift spec "Spec candidate, planning surface", re-verified 2026-10-18).
@@ -3386,7 +3387,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the harness branch (`:354-356`) is unreachable for it. (c) Step 6 has no path for a
       `git worktree remove` refusal (a lock, a dirty tree, untracked files); drift spec
       finding 8 records the untracked-file half as "still unhandled"
-      (`specs/superpowers-drift-spec.md:404-409`). (d) using-git-worktrees' Step 1a
+      (`specs/completed/superpowers-drift-spec-v7-0-1.md:404-409`). (d) using-git-worktrees' Step 1a
       (`skills/using-git-worktrees/SKILL.md:55-61`) sends agents to EnterWorktree with no
       caveat that a new worktree branches from `origin/<default>` and so leaves out
       unpushed commits. Fix: Step 2 (`:115-136`) records whether the session is isolated
@@ -4159,25 +4160,20 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       skills. See `specs/completed/agent-skills-portability-spec.md`, "Out of scope", and
       `NOTICE`. Size: design. Done when: each installed superpowers-derived agent carries or
       points to the superpowers notice, and `install.py` installs that notice with it.
-- [ ] Split and rewrite writing-skills against the guide (in place of plan 53's spec's
-      "Splitting writing-skills", Out of scope). `skills/writing-skills/SKILL.md`'s body is 701
-      lines, and `build/check_frontmatter.py` prints R1.7's WARN for it (a body over 500
-      lines). The work: split the body below 500 lines; close the register gaps
-      `writing-skills-guide-gaps` and `writing-skills-late-critical-headings` in
-      `build/cc_guide/conformance.toml`, whose `tracked_in` names this item (plan 53, Task 14,
-      DF20); close the deviation `writing-skills-tdd-for-docs`, whose `revisit` names it; and
-      verify or drop the skill's claim that `@` links force-load files ("Why no @ links").
-      Two tests change with the split:
-      `build/test_check_frontmatter.py::test_the_body_warning_goes_to_stderr_and_keeps_exit_zero`
-      expects writing-skills to be the one body over 500 lines, and `ACKNOWLEDGED_LATE` in
-      `build/test_check_conformance.py` names this item. The plan-48 item "Pin the
-      `_late_headings` parse with a positive control" (section
-      48-compaction-late-heading-ratchet) also names it in its revisit trigger. Deferred
-      because the split is a rewrite of the repo's meta-skill, beyond plan 53's scope. See
-      `specs/plans/completed/53-agent-skills-portability.md` (DF20, Task 14). Size: design.
-      Done when: the body is under 500 lines with no WARN, the two gaps and the deviation are
-      removed from `build/cc_guide/conformance.toml` with `build/check_conformance.py`
-      passing, and both tests are updated in the same change.
+- [ ] Split and rewrite writing-skills against the guide (residual rewrite from plan 53's
+      "Splitting writing-skills", Out of scope). Plan 72 completed the body split, removed
+      `writing-skills-late-critical-headings` and updated the body-warning test and
+      late-heading machinery; those parts are closed. The remaining work is to close
+      `writing-skills-guide-gaps` (listing budget, critical-rules-first and `@` loading) and
+      `writing-skills-tdd-for-docs` in `build/cc_guide/conformance.toml`, verify or drop the
+      force-loading claim in `skills/writing-skills/references/discovery.md` ("Why no @ links"),
+      and update SKILL.md's Directory Structure and File Organization examples to include
+      `references/`. The register still names this item. The guide-aware rewrite was beyond
+      plan 53's scope; see `specs/plans/completed/53-agent-skills-portability.md` (DF20, Task 14)
+      and `specs/superpowers-drift-spec-v7-0-2.md` finding 17's inherited follow-ups. Size: design.
+      Done when: the remaining gap and deviation are resolved in the register with
+      `build/check_conformance.py` passing, the force-loading claim is verified or removed,
+      and the directory examples describe the shipped layout.
       → progress 2026-10-20 (owner rulings D2.22 and D2.24, `/cc-guide` upkeep): two more
       inputs for the rewrite. Line 109 says the `haiku` alias means Haiku 4.5 on other
       providers; the guide says so in `subagents.models`, which the file does not cite, so add
@@ -4847,7 +4843,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       skills (`skills/executing-plans/SKILL.md`, `skills/test-driven-development/SKILL.md`,
       `skills/subagent-driven-development/SKILL.md` mid-run conflict text near `:320-324`), so
       the spec plans writing-skills' pressure-test and micro-test, and each ported change gets a
-      NOTICE change-list line. See `specs/superpowers-drift-spec.md` findings 7, 11 and 13.
+      NOTICE change-list line. See `specs/completed/superpowers-drift-spec-v7-0-1.md` findings 7, 11 and 13.
       Size: design. Done when: the spec is approved in `specs/`, or the owner records findings
       11 and 13 as declined in the drift spec.
       → done 2026-10-31 (spec approved): `specs/completed/executing-plans-port.md`, approved by the owner;
@@ -5258,22 +5254,23 @@ review and the Plan Completion gate (2026-10-27) add the others.
 
 ## superpowers-drift-v7.0.1 (no plan; drift review of upstream v7.0.1, branch claude/practical-hugle-86bb56) — 2026-10-28
 - [ ] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
-      17, `specs/superpowers-drift-spec.md`). The guide says each invoked skill keeps its first
+      17, `specs/superpowers-drift-spec-v7-0-2.md`). The guide says each invoked skill keeps its first
       5,000 tokens (`specs/guides/claude-code-customization-guide.md:128`). Upstream's #2481
       transcript shows a cut at exactly 20,000 characters, with a marker that points at the
       file. The `compaction-window` check in `build/cc_guide/conformance.toml` measures the
       body after the frontmatter, at 5,000 × 4 characters. Nobody has checked whether the cut
-      counts frontmatter or a header Claude Code adds. That matters now:
-      `skills/finishing-a-development-branch/SKILL.md` has a body of 19,970 characters, 30
-      inside the check, and its last section is Red Flags. Deferred because it needs a live
+      counts frontmatter or a header Claude Code adds. At the 2026-11-07 anchor `5beacf5`,
+      `skills/writing-plans/SKILL.md` has 19,994 body characters (6 inside the check), and
+      `skills/finishing-a-development-branch/SKILL.md` has 19,924 (76 inside); both whole files
+      exceed upstream's byte bar, as does subagent-driven-development. Deferred because it needs a live
       probe beside the others in `build/cc_guide/manifest.toml`, which costs a `claude -p` run
       with a forced compaction. Size: plan. Done when: the probe runs and records where the cut
       falls, and the register's window (and the guide, through `/cc-guide`) matches what it
       shows.
       → progress 2026-10-28 (owner decision, "I approve your recommendations"): upstream's
       whole-file byte bar is not adopted. This probe decides the measure: if the cut counts
-      the frontmatter, correct the register's window. No execution starts before plan 69's
-      execution has ended. Plan 69 adds a probe to the same `build/cc_guide/` files.
+      the frontmatter, correct the register's window.
+      → progress 2026-11-07 (drift-record reconciliation): plan 69 completed on 2026-10-28 (specs/plans/completed/69-agent-payload-probe.md), so its sequencing blocker has elapsed. The compaction-cut probe remains unimplemented; the archived v7.0.1 record supplies its history and the current v7.0.2 finding 17 carries it forward.
 - [x] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
       The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
       first as a plan without a spec. It runs after the subagent-driven-development compaction
@@ -5304,23 +5301,21 @@ review and the Plan Completion gate (2026-10-27) add the others.
 
 ## spec-reading-test-check (no plan; owner-approved local design idea from session "Obra superpowers writing-plans mechanism") — 2026-10-28
 - [ ] Spec-reading test check (local design, not an upstream finding, owner-approved
-      2026-10-28): no step from writing-plans through subagent-driven-development checks the
-      plan's test assertions against the spec. The planner writes the tests and the code
-      (`skills/writing-plans/SKILL.md:134-152`, enforced by `:167-181`). Its self-review
-      (`:185-193`) checks that each spec requirement has a task, not that the assertions match
-      the spec. The task reviewer compares the diff to the brief (`agents/task-reviewer.md:87-89`).
-      The final code-reviewer gets the plan, not the spec (`skills/executing-plans/SKILL.md:65-66`).
-      The Codex seat never sees the plan (`skills/requesting-code-review/codex-review.md:5-6`).
-      A planner's misread therefore passes every gate, and only the owner's plan review can
-      catch it. Superpowers drift findings 9 and 10 do not close it. Neither does upstream
-      v7.0.1's pre-flight scan (finding 7). It checks a task's tests against that task's
-      code, so a misread that test and code share passes it. Five layers, in the order a
-      misread can enter:
+      2026-10-28): the planner authors each task's test recipe, and the implementer writes its
+      tests and code from that recipe. No separate seat writes independent spec-derived
+      acceptance tests. A shared misreading can therefore survive passing tests. The task
+      reviewer checks the diff against the brief; since plan 73, the final code-reviewer also
+      receives the spec, plan and Review Focus and can catch a requirement misreading
+      (`skills/subagent-driven-development/references/final-review.md:17-22` and
+      `skills/executing-plans/references/final-review.md:18-25`). Review is an existing check;
+      independent test generation remains the open design question. See current superpowers
+      drift findings 21 and 24 (`specs/superpowers-drift-spec-v7-0-2.md`). The following five
+      layers were the 2026-10-28 proposal, with completed portions identified below:
       (1) Spec: owner-approved worked examples with exact values (inputs, outputs,
       boundaries). They are the only reference that no model produced. This lands in
       brainstorming, so coordinate with the brainstorming rebuild.
-      (2) Plan: adopt findings 9 and 10 as the base. They separate the code from the tests,
-      but not one reading of the spec from another.
+      (2) Plan: findings 9 and 10 were adopted by plan 73. They separate the code from the
+      tests, but not one reading of the spec from another.
       (3) Plan review: Codex writes acceptance tests from the spec and the plan's Interfaces
       blocks only, never from the plan's tests or approach lines. The owner gets a table of
       the disagreements (spec quote, plan assertion, Codex assertion). Each ruling becomes a
@@ -5330,8 +5325,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       plan test to fit its own reading.
       (5) End of run: before the final review, run the reconciled acceptance tests, which the
       implementer never saw. Triage each failure as code wrong, acceptance test wrong, or spec
-      unclear (the owner rules). Pass the spec path to code-reviewer with the plan. That part
-      is a quick fix that can land alone.
+      unclear (the owner rules). The spec-path handoff to code-reviewer already landed in
+      plan 73; independent acceptance tests and their execution have not.
       Rules: no agent resolves a disagreement between two readings. Only the owner does. Add no
       further Claude reviewers that start from the plan. Mutation testing is out of scope,
       because it measures test strength, not correctness.
@@ -5341,8 +5336,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       is the failing baseline. Then add each layer, and keep only the layers that catch
       something. The design expects Codex to share fewer errors with the planner, but nobody
       has measured that, and the probes measure it. Codex runs send the spec and the plan to
-      OpenAI, so a private project needs owner approval beyond this repository. Sequence: after
-      the owner decides findings 9 and 10. Size: design. Done when: a brainstorming spec
+      OpenAI, so a private project needs owner approval beyond this repository. Findings 9
+      and 10 are settled; this item remains a design proposal. Size: design. Done when: a brainstorming spec
       decides the layers and records the baseline probe results.
       Progress (plan 73, 2026-10-30): layer 5's spec-path handoff landed (spec D3). Both executors
       pass the spec path and the plan's Review Focus section to the final code-reviewer. The item
@@ -5369,7 +5364,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       arms on the variant and says whether the skill alone reaches a spec file. If the skill fails
       the variant, add a new item for the wording change.
       → done 2026-10-31 (/deferred quick fix): T6v run, both arms 5/5; the skill alone reaches a spec file, so no wording item (specs/red-baseline-brainstorming-2026-10-28.md, "T6 variant").
-- [x] Three wrong statements in `specs/superpowers-drift-spec.md`, found by the plan 70
+- [x] Three wrong statements in `specs/completed/superpowers-drift-spec-v7-0-1.md`, found by the plan 70
       fact-check panels (2026-10-28). Plan 70 did not write them, and the owner's correction list
       (D19) did not name them, so they stayed. Find each one by its quoted text, because line
       numbers move. (1) The "Commits since previous review" row in the Scope table says
@@ -5392,7 +5387,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       and the method paragraph no longer says "per-PR". Finding 9's anchor reads `:197-198`.
       `NOTICE` now holds five "adopted FROM upstream" entries (plans 22, 40, 50, 71 and 72), so
       "two" was deleted.
-- [x] Two gaps in tables of `specs/superpowers-drift-spec.md`, found by the same panels. Plan 70
+- [x] Two gaps in tables of `specs/completed/superpowers-drift-spec-v7-0-1.md`, found by the same panels. Plan 70
       did not cause them. (1) The "Adoption baselines" row in the Scope table names the upstream
       commit that each adoption was read at, for plans 22, 40 and 70 only. It leaves out plan 50
       (2026-10-18, findings 8, 12 and 16) and plan 60 (finding 8's untracked-file guard, taken as
@@ -5413,16 +5408,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the plan 70 fix-wave panel, 2026-10-29). The paragraph ends "Upstream has continued to move
       since; use the date and commit above as the starting point for any drift review." That sends
       every drift review back to the vendored commit `896224c`. But the row "Next review starts
-      from" in `specs/superpowers-drift-spec.md` (now `2ce8aa1`) is the moving start, and no step
+      from" in `specs/completed/superpowers-drift-spec-v7-0-1.md` (now `2ce8aa1`) is the moving start, and no step
       updates `NOTICE`. The sentence is older than plan 70, and the owner's correction list (D19)
       did not name it, so it stayed. The owner decides, because `NOTICE` is a provenance file. The
       panel that found the sentence proposed this wording: "Upstream has continued to move since.
       896224c is the vendored baseline. The "Next review starts from" row of
-      `specs/superpowers-drift-spec.md` names where the next drift review starts." Do not copy a
+      `specs/completed/superpowers-drift-spec-v7-0-1.md` names where the next drift review starts." Do not copy a
       current SHA into `NOTICE`, because no step updates it at a drift pass. Size: quick-fix. Done
       when: the owner has chosen the wording, `NOTICE` no longer sends a drift review back to
       `896224c`, and `uv run python build/check_provenance.py` passes.
-      → done 2026-10-31 (/deferred quick fix): the owner chose the panel's wording, verbatim. `NOTICE` now names `896224c` as the vendored baseline and points the next drift review to the "Next review starts from" row of `specs/superpowers-drift-spec.md`. No current SHA went into `NOTICE`. `uv run python build/check_provenance.py` passes.
+      → done 2026-10-31 (/deferred quick fix): the owner chose the panel's wording, verbatim. `NOTICE` now names `896224c` as the vendored baseline and points the next drift review to the "Next review starts from" row of `specs/completed/superpowers-drift-spec-v7-0-1.md`. No current SHA went into `NOTICE`. `uv run python build/check_provenance.py` passes.
 - [x] Eight wording edits left in the plan 70 record and drift spec after the fifth fix round
       (found by that round's light check, 2026-10-29). The subagent-driven-development cap of five
       fix rounds ended further edits. None of the eight edits changes a score, a bar or a verdict.
@@ -5456,7 +5451,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       to be within reach of those edits". (7) The limits bullet (near line 821) ends "The
       registered caveat says so." That caveat calls it "this P2 reading", a name that the
       control-arm reading also uses. Write "The registered caveat, which calls it "this P2
-      reading", says so." (8) In `specs/superpowers-drift-spec.md`, the "Done, brainstorming"
+      reading", says so." (8) In `specs/completed/superpowers-drift-spec-v7-0-1.md`, the "Done, brainstorming"
       bullet uses "registered" twice, in "the registered rules" and in "On the registered
       verdicts,". No other line of the drift spec uses the word. Delete "On the registered
       verdicts,". Then delete "registered" from "the registered rules", or say once that those
@@ -5553,7 +5548,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       beyond "reads first".
 
 ## micro-test-kit-isolation (no plan; kit fix, branch claude/what-is-next-2ccb0d) — 2026-10-29
-- [ ] Earlier micro-test kits leaked user-level context too (found while fixing plan 72's kit).
+- [x] Earlier micro-test kits leaked user-level context too (found while fixing plan 72's kit).
       Every `claude -p --tools ""` kit before plan 72's fix ran without `--setting-sources ""`.
       So the reps got the owner's output style, the output-style plugins' SessionStart hooks,
       `~/.claude/CLAUDE.md` and `~/.claude/rules/`. Kits and records that show it include
@@ -5586,6 +5581,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/red-baseline-brainstorming-2026-10-28.md`.
       → progress 2026-11-06 (owner ruling): accept T7 as a known gap near 50%, keep the text, and
       leave D17's letter reading in place. No skill text changes.
+      → done 2026-11-07 (drift-record reconciliation): the 2026-11-05 isolated reruns fulfilled the owner's Done-when-only scope. Plan 71's C3 control remains 5/5 (specs/red-baseline-sdd-compaction.md, "Re-run with the isolated kit"); plan 70's record reports each verdict and the T7 flip. The owner settled T7 and D17 on 2026-11-06 (specs/red-baseline-brainstorming-2026-10-28.md, "Owner ruling (2026-11-06)"). Plans 57, 59, 64, 65 and 67 were outside the selected rerun scope.
 
 ## backlog-protocol-design (no plan; brainstorming, branch claude/backlog-protocol-design-aa6201) — 2026-10-29
 - [ ] Split `specs/deferred_items.md` into one file per section, to cut merge conflicts
@@ -5702,6 +5698,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       compliance OK while raising the crash as Important; three X3 plans check the quoted
       wording only weakly. Size: design. Revisit if: a real run shows a reviewer grading
       polish as Important, or a plan that dropped a micro-tested text.
+      → progress 2026-11-07 (drift-record reconciliation): the reviewer wording portion is addressed: agents/code-reviewer.md, skills/requesting-code-review/code-reviewer.md and skills/subagent-driven-development/task-reviewer-prompt.md now exclude wording that does not change what the reader does, including from Declined to judge. The remaining wording and test-observation portions stay open under the existing revisit condition.
 - [x] Cosmetic wraps from plan 73's task reviews (Minors M11 and M13): the "Order matters"
       line in `skills/subagent-driven-development/references/final-review.md` is about 92
       columns; the relabeled deferred example's second line

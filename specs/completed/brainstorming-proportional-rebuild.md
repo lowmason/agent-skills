@@ -60,7 +60,7 @@ Two records on `main` (`1cd7417`) disagree about when brainstorming applies.
 The conformance register records this gap as exception `brainstorming-every-project`
 (`build/cc_guide/conformance.toml:696-704`). Its source is plan 35's audit row S-96.
 
-Superpowers drift finding 4 (`specs/superpowers-drift-spec.md`, "Brainstorming ceremony does not
+Superpowers drift finding 4 (`specs/completed/superpowers-drift-spec-v7-0-1.md`, "Brainstorming ceremony does not
 scale") found that upstream rebuilt the skill in v7.0.0. The S-96 fix rewrites the same lines that
 finding 4 redesigns, so one spec carries both. Run alone, the S-96 fix would pre-empt this design.
 
@@ -233,7 +233,7 @@ The design marked these calls as the agent's own. The owner approved each with i
 | `commands/fix-issue.md`, `runtimes/` | R2.3. |
 | `build/cc_guide/conformance.toml` | R8. |
 | `NOTICE` | R7. |
-| `specs/superpowers-drift-spec.md` | R9. |
+| `specs/completed/superpowers-drift-spec-v7-0-1.md` | R9. |
 
 ### R7. Provenance
 

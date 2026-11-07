@@ -10,7 +10,7 @@
 
 **Tech Stack:** Markdown skill text; Python 3 stdlib scripts; pytest through `uv run`; `claude -p` micro-test reps; the repo's commit lints (`build/run_commit_lints.sh`).
 
-**Spec:** `none`. The requirements are two deferred items in `specs/deferred_items.md`: "Split writing-skills along upstream v7.0.1's map" (section `superpowers-drift-v7.0.1`) and "Nothing resolves relative links inside `skills/**/references/`" (section `71-sdd-bayesian-compaction-window`). The design record for the split is drift finding 17 in `specs/superpowers-drift-spec.md` (section "17. Skill bodies run past the compaction re-attach cut", paragraph "The writing-skills move (#2564)"). Read both items and that paragraph before Task 1.
+**Spec:** `none`. The requirements are two deferred items in `specs/deferred_items.md`: "Split writing-skills along upstream v7.0.1's map" (section `superpowers-drift-v7.0.1`) and "Nothing resolves relative links inside `skills/**/references/`" (section `71-sdd-bayesian-compaction-window`). The design record for the split is drift finding 17 in `specs/completed/superpowers-drift-spec-v7-0-1.md` (section "17. Skill bodies run past the compaction re-attach cut", paragraph "The writing-skills move (#2564)"). Read both items and that paragraph before Task 1.
 
 ## Global Constraints
 
@@ -59,7 +59,7 @@
 | `build/cc_guide/conformance.toml` | remove exception `writing-skills-late-critical-headings` | 3 |
 | `build/test_check_conformance.py` | delete the placement tables and `test_real_skill_*` tests | 3 |
 | `NOTICE` | adoption entry | 3 |
-| `specs/superpowers-drift-spec.md` | finding 17 disposition | 4 |
+| `specs/completed/superpowers-drift-spec-v7-0-1.md` | finding 17 disposition | 4 |
 
 ---
 
@@ -709,7 +709,7 @@ Expected:
 - `build/run_commit_lints.sh`: replace the line `run critical_placement bash -c 'cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill'` with `run check_links uv run python build/check_links.py`, and delete the `run check_links …` line that Task 1 added after `run versions_check …`.
 - `build/test_commit_lints.py`: in `CHECKS`, delete `'critical_placement', ` and move `'check_links'` to its place, so the set reads `{'check_frontmatter', 'check_provenance', 'check_snippets', 'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint', 'check_links', 'suite_registry', 'versions_check'}` (keep the file's three-line layout). Delete `test_late_heading_in_acknowledged_file_is_refused` (D6). In `test_broken_reference_link_is_refused`'s docstring, change `The eleventh lint` to `The eighth lint`.
 - `CLAUDE.md`: in the commit-lint sentence, delete `the placement tests (below),` and re-wrap so the sentence reads `… the drift lint (cli.py lint, below), the link check (check_links.py, below) and the versions check (versions.py check, below). build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled`. Then delete the "Critical-section placement" block: its four comment lines (`# Critical-section placement: compaction-window exceptions waive per file, …` through `… retire this lint and these tests with it`), its command line `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill`, and one of the blank lines around it.
-- Sweep for leftovers. Hits are expected only in `specs/` history, `specs/deferred_items.md`, `specs/superpowers-drift-spec.md` and this plan, which the filter drops:
+- Sweep for leftovers. Hits are expected only in `specs/` history, `specs/deferred_items.md`, `specs/completed/superpowers-drift-spec-v7-0-1.md` and this plan, which the filter drops:
 
 ```bash
 grep -rn -E 'critical_placement|ACKNOWLEDGED_LATE|CRITICAL_SPANS|test_real_skill|writing-skills-late-critical-headings' . -I --exclude-dir=.git --exclude-dir=completed | grep -v -E '^\./specs/(deferred_items\.md|superpowers-drift-spec\.md|plans/72-writing-skills-split\.md)'
@@ -765,7 +765,7 @@ Record this commit's short SHA in the ledger as `T3_SHA`.
 
 **Files:**
 - Create: rep outputs under `specs/red-baseline-writing-skills-split/<arm>/`
-- Modify: `specs/red-baseline-writing-skills-split.md`, `specs/superpowers-drift-spec.md`
+- Modify: `specs/red-baseline-writing-skills-split.md`, `specs/completed/superpowers-drift-spec-v7-0-1.md`
 - Modify only if a bar is missed: the pointer texts in `skills/writing-skills/SKILL.md`
 
 **Interfaces:**
@@ -805,7 +805,7 @@ If a `t3` case misses its bar on a model: tighten that case's pointer wording in
 
 - [x] **Step 4: Update drift finding 17's disposition**
 
-In `specs/superpowers-drift-spec.md`, under `## Suggested disposition`, replace the bullet that starts `- **Fix directly, no spec, after the SDD plan:** finding 17's writing-skills` (through `…stays a spec candidate.`) with:
+In `specs/completed/superpowers-drift-spec-v7-0-1.md`, under `## Suggested disposition`, replace the bullet that starts `- **Fix directly, no spec, after the SDD plan:** finding 17's writing-skills` (through `…stays a spec candidate.`) with:
 
 ```markdown
 - **Done, writing-skills half of finding 17:** through plan 72 (2026-10-29).
@@ -824,7 +824,7 @@ In the same file's Scope table, the "Adoption baselines" row ends with `` `2ce8a
 - [x] **Step 5: Commit**
 
 ```bash
-git add specs/red-baseline-writing-skills-split.md specs/red-baseline-writing-skills-split specs/superpowers-drift-spec.md
+git add specs/red-baseline-writing-skills-split.md specs/red-baseline-writing-skills-split specs/completed/superpowers-drift-spec-v7-0-1.md
 git commit -m "test(writing-skills): plan 72 micro-test results and finding 17 disposition"
 ```
 

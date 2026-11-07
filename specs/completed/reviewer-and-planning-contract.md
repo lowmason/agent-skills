@@ -415,7 +415,7 @@ On completion, the plan-completion protocol does these things:
   removed.
 - Adds a note to the "Spec-reading test check" item: layer 5's spec-path handoff landed (D3).
   The item stays open.
-- Updates the drift spec (`specs/superpowers-drift-spec.md`): the status lines of findings 9
+- Updates the drift spec (`specs/completed/superpowers-drift-spec-v7-0-1.md`): the status lines of findings 9
   and 10, and the "Spec candidate, planning surface" bullet under "Suggested disposition".
   The design branch does not edit that file. The execution branch does, from the drift spec
   as it stands on main at that time.

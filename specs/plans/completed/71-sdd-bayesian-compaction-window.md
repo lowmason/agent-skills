@@ -10,7 +10,7 @@
 
 **Tech Stack:** Markdown skill text; Python 3 stdlib scripts; `claude -p` micro-test reps; the repo's commit lints (`build/run_commit_lints.sh`); pytest through `uv run`.
 
-**Spec:** `none`. The requirements are two deferred items in `specs/deferred_items.md`: "Fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window" (section `46-sdd-bundle`) and "Three subagent-driven-development decisions, outside the register". The design record for the subagent-driven-development half is drift finding 17 in `specs/superpowers-drift-spec.md` (section "17. Skill bodies run past the compaction re-attach cut"). Read both items and finding 17 before Task 1.
+**Spec:** `none`. The requirements are two deferred items in `specs/deferred_items.md`: "Fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window" (section `46-sdd-bundle`) and "Three subagent-driven-development decisions, outside the register". The design record for the subagent-driven-development half is drift finding 17 in `specs/completed/superpowers-drift-spec-v7-0-1.md` (section "17. Skill bodies run past the compaction re-attach cut"). Read both items and finding 17 before Task 1.
 
 ## Global Constraints
 
@@ -66,7 +66,7 @@
 | `build/test_check_conformance.py` | empty `CRITICAL_SPANS` | 5 |
 | `build/test_commit_lints.py` | replace `test_late_critical_section_is_refused` | 5 |
 | `CLAUDE.md`, `build/CLAUDE.md` | placement block text | 5 |
-| `specs/superpowers-drift-spec.md` | finding 17 disposition | 5 |
+| `specs/completed/superpowers-drift-spec-v7-0-1.md` | finding 17 disposition | 5 |
 
 ---
 
@@ -785,7 +785,7 @@ git commit -m "refactor(bayesian-workflow): move situational sections into refer
 ### Task 5: Remove exception `skill-body-past-compaction`
 
 **Files:**
-- Modify: `build/cc_guide/conformance.toml:682-694`, `build/test_check_conformance.py:1140-1143`, `build/test_commit_lints.py:163-182`, `CLAUDE.md:107-110`, `build/CLAUDE.md`, `specs/superpowers-drift-spec.md`
+- Modify: `build/cc_guide/conformance.toml:682-694`, `build/test_check_conformance.py:1140-1143`, `build/test_commit_lints.py:163-182`, `CLAUDE.md:107-110`, `build/CLAUDE.md`, `specs/completed/superpowers-drift-spec-v7-0-1.md`
 
 **Interfaces:**
 - Consumes: both bodies within the size gate (Tasks 3 and 4).
@@ -859,7 +859,7 @@ In `build/CLAUDE.md`, find each sentence that names `skill-body-past-compaction`
 
 - [x] **Step 6: Update drift finding 17's disposition**
 
-In `specs/superpowers-drift-spec.md`, under `## Suggested disposition`, replace the bullet that starts `- **Fix directly, no spec, through an open deferred item:** finding 17's SDD` (through `…prior art for it.`) with:
+In `specs/completed/superpowers-drift-spec-v7-0-1.md`, under `## Suggested disposition`, replace the bullet that starts `- **Fix directly, no spec, through an open deferred item:** finding 17's SDD` (through `…prior art for it.`) with:
 
 ```markdown
 - **Done, SDD half of finding 17:** through plan 71 (2026-10-29). Our own text
@@ -889,7 +889,7 @@ Expected: every lint passes; the three suites pass (skips only for the empty-`CR
 - [x] **Step 8: Commit**
 
 ```bash
-git add build/cc_guide/conformance.toml build/test_check_conformance.py build/test_commit_lints.py CLAUDE.md build/CLAUDE.md specs/superpowers-drift-spec.md
+git add build/cc_guide/conformance.toml build/test_check_conformance.py build/test_commit_lints.py CLAUDE.md build/CLAUDE.md specs/completed/superpowers-drift-spec-v7-0-1.md
 git commit -m "chore(conformance): remove skill-body-past-compaction now both bodies fit the window"
 ```
 

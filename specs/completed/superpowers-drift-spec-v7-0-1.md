@@ -1,10 +1,10 @@
 # Superpowers drift assessment
 
-**Status:** findings only. No skill files were edited. This document exists to
-decide *what, if anything, becomes a spec*.
+**Status: RETIRED (2026-11-07)** — historical v7.0.1 assessment; current review:
+[v7.0.2](../superpowers-drift-spec-v7-0-2.md). Retained findings are sources, not completed work.
 
-It is a living record: each review re-baselines it in place rather than adding a
-dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for every
+This is the archived full record; v7.0.2 carries its open findings forward.
+This revision (2026-10-28) brings it to upstream v7.0.1 for every
 skill except brainstorming. It re-takes the line anchors of the findings it
 edits (8, 9, 10, 11, 14, 15 and the new 17) and of the method section's example.
 Plan 70 (2026-10-28) re-baselined finding 4 (brainstorming) to v7.0.1
@@ -566,7 +566,7 @@ planted-defect probe is a ready bar.
 assertions against the spec, and this finding adds none. The planner still
 writes the tests and the code, so a planner's misread of the spec passes every
 later gate. A local design for that gap, not an upstream finding, is deferred
-in `specs/deferred_items.md`, item "Spec-reading test check".
+in `specs/deferred_items.md`, → item: "Spec-reading test check".
 
 ### 10. Reviewers grade the spec's silence, not the user's experience — adopted (plan 73)
 

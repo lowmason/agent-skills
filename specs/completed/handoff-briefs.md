@@ -112,7 +112,7 @@ Decisions 1–11 were settled with the owner on 2026-10-04, and 12–18 on
    - *Rejected:* a named re-entry procedure, which repeats B1's receiver logic.
    - *Rejected:* bringing readiness triage into scope.
 3. **Absorb the superpowers-drift pieces that are the same mechanism.** From
-   `specs/superpowers-drift-spec.md` this spec takes:
+   `specs/completed/superpowers-drift-spec-v7-0-1.md` this spec takes:
    - finding 8's plan-header `Spec:` pointer (`:278`);
    - the handoff half of finding 11, upstream's partner plan-review stage
      (`:435`).
@@ -273,7 +273,7 @@ skills/derive-roadmap/
   SKILL.md                         modified: R7.3-R7.4, R4.9
   references/roadmap-format.md     modified: R7.5
 NOTICE, CLAUDE.md, README.md       modified: R6.1-R6.3, R7.7
-specs/superpowers-drift-spec.md    modified: R6.5
+specs/completed/superpowers-drift-spec-v7-0-1.md    modified: R6.5
 ```
 
 ### R1 — Entry check (C1)
@@ -667,7 +667,7 @@ C5's own mentions follow R7.7. Neither `install.py`'s
 `DEPENDENCIES` nor `SOFT_REFERENCES` changes, and the dependency-drift test
 confirms it.
 
-**R6.5** `specs/superpowers-drift-spec.md` is updated:
+**R6.5** `specs/completed/superpowers-drift-spec-v7-0-1.md` is updated:
 
 - finding 8's `Spec:` pointer and finding 11's handoff half are marked adopted
   by this spec's plan;

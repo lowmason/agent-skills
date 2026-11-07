@@ -103,7 +103,7 @@ The owner approved D5–D13 at plan review with "Approve all nine defaults as re
 
 - **D5** (owner, plan review, 2026-10-21): Instruction-level ban. The probe runs, but the session's instructions say to stay in the worktree (the desktop app's notes do). Then Step 2 records MAIN_GIT `ask`, and Option 1 or 4 asks the partner before running git in the main checkout. A yes takes the `allowed` path and a no the `blocked` path. Options 2 and 3 never ask. Applied in: Task 2 (Steps 1 and 3), scenario S4.
 - **D6** (owner, plan review, 2026-10-21): A control that already passes. writing-skills says to stop when the no-guidance control shows no failure. Here, factual corrections ship even when the control passes: the Step 2 commands, the exit path, ownership, and the Step 1a base check (S1–S4, S9). So does the refusal rule, which is the owner's instruction (S5, S6). The record says "not shown necessary" for those. If the control passes 5 of 5 on S8 (the Step 4b offer), Task 1 stops for the owner, because that rule is neither a fact nor an owner's instruction. Applied in: Task 1 (Steps 6 and 11).
-- **D7** (owner, plan review, 2026-10-21): Upstream credit for the refusal rule. Finding 8 of `specs/superpowers-drift-spec.md` records that upstream stops, names the files and asks when untracked files block a removal, read at `bb92a77` (v7.0.0). The rule is written here. NOTICE credits upstream's idea and takes no upstream text. No new read of upstream. Applied in: Task 2 (Step 8).
+- **D7** (owner, plan review, 2026-10-21): Upstream credit for the refusal rule. Finding 8 of `specs/completed/superpowers-drift-spec-v7-0-1.md` records that upstream stops, names the files and asks when untracked files block a removal, read at `bb92a77` (v7.0.0). The rule is written here. NOTICE credits upstream's idea and takes no upstream text. No new read of upstream. Applied in: Task 2 (Step 8).
 - **D8** (owner, plan review, 2026-10-21): Test scope. Decision-only micro-tests only, with pressure (time, git's own `--force` hint) written into the fixtures. There is no separate multi-turn pressure-scenario run, which writing-skills calls the final gate for discipline skills. The two items ask for micro-tests. Applied in: Global Constraints, Tasks 1 and 5.
 - **D9** (owner, plan review, 2026-10-21): Coverage gap. No `# cc-guide:` line on either skill. The worktree facts go to the owner at completion as an R4.3 coverage gap. Applied in: Global Constraints, Task 5 (Step 5).
 - **D10** (owner, plan review, 2026-10-21): Step 4b section name. Step 4b appends under a new section, `## <name> Step 4b review — <YYYY-MM-DD>`. `<name>` is the executed plan's file name without `.md`, or the branch name when no plan ran. It is a separate section even when the protocol wrote one for the plan that day. The em dash lets `deferred_stats.py` date it. Applied in: Task 3 (Step 1).
@@ -1099,7 +1099,7 @@ In `NOTICE`, after the line `    (specs/completed/agent-skills-portability-spec.
     worktree only when this session made it. When `git worktree remove`
     refuses, Step 6 names the cause and asks, with no `--force` and no
     unlock. Upstream at bb92a77 (v7.0.0) also stops and asks when untracked
-    files block a removal, as finding 8 of specs/superpowers-drift-spec.md
+    files block a removal, as finding 8 of specs/completed/superpowers-drift-spec-v7-0-1.md
     records. That idea is credited here, and no upstream text was taken.
 ```
 

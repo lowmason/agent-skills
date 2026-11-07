@@ -12,7 +12,7 @@
 
 **Spec:** `specs/completed/brainstorming-proportional-rebuild.md` (approved 2026-10-28).
 
-> **Execution base.** The spec and this plan exist only on the local, unpushed branch `claude/objective-booth-e14bb4`, which also carries `main` at `ffc521d` (the v7.0.1 drift review, pushed to `origin/main` on 2026-10-28). An execution worktree, which usually branches from `origin/main`, must contain that branch: merge `refs/heads/claude/objective-booth-e14bb4` into it first, and confirm `specs/plans/70-brainstorming-proportional-rebuild.md` and `specs/brainstorming-proportional-rebuild.md` both exist, and that `specs/superpowers-drift-spec.md` has `### 17. Skill bodies run past the compaction re-attach cut`. Never execute on `main`.
+> **Execution base.** The spec and this plan exist only on the local, unpushed branch `claude/objective-booth-e14bb4`, which also carries `main` at `ffc521d` (the v7.0.1 drift review, pushed to `origin/main` on 2026-10-28). An execution worktree, which usually branches from `origin/main`, must contain that branch: merge `refs/heads/claude/objective-booth-e14bb4` into it first, and confirm `specs/plans/70-brainstorming-proportional-rebuild.md` and `specs/brainstorming-proportional-rebuild.md` both exist, and that `specs/completed/superpowers-drift-spec-v7-0-1.md` has `### 17. Skill bodies run past the compaction re-attach cut`. Never execute on `main`.
 >
 > **Quarantine.** This plan holds the frozen conversations, the prompts and the pass rules. Quarantine it, with the record and its folder, during any later micro-test of brainstorming.
 
@@ -1195,7 +1195,7 @@ Set the Status line to `Complete: RED, pressure test, GREEN and trigger test.` C
 
 **Files:**
 - Modify: `NOTICE` (one new entry at the end of the superpowers "Changes from upstream" list, before the line `    brainstorming/`)
-- Modify: `specs/superpowers-drift-spec.md` (the revision note, two scope-table rows, status row 4, finding 4, the disposition bullet)
+- Modify: `specs/completed/superpowers-drift-spec-v7-0-1.md` (the revision note, two scope-table rows, status row 4, finding 4, the disposition bullet)
 - Modify: `README.md:15`
 - Modify: `commands/fix-issue.md:16`
 - Modify, generated: `runtimes/gemini/commands/fix-issue.toml`
@@ -1253,7 +1253,7 @@ Set the Status line to `Complete: RED, pressure test, GREEN and trigger test.` C
 
   > Deviation: This note describes the entry at the end of Task 6 (`6060e95`). The plan said to write Twelve and keep its template text. D16 made it Thirteen, added "with one wording change noted below" to "Upstream's examples stay", and added three sentences on the GREEN-round changes. Four fix rounds, each after a fact-check panel, rewrote six template sentences and added others. Task 8 (`a8e1832`) and the final fix wave (`c780573`) later changed two more template sentences.
 
-- [x] **Step 3: The drift spec** (R9, as D11 amends it). Five exact replacements in `specs/superpowers-drift-spec.md`, each old text found once, with `<YYYY-MM-DD>` and `<run-date>` filled in. The line numbers are those before any edit, in the file as merged from local `main` at `ffc521d`:
+- [x] **Step 3: The drift spec** (R9, as D11 amends it). Five exact replacements in `specs/completed/superpowers-drift-spec-v7-0-1.md`, each old text found once, with `<YYYY-MM-DD>` and `<run-date>` filled in. The line numbers are those before any edit, in the file as merged from local `main` at `ffc521d`:
 
   1. The revision note (lines 7-10). Old:
 
@@ -1331,7 +1331,7 @@ every skill except brainstorming. Plan 70 (<YYYY-MM-DD>) re-baselined finding 4
   Then replace all of finding 4, from its heading `### 4. Brainstorming ceremony does not scale — open; upstream rebuilt the skill` (line 219) up to the blank line before `### 5. Every task gets its own dispatch — adopted` (line 322), with the block between the `finding4:begin` and `finding4:end` markers below. Run, with both dates filled in:
 
 ```bash
-uv run python -c "import pathlib, sys; plan = pathlib.Path('specs/plans/70-brainstorming-proportional-rebuild.md').read_text(); new = plan.split('<!-- finding4:begin -->\n\`\`\`\`markdown\n', 1)[1].split('\n\`\`\`\`\n<!-- finding4:end -->', 1)[0].replace('<YYYY-MM-DD>', sys.argv[1]).replace('<run-date>', sys.argv[2]); f = pathlib.Path('specs/superpowers-drift-spec.md'); t = f.read_text(); a = t.index('### 4. Brainstorming ceremony does not scale'); b = t.index('### 5. Every task gets its own dispatch'); assert t.count('### 4. Brainstorming ceremony') == 1; f.write_text(t[:a] + new + '\n\n' + t[b:])" <YYYY-MM-DD> <run-date>
+uv run python -c "import pathlib, sys; plan = pathlib.Path('specs/plans/70-brainstorming-proportional-rebuild.md').read_text(); new = plan.split('<!-- finding4:begin -->\n\`\`\`\`markdown\n', 1)[1].split('\n\`\`\`\`\n<!-- finding4:end -->', 1)[0].replace('<YYYY-MM-DD>', sys.argv[1]).replace('<run-date>', sys.argv[2]); f = pathlib.Path('specs/completed/superpowers-drift-spec-v7-0-1.md'); t = f.read_text(); a = t.index('### 4. Brainstorming ceremony does not scale'); b = t.index('### 5. Every task gets its own dispatch'); assert t.count('### 4. Brainstorming ceremony') == 1; f.write_text(t[:a] + new + '\n\n' + t[b:])" <YYYY-MM-DD> <run-date>
 ```
 
 <!-- finding4:begin -->
@@ -1397,7 +1397,7 @@ and trigger test, all newly written.
 ````
 <!-- finding4:end -->
 
-  Check: `grep -c 'adopted (plan 70)' specs/superpowers-drift-spec.md` prints `1`, `grep -n '### 5. Every task' specs/superpowers-drift-spec.md` still finds finding 5, and no `<YYYY-MM-DD>` or `<run-date>` slot is left in the file (`grep -c -F -e '<YYYY-MM-DD>' -e '<run-date>' specs/superpowers-drift-spec.md NOTICE` prints `0` for each).
+  Check: `grep -c 'adopted (plan 70)' specs/completed/superpowers-drift-spec-v7-0-1.md` prints `1`, `grep -n '### 5. Every task' specs/completed/superpowers-drift-spec-v7-0-1.md` still finds finding 5, and no `<YYYY-MM-DD>` or `<run-date>` slot is left in the file (`grep -c -F -e '<YYYY-MM-DD>' -e '<run-date>' specs/completed/superpowers-drift-spec-v7-0-1.md NOTICE` prints `0` for each).
 
   > Deviation: At the end of Task 6 (`6060e95`), replacements 2 to 5 matched the plan, and Task 6's fix rounds had reworded replacement 1. A controller ruling added a sentence to the divergence list. Four fix rounds reworked finding 4. Its last line points to "New finding (v7.0.1)", not to finding 17 as D11 says. Task 8, the final fix wave and the retirement commit later changed finding 4. Only the final fix wave changed the Done bullet (replacement 5).
 
@@ -1416,7 +1416,7 @@ git diff --stat runtimes/
 - [x] **Step 6: Commit.**
 
 ```bash
-git add NOTICE specs/superpowers-drift-spec.md README.md commands/fix-issue.md runtimes/gemini/commands/fix-issue.toml
+git add NOTICE specs/completed/superpowers-drift-spec-v7-0-1.md README.md commands/fix-issue.md runtimes/gemini/commands/fix-issue.toml
 git commit -m "docs: record the brainstorming v7.0.1 rebase in NOTICE, the drift spec, README and /fix-issue"
 ```
 

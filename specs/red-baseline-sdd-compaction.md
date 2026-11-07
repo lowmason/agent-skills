@@ -455,7 +455,7 @@ Pilot spend: $0.011.
 - The verdict holds when the isolated control again scores 4 of 5 or better. It flips when the
   control scores 3 of 5 or worse.
 - A flip is reported as "flip on n=5, not confirmed". No extra reps run. No skill text changes.
-  A flip would also make the shipped sentence at `specs/superpowers-drift-spec.md:1091-1094`
+  A flip would also make the shipped sentence at `specs/completed/superpowers-drift-spec-v7-0-1.md:1091-1094`
   doubtful. That sentence says the recovery line was dropped because the control already
   recovered. This record would name it and not edit it.
 - Scoring is by hand, from the full reply. One reader scores all five reps and knows the
@@ -485,7 +485,7 @@ C3 control, isolated: 5/5 pass. The first run scored 5/5. The bar is 4 of 5 or b
 rule still fires.
 
 **Verdict: holds.** Ruling (3), the recovery line, stays dropped (D3). No flip, so the sentence at
-`specs/superpowers-drift-spec.md:1091-1094` needs no change.
+`specs/completed/superpowers-drift-spec-v7-0-1.md:1091-1094` needs no change.
 
 Why the control recovers, read from the prompt and not from the replies: the `SKILL.md` body at
 `618e31d` already carries both pointers. Line 172 of `t1/C3.txt` says "Before every fix round, read

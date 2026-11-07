@@ -9,7 +9,7 @@ the 2026-09-03 completion gate.
 Adopt four changes from superpowers v6.1.0–v6.3.0 into
 `skills/subagent-driven-development`, its three dispatch scripts, and its two
 reviewer templates. Sources and per-claim verification are in
-`specs/superpowers-drift-spec.md` (findings 1, 2, 5, 6; the file was
+`specs/completed/superpowers-drift-spec-v7-0-1.md` (findings 1, 2, 5, 6; the file was
 `specs/superpowers-drift-2026-09-03.md` when this spec was written); this spec is
 self-sufficient and does not require reading it.
 

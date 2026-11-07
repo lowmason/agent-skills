@@ -4403,7 +4403,7 @@ git add skills/writing-plans/scripts/entry_check.py skills/writing-plans/scripts
 **Files:**
 - Modify: `skills/writing-plans/SKILL.md:71`, `:160-184`
 - Modify: `NOTICE` (the superpowers change list)
-- Modify: `specs/superpowers-drift-spec.md` (row 8, finding 8, Suggested disposition)
+- Modify: `specs/completed/superpowers-drift-spec-v7-0-1.md` (row 8, finding 8, Suggested disposition)
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks.
@@ -4501,7 +4501,7 @@ In `NOTICE`, add this bullet as the last item of the superpowers "Changes from u
 
 - [x] **Step 5: Mark finding 8's pointer adopted (spec R6.5)**
 
-In `specs/superpowers-drift-spec.md`, make three replacements.
+In `specs/completed/superpowers-drift-spec-v7-0-1.md`, make three replacements.
 
 Replace:
 
@@ -4571,7 +4571,7 @@ with:
 Run the gate block. Then:
 
 ```bash
-git add skills/writing-plans/SKILL.md NOTICE specs/superpowers-drift-spec.md && [ "$(git branch --show-current)" = feat/handoff-briefs ] && git commit -m "feat(writing-plans): add the Spec pointer and drop the tier premise"
+git add skills/writing-plans/SKILL.md NOTICE specs/completed/superpowers-drift-spec-v7-0-1.md && [ "$(git branch --show-current)" = feat/handoff-briefs ] && git commit -m "feat(writing-plans): add the Spec pointer and drop the tier premise"
 ```
 
 ### Task 10: writing-plans, the Entry Check section (C1)
@@ -4683,7 +4683,7 @@ git add skills/writing-plans/SKILL.md NOTICE && [ "$(git branch --show-current)"
 **Files:**
 - Modify: `skills/writing-plans/SKILL.md`: the template; a new section before `## Scope Check`; the Execution Handoff
 - Modify: `NOTICE` (Task 9's adoption bullet; GO only)
-- Modify: `specs/superpowers-drift-spec.md` (finding 11, Suggested disposition)
+- Modify: `specs/completed/superpowers-drift-spec-v7-0-1.md` (finding 11, Suggested disposition)
 
 **Interfaces:**
 - Consumes:
@@ -4877,12 +4877,12 @@ with:
     A decision that changes the spec becomes a tagged amendment task,
     never an edit made during planning. And there is no Native mode:
     this repo's executing-plans is not ported (finding 11 of
-    specs/superpowers-drift-spec.md).
+    specs/completed/superpowers-drift-spec-v7-0-1.md).
 ````
 
 - [x] **Step 6: Mark finding 11's handoff half adopted (spec R6.5)**
 
-In `specs/superpowers-drift-spec.md`, make three replacements.
+In `specs/completed/superpowers-drift-spec-v7-0-1.md`, make three replacements.
 
 Replace:
 
@@ -4933,7 +4933,7 @@ Go to Step 8.
 
 - [x] **Step 7: NO-GO only, record finding 11's handoff half as not adopted (spec R6.5)**
 
-In `specs/superpowers-drift-spec.md`, replace:
+In `specs/completed/superpowers-drift-spec-v7-0-1.md`, replace:
 
 ````markdown
 saved plan before anything runs. It offers Subagent-driven and Native, says what
@@ -4954,13 +4954,13 @@ adopted (`<record>`, C2); the executing-plans port below stays open.
 Run the gate block. Then commit. On GO:
 
 ```bash
-git add skills/writing-plans/SKILL.md NOTICE specs/superpowers-drift-spec.md && [ "$(git branch --show-current)" = feat/handoff-briefs ] && git commit -m "feat(writing-plans): log decisions and review the plan before execution"
+git add skills/writing-plans/SKILL.md NOTICE specs/completed/superpowers-drift-spec-v7-0-1.md && [ "$(git branch --show-current)" = feat/handoff-briefs ] && git commit -m "feat(writing-plans): log decisions and review the plan before execution"
 ```
 
 On NO-GO:
 
 ```bash
-git add specs/superpowers-drift-spec.md && [ "$(git branch --show-current)" = feat/handoff-briefs ] && git commit -m "docs(specs): record finding 11's handoff half as not adopted"
+git add specs/completed/superpowers-drift-spec-v7-0-1.md && [ "$(git branch --show-current)" = feat/handoff-briefs ] && git commit -m "docs(specs): record finding 11's handoff half as not adopted"
 ```
 
 ### Task 12: GREEN, Phase 1 (owner)
@@ -6313,7 +6313,7 @@ Expected: `leave-alone-ok`, then only paths from this list:
 - `skills/subagent-driven-development/SKILL.md`;
 - `skills/writing-plans/SKILL.md`, `skills/writing-plans/scripts/entry_check.py`, `skills/writing-plans/scripts/test_entry_check.py`;
 - `specs/red-baseline-handoff-briefs-<date>.md`;
-- `specs/superpowers-drift-spec.md`.
+- `specs/completed/superpowers-drift-spec-v7-0-1.md`.
 
 Any other path is a finding for your human partner.
 

@@ -15,7 +15,7 @@ is outside this repository and does not gate the plan.
 
 This spec settles one backlog item: "Write the executing-plans port spec"
 (`specs/deferred_items.md`, section `owner-calls-2026-10-21`). It covers three findings of
-`specs/superpowers-drift-spec.md`, the record of upstream changes to the 13 skills that this
+`specs/completed/superpowers-drift-spec-v7-0-1.md`, the record of upstream changes to the 13 skills that this
 repository adapts from Jesse Vincent's superpowers (MIT).
 
 1. **Finding 11.** Upstream v6.4.1 (obra/superpowers PR #2318) rebuilt executing-plans. The
@@ -423,7 +423,7 @@ plans 71 and 72 did (`specs/red-baseline-sdd-compaction/kit/check_moved_lines.py
 Read `NOTICE` before building. Its superpowers change list needs these edits:
 
 - **Rewrite** the clause "And there is no Native mode: this repo's executing-plans is not
-  ported (finding 11 of specs/superpowers-drift-spec.md)" (`NOTICE`, near line 470).
+  ported (finding 11 of specs/completed/superpowers-drift-spec-v7-0-1.md)" (`NOTICE`, near line 470).
 - **Add** a line: executing-plans was rebuilt from upstream's v7.0.1 `2ce8aa1` (#2318, with
   #2563's cut), keeping the local parts listed in this spec's table above.
 - **Add** a line: `scripts/task-start` and `scripts/task-done` adapt upstream's scripts at
