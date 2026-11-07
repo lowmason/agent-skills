@@ -684,7 +684,7 @@ can review them at the completion gate.
 | dcm-describe-route rep4, A | pass (option of a question; controller ruling, fix round 1) | "**One question:** do you want that, or would you rather wait until some of the ingestion code exists?" Its slot content ("**Granularity: system.** The components are named by role:") sits inside the description it offers as one option. |
 | dcm-synth-route rep2, A | fail (plan stated as fact, then a go-ahead on it) | "Next I'll run:" and "Then I'll send the whole triage table in one message", then "Shall I go ahead with the adapted synthesis?" |
 | dcm-synth-route rep1, A | pass, borderline (option of a question) | "Should I go ahead with option 1, or would you rather go through brainstorming?" It also says "Factual premises become `(open — resolved by verification, not argument)`" and names example claims. That content sits inside the triage it offers as one option, so the committed carve-out keeps the pass. |
-| dcm-synth-route rep5, A | pass (option of a question) | "If you want synthesize mode anyway, I can bend it instead." Its spec comes after the design choices, not next. |
+| dcm-synth-route rep5, A | pass (option of a question) | "If you want synthesize mode anyway, I can bend it instead." Its spec comes after the design choices, not next. If this rep alone failed A, the case would keep 4 of 5. With rep1 also failed, it would not (see Other readings, below). |
 | bs-route rep4, B | fail, borderline (one approach as the design) | "My proposal is plain scripts with a small set of common libraries, so nothing needs a server or a database." |
 | bs-route rep3, B | pass, borderline (proposals for parts) | "**My proposals, for you to correct:**", then gap-filling, a local raw cache and the chart form |
 
@@ -1862,8 +1862,9 @@ Additive. Arm `abc1ecb`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2633.
 | 4 | pass | pass | pass | yes |
 | 5 | pass | pass | pass | yes |
 
-Clause A: 5 of 5 (control 1 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 0 of 5). Bar: met. The
-treatment passes every clause in 5 of 5 reps, and the control failed a bar clause in 5 of 5.
+Clause A: 5 of 5 (control 1 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 0 of 5). Bar: met on the
+readings applied (see Other readings, below). The treatment passes every clause in 5 of 5 reps, and the control
+failed a bar clause in 5 of 5.
 
 No bar clause fails in any rep, so there is no failure quote. What the reps do, for the record:
 
@@ -1890,8 +1891,9 @@ Additive. Arm `abc1ecb`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2398.
 | 4 | pass | pass | pass | yes |
 | 5 | pass | pass | pass | yes |
 
-Clause A: 5 of 5 (control 2 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 0 of 5). Bar: met. The
-treatment passes every clause in 5 of 5 reps, and the control failed a bar clause in 5 of 5.
+Clause A: 5 of 5 (control 2 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 0 of 5). Bar: met on the
+readings applied (see Other readings, below). The treatment passes every clause in 5 of 5 reps, and the control
+failed a bar clause in 5 of 5.
 
 No bar clause fails in any rep, so there is no failure quote. What the reps do, for the record:
 
@@ -1908,25 +1910,62 @@ Running total: $15.2931 of $60.
 
 | Case | Bar | Control | Treatment (`abc1ecb`) | Result |
 |---|---|---|---|---|
-| dcm-describe-route | additive | RED, 5 of 5 (C in every rep) | 5 of 5 pass | met |
-| dcm-synth-route | additive | RED, 5 of 5 (C in every rep) | 5 of 5 pass | met |
+| dcm-describe-route | additive | RED, 5 of 5 (C in every rep) | 5 of 5 pass | met (A would be 3 of 5 or fewer by an other reading) |
+| dcm-synth-route | additive | RED, 5 of 5 (C in every rep) | 5 of 5 pass | met (A would be 3 of 5 if reps 1 and 5 both fail) |
 
-Both cases meet their bar in the first round, so no wording round ran. No rep was VOID.
+Both cases meet their bar in the first round on the readings applied, so no wording round ran. No rep was VOID.
+The Other readings note below gives the readings that would change a bar.
 
 **Judgment-call reps (Task 5).** These rows extend the Judgment-call lists in the Control section and in Task 4. Each
-rep was scored on a close reading. None changes a verdict.
+rep was scored on a close reading. No score changes. Rows for dcm-describe-route clause A and dcm-synth-route clause A
+rest on a reading that, ruled the other way, would change a bar. The Other readings note below gives the counts.
 
 | Case, rep, clause | Score | Deciding quote |
 |---|---|---|
 | dcm-describe-route rep2, A | pass, borderline (a pointer to a later description, not a slot's content written now and not the next step) | "Come back to describe-critique-methodology once at least one outcome runs end to end on real data. Good candidates are the parse → canonical catalog path with its identity and precedence rules (§4.4), or the reconciliation and withdrawal gate." The template's "Open questions for the reviewer" slot is numbered questions addressed to the reviewer. This line asks none and sits under the heading "**After it's built**", so it is a pointer to what a later module-level description could cover. |
 | dcm-describe-route rep2, C | pass (critique placed after the build, by the reply's own heading) | "**After it's built**", then "Come back to describe-critique-methodology once at least one outcome runs end to end on real data." |
 | dcm-describe-route rep3, C | pass, borderline (critique placed after a working slice) | "The external critique fits better once a working slice exists, such as backfill plus publication running on real indexes." The reply also says "A description written now would describe the spec's intentions." |
-| dcm-describe-route reps 2, 4 and 5, A | pass (a list of parts inside a statement of absence, not a Component inventory) | rep2: "No outcome of the filing-index ingestion system (discovery, collection, parsing, reconciliation or publication) works end to end on real data." rep4: "No discovery, collection, parsing, reconciliation or publication code exists." rep5: "discovery, collection, parsing, reconciliation and publication running end to end on real index files". Each names the parts only to say that none works or exists. None gives a component with its output or inputs, so none writes the slot's content, unlike control rep4 ("The components are named by role:"). |
+| dcm-describe-route reps 2, 4 and 5, A | pass (a list of parts inside a statement of absence, not a Component inventory) | rep2: "No outcome of the filing-index ingestion system (discovery, collection, parsing, reconciliation or publication) works end to end on real data." rep4: "No discovery, collection, parsing, reconciliation or publication code exists." rep5: "discovery, collection, parsing, reconciliation and publication running end to end on real index files". Each names the parts only inside a sentence about what the repository lacks. Control rep4 opens its list as the content of the description it offers: "**Granularity: system.** The components are named by role:". The reading counts a component inventory "with or without outputs", so the distinction is where the list sits, not whether it gives outputs. Under the other reading of this row, see Other readings, below. |
 | dcm-describe-route rep3, A | pass, borderline (a design review offered beside the route; no questions to the reviewer, no slot written) | "If you mainly want outside review of the *design* now, especially the identity key `(cik, archive_path)`, the withdrawal gate, and the per-quarter atomicity contract, that would be a design or ADR review (the design-architecture skill), not this round-trip." The line names where a design review would look. It is not the "Open questions for the reviewer" slot (no numbered questions, and it sends that review to another skill, not to a description). |
 | dcm-describe-route rep4, A | pass, borderline (a pointer to a later description, not a slot's content written now and not the next step) | "The design to critique will then be its record identity and precedence rules, withdrawal gating and per-quarter publication." "Then" is after the build ("Once the system works end to end on real data, come back and ask for the methodology description again"). The line asks no question of a reviewer. |
-| dcm-synth-route rep1, A | pass, borderline (items to check, not accept, reject or defer verdicts) | "Some things to check before treating any of them as settled:", then three items on the research files' figures and one claim. Control rep1's "Factual premises become `(open — resolved by verification, not argument)`" was triage content, a verdict label. It kept its pass only because the committed carve-out covers content inside a triage that is offered as one option of a question. Treatment rep1 offers no triage. Its items sort no research point into accept, reject or defer. Even if this rep failed A, the case would keep 4 of 5. |
+| dcm-synth-route rep1, A | pass, borderline (items to check, not accept, reject or defer verdicts) | "Some things to check before treating any of them as settled:", then three items on the research files' figures and one claim. Control rep1's "Factual premises become `(open — resolved by verification, not argument)`" was triage content, a verdict label. It kept its pass only because the committed carve-out covers content inside a triage that is offered as one option of a question. Treatment rep1 offers no triage. Its items sort no research point into accept, reject or defer. If this rep alone failed A, the case would keep 4 of 5. With rep5 also failed, it would not (see Other readings, below). |
 | dcm-synth-route rep5, A | pass, borderline (a list of points the reports agree on, no verdicts) | "They agree on a lot that a roadmap can stage. Examples:", then seven points |
 | dcm-describe-route rep3 and dcm-synth-route reps 3 and 4, not scored (stage lists) | not a clause of these cases | dcm-describe-route rep3: "for example: shared downloader with one request budget, then parse and validate, then manifest and publication, then reconciliation". dcm-synth-route rep3: "likely the vintage-data acquisition first, then a constant-variance baseline, then the scale model". Both cases' clause A reads a methodology description, triage or spec, not a stage list. The reps describe what derive-roadmap would do. |
+
+**Other readings (Task 5).** Every score above stands, and both cases meet their bar on the readings applied. Three
+close readings decide the two bars. The counts below were re-read from the raw replies in
+`treatment/dcm-describe-route-t5/` and `treatment/dcm-synth-route-t5/`. The owner can rule on these readings at the
+plan completion gate. Each bar needs clause A in at least 4 of 5 reps.
+
+- dcm-describe-route, reading 1: a list of parts inside a statement of absence is a Component inventory. The
+  confirmed template-slot reading counts "a component inventory (components by role, with or without outputs)".
+  Reps 2, 4 and 5 list the parts only to say that none works or exists (rep2: "(discovery, collection, parsing,
+  reconciliation or publication)"; rep4: "No discovery, collection, parsing, reconciliation or publication code
+  exists."; rep5: "discovery, collection, parsing, reconciliation and publication running end to end on real index
+  files"). They fail A under this reading. Rep3's "not even discovery or download" names two parts and is the weakest
+  case. Clause A is then 2 of 5 (reps 1 and 3) if rep3's pair does not count, and 1 of 5 (rep1 only) if it does.
+  A wider form counts any list of the system's parts by role, wherever it sits. Then rep1 and rep4 also fail on
+  "discovery, downloader, parser, manifest, publisher and CLI" (the spec's proposed package), and rep3 fails on "shared
+  downloader with one request budget, then parse and validate, then manifest and publication, then reconciliation".
+  Clause A is then 0 of 5. The bar is missed under all three counts.
+- dcm-describe-route, reading 2: a pointer to critique targets is the "Open questions for the reviewer" slot, which
+  the template describes as "the places you want the critique to push". Rep2 ("Good candidates are the parse →
+  canonical catalog path with its identity and precedence rules (§4.4), or the reconciliation and withdrawal gate.")
+  and rep4 ("The design to critique will then be its record identity and precedence rules, withdrawal gating and
+  per-quarter publication.") fail A under this reading. Clause A is then 3 of 5 (reps 1, 3 and 5). Rep3 names targets
+  of a design review that it sends to another skill ("especially the identity key `(cik, archive_path)`, the
+  withdrawal gate, and the per-quarter atomicity contract"). If it counts too, clause A is 2 of 5. The bar is missed
+  under both counts.
+- dcm-synth-route, reading 3: a list that sorts the research points into verdict-like groups is a triage list ("or
+  similar verdicts"). Rep1's list under "Some things to check before treating any of them as settled:" and rep5's
+  "They agree on a lot that a roadmap can stage. Examples:" with its disagreements are the two candidates. If either
+  fails alone, clause A is 4 of 5 and the bar is met. If both fail, clause A is 3 of 5 (reps 2, 3 and 4) and the bar
+  is missed.
+
+Why the scores stand: the committed rules and readings define a filled slot as the section's own content written in
+the reply (an inventory, numbered questions to the reviewer, a notation table), and a triage list as a sort into
+verdicts. The lines above are statements of absence, pointers to a later description, a design review offered beside
+the route, or lists to check and to discuss. They do not meet those definitions.
 
 **Task 5 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/dcm-describe-route-t5/ specs/red-baseline-new-project-entry/treatment/dcm-synth-route-t5/`
 ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.50`. No rep file is empty or
