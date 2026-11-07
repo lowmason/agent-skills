@@ -2097,8 +2097,9 @@ to pass every clause in at least 4 of 5 reps.
 
 - bs-route, reading 1: a handoff that ends "tell me before the roadmap is written. Otherwise I'll go ahead" is a
   handoff put to the partner for approval, not a handoff now. Rep4 then fails A. Clause A is 3 of 5 (reps 1, 3 and 5)
-  and PASS is 3 of 5. The bar is missed. Control dcm-describe-route reps 1 and 5 ("Tell me if you'd rather go that
-  way. Otherwise I'm proceeding.") were read as stating the plan, so the description stayed as their next step and
+  and PASS is 3 of 5. The bar is missed. Control dcm-describe-route reps 1 and 5 (rep1: "Tell me if you'd rather go
+  that way. Otherwise I'm proceeding."; rep5: "My plan, unless you'd rather point the critique at the spec directly")
+  were read as stating the plan, so the description stayed as their next step and
   failed A. The same plan-or-option reading applied here keeps the handoff as rep4's next step, and it says "now"
   and writes the call before its closing line. So the score stands as a pass. Reading 1 is the owner's alternative.
 
@@ -2160,5 +2161,5 @@ dcm-synth-route and bs-route (Task 5 and Task 6, Other readings). The review fin
 **Spend total.** Spend by task: Task 1 $0.2962 (isolation probe $0.0141 and cost pilot $0.2821), Task 2 $5.5029
 (control arms), Task 3 $8.4719, Task 4 $0.5190, Task 5 $0.5031 and Task 6 $0.3376. These sum to **$15.6307 of $60**.
 The control arms alone cost $5.5029 of $30, unchanged: treatment reps count toward the $60 only. The per-case figures
-in this record sum to the same total, except Task 3's, which are rounded and sum to $0.0001 less (Task 3 summary). No rep was VOID and there was no VOID rerun in any task, and no rep file was
+in this record sum to the same total, except Task 3's, which are rounded and sum to $0.0001 less (Round 2: dr-research-depth). No rep was VOID and there was no VOID rerun in any task, and no rep file was
 empty or unreadable. The Spend table, the "Running total after Task 6" paragraph and this total agree.
