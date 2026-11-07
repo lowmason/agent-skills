@@ -47,7 +47,7 @@ point settled at a resume carries `(Resolved at resume, YYYY-MM-DD)`. A resume
 treats a stamped stage as new while no entry cites its plan's Handoff, and it
 asks when unticked stages remain and none has its `Consumes` met, where a
 `Consumes` is unmet only when a Handoff or stamp shows its input missing or not
-built (SKILL.md §5).
+built, or the stage that is to produce it is unticked (SKILL.md §5).
 
 **ROUTING** is `brainstorming` when the stage's design space is open, and
 `writing-plans` when the spec fully determines it. Name the skill bare.
