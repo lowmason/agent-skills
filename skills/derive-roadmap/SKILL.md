@@ -161,9 +161,11 @@ On re-entry, for each stage: the stage stamp under its roadmap entry
 authoritative. A fuzzy match against `specs/plans/completed/` is FALLBACK
 only — never let it overrule a stamp.
 
-For each stage stamped COMPLETE since the last resume, read the stamp and its
-plan's `## Handoff to later stages`. Re-validate every unticked stage against
-what actually shipped:
+For each stage stamped COMPLETE whose plan's Handoff no roadmap entry yet cites
+(an amendment cites `plan <id>, Handoff`), read the stamp and that Handoff. A
+Handoff that reads `None` is never cited, so a resume reads it again and
+changes nothing. Re-validate every unticked stage against what actually
+shipped:
 
 - **Amend.** When a Handoff bullet changes a later stage's `Spec` (or
   `Outcomes`), `Consumes`, `Produces`, `Exit` or `Leaves out`, amend that
@@ -175,8 +177,14 @@ what actually shipped:
 - **Ask.** A stage added, split, dropped or reordered is not an amendment. Put
   every such change to your human partner as ONE question, not a numbered
   list: state the changes with your proposed default and ask for a single
-  approve-or-amend. Name no stage's routing in it; route only after the
-  answer.
+  approve-or-amend. When unticked stages remain and none has all its
+  `Consumes` met, the same question names each unmet `Consumes` and the stages
+  it blocks, with your proposed default: a stage added to produce it, or the
+  `Consumes` amended. Hand off nothing before the answer. Name no stage's
+  routing in it; route only after the answer. A `Consumes` is unmet when a
+  Handoff or stamp shows its input missing or not built, or when the stage
+  that is to produce it is unticked. Otherwise it counts as met, and the
+  receiving session checks it.
 - **Commit** the amendments, and whatever your partner approved at the Ask,
   on the current branch before the handoff, so the
   fresh session reads them. Context for a later stage that cannot be
@@ -200,9 +208,9 @@ waiting, go to §6.
 **Parking is a first-class exit.** When your partner parks the roadmap, its
 remaining unticked stages and the items of every Ranked list append to
 `specs/deferred_items.md`, one item per stage or list item, under a dated
-`## <roadmap-name> — <YYYY-MM-DD>` section. When your partner stops a
+`## <name>-roadmap — <YYYY-MM-DD>` section. When your partner stops a
 research track, only the items of that track's Ranked list append, one item
-per list item, under a dated `## <roadmap-name> — <YYYY-MM-DD>` section, and
+per list item, under a dated `## <name>-roadmap — <YYYY-MM-DD>` section, and
 the roadmap stays live. Each item follows the Deferred-item schema in the
 writing-plans skill's deferred-backlog reference (self-contained, with
 `Size:` and a `Done when:` naming the stage's Produces or the item's
@@ -253,10 +261,10 @@ inputs, the checks you may run, and each rule below in full.
 3. **Cost.** Each outcome whose cost is material gets a rough estimate and its
    basis. When only running the work can tell, say so.
 4. **One message.** Before any roadmap text, send one message: the outcome
-   list, unranked, with the cost notes, the tracks and their kinds, and a
-   proposed roadmap name. It makes one request: rank the outcomes within each
-   track and the tracks among themselves, and confirm the tracks. Do not rank
-   for your partner unless they ask.
+   list, unranked, with the cost notes, the tracks and their kinds, and, with
+   no spec, a proposed roadmap name. It makes one request: rank the outcomes
+   within each track and the tracks among themselves, and confirm the tracks.
+   Do not rank for your partner unless they ask.
 5. **Stages.** Each track's first stage is its core stage: it works on real
    data at the smallest standard that gives a usable result, and its Exit
    names the measured cost of the real run. A known-progression track commits

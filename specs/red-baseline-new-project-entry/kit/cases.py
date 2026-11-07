@@ -1,6 +1,10 @@
 '''Frozen inputs for plan 78's micro-tests of derive-roadmap's New-Project Entry.
 
 Fifteen cases, as specs/plans/completed/78-derive-roadmap-new-project-entry.md Task 1 Step 3 defines them.
+Plan 79 adds seven more at the end of CASES: dr-stop-track, dr-park-ranked, dr-name-collision and
+dr-rerank-second (the four routes that plan 78 added without a micro-test), dr-resume-marker and
+dr-resume-blocked (the two resume gaps), and dr-known-progression-79 (dr-known-progression under an
+amended clause C). No plan 78 case, rule or fixture changed.
 Each case names the repository texts under test (read at a sha by build_prompts.py), its model
 and per-rep budget, its kind, its fixture (the session so far), its task, its pass rule, its leak
 pattern and, where it reads them, the case-repository files that its `{file:<key>}` markers
@@ -582,6 +586,320 @@ BS_GUARD_FIXTURE = lines(
 BS_GUARD_PASS = '''PASS (guard): the reply lays out two or three ways to build it, in this message, with a recommendation and one question asking which way to go. It does not hand off to derive-roadmap.
 Reading notes. A way to build it is an approach to the whole script, such as a choice of parsing library or of structure. The message asks one question, which way to go; a message with further questions fails.'''
 
+# Plan 79 cases ---------------------------------------------------------------------------------
+# The four routes that plan 78 added without a micro-test, the two resume gaps, and dr-known-progression
+# under an amended clause C. Every fixture reuses a kit domain: canal locks and river gauges, parking
+# sensors, SEC filings.
+
+
+def edit(text: str, *swaps: tuple[str, str]) -> str:
+    '''`text` with each (old, new) pair applied in order. Refuses when an `old` is not in the text exactly once.'''
+    for old, new in swaps:
+        found = text.count(old)
+        if found != 1:
+            raise SystemExit(f'refusing: {old[:50]!r} appears {found} times in the text, not once')
+        text = text.replace(old, new)
+    return text
+
+
+# LOCK_ROADMAP with a second track, a known progression of one stage ---------------------------
+
+TWO_TRACK_STAGE_2 = '''- [ ] Stage 2: Closure notices
+      Objective: Boat operators get an email notice within an hour of a lock closing.
+      Outcomes: O5
+      Track: B
+      Consumes: the closure log's live feed
+      Produces: the notice job and its operator mailing list
+      Exit: in a test, an email reaches every address on the mailing list within an hour of a new closure entry
+      Leaves out: text-message notices (no stage or list item picks them up)
+      ROUTING: writing-plans'''
+
+TWO_TRACK_ROADMAP = edit(
+    LOCK_ROADMAP,
+    ('basis: one static map page |',
+     'basis: one static map page |\n| O5 | An email notice to boat operators within an hour of a lock closing | B | 1 | small; basis: one closure-log poll each 10 minutes |'),
+    ('Tracks: A — lock closures and river level (research).',
+     'Tracks: A — lock closures and river level (research). B — closure notices (known progression). Split from A because the notices serve boat operators whether or not the curve holds.'),
+    ('> Next: resume the roadmap.\n\n## Ranked list — Track A',
+     '> Next: resume the roadmap.\n\n' + TWO_TRACK_STAGE_2 + '\n\n## Ranked list — Track A'),
+)
+
+# LOCK_ROADMAP after one re-rank: O2 became Stage 2, and Stage 2 has run --------------------------
+
+PROMOTED_STAGE_2 = '''- [x] Stage 2: 7-day outlook
+      Objective: A 7-day closure-risk outlook for each lock runs on the river-level forecast.
+      Outcomes: O2
+      Consumes: Stage 1's response curve, specs/lock-closures-stage-1-findings.md (Resolved at resume, 2026-10-21)
+      Produces: specs/lock-closures-stage-2-findings.md, with the result and the measured cost of the real run
+      Exit: O2's outlook, run on the real river-level forecast and closure log, is in the findings file; the run's time, compute and data volume are recorded there
+      Leaves out: per-lock curves (Ranked list, O3); the map (Ranked list, O4)
+      ROUTING: brainstorming
+
+> Stage 2: COMPLETE (2026-11-04) — implemented by plan 6 (specs/plans/completed/6-closure-outlook.md).
+> Next: resume the roadmap.'''
+
+PROMOTED_ROADMAP = edit(
+    LOCK_ROADMAP,
+    ('> Stage 1: COMPLETE (2026-11-03)', '> Stage 1: COMPLETE (2026-10-20)'),
+    ('the outlook (Ranked list, O2)', 'the outlook (Stage 2)'),
+    ('> Next: resume the roadmap.\n\n## Ranked list — Track A',
+     '> Next: resume the roadmap.\n\n' + PROMOTED_STAGE_2 + '\n\n## Ranked list — Track A'),
+    ('1. O2 — one model run a day, small once O1\'s model exists\n2. O3 —', '1. O3 —'),
+    ('3. O4 —', '2. O4 —'),
+)
+
+LOCK_PLAN_4_READ = '[you, tools] Read plan 4, specs/plans/completed/4-closure-river-level-response.md. Its `## Handoff to later stages` reads `None: shipped as the roadmap\'s Produces states.`'
+
+LOCK_STAGE_1_FINDINGS = lines(
+    '[you, tools] Read specs/lock-closures-stage-1-findings.md. Its full text:',
+    '# Stage 1 findings: lock closures and river level',
+    'Result: below a gauge level of 3.1 m a lock closes on fewer than 2% of days; above it the chance rises steeply, to about 60% at 3.8 m.',
+    'The four locks with the longest records show close to the same curve.',
+    'Cost of the real run: one fit on 11 years of daily gauge readings, 1.8 GB, took 22 minutes on a laptop.',
+)
+
+# dr-stop-track and dr-park-ranked (plan 78 D6, §5 track stop and Parking) ------------------------
+
+TWO_TRACK_SESSION = lines(
+    TODAY + ' The repository is `lock-closures`, on branch `main`.\n',
+    '[earlier] Your partner: Resume the roadmap.',
+    '[you, tools] Read specs/lock-closures-roadmap.md. Its full text:',
+    TWO_TRACK_ROADMAP,
+    '[you, tools] `git log` on the roadmap: it was written on 2026-10-14, and Stage 1\'s tick and stamp were added on 2026-11-03, when plan 4 completed. No resume has run since the roadmap was written.',
+    LOCK_PLAN_4_READ,
+    LOCK_STAGE_1_FINDINGS,
+    '[earlier] You (your last message, in summary): You reported what Stage 1 found and what its real run cost: the chance of a closure rises steeply above a gauge level of 3.1 m, and the one fit took 22 minutes on 1.8 GB. You asked one question: promote O2 as Stage 3 (your default), re-order the Ranked list, or stop Track A.',
+)
+
+DR_STOP_TRACK_FIXTURE = lines(
+    TWO_TRACK_SESSION,
+    '[now] Your partner: Stop Track A. The curve answers what we needed.',
+)
+
+DR_STOP_TRACK_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the reply appends to specs/deferred_items.md one item for each of O2, O3 and O4, and no item for Stage 2 or O5.
+Clause B (bar): the roadmap stays live: it is not moved to specs/completed/, it is not marked PARKED, and Stage 2's entry stays.
+Clause C (conformance): the items sit under one dated section heading of the form `## <roadmap name> — 2026-11-06`.
+Clause D (conformance): each item has a `Size:` line and a `Done when:` line that names its outcome.
+Clause E (conformance): no completion review starts, and the reply hands off Stage 2 with a "Next:" line that names writing-plans and the roadmap, and plans nothing.
+Reading notes. Clause A: an item written in a tool call or as file content counts; a reply that only asks to confirm the stop fails A. Clause C: the roadmap name may be the file's stem or its title in kebab case. Clause E: a completion review is the audit run before a roadmap retires (derive-roadmap §6).'''
+
+DR_STOP_TRACK_LEAK = r'one item per|PARKED|deferred_items|only that track'
+
+DR_PARK_RANKED_FIXTURE = lines(
+    TWO_TRACK_SESSION,
+    '[now] Your partner: Park the whole roadmap. The canal study\'s funding ended.',
+)
+
+DR_PARK_RANKED_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the reply appends to specs/deferred_items.md one item for each of Stage 2, O2, O3 and O4: four items.
+Clause B (bar): the roadmap moves to specs/completed/ and is marked PARKED with the date and "1 of 2 stages complete".
+Clause C (conformance): the items sit under one dated section heading of the form `## <roadmap name> — 2026-11-06`.
+Clause D (conformance): each item has a `Size:` line and a `Done when:` line that names the stage's Produces or the item's outcome.
+Clause E (conformance): no completion review starts, and no stage is handed off.
+Reading notes. Clause A: an item written in a tool call or as file content counts; one item that bundles the list items fails A. Clause B: any wording of the count passes when it says 1 complete of 2 stages; a count that includes list items fails. Clause C: as dr-stop-track's clause C.'''
+
+DR_PARK_RANKED_LEAK = r'one item per|PARKED|deferred_items|stages complete'
+
+# dr-name-collision (roadmap-format New-project roadmaps, name rule) ------------------------------
+
+OTHER_ROADMAP_HEAD = '''# Filing alerts — roadmap
+
+> For agentic workers: REQUIRED SKILL: derive-roadmap — resume via its
+> reconcile step; route each unticked stage per its ROUTING line; never plan
+> this document wholesale.
+
+## Outcomes
+
+Source: your partner's words, 2026-09-14. Background: none.
+Choices made: none.
+
+| # | Outcome | Track | Rank | Cost (estimate; basis) |'''
+
+DR_NAME_COLLISION_FIXTURE = lines(
+    edit(DR_OFFER_YES_FIXTURE, ('[now] Your partner: Yes, do that.', '[earlier] Your partner: Yes, do that.')),
+    '[earlier] You (your last message, in summary): You sent the one message before any roadmap text: the outcomes drawn from R1 to R11, one line each in plain words; one track, a known progression; and cost notes with their bases. You said that the roadmap takes the spec\'s stem as its name, and asked your partner to rank the outcomes.',
+    '[you, tools] Before writing, ran `ls specs/`. It lists three files: sec-filing-index-ingestion-adr.md, sec-filing-index-ingestion-spec-roadmap.md and sec-filing-index-ingestion-spec.md.',
+    '[you, tools] Read the first 12 lines of specs/sec-filing-index-ingestion-spec-roadmap.md:',
+    OTHER_ROADMAP_HEAD,
+    '[now] Your partner: Rank them in the order you listed. Go ahead and write the roadmap.',
+)
+
+DR_NAME_COLLISION_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the reply does not write specs/sec-filing-index-ingestion-spec-roadmap.md, by tool call or as file content.
+Clause B (bar): the reply asks the partner for another name and writes no roadmap file under any name before the answer.
+Clause C (conformance): the reply says that the existing file is not this spec's roadmap, and it does not resume it.
+Reading notes. Clause B: a name proposed inside the question passes; a file written under the proposed name fails. Clause C: any statement that the file's source is not this spec passes.'''
+
+DR_NAME_COLLISION_LEAK = r'overwrite|another name|collision|already exists'
+
+# dr-rerank-second (§5 research track, most recently ticked stage) --------------------------------
+
+DR_RERANK_SECOND_FIXTURE = lines(
+    TODAY + ' The repository is `lock-closures`, on branch `main`.\n',
+    '[earlier] Your partner: Resume the roadmap.',
+    '[you, tools] Read specs/lock-closures-roadmap.md. Its full text:',
+    PROMOTED_ROADMAP,
+    '[you, tools] `git log` on the roadmap: it was written on 2026-10-14. Stage 1\'s tick and stamp were added on 2026-10-20, when plan 4 completed. The Stage 2 entry was added on 2026-10-21. Stage 2\'s tick and stamp were added on 2026-11-04, when plan 6 completed.',
+    '[you, tools] Read plan 6, specs/plans/completed/6-closure-outlook.md. Its `## Handoff to later stages` reads `None: shipped as the roadmap\'s Produces states.`',
+    LOCK_STAGE_1_FINDINGS,
+    '[you, tools] Read specs/lock-closures-stage-2-findings.md. Its full text:',
+    '# Stage 2 findings: 7-day closure outlook',
+    'Result: the outlook flagged 81% of closures at least 2 days ahead, with one false alarm in 9.',
+    'Cost of the real run: 14 minutes a day on one small VM, 0.3 GB of forecasts.',
+)
+
+DR_RERANK_SECOND_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): no completion review starts, and the roadmap is neither parked nor retired.
+Clause B (bar): the reply reports Stage 2's finding and its measured cost.
+Clause C (bar): one question that asks for a re-ranking of O3 and O4 or the approval of a proposed next stage from them, with a default.
+Clause D (conformance): no new stage entry is written before the answer, and O2 is not offered again.
+Reading notes. Clause B: the finding is the 81% or the false-alarm rate; the cost is the 14 minutes a day or the 0.3 GB. Stage 1's finding reported as well passes; Stage 1's alone fails. Clause C: as dr-resume-rerank's clause C.'''
+
+DR_RERANK_SECOND_LEAK = r're-rank|promote|stop the track|most recently'
+
+# dr-resume-marker and dr-resume-blocked (§5 resume gaps 1 and 2) ---------------------------------
+
+OCCUPANCY_ROADMAP = '''# Parking occupancy pipeline — roadmap
+
+> For agentic workers: REQUIRED SKILL: derive-roadmap — resume via its
+> reconcile step; route each unticked stage per its ROUTING line; never plan
+> this document wholesale.
+
+Source spec: `specs/parking-occupancy-spec.md`. Derived 2026-09-02.
+
+## Gap analysis
+
+| Req | Verdict | Evidence | Note |
+|---|---|---|---|
+| R1 | missing | none found | |
+| R2 | missing | none found | |
+| R3 | missing | none found | |
+| R4 | missing | none found | |
+| R5 | missing | none found | |
+| R6 | missing | none found | |
+| R7 | missing | none found | |
+
+## Stages
+
+- [x] Stage 1: Sensor ingest
+      Objective: Bay-sensor events from every car park land in one events table every 5 minutes.
+      Spec: §2 R1–R3
+      Gap closed: R1; R2; R3
+      Consumes: the sensor vendor's event feed
+      Produces: the `bay_events` table and its loader
+      Exit: events from all 9 car parks arrive within 5 minutes; a test shows that a duplicate event is stored once
+      ROUTING: writing-plans
+
+> Stage 1: COMPLETE (2026-09-19) — implemented by plan 3 (specs/plans/completed/3-sensor-ingest.md). Its Handoff section names what Stage 3 consumes.
+> Next: resume the roadmap.
+
+- [x] Stage 2: Hourly occupancy
+      Objective: Occupancy per car park is computed every hour from the events table.
+      Spec: §3 R4
+      Gap closed: R4
+      Consumes: Stage 1's `bay_events` table
+      Produces: the `occupancy_hourly` table
+      Exit: occupancy for each car park and hour matches a hand count on two sample days
+      ROUTING: writing-plans
+
+> Stage 2: COMPLETE (2026-11-04) — implemented by plan 5 (specs/plans/completed/5-hourly-occupancy.md). Its Handoff section names what Stage 3 and Stage 4 consume.
+> Next: resume the roadmap.
+
+- [ ] Stage 3: Occupancy dashboard and alerts
+      Objective: Staff see hourly occupancy per car park and get an alert when one passes 95%.
+      Spec: §4 R5, R6
+      Gap closed: R5; R6
+      Consumes: Stage 1's `bay_events` table, with the car park in its `lot_id` column (plan 3, Handoff; Resolved at resume, 2026-10-12); Stage 2's `occupancy_hourly` table
+      Produces: the dashboard and the alert rule
+      Exit: the dashboard shows all 9 car parks; in a test, an alert fires when occupancy passes 95%
+      ROUTING: brainstorming
+
+- [ ] Stage 4: Weekly utilization report
+      Objective: The parking office gets a weekly report of occupancy by car park and hour.
+      Spec: §5 R7
+      Gap closed: R7
+      Consumes: Stage 2's `occupancy_hourly` table
+      Produces: the weekly report job
+      Exit: the report for a sample week matches a hand count of occupancy for two car parks
+      ROUTING: writing-plans
+
+## Stage-spec stamp
+
+Each stage spec's Rollout note carries this line, which writing-plans then copies verbatim into the stage plan's header:
+
+> Roadmap: specs/parking-occupancy-spec-roadmap.md, Stage N — on plan completion, tick the stage and re-validate later stages against what shipped.
+
+## Completion
+
+Retire this roadmap only after a conformance audit of the accumulated system: re-run the gap rubric over every numbered requirement (R1–R7), with evidence per verdict. Each requirement that the system does not satisfy either becomes a new stage, keeping this roadmap live, or is deferred consciously with a written why. Then move this file to specs/completed/ beside the retired spec.'''
+
+# The marker variant: plan 3's one Handoff bullet is already cited by Stage 3, so only plan 5's is new.
+# The blocked variant differs from it in two things. Plan 5's bullet says that `occupancy_hourly` was not
+# built. Stage 3's entry cites nothing and has its pre-amendment form, which still names `car_park_id`, so
+# plan 3's bullet is pending as well.
+OCCUPANCY_ROADMAP_BLOCKED = edit(
+    OCCUPANCY_ROADMAP,
+    ('Consumes: Stage 1\'s `bay_events` table, with the car park in its `lot_id` column (plan 3, Handoff; Resolved at resume, 2026-10-12); Stage 2\'s `occupancy_hourly` table',
+     'Consumes: Stage 1\'s `bay_events` table, with the car park in its `car_park_id` column; Stage 2\'s `occupancy_hourly` table'),
+)
+
+PLAN_3_HANDOFF = 'Its `## Handoff to later stages` has one bullet, for Stage 3: "Read the car park from the `lot_id` column of `bay_events`, not `car_park_id`."'
+
+
+def resume_gap_fixture(roadmap: str, commits: str, plan_3: str, plan_5: str) -> str:
+    return lines(
+        TODAY + ' The repository is `parking-occupancy`, on branch `main`.\n',
+        '[you, tools] Read specs/parking-occupancy-spec-roadmap.md. Its full text:',
+        roadmap,
+        f'[you, tools] `git log` on the roadmap: {commits} commits, each with the subject "update the roadmap". None is labeled as a resume.',
+        '[you, tools] Read plan 3, specs/plans/completed/3-sensor-ingest.md. ' + plan_3,
+        '[you, tools] Read plan 5, specs/plans/completed/5-hourly-occupancy.md. ' + plan_5,
+        '[now] Your partner: Resume the roadmap.',
+    )
+
+
+DR_RESUME_MARKER_FIXTURE = resume_gap_fixture(
+    OCCUPANCY_ROADMAP,
+    'four',
+    PLAN_3_HANDOFF,
+    'Its `## Handoff to later stages` has one bullet: "`occupancy_hourly` shipped as `occupancy_by_hour` with the same columns, which Stage 3 and Stage 4 consume."',
+)
+
+DR_RESUME_MARKER_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the reply amends the Consumes of Stage 3 and Stage 4 from plan 5's Handoff bullet, citing plan 5, Handoff.
+Clause B (bar): no amendment re-applies or restates plan 3's Handoff bullet, which Stage 3's entry already cites.
+Clause C (conformance): the reply commits the amendments and hands off Stage 3 with a "Next:" line, and plans nothing.
+Reading notes. Clause A: a stated amendment counts, in a tool call or in the roadmap text. Clause B: naming plan 3's bullet as already applied passes; amending from it again fails.'''
+
+DR_RESUME_MARKER_LEAK = r'since the last resume|no entry yet cites|already cites'
+
+DR_RESUME_BLOCKED_FIXTURE = resume_gap_fixture(
+    OCCUPANCY_ROADMAP_BLOCKED,
+    'three',
+    PLAN_3_HANDOFF,
+    'Its `## Handoff to later stages` has one bullet: "`occupancy_hourly` was not built, because the vendor feed has no bay ids, and Stage 3 and Stage 4 consume it."',
+)
+
+DR_RESUME_BLOCKED_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the reply hands off no stage before the answer: no "Next:" line names a stage.
+Clause B (bar): one question that names the unmet Consumes (occupancy_hourly) and the stages it blocks (3 and 4), with a proposed default.
+Clause C (conformance): the default adds a stage that produces it, or amends the Consumes.
+Clause D (conformance): no completion review starts, and the roadmap is not parked.
+Reading notes. Clause B: two or more separate questions fail B. Clause C: either default passes; a default that hands off Stage 3 as it stands fails C.'''
+
+DR_RESUME_BLOCKED_LEAK = r'blocked|unmet|no unticked stage'
+
+# dr-known-progression-79 (V2, R7-R9; plan 79 D1): the old fixture under a clause C that fits it ---
+
+DR_KNOWN_PROGRESSION_PASS_79 = '''PASS needs every bar and conformance clause. Clause E is recorded and never scored.
+Clause B (bar): the first stage's Exit requires no manifest, no traceability (a provenance or lineage record per row) and no point-in-time (as-of) awareness. A quality named as left out passes.
+Clause A (conformance): committed stages cover, in order, the index files, the individual submissions, and 10-K and 8-K handling.
+Clause C (conformance): manifests and traceability each appear in a named later stage. Point-in-time awareness is not scored for this fixture (owner ruling, 2026-11-07).
+Clause D (conformance): every stage entry has a field that names what it leaves out and where that goes.
+Clause E (recorded, no bar): the first stage's Exit does not require complete dataset generations to publish atomically. The background spec's §1 asks for that, and the skill text does not name it, so E checks transfer.
+Reading notes. Clause B reads the first stage's Exit field, or the criteria that the reply gives for finishing the first stage when it has no field of that name. A manifest of any kind (source, run, ingestion or publication) fails B. Per-row provenance columns, such as a source id or a source hash, are traceability and fail B. A quality that the first stage names as not required, or as left out, passes. Clause A: committed stages are the stage entries of the roadmap file. Clause C: a named later stage is a stage entry after the first whose fields name the quality. Clause D: the field may have any name.'''
+
 # -----------------------------------------------------------------------------------------------
 
 
@@ -620,4 +938,20 @@ CASES = {
                             DCM_SYNTH_LEAK, CES_FILES),
     'bs-route': case('R13a', 'additive', BS, BS_ROUTE_FIXTURE, STEP_TASK, BS_ROUTE_PASS, BS_LEAK),
     'bs-guard': case('R13a guard', 'non-regression', BS, BS_GUARD_FIXTURE, STEP_TASK, BS_GUARD_PASS, BS_LEAK),
+    'dr-stop-track': case('plan 78 D6, §5 track stop', 'additive', DR, DR_STOP_TRACK_FIXTURE, STEP_TASK,
+                          DR_STOP_TRACK_PASS, DR_STOP_TRACK_LEAK),
+    'dr-park-ranked': case('§5 Parking, roadmap-format Ranked list', 'additive', DR, DR_PARK_RANKED_FIXTURE,
+                           STEP_TASK, DR_PARK_RANKED_PASS, DR_PARK_RANKED_LEAK),
+    'dr-name-collision': case('roadmap-format New-project roadmaps, name rule', 'additive', DR,
+                              DR_NAME_COLLISION_FIXTURE, STEP_TASK, DR_NAME_COLLISION_PASS,
+                              DR_NAME_COLLISION_LEAK, {'spec': SEC_SPEC}),
+    'dr-rerank-second': case('§5 research track, most recently ticked stage', 'additive', DR,
+                             DR_RERANK_SECOND_FIXTURE, STEP_TASK, DR_RERANK_SECOND_PASS, DR_RERANK_SECOND_LEAK),
+    'dr-resume-marker': case('§5 resume gap 1, D3', 'additive', DR, DR_RESUME_MARKER_FIXTURE, STEP_TASK,
+                             DR_RESUME_MARKER_PASS, DR_RESUME_MARKER_LEAK),
+    'dr-resume-blocked': case('§5 resume gap 2, D4', 'additive', DR, DR_RESUME_BLOCKED_FIXTURE, STEP_TASK,
+                              DR_RESUME_BLOCKED_PASS, DR_RESUME_BLOCKED_LEAK),
+    'dr-known-progression-79': case('V2, R7-R9; plan 79 D1', 'additive', DR, DR_KNOWN_PROGRESSION_FIXTURE,
+                                    ROADMAP_TASK, DR_KNOWN_PROGRESSION_PASS_79, DR_KNOWN_PROGRESSION_LEAK,
+                                    {'spec': SEC_SPEC}),
 }

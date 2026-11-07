@@ -1534,7 +1534,7 @@
       rewording above and the subagent-driven-development half of the compaction-cut item.
       → done in plan 46 (2026-10-15): the When to Use graph moved to
       `references/advantages.md`; the file is 484 lines, under 490.
-- [ ] `skills/derive-roadmap/SKILL.md` §5 (the resume) has two gaps found in
+- [x] `skills/derive-roadmap/SKILL.md` §5 (the resume) has two gaps found in
       review. "Each stage stamped COMPLETE since the last resume" has no marker for
       the last resume (suggested: each stamped stage whose Handoff no entry yet
       cites). And no rule covers a roadmap where no unticked stage has its
@@ -1542,6 +1542,10 @@
       `references/roadmap-format.md` and a fixture shows each behaving as
       specified.
       → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
+      → done 2026-11-07 (plan 79): the marker ("whose plan's Handoff no roadmap entry yet cites") and the blocked-roadmap
+      Ask are in `SKILL.md` §5 and `references/roadmap-format.md`. The fixtures `dr-resume-marker` and `dr-resume-blocked`
+      pass 5 of 5 at the final text, but both controls were clean, so neither shows a failing control. Follow-ups on
+      the unmet-`Consumes` rule are filed → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
 - [x] `skills/prepare-handoff/references/cold-reader.md` has no output form for a
       clean read (`fact-checker.md` has `VERIFIED OK`), so a sender cannot tell a
       clean read from a truncated one. Add a "NO FINDINGS" line after the report
@@ -5925,7 +5929,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the Task 7 result as it stands.
       → progress 2026-11-07 (owner ruling): the Task 7 result is not accepted as it stands. The item stays open for the two independent five-rep runs.
       → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
-- [ ] **dr-known-progression fails conformance clause C: point-in-time awareness appears in 0 of 5
+      → progress 2026-11-07 (plan 79): two independent five-rep runs at `5f52dfc` scored 3 of 5 and 2 of 5 (bar 4 of 5
+      each) and both missed on clause C. If an order attached to the phrase "name its stages first to last" counts as
+      an echo, both runs are 4 of 5. See specs/red-baseline-new-project-entry.md (Plan 79: summary, owner-gate items 1
+      and 2). Filed → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
+- [x] **dr-known-progression fails conformance clause C: point-in-time awareness appears in 0 of 5
       reps (owner ruled accept and file at the completion gate).** The fixture's background spec
       never raises as-of reads, so the skill's Later-qualities example list in
       `skills/derive-roadmap/references/new-project-entry.md` is the only cue. Manifests (5 of 5)
@@ -5935,6 +5943,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       fixture, and the case is re-run under that decision.
       → progress 2026-11-07 (owner ruling): clause C fits the fixture. Clause C drops point-in-time awareness for this fixture, and the case is re-run under the new clause, not re-scored. The re-run joins the plan for the "Four routes that plan 78 added have no micro-test" item below.
       → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
+      → done 2026-11-07 (plan 79): the case was re-run under the new clause C as `dr-known-progression-79`. It scored
+      3 of 5 at `5f52dfc` (bar 4 of 5) and missed on traceability (4 of 5 on one other reading). The miss is filed
+      → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
 - [ ] **A new-project roadmap built from a spec maps each outcome to no spec section reference
       (plan 78 final review, owner ruled file).** Spec R10 sets this substitution (`Outcomes` in
       place of `Spec` and `Gap closed`). A stage plan from `writing-plans` is then scoped to
@@ -5952,7 +5963,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       later quality is listed in a Ranked list (for example an O-number and a rank request, or a
       named unranked class).
       → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
-- [ ] **Four routes that plan 78 added have no micro-test (plan 78 Task 7 and final review).** A
+- [x] **Four routes that plan 78 added have no micro-test (plan 78 Task 7 and final review).** A
       "stop the track" answer and a whole-roadmap park with Ranked lists (`skills/derive-roadmap/SKILL.md`
       §5 and its Parking paragraph), a name collision when a spec exists (`references/roadmap-format.md`,
       New-project roadmaps), and a second re-rank round (the research-track paragraph in §5). Two
@@ -5961,7 +5972,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       cases for the four paths exist in specs/red-baseline-new-project-entry/kit/cases.py, each
       with a control run and a treatment run.
       → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
-- [ ] **Two wording gaps left by plan 78's final review (owner ruled file).**
+      → done 2026-11-07 (plan 79): the four cases exist in the kit and each has a control run (all four RED)
+      and treatment runs. At the final text three meet their bar, and `dr-park-ranked` meets it by the owner's
+      re-run rule (4 of 5, on the inline-fields reading of clause D). `dr-name-collision` was last run at `T3`
+      (4 of 5). See specs/red-baseline-new-project-entry.md (Plan 79: summary). Follow-ups are filed → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
+- [x] **Two wording gaps left by plan 78's final review (owner ruled file).**
       `skills/derive-roadmap/references/roadmap-format.md` (Ranked list, last paragraph) names only a
       promotion and a track stop as ways an item leaves a Ranked list, and a whole-roadmap park also
       removes them. `skills/derive-roadmap/SKILL.md` §7 step 4 says "a proposed roadmap name" for
@@ -5970,6 +5985,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       kit. Size: quick-fix. Done when: the roadmap-format paragraph also names a whole-roadmap park
       and §7 step 4 says "with no spec".
       → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
+      → done 2026-11-07 (plan 79): the Ranked list paragraph names a whole-roadmap park (edit 5) and §7 step 4
+      says "with no spec" (edit 3), both in `c500e14`. `dr-offer-yes` (4 of 5) was re-run at the final text as a guard.
 
 ## deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
 - [ ] **The derive-roadmap new-project offer still draws core-and-later-stages text before the
@@ -5988,3 +6005,61 @@ review and the Plan Completion gate (2026-10-27) add the others.
       re-run of `dr-offer-yes` under the kit passes 4 of 5 by plan 78's core-and-later-stages
       reading.
       → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
+
+## 79-derive-roadmap-resume-and-route-tests — 2026-11-07
+- [ ] **dr-tracks and dr-known-progression-79 miss conformance clause C at the final skill text (plan 79
+      Task 4; owner ruled record).** `skills/derive-roadmap/SKILL.md` §7 step 2 and
+      `references/new-project-entry.md` (Outcomes and tracks, Later qualities). At `5f52dfc` the two
+      independent `dr-tracks` runs scored 3 of 5 and 2 of 5 (bar 4 of 5): replies echo the skill's phrase
+      "your partner can name its stages from first to last" next to an order, and a reply that says
+      "Those go into later stages" counts as a stage list. `dr-known-progression-79` scored 3 of 5 on
+      traceability (4 of 5 on the Provenance-on-bytes other reading). If an order attached to that phrase
+      counts as an echo, both `dr-tracks` runs are 4 of 5; this would reverse plan 78's round 2 rep5 verdict.
+      See specs/red-baseline-new-project-entry.md (Plan 79: re-runs and summary, owner-gate items 1 to 3).
+      Size: design. Done when: the owner rules on the Echo and Provenance readings, or the wording of the two
+      sections changes, and two independent five-rep `dr-tracks` runs and a `dr-known-progression-79` run
+      each pass 4 of 5 under the kit in specs/red-baseline-new-project-entry/kit/.
+- [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
+      defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
+      cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
+      Handoff at every later resume, and the rule "unmet when a Handoff or stamp shows its input missing or not
+      built" has no expiry. Reps 3 and 4 of `dr-resume-blocked` at `T3-r3` add the stage with no citation. No
+      case runs two resumes. Proposed fix: the Commit bullet makes a change approved at the Ask cite
+      `plan <id>, Handoff`, as an amendment does. Size: plan. Done when: a two-resume case exists in the kit,
+      its control fails (the second resume raises the block again), and the one-clause edit lands with a
+      treatment run at 4 of 5.
+- [ ] **The gap-analysis path has no overwrite guard (plan 79 final review; outside plan 79's fence).**
+      `skills/derive-roadmap/SKILL.md` §3 and the opening of `references/roadmap-format.md`. "Ask for another
+      name: never overwrite it" appears only under New-project roadmaps. On the §1 to §3 path, §3 scans only
+      for a header that names this spec, then writes `specs/<name>-roadmap.md`, so a roadmap file with another
+      source could be overwritten. Size: plan. Done when: a gap-analysis collision case exists in the kit, its
+      control fails, and one sentence in §3 (or the roadmap-format.md opening) forbids overwriting a roadmap
+      file that is not this spec's, with a treatment run at 4 of 5.
+- [ ] **The unticked-producer clause and the unusable-output path have no case (plan 79 final review).**
+      `skills/derive-roadmap/SKILL.md` §5 Ask: a `Consumes` is unmet when a Handoff or stamp shows its input
+      missing or not built, or when the stage that is to produce it is unticked. No fixture has a blocked
+      chain (Stage 3 blocked by a Handoff, Stage 4 consumes Stage 3's output) or an output that shipped but is
+      unusable. The default "a stage added to produce it" fits the second case badly. Size: plan. Done when:
+      cases for both exist in the kit, each with a control run and a treatment run, and the Ask text changes
+      if either fails.
+- [ ] **A partial block gets no question about the blocked stage (plan 79 final review; owner decision D4).**
+      `skills/derive-roadmap/SKILL.md` §5 Ask. The trigger is "none has all its `Consumes` met", which is the
+      plan's exact copy of edit 2; D4 as the owner approved it has no "none" condition. With Stage 3 blocked
+      and a ready stage on another track, the ready stage is handed off and Stage 3's blocker is not
+      surfaced. Size: design. Done when: the owner decides whether the question also fires for a blocked stage
+      beside a ready one, and the Ask text and a case match that decision.
+- [ ] **A Handoff that amends nothing is re-read at every resume (plan 79 final review; owner decision D6
+      item 5).** `skills/derive-roadmap/SKILL.md` §5 marker. A Handoff whose bullets change no entry's fields
+      (a trap, a deferred item) is never cited, so each resume reads it again. The owner kept the narrow
+      marker sentence at plan review. Size: design. Revisit if: a recorded resume reports the same trap or
+      deferred-item bullet that an earlier resume of the same roadmap already reported.
+- [ ] **`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5
+      rests on rep2's borderline clause B call. §3 and §7 did not change after `T3`. See
+      specs/red-baseline-new-project-entry.md (Plan 79: Task 3 wording round 1). Size: quick-fix. Done when: a
+      five-rep run of `dr-name-collision` at the final skill text is recorded in
+      specs/red-baseline-new-project-entry.md (about $0.35).
+- [ ] **The term "roadmap name" differs between `references/new-project-entry.md` and `SKILL.md` §5 Parking
+      (plan 79 Task 3 wording round).** new-project-entry.md item 4 defines the roadmap name as the `<name>` in
+      `specs/<name>-roadmap.md`. The deferred-items heading in §5 Parking now uses `<name>-roadmap`. Size:
+      design. Done when: one of the two texts changes or states the difference, and `dr-offer-yes` and
+      `dr-tracks` still pass their bars under the kit.
