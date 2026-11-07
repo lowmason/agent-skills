@@ -131,7 +131,8 @@ Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in
 | Task 1 Step 5, isolation probe | 1 | $1.00 | $1.00 | $0.0141 |
 | Task 1 Step 6, cost pilot | 1 | $3.00 | $3.00 | $0.2821 |
 | Task 2, control arms (15 cases, 5 reps each, no VOID rerun) | 75 | $1.00 | $75.00 ($5.00 per case call) | $5.5029 |
-| **Running total** | 77 | | | **$5.7991 of $60** |
+| Task 3, treatment arms (9 cases in round 1 and 7 in round 2, 5 reps each, no VOID rerun) | 80 | $1.00 | $80.00 ($5.00 per case call) | $8.4719 |
+| **Running total** | 157 | | | **$14.2710 of $60** |
 | **Control arms** | 75 | | | **$5.5029 of $30** |
 
 Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
@@ -141,6 +142,10 @@ as well, it would make the control total $0.28.
 Running total after Task 2: $5.7991 of $60 ($5.80). Control arms: $5.5029 of $30 ($5.50; `show_reps.py` over
 `control/*/` prints $5.50). No rep file is empty or unreadable, so none counts at its cap. These figures match
 Task 2's "Control summary and spend" section, below.
+
+Running total after Task 3: $14.2710 of $60 ($14.27). Control arms: $5.5029 of $30, unchanged: treatment reps count
+toward the $60 only. `show_reps.py` over `treatment/*/` prints $8.47 for Task 3's 80 reps. These figures match the
+"Task 3 summary and owner gate" section, below.
 
 ## Fixture sources
 
@@ -1106,3 +1111,586 @@ other reading of clause B, and it goes to the owner at the completion gate on th
 Spend: Task 2's control arms cost $5.5029 (`show_reps.py` prints $5.50), the Task 2 row of the Spend table. Running
 total: $5.7991 of $60. Control arms: $5.5029 of $30.
 
+
+## Treatment: Task 3
+
+Task 3 adds the New-Project Entry to derive-roadmap. The skill text was committed as `48d9847`
+(`feat(derive-roadmap): add the New-Project Entry for a project with nothing built`). Task 3 runs the treatment of
+nine cases: trigger-stages, trigger-decoy, dr-offer-scaffold, dr-offer-inputs, dr-offer-yes, dr-built-guard,
+dr-known-progression, dr-tracks and dr-research-depth. Each rep is scored by its case's committed rule and by every
+reading in the Control section. No rule and no reading changed.
+
+**Build, round 1.** The prompts were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 48d9847 /tmp/plan78-work/t3 trigger-stages trigger-decoy dr-offer-scaffold dr-offer-inputs dr-offer-yes dr-built-guard dr-known-progression dr-tracks dr-research-depth`.
+Its `MANIFEST.txt` is copied to `treatment/t3-MANIFEST.txt`. Three checks ran on the build before any rep:
+
+- Each DR prompt holds `~/.claude/skills/derive-roadmap/references/new-project-entry.md` as a file block. The
+  derive-roadmap line of each trigger prompt's listing holds the new description ("lay out the stages").
+- The case-repository reads (URL, commit, path and sha256) are the same as those in `control/MANIFEST.txt`.
+- No prompt holds `red-baseline`, `plan 78` or the spec's file name (the quarantine).
+
+Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t3/<case>.txt specs/red-baseline-new-project-entry/treatment/<case> 1 5 claude-opus-5-5 1.00`,
+one case at a time. Before each call, the running total plus the call's worst case ($5.00) stayed under $60.
+
+**Arm of record.** This rule was written here before any round-2 rep ran. Three cases miss their bar in round 1, so
+Task 3 takes its one wording round (below).
+
+- For the seven DR cases, the arm at the wording round's commit is the arm of record. Round 1 stays as history.
+- For the two trigger cases, round 1 stays the arm of record when their prompts at the new commit are byte-identical
+  to round 1's prompts. Then the changed passages cannot reach them.
+- A case that meets its bar in round 1 and misses it in round 2 is an owner gate. The better arm is not picked.
+
+### Round 1: trigger-stages
+
+Additive. Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.0491.
+
+| Rep | A (bar) | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Clause A: 5 of 5 (control 0 of 5). Every rep names derive-roadmap first, for example rep4: "I'd invoke
+**derive-roadmap** first. You're asking me to lay out the stages for a project where nothing is built yet". Bar: met.
+The treatment passes 5 of 5 and the control is RED in 5 of 5.
+
+Running total: $5.8482 of $60.
+
+### Round 1: trigger-decoy
+
+Non-regression (guard). Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.0382.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (control 5 of 5). Every rep names brainstorming first. Bar: met. The guard needs
+at least 4 of 5.
+
+Running total: $5.8864 of $60.
+
+### Round 1: dr-offer-scaffold
+
+Additive. Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.4227.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | fail | pass | pass | no |
+| 2 | pass | pass | pass | yes |
+| 3 | fail (borderline) | pass | pass | no |
+| 4 | pass | pass | pass | yes |
+| 5 | fail (borderline) | pass | pass | no |
+
+Clause A: 2 of 5 (control 3 of 5). Clause B: 5 of 5 (control 5 of 5). Clause C: 5 of 5 (control 0 of 5). PASS: 2 of
+5 (control 0 of 5). Bar: **missed**. It needs 4 of 5.
+
+- A, by the stage-list reading. Reps 1, 3 and 5 describe the offered entry as a core stage first and the hardening
+  in later stages. That sets out two or more stages in an order, as the proposed grouping of the work, inside the
+  offer. Quote (A, rep1): "Hardening would move into named later stages: lease coordination, withdrawal approval,
+  ADF and Container Apps, alerts and runbooks." Rep3: "Hardening such as Azure orchestration, leases and withdrawal
+  gating would go into named later stages." Rep5: "Azure hardening (ADF, the lease, approval gates, alerts) would go
+  to named later stages." Reps 3 and 5 name no later stage, so they are borderline. They are scored as control rep5
+  was ("I'll put all fixture-only CI stages ahead of the infra and orchestration stages"). Reps 2 and 4 name at most
+  one stage, for example rep4: "For example, the first stage might ingest one real archived quarter into Parquet."
+- B passes in every rep with an absolute statement, for example rep1: "No outcome works end to end on real data."
+- C passes in every rep. Each offers staging from an unranked outcome list that the partner ranks, beside a
+  partition from the gap table, and asks. For example rep2: "Which do you want: New-Project Entry, or a partition
+  from the gap table?" No stage, partition or roadmap text follows the question.
+
+Running total: $6.3091 of $60.
+
+### Round 1: dr-offer-inputs
+
+Additive. Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6599.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 2 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 5 of 5 (control 0 of 5). PASS: 5 of 5
+(control 0 of 5). Bar: met.
+
+- A. Reps 1, 3 and 4 name one generic core stage in the offer and no other stage, for example rep1: "each track's
+  first stage is a small core stage on real data". Rep3 also says "I plan to sequence by today's state, which means
+  recording V4 and V5 early". That is one item placed early, not called a stage, so it passes (borderline).
+- B. Each rep says that downloads are not a working outcome and that nothing works end to end, for example rep4:
+  "this repo has nothing working end to end on real data yet."
+- C. Each rep offers the New-Project Entry, with the partner ranking the outcomes, beside a partition, and waits. For
+  example rep4: "Which do you want? I won't switch on my own."
+
+Running total: $6.9690 of $60.
+
+### Round 1: dr-offer-yes
+
+Additive. Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.5875.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | fail (borderline) | fail (borderline) | pass | no |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 5 of 5). Clause B: 4 of 5 (control 2 of 5). Clause C: 4 of 5 (control 2 of 5). Clause D: 5
+of 5 (control 0 of 5). PASS: 4 of 5 (control 0 of 5). Bar: met.
+
+- A. Every rep gives O-numbered table rows, one plain line each, drawn from the spec's rulings (labeled-list
+  reading).
+- B. Reps 1, 2, 4 and 5 give no order of their own. Reps 1 and 5 cite the spec's order and label it, for example
+  rep5: "The spec's §7 already names the order: baseline, daily, replay, reconciliation, withdrawal gate." Rep1's "B
+  does depend on A's code, so it can't start first." is a dependency fact. Rep3 fails by the dependency-fact
+  reading: it places its Azure outcome last, as control rep1 did ("H and I come last"). Quote (B, rep3): "It becomes
+  the later stages of this one track, after the catalog works locally on real SEC data."
+- C. Rep3 fails by the stage-list reading. The same sentence calls the Azure outcome "the later stages" and orders
+  them after the catalog, as control reps 3 to 5 did. Quote (C, rep3): "It becomes the later stages of this one
+  track, after the catalog works locally on real SEC data." Reps 1 and 5 order items by the spec without calling
+  them stages, as control reps 1 and 2 did.
+- D. Every rep gives a cost note with a basis, for example rep4: "Basis: about 350k rows × about 90 bytes per
+  `master.idx` line".
+
+Running total: $7.5565 of $60.
+
+### Round 1: dr-built-guard
+
+Non-regression (guard). Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3092.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (control 5 of 5). Bar: met. The guard needs at least 4 of 5. Every rep gives the
+gap table and one batch of questions. Reps 1 and 3 add a draft partition. No rep says that nothing is built or offers
+outcome-first staging. Reps 1 to 3 name the new entry only to decline it, for example rep2: "R1 and R2 already run end
+to end on the real 2019–2025 export, so the project is partly built and I'll partition the remaining gaps rather than
+use the New-Project Entry."
+
+Running total: $7.8657 of $60.
+
+### Round 1: dr-known-progression
+
+Additive. Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.8438.
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | fail | pass | pass | no |
+| 2 | pass | pass | fail | pass | pass | no |
+| 3 | pass | pass | fail | pass | pass | no |
+| 4 | pass | pass | fail | pass | pass | no |
+| 5 | pass | pass | fail | pass | pass | no |
+
+Clause B: 5 of 5 (control 4 of 5). Clause A: 5 of 5 (control 5 of 5). Clause C: 0 of 5 (control 0 of 5). Clause D: 5
+of 5 (control 0 of 5). Clause E (recorded): 5 of 5 (control 4 of 5). PASS: 0 of 5 (control 0 of 5). Bar: **missed**,
+through conformance clause C.
+
+Clause C by quality. A rep passes a quality when a stage entry after the first names it in its fields.
+
+| Quality | Reps that pass | Count |
+|---|---|---|
+| manifest | rep2 | 1 of 5 |
+| traceability | rep3, rep5 | 2 of 5 |
+| point-in-time (as-of) | none | 0 of 5 |
+
+- B. Each first-stage Exit asks for the table from real index files and records the cost of the run. None names a
+  manifest, a per-row provenance record, as-of awareness or a spec section. For example rep1: "Exit: One real
+  quarter's quarterly master index and at least one real daily master index are in one table." Each first stage's
+  `Leaves out` field sends the hardening to a later stage.
+- C. No rep names point-in-time or as-of awareness in any stage. Quote (C, rep1, the later stage that its Stage 1
+  points to): "Objective: Make the filing-index table cover the full range and make it replayable and
+  correction-safe (background spec §4.2–4.6 as input)." Rep2 names manifests in Stage 5 ("Publish the filing-index
+  table as versioned generations with manifests and one active pointer"). Rep4's Stage 1 `Leaves out` names a
+  "source-state manifest" for Stage 4, but Stage 4's fields name only "per-source state", so rep4 does not pass the
+  manifest quality. Reps 3 and 5 give Stage 2 submissions "each traceable to its index row". Reps 2 and 4 give
+  submissions "located by their index rows" and documents "linked to their index rows". These do not name
+  traceability, so they do not pass it (borderline).
+- A. Every rep commits the index files, the submissions, and 10-K and 8-K handling as Stages 1 to 3, in that order.
+- D. Every stage entry of every rep has a `Leaves out` field. The last stage of each rep reads "nothing".
+- E (recorded). No first-stage Exit requires generations to publish.
+
+Running total: $8.7095 of $60.
+
+### Round 1: dr-tracks
+
+Additive. Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.5813.
+
+| Rep | A (bar) | B (conformance) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | fail | pass | pass | pass | no |
+| 2 | fail | pass | pass | pass | no |
+| 3 | fail | pass | pass | pass | no |
+| 4 | pass | pass (borderline) | pass (borderline) | pass | yes |
+| 5 | pass (borderline) | pass | pass | pass | yes |
+
+Clause A: 2 of 5 (control 0 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 5 of 5 (control 3 of 5). Clause D: 5
+of 5 (control 0 of 5). PASS: 2 of 5 (control 0 of 5). Bar: **missed**, through bar clause A.
+
+Every rep stages the brief through the new entry. Each sends an unranked outcome list with cost notes, proposed
+tracks with their kinds, the name `ces-revisions` and one request to rank.
+
+- A. Reps 1 to 3 put the collection-interval outcome and the budget and staffing outcome in one track. Quote (A,
+  rep1): "**C: Drivers of revision scale (O4–O7).** Research." Its O4 is the collection-interval covariates and its
+  O5 the appropriations, FTE and sample-size covariates. Rep2's "**B: Drivers of revision scale**" holds its O5
+  (collection interval) and O6 (appropriations, FTE and sample size). Rep3: "**B: Covariates (O4, O5). Known
+  progression.**" It offers the split only as an option: "O4 and O5 could be separate tracks if you want the cheap
+  monthly covariate without waiting on the annual hand-build." Rep4 passes. Its O3 (collection interval and revision
+  scale) is in Track B and its O7 (institutional covariates) in Track C: "It is split from B because it answers a
+  different question (agency capacity)." Rep5 passes, borderline. Its O4 (collection days) is in Track A and its O7
+  (capacity series) in Track C. Its reason sets Track C apart from the model track, not from Track A by name:
+  "Split from B for two reasons: it answers an institutional question with weak identification, and its data must
+  be hand-built."
+- B. Every rep asks the partner to rank. Rep4 passes, borderline, by the dependency-fact reading: "B consumes A's
+  vintage panel, so A's core stage comes first whatever the ranking."
+- C. No rep writes roadmap text. Rep4's same sentence names one stage first, as control dr-offer-scaffold reps 2 to 4
+  did, so it is not a stage list (borderline). Reps 3 and 5 say that a research track commits one core stage and
+  keeps the rest in a ranked list, which names one stage.
+- D. Every rep says that the core stage measures the fit cost, for example rep1: "Compute unknown. The core stage
+  measures the real fit time."
+
+Running total: $9.2908 of $60.
+
+### Round 1: dr-research-depth
+
+Additive. Arm `48d9847`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6423.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 0 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 5 of 5 (control 5 of 5). Clause D: 5
+of 5 (control 0 of 5). Clause E: 5 of 5 (control 0 of 5). PASS: 5 of 5 (control 0 of 5). Bar: met.
+
+- A. Every rep commits Stage 1 (Track A, O1) and Stage 2 (Track B, O6) and keeps O3 and O2, and O4 and O5, in
+  `## Ranked list — Track A` and `## Ranked list — Track B`.
+- B. Each committed stage's Exit records a measured cost of the real run, for example rep3's Stage 1: "records the
+  measured time to assemble the calendar and vintages, their data volume, and the wall time of the fit".
+- C. No stage mixes the two tracks. D. Every stage entry has a `Leaves out` field. E. Each committed stage's Produces
+  names `specs/ces-revisions-stage-<N>-findings.md`, the file that its Exit says records the result and the cost.
+
+Running total: $9.9331 of $60.
+
+### Round 1 summary
+
+| Case | Bar | Control | Round 1 (`48d9847`) | Result |
+|---|---|---|---|---|
+| trigger-stages | additive | RED, 5 of 5 | 5 of 5 pass | met |
+| trigger-decoy | guard | 5 of 5 | 5 of 5 | met |
+| dr-offer-scaffold | additive | RED, 5 of 5 | 2 of 5 pass (A 2 of 5) | missed |
+| dr-offer-inputs | additive | RED, 5 of 5 | 5 of 5 pass | met |
+| dr-offer-yes | additive | RED, 4 of 5 | 4 of 5 pass | met |
+| dr-built-guard | guard | 5 of 5 | 5 of 5 | met |
+| dr-known-progression | additive | RED, 1 of 5 | 0 of 5 pass (C 0 of 5) | missed |
+| dr-tracks | additive | RED, 5 of 5 | 2 of 5 pass (A 2 of 5) | missed |
+| dr-research-depth | additive | RED, 5 of 5 | 5 of 5 pass | met |
+
+Round 1 spend: $4.1340 for 45 reps, none VOID. Running total: $9.9331 of $60. Control arms: $5.5029 of $30, unchanged.
+
+### Wording round 1
+
+Three cases missed their bar in round 1. The one wording round edited only the passages that their failed clauses
+read. It kept every case's rule unchanged. The commit is `3ca7344`
+(`fix(derive-roadmap): sharpen the offer, the track split and the later-qualities rule`). The commit lints passed
+before it.
+
+| Failed clause | Passage edited | Change |
+|---|---|---|
+| dr-offer-scaffold A | `SKILL.md` §1, **NOTHING BUILT** | Adds "The offer names no stage, core or later: stages come only after your partner ranks the outcomes." |
+| dr-tracks A | `SKILL.md` §7 step 2, and the second bullet of "Outcomes and tracks" in `references/new-project-entry.md` | Adds "Two questions are unrelated when either answer stands without the other, even when both explain the same result." The reference also gets a transit example: "Whether late trips follow the weather and whether they follow the age of the buses are two questions, though both explain lateness." |
+| dr-known-progression C | The "Later qualities" bullet of `references/new-project-entry.md` | Adds "Check the project against each one, and place every one it will need." and "The later stage or item that picks a quality up names it in its own fields, by the name that `Leaves out` gives it." |
+
+The new text uses no word from a fixture domain. The tracks sentence sharpens what the spec's R4 calls unrelated
+questions and adds no split criterion. The later-qualities text keeps R9's split: a later stage in a known
+progression, a Ranked-list item in a research track. After the edit the derive-roadmap body measures 14,090
+characters, and every Step 6 pin still prints `1`.
+
+**Build, round 2.** The prompts were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 3ca7344 /tmp/plan78-work/t3-r1 trigger-stages trigger-decoy dr-offer-scaffold dr-offer-inputs dr-offer-yes dr-built-guard dr-known-progression dr-tracks dr-research-depth`.
+Its `MANIFEST.txt` is copied to `treatment/t3-r1-MANIFEST.txt`. Checks on the build:
+
+- The sha256 of `trigger-stages.txt` and `trigger-decoy.txt` is the same as in `t3-MANIFEST.txt`. Those prompts carry
+  only the skill listing, and the description did not change. So the changed passages cannot reach them, and they
+  were not re-run. Round 1 stays their arm of record.
+- Each of the seven DR prompts holds a phrase of each edit: "The offer names no stage, core or later" (1), "either
+  answer stands without the other" (2) and "by the name that `Leaves out` gives it" (1).
+- The case-repository reads are the same as in round 1, and no prompt holds `red-baseline`, `plan 78` or the spec's
+  file name.
+
+**Re-run scope.** Every DR prompt carries the whole of `SKILL.md` and its references, and §1 and §7 sit on the path
+of every DR case's decision. So all seven DR cases were re-run, the four that met their bar in round 1 included.
+Each ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t3-r1/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-r1 1 5 claude-opus-5-5 1.00`.
+The `-r1` folders keep the round-1 rep files in place. Before each call, the running total plus $5.00 stayed under $60.
+
+### Round 2: dr-offer-scaffold
+
+Additive. Arm `3ca7344`. Scored reps: rep1 to rep5 of `treatment/dr-offer-scaffold-r1/`. No VOID rep. Spend: $0.4103.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (round 1 2 of 5). Clause B: 5 of 5. Clause C: 5 of 5. PASS: 5 of 5. Bar: met.
+
+- A. No rep previews a stage. Each says that the stages come after the ranking, for example rep1: "You would rank
+  them, and stages would follow from your ranking." Rep4 describes the spec's own phases, which is not its own stage
+  list: "Its Phase 1 is built on Azure infrastructure and integration tests before anything runs on real data."
+- B. For example rep1: "Nothing in this repository is built yet."
+- C. Each rep offers the entry beside a partition and waits, for example rep4: "You would then rank them before I lay
+  out any stages."
+
+Running total: $10.3434 of $60.
+
+### Round 2: dr-offer-inputs
+
+Additive. Arm `3ca7344`. Scored reps: rep1 to rep5 of `treatment/dr-offer-inputs-r1/`. No VOID rep. Spend: $0.6830.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass (borderline) | pass | yes |
+
+Clause A: 5 of 5. Clause B: 5 of 5. Clause C: 5 of 5. PASS: 5 of 5 (round 1 5 of 5). Bar: met.
+
+- B, for example rep1: "By the skill's test, no outcome of this system works end to end on real data." Rep5 passes,
+  borderline. Its question is headed "**1. Nothing built: stage this as a new project?**". It lists "**What
+  works:** the implemented rows are acquisition and conventions", then says "Downloads alone don't count as a
+  working outcome." The heading is an absolute statement, and the reply does not count acquisition as progress.
+- A and C. No rep names a stage before the ranking, and each offers the entry beside a partition and waits.
+
+Running total: $11.0264 of $60.
+
+### Round 2: dr-offer-yes
+
+Additive. Arm `3ca7344`. Scored reps: rep1 to rep5 of `treatment/dr-offer-yes-r1/`. No VOID rep. Spend: $0.6015.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | fail (borderline) | fail | pass | no |
+| 2 | pass | fail (borderline) | fail (borderline) | pass | no |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5. Clause B: 3 of 5 (round 1 4 of 5). Clause C: 3 of 5 (round 1 4 of 5). Clause D: 5 of 5. PASS: 3 of
+5 (round 1 4 of 5). Bar: **missed**. It needs 4 of 5. This case met its bar in round 1, so this is an owner gate.
+
+- B and C, reps 1 and 2. Each applies the later-qualities rule inside the one message. It places some outcomes in
+  later stages, outside a core stage, before the partner ranks. By the dependency-fact reading that is a position
+  ("H and I come last"), so B fails. By the stage-list reading it is a core stage and later stages in an order, so C
+  fails. Quote (B and C, rep1): "The shared cross-collector lease (O7), the pointer (O6) and replay (O4) would be
+  named later stages, not part of the core stage's exit." Rep1 also calls its Track A outcomes stages and orders
+  them by the spec, which fails C on its own: "The spec names these stages in order." Quote (B and C, rep2): "Under
+  the skill's rules, the core stage would run on one real quarter at the smallest usable standard. It would leave
+  out manifests, pointers, the withdrawal gate and Azure, each placed in a named later stage."
+- Rep1's "B depends on A's commands existing, so it would come after at least A's core stage." is a dependency fact
+  and does not decide B.
+- Reps 3 to 5 give dependency facts and the spec's order, labeled. Rep4 names no stage: "Once you've answered, I'll
+  write the stages."
+- D. Every rep gives a cost note with a basis, such as a file count at 3 requests per second.
+- Other reading. If a core stage and its later-quality stages, said inside the one message, are not read as a stage
+  list or a position, rep2 passes B and C. Rep1 still fails C on "The spec names these stages in order." PASS would
+  then be 4 of 5 and the bar met. The owner can rule on this reading (Judgment-call reps, below).
+
+Running total: $11.6279 of $60.
+
+### Round 2: dr-built-guard
+
+Non-regression (guard). Arm `3ca7344`. Scored reps: rep1 to rep5 of `treatment/dr-built-guard-r1/`. No VOID rep.
+Spend: $0.2912.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (control 5 of 5, round 1 5 of 5). Bar: met. Every rep says that the system
+already works end to end and goes to the gap partition, for example rep2: "so this is a normal gap-driven partition,
+not a new project." Rep5 names the definition only to say that it does not apply: "The project is not "nothing
+built"".
+
+Running total: $11.9191 of $60.
+
+### Round 2: dr-known-progression
+
+Additive. Arm `3ca7344`. Scored reps: rep1 to rep5 of `treatment/dr-known-progression-r1/`. No VOID rep. Spend:
+$0.9532.
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | fail (borderline) | pass | pass | no |
+| 2 | pass | pass | fail | pass | pass | no |
+| 3 | pass | pass | fail | pass | pass | no |
+| 4 | pass | pass | fail | pass | pass | no |
+| 5 | pass | pass | fail | pass | pass | no |
+
+Clause B: 5 of 5. Clause A: 5 of 5. Clause C: 0 of 5 (round 1 0 of 5). Clause D: 5 of 5. Clause E (recorded): 5 of 5.
+PASS: 0 of 5 (round 1 0 of 5). Bar: **missed**, through conformance clause C.
+
+Clause C by quality:
+
+| Quality | Round 1 | Round 2 | Round 2 reps that pass |
+|---|---|---|---|
+| manifest | 1 of 5 | 5 of 5 | all |
+| traceability | 2 of 5 | 4 of 5 | rep1, rep3, rep4, rep5 |
+| point-in-time (as-of) | 0 of 5 | 0 of 5 | none (rep1 borderline) |
+
+- C. Every rep now names a manifest in a later stage, for example rep1's "Stage 4: Source manifest and raw-byte
+  replay". Four reps name traceability, for example rep1: "every output row traces to its source file and hash", and
+  rep5's "Stage 5: Submission and document traceability". Rep2's submissions are only "linked to their index rows".
+  No rep names point-in-time or as-of awareness. Quote (C, rep1, the nearest): "Objective: Re-read quarterly indexes,
+  record their changes, and publish index generations readers can pin." It names version pinning, not point-in-time
+  awareness, so it does not pass (borderline). The background spec never raises as-of reads, so the quality has to
+  come from the skill's list alone. With rep1 passed, C would be 1 of 5 and PASS 1 of 5, still below the bar.
+- B. No first-stage Exit names a manifest, a per-row provenance record, as-of awareness or a spec section. Rep5's
+  Exit asks for the full history ("Exit: the table holds the rows of every quarterly master index from 1993Q1 through
+  the last closed quarter"), which is not the smallest standard, but clause B does not test that.
+- A, D and E pass in every rep.
+
+Running total: $12.8723 of $60.
+
+### Round 2: dr-tracks
+
+Additive. Arm `3ca7344`. Scored reps: rep1 to rep5 of `treatment/dr-tracks-r1/`. No VOID rep. Spend: $0.6754.
+
+| Rep | A (bar) | B (conformance) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass (borderline) | fail (borderline) | pass | no |
+| 2 | fail | pass (borderline) | pass (borderline) | pass | no |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass (borderline) | pass (borderline) | pass | yes |
+| 5 | pass | pass (borderline) | fail | pass | no |
+
+Clause A: 4 of 5 (round 1 2 of 5). Clause B: 5 of 5. Clause C: 3 of 5 (round 1 5 of 5). Clause D: 5 of 5. PASS: 2 of
+5 (round 1 2 of 5). Bar: **missed**.
+
+- A. Four reps split the collection-interval outcome from the capacity outcome and say why, for example rep4: "Split
+  from C because the two questions are unrelated even though both explain revision size." Rep2 keeps them in one
+  track. Quote (A, rep2): "I kept fast covariates (O4) and slow ones (O5) together because they're estimated jointly
+  in one scale equation. Split them if you'd rather."
+- C. Rep5 lists the stages of its known-progression track inside the one message. Quote (C, rep5): "I'd expect total
+  nonfarm first, then stage dispersion, then supersectors with NSA/SA. Tell me if you'd name the stages
+  differently." Rep1 fails, borderline, by the same core-and-later-stages reading as dr-offer-yes: "Its core stage
+  builds the vintage panel that every other track consumes, so it likely goes first whatever the ranking." and "Some
+  qualities go to later stages, never a core stage's Exit:", followed by four named qualities. Rep2 passes,
+  borderline. It says it will place its qualities "in a named later stage or a Ranked-list item", which sets out no
+  stage, and it names one stage first. Rep4 names one stage first, as in round 1, so it passes (borderline). Reps
+  3 and 4 order outcomes inside a track without calling them stages.
+- B. Every rep asks the partner to rank. Reps 1, 2, 4 and 5 put Track A's core stage first as a dependency fact, for
+  example rep2: "There's one dependency regardless of ranking: B, C and D all consume A's panel, so A's core stage
+  comes first." These pass by the dependency-fact reading (borderline).
+- D. Every rep says that a run measures the fit cost.
+- Other reading. With rep1 passed on C, PASS would be 3 of 5, still below the bar.
+
+Running total: $13.5477 of $60.
+
+### Round 2: dr-research-depth
+
+Additive. Arm `3ca7344`. Scored reps: rep1 to rep5 of `treatment/dr-research-depth-r1/`. No VOID rep. Spend: $0.7232.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Every clause: 5 of 5. PASS: 5 of 5 (round 1 5 of 5). Bar: met. Every rep commits one core stage per track and keeps
+the other outcomes in the two Ranked lists. The later-qualities edit adds quality items to the Ranked lists, not
+stage entries, for example rep5's "6. Point-in-time vintage store." and rep4's "Q-A4 — a vintage store with as-of
+queries and download manifests."
+
+Running total: $14.2710 of $60 (the per-case figures above are rounded, so the last one reads $14.2709 by sum).
+
+### Task 3 summary and owner gate
+
+| Case | Bar | Control | Round 1 (`48d9847`) | Round 2 (`3ca7344`) | Arm of record | Result |
+|---|---|---|---|---|---|---|
+| trigger-stages | additive | RED, 5 of 5 | 5 of 5 pass | not re-run (prompt unchanged) | round 1 | met |
+| trigger-decoy | guard | 5 of 5 | 5 of 5 | not re-run (prompt unchanged) | round 1 | met |
+| dr-offer-scaffold | additive | RED, 5 of 5 | 2 of 5 pass | 5 of 5 pass | round 2 | met |
+| dr-offer-inputs | additive | RED, 5 of 5 | 5 of 5 pass | 5 of 5 pass | round 2 | met |
+| dr-offer-yes | additive | RED, 4 of 5 | 4 of 5 pass | 3 of 5 pass | round 2 | **missed** (4 of 5 by the other reading) |
+| dr-built-guard | guard | 5 of 5 | 5 of 5 | 5 of 5 | round 2 | met |
+| dr-known-progression | additive | RED, 1 of 5 | 0 of 5 pass | 0 of 5 pass | round 2 | **missed** (C: point-in-time 0 of 5) |
+| dr-tracks | additive | RED, 5 of 5 | 2 of 5 pass | 2 of 5 pass | round 2 | **missed** (3 of 5 by the other reading) |
+| dr-research-depth | additive | RED, 5 of 5 | 5 of 5 pass | 5 of 5 pass | round 2 | met |
+
+Six of the nine cases meet their bar. Three miss it after the one wording round. By plan 78's Bars and D13, that is
+an owner gate at Task 3 Step 9. No second wording round ran.
+
+- **dr-known-progression** misses through conformance clause C alone. Round 2 names manifests in 5 of 5 reps and
+  traceability in 4 of 5, but point-in-time awareness in none. The background spec never raises as-of reads, so
+  that quality would have to come from the skill's example list.
+- **dr-tracks** misses through bar clause A in rep2 (the two covariate outcomes in one track) and conformance clause
+  C in rep5 (a known-progression track's stages listed in the one message). Rep1 fails C on the core-and-later-stages
+  reading (below).
+- **dr-offer-yes** met its bar in round 1 (4 of 5) and misses it in round 2 (3 of 5). By the rule written above
+  under "Arm of record", the better arm is not picked. Its verdict turns on one reading (below).
+
+**The core-and-later-stages reading.** Several replies describe, inside an offer or inside the one message, a core
+stage and the later stages that take the hardening or the later qualities. Task 3 scores that as a stage list by
+the committed stage-list reading ("two or more stages in an order, as its proposed grouping or order of the work, in
+any form"), as Task 2 scored control dr-offer-scaffold rep5 ("I'll put all fixture-only CI stages ahead of the infra
+and orchestration stages"). For dr-offer-yes clause B, the same text places outcomes later, which is a position by
+the dependency-fact reading. This is the committed reading applied, not a new one. It decides one verdict:
+dr-offer-yes round 2 (3 of 5 by it, 4 of 5 without it). Without it, dr-offer-scaffold round 1 would also read 4 of
+5, and dr-tracks round 2 would read 3 of 5. The round-2 edit to the later-qualities rule ("Check the project
+against each one, and place every one it will need") may have drawn this text into the one message: it appears in
+dr-offer-yes reps 1 and 2 and dr-tracks rep1 of round 2. In round 1, only dr-offer-yes rep3 had a
+form close to it.
+
+**Judgment-call reps (Task 3).** These rows extend the Judgment-call list in the Control section. Each rep was
+scored on a close reading.
+
+| Arm, case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| round 1, dr-offer-scaffold rep1, A | fail (stage list) | "Hardening would move into named later stages: lease coordination, withdrawal approval, ADF and Container Apps, alerts and runbooks." |
+| round 1, dr-offer-scaffold rep3, A | fail, borderline (core and later stages) | "Hardening such as Azure orchestration, leases and withdrawal gating would go into named later stages." |
+| round 1, dr-offer-scaffold rep5, A | fail, borderline (core and later stages) | "Azure hardening (ADF, the lease, approval gates, alerts) would go to named later stages." |
+| round 1, dr-offer-inputs rep3, A | pass, borderline (one item early) | "I plan to sequence by today's state, which means recording V4 and V5 early" |
+| round 1, dr-offer-yes rep3, B and C | fail, borderline (position, stage list) | "It becomes the later stages of this one track, after the catalog works locally on real SEC data." |
+| round 1, dr-known-progression reps 2 and 4, C (traceability) | not passed, borderline | "located by their index rows" (rep2), "linked to their index rows" (rep4) |
+| round 1, dr-known-progression rep4, C (manifest) | not passed, borderline | Stage 1 `Leaves out` names a "source-state manifest", but Stage 4's fields name only "per-source state" |
+| round 1, dr-tracks rep4, B and C | pass, borderline (dependency fact, one stage) | "B consumes A's vintage panel, so A's core stage comes first whatever the ranking." |
+| round 1, dr-tracks rep5, A | pass, borderline (reason sets Track C apart from the model track) | "Split from B for two reasons: it answers an institutional question with weak identification, and its data must be hand-built." |
+| round 2, dr-offer-inputs rep5, B | pass, borderline (absolute heading) | "**1. Nothing built: stage this as a new project?**" |
+| round 2, dr-offer-yes rep1, B | fail, borderline (position) | "The shared cross-collector lease (O7), the pointer (O6) and replay (O4) would be named later stages, not part of the core stage's exit." |
+| round 2, dr-offer-yes rep2, B and C | fail, borderline (core and later stages, decides the case) | "It would leave out manifests, pointers, the withdrawal gate and Azure, each placed in a named later stage." |
+| round 2, dr-known-progression rep1, C (point-in-time) | not passed, borderline | "publish index generations readers can pin" |
+| round 2, dr-tracks rep1, C | fail, borderline (core and later stages) | "Some qualities go to later stages, never a core stage's Exit:" |
+| round 2, dr-tracks rep2, C | pass, borderline (no stage set out) | "in a named later stage or a Ranked-list item" |
+| round 2, dr-tracks reps 1, 2, 4 and 5, B | pass, borderline (dependency fact) | "There's one dependency regardless of ranking: B, C and D all consume A's panel, so A's core stage comes first." (rep2) |
+
+**Task 3 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/*/`
+ran once after the last rep. It shows 80 reps, none VOID, and prints `total cost $8.47`. No rep file is empty or
+unreadable, so none counts at its cap. There was no VOID rerun. Round 1 cost $4.1340 (45 reps) and round 2 cost
+$4.3379 (35 reps), so Task 3 cost $8.4719. Running total: $14.2710 of $60. Control arms: $5.5029 of $30, unchanged.
