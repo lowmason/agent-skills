@@ -1808,3 +1808,15 @@ scored on a close reading. None changes a verdict.
 ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.52`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.2646 and $0.2544, so Task 4
 cost $0.5190. Running total: $14.7900 of $60. Control arms: $5.5029 of $30, unchanged.
+
+**Review finding for the owner, Task 4 (parked to the plan completion gate).** The Task 4 reviewer found that "stop the
+track" has two readings in the owner-approved text of D16. The new §5 paragraph sends a stopped track's items to "the
+Parking rule below". That rule ends by moving the whole roadmap to `specs/completed/` marked
+`PARKED (date) — N of M stages complete`. The new §6 sentence says never-promoted items "have parked (§5)", which
+assumes §6 still runs after a stop. So when the partner answers "stop the track", the agent can read either "park the
+whole roadmap now, with no completion audit" or "park the items, then run §6 and retire". In a two-track roadmap the
+first reading also parks the track that is still live. No micro-test reaches this path: `dr-resume-rerank` has one
+track and no rep receives a "stop" answer. No edit was made. The reviewer's smallest fix: say in the new paragraph that
+a stopped track's items append to `specs/deferred_items.md` under the Parking rule's item schema, and that the roadmap
+itself moves only through §6 or when the partner parks the whole roadmap. Task 4's treatment arms met their bars in
+round 1, with a thin control for `dr-resume-rerank` (the control failed a bar clause in 1 of 5 reps).
