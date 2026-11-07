@@ -296,7 +296,7 @@ skills/ at 896224c. They include brainstorming/SKILL.md and the three
 subagent-driven-development scripts. The other six were adapted on the
 way in. Upstream has continued to move since. 896224c is the vendored
 baseline. The "Next review starts from" row of
-`specs/superpowers-drift-spec.md` names where the next drift review starts.
+`specs/superpowers-drift-spec-v7-0-2.md` names where the next drift review starts.
 
 Changes from upstream:
   - Cross-skill references rewritten from the `superpowers:` plugin
@@ -479,7 +479,7 @@ Changes from upstream:
     A decision that changes the spec becomes a tagged amendment task,
     never an edit made during planning. And there is no Native mode.
     executing-plans was later ported from upstream (plan 75, finding 11
-    of specs/superpowers-drift-spec.md), as the entry below records.
+    of specs/completed/superpowers-drift-spec-v7-0-1.md), as the entry below records.
   - writing-plans' Plan Completion Protocol gained a step 3a, and
     subagent-driven-development and executing-plans a closing handoff,
     for a plan that is a stage of a derive-roadmap roadmap. The plan
@@ -616,7 +616,7 @@ Changes from upstream:
     worktree only when this session made it. When `git worktree remove`
     refuses, Step 6 names the cause and asks, with no `--force` and no
     unlock. Upstream at bb92a77 (v7.0.0) also stops and asks when untracked
-    files block a removal, as finding 8 of specs/superpowers-drift-spec.md
+    files block a removal, as finding 8 of specs/completed/superpowers-drift-spec-v7-0-1.md
     records. That idea is credited here, and no upstream text was taken.
     The Common Mistakes list moved to references/common-mistakes.md, so the
     body stays inside the compaction window.
