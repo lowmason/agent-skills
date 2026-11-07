@@ -1,6 +1,6 @@
 # derive-roadmap new-project entry — Design Spec
 
-**Status:** APPROVED (2026-11-06). The design came from a brainstorming session on 2026-11-06,
+**Status:** COMPLETE (2026-11-06), implemented by plan 78 (`specs/plans/completed/78-derive-roadmap-new-project-entry.md`). It was APPROVED on 2026-11-06. The design came from a brainstorming session on 2026-11-06,
 and the owner approved this file, its designer's calls included, the same day.
 
 derive-roadmap gets a second way in, for a project with nothing built yet. The owner states the

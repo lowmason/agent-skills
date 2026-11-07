@@ -1,6 +1,6 @@
 '''Frozen inputs for plan 78's micro-tests of derive-roadmap's New-Project Entry.
 
-Fifteen cases, as specs/plans/78-derive-roadmap-new-project-entry.md Task 1 Step 3 defines them.
+Fifteen cases, as specs/plans/completed/78-derive-roadmap-new-project-entry.md Task 1 Step 3 defines them.
 Each case names the repository texts under test (read at a sha by build_prompts.py), its model
 and per-rep budget, its kind, its fixture (the session so far), its task, its pass rule, its leak
 pattern and, where it reads them, the case-repository files that its `{file:<key>}` markers

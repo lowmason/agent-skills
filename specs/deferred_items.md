@@ -5901,3 +5901,62 @@ review and the Plan Completion gate (2026-10-27) add the others.
       shows an agent that loaded the test-driven-development skill skip the
       develop-testing-strategy skill when adding the first tests to a scraper, pipeline or
       model.
+
+## 78-derive-roadmap-new-project-entry — 2026-11-06
+- [ ] **dr-offer-yes misses its bar after plan 78's wording round (3 of 5; owner ruled accept and
+      file at the completion gate).** `skills/derive-roadmap/SKILL.md` §1 NOTHING BUILT and
+      `references/new-project-entry.md` (Later qualities, The one message). The case passed 4 of 5
+      in Task 3 round 1, then 3 of 5 after the wording round, and 3 of 5 again in the Task 7 re-run.
+      The verdict turns on one reading: a reply that names a core stage and later stages for the
+      hardening, inside the offer or the one message, counts as a stage list. Without that reading
+      the case passes 4 of 5. See specs/red-baseline-new-project-entry.md (Task 3 summary and owner
+      gate; Task 7) and specs/plans/completed/78-derive-roadmap-new-project-entry.md. Size: design.
+      Done when: the owner rules on that reading, or a re-run of the case passes 4 of 5 under the
+      kit in specs/red-baseline-new-project-entry/kit/.
+- [ ] **dr-tracks passes unstably (owner ruled accept and file at the completion gate).**
+      `skills/derive-roadmap/SKILL.md` §7 step 2 and `references/new-project-entry.md` (Outcomes and
+      tracks). Task 3 rounds 1 and 2 scored 2 of 5 each. The Task 7 re-run scored 5 of 5 on the
+      readings applied, although no edit touched the track-split text, so most of the change is
+      likely variance. By the other reading of clause C it scores 3 of 5 or fewer. See
+      specs/red-baseline-new-project-entry.md (Treatment: Task 3 and Task 7). Size: plan. Done when:
+      two independent five-rep runs of the case each pass 4 of 5 under the kit, or the owner accepts
+      the Task 7 result as it stands.
+- [ ] **dr-known-progression fails conformance clause C: point-in-time awareness appears in 0 of 5
+      reps (owner ruled accept and file at the completion gate).** The fixture's background spec
+      never raises as-of reads, so the skill's Later-qualities example list in
+      `skills/derive-roadmap/references/new-project-entry.md` is the only cue. Manifests (5 of 5)
+      and traceability (4 of 5) land in later stages. See specs/red-baseline-new-project-entry.md
+      (Task 3 summary and owner gate; Task 7). Size: design. Done when: the owner decides whether
+      the skill text must prompt for point-in-time awareness or whether clause C should fit the
+      fixture, and the case is re-run under that decision.
+- [ ] **A new-project roadmap built from a spec maps each outcome to no spec section reference
+      (plan 78 final review, owner ruled file).** Spec R10 sets this substitution (`Outcomes` in
+      place of `Spec` and `Gap closed`). A stage plan from `writing-plans` is then scoped to
+      one-line outcomes, and the effect on a stage plan is untested. See
+      `skills/derive-roadmap/references/roadmap-format.md` (New-project roadmaps) and
+      specs/completed/derive-roadmap-new-project-entry.md. Size: design. Done when: one stage plan built from
+      a new-project roadmap with a spec has been checked against that spec, and the format either
+      carries the spec section or states why it does not.
+- [ ] **A later quality in a research track's Ranked list has no O-number and no partner rank
+      (plan 78 final review, owner ruled file).** `skills/derive-roadmap/references/roadmap-format.md`
+      (Ranked list) gives a list item an O-number and the partner's order. A quality that
+      `Leaves out` hands to the list has neither, so replies add it as an unranked item. See
+      specs/red-baseline-new-project-entry.md. Size: design. Done when: the format states how a
+      later quality is listed in a Ranked list (for example an O-number and a rank request, or a
+      named unranked class).
+- [ ] **Four routes that plan 78 added have no micro-test (plan 78 Task 7 and final review).** A
+      "stop the track" answer and a whole-roadmap park with Ranked lists (`skills/derive-roadmap/SKILL.md`
+      §5 and its Parking paragraph), a name collision when a spec exists (`references/roadmap-format.md`,
+      New-project roadmaps), and a second re-rank round (the research-track paragraph in §5). Two
+      reviewers and Codex found defects on these paths, and no case reaches them. See
+      specs/red-baseline-new-project-entry.md (Untested by micro-tests). Size: plan. Done when:
+      cases for the four paths exist in specs/red-baseline-new-project-entry/kit/cases.py, each
+      with a control run and a treatment run.
+- [ ] **Two wording gaps left by plan 78's final review (owner ruled file).**
+      `skills/derive-roadmap/references/roadmap-format.md` (Ranked list, last paragraph) names only a
+      promotion and a track stop as ways an item leaves a Ranked list, and a whole-roadmap park also
+      removes them. `skills/derive-roadmap/SKILL.md` §7 step 4 says "a proposed roadmap name" for
+      every case, while `references/new-project-entry.md` limits it to a run with no spec. Both are
+      one-phrase edits to owner-approved text, so they need a micro-test pass under the plan 78
+      kit. Size: quick-fix. Done when: the roadmap-format paragraph also names a whole-roadmap park
+      and §7 step 4 says "with no spec".

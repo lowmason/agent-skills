@@ -1,5 +1,7 @@
 # derive-roadmap New-Project Entry Implementation Plan
 
+**Status: COMPLETE (2026-11-06)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give derive-roadmap a second entry for a project with nothing built, and route brainstorming and describe-critique-methodology to it, with a RED baseline before every text change and a GREEN run after.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Markdown skill text; Python per `build/versions.toml` (kit: stdlib only, run through `uv run python`); bash for the rep runner; the `claude` CLI (version recorded at the pilot); `git show` to read fixtures from local clones of the four case-study repositories; this repo's commit lints.
 
-**Spec:** `specs/derive-roadmap-new-project-entry.md` (approved 2026-11-06).
+**Spec:** `specs/completed/derive-roadmap-new-project-entry.md` (approved 2026-11-06).
 
 > **Execution base.** The spec and this plan exist only on the local, unpushed branch `claude/roadmap-methodology-scope-c00eab`. An execution worktree, which usually branches from `origin/main`, must contain that branch: merge `refs/heads/claude/roadmap-methodology-scope-c00eab` into it first, and confirm that `specs/derive-roadmap-new-project-entry.md` and this plan both exist. Never execute on `main`.
 >
@@ -104,15 +106,16 @@ Defaults this plan settles where the spec leaves a call to the builder, or where
 - Produces: `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py <sha> <out-dir> [<case> ...]` (and `leakview <out-dir>`); `bash specs/red-baseline-new-project-entry/kit/run_reps.sh <prompt> <out-dir> <first> <last> claude-opus-5-5 <cap>`; `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py <dir> ...`. The 15 case keys below. The per-rep cap in the record.
 - Consumes, for fixtures: the roadmap format fixed in Task 3 Step 4 (the `dr-resume-rerank` fixture uses it before Task 3 runs).
 
-- [ ] **Step 1: Fix `BASE` and check for drift.** `BASE` is the execution branch's start commit; write its sha in the record. Run `git diff --stat da5b21b BASE -- skills/derive-roadmap skills/describe-critique-methodology skills/brainstorming build/test_runtime_support.py README.md NOTICE`.
+- [x] **Step 1: Fix `BASE` and check for drift.** `BASE` is the execution branch's start commit; write its sha in the record. Run `git diff --stat da5b21b BASE -- skills/derive-roadmap skills/describe-critique-methodology skills/brainstorming build/test_runtime_support.py README.md NOTICE`.
 Expected: no output. Otherwise re-take the anchors of each changed file before its task, and add a deviation note.
 
-- [ ] **Step 2: Write `build_prompts.py`.** Plan 77's file, with these changes:
+- [x] **Step 2: Write `build_prompts.py`.** Plan 77's file, with these changes:
   - **Skills listing.** Every prompt carries, after the frame's first line, a block headed `Skills available in this session, as your skill listing shows them (name: description):`, with one line per skill, read from the frontmatter at the arm's sha, for `brainstorming`, `creative-thinking`, `derive-roadmap`, `describe-critique-methodology`, `design-architecture`, `executing-plans`, `subagent-driven-development` and `writing-plans`, in that order. In `leakview`, each description is the placeholder.
   - **Case-repository files.** `repo_file(repo: str, commit: str, path: str, excerpt: int | None = None) -> str` reads with `git -C "$CASE_REPOS/<repo>" show <commit>:<path>`. It refuses when `CASE_REPOS` is unset or the read fails. With `excerpt`, it returns the file's first line, then every Markdown heading line, then the first `excerpt` characters, then `[excerpt: <excerpt> of <N> characters]`. Each read adds a MANIFEST line: `https://github.com/lowmason/<repo>`, commit, path, sha256 of the text used. A fixture places a file's text with a `{file:<key>}` marker that the case maps to a `repo_file` call. `leakview` keeps these files, since they are fixture, not text under test.
   - **No texts.** A case whose `texts` list is empty (the trigger cases) builds a prompt with no text block.
 
-- [ ] **Step 3: Write the 15 cases in `cases.py`.** Each case gives `texts`, `model` (`claude-opus-5-5`), `budget` (filled in at Step 6), `kind`, `fixture`, `task`, `pass` (clauses marked bar or conformance, with reading notes), `leak` and, where it reads them, its `repo_file` calls. Text sets: **DR** = `skills/derive-roadmap/SKILL.md` and `skills/derive-roadmap/references/*.md`. **DCM-D** = `skills/describe-critique-methodology/SKILL.md` and its `references/methodology-template.md`. **DCM-S** = the same SKILL.md and its `references/spec-synthesis.md`. **BS** = `skills/brainstorming/SKILL.md`. Rules for every fixture:
+> Deviation: `build_prompts.py` also reads and writes UTF-8 explicitly, and its listing parser accepts only a folded `description: >` block.
+- [x] **Step 3: Write the 15 cases in `cases.py`.** Each case gives `texts`, `model` (`claude-opus-5-5`), `budget` (filled in at Step 6), `kind`, `fixture`, `task`, `pass` (clauses marked bar or conformance, with reading notes), `leak` and, where it reads them, its `repo_file` calls. Text sets: **DR** = `skills/derive-roadmap/SKILL.md` and `skills/derive-roadmap/references/*.md`. **DCM-D** = `skills/describe-critique-methodology/SKILL.md` and its `references/methodology-template.md`. **DCM-S** = the same SKILL.md and its `references/spec-synthesis.md`. **BS** = `skills/brainstorming/SKILL.md`. Rules for every fixture:
   - `[you, tools]` lines state what the tools showed, as facts, and never a verdict the case scores.
   - A constructed fixture uses its listed domain only.
   - The task line is `It is your turn. You have no tools in this turn, so write any tool call as text. Write your next message to your partner.` unless the case gives another.
@@ -203,20 +206,21 @@ Expected: no output. Otherwise re-take the anchors of each changed file before i
     Leak: `New-Project`, `roadmap`, `nothing built`.
   - **`bs-guard`.** Constructed; domain: a small script, in a fresh repository where nothing exists, that reads a folder of GPX track files and writes one CSV with each track's distance and duration. Nothing is built, and the work is one cycle, so only the "several stages" test keeps it off the new route (Review Focus item 4). Your first message, given in an `[earlier]` line, echoed the request and asked one question. The partner's answer settles the units and what happens to a file that fails to parse. PASS: the reply lays out two or three ways to build it, in this message, with a recommendation and one question asking which way to go. It does not hand off to derive-roadmap. Leak: as `bs-route`.
 
-- [ ] **Step 4: Write the record.** It holds `BASE`; the kit's files; the arms; both bar kinds and the clause kinds from Global Constraints; the VOID rule copied from plan 77's `cases.py`; each case's reading rule, kind and bar; the fixture sources with their commits; and the quarantine note from this plan's header. Then build the leak view, `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan78-work/leak`, and grep each prompt for its case's leak words. Record each hit, and whether it is exempt and why: a hit in the listing's skill names, or in a case-repository file read verbatim, can be exempt. A hit in a hand-written line is reworded. Commit before any rep:
+> Deviation: At `22c6767f` each sec-edgar `__init__.py` holds the `uv init` `hello()` stub, so the fixture states that fact and the gap evidence reads "generated package scaffolds", not "empty". The `dr-offer-inputs` gap table empties only the osha row's note, by the plan's leak rule (record: Amendment 1).
+- [x] **Step 4: Write the record.** It holds `BASE`; the kit's files; the arms; both bar kinds and the clause kinds from Global Constraints; the VOID rule copied from plan 77's `cases.py`; each case's reading rule, kind and bar; the fixture sources with their commits; and the quarantine note from this plan's header. Then build the leak view, `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan78-work/leak`, and grep each prompt for its case's leak words. Record each hit, and whether it is exempt and why: a hit in the listing's skill names, or in a case-repository file read verbatim, can be exempt. A hit in a hand-written line is reworded. Commit before any rep:
 
 ```bash
 git add specs/red-baseline-new-project-entry specs/red-baseline-new-project-entry.md
 git commit -m "test(specs): micro-test kit and reading rules for plan 78"
 ```
 
-- [ ] **Step 5: Pilot isolation.** Run `bash specs/red-baseline-new-project-entry/kit/run_reps.sh specs/red-baseline-new-project-entry/kit/isolation_probe.txt specs/red-baseline-new-project-entry/pilot/probe 1 1 claude-opus-5-5 1.00`.
+- [x] **Step 5: Pilot isolation.** Run `bash specs/red-baseline-new-project-entry/kit/run_reps.sh specs/red-baseline-new-project-entry/kit/isolation_probe.txt specs/red-baseline-new-project-entry/pilot/probe 1 1 claude-opus-5-5 1.00`.
 Expected: all five probe lines `NO`; `show_reps.py` shows one turn, no tool and one model. Record the Claude Code version (`claude --version`).
 
-- [ ] **Step 6: Calibrate the spend.** Build the control prompts with `build_prompts.py BASE /tmp/plan78-work/calibrate`. Run one uncounted rep of the largest prompt by bytes into `specs/red-baseline-new-project-entry/pilot/<case>/` with a $3.00 cap. Set the per-rep cap to the larger of $1.00 and three times the pilot's `total_cost_usd`, rounded up to the next $0.25. Write it into every case's `budget`, and estimate the run as 150 × the pilot cost.
+- [x] **Step 6: Calibrate the spend.** Build the control prompts with `build_prompts.py BASE /tmp/plan78-work/calibrate`. Run one uncounted rep of the largest prompt by bytes into `specs/red-baseline-new-project-entry/pilot/<case>/` with a $3.00 cap. Set the per-rep cap to the larger of $1.00 and three times the pilot's `total_cost_usd`, rounded up to the next $0.25. Write it into every case's `budget`, and estimate the run as 150 × the pilot cost.
 Expected: the record shows the pilot cost, the cap and the estimate. If the estimate passes $60, stop and ask the owner before any counted rep.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/red-baseline-new-project-entry specs/red-baseline-new-project-entry.md
@@ -233,10 +237,11 @@ git commit -m "test(specs): isolation pilot and spend calibration for plan 78"
 - Consumes: Task 1's kit, cases and cap.
 - Produces: each case's control score per clause, which Tasks 3 to 6 compare against.
 
-- [ ] **Step 1: Confirm no skill file has changed.** `git diff --stat BASE -- skills/` prints nothing.
-- [ ] **Step 2: Run five reps per case.** Build with `build_prompts.py BASE /tmp/plan78-work/control`, now that every case carries its cap, and run into `specs/red-baseline-new-project-entry/control/<case>/`. Copy the build's `MANIFEST.txt` to `control/`. Rerun each VOID rep under the next free number.
-- [ ] **Step 3: Score every reply by hand** by the committed rule, clause by clause. Record each case's score per clause, the VOID reruns, one verbatim quote per failed bar clause, and the spend. A case whose control passes every bar clause in 5 of 5 is marked "clean control: to the owner at the completion gate".
-- [ ] **Step 4: Commit**
+- [x] **Step 1: Confirm no skill file has changed.** `git diff --stat BASE -- skills/` prints nothing.
+- [x] **Step 2: Run five reps per case.** Build with `build_prompts.py BASE /tmp/plan78-work/control`, now that every case carries its cap, and run into `specs/red-baseline-new-project-entry/control/<case>/`. Copy the build's `MANIFEST.txt` to `control/`. Rerun each VOID rep under the next free number.
+- [x] **Step 3: Score every reply by hand** by the committed rule, clause by clause. Record each case's score per clause, the VOID reruns, one verbatim quote per failed bar clause, and the spend. A case whose control passes every bar clause in 5 of 5 is marked "clean control: to the owner at the completion gate".
+> Deviation: Scoring needed readings that the committed notes do not state. The controller confirmed them during execution. They are written once under "Readings applied" in `specs/red-baseline-new-project-entry.md` and apply to every arm.
+- [x] **Step 4: Commit**
 
 ```bash
 git add specs/red-baseline-new-project-entry specs/red-baseline-new-project-entry.md
@@ -255,10 +260,10 @@ git commit -m "test(specs): control arms for plan 78's micro-tests"
 - Consumes: Task 2's control scores.
 - Produces: §7 "New-Project Entry" (the name Tasks 5 and 6 cite as `derive-roadmap's New-Project Entry`); the `New-project roadmaps` format: the `Outcomes` section, the stage fields `Outcomes`, `Track` and `Leaves out`, `## Ranked list — Track <X>`, and the findings file `specs/<name>-stage-<N>-findings.md`, which Task 4's §5 text reads.
 
-- [ ] **Step 1: Show the gap.** `/usr/bin/grep -c "New-Project\|Nothing built" skills/derive-roadmap/SKILL.md`.
+- [x] **Step 1: Show the gap.** `/usr/bin/grep -c "New-Project\|Nothing built" skills/derive-roadmap/SKILL.md`.
 Expected: `0`.
 
-- [ ] **Step 2: Edit `SKILL.md`.** Wrap each new passage like the text around it.
+- [x] **Step 2: Edit `SKILL.md`.** Wrap each new passage like the text around it.
   - Description (`:3-8`) becomes:
 
 ```text
@@ -355,7 +360,7 @@ inputs, the checks you may run, and each rule below in full.
   recorded in `Leaves out`.
 ```
 
-- [ ] **Step 3: Create `references/new-project-entry.md`** with this text:
+- [x] **Step 3: Create `references/new-project-entry.md`** with this text:
 
 ````markdown
 # New-Project Entry
@@ -462,7 +467,7 @@ How a stage is built: its tasks, its tests, its approach. That stays with
 brainstorming or writing-plans, by bare name, in the stage's own session.
 ````
 
-- [ ] **Step 4: Append to `references/roadmap-format.md`,** after its last line:
+- [x] **Step 4: Append to `references/roadmap-format.md`,** after its last line:
 
 ````markdown
 
@@ -526,22 +531,23 @@ An item leaves the list when your partner promotes it to a stage at a resume,
 or parks when the track stops (SKILL.md §5).
 ````
 
-- [ ] **Step 5: Measure.** The derive-roadmap body measures at most 20,000 characters: `cd build && uv run --with pyyaml python -c "import check_conformance as c, pathlib; print(len(c.skill_body(pathlib.Path('../skills/derive-roadmap/SKILL.md').read_text())[0]))"`. `uv run --with pyyaml python build/check_frontmatter.py` passes. `/usr/bin/grep -c "New-Project\|Nothing built" skills/derive-roadmap/SKILL.md` prints at least `4`.
-- [ ] **Step 6: Check the Review Focus pins.** Each command prints `1`:
+- [x] **Step 5: Measure.** The derive-roadmap body measures at most 20,000 characters: `cd build && uv run --with pyyaml python -c "import check_conformance as c, pathlib; print(len(c.skill_body(pathlib.Path('../skills/derive-roadmap/SKILL.md').read_text())[0]))"`. `uv run --with pyyaml python build/check_frontmatter.py` passes. `/usr/bin/grep -c "New-Project\|Nothing built" skills/derive-roadmap/SKILL.md` prints at least `4`.
+- [x] **Step 6: Check the Review Focus pins.** Each command prints `1`:
   - `tr '\n' ' ' < skills/derive-roadmap/SKILL.md | tr -s ' ' | /usr/bin/grep -o 'Judge that system, not the whole repository' | wc -l` (item 1)
   - `tr '\n' ' ' < skills/derive-roadmap/SKILL.md | tr -s ' ' | /usr/bin/grep -o 'the offer goes in the questions block' | wc -l` (item 2)
   - `tr '\n' ' ' < skills/derive-roadmap/references/new-project-entry.md | tr -s ' ' | /usr/bin/grep -o 'label the ranking provisional' | wc -l` (item 2)
   - `tr '\n' ' ' < skills/derive-roadmap/references/roadmap-format.md | tr -s ' ' | /usr/bin/grep -o 'never overwrite it' | wc -l` (item 5)
-- [ ] **Step 7: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 8: Commit**
+- [x] **Step 7: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/derive-roadmap
 git commit -m "feat(derive-roadmap): add the New-Project Entry for a project with nothing built"
 ```
 
-- [ ] **Step 9: Run the treatment arms** at `HEAD` (write its sha in the record as the arm's sha) for `trigger-stages`, `trigger-decoy`, `dr-offer-scaffold`, `dr-offer-inputs`, `dr-offer-yes`, `dr-built-guard`, `dr-known-progression`, `dr-tracks` and `dr-research-depth`. Build into `/tmp/plan78-work/t3`, run into `specs/red-baseline-new-project-entry/treatment/<case>/`, and copy the build's `MANIFEST.txt` to `treatment/t3-MANIFEST.txt`. Score by the committed rules. Append each case's clause scores, its bar result, VOID reruns and the spend, and apply the bars. A wording round edits only the passage that the failed clause reads and commits it as `fix(derive-roadmap): …`.
-- [ ] **Step 10: Commit**
+- [x] **Step 9: Run the treatment arms** at `HEAD` (write its sha in the record as the arm's sha) for `trigger-stages`, `trigger-decoy`, `dr-offer-scaffold`, `dr-offer-inputs`, `dr-offer-yes`, `dr-built-guard`, `dr-known-progression`, `dr-tracks` and `dr-research-depth`. Build into `/tmp/plan78-work/t3`, run into `specs/red-baseline-new-project-entry/treatment/<case>/`, and copy the build's `MANIFEST.txt` to `treatment/t3-MANIFEST.txt`. Score by the committed rules. Append each case's clause scores, its bar result, VOID reruns and the spend, and apply the bars. A wording round edits only the passage that the failed clause reads and commits it as `fix(derive-roadmap): …`.
+> Deviation: One wording round ran (`3ca7344`). Three cases still missed their bar, and the owner ruled "Record and continue" (2026-11-06). The controller committed the arms and the record (Step 10) after that ruling. See "Task 3 summary and owner gate" in `specs/red-baseline-new-project-entry.md`.
+- [x] **Step 10: Commit**
 
 ```bash
 git add specs/red-baseline-new-project-entry specs/red-baseline-new-project-entry.md
@@ -558,9 +564,9 @@ git commit -m "test(specs): treatment arms for derive-roadmap's New-Project Entr
 **Interfaces:**
 - Consumes: Task 3's format names: `Outcomes`, `Leaves out`, `## Ranked list — Track <X>` and the findings file in a core stage's `Produces`.
 
-- [ ] **Step 1: Show the gap.** `tr '\n' ' ' < skills/derive-roadmap/SKILL.md | tr -s ' ' | /usr/bin/grep -o "no Ranked list waiting\|A research track waiting on its Ranked list\|stopped track" | wc -l`.
+- [x] **Step 1: Show the gap.** `tr '\n' ' ' < skills/derive-roadmap/SKILL.md | tr -s ' ' | /usr/bin/grep -o "no Ranked list waiting\|A research track waiting on its Ranked list\|stopped track" | wc -l`.
 Expected: `0`.
-- [ ] **Step 2: Edit §5 and §6.**
+- [x] **Step 2: Edit §5 and §6.**
   - Amend (`:143-144`), then re-wrap the bullet:
 
 ```text
@@ -585,18 +591,18 @@ under the Parking rule below.
   - `:159`: `With every stage ticked, go to §6.` becomes `With every stage ticked and no Ranked list waiting, go to §6.`
   - Parking (`:161-166`): `Remaining unticked stages append to` becomes `Remaining unticked stages, and the items of a stopped track's Ranked list, append to`. `one item per stage` becomes `one item per stage or list item`. `a `Done when:` naming the stage's Produces` becomes ``a `Done when:` naming the stage's Produces or the item's outcome``. Re-wrap the paragraph.
   - §6, after the sentence that ends `deferred_items entries).` (`:175`): `In a new-project roadmap, run it over the Outcomes list in place of spec requirements. Ranked-list items your partner never promoted have parked (§5).`
-- [ ] **Step 3: Check.** Step 1's command prints `3`. The body measures at most 20,000 characters (Task 3 Step 5's command).
-- [ ] **Step 4: Edit the README row** (`README.md:73`). `The rubric in `references/gap-rubric.md` has four classes: implemented-as-specified, implemented-differently, missing, and in-code-but-not-in-spec.` becomes ``The rubric in `references/gap-rubric.md` has five classes: implemented-as-specified, implemented-differently, missing, in-code-but-not-in-spec, and out-of-repo.`` At the end of the row, before ` |`, add: ` For a project with nothing built, its New-Project Entry takes the outcomes in plain words, splits unrelated ones into tracks, adds rough cost notes and asks for a ranking. A known progression then gets every stage, and a research track gets only its core stage until that stage has run on real data.`
-- [ ] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 6: Commit**
+- [x] **Step 3: Check.** Step 1's command prints `3`. The body measures at most 20,000 characters (Task 3 Step 5's command).
+- [x] **Step 4: Edit the README row** (`README.md:73`). `The rubric in `references/gap-rubric.md` has four classes: implemented-as-specified, implemented-differently, missing, and in-code-but-not-in-spec.` becomes ``The rubric in `references/gap-rubric.md` has five classes: implemented-as-specified, implemented-differently, missing, in-code-but-not-in-spec, and out-of-repo.`` At the end of the row, before ` |`, add: ` For a project with nothing built, its New-Project Entry takes the outcomes in plain words, splits unrelated ones into tracks, adds rough cost notes and asks for a ranking. A known progression then gets every stage, and a research track gets only its core stage until that stage has run on real data.`
+- [x] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/derive-roadmap/SKILL.md README.md
 git commit -m "feat(derive-roadmap): resume and complete new-project roadmaps with ranked lists"
 ```
 
-- [ ] **Step 7: Run the treatment arms** at `HEAD` for `dr-resume-rerank` and `dr-resume-legacy`, as in Task 3 Step 9, with `t4` in place of `t3`. Score, append and apply the bars. Task 3's cases decide at entry, §1 and §7, which this task does not touch. The record says so in one line, in place of re-running them.
-- [ ] **Step 8: Commit**
+- [x] **Step 7: Run the treatment arms** at `HEAD` for `dr-resume-rerank` and `dr-resume-legacy`, as in Task 3 Step 9, with `t4` in place of `t3`. Score, append and apply the bars. Task 3's cases decide at entry, §1 and §7, which this task does not touch. The record says so in one line, in place of re-running them.
+- [x] **Step 8: Commit**
 
 ```bash
 git add specs/red-baseline-new-project-entry specs/red-baseline-new-project-entry.md
@@ -614,9 +620,9 @@ git commit -m "test(specs): treatment arms for the new-project resume"
 **Interfaces:**
 - Consumes: Task 3's §7 name, cited as `derive-roadmap's New-Project Entry`; the definition from Global Constraints.
 
-- [ ] **Step 1: Show the gap.** `/usr/bin/grep -c "New-Project" skills/describe-critique-methodology/SKILL.md`.
+- [x] **Step 1: Show the gap.** `/usr/bin/grep -c "New-Project" skills/describe-critique-methodology/SKILL.md`.
 Expected: `0`.
-- [ ] **Step 2: Edit `SKILL.md`.** Wrap like the text around each edit.
+- [x] **Step 2: Edit `SKILL.md`.** Wrap like the text around each edit.
   - After the Mode selection paragraph (ends `Otherwise, Describe mode.`, `:43`), two paragraphs: first the definition from Global Constraints, verbatim, then:
 
 ```text
@@ -655,7 +661,7 @@ Route the files to derive-roadmap's New-Project Entry as background, and stop.
   critique comes after the system is built.
 ```
 
-- [ ] **Step 3: Declare the soft edge.** In `SOFT_REFERENCES`, after the `('skill:derive-roadmap', 'skill:writing-plans')` entry:
+- [x] **Step 3: Declare the soft edge.** In `SOFT_REFERENCES`, after the `('skill:derive-roadmap', 'skill:writing-plans')` entry:
 
 ```python
   # Routes a system with nothing built to the New-Project Entry; both modes run
@@ -663,18 +669,19 @@ Route the files to derive-roadmap's New-Project Entry as background, and stop.
   ('skill:describe-critique-methodology', 'skill:derive-roadmap'),
 ```
 
-- [ ] **Step 4: Check.** The one-definition check in Global Constraints prints one line: the count `2`, then the definition. `tr '\n' ' ' < skills/describe-critique-methodology/SKILL.md | tr -s ' ' | /usr/bin/grep -o "derive-roadmap's New-Project Entry" | wc -l` prints `5`. `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies` passes. The body measures at most 20,000 characters.
-- [ ] **Step 5: Edit the README row** (`README.md:72`). At the end of the row, before ` |`, add: `` A system with nothing built goes to `derive-roadmap`'s New-Project Entry instead, because the critique comes after the system is built.``
-- [ ] **Step 6: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 7: Commit**
+- [x] **Step 4: Check.** The one-definition check in Global Constraints prints one line: the count `2`, then the definition. `tr '\n' ' ' < skills/describe-critique-methodology/SKILL.md | tr -s ' ' | /usr/bin/grep -o "derive-roadmap's New-Project Entry" | wc -l` prints `5`. `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies` passes. The body measures at most 20,000 characters.
+- [x] **Step 5: Edit the README row** (`README.md:72`). At the end of the row, before ` |`, add: `` A system with nothing built goes to `derive-roadmap`'s New-Project Entry instead, because the critique comes after the system is built.``
+- [x] **Step 6: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/describe-critique-methodology/SKILL.md build/test_runtime_support.py README.md
 git commit -m "feat(describe-critique-methodology): route a system with nothing built to derive-roadmap"
 ```
 
-- [ ] **Step 8: Run the treatment arms** at `HEAD` for `dcm-describe-route` and `dcm-synth-route`, as in Task 3 Step 9, with `t5`. Score, append and apply the bars.
-- [ ] **Step 9: Commit**
+- [x] **Step 8: Run the treatment arms** at `HEAD` for `dcm-describe-route` and `dcm-synth-route`, as in Task 3 Step 9, with `t5`. Score, append and apply the bars.
+> Deviation: Both cases met their bar only on the readings applied. The record states the other readings and their counts for the owner.
+- [x] **Step 9: Commit**
 
 ```bash
 git add specs/red-baseline-new-project-entry specs/red-baseline-new-project-entry.md
@@ -692,9 +699,9 @@ git commit -m "test(specs): treatment arms for describe-critique-methodology's r
 **Interfaces:**
 - Consumes: Task 3's §7 name.
 
-- [ ] **Step 1: Show the gap.** `/usr/bin/grep -c "derive-roadmap" skills/brainstorming/SKILL.md`.
+- [x] **Step 1: Show the gap.** `/usr/bin/grep -c "derive-roadmap" skills/brainstorming/SKILL.md`.
 Expected: `0`.
-- [ ] **Step 2: Edit `SKILL.md`.** Wrap at about 72 columns, like the file.
+- [x] **Step 2: Edit `SKILL.md`.** Wrap at about 72 columns, like the file.
   - After the paragraph that ends `once they've opted out of the questions.` (`:48`):
 
 ```text
@@ -724,7 +731,7 @@ installed, size it as a project.
 
   - `:236-237`: after `brainstorm them one at a time.` add `A new project of several stages with nothing built goes to the New-Project Entry whole, and it splits unrelated outcomes into tracks.`
   - HARD-GATE (`:322-323`): after `writing-plans, in a fresh session, and no other skill.` add `A new project of several stages with nothing built has no spec: it goes to derive-roadmap's New-Project Entry in this session, which builds nothing.`
-- [ ] **Step 3: Declare the soft edge.** In `SOFT_REFERENCES`, between the `('skill:brainstorming', 'command:deferred')` and `('skill:brainstorming', 'skill:writing-plans')` entries:
+- [x] **Step 3: Declare the soft edge.** In `SOFT_REFERENCES`, between the `('skill:brainstorming', 'command:deferred')` and `('skill:brainstorming', 'skill:writing-plans')` entries:
 
 ```python
   # Hands a new project of several stages with nothing built to the New-Project
@@ -733,8 +740,8 @@ installed, size it as a project.
   ('skill:brainstorming', 'skill:derive-roadmap'),
 ```
 
-- [ ] **Step 4: Check.** `tr '\n' ' ' < skills/brainstorming/SKILL.md | tr -s ' ' | /usr/bin/grep -o "derive-roadmap" | wc -l` prints `5`. Review Focus item 4: `tr '\n' ' ' < skills/brainstorming/SKILL.md | tr -s ' ' | /usr/bin/grep -o 'several stages' | wc -l` prints `5`. The brainstorming body measures at most 20,000 characters. The declared-dependencies test passes (Task 5 Step 4's command).
-- [ ] **Step 5: Append the NOTICE bullet** after the plan 77 bullet and before the blank line above `brainstorming/`, dated with the commit's date:
+- [x] **Step 4: Check.** `tr '\n' ' ' < skills/brainstorming/SKILL.md | tr -s ' ' | /usr/bin/grep -o "derive-roadmap" | wc -l` prints `5`. Review Focus item 4: `tr '\n' ' ' < skills/brainstorming/SKILL.md | tr -s ' ' | /usr/bin/grep -o 'several stages' | wc -l` prints `5`. The brainstorming body measures at most 20,000 characters. The declared-dependencies test passes (Task 5 Step 4's command).
+- [x] **Step 5: Append the NOTICE bullet** after the plan 77 bullet and before the blank line above `brainstorming/`, dated with the commit's date:
 
 ```text
   - Plan 78 (<YYYY-MM-DD>) gave brainstorming a route for a new project
@@ -747,18 +754,20 @@ installed, size it as a project.
     taken.
 ```
 
-- [ ] **Step 6: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 7: Commit**
+- [x] **Step 6: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/brainstorming/SKILL.md build/test_runtime_support.py NOTICE
 git commit -m "feat(brainstorming): hand a new multi-stage project with nothing built to derive-roadmap"
 ```
 
-- [ ] **Step 8: Run the treatment arms** at `HEAD` for `bs-route` and `bs-guard`, as in Task 3 Step 9, with `t6`. Score, append and apply the bars. Then add "All arms side by side" to the record: one row per case with its kind, control and treatment scores per bar clause, bar result, and the clean-control flag. Add the spend total.
-- [ ] **Step 9: Commit**
+- [x] **Step 8: Run the treatment arms** at `HEAD` for `bs-route` and `bs-guard`, as in Task 3 Step 9, with `t6`. Score, append and apply the bars. Then add "All arms side by side" to the record: one row per case with its kind, control and treatment scores per bar clause, bar result, and the clean-control flag. Add the spend total.
+- [x] **Step 9: Commit**
 
 ```bash
 git add specs/red-baseline-new-project-entry specs/red-baseline-new-project-entry.md
 git commit -m "test(specs): treatment arms for brainstorming's route and the side-by-side table"
 ```
+
+> Deviation: Task 7 was added at the completion gate (owner: "Fix all four now", 2026-11-06). Its first commit (`f824492`) closed four routing defects that two task reviewers, Codex and the final code-reviewer found in the approved text of Tasks 3 and 4. A fix round (`d3fc772`) closed four gaps in the Task 7 text itself. Nine, then four, derive-roadmap cases were re-run. See "Treatment: Task 7" in `specs/red-baseline-new-project-entry.md`.

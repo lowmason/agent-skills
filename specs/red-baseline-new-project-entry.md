@@ -1,11 +1,11 @@
 # Plan 78 micro-tests: derive-roadmap's New-Project Entry
 
-This record holds the micro-tests for plan 78 (`specs/plans/78-derive-roadmap-new-project-entry.md`). A micro-test
+This record holds the micro-tests for plan 78 (`specs/plans/completed/78-derive-roadmap-new-project-entry.md`). A micro-test
 runs one decision many times through a fresh `claude -p` with no tools. Then a person reads each reply by a rule
 that was fixed and committed before any rep ran. A rep is one such run.
 
 Plan 78 gives derive-roadmap a second entry, the New-Project Entry, for a project with nothing built. It also routes
-brainstorming and describe-critique-methodology to that entry. The spec is `specs/derive-roadmap-new-project-entry.md`.
+brainstorming and describe-critique-methodology to that entry. The spec is `specs/completed/derive-roadmap-new-project-entry.md`.
 Each case below cites the spec requirement (`R<n>`) or verification item (`V<n>`) that it checks.
 
 Task 1 builds the kit, registers the 15 cases and their reading rules, runs the isolation probe and sets the per-rep
