@@ -5931,6 +5931,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (Task 3 summary and owner gate; Task 7). Size: design. Done when: the owner decides whether
       the skill text must prompt for point-in-time awareness or whether clause C should fit the
       fixture, and the case is re-run under that decision.
+      → progress 2026-11-07 (owner ruling): clause C fits the fixture. Clause C drops point-in-time awareness for this fixture, and the case is re-run under the new clause, not re-scored. The re-run joins the plan for the "Four routes that plan 78 added have no micro-test" item below.
 - [ ] **A new-project roadmap built from a spec maps each outcome to no spec section reference
       (plan 78 final review, owner ruled file).** Spec R10 sets this substitution (`Outcomes` in
       place of `Spec` and `Gap closed`). A stage plan from `writing-plans` is then scoped to
