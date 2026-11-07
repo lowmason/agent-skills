@@ -1,0 +1,9 @@
+arm c500e1424cee823e0d1d6f6a8cb6373a55922f0c (c500e1424cee823e0d1d6f6a8cb6373a55922f0c)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-stop-track.txt sha256 c4167d8adb21e89997a810a5f2027046eda44962d05661d97ed2cf59d4702fd7 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-park-ranked.txt sha256 9748b3e057a37f39d102d598f5bba2c7cd6ed6311e593339d56c5353b94eb2ae model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-name-collision.txt sha256 bfd76d0a57af6b3e83f270052ab3acc88dfeb3b932b643b8e6ef915c2b49bf97 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-rerank-second.txt sha256 34c32a58d97d2f916ce404e9426c21f17dd80d89a5097ef5c7f51f6c7dd9e4f9 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-marker.txt sha256 5e3a21a2a85c54fa1b778119469804a43b70f20a39205df803f17e55d39b2774 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-blocked.txt sha256 332ab193adfaf7ea4850cc42eb126dabc463976629ebb4790a7bd6deedbea908 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
