@@ -494,6 +494,9 @@ SOFT_REFERENCES = {
   ('skill:derive-roadmap', 'skill:describe-critique-methodology'),
   # Likens a stage to writing-plans' Scope Check; an analogy, not a step.
   ('skill:derive-roadmap', 'skill:writing-plans'),
+  # Routes a system with nothing built to the New-Project Entry; both modes run
+  # without it on a built system, and the text stops when it is absent.
+  ('skill:describe-critique-methodology', 'skill:derive-roadmap'),
   # Routes a model package's evaluation protocol to track's predictive-evaluation
   # reference; the test plan never reads it.
   ('skill:develop-testing-strategy', 'skill:track-model-experiments'),
