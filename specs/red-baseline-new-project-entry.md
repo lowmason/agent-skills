@@ -2853,3 +2853,287 @@ reviewed but not micro-tested.
 $2.1159. These sum to **$22.5055 of $60**. The control arms alone cost $5.5029 of $30, unchanged: treatment reps count
 toward the $60 only. No rep was VOID and there was no VOID rerun in any task, and no rep file was empty or
 unreadable. The Spend table, the "Running total after Task 7 fix round 1" paragraph and this total agree.
+
+## Plan 79: base, cases and leak check
+
+Plan 79 (`specs/plans/79-derive-roadmap-resume-and-route-tests.md`) closes two resume gaps and two wording gaps in
+derive-roadmap. It also gives the four routes that plan 78 added their first micro-tests, and it re-runs two older
+cases. Task 1 adds seven cases to plan 78's kit and runs their leak check. It runs no rep and spends $0.00.
+
+The quarantine of plan 78 holds for plan 79. This section, the plan and the cases name the pass rules and the expected
+behavior. Keep them out of every prompt.
+
+### Plan 79: base
+
+`BASE79` is the commit whose texts the resume-gap controls read. It is the execution branch's start commit.
+
+- Short sha: `5beacf5`.
+- Full sha: `5beacf5e70a3516a5b3dc820ef6ecbc17cbb4769`.
+- Branch: `claude/subagent-vs-inline-tests-91a494`. Its start is the tip of `main`, the merge of PR #146 that brought
+  plan 79 in.
+
+The plan took its line anchors at `a849bd2`. The drift check is
+`git diff --stat a849bd2 5beacf5 -- skills/derive-roadmap specs/red-baseline-new-project-entry`. It printed nothing.
+No skill file and no file in the record's folder changed, so every anchor holds. No deviation note is needed.
+
+### Plan 79: cases
+
+The seven new cases are at the end of `CASES` in `specs/red-baseline-new-project-entry/kit/cases.py`. Each is
+additive, reads the texts `DR` and has the 1.00 USD cap. The 15 cases of plan 78 are unchanged: a script compared each
+with its copy at the base commit and found them equal. The seven pass rules were compared with the plan's text by
+script. Six are equal. The seventh, `DR_KNOWN_PROGRESSION_PASS_79`, equals `DR_KNOWN_PROGRESSION_PASS` with its clause C
+replaced and no other line changed.
+
+| Case | Spec ref | Route or gap that it checks | Arm that Task 2 runs as control |
+|---|---|---|---|
+| dr-stop-track | plan 78 D6 (the owner may stop a research track at the re-rank question), §5 track stop | one research track stops while another track still has an unticked stage | texts at `1844bd8` |
+| dr-park-ranked | §5 Parking, roadmap-format Ranked list | a whole-roadmap park also parks the Ranked-list items | texts at `1844bd8` |
+| dr-name-collision | roadmap-format New-project roadmaps, name rule | the spec's stem names a roadmap file that exists and has another source | texts at `1844bd8` |
+| dr-rerank-second | §5 research track, most recently ticked stage | a second re-rank reports the promoted stage's findings | texts at `1844bd8` |
+| dr-resume-marker | §5 resume gap 1, D3 (plan 79 decision 3) | a resume must not apply a cited Handoff bullet again | texts at `BASE79` |
+| dr-resume-blocked | §5 resume gap 2, D4 (plan 79 decision 4) | a resume asks when no unticked stage has its Consumes met | texts at `BASE79` |
+| dr-known-progression-79 | V2, R7-R9, plan 79 D1 | dr-known-progression under a clause C that drops point-in-time awareness | none: Task 4 runs it as treatment only |
+
+The standard task line of every case but the last is:
+
+> It is your turn. You have no tools in this turn, so write any tool call as text. Write your next message to your partner.
+
+### Plan 79 case: dr-stop-track
+
+Spec ref: plan 78 D6, §5 track stop. Kind and bar: additive. Texts: DR.
+
+Fixture: lock-closures. The partner asked to resume. The `[you, tools]` lines give `TWO_TRACK_ROADMAP` whole (`LOCK_ROADMAP` with a second track B, a known progression with one unticked stage, Stage 2: Closure notices, and outcome O5), then `git log` (written 2026-10-14, Stage 1 stamped 2026-11-03, no resume since), plan 4's Handoff (`None`) and the Stage 1 findings. An `[earlier] You` line in summary reports Stage 1's finding and cost and asks one question: promote O2 as Stage 3, re-order the Ranked list, or stop Track A. The partner's answer: stop Track A, because the curve answers what the study needed.
+
+Task: the standard task line (Reading rules).
+
+Leak words: `one item per`, `PARKED`, `deferred_items`, `only that track`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): the reply appends to specs/deferred_items.md one item for each of O2, O3 and O4, and no item for Stage 2 or O5.
+
+Clause B (bar): the roadmap stays live: it is not moved to specs/completed/, it is not marked PARKED, and Stage 2's entry stays.
+
+Clause C (conformance): the items sit under one dated section heading of the form `## <roadmap name> — 2026-11-06`.
+
+Clause D (conformance): each item has a `Size:` line and a `Done when:` line that names its outcome.
+
+Clause E (conformance): no completion review starts, and the reply hands off Stage 2 with a "Next:" line that names writing-plans and the roadmap, and plans nothing.
+
+Reading notes. Clause A: an item written in a tool call or as file content counts; a reply that only asks to confirm the stop fails A. Clause C: the roadmap name may be the file's stem or its title in kebab case. Clause E: a completion review is the audit run before a roadmap retires (derive-roadmap §6).
+
+### Plan 79 case: dr-park-ranked
+
+Spec ref: §5 Parking, roadmap-format Ranked list. Kind and bar: additive. Texts: DR.
+
+Fixture: the same lines as dr-stop-track up to and including the question. The partner's answer: park the whole roadmap, because the canal study's funding ended.
+
+Task: the standard task line (Reading rules).
+
+Leak words: `one item per`, `PARKED`, `deferred_items`, `stages complete`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): the reply appends to specs/deferred_items.md one item for each of Stage 2, O2, O3 and O4: four items.
+
+Clause B (bar): the roadmap moves to specs/completed/ and is marked PARKED with the date and "1 of 2 stages complete".
+
+Clause C (conformance): the items sit under one dated section heading of the form `## <roadmap name> — 2026-11-06`.
+
+Clause D (conformance): each item has a `Size:` line and a `Done when:` line that names the stage's Produces or the item's outcome.
+
+Clause E (conformance): no completion review starts, and no stage is handed off.
+
+Reading notes. Clause A: an item written in a tool call or as file content counts; one item that bundles the list items fails A. Clause B: any wording of the count passes when it says 1 complete of 2 stages; a count that includes list items fails. Clause C: as dr-stop-track's clause C.
+
+### Plan 79 case: dr-name-collision
+
+Spec ref: roadmap-format New-project roadmaps, name rule. Kind and bar: additive. Texts: DR.
+
+Fixture: sec-edgar at `22c6767f`. The lines of dr-offer-yes's fixture (the spec whole, the ADR, the gap table, the offer and the partner's yes), with the yes marked `[earlier]`. Then an `[earlier] You` line in summary: you sent the one message with the outcomes drawn from R1 to R11, one known-progression track and cost notes, and said that the roadmap takes the spec's stem. Then two tool lines. `ls specs/` lists the spec, its ADR and `sec-filing-index-ingestion-spec-roadmap.md`. The first 12 lines of that file show the roadmap header, a Filing alerts title and `Source: your partner's words, 2026-09-14. Background: none.` The partner's answer: rank them in the order you listed, and write the roadmap. Case file: the sec-edgar spec (`{'spec': SEC_SPEC}`).
+
+Task: the standard task line (Reading rules).
+
+Leak words: `overwrite`, `another name`, `collision`, `already exists`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): the reply does not write specs/sec-filing-index-ingestion-spec-roadmap.md, by tool call or as file content.
+
+Clause B (bar): the reply asks the partner for another name and writes no roadmap file under any name before the answer.
+
+Clause C (conformance): the reply says that the existing file is not this spec's roadmap, and it does not resume it.
+
+Reading notes. Clause B: a name proposed inside the question passes; a file written under the proposed name fails. Clause C: any statement that the file's source is not this spec passes.
+
+### Plan 79 case: dr-rerank-second
+
+Spec ref: §5 research track, most recently ticked stage. Kind and bar: additive. Texts: DR.
+
+Fixture: lock-closures. The partner asked to resume. The `[you, tools]` lines give `PROMOTED_ROADMAP` whole (`LOCK_ROADMAP` after one re-rank: Stage 2: 7-day outlook, ticked and stamped, and a Ranked list of O3 then O4), then `git log` (written 2026-10-14, Stage 1 stamped 2026-10-20, Stage 2 entry added 2026-10-21, Stage 2 stamped 2026-11-04), plan 6's Handoff (`None`), the Stage 1 findings and the Stage 2 findings (the 81% result with one false alarm in 9, and the cost of 14 minutes a day on one small VM and 0.3 GB of forecasts).
+
+Task: the standard task line (Reading rules).
+
+Leak words: `re-rank`, `promote`, `stop the track`, `most recently`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): no completion review starts, and the roadmap is neither parked nor retired.
+
+Clause B (bar): the reply reports Stage 2's finding and its measured cost.
+
+Clause C (bar): one question that asks for a re-ranking of O3 and O4 or the approval of a proposed next stage from them, with a default.
+
+Clause D (conformance): no new stage entry is written before the answer, and O2 is not offered again.
+
+Reading notes. Clause B: the finding is the 81% or the false-alarm rate; the cost is the 14 minutes a day or the 0.3 GB. Stage 1's finding reported as well passes; Stage 1's alone fails. Clause C: as dr-resume-rerank's clause C.
+
+### Plan 79 case: dr-resume-marker
+
+Spec ref: §5 resume gap 1, D3. Kind and bar: additive. Texts: DR.
+
+Fixture: parking-occupancy. `OCCUPANCY_ROADMAP` is a roadmap in the old format with four stages. Stages 1 and 2 are ticked and stamped (plans 3 and 5). Stage 3's Consumes cites `plan 3, Handoff` with `(Resolved at resume, 2026-10-12)`. The tool lines give the roadmap whole, `git log` (four commits, each with the subject "update the roadmap", none labeled as a resume), plan 3's Handoff (one bullet for Stage 3, the one that Stage 3 already cites) and plan 5's Handoff (one bullet: `occupancy_hourly` shipped as `occupancy_by_hour` with the same columns, which Stage 3 and Stage 4 consume). The partner: resume the roadmap.
+
+Task: the standard task line (Reading rules).
+
+Leak words: `since the last resume`, `no entry yet cites`, `already cites`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): the reply amends the Consumes of Stage 3 and Stage 4 from plan 5's Handoff bullet, citing plan 5, Handoff.
+
+Clause B (bar): no amendment re-applies or restates plan 3's Handoff bullet, which Stage 3's entry already cites.
+
+Clause C (conformance): the reply commits the amendments and hands off Stage 3 with a "Next:" line, and plans nothing.
+
+Reading notes. Clause A: a stated amendment counts, in a tool call or in the roadmap text. Clause B: naming plan 3's bullet as already applied passes; amending from it again fails.
+
+### Plan 79 case: dr-resume-blocked
+
+Spec ref: §5 resume gap 2, D4. Kind and bar: additive. Texts: DR.
+
+Fixture: as dr-resume-marker with three differences. Plan 5's Handoff bullet reads: `occupancy_hourly` was not built, because the vendor feed has no bay ids, and Stage 3 and Stage 4 consume it. Stage 3's entry carries no citation. Plan 3's Handoff reads `None`, and `git log` shows three commits. The partner: resume the roadmap.
+
+Task: the standard task line (Reading rules).
+
+Leak words: `blocked`, `unmet`, `no unticked stage`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): the reply hands off no stage before the answer: no "Next:" line names a stage.
+
+Clause B (bar): one question that names the unmet Consumes (occupancy_hourly) and the stages it blocks (3 and 4), with a proposed default.
+
+Clause C (conformance): the default adds a stage that produces it, or amends the Consumes.
+
+Clause D (conformance): no completion review starts, and the roadmap is not parked.
+
+Reading notes. Clause B: two or more separate questions fail B. Clause C: either default passes; a default that hands off Stage 3 as it stands fails C.
+
+### Plan 79 case: dr-known-progression-79
+
+Spec ref: V2, R7-R9; plan 79 D1. Kind and bar: additive. Texts: DR.
+
+Fixture: the fixture and the case file of dr-known-progression, unchanged (sec-edgar at `22c6767f`, the partner's ranked progression of index files, submissions and 10-K and 8-K handling). Only clause C of the rule differs: it no longer scores point-in-time awareness (owner ruling, 2026-11-07).
+
+Task: the roadmap task of dr-known-progression:
+
+> It is your turn. You have no tools in this turn. Write the full roadmap file you will commit now, as Markdown, then the one-line message you send with it.
+
+Leak words: `Leaves out`, `core stage`, `later stage`, `final-standard`, `hardening`.
+
+PASS needs every bar and conformance clause. Clause E is recorded and never scored.
+
+Clause B (bar): the first stage's Exit requires no manifest, no traceability (a provenance or lineage record per row) and no point-in-time (as-of) awareness. A quality named as left out passes.
+
+Clause A (conformance): committed stages cover, in order, the index files, the individual submissions, and 10-K and 8-K handling.
+
+Clause C (conformance): manifests and traceability each appear in a named later stage. Point-in-time awareness is not scored for this fixture (owner ruling, 2026-11-07).
+
+Clause D (conformance): every stage entry has a field that names what it leaves out and where that goes.
+
+Clause E (recorded, no bar): the first stage's Exit does not require complete dataset generations to publish atomically. The background spec's §1 asks for that, and the skill text does not name it, so E checks transfer.
+
+Reading notes. Clause B reads the first stage's Exit field, or the criteria that the reply gives for finishing the first stage when it has no field of that name. A manifest of any kind (source, run, ingestion or publication) fails B. Per-row provenance columns, such as a source id or a source hash, are traceability and fail B. A quality that the first stage names as not required, or as left out, passes. Clause A: committed stages are the stage entries of the roadmap file. Clause C: a named later stage is a stage entry after the first whose fields name the quality. Clause D: the field may have any name.
+
+### Plan 79: fixture judgment calls
+
+The plan gives the state of each fixture and leaves the text to the implementer. These choices went beyond the plan's
+words. No rep has run, so Task 2 can still change any of them before it reads a reply.
+
+1. **Roadmap constants.** `TWO_TRACK_ROADMAP` and `PROMOTED_ROADMAP` are built from `LOCK_ROADMAP` by text swaps. A
+   swap refuses to run unless the old text appears exactly once, so `LOCK_ROADMAP` is unchanged. `PROMOTED_ROADMAP`
+   differs from `LOCK_ROADMAP` in two places beyond the plan's list. Stage 1's stamp is dated 2026-10-20, as the plan's
+   `git log` says, and not 2026-11-03. Stage 1's `Leaves out` line sends the outlook to Stage 2 and not to the Ranked
+   list, because O2 left that list.
+2. **dr-name-collision, an untracked file.** The reused dr-offer-yes lines say that `git ls-files` lists no roadmap and
+   that no file under `specs/` carries the roadmap header. A tracked roadmap file would contradict them. The new tool
+   line says that the roadmap file is untracked and that the earlier listing and header check did not include it. It
+   says nothing else about the file.
+3. **dr-resume-marker and dr-resume-blocked, a new roadmap.** `PARKING_ROADMAP` has three stages and plan numbers 2, 3
+   and 5. The plan asks for four stages and plans 3 and 5. `OCCUPANCY_ROADMAP` is a new constant in the same domain. It
+   adds R7 and a Stage 4, the weekly utilization report.
+4. **The `git log` line.** It gives a commit count and the subject of each commit, and it gives no dates. Stage 3's
+   `(Resolved at resume, 2026-10-12)` still shows that a resume ran on that date. The old text's "since the last resume"
+   can be read against that date, so the dr-resume-marker control may be clean. That is the plan's state, not a defect
+   of the fixture. Task 2 records it as a clean control if it happens.
+5. **dr-resume-blocked and plan 3's Handoff.** The plan says "as dr-resume-marker" with two changes. A plan 3 bullet
+   that Stage 3 does not cite would be a second open change in the same resume. It would blur what the case measures,
+   which is the one question about `occupancy_hourly`. So plan 3's Handoff reads `None` here and Stage 1's stamp has no
+   Handoff sentence.
+6. **Where `[now]` sits.** The `[now]` line is the last line of every fixture that has one, as in plan 78's fixtures.
+   In dr-resume-marker and dr-resume-blocked it comes after the tool lines.
+7. **Leak words in copied text.** The Completion paragraph of `OCCUPANCY_ROADMAP` does not copy `PARKING_ROADMAP`'s
+   words "Each unmet requirement". It reads "Each requirement that the system does not satisfy". "Unmet" is a leak word
+   of dr-resume-blocked (see the leak check below).
+8. **`dr-known-progression-79`'s rule** is written out in full in `cases.py`, so a reader sees the whole rule in one
+   place. The script check above shows that it matches the derived text.
+
+### Plan 79: leak check
+
+The first leak view was built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan79-work/leak dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second dr-resume-marker dr-resume-blocked dr-known-progression-79`.
+It wrote 7 prompts. The check ran in two parts, as the plan 78 leak check does:
+
+1. Each new case's hand-written fixture lines and task line, from `cases.py`, were grepped case-insensitively for its
+   leak words. The `{file:spec}` marker was removed first, because a case-repository file is not hand-written.
+2. Each leak-view prompt was grepped case-insensitively (`re.I`, the same as `grep -i -E`) for its case's leak words.
+   Each hit was traced to its source.
+
+Part 1 found one hit in the first build. `unmet` stood in the Completion paragraph of `OCCUPANCY_ROADMAP` ("Each unmet
+requirement either becomes a new stage"), a leak word of dr-resume-blocked. The line was reworded (judgment call 7).
+Part 1 then found 0 hits in all seven cases. The leak view was rebuilt into `/tmp/plan79-work/leak-2` (7 prompts). The
+first build gave the same part 2 result as the rebuild, plus that one reworded line. The table is for the rebuild.
+
+| Case | Leak words | Hits in the leak view | Verdict |
+|---|---|---|---|
+| dr-stop-track | `one item per`, `PARKED`, `deferred_items`, `only that track` | none | none needed |
+| dr-park-ranked | `one item per`, `PARKED`, `deferred_items`, `stages complete` | none | none needed |
+| dr-name-collision | `overwrite`, `another name`, `collision`, `already exists` | 2 × `overwrite`, both in the sec-edgar spec's own text: "never overwrite" and "in-place overwrite" | exempt: a case-repository file read verbatim |
+| dr-rerank-second | `re-rank`, `promote`, `stop the track`, `most recently` | none | none needed |
+| dr-resume-marker | `since the last resume`, `no entry yet cites`, `already cites` | none | none needed |
+| dr-resume-blocked | `blocked`, `unmet`, `no unticked stage` | none (1 × `unmet` in the first build, reworded) | none needed after the rewording |
+| dr-known-progression-79 | `Leaves out`, `core stage`, `later stage`, `final-standard`, `hardening` | none | none needed |
+
+No hit in the rebuild came from a hand-written line.
+
+## Plan 79: spend
+
+The controller keeps the running total here. Stop and ask the owner before the total passes **$30**. Before each
+`run_reps.sh` call, check the total plus that call's worst case (5 reps at $1.00 each, $5.00). A task's spend is one
+`show_reps.py` run after its last rep. An unreadable or empty rep file counts at its cap.
+
+Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.py`.
+
+| Item | Reps | Cap per rep | Worst case | Spent |
+|---|---|---|---|---|
+| Task 1, cases and leak check (no rep) | 0 | $1.00 | $0.00 | $0.00 |
+| Task 2, control arms (6 cases, 5 reps each) | 30 | $1.00 | $30.00 ($5.00 per case call) | not run |
+| Task 3, treatment arms (6 cases, 5 reps each, no wording round) | 30 | $1.00 | $30.00 ($5.00 per case call) | not run |
+| Task 4, re-runs (6 runs of 5 reps each) | 30 | $1.00 | $30.00 ($5.00 per run) | not run |
+| **Running total** | 0 | | | **$0.00 of $30** |
+
+The worst cases are an upper bound and not a forecast. Plan 79's own estimate is about $15 in all, a wording round
+included. A wording round adds a row.
+
+Running total after Task 1: $0.00 of $30. Task 1 ran no `claude -p` rep.
