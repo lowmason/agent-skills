@@ -5943,6 +5943,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/completed/derive-roadmap-new-project-entry.md. Size: design. Done when: one stage plan built from
       a new-project roadmap with a spec has been checked against that spec, and the format either
       carries the spec section or states why it does not.
+      → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
 - [ ] **A later quality in a research track's Ranked list has no O-number and no partner rank
       (plan 78 final review, owner ruled file).** `skills/derive-roadmap/references/roadmap-format.md`
       (Ranked list) gives a list item an O-number and the partner's order. A quality that
@@ -5950,6 +5951,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/red-baseline-new-project-entry.md. Size: design. Done when: the format states how a
       later quality is listed in a Ranked list (for example an O-number and a rank request, or a
       named unranked class).
+      → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
 - [ ] **Four routes that plan 78 added have no micro-test (plan 78 Task 7 and final review).** A
       "stop the track" answer and a whole-roadmap park with Ranked lists (`skills/derive-roadmap/SKILL.md`
       §5 and its Parking paragraph), a name collision when a spec exists (`references/roadmap-format.md`,
@@ -5985,3 +5987,4 @@ review and the Plan Completion gate (2026-10-27) add the others.
       2026-11-06. Size: design. Done when: the skill wording that stops this text lands, and a
       re-run of `dr-offer-yes` under the kit passes 4 of 5 by plan 78's core-and-later-stages
       reading.
+      → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
