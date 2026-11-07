@@ -1698,3 +1698,12 @@ $4.3379 (35 reps), so Task 3 cost $8.4719. Running total: $14.2710 of $60. Contr
 **Owner ruling at the Task 3 gate (2026-11-06).** The owner chose "Record and continue": keep the current skill text
 (`3ca7344`), record the three misses with their causes, run Tasks 4 to 6, and rule on all misses together at the plan
 completion gate, as plan 77 did.
+
+**Review finding for the owner, Task 3 (parked to the plan completion gate with the three misses).** The Task 3
+reviewer found that entry item 2 in `skills/derive-roadmap/SKILL.md` ("Your partner asks for a roadmap for a project
+that has nothing built (below) … with or without a spec → §7") also matches a plain "derive the roadmap for
+`specs/X.md`" on a scaffold-only repository. Item 2 comes before item 4 in the entry order, so read literally the
+agent goes straight to §7 and skips the §1 offer that the Common mistakes bullet requires. Both offer fixtures hand
+the agent a finished gap analysis, so no micro-test exercises the entry decision. The text is the owner-approved text
+of D16 and the one wording round is spent, so no edit was made. The reviewer's smallest fix: make item 2's condition
+the partner's own statement ("Your partner says the project has nothing built and asks for a roadmap …").
