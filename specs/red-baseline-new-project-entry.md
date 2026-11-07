@@ -136,7 +136,8 @@ Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in
 | Task 5, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5031 |
 | Task 6, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.3376 |
 | Task 7, treatment arms after the final-review fixes (9 cases, 5 reps each, no VOID rerun) | 45 | $1.00 | $45.00 ($5.00 per case call) | $4.7589 |
-| **Running total** | 232 | | | **$20.3896 of $60** |
+| Task 7 fix round 1, treatment arms (4 cases, 5 reps each, no VOID rerun) | 20 | $1.00 | $20.00 ($5.00 per case call) | $2.1159 |
+| **Running total** | 252 | | | **$22.5055 of $60** |
 | **Control arms** | 75 | | | **$5.5029 of $30** |
 
 Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
@@ -164,6 +165,10 @@ total under "All arms side by side", below.
 Running total after Task 7: $20.3896 of $60 ($20.39). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
 Task 7's nine folders prints $4.76 for its 45 reps. These figures match the "Task 7 summary" section and the spend
 total under "All arms side by side (after the Task 7 fixes)", below.
+
+Running total after Task 7 fix round 1: $22.5055 of $60 ($22.51). Control arms: $5.5029 of $30, unchanged.
+`show_reps.py` over the fix round's four folders prints $2.12 for its 20 reps. These figures match the "Fix round 1
+summary" section and the spend total under "All arms side by side (after the Task 7 fix round 1)", below.
 
 ## Fixture sources
 
@@ -2598,3 +2603,253 @@ tests, so its "met" is probably spread between reps. The brief's check 4 printed
 **$20.3896 of $60**. The control arms alone cost $5.5029 of $30, unchanged: treatment reps count toward the $60 only.
 No rep was VOID and there was no VOID rerun in any task, and no rep file was empty or unreadable. The Spend table, the
 "Running total after Task 7" paragraph and this total agree.
+
+## Treatment: Task 7 fix round 1
+
+The Task 7 reviewer and a Codex review of the Task 7 commits found four defects in the text that the Task 7 brief
+gave. The controller sent the exact fix text. The four edits were committed as `d3fc772` (`fix(derive-roadmap): fix
+four gaps in the final-review routing edits`). The fix round re-runs the four cases that read the edited passages.
+Each rep is scored by its case's committed rule and by every reading in the Control section. No rule and no reading
+changed.
+
+| Edit | Defect | Passage | Change |
+|---|---|---|---|
+| 5 | A stopped track's items got no dated section heading, so they did not age as the Parking paragraph promises. A whole-roadmap park appended only the unticked stages, so Ranked-list items went to `specs/completed/` and never reached `specs/deferred_items.md`. | `SKILL.md` §5, the Parking paragraph | A whole-roadmap park also appends the items of every Ranked list. A stopped track's items go under a dated `## <roadmap-name> — <YYYY-MM-DD>` section. |
+| 6 | Edit 4(a) dropped the never-overwrite check when there is a spec. | `references/roadmap-format.md`, the name rule | After §3's scan, the check that `specs/<name>-roadmap.md` does not exist runs with or without a spec. |
+| 7 | The re-rank reports the latest stage's measured cost, but only a core stage was told to record one. | `references/roadmap-format.md`, the `Exit` line of the stage-entry template | Any stage of a research track adds the measured cost of its real run. |
+| 8 | As Edit 7. | `references/new-project-entry.md`, the Research bullet | A promoted stage names the measured cost of its real run in `Exit`, so the next re-rank reads what that stage found and cost. |
+
+**Checks after the edits.** The four pins each print `1`. The one-definition check prints one line,
+`2 **Nothing built** means that no outcome …`. The derive-roadmap body measures 15,506 characters.
+`/usr/bin/grep -c "any stage of a research track" skills/derive-roadmap/references/roadmap-format.md` prints 2 (the
+`Produces` line and the `Exit` line). `/usr/bin/grep -c "Then, with or without a spec"` on the same file prints 1. The
+commit lints passed.
+
+**Build.** The prompts of all 15 cases were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py d3fc772 /tmp/plan78-work/t7b`.
+Its `MANIFEST.txt` is copied to `treatment/t7b-MANIFEST.txt`. Checks on the build before any rep:
+
+- The six cases that read no derive-roadmap text have prompts that `cmp` finds byte-identical to their arms of
+  record (`t3-r1/`, `t5/` and `t6/`, as in Task 7).
+- Each of the four re-run prompts holds a phrase of each edit once: "the items of every Ranked list append" (5),
+  "Then, with or without a spec" (6), "any stage of a research track, adds the measured cost" (7) and "and the
+  measured cost of its real run in `Exit`" (8). None holds the removed "With no spec, check before writing".
+- The case-repository reads are the same as those in `control/MANIFEST.txt`. No prompt holds `red-baseline`,
+  `plan 78`, the spec's file name or `task-7` (the quarantine).
+
+Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t7b/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t7b 1 5 claude-opus-5-5 1.00`,
+one case at a time, into folders with a `-t7b` suffix. Before each call, the running total plus the call's worst
+case ($5.00) stayed under $60. The largest such sum was $27.2461, before the last call. Each case's replies were read
+in full from `show_reps.py` over that case's folder alone.
+
+**Cases not re-run.** Their prompts carry the edited text, but their decisions come before any of it acts:
+
+- dr-offer-scaffold: decides at §1 (the gap table and the offer), and writes, parks and names no roadmap.
+- dr-offer-inputs: decides at §1 (the gap table and the offer), and writes, parks and names no roadmap.
+- dr-offer-yes: decides in the one message, before any roadmap file, so neither the check before writing nor a stage
+  entry's `Exit` comes into play.
+- dr-built-guard: decides at §1 for a partly built system and goes to the existing partition, with no new-project
+  roadmap.
+- dr-tracks: decides in the one message (tracks and the ranking request), and writes no roadmap file and parks
+  nothing.
+
+**Result rules.** As in Task 7: a case that met its bar before and misses it now is an owner gate.
+dr-known-progression's miss is recorded, with no action. The "before" arm of each case is its Task 7 arm
+(`f824492`).
+
+### Fix round 1: dr-known-progression
+
+Additive. Arm `d3fc772`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.9199.
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | fail | pass | pass | no |
+| 2 | pass (borderline) | pass | fail | pass | pass | no |
+| 3 | pass | pass | fail | pass | pass | no |
+| 4 | pass | pass | fail | pass | pass | no |
+| 5 | pass | pass | fail | pass | pass | no |
+
+Clause B: 5 of 5 (before 5 of 5, control 4 of 5). Clause A: 5 of 5. Clause C: 0 of 5 (before 0 of 5). Clause D: 5 of
+5. Clause E (recorded): 5 of 5. PASS: 0 of 5 (before 0 of 5). Bar: **missed**, as before, through conformance clause
+C. The owner ruled to accept and file this miss, so no action follows.
+
+Clause C by quality:
+
+| Quality | Task 7 (before) | Fix round 1 | Fix round 1 reps that pass |
+|---|---|---|---|
+| manifest | 5 of 5 | 5 of 5 | all |
+| traceability | 5 of 5 | 4 of 5 | rep1, rep3, rep4, rep5 |
+| point-in-time (as-of) | 0 of 5 | 0 of 5 | none |
+
+- C. Every rep names a manifest in a later stage, for example rep3's "Stage 4: Download manifest and replay". Four
+  reps name traceability, for example rep1's Stage 4: "Every row traces to a source file and its hash." Rep2's later
+  stages name retained bytes and manifests but no trace from a row to its source. No rep names point-in-time or as-of
+  awareness. Quote (C, rep1, the nearest): "Readers of the published table see either the previous version or the
+  new one, never a mix."
+- B. No first-stage Exit names a manifest, a per-row provenance record, as-of awareness or a spec section. Rep2
+  passes, borderline. Its Exit asks for "its row count checked against the source files", a count check and not a
+  manifest, as Task 7 rep5's "a row count per source file" was read.
+- A. Every rep commits the index work, then the submissions, then 10-K and 8-K handling, in that order. Reps 2 and 5
+  put a second index stage before the submissions, which keeps the order.
+- D and E pass in every rep. Each rep writes `specs/sec-filing-ingestion-roadmap.md`, the confirmed name.
+
+Running total: $21.3095 of $60.
+
+### Fix round 1: dr-research-depth
+
+Additive. Arm `d3fc772`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6747.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass | pass (borderline) | pass | pass | pass | yes |
+
+Every clause: 5 of 5 (before 5 of 5). PASS: 5 of 5 (before 5 of 5). Bar: met. Every rep commits Stage 1 (Track A,
+O1) and Stage 2 (Track B, O6) and keeps O3 and O2, and O4 and O5, in the two Ranked lists. Each committed stage's
+Produces names `specs/ces-revisions-stage-<N>-findings.md`, and each Exit records the cost of the real run. Rep5
+passes B, borderline: its Exits record the run's times without the word "measured", for example Stage 1's "recorded in
+the findings file with wall-clock time for data assembly and for the fit". Rep1 also writes Edit 8's rule into its
+roadmap: "A stage promoted from a Ranked list names its own findings file, `specs/ces-revisions-stage-<N>-findings.md`,
+in `Produces`, and the measured cost of its real run in `Exit`."
+
+Running total: $21.9842 of $60.
+
+### Fix round 1: dr-resume-rerank
+
+Additive. Arm `d3fc772`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2619.
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass (borderline) | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (before 5 of 5, control 4 of 5). Clause C: 5 of 5 (before 5 of 5, control 5 of 5). Clause B: 5 of 5
+(before 5 of 5, control 2 of 5). Clause D: 5 of 5 (before 5 of 5, control 5 of 5). PASS: 5 of 5 (before 5 of 5). Bar:
+met.
+
+- A. No rep starts a completion review. Each offers stopping the track as one option of its question, for example
+  rep3: "Stopping the track instead would park all three items in `specs/deferred_items.md`, and the roadmap would
+  stay live."
+- C. Each rep ends on one approve-or-amend question that promotes O2 as Stage 2. Reps 1, 2, 4 and 5 keep the order
+  O2, O3, O4. Rep3 proposes O2, O4, O3. Rep4 passes, borderline. Its question gives the default and then its
+  alternatives in a second sentence: "Should we promote O2 as the next stage, keep O3 then O4 in the list in that
+  order, and change O3's cost note …? Or would you rather re-order the list, promote a different item, or stop the
+  track …?"
+- B. Each rep reports the 3.1 m level with the steep rise above it, and the 22-minute, 1.8 GB fit.
+- D. No rep writes a stage entry. Reps 1 and 2 say the promoted stage's Exit will carry its measured cost (Edits 7
+  and 8), for example rep1: "Its Exit would name its findings file and the measured cost of its real run."
+
+Running total: $22.2461 of $60.
+
+### Fix round 1: dr-resume-legacy
+
+Non-regression (guard). Arm `d3fc772`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2594.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (before 5 of 5, control 5 of 5). Bar: met. The guard needs at least 4 of 5.
+Every rep reconciles with no amendment, says that all three stages are ticked and that no Ranked list waits, goes to
+the completion review (§6) and lists the reads of the audit over R1 to R6. No rep asks a re-ranking question. Reps 1,
+3 and 5 end on "Shall I run the audit?", a go-ahead question.
+
+Running total: $22.5055 of $60.
+
+### Fix round 1 summary
+
+| Case | Bar | Control | Task 7 (`f824492`) | Fix round 1 (`d3fc772`) | Result |
+|---|---|---|---|---|---|
+| dr-known-progression | additive | RED, 1 of 5 | 0 of 5 pass | 0 of 5 pass | **missed**, as before (C: point-in-time 0 of 5) |
+| dr-research-depth | additive | RED, 5 of 5 | 5 of 5 pass | 5 of 5 pass | met, as before |
+| dr-resume-rerank | additive | RED, 1 of 5 | 5 of 5 pass | 5 of 5 pass | met, as before |
+| dr-resume-legacy | guard | 5 of 5 | 5 of 5 | 5 of 5 | met, as before (needs 4 of 5) |
+
+No case that met its bar before misses it now, so the fix round has no owner gate. Three of the four cases meet their
+bar. dr-known-progression misses as before, and the owner's earlier ruling covers it. No rep was VOID.
+
+**Judgment-call reps (Task 7 fix round 1).** These rows extend the earlier Judgment-call lists. None changes a bar.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-known-progression rep2, B | pass, borderline (a count check, not a manifest, as Task 7 rep5) | "its row count checked against the source files" |
+| dr-known-progression rep2, C (traceability) | not passed (retained bytes and manifests, no trace from a row to its source) | "Per-file checkpoints, retained raw source bytes, manifests and versioned publication that later stages may assume" |
+| dr-research-depth rep5, B | pass, borderline (the run's times recorded, without the word "measured") | "recorded in the findings file with wall-clock time for data assembly and for the fit" |
+| dr-resume-rerank rep3, C | pass (a proposed re-rank as the default, then one question) | "**Do you approve this re-rank with O2 promoted to Stage 2, or would you change the order, promote a different item, or stop the track?**" |
+| dr-resume-rerank rep4, C | pass, borderline (the default and its alternatives in two sentences of one question) | "Or would you rather re-order the list, promote a different item, or stop the track" |
+
+**Fix round 1 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` over the four `-t7b`
+folders ran once after the last rep. It shows 20 reps, none VOID, and prints `total cost $2.12`. No rep file is empty
+or unreadable, so none counts at its cap. There was no VOID rerun. The four cases cost $0.9199, $0.6747, $0.2619 and
+$0.2594, so the fix round cost $2.1159. Running total: $22.5055 of $60. Control arms: $5.5029 of $30, unchanged.
+
+**Untested by micro-tests.** No case exercises these paths, so the owner should know that the edits on them are
+reviewed but not micro-tested:
+
+- A "stop the track" answer (Edits 2 and 5): no rep receives that answer, so no rep writes the dated section.
+- A whole-roadmap park (Edit 5): no rep receives a park answer, so no rep appends stages and Ranked-list items.
+- A name collision with a spec (Edits 4 and 6): no fixture has a headerless `specs/<stem>-roadmap.md`, or a roadmap
+  from another spec, at the name a spec gives.
+- A second re-rank round (Edits 3, 7 and 8): dr-resume-rerank has only its core stage ticked, so the most recently
+  ticked stage is always the core.
+
+## All arms side by side (after the Task 7 fix round 1)
+
+One row per case. Every figure is taken from this record's own tables. Each count is the number of the 5 scored reps
+that pass the clause. The control columns give the control arm at `BASE` (`1844bd8`). The treatment columns give each
+case's arm of record. The four re-run cases use the fix round 1 arm (`d3fc772`). The five other derive-roadmap cases
+keep the Task 7 arm (`f824492`). The six other rows are copied from "All arms side by side (after the Task 7 fixes)":
+the two trigger cases use round 1 (`48d9847`), the two dcm cases use `abc1ecb` and the two bs cases use `1f64a61`.
+Their prompts at `d3fc772` are byte-identical to those arms. The two earlier side-by-side tables stay as history.
+Only bar clauses are counted in the clause columns. A conformance clause can still decide the bar result, and the
+Bar result column says so where it does. A guard case has no bar clause, so its columns give the reps that pass the
+whole rule.
+
+| Case | Kind | Control, bar clauses | Treatment, bar clauses | Treatment PASS | Bar result | Clean control |
+|---|---|---|---|---|---|---|
+| trigger-stages | additive | A 0 | A 5 | 5 of 5 | met | no (RED, 5 of 5) |
+| trigger-decoy | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (needs 4 of 5) | n/a |
+| dr-offer-scaffold | additive | A 3, B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met (Task 7 arm; A rep4 borderline). In Task 3 it met only in round 2: round 1 (`48d9847`) missed (PASS 2 of 5) | no (RED, 5 of 5) |
+| dr-offer-inputs | additive | A 2, B 0, C 0 | A 5, B 5, C 5 | 5 of 5 | met (Task 7 arm; B rep2 borderline). Met in every arm | no (RED, 5 of 5) |
+| dr-offer-yes | additive | A 5 (by the labeled-list reading; 0 on form alone), B 2, C 2 | A 5, B 4, C 3 | 3 of 5 | **missed** (Task 7 arm): PASS 3 of 5, and 4 of 5 by either other reading (Task 7: dr-offer-yes). Round 2 (`3ca7344`) also 3 of 5. Owner ruling: accept and file | no (RED, 4 of 5) |
+| dr-built-guard | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (Task 7 arm; needs 4 of 5) | n/a |
+| dr-known-progression | additive | B 4 (by the by-reference reading; B 5 by the other reading) | B 5 | 0 of 5 | **missed** (fix round 1 arm) through conformance clause C (point-in-time awareness 0 of 5, though manifest is 5 of 5 and traceability 4 of 5), although bar clause B is 5 of 5. Owner ruling: accept and file | no by the by-reference reading (RED, 1 of 5); yes by the other reading of B (B 5 of 5) |
+| dr-tracks | additive | A 0 | A 5 | 5 of 5 | met on the readings applied (Task 7 arm). PASS is 2 of 5 or fewer, and the bar is missed, if an order inside Track A counts as a stage list without the word "stages" (Task 7: dr-tracks, Other readings). Both Task 3 rounds missed (PASS 2 of 5) | no (RED, 5 of 5) |
+| dr-research-depth | additive | A 0, B 0 | A 5, B 5 | 5 of 5 | met (fix round 1 arm). Met in every arm | no (RED, 5 of 5) |
+| dr-resume-rerank | additive | A 4, C 5 | A 5, C 5 | 5 of 5 | met (fix round 1 arm) against a thin control: the control failed a bar clause in 1 of 5 reps (rep4, A) | no (thin: RED in 1 of 5) |
+| dr-resume-legacy | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (fix round 1 arm; needs 4 of 5) | n/a |
+| dcm-describe-route | additive | A 1 (0 before fix round 1), B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met on the readings applied. Under the other readings (Task 5, Other readings) A is 3 of 5 or fewer, and the bar is missed | no (RED, 5 of 5) |
+| dcm-synth-route | additive | A 2, B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met on the readings applied. A is 3 of 5, and the bar is missed, if reps 1 and 5 both fail A (Task 5, Other readings) | no (RED, 5 of 5) |
+| bs-route | additive | A 0, B 4, C 5 | A 4, B 5, C 5 | 4 of 5 | met on the readings applied. A is 3 of 5, PASS is 3 of 5 and the bar is missed, if rep4 fails A (Task 6, Other readings) | no (RED, 5 of 5) |
+| bs-guard | guard | 4 of 5 pass | 4 of 5 pass | 4 of 5 | met (needs 3 of 5) | n/a |
+
+(The dcm-describe-route row's "fix round 1" is the earlier controller ruling on a scoring reading, in the Control
+section's "Readings applied". It is not this fix round.)
+
+**Counts.** Unchanged from the table after Task 7. 13 of the 15 cases meet their bar and 2 miss it: dr-offer-yes and
+dr-known-progression. The owner ruled to accept and file both misses. Of the 13 that meet their bar, four meet it only
+on the readings applied (dcm-describe-route, dcm-synth-route, bs-route and dr-tracks), and one meets it against a thin
+control (dr-resume-rerank). The four guard cases all meet their bar.
+
+**Clean controls.** Unchanged: see "All arms side by side (after the Task 7 fixes)".
+
+**For the owner.** The fix round closes the four defects that the Task 7 review and the Codex review found, with no
+regression in the four cases that read the edited passages. The paths in "Untested by micro-tests", above, are
+reviewed but not micro-tested.
+
+**Spend total.** Spend by task: Task 1 $0.2962 (isolation probe $0.0141 and cost pilot $0.2821), Task 2 $5.5029
+(control arms), Task 3 $8.4719, Task 4 $0.5190, Task 5 $0.5031, Task 6 $0.3376, Task 7 $4.7589 and Task 7 fix round 1
+$2.1159. These sum to **$22.5055 of $60**. The control arms alone cost $5.5029 of $30, unchanged: treatment reps count
+toward the $60 only. No rep was VOID and there was no VOID rerun in any task, and no rep file was empty or
+unreadable. The Spend table, the "Running total after Task 7 fix round 1" paragraph and this total agree.
