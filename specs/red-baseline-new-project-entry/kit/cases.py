@@ -719,7 +719,7 @@ Choices made: none.
 DR_NAME_COLLISION_FIXTURE = lines(
     edit(DR_OFFER_YES_FIXTURE, ('[now] Your partner: Yes, do that.', '[earlier] Your partner: Yes, do that.')),
     '[earlier] You (your last message, in summary): You sent the one message before any roadmap text: the outcomes drawn from R1 to R11, one line each in plain words; one track, a known progression; and cost notes with their bases. You said that the roadmap takes the spec\'s stem as its name, and asked your partner to rank the outcomes.',
-    '[you, tools] Before writing, ran `ls specs/`. It lists three files: sec-filing-index-ingestion-adr.md, sec-filing-index-ingestion-spec-roadmap.md and sec-filing-index-ingestion-spec.md. The roadmap file is untracked, so the earlier `git ls-files` listing and header check did not include it.',
+    '[you, tools] Before writing, ran `ls specs/`. It lists three files: sec-filing-index-ingestion-adr.md, sec-filing-index-ingestion-spec-roadmap.md and sec-filing-index-ingestion-spec.md.',
     '[you, tools] Read the first 12 lines of specs/sec-filing-index-ingestion-spec-roadmap.md:',
     OTHER_ROADMAP_HEAD,
     '[now] Your partner: Rank them in the order you listed. Go ahead and write the roadmap.',
@@ -835,14 +835,16 @@ Each stage spec's Rollout note carries this line, which writing-plans then copie
 Retire this roadmap only after a conformance audit of the accumulated system: re-run the gap rubric over every numbered requirement (R1–R7), with evidence per verdict. Each requirement that the system does not satisfy either becomes a new stage, keeping this roadmap live, or is deferred consciously with a written why. Then move this file to specs/completed/ beside the retired spec.'''
 
 # The marker variant: plan 3's one Handoff bullet is already cited by Stage 3, so only plan 5's is new.
-# The blocked variant: Stage 3 cites nothing and plan 3's Handoff reads None, so plan 5's bullet is the
-# one open point.
+# The blocked variant differs from it in two things. Plan 5's bullet says that `occupancy_hourly` was not
+# built. Stage 3's entry cites nothing and has its pre-amendment form, which still names `car_park_id`, so
+# plan 3's bullet is pending as well.
 OCCUPANCY_ROADMAP_BLOCKED = edit(
     OCCUPANCY_ROADMAP,
-    (' Its Handoff section names what Stage 3 consumes.\n', '\n'),
     ('Consumes: Stage 1\'s `bay_events` table, with the car park in its `lot_id` column (plan 3, Handoff; Resolved at resume, 2026-10-12); Stage 2\'s `occupancy_hourly` table',
-     'Consumes: Stage 1\'s `bay_events` table; Stage 2\'s `occupancy_hourly` table'),
+     'Consumes: Stage 1\'s `bay_events` table, with the car park in its `car_park_id` column; Stage 2\'s `occupancy_hourly` table'),
 )
+
+PLAN_3_HANDOFF = 'Its `## Handoff to later stages` has one bullet, for Stage 3: "Read the car park from the `lot_id` column of `bay_events`, not `car_park_id`."'
 
 
 def resume_gap_fixture(roadmap: str, commits: str, plan_3: str, plan_5: str) -> str:
@@ -860,7 +862,7 @@ def resume_gap_fixture(roadmap: str, commits: str, plan_3: str, plan_5: str) -> 
 DR_RESUME_MARKER_FIXTURE = resume_gap_fixture(
     OCCUPANCY_ROADMAP,
     'four',
-    'Its `## Handoff to later stages` has one bullet, for Stage 3: "Read the car park from the `lot_id` column of `bay_events`, not `car_park_id`."',
+    PLAN_3_HANDOFF,
     'Its `## Handoff to later stages` has one bullet: "`occupancy_hourly` shipped as `occupancy_by_hour` with the same columns, which Stage 3 and Stage 4 consume."',
 )
 
@@ -875,7 +877,7 @@ DR_RESUME_MARKER_LEAK = r'since the last resume|no entry yet cites|already cites
 DR_RESUME_BLOCKED_FIXTURE = resume_gap_fixture(
     OCCUPANCY_ROADMAP_BLOCKED,
     'three',
-    'Its `## Handoff to later stages` reads `None`.',
+    PLAN_3_HANDOFF,
     'Its `## Handoff to later stages` has one bullet: "`occupancy_hourly` was not built, because the vendor feed has no bay ids, and Stage 3 and Stage 4 consume it."',
 )
 

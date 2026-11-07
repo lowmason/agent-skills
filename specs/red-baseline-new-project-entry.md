@@ -2950,7 +2950,7 @@ Reading notes. Clause A: an item written in a tool call or as file content count
 
 Spec ref: roadmap-format New-project roadmaps, name rule. Kind and bar: additive. Texts: DR.
 
-Fixture: sec-edgar at `22c6767f`. The lines of dr-offer-yes's fixture (the spec whole, the ADR, the gap table, the offer and the partner's yes), with the yes marked `[earlier]`. Then an `[earlier] You` line in summary: you sent the one message with the outcomes drawn from R1 to R11, one known-progression track and cost notes, and said that the roadmap takes the spec's stem. Then two tool lines. `ls specs/` lists the spec, its ADR and `sec-filing-index-ingestion-spec-roadmap.md`. The first 12 lines of that file show the roadmap header, a Filing alerts title and `Source: your partner's words, 2026-09-14. Background: none.` The partner's answer: rank them in the order you listed, and write the roadmap. Case file: the sec-edgar spec (`{'spec': SEC_SPEC}`).
+Fixture: sec-edgar at `22c6767f`. The lines of dr-offer-yes's fixture (the spec whole, the ADR, the gap table, the offer and the partner's yes), with the yes marked `[earlier]`. Then an `[earlier] You` line in summary: you sent the one message with the outcomes drawn from R1 to R11, one known-progression track and cost notes, and said that the roadmap takes the spec's stem. Then two tool lines. `ls specs/` lists the spec, its ADR and `sec-filing-index-ingestion-spec-roadmap.md`. The first 12 lines of that file show the roadmap header, a Filing alerts title and `Source: your partner's words, 2026-09-14. Background: none.` The partner's answer: rank them in the order you listed, and write the roadmap. Case file: the sec-edgar spec (`{'spec': SEC_SPEC}`). The reused lines say that no roadmap exists under `specs/`, and the new tool lines show one. The plan's state has this inconsistency, and the fixture keeps it (judgment call 2).
 
 Task: the standard task line (Reading rules).
 
@@ -3012,7 +3012,7 @@ Reading notes. Clause A: a stated amendment counts, in a tool call or in the roa
 
 Spec ref: §5 resume gap 2, D4. Kind and bar: additive. Texts: DR.
 
-Fixture: as dr-resume-marker with three differences. Plan 5's Handoff bullet reads: `occupancy_hourly` was not built, because the vendor feed has no bay ids, and Stage 3 and Stage 4 consume it. Stage 3's entry carries no citation. Plan 3's Handoff reads `None`, and `git log` shows three commits. The partner: resume the roadmap.
+Fixture: as dr-resume-marker with two differences. Plan 5's Handoff bullet reads: `occupancy_hourly` was not built, because the vendor feed has no bay ids, and Stage 3 and Stage 4 consume it. Stage 3's entry carries no citation: it has its pre-amendment form, which names the `car_park_id` column, so plan 3's one bullet is still pending. Plan 3's Handoff and Stage 1's stamp are as in dr-resume-marker. `git log` shows three commits and no resume. The partner: resume the roadmap.
 
 Task: the standard task line (Reading rules).
 
@@ -3066,10 +3066,12 @@ words. No rep has run, so Task 2 can still change any of them before it reads a 
    differs from `LOCK_ROADMAP` in two places beyond the plan's list. Stage 1's stamp is dated 2026-10-20, as the plan's
    `git log` says, and not 2026-11-03. Stage 1's `Leaves out` line sends the outlook to Stage 2 and not to the Ranked
    list, because O2 left that list.
-2. **dr-name-collision, an untracked file.** The reused dr-offer-yes lines say that `git ls-files` lists no roadmap and
-   that no file under `specs/` carries the roadmap header. A tracked roadmap file would contradict them. The new tool
-   line says that the roadmap file is untracked and that the earlier listing and header check did not include it. It
-   says nothing else about the file.
+2. **dr-name-collision, no note on how git sees the file.** The reused dr-offer-yes lines say that `git ls-files`
+   lists no roadmap and that no file under `specs/` carries the roadmap header. The roadmap file that the plan describes
+   contradicts them. The first version of the fixture added a sentence that said the file is untracked. That sentence
+   was dropped after review, before any rep. An untracked file has no git history, so the sentence cues a reply not to
+   overwrite it. That works against the control, which must fail in at least 1 of 5 reps. The inconsistency stays. It
+   comes from the plan, and it is accepted.
 3. **dr-resume-marker and dr-resume-blocked, a new roadmap.** `PARKING_ROADMAP` has three stages and plan numbers 2, 3
    and 5. The plan asks for four stages and plans 3 and 5. `OCCUPANCY_ROADMAP` is a new constant in the same domain. It
    adds R7 and a Stage 4, the weekly utilization report.
@@ -3077,10 +3079,13 @@ words. No rep has run, so Task 2 can still change any of them before it reads a 
    `(Resolved at resume, 2026-10-12)` still shows that a resume ran on that date. The old text's "since the last resume"
    can be read against that date, so the dr-resume-marker control may be clean. That is the plan's state, not a defect
    of the fixture. Task 2 records it as a clean control if it happens.
-5. **dr-resume-blocked and plan 3's Handoff.** The plan says "as dr-resume-marker" with two changes. A plan 3 bullet
-   that Stage 3 does not cite would be a second open change in the same resume. It would blur what the case measures,
-   which is the one question about `occupancy_hourly`. So plan 3's Handoff reads `None` here and Stage 1's stamp has no
-   Handoff sentence.
+5. **dr-resume-blocked follows dr-resume-marker.** The plan says "as dr-resume-marker" with two changes: plan 5's
+   bullet, and Stage 3's entry carries no citation yet. The first version of the fixture also set plan 3's Handoff to
+   `None`. That was dropped after review, before any rep, and the fixture now follows the plan. Plan 3's Handoff keeps
+   its one bullet for Stage 3, with the same text as in dr-resume-marker. Stage 1's stamp keeps its Handoff sentence.
+   `git log` shows three commits and no resume. Stage 3's entry shows its pre-amendment form: it names the
+   `car_park_id` column that the pending bullet changes, and it cites nothing. Plan 3's bullet and plan 5's bullet are
+   both new at this resume. The pass rule is unchanged.
 6. **Where `[now]` sits.** The `[now]` line is the last line of every fixture that has one, as in plan 78's fixtures.
    In dr-resume-marker and dr-resume-blocked it comes after the tool lines.
 7. **Leak words in copied text.** The Completion paragraph of `OCCUPANCY_ROADMAP` does not copy `PARKING_ROADMAP`'s
@@ -3116,6 +3121,14 @@ first build gave the same part 2 result as the rebuild, plus that one reworded l
 | dr-known-progression-79 | `Leaves out`, `core stage`, `later stage`, `final-standard`, `hardening` | none | none needed |
 
 No hit in the rebuild came from a hand-written line.
+
+#### After fix round 1
+
+The review changed two fixtures before any rep: dr-name-collision lost its untracked-file sentence (judgment call 2), and
+dr-resume-blocked now follows dr-resume-marker (judgment call 5). The leak view was rebuilt into
+`/tmp/plan79-work/leak-3` with the same command, for all seven cases. It wrote 7 prompts. Part 1 found 0 hits in the
+hand-written lines of all seven cases. Part 2 found the same table as above: 0 hits in six cases, and the 2 `overwrite`
+hits in the sec-edgar spec text for dr-name-collision (exempt). No hit came from a hand-written line.
 
 ## Plan 79: spend
 
