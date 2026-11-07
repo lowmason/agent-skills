@@ -1,0 +1,4 @@
+arm a98ff27 (a98ff27b952e9a61dcc60fc0136b95c7043752ad)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-resume-rerank.txt sha256 3a71cd50c3ad8a7ad4d0f05ee25d5119d45108360abda9ce0f686e0ecad9d0d9 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-legacy.txt sha256 45a9bf1805a9d2143170fab956c54646ee36f6bef7f86e23257463a8d44a3610 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md

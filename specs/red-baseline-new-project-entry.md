@@ -132,7 +132,8 @@ Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in
 | Task 1 Step 6, cost pilot | 1 | $3.00 | $3.00 | $0.2821 |
 | Task 2, control arms (15 cases, 5 reps each, no VOID rerun) | 75 | $1.00 | $75.00 ($5.00 per case call) | $5.5029 |
 | Task 3, treatment arms (9 cases in round 1 and 7 in round 2, 5 reps each, no VOID rerun) | 80 | $1.00 | $80.00 ($5.00 per case call) | $8.4719 |
-| **Running total** | 157 | | | **$14.2710 of $60** |
+| Task 4, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5190 |
+| **Running total** | 167 | | | **$14.7900 of $60** |
 | **Control arms** | 75 | | | **$5.5029 of $30** |
 
 Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
@@ -146,6 +147,9 @@ Task 2's "Control summary and spend" section, below.
 Running total after Task 3: $14.2710 of $60 ($14.27). Control arms: $5.5029 of $30, unchanged: treatment reps count
 toward the $60 only. `show_reps.py` over `treatment/*/` prints $8.47 for Task 3's 80 reps. These figures match the
 "Task 3 summary and owner gate" section, below.
+
+Running total after Task 4: $14.7900 of $60 ($14.79). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
+Task 4's two folders prints $0.52 for its 10 reps. These figures match the "Task 4 summary" section, below.
 
 ## Fixture sources
 
@@ -1707,3 +1711,100 @@ agent goes straight to §7 and skips the §1 offer that the Common mistakes bull
 the agent a finished gap analysis, so no micro-test exercises the entry decision. The text is the owner-approved text
 of D16 and the one wording round is spent, so no edit was made. The reviewer's smallest fix: make item 2's condition
 the partner's own statement ("Your partner says the project has nothing built and asks for a roadmap …").
+
+
+## Treatment: Task 4
+
+Task 4 makes derive-roadmap's resume (§5) and completion review (§6) understand the new-project roadmap. The skill
+text was committed as `a98ff27` (`feat(derive-roadmap): resume and complete new-project roadmaps with ranked
+lists`). Task 4 runs the treatment of two cases: dr-resume-rerank (additive) and dr-resume-legacy (guard). Each rep is
+scored by its case's committed rule and by every reading in the Control section. No rule and no reading changed.
+
+**Task 3's cases are not re-run.** They decide at entry, §1 and §7, which Task 4 does not touch.
+
+**Build.** The prompts were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py a98ff27 /tmp/plan78-work/t4 dr-resume-rerank dr-resume-legacy`.
+Its `MANIFEST.txt` is copied to `treatment/t4-MANIFEST.txt`. Two checks ran on the build before any rep:
+
+- Each prompt holds the paragraph "A research track waiting on its Ranked list" once and
+  `derive-roadmap/references/new-project-entry.md` as a file block.
+- No prompt holds `red-baseline`, `plan 78` or the spec's file name (the quarantine).
+
+Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t4/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t4 1 5 claude-opus-5-5 1.00`,
+one case at a time, into folders with a `-t4` suffix, so Task 3's folders are untouched. Before each call, the
+running total plus the call's worst case ($5.00) stayed under $60.
+
+### Task 4: dr-resume-rerank
+
+Additive. Arm `a98ff27`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2646.
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (control 4 of 5). Clause C: 5 of 5 (control 5 of 5). Clause B: 5 of 5 (control 2 of 5). Clause D: 5 of
+5 (control 5 of 5). Bar: met. The treatment passes every clause in 5 of 5 reps, and the control fails a bar clause in
+1 of 5 (rep4, clause A).
+
+No bar clause fails in any rep, so there is no failure quote. What the reps do, for the record:
+
+- A: no rep starts a completion review. Every rep offers stopping the track as one option of the question, and says
+  its remaining items would park in `specs/deferred_items.md`. Parking offered as one option is not parking.
+- C: each rep ends on one approve-or-amend question that proposes a default, which is to promote O2 as Stage 2.
+  Rep1 also proposes a re-ranking (O2, then O4, then O3). The other four keep the order O2, O3, O4.
+- B: each rep reports the 3.1 m level with the steep rise above it, and the measured cost of one fit on 11 years of
+  daily gauge readings: 1.8 GB in 22 minutes on a laptop. All five name the findings file. The control's three
+  failures were the missing 3.1 m level or rise.
+- D: no rep writes a stage entry. Each describes Stage 2 inside the question and says it will write the entry after
+  the answer.
+
+Running total: $14.5356 of $60.
+
+### Task 4: dr-resume-legacy
+
+Non-regression (guard). Arm `a98ff27`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2544.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (control 5 of 5). Bar: met. The guard needs at least 4 of 5. Every rep says that
+all three stages are ticked, reconciles with no amendment (plan 5's Handoff reads `None`), goes to the completion
+review (§6) and lists the reads of the audit over R1 to R6. Every rep also says that no Ranked list is waiting.
+No rep asks a re-ranking question. Reps 1, 2 and 5 end on a go-ahead question ("Shall I run these reads?"), which is
+not a re-ranking question, as in control rep1.
+
+Running total: $14.7900 of $60.
+
+### Task 4 summary
+
+| Case | Bar | Control | Treatment (`a98ff27`) | Result |
+|---|---|---|---|---|
+| dr-resume-rerank | additive | RED, 1 of 5 (rep4, A) | 5 of 5 pass | met |
+| dr-resume-legacy | guard | 5 of 5 | 5 of 5 | met |
+
+Both cases meet their bar in the first round, so no wording round ran.
+
+**Judgment-call reps (Task 4).** These rows extend the Judgment-call list in the Control section. Each rep was
+scored on a close reading. None changes a verdict.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-resume-rerank rep2, C | pass, borderline (one question with options) | "**My question:** should I keep your ranking (O2, then O3, then O4) and promote **O2, the 7-day outlook**, as Stage 2?", then "You could also amend this in one reply:" and three options |
+| dr-resume-rerank rep5, C and D | pass, borderline (a proposed cost-note change inside the question, no stage entry) | "I'd also re-note O3's cost as \"to confirm: how many locks Stage 1's 1.8 GB covers\"." |
+| dr-resume-rerank all reps, A | pass (stopping the track offered as one option, not parking) | "The alternative is to stop Track A here, which would park O2, O3 and O4 in `specs/deferred_items.md`." (rep1) |
+| dr-resume-legacy rep3, guard | pass (a later question on audit exits, not a re-ranking) | "I'll put that choice to you as one question." |
+
+**Task 4 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/dr-resume-rerank-t4/ specs/red-baseline-new-project-entry/treatment/dr-resume-legacy-t4/`
+ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.52`. No rep file is empty or
+unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.2646 and $0.2544, so Task 4
+cost $0.5190. Running total: $14.7900 of $60. Control arms: $5.5029 of $30, unchanged.
