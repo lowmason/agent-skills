@@ -1,0 +1,7 @@
+arm 5f52dfc75f7e55658b1f7eeb237845af7da06d54 (5f52dfc75f7e55658b1f7eeb237845af7da06d54)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-stop-track.txt sha256 218dbc84a2ced96004e0d93a17b2bfca06bcded3ad33894029ed52fbf2b30aa2 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-park-ranked.txt sha256 b575ce9cf855a6a04b14a18af5b533d098f16ce3ca4a3141325327a8f912e4cc model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-rerank-second.txt sha256 62020c8406f91f58084bb4a3ee7b3f77c9bdaf434fa5a7c829c7cd3bac4cd962 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-marker.txt sha256 6faa7a330eadfa74caa8876a9bda8fbee7cd9a7aac1c940334df7b578f972c11 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-blocked.txt sha256 85e94e44c51ce6df884a551bbd2d5f1546399fc44e9c71f1f599de3e1f22b9bb model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
