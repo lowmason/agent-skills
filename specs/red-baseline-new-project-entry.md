@@ -3199,26 +3199,32 @@ gives the number of the 5 scored reps that pass it. A failed bar clause gets one
 
 **Readings applied (plan 79).** The Carried citation and Pending bullet readings were set before the replies of their
 cases were read. The others were set when a close call first appeared in a reply, and then applied to every rep of that
-case. All of them apply to every later arm of these six cases. They are the implementer's readings. The controller can
-confirm or change each one before Task 3 scores a treatment rep. No rule changed.
+case. The controller confirmed six of them (Review by table, Another name, Carried citation, Pending bullet, Item by
+description and Stage 2's live feed) and changed the seventh (Date), after the control reps ran. All of them apply to
+every later arm of these six cases. Each later arm also reports the other reading of each one under "Other readings",
+and no other reading counts toward a bar. No rule changed.
 
-- *Review by table* (dr-rerank-second clause A). A table over the whole Outcomes list with a verdict and evidence for
+- *Review by table* (dr-rerank-second clause A; confirmed by the controller). A table over the whole Outcomes list with a verdict and evidence for
   each outcome is the audit of derive-roadmap §6, whether or not the reply names it. It starts a completion review and
   fails A. An alternative that mentions the review as something that would follow a stop does not start one.
-- *Another name* (dr-name-collision clause B). The clause needs a request for another name for this spec's roadmap. A
+- *Another name* (dr-name-collision clause B; confirmed by the controller). The clause needs a request for another name for this spec's roadmap. A
   proposal to move the old file to a name of its own is not that request. A branch that offers "a different name, which
   you'd pick" inside a question about something else is not that request either.
-- *Carried citation* (dr-resume-marker clause B). When a rewritten Stage 3 `Consumes` line carries plan 3's existing
+- *Carried citation* (dr-resume-marker clause B; confirmed by the controller). When a rewritten Stage 3 `Consumes` line carries plan 3's existing
   citation unchanged, that is the old citation carried over. It is not a new amendment from plan 3. A new date or a new
   Resolved marker for plan 3's point, or plan 3's bullet listed among the changes made now, would fail B.
-- *Pending bullet* (dr-resume-blocked). Applying plan 3's pending bullet is not scored and is not the default of clause
+- *Pending bullet* (dr-resume-blocked; confirmed by the controller). Applying plan 3's pending bullet is not scored and is not the default of clause
   C. A commit written before the answer is not a handoff, so it does not fail clause A.
-- *Item by description* (dr-park-ranked clause D). A reply that says what an item will hold, and writes none of its
+- *Item by description* (dr-park-ranked clause D; confirmed by the controller). A reply that says what an item will hold, and writes none of its
   text, does not pass D.
-- *Date* (dr-park-ranked clauses B and C, dr-stop-track clause C). Clause B asks for "the date" of the parking and passes any
-  date, a `<date>` placeholder that a `date +%F` call fills included. Clause C fixes 2026-11-06 in the heading, so a
-  heading with another date or a placeholder fails C.
-- *Stage 2's live feed* (dr-stop-track and dr-park-ranked). Stage 2 has `Consumes: the closure log's live feed` and no
+- *Date* (dr-park-ranked clauses B and C, dr-stop-track clause C; set by the controller after the control reps ran).
+  Clause B asks for "the date" of the parking and passes any date, a `<date>` placeholder that a `date +%F` call fills
+  included. Clause C fixes 2026-11-06 in the heading. A heading dated 2026-11-06 passes C. A heading dated with the run
+  day's own date, as the CLI date line gives it, passes C too (2026-11-07 for these reps). A `<date>` placeholder heading
+  still fails C. The reason: a rep that uses either date follows its frame, the mismatch is not what the skill text
+  controls, and the run day moves every day. No rule text and no fixture changed. This reading touches only a
+  conformance clause.
+- *Stage 2's live feed* (dr-stop-track and dr-park-ranked; confirmed by the controller). Stage 2 has `Consumes: the closure log's live feed` and no
   stage produces it. No clause scores that. Each case's section records how its reps treat the feed.
 
 **The date conflict.** Every fixture says "Today is 2026-11-06." The replies show that the CLI gives each rep its own date,
@@ -3226,9 +3232,9 @@ confirm or change each one before Task 3 scores a treatment rep. No rule changed
 reports 2026-11-07", and reps 3 and 5 date their marker 2026-11-07. In dr-resume-blocked, reps 2, 3 and 5 date plan 3's
 marker 2026-11-07. In dr-park-ranked, rep4 dates its heading and its PARKED line 2026-11-07. The same date line is in plan
 78's fixtures. A fixture change after a first rep voids the arm, so no fixture changed. In these controls the conflict
-touches only dr-park-ranked clause C (and B, on one reading), and C is a conformance clause. It cannot change a RED. The
-treatment arms of Task 3 meet the same conflict, and a treatment rep passes only when every clause passes, clause C
-included. The controller can decide before Task 3 whether to leave it.
+touches only dr-park-ranked clause C (and B, on one reading), and C is a conformance clause. The controller ruled on it
+after the control reps ran: see the Date reading above and the Controller rulings paragraph below. The treatment arms of
+Task 3 meet the same conflict and are scored by that reading.
 
 **Judgment-call reps.** Each rep below was scored by one of the readings above, where the call was close. The owner can
 review them at the completion gate. The quote column also gives the other reading's effect where it changes a count.
@@ -3237,7 +3243,7 @@ review them at the completion gate. The quote column also gives the other readin
 |---|---|---|
 | dr-park-ranked rep1, D | fail (item described, not written) | "The item will be self-contained, with a `Size:` field, and its `Done when:` will name Stage 2's Produces: the notice job and its operator mailing list." The other reading passes D, which makes D 5 of 5 and changes no bar. |
 | dr-park-ranked rep3, B and C | B pass, C fail (placeholder date) | "**PARKED (<date>) — 1 of 2 stages complete.**" and "## lock-closures-roadmap — <date>". The reply says that a `date +%F` call fills the date. |
-| dr-park-ranked rep4, B and C | B pass, C fail (date from the CLI, not the fixture) | "## lock-closures-roadmap — 2026-11-07". If clause B meant the fixture's date, B would be 4 of 5. A fails in 5 of 5 either way. |
+| dr-park-ranked rep4, B and C | B pass, C pass (the run day's date from the CLI date line; re-scored after the controller's Date reading, first scored fail) | "## lock-closures-roadmap — 2026-11-07". Other readings: if clause B meant the fixture's date, B would be 4 of 5. If clause C allowed only 2026-11-06, C would be 3 of 5. A fails in 5 of 5 either way, so neither changes the RED. |
 | dr-name-collision rep3, B | fail, borderline (an option inside another question) | "Or I can leave it in place and write the new one under a different name, which you'd pick." Its one question asks whether the file is separate or an earlier roadmap. The other reading passes B, which makes B 1 of 5. |
 | dr-name-collision reps 2 and 4, C | pass, borderline (a statement of source, with a hedge) | rep2: "cites no spec at all", with "I haven't read past line 12". rep4: "it does not name this spec as its source", with "I can't rule out that it cites the spec further down." The committed note passes any statement that the file's source is not this spec. |
 | dr-name-collision rep3, C | fail, borderline (no statement of source) | "I can't yet tell whether it names this spec as its source" |
@@ -3300,19 +3306,24 @@ off no stage.
 | 1 | fail | pass | pass | fail | pass | no |
 | 2 | fail | pass | pass | pass | pass | no |
 | 3 | fail | pass (borderline) | fail | pass | pass | no |
-| 4 | fail | pass | fail | pass | pass | no |
+| 4 | fail | pass | pass | pass | pass | no |
 | 5 | fail | pass | pass | pass | pass | no |
 
-Clause A: 0 of 5. Clause B: 5 of 5. Clause C: 3 of 5. Clause D: 4 of 5. Clause E: 5 of 5. PASS: 0 of 5. RED: the control
+Clause A: 0 of 5. Clause B: 5 of 5. Clause C: 4 of 5. Clause D: 4 of 5. Clause E: 5 of 5. PASS: 0 of 5. RED: the control
 fails a bar clause in 5 of 5.
+
+Re-score. The controller set the Date reading after these reps ran. It moved rep4's clause C from fail to pass, so C
+went from 3 of 5 to 4 of 5. It touches only a conformance clause. PASS stays 0 of 5, because clause A fails in every
+rep, and the RED stands.
 
 - A fails in every rep. Each rep appends one item, for Stage 2, and none for O2, O3 or O4. Reps 1, 3, 4 and 5 offer to
   add the three if the partner asks, and rep2 leaves them in the parked roadmap's Ranked list. Quote (A, rep1): "Unless
   you say otherwise, those three stay recorded only in the parked roadmap, where they won't age or come up for review."
 - B passes in every rep. Each moves the roadmap with `git mv` to `specs/completed/` and adds a PARKED line with "1 of 2
   stages complete". Rep3 writes the date as `<date>`, and rep4 writes 2026-11-07 (see the Date reading).
-- C: rep3's heading carries `<date>` and rep4's carries 2026-11-07. The other three carry 2026-11-06. Under the other
-  reading of the date, rep4 passes and C is 4 of 5.
+- C: rep3's heading carries `<date>`, which fails. Rep4's heading carries 2026-11-07, the run day's date from the CLI
+  date line, which passes by the Date reading. The other three carry 2026-11-06. Other reading: if C allowed only
+  2026-11-06, rep4 would fail and C would be 3 of 5.
 - D: rep1 describes an item and writes none (see the judgment-call table). The other four write a `Size:` and a
   `Done when:` that names the notice job and its mailing list.
 - E passes in every rep. No rep starts a review or hands off a stage. Rep3: "Nothing gets handed off after a park".
@@ -3473,7 +3484,7 @@ plan 78's 15 folders ($5.50).
 | Case | Bar clauses | Result | Clean control |
 |---|---|---|---|
 | dr-stop-track | A, B | RED, A fails in 5 of 5 | no |
-| dr-park-ranked | A, B | RED, A fails in 5 of 5 | no |
+| dr-park-ranked | A, B | RED, A fails in 5 of 5 (clause C is 4 of 5 after the controller's Date reading, 3 of 5 before it) | no |
 | dr-name-collision | A, B | RED, B fails in 5 of 5 (4 of 5 by the other reading of rep3) | no |
 | dr-rerank-second | A, B, C | RED, a bar clause fails in 4 of 5 (A in 3 reps, B in 3 reps) | no |
 | dr-resume-marker | A, B | no failure in 5 of 5 (RED in 2 of 5 by the other reading of the Carried citation) | **yes** |
@@ -3485,6 +3496,26 @@ one whose `Consumes` are all met, and §5's Ask already takes one question with 
 dr-resume-marker, the Resolved marker is enough for them to place the last resume. A clean control reverts nothing
 (plan 79's Global Constraints). The plan completion gate puts both clean controls to the owner.
 
+The Date reading changes one cell, dr-park-ranked rep4's clause C, a conformance clause. It changes no RED or clean
+verdict and no PASS count.
+
 **Spend.** Task 2's control arms cost $1.7765 (`show_reps.py` prints $1.78), the Task 2 row of the Plan 79 spend
 table. Per case: dr-stop-track $0.2329, dr-park-ranked $0.2930, dr-name-collision $0.3198, dr-rerank-second $0.2614,
 dr-resume-marker $0.2946 and dr-resume-blocked $0.3749. Running total: $1.7765 of $30.
+
+**Controller rulings (fix round 1).** The controller ruled on the readings of this section after the control reps ran,
+and before the task review. No rep file, fixture or rule changed.
+
+1. Confirmed as written: Review by table, Another name, Carried citation, Pending bullet, Item by description and Stage
+   2's live feed. They apply unchanged to every later arm of these six cases. Each later arm also reports the other
+   reading under "Other readings", and the other reading never counts toward a bar.
+2. Date reading, changed. Clause C of dr-stop-track and dr-park-ranked fixes `2026-11-06` in the heading. A heading dated
+   2026-11-06, or dated with the run day's own date as the CLI date line gives it (2026-11-07 for these reps), passes
+   clause C. A placeholder heading still fails C. Clause B of dr-park-ranked is as read: it passes any date. The reason:
+   a rep that uses either date follows its frame, the mismatch is not what the skill text controls, and the run day
+   moves every day. The reading applies to every later arm of these cases. It touches only a conformance clause.
+3. Re-score. The only control rep that failed on the date alone is dr-park-ranked rep4 (clause C, fail to pass). Rep3
+   still fails C on its placeholder. dr-stop-track clause C fails in every rep because no item exists, not because of a
+   date. No RED or clean verdict changes.
+4. The dr-resume-marker and dr-resume-blocked controls are clean. A clean control reverts nothing and goes to the owner
+   at the plan completion gate.
