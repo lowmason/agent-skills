@@ -135,7 +135,8 @@ Per-rep cap: **$1.00** (Task 1 Step 6, below). It is in every case's `budget` in
 | Task 4, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5190 |
 | Task 5, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.5031 |
 | Task 6, treatment arms (2 cases, 5 reps each, no VOID rerun) | 10 | $1.00 | $10.00 ($5.00 per case call) | $0.3376 |
-| **Running total** | 187 | | | **$15.6307 of $60** |
+| Task 7, treatment arms after the final-review fixes (9 cases, 5 reps each, no VOID rerun) | 45 | $1.00 | $45.00 ($5.00 per case call) | $4.7589 |
+| **Running total** | 232 | | | **$20.3896 of $60** |
 | **Control arms** | 75 | | | **$5.5029 of $30** |
 
 Running total after Task 1: $0.2962 of $60 (`show_reps.py` prints $0.30). Control arms: $0.00 of $30. The cost pilot
@@ -159,6 +160,10 @@ Task 5's two folders prints $0.50 for its 10 reps. These figures match the "Task
 Running total after Task 6: $15.6307 of $60 ($15.63). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
 Task 6's two folders prints $0.34 for its 10 reps. These figures match the "Task 6 summary" section and the spend
 total under "All arms side by side", below.
+
+Running total after Task 7: $20.3896 of $60 ($20.39). Control arms: $5.5029 of $30, unchanged. `show_reps.py` over
+Task 7's nine folders prints $4.76 for its 45 reps. These figures match the "Task 7 summary" section and the spend
+total under "All arms side by side (after the Task 7 fixes)", below.
 
 ## Fixture sources
 
@@ -2163,3 +2168,433 @@ dcm-synth-route and bs-route (Task 5 and Task 6, Other readings). The review fin
 The control arms alone cost $5.5029 of $30, unchanged: treatment reps count toward the $60 only. The per-case figures
 in this record sum to the same total, except Task 3's, which are rounded and sum to $0.0001 less (Round 2: dr-research-depth). No rep was VOID and there was no VOID rerun in any task, and no rep file was
 empty or unreadable. The Spend table, the "Running total after Task 6" paragraph and this total agree.
+
+## Treatment: Task 7 (final-review fixes)
+
+Task 7 was added at the plan completion gate. It is not in the plan file. On 2026-11-06 the owner chose "Fix all four
+now" for four routing gaps that the final whole-branch review found in derive-roadmap's new-project text. The four
+edits were committed as `f824492` (`fix(derive-roadmap): close four routing gaps found by the final review`). Task 7
+re-runs the treatment of the nine cases whose prompts carry derive-roadmap text. Each rep is scored by its case's
+committed rule and by every reading in the Control section. No rule and no reading changed.
+
+**The four edits.** They change only `skills/derive-roadmap/SKILL.md`, `references/roadmap-format.md` and
+`references/new-project-entry.md`. The new text is the brief's text, wrapped like the text around it. No
+description changed.
+
+| Edit | Passage | Change |
+|---|---|---|
+| 1 | `SKILL.md`, entry item 2 | Item 2 now starts from the partner's own statement: "Your partner says the project has nothing built (below) and asks for a roadmap". It adds "A request that only names a spec is not this case: §1 runs the gap analysis and makes the offer." This is the Task 3 review finding (entry item 2). |
+| 2 | `SKILL.md` §5, the research-track paragraph and the Parking rule | When the partner stops a research track, only that track's Ranked-list items park, and the roadmap stays live. It moves only through §6, or when the partner parks the whole roadmap. This is the Task 4 review finding ("stop the track"). |
+| 3 | `SKILL.md` §5 and its Quick reference row, the `Produces` line of the stage-entry template in `references/roadmap-format.md`, and the Research bullet of `references/new-project-entry.md` | A re-rank reads the findings file of the track's most recently ticked stage. A stage promoted from a Ranked list names its own findings file in `Produces`. |
+| 4 | `references/roadmap-format.md` (New-project roadmaps) and `references/new-project-entry.md` (The one message, items 4 and 5) | With a spec, the name is the spec's stem, and §3's scan applies first. The one message proposes a name, and asks the partner to confirm it, only with no spec. |
+
+**Checks after the edits.** The four pins each print `1`. The one-definition check prints one line,
+`2 **Nothing built** means that no outcome …`. The derive-roadmap body measures 15,400 characters. The commit lints
+passed. The brief's check `grep -c "stopped track\|most recently ticked stage\|only that track"` on `SKILL.md` prints
+2, not the 4 that the brief expects. Each of the three phrases occurs at most once in the brief's own new text. Edit
+2(b) says "only the items of that track's", which the pattern does not match, and the one old "stopped track" leaves
+with Edit 2(b). So 2 is the most that any wrapping gives. Direct checks over the three files confirm the intent: each
+new phrase occurs once, and `its core stage's`, `a stopped track's Ranked list` and `Remaining unticked stages, and`
+each occur 0 times. No text was added to reach 4.
+
+**Build.** The prompts of all 15 cases were built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py f824492 /tmp/plan78-work/t7`.
+Its `MANIFEST.txt` is copied to `treatment/t7-MANIFEST.txt`. Checks on the build before any rep:
+
+- The six cases that read no derive-roadmap text have prompts that `cmp` finds byte-identical to their arms of
+  record: trigger-stages and trigger-decoy to `/tmp/plan78-work/t3-r1/`, dcm-describe-route and dcm-synth-route to
+  `/tmp/plan78-work/t5/`, and bs-route and bs-guard to `/tmp/plan78-work/t6/`. The edits cannot reach them, so they
+  were not re-run.
+- Each of the nine DR prompts holds a phrase of each edit once: "A request that only names a spec" (1), "only that
+  track's remaining items park" (2), "latest stage's finding" (3) and "with no spec, a proposed roadmap name" (4).
+  None holds `its core stage's` or `Remaining unticked stages, and`.
+- The case-repository reads (URL, commit, path and sha256) are the same as those in `control/MANIFEST.txt`. No prompt
+  holds `red-baseline`, `plan 78`, the spec's file name or `task-7` (the quarantine).
+
+Each case ran with
+`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t7/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t7 1 5 claude-opus-5-5 1.00`,
+one case at a time, into folders with a `-t7` suffix, so earlier folders are untouched. Before each call, the running
+total plus the call's worst case ($5.00) stayed under $60. The largest such sum was $25.1399, before the last call.
+Each case's replies were read in full from `show_reps.py` over that case's folder alone.
+
+**Result rules (the brief).** A case that met its bar before and misses it now is an owner gate. dr-offer-yes,
+dr-tracks and dr-known-progression missed their bar before. The owner ruled to accept and file those misses, so their
+new scores are recorded, with no wording round and no action on a miss. The "before" arm of each case is its arm of
+record in "All arms side by side": round 2 (`3ca7344`) for the seven Task 3 cases and `a98ff27` for the two Task 4
+cases.
+
+### Task 7: dr-offer-scaffold
+
+Additive. Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.4327.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass (borderline) | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (before 5 of 5, control 3 of 5). Clause B: 5 of 5 (before 5 of 5, control 5 of 5). Clause C: 5 of 5
+(before 5 of 5, control 0 of 5). PASS: 5 of 5 (before 5 of 5). Bar: met.
+
+- A. No rep sets out a stage list. Each says that stages come only after the ranking, for example rep3: "You would
+  rank them, and only then would stages be drawn." Rep2 names one stage: "The first stage would then be whatever you
+  rank highest". Rep4 passes, borderline. Its ADR question offers an order of work as one option: "Or should I keep
+  the Azure-specific work behind that decision, so cloud-independent work can come first?" It calls neither part a
+  stage, so the reading for work areas applies.
+- B. Every rep makes an absolute statement, for example rep1: "so no outcome works end to end on real data."
+- C. Every rep offers staging from an outcome list that the partner ranks, beside a partition, and waits. For example
+  rep3: "I won't switch approaches without your answer."
+- Edit 1. No rep goes straight to §7. Each gives the gap table, puts the offer in its batched questions and waits.
+
+Running total: $16.0634 of $60.
+
+### Task 7: dr-offer-inputs
+
+Additive. Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6697.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass (borderline) | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (before 5 of 5, control 2 of 5). Clause B: 5 of 5 (before 5 of 5, control 0 of 5). Clause C: 5 of 5
+(before 5 of 5, control 0 of 5). PASS: 5 of 5 (before 5 of 5). Bar: met.
+
+- A. No rep names a stage list. Reps 1, 3, 4 and 5 ask whether the spec's rollout order still binds, which sets out
+  no stage.
+- B. Each rep says that download code is not a working outcome, and that nothing is built or works end to end. For
+  example rep5: "By the skill's test, no outcome of this system works end to end on real data, because download code
+  doesn't count." Rep2 passes, borderline. Its question is headed "**Nothing built.**", and its body says "Nothing
+  turns real data into any R7 target" and "Code that only downloads and converts inputs doesn't count as a working
+  outcome." It is scored as round 2 rep5's heading was.
+- C. Each rep offers the new-project entry beside a partition and waits, for example rep5: "Which do you want? I
+  won't proceed on either until you answer."
+- Edit 1. No rep goes straight to §7.
+
+Running total: $16.7331 of $60.
+
+### Task 7: dr-offer-yes
+
+Additive. Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6191.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | fail (borderline) | fail (borderline) | pass | no |
+| 3 | pass | pass | fail (borderline) | pass | no |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass (borderline) | pass (borderline) | pass | yes |
+
+Clause A: 5 of 5 (before 5 of 5, control 5 of 5). Clause B: 4 of 5 (before 3 of 5, control 2 of 5). Clause C: 3 of 5
+(before 3 of 5, control 2 of 5). Clause D: 5 of 5 (before 5 of 5, control 0 of 5). PASS: 3 of 5 (before 3 of 5).
+Bar: **missed**, as before. It needs 4 of 5. The owner ruled before Task 7 to accept and file this miss, so no action
+follows.
+
+- A. Every rep gives O-numbered table rows, one plain line each, from the spec's requirements (labeled-list reading).
+- B, rep2, fail (borderline), by Task 3's core-and-later-stages reading. It picks the first outcome and places others
+  in later stages before the partner ranks. Quote (B, rep2): "Stage 1 would be the core: O1 on one real quarter plus
+  one real daily file, run locally, with the measured cost recorded." The reply also says "every outcome depends on
+  the O1 catalog", so its pick follows a dependency that it states.
+- C, reps 2 and 3, fail (borderline). Rep2 sets out a core stage and the later stages: "The later stages build out
+  from there. Alerts, runbooks, deployment and fault-injection suites go into named later stages, not into stage 1."
+  Rep3 calls its Track A outcomes stages and orders them by the spec, as round 2 rep1 did ("The spec names these
+  stages in order."). Quote (C, rep3): "The spec's §7 order already names the stages from one quarter to
+  reconciliation."
+- Reps 1, 4 and 5 give dependency facts and the spec's order, labeled. Rep4 calls the spec's order "steps", not
+  stages: "The spec's §4 names these steps in order", as round 1 rep5 did. Rep5 passes B and C, borderline
+  (Judgment-call reps, below).
+- D. Every rep gives a cost note with a basis, for example rep1: "136 quarters from 1993 Q1 to 2026 Q4, each a
+  listing plus one file. That is under 2 minutes of request budget at 3 req/s."
+- Edit 4. Every rep names the roadmap from the spec's stem, `specs/sec-filing-index-ingestion-spec-roadmap.md`, and
+  no rep asks the partner to confirm or change the name. Rep5: "This is the spec's stem used whole, so no other name
+  is needed." No clause scores this.
+- Other readings. If the core-and-later-stages text is not read as a stage list or a position, rep2 passes C. It
+  passes B too if its pick of O1 for Stage 1 is read as the dependency it states, as dr-tracks' "A's core stage comes
+  first whatever the ranking" is. If rep3's sentence is read as the spec's order cited, as round 1 rep5's was, rep3
+  passes C. Either change alone gives PASS 4 of 5 and the bar met. Both give 5 of 5. If rep5's "§7 of the spec
+  already names the progression from first stage to last" is read as round 2 rep1's sentence was, rep5 fails C, and
+  PASS is 2 of 5.
+
+Running total: $17.3522 of $60.
+
+### Task 7: dr-built-guard
+
+Non-regression (guard). Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.3008.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (before 5 of 5, control 5 of 5). Bar: met. The guard needs at least 4 of 5.
+Every rep gives the gap table and one batch of questions, and says it will partition the remaining gaps. No rep says
+that nothing is built or offers outcome-first staging. Reps 1 and 5 name the new path only to decline it, for example
+rep1: "So this is a normal partition, not the new-project path."
+
+Running total: $17.6530 of $60.
+
+### Task 7: dr-known-progression
+
+Additive. Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.8990.
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | fail | pass | pass | no |
+| 2 | pass | pass | fail | pass | pass | no |
+| 3 | pass | pass | fail | pass | pass | no |
+| 4 | pass | pass | fail | pass | pass | no |
+| 5 | pass (borderline) | pass | fail | pass | pass | no |
+
+Clause B: 5 of 5 (before 5 of 5, control 4 of 5). Clause A: 5 of 5. Clause C: 0 of 5 (before 0 of 5). Clause D: 5 of
+5. Clause E (recorded): 5 of 5. PASS: 0 of 5 (before 0 of 5). Bar: **missed**, as before, through conformance clause
+C. The owner ruled before Task 7 to accept and file this miss, so no action follows.
+
+Clause C by quality:
+
+| Quality | Round 2 (before) | Task 7 | Task 7 reps that pass |
+|---|---|---|---|
+| manifest | 5 of 5 | 5 of 5 | all |
+| traceability | 4 of 5 | 5 of 5 | all |
+| point-in-time (as-of) | 0 of 5 | 0 of 5 | none (reps 1, 3 and 4 borderline) |
+
+- C. Every rep names a manifest in Stage 4, for example rep4's "a source manifest". Every rep names traceability in a
+  later stage, for example rep3's Stage 4 "provenance: each row names its source file and hash." and rep2's Stage 2
+  "each traceable to its index row". No rep names point-in-time or as-of awareness. Reps 1, 3 and 4 name versions that
+  readers can reach, which is not as-of awareness, as round 2 rep1's "readers can pin" was read. Quote (C, rep3, the
+  nearest): "reconciliation of later quarterly changes, with prior catalog versions readable".
+- B. No first-stage Exit names a manifest, a per-row provenance record, as-of awareness or a spec section. Rep5
+  passes, borderline. Its Exit asks for "a row count per source file", a count and not a manifest, and its
+  `Leaves out` sends the "provenance manifest" to Stage 4.
+- A, D and E pass in every rep. No rep stops on §3's scan or changes the name: each writes
+  `specs/sec-filing-ingestion-roadmap.md`, the name that the partner confirmed.
+
+Running total: $18.5520 of $60.
+
+### Task 7: dr-tracks
+
+Additive. Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6228.
+
+| Rep | A (bar) | B (conformance) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass (borderline) | pass | yes |
+| 2 | pass | pass (borderline) | pass (borderline) | pass | yes |
+| 3 | pass | pass | pass (borderline) | pass | yes |
+| 4 | pass | pass | pass (borderline) | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (before 4 of 5, control 0 of 5). Clause B: 5 of 5 (before 5 of 5). Clause C: 5 of 5 (before 3 of 5).
+Clause D: 5 of 5 (before 5 of 5). PASS: 5 of 5 (before 2 of 5, control 0 of 5). Bar: **met on the readings applied**
+(see Other readings, below). It missed in both rounds of Task 3.
+
+- A. Every rep puts the collection-interval outcome and the budget and staffing outcome in separate tracks and says
+  why. For example rep4: "Either answer stands without the other, even though both explain revision scale."
+- B. Every rep asks the partner to rank. Rep2 passes, borderline, by the dependency-fact reading: "Tracks B through F
+  all consume O1, so Track A's core stage comes first whatever the ranking." Reps 2, 3 and 4 propose an order inside
+  the known-progression Track A, for example rep3: "*Known progression*, proposed: total SA → benchmark/wedge-back →
+  supersector". Each still asks the partner to rank within each track, so no order is settled.
+- C. No rep writes roadmap text or sets out a stage list. Reps 2, 3 and 4 pass, borderline. Each orders outcomes
+  inside Track A without calling them stages, as round 2 reps 3 and 4 did, for example rep4: "Known progression:
+  total nonfarm first, then supersectors." Rep1 passes, borderline. Its Track A line orders work steps that it does
+  not call stages: "Known progression: assemble the vintages, compute revisions by stage, describe them." Its
+  qualities line sets out no stage, as round 2 rep2's did: "will go into later stages or Ranked-list items, never into
+  a core stage's Exit."
+- D. Every rep says that the first run measures the fit cost, for example rep5: "NUTS compute unknown; its core stage
+  measures it".
+- The cause. No edit changes the tracks rules (§7 step 2 and the tracks bullets of `references/new-project-entry.md`).
+  Edit 4 changes items 4 and 5 of the one message, but only for the name. The likely cause of the change from 2 of 5
+  to 5 of 5 is the spread from rep to rep on the tracks decision. Five reps cannot tell this apart from an effect of
+  the edits.
+- Other readings. Round 2 rep5 failed C for the same kind of content with the word "stages": "I'd expect total
+  nonfarm first, then stage dispersion, then supersectors with NSA/SA. Tell me if you'd name the stages
+  differently." If an order inside a known-progression track counts as a stage list without that word, reps 2, 3
+  and 4 fail C (rep2: "panel → stage-wise magnitude → supersectors", rep3: "total SA → benchmark/wedge-back →
+  supersector", rep4: "total nonfarm first, then supersectors"). PASS is then 2 of 5. With rep1's ordered work steps
+  also failed, PASS is 1 of 5. The bar is missed under both counts. The scores stand on round 2's reading of its reps
+  3 and 4, which ordered outcomes inside a track without calling them stages and passed C.
+
+Running total: $19.1748 of $60.
+
+### Task 7: dr-research-depth
+
+Additive. Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.6987.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Every clause: 5 of 5 (before 5 of 5, control A 0, B 0). PASS: 5 of 5 (before 5 of 5). Bar: met. Every rep commits
+Stage 1 (Track A, O1) and Stage 2 (Track B, O6) and keeps O3 and O2, and O4 and O5, in the two Ranked lists. Each
+committed stage's Exit records the measured cost of the real run, for example rep2's Stage 1: "it also records the
+measured cost of the real run, meaning the data-assembly time and the wall-clock time of the fit." Each committed
+stage's Produces names `specs/ces-revisions-stage-<N>-findings.md`. The later qualities go to the Ranked lists as
+items, for example rep4's "Vintage provenance — a manifest of the source, retrieval date and checksum for each
+downloaded vintage." No rep stops on §3's scan: each writes `specs/ces-revisions-roadmap.md`.
+
+Running total: $19.8735 of $60.
+
+### Task 7: dr-resume-rerank
+
+Additive. Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2664.
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (before 5 of 5, control 4 of 5). Clause C: 5 of 5 (before 5 of 5, control 5 of 5). Clause B: 5 of 5
+(before 5 of 5, control 2 of 5). Clause D: 5 of 5 (before 5 of 5, control 5 of 5). PASS: 5 of 5 (before 5 of 5). Bar:
+met.
+
+- A. No rep starts a completion review. Each offers stopping the track as one option of its question. Rep2 uses Edit
+  2's wording: "Stopping parks O2–O4 in `specs/deferred_items.md`, and the roadmap stays live."
+- C. Each rep ends on one approve-or-amend question. Its default keeps the order O2, O3, O4 and promotes O2 as Stage
+  2. Rep4 names promoting O3 first as the alternative, inside the same question: "Approve the default, or amend it (a
+  different item, a different order, or stop)?"
+- B. Each rep reports the 3.1 m level with the steep rise above it, and the 22-minute, 1.8 GB fit.
+- D. No rep writes a stage entry. Rep5 describes the promoted stage inside its proposal, by Edit 3's rule: "That
+  stage would name its own findings file, `specs/lock-closures-stage-2-findings.md`".
+
+Running total: $20.1399 of $60.
+
+### Task 7: dr-resume-legacy
+
+Non-regression (guard). Arm `f824492`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.2497.
+
+| Rep | Guard rule | PASS |
+|---|---|---|
+| 1 | pass | yes |
+| 2 | pass | yes |
+| 3 | pass | yes |
+| 4 | pass | yes |
+| 5 | pass | yes |
+
+Reps that pass the whole rule: 5 of 5 (before 5 of 5, control 5 of 5). Bar: met. The guard needs at least 4 of 5.
+Every rep reconciles with no amendment (plan 5's Handoff reads `None`), says that all three stages are ticked and that
+no Ranked list waits, goes to the completion review (§6) and lists the reads of the audit over R1 to R6. No rep asks
+a re-ranking question. Reps 2, 4 and 5 end on a go-ahead question (rep4: "Shall I run the audit?"), as in Task 4.
+That is not a re-ranking question.
+
+Running total: $20.3896 of $60.
+
+### Task 7 summary
+
+| Case | Bar | Control | Before (arm of record) | Task 7 (`f824492`) | Result |
+|---|---|---|---|---|---|
+| dr-offer-scaffold | additive | RED, 5 of 5 | 5 of 5 pass (round 2, `3ca7344`) | 5 of 5 pass | met, as before |
+| dr-offer-inputs | additive | RED, 5 of 5 | 5 of 5 pass (round 2) | 5 of 5 pass | met, as before |
+| dr-offer-yes | additive | RED, 4 of 5 | 3 of 5 pass (round 2) | 3 of 5 pass | **missed**, as before (4 of 5 by either other reading) |
+| dr-built-guard | guard | 5 of 5 | 5 of 5 (round 2) | 5 of 5 | met, as before (needs 4 of 5) |
+| dr-known-progression | additive | RED, 1 of 5 | 0 of 5 pass (round 2) | 0 of 5 pass | **missed**, as before (C: point-in-time 0 of 5) |
+| dr-tracks | additive | RED, 5 of 5 | 2 of 5 pass (round 2) | 5 of 5 pass | **met** on the readings applied (missed before; 2 of 5 or fewer by the other reading) |
+| dr-research-depth | additive | RED, 5 of 5 | 5 of 5 pass (round 2) | 5 of 5 pass | met, as before |
+| dr-resume-rerank | additive | RED, 1 of 5 | 5 of 5 pass (`a98ff27`) | 5 of 5 pass | met, as before |
+| dr-resume-legacy | guard | 5 of 5 | 5 of 5 (`a98ff27`) | 5 of 5 | met, as before (needs 4 of 5) |
+
+No case that met its bar before misses it now, so Task 7 has no owner gate. Seven of the nine cases meet their bar.
+dr-offer-yes and dr-known-progression miss it as before, and the owner's earlier ruling covers both. dr-tracks now
+meets it, on the readings applied (dr-tracks, Other readings). No rep was VOID.
+
+**Edit 1 and the two offer cases.** No rep of dr-offer-scaffold or dr-offer-inputs goes straight to §7 without the
+offer. All ten put the offer in their batched questions and wait. This is weak evidence for Edit 1. Both fixtures hand
+the agent a finished gap analysis, so they do not test the entry decision itself (the Task 3 review finding).
+
+**Judgment-call reps (Task 7).** These rows extend the Judgment-call lists in the Control section and in Tasks 3 to
+6. Each rep was scored on a close reading. Two groups of rows rest on readings that, ruled the other way, would change
+a bar: the dr-offer-yes rows for reps 2 and 3, and the dr-tracks row for reps 2, 3 and 4 (each case's Other
+readings, above). No other row changes a bar.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-offer-scaffold rep4, A | pass, borderline (an order of work areas inside one option of a question, not called stages) | "Or should I keep the Azure-specific work behind that decision, so cloud-independent work can come first?" If it failed, PASS would be 4 of 5 and the bar still met. |
+| dr-offer-scaffold rep2, A | pass (one stage) | "The first stage would then be whatever you rank highest, run on real SEC data at the smallest usable standard." |
+| dr-offer-inputs rep2, B | pass, borderline (absolute heading, acquisition not counted) | "**Nothing built.**", then "Nothing turns real data into any R7 target" and "Code that only downloads and converts inputs doesn't count as a working outcome." If it failed, PASS would be 4 of 5 and the bar still met. |
+| dr-offer-yes rep2, B | fail, borderline (core and later stages; the pick of O1 follows a dependency that the reply states) | "Stage 1 would be the core: O1 on one real quarter plus one real daily file, run locally, with the measured cost recorded." |
+| dr-offer-yes rep2, C | fail, borderline (core and later stages) | "Alerts, runbooks, deployment and fault-injection suites go into named later stages, not into stage 1." |
+| dr-offer-yes rep3, C | fail, borderline (the spec's stages in order, as round 2 rep1) | "The spec's §7 order already names the stages from one quarter to reconciliation." |
+| dr-offer-yes rep4, C | pass (the spec's steps, not called stages, as round 1 rep5) | "The spec's §4 names these steps in order, from parse and publish through replay, daily, throttling and reconciliation." |
+| dr-offer-yes rep5, B | pass, borderline (what the first run needs, not a position of an outcome) | "What can come later is the cross-job lease." |
+| dr-offer-yes rep5, C | pass, borderline (the definition of the track's kind, no stage set out) | "§7 of the spec already names the progression from first stage to last." |
+| dr-known-progression rep5, B | pass, borderline (a per-file count, not a manifest; the manifest is named as left out) | Exit: "with a row count per source file". Leaves out: "provenance manifest, raw-snapshot replay, versioned publication and golden-fixture validation suite → Stage 4" |
+| dr-known-progression reps 1, 3 and 4, C (point-in-time) | not passed, borderline (versions, not as-of reads, as round 2 rep1) | rep1 "per-quarter generations, an active-pointer reader contract", rep3 "with prior catalog versions readable", rep4 "readers see only complete quarter versions and can name the version they read" |
+| dr-known-progression rep2, C (traceability) | passed (as round 1 reps 3 and 5) | "one quarter's submissions on disk, each traceable to its index row" |
+| dr-tracks rep1, C | pass, borderline (work steps not called stages; no stage set out for the qualities) | "Known progression: assemble the vintages, compute revisions by stage, describe them." and "will go into later stages or Ranked-list items, never into a core stage's Exit." If it failed, PASS would be 4 of 5 and the bar still met. |
+| dr-tracks rep2, B and C | pass, borderline (dependency fact, one stage) | "Tracks B through F all consume O1, so Track A's core stage comes first whatever the ranking." |
+| dr-tracks reps 2, 3 and 4, C | pass, borderline (outcomes ordered inside a known-progression track, not called stages, as round 2 reps 3 and 4) | rep2 "panel → stage-wise magnitude → supersectors", rep3 "*Known progression*, proposed: total SA → benchmark/wedge-back → supersector", rep4 "Known progression: total nonfarm first, then supersectors." Round 2 rep5 failed C for the same kind of content with the word "stages". Ruled the other way, PASS is 2 of 5 (1 of 5 with rep1) and the bar is missed. |
+| dr-resume-rerank rep4, C | pass (one question with a default and its alternatives) | "Approve the default, or amend it (a different item, a different order, or stop)?" |
+
+**Task 7 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` over the nine `-t7` folders
+ran once after the last rep. It shows 45 reps, none VOID, and prints `total cost $4.76`. No rep file is empty or
+unreadable, so none counts at its cap. There was no VOID rerun. The nine cases cost $0.4327, $0.6697, $0.6191,
+$0.3008, $0.8990, $0.6228, $0.6987, $0.2664 and $0.2497, so Task 7 cost $4.7589. Running total: $20.3896 of $60.
+Control arms: $5.5029 of $30, unchanged.
+
+## All arms side by side (after the Task 7 fixes)
+
+One row per case. Every figure is taken from this record's own tables. Each count is the number of the 5 scored reps
+that pass the clause. The control columns give the control arm at `BASE` (`1844bd8`). The treatment columns give each
+case's arm of record. The nine derive-roadmap cases use the Task 7 arm (`f824492`). The other six rows are copied
+from the earlier table, "All arms side by side", which stays as history: the two trigger cases use round 1
+(`48d9847`), the two dcm cases use `abc1ecb` and the two bs cases use `1f64a61`. Their prompts at `f824492` are
+byte-identical to those arms. Only bar clauses are counted in the clause columns. A conformance clause can still
+decide the bar result, and the Bar result column says so where it does. A guard case has no bar clause, so its
+columns give the reps that pass the whole rule.
+
+| Case | Kind | Control, bar clauses | Treatment, bar clauses | Treatment PASS | Bar result | Clean control |
+|---|---|---|---|---|---|---|
+| trigger-stages | additive | A 0 | A 5 | 5 of 5 | met | no (RED, 5 of 5) |
+| trigger-decoy | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (needs 4 of 5) | n/a |
+| dr-offer-scaffold | additive | A 3, B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met (A rep4 borderline). In Task 3 it met only in round 2: round 1 (`48d9847`) missed (PASS 2 of 5) | no (RED, 5 of 5) |
+| dr-offer-inputs | additive | A 2, B 0, C 0 | A 5, B 5, C 5 | 5 of 5 | met (B rep2 borderline). Met in every arm | no (RED, 5 of 5) |
+| dr-offer-yes | additive | A 5 (by the labeled-list reading; 0 on form alone), B 2, C 2 | A 5, B 4, C 3 | 3 of 5 | **missed**: PASS 3 of 5, and 4 of 5 by either other reading (Task 7: dr-offer-yes). Round 2 (`3ca7344`) also 3 of 5. Owner ruling: accept and file | no (RED, 4 of 5) |
+| dr-built-guard | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (needs 4 of 5) | n/a |
+| dr-known-progression | additive | B 4 (by the by-reference reading; B 5 by the other reading) | B 5 | 0 of 5 | **missed** through conformance clause C (point-in-time awareness 0 of 5, though manifest and traceability are 5 of 5), although bar clause B is 5 of 5. Owner ruling: accept and file | no by the by-reference reading (RED, 1 of 5); yes by the other reading of B (B 5 of 5) |
+| dr-tracks | additive | A 0 | A 5 | 5 of 5 | met on the readings applied. PASS is 2 of 5 or fewer, and the bar is missed, if an order inside Track A counts as a stage list without the word "stages" (Task 7: dr-tracks, Other readings). Both Task 3 rounds missed (PASS 2 of 5) | no (RED, 5 of 5) |
+| dr-research-depth | additive | A 0, B 0 | A 5, B 5 | 5 of 5 | met. Met in every arm | no (RED, 5 of 5) |
+| dr-resume-rerank | additive | A 4, C 5 | A 5, C 5 | 5 of 5 | met against a thin control: the control failed a bar clause in 1 of 5 reps (rep4, A) | no (thin: RED in 1 of 5) |
+| dr-resume-legacy | guard | 5 of 5 pass | 5 of 5 pass | 5 of 5 | met (needs 4 of 5) | n/a |
+| dcm-describe-route | additive | A 1 (0 before fix round 1), B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met on the readings applied. Under the other readings (Task 5, Other readings) A is 3 of 5 or fewer, and the bar is missed | no (RED, 5 of 5) |
+| dcm-synth-route | additive | A 2, B 5, C 0 | A 5, B 5, C 5 | 5 of 5 | met on the readings applied. A is 3 of 5, and the bar is missed, if reps 1 and 5 both fail A (Task 5, Other readings) | no (RED, 5 of 5) |
+| bs-route | additive | A 0, B 4, C 5 | A 4, B 5, C 5 | 4 of 5 | met on the readings applied. A is 3 of 5, PASS is 3 of 5 and the bar is missed, if rep4 fails A (Task 6, Other readings) | no (RED, 5 of 5) |
+| bs-guard | guard | 4 of 5 pass | 4 of 5 pass | 4 of 5 | met (needs 3 of 5) | n/a |
+
+**Counts.** 13 of the 15 cases meet their bar and 2 miss it: dr-offer-yes and dr-known-progression. Both are Task 3
+derive-roadmap cases that missed after the one wording round and miss again at Task 7. The owner ruled to accept and
+file both misses. dr-tracks, the third earlier miss, now meets its bar. Of the 13 that meet their bar, four meet it
+only on the readings applied (dcm-describe-route, dcm-synth-route, bs-route and dr-tracks), and one meets it against
+a thin control (dr-resume-rerank). dr-offer-scaffold met its bar in Task 3 only after the wording round. The four guard cases
+(trigger-decoy, dr-built-guard, dr-resume-legacy, bs-guard) all meet their bar and have no clean-control flag.
+
+**Clean controls.** Unchanged. No additive case has a clean control under the readings applied. dr-known-progression
+would have one under the other reading of its clause B. Two additive controls are thin, with a bar clause that fails
+in 1 of 5 reps: dr-resume-rerank (rep4, clause A) and dr-known-progression (rep5, clause B, by the by-reference
+reading).
+
+**For the owner.** Edits 1 and 2 address the two review findings parked at the Task 3 and Task 4 gates (entry item 2,
+and "stop the track"). The micro-tests reach Edit 1 only weakly, because the offer fixtures hand over a finished gap
+analysis. They do not reach the stop-the-track answer, because no rep receives a "stop" answer. Edits 3 and 4 show in
+the replies but no clause scores them: dr-resume-rerank rep5 names the promoted stage's own findings file, and every
+dr-offer-yes rep names the roadmap from the spec's stem without asking for a name. The two remaining misses stay with
+the owner, with the other-reading counts of dr-offer-yes and dr-tracks (Task 7), dcm-describe-route and
+dcm-synth-route (Task 5) and bs-route (Task 6). dr-tracks moved from a miss to met with no change to the text it
+tests, so its "met" is probably spread between reps. The brief's check 4 printed 2, not 4 (Treatment: Task 7, Checks after the edits).
+
+**Spend total.** Spend by task: Task 1 $0.2962 (isolation probe $0.0141 and cost pilot $0.2821), Task 2 $5.5029
+(control arms), Task 3 $8.4719, Task 4 $0.5190, Task 5 $0.5031, Task 6 $0.3376 and Task 7 $4.7589. These sum to
+**$20.3896 of $60**. The control arms alone cost $5.5029 of $30, unchanged: treatment reps count toward the $60 only.
+No rep was VOID and there was no VOID rerun in any task, and no rep file was empty or unreadable. The Spend table, the
+"Running total after Task 7" paragraph and this total agree.

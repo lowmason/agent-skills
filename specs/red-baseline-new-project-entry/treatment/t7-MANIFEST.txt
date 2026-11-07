@@ -1,0 +1,36 @@
+arm f824492 (f824492e02122946d2dac2d6c51ef7a423ab2a3d)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+bs-guard.txt sha256 8f8cc196346d5f1ae7287569ef965def11a883145b029afbfb93e055dc4c29e7 model claude-opus-5-5 budget 1.00 uses skills/brainstorming/SKILL.md
+bs-route.txt sha256 c62c46f6f2c9f475b578db9f6b90af1d3a23dc220c08869dcd05d1d28b01e30f model claude-opus-5-5 budget 1.00 uses skills/brainstorming/SKILL.md
+dcm-describe-route.txt sha256 22182a12f6797b189008e6df7768c961308dde6219b85038b164f07d16d53d17 model claude-opus-5-5 budget 1.00 uses skills/describe-critique-methodology/SKILL.md,skills/describe-critique-methodology/references/methodology-template.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dcm-synth-route.txt sha256 4f7ab24d25b4070ba9c557033d4a344d942b1a4e5866389cfe619e173637ab63 model claude-opus-5-5 budget 1.00 uses skills/describe-critique-methodology/SKILL.md,skills/describe-critique-methodology/references/spec-synthesis.md
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-prompt.md whole sha256 ff6ec94342e11045e0c0353b46801cb87b7e63b4ba845289b189728ec5f39b73
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-chatgpt.md excerpt 3000 sha256 399f007ce3ae3816d55fb942feaf0f8c1579e0c47f49f8d6e4839173509f5ee7
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-claude.md excerpt 3000 sha256 150383c5bc32bd8247641b954f7ee5b9f94c31170209679c244de12372e8f5a0
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-gemini.md excerpt 3000 sha256 0f4ec5d09858cc5e3fa86e5a23e8d4297a8ffc248907246c6159763b2d7c6a1c
+dr-built-guard.txt sha256 4dee0897e4adb16f51884bd272f866abc26a14e3ffc4ef09065c77dc8edf489f model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-known-progression.txt sha256 7f8fbce3e1175660328cebe5fac855621ab13e14cb14dd5b28d42fb3b5df913d model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-offer-inputs.txt sha256 47eeb6fb1120c504a1175d0f58b215ae6b7b5d3e9bf40faa14e06db89fd02a58 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/embedding-data af7bf21d5522e0cd5cf3fbc72419ad77b436aa7e specs/embedding-evaluation-data-spec.md whole sha256 15cd337c627249c37ec2bb684aef137f69a961a0a75831b5d21ccfa7c68e8811
+  read https://github.com/lowmason/embedding-data 4bc8cda6d594190a9bfb5d3cf993722cb105c9f9 specs/embedding-evaluation-data-spec-roadmap.md whole sha256 59427cabc0b092b9fdddb6e0ccf5b2195a3773bccc3360601cf2aba59dfd0fe7
+  gap: derived from the read above by cases.gap_table_without_stages, sha256 05fde81b400b1049ddbb02c77b9d3ddb4b0c70d407dfe301f678576bd2bd6b80
+dr-offer-scaffold.txt sha256 985c6ccdc12bfaf66c8e9f03478a5dc428ac16039b4877deb56615bdbbce67ad model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-offer-yes.txt sha256 e5a055f7dfe43bf82b98149116f0a20735543f6233e7c8cd9e3b659bcd206d95 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-research-depth.txt sha256 673ac05614f0ab36c13960974d4a260145fea99ad1e8352c936fd56fb598bd59 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-prompt.md whole sha256 ff6ec94342e11045e0c0353b46801cb87b7e63b4ba845289b189728ec5f39b73
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-chatgpt.md excerpt 3000 sha256 399f007ce3ae3816d55fb942feaf0f8c1579e0c47f49f8d6e4839173509f5ee7
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-claude.md excerpt 3000 sha256 150383c5bc32bd8247641b954f7ee5b9f94c31170209679c244de12372e8f5a0
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-gemini.md excerpt 3000 sha256 0f4ec5d09858cc5e3fa86e5a23e8d4297a8ffc248907246c6159763b2d7c6a1c
+dr-resume-legacy.txt sha256 ac922d22bc4193dc88949d7146ed5e3e286e0da05424c95fb885617bb0910ff9 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-resume-rerank.txt sha256 d329848e6917881ca08ccc35f0f93ea4d1c040a70b469b5abb003eaba4bf3e25 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-tracks.txt sha256 916c4fb86db73a593bbb26837463eb478fd59e8a343fc00d369866764f09d4de model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-prompt.md whole sha256 ff6ec94342e11045e0c0353b46801cb87b7e63b4ba845289b189728ec5f39b73
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-chatgpt.md excerpt 3000 sha256 399f007ce3ae3816d55fb942feaf0f8c1579e0c47f49f8d6e4839173509f5ee7
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-claude.md excerpt 3000 sha256 150383c5bc32bd8247641b954f7ee5b9f94c31170209679c244de12372e8f5a0
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-gemini.md excerpt 3000 sha256 0f4ec5d09858cc5e3fa86e5a23e8d4297a8ffc248907246c6159763b2d7c6a1c
+trigger-decoy.txt sha256 4ee70b3f0f90622829bf0e6a1daa75a7c3bab46b8c82c8214dd80a9d002d487d model claude-opus-5-5 budget 1.00 uses none
+trigger-stages.txt sha256 06f5480e1315c88e8ffa7079ef1618bb9873b42ab31864afb9a8108ce9bb4bf7 model claude-opus-5-5 budget 1.00 uses none
