@@ -70,6 +70,10 @@ is read by hand from the full reply.
   (`feat(executors): tag gate rulings that contradict the spec`). The one commit after `T5` on the branch at Task 7,
   `8e6ec6e`, changes only `commands/`, `runtimes/`, `NOTICE` and `README.md`, so no text under test changed after
   `T5`.
+- Final text, after the final review: the `gate-tag` text is `fd4749b`, the `treatment2` arm. The `history-filter`
+  text changed once after `T5`: `00b3c45` adds `--date <YYYY-MM-DD>` to the `deferred` command in
+  `## /deferred entries` of `references/history.md`. The case's fixture and task read only plan entries, so no arm
+  was re-run for it (controller's ruling).
 
 Both arms use the same frame, fixture and task. Only the sha of the texts differs. A `SKILL.md` text is its body
 with the frontmatter removed. A reference file is the whole file.
