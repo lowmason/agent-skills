@@ -53,11 +53,13 @@ RULING_MARK = 'Ruling:'
 DECISIONS_SOURCE = '`## Decisions`'
 
 H2_RE = re.compile(r'^##\s')
+SECTION_HEADING_RE = re.compile(r'^#{2,3}\s')
+HEADING_MARKS_RE = re.compile(r'^#+\s*')
 TASK_RE = re.compile(r'^###\s+Task\s+(?P<number>\d+)')
 SPEC_LINE_RE = re.compile(r'^\*\*Spec:\*\*')
-NO_SPEC_RE = re.compile(rf'{NO_SPEC}\b')
+NO_SPEC_RE = re.compile(rf'`?{NO_SPEC}\b')
 SPEC_PATH_RE = re.compile(r'specs/[\w./-]+\.md(?!\w)')
-ROADMAP_LINE_RE = re.compile(r'^\s*>\s*Roadmap:')
+ROADMAP_LINE_RE = re.compile(r'^\s*(?:>\s*)?Roadmap:')
 DEVIATION_RE = re.compile(r'^\s*>\s*(\*\*)?Deviation\b[^:]*:(?:\*\*)?')
 BLOCKQUOTE_RE = re.compile(r'^\s*>')
 BLOCKQUOTE_PREFIX_RE = re.compile(r'^\s*>\s*')
@@ -153,20 +155,25 @@ def _deviation_text(plan: PlanText, index: int, note: re.Match[str]) -> str:
 def deviation_lines(plan: PlanText) -> list[str]:
     '''One difference line per deviation note, in plan order.
 
-    A note above the first `### Task` heading is the plan header's.
+    A note's source is the last `##` or `###` heading above it. Above the first
+    `### Task` heading that is the plan header. Under a `### Task <N>` heading it is
+    that task. Under any other heading after a task it is that heading's text.
     '''
     found = []
-    task = None
+    seen_task = False
+    label, where = '', 'header'
     for index, masked in enumerate(plan.masked):
-        heading = TASK_RE.match(masked)
-        if heading:
-            task = heading.group('number')
+        if SECTION_HEADING_RE.match(masked):
+            task = TASK_RE.match(masked)
+            if task:
+                seen_task = True
+                label, where = f' (Task {task.group("number")})', f'Task {task.group("number")}'
+            elif seen_task:
+                label, where = '', f'§ {HEADING_MARKS_RE.sub("", plan.lines[index]).strip()}'
             continue
         note = DEVIATION_RE.match(masked)
         if note:
             text = _deviation_text(plan, index, note)
-            label = f' (Task {task})' if task else ''
-            where = f'Task {task}' if task else 'header'
             found.append(f'- Deviation{label}: {text}. Source: plan, {where}.')
     return found
 
@@ -330,13 +337,13 @@ def draft_entry(inputs: DraftInputs) -> str:
             for item in closed_by_plan(items, plan_id.group('id'))
         ]
 
-    lines = [f'## {stem} — {inputs.date}', ' · '.join(first), *warnings, '']
+    lines = [f'## {stem} — {inputs.date}', ' · '.join(first), *warnings]
     if differences:
-        lines += ['Differences from the design:', *differences]
-    else:
-        lines.append('No differences from the design.')
+        lines += ['', 'Differences from the design:', *differences]
     if closed:
         lines += ['', 'Closed earlier deferred items:', *closed]
+    if not differences and not closed:
+        lines += ['', 'No differences from the design.']
     return '\n'.join(lines)
 
 

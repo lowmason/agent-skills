@@ -277,6 +277,73 @@ def test_bold_dated_deviation_drops_its_bold_marks(tmp_path, capsys):
     assert '**' not in bold[0]
 
 
+def test_backticked_none_spec_header_is_none(tmp_path, capsys):
+    backticked = TINY_PLAN.replace(
+        '**Spec:** none. The requirement is one item.',
+        '**Spec:** `none`. The requirement is an item in `specs/deferred_items.md`.',
+    )
+    plan, ledger = write_repo(tmp_path, '9-tiny', backticked, ledger=NO_RULING_LEDGER)
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    assert out.splitlines()[1] == 'Plan: specs/plans/completed/9-tiny.md · Spec: none'
+    assert 'Spec: --spec not given' not in out
+
+
+def test_roadmap_header_line_without_a_quote_prefix(tmp_path, capsys):
+    bare = TINY_PLAN.replace(
+        '\n### Task 1',
+        '\nRoadmap: specs/x-roadmap.md, Stage 2 — on plan completion, tick the stage.\n\n### Task 1',
+        1,
+    )
+    plan, ledger = write_repo(tmp_path, '9-tiny', bare, ledger=NO_RULING_LEDGER)
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    assert out.splitlines()[1] == (
+        'Plan: specs/plans/completed/9-tiny.md · Spec: none · Roadmap: specs/x-roadmap.md, Stage 2'
+    )
+
+
+def test_closed_items_without_differences_print_no_differences_line(tmp_path, capsys):
+    backlog = (
+        '## 5-http-client — 2026-06-01\n'
+        '- [x] Retry jitter is fixed-seed in tests only → done 2026-07-04 (plan 9)\n'
+    )
+    plan, ledger = write_repo(tmp_path, '9-tiny', TINY_PLAN, backlog, NO_RULING_LEDGER)
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    assert out.splitlines() == [
+        '## 9-tiny — 2026-07-04',
+        'Plan: specs/plans/completed/9-tiny.md · Spec: none',
+        '',
+        'Closed earlier deferred items:',
+        '- "Retry jitter is fixed-seed in tests only" (deferred by 5-http-client).',
+    ]
+
+
+def test_deviation_under_a_heading_after_the_tasks_names_that_heading(tmp_path, capsys):
+    later = PLAN + (
+        '\n## Plan Completion\n\n> Deviation: the retire commit also renamed a file.\n'
+        '\n### Self-review\n\n> Deviation: the review found no gaps.\n'
+    )
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', later, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    lines = out.splitlines()
+    assert '- Deviation: the retire commit also renamed a file. Source: plan, § Plan Completion.' in lines
+    assert '- Deviation: the review found no gaps. Source: plan, § Self-review.' in lines
+    assert [line for line in lines if 'Task 2' in line] == [
+        '- Deviation (Task 2): `X-RateLimit` headers are lower-case. Source: plan, Task 2.'
+    ]
+
+
+def test_deviation_before_the_first_task_stays_the_headers_after_a_heading(tmp_path, capsys):
+    early = PLAN.replace('- **D1**', '> Deviation: the plan ran on main.\n\n- **D1**', 1)
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', early, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    assert '- Deviation: the plan ran on main. Source: plan, header.' in out.splitlines()
+
+
 def test_quoted_forms_in_code_are_not_read(tmp_path, capsys):
     plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN + QUOTED, BACKLOG, LEDGER)
     code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
