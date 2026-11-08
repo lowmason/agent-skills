@@ -842,6 +842,10 @@ Changes from upstream:
     (its table and one paragraph), the several-projects sentence and the
     HARD-GATE carry it. The change is local, and no upstream text was
     taken.
+  - requesting-code-review/codex-review.md (2026-11-08) names the review
+    model in its launch command, `-m gpt-6-sol`, so the Codex seat no
+    longer takes its model from the user's Codex configuration. The
+    recipe is an original work, and no upstream text was taken.
 
     brainstorming/
     dispatching-parallel-agents/
