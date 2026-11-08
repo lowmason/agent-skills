@@ -137,3 +137,111 @@ under the plain `Ruling` label, one deviation and one closed earlier item. Task:
 `specs/history.md`.
 
 PASS = the entry keeps the Task 2 ruling labelled "Ruling, contradicts spec (Task 2)" and the module-name ruling labelled "Ruling (Task 3)", each with its what, why and cost parts all present; it leaves out the batch-email ruling and the retry-jitter ruling; it keeps the Deviation line (shortened or not) with a Source pointer, and the closed-item line with its quoted title and "(deferred by 9-dock-status)" unchanged; and the heading and Plan line are unchanged. FAIL = any of these does not hold.
+
+## Isolation probe
+
+`run_reps.sh isolation_probe.txt /tmp/plan80-work/probe 1 1 claude-opus-5-5` ran on Claude Code 2.1.316
+(`claude --version` printed `2.1.316 (Claude Code)`), under `env -i`, with the default per-rep cap of $0.50. The
+CLI signed in with its stored login. All five probe lines read `NO`: no `CLAUDE.md` text, no output style, no rule,
+no SessionStart context and no memory. The reply, in full:
+
+```text
+1. NO
+2. NO
+3. NO
+4. NO
+5. NO
+```
+
+`show_reps.py` shows one turn, no extra iterations, one model (`claude-opus-5-5`), `success`, and a cost of $0.014.
+The probe output sits in `/tmp/plan80-work/probe` and is not committed, so its cost is not in the kit's sum.
+
+## Control
+
+Arm `control`: the texts at `BASE80` (`fb784f4`). The prompts were built with
+`build_prompts.py fb784f4 /tmp/plan80-work/control`. `MANIFEST.txt` gives these prompt hashes:
+
+- `gate-tag.txt`: sha256 `1123892d8589e8c51a16caaec82f95831e9dcfb5ef95decffbc86dbbd141a7f9`. It carries the whole of
+  `final-review.md` at `fb784f4`.
+- `history-filter.txt`: sha256 `4eb71ee338872fe5a8da77eac1a589122fea8dff7f90915833e7a8b1bdf22f76`. It carries the
+  writing-plans `SKILL.md` body and no reference file, because the `histor*.md` glob matched nothing.
+
+Each case ran 5 reps on Claude Code 2.1.316, with this command:
+`run_reps.sh <prompt> specs/red-baseline-development-history/control/<case> 1 5 claude-opus-5-5 1.00`.
+So there are 10 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with
+`success`. No rep wrote an error file, so no rep was rerun. Every reply was read
+in full, and every verdict was read by hand by the committed rules.
+
+| Case | Bar | Passing reps | Failing reps |
+|---|---|---|---|
+| `gate-tag` | `treatment 5/5; control fails at least 1 of 5` | 0/5 | 5/5 |
+| `history-filter` | `treatment 5/5; control fails at least 1 of 5` | 0/5 | 5/5 |
+
+Both cases fail at least 1 of 5, so the bar's control condition is met for each. The stop rule does not apply.
+
+### gate-tag
+
+The pass rule has four clauses: (1) all four rulings listed; (2) the Task 2 entry holds the literal text
+`contradicts spec` followed by `§ 2` or `Alert threshold`; (3) no other ruling's entry holds `contradicts spec`;
+(4) no ruling is put to the partner as a question to approve. Every rep meets clauses 1 and 3. Every rep lists the
+four rulings in order with a cost, and no rep writes `contradicts spec` anywhere. Every rep breaks clause 2 first.
+
+- rep1: FAIL — clause 2: the Task 2 entry says "this departs from spec § 2", with no `contradicts spec`. Clause 4
+  also breaks: the reply asks "Do you want any of rulings 1–4 reversed?", and asks whether to record a § 2
+  amendment "if you keep" ruling 1.
+- rep2: FAIL — clause 2: the Task 2 entry says "not the spec's 2 or fewer", with no `contradicts spec`. Clause 4
+  also breaks: question B asks whether to update § 2 "or would you rather revisit the threshold", which puts the
+  Task 2 ruling up for approval.
+- rep3: FAIL — clause 2: the Task 2 entry names no spec section and has no `contradicts spec`. The § 2 conflict
+  comes up only in question A. Clause 4 also breaks: question A asks "do you want the threshold reverted to 2?"
+- rep4: FAIL — clause 2: the Task 2 entry has no `contradicts spec`. The § 2 conflict comes up only in question B.
+  Clause 4 also breaks: question B offers "revert the code to 2" as an option.
+- rep5: FAIL — clause 2: the Task 2 entry says "This departs from spec § 2", with no `contradicts spec`. Clause 4
+  holds: the reply lists the rulings as decisions "already in the code" and invites the partner to overturn one,
+  but it asks no question about a ruling. Its one question is the Declined to judge line.
+
+Fails: 5 of 5. The `question` aid fired on every rep. In every rep it marks the Declined to judge line, which the
+reference text puts to the partner as a question on purpose. In reps 1 to 4 it also marks a question about the
+Task 2 ruling. In the control, each rep sees the § 2 conflict and says so in its own words, but no rep uses the tag,
+and four of the five reps turn the conflict into a question about the ruling.
+
+### history-filter
+
+The pass rule has six clauses: (1) the Task 2 ruling is labelled `Ruling, contradicts spec (Task 2)` with its what,
+why and cost parts; (2) the module-name ruling is labelled `Ruling (Task 3)` with its three parts; (3) the
+batch-email ruling and the retry-jitter ruling are left out; (4) the Deviation line is kept with a Source pointer;
+(5) the closed-item line is kept with its quoted title and `(deferred by 9-dock-status)` unchanged; (6) the heading
+and the Plan line are unchanged. Every rep meets clauses 2, 4, 5 and 6. Every rep breaks clauses 1 and 3.
+
+- rep1: FAIL — clause 1: the Task 2 ruling keeps the draft's label `Ruling (Task 2)` and adds "Contradicts spec: §
+  2 Alert threshold" at the end of the line, with a note on the retired spec. Clause 3 also breaks: the batch-email
+  ruling and the retry-jitter ruling both stay in.
+- rep2: FAIL — clause 1: the label is `Ruling (Task 2)`, with "Contradicts spec: § 2 Alert threshold." added at the
+  end. Clause 3 also breaks: both rulings that kept the plan stay in. The rep also adds a line that is not in the
+  draft: "All four rulings confirmed by owner at the completion gate, 2026-11-09; no reverts." The rule does not
+  score that line.
+- rep3: FAIL — clause 1: the label is `Ruling (Task 2)`, with "Contradicts spec § 2 Alert threshold, which still
+  reads 2 or fewer" added at the end. Clause 3 also breaks: both rulings that kept the plan stay in.
+- rep4: FAIL — clause 1: the label is `Ruling (Task 2)`, with "Contradicts spec: § 2 Alert threshold." added at the
+  end. Clause 3 also breaks: both rulings that kept the plan stay in.
+- rep5: FAIL — clause 1: the label is `Ruling (Task 2)`, with "Contradicts spec: § 2 Alert threshold" and a note on
+  the retired spec added at the end. Clause 3 also breaks: both rulings that kept the plan stay in.
+
+Fails: 5 of 5. In the control, every rep carries the gate's tag into the entry, but as trailing text, not as the
+label. No rep filters the rulings. Each rep keeps the draft's four rulings as printed.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `gate-tag` control, reps 1 to 5 | $0.140 |
+| `history-filter` control, reps 1 to 5 | $0.176 |
+| Control arms, `show_reps.py` total over both folders | $0.32 |
+| Isolation probe (in `/tmp`, not in the kit's sum) | $0.014 |
+
+The control arms cost $0.32, against the $5 control stop. The kit's sum is $0.32 of $12, or $0.33 with the probe.
+
+Findings for Task 7:
+
+- `gate-tag`: the control fails 5 of 5. Task 7's treatment must pass 5 of 5.
+- `history-filter`: the control fails 5 of 5. Task 7's treatment must pass 5 of 5.
