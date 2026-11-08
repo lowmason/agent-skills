@@ -38,6 +38,10 @@ contradicts spec text `contradicts spec: <spec section>` — decisions already
 taken, shown so your partner sees them, not questions — then fold the final
 review's Declined to judge lines, each for your human partner to rule on,
 into the same batch, so your human partner gets at most one round-trip.
+A tagged ruling is still a decision taken, not a question: the plan's entry
+in `specs/history.md` records it in place of a spec amendment, so ask your
+partner nothing about it. Your partner may still ask to revert it, which
+makes it a deferred item.
 Review findings the final review left unfixed feed the gate. This is
 compatible with Continuous execution: "all tasks complete" is a sanctioned
 stop.
