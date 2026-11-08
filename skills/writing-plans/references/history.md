@@ -124,5 +124,6 @@ when it is absent), after one blank line, and put the file into the pass's commi
 - It writes no file. A wrong draft never lands unread, because you finish the draft and append it.
 - `draft` exits 0 with a draft. It exits 2, with a one-line error on stderr, when the plan file is missing or not a
   plan, or when `--spec` and `--spec-status` do not come together.
-- `deferred` exits 0. It prints nothing when no item qualifies.
+- `deferred` exits 0, and prints nothing when no item qualifies or `specs/deferred_items.md` is absent. It exits 2,
+  with a one-line error on stderr, when `specs/deferred_items.md` or `specs/history.md` exists but cannot be read.
 - `--date YYYY-MM-DD` sets the entry date. It defaults to today.
