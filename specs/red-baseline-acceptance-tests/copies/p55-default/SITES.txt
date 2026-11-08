@@ -1,0 +1,16 @@
+63  planning-record  - one `--all` run printed the `skip cc_guide` line, passed every run except `bui
+243  interfaces  - constants `REPO: Path` (the repo root), `REGISTRY = 'build/suites.toml'`, `DEF
+328  test-step  assert run.label == 'alpha (3.12)'
+329  test-step  assert run.argv == ('uv', 'run', '--python', '3.12', '--with', 'pytest', '--with
+331  test-step  assert run.shell() == ('cd skills/alpha/scripts && uv run --python 3.12 --with p
+337  test-step  assert run.shell() == ("cd skills/alpha/scripts && uv run --python 3.12 --with p
+399  code-step  DEFAULT_PYTHONS = ('3.12',)
+753  test-step  assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)', '
+758  test-step  assert rs.main(['alpha'], root=repo, run_one=FakeRuns({'alpha (3.12)': 5})) == 1
+763  test-step  assert capsys.readouterr().out.splitlines()[:2] == ['== alpha (3.12)', 'note: Re
+769  test-step  assert fake.argvs == [('uv', 'run', '--python', '3.12', '--with', 'pytest', '--w
+776  test-step  assert fake.labels == ['alpha (3.12)', 'outer (3.12)']
+786  test-step  '  cd skills/alpha/scripts && uv run --python 3.12 --with pytest --with polars p
+835  test-step  assert 'ghost (3.12): cannot start' in capsys.readouterr().err
+1043  code-step  #   pythons  optional: one run per interpreter, in order (default ['3.12'])
+1504  step-text  Expected: a `skip cc_guide: the build suite collects build/cc_guide` line. Then 
