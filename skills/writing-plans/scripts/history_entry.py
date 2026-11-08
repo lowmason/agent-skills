@@ -10,12 +10,14 @@ its run ledger and the backlog. The agent that retires the plan finishes the dra
 and appends it to `specs/history.md`. The script never writes a file.
 
 The draft lists every ledger ruling. It also lists the plan's deviation notes and
-its decisions that carry `(spec amendment)`, the count of items the plan deferred,
-and the earlier deferred items that the plan closed. The agent removes the
-rulings that did not change the build (spec D7).
+its decisions whose `Applied in:` part holds `(spec amendment` or `(spec amendments`
+(for example `(spec amendment A2)` or `(spec amendments: R6.11)`), the count of items
+the plan deferred, and the earlier deferred items that the plan closed. The agent
+removes the rulings that did not change the build (spec D7).
 
-A form inside a fenced block or an inline code span is quoted text, so it is never
-read. The plan's header lines come from above its first `## ` heading.
+A form inside a fenced block, a fenced block inside a blockquote, or an inline code
+span is quoted text, so it is never read. The plan's header lines come from above
+its first `## ` heading.
 
 The `deferred` subcommand prints the draft entry for a /deferred pass. It lists the
 ticked items of `specs/deferred_items.md` that carry a `done` note with the pass
@@ -55,7 +57,7 @@ SPEC_STATUSES = ('retired', 'live')
 NO_SPEC = 'none'
 STATUS_NOT_GIVEN = 'status not given'
 ROADMAP_END = ' — '
-SPEC_AMENDMENT = '(spec amendment)'
+SPEC_AMENDMENT = '(spec amendment)'  # the printed label
 APPLIED_IN = ' Applied in:'
 DECISION_CLOSE = '): '
 RULING_MARK = 'Ruling:'
@@ -74,9 +76,12 @@ SPEC_PATH_RE = re.compile(r'specs/[\w./-]+\.md(?!\w)')
 ROADMAP_LINE_RE = re.compile(r'^\s*(?:>\s*)?Roadmap:')
 DEVIATION_RE = re.compile(r'^\s*>\s*(\*\*)?Deviation\b[^:]*:(?:\*\*)?')
 BLOCKQUOTE_RE = re.compile(r'^\s*>')
+QUOTE_MARKS_RE = re.compile(r'^\s*(?:>\s*)+')
+QUOTED_FENCE_OPEN_RE = re.compile(r'^\s*(?:>\s*)+(?P<run>`{3,}|~{3,})(?P<info>.*)$')
 BLOCKQUOTE_PREFIX_RE = re.compile(r'^\s*>\s*')
 BARE_BLOCKQUOTE_RE = re.compile(r'^\s*>\s*$')
 DECISION_RE = re.compile(r'^- \*\*(?P<id>D\d+)\*\*')
+SPEC_AMENDMENT_MARK_RE = re.compile(r'\(spec amendments?\b')
 LEDGER_TASK_RE = re.compile(r'^\s*Task\s+(?P<number>\d+)')
 LEDGER_FINAL_RE = re.compile(r'^\s*Final\b')
 PLAN_ID_RE = re.compile(r'(?P<id>\d+)-')
@@ -89,18 +94,71 @@ class InputError(Exception):
 
 @dataclass(frozen=True)
 class PlanText:
-    '''A plan's lines, and the same lines with fenced blocks and code spans blanked.
+    '''A plan's lines, and the same lines with code blanked.
 
-    A match is decided on `masked`, so a form quoted in code never matches. The
-    printed text comes from `lines`.
+    The code is each fenced block, each fenced block inside a blockquote and each
+    inline code span. A match is decided on `masked`, so a form quoted in code never
+    matches. The printed text comes from `lines`.
     '''
 
     lines: list[str]
     masked: list[str]
 
 
+def _quoted_fence_run(line: str) -> str:
+    '''The run of backticks or tildes that opens a fence after the `>` marks, or an empty string.
+
+    The info string of a backtick fence holds no backtick, so a line like
+    `> ```x``` text` opens no fence.
+    '''
+    opener = QUOTED_FENCE_OPEN_RE.match(line)
+    if not opener or (opener.group('run')[0] == '`' and '`' in opener.group('info')):
+        return ''
+    return opener.group('run')
+
+
+def _quoted_fence_end(lines: list[str], start: int, run: str) -> int:
+    '''The index of the last line of the blockquoted fence that opens at `start`.
+
+    The fence ends at the next blockquoted line that closes it: the same character,
+    at least as long, and nothing else after the `>` marks. A fence never closed ends
+    with its blockquote, at the last line that starts with `>`.
+    '''
+    end = start
+    for index in range(start + 1, len(lines)):
+        if not BLOCKQUOTE_RE.match(lines[index]):
+            break
+        end = index
+        closer = QUOTE_MARKS_RE.sub('', lines[index]).strip()
+        if len(closer) >= len(run) and closer == run[0] * len(closer):
+            break
+    return end
+
+
+def _blank_quoted_fences(lines: list[str], masked: list[str]) -> list[str]:
+    '''`masked` with each fenced block inside a blockquote blanked, line lengths kept.
+
+    A block runs from a line that opens a fence after its `>` marks through its
+    closer. The opener and the closer are read on `lines`, because `blank_code` may
+    already have blanked their backticks.
+    '''
+    blanked = list(masked)
+    index = 0
+    while index < len(lines):
+        run = _quoted_fence_run(lines[index])
+        if not run:
+            index += 1
+            continue
+        end = _quoted_fence_end(lines, index, run)
+        for covered in range(index, end + 1):
+            blanked[covered] = ' ' * len(masked[covered])
+        index = end + 1
+    return blanked
+
+
 def read_plan_text(text: str) -> PlanText:
-    return PlanText(text.split('\n'), blank_code(text).split('\n'))
+    lines = text.split('\n')
+    return PlanText(lines, _blank_quoted_fences(lines, blank_code(text).split('\n')))
 
 
 def _read_text(path: Path, what: str) -> str:
@@ -195,10 +253,14 @@ def _is_continuation(line: str) -> bool:
 
 
 def _spec_decision_line(number: str, joined: str) -> str | None:
-    '''The difference line for a decision whose `Applied in:` part has `(spec amendment)`.'''
+    '''The difference line for a decision whose `Applied in:` part has a `(spec amendment` mark.
+
+    The mark opens `(spec amendment)`, `(spec amendments)`, `(spec amendment A2)` and the like.
+    The printed label stays `(spec amendment)`.
+    '''
     head, found, applied = joined.rpartition(APPLIED_IN)
     close = head.find(DECISION_CLOSE)
-    if not found or SPEC_AMENDMENT not in applied or close == -1:
+    if not found or not SPEC_AMENDMENT_MARK_RE.search(applied) or close == -1:
         return None
     text = head[close + len(DECISION_CLOSE):].strip().removesuffix('.')
     return f'- Decision {number} {SPEC_AMENDMENT}: {text}. Source: plan, {DECISIONS_SOURCE}.'

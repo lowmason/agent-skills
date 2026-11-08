@@ -59,9 +59,11 @@ backlog (derive-roadmap's gap rubric records the same boundary).
      made with the signal in view.
 
    When the pass ticked at least one item `→ done <YYYY-MM-DD> (/deferred quick fix)`,
-   run the writing-plans skill's `scripts/history_entry.py deferred` with `uv run`
-   before the archive run. Finish its draft and append it to `specs/history.md`, as
-   that skill's `references/history.md` says. No output means no entry.
+   run the writing-plans skill's
+   `scripts/history_entry.py deferred --date <YYYY-MM-DD>` with `uv run` before
+   the archive run, where the date is the one on the pass's ticks. Finish its
+   draft and append it to `specs/history.md`, as that skill's
+   `references/history.md` says. No output means no entry.
 
    End the pass by running the writing-plans skill's
    `scripts/archive_deferred.py` with `uv run`. It moves ticked items more

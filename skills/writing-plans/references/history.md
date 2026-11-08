@@ -97,8 +97,10 @@ items writes no entry: those passes change no built thing.
 **Command.** Run it from the repo root:
 
 ```bash
-uv run <this-skill-dir>/scripts/history_entry.py deferred
+uv run <this-skill-dir>/scripts/history_entry.py deferred --date <YYYY-MM-DD>
 ```
+
+The date is the one on the pass's `→ done … (/deferred quick fix)` ticks.
 
 It reads `specs/deferred_items.md` and prints one line for each ticked item whose `→ done <YYYY-MM-DD> (/deferred quick fix)`
 note carries the pass date (`--date`, default today). A second pass on the same date appends its own section with the

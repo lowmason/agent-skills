@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from history_entry import closed_item_line, main
+from history_entry import closed_item_line, main, read_plan_text
 
 PLAN = '''# Rate Limiter Implementation Plan
 
@@ -105,6 +105,27 @@ Add a one-line `> Deviation: …` note.
 '''
 
 DATE = '2026-07-04'
+
+AMENDMENT_FORMS = '''- **D3** (owner, plan review, 2026-07-01): the retry count is three. Applied in: Task 1 (spec amendment A2).
+- **D4** (owner, plan review, 2026-07-01): the window slides. Applied in: Task 2 (spec amendments: R6.11, R8.5).
+- **D5** (owner, plan review, 2026-07-01): the list stays as it is. Applied in: Task 3 (spec amendments).
+- **D6** (owner, plan review, 2026-07-01): keep the (spec amendment A3) text in the spec. Applied in: Task 3.
+'''
+
+QUOTED_FENCES = '''
+### Task 3: Examples
+
+> ~~~markdown
+> Deviation: an example inside a tilde fence.
+> > Deviation: a nested example inside a tilde fence.
+> ~~~
+
+>    ```bash
+>    Deviation: an example inside a backtick fence.
+>    ````
+
+> Deviation: a real note after the fences.
+'''
 
 
 QUICK = '''# Deferred items
@@ -389,6 +410,54 @@ def test_quoted_forms_in_code_are_not_read(tmp_path, capsys):
     code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
     assert code == 0
     assert out == GOLDEN + '\n'
+
+
+def test_spec_amendment_decisions_in_variant_forms_are_listed(tmp_path, capsys):
+    varied = PLAN.replace('  amendment), Task 3.\n', '  amendment), Task 3.\n' + AMENDMENT_FORMS, 1)
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', varied, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    decisions = [line for line in out.splitlines() if line.startswith('- Decision')]
+    assert decisions == [
+        '- Decision D2 (spec amendment): the 429 body is JSON. Source: plan, `## Decisions`.',
+        '- Decision D3 (spec amendment): the retry count is three. Source: plan, `## Decisions`.',
+        '- Decision D4 (spec amendment): the window slides. Source: plan, `## Decisions`.',
+        '- Decision D5 (spec amendment): the list stays as it is. Source: plan, `## Decisions`.',
+    ]
+
+
+def test_quoted_fences_in_a_blockquote_are_not_read(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN + QUOTED_FENCES, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    assert out == GOLDEN.replace(
+        '- Decision D2',
+        '- Deviation (Task 3): a real note after the fences. Source: plan, Task 3.\n- Decision D2',
+    ) + '\n'
+
+
+def test_quoted_fence_is_blanked_from_opener_to_closer_keeping_every_length():
+    text = '> ```bash\n> echo hi\n> ```\n> kept\n>~~~\n>   code\n> > ~~~\nplain'
+    plan = read_plan_text(text)
+    assert [len(line) for line in plan.masked] == [len(line) for line in plan.lines]
+    assert [line.strip() for line in plan.masked] == ['', '', '', '> kept', '', '', '', 'plain']
+
+
+def test_quoted_fence_closes_only_on_the_same_mark_at_least_as_long():
+    text = '> ~~~~\n> ~~~\n> ```` x\n> ````\n> inside\n> ~~~~~\n> after'
+    masked = read_plan_text(text).masked
+    assert [line.strip() for line in masked] == ['', '', '', '', '', '', '> after']
+
+
+def test_unclosed_quoted_fence_ends_with_its_blockquote():
+    text = '> ~~~\n> inside\n\n> Deviation: real.'
+    masked = read_plan_text(text).masked
+    assert [line.strip() for line in masked] == ['', '', '', '> Deviation: real.']
+
+
+def test_backtick_fence_with_backticks_in_its_info_is_not_an_opener():
+    text = '> ```x``` is not a fence\n> Deviation: real.'
+    assert read_plan_text(text).masked[1] == '> Deviation: real.'
 
 
 def test_plan_id_matches_whole_word(tmp_path, capsys):
