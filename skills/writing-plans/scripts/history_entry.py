@@ -256,15 +256,19 @@ def _is_continuation(line: str) -> bool:
     return line[:1].isspace() and bool(line.strip())
 
 
-def _spec_decision_line(number: str, joined: str) -> str | None:
+def _spec_decision_line(number: str, joined: str, masked_joined: str) -> str | None:
     '''The difference line for a decision whose `Applied in:` part has a `(spec amendment` mark.
 
     The mark opens `(spec amendment)`, `(spec amendments)`, `(spec amendment A2)` and the like.
-    The printed label stays `(spec amendment)`.
+    It is read on the masked text, so a mark inside inline code does not count. The printed
+    text comes from the original, and its label stays `(spec amendment)`.
     '''
-    head, found, applied = joined.rpartition(APPLIED_IN)
+    _, masked_found, masked_applied = masked_joined.rpartition(APPLIED_IN)
+    if not masked_found or not SPEC_AMENDMENT_MARK_RE.search(masked_applied):
+        return None
+    head, found, _ = joined.rpartition(APPLIED_IN)
     close = head.find(DECISION_CLOSE)
-    if not found or not SPEC_AMENDMENT_MARK_RE.search(applied) or close == -1:
+    if not found or close == -1:
         return None
     text = head[close + len(DECISION_CLOSE):].strip().removesuffix('.')
     return f'- Decision {number} {SPEC_AMENDMENT}: {text}. Source: plan, {DECISIONS_SOURCE}.'
@@ -283,11 +287,13 @@ def decision_lines(plan: PlanText) -> list[str]:
             index += 1
             continue
         parts = [plan.lines[index].strip()]
+        masked_parts = [plan.masked[index].strip()]
         index += 1
         while index < len(plan.lines) and _is_continuation(plan.lines[index]):
             parts.append(plan.lines[index].strip())
+            masked_parts.append(plan.masked[index].strip())
             index += 1
-        line = _spec_decision_line(start.group('id'), ' '.join(parts))
+        line = _spec_decision_line(start.group('id'), ' '.join(parts), ' '.join(masked_parts))
         if line:
             found.append(line)
     return found

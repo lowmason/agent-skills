@@ -128,6 +128,10 @@ AMENDMENT_FORMS = '''- **D3** (owner, plan review, 2026-07-01): the retry count 
 - **D6** (owner, plan review, 2026-07-01): keep the (spec amendment A3) text in the spec. Applied in: Task 3.
 '''
 
+QUOTED_AMENDMENT_MARK = '''- **D7** (owner, plan review, 2026-07-01): name the form. Applied in: Task 2, as
+  `Task 2 (spec amendments: R1)` shows.
+'''
+
 QUOTED_FENCES = '''
 ### Task 3: Examples
 
@@ -440,6 +444,14 @@ def test_spec_amendment_decisions_in_variant_forms_are_listed(tmp_path, capsys):
         '- Decision D4 (spec amendment): the window slides. Source: plan, `## Decisions`.',
         '- Decision D5 (spec amendment): the list stays as it is. Source: plan, `## Decisions`.',
     ]
+
+
+def test_spec_amendment_mark_inside_inline_code_is_not_read(tmp_path, capsys):
+    quoted = PLAN.replace('  amendment), Task 3.\n', '  amendment), Task 3.\n' + QUOTED_AMENDMENT_MARK, 1)
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', quoted, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    assert out == GOLDEN + '\n'
 
 
 def test_quoted_fences_in_a_blockquote_are_not_read(tmp_path, capsys):
