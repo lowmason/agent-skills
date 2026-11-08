@@ -1,12 +1,13 @@
 # Development history record — Design Spec
 
-**Status:** DRAFT (2026-11-08). The design came from a brainstorming session on 2026-11-08. That session took
-finding 22 ("Spec drift is unaddressed", `specs/superpowers-drift-spec-v7-0-2.md:729-750`) alone, apart from
-findings 21 and 24, on the owner's decision (D1). Decisions D1–D5 are the owner's, from that session. Text marked
-*(designer's call)* is the designer's choice.
+**Status:** DRAFT (2026-11-08), for the owner's review. The design came from a brainstorming session on
+2026-11-08. That session took finding 22 ("Spec drift is unaddressed",
+`specs/superpowers-drift-spec-v7-0-2.md:729-750`) alone, apart from findings 21 and 24, on the owner's decision
+(D1). Decisions D1–D7 are the owner's, from that session. Text marked *(designer's call)* is the designer's choice.
 
 Each project that uses these skills gets one Markdown file, `specs/history.md`. It records what each plan built and
-where the build differed from its design. The plan-completion protocol appends one entry for each plan, from a draft
+where the build differed from its design, and which deferred items each `/deferred` pass fixed. The plan-completion
+protocol appends one entry for each plan, and `/deferred` one entry for each pass that closes items, from a draft
 that a script prints. No spec is edited after approval to keep it current. The history file holds that record.
 
 ## Motivation
@@ -38,11 +39,16 @@ The brainstorming session found three more facts:
   records the closures of earlier items instead.
 - **D5** (owner, 2026-11-08): approach B (below): a protocol step, a reference file, and a script that drafts the
   entry.
+- **D6** (owner, 2026-11-08): `/deferred` passes also write history entries, so closures from quick fixes are in the
+  history too.
+- **D7** (owner, 2026-11-08): an entry keeps only the rulings that changed the build against the spec or the plan
+  (rule 3). A ruling that declined a finding and kept the plan as written stays out.
 
 ## Goals
 
 1. One file for each project records, for each completed plan, what it built and where it differed from its spec and
-   plan, with a pointer from each line to its source.
+   plan, with a pointer from each line to its source. It also records which deferred items each `/deferred` pass
+   fixed.
 2. A `Ruling:` that changed what got built outlives the ledger.
 3. A ruling that contradicts spec text is marked as such at the gate, so the owner sees it before it is recorded.
 4. A rare reader finds the record in one place, in any project.
@@ -78,7 +84,8 @@ The brainstorming session found three more facts:
 
 - Path: `specs/history.md` *(designer's call)*. Title line `# Development history` and no other preamble, created on
   first use, like `specs/deferred_items.md`.
-- One `##` section for each completed plan, newest last. The heading is the same as the plan's section heading in
+- One `##` section for each completed plan, and one for each `/deferred` pass that closes items (below), newest
+  last. The heading is the same as the plan's section heading in
   `specs/deferred_items.md`: `## <plan-stem> — YYYY-MM-DD`, where `<plan-stem>` is the plan filename without `.md`
   and the date is the completion date.
 - Append-only. No skill step edits or moves an earlier section.
@@ -110,7 +117,7 @@ Rules:
    prefix. Its label is `Ruling` or `Ruling, contradicts spec`, followed by the task or `final review` in brackets
    when the ledger line shows it.
 3. **Rulings that go in:** each ruling that changed what got built against the spec or the plan text. A ruling that
-   only parks a finding with no change to the build stays out *(designer's call)*. The script lists every ruling and
+   only parks a finding with no change to the build stays out (D7). The script lists every ruling and
    the agent removes the ones that do not qualify.
 4. **Deviations and decisions** are one short line each, with a source pointer. Decisions go in only when they are
    spec-level: their `Applied in:` list contains `(spec amendment)` anywhere, for example `Applied in: Task 1 (spec
@@ -124,6 +131,26 @@ Rules:
    *(designer's call)*. No change to `SKILL.md` step 3 is needed.
 7. When a list has no lines, it is left out. When the entry has no differences and closed nothing, its body after
    the first line is `No differences from the design.`
+
+### `/deferred` entries (D6)
+
+A `/deferred` pass that ticks at least one item `→ done <YYYY-MM-DD> (/deferred quick fix)` appends one entry. A
+pass that only retires, holds, plans or designs items writes none: those change no built thing *(designer's call)*.
+
+```markdown
+## /deferred — 2026-10-05
+
+Closed deferred items:
+- "Retry jitter is fixed-seed in tests only" (deferred by 7-rate-limiter): seeded jitter from the test fixture.
+```
+
+- The heading is `## /deferred — YYYY-MM-DD`, the pass date.
+- Each line is the item's first-line title, the section it came from, and the quick-fix note's text after the
+  arrow's `:` when it has one. That note says what the fix changed.
+- A second pass on the same date appends its own section with the same heading. The script leaves out items that an
+  earlier section of that heading already lists *(designer's call)*.
+- The entry is written before the pass's closing `archive_deferred.py` run, so every item is still in the live file,
+  and it goes into the pass's commit. The command step is in `commands/deferred.md`, step 5, beside the archive run.
 
 ### Contradicting rulings at the gate (finding 22's line)
 
@@ -154,6 +181,18 @@ uv run <writing-plans>/scripts/history_entry.py draft <plan> [--ledger <path>] [
   it, so a wrong draft never lands unread.
 - Exit 0 with a draft; exit 2 with a one-line error when the plan file is missing or not a plan.
 
+A second subcommand drafts a `/deferred` entry:
+
+```
+uv run <writing-plans>/scripts/history_entry.py deferred [--date YYYY-MM-DD]
+```
+
+- Reads `specs/deferred_items.md` from the current repository root: every item with a
+  `→ done <date> (/deferred quick fix)` note for the date (default: today).
+- Reads `specs/history.md`, when it exists, to leave out items already listed under a `## /deferred — <date>`
+  heading.
+- Prints the draft. When no item qualifies, prints nothing and exits 0, and the pass writes no entry.
+
 Tests go in `skills/writing-plans/scripts/test_history_entry.py`, in the existing `writing-plans` suite in
 `build/suites.toml`. Fixtures are small inline plan, ledger and backlog texts.
 
@@ -172,10 +211,6 @@ the rules and the script command. `SKILL.md` gets one pointer line. `SKILL.md` h
 pointer needs an equal or larger cut elsewhere in that file. Moving prose to a reference is the expected form.
 Run `uv run --with pyyaml python build/check_conformance.py` before the commit.
 
-## Open questions for the owner
-
-Listed by the builder check pass; see the end of the brainstorming session.
-
 ## Left to the builder
 
 - The pointer line's wording and the cut that makes room for it in `skills/writing-plans/SKILL.md`.
@@ -190,7 +225,9 @@ Listed by the builder check pass; see the end of the brainstorming session.
   so the plan should keep this edit to the pointer line and its cut, and expect a merge.
 - The deferral lint reads new files under `specs/completed/` and `specs/plans/completed/`. `specs/history.md` is in
   neither, so the lint does not read it.
-- Canonical files only: if `commands/deferred.md` changes, regenerate `runtimes/` with
-  `build/sync_runtime_assets.py`.
+- `commands/deferred.md` changes (D6). It is canonical: regenerate `runtimes/` with
+  `build/sync_runtime_assets.py`, then run its `--check`. The command already depends on writing-plans in
+  `install.py`, so its new reference to `references/history.md` and the script needs no new dependency. The
+  dependency-drift check confirms it.
 - Provenance: writing-plans is a superpowers-adapted skill (`NOTICE`, `LICENSE-superpowers`). The new reference and
   script are original work in an adapted skill. Check `NOTICE` and `build/check_provenance.py` for what that needs.
