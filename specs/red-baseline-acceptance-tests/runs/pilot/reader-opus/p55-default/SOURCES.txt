@@ -1,0 +1,1 @@
+copy: p55-default from f0ebef6 (specs/plans/55-test-suite-registry.md, specs/test-suite-registry.md)

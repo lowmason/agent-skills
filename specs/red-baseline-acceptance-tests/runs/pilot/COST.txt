@@ -1,0 +1,7 @@
+Pilot reps on p55-default (rep 1 each, Claude Code 2.1.319, opus): total_cost_usd
+  control-opus: $0.4823 for a 119332-character prompt
+  reader-opus: $0.4851 for a 24551-character prompt
+  adjudicator-opus: $0.3307 for a 71662-character prompt
+Projection for Task 3: 5 reps of each arm on each copy, cost scaled by prompt size (DF8).
+  control $14.31, reader $11.94, adjudicator $8.14, total $34.39
+  DF8 stop at $150: under, Task 3 proceeds

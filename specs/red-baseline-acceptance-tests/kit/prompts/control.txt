@@ -1,0 +1,26 @@
+@@SOURCE@@
+You are the planner. Your skill text follows, between the <skill> tags.
+
+<skill>
+@@SKILL@@
+</skill>
+
+You wrote the plan below from the spec below. Run your Self-Review now.
+
+You have no tools. Do not edit the plan. Report each problem that the Self-Review finds.
+
+<spec>
+@@SPEC@@
+</spec>
+
+<plan>
+@@PLAN@@
+</plan>
+
+Reply with exactly one <findings> block. Each problem is one <finding> element:
+
+<findings>
+<finding task="N"><quote>the spec sentence that the problem breaks, copied word for word</quote><plan>the plan text that is wrong, copied word for word</plan><fix>the change that you would make</fix></finding>
+</findings>
+
+Set task to the number of the task that holds the problem, or to 0 for a problem outside every task. If the Self-Review finds no problem, reply with <findings></findings>.
