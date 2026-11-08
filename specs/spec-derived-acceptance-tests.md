@@ -334,8 +334,8 @@ The new script gets pytest cases in `skills/subagent-driven-development/scripts/
   ran on `gpt-6.1-sol` with no override. The rejection that plan 69 recorded (codex-cli 0.154.0,
   `specs/plans/completed/69-agent-payload-probe.md:63`, D5) had stopped by 2026-10-29. The fall-back to Astra
   6 that the owner described came from a stale memory entry. Commit `2f35f81` adds `-m gpt-6-sol` to the
-  launch command in `skills/requesting-code-review/codex-review.md`. It is on branch
-  `claude/codex-review-model-93f992`, not yet on `main`. A Codex acceptance run names its model with `-m` in
+  launch command in `skills/requesting-code-review/codex-review.md`. It reached `main` through
+  lowmason/agent-skills#149 (`f0a9f89`). A Codex acceptance run names its model with `-m` in
   the same way, and the probe records the model of each Codex run. This design does not change the review
   recipe.
 - **Lints.** `build/run_commit_lints.sh` passes before each commit.
