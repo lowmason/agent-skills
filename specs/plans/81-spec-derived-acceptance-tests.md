@@ -100,11 +100,11 @@ Verification section, "Probe first", only. The build plan comes after the owner 
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-08): approved the planner defaults DF1–DF11 as written ("Approve defaults"). DF8's cost stop is the one stop this plan adds. Applied in: Global Constraints, Tasks 1–5.
 
-## Planner defaults (for plan review)
+## Planner defaults (approved, D1)
 
-The brief flagged no defaults. These are the planner's, for the owner's review:
+The brief flagged no defaults. These are the planner's. The owner approved them at plan review (D1):
 
 - **DF1. Pairs and plants.** One misread in each planted copy, so a catch is not confused with another plant:
   - `p53-unit`: portability spec R1.3, `compatibility` "a string of 1–500 characters after stripping", planted as
