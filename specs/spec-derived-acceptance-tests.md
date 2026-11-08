@@ -3,8 +3,11 @@
 **Status:** DRAFT (2026-11-08), for the owner's review. The design came from a brainstorming session on
 2026-11-08, opened on `specs/superpowers-drift-spec-v7-0-2.md`. It covers that assessment's finding 21
 ("Per-task test evidence is self-reported in SDD") and finding 24 ("Planner-authored tests can share a spec
-misreading"). Finding 22 (spec drift) moved to its own session on the same day (D2). Decisions D1–D7 are the
+misreading"). Finding 22 (spec drift) moved to its own session on the same day (D2). Decisions D1–D8 are the
 owner's. Text marked *(designer's call)* is the designer's choice. The list under "Designer's calls" collects them.
+
+> **For agentic workers:** this spec gets two plans (D8). Plan the probe first, as its own plan
+> (Verification, "Probe first"). Write the build plan only after the owner has reviewed the probe's results.
 
 ## Intent
 
@@ -58,7 +61,7 @@ So the plan measures the step before it changes any skill text (Verification).
 - Most unclear cases reach the owner at plan review, so a run seldom stops for one.
 - During execution, the acceptance tests run through the same script, and a failure goes to the adjudicator.
 - A planted-misread probe measures what the step catches, and how many false alarms it raises, before any
-  skill text changes (D6).
+  skill text changes (D6, D8).
 
 **Non-goals.**
 
@@ -142,6 +145,9 @@ already present. The cost is the writing-plans references split, which finding 1
   then fall back to Astra 6. Reading: the Codex reader uses the cheapest model that the login accepts and that
   meets the probe's bars, and the probe tries Sol 6 first. The repository does not record Sol 6's exact model
   ID, so the builder confirms it.
+- **D8. The probe is its own plan, first.** "yes, run the probe as its own plan first." The owner answered the
+  question whether to review the probe's results before anything else is built. The build plan is written
+  after that review.
 
 ## Design
 
@@ -249,7 +255,8 @@ already present. The cost is the writing-plans references split, which finding 1
 
 ### Probe first
 
-The plan's first task runs the backlog item's probe, before any skill text changes (D6):
+The backlog item's probe runs as its own plan, before the build plan and before any skill text changes (D8).
+The owner reviews its results. The build plan is written only after that review.
 
 1. Take two or three completed spec-and-plan pairs from `specs/completed/` and `specs/plans/completed/`. Each
    needs code tasks and exact values in its spec.
@@ -270,13 +277,15 @@ The plan's first task runs the backlog item's probe, before any skill text chang
 **Proposed bars** *(designer's call)*: a treatment arm catches each planted misread in at least 4 of 5
 repetitions. The control catches it in at most 2 of 5. A treatment arm raises at most one false alarm and at
 most one unclear case per plan. These bars replace the backlog item's looser rule, "keep only the layers that
-catch something". The Codex arm stays only if it beats the Claude arm on catches or on false alarms.
+catch something". The Codex arm stays only if it beats the Claude arm on catches or on false alarms. The owner
+reviews the results against these bars, and decides what the build plan keeps (D8).
 
 **Whatever the probe shows, finding 21's half ships.** The test-run script, the task-reviewer change and the
 `task-done` change do not depend on the second reader. The approaches message said so: "The script is useful
 on its own, so it lands first."
 
-The results go to `specs/red-baseline-acceptance-tests.md`, linked from this spec *(designer's call)*.
+The results go to `specs/red-baseline-acceptance-tests.md`, linked from this spec *(designer's call)*. The
+probe plan's completion adds a progress note to the backlog item that points at that file.
 
 ### Micro-tests
 
@@ -297,8 +306,11 @@ The new script gets pytest cases in `skills/subagent-driven-development/scripts/
 
 ## Constraints
 
-- **Order.** This plan runs after finding 18's helper plan and after the writing-plans references split. The
-  split runs as its own plan without a spec, as plans 71 and 72 did *(designer's call)*.
+- **Order (D8).** The probe plan comes first. It needs neither finding 18's helper fixes nor the writing-plans
+  split, so it can run now. The build plan comes after three things: the owner's review of the probe, finding
+  18's helper plan and the writing-plans references split. The split runs as its own plan without a spec, as
+  plans 71 and 72 did *(designer's call)*. If the owner drops the acceptance step after the probe, the build
+  plan is finding 21's half alone, and it needs no split.
 - **Room.** On 2026-11-08 at `e0a360a`, the skill bodies have this much room under the compaction check:
   writing-plans 6 characters, SDD 591 and executing-plans 3,616 (finding 17's measure). New text goes to
   `references/` files, with a pointer at each step that needs it.
@@ -322,7 +334,9 @@ The new script gets pytest cases in `skills/subagent-driven-development/scripts/
   `-c 'model="gpt-6-astra"'` (`specs/plans/completed/69-agent-payload-probe.md:63`, D5). So a Codex
   acceptance run names its model on every run, and the probe records the model of each Codex run. Where the
   skill text names the model is left to the builder. `skills/requesting-code-review/codex-review.md` names no
-  model either. This design does not change that recipe.
+  model either. This design does not change that recipe. A separate session, running on the owner's machine
+  on 2026-11-08, checks which models the login accepts and where the recipe should name one. The probe plan
+  starts from its result.
 - **Lints.** `build/run_commit_lints.sh` passes before each commit.
 
 ## Provenance
@@ -336,7 +350,7 @@ The new script gets pytest cases in `skills/subagent-driven-development/scripts/
 
 ## Closing the backlog and the drift spec
 
-On completion, the plan-completion protocol does these things:
+When the build plan completes, the plan-completion protocol does these things:
 
 - It ticks the backlog item "Spec-reading test check" (section `spec-reading-test-check`,
   `specs/deferred_items.md:5306`). The closing note says three things *(designer's call)*:
@@ -369,8 +383,8 @@ These were not discussed with the owner:
 9. **Code tasks only.** Prose and skill-text tasks keep their micro-tests.
 10. **The acceptance tests join the project's suite** at plan completion.
 11. **A separate Codex approval** until the owner extends `CLAUDE.md:54`.
-12. **The probe bars, and the probe as the plan's first task.** The backlog item's closure condition asks the
-    spec to record the probe results. This design has the plan record them instead, in the red-baseline file.
+12. **The probe bars, and where the results go.** The backlog item's closure condition asks the spec to record
+    the probe results. This design has the probe plan record them instead, in the red-baseline file.
 13. **Layer 4 stays open** in the backlog.
 14. **The adjudicator as an agent file pinned to Opus,** so the existing guards cover it.
 15. **The writing-plans split as its own plan,** before this one.
