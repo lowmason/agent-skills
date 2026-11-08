@@ -1,7 +1,8 @@
 # Independent test evidence: controller test runs and spec-derived acceptance tests — Design Spec
 
-**Status:** DRAFT (2026-11-08), for the owner's review. The design came from a brainstorming session on
-2026-11-08, opened on `specs/superpowers-drift-spec-v7-0-2.md`. It covers that assessment's finding 21
+**Status:** APPROVED (2026-11-08). The owner approved this file, its designer's calls included, on 2026-11-08
+("Spec approved"). The design came from a brainstorming session on 2026-11-08, opened on
+`specs/superpowers-drift-spec-v7-0-2.md`. It covers that assessment's finding 21
 ("Per-task test evidence is self-reported in SDD") and finding 24 ("Planner-authored tests can share a spec
 misreading"). Finding 22 (spec drift) moved to its own session on the same day (D2). Decisions D1–D8 are the
 owner's. Text marked *(designer's call)* is the designer's choice. The list under "Designer's calls" collects them.
