@@ -24,9 +24,15 @@ command text, the runtime adapter generator, the `claude -p` micro-test kit.
 - **Execution base.** `BASE80` is the commit that adds this plan. Task 1 Step 1 records its sha. Line numbers below
   were taken at `4d69454`. The old text in each step is the match key, not the line number.
 - **One execution at a time.** No execution starts while another plan executes in this repository (owner ruling,
-  2026-10-28). The superpowers-drift session for findings 21 and 24 may also edit `skills/writing-plans/SKILL.md`
-  (spec Constraints). Before Task 4, fetch `main` and check that the two match keys of Task 4 Step 3 are unchanged.
-  If either changed, rebase onto `main` and re-measure the body before the edit.
+  2026-10-28).
+- **A parallel session (brief T6).** The findings 21 and 24 session (branch `claude/admiring-curie-2vilnz`, draft
+  spec `specs/spec-derived-acceptance-tests.md`) plans edits to `skills/writing-plans/SKILL.md` and to the gate
+  paragraph of both executors' `references/final-review.md`, after a writing-plans references split. Before Task 1,
+  and again before Tasks 4 and 5, run `git fetch origin main` and
+  `git log --oneline <BASE80>..origin/main -- skills/writing-plans/SKILL.md skills/subagent-driven-development/references/final-review.md skills/executing-plans/references/final-review.md`.
+  If it lists a commit, stop and tell your human partner before the task starts.
+  The old text in each edit step is the match key.
+  Never push to `claude/admiring-curie-2vilnz`.
 - **The history file** (spec, The history file), exact: path `specs/history.md`; title line `# Development history`
   and no other preamble, created on first use; one `##` section for each completed plan and one for each `/deferred`
   pass that closes items, newest last; plan heading `## <plan-stem> — YYYY-MM-DD`, where `<plan-stem>` is the plan
@@ -64,7 +70,8 @@ command text, the runtime adapter generator, the `claude -p` micro-test kit.
   `archive_deferred.py` and `entry_check.py`; `skills/writing-plans/SKILL.md` outside step 3's example block and the
   end of step 5; every retired plan and spec (no backfill, and the stale-pointer item of section
   `spec-drift-finding-22` stays open); the task-review surfaces of subagent-driven-development (findings 21 and 24);
-  the backlog item "Spec-reading test check"; `install.py`.
+  the backlog item `spec-reading-test-check`; the other session's branch `claude/admiring-curie-2vilnz`;
+  `install.py`.
 - **Micro-tests.** Kit at `specs/red-baseline-development-history/kit/`, record at
   `specs/red-baseline-development-history.md`. Every rep is a fresh
   `claude -p --model claude-opus-5-5 --tools "" --strict-mcp-config --setting-sources "" --no-session-persistence --output-format json --max-budget-usd 1.00`
@@ -93,14 +100,16 @@ command text, the runtime adapter generator, the `claude -p` micro-test kit.
 
 ## Decisions
 
-None.
+None. The brief records no decision after the spec's D1–D7.
 
 ## Open for plan review
 
-1. **The handoff brief was not available.** `/root/.cache/agent-skills/handoffs/agent-skills/2026-11-08-development-history-plan.md`
-   is not in this cloud container, so no brief decision is logged, and its flagged defaults, owner gates and
-   leave-alone list are not applied. Give any of them at review, and each goes into `## Decisions` with source
-   `brief`.
+1. **The brief came by relay.** It was not in this container. The findings 21 and 24 session relayed its text on
+   2026-11-08. It has no decisions and no owner gates. Its leave-alone list is in Global Constraints. Its traps
+   T1–T6 are applied: T1 in Task 4 Steps 1 and 4, T2 and T4 in Task 2's fixtures, T3 in Task 4 Step 2, T5 in
+   Task 6 Step 2, T6 in Global Constraints. Its two defaults are items 10 and 11 below.
+   The brief file is not saved in this container.
+   Say if you want it kept.
 2. **The cut that pays for the pointer.** Task 4 deletes step 3's example block (509 characters plus one blank line).
    It is byte-identical to the example under **Deferred-item schema** in `references/deferred-backlog.md`, to which
    step 3 already points. Net body change: about −330 characters.
@@ -121,6 +130,15 @@ None.
    and 7's reps). Recommended: keep the two cases.
 9. **A README bullet.** Task 6 adds `specs/history.md` to the README's list of the files the lifecycle skills create,
    since D3 says the record serves any project that uses these skills.
+10. **Brief F1: the source of a closed item is its section's slug.** The slug is the section name up to the first
+    ` (`, so `## deferred-triage (no plan; /deferred pass, branch …) — 2026-09-28` gives `deferred-triage`, and a
+    plan section gives its plan stem. The spec's rule 6 says only "the section it came from". The other choice is the
+    full heading, which a reader can search for. Pinned in Task 3 (`test_deferred_draft`).
+11. **Brief F2: this plan writes the first entry.** Its own completion runs the new step and creates this
+    repository's `specs/history.md` (Architecture). The other choice starts the history with the next plan.
+12. **Order against the references split.** The findings 21 and 24 work waits for a writing-plans references split,
+    which may move protocol text out of `SKILL.md`. Task 4 cuts only step 3's example block. If plan 80 lands first,
+    the split starts from it. The owner orders the plans.
 
 ---
 
@@ -404,6 +422,7 @@ Rules the tests do not fully fix:
   that starts `Task <N>` labels it `(Task <N>)`; one that starts `Final` labels it `(final review)`.
 - Plan id: the stem's leading digits before `-`. Closed items: ticked items with a `done` note whose `rest` matches
   `(?<![\w-])plan\s+#?<id>(?![\w-])`. Title: the item's first line with every note span cut, whitespace collapsed.
+  Source: the item's section name up to the first ` (` (brief F1).
   No id, or no backlog file: no closed items and no `Deferred:` line.
 - `Deferred:` counts every item in the section named exactly `<plan-stem>`; `1 item`, otherwise `<n> items`.
 - Warning lines follow the `Plan:` line, `Spec: --spec not given` first, then `Rulings: no ledger given`.
@@ -454,7 +473,7 @@ QUICK = '''# Deferred items
 - [x] No note text → done 2026-10-05 (/deferred quick fix)
 - [ ] Open, not closed → done 2026-10-05 (/deferred quick fix): typo.
 
-## 40-handoff — 2026-09-30
+## deferred-triage (no plan; /deferred pass, branch deferred-triage-2026-09-28) — 2026-09-28
 - [x] Brief path is relative → done 2026-10-05 (/deferred quick fix): made it absolute.
 '''
 
@@ -463,7 +482,7 @@ HISTORY = '''# Development history
 ## /deferred — 2026-10-04
 
 Closed deferred items:
-- "Brief path is relative" (deferred by 40-handoff): an older close.
+- "Brief path is relative" (deferred by deferred-triage): an older close.
 
 ## /deferred — 2026-10-05
 
@@ -482,8 +501,10 @@ Tests and assertions:
 Closed deferred items:
 - "The spread step is direction-blind" (deferred by 34-calibration): signed the spread and added a test.
 - "No note text" (deferred by 34-calibration).
-- "Brief path is relative" (deferred by 40-handoff): made it absolute.
+- "Brief path is relative" (deferred by deferred-triage): made it absolute.
 ```
+
+  The last line pins brief F1: a section with no plan is named by its slug.
 
 - `test_quoted_quick_fix_form_is_not_a_close`: in that output, no line names `Quoted form only`, `Fixed on another
   day` or `Open, not closed`.
@@ -533,6 +554,8 @@ git commit -m "feat(writing-plans): draft a /deferred pass's history entry"
 
 Run: `grep -c 'history_entry.py' skills/writing-plans/SKILL.md; test -f skills/writing-plans/references/history.md`
 Expected: `0`, and `test` exits 1.
+Run: the Global Constraints' body measure, and record the figure as the before value (brief T1).
+Expected: 19,994, unless a rebase changed the file.
 
 - [ ] **Step 2: Write `references/history.md`**
 
@@ -583,7 +606,8 @@ history entry with `scripts/history_entry.py`, finish it and append it to
 - [ ] **Step 4: Run the checks**
 
 Run: Step 1's check. Expected: `1`, and `test` exits 0.
-Run: the Global Constraints' body measure. Expected: a number at or below 19,994.
+Run: the Global Constraints' body measure. Expected: at or below Step 1's before value. Put both figures in the
+task report.
 Run: `uv run python build/check_links.py` and `uv run python build/check_snippets.py skills/`. Expected: both pass.
 Run: `uv run --with pyyaml python build/check_conformance.py`. Expected: no finding for `skills/writing-plans/`.
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies`.
