@@ -1,6 +1,6 @@
 # Development history record — Design Spec
 
-**Status:** APPROVED (2026-11-08). The design came from a brainstorming session on
+**Status:** COMPLETE (2026-11-08), implemented by plan 80 (`specs/plans/completed/80-development-history-record.md`). It was APPROVED on 2026-11-08. The design came from a brainstorming session on
 2026-11-08. That session took finding 22 ("Spec drift is unaddressed",
 `specs/superpowers-drift-spec-v7-0-2.md:729-750`) alone, apart from findings 21 and 24, on the owner's decision
 (D1). Decisions D1–D7 are the owner's, from that session. Text marked *(designer's call)* was the designer's choice. The owner approved this file, its designer's calls

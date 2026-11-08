@@ -1,5 +1,7 @@
 # Development history record Implementation Plan
 
+**Status: COMPLETE (2026-11-08)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give each project one append-only file, `specs/history.md`, that records what each completed plan built
@@ -17,7 +19,7 @@ completion writes the first entry of this repository's `specs/history.md`.
 **Tech Stack:** Python 3.11+ stdlib (PEP 723 script), pytest through `build/run_suites.py`, Markdown skill and
 command text, the runtime adapter generator, the `claude -p` micro-test kit.
 
-**Spec:** `specs/development-history-record.md` (APPROVED 2026-11-08; decisions D1–D7)
+**Spec:** `specs/completed/development-history-record.md` (APPROVED 2026-11-08; decisions D1–D7)
 
 ## Global Constraints
 
@@ -160,18 +162,20 @@ All twelve items are settled: approved as written by D8 (2026-11-08).
 - Produces: `cases.CASES` with keys `gate-tag` and `history-filter`; the record's `## Control` section; `BASE80`
   recorded in the record's `## Base` section. Task 7 runs the treatment arms with the same kit.
 
-- [ ] **Step 1: Record the base**
+- [x] **Step 1: Record the base**
 
 Run: `git rev-parse --short HEAD`. Write it into the record's `## Base` section as `BASE80`.
 
-- [ ] **Step 2: Copy plan 77's kit**
+- [x] **Step 2: Copy plan 77's kit**
+
+> Deviation: `run_reps.sh` keeps its comment `Plan 77 deviation (a)`, because that deviation was plan 77's.
 
 Copy `run_reps.sh`, `isolation_probe.txt`, `show_reps.py` and `build_prompts.py` from
 `specs/red-baseline-audit-p2/kit/`. Change only the plan number in comments and docstrings (77 → 80), the temp
 prefix (`/tmp/plan77-rep-` → `/tmp/plan80-rep-`), and `show_reps.py`'s `AIDS` to flag `contradicts spec`,
 `Ruling`, `history` and `\?` (a question mark). `isolation_probe.txt` stays unchanged.
 
-- [ ] **Step 3: Write `cases.py`**
+- [x] **Step 3: Write `cases.py`**
 
 Same shape as `specs/red-baseline-review-fixes/kit/cases.py` (`case(texts, fixture, task, pass_rule, leak, bar)`,
 `CASES`, a shared `VOID` string copied from it), with `MODEL = 'claude-opus-5-5'` and `BUDGET = '1.00'`. The bar for
@@ -242,7 +246,7 @@ Pass rule: `PASS = the entry keeps the Task 2 ruling labelled "Ruling, contradic
 
 Leak: `r'changed the build|kept the plan as written|rule 3|parks? a finding'`.
 
-- [ ] **Step 4: Write the record and register the rules**
+- [x] **Step 4: Write the record and register the rules**
 
 Sections, in this order: `## Base` (`BASE80`), `## Kit` (what was copied from where and what changed), `## Arms`
 (control: texts at `BASE80`; treatment: texts at Task 5's last commit, `T5`), `## Bars`, `## Spend stop`,
@@ -250,41 +254,41 @@ Sections, in this order: `## Base` (`BASE80`), `## Kit` (what was copied from wh
 Stop rule, exact: `A case whose control fails 0 of 5 has nothing to fix in wording. Record it and put it to the owner
 in the completion gate's batch. The spec-required wording still lands.`
 
-- [ ] **Step 5: Run the leak check**
+- [x] **Step 5: Run the leak check**
 
 Run: `uv run python specs/red-baseline-development-history/kit/build_prompts.py leakview /tmp/plan80-work/leak`,
 then `grep -nE` each case's leak pattern over its leak-view prompt.
 Expected: no hit, except `contradicts spec` in the `history-filter` fixture (the gate's list, shown on purpose).
 Record each hit and why it stands in `## Leak check`.
 
-- [ ] **Step 6: Commit the registration**
+- [x] **Step 6: Commit the registration**
 
 ```bash
 git add specs/red-baseline-development-history specs/red-baseline-development-history.md
 git commit -m "test(specs): register the development-history micro-tests"
 ```
 
-- [ ] **Step 7: Run the isolation probe**
+- [x] **Step 7: Run the isolation probe**
 
 Run: `bash specs/red-baseline-development-history/kit/run_reps.sh specs/red-baseline-development-history/kit/isolation_probe.txt /tmp/plan80-work/probe 1 1 claude-opus-5-5`
 Expected: all five probe lines read `NO`. Record the Claude Code version and the result in `## Isolation probe`. Any
 `YES`: stop and ask your human partner.
 
-- [ ] **Step 8: Build the control prompts and run the control arms**
+- [x] **Step 8: Build the control prompts and run the control arms**
 
 Run: `uv run python specs/red-baseline-development-history/kit/build_prompts.py <BASE80> /tmp/plan80-work/control`,
 then for each case
 `bash specs/red-baseline-development-history/kit/run_reps.sh /tmp/plan80-work/control/<case>.txt specs/red-baseline-development-history/control/<case> 1 5 claude-opus-5-5 1.00`.
 Expected: 10 reps; rerun VOID reps with the next free number, inside the spend stop.
 
-- [ ] **Step 9: Read and record the control verdicts**
+- [x] **Step 9: Read and record the control verdicts**
 
 Run: `uv run python specs/red-baseline-development-history/kit/show_reps.py specs/red-baseline-development-history/control/<case>`
 for each case. Read every reply in full. Write `## Control` with one verdict line per scored rep (`rep<N>: PASS|FAIL —
 <reason>`), the fail count per case, and the spend so far.
 Expected: each case fails at least 1 of 5. If not, apply the stop rule.
 
-- [ ] **Step 10: Commit the control arm**
+- [x] **Step 10: Commit the control arm**
 
 ```bash
 git add specs/red-baseline-development-history specs/red-baseline-development-history.md
@@ -304,7 +308,7 @@ git commit -m "test(specs): run the development-history control arms"
 - Produces: `main(argv: list[str] | None = None) -> int` with the `draft` subcommand. Task 3 adds the `deferred`
   subcommand to the same parser, and reuses the closed-item line form `- "<title>" (deferred by <section>)`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 All tests build a throwaway repo under `tmp_path`: the plan at `specs/plans/completed/<stem>.md`, the backlog at
 `specs/deferred_items.md`, and the ledger anywhere. They call `main([...])` and read `capsys`. Fixtures, exact:
@@ -405,12 +409,18 @@ Closed earlier deferred items:
   returns 2, stdout is empty, and stderr is one line that names the path.
 - `test_spec_without_status_exits_2`: `--spec specs/x.md` alone returns 2 with a one-line error.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py writing-plans -- test_history_entry.py`
 Expected: collection error — `ModuleNotFoundError: No module named 'history_entry'`.
 
-- [ ] **Step 3: Implement `main(argv: list[str] | None = None) -> int` with `draft` in `history_entry.py`**
+- [x] **Step 3: Implement `main(argv: list[str] | None = None) -> int` with `draft` in `history_entry.py`**
+
+> Deviation: a deviation note's text joins its wrapped `>` lines, and a note under a non-task heading after the tasks prints `Source: plan, § <heading>.` with no task label, because 12 or more retired plans hold such notes.
+
+> Deviation: a fence inside a blockquote counts as code, though `blank_code` does not see it, so a quoted form in one is never read (Codex, final review).
+
+> Deviation: a decision qualifies when its `Applied in:` part matches `\(spec amendments?\b`, not only the literal `(spec amendment)`, so `(spec amendments)` and `(spec amendment A2)` are read too (final review, contradicts spec: Entry format, rule 4).
 
 Rules the tests do not fully fix:
 - Repo root: the parent of the plan's nearest ancestor directory named `specs`. None: exit 2, not a plan. The
@@ -434,18 +444,18 @@ Rules the tests do not fully fix:
 - `Deferred:` counts every item in the section named exactly `<plan-stem>`; `1 item`, otherwise `<n> items`.
 - Warning lines follow the `Plan:` line, `Spec: --spec not given` first, then `Rulings: no ledger given`.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: PASS, with every earlier writing-plans test still passing.
 
-- [ ] **Step 5: Update the suite note**
+- [x] **Step 5: Update the suite note**
 
 In `build/suites.toml`, the `writing-plans` notes become
 `'Deferred-backlog stats, deferral scan, history-entry and entry-check tests (stdlib only; the entry-check tests build throwaway git repos).'`
 Run: `uv run python build/run_suites.py --check`. Expected: exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/writing-plans/scripts/history_entry.py skills/writing-plans/scripts/test_history_entry.py build/suites.toml
@@ -463,7 +473,7 @@ git commit -m "feat(writing-plans): draft a plan's history entry"
 - Produces: the `deferred` subcommand. It reads `specs/deferred_items.md` and `specs/history.md` relative to the
   current directory (tests `monkeypatch.chdir(tmp_path)`).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Fixtures, exact:
 
@@ -521,24 +531,24 @@ Closed deferred items:
   section: stdout is empty and `main` returns 0.
 - `test_no_backlog_prints_nothing`: no `specs/deferred_items.md`: stdout is empty, exit 0.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py writing-plans -- test_history_entry.py`
 Expected: the five new tests FAIL with `SystemExit: 2` (argparse: `invalid choice: 'deferred'`); Task 2's tests pass.
 
-- [ ] **Step 3: Implement the `deferred` subcommand in `history_entry.py`**
+- [x] **Step 3: Implement the `deferred` subcommand in `history_entry.py`**
 
 An item qualifies when it is ticked and has a `done` note dated `--date` whose `rest` starts with
 `(/deferred quick fix)`. Its note text is what follows that prefix and one `:`, through the note's continuation lines
 up to the next note or the item's end, joined with single spaces. An item is already listed when a line in an earlier
 `## /deferred — <date>` section of `specs/history.md` starts with its `- "<title>" (deferred by <section>)` prefix.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run python build/run_suites.py writing-plans`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/writing-plans/scripts/history_entry.py skills/writing-plans/scripts/test_history_entry.py
@@ -557,14 +567,14 @@ git commit -m "feat(writing-plans): draft a /deferred pass's history entry"
 - Produces: `references/history.md` with the headings `## The history file`, `## Plan entries`,
   `## /deferred entries` and `## The script`, which Task 6's command text and Task 7's micro-test read.
 
-- [ ] **Step 1: Write the failing check**
+- [x] **Step 1: Write the failing check**
 
 Run: `grep -c 'history_entry.py' skills/writing-plans/SKILL.md; test -f skills/writing-plans/references/history.md`
 Expected: `0`, and `test` exits 1.
 Run: the Global Constraints' body measure, and record the figure as the before value (brief T1).
 Expected: 19,994, unless a rebase changed the file.
 
-- [ ] **Step 2: Write `references/history.md`**
+- [x] **Step 2: Write `references/history.md`**
 
 Agent-facing. Title `# Development history reference`, then one paragraph: what `specs/history.md` records, and its
 two writers (Protocol step 5 and `/deferred` step 5). Then:
@@ -598,7 +608,7 @@ two writers (Protocol step 5 and `/deferred` step 5). Then:
 
 All note forms in backticks. Every link resolves from `references/`.
 
-- [ ] **Step 3: Cut step 3's example and add the step 5 pointer in `SKILL.md`**
+- [x] **Step 3: Cut step 3's example and add the step 5 pointer in `SKILL.md`**
 
 Delete the block from the line `` ```markdown `` through its closing `` ``` `` that holds
 `## 7-rate-limiter — 2026-07-04` in step 3, and one of the two blank lines around it. Then, after the step 5
@@ -610,7 +620,7 @@ history entry with `scripts/history_entry.py`, finish it and append it to
 `specs/history.md` in that commit (`references/history.md`).
 ```
 
-- [ ] **Step 4: Run the checks**
+- [x] **Step 4: Run the checks**
 
 Run: Step 1's check. Expected: `1`, and `test` exits 0.
 Run: the Global Constraints' body measure. Expected: at or below Step 1's before value. Put both figures in the
@@ -620,7 +630,9 @@ Run: `uv run --with pyyaml python build/check_conformance.py`. Expected: no find
 Run: `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies`.
 Expected: PASS (a skill's own `references/` and `scripts/` are no new dependency).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
+
+> Deviation: Task 4 committed first (`a119dc0`), before Tasks 2 and 3, because the orphan-bundled-file lint fails a commit that adds `history_entry.py` while no skill text names it.
 
 ```bash
 git add skills/writing-plans/references/history.md skills/writing-plans/SKILL.md
@@ -637,24 +649,24 @@ git commit -m "feat(writing-plans): write a history entry at plan retirement"
 - Produces: the gate tag form `contradicts spec: <spec section>`, which `references/history.md` (Task 4) reads.
 - Task 7's treatment arms read both files at this task's last commit, `T5`.
 
-- [ ] **Step 1: Write the failing check**
+- [x] **Step 1: Write the failing check**
 
 Run: `grep -c 'contradicts spec: <spec section>' skills/subagent-driven-development/references/final-review.md skills/executing-plans/references/final-review.md`
 Expected: `0` for each file.
 
-- [ ] **Step 2: Edit both gate paragraphs**
+- [x] **Step 2: Edit both gate paragraphs**
 
 In each file, replace `each with what it costs if wrong —` with
 ``each with what it costs if wrong, and tag each one that contradicts spec text `contradicts spec: <spec section>` —``.
 Rewrap the paragraph at its current width. Change nothing else.
 
-- [ ] **Step 3: Run the check**
+- [x] **Step 3: Run the check**
 
 Run: Step 1's command. Expected: `1` for each file.
 Run: `uv run --with pyyaml python build/check_conformance.py` and `uv run python build/check_reviewer_block.py`.
 Expected: both pass.
 
-- [ ] **Step 4: Commit and record `T5`**
+- [x] **Step 4: Commit and record `T5`**
 
 ```bash
 git add skills/subagent-driven-development/references/final-review.md skills/executing-plans/references/final-review.md
@@ -674,12 +686,14 @@ Run: `git rev-parse --short HEAD`. Note it as `T5`. Task 7 writes it into the re
 **Interfaces:**
 - Consumes: Task 3's `deferred` subcommand and Task 4's `## /deferred entries`.
 
-- [ ] **Step 1: Write the failing check**
+- [x] **Step 1: Write the failing check**
 
 Run: `grep -c 'history_entry.py deferred' commands/deferred.md; grep -c 'history_entry.py' NOTICE; grep -c 'specs/history.md' README.md`
 Expected: `0`, `0`, `0`.
 
-- [ ] **Step 2: Edit `commands/deferred.md` step 5**
+- [x] **Step 2: Edit `commands/deferred.md` step 5**
+
+> Deviation: the command passes `--date <YYYY-MM-DD>`, the date on the pass's ticks, here and in `references/history.md` (final review), because the default date is the local today and a pass that crosses midnight would print nothing.
 
 Before the paragraph that starts `End the pass by running the writing-plans skill's`, add, exactly, at the same
 indent:
@@ -694,12 +708,12 @@ indent:
 In the archive paragraph, replace `Commit both files with the pass's other edits.` with
 ``Commit both files, and `specs/history.md` when the pass wrote an entry, with the pass's other edits.``
 
-- [ ] **Step 3: Regenerate the adapters**
+- [x] **Step 3: Regenerate the adapters**
 
 Run: `uv run --with pyyaml python build/sync_runtime_assets.py`, then the same with `--check`.
 Expected: `runtimes/gemini/commands/deferred.toml` changes; `--check` exits 0.
 
-- [ ] **Step 4: Add the NOTICE paragraph**
+- [x] **Step 4: Add the NOTICE paragraph**
 
 Plain technical English, at the change list's indent, exactly:
 
@@ -718,7 +732,7 @@ Plain technical English, at the change list's indent, exactly:
     writes a history entry for a pass that closes items with a quick fix.
 ```
 
-- [ ] **Step 5: Add the README bullet**
+- [x] **Step 5: Add the README bullet**
 
 After the README line that ends ``appended to `specs/deferred_items.md` ``, add this line, exactly:
 
@@ -726,7 +740,7 @@ After the README line that ends ``appended to `specs/deferred_items.md` ``, add 
 >   - a short history of what each plan built and where it differed from its design, appended to `specs/history.md`
 ```
 
-- [ ] **Step 6: Run the checks**
+- [x] **Step 6: Run the checks**
 
 Run: Step 1's command. Expected: `1`, `1`, `1`.
 Run: `uv run python build/check_provenance.py`,
@@ -734,7 +748,7 @@ Run: `uv run python build/check_provenance.py`,
 `cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py`.
 Expected: all pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add commands/deferred.md runtimes NOTICE README.md
@@ -750,21 +764,23 @@ git commit -m "feat(deferred): write a history entry for quick-fix passes"
 **Interfaces:**
 - Consumes: Task 1's kit and record; `T5` (Task 5); Tasks 2–3's script.
 
-- [ ] **Step 1: Build the treatment prompts and run the treatment arms**
+- [x] **Step 1: Build the treatment prompts and run the treatment arms**
 
 Write `T5` into the record's `## Arms` section.
 Run: `uv run python specs/red-baseline-development-history/kit/build_prompts.py <T5> /tmp/plan80-work/treatment`,
 then `run_reps.sh` for each case into `specs/red-baseline-development-history/treatment/<case>`, reps 1–5, as in
 Task 1 Step 8. Check the spend stop before each batch.
 
-- [ ] **Step 2: Read and record the verdicts**
+- [x] **Step 2: Read and record the verdicts**
+
+> Deviation: `gate-tag` passed 2 of 5 at `T5`, so the one wording round (`fd4749b`) added two sentences to both gate paragraphs: a tagged ruling stays a decision that the history entry records, and a revert becomes a deferred item. `treatment2` passed 5 of 5.
 
 As Task 1 Step 9, under `## Treatment`, with the bar result per case.
 Expected: each case 5/5. A case below its bar gets one wording round in its text under test, in its own commit, and
 5 new reps under `treatment2/<case>` at that commit. A `gate-tag` round edits both executor files the same way. Still below: record it and put it to your human partner in the
 completion gate's batch. No second round.
 
-- [ ] **Step 3: Run `draft` on plan 79**
+- [x] **Step 3: Run `draft` on plan 79**
 
 Run: `uv run skills/writing-plans/scripts/history_entry.py draft specs/plans/completed/79-derive-roadmap-resume-and-route-tests.md --date 2026-11-07`
 Expected, at `BASE80`'s backlog: exit 0; second line
@@ -774,20 +790,20 @@ line; 7 lines that start `- Deviation (Task`; no `- Decision` line;
 lines, one from `40-handoff-briefs` and three from `78-derive-roadmap-new-project-entry`. If a `/deferred` pass has
 archived some of those items since `BASE80`, record the new counts with the reason.
 
-- [ ] **Step 4: Run `draft` on plan 74**
+- [x] **Step 4: Run `draft` on plan 74**
 
 Run: `uv run skills/writing-plans/scripts/history_entry.py draft specs/plans/completed/74-backlog-protocol.md --spec specs/completed/backlog-protocol.md --spec-status retired --date 2026-10-31`
 Expected: exit 0, and exactly one decision line, which starts `- Decision D18 (spec amendment): approve Task 0's
 amendment.`
 
-- [ ] **Step 5: Run `deferred` on a real pass date**
+- [x] **Step 5: Run `deferred` on a real pass date**
 
 Run: `uv run skills/writing-plans/scripts/history_entry.py deferred --date 2026-10-05`
 Expected: exit 0, a `## /deferred — 2026-10-05` heading and 47 item lines (the live file's count at `BASE80`; one
 more 2026-10-05 close is in the archive, which the script does not read). Record both real-data results in the
 record's `## Real-data check`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/red-baseline-development-history specs/red-baseline-development-history.md
