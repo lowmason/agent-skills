@@ -76,7 +76,8 @@ resolve-before-defer gate → plan markup → deferred items → retire the plan
 and (conditionally) its spec.
 
 In the gate's batched questions, list every `Ruling:` line in the ledger
-first, all of them, in the order made, each with what it costs if wrong —
+first, all of them, in the order made, each with what it costs if wrong, and
+tag each one that contradicts spec text `contradicts spec: <spec section>` —
 decisions already taken, shown so your partner sees them, not questions —
 then fold the final review's Declined to judge lines, each for your human
 partner to rule on, into the same batch, so your human partner gets at most
