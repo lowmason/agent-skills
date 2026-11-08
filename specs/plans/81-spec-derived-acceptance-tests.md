@@ -27,7 +27,8 @@ Verification section, "Probe first", only. The build plan comes after the owner 
   `agents/`, `commands/`, `hooks/`, `rules/` or `runtimes/`, and it writes no build plan.
 - **One execution at a time.** No execution of this plan starts while another plan executes in this repository
   (owner ruling D10, `specs/plans/completed/73-reviewer-and-planning-contract.md:59`). This rule forbids overlap
-  only. It does not order this plan and plan 80: the owner decides which executes first.
+  only. The owner ordered the two plans (D2): this plan starts only after plan 80's execution finishes. Before
+  Task 1, ask the owner to confirm that plan 80's execution has finished.
 - **Plan 80.** Plan 80 (branch `claude/zealous-bell-ltw3ta`, approved 2026-11-08) edits writing-plans' protocol steps
   3 and 5 and the gate paragraph of both executors' `references/final-review.md`. It does not change the Self-Review
   checklist (`skills/writing-plans/SKILL.md:208`), which the control arm uses. The control prompt reads writing-plans
@@ -101,6 +102,7 @@ Verification section, "Probe first", only. The build plan comes after the owner 
 ## Decisions
 
 - **D1** (owner, plan review, 2026-11-08): approved the planner defaults DF1–DF11 as written ("Approve defaults"). DF8's cost stop is the one stop this plan adds. Applied in: Global Constraints, Tasks 1–5.
+- **D2** (owner, plan review, 2026-11-08): execute inline (executing-plans), after plan 80's execution on the owner's machine finishes. Applied in: Global Constraints.
 
 ## Planner defaults (approved, D1)
 
