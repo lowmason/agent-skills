@@ -1,0 +1,1524 @@
+You are the adjudicator. Two readings of one spec gave two sets of tests: the planner's tests, from the plan, and the acceptance tests, which a second reader wrote from the spec alone. For each task below, compare the two sets against the spec, and rule on each case where they conflict: where the two sets assert different values or behavior for the same requirement, or where the second reader flagged a plan value.
+
+Your rule:
+
+1. Each case gets one ruling: the plan or code is wrong (verdict "plan-wrong"), the acceptance test is wrong (verdict "test-wrong"), or the case is unclear (verdict "unclear").
+2. Every ruling except "unclear" quotes the binding text that decides it, word for word. No deciding text means "unclear".
+3. For what the code must do, the binding text is the spec. For names, paths and types, the binding text is the task's Interfaces block, when the behavior under test does not change. So an acceptance test that fails only on an import path or a parameter name is wrong: rule "test-wrong", and quote the Interfaces block.
+4. You never edit a file. You have no tools. You only rule.
+5. Do not rule on a case where the two sets agree, or where only one set tests a requirement and the other says nothing that conflicts.
+
+<spec>
+# Test-suite registry and runner — Design Spec
+
+**Status:** Design approved in brainstorming on 2026-10-18. Next step: an implementation plan from the
+writing-plans skill (`entry_check.py` reported plan id 54 as next free on 2026-10-18).
+
+## What this builds
+
+A registry of the repo's directory-scoped pytest suites, a runner that reads it, and a commit lint that
+keeps it complete:
+
+- `build/suites.toml` holds one entry per suite: its directory, its `--with` deps, the extra deps that
+  unlock its skips, its interpreters, and its notes.
+- `build/run_suites.py` (stdlib only) lists the suites, runs one or more of them, runs all of them, and
+  checks the registry.
+- `run_suites.py --check` becomes the ninth commit lint. It fails when a directory that holds tests is not
+  registered.
+
+The root `CLAUDE.md` then replaces its per-suite commands with a short block that points at the runner.
+
+## Why
+
+- **The 200-line limit.** The `claude-md-size` check (a commit lint, through `build/check_conformance.py`)
+  fails at 200 lines. `CLAUDE.md` had 199 on `main` at `456e3fb`. Its Commands block spends lines 66–125,
+  60 lines, on one `cd <dir> && uv run … python -m pytest -q` command and comment per suite. Each new suite
+  costs two or three more lines.
+- **Three plans competed for the last lines on 2026-10-18.** Plan 50 (the superpowers upstream fixes,
+  lowmason/agent-skills#56) took the file from 195 to 199. Plan 52 (the write-with-asd-ste100 skill, not
+  merged) needs two more lines. Its open question Q4 asked where they come from: (a) fold seven suites under
+  one comment, (b) record a size deviation, or (c) move the per-suite commands out of the root file first.
+  This spec is option (c).
+- **Plan 38 fixed the same problem once.** In plan 38, Task 2 condensed `CLAUDE.md` from 224 lines to 170
+  and kept every command in place. The file then grew back to 199 by 2026-10-18. A registry removes the
+  per-suite growth.
+- **Compound commands.** Worktree-isolated sessions and their subagents have refused compound shell such as
+  `cd X && Y` (seen on 2026-10-12). A runner gives each suite a single simple command.
+
+## Decisions taken in brainstorming
+
+The owner took these decisions on 2026-10-18. Each records the option that the owner chose.
+
+1. **The coverage guard is a ninth commit lint:** "`run_suites.py --check` joins build/run_commit_lints.sh,
+   so the pre-commit hook and CI run it."
+2. **Plan 52's Q4 is (c):** "This work lands whole, registry and CLAUDE.md shrink, ahead of plan 52's Task 6.
+   Task 6 then adds one build/suites.toml entry instead of editing Commands. Plan 52's planning session
+   amends its plan to match and records Q4 as (c)."
+3. **Approach A:** "build/suites.toml (data) + build/run_suites.py (stdlib, tomllib). Matches
+   conformance.toml and manifest.toml. One central file, sorted by name." Rejected: a Python list inside the
+   runner (every suite change becomes a code edit), and one manifest per suite directory (`install.py`
+   copies skill directories, so the manifests would ship with installed skills). An `@`-imported document
+   was ruled out before the vote: the guide says imported files load at launch too, so it only moves lines.
+4. **Design section 1** (the registry keys and the runner's behaviour) was approved as presented. It is
+   R1–R3 below.
+5. **Design section 2** (the guard, the file edits, the tests and the couplings) was approved as presented.
+   It is R4–R7 below.
+
+## Design
+
+### R1 — Scope
+
+R1.1 The registry holds every **directory suite**: a directory where pytest runs as a whole, with no
+selection argument. On `main` at `456e3fb` there are 18: the 17 in `CLAUDE.md` lines 66–125, and
+`build/cc_guide`, whose command is line 145.
+
+R1.2 These commands **stay literal in `CLAUDE.md`**. They are selections or tools, not directory suites, and
+their comments say when to run them:
+- `test_runtime_support.py` (lines 63–64), `test_commit_lints.py`, the `-k declared_dependencies` and
+  `-k test_real_skill` lints, `test_check_jax_examples.py`, and the "Single test" example;
+- the commit lints, the snippet tiers, the JAX CPU examples, the smoke test, the two `build.py` rebuilds,
+  `verify_citations.py`, `extract_structure.py`, and `cli.py lint` and `check`.
+
+R1.3 `build/run_commit_lints.sh` keeps its literal commands. It does not call the runner, except for the new
+`--check` lint (R4).
+
+### R2 — The registry: `build/suites.toml`
+
+R2.1 One `[[suite]]` table per directory suite, sorted by `name`. A header comment states the keys, the
+sort order, and that the ninth commit lint checks the file.
+
+R2.2 Keys:
+
+| Key | Type | Required | Meaning |
+|---|---|---|---|
+| `name` | string | yes | The name that the runner takes. A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`. |
+| `dir` | string | yes | The repo-relative directory that pytest runs from. |
+| `with` | list of strings | yes | The default `--with` deps, in the order the current command gives them. It includes `pytest`. |
+| `extras` | list of strings | no | The deps that unlock skips. Only `--extras` adds them. |
+| `pythons` | list of strings | no | The interpreters, one run each, in order. Default `['3.13']`. |
+| `notes` | list of strings | no | What the suite covers or needs: opt-in environment variables, expected warnings, run times, why some tests skip or fail. |
+
+R2.3 The entries carry the text of today's commands and comments. Every command, dependency and note
+survives; the only change is the form. The inventory, from `CLAUDE.md` at `456e3fb`:
+
+| `name` | `dir` | `with` (after `pytest`) | `extras` | `pythons` |
+|---|---|---|---|---|
+| `bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default |
+| `brainstorming` | `skills/brainstorming/scripts` | — | — | default |
+| `build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default |
+| `cc-guide` | `build/cc_guide` | — | — | default |
+| `classification-codes` | `skills/classification-codes/scripts` | polars | — | default |
+| `describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default |
+| `design-architecture` | `skills/design-architecture/scripts` | — | — | default |
+| `explore-data` | `skills/explore-data/scripts` | polars | — | default |
+| `geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default |
+| `hooks` | `hooks` | — | — | 3.13, /usr/bin/python3 |
+| `llm-wiki` | `skills/llm-wiki/scripts` | — | — | default |
+| `recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default |
+| `recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default |
+| `subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default |
+| `systematic-debugging` | `skills/systematic-debugging` | — | — | default |
+| `track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default |
+| `tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default |
+| `writing-plans` | `skills/writing-plans/scripts` | — | — | default |
+
+The notes carry the rest of each comment. Examples: `build`'s missing `build/.scratch/` in a fresh clone or
+worktree; `bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep and its expected arviz warnings; `llm-wiki`'s
+`@needs_pilot` tests and `$LLM_WIKI_ROOT`; `brainstorming`'s node skip; `tune-hyperparameters`'
+"`--with sklearn` fails"; `track-model-experiments`' run time; the guard's 3.9 floor, its launchd-PATH skips
+and its Gate B probe for `hooks`.
+
+### R3 — The runner: `build/run_suites.py`
+
+R3.1 Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13. Invoked as
+`uv run --python 3.13 python build/run_suites.py …` from any directory. It finds the repo root from its
+own path, never from the working directory.
+
+R3.2 **One run** is one interpreter of one suite. Its command is
+`uv run --python <python> --with <dep> … python -m pytest -q [<args>]`, run with the suite's `dir` as its
+working directory. Its shell form is `cd <dir> && <command>`, with shell quoting where a word needs it. With
+default options, the shell form equals the suite's current `CLAUDE.md` command, character for character.
+For `hooks`, whose line chains two runs as `cd hooks && A && B`, the two shell forms are `cd hooks && A`
+and `cd hooks && B`.
+
+R3.3 **`--list [NAME …]`** prints, for each named suite (default: all): its name and directory, the shell
+form of each run, its extras, and its notes. `--extras` and the `--` arguments apply here too, so `--list`
+prints the exact command that a run would use.
+
+R3.4 **`NAME [NAME …]`** runs the named suites, in the order given, one run per interpreter in `pythons`.
+Each run starts with a `== <name> (<python>)` header, and the suite's notes follow its first run's header.
+Then pytest's output streams. A failed run does not stop the next one.
+
+R3.5 **`--extras`** adds each suite's `extras` after its `with` deps. Arguments after **`--`** go to pytest
+(a test node ID, `-k`, `-s`, `-rs`) in every run.
+
+R3.6 **`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`. Today that is
+`cc-guide`: `cd build && pytest` collects `build/cc_guide` already. `--all` prints one line for each suite
+that it skips. A suite named on the command line always runs.
+
+R3.7 **Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected,
+counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation. The
+last line names the failed runs, or says that every run passed. A run whose `uv` cannot start counts as
+failed.
+
+R3.8 The runner passes its environment to every run unchanged. `CALIBRATION_SWEEP=1 uv run --python 3.13
+python build/run_suites.py bayesian-workflow -- -s` therefore runs the sweep.
+
+R3.9 Validation fails closed. An unknown key, a missing required key, a wrong type, a duplicate name or
+directory, or a `with` list without `pytest` stops `--list`, a named run and `--all` with exit 2. `--check`
+reports the same failures as findings (R4.3). A misspelled key can therefore never run a suite without its
+deps.
+
+### R4 — The guard: `run_suites.py --check`
+
+R4.1 `--check` reports two kinds of findings:
+- **registry:** R3.9's validation, plus a registered `dir` that does not exist or holds no pytest file;
+- **coverage:** a directory that holds a pytest file (`test_*.py` or `*_test.py`, pytest's default
+  patterns) and does not lie inside any registered `dir`.
+
+R4.2 The file list is `git ls-files --cached --others --exclude-standard`, run at the repo root. Ignored
+trees, `.claude/worktrees/` and `build/.scratch/` among them, drop out. Untracked new suites count, as the
+hook's other lints read untracked drafts too. If git fails, `--check` fails.
+
+R4.3 Output: `suite registry ok` and exit 0, or one line per finding and exit 1.
+
+R4.4 `build/run_commit_lints.sh` runs it as the ninth lint, named `suite_registry`:
+`run suite_registry uv run --python 3.13 python build/run_suites.py --check`. Its header says "nine".
+
+### R5 — `CLAUDE.md` and the other edits
+
+R5.1 `CLAUDE.md`, from `main` at `456e3fb`:
+
+| Lines | Change |
+|---|---|
+| 60 | Rewrite the intro paragraph. Drop "There is no root test runner" and the sentence that comments name the skip-unlocking deps. Keep the uv and Python 3.13 rule, the directory scope, and the `test_build.py` basename-collision reason. Name `build/suites.toml` and `build/run_suites.py`, and say that the runner prints a suite's notes before it runs. One line. |
+| 66–125 | Replace with one block: a comment, then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands. |
+| 127–132 | The commit-lint comment names the suite-registry check and says "nine". Same number of lines. Line 133 is not touched (plan 53's Task 7 edits it). |
+| 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `run_suites.py cc-guide` instead of "its suite". |
+
+The file ends at about 145 lines. The new text states no count of suites or tests (the
+`claude-md-count-claims` check).
+
+R5.2 The deletion of lines 66–125 is bounded by two lines that no other plan edits: the
+`# Full build-directory tests` comment and the `cd hooks && …` command. Whatever lies between them goes, so
+the edit works in either landing order with plan 52 (R7.1).
+
+R5.3 `build/CLAUDE.md`: "the eight commit lints" becomes "the nine commit lints", and one sentence names
+`suites.toml` and `run_suites.py` and says that `--check` is a commit lint.
+
+R5.4 `build/test_check_conformance.py`: `test_claude_md_import_resolves_passes_on_the_repo` asserts
+`'@needs_pilot' in text` as its positive control, and that note moves to the registry. The control becomes
+a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp. A naive scan would flag the `@` in it,
+and the stamp keeps its form when its version changes.
+
+R5.5 No change to `AGENTS.md`, `GEMINI.md`, `.github/workflows/lints.yml`, `install.py` or `NOTICE`. The new
+files are the owner's original tooling. The register's deviation `claude-md-serves-codex-gemini` still holds
+as written: a condensed Commands block stays in the root file, and the registry is a plain file that every
+runtime can read.
+
+### R6 — Tests
+
+R6.1 `build/test_run_suites.py`, stdlib and pytest only, which the build suite collects. It covers:
+- validation: each R3.9 failure, with exit 2;
+- commands: the default argv and shell form, two `pythons` runs, `--extras`, `--` arguments, quoting;
+- `--list` output for a fixture registry;
+- the `--all` nesting rule, and that a named nested suite runs;
+- running, through an injected run function so the tests start no real `uv`: every run happens after a
+  failure; exit 0, 1 and 2; exit 5 counts as failed; the notes print before the first run;
+- `--check` on throwaway git repos: an unregistered test directory, a missing registered directory, a
+  registered directory without tests, an ignored directory (no finding), an untracked test directory
+  (a finding);
+- the real registry: `--check` passes on the repo.
+
+R6.2 `build/test_commit_lints.py`: `suite_registry` joins `CHECKS`, and `test_unregistered_suite_is_refused`
+commits a new `skills/<name>/scripts/test_new.py` in a clone and asserts that `suite_registry` is the only
+failed lint.
+
+R6.3 Write each test before its code and see it fail first (red, then green).
+
+### R7 — Couplings with other plans
+
+R7.1 **Plan 52 (write-with-asd-ste100).** Under decision 2, plan 52's Task 6 drops its
+`CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits and adds one `[[suite]]` entry for
+`skills/write-with-asd-ste100/scripts` instead. Its expectations of 199 and 197 lines (Task 1, DF19, Q4,
+Coupling (e)) change with it. Its `CLAUDE.md:sources` and `CLAUDE.md:bullet` edits are outside the Commands
+block and still apply. A note in the session group's shared notes folder gives the exact entry. Until plan 52
+adds the entry, the ninth lint refuses its new suite directory. If plan 52 lands first after all, R5.2's
+deletion still works, and this plan registers that suite itself.
+
+R7.2 **Plan 53 (agent-skills portability).** None of the lines that R5.1 deletes carries one of its edit
+anchors. Its Task 7 edits line 133, which stays. Its own suite commands are written out in full in the
+plan, so they work without `CLAUDE.md`.
+
+R7.3 **Plan 51 (drift automation, rebaseline pin).** It edits one sentence of `build/CLAUDE.md`'s
+`cc_guide/` paragraph. R5.3 edits the `run_commit_lints.sh` paragraph and adds a sentence. If an edit block
+does not match, merge by hand.
+
+## Testing
+
+- **R6's tests** run red first, then green.
+- **The Stage 2 audit** (one time, a scratch script that is never committed, as in plan 38's Task 2). Run it
+  before the `CLAUDE.md` deletion. It extracts every `cd <dir> && uv run …` command from lines 66–125 and
+  145, splitting the hooks `&&` chain into one command per run. It asserts that the set equals the set of
+  default shell forms that `--list` prints: nothing is missing on either side. It also checks each comment's
+  skip-unlocking deps against that suite's `extras`.
+- **Behaviour.** Run `hooks`, `build` and `bayesian-workflow` once directly and once through the runner, in
+  the same checkout. Their pytest summary lines match. Then run `--all` once, and record each run's result
+  beside the direct result.
+- **Gates.** `uv run --python 3.13 python build/run_suites.py --check` prints `suite registry ok`. The
+  build suite passes (where the missing `build/.scratch/` lets it). `bash build/run_commit_lints.sh` prints
+  `commit lints passed`.
+
+## Done when
+
+1. `build/suites.toml` registers every directory suite (R2.3) and `--check` passes.
+2. `build/run_suites.py` and its tests are committed, and the ninth lint runs in `run_commit_lints.sh`.
+3. The Stage 2 audit passes, and the behaviour runs match.
+4. `CLAUDE.md` has no directory-suite command left (R5.1) and stays under 200 lines.
+5. `bash build/run_commit_lints.sh` prints `commit lints passed`.
+6. The shared note for plan 52 (R7.1) is written.
+
+## Consequences to know
+
+- Agents no longer see each suite's notes at session start. They see them in `--list`, and the runner
+  prints them before it runs a suite.
+- No commit can add a test directory without a registry entry, plan 52's new suite included.
+- The commit hook runs one more fast, stdlib-only check.
+- Codex and Gemini reach the runner commands through `AGENTS.md` and `GEMINI.md`, as before.
+
+## Out of scope (deferred items)
+
+- CI running the suites (`--all` in `.github/workflows/lints.yml`). It would need node, a 3.9
+  `/usr/bin/python3` and `build/.scratch/`. Size: design. Revisit if: the owner wants suites in CI.
+- Parallel runs, per-suite timeouts and machine-readable output. Size: plan. Revisit if: `--all` gets slow
+  or a tool needs to parse its results.
+- Moving the lint, snippet, JAX, smoke, rebuild and citation commands into the runner. Size: design.
+  Revisit if: `CLAUDE.md` nears its limit again.
+</spec>
+
+<acceptance-preamble>
+class Recorder:
+    def __init__(self, codes=None):
+        self.calls = []
+        self.codes = codes or {}
+
+    def __call__(self, root, run):
+        self.calls.append(run.label)
+        print(f"RUN {run.label}", flush=True)
+        return self.codes.get(run.label, 0)
+
+def write_registry(root, text):
+    (root / "build").mkdir(parents=True, exist_ok=True)
+    (root / "build" / "suites.toml").write_text(text)
+
+def fixture_root(tmp_path, text=FIXTURE):
+    write_registry(tmp_path, text)
+    for d in ("build", "build/cc_guide", "hooks"):
+        (tmp_path / d).mkdir(parents=True, exist_ok=True)
+        (tmp_path / d / "test_x.py").write_text(TEST_BODY)
+    return tmp_path
+
+def call_main(argv, root, run_one=None):
+    try:
+        return rs.main(argv, root=root, run_one=run_one if run_one is not None else Recorder())
+    except SystemExit as exc:
+        return exc.code
+
+def by_name(text=FIXTURE):
+    return {s.name: s for s in rs.parse(tomllib.loads(text))}
+
+def last_line(captured):
+    lines = [l for l in (captured.err or captured.out).splitlines() if l.strip()]
+    return lines[-1] if lines else ""
+
+def make_repo(root, tracked=(), untracked=(), registry=None, gitignore=None):
+    root.mkdir(parents=True, exist_ok=True)
+    for f in tracked:
+        p = root / f
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(TEST_BODY if Path(f).suffix == ".py" else "x\n")
+    if registry is not None:
+        write_registry(root, registry)
+    if gitignore is not None:
+        (root / ".gitignore").write_text(gitignore)
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+    for f in untracked:
+        p = root / f
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(TEST_BODY)
+    return root
+
+def registry_text(*entries):
+    return "\n".join(
+        f'[[suite]]\nname = "{n}"\ndir = "{d}"\nwith = ["pytest"]\n' for n, d in entries
+    )
+
+def real_suites():
+    return {s.name: s for s in rs.parse(tomllib.loads((rs.REPO / rs.REGISTRY).read_text()))}
+
+def default_shells(dir_, deps, pythons):
+    withs = " ".join(f"--with {d}" for d in ["pytest", *deps])
+    return [f"cd {dir_} && uv run --python {py} {withs} python -m pytest -q" for py in pythons]
+
+
+# ---------------------------------------------------------------- Task 2
+
+@pytest.mark.parametrize("case", sorted(BAD_REGISTRIES))
+
+@pytest.mark.parametrize("case", ["unknown key", "with without pytest", "duplicate dir"])
+
+@pytest.mark.parametrize("argv", [["--list"], ["a"], ["--all"]])
+
+@pytest.mark.parametrize("case", sorted(BAD_REGISTRIES))
+
+@pytest.mark.parametrize("argv", [["nope"], ["build", "nope"], ["--bogus"]])
+
+def _fake_uv(bindir, code):
+    bindir.mkdir()
+    uv = bindir / "uv"
+    uv.write_text('#!/bin/sh\n{ pwd -P; printf "%s\\n" "${CALIBRATION_SWEEP-unset}"; '
+                  f'printf "%s\\n" "$*"; }} > "$UV_OUT"\nexit {code}\n')
+    uv.chmod(uv.stat().st_mode | stat.S_IEXEC)
+
+@pytest.mark.skipif(shutil.which("uv") is None, reason="needs uv")
+</acceptance-preamble>
+
+<task number="1" title="Pre-flight and the Q1 spec amendment">
+<interfaces>
+**Interfaces:**
+- Consumes: nothing.
+- Produces: the base facts that Tasks 5 and 7 check against, and a spec that names the suite `cc_guide`.
+</interfaces>
+<planner-tests>
+
+</planner-tests>
+<acceptance-tests>
+
+</acceptance-tests>
+<acceptance-flags>
+<flag><spec>A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`.</spec><plan>a spec that names the suite `cc_guide`</plan></flag>
+</acceptance-flags>
+</task>
+
+<task number="2" title="The registry model">
+<interfaces>
+**Interfaces:**
+- Consumes: nothing.
+- Produces, in `build/run_suites.py`:
+  - constants `REPO: Path` (the repo root), `REGISTRY = 'build/suites.toml'`, `DEFAULT_PYTHONS = ('3.13',)`, `TEST_FILE_PATTERNS`;
+  - `@dataclass(frozen=True) class Suite(name: str, dir: str, deps: tuple[str, ...], extras=(), pythons=DEFAULT_PYTHONS, notes=())`;
+  - `@dataclass(frozen=True) class Run(suite: Suite, python: str, argv: tuple[str, ...])`, with `.label -> str` (`'<name> (<python>)'`) and `.shell() -> str`;
+  - `validate(data: dict) -> list[str]`, `parse(data: dict) -> list[Suite]`, `runs(suite, extras=False, pytest_args=()) -> list[Run]`, `container(suite, suites) -> Suite | None`.
+- In `build/test_run_suites.py`: `FIXTURE` (a three-suite registry text), `ONE`, `problems(text)`, `fixture_suites()`. Tasks 3–5 append to this file.
+</interfaces>
+<planner-tests>
+```python
+'''Tests for run_suites.py, the runner and commit lint for build/suites.toml.
+
+The run tests inject a fake run function, so no test starts uv; the --check tests
+build throwaway git repositories.
+'''
+import tomllib
+
+import pytest
+
+import run_suites as rs
+
+FIXTURE = '''\
+[[suite]]
+name = 'alpha'
+dir = 'skills/alpha/scripts'
+with = ['pytest', 'polars']
+extras = ['arviz>=1.0']
+notes = ['Reads a pilot wiki, else skips.']
+
+[[suite]]
+name = 'outer'
+dir = 'tools'
+with = ['pytest']
+
+[[suite]]
+name = 'tools-inner'
+dir = 'tools/inner'
+with = ['pytest']
+pythons = ['3.13', '/usr/bin/python3']
+'''
+ONE = "[[suite]]\nname = 'a'\ndir = 'x'\n"  # a suite table without its `with` line
+
+
+def problems(text):
+    return rs.validate(tomllib.loads(text))
+
+
+def fixture_suites():
+    return rs.parse(tomllib.loads(FIXTURE))
+
+
+# --- the registry: validation, runs, nesting ---
+
+def test_the_fixture_registry_is_valid():
+    assert problems(FIXTURE) == []
+
+
+@pytest.mark.parametrize('text, problem', [
+    (ONE + "with = ['pytest']\nwtih = ['polars']\n", "suite 1 (a): unknown key 'wtih'"),
+    ("[[suite]]\nname = 'a'\nwith = ['pytest']\n", "suite 1 (a): missing key 'dir'"),
+    (ONE + "with = 'pytest'\n", "suite 1 (a): 'with' must be a list of non-empty strings"),
+    (ONE + "with = ['pytest', '']\n", "suite 1 (a): 'with' must be a list of non-empty strings"),
+    (ONE + "with = ['polars']\n", "suite 1 (a): 'with' must include 'pytest'"),
+    (ONE + "with = ['pytest']\npythons = []\n", "suite 1 (a): 'pythons' must not be empty"),
+    (ONE + "with = ['pytest']\nnotes = 'one note'\n", "suite 1 (a): 'notes' must be a list of non-empty strings"),
+    ("[[suite]]\nname = ''\ndir = 'x'\nwith = ['pytest']\n", "suite 1: 'name' must be a non-empty string"),
+    ("[[suite]]\nname = 'a'\ndir = '../x'\nwith = ['pytest']\n",
+     "suite 1 (a): 'dir' must be a normalised path below the repo root"),
+    ("[[suite]]\nname = 'a'\ndir = 'x/'\nwith = ['pytest']\n",
+     "suite 1 (a): 'dir' must be a normalised path below the repo root"),
+    ("[[suite]]\nname = 'a'\ndir = '.'\nwith = ['pytest']\n",
+     "suite 1 (a): 'dir' must be a normalised path below the repo root"),
+    (ONE + "with = ['pytest']\n" + ONE.replace('x', 'y') + "with = ['pytest']\n", 'suite 2 (a): duplicate name'),
+    (ONE + "with = ['pytest']\n" + ONE.replace("'a'", "'b'") + "with = ['pytest']\n",
+     "suite 2 (b): duplicate dir 'x'"),
+    ("title = 'suites'\n" + ONE + "with = ['pytest']\n", "unknown top-level key 'title'"),
+    ('', 'no [[suite]] tables'),
+])
+def test_validate_refuses(text, problem):
+    assert problem in problems(text)
+
+
+def test_a_default_run_has_the_form_claude_md_used():
+    [run] = rs.runs(fixture_suites()[0])
+    assert run.label == 'alpha (3.13)'
+    assert run.argv == ('uv', 'run', '--python', '3.13', '--with', 'pytest', '--with', 'polars',
+                        'python', '-m', 'pytest', '-q')
+    assert run.shell() == ('cd skills/alpha/scripts && uv run --python 3.13 --with pytest '
+                           '--with polars python -m pytest -q')
+
+
+def test_extras_and_pytest_args_follow_the_deps_and_are_quoted():
+    [run] = rs.runs(fixture_suites()[0], extras=True, pytest_args=('-k', 'a and b'))
+    assert run.shell() == ("cd skills/alpha/scripts && uv run --python 3.13 --with pytest "
+                           "--with polars --with 'arviz>=1.0' python -m pytest -q -k 'a and b'")
+
+
+def test_each_python_gets_its_own_run_in_order():
+    first, second = rs.runs(fixture_suites()[2])
+    assert (first.python, second.python) == ('3.13', '/usr/bin/python3')
+    assert second.shell() == 'cd tools/inner && uv run --python /usr/bin/python3 --with pytest python -m pytest -q'
+
+
+def test_container_is_the_suite_whose_directory_holds_this_one():
+    alpha, outer, inner = suites = fixture_suites()
+    assert rs.container(inner, suites) == outer
+    assert rs.container(outer, suites) is None
+    assert rs.container(alpha, suites) is None
+
+
+def test_container_compares_path_parts_not_string_prefixes():
+    build = rs.Suite('build', 'build', ('pytest',))
+    other = rs.Suite('other', 'build_extra', ('pytest',))
+    assert rs.container(other, [build, other]) is None
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13."
+# task: 2
+
+# spec: "It finds the repo root from its own path, never from the working directory."
+# task: 2
+
+# spec: "An unknown key, a missing required key, a wrong type, a duplicate name or directory, or a `with` list without `pytest` stops `--list`, a named run and `--all` with exit 2."
+# task: 2
+
+# spec: "| `pythons` | list of strings | no | The interpreters, one run each, in order. Default `['3.13']`. |"
+# task: 2
+
+# spec: "Its command is `uv run --python <python> --with <dep> … python -m pytest -q [<args>]`, run with the suite's `dir` as its working directory."
+# task: 2
+
+# spec: "For `hooks`, whose line chains two runs as `cd hooks && A && B`, the two shell forms are `cd hooks && A` and `cd hooks && B`."
+# task: 2
+
+# spec: "**`--extras`** adds each suite's `extras` after its `with` deps."
+# task: 2
+
+# spec: "Arguments after **`--`** go to pytest (a test node ID, `-k`, `-s`, `-rs`) in every run."
+# task: 2
+
+# spec: "**`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`."
+# task: 2
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="3" title="The coverage check">
+<interfaces>
+**Interfaces:**
+- Consumes: `validate`, `parse`, `REGISTRY`, `TEST_FILE_PATTERNS` (Task 2).
+- Produces: `git_env() -> dict[str, str]`, `pytest_dirs(root: Path) -> set[str] | None`, and `check(root: Path, data: dict) -> list[str]`, which returns finished finding lines. Each registry problem starts `build/suites.toml: `; an uncovered directory reads `<dir>: holds pytest files, but no suite in build/suites.toml contains it`. The tests gain `git_repo(root, files)`, `findings(root)` and `COVERED`.
+</interfaces>
+<planner-tests>
+```python
+# --- --check: the registry and its coverage ---
+
+COVERED = {
+    'build/suites.toml': FIXTURE,
+    'skills/alpha/scripts/test_a.py': '',
+    'tools/test_t.py': '',
+    'tools/inner/test_i.py': '',
+}
+
+
+def git_repo(root, files):
+    '''Write files under root and git-init it, so `git ls-files --others` lists them.'''
+    for rel, text in files.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    subprocess.run(['git', 'init', '-q'], cwd=root, env=rs.git_env(), check=True)
+    return root
+
+
+def findings(root):
+    return rs.check(root, tomllib.loads((root / 'build' / 'suites.toml').read_text()))
+
+
+def test_check_passes_when_every_test_directory_is_registered(tmp_path):
+    assert findings(git_repo(tmp_path, COVERED)) == []
+
+
+def test_check_flags_a_test_directory_outside_every_suite(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'skills/beta/scripts/test_b.py': ''})
+    assert findings(root) == [
+        'skills/beta/scripts: holds pytest files, but no suite in build/suites.toml contains it']
+
+
+def test_check_knows_both_pytest_file_patterns(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'misc/smoke_test.py': '', 'misc/helper.py': '',
+                               'docs/test_notes.md': ''})
+    assert findings(root) == ['misc: holds pytest files, but no suite in build/suites.toml contains it']
+
+
+def test_check_flags_a_registered_directory_that_is_missing(tmp_path):
+    files = {rel: text for rel, text in COVERED.items() if not rel.startswith('skills/alpha/')}
+    assert findings(git_repo(tmp_path, files)) == [
+        'build/suites.toml: alpha: skills/alpha/scripts is not a directory']
+
+
+def test_check_flags_a_registered_directory_without_tests(tmp_path):
+    files = {rel: text for rel, text in COVERED.items() if not rel.startswith('skills/alpha/')}
+    root = git_repo(tmp_path, {**files, 'skills/alpha/scripts/tool.py': ''})
+    assert findings(root) == ['build/suites.toml: alpha: skills/alpha/scripts holds no pytest file']
+
+
+def test_check_ignores_gitignored_trees(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, '.gitignore': 'wt/\n', 'wt/skills/beta/test_b.py': ''})
+    assert findings(root) == []
+
+
+def test_check_reports_registry_problems_alone(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'build/suites.toml': FIXTURE.replace('with', 'wtih', 1),
+                               'skills/beta/scripts/test_b.py': ''})
+    assert findings(root) == ["build/suites.toml: suite 1 (alpha): unknown key 'wtih'",
+                              "build/suites.toml: suite 1 (alpha): missing key 'with'"]
+
+
+def test_check_flags_suites_out_of_name_order(tmp_path):
+    swapped = FIXTURE.replace("name = 'alpha'", "name = 'zulu'")
+    root = git_repo(tmp_path, {**COVERED, 'build/suites.toml': swapped})
+    assert findings(root) == ["build/suites.toml: suites are not sorted by name: 'outer' comes after 'zulu'"]
+
+
+def test_check_fails_closed_outside_a_git_repository(tmp_path):
+    (tmp_path / 'build').mkdir()
+    (tmp_path / 'build' / 'suites.toml').write_text(FIXTURE)
+    assert findings(tmp_path) == ['build/suites.toml: git ls-files failed, so the test directories are unknown']
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "**coverage:** a directory that holds a pytest file (`test_*.py` or `*_test.py`, pytest's default patterns) and does not lie inside any registered `dir`."
+# task: 3
+
+# spec: "**registry:** R3.9's validation, plus a registered `dir` that does not exist or holds no pytest file;"
+# task: 3
+
+# spec: "`--check` reports the same failures as findings (R4.3)."
+# task: 3
+
+# spec: "Ignored trees, `.claude/worktrees/` and `build/.scratch/` among them, drop out."
+# task: 3
+
+# spec: "Untracked new suites count, as the hook's other lints read untracked drafts too."
+# task: 3
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="4" title="The command line">
+<interfaces>
+**Interfaces:**
+- Consumes: everything in Tasks 2 and 3.
+- Produces: `RunOne = Callable[[Path, Run], int]`, `run_subprocess(root, run) -> int`, `execute(root, suites, extras, pytest_args, run_one) -> int`, `list_suites(suites, extras, pytest_args) -> None`, `parse_args(argv) -> (Namespace, tuple[str, ...])`, and `main(argv=None, root=REPO, run_one=run_subprocess) -> int`. The output lines are `== <label>`, `note: <text>`, `suite runs passed` (stdout), `suite runs failed: <labels>` (stderr), `skip <name>: the <outer> suite collects <dir>`, and `suite registry ok`.
+</interfaces>
+<planner-tests>
+```python
+# --- the command line ---
+
+class FakeRuns:
+    '''Records each run's label and returns its exit code (0 unless given).'''
+
+    def __init__(self, codes=None):
+        self.codes = codes or {}
+        self.labels = []
+        self.argvs = []
+
+    def __call__(self, root, run):
+        self.labels.append(run.label)
+        self.argvs.append(run.argv)
+        return self.codes.get(run.label, 0)
+
+
+@pytest.fixture
+def repo(tmp_path):
+    (tmp_path / 'build').mkdir()
+    (tmp_path / 'build' / 'suites.toml').write_text(FIXTURE)
+    return tmp_path
+
+
+def test_a_named_suite_runs_once_per_python(repo, capsys):
+    fake = FakeRuns()
+    assert rs.main(['tools-inner'], root=repo, run_one=fake) == 0
+    assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)']
+    assert capsys.readouterr().out.splitlines()[-1] == 'suite runs passed'
+
+
+def test_a_failed_run_does_not_stop_the_next(repo, capsys):
+    fake = FakeRuns({'tools-inner (3.13)': 1})
+    assert rs.main(['tools-inner', 'alpha'], root=repo, run_one=fake) == 1
+    assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)', 'alpha (3.13)']
+    assert capsys.readouterr().err.splitlines()[-1] == 'suite runs failed: tools-inner (3.13)'
+
+
+def test_no_tests_collected_counts_as_a_failure(repo):
+    assert rs.main(['alpha'], root=repo, run_one=FakeRuns({'alpha (3.13)': 5})) == 1
+
+
+def test_the_notes_follow_the_first_header(repo, capsys):
+    rs.main(['alpha'], root=repo, run_one=FakeRuns())
+    assert capsys.readouterr().out.splitlines()[:2] == ['== alpha (3.13)', 'note: Reads a pilot wiki, else skips.']
+
+
+def test_extras_and_pytest_args_reach_the_run(repo):
+    fake = FakeRuns()
+    rs.main(['alpha', '--extras', '--', '-k', 'x'], root=repo, run_one=fake)
+    assert fake.argvs == [('uv', 'run', '--python', '3.13', '--with', 'pytest', '--with', 'polars',
+                           '--with', 'arviz>=1.0', 'python', '-m', 'pytest', '-q', '-k', 'x')]
+
+
+def test_all_skips_a_suite_inside_another(repo, capsys):
+    fake = FakeRuns()
+    assert rs.main(['--all'], root=repo, run_one=fake) == 0
+    assert fake.labels == ['alpha (3.13)', 'outer (3.13)']
+    assert 'skip tools-inner: the outer suite collects tools/inner' in capsys.readouterr().out
+
+
+def test_list_prints_commands_extras_and_notes_and_runs_nothing(repo, capsys):
+    fake = FakeRuns()
+    assert rs.main(['--list', 'alpha'], root=repo, run_one=fake) == 0
+    assert fake.labels == []
+    assert capsys.readouterr().out.splitlines() == [
+        'alpha: skills/alpha/scripts',
+        '  cd skills/alpha/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q',
+        '  extras: arviz>=1.0',
+        '  note: Reads a pilot wiki, else skips.',
+    ]
+
+
+def test_an_unknown_suite_exits_2(repo, capsys):
+    assert rs.main(['nope'], root=repo, run_one=FakeRuns()) == 2
+    assert 'unknown suite: nope' in capsys.readouterr().err
+
+
+def test_an_invalid_registry_stops_a_run_with_exit_2(repo, capsys):
+    (repo / 'build' / 'suites.toml').write_text(FIXTURE.replace('with', 'wtih', 1))
+    fake = FakeRuns()
+    assert rs.main(['outer'], root=repo, run_one=fake) == 2
+    assert fake.labels == []
+    assert "build/suites.toml: suite 1 (alpha): unknown key 'wtih'" in capsys.readouterr().err
+
+
+def test_a_missing_registry_exits_2_for_a_run_and_1_for_check(tmp_path):
+    assert rs.main(['alpha'], root=tmp_path, run_one=FakeRuns()) == 2
+    assert rs.main(['--check'], root=tmp_path) == 1
+
+
+@pytest.mark.parametrize('argv', [
+    [], ['--', '-x'], ['--check', 'alpha'], ['--check', '--extras'], ['--check', '--', '-x'],
+    ['--all', 'alpha'], ['--list', '--all'],
+])
+def test_usage_errors_exit_2(repo, argv):
+    with pytest.raises(SystemExit) as stop:
+        rs.main(argv, root=repo, run_one=FakeRuns())
+    assert stop.value.code == 2
+
+
+def test_check_mode_prints_ok_and_exits_0(tmp_path, capsys):
+    assert rs.main(['--check'], root=git_repo(tmp_path, COVERED)) == 0
+    assert capsys.readouterr().out == 'suite registry ok\n'
+
+
+def test_check_mode_prints_each_finding_and_exits_1(tmp_path, capsys):
+    root = git_repo(tmp_path, {**COVERED, 'skills/beta/scripts/test_b.py': ''})
+    assert rs.main(['--check'], root=root) == 1
+    assert capsys.readouterr().out == (
+        'skills/beta/scripts: holds pytest files, but no suite in build/suites.toml contains it\n')
+
+
+def test_a_run_that_cannot_start_fails(tmp_path, capsys):
+    [run] = rs.runs(rs.Suite('ghost', 'missing', ('pytest',)))
+    assert rs.run_subprocess(tmp_path, run) == 1
+    assert 'ghost (3.13): cannot start' in capsys.readouterr().err
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "Output: `suite registry ok` and exit 0, or one line per finding and exit 1."
+# task: 4
+
+# spec: "`--check` reports the same failures as findings (R4.3)."
+# task: 4
+
+# spec: "If git fails, `--check` fails."
+# task: 4
+
+# spec: "An unknown key, a missing required key, a wrong type, a duplicate name or directory, or a `with` list without `pytest` stops `--list`, a named run and `--all` with exit 2."
+# task: 4
+
+# spec: "**`--list [NAME …]`** prints, for each named suite (default: all): its name and directory, the shell form of each run, its extras, and its notes."
+# task: 4
+
+# spec: "**`--list [NAME …]`** prints, for each named suite (default: all): its name and directory, the shell form of each run, its extras, and its notes."
+# task: 4
+
+# spec: "`--extras` and the `--` arguments apply here too, so `--list` prints the exact command that a run would use."
+# task: 4
+
+# spec: "**`NAME [NAME …]`** runs the named suites, in the order given, one run per interpreter in `pythons`."
+# task: 4
+
+# spec: "Each run starts with a `== <name> (<python>)` header, and the suite's notes follow its first run's header."
+# task: 4
+
+# spec: "A failed run does not stop the next one."
+# task: 4
+
+# spec: "**Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected, counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation."
+# task: 4
+
+# spec: "The last line names the failed runs, or says that every run passed."
+# task: 4
+
+# spec: "**Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected, counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation."
+# task: 4
+
+# spec: "`--all` prints one line for each suite that it skips."
+# task: 4
+
+# spec: "A suite named on the command line always runs."
+# task: 4
+
+# spec: "The runner passes its environment to every run unchanged."
+# task: 4
+
+# spec: "**Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected, counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation."
+# task: 4
+
+# spec: "A run whose `uv` cannot start counts as failed."
+# task: 4
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="5" title="The registry and the command audit">
+<interfaces>
+**Interfaces:**
+- Consumes: `check`, `REPO`, `REGISTRY` (Tasks 2–4).
+- Produces: the registry that Tasks 6 and 7 rely on, with suite names `bayesian-workflow`, `brainstorming`, `build`, `cc_guide`, `classification-codes`, `describe-critique-methodology`, `design-architecture`, `explore-data`, `geographic-codes`, `hooks`, `llm-wiki`, `recommend-probabilistic-model`, `recommend-visualization`, `subagent-driven-development`, `systematic-debugging`, `track-model-experiments`, `tune-hyperparameters` and `writing-plans`.
+</interfaces>
+<planner-tests>
+```python
+# --- the real registry ---
+
+def test_the_real_registry_passes_check():
+    data = tomllib.loads((rs.REPO / rs.REGISTRY).read_text(encoding='utf-8'))
+    assert rs.check(rs.REPO, data) == []
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "On `main` at `456e3fb` there are 18: the 17 in `CLAUDE.md` lines 66–125, and `build/cc_guide`, whose command is line 145."
+# task: 5
+
+# spec: "A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`."
+# task: 5
+
+# spec: "One `[[suite]]` table per directory suite, sorted by `name`."
+# task: 5
+
+# spec: "A header comment states the keys, the sort order, and that the ninth commit lint checks the file."
+# task: 5
+
+# spec: "| `with` | list of strings | yes | The default `--with` deps, in the order the current command gives them. It includes `pytest`. |"
+# task: 5
+
+# spec: "With default options, the shell form equals the suite's current `CLAUDE.md` command, character for character."
+# task: 5
+
+# spec: "The notes carry the rest of each comment."
+# task: 5
+
+# spec: "Today that is `cc-guide`: `cd build && pytest` collects `build/cc_guide` already."
+# task: 5
+
+# spec: "`uv run --python 3.13 python build/run_suites.py --check` prints `suite registry ok`."
+# task: 5
+
+# spec: "`build/test_run_suites.py`, stdlib and pytest only, which the build suite collects."
+# task: 5
+</acceptance-tests>
+<acceptance-flags>
+<flag><spec>| `cc-guide` | `build/cc_guide` | — | — | default |</spec><plan>`cc_guide`</plan></flag>
+</acceptance-flags>
+</task>
+
+<task number="6" title="The ninth commit lint">
+<interfaces>
+**Interfaces:**
+- Consumes: `run_suites.py --check` and the committed registry (Tasks 4 and 5).
+- Produces: the lint named `suite_registry`, which Task 7's `CLAUDE.md` text names.
+</interfaces>
+<planner-tests>
+```python
+def test_unregistered_suite_is_refused(clone):
+    '''The ninth lint keeps build/suites.toml complete: a first test file in
+    tech-debt's scripts directory needs a [[suite]] entry before it can be committed.'''
+    test = clone / 'skills' / 'tech-debt' / 'scripts' / 'test_scan.py'
+    test.write_text('def test_scan():\n    assert True\n')
+    git(clone, 'add', 'skills/tech-debt/scripts/test_scan.py')
+    before = head(clone)
+    result = commit(clone, '-m', 'unregistered suite')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'suite_registry'}, result.stderr
+    assert ('skills/tech-debt/scripts: holds pytest files, but no suite in build/suites.toml '
+            'contains it') in result.stderr, result.stderr
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "`build/run_commit_lints.sh` runs it as the ninth lint, named `suite_registry`: `run suite_registry uv run --python 3.13 python build/run_suites.py --check`."
+# task: 6
+
+# spec: "Its header says "nine"."
+# task: 6
+
+# spec: "It does not call the runner, except for the new `--check` lint (R4)."
+# task: 6
+
+# spec: "`build/CLAUDE.md`: "the eight commit lints" becomes "the nine commit lints", and one sentence names `suites.toml` and `run_suites.py` and says that `--check` is a commit lint."
+# task: 6
+
+# spec: "`build/test_commit_lints.py`: `suite_registry` joins `CHECKS`, and `test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py` in a clone and asserts that `suite_registry` is the only failed lint."
+# task: 6
+
+# spec: "`bash build/run_commit_lints.sh` prints `commit lints passed`."
+# task: 6
+</acceptance-tests>
+<acceptance-flags>
+<flag><spec>and one sentence names `suites.toml` and `run_suites.py` and says that `--check` is a commit lint.</spec><plan>a new paragraph</plan></flag>
+</acceptance-flags>
+</task>
+
+<task number="7" title="The `CLAUDE.md` Commands block">
+<interfaces>
+**Interfaces:**
+- Consumes: the registry (Task 5), `run_suites.py` (Task 4), the lint named `suite_registry` (Task 6), and the build baseline (Task 1, Step 4).
+- Produces: the finished Commands block.
+</interfaces>
+<planner-tests>
+```python
+def test_claude_md_import_resolves_passes_on_the_repo():
+    text = (cc.REPO / 'CLAUDE.md').read_text()
+    assert '@needs_pilot' in text  # a naive scan would flag this, so the test means something
+    assert real_check('claude-md-import-resolves') == []
+```
+
+```python
+def test_claude_md_import_resolves_passes_on_the_repo():
+    first = (cc.REPO / 'CLAUDE.md').read_text().split('\n', 1)[0]
+    # A naive scan would read the cc-guide stamp's @<version> as an import, so the test
+    # means something; a restamp changes the version but not the form.
+    assert first.startswith('<!-- cc-guide: ') and ' @' in first, first
+    assert real_check('claude-md-import-resolves') == []
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "`CLAUDE.md` has no directory-suite command left (R5.1) and stays under 200 lines."
+# task: 7
+
+# spec: "Name `build/suites.toml` and `build/run_suites.py`, and say that the runner prints a suite's notes before it runs."
+# task: 7
+
+# spec: "The comment names the suite `run_suites.py cc-guide` instead of "its suite"."
+# task: 7
+
+# spec: "The commit-lint comment names the suite-registry check and says "nine"."
+# task: 7
+
+# spec: "These commands **stay literal in `CLAUDE.md`**."
+# task: 7
+
+# spec: "The control becomes a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp."
+# task: 7
+</acceptance-tests>
+<acceptance-flags>
+<flag><spec>The comment names the suite `run_suites.py cc-guide` instead of "its suite".</spec><plan>Consumes: the registry (Task 5), `run_suites.py` (Task 4), the lint named `suite_registry` (Task 6), and the build baseline (Task 1, Step 4).</plan></flag>
+</acceptance-flags>
+</task>
+
+<acceptance-tests-without-a-task>
+import ast
+import os
+import shlex
+import shutil
+import stat
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+import pytest
+
+BUILD = Path(__file__).resolve().parent
+sys.path.insert(0, str(BUILD))
+import run_suites as rs  # noqa: E402
+
+TEST_BODY = "def test_x():\n    pass\n"
+
+FIXTURE = """\
+[[suite]]
+name = "build"
+dir = "build"
+with = ["pytest", "numpy"]
+extras = ["arviz>=1.0"]
+notes = ["build note"]
+
+[[suite]]
+name = "cc-guide"
+dir = "build/cc_guide"
+with = ["pytest"]
+
+[[suite]]
+name = "hooks"
+dir = "hooks"
+with = ["pytest"]
+pythons = ["3.13", "/usr/bin/python3"]
+notes = ["hooks note one", "hooks note two"]
+"""
+
+BAD_REGISTRIES = {
+    "unknown key": '[[suite]]\nname = "a"\ndir = "a"\nwith = ["pytest"]\nwiht = ["numpy"]\n',
+    "missing name": '[[suite]]\ndir = "a"\nwith = ["pytest"]\n',
+    "missing dir": '[[suite]]\nname = "a"\nwith = ["pytest"]\n',
+    "missing with": '[[suite]]\nname = "a"\ndir = "a"\n',
+    "wrong type with": '[[suite]]\nname = "a"\ndir = "a"\nwith = "pytest"\n',
+    "wrong type pythons": '[[suite]]\nname = "a"\ndir = "a"\nwith = ["pytest"]\npythons = "3.13"\n',
+    "wrong type name": '[[suite]]\nname = 1\ndir = "a"\nwith = ["pytest"]\n',
+    "wrong type extras": '[[suite]]\nname = "a"\ndir = "a"\nwith = ["pytest"]\nextras = "x"\n',
+    "wrong type notes": '[[suite]]\nname = "a"\ndir = "a"\nwith = ["pytest"]\nnotes = "x"\n',
+    "duplicate name": '[[suite]]\nname = "a"\ndir = "a"\nwith = ["pytest"]\n\n'
+                      '[[suite]]\nname = "a"\ndir = "b"\nwith = ["pytest"]\n',
+    "duplicate dir": '[[suite]]\nname = "a"\ndir = "a"\nwith = ["pytest"]\n\n'
+                     '[[suite]]\nname = "b"\ndir = "a"\nwith = ["pytest"]\n',
+    "with without pytest": '[[suite]]\nname = "a"\ndir = "a"\nwith = ["numpy"]\n',
+}
+
+EXPECTED = {
+    "bayesian-workflow": ("skills/bayesian-workflow/scripts", ["arviz", "arviz-stats", "numpy", "xarray"], ["matplotlib"], ["3.13"]),
+    "brainstorming": ("skills/brainstorming/scripts", [], [], ["3.13"]),
+    "build": ("build", ["numpy", "polars", "pyyaml"], ["arviz>=1.0", "arviz-base", "arviz-stats", "arviz-plots", "numpyro", "jax", "matplotlib"], ["3.13"]),
+    "cc-guide": ("build/cc_guide", [], [], ["3.13"]),
+    "classification-codes": ("skills/classification-codes/scripts", ["polars"], [], ["3.13"]),
+    "describe-critique-methodology": ("skills/describe-critique-methodology/scripts", [], [], ["3.13"]),
+    "design-architecture": ("skills/design-architecture/scripts", [], [], ["3.13"]),
+    "explore-data": ("skills/explore-data/scripts", ["polars"], [], ["3.13"]),
+    "geographic-codes": ("skills/geographic-codes/scripts", ["polars", "fastexcel"], [], ["3.13"]),
+    "hooks": ("hooks", [], [], ["3.13", "/usr/bin/python3"]),
+    "llm-wiki": ("skills/llm-wiki/scripts", [], [], ["3.13"]),
+    "recommend-probabilistic-model": ("skills/recommend-probabilistic-model/scripts", ["numpy", "polars"], [], ["3.13"]),
+    "recommend-visualization": ("skills/recommend-visualization/scripts", ["numpy", "polars"], [], ["3.13"]),
+    "subagent-driven-development": ("skills/subagent-driven-development/scripts", [], [], ["3.13"]),
+    "systematic-debugging": ("skills/systematic-debugging", [], [], ["3.13"]),
+    "track-model-experiments": ("skills/track-model-experiments/scripts", ["numpy", "polars", "arviz", "numpyro", "h5netcdf", "h5py"], [], ["3.13"]),
+    "tune-hyperparameters": ("skills/tune-hyperparameters/scripts", ["numpy", "polars"], ["scikit-learn", "optuna"], ["3.13"]),
+    "writing-plans": ("skills/writing-plans/scripts", [], [], ["3.13"]),
+}
+
+def test_runner_imports_stdlib_only():
+    tree = ast.parse((BUILD / "run_suites.py").read_text())
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0:
+            names.add(node.module.split(".")[0])
+    assert names - set(sys.stdlib_module_names) - {"__future__"} == set()
+
+def test_repo_root_comes_from_the_runner_path(tmp_path):
+    assert rs.REPO == Path(rs.__file__).resolve().parent.parent
+    proc = subprocess.run(
+        [sys.executable, str(BUILD / "run_suites.py"), "--list", "hooks"],
+        cwd=tmp_path, capture_output=True, text=True,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "hooks" in proc.stdout
+
+def test_validate_reports_each_failure(case):
+    assert rs.validate(tomllib.loads(BAD_REGISTRIES[case]))
+
+def test_parse_defaults_and_valid_registry():
+    data = tomllib.loads(FIXTURE)
+    assert rs.validate(data) == []
+    s = by_name()
+    assert rs.DEFAULT_PYTHONS == ("3.13",)
+    assert tuple(s["cc-guide"].pythons) == ("3.13",)
+    assert tuple(s["cc-guide"].extras) == ()
+    assert tuple(s["cc-guide"].notes) == ()
+    assert tuple(s["hooks"].pythons) == ("3.13", "/usr/bin/python3")
+    assert tuple(s["build"].deps) == ("pytest", "numpy")
+
+def test_default_argv_and_shell_form():
+    (run,) = rs.runs(by_name()["build"])
+    assert tuple(run.argv) == ("uv", "run", "--python", "3.13", "--with", "pytest",
+                               "--with", "numpy", "python", "-m", "pytest", "-q")
+    assert run.shell() == "cd build && uv run --python 3.13 --with pytest --with numpy python -m pytest -q"
+    assert run.label == "build (3.13)"
+
+def test_two_pythons_give_two_runs_in_order():
+    runs = rs.runs(by_name()["hooks"])
+    assert [r.python for r in runs] == ["3.13", "/usr/bin/python3"]
+    assert [r.label for r in runs] == ["hooks (3.13)", "hooks (/usr/bin/python3)"]
+    assert [r.shell() for r in runs] == [
+        "cd hooks && uv run --python 3.13 --with pytest python -m pytest -q",
+        "cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q",
+    ]
+
+def test_extras_follow_with_deps_and_are_quoted():
+    (plain,) = rs.runs(by_name()["build"])
+    assert "arviz>=1.0" not in plain.argv
+    (run,) = rs.runs(by_name()["build"], extras=True)
+    assert tuple(run.argv[:10]) == ("uv", "run", "--python", "3.13", "--with", "pytest",
+                                    "--with", "numpy", "--with", "arviz>=1.0")
+    assert f"--with numpy --with {shlex.quote('arviz>=1.0')} python -m pytest -q" in run.shell()
+
+def test_pytest_args_reach_every_run_with_quoting():
+    runs = rs.runs(by_name()["hooks"], pytest_args=("-k", "foo bar", "-s"))
+    assert len(runs) == 2
+    for r in runs:
+        assert tuple(r.argv[-5:]) == ("pytest", "-q", "-k", "foo bar", "-s")
+        assert r.shell().endswith("python -m pytest -q -k 'foo bar' -s")
+
+def test_container_finds_the_enclosing_suite():
+    s = by_name()
+    allsuites = list(s.values())
+    assert rs.container(s["cc-guide"], allsuites).name == "build"
+    assert rs.container(s["build"], allsuites) is None
+    assert rs.container(s["hooks"], allsuites) is None
+    other = by_name(registry_text(("b", "build"), ("b2", "build2")))
+    assert rs.container(other["b2"], list(other.values())) is None
+
+
+# ---------------------------------------------------------------- Task 3
+
+def test_check_flags_unregistered_test_directory(tmp_path):
+    reg = registry_text(("a", "pkg/a"))
+    root = make_repo(tmp_path / "r", tracked=["pkg/a/test_a.py", "pkg/a/sub/test_s.py",
+                                              "pkg/b/b_test.py", "pkg/c/helper.py"], registry=reg)
+    found = rs.check(root, tomllib.loads(reg))
+    assert any("pkg/b" in f for f in found)
+    assert not any("pkg/a" in f for f in found)
+    assert not any("pkg/c" in f for f in found)
+
+def test_check_flags_missing_and_testless_registered_dirs(tmp_path):
+    reg = registry_text(("a", "pkg/a"), ("gone", "pkg/gone"), ("empty", "pkg/empty"))
+    root = make_repo(tmp_path / "r", tracked=["pkg/a/test_a.py", "pkg/empty/readme.md"], registry=reg)
+    found = rs.check(root, tomllib.loads(reg))
+    assert any("pkg/gone" in f for f in found)
+    assert any("pkg/empty" in f for f in found)
+    assert not any("pkg/a:" in f or f.endswith("pkg/a") for f in found)
+
+def test_check_reports_validation_as_findings(tmp_path, case):
+    root = make_repo(tmp_path / "r", tracked=["a/test_a.py", "b/test_b.py"], registry=BAD_REGISTRIES[case])
+    assert rs.check(root, tomllib.loads(BAD_REGISTRIES[case]))
+
+def test_check_ignores_gitignored_tests(tmp_path):
+    reg = registry_text(("a", "a"))
+    root = make_repo(tmp_path / "r", tracked=["a/test_a.py"], registry=reg,
+                     gitignore="scratch/\n.claude/worktrees/\n",
+                     untracked=["scratch/test_s.py", ".claude/worktrees/w/a/test_w.py"])
+    assert rs.check(root, tomllib.loads(reg)) == []
+
+def test_check_counts_untracked_test_directory(tmp_path):
+    reg = registry_text(("a", "a"))
+    root = make_repo(tmp_path / "r", tracked=["a/test_a.py"], registry=reg,
+                     untracked=["skills/new/scripts/test_new.py"])
+    found = rs.check(root, tomllib.loads(reg))
+    assert any("skills/new/scripts" in f for f in found)
+
+
+# ---------------------------------------------------------------- Task 4
+
+def test_check_output_and_exit(tmp_path, capsys):
+    reg = registry_text(("a", "a"))
+    good = make_repo(tmp_path / "good", tracked=["a/test_a.py"], registry=reg)
+    assert call_main(["--check"], good) == 0
+    assert "suite registry ok" in capsys.readouterr().out
+    bad = make_repo(tmp_path / "bad", tracked=["a/test_a.py", "b/test_b.py", "c/test_c.py"], registry=reg)
+    assert call_main(["--check"], bad) == 1
+    cap = capsys.readouterr()
+    text = cap.out + cap.err
+    assert "suite registry ok" not in text
+    assert sum(1 for l in text.splitlines() if "b" in l.split(":")[0] or "c" in l.split(":")[0]) >= 2
+
+def test_check_validation_failure_exits_1_not_2(tmp_path, capsys):
+    root = make_repo(tmp_path / "r", tracked=["a/test_a.py"], registry=BAD_REGISTRIES["unknown key"])
+    assert call_main(["--check"], root) == 1
+
+def test_check_fails_when_git_fails(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("GIT_CEILING_DIRECTORIES", str(tmp_path))
+    root = tmp_path / "notgit"
+    write_registry(root, registry_text(("a", "a")))
+    (root / "a").mkdir()
+    (root / "a" / "test_a.py").write_text(TEST_BODY)
+    code = call_main(["--check"], root)
+    assert code not in (0, None)
+    assert "suite registry ok" not in capsys.readouterr().out
+
+def test_invalid_registry_stops_with_exit_2(tmp_path, argv, case):
+    write_registry(tmp_path, BAD_REGISTRIES[case])
+    rec = Recorder()
+    assert call_main(argv, tmp_path, rec) == 2
+    assert rec.calls == []
+
+def test_list_prints_everything(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    rec = Recorder()
+    assert call_main(["--list"], root, rec) == 0
+    out = capsys.readouterr().out
+    assert rec.calls == []
+    for s in by_name().values():
+        assert s.name in out and s.dir in out
+        for r in rs.runs(s):
+            assert r.shell() in out
+    assert "arviz>=1.0" in out
+    for note in ("build note", "hooks note one", "hooks note two"):
+        assert note in out
+
+def test_list_named_suite_only(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    assert call_main(["--list", "hooks"], root) == 0
+    out = capsys.readouterr().out
+    assert "hooks note one" in out
+    assert "build note" not in out
+    assert "--with numpy" not in out
+
+def test_list_shows_extras_and_pytest_args(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    assert call_main(["--list", "--extras", "build", "--", "-k", "x y"], root) == 0
+    out = capsys.readouterr().out
+    (run,) = rs.runs(by_name()["build"], extras=True, pytest_args=("-k", "x y"))
+    assert run.shell() in out
+
+def test_named_runs_in_order_given(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    rec = Recorder()
+    assert call_main(["hooks", "build"], root, rec) == 0
+    assert rec.calls == ["hooks (3.13)", "hooks (/usr/bin/python3)", "build (3.13)"]
+
+def test_headers_and_notes_order(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    assert call_main(["hooks"], root) == 0
+    lines = capsys.readouterr().out.splitlines()
+    h1 = lines.index("== hooks (3.13)")
+    r1 = lines.index("RUN hooks (3.13)")
+    h2 = lines.index("== hooks (/usr/bin/python3)")
+    r2 = lines.index("RUN hooks (/usr/bin/python3)")
+    assert h1 < r1 < h2 < r2
+    for note in ("hooks note one", "hooks note two"):
+        idx = [i for i, l in enumerate(lines) if note in l]
+        assert len(idx) == 1 and h1 < idx[0] < r1
+
+def test_failure_does_not_stop_and_last_line_names_it(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    rec = Recorder({"hooks (3.13)": 1})
+    assert call_main(["hooks", "build"], root, rec) == 1
+    assert rec.calls == ["hooks (3.13)", "hooks (/usr/bin/python3)", "build (3.13)"]
+    last = last_line(capsys.readouterr())
+    assert "hooks (3.13)" in last
+    assert "build (3.13)" not in last
+
+def test_exit_5_counts_as_failure(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    assert call_main(["build"], root, Recorder({"build (3.13)": 5})) == 1
+    assert "build (3.13)" in last_line(capsys.readouterr())
+
+def test_all_passed_last_line(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    assert call_main(["build", "hooks"], root) == 0
+    assert "passed" in last_line(capsys.readouterr())
+
+def test_unknown_name_and_usage_error_exit_2(tmp_path, argv, capsys):
+    root = fixture_root(tmp_path)
+    rec = Recorder()
+    assert call_main(argv, root, rec) == 2
+    assert rec.calls == []
+
+def test_all_skips_nested_suite(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    rec = Recorder()
+    assert call_main(["--all"], root, rec) == 0
+    assert rec.calls == ["build (3.13)", "hooks (3.13)", "hooks (/usr/bin/python3)"]
+    cap = capsys.readouterr()
+    skips = [l for l in (cap.out + cap.err).splitlines() if "skip" in l.lower()]
+    assert len(skips) == 1 and "cc-guide" in skips[0]
+
+def test_named_nested_suite_runs(tmp_path, capsys):
+    root = fixture_root(tmp_path)
+    rec = Recorder()
+    assert call_main(["cc-guide"], root, rec) == 0
+    assert rec.calls == ["cc-guide (3.13)"]
+
+def test_run_subprocess_env_cwd_and_argv(tmp_path, monkeypatch):
+    root = tmp_path / "repo"
+    (root / "pkg" / "tests").mkdir(parents=True)
+    _fake_uv(tmp_path / "bin", 0)
+    out = tmp_path / "uv.out"
+    monkeypatch.setenv("PATH", f"{tmp_path / 'bin'}{os.pathsep}{os.environ['PATH']}")
+    monkeypatch.setenv("UV_OUT", str(out))
+    monkeypatch.setenv("CALIBRATION_SWEEP", "1")
+    (suite,) = rs.parse(tomllib.loads(registry_text(("p", "pkg/tests"))))
+    (run,) = rs.runs(suite, pytest_args=("-s",))
+    assert rs.run_subprocess(root, run) == 0
+    cwd, sweep, args = out.read_text().splitlines()
+    assert Path(cwd) == (root / "pkg" / "tests").resolve()
+    assert sweep == "1"
+    assert args == "run --python 3.13 --with pytest python -m pytest -q -s"
+
+def test_run_subprocess_reports_nonzero(tmp_path, monkeypatch):
+    root = tmp_path / "repo"
+    (root / "p").mkdir(parents=True)
+    _fake_uv(tmp_path / "bin", 5)
+    monkeypatch.setenv("PATH", f"{tmp_path / 'bin'}{os.pathsep}{os.environ['PATH']}")
+    monkeypatch.setenv("UV_OUT", str(tmp_path / "uv.out"))
+    (suite,) = rs.parse(tomllib.loads(registry_text(("p", "p"))))
+    (run,) = rs.runs(suite)
+    assert rs.run_subprocess(root, run) != 0
+
+def test_uv_that_cannot_start_counts_as_failed(tmp_path, monkeypatch, capsys):
+    root = tmp_path / "repo"
+    write_registry(root, registry_text(("p", "p")))
+    (root / "p").mkdir()
+    (root / "p" / "test_p.py").write_text(TEST_BODY)
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    monkeypatch.setenv("PATH", str(empty))
+    assert call_main(["p"], root, rs.run_subprocess) == 1
+    assert "p (3.13)" in last_line(capsys.readouterr())
+
+
+# ---------------------------------------------------------------- Task 5
+
+def test_real_registry_names_and_dirs():
+    s = real_suites()
+    assert set(s) == set(EXPECTED)
+    assert {n: x.dir for n, x in s.items()} == {n: e[0] for n, e in EXPECTED.items()}
+
+def test_real_registry_non_skill_names():
+    s = real_suites()
+    non_skill = {n for n, x in s.items() if not x.dir.startswith("skills/")}
+    assert non_skill == {"build", "cc-guide", "hooks"}
+    for n, x in s.items():
+        if x.dir.startswith("skills/"):
+            assert x.dir.split("/")[1] == n
+
+def test_real_registry_sorted_by_name():
+    data = tomllib.loads((rs.REPO / rs.REGISTRY).read_text())
+    names = [e["name"] for e in data["suite"]]
+    assert names == sorted(names)
+    assert rs.validate(data) == []
+
+def test_real_registry_header_comment():
+    lines = (rs.REPO / rs.REGISTRY).read_text().splitlines()
+    header = []
+    for line in lines:
+        if line.startswith("#") or not line.strip():
+            header.append(line)
+        else:
+            break
+    text = "\n".join(header).lower()
+    for key in ("name", "dir", "with", "extras", "pythons", "notes"):
+        assert key in text
+    assert "sort" in text
+    assert "ninth" in text or "--check" in text
+    assert "lint" in text
+
+def test_real_registry_with_extras_pythons():
+    s = real_suites()
+    for n, (_, deps, extras, pythons) in EXPECTED.items():
+        assert tuple(s[n].deps) == ("pytest", *deps), n
+        assert tuple(s[n].extras) == tuple(extras), n
+        assert tuple(s[n].pythons) == tuple(pythons), n
+
+def test_real_registry_default_shell_forms():
+    s = real_suites()
+    for n, (dir_, deps, _, pythons) in EXPECTED.items():
+        assert [r.shell() for r in rs.runs(s[n])] == default_shells(dir_, deps, pythons), n
+
+def test_real_registry_notes_examples():
+    s = real_suites()
+
+    def notes(n):
+        return "\n".join(s[n].notes)
+
+    assert ".scratch" in notes("build")
+    assert "CALIBRATION_SWEEP=1" in notes("bayesian-workflow")
+    assert "warning" in notes("bayesian-workflow").lower()
+    assert "needs_pilot" in notes("llm-wiki") and "LLM_WIKI_ROOT" in notes("llm-wiki")
+    assert "node" in notes("brainstorming").lower()
+    assert "--with sklearn" in notes("tune-hyperparameters")
+    assert notes("track-model-experiments")
+    assert "3.9" in notes("hooks") and "PATH" in notes("hooks") and "Gate B" in notes("hooks")
+
+def test_real_all_skips_only_cc_guide(capsys):
+    rec = Recorder()
+    assert rs.main(["--all"], root=rs.REPO, run_one=rec) == 0
+    ran = {label.split(" (")[0] for label in rec.calls}
+    assert ran == set(EXPECTED) - {"cc-guide"}
+    assert "hooks (/usr/bin/python3)" in rec.calls
+
+def test_real_registry_check_passes(capsys):
+    assert rs.main(["--check"], root=rs.REPO) == 0
+    assert "suite registry ok" in capsys.readouterr().out
+
+def test_test_run_suites_is_stdlib_and_pytest_only():
+    path = rs.REPO / "build" / "test_run_suites.py"
+    tree = ast.parse(path.read_text())
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0:
+            names.add(node.module.split(".")[0])
+    assert names - set(sys.stdlib_module_names) - {"__future__", "pytest", "run_suites"} == set()
+
+
+# ---------------------------------------------------------------- Task 6
+
+def test_ninth_lint_line():
+    lines = (rs.REPO / "build" / "run_commit_lints.sh").read_text().splitlines()
+    runs = [l.strip() for l in lines if l.strip().startswith("run ")]
+    assert len(runs) == 9
+    assert runs[8] == "run suite_registry uv run --python 3.13 python build/run_suites.py --check"
+
+def test_commit_lints_header_says_nine():
+    text = (rs.REPO / "build" / "run_commit_lints.sh").read_text()
+    header = "\n".join(l for l in text.splitlines()[:30] if l.startswith("#"))
+    assert "nine" in header
+    assert "eight" not in header
+
+def test_commit_lints_only_call_runner_for_check():
+    for line in (rs.REPO / "build" / "run_commit_lints.sh").read_text().splitlines():
+        if "run_suites" in line and not line.lstrip().startswith("#"):
+            assert "--check" in line
+
+def test_build_claude_md_edits():
+    text = (rs.REPO / "build" / "CLAUDE.md").read_text()
+    assert "the nine commit lints" in text
+    assert "the eight commit lints" not in text
+    assert "suites.toml" in text and "run_suites.py" in text and "--check" in text
+
+def test_commit_lints_tests_know_suite_registry():
+    src = (rs.REPO / "build" / "test_commit_lints.py").read_text()
+    tree = ast.parse(src)
+    checks = [n for n in tree.body if isinstance(n, (ast.Assign, ast.AnnAssign))
+              and any(isinstance(t, ast.Name) and t.id == "CHECKS"
+                      for t in (n.targets if isinstance(n, ast.Assign) else [n.target]))]
+    assert checks and "suite_registry" in ast.unparse(checks[0])
+    funcs = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
+    assert "test_unregistered_suite_is_refused" in funcs
+    body = ast.unparse(funcs["test_unregistered_suite_is_refused"])
+    assert "test_new.py" in body and "suite_registry" in body
+
+def test_commit_lints_pass():
+    proc = subprocess.run(["bash", "build/run_commit_lints.sh"], cwd=rs.REPO,
+                          capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "commit lints passed" in proc.stdout + proc.stderr
+
+
+# ---------------------------------------------------------------- Task 7
+
+def test_claude_md_has_no_directory_suite_command():
+    lines = [l.strip() for l in (rs.REPO / "CLAUDE.md").read_text().splitlines()]
+    assert len(lines) < 200
+    for s in real_suites().values():
+        for r in rs.runs(s):
+            assert r.shell() not in lines
+    assert not any(l.startswith("cd build/cc_guide &&") for l in lines)
+    assert not any(l.startswith("cd hooks &&") for l in lines)
+
+def test_claude_md_intro_and_commands_block():
+    text = (rs.REPO / "CLAUDE.md").read_text()
+    assert "There is no root test runner" not in text
+    assert "build/suites.toml" in text and "build/run_suites.py" in text
+    assert "test_build.py" in text
+    for flag in ("--list", "--extras", "--all", "--check"):
+        assert flag in text
+    assert "notes" in text
+
+def test_claude_md_names_cc_guide_suite():
+    assert "run_suites.py cc-guide" in (rs.REPO / "CLAUDE.md").read_text()
+
+def test_claude_md_commit_lint_comment():
+    text = (rs.REPO / "CLAUDE.md").read_text()
+    assert "nine" in text
+    assert "suite_registry" in text or "suite registry" in text or "suite-registry" in text
+
+def test_claude_md_keeps_selections_and_tools():
+    text = (rs.REPO / "CLAUDE.md").read_text()
+    for needle in ("test_runtime_support.py", "test_commit_lints.py", "-k declared_dependencies",
+                   "-k test_real_skill", "test_check_jax_examples.py", "run_commit_lints.sh",
+                   "build.py", "verify_citations.py", "extract_structure.py", "cli.py lint"):
+        assert needle in text, needle
+
+def test_conformance_positive_control_moved():
+    src = (rs.REPO / "build" / "test_check_conformance.py").read_text()
+    tree = ast.parse(src)
+    funcs = {n.name: n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}
+    body = ast.unparse(funcs["test_claude_md_import_resolves_passes_on_the_repo"])
+    assert "@needs_pilot" not in body
+    assert "cc-guide" in body
+    first = (rs.REPO / "CLAUDE.md").read_text().splitlines()[0]
+    assert first.startswith("<!-- cc-guide:") and "@" in first and first.endswith("-->")
+</acceptance-tests-without-a-task>
+
+Reply with exactly one <rulings> block. Each case is one <ruling> element:
+
+<rulings>
+<ruling task="N" verdict="plan-wrong|test-wrong|unclear"><quote>the binding text, copied word for word (empty for unclear)</quote><plan>the planner's assertion, copied word for word</plan><acceptance>the acceptance test's assertion, copied word for word</acceptance></ruling>
+</rulings>
+
+If no case conflicts, reply with <rulings></rulings>.

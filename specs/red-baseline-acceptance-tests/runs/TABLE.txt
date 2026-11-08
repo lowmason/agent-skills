@@ -1,0 +1,18 @@
+adjudicator-opus       p53-unit     scored=5 catches=0/5 false_alarms/rep=2.6 [2, 2, 4, 3, 2] unclear/rep=2.6 [4, 2, 2, 3, 2] real=10 interface=0
+adjudicator-opus       p55-clean    scored=5 catches=n/a false_alarms/rep=2.8 [3, 2, 2, 3, 4] unclear/rep=3.0 [1, 3, 4, 3, 4] real=3 interface=0
+adjudicator-opus       p55-default  scored=5 catches=5/5 false_alarms/rep=2.6 [2, 3, 2, 2, 4] unclear/rep=2.6 [3, 0, 4, 4, 2] real=3 interface=0
+adjudicator-opus       p66-bound    scored=5 catches=5/5 false_alarms/rep=0.4 [1, 0, 1, 0, 0] unclear/rep=1.6 [1, 3, 2, 0, 2] real=3 interface=3
+control-opus           p53-unit     scored=5 catches=5/5 false_alarms/rep=2.6 [2, 2, 3, 3, 3] unclear/rep=0.0 [0, 0, 0, 0, 0] real=5 interface=0
+control-opus           p55-clean    scored=5 catches=n/a false_alarms/rep=4.4 [5, 4, 6, 3, 4] unclear/rep=0.0 [0, 0, 0, 0, 0] real=14 interface=0
+control-opus           p55-default  scored=5 catches=5/5 false_alarms/rep=3.2 [3, 3, 2, 3, 5] unclear/rep=0.0 [0, 0, 0, 0, 0] real=7 interface=0
+control-opus           p66-bound    scored=5 catches=5/5 false_alarms/rep=4.0 [3, 4, 5, 4, 4] unclear/rep=0.0 [0, 0, 0, 0, 0] real=18 interface=0
+
+False alarms whose CLASSIFY reason starts 'amendment:' (a ruling against a plan value that the plan's own approved spec amendment sets; DF2 keeps amendments out of the copy spec):
+  adjudicator-opus/p53-unit: 10 of 13
+  adjudicator-opus/p55-clean: 14 of 14
+  adjudicator-opus/p55-default: 13 of 13
+  adjudicator-opus/p66-bound: 1 of 2
+  control-opus/p53-unit: 0 of 14
+  control-opus/p55-clean: 0 of 22
+  control-opus/p55-default: 0 of 16
+  control-opus/p66-bound: 0 of 20

@@ -1,0 +1,2358 @@
+You are the adjudicator. Two readings of one spec gave two sets of tests: the planner's tests, from the plan, and the acceptance tests, which a second reader wrote from the spec alone. For each task below, compare the two sets against the spec, and rule on each case where they conflict: where the two sets assert different values or behavior for the same requirement, or where the second reader flagged a plan value.
+
+Your rule:
+
+1. Each case gets one ruling: the plan or code is wrong (verdict "plan-wrong"), the acceptance test is wrong (verdict "test-wrong"), or the case is unclear (verdict "unclear").
+2. Every ruling except "unclear" quotes the binding text that decides it, word for word. No deciding text means "unclear".
+3. For what the code must do, the binding text is the spec. For names, paths and types, the binding text is the task's Interfaces block, when the behavior under test does not change. So an acceptance test that fails only on an import path or a parameter name is wrong: rule "test-wrong", and quote the Interfaces block.
+4. You never edit a file. You have no tools. You only rule.
+5. Do not rule on a case where the two sets agree, or where only one set tests a requirement and the other says nothing that conflicts.
+
+<spec>
+# Package versions: one source for every pinned or cited version
+
+**Status:** approved by the owner on 2026-10-21, after a section-by-section design review and a review of the written text. Next skill: writing-plans.
+
+## Problem
+
+The repo fixes package versions by hand in many places, and nothing ties the copies together. On 2026-10-21 the owner found NumPyro at 0.21.0 in one deferred item and at 0.22.0 in `PINNED`. The owner wants one mechanism for every package that a skill names or runs, the Python interpreter included. It must give one or both of these properties:
+
+1. A way to always use the latest release.
+2. The version as a parameter, set in one place and not copied by hand.
+
+This work is not part of plan 64 (bayesian-workflow and recommend-probabilistic-model routing).
+
+## Inventory (2026-10-21, branch `claude/admiring-haslett-c81ea8` at 7612c6e)
+
+"Version" has four roles here. They change for different reasons, so the design keeps them apart.
+
+### Role 1. Gate pins: the versions that a repo gate verifies against
+
+| Where | What | Notes |
+|---|---|---|
+| `build/snippet_preamble.py:199-203` | `PINNED`: arviz==1.3.0, arviz-stats==1.3.3, arviz-plots==1.3.2, numpyro==0.22.0, jax==0.12.0. arviz-base, numpy and matplotlib float | The Tier 3 snippet gate (`check_snippets.py --run`, which executes the bayesian-workflow code blocks). Comment: "Verified resolving 2026-10-19" |
+| `build/check_snippets.py:87-90` | `RUN_REMEDIATION` builds the Tier 3 command from `PINNED` | Already a single source in code |
+| `CLAUDE.md:122` | The Tier 3 command, with the `PINNED` versions copied by hand | No check compares it with `PINNED` (deferred item F9, done 2026-10-19, says so) |
+| `build/check_snippets.py:84-86`, `CLAUDE.md:120` | Tier 2 (`--api`, which resolves library names) floats: `arviz>=1.0` and unpinned rest | Floats by design |
+| `specs/verification/32-jax-cpu.in` -> `32-jax-cpu.txt` | Full lock for the deep-learning CPU examples: jax==0.11.2, jaxlib==0.11.2, flax==0.12.10, optax==0.2.8, orbax-checkpoint==0.12.6, equinox==0.13.8, diffrax==0.7.2, e3nn-jax==0.21.0, numpy==2.5.3, plus transitive pins | Made by `uv pip compile --python-version 3.13`. Run by `CLAUDE.md:130` (`check_jax_examples.py`) |
+| `build/suites.toml` | `with` and `extras` deps for each test suite, all unpinned (`build` extras: `arviz>=1.0` and the rest bare) | Float |
+
+Conflict: the two gates pin different JAX releases. The CPU lock has 0.11.2 and `PINNED` has 0.12.0.
+
+### Role 2. Interpreter versions
+
+The interpreter is not one value. Three separate roles exist:
+
+| Role | Value | Where |
+|---|---|---|
+| Dev and gate interpreter | 3.13 | `--python 3.13` in 26 lines of `CLAUDE.md`, 9 of `build/run_commit_lints.sh`, `build/githooks/pre-commit:15`, `build/cc_guide/notice.sh:114`, `build/cc_guide/lint.py:12`, `build/run_suites.py:35` (`DEFAULT_PYTHONS`), the usage docstrings of most `build/*.py` files and of about 13 skill test files, `skills/geographic-codes/SKILL.md:250`, `skills/classification-codes/SKILL.md:246`, `skills/writing-skills/SKILL.md:292`, `hooks/README.md:195`, `AGENTS.md`, `GEMINI.md`, `NOTICE`, `.claude/skills/cc-guide/SKILL.md`. Also `32-jax-cpu.txt` (compiled for 3.13) and `rules/clean-code-python.md:30` ("agent-skills: 3.13; work repos: 3.12") |
+| Floor that skill scripts promise users | 3.11 or 3.12 | `requires-python` in 18 script headers under `skills/*/scripts/` (3.12 for the arviz scripts, 3.11 for the rest). `compatibility:` frontmatter in 12 `SKILL.md` files (`Python 3.11+` or `3.12+`). Prose: `recommend-probabilistic-model/SKILL.md:96`, `recommend-visualization/SKILL.md:107`, `document-python-package/SKILL.md:105` |
+| Floor for system-Python tools | 3.9 | `install.py` (`install.py:237` handles a 3.9 behavior) and the read-only agent guard (`build/suites.toml`, `hooks` suite: `pythons = ['3.13', '/usr/bin/python3']`) |
+
+Tests assert the dev value in expected strings: `build/test_run_suites.py:79-86,250` and `build/test_check_frontmatter.py:434`.
+
+### Role 3. User floors: what a skill script needs, as `>=` ranges
+
+| Where | Floors |
+|---|---|
+| `skills/explore-data/scripts/profile.py`, `recommend-visualization/scripts/recommend.py`, `recommend-probabilistic-model/scripts/characterize.py` | `polars>=2.0` |
+| `skills/geographic-codes/scripts/build.py`, `classification-codes/scripts/build.py` | `polars>=1.0`, `fastexcel>=0.12` |
+| `skills/bayesian-workflow/scripts/diagnose_model.py`, `track-model-experiments/scripts/compare_experiments.py` | `arviz>=1.0`, `numpy>=2.0`, `h5netcdf>=1.0`, `h5py>=3.0` |
+| `skills/bayesian-workflow/scripts/calibration_check.py` | `numpy>=2.0`, `arviz-base>=1.0`, `arviz-plots>=1.1`, `arviz-stats>=1.1`, `xarray>=2026.0`, `scipy>=1.0`, `h5netcdf>=1.0`, `h5py>=3.0`, `matplotlib>=3.0` |
+| `skills/document-python-package/SKILL.md:13,24,94,105`, `scripts/preflight.py:34` | `great-docs>=0.17.0,<0.18` (an upper bound, tied to a tested range), `numpydoc>=1.11` |
+| bayesian-workflow prose: `SKILL.md:34,69,119,121,318`, `references/priors.md:64,71`, `references/diagnostics.md:54`, `README.md:65` | API floors: `arviz-stats >= 1.0.0` for `diagnose`, `NumPyro ≥ 0.22` for `Hurdle*`, the ArviZ ≥ 1.0 stack |
+
+A floor states when an API appeared. A new upstream release does not make it stale.
+
+### Role 4. Prose that cites a version as an observed fact
+
+| Where | Citation | Gate behind it? |
+|---|---|---|
+| `skills/bayesian-workflow/references/diagnostics.md:49` | NumPyro "checked in the 0.22.0" source | Tier 3 pins 0.22.0 |
+| `skills/bayesian-workflow/references/model-comparison.md:130` | "verified on arviz 1.3.0 / arviz-stats 1.3.1" | Tier 3 now pins arviz-stats 1.3.3 |
+| `skills/bayesian-workflow/references/model-criticism.md:196` | "arviz-plots 1.3.1" | Tier 3 now pins 1.3.2 |
+| `skills/deep-learning/references/frameworks.md:94-95` | A hand copy of the CPU lock's versions, and "Python 3.13.8" | The CPU lock |
+| `skills/recommend-visualization/SKILL.md:112`, `README.md:30-31`, `references/altair.md:5`, `references/plotly.md:4`, `references/matplotlib.md:4-5` | "Verified on Polars 1.42, Altair 6.2, matplotlib 3.11, plotly 6.8" | None |
+| `skills/explore-data/SKILL.md:83` | "verified on Polars 1.38" | None |
+| `skills/tune-hyperparameters/SKILL.md:102` | "verified against Optuna 5.0.0" | None |
+| bayesian-workflow porting text: `SKILL.md:59,122,130`, `references/model-comparison.md:74,196`, `references/visualize.md:125`, `references/diagnostics.md:111,175` | "ArviZ 0.23" as the classic stack | History, by design |
+
+Conflict: the Polars citations disagree. explore-data says 1.38, recommend-visualization says 1.42, and three script headers require `polars>=2.0`.
+
+### Records, out of scope for any lint
+
+`specs/deferred_items.md`, `specs/plans/completed/`, `specs/completed/` and `specs/verification/*.md` are dated records. They keep the versions of their day. One open deferred item is stale in a way that misleads: the Gaussian-process item at `specs/deferred_items.md:4492` says "on the pinned 0.21.0".
+
+`skills/evaluate-deep-learning/references/experiments.md:86-87` is an illustrative run manifest, and the `build/test_check_frontmatter.py` header strings are test data.
+
+### Latest releases on 2026-10-21 (PyPI)
+
+| Package | Latest | Uploaded | Repo pin or citation |
+|---|---|---|---|
+| jax | 0.12.0.1 | 2026-10-21 | 0.12.0 (`PINNED`), 0.11.2 (CPU lock) |
+| polars | 2.0.0 | 2026-10-06 | 1.38 and 1.42 cited; `>=2.0` and `>=1.0` floors |
+| numpyro | 0.22.0 | 2026-09-18 | 0.22.0 |
+| arviz / arviz-stats / arviz-plots / arviz-base | 1.3.0 / 1.3.3 / 1.3.2 / 1.3.1 | 2026-08-11 to 2026-09-25 | same; arviz-base floats |
+| flax / optax / equinox | 0.12.10 / 0.2.8 / 0.13.8 | | same as the CPU lock |
+| plotly / altair / matplotlib | 7.1.0 / 6.3.0 / 3.11.2 | 2026-09 | 6.8 / 6.2 / 3.11 cited |
+| optuna / great-docs | 5.0.0 / 0.17.0 | | same |
+
+A floating gate would have changed today: jax 0.12.0.1 was uploaded on 2026-10-21.
+
+### uv behavior that constrains the design (uv 0.13.1, probed 2026-10-21 in `/tmp/vprobe`)
+
+1. `uv run --exclude-newer <date> --with jax` respects the cutoff. With 2026-10-20 it gave jax 0.12.0, not 0.12.0.1.
+2. For a PEP 723 script (`uv run script.py`), the command-line `--exclude-newer` and `UV_EXCLUDE_NEWER` did not limit the header's dependencies. With a 2026-10-01 cutoff it still installed polars 2.0.0 (uploaded 2026-10-06). A `[tool.uv] exclude-newer = "..."` table inside the script header did limit them (polars 1.44.2).
+3. With no `--python`, uv picked Python 3.14 for a script, and a bare `polars` header resolved to 1.44.2, not 2.0.0. Under `--python 3.13` it resolved to 2.0.0. But `uv run --python 3.14 --with 'polars>=2.0'` also resolved to 2.0.0, so the three `polars>=2.0` scripts work on 3.14. The cause of the 1.44.2 result is unknown.
+4. A `uv.toml` with `exclude-newer` at the repo root reached `--with` deps and script headers in every subdirectory. `constraint-dependencies` and `override-dependencies` in `uv.toml` did not affect `uv run --with`, and neither did `UV_CONSTRAINT`. A command-line `--exclude-newer` or `UV_EXCLUDE_NEWER` overrode the `uv.toml` date. A `--with 'polars==X'` on a script run overrode the script header's range.
+5. A script run by its real path inside the repo picked up the repo's `uv.toml`, even from another working directory. The same script run through a symlink, which is how `~/.claude/skills` reaches this repo, did not.
+6. A `.python-version` file was found from subdirectories, also with `--no-project`.
+7. uv compares the date with the upload time of each file, not of the release. It reads a bare date (`2026-10-19`) in the machine's local time zone, and an RFC 3339 timestamp (`2026-10-20T00:00:00Z`) as written.
+
+The plan must re-check items 2 to 6 before it relies on them.
+
+Nested worktrees: this repo's worktrees live inside the main checkout, at `.claude/worktrees/<name>/`. uv searches parent directories for `uv.toml` and `.python-version`. So after the change merges, a worktree on a branch that lacks those files inherits the main checkout's freeze date and interpreter, with no sign of it.
+
+### Related live work
+
+- Plan 63 (conformance gaps, branch `claude/plan-35-conformance-gaps-427f5e`) touches `build/run_commit_lints.sh`, `install.py` and `build/test_runtime_support.py`.
+- Plan 64 (bayesian-workflow and recommend-probabilistic-model routing) edits bayesian-workflow prose that holds Role 3 and Role 4 citations.
+- The model-lifecycle spec (PR #106) adds bayesian-workflow sections.
+- `CLAUDE.md` has 153 lines against a 200-line budget.
+
+## Decisions (owner, 2026-10-21)
+
+| # | Question | Decision |
+|---|---|---|
+| D1 | How the checks choose versions | Exact pins in one file, plus a separate drift run on the newest releases. Not a floating gate |
+| D2 | Pin scope | One version per package for the whole repo. A check differs only through a named override with a reason |
+| D3 | Packages the file does not name | One freeze date. Every check resolves as of that date (uv `exclude-newer`). No lock file |
+| D4 | Python | The file sets only the dev interpreter. Script floors (3.11, 3.12) and the 3.9 floor stay user promises in their own files |
+| D5 | Prose citations | An offline lint compares each version literal in `skills/` with the file |
+| D6 | When the drift run happens | On demand, and in a weekly advisory CI job |
+| D7 | Shape | One file that a person edits, with synced outputs that uv reads natively, and a `--check` mode as a commit lint |
+| D8 | User runs of skill scripts | They float within the header floors. The freeze date covers only the repo's checks |
+
+## Requirements
+
+### R1. The versions file
+
+R1.1. `build/versions.toml` is the only file in which a person sets a package version or the dev interpreter. Its tables:
+
+```toml
+[python]
+dev = '3.13'                 # repo checks and documented commands
+
+[freeze]
+date = 2026-10-19            # a TOML date; every check resolves as of this date
+
+[packages]                   # one exact version each; a check runs these
+arviz = '1.3.0'
+numpyro = '0.22.0'
+jax = '0.12.0'
+# ... every package that a [gates] entry or a skill citation names and a check runs
+
+[cited]                      # prose cites these, but no check runs them
+altair = '6.2'
+plotly = '6.8'
+optuna = '5.0.0'
+great-docs = '0.17.0'
+
+[gates]                      # the packages each check installs, pinned from [packages]
+snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']
+jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']
+
+# [[override]]               # gate, package, version, reason; empty at the start
+```
+
+The values above are the 2026-10-21 state. The plan sets the real values with `bump` (R3).
+
+R1.2. A package gets a `[packages]` entry in two cases. The first is when a `[gates]` list names it. The second is when a check installs it and skill text or a script header states a version for it. Polars is in `[packages]` by the second case: the suites install it, and three headers floor it. Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry, and the freeze date fixes them.
+
+R1.3. A package gets a `[cited]` entry when skill prose cites a version for it and no check runs it.
+
+R1.4. A check uses a version other than the `[packages]` value only through an `[[override]]` entry with four keys: `gate`, `package`, `version` and `reason`.
+
+R1.5. The file does not hold the script floors (`requires-python`, `compatibility:`) or the 3.9 floor of `install.py` and the read-only agent guard.
+
+### R2. Synced outputs and readers
+
+R2.1. `build/versions.py sync` writes three files from `build/versions.toml`, and `sync --check` fails when any of them differs:
+
+| Output | Content | Effect |
+|---|---|---|
+| `.python-version` (repo root) | the `[python] dev` value | Every `uv run` in the repo uses the dev interpreter with no `--python` flag, from any subdirectory |
+| `uv.toml` (repo root) | `exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date | Every `uv run` from the repo root resolves as of the freeze date, script headers included. Files uploaded on the freeze date itself (UTC) are included. CI and a local machine resolve alike, because uv reads a bare date in local time (Inventory, uv item 7) |
+| `skills/uv.toml` | no settings, and a comment that names `build/versions.toml` | It shadows the root date under `skills/`, so a skill script that a user runs floats within its floors (D8), whatever the path form |
+
+`skills/uv.toml` is a file, not a skill. `install.py:97-101`, `build/check_frontmatter.py:574-575` and `build/check_provenance.py:40-44` read only directories that hold a `SKILL.md`, so they skip it. The plan confirms that Claude Code, Codex and Gemini also ignore a plain file in a skills directory.
+
+R2.2. `build/versions.py` gives the other build scripts these values: the dev Python, the freeze date, and `stack(gate)`, the list of `pkg==version` strings for a gate after overrides.
+
+R2.3. These readers take their versions from R2.2 and from no literal:
+- `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`. Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date.
+- `build/check_jax_examples.py` and its documented command: they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`.
+- `build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python. A `with` or `extras` package that `[packages]` names gets its pin. Each run passes `--exclude-newer <date>` explicitly, because suites under `skills/` sit below the shadow file. The `hooks` suite keeps its explicit `/usr/bin/python3` run.
+- `build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`: they can run outside the repo's working directory, so they take the interpreter from the file and not from a literal.
+
+R2.4. Documented commands spell no interpreter or package version. This covers `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `build/run_commit_lints.sh`, the usage docstrings in `build/`, `hooks/` and the skill test files, and the commands in skill text. A command that needs a pinned stack uses the runner (R3):
+
+```bash
+uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/
+```
+
+### R3. Operations
+
+R3.1. `build/versions.py` has these subcommands:
+
+| Subcommand | Network | Effect |
+|---|---|---|
+| `sync [--check]` | no | Writes or checks the R2.1 outputs |
+| `run <gate> [--pin pkg==X ...] -- <cmd>` | yes | Runs `<cmd>` under `uv run` with the gate's stack and the freeze date |
+| `verify [--pin pkg==X ...]` | yes | Runs the re-verify set on the file's versions: Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras` |
+| `bump [--date D] [--only pkg ...]` | yes | Sets the freeze date (default: today, UTC) and does one joint resolve, as of that date and on the dev Python, of every `[packages]` entry together. It rewrites `[packages]` from the result and runs `sync`. With `--only`, the other entries stay at their pins in the joint resolve |
+| `drift [--pin pkg==X ...]` | yes | Does the same joint resolve as `bump`, with no freeze date and no pins, in two passes: first on the dev Python, then on the newest stable Python. For each pass it reports, for each `[packages]` and `[cited]` entry, the pinned version, the resolved version, the newest release and its upload date. It flags each package that resolves below its newest release. It then runs the re-verify set on each pass's versions and reports each gate's result for each pass |
+| `check` | no | The R4 lint |
+
+R3.2. `bump` never changes `[cited]`. A person changes a `[cited]` entry only after re-checking the cited behavior.
+
+R3.3. `--pin` changes one package for one run and never edits the file.
+
+R3.4. A bump follows these steps, in one change:
+1. Run `bump`.
+2. Run `verify`.
+3. Run `check`, which lists each prose citation that the bump made stale.
+4. Re-verify or rewrite each stale citation (R5.5).
+5. Commit.
+
+R3.5. Exit codes:
+- `run` and `verify` exit non-zero on any failure.
+- `drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network. The report states which.
+- `bump` exits 2 on a network or resolve failure and names the step.
+
+R3.6. Errors name their cause:
+- A missing or invalid file names the key.
+- An unknown package in `[gates]` or `[[override]]` names the package.
+- An invalid date names the value.
+- A pin uploaded after the freeze date names the package and the date.
+- A joint resolve that fails in `bump` or `drift` names the packages in conflict. This is how a conflict under D2 (one version per package) becomes visible.
+
+### R4. The `check` lint
+
+R4.1. `versions.py check` runs offline. It fails on any of these:
+1. **Sync.** An R2.1 output differs from the file.
+2. **Interpreter literals.** A live file spells `--python 3.<n>`. Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`. An interpreter path such as `/usr/bin/python3` is not a literal.
+3. **Prose citations.** In `skills/**/*.md` and the script headers under `skills/*/scripts/`, `check` finds each version that stands next to a `[packages]` name, a `[cited]` name or "Python", and classifies it by form:
+   - **Equality** ("verified on Polars 1.42", `numpyro==0.22.0`, "checked in the 0.22.0") must equal the file's value at the cited precision.
+   - **Range** (`>=`, `≥`, `<`, `,<0.18`, "3.11+") must contain the file's value.
+   - **History** ("ArviZ 0.23", "and earlier") passes only through the `HISTORICAL` allowlist.
+4. **Floors.** Each script's `requires-python` must match the Python floor in its `SKILL.md` `compatibility:` line. The dev Python must satisfy each floor.
+
+R4.2. `HISTORICAL` is keyed by the literal phrase, not by file and line, and each entry gives its reason. It follows the model of `DOCUMENTED_ABSENT` in `build/check_snippets.py`.
+
+R4.3. `check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures. Illustrative text, such as the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`, goes on `HISTORICAL` with a reason.
+
+R4.4. Known limit: `check` sees only the package names that the file lists. The `drift` report states this limit.
+
+### R5. Commit lints and CI
+
+R5.1. `versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint in `build/run_commit_lints.sh`. `CLAUDE.md`'s count of commit lints, `build/githooks/pre-commit` and `build/test_commit_lints.py` change with it.
+
+R5.2. `.github/workflows/lints.yml` keeps its steps. `setup-uv` takes the interpreter from `.python-version`.
+
+R5.3. A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch. It follows these rules:
+- It has `permissions: contents: read`, and it pins its actions by SHA, as `lints.yml` does.
+- It writes the drift report to the job summary.
+- The job may go red, but it is not a required check.
+- It never opens an issue or a PR, and it never commits.
+
+R5.4. Known limit: GitHub disables scheduled workflows in a public repository after 60 days with no activity. The spec accepts this. It does not work around it.
+
+### R6. Migration
+
+The first plan does these, in order:
+1. Re-probe the uv behaviors in the Inventory (items 2 to 6, the shadow file under `skills/`, and nested-worktree inheritance) on the uv version of the day. Record the results in `specs/verification/`. If a behavior changed, stop and bring the change to the owner before going on.
+2. Write `build/versions.toml`, then run `bump` and `verify` on the day of execution.
+3. Use one JAX version for both gates. The JAX CPU examples must pass on it. If they fail, add a temporary `[[override]]` for `jax-cpu` with its reason, and log a deferred item to remove it.
+4. Pin Polars at the latest release (2.0.0 on 2026-10-21). This keeps the `polars>=2.0` floors that the portability plan set on purpose (`specs/plans/completed/53-agent-skills-portability.md`, decision DF4).
+5. For each stale citation, either re-verify the cited behavior on the file's version and update the citation, or move it to `HISTORICAL` with the reason "verified on X, not re-checked on Y" and log a deferred item to re-check it. Never change a citation's version without a re-check. The known stale citations are the Polars, Altair and plotly lines, `skills/bayesian-workflow/references/model-comparison.md:130`, `references/model-criticism.md:196` and `skills/deep-learning/references/frameworks.md:94-95`.
+6. Correct the open Gaussian-process item at `specs/deferred_items.md:4492`, which says "on the pinned 0.21.0".
+7. Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`, and point their readers at `build/versions.toml`. The plan-32 verification records keep their old versions as history.
+8. Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python.
+
+### R7. Tests
+
+The plan writes each test before its code (red, then green).
+- **`versions.py` units.** Cover schema validation, `stack()` with and without an override, and the exact text that `sync` writes.
+- **`check` findings.** Cover each form (equality, range, history), the interpreter-literal rule and the floors rule. Each finding has a positive control: a seeded stale literal that must fail.
+- **`run_suites.py` tests.** `build/test_run_suites.py` and `build/test_check_frontmatter.py:434` build their expected commands from the file, not from a `3.13` literal.
+- **Exit codes.** Test the `drift`, `verify` and `bump` exit codes against a stub uv, as `hooks/test_project_hooks.py` does.
+
+## Out of scope
+
+- GitHub Action SHAs, the uv version, Claude Code binaries and Node.
+- The data-source vintages in geographic-codes and classification-codes.
+- The upstream Great Docs skills that `skills/document-python-package/scripts/preflight.py` fetches.
+- Dated records in `specs/`.
+- Raising user floors automatically.
+
+## Provenance and conformance
+
+No third-party text enters the repo, so `NOTICE` and the license files do not change. The `CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`, and `check_conformance.py` runs before each commit.
+
+## Order with other work
+
+- **Plan 63.** It edits `build/run_commit_lints.sh`. This work lands after plan 63, or the plan that lands second rebases onto the other and re-reads the anchors.
+- **Plan 64 and the model-lifecycle spec.** They edit bayesian-workflow prose that holds Role 3 and Role 4 citations. The R6 prose fixes rebase onto them and re-take the line numbers.
+- **`CLAUDE.md` line budget.** R2.4 removes the version flags from the commands, so `CLAUDE.md` gets shorter.
+</spec>
+
+<acceptance-preamble>
+```python
+import datetime
+import importlib
+import os
+import re
+import stat
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+import pytest
+
+def _find_repo() -> Path:
+    here = Path(__file__).resolve()
+    for p in [here.parent, *here.parents]:
+        if (p / "build" / "versions.py").exists() or (p / "build" / "suites.toml").exists():
+            return p
+    raise RuntimeError("repo root not found")
+
+
+REPO = _find_repo()
+sys.path.insert(0, str(REPO / "build"))
+
+def mod(name):
+    return importlib.import_module(name)
+
+
+SNIPPETS = ["arviz", "arviz-base", "arviz-stats", "arviz-plots", "numpyro", "jax", "numpy", "matplotlib"]
+JAX_CPU = ["jax", "jaxlib", "flax", "optax", "orbax-checkpoint", "equinox", "diffrax", "e3nn-jax", "numpy"]
+
+def toml_text(extra=""):
+    return (
+        "[python]\n"
+        "dev = '3.13'\n\n"
+        "[freeze]\n"
+        "date = 2026-10-19\n\n"
+        "[packages]\n"
+        "arviz = '1.3.0'\n"
+        "arviz-base = '1.3.1'\n"
+        "arviz-stats = '1.3.3'\n"
+        "arviz-plots = '1.3.2'\n"
+        "numpyro = '0.22.0'\n"
+        "jax = '0.12.0'\n"
+        "jaxlib = '0.12.0'\n"
+        "numpy = '2.5.3'\n"
+        "matplotlib = '3.11.2'\n"
+        "flax = '0.12.10'\n"
+        "optax = '0.2.8'\n"
+        "orbax-checkpoint = '0.12.6'\n"
+        "equinox = '0.13.8'\n"
+        "diffrax = '0.7.2'\n"
+        "e3nn-jax = '0.21.0'\n"
+        "polars = '2.0.0'\n\n"
+        "[cited]\n"
+        "altair = '6.2'\n"
+        "plotly = '6.8'\n"
+        "optuna = '5.0.0'\n"
+        "great-docs = '0.17.0'\n\n"
+        "[gates]\n"
+        f"snippets = {SNIPPETS!r}\n"
+        f"jax-cpu = {JAX_CPU!r}\n"
+        + extra
+    )
+
+
+OVERRIDE = (
+    "\n[[override]]\n"
+    "gate = 'jax-cpu'\n"
+    "package = 'jax'\n"
+    "version = '0.11.2'\n"
+    "reason = 'CPU examples fail on 0.12'\n"
+)
+
+def write_root(tmp_path, text=None):
+    root = tmp_path / "repo"
+    (root / "build").mkdir(parents=True, exist_ok=True)
+    (root / "skills").mkdir(exist_ok=True)
+    (root / "build" / "versions.toml").write_text(text or toml_text())
+    return root
+
+@pytest.fixture
+
+def stub_uv(tmp_path, monkeypatch):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    log = tmp_path / "uv.log"
+    uv = bin_dir / "uv"
+    uv.write_text(
+        "#!/bin/sh\n"
+        'printf "%s\\n" "$@" >> "$UV_STUB_LOG"\n'
+        'echo "---" >> "$UV_STUB_LOG"\n'
+        'if [ -n "$UV_STUB_STDERR" ]; then printf "%s\\n" "$UV_STUB_STDERR" >&2; fi\n'
+        'exit "${UV_STUB_EXIT:-0}"\n'
+    )
+    uv.chmod(uv.stat().st_mode | stat.S_IEXEC)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
+    monkeypatch.setenv("UV_STUB_LOG", str(log))
+    return log
+
+
+# ---------- R1 / R2.1 / R2.2: the file, outputs, stack ----------
+
+def _resolver_recorder(result):
+    calls = []
+
+    def resolver(*args, **kwargs):
+        names = ["requirements", "python_version", "cutoff"]
+        call = dict(zip(names, args))
+        call.update(kwargs)
+        calls.append(call)
+        if isinstance(result, Exception):
+            raise result
+        return dict(result)
+
+    return resolver, calls
+
+
+RESOLVED = {
+    "arviz": "1.3.0", "arviz-base": "1.3.1", "arviz-stats": "1.3.3", "arviz-plots": "1.3.2",
+    "numpyro": "0.22.0", "jax": "0.12.0.1", "jaxlib": "0.12.0.1", "numpy": "2.5.3",
+    "matplotlib": "3.11.2", "flax": "0.12.10", "optax": "0.2.8", "orbax-checkpoint": "0.12.6",
+    "equinox": "0.13.8", "diffrax": "0.7.2", "e3nn-jax": "0.21.0", "polars": "2.0.0",
+    "scipy": "1.16.0", "tensorstore": "0.1.80",
+}
+
+def _fake_fetch(uploads, newest=None):
+    """uploads: {name: {version: iso_time}}"""
+
+    def fetch(url):
+        name = url.rstrip("/").split("/")[-2]
+        rel = uploads.get(name, {"1.0.0": "2026-01-01T00:00:00Z"})
+        top = (newest or {}).get(name) or max(rel)
+        files = lambda t: [{"upload_time_iso_8601": t, "upload_time": t.rstrip("Z"), "yanked": False, "packagetype": "bdist_wheel"}]
+        return {
+            "info": {"name": name, "version": top},
+            "releases": {ver: files(t) for ver, t in rel.items()},
+            "urls": files(rel[top]),
+        }
+
+    return fetch
+
+class _Py(str):
+    def __call__(self, *a, **k):
+        return str(self)
+
+def _drift(root, result, runner_code):
+    versions = mod("versions")
+    resolver, calls = _resolver_recorder(result)
+    code, report = versions.drift(
+        root,
+        fetch=_fake_fetch(DRIFT_UPLOADS),
+        resolver=resolver,
+        newest_python=_Py("3.14"),
+        runner=lambda *a, **k: runner_code,
+    )
+    return code, report, calls
+
+def make_repo(tmp_path, files=None, text=None):
+    versions = mod("versions")
+    root = write_root(tmp_path, text)
+    base = {
+        "skills/demo/SKILL.md": CLEAN_SKILL,
+        "skills/demo/scripts/run.py": CLEAN_SCRIPT,
+        "CLAUDE.md": CLEAN_CLAUDE,
+    }
+    base.update(files or {})
+    for rel, body in base.items():
+        p = root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(body)
+    versions.sync(root)
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
+    return root
+
+def findings(root, historical=None):
+    return mod("versions_check").check(root, historical={} if historical is None else historical)
+</acceptance-preamble>
+
+<task number="2" title="`versions.py` core">
+<interfaces>
+**Interfaces:**
+- Consumes: nothing.
+- Produces (later tasks rely on these exact names):
+  - `VersionsError(Exception)`. `normalize(name) -> str` (PEP 503 form). `version_tuple(text) -> tuple[int, ...]`. `compare(a, b) -> -1 | 0 | 1` (zero-padded).
+  - `Override(gate, package, version, reason)`. `Versions(dev_python, freeze, packages, cited, gates, overrides)` with `.cutoff -> str`, `.stack(gate, pins=None) -> list[str]` and `.pins() -> dict[str, str]`.
+  - `parse(text, where=VERSIONS_FILE) -> Versions`. `load(root=REPO) -> Versions`. `rewrite(text, date=None, packages=None) -> str`. `outputs(v) -> dict[str, str]`. `sync(root, check=False) -> list[str]`.
+  - `SUBCOMMANDS` (name -> `(add_parser, handler)`), `build_parser()`, `main(argv=None, root=REPO) -> int`.
+  - Later tasks insert library code above the line `# ---- command line` and command code above `SUBCOMMANDS = {`.
+</interfaces>
+<planner-tests>
+```python
+'''Tests for build/versions.py: the file's schema, the synced outputs, the uv argv it builds, and the
+bump, verify and drift flows against a stub uv. Nothing here uses the network or a real uv: the stub
+is a script first on PATH, as hooks/test_project_hooks.py does it.'''
+import datetime
+
+import pytest
+
+import versions
+from versions import VersionsError
+
+
+GOOD = '''\
+[python]
+dev = '3.13'                 # repo checks
+
+[freeze]
+date = 2026-10-19            # every check resolves as of this date
+
+[packages]
+alpha = '1.2.0'
+beta-two = '2.0.0'
+gamma = '0.5'
+
+[cited]
+delta = '6.2'
+
+[gates]
+snippets = ['alpha', 'beta-two']
+jax-cpu = ['alpha', 'gamma']
+'''
+
+
+WITH_OVERRIDE = GOOD + '''
+[[override]]
+gate = 'jax-cpu'
+package = 'alpha'
+version = '1.1.0'
+reason = 'jax-cpu needs the older alpha'
+'''
+
+
+def make_root(tmp_path, text=GOOD):
+    (tmp_path / 'build').mkdir()
+    (tmp_path / 'build' / 'versions.toml').write_text(text)
+    (tmp_path / 'skills').mkdir()
+    return tmp_path
+
+
+def test_parse_reads_every_table():
+    v = versions.parse(WITH_OVERRIDE)
+    assert (v.dev_python, v.freeze) == ('3.13', datetime.date(2026, 10, 19))
+    assert v.packages == {'alpha': '1.2.0', 'beta-two': '2.0.0', 'gamma': '0.5'}
+    assert v.cited == {'delta': '6.2'}
+    assert v.gates == {'snippets': ('alpha', 'beta-two'), 'jax-cpu': ('alpha', 'gamma')}
+    assert v.overrides == (versions.Override('jax-cpu', 'alpha', '1.1.0', 'jax-cpu needs the older alpha'),)
+
+
+def test_cutoff_is_midnight_utc_on_the_freeze_date():
+    assert versions.parse(GOOD).cutoff == '2026-10-19T00:00:00Z'
+    assert versions.parse(GOOD.replace('2026-10-19', '2026-12-31')).cutoff == '2026-12-31T00:00:00Z'
+
+
+def test_stack_without_an_override():
+    v = versions.parse(GOOD)
+    assert v.stack('snippets') == ['alpha==1.2.0', 'beta-two==2.0.0']
+    assert v.stack('jax-cpu') == ['alpha==1.2.0', 'gamma==0.5']
+
+
+def test_stack_with_an_override_changes_only_its_gate():
+    v = versions.parse(WITH_OVERRIDE)
+    assert v.stack('snippets') == ['alpha==1.2.0', 'beta-two==2.0.0']
+    assert v.stack('jax-cpu') == ['alpha==1.1.0', 'gamma==0.5']
+
+
+def test_a_pin_beats_an_override_and_matches_a_normalised_name():
+    v = versions.parse(WITH_OVERRIDE)
+    assert v.stack('jax-cpu', {'alpha': '9.9'}) == ['alpha==9.9', 'gamma==0.5']
+    assert v.stack('snippets', {'beta_two': '3.0'}) == ['alpha==1.2.0', 'beta-two==3.0']
+
+
+def test_stack_of_an_unknown_gate_names_the_gates():
+    with pytest.raises(VersionsError, match=r"unknown gate 'third'.*snippets, jax-cpu"):
+        versions.parse(GOOD).stack('third')
+
+
+@pytest.mark.parametrize('old, new, expected', [
+    ("dev = '3.13'", "dev = 3.13", r"\[python\] dev must be a string"),
+    ("dev = '3.13'", "dev = 'three'", r"'three'"),
+    ('date = 2026-10-19', "date = '2026-10-19'", r"\[freeze\] date must be a TOML date.*'2026-10-19'"),
+    ('date = 2026-10-19', 'date = 2026-10-19T12:00:00Z', r"\[freeze\] date must be a TOML date"),
+    ("alpha = '1.2.0'", "alpha = '1.2.x'", r"\[packages\] alpha: invalid version '1\.2\.x'"),
+    ("delta = '6.2'", "alpha = '6.2'", r"alpha is in both \[packages\] and \[cited\]"),
+    ("['alpha', 'beta-two']", "['alpha', 'zeta']", r"\[gates\] snippets names zeta, which has no \[packages\] entry"),
+    ("['alpha', 'beta-two']", "[]", r"\[gates\] snippets must be a non-empty list"),
+    ('[cited]', '[cites]', r"unknown table 'cites'"),
+])
+def test_invalid_files_name_their_cause(old, new, expected):
+    with pytest.raises(VersionsError, match=expected):
+        versions.parse(GOOD.replace(old, new))
+
+
+@pytest.mark.parametrize('mutate, expected', [
+    (lambda t: t.replace("gate = 'jax-cpu'", "gate = 'third'"), r"unknown gate 'third'"),
+    (lambda t: t.replace("package = 'alpha'", "package = 'gamma2'"), r"gamma2 is not in gate jax-cpu"),
+    (lambda t: t.replace("reason = 'jax-cpu needs the older alpha'", "reason = ''"), r"missing key 'reason'"),
+    (lambda t: t.replace("version = '1.1.0'", "version = 'old'"), r"invalid version 'old'"),
+])
+def test_invalid_overrides(mutate, expected):
+    with pytest.raises(VersionsError, match=expected):
+        versions.parse(mutate(WITH_OVERRIDE))
+
+
+def test_a_missing_file_names_the_path(tmp_path):
+    with pytest.raises(VersionsError, match=r'build/versions\.toml: cannot read'):
+        versions.load(tmp_path)
+
+
+def test_invalid_toml_names_the_file():
+    with pytest.raises(VersionsError, match=r'build/versions\.toml: invalid TOML'):
+        versions.parse('[python\n')
+
+
+def test_outputs_are_exactly_these_files():
+    out = versions.outputs(versions.parse(GOOD))
+    assert out['.python-version'] == '3.13\n'
+    assert out['uv.toml'].endswith('exclude-newer = "2026-10-19T00:00:00Z"\n')
+    assert out['uv.toml'].startswith('# Written by build/versions.py sync from build/versions.toml. Do not edit.\n')
+    settings = [line for line in out['skills/uv.toml'].splitlines() if line and not line.startswith('#')]
+    assert settings == []  # the shadow file sets nothing
+    assert 'build/versions.toml' in out['skills/uv.toml']
+    assert set(out) == {'.python-version', 'uv.toml', 'skills/uv.toml'}
+
+
+def test_sync_writes_the_outputs_and_check_then_passes(tmp_path):
+    root = make_root(tmp_path)
+    assert versions.main(['sync', '--check'], root=root) == 1
+    assert versions.main(['sync'], root=root) == 0
+    assert (root / '.python-version').read_text() == '3.13\n'
+    assert versions.main(['sync', '--check'], root=root) == 0
+
+
+def test_sync_check_names_a_file_that_differs(tmp_path, capsys):
+    root = make_root(tmp_path)
+    versions.sync(root)
+    (root / 'uv.toml').write_text('exclude-newer = "2020-01-01T00:00:00Z"\n')
+    assert versions.sync(root, check=True) == ['uv.toml: differs; run build/versions.py sync']
+
+
+def test_rewrite_changes_the_date_and_the_package_values_only():
+    text = versions.rewrite(GOOD, datetime.date(2026, 11, 2), {'alpha': '1.3.0', 'gamma': '0.6'})
+    assert "alpha = '1.3.0'" in text and "gamma = '0.6'" in text
+    assert 'date = 2026-11-02            # every check resolves as of this date' in text
+    assert "beta-two = '2.0.0'" in text and "delta = '6.2'" in text   # [cited] never moves
+    assert "dev = '3.13'                 # repo checks" in text
+    assert versions.rewrite(text, datetime.date(2026, 10, 19), {'alpha': '1.2.0', 'gamma': '0.5'}) == GOOD
+
+
+def test_an_invalid_file_exits_2_with_the_cause(tmp_path, capsys):
+    root = make_root(tmp_path, GOOD.replace("'1.2.0'", "'oops'"))
+    assert versions.main(['sync'], root=root) == 2
+    assert "[packages] alpha: invalid version 'oops'" in capsys.readouterr().err
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "`build/versions.py sync` writes three files from `build/versions.toml`, and `sync --check` fails when any of them differs:"
+# task: 2
+
+# spec: "`sync [--check]` | no | Writes or checks the R2.1 outputs"
+# task: 2
+
+# spec: "| `.python-version` (repo root) | the `[python] dev` value |"
+# task: 2
+
+# spec: "| `uv.toml` (repo root) | `exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date |"
+# task: 2
+
+# spec: "| `uv.toml` (repo root) | `exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date |"
+# task: 2
+
+# spec: "| `skills/uv.toml` | no settings, and a comment that names `build/versions.toml` |"
+# task: 2
+
+# spec: "R2.2. `build/versions.py` gives the other build scripts these values: the dev Python, the freeze date, and `stack(gate)`, the list of `pkg==version` strings for a gate after overrides."
+# task: 2
+
+# spec: "R1.4. A check uses a version other than the `[packages]` value only through an `[[override]]` entry with four keys: `gate`, `package`, `version` and `reason`."
+# task: 2
+
+# spec: "R1.4. A check uses a version other than the `[packages]` value only through an `[[override]]` entry with four keys: `gate`, `package`, `version` and `reason`."
+# task: 2
+
+# spec: "A missing or invalid file names the key."
+# task: 2
+
+# spec: "A missing or invalid file names the key."
+# task: 2
+
+# spec: "An unknown package in `[gates]` or `[[override]]` names the package."
+# task: 2
+
+# spec: "An unknown package in `[gates]` or `[[override]]` names the package."
+# task: 2
+
+# spec: "An invalid date names the value."
+# task: 2
+
+# spec: "R3.3. `--pin` changes one package for one run and never edits the file."
+# task: 2
+</acceptance-tests>
+<acceptance-flags>
+<flag><spec>**Equality** ("verified on Polars 1.42", `numpyro==0.22.0`, "checked in the 0.22.0") must equal the file's value at the cited precision.</spec><plan>`compare(a, b) -> -1 | 0 | 1` (zero-padded).</plan></flag>
+</acceptance-flags>
+</task>
+
+<task number="3" title="`bump` and the joint resolve">
+<interfaces>
+**Interfaces:**
+- Consumes: Task 2's `load`, `parse`, `rewrite`, `sync`, `Versions`, `normalize`, `SUBCOMMANDS`.
+- Produces: `resolve(requirements, python_version, cutoff) -> dict[str, str]` (a joint `uv pip compile`, normalised name to version, transitive pins included, and with `cutoff=None` it runs `uv --no-config` so the repo's `uv.toml` does not apply). `requirements(v, only=(), pins=None) -> list[str]`. `bump(root, date, only=(), resolver=None) -> list[str]`. `parse_date(text) -> datetime.date`. The `bump` subcommand.
+</interfaces>
+<planner-tests>
+```python
+STUB = '''\
+#!{python}
+import json, sys
+cfg = json.load(open({config!r}))
+args = sys.argv[1:]
+with open({log!r}, 'a') as log:
+    log.write(json.dumps(args) + '\\n')
+if 'compile' in args:
+    sys.stdout.write(cfg.get('compile_out', ''))
+    sys.stderr.write(cfg.get('compile_err', ''))
+    sys.exit(cfg.get('compile_rc', 0))
+if args[:2] == ['python', 'list']:
+    print(json.dumps(cfg.get('pythons', [])))
+    sys.exit(0)
+sys.exit(cfg.get('run_rc', 0))
+'''
+
+
+@pytest.fixture
+def stub_uv(tmp_path, monkeypatch):
+    bin_dir = tmp_path / 'stub-bin'
+    bin_dir.mkdir()
+    config, log = tmp_path / 'stub.json', tmp_path / 'uv.log'
+    uv = bin_dir / 'uv'
+    uv.write_text(STUB.format(python=sys.executable, config=str(config), log=str(log)))
+    uv.chmod(0o755)
+    monkeypatch.setenv('PATH', f'{bin_dir}:/usr/bin:/bin')
+
+    class Stub:
+        def set(self, **cfg):
+            config.write_text(json.dumps(cfg))
+
+        def calls(self):
+            return [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+
+    stub = Stub()
+    stub.set()
+    return stub
+
+
+def test_requirements_leave_only_the_named_packages_free():
+    v = versions.parse(GOOD)
+    assert versions.requirements(v) == ['alpha', 'beta-two', 'gamma']
+    assert versions.requirements(v, only=['gamma']) == ['alpha==1.2.0', 'beta-two==2.0.0', 'gamma']
+    assert versions.requirements(v, pins={'beta-two': '1.0'}) == ['alpha', 'beta-two==1.0', 'gamma']
+    with pytest.raises(VersionsError, match=r'--only names zeta'):
+        versions.requirements(v, only=['zeta'])
+
+
+def test_bump_rewrites_the_file_and_the_outputs(tmp_path):
+    root = make_root(tmp_path)
+    seen = {}
+
+    def resolver(reqs, python, cutoff):
+        seen.update(reqs=reqs, python=python, cutoff=cutoff)
+        return {'alpha': '1.3.0', 'beta-two': '2.0.0', 'gamma': '0.5', 'extra': '1.0'}
+
+    changes = versions.bump(root, datetime.date(2026, 11, 2), resolver=resolver)
+    assert seen == {'reqs': ['alpha', 'beta-two', 'gamma'], 'python': '3.13', 'cutoff': '2026-11-02T00:00:00Z'}
+    assert changes == ['freeze: 2026-10-19 -> 2026-11-02', 'alpha: 1.2.0 -> 1.3.0']
+    v = versions.load(root)
+    assert v.freeze == datetime.date(2026, 11, 2) and v.packages['alpha'] == '1.3.0'
+    assert 'exclude-newer = "2026-11-02T00:00:00Z"' in (root / 'uv.toml').read_text()
+    assert v.cited == {'delta': '6.2'}
+
+
+def test_bump_fails_when_the_resolve_misses_a_package(tmp_path):
+    root = make_root(tmp_path)
+    with pytest.raises(VersionsError, match=r'resolve step: the joint resolve did not return gamma'):
+        versions.bump(root, datetime.date(2026, 11, 2), resolver=lambda *a: {'alpha': '1', 'beta-two': '2'})
+    assert versions.load(root).freeze == datetime.date(2026, 10, 19)   # nothing was written
+
+
+def test_resolve_passes_the_requirements_on_stdin_and_parses_the_pins(stub_uv):
+    stub_uv.set(compile_out='alpha==1.3.0\nBeta_Two==2.0.0 ; python_version > "3"\ntransitive==4.0\n')
+    got = versions.resolve(['alpha', 'beta-two'], '3.13', '2026-11-02T00:00:00Z')
+    assert got == {'alpha': '1.3.0', 'beta-two': '2.0.0', 'transitive': '4.0'}
+    assert stub_uv.calls() == [['pip', 'compile', '-', '--python-version', '3.13', '--no-header', '--no-annotate',
+                                '--quiet', '--exclude-newer', '2026-11-02T00:00:00Z']]
+
+
+def test_resolve_without_a_cutoff_ignores_the_config(stub_uv):
+    stub_uv.set(compile_out='alpha==1.3.0\n')
+    versions.resolve(['alpha'], '3.14', None)
+    assert stub_uv.calls()[0][:3] == ['--no-config', 'pip', 'compile']
+    assert '--exclude-newer' not in stub_uv.calls()[0]
+
+
+def test_a_failed_resolve_names_the_step_the_packages_and_uvs_reason(stub_uv):
+    stub_uv.set(compile_rc=1, compile_err='Because alpha and gamma conflict, no solution\n')
+    with pytest.raises(VersionsError) as err:
+        versions.resolve(['alpha', 'gamma'], '3.13', None)
+    assert 'resolve step' in str(err.value) and 'alpha, gamma' in str(err.value)
+    assert 'Because alpha and gamma conflict' in str(err.value)
+
+
+def test_bump_exits_2_and_names_the_step_when_the_resolve_fails(tmp_path, stub_uv, capsys):
+    root = make_root(tmp_path)
+    stub_uv.set(compile_rc=1, compile_err='no network\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    assert capsys.readouterr().err.startswith('bump: resolve step:')
+    assert versions.load(root).freeze == datetime.date(2026, 10, 19)
+
+
+def test_bump_rejects_an_invalid_date(tmp_path, capsys):
+    with pytest.raises(SystemExit) as err:
+        versions.main(['bump', '--date', '2026-13-40'], root=make_root(tmp_path))
+    assert err.value.code == 2
+    assert "invalid date '2026-13-40'" in capsys.readouterr().err
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "An invalid date names the value."
+# task: 3
+
+# spec: "Sets the freeze date (default: today, UTC) and does one joint resolve, as of that date and on the dev Python, of every `[packages]` entry together. It rewrites `[packages]` from the result and runs `sync`."
+# task: 3
+
+# spec: "Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry, and the freeze date fixes them."
+# task: 3
+
+# spec: "R3.2. `bump` never changes `[cited]`."
+# task: 3
+
+# spec: "With `--only`, the other entries stay at their pins in the joint resolve"
+# task: 3
+
+# spec: "A joint resolve that fails in `bump` or `drift` names the packages in conflict."
+# task: 3
+
+# spec: "`bump` exits 2 on a network or resolve failure and names the step."
+# task: 3
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="4" title="Write `build/versions.toml`, first `bump`, `sync` (spec R6 step 2, first half)">
+<interfaces>
+**Interfaces:**
+- Consumes: `bump`, `sync` from Tasks 2 and 3.
+- Produces: the file that Tasks 5 to 10 read. Gate names `snippets` and `jax-cpu`. The package list of Q2.
+</interfaces>
+<planner-tests>
+
+</planner-tests>
+<acceptance-tests>
+# spec: "R1.1. `build/versions.toml` is the only file in which a person sets a package version or the dev interpreter."
+# task: 4
+
+# spec: "The first is when a `[gates]` list names it."
+# task: 4
+
+# spec: "Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry, and the freeze date fixes them."
+# task: 4
+
+# spec: "R1.3. A package gets a `[cited]` entry when skill prose cites a version for it and no check runs it."
+# task: 4
+
+# spec: "R1.5. The file does not hold the script floors (`requires-python`, `compatibility:`) or the 3.9 floor of `install.py` and the read-only agent guard."
+# task: 4
+
+# spec: "`build/versions.py sync` writes three files from `build/versions.toml`, and `sync --check` fails when any of them differs:"
+# task: 4
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="5" title="`run` and the upload-date check">
+<interfaces>
+**Interfaces:**
+- Consumes: Tasks 2 and 4 (`Versions.stack`, the real file).
+- Produces: `RUNNER` (`'uv run python build/versions.py run'`), `runner_command(gate, tail) -> str` (the documented form of a pinned command), `uv_run_argv(v, gate, command, pins=None, python=None, freeze=True) -> list[str]` (`gate=None` leaves out the `--with` list), `parse_pins(v, specs) -> dict[str, str]` (names normalised, each must be a `[packages]` entry), `late_pins(v, specs, fetch=None) -> list[str]` (the specs whose release was first uploaded at or after the cutoff), `fetch_json(url) -> dict`, `run_process(argv, root, env) -> int`, `add_pin_options`, and the `run` subcommand.
+</interfaces>
+<planner-tests>
+```python
+def test_parse_pins():
+    v = versions.parse(GOOD)
+    assert versions.parse_pins(v, ['beta_two==3.1', 'alpha==1.0']) == {'beta-two': '3.1', 'alpha': '1.0'}
+    with pytest.raises(VersionsError, match=r"--pin 'alpha': write it as package==version"):
+        versions.parse_pins(v, ['alpha'])
+    with pytest.raises(VersionsError, match=r"--pin 'zeta==1\.0': zeta has no \[packages\] entry"):
+        versions.parse_pins(v, ['zeta==1.0'])
+
+
+def fake_pypi(uploaded='2026-10-01T10:00:00.000000Z', newest='9.9.9'):
+    def fetch(url):
+        return {'info': {'version': newest}, 'urls': [{'upload_time_iso_8601': uploaded}]}
+    return fetch
+
+
+def test_a_pin_uploaded_after_the_cutoff_names_the_package_and_the_dates():
+    v = versions.parse(GOOD)
+    late = versions.late_pins(v, ['alpha==1.2.0'], fake_pypi('2026-10-20T00:00:00.000000Z'))
+    assert late == ['alpha 1.2.0: uploaded 2026-10-20, after the freeze date 2026-10-19']
+    assert versions.late_pins(v, ['alpha==1.2.0'], fake_pypi('2026-10-18T23:59:59.000000Z')) == []
+
+
+def test_uv_run_argv_orders_python_cutoff_stack_command():
+    v = versions.parse(GOOD)
+    argv = versions.uv_run_argv(v, 'snippets', ['python', 'x.py'])
+    assert argv == ['uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-19T00:00:00Z',
+                    '--with', 'alpha==1.2.0', '--with', 'beta-two==2.0.0', 'python', 'x.py']
+    argv = versions.uv_run_argv(v, 'snippets', ['python', 'x.py'], {'alpha': '1.0'}, python='3.14', freeze=False)
+    assert argv == ['uv', 'run', '--python', '3.14', '--with', 'alpha==1.0', '--with', 'beta-two==2.0.0',
+                    'python', 'x.py']
+    assert versions.uv_run_argv(v, None, ['python', 'y.py']) == [
+        'uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-19T00:00:00Z', 'python', 'y.py']
+
+
+def test_runner_command_is_the_documented_form():
+    assert versions.runner_command('snippets', 'python build/check_snippets.py --run skills/') == (
+        'uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/')
+
+
+def test_run_builds_the_uv_command_and_returns_its_status(tmp_path, stub_uv, monkeypatch):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    stub_uv.set(run_rc=3)
+    assert versions.main(['run', 'snippets', '--pin', 'alpha==1.0', '--', 'python', 'x.py'], root=root) == 3
+    assert stub_uv.calls() == [['run', '--python', '3.13', '--exclude-newer', '2026-10-19T00:00:00Z',
+                                '--with', 'alpha==1.0', '--with', 'beta-two==2.0.0', 'python', 'x.py']]
+
+
+def test_run_refuses_a_pin_uploaded_after_the_freeze_date(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi('2026-10-25T00:00:00.000000Z'))
+    assert versions.main(['run', 'snippets', '--', 'python', 'x.py'], root=root) == 2
+    assert 'alpha 1.2.0: uploaded 2026-10-25, after the freeze date 2026-10-19' in capsys.readouterr().err
+    assert stub_uv.calls() == []
+
+
+def test_run_needs_a_command(tmp_path):
+    with pytest.raises(SystemExit) as err:
+        versions.main(['run', 'snippets'], root=make_root(tmp_path))
+    assert err.value.code == 2
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/"
+# task: 5
+
+# spec: "| `run <gate> [--pin pkg==X ...] -- <cmd>` | yes | Runs `<cmd>` under `uv run` with the gate's stack and the freeze date |"
+# task: 5
+
+# spec: "`run` and `verify` exit non-zero on any failure."
+# task: 5
+
+# spec: "R3.3. `--pin` changes one package for one run and never edits the file."
+# task: 5
+
+# spec: "A pin uploaded after the freeze date names the package and the date."
+# task: 5
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="6" title="`check_snippets.py` reads the file (spec R2.3), amendment A3">
+<interfaces>
+**Interfaces:**
+- Consumes: `versions.runner_command` (Task 5).
+- Produces: `check_snippets.API_REMEDIATION` and `RUN_REMEDIATION` as runner commands. `snippet_preamble.PINNED` no longer exists.
+</interfaces>
+<planner-tests>
+```python
+def test_the_remediation_commands_use_the_runner_and_spell_no_version():
+    import versions
+    assert check_snippets.API_REMEDIATION == versions.runner_command(
+        'snippets', 'python build/check_snippets.py --api <paths>')
+    assert check_snippets.RUN_REMEDIATION == versions.runner_command(
+        'snippets', 'python build/check_snippets.py --run <paths>')
+    for command in (check_snippets.API_REMEDIATION, check_snippets.RUN_REMEDIATION):
+        assert not any(mark in command for mark in ('==', '>=', '--python', '--with'))
+
+
+def test_the_preamble_module_no_longer_pins_packages():
+    import snippet_preamble
+    assert not hasattr(snippet_preamble, 'PINNED')
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`."
+# task: 6
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="7" title="`run_suites.py` reads the file (spec R2.3)">
+<interfaces>
+**Interfaces:**
+- Consumes: `versions.load`, `Versions.pins`, `Versions.cutoff`, `versions.parse_pins`, `versions.normalize`.
+- Produces: `run_suites.Pins(python, cutoff, packages)` with `Pins.from_versions(v, python=None, freeze=True, user_pins=None)` and `Pins.spec(dep)`. `run_suites.DEV == 'dev'`. `runs(suite, pins, extras=False, pytest_args=())`, `execute(root, suites, pins, extras, pytest_args, run_one)`, `list_suites(suites, pins, extras, pytest_args)` and `main(argv, root, run_one, pins=None)`. The options `--pin`, `--python` and `--no-freeze`. In `suites.toml`, `dev` stands for the dev Python.
+</interfaces>
+<planner-tests>
+```text
+def test_a_default_run_has_the_form_claude_md_used():
+    [run] = rs.runs(fixture_suites()[0])
+    assert run.label == 'alpha (3.13)'
+    assert run.argv == ('uv', 'run', '--python', '3.13', '--with', 'pytest', '--with', 'polars',
+                        'python', '-m', 'pytest', '-q')
+    assert run.shell() == ('cd skills/alpha/scripts && uv run --python 3.13 --with pytest '
+                           '--with polars python -m pytest -q')
+
+
+def test_extras_and_pytest_args_follow_the_deps_and_are_quoted():
+    [run] = rs.runs(fixture_suites()[0], extras=True, pytest_args=('-k', 'a and b'))
+    assert run.shell() == ("cd skills/alpha/scripts && uv run --python 3.13 --with pytest "
+                           "--with polars --with 'arviz>=1.0' python -m pytest -q -k 'a and b'")
+
+
+def test_each_python_gets_its_own_run_in_order():
+    first, second = rs.runs(fixture_suites()[2])
+    assert (first.python, second.python) == ('3.13', '/usr/bin/python3')
+    assert second.shell() == 'cd tools/inner && uv run --python /usr/bin/python3 --with pytest python -m pytest -q'
+```
+
+```text
+def test_a_default_run_has_the_form_claude_md_used():
+    [run] = rs.runs(fixture_suites()[0], PINS)
+    assert run.label == f'alpha ({DEV})'
+    assert run.argv == ('uv', 'run', '--python', DEV, '--exclude-newer', V.cutoff, '--with', 'pytest',
+                        '--with', 'polars==9.9.9', 'python', '-m', 'pytest', '-q')
+    assert run.shell() == (f'cd skills/alpha/scripts && uv run --python {DEV} --exclude-newer {V.cutoff} '
+                           '--with pytest --with polars==9.9.9 python -m pytest -q')
+
+
+def test_extras_and_pytest_args_follow_the_deps_and_are_quoted():
+    [run] = rs.runs(fixture_suites()[0], PINS, extras=True, pytest_args=('-k', 'a and b'))
+    assert run.shell() == (f"cd skills/alpha/scripts && uv run --python {DEV} --exclude-newer {V.cutoff} "
+                           "--with pytest --with polars==9.9.9 --with 'arviz>=1.0' python -m pytest -q -k 'a and b'")
+
+
+def test_each_python_gets_its_own_run_in_order():
+    first, second = rs.runs(fixture_suites()[2], PINS)
+    assert (first.python, second.python) == (DEV, '/usr/bin/python3')
+    assert second.shell() == (f'cd tools/inner && uv run --python /usr/bin/python3 --exclude-newer {V.cutoff} '
+                              '--with pytest python -m pytest -q')
+
+
+def test_the_dev_entry_follows_the_python_override_and_no_other_entry_does():
+    first, second = rs.runs(fixture_suites()[2], rs.Pins(python='3.99', cutoff=None))
+    assert (first.python, second.python) == ('3.99', '/usr/bin/python3')
+
+
+def test_a_pins_object_without_a_cutoff_leaves_out_exclude_newer():
+    [run] = rs.runs(fixture_suites()[0], rs.Pins(python=DEV, cutoff=None, packages={}))
+    assert '--exclude-newer' not in run.argv
+    assert run.argv == ('uv', 'run', '--python', DEV, '--with', 'pytest', '--with', 'polars',
+                        'python', '-m', 'pytest', '-q')
+
+
+def test_pins_pin_only_the_packages_the_file_names():
+    assert PINS.spec('polars') == 'polars==9.9.9'
+    assert PINS.spec('Polars>=1.0') == 'Polars==9.9.9'
+    assert PINS.spec('pytest') == 'pytest'
+    assert PINS.spec('arviz>=1.0') == 'arviz>=1.0'
+
+
+def test_pins_from_versions_read_the_file_and_take_the_options():
+    assert rs.Pins.from_versions(V) == rs.Pins(DEV, V.cutoff, V.pins())
+    custom = rs.Pins.from_versions(V, python='3.99', freeze=False, user_pins={'numpy': '0.1'})
+    assert (custom.python, custom.cutoff) == ('3.99', None) and custom.packages['numpy'] == '0.1'
+```
+
+```text
+def test_container_compares_path_parts_not_string_prefixes():
+    build = rs.Suite('build', 'build', ('pytest',))
+    other = rs.Suite('other', 'build_extra', ('pytest',))
+```
+
+```text
+def test_container_compares_path_parts_not_string_prefixes():
+    build = rs.Suite('build', 'build', ('pytest',))
+    other = rs.Suite('other', 'build_extra', ('pytest',))
+```
+
+```text
+    rs.main(['alpha', '--extras', '--', '-k', 'x'], root=repo, run_one=fake, pins=PINS)
+    assert fake.argvs == [('uv', 'run', '--python', DEV, '--exclude-newer', V.cutoff, '--with', 'pytest',
+                           '--with', 'polars==9.9.9', '--with', 'arviz>=1.0', 'python', '-m', 'pytest', '-q',
+                           '-k', 'x')]
+
+
+def test_the_options_build_the_pins_from_the_repos_file(repo):
+    fake = FakeRuns()
+    args = ['alpha', '--pin', 'polars==8.8.8', '--python', '3.99', '--no-freeze']
+    assert rs.main(args, root=repo, run_one=fake) == 0
+    assert fake.argvs == [('uv', 'run', '--python', '3.99', '--with', 'pytest', '--with', 'polars==8.8.8',
+                           'python', '-m', 'pytest', '-q')]
+
+
+def test_a_pin_the_file_does_not_name_exits_2(repo, capsys):
+    assert rs.main(['alpha', '--pin', 'zeta==1.0'], root=repo, run_one=FakeRuns()) == 2
+    assert 'zeta has no [packages] entry' in capsys.readouterr().err
+
+
+def test_a_missing_versions_file_exits_2(repo, capsys):
+    (repo / 'build' / 'versions.toml').unlink()
+    assert rs.main(['alpha'], root=repo, run_one=FakeRuns()) == 2
+    assert 'build/versions.toml: cannot read' in capsys.readouterr().err
+
+
+def test_check_takes_no_pin_options(repo):
+    with pytest.raises(SystemExit) as err:
+        rs.main(['--check', '--pin', 'polars==1.0'], root=repo)
+    assert err.value.code == 2
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "`build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python. A `with` or `extras` package that `[packages]` names gets its pin."
+# task: 7
+
+# spec: "Each run passes `--exclude-newer <date>` explicitly, because suites under `skills/` sit below the shadow file. The `hooks` suite keeps its explicit `/usr/bin/python3` run."
+# task: 7
+
+# spec: "`build/test_run_suites.py` and `build/test_check_frontmatter.py:434` build their expected commands from the file, not from a `3.13` literal."
+# task: 7
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="8" title="`verify` and `drift`">
+<interfaces>
+**Interfaces:**
+- Consumes: Tasks 3, 5 and 7 (`resolve`, `requirements`, `uv_run_argv`, `run_process`, `run_suites.py --pin/--python/--no-freeze`).
+- Produces: `Step(label, argv)`, `verify_steps(v, pins=None, python=None, freeze=True, user_pins=None) -> list[Step]` (four steps: `tier 2 (--api)`, `tier 3 (--run)`, `jax cpu examples`, `suites`), `run_steps(steps, root, env, runner) -> list[str]` (labels of failed steps), `newest_stable_python() -> str`, `Row`, `drift_rows`, `render_pass`, `DRIFT_LIMIT`, `drift(root, user_pins=None, fetch=None, resolver=None, newest_python=None, runner=None) -> tuple[int, str]`, and the `verify` and `drift` subcommands.
+</interfaces>
+<planner-tests>
+```python
+def python_item(version, variant='default', implementation='cpython'):
+    major, minor, patch = (int(''.join(c for c in p if c.isdigit())) for p in version.split('.')[:3])
+    return {'version': version, 'variant': variant, 'implementation': implementation,
+            'version_parts': {'major': major, 'minor': minor, 'patch': patch}}
+
+
+def test_newest_stable_python_skips_prereleases_and_free_threaded_builds(stub_uv):
+    stub_uv.set(pythons=[python_item('3.16.0a1'), python_item('3.15.0', variant='freethreaded'),
+                         python_item('3.14.2'), python_item('3.13.9'), python_item('3.15.0', implementation='pypy')])
+    assert versions.newest_stable_python() == '3.14'
+
+
+def test_verify_runs_every_step_and_exits_1_when_one_fails(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    stub_uv.set(run_rc=1)
+    assert versions.main(['verify'], root=root) == 1
+    assert len(stub_uv.calls()) == 4          # a failure does not stop the next step
+    err = capsys.readouterr().err
+    assert 'verify failed: tier 2 (--api), tier 3 (--run), jax cpu examples, suites' in err
+
+
+def test_verify_passes_when_every_step_passes(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    assert versions.main(['verify', '--pin', 'gamma==0.4'], root=root) == 0
+    assert capsys.readouterr().out.rstrip().endswith('verify passed')
+    assert stub_uv.calls()[3][-5:] == ['build/run_suites.py', '--all', '--extras', '--pin', 'gamma==0.4']
+
+
+def drift_world(stub_uv, monkeypatch, run_rc=0, compile_rc=0):
+    stub_uv.set(compile_out='alpha==1.5.0\nbeta-two==2.0.0\ngamma==0.5\n', compile_rc=compile_rc,
+                compile_err='no route to host\n', run_rc=run_rc,
+                pythons=[python_item('3.14.1'), python_item('3.13.9')])
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi(newest='1.5.0'))
+
+
+def test_drift_exits_0_when_every_gate_passes_on_both_pythons(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 0
+    assert '## Python 3.13' in report and '## Python 3.14' in report
+    assert '| alpha | 1.2.0 | 1.5.0 | 1.5.0 |' in report
+    assert '| delta | 6.2 | - | 1.5.0 |' in report and 'a newer release exists' in report
+    assert report.count('| suites | pass |') == 2 and 'FAIL' not in report
+    assert versions.DRIFT_LIMIT in report
+
+
+def test_drift_runs_the_steps_with_the_resolved_pins_and_no_freeze(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    versions.drift(make_root(tmp_path))
+    runs = [call for call in stub_uv.calls() if call[0] == 'run']
+    assert len(runs) == 8                        # four steps in each of two passes
+    first = runs[0]
+    assert first[:3] == ['run', '--python', '3.13'] and '--exclude-newer' not in first
+    assert 'alpha==1.5.0' in first
+    assert runs[3][-5:] == ['--pin', 'gamma==0.5', '--python', '3.13', '--no-freeze']
+
+
+def test_drift_exits_1_when_a_gate_fails(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch, run_rc=1)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 1 and '| suites | FAIL |' in report
+
+
+def test_drift_exits_2_when_it_cannot_resolve(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch, compile_rc=1)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2 and 'drift could not finish: resolve step' in report
+
+
+def test_drift_exits_2_when_pypi_is_unreachable(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+
+    def down(url):
+        raise VersionsError(f'cannot reach {url}: timed out')
+
+    monkeypatch.setattr(versions, 'fetch_json', down)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2 and 'cannot reach https://pypi.org/pypi/' in report
+
+
+def test_drift_main_prints_the_report_and_returns_its_status(tmp_path, stub_uv, monkeypatch, capsys):
+    drift_world(stub_uv, monkeypatch, run_rc=1)
+    assert versions.main(['drift'], root=make_root(tmp_path)) == 1
+    assert '# Package drift' in capsys.readouterr().out
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date."
+# task: 8
+
+# spec: "`run` and `verify` exit non-zero on any failure."
+# task: 8
+
+# spec: "Does the same joint resolve as `bump`, with no freeze date and no pins, in two passes: first on the dev Python, then on the newest stable Python."
+# task: 8
+
+# spec: "For each pass it reports, for each `[packages]` and `[cited]` entry, the pinned version, the resolved version, the newest release and its upload date."
+# task: 8
+
+# spec: "R4.4. Known limit: `check` sees only the package names that the file lists. The `drift` report states this limit."
+# task: 8
+
+# spec: "`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network. The report states which."
+# task: 8
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="9" title="The `check` lint (library and subcommand, not yet wired)">
+<interfaces>
+**Interfaces:**
+- Consumes: `versions.load`, `versions.sync`, `Versions`, `compare`, `normalize`, `version_tuple`, and `run_suites.git_env`.
+- Produces: `versions_check.check(root=versions.REPO, historical=None) -> list[str]` (one line for each finding, empty when clean). `HISTORICAL` (phrase to reason). `live_files`, `skipped`, `check_literals`, `check_citations`, `check_floors`, `compat_floor`, `header_text`, `judge`, `citation_regex`, `current_versions`. The `check` subcommand.
+</interfaces>
+<planner-tests>
+```python
+'''Tests for build/versions_check.py, the lint behind `versions.py check`. Every rule has a positive
+control: a seeded stale literal, citation or floor that must fail. The seeded flag text is built from
+parts, because the lint reads this file too.'''
+import subprocess
+import textwrap
+from pathlib import Path
+
+import pytest
+
+import versions
+import versions_check as vc
+from run_suites import git_env
+
+TOML = '''\
+[python]
+dev = '3.13'
+[freeze]
+date = 2026-10-19
+[packages]
+arviz = '1.3.0'
+polars = '2.0.0'
+numpyro = '0.22.0'
+arviz-stats = '1.3.3'
+orbax-checkpoint = '0.12.8'
+jaxlib = '0.12.0.1'
+[cited]
+altair = '6.2'
+great-docs = '0.17.0'
+[gates]
+snippets = ['numpyro', 'arviz-stats', 'arviz']
+jax-cpu = ['jaxlib', 'orbax-checkpoint']
+'''
+V = versions.parse(TOML)
+FLAG = '--python'
+
+
+def skill_tree(tmp_path, files):
+    for rel, text in files.items():
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(textwrap.dedent(text))
+    return tmp_path
+
+
+def cite(tmp_path, text, historical=None):
+    root = skill_tree(tmp_path, {'skills/demo/SKILL.md': text})
+    return vc.check_citations(root, V, historical or {})
+
+
+# ---- equality ------------------------------------------------------------------------------
+
+def test_an_equal_citation_passes_at_its_own_precision(tmp_path):
+    text = 'Verified on Polars 2, Polars 2.0, Polars 2.0.0, NumPyro 0.22 and `numpyro==0.22.0`.\n'
+    assert cite(tmp_path, text) == []
+
+
+def test_a_stale_equality_citation_fails(tmp_path):
+    findings = cite(tmp_path, 'line one\nThese are verified on Polars 1.42.\n')
+    assert len(findings) == 1
+    assert findings[0].startswith("skills/demo/SKILL.md:2: 'Polars 1.42': the file says 2.0.0")
+
+
+def test_a_citation_more_precise_than_the_file_fails(tmp_path):
+    assert len(cite(tmp_path, 'Altair 6.2.1 works.\n')) == 1
+    assert cite(tmp_path, 'Altair 6.2 works.\n') == []
+
+
+@pytest.mark.parametrize('text', [
+    '**Altair 6.2, Polars 1.42**', 'orbax checkpoint 0.12.6', 'Orbax checkpoint 0.12.6', 'ORBAX-CHECKPOINT 0.12.6',
+    'JAXlib 0.11.2', '`polars` 1.42', 'Polars\n  1.42',
+])
+def test_name_forms_and_line_breaks_are_still_found(tmp_path, text):
+    assert cite(tmp_path, text + '\n'), text
+
+
+def test_a_name_without_a_version_next_to_it_is_ignored(tmp_path):
+    assert cite(tmp_path, 'Polars is fast. narwhals 2.x is a library the file does not list.\n') == []
+
+
+# ---- ranges --------------------------------------------------------------------------------
+
+@pytest.mark.parametrize('text', [
+    'polars>=1.0', 'polars >= 2.0', 'polars≥2.0', 'Polars ≥ 2', 'numpyro >= 0.22', 'Python 3.11+', 'Python ≥ 3.11',
+    'Python 3.12 or later', 'great-docs>=0.17.0,<0.18', 'great-docs >=0.17.0,<0.18', 'polars<3', 'arviz-stats < 2.0.0',
+])
+def test_a_range_that_holds_the_files_version_passes(tmp_path, text):
+    assert cite(tmp_path, text + '\n') == []
+
+
+@pytest.mark.parametrize('text', [
+    'polars>=2.1', 'numpyro >= 0.23', 'Python 3.14+', 'Python ≥ 3.14', 'great-docs>=0.17.0,<0.17.0', 'polars<2',
+    'arviz-stats < 1.0.0', 'polars>2.0',
+])
+def test_a_range_that_misses_the_files_version_fails(tmp_path, text):
+    findings = cite(tmp_path, text + '\n')
+    assert len(findings) == 1 and 'outside this range' in findings[0], text
+
+
+def test_python_is_checked_against_the_dev_interpreter(tmp_path):
+    assert cite(tmp_path, 'Needs Python 3.13.\n') == []
+    assert len(cite(tmp_path, 'Verified under Python 3.13.8.\n')) == 1
+
+
+# ---- history -------------------------------------------------------------------------------
+
+def test_a_historical_phrase_passes_whatever_its_case_or_markup(tmp_path):
+    text = 'The classic ArviZ 0.23 stack, the `arviz` 0.23 names and arviz-stats < 1.0.0.\n'
+    history = {'ArviZ 0.23': 'classic stack', 'arviz-stats < 1.0.0': 'old releases'}
+    assert cite(tmp_path, text, history) == []
+    assert len(cite(tmp_path, text)) == 3   # without the allowlist all three fail
+
+
+def test_a_historical_entry_that_matches_nothing_is_reported(tmp_path):
+    findings = cite(tmp_path, 'No versions here.\n', {'ArviZ 0.23': 'classic stack'})
+    assert findings == ["HISTORICAL entry 'ArviZ 0.23' matches no text under skills/; remove it"]
+
+
+# ---- scope ---------------------------------------------------------------------------------
+
+def test_only_the_script_header_of_a_python_file_is_read(tmp_path):
+    root = skill_tree(tmp_path, {'skills/demo/scripts/tool.py': '''\
+        # /// script
+        # requires-python = '>=3.11'
+        # dependencies = ['polars>=1.0', 'numpyro==0.21.0']
+        # ///
+        # In the body a comment may say Polars 1.42 without a finding.
+        x = 'numpyro 0.21'
+        '''})
+    findings = vc.check_citations(root, V, {})
+    assert len(findings) == 1 and findings[0].startswith("skills/demo/scripts/tool.py:3: 'numpyro==0.21.0'")
+
+
+def test_test_files_and_files_outside_skills_are_not_read(tmp_path):
+    root = skill_tree(tmp_path, {
+        'skills/demo/scripts/test_tool.py': "# /// script\n# dependencies = ['polars==1.0']\n# ///\n",
+        'specs/plan.md': 'Polars 1.42\n', 'build/notes.md': 'Polars 1.42\n'})
+    assert vc.check_citations(root, V, {}) == []
+
+
+def test_data_directories_fixtures_and_license_files_are_not_read(tmp_path):
+    stale = 'Polars 1.0 is stale.\n'
+    root = skill_tree(tmp_path, {'skills/demo/data/notes.md': stale, 'skills/demo/fixtures/page.md': stale,
+                                 'skills/demo/LICENSE.md': stale, 'skills/demo/SKILL.md': stale})
+    assert [f.split(':')[0] for f in vc.check_citations(root, V, {})] == ['skills/demo/SKILL.md']
+
+
+# ---- floors --------------------------------------------------------------------------------
+
+def skill(compat, floor=None, name='demo'):
+    files = {f'skills/{name}/SKILL.md': f'---\nname: {name}\ndescription: Use when testing.\n{compat}\n---\nbody\n'}
+    if floor:
+        files[f'skills/{name}/scripts/tool.py'] = f"# /// script\n# requires-python = '>={floor}'\n# ///\n"
+    return files
+
+
+def test_a_script_floor_above_the_promised_floor_fails(tmp_path):
+    root = skill_tree(tmp_path, skill('compatibility: Requires uv; Python 3.11+.', '3.12'))
+    assert vc.check_floors(root, V) == ['skills/demo/scripts/tool.py: requires Python 3.12, but SKILL.md promises 3.11']
+
+
+def test_a_script_floor_at_or_below_the_promise_passes(tmp_path):
+    assert vc.check_floors(skill_tree(tmp_path, skill('compatibility: Python 3.12+.', '3.12')), V) == []
+    assert vc.check_floors(skill_tree(tmp_path / 'b', skill('compatibility: Python 3.12+.', '3.11')), V) == []
+
+
+def test_a_script_without_a_promise_is_not_compared(tmp_path):
+    assert vc.check_floors(skill_tree(tmp_path, skill('license: MIT', '3.11')), V) == []
+
+
+def test_a_folded_compatibility_value_is_read(tmp_path):
+    compat = 'compatibility: >\n  Requires uv to run bundled scripts; Python\n  3.11+. Also requires git.'
+    root = skill_tree(tmp_path, skill(compat, '3.12'))
+    assert 'promises 3.11' in vc.check_floors(root, V)[0]
+
+
+def test_a_floor_above_the_dev_python_fails_twice_over(tmp_path):
+    root = skill_tree(tmp_path, skill('compatibility: Python 3.14+.', '3.14'))
+    findings = vc.check_floors(root, V)
+    assert any('promises Python 3.14, above the dev Python 3.13' in f for f in findings)
+    assert any('requires Python 3.14, above the dev Python 3.13' in f for f in findings)
+
+
+# ---- interpreter literals ------------------------------------------------------------------
+
+def test_an_interpreter_literal_fails_and_paths_do_not(tmp_path):
+    root = skill_tree(tmp_path, {'CLAUDE.md': f'run uv run {FLAG} 3.13 python x.py\n'
+                                 f'and uv run {FLAG}=3.12 python y.py\n'
+                                 f'and uv run {FLAG} /usr/bin/python3 python z.py\n'
+                                 f'and uv pip compile {FLAG}-version 3.13\n'})
+    findings = vc.check_literals(root, [root / 'CLAUDE.md'])
+    assert [f.split(': ')[0] for f in findings] == ['CLAUDE.md:1', 'CLAUDE.md:2']
+    assert "drop the flag, since uv reads .python-version" in findings[0]
+
+
+def git(repo, *args):
+    subprocess.run(['git', '-C', str(repo), *args], check=True, capture_output=True, env=git_env())
+
+
+def test_live_files_are_the_listed_files_and_directories_that_git_keeps(tmp_path):
+    git(tmp_path, 'init', '-q')
+    skill_tree(tmp_path, {'CLAUDE.md': 'x', 'README.md': 'x', 'build/a.py': 'x', 'build/.scratch/b.py': 'x',
+                          'skills/s/SKILL.md': 'x', 'specs/plans/p.md': 'x', 'hooks/h.sh': 'x',
+                          '.claude/skills/c/SKILL.md': 'x', '.claude/worktrees/w/CLAUDE.md': 'x',
+                          '.gitignore': 'build/.scratch/\n.claude/worktrees/\n'})
+    got = sorted(str(p.relative_to(tmp_path)) for p in vc.live_files(tmp_path))
+    assert got == ['.claude/skills/c/SKILL.md', 'CLAUDE.md', 'build/a.py', 'hooks/h.sh', 'skills/s/SKILL.md']
+
+
+def test_live_files_leave_out_data_fixtures_and_license_files(tmp_path):
+    git(tmp_path, 'init', '-q')
+    skill_tree(tmp_path, {'skills/s/data/d.md': 'x', 'skills/s/scripts/fixtures/f.md': 'x', 'skills/s/LICENSE': 'x',
+                          'skills/s/SKILL.md': 'x'})
+    assert [str(p.relative_to(tmp_path)) for p in vc.live_files(tmp_path)] == ['skills/s/SKILL.md']
+
+
+# ---- the whole lint ------------------------------------------------------------------------
+
+def clean_root(tmp_path):
+    git(tmp_path, 'init', '-q')
+    root = skill_tree(tmp_path, {'build/versions.toml': TOML, **skill('compatibility: Python 3.11+.', '3.11')})
+    (root / 'skills' / 'demo' / 'SKILL.md').write_text(
+        '---\nname: demo\ndescription: Use when testing.\ncompatibility: Python 3.11+.\n---\nVerified on Polars 2.0.\n')
+    versions.sync(root)
+    return root
+
+
+def test_a_consistent_tree_has_no_findings(tmp_path):
+    assert vc.check(clean_root(tmp_path), {}) == []
+
+
+def test_each_rule_fails_on_its_seeded_defect(tmp_path):
+    root = clean_root(tmp_path)
+    (root / '.python-version').write_text('3.12\n')
+    (root / 'CLAUDE.md').write_text(f'uv run {FLAG} 3.13 python x.py\n')
+    (root / 'skills/demo/SKILL.md').write_text(
+        '---\nname: demo\ndescription: Use when testing.\ncompatibility: Python 3.10+.\n---\nVerified on Polars 1.42.\n')
+    findings = vc.check(root, {})
+    assert any(f.startswith('.python-version: differs') for f in findings)
+    assert any(f.startswith('CLAUDE.md:1:') for f in findings)
+    assert any("'Polars 1.42'" in f for f in findings)
+    assert any('requires Python 3.11, but SKILL.md promises 3.10' in f for f in findings)
+
+
+def test_an_invalid_versions_file_is_one_finding(tmp_path):
+    (tmp_path / 'build').mkdir()
+    (tmp_path / 'build' / 'versions.toml').write_text("[python]\ndev = 'x'\n")
+    assert len(vc.check(tmp_path, {})) == 1 and 'dev must be a string' in vc.check(tmp_path, {})[0]
+
+
+def test_the_check_command_prints_ok_or_each_finding(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(vc, 'HISTORICAL', {})
+    root = clean_root(tmp_path)
+    assert versions.main(['check'], root=root) == 0
+    assert capsys.readouterr().out == 'versions ok\n'
+    (root / 'CLAUDE.md').write_text(f'uv run {FLAG} 3.13 python x.py\n')
+    assert versions.main(['check'], root=root) == 1
+    out = capsys.readouterr().out.splitlines()
+    assert out[0].startswith('CLAUDE.md:1:') and out[-1] == '1 problem(s)'
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "R4.1. `versions.py check` runs offline. It fails on any of these:"
+# task: 9
+
+# spec: "**Sync.** An R2.1 output differs from the file."
+# task: 9
+
+# spec: "**Interpreter literals.** A live file spells `--python 3.<n>`."
+# task: 9
+
+# spec: "An interpreter path such as `/usr/bin/python3` is not a literal."
+# task: 9
+
+# spec: "**Equality** (\"verified on Polars 1.42\", `numpyro==0.22.0`, \"checked in the 0.22.0\") must equal the file's value at the cited precision."
+# task: 9
+
+# spec: "R1.3. A package gets a `[cited]` entry when skill prose cites a version for it and no check runs it."
+# task: 9
+
+# spec: "**Range** (`>=`, `≥`, `<`, `,<0.18`, \"3.11+\") must contain the file's value."
+# task: 9
+
+# spec: "**History** (\"ArviZ 0.23\", \"and earlier\") passes only through the `HISTORICAL` allowlist."
+# task: 9
+
+# spec: "R4.2. `HISTORICAL` is keyed by the literal phrase, not by file and line, and each entry gives its reason."
+# task: 9
+
+# spec: "R4.3. `check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures."
+# task: 9
+
+# spec: "**Floors.** Each script's `requires-python` must match the Python floor in its `SKILL.md` `compatibility:` line."
+# task: 9
+
+# spec: "The dev Python must satisfy each floor."
+# task: 9
+
+# spec: "| `check` | no | The R4 lint |"
+# task: 9
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="10" title="Bump and verify on the day of execution (R6.2 to R6.4)">
+<interfaces>
+**Interfaces:**
+- Consumes: `versions.py bump` (Task 3), `versions.py verify` (Task 8), `build/versions.toml` (Task 4).
+- Produces: a `build/versions.toml` whose pins pass `verify`. The decision of R6.3 (one JAX version for both gates, or a temporary override). The check that Polars is at its latest release and at least 2.0 (R6.4).
+</interfaces>
+<planner-tests>
+
+</planner-tests>
+<acceptance-tests>
+# spec: "Use one JAX version for both gates."
+# task: 10
+
+# spec: "Pin Polars at the latest release (2.0.0 on 2026-10-21)."
+# task: 10
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="12" title="Spec items 6 to 8 (R6.6 to R6.8)">
+<interfaces>
+**Interfaces:**
+- Consumes: the `jax-cpu` stack of `build/versions.toml` (Task 4), which now replaces the two retired files.
+- Produces: no file that names a lock file that no longer exists in its old place.
+</interfaces>
+<planner-tests>
+
+</planner-tests>
+<acceptance-tests>
+# spec: "`build/check_jax_examples.py` and its documented command: they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`."
+# task: 12
+
+# spec: "Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`, and point their readers at `build/versions.toml`."
+# task: 12
+
+# spec: "Correct the open Gaussian-process item at `specs/deferred_items.md:4492`, which says \"on the pinned 0.21.0\"."
+# task: 12
+
+# spec: "Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python."
+# task: 12
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="13" title="Remove the interpreter literals and the last hand copies (R2.4)">
+<interfaces>
+**Interfaces:**
+- Consumes: `versions_check.live_files` and `versions_check.INTERPRETER_RE` (Task 9). `.python-version` (Task 4). The `snippets` and `jax-cpu` runner forms (Tasks 5 and 6).
+- Produces: documented commands that spell no interpreter or package version. `versions.py check` exits 0.
+</interfaces>
+<planner-tests>
+
+</planner-tests>
+<acceptance-tests>
+# spec: "`build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`: they can run outside the repo's working directory, so they take the interpreter from the file and not from a literal."
+# task: 13
+
+# spec: "R4.1. `versions.py check` runs offline. It fails on any of these:"
+# task: 13
+
+# spec: "R2.4. Documented commands spell no interpreter or package version."
+# task: 13
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<task number="14" title="Wire the tenth commit lint (R5.1, R5.2)">
+<interfaces>
+**Interfaces:**
+- Consumes: `versions.py check` (Task 9), which exits 0 on the tree from Task 13.
+- Produces: `versions_check` as the tenth lint of `run_commit_lints.sh`, in the pre-commit hook and in CI (`lints.yml` runs the runner).
+</interfaces>
+<planner-tests>
+
+</planner-tests>
+<acceptance-tests>
+# spec: "R5.1. `versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint in `build/run_commit_lints.sh`."
+# task: 14
+
+# spec: "`setup-uv` takes the interpreter from `.python-version`."
+# task: 14
+</acceptance-tests>
+<acceptance-flags>
+<flag><spec>R5.2. `.github/workflows/lints.yml` keeps its steps. `setup-uv` takes the interpreter from `.python-version`.</spec><plan>Modify: `build/test_commit_lints.py`, `build/run_commit_lints.sh`, `build/githooks/pre-commit`, `CLAUDE.md`, `build/CLAUDE.md`</plan></flag>
+</acceptance-flags>
+</task>
+
+<task number="15" title="The weekly advisory workflow (R5.2 to R5.4)">
+<interfaces>
+**Interfaces:**
+- Consumes: `versions.py drift` (Task 8). The `WORKFLOW`, `PINNED`, `workflow()` helpers already in `test_commit_lints.py`.
+- Produces: a scheduled job that reports drift to the job summary. It never edits the repo, opens no issue or PR, and is not a required check.
+</interfaces>
+<planner-tests>
+```python
+DRIFT_WORKFLOW = REPO / '.github' / 'workflows' / 'versions-drift.yml'
+
+
+def drift_workflow():
+    return yaml.safe_load(DRIFT_WORKFLOW.read_text())
+
+
+def test_lints_workflow_takes_the_interpreter_from_python_version():
+    text = WORKFLOW.read_text()
+    assert 'python-version' not in text and 'UV_PYTHON' not in text
+
+
+def test_drift_workflow_triggers_and_permissions():
+    wf = drift_workflow()
+    on = wf.get('on', wf.get(True))
+    assert set(on) == {'schedule', 'workflow_dispatch'}
+    assert len(on['schedule']) == 1 and on['schedule'][0]['cron']
+    assert wf['permissions'] == {'contents': 'read'}
+
+
+def test_drift_workflow_pins_actions_bounds_the_job_and_matches_lints():
+    jobs = drift_workflow()['jobs'].values()
+    steps = [step for job in jobs for step in job['steps']]
+    uses = [step['uses'] for step in steps if 'uses' in step]
+    assert uses and all(PINNED.match(u) for u in uses), uses
+    assert set(uses) == {step['uses'] for job in workflow()['jobs'].values() for step in job['steps']
+                         if 'uses' in step}
+    assert all(job.get('timeout-minutes') for job in jobs)
+    checkouts = [step for step in steps if step.get('uses', '').startswith('actions/checkout@')]
+    assert checkouts and all(step.get('with', {}).get('persist-credentials') is False for step in checkouts)
+
+
+def test_drift_workflow_reports_to_the_summary_and_changes_nothing():
+    text = DRIFT_WORKFLOW.read_text()
+    runs = [step['run'] for job in drift_workflow()['jobs'].values() for step in job['steps'] if 'run' in step]
+    assert any('build/versions.py drift' in run and 'GITHUB_STEP_SUMMARY' in run and 'pipefail' in run
+               for run in runs), runs
+    assert not re.search(r'git (commit|push)|gh (issue|pr)|issues:|pull-requests:', text)
+```
+</planner-tests>
+<acceptance-tests>
+# spec: "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch."
+# task: 15
+
+# spec: "It has `permissions: contents: read`, and it pins its actions by SHA, as `lints.yml` does."
+# task: 15
+
+# spec: "It writes the drift report to the job summary."
+# task: 15
+
+# spec: "It never opens an issue or a PR, and it never commits."
+# task: 15
+</acceptance-tests>
+<acceptance-flags>
+
+</acceptance-flags>
+</task>
+
+<acceptance-tests-without-a-task>
+def test_sync_writes_three_outputs_and_check_detects_drift(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    versions.sync(root)
+    for rel in (".python-version", "uv.toml", "skills/uv.toml"):
+        assert (root / rel).is_file(), rel
+    assert versions.sync(root, check=True) == []
+    (root / "uv.toml").write_text('exclude-newer = "2020-01-01T00:00:00Z"\n')
+    assert versions.sync(root, check=True) != []
+    (root / "uv.toml").unlink()
+    assert versions.sync(root, check=True) != []
+
+def test_main_sync_check_exit_codes(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    assert versions.main(["sync"], root=root) == 0
+    assert versions.main(["sync", "--check"], root=root) == 0
+    (root / ".python-version").write_text("3.12\n")
+    assert versions.main(["sync", "--check"], root=root) != 0
+
+def test_python_version_output_is_dev_value(tmp_path):
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    assert v.dev_python == "3.13"
+    assert versions.outputs(v)[".python-version"].strip() == "3.13"
+
+def test_root_uv_toml_has_day_after_cutoff():
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    assert v.freeze == datetime.date(2026, 10, 19)
+    assert v.cutoff == "2026-10-20T00:00:00Z"
+    data = tomllib.loads(versions.outputs(v)["uv.toml"])
+    assert data["exclude-newer"] == "2026-10-20T00:00:00Z"
+
+def test_cutoff_crosses_year_boundary():
+    versions = mod("versions")
+    v = versions.parse(toml_text().replace("date = 2026-10-19", "date = 2026-12-31"))
+    assert v.cutoff == "2027-01-01T00:00:00Z"
+
+def test_skills_uv_toml_is_empty_with_comment():
+    versions = mod("versions")
+    text = versions.outputs(versions.parse(toml_text()))["skills/uv.toml"]
+    assert tomllib.loads(text) == {}
+    assert "build/versions.toml" in text
+    assert all(line.strip() == "" or line.lstrip().startswith("#") for line in text.splitlines())
+
+def test_stack_without_override():
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    stack = v.stack("snippets")
+    assert sorted(stack) == sorted(
+        f"{p}=={v}" for p, v in {
+            "arviz": "1.3.0", "arviz-base": "1.3.1", "arviz-stats": "1.3.3", "arviz-plots": "1.3.2",
+            "numpyro": "0.22.0", "jax": "0.12.0", "numpy": "2.5.3", "matplotlib": "3.11.2",
+        }.items()
+    )
+
+def test_stack_with_override_only_affects_its_gate():
+    versions = mod("versions")
+    v = versions.parse(toml_text(OVERRIDE))
+    assert "jax==0.11.2" in v.stack("jax-cpu")
+    assert "jax==0.12.0" not in v.stack("jax-cpu")
+    assert "jax==0.12.0" in v.stack("snippets")
+    assert v.overrides[0].reason == "CPU examples fail on 0.12"
+
+def test_override_without_reason_is_rejected():
+    versions = mod("versions")
+    bad = OVERRIDE.replace("reason = 'CPU examples fail on 0.12'\n", "")
+    with pytest.raises(versions.VersionsError) as e:
+        versions.parse(toml_text(bad))
+    assert "reason" in str(e.value)
+
+def test_missing_key_names_the_key():
+    versions = mod("versions")
+    text = toml_text().replace("[python]\ndev = '3.13'\n", "")
+    with pytest.raises(versions.VersionsError) as e:
+        versions.parse(text)
+    assert "python" in str(e.value) or "dev" in str(e.value)
+
+def test_missing_file_is_an_error(tmp_path):
+    versions = mod("versions")
+    with pytest.raises(versions.VersionsError):
+        versions.load(tmp_path)
+
+def test_unknown_gate_package_named():
+    versions = mod("versions")
+    text = toml_text().replace("snippets = [", "snippets = ['nosuchpkg', ")
+    with pytest.raises(versions.VersionsError) as e:
+        versions.parse(text)
+    assert "nosuchpkg" in str(e.value)
+
+def test_unknown_override_package_named():
+    versions = mod("versions")
+    with pytest.raises(versions.VersionsError) as e:
+        versions.parse(toml_text(OVERRIDE.replace("package = 'jax'", "package = 'nosuchpkg'")))
+    assert "nosuchpkg" in str(e.value)
+
+def test_invalid_freeze_date_names_value():
+    versions = mod("versions")
+    with pytest.raises(versions.VersionsError) as e:
+        versions.parse(toml_text().replace("date = 2026-10-19", "date = 'yesterday'"))
+    assert "yesterday" in str(e.value)
+
+def test_parse_date_invalid_names_value():
+    versions = mod("versions")
+    assert versions.parse_date("2026-10-21") == datetime.date(2026, 10, 21)
+    with pytest.raises(versions.VersionsError) as e:
+        versions.parse_date("2026-13-45")
+    assert "2026-13-45" in str(e.value)
+
+def test_stack_pins_do_not_mutate(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    before = (root / "build" / "versions.toml").read_text()
+    v = versions.load(root)
+    stack = v.stack("snippets", pins={"jax": "0.11.2"})
+    assert "jax==0.11.2" in stack and "jax==0.12.0" not in stack
+    assert v.pins()["jax"] == "0.12.0"
+    assert "jax==0.12.0" in v.stack("snippets")
+    assert (root / "build" / "versions.toml").read_text() == before
+
+
+# ---------- R3: bump and resolve ----------
+
+def test_bump_joint_resolve_rewrites_packages_and_syncs(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    resolver, calls = _resolver_recorder(RESOLVED)
+    versions.bump(root, datetime.date(2026, 10, 21), resolver=resolver)
+    assert len(calls) == 1
+    call = calls[0]
+    assert call["python_version"] == "3.13"
+    assert call["cutoff"] == "2026-10-22T00:00:00Z"
+    names = {re.split(r"[=<>!~ ]", r)[0] for r in call["requirements"]}
+    assert set(versions.parse(toml_text()).packages) <= {versions.normalize(n) for n in names}
+    v = versions.load(root)
+    assert v.freeze == datetime.date(2026, 10, 21)
+    assert v.packages["jax"] == "0.12.0.1"
+    assert versions.sync(root, check=True) == []
+
+def test_bump_does_not_add_transitive_packages(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    resolver, _ = _resolver_recorder(RESOLVED)
+    versions.bump(root, datetime.date(2026, 10, 21), resolver=resolver)
+    v = versions.load(root)
+    assert "scipy" not in v.packages and "tensorstore" not in v.packages
+
+def test_bump_never_changes_cited(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    resolved = dict(RESOLVED, altair="6.3.0", plotly="7.1.0", optuna="5.1.0")
+    resolver, _ = _resolver_recorder(resolved)
+    versions.bump(root, datetime.date(2026, 10, 21), resolver=resolver)
+    v = versions.load(root)
+    assert v.cited == {"altair": "6.2", "plotly": "6.8", "optuna": "5.0.0", "great-docs": "0.17.0"}
+
+def test_requirements_only_keeps_others_pinned():
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    reqs = versions.requirements(v, only=("jax",))
+    assert "arviz==1.3.0" in reqs
+    assert "polars==2.0.0" in reqs
+    jax = [r for r in reqs if re.match(r"jax(\W|$)", r) and not r.startswith("jaxlib")]
+    assert jax and all("==" not in r for r in jax)
+    free = versions.requirements(v)
+    assert all("==" not in r for r in free)
+
+def test_resolve_failure_names_conflicting_packages(stub_uv, monkeypatch):
+    versions = mod("versions")
+    monkeypatch.setenv("UV_STUB_EXIT", "1")
+    monkeypatch.setenv(
+        "UV_STUB_STDERR",
+        "No solution found when resolving dependencies: Because jax==0.12.0 depends on "
+        "jaxlib==0.12.0 and you require jaxlib==0.11.2, we can conclude that your requirements are unsatisfiable.",
+    )
+    with pytest.raises(versions.VersionsError) as e:
+        versions.resolve(["jax==0.12.0", "jaxlib==0.11.2"], "3.13", "2026-10-20T00:00:00Z")
+    assert "jax" in str(e.value) and "jaxlib" in str(e.value)
+
+def test_bump_exit_2_on_resolve_failure(tmp_path, stub_uv, monkeypatch, capsys):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    before = (root / "build" / "versions.toml").read_text()
+    monkeypatch.setenv("UV_STUB_EXIT", "1")
+    monkeypatch.setenv("UV_STUB_STDERR", "error: Failed to fetch: https://pypi.org/simple/jax/")
+    assert versions.main(["bump", "--date", "2026-10-21"], root=root) == 2
+    out = capsys.readouterr()
+    assert (out.out + out.err).strip()
+    assert (root / "build" / "versions.toml").read_text() == before
+
+
+# ---------- R3: run and pins ----------
+
+def test_runner_command_form():
+    versions = mod("versions")
+    assert versions.RUNNER == "uv run python build/versions.py run"
+    assert (
+        versions.runner_command("snippets", "python build/check_snippets.py --run skills/bayesian-workflow/")
+        == "uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/"
+    )
+
+def test_uv_run_argv_has_stack_and_cutoff():
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    argv = versions.uv_run_argv(v, "snippets", ["python", "x.py"])
+    assert argv[:2] == ["uv", "run"]
+    assert "--exclude-newer" in argv
+    assert argv[argv.index("--exclude-newer") + 1] == v.cutoff
+    withs = [argv[i + 1] for i, a in enumerate(argv) if a == "--with"]
+    assert sorted(withs) == sorted(v.stack("snippets"))
+    assert argv[-2:] == ["python", "x.py"]
+    bare = versions.uv_run_argv(v, None, ["python", "x.py"])
+    assert "--with" not in bare
+
+def test_run_subcommand_passes_stack_and_propagates_failure(tmp_path, stub_uv, monkeypatch):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    versions.sync(root)
+    monkeypatch.setenv("UV_STUB_EXIT", "3")
+    assert versions.main(["run", "snippets", "--", "python", "-c", "pass"], root=root) != 0
+    log = stub_uv.read_text()
+    assert "arviz==1.3.0" in log and "2026-10-20T00:00:00Z" in log
+
+def test_parse_pins_normalises_and_rejects_unknown():
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    assert versions.parse_pins(v, ["JAX==0.11.2"]) == {"jax": "0.11.2"}
+    assert versions.parse_pins(v, ["Arviz_Stats==1.3.1"]) == {"arviz-stats": "1.3.1"}
+    with pytest.raises(versions.VersionsError) as e:
+        versions.parse_pins(v, ["nosuchpkg==1.0"])
+    assert "nosuchpkg" in str(e.value)
+
+def test_late_pins_flags_upload_after_freeze_date():
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    fetch = _fake_fetch({
+        "jax": {"0.12.0": "2026-10-01T10:00:00Z", "0.12.0.1": "2026-10-21T08:00:00Z"},
+        "numpyro": {"0.22.0": "2026-10-19T23:30:00Z"},
+    })
+    late = versions.late_pins(v, ["jax==0.12.0.1", "jax==0.12.0", "numpyro==0.22.0"], fetch=fetch)
+    joined = " ".join(late)
+    assert "jax" in joined and "0.12.0.1" in joined
+    assert "numpyro" not in joined
+    assert not any(s.endswith("==0.12.0") for s in late)
+
+
+# ---------- R2.3 readers ----------
+
+def test_check_snippets_remediation_uses_runner():
+    versions = mod("versions")
+    check_snippets = mod("check_snippets")
+    preamble = mod("snippet_preamble")
+    assert not hasattr(preamble, "PINNED")
+    for cmd in (check_snippets.RUN_REMEDIATION, check_snippets.API_REMEDIATION):
+        assert cmd.startswith(versions.RUNNER)
+        assert "--python" not in cmd
+        assert not re.search(r"==\d", cmd)
+    assert "--run" in check_snippets.RUN_REMEDIATION
+    assert "--api" in check_snippets.API_REMEDIATION
+
+def test_verify_steps_tier2_unpinned_with_freeze_date():
+    versions = mod("versions")
+    v = versions.parse(toml_text())
+    steps = versions.verify_steps(v)
+    assert [s.label for s in steps] == ["tier 2 (--api)", "tier 3 (--run)", "jax cpu examples", "suites"]
+    tier2 = " ".join(steps[0].argv)
+    assert "--api" in tier2
+    assert v.cutoff in tier2
+    assert not re.search(r"(arviz|numpyro|jax)==", tier2)
+    tier3 = " ".join(steps[1].argv)
+    for spec in v.stack("snippets"):
+        assert spec in tier3
+    jax = " ".join(steps[2].argv)
+    for spec in v.stack("jax-cpu"):
+        assert spec in jax
+    assert "32-jax-cpu.txt" not in jax
+    suites = " ".join(steps[3].argv)
+    assert "run_suites.py" in suites and "--all" in suites and "--extras" in suites
+
+def test_verify_exits_non_zero_on_failure(tmp_path, stub_uv, monkeypatch):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    versions.sync(root)
+    monkeypatch.setenv("UV_STUB_EXIT", "1")
+    assert versions.main(["verify"], root=root) != 0
+
+def test_run_suites_pins_spec():
+    versions = mod("versions")
+    run_suites = mod("run_suites")
+    v = versions.parse(toml_text())
+    pins = run_suites.Pins.from_versions(v)
+    assert pins.cutoff == v.cutoff
+    assert pins.spec("polars") == "polars==2.0.0"
+    assert pins.spec("arviz>=1.0") == "arviz==1.3.0"
+    assert pins.spec("pytest") == "pytest"
+    assert run_suites.DEV == "dev"
+
+def test_run_suites_every_run_has_cutoff_and_hooks_keeps_system_python():
+    versions = mod("versions")
+    run_suites = mod("run_suites")
+    v = versions.load(REPO)
+    calls = []
+
+    def run_one(*args, **kwargs):
+        calls.append(" ".join(map(str, args)) + " " + " ".join(map(str, kwargs.values())))
+        return 0
+
+    run_suites.main(["--all", "--extras"], REPO, run_one)
+    assert calls
+    for c in calls:
+        assert "--exclude-newer" in c and v.cutoff in c
+    assert any("/usr/bin/python3" in c for c in calls)
+    assert any(v.dev_python in c for c in calls)
+    assert not any(re.search(r"--python 3\.(?!13\b)\d+", c) for c in calls if v.dev_python == "3.13")
+
+def test_suite_tests_have_no_interpreter_literal():
+    for rel in ("build/test_run_suites.py", "build/test_check_frontmatter.py"):
+        text = (REPO / rel).read_text()
+        assert not re.search(r"--python['\",\s]+3\.\d+", text), rel
+    assert "'3.13'" not in (REPO / "build/test_run_suites.py").read_text()
+
+def test_notice_and_precommit_have_no_interpreter_literal():
+    for rel in ("build/cc_guide/notice.sh", "build/githooks/pre-commit"):
+        text = (REPO / rel).read_text()
+        assert not re.search(r"3\.1\d\b", text), rel
+
+def test_check_jax_examples_no_lock_file():
+    text = (REPO / "build/check_jax_examples.py").read_text()
+    assert "32-jax-cpu" not in text
+    assert "--with-requirements" not in text
+
+
+# ---------- R3: drift ----------
+
+DRIFT_UPLOADS = {
+    "jax": {"0.12.0": "2026-10-01T00:00:00Z", "0.12.0.1": "2026-10-21T08:00:00Z"},
+    "altair": {"6.2.0": "2026-06-01T00:00:00Z", "6.3.0": "2026-09-10T00:00:00Z"},
+}
+
+def test_drift_two_passes_no_freeze_no_pins(tmp_path):
+    root = write_root(tmp_path)
+    mod("versions").sync(root)
+    code, report, calls = _drift(root, dict(RESOLVED, jax="0.12.0", jaxlib="0.12.0"), 0)
+    assert [c["python_version"] for c in calls] == ["3.13", "3.14"]
+    assert all(c["cutoff"] is None for c in calls)
+    assert all("==" not in r for c in calls for r in c["requirements"])
+
+def test_drift_report_contents(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    versions.sync(root)
+    code, report, _ = _drift(root, dict(RESOLVED, jax="0.12.0", jaxlib="0.12.0"), 0)
+    for name in ("jax", "polars", "altair", "plotly", "optuna", "great-docs"):
+        assert name in report
+    assert "0.12.0.1" in report and "2026-10-21" in report
+    assert "3.13" in report and "3.14" in report
+
+def test_drift_report_states_limit(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    versions.sync(root)
+    _, report, _ = _drift(root, RESOLVED, 0)
+    assert versions.DRIFT_LIMIT and versions.DRIFT_LIMIT in report
+
+def test_drift_exit_codes(tmp_path):
+    versions = mod("versions")
+    root = write_root(tmp_path)
+    versions.sync(root)
+    assert _drift(root, RESOLVED, 0)[0] == 0
+    code, report, _ = _drift(root, RESOLVED, 1)
+    assert code == 1 and report.strip()
+    code, report, _ = _drift(root, versions.VersionsError("conflict: jax, jaxlib"), 0)
+    assert code == 2 and report.strip()
+
+
+# ---------- R4: check ----------
+
+CLEAN_SKILL = (
+    "---\n"
+    "name: demo\n"
+    "description: Demo skill.\n"
+    "compatibility: Python 3.12+\n"
+    "---\n\n"
+    "Verified on Polars 2.0. Verified on Altair 6.2.\n"
+)
+CLEAN_SCRIPT = (
+    "# /// script\n"
+    '# requires-python = ">=3.12"\n'
+    '# dependencies = ["polars>=2.0", "great-docs>=0.17.0,<0.18"]\n'
+    "# ///\n"
+    'print("hi")\n'
+)
+CLEAN_CLAUDE = "Run the hooks guard with `uv run --python /usr/bin/python3 hooks/guard.py`.\n"
+
+def test_check_clean_tree_has_no_findings(tmp_path):
+    assert findings(make_repo(tmp_path)) == []
+
+def test_check_sync_finding(tmp_path):
+    root = make_repo(tmp_path)
+    (root / "skills" / "uv.toml").write_text('exclude-newer = "2026-10-20T00:00:00Z"\n')
+    assert findings(root)
+
+def test_check_interpreter_literal(tmp_path):
+    root = make_repo(tmp_path, {"CLAUDE.md": "Run `uv run --python 3.13 build/x.py`.\n"})
+    f = findings(root)
+    assert f and any("CLAUDE.md" in line for line in f)
+    root2 = make_repo(tmp_path / "b", {"build/tool.py": '"""Usage: uv run --python 3.12 build/tool.py"""\n'})
+    assert any("tool.py" in line for line in findings(root2))
+
+def test_check_interpreter_path_not_literal(tmp_path):
+    root = make_repo(tmp_path, {"hooks/README.md": "uv run --python /usr/bin/python3 hooks/x.py\n"})
+    assert findings(root) == []
+
+def test_check_equality(tmp_path):
+    ok = CLEAN_SKILL + "\nUse `numpyro==0.22.0`.\n"
+    assert findings(make_repo(tmp_path / "ok", {"skills/demo/SKILL.md": ok})) == []
+    stale = CLEAN_SKILL.replace("Polars 2.0", "Polars 1.42")
+    f = findings(make_repo(tmp_path / "a", {"skills/demo/SKILL.md": stale}))
+    assert any("SKILL.md" in line for line in f)
+    stale2 = CLEAN_SKILL + "\nUse `numpyro==0.21.0`.\n"
+    assert findings(make_repo(tmp_path / "b", {"skills/demo/references/x.md": stale2}))
+
+def test_check_cited_entry(tmp_path):
+    stale = CLEAN_SKILL.replace("Altair 6.2", "Altair 6.1")
+    assert findings(make_repo(tmp_path, {"skills/demo/SKILL.md": stale}))
+
+def test_check_range(tmp_path):
+    bad_header = CLEAN_SCRIPT.replace("polars>=2.0", "polars>=2.1")
+    assert findings(make_repo(tmp_path / "a", {"skills/demo/scripts/run.py": bad_header}))
+    bad_upper = CLEAN_SCRIPT.replace("great-docs>=0.17.0,<0.18", "great-docs>=0.16,<0.17")
+    assert findings(make_repo(tmp_path / "b", {"skills/demo/scripts/run.py": bad_upper}))
+    bad_prose = CLEAN_SKILL + "\nNeeds NumPyro ≥ 0.23.\n"
+    assert findings(make_repo(tmp_path / "c", {"skills/demo/SKILL.md": bad_prose}))
+    ok_prose = CLEAN_SKILL + "\nNeeds NumPyro ≥ 0.22.\n"
+    assert findings(make_repo(tmp_path / "d", {"skills/demo/SKILL.md": ok_prose})) == []
+
+def test_check_history(tmp_path):
+    text = CLEAN_SKILL + "\nThe classic stack is ArviZ 0.23.\n"
+    root = make_repo(tmp_path, {"skills/demo/references/porting.md": text})
+    assert findings(root)
+    assert findings(root, historical={"ArviZ 0.23": "the classic stack, history by design"}) == []
+
+def test_historical_entries_have_reasons():
+    hist = mod("versions_check").HISTORICAL
+    assert isinstance(hist, dict)
+    for phrase, reason in hist.items():
+        assert isinstance(phrase, str) and phrase.strip()
+        assert not re.search(r"\.md:\d+", phrase)
+        assert isinstance(reason, str) and reason.strip()
+
+def test_check_skips_specs_license_data(tmp_path):
+    stale = "verified on Polars 1.38\n"
+    root = make_repo(tmp_path, {
+        "specs/old.md": stale,
+        "skills/demo/LICENSE.md": stale,
+        "skills/demo/data/notes.md": stale,
+    })
+    assert findings(root) == []
+
+def test_check_floor_mismatch(tmp_path):
+    header = CLEAN_SCRIPT.replace(">=3.12", ">=3.11")
+    assert findings(make_repo(tmp_path, {"skills/demo/scripts/run.py": header}))
+
+def test_check_floor_above_dev(tmp_path):
+    root = make_repo(tmp_path, {
+        "skills/demo/SKILL.md": CLEAN_SKILL.replace("Python 3.12+", "Python 3.14+"),
+        "skills/demo/scripts/run.py": CLEAN_SCRIPT.replace(">=3.12", ">=3.14"),
+    })
+    assert findings(root)
+
+def test_check_subcommand_exit_codes(tmp_path):
+    versions = mod("versions")
+    root = make_repo(tmp_path, {"CLAUDE.md": "uv run --python 3.13 x.py\n"})
+    assert versions.main(["check"], root=root) != 0
+
+
+# ---------- Real tree ----------
+
+def test_real_versions_file_shape():
+    data = tomllib.loads((REPO / "build" / "versions.toml").read_text())
+    assert set(data) >= {"python", "freeze", "packages", "cited", "gates"}
+    assert isinstance(data["freeze"]["date"], datetime.date)
+    assert re.fullmatch(r"3\.\d+", data["python"]["dev"])
+    assert data["gates"]["snippets"] == SNIPPETS
+    assert data["gates"]["jax-cpu"] == JAX_CPU
+    for v in data["packages"].values():
+        assert re.fullmatch(r"\d+(\.\d+)*", v)
+
+def test_real_gate_packages_have_entries():
+    versions = mod("versions")
+    v = versions.load(REPO)
+    for gate, names in v.gates.items():
+        for n in names:
+            assert versions.normalize(n) in v.packages, (gate, n)
+    assert "polars" in v.packages
+
+def test_real_no_entry_for_unrelated_packages():
+    v = mod("versions").load(REPO)
+    for name in ("pytest", "pyyaml", "scipy", "tensorstore"):
+        assert name not in v.packages
+
+def test_real_cited_entries():
+    v = mod("versions").load(REPO)
+    for name in ("altair", "plotly", "optuna", "great-docs"):
+        assert name in v.cited
+        assert name not in v.packages
+
+def test_real_file_has_no_floors():
+    text = (REPO / "build" / "versions.toml").read_text()
+    assert "requires-python" not in text
+    assert "compatibility" not in text
+    assert "3.9" not in text
+    assert "3.11" not in text
+
+def test_real_outputs_in_sync():
+    versions = mod("versions")
+    assert versions.sync(REPO, check=True) == []
+    assert (REPO / ".python-version").read_text().strip() == versions.load(REPO).dev_python
+
+def test_real_one_jax_or_documented_override():
+    v = mod("versions").load(REPO)
+    a = [s for s in v.stack("snippets") if s.startswith("jax==")]
+    b = [s for s in v.stack("jax-cpu") if s.startswith("jax==")]
+    if a != b:
+        ov = [o for o in v.overrides if o.gate == "jax-cpu" and o.package == "jax"]
+        assert ov and ov[0].reason.strip()
+        assert "jax" in (REPO / "specs" / "deferred_items.md").read_text()
+
+def test_real_polars_at_least_two():
+    versions = mod("versions")
+    v = versions.load(REPO)
+    assert versions.version_tuple(v.packages["polars"]) >= (2, 0)
+
+def test_real_tree_check_clean():
+    versions = mod("versions")
+    assert mod("versions_check").check(REPO) == []
+    assert versions.main(["check"], root=REPO) == 0
+
+def test_real_documented_commands():
+    for rel in ("CLAUDE.md", "AGENTS.md", "GEMINI.md", "build/run_commit_lints.sh"):
+        text = (REPO / rel).read_text()
+        assert not re.search(r"--python\s+3\.\d+", text), rel
+        assert not re.search(r"--with\s+['\"]?[A-Za-z0-9_.-]+==", text), rel
+    claude = (REPO / "CLAUDE.md").read_text()
+    assert "build/versions.py run snippets --" in claude
+
+def test_lock_files_retired():
+    assert not (REPO / "specs/verification/32-jax-cpu.in").exists()
+    assert not (REPO / "specs/verification/32-jax-cpu.txt").exists()
+
+def test_gp_item_corrected():
+    assert "on the pinned 0.21.0" not in (REPO / "specs/deferred_items.md").read_text()
+
+def test_clean_code_rule_names_file():
+    assert "build/versions.toml" in (REPO / "rules/clean-code-python.md").read_text()
+
+
+# ---------- R5 ----------
+
+def test_tenth_commit_lint():
+    text = (REPO / "build/run_commit_lints.sh").read_text()
+    assert "versions_check" in text
+    assert "uv run python build/versions.py check" in text
+    assert "versions_check" in (REPO / "build/githooks/pre-commit").read_text() or \
+        "run_commit_lints" in (REPO / "build/githooks/pre-commit").read_text()
+    assert re.search(r"\b(ten|10)\b", (REPO / "CLAUDE.md").read_text())
+
+def test_lints_workflow_python_from_file():
+    text = (REPO / ".github/workflows/lints.yml").read_text()
+    assert not re.search(r"python-version:\s*['\"]?3\.\d+", text)
+    assert not re.search(r"--python\s+3\.\d+", text)
+
+
+WF = REPO / ".github/workflows/versions-drift.yml"
+
+def test_drift_workflow_triggers():
+    text = WF.read_text()
+    assert re.search(r"schedule:\s*\n\s*-\s*cron:", text)
+    m = re.search(r"cron:\s*['\"]([^'\"]+)['\"]", text)
+    assert m and len(m.group(1).split()) == 5 and m.group(1).split()[4] != "*"
+    assert "workflow_dispatch" in text
+    assert "versions.py drift" in text
+
+def test_drift_workflow_permissions_and_shas():
+    text = WF.read_text()
+    assert re.search(r"permissions:\s*\n\s*contents:\s*read", text)
+    uses = re.findall(r"uses:\s*([^\s#]+)", text)
+    assert uses
+    for u in uses:
+        assert re.search(r"@[0-9a-f]{40}$", u), u
+
+def test_drift_workflow_job_summary():
+    assert "GITHUB_STEP_SUMMARY" in WF.read_text()
+
+def test_drift_workflow_never_writes():
+    text = WF.read_text()
+    for bad in ("issues: write", "pull-requests: write", "contents: write", "git commit", "git push",
+                "gh issue", "gh pr", "create-pull-request", "create-issue"):
+        assert bad not in text, bad
+```
+</acceptance-tests-without-a-task>
+
+Reply with exactly one <rulings> block. Each case is one <ruling> element:
+
+<rulings>
+<ruling task="N" verdict="plan-wrong|test-wrong|unclear"><quote>the binding text, copied word for word (empty for unclear)</quote><plan>the planner's assertion, copied word for word</plan><acceptance>the acceptance test's assertion, copied word for word</acceptance></ruling>
+</rulings>
+
+If no case conflicts, reply with <rulings></rulings>.

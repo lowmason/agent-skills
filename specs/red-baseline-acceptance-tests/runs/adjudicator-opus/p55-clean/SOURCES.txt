@@ -1,0 +1,6 @@
+copy: p55-clean from f0ebef6 (specs/plans/55-test-suite-registry.md, specs/test-suite-registry.md)
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p55-clean/rep1.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p55-clean/rep2.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p55-clean/rep3.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p55-clean/rep4.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p55-clean/rep5.json

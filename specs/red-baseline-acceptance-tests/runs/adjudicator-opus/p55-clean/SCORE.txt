@@ -1,0 +1,5 @@
+rep1 catch=no near=- unclear=1 to_classify=1,2,4 cost=0.3144
+rep2 catch=no near=- unclear=3 to_classify=1,3,4 cost=0.3417
+rep3 catch=no near=- unclear=4 to_classify=1,2,4 cost=0.3377
+rep4 catch=no near=- unclear=3 to_classify=1,2,3,5 cost=0.3520
+rep5 catch=no near=- unclear=4 to_classify=1,2,3,6 cost=0.3263

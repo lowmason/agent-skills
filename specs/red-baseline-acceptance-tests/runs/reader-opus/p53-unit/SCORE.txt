@@ -1,0 +1,5 @@
+rep1 reader tests=59 flags=7 untestable=37 cost=0.5795
+rep2 reader tests=69 flags=5 untestable=55 cost=0.5854
+rep3 reader tests=53 flags=7 untestable=37 cost=0.5214
+rep4 reader tests=54 flags=7 untestable=32 cost=0.4698
+rep5 reader tests=71 flags=5 untestable=32 cost=0.4503
