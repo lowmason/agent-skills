@@ -104,6 +104,8 @@ Numbered after the spec's D1–D7. The brief records no decision after D7.
 
 - **D8** (owner, plan review, 2026-11-08): approve the plan as written, including the planner's calls in Open for
   plan review items 1–12. Applied in: Open for plan review.
+- **D9** (owner, brief, 2026-11-08): execute in a local session on the owner's computer, so the micro-test reps
+  sign in with the CLI's stored login under env -i. Applied in: Tasks 1 and 7.
 
 ## Open for plan review
 
