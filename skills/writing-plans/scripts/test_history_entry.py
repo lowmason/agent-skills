@@ -1,0 +1,376 @@
+'''Tests for history_entry.py: the draft of a retired plan's history entry.'''
+from __future__ import annotations
+
+from pathlib import Path
+
+from history_entry import closed_item_line, main
+
+PLAN = '''# Rate Limiter Implementation Plan
+
+**Spec:** `specs/rate-limiter.md`
+
+> Roadmap: specs/edge-roadmap.md, Stage 2 — on plan completion, tick the stage and re-validate later stages against what shipped.
+
+## Decisions
+
+- **D1** (owner, plan review, 2026-07-01): keep the per-IP bucket size. Applied in: Task 2.
+- **D2** (owner, plan review, 2026-07-01): the 429 body is JSON. Applied in: Task 1 (spec
+  amendment), Task 3.
+
+---
+
+### Task 1: Store
+
+- [x] **Step 1: Write the failing test**
+
+> Deviation: the store reads the limit from config, not from a constant.
+
+### Task 2: Middleware
+
+- [x] **Step 1: Run it**
+
+  > Deviation (two, from review): `X-RateLimit` headers are lower-case.
+'''
+
+LEDGER = '''Plan: specs/plans/7-rate-limiter.md
+Task 1: complete (commits a1b2c3d..d4e5f6a, review clean)
+Task 3: Ruling: count requests per key, not per IP — the spec's per-IP rule breaks behind the proxy — clients behind one NAT share a key if wrong.
+Ruling: returned 503, not the plan's 429, when the store is down — a 429 tells clients to back off from a fault that is ours — clients retry at once if wrong.
+Final: Ruling: the jitter finding stays out — tests seed jitter on purpose — a flaky test if wrong.
+'''
+
+BACKLOG = '''# Deferred items
+
+## 5-http-client — 2026-06-01
+- [x] Retry jitter is fixed-seed in tests only
+      (final review). Size: quick-fix. → done 2026-07-04 (plan 7)
+- [x] Older tick form → done in plan 7 (D)
+- [x] Belongs to another plan → done 2026-07-04 (plan 79)
+- [ ] Open item with a note → done 2026-07-04 (plan 7)
+- [x] Prose that quotes `→ done 2026-07-04 (plan 7)` only → retired 2026-07-04: gone.
+
+## 7-rate-limiter — 2026-07-04
+- [ ] Redis-backed counter store. Size: design. Done when: the DSN is recorded.
+- [ ] Second deferred thing. Size: quick-fix. Done when: it lands.
+'''
+
+GOLDEN = '''## 7-rate-limiter — 2026-07-04
+Plan: specs/plans/completed/7-rate-limiter.md · Spec: specs/completed/rate-limiter.md (retired) · Roadmap: specs/edge-roadmap.md, Stage 2
+
+Differences from the design:
+- Ruling (Task 3): count requests per key, not per IP — the spec's per-IP rule breaks behind the proxy — clients behind one NAT share a key if wrong.
+- Ruling: returned 503, not the plan's 429, when the store is down — a 429 tells clients to back off from a fault that is ours — clients retry at once if wrong.
+- Ruling (final review): the jitter finding stays out — tests seed jitter on purpose — a flaky test if wrong.
+- Deviation (Task 1): the store reads the limit from config, not from a constant. Source: plan, Task 1.
+- Deviation (Task 2): `X-RateLimit` headers are lower-case. Source: plan, Task 2.
+- Decision D2 (spec amendment): the 429 body is JSON. Source: plan, `## Decisions`.
+- Deferred: 2 items. Source: specs/deferred_items.md, § 7-rate-limiter.
+
+Closed earlier deferred items:
+- "Retry jitter is fixed-seed in tests only" (deferred by 5-http-client).
+- "Older tick form" (deferred by 5-http-client).'''
+
+TINY_PLAN = '''# Tiny Implementation Plan
+
+**Spec:** none. The requirement is one item.
+
+### Task 1: Do it
+
+- [x] **Step 1: Do it**
+'''
+
+TINY_BACKLOG = '''# Deferred items
+
+## 9-tiny — 2026-07-04
+- [ ] One deferred thing. Size: quick-fix. Done when: it lands.
+'''
+
+NO_RULING_LEDGER = '''Plan: specs/plans/9-tiny.md
+Task 1: complete (commits a1b2c3d..d4e5f6a, review clean)
+'''
+
+QUOTED = '''
+````markdown
+```python
+> Deviation: quoted.
+### Task 9: Quoted
+- **D9** (owner, plan review, 2026-07-01): quoted. Applied in: Task 9 (spec amendment).
+```
+> Deviation: quoted.
+### Task 9: Quoted
+- **D9** (owner, plan review, 2026-07-01): quoted. Applied in: Task 9 (spec amendment).
+````
+
+Add a one-line `> Deviation: …` note.
+'''
+
+DATE = '2026-07-04'
+
+
+def write_repo(
+    root: Path,
+    stem: str,
+    plan_text: str,
+    backlog: str | None = None,
+    ledger: str | None = None,
+) -> tuple[Path, Path | None]:
+    '''Write a throwaway repo: the retired plan, the backlog and the ledger.'''
+    plan = root / 'specs' / 'plans' / 'completed' / f'{stem}.md'
+    plan.parent.mkdir(parents=True)
+    plan.write_text(plan_text, encoding='utf-8')
+    if backlog is not None:
+        (root / 'specs' / 'deferred_items.md').write_text(backlog, encoding='utf-8')
+    ledger_path = None
+    if ledger is not None:
+        ledger_path = root / 'run-ledger.md'
+        ledger_path.write_text(ledger, encoding='utf-8')
+    return plan, ledger_path
+
+
+def run_draft(capsys, plan: Path, *args: str) -> tuple[int, str, str]:
+    code = main(['draft', str(plan), *args])
+    captured = capsys.readouterr()
+    return code, captured.out, captured.err
+
+
+def golden_args(ledger: Path) -> list[str]:
+    return [
+        '--ledger', str(ledger),
+        '--spec', 'specs/completed/rate-limiter.md', '--spec-status', 'retired',
+        '--date', DATE,
+    ]
+
+
+def test_golden_draft(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN, BACKLOG, LEDGER)
+    code, out, err = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    assert out == GOLDEN + '\n'
+    assert err == ''
+
+
+def test_no_ledger_and_spec_none(tmp_path, capsys):
+    plan, _ = write_repo(tmp_path, '9-tiny', TINY_PLAN, TINY_BACKLOG)
+    code, out, _ = run_draft(capsys, plan, '--date', DATE)
+    assert code == 0
+    assert out.splitlines() == [
+        '## 9-tiny — 2026-07-04',
+        'Plan: specs/plans/completed/9-tiny.md · Spec: none',
+        'Rulings: no ledger given',
+        '',
+        'Differences from the design:',
+        '- Deferred: 1 item. Source: specs/deferred_items.md, § 9-tiny.',
+    ]
+
+
+def test_header_spec_without_flag_warns(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    lines = out.splitlines()
+    assert lines[1].endswith(
+        '· Spec: specs/rate-limiter.md (status not given) · Roadmap: specs/edge-roadmap.md, Stage 2'
+    )
+    assert lines[2] == 'Spec: --spec not given'
+
+
+def test_both_warnings_come_in_order(tmp_path, capsys):
+    plan, _ = write_repo(tmp_path, '7-rate-limiter', PLAN)
+    code, out, _ = run_draft(capsys, plan, '--date', DATE)
+    assert code == 0
+    assert out.splitlines()[2:4] == ['Spec: --spec not given', 'Rulings: no ledger given']
+
+
+def test_no_differences(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '9-tiny', TINY_PLAN, ledger=NO_RULING_LEDGER)
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    assert out.splitlines() == [
+        '## 9-tiny — 2026-07-04',
+        'Plan: specs/plans/completed/9-tiny.md · Spec: none',
+        '',
+        'No differences from the design.',
+    ]
+
+
+def test_header_deviation(tmp_path, capsys):
+    header_note = PLAN.replace(
+        '## Decisions', '> Deviation: the plan ran on main.\n\n## Decisions', 1,
+    )
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', header_note, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    deviations = [line for line in out.splitlines() if line.startswith('- Deviation')]
+    assert deviations[0] == '- Deviation: the plan ran on main. Source: plan, header.'
+    assert len(deviations) == 3
+
+
+def test_bold_deviation_label(tmp_path, capsys):
+    bold = PLAN.replace('> Deviation: the store', '> **Deviation:** the store', 1)
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', bold, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    assert out == GOLDEN + '\n'
+
+
+WRAPPED_NOTE = '''> Deviation: the Task 1 brief extracted by scripts/task-brief truncated at 73/255 lines because
+> this task's nested ```python blocks sat inside 3-backtick fences. The implementer detected it,
+> verified the brief was a byte-identical prefix of the plan, and worked from the plan.'''
+
+WRAPPED_LINE = (
+    "- Deviation (Task 1): the Task 1 brief extracted by scripts/task-brief truncated at 73/255 lines because"
+    " this task's nested ```python blocks sat inside 3-backtick fences. The implementer detected it,"
+    ' verified the brief was a byte-identical prefix of the plan, and worked from the plan. Source: plan, Task 1.'
+)
+
+ONE_LINE_NOTE = '> Deviation: the store reads the limit from config, not from a constant.'
+ONE_LINE = '- Deviation (Task 1): the store reads the limit from config, not from a constant. Source: plan, Task 1.'
+
+BOLD_NOTE = '''
+> **Deviation (2026-07-20, review-driven):** the Step 1 replacement text above shipped in a
+> corrected form. The shipped text names the tail, not the mass near zero.
+'''
+
+
+def test_wrapped_deviation_joins_its_blockquote_lines(tmp_path, capsys):
+    wrapped = PLAN.replace(ONE_LINE_NOTE, WRAPPED_NOTE, 1)
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', wrapped, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    assert out == GOLDEN.replace(ONE_LINE, WRAPPED_LINE) + '\n'
+
+
+def test_deviation_continuation_stops_at_a_break(tmp_path, capsys):
+    stops = '''
+### Task 3: Stops
+
+> Deviation: first note, line one
+> and line two.
+>
+> still the blockquote, but after a bare marker.
+> Deviation: second note touches the first.
+Plain line.
+> Deviation: third note, then a plain line follows.
+Not quoted.
+> not part of any note.
+'''
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN + stops, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    deviations = [line for line in out.splitlines() if line.startswith('- Deviation (Task 3)')]
+    assert deviations == [
+        '- Deviation (Task 3): first note, line one and line two. Source: plan, Task 3.',
+        '- Deviation (Task 3): second note touches the first. Source: plan, Task 3.',
+        '- Deviation (Task 3): third note, then a plain line follows. Source: plan, Task 3.',
+    ]
+
+
+def test_bold_dated_deviation_drops_its_bold_marks(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN + BOLD_NOTE, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    bold = [line for line in out.splitlines() if 'Step 1 replacement text' in line]
+    assert bold == [
+        '- Deviation (Task 2): the Step 1 replacement text above shipped in a corrected form.'
+        ' The shipped text names the tail, not the mass near zero. Source: plan, Task 2.'
+    ]
+    assert '**' not in bold[0]
+
+
+def test_quoted_forms_in_code_are_not_read(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN + QUOTED, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    assert out == GOLDEN + '\n'
+
+
+def test_plan_id_matches_whole_word(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN, BACKLOG, LEDGER)
+    _, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert not [line for line in out.splitlines() if 'Belongs to another plan' in line]
+
+
+def test_unticked_and_quoted_ticks_are_not_closes(tmp_path, capsys):
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', PLAN, BACKLOG, LEDGER)
+    _, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert 'Open item with a note' not in out
+    assert 'Prose that quotes' not in out
+
+
+def test_no_plan_id_gives_no_closed_items_and_no_deferred_line(tmp_path, capsys):
+    plan, _ = write_repo(tmp_path, 'tiny', TINY_PLAN, TINY_BACKLOG.replace('9-tiny', 'tiny'))
+    code, out, _ = run_draft(capsys, plan, '--date', DATE)
+    assert code == 0
+    assert 'Deferred:' not in out
+    assert 'Closed earlier' not in out
+
+
+def test_missing_plan_exits_2(tmp_path, capsys):
+    plan = tmp_path / 'specs' / 'plans' / 'completed' / '9-gone.md'
+    code, out, err = run_draft(capsys, plan, '--date', DATE)
+    assert code == 2
+    assert out == ''
+    assert len(err.splitlines()) == 1
+    assert str(plan) in err
+
+
+def test_not_a_plan_exits_2(tmp_path, capsys):
+    prose = '# Notes\n\n```\n### Task 1: Only in code\n```\n'
+    plan, _ = write_repo(tmp_path, '9-notes', prose)
+    code, out, err = run_draft(capsys, plan, '--date', DATE)
+    assert code == 2
+    assert out == ''
+    assert len(err.splitlines()) == 1
+    assert str(plan) in err
+
+
+def test_plan_outside_a_specs_directory_exits_2(tmp_path, capsys):
+    plan = tmp_path / 'notes' / '9-tiny.md'
+    plan.parent.mkdir()
+    plan.write_text(TINY_PLAN, encoding='utf-8')
+    code, out, err = run_draft(capsys, plan, '--date', DATE)
+    assert code == 2
+    assert out == ''
+    assert len(err.splitlines()) == 1
+    assert str(plan) in err
+
+
+def test_missing_ledger_exits_2(tmp_path, capsys):
+    plan, _ = write_repo(tmp_path, '9-tiny', TINY_PLAN)
+    ledger = tmp_path / 'no-such-ledger.md'
+    code, out, err = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 2
+    assert out == ''
+    assert len(err.splitlines()) == 1
+    assert str(ledger) in err
+
+
+def test_spec_without_status_exits_2(tmp_path, capsys):
+    plan, _ = write_repo(tmp_path, '9-tiny', TINY_PLAN)
+    code, out, err = run_draft(capsys, plan, '--spec', 'specs/x.md')
+    assert code == 2
+    assert out == ''
+    assert len(err.splitlines()) == 1
+
+
+def test_status_without_spec_exits_2(tmp_path, capsys):
+    plan, _ = write_repo(tmp_path, '9-tiny', TINY_PLAN)
+    code, out, err = run_draft(capsys, plan, '--spec-status', 'live')
+    assert code == 2
+    assert out == ''
+    assert len(err.splitlines()) == 1
+
+
+def test_closed_item_line_form():
+    assert closed_item_line('A title', '5-http-client') == '- "A title" (deferred by 5-http-client).'
+    assert closed_item_line('A title', 'x', 'it is fixed.') == '- "A title" (deferred by x): it is fixed.'
+
+
+def test_closed_item_section_without_plan_uses_its_slug(tmp_path, capsys):
+    backlog = (
+        '## deferred-triage (no plan; /deferred pass, branch deferred-triage-2026-09-28) — 2026-09-28\n'
+        '- [x] Brief path is relative → done 2026-07-04 (plan 9)\n'
+    )
+    plan, _ = write_repo(tmp_path, '9-tiny', TINY_PLAN, backlog)
+    _, out, _ = run_draft(capsys, plan, '--date', DATE)
+    assert '- "Brief path is relative" (deferred by deferred-triage).' in out.splitlines()
