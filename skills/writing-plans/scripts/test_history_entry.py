@@ -1,4 +1,4 @@
-'''Tests for history_entry.py: the draft of a retired plan's history entry.'''
+'''Tests for history_entry.py: the draft of a retired plan's entry and of a /deferred pass's entry.'''
 from __future__ import annotations
 
 from pathlib import Path
@@ -105,6 +105,46 @@ Add a one-line `> Deviation: …` note.
 '''
 
 DATE = '2026-07-04'
+
+
+QUICK = '''# Deferred items
+
+## 34-calibration — 2026-09-20
+- [x] The spread step is direction-blind
+      (final review). → done 2026-10-05 (/deferred quick fix): signed the spread
+      and added a test.
+- [x] Quoted form only: `→ done 2026-10-05 (/deferred quick fix)` here
+      → retired 2026-10-05: the premise is gone.
+- [x] Fixed on another day → done 2026-10-04 (/deferred quick fix): moved the guard.
+- [x] No note text → done 2026-10-05 (/deferred quick fix)
+- [ ] Open, not closed → done 2026-10-05 (/deferred quick fix): typo.
+
+## deferred-triage (no plan; /deferred pass, branch deferred-triage-2026-09-28) — 2026-09-28
+- [x] Brief path is relative → done 2026-10-05 (/deferred quick fix): made it absolute.
+'''
+
+HISTORY = '''# Development history
+
+## /deferred — 2026-10-04
+
+Closed deferred items:
+- "Brief path is relative" (deferred by deferred-triage): an older close.
+
+## /deferred — 2026-10-05
+
+Closed deferred items:
+- "The spread step is direction-blind" (deferred by 34-calibration): signed it.
+'''
+
+DEFERRED_DATE = '2026-10-05'
+
+DEFERRED_GOLDEN = '''## /deferred — 2026-10-05
+
+Closed deferred items:
+- "The spread step is direction-blind" (deferred by 34-calibration): signed the spread and added a test.
+- "No note text" (deferred by 34-calibration).
+- "Brief path is relative" (deferred by deferred-triage): made it absolute.
+'''
 
 
 def write_repo(
@@ -441,3 +481,70 @@ def test_closed_item_section_without_plan_uses_its_slug(tmp_path, capsys):
     plan, _ = write_repo(tmp_path, '9-tiny', TINY_PLAN, backlog)
     _, out, _ = run_draft(capsys, plan, '--date', DATE)
     assert '- "Brief path is relative" (deferred by deferred-triage).' in out.splitlines()
+
+
+def write_deferred_repo(root: Path, backlog: str | None, history: str | None = None) -> None:
+    '''Write the backlog and the history file that `deferred` reads from the current directory.'''
+    (root / 'specs').mkdir()
+    if backlog is not None:
+        (root / 'specs' / 'deferred_items.md').write_text(backlog, encoding='utf-8')
+    if history is not None:
+        (root / 'specs' / 'history.md').write_text(history, encoding='utf-8')
+
+
+def run_deferred(capsys, *args: str) -> tuple[int, str, str]:
+    code = main(['deferred', *args])
+    captured = capsys.readouterr()
+    return code, captured.out, captured.err
+
+
+def test_deferred_draft(tmp_path, monkeypatch, capsys):
+    write_deferred_repo(tmp_path, QUICK)
+    monkeypatch.chdir(tmp_path)
+    code, out, err = run_deferred(capsys, '--date', DEFERRED_DATE)
+    assert code == 0
+    assert out == DEFERRED_GOLDEN
+    assert err == ''
+
+
+def test_quoted_quick_fix_form_is_not_a_close(tmp_path, monkeypatch, capsys):
+    write_deferred_repo(tmp_path, QUICK)
+    monkeypatch.chdir(tmp_path)
+    _, out, _ = run_deferred(capsys, '--date', DEFERRED_DATE)
+    for name in ('Quoted form only', 'Fixed on another day', 'Open, not closed'):
+        assert not any(name in line for line in out.splitlines())
+
+
+def test_second_pass_same_date_lists_only_new_items(tmp_path, monkeypatch, capsys):
+    write_deferred_repo(tmp_path, QUICK, HISTORY)
+    monkeypatch.chdir(tmp_path)
+    code, out, _ = run_deferred(capsys, '--date', DEFERRED_DATE)
+    assert code == 0
+    listed = [line for line in out.splitlines() if line.startswith('- ')]
+    assert listed == [
+        '- "No note text" (deferred by 34-calibration).',
+        '- "Brief path is relative" (deferred by deferred-triage): made it absolute.',
+    ]
+
+
+def test_all_listed_prints_nothing(tmp_path, monkeypatch, capsys):
+    history = HISTORY + (
+        '\n## /deferred — 2026-10-05\n\nClosed deferred items:\n'
+        '- "No note text" (deferred by 34-calibration).\n'
+        '- "Brief path is relative" (deferred by deferred-triage): made it absolute.\n'
+    )
+    write_deferred_repo(tmp_path, QUICK, history)
+    monkeypatch.chdir(tmp_path)
+    code, out, err = run_deferred(capsys, '--date', DEFERRED_DATE)
+    assert code == 0
+    assert out == ''
+    assert err == ''
+
+
+def test_no_backlog_prints_nothing(tmp_path, monkeypatch, capsys):
+    write_deferred_repo(tmp_path, None, HISTORY)
+    monkeypatch.chdir(tmp_path)
+    code, out, err = run_deferred(capsys, '--date', DEFERRED_DATE)
+    assert code == 0
+    assert out == ''
+    assert err == ''

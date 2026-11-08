@@ -3,11 +3,11 @@
 # requires-python = '>=3.11'
 # dependencies = []
 # ///
-'''Draft an entry for specs/history.md from a retired plan, its run ledger and the backlog.
+'''Draft an entry for specs/history.md: for a retired plan, or for a /deferred pass.
 
-The `draft` subcommand prints the draft entry for one retired plan. The agent that
-retires the plan finishes the draft and appends it to `specs/history.md`. The
-script never writes a file.
+The `draft` subcommand prints the draft entry for one retired plan, from the plan,
+its run ledger and the backlog. The agent that retires the plan finishes the draft
+and appends it to `specs/history.md`. The script never writes a file.
 
 The draft lists every ledger ruling. It also lists the plan's deviation notes and
 its decisions that carry `(spec amendment)`, the count of items the plan deferred,
@@ -17,12 +17,20 @@ rulings that did not change the build (spec D7).
 A form inside a fenced block or an inline code span is quoted text, so it is never
 read. The plan's header lines come from above its first `## ` heading.
 
+The `deferred` subcommand prints the draft entry for a /deferred pass. It lists the
+ticked items of `specs/deferred_items.md` that carry a `done` note with the pass
+date and the mark `(/deferred quick fix)`. It leaves out each item that an earlier
+`## /deferred` section of that date in `specs/history.md` already lists. It prints
+nothing when no item qualifies. Both files are read from the current directory.
+
 Usage:
     uv run <this-skill-dir>/scripts/history_entry.py draft <plan> \\
         [--ledger <path>] [--spec <path> --spec-status retired|live] [--date YYYY-MM-DD]
+    uv run <this-skill-dir>/scripts/history_entry.py deferred [--date YYYY-MM-DD]
 
-Exit 0 with a draft. Exit 2 with a one-line error on stderr when an input is bad,
-for example a plan file that is missing or is not a plan.
+Exit 0 with a draft, or with no output for `deferred` when no item qualifies. Exit 2
+with a one-line error on stderr when an input is bad, for example a plan file that
+is missing or is not a plan.
 '''
 
 from __future__ import annotations
@@ -42,6 +50,7 @@ PROG = 'history_entry.py'
 EXIT_BAD_INPUT = 2
 SPECS_DIR = 'specs'
 BACKLOG_PATH = 'specs/deferred_items.md'
+HISTORY_PATH = 'specs/history.md'
 SPEC_STATUSES = ('retired', 'live')
 NO_SPEC = 'none'
 STATUS_NOT_GIVEN = 'status not given'
@@ -51,6 +60,9 @@ APPLIED_IN = ' Applied in:'
 DECISION_CLOSE = '): '
 RULING_MARK = 'Ruling:'
 DECISIONS_SOURCE = '`## Decisions`'
+DONE_KIND = 'done'
+QUICK_FIX_MARK = '(/deferred quick fix)'
+DEFERRED_HEADING = '## /deferred — '
 
 H2_RE = re.compile(r'^##\s')
 SECTION_HEADING_RE = re.compile(r'^#{2,3}\s')
@@ -231,9 +243,14 @@ def ruling_lines(ledger_text: str) -> list[str]:
     return found
 
 
+def closed_item_head(title: str, section: str) -> str:
+    '''`- "<title>" (deferred by <section>)`, the part of a closed-item line that names the item.'''
+    return f'- "{title}" (deferred by {section})'
+
+
 def closed_item_line(title: str, section: str, detail: str = '') -> str:
-    '''`- "<title>" (deferred by <section>)`, closed by a period or by `: <detail>`.'''
-    head = f'- "{title}" (deferred by {section})'
+    '''The head of a closed-item line, closed by a period or by `: <detail>`.'''
+    head = closed_item_head(title, section)
     return f'{head}: {detail}' if detail else f'{head}.'
 
 
@@ -347,6 +364,66 @@ def draft_entry(inputs: DraftInputs) -> str:
     return '\n'.join(lines)
 
 
+def quick_fix_detail(item: Item, date: str) -> str | None:
+    '''The text of the item's `done <date> (/deferred quick fix)` note, or None.
+
+    None when the item is open or has no such note. The text may be empty. A note
+    runs to the next note or to the item's end, over its continuation lines, so it
+    is read from `item.text`: `Note.rest` stops at the end of the note's line. The
+    lines are joined with single spaces.
+    '''
+    if not item.checked:
+        return None
+    text = item.text
+    notes = list(NOTE_RE.finditer(blank_code(text)))
+    for index, note in enumerate(notes):
+        if note.group('kind') != DONE_KIND or note.group('date') != date:
+            continue
+        end = notes[index + 1].start() if index + 1 < len(notes) else len(text)
+        words = ' '.join(text[note.end():end].split()).lstrip(': ')
+        if words.startswith(QUICK_FIX_MARK):
+            return words.removeprefix(QUICK_FIX_MARK).lstrip(': ')
+    return None
+
+
+def _listed_lines(history_text: str, date: str) -> list[str]:
+    '''The lines under every `## /deferred — <date>` heading of the history file.'''
+    heading = f'{DEFERRED_HEADING}{date}'
+    lines = []
+    inside = False
+    for line in history_text.split('\n'):
+        if H2_RE.match(line):
+            inside = line.rstrip() == heading
+        elif inside:
+            lines.append(line)
+    return lines
+
+
+def deferred_entry(date: str) -> str:
+    '''The draft history entry for a /deferred pass, or '' when no item qualifies.
+
+    Reads `specs/deferred_items.md` and `specs/history.md` from the current directory.
+    An item that a `## /deferred` section of the same date already lists is left out.
+    '''
+    backlog = Path(BACKLOG_PATH)
+    if not backlog.is_file():
+        return ''
+    history = Path(HISTORY_PATH)
+    listed = _listed_lines(_read_text(history, 'history file') if history.is_file() else '', date)
+    closed = []
+    for item in parse_items(_read_text(backlog, 'backlog')):
+        detail = quick_fix_detail(item, date)
+        if detail is None:
+            continue
+        title, section = item_title(item), item_section(item)
+        head = closed_item_head(title, section)
+        if not any(line.startswith(head) for line in listed):
+            closed.append(closed_item_line(title, section, detail))
+    if not closed:
+        return ''
+    return '\n'.join([f'{DEFERRED_HEADING}{date}', '', 'Closed deferred items:', *closed])
+
+
 def _iso_date(raw: str) -> str:
     try:
         if ISO_DATE_RE.fullmatch(raw):
@@ -367,6 +444,10 @@ def _run_draft(args: argparse.Namespace) -> str:
     return draft_entry(DraftInputs(args.plan, args.ledger, args.spec, args.spec_status, args.date))
 
 
+def _run_deferred(args: argparse.Namespace) -> str:
+    return deferred_entry(args.date)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog=PROG, description=__doc__.splitlines()[0])
     commands = parser.add_subparsers(dest='command', required=True)
@@ -377,6 +458,11 @@ def build_parser() -> argparse.ArgumentParser:
     draft.add_argument('--spec-status', choices=SPEC_STATUSES, help='whether the spec retired or stays live')
     _add_date_option(draft)
     draft.set_defaults(run=_run_draft)
+    deferred = commands.add_parser(
+        'deferred', help="print the draft entry for a /deferred pass's quick fixes",
+    )
+    _add_date_option(deferred)
+    deferred.set_defaults(run=_run_deferred)
     return parser
 
 
