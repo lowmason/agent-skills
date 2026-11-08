@@ -100,9 +100,14 @@ command text, the runtime adapter generator, the `claude -p` micro-test kit.
 
 ## Decisions
 
-None. The brief records no decision after the spec's D1–D7.
+Numbered after the spec's D1–D7. The brief records no decision after D7.
+
+- **D8** (owner, plan review, 2026-11-08): approve the plan as written, including the planner's calls in Open for
+  plan review items 1–12. Applied in: Open for plan review.
 
 ## Open for plan review
+
+All twelve items are settled: approved as written by D8 (2026-11-08).
 
 1. **The brief came by relay.** It was not in this container. The findings 21 and 24 session relayed its text on
    2026-11-08. It has no decisions and no owner gates. Its leave-alone list is in Global Constraints. Its traps
