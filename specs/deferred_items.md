@@ -6069,10 +6069,28 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/completed/deferred_items.md`, and nothing updates the plan. On 2026-11-08, 15 plan sections were in
       the archive only, and 14 of their retired plans kept the old pointer: plans 7, 8, 11-17, 20, 22, 23, 28 and
       29 (for example `specs/plans/completed/13-llm-wiki.md:3`). The owner kept this apart from the
-      development-history design (`specs/development-history-record.md`, D4), which replaced the trigger that
+      development-history design (`specs/completed/development-history-record.md`, D4), which replaced the trigger that
       would have fixed it. Open choices: a status-line form that names both files, an update that the archive
       script makes, or a one-time fix of the 14 plans. An edit to a retired plan not in
       `build/deferral_baseline.txt` can fail the deferral lint
       (`skills/writing-plans/references/deferred-backlog.md`, Markers). Size: design. Done when: a retired plan
       whose section is in the archive only points at a file that holds that section, and the rule that keeps
       it so is in writing-plans or `archive_deferred.py`.
+
+## 80-development-history-record — 2026-11-08
+- [ ] **A revert asked for at the gate has two rules (plan 80 final review, owner ruling at the completion gate).**
+      The spec says a reverted `contradicts spec` ruling "makes it a deferred item as today"
+      (`specs/completed/development-history-record.md`, Contradicting rulings at the gate), and both executors'
+      `references/final-review.md` gate paragraphs now say the same. But writing-plans protocol step 1
+      (`skills/writing-plans/SKILL.md`) implements an answer that unblocks work at once, and the final review
+      found no source for "as today". The owner kept the spec's wording for plan 80. Size: design. Done when:
+      protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate, and the
+      `gate-tag` case still meets its bar under `specs/red-baseline-development-history/kit/`.
+- [ ] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
+      `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
+      "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and
+      protocol step 5, the gate message is gone and no file holds the tags. Plan 80's run wrote them into its SDD
+      ledger by hand (a `Gate tags:` line). The suggested fix is one fallback line: when the gate message is not in
+      view, judge each kept ruling against the spec. The owner kept the micro-tested text unchanged for plan 80.
+      Size: quick-fix. Done when: Finish step 2 names a source for the tags that survives a `/clear`, and a
+      five-rep `history-filter` run at the new text is recorded in `specs/red-baseline-development-history.md`.

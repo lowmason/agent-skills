@@ -17,6 +17,7 @@ the task, or when you invoke the skill explicitly.
 >   - plans, in `specs/plans/<id>-<spec-name>.md`, numbered automatically
 >   - finished work, retired to `specs/completed/` and `specs/plans/completed/`
 >   - work that you consciously defer, appended to `specs/deferred_items.md`
+>   - a short history of what each plan built and where it differed from its design, appended to `specs/history.md`
 >
 >   If your projects do not use that layout, these skills start to build it.
 > - **The review steps send code to OpenAI when the Codex CLI is present.** `executing-plans`, `subagent-driven-development`, and `finishing-a-development-branch` run a read-only second-opinion review with the Codex CLI (`codex exec review`) whenever `codex` is on your `PATH`. The review is agentic. It sends the branch diff to OpenAI under your Codex login, *and* every repository file and command output that Codex reads during the review. Where code egress is governed, keep `codex` off that machine or remove the step.

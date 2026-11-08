@@ -357,6 +357,18 @@ Changes from upstream:
     deliberately" sentence, which the reference now holds in the new
     form. Step 4b, Options 1 and 2 and Red Flags name the note on the
     item.
+    Plan 80 added a development history record, which is not upstream:
+    writing-plans/references/history.md (the file specs/history.md, its
+    entry format and its rules) and writing-plans/scripts/history_entry.py,
+    which drafts each entry, with its tests
+    (writing-plans/scripts/test_history_entry.py). These three files are
+    original works by Lowell Mason under the same MIT terms. In the adapted
+    skills, step 5 of writing-plans' Plan Completion Protocol appends a
+    history entry before the retire commit. Step 3 no longer has its
+    example block, which the deferred-backlog reference already holds. The
+    plan-completion gate in subagent-driven-development and executing-plans
+    tags each ruling that contradicts spec text. The /deferred command
+    writes a history entry for a pass that closes items with a quick fix.
   - finishing-a-development-branch's Option 2 creates the PR and Step 3
     detects the base branch. Neither is upstream: as vendored, Option 2
     only pushed the branch and there was no `gh` anywhere in the file. Both

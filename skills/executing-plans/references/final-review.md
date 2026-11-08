@@ -76,11 +76,16 @@ resolve-before-defer gate → plan markup → deferred items → retire the plan
 and (conditionally) its spec.
 
 In the gate's batched questions, list every `Ruling:` line in the ledger
-first, all of them, in the order made, each with what it costs if wrong —
+first, all of them, in the order made, each with what it costs if wrong, and
+tag each one that contradicts spec text `contradicts spec: <spec section>` —
 decisions already taken, shown so your partner sees them, not questions —
 then fold the final review's Declined to judge lines, each for your human
 partner to rule on, into the same batch, so your human partner gets at most
-one round-trip. Findings the fix pass left unfixed feed the gate.
+one round-trip. A tagged ruling is still a decision taken, not a question:
+the plan's entry in `specs/history.md` records it in place of a spec
+amendment, so ask your partner nothing about it. Your partner may still ask
+to revert it, which makes it a deferred item. Findings the fix pass left
+unfixed feed the gate.
 
 When the protocol has finished, delete this plan's workspace — the
 directory `sdd-workspace` printed at setup; if you lost it, re-run the
