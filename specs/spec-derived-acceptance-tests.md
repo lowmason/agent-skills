@@ -3,7 +3,7 @@
 **Status:** DRAFT (2026-11-08), for the owner's review. The design came from a brainstorming session on
 2026-11-08, opened on `specs/superpowers-drift-spec-v7-0-2.md`. It covers that assessment's finding 21
 ("Per-task test evidence is self-reported in SDD") and finding 24 ("Planner-authored tests can share a spec
-misreading"). Finding 22 (spec drift) moved to its own session on the same day (D2). Decisions D1–D6 are the
+misreading"). Finding 22 (spec drift) moved to its own session on the same day (D2). Decisions D1–D7 are the
 owner's. Text marked *(designer's call)* is the designer's choice. The list under "Designer's calls" collects them.
 
 ## Intent
@@ -74,8 +74,8 @@ So the plan measures the step before it changes any skill text (Verification).
 **Anti-goals.** Each of these makes the design a failure, even if it works:
 
 - The second reader sees the plan's tests or approach lines. Its reading is then a copy of the planner's.
-- The adjudicator settles a case that no spec sentence decides. An agent then picks a reading that the owner
-  never chose.
+- The adjudicator rules on what the code must do without quoting the requirement text that decides it. An
+  agent then picks a reading that the owner never chose.
 - The step adds a stop to every run, or a ruling for the owner on every task.
 - An executor edits an acceptance test to match the code without a recorded ruling.
 - A Codex run sends a project's spec to OpenAI without the owner's approval for that project.
@@ -101,7 +101,7 @@ accepted them with approach A (D6):
 | Main edit | writing-plans (6 characters of room) | SDD's `SKILL.md` (591 characters of room) | both executors' `final-review.md` |
 
 - **A** writes tests before the code exists, so some tests fail on interface details, not on meaning. The
-  adjudicator sorts those out.
+  adjudicator corrects those against the Interfaces block.
 - **B** gives the fastest feedback, but costs one more subagent per task. Its tester also reads the brief's
   Interfaces block, which the planner wrote.
 - **C** is the cheapest to build. But a misreading in Task 1 then costs every task built on it, and the final
@@ -137,6 +137,11 @@ already present. The cost is the writing-plans references split, which finding 1
   I could provide these in some limited cases."
 - **D5. The playback stands.** "Nothing is missing, lay out the approaches."
 - **D6. Approach A.** "Go with A." The approaches message showed the four shared parts with it.
+- **D7. A cheaper Codex model.** "It would be nice to use a less capable (and expensive model). We should see if
+  Sol 6 works." The owner said this after reporting that Codex's default model, Sol 6.1, fails, and that runs
+  then fall back to Astra 6. Reading: the Codex reader uses the cheapest model that the login accepts and that
+  meets the probe's bars, and the probe tries Sol 6 first. The repository does not record Sol 6's exact model
+  ID, so the builder confirms it.
 
 ## Design
 
@@ -163,11 +168,18 @@ already present. The cost is the writing-plans references split, which finding 1
   Self-Review at `:208` and Plan review at `:233`).
 - **Who.** Codex where the session has the owner's approval, by the same gate as
   `skills/requesting-code-review/codex-review.md` ("Approval first", `:9`). Elsewhere, a fresh Claude
-  subagent at SDD's capable tier. Codex already runs at both executors' final reviews.
-- **Inputs** *(designer's call)*: the whole spec and four parts of the plan. The parts are the Tech Stack
-  line, the Global Constraints, and each task's Files list and Interfaces block. These are enough to write
-  runnable tests. The reader never gets the task steps, the test code, the approach lines, the Review Focus section or
-  the Decisions section. The planner wrote all of those.
+  subagent at SDD's capable tier. Codex already runs at both executors' final reviews. The Codex run uses the
+  cheapest model that the login accepts and that meets the probe's bars (D7).
+- **The requirement text** *(designer's call)*: the text that the plan's `**Spec:**` line names. That is
+  usually a spec. It can also be the backlog items or the brief that a plan with no spec names as its
+  requirements (`skills/writing-plans/SKILL.md:99`). A plan whose `**Spec:**` line names no requirement text
+  skips the step, and the plan review message says so.
+- **Inputs** *(designer's call)*: the requirement text, the plan's Tech Stack line, and each task's Files list
+  and Interfaces block. The reader uses the Interfaces blocks for names, paths and types only. It takes every
+  value from the requirement text, and it flags each plan value that differs from it. The reader never gets
+  the Global Constraints, the task steps, the test code, the approach lines, the Review Focus section or the
+  Decisions section. The planner wrote all of those, and the Global Constraints repeat the spec's values in
+  the planner's copy (`skills/writing-plans/SKILL.md:103-106`).
 - **Isolation** *(designer's call)*: the planner copies the inputs into a scratch directory outside the
   checkout. The prompt names no plan path, and it tells the reader not to search for one.
 - **Output.** Acceptance tests in the project's test framework. Each test names the spec sentence that it
@@ -185,8 +197,13 @@ already present. The cost is the writing-plans references split, which finding 1
   `agents/code-reviewer.md`, it falls under `hooks/readonly-agent-guard.py` and
   `hooks/dispatch-model-guard.py`.
 - **Its rule (D3, D6).** Each case gets one ruling: the plan or code is wrong, the acceptance test is wrong, or
-  the case is unclear. Every ruling except "unclear" quotes the spec sentence that decides it. No deciding
-  sentence means "unclear".
+  the case is unclear. Every ruling except "unclear" quotes the binding text that decides it. No deciding
+  text means "unclear".
+- **The binding text** *(designer's call)*. For what the code must do, the binding text is the requirement
+  text. For names, paths and types, it is the task's Interfaces block, when the behavior under test does not
+  change. So an acceptance test that fails only on an import path or a parameter name is corrected to match
+  the Interfaces block. No owner ruling is needed. The quote rule comes from D3's "only raise it when it is
+  unclear". A name that the plan fixes is not unclear.
 - It never edits a file. The planner applies its plan-time rulings, and the controller applies its run-time
   rulings.
 
@@ -210,10 +227,15 @@ already present. The cost is the writing-plans references split, which finding 1
   - **The code is wrong.** The controller records a fix-loop finding for that task, under the usual cap.
   - **The acceptance test is wrong.** The controller corrects or drops the test, and ledgers a `Ruling:` line.
   - **Unclear.** The controller ledgers a `Ruling:` line marked for the owner, and keeps going unless one of the
-    five stops applies *(designer's call)*. The completion gate shows it with the final review's Declined to
-    judge lines, for the owner to rule on (`skills/subagent-driven-development/references/final-review.md:29`,
+    five stops applies *(designer's call)*. It sets the test aside: later runs leave the test out, and the
+    ledger line names it. Otherwise the test would fail every later run, and `task-done` records a task only
+    when its command passes. The completion gate shows the case with the final review's Declined to judge
+    lines, for the owner to rule on (`skills/subagent-driven-development/references/final-review.md:29`,
     `skills/executing-plans/references/final-review.md:71`).
-- No executor edits an acceptance test without a ledgered ruling.
+- No executor edits or sets aside an acceptance test without a ledgered ruling.
+- The history record from finding 22 keeps each `Ruling:` line that changed the build
+  (`specs/development-history-record.md`, merged in `4d69454`). The adjudicator's rulings are ordinary ledger
+  lines, so they need no extra step.
 - At plan completion, the reconciled acceptance tests join the project's test suite, so they keep guarding the
   behavior *(designer's call)*.
 
@@ -232,18 +254,27 @@ The plan's first task runs the backlog item's probe, before any skill text chang
 1. Take two or three completed spec-and-plan pairs from `specs/completed/` and `specs/plans/completed/`. Each
    needs code tasks and exact values in its spec.
 2. In copies of the plans, plant the backlog item's three misreads: an inclusive bound made exclusive, a wrong
-   unit and a wrong default. Keep one plan unchanged, to count false alarms.
+   unit and a wrong default. Plant each one everywhere the plan states that value: the Global Constraints,
+   the Interfaces blocks, the test steps and the code steps *(designer's call)*. A misread that appears only
+   in the test steps never reaches the reader, so it would overstate the catch rate. Keep one plan unchanged,
+   to count false alarms.
 3. Run the control arm: the current Self-Review checklist, run by a fresh planner session against the spec.
-4. Run two treatment arms: the second reader and the adjudicator, once with a Claude reader and once with
-   Codex.
+4. Run the treatment arms: the second reader and the adjudicator, with a Claude reader and with Codex. The
+   Codex arm tries Sol 6 first (D7). It runs Astra 6 (`gpt-6-astra`) only when the login rejects Sol 6 or Sol
+   6 misses a bar. Codex is not installed in cloud sessions, so the Codex arms run where the owner's `codex`
+   CLI is logged in.
 5. For each arm, count three things: planted misreads caught, false alarms and unclear cases. A catch means
    that the adjudicator rules the plan wrong and quotes the right sentence. A false alarm is a ruling against a
    correct assertion.
 
 **Proposed bars** *(designer's call)*: a treatment arm catches each planted misread in at least 4 of 5
-repetitions. The control catches it in at most 2 of 5. A treatment arm raises at most one false alarm per
-plan. A part stays only if it catches something, which is the backlog item's rule. The Codex arm stays only if
-it beats the Claude arm on catches or on false alarms.
+repetitions. The control catches it in at most 2 of 5. A treatment arm raises at most one false alarm and at
+most one unclear case per plan. These bars replace the backlog item's looser rule, "keep only the layers that
+catch something". The Codex arm stays only if it beats the Claude arm on catches or on false alarms.
+
+**Whatever the probe shows, finding 21's half ships.** The test-run script, the task-reviewer change and the
+`task-done` change do not depend on the second reader. The approaches message said so: "The script is useful
+on its own, so it lands first."
 
 The results go to `specs/red-baseline-acceptance-tests.md`, linked from this spec *(designer's call)*.
 
@@ -256,7 +287,8 @@ repository's isolated kit, as writing-skills requires. The behaviors to test:
 - The planner sends unclear cases to the owner, and records the other rulings in `## Acceptance`.
 - The SDD controller runs the script before the task review, and the task reviewer reads the run file.
 - The controller sends a failing acceptance test to the adjudicator, and never edits the test without a ruling.
-- After an unclear ruling during a run, the controller ledgers it and keeps going.
+- The adjudicator quotes the binding text, and it rules "unclear" when no text decides the case.
+- After an unclear ruling during a run, the controller ledgers it, sets the test aside and keeps going.
 
 ### Script tests
 
@@ -270,7 +302,12 @@ The new script gets pytest cases in `skills/subagent-driven-development/scripts/
 - **Room.** On 2026-11-08 at `e0a360a`, the skill bodies have this much room under the compaction check:
   writing-plans 6 characters, SDD 591 and executing-plans 3,616 (finding 17's measure). New text goes to
   `references/` files, with a pointer at each step that needs it.
-- **The finding 22 session** may also edit writing-plans. The owner coordinates the two designs.
+- **The history record plan.** Finding 22's design, `specs/development-history-record.md`, is approved and on
+  `main` (`4d69454`, lowmason/agent-skills#148). Its session reported on 2026-11-08 that plan 80 is being
+  written for it. Plan 80 edits `skills/writing-plans/SKILL.md` (one pointer line in protocol step 5, plus an
+  equal cut) and the gate paragraph of both executors' `references/final-review.md`. This design edits the
+  same gate paragraph. Plan 80 will likely land first. So this plan measures the room again and takes its line
+  numbers from `main` at that time. The writing-plans split must not cut or move the text that plan 80 cuts.
 - **Reviewer surfaces.** The two `## Tests` sections sit outside the shared reviewer block that
   `build/check_reviewer_block.py` checks. A new agent file needs `build/sync_runtime_assets.py`, then its
   `--check`.
@@ -316,9 +353,10 @@ These were not discussed with the owner:
 
 1. **Hidden acceptance tests, in a committed path beside the plan.** Hidden tests can catch code that was
    written to pass visible ones, and a fresh session reads only committed files.
-2. **The second reader's inputs.** It gets the spec, the Tech Stack line, the Global Constraints, the Files
-   lists and the Interfaces blocks. It needs module paths to write runnable tests, but not the planner's
-   reading.
+2. **The second reader's inputs.** It gets the requirement text, the Tech Stack line, the Files lists and the
+   Interfaces blocks, and it takes every value from the requirement text. It needs module paths to write
+   runnable tests, but not the planner's reading. The Global Constraints are left out, because they repeat the
+   spec's values in the planner's copy.
 3. **No Review Focus for the second reader.** The planner wrote it.
 4. **Isolation in a scratch directory, with no plan path.** A reader that can find the plan can read its
    tests.
@@ -336,6 +374,14 @@ These were not discussed with the owner:
 13. **Layer 4 stays open** in the backlog.
 14. **The adjudicator as an agent file pinned to Opus,** so the existing guards cover it.
 15. **The writing-plans split as its own plan,** before this one.
+16. **The Interfaces block is the binding text for names, paths and types.** An acceptance test that fails only
+    on a name is corrected without an owner ruling.
+17. **An unclear test is set aside** until the owner rules at the completion gate.
+18. **A plan with no spec uses the requirement text that its `**Spec:**` line names,** and it skips the step
+    when that line names none.
+19. **The probe plants each misread everywhere the plan states the value.**
+20. **A bar of at most one unclear case per plan.** The bars replace the backlog item's keep rule.
+21. **The Codex arms run Sol 6 first,** then Astra 6 only when needed.
 
 ## Left to the builder
 
