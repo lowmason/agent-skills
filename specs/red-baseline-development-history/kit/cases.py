@@ -1,6 +1,6 @@
 '''Frozen inputs for plan 80's micro-tests of the development history wording.
 
-Two cases, as specs/plans/80-development-history-record.md Task 1 defines them. Each case names
+Two cases, as specs/plans/completed/80-development-history-record.md Task 1 defines them. Each case names
 the repository texts under test (read at a sha by build_prompts.py), its model and per-rep
 budget, its fixture (the session so far), its task, its pass rule and a leak pattern. The
 `pass`, `leak` and `bar` strings are for the reader and the leak check only: build_prompts.py

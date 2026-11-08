@@ -1,6 +1,6 @@
 # Plan 80 micro-tests: the development history record
 
-This record holds the micro-tests for plan 80 (`specs/plans/80-development-history-record.md`). A micro-test runs one
+This record holds the micro-tests for plan 80 (`specs/plans/completed/80-development-history-record.md`). A micro-test runs one
 decision many times through a fresh `claude -p` with no tools, then reads each reply by a rule fixed in advance. One
 run is a rep. Plan 80 changes the wording of two texts, and each change gets one case:
 
@@ -360,7 +360,7 @@ task, pass rule or kit file. Before the edit, `git fetch origin main` and the pa
 Global Constraints listed no commit. The commit passed `run_commit_lints.sh` (`commit lints passed`),
 `check_conformance.py`, `check_provenance.py` and `check_reviewer_block.py`.
 
-The added text follows plan 80's spec (`specs/development-history-record.md`, the gate paragraph and the Non-goals
+The added text follows plan 80's spec (`specs/completed/development-history-record.md`, the gate paragraph and the Non-goals
 bullet on spec amendments). In `skills/subagent-driven-development/references/final-review.md` it is four new lines
 after "gets at most one round-trip.":
 

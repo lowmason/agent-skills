@@ -6069,7 +6069,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/completed/deferred_items.md`, and nothing updates the plan. On 2026-11-08, 15 plan sections were in
       the archive only, and 14 of their retired plans kept the old pointer: plans 7, 8, 11-17, 20, 22, 23, 28 and
       29 (for example `specs/plans/completed/13-llm-wiki.md:3`). The owner kept this apart from the
-      development-history design (`specs/development-history-record.md`, D4), which replaced the trigger that
+      development-history design (`specs/completed/development-history-record.md`, D4), which replaced the trigger that
       would have fixed it. Open choices: a status-line form that names both files, an update that the archive
       script makes, or a one-time fix of the 14 plans. An edit to a retired plan not in
       `build/deferral_baseline.txt` can fail the deferral lint
