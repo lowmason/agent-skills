@@ -141,10 +141,11 @@ already present. The cost is the writing-plans references split, which finding 1
 - **D5. The playback stands.** "Nothing is missing, lay out the approaches."
 - **D6. Approach A.** "Go with A." The approaches message showed the four shared parts with it.
 - **D7. A cheaper Codex model.** "It would be nice to use a less capable (and expensive model). We should see if
-  Sol 6 works." The owner said this after reporting that Codex's default model, Sol 6.1, fails, and that runs
-  then fall back to Astra 6. Reading: the Codex reader uses the cheapest model that the login accepts and that
-  meets the probe's bars, and the probe tries Sol 6 first. The repository does not record Sol 6's exact model
-  ID, so the builder confirms it.
+  Sol 6 works." Reading: the Codex reader uses the cheapest model that meets the probe's bars, and the probe
+  tries Sol 6 first. Sol 6's ID is `gpt-6-sol`, and its catalog entry reads "Previous generation workhorse
+  model." The repository records no prices, so "cheaper" is the owner's description, not a measurement. The
+  owner said this after reporting that Codex's default model, Sol 6.1, fails. A check on 2026-11-08 found that
+  it does not fail (Constraints, "Codex model").
 - **D8. The probe is its own plan, first.** "yes, run the probe as its own plan first." The owner answered the
   question whether to review the probe's results before anything else is built. The build plan is written
   after that review.
@@ -175,7 +176,7 @@ already present. The cost is the writing-plans references split, which finding 1
 - **Who.** Codex where the session has the owner's approval, by the same gate as
   `skills/requesting-code-review/codex-review.md` ("Approval first", `:9`). Elsewhere, a fresh Claude
   subagent at SDD's capable tier. Codex already runs at both executors' final reviews. The Codex run uses the
-  cheapest model that the login accepts and that meets the probe's bars (D7).
+  cheapest model that meets the probe's bars (D7).
 - **The requirement text** *(designer's call)*: the text that the plan's `**Spec:**` line names. That is
   usually a spec. It can also be the backlog items or the brief that a plan with no spec names as its
   requirements (`skills/writing-plans/SKILL.md:99`). A plan whose `**Spec:**` line names no requirement text
@@ -267,9 +268,9 @@ The owner reviews its results. The build plan is written only after that review.
    to count false alarms.
 3. Run the control arm: the current Self-Review checklist, run by a fresh planner session against the spec.
 4. Run the treatment arms: the second reader and the adjudicator, with a Claude reader and with Codex. The
-   Codex arm tries Sol 6 first (D7). It runs Astra 6 (`gpt-6-astra`) only when the login rejects Sol 6 or Sol
-   6 misses a bar. Codex is not installed in cloud sessions, so the Codex arms run where the owner's `codex`
-   CLI is logged in.
+   Codex arm runs `gpt-6-sol` first (D7). It runs the config default, `gpt-6.1-sol`, only when `gpt-6-sol`
+   misses a bar *(designer's call)*. Codex is not installed in cloud sessions, so the Codex arms run where the
+   owner's `codex` CLI is logged in.
 5. For each arm, count three things: planted misreads caught, false alarms and unclear cases. A catch means
    that the adjudicator rules the plan wrong and quotes the right sentence. A false alarm is a ruling against a
    correct assertion.
@@ -328,15 +329,15 @@ The new script gets pytest cases in `skills/subagent-driven-development/scripts/
 - **Codex data.** A Codex run sends the spec, the Interfaces blocks and every file it reads to OpenAI. This
   repository's CLAUDE.md approves "Codex second-opinion reviews" only (`CLAUDE.md:54`). So a Codex acceptance
   run asks once per session until the owner extends that line *(designer's call)*.
-- **Codex model.** The owner reported on 2026-11-08: "Codex runs defaults to Sol 6.1 but that fails for some
-  reason. Then it defaults (via memory) to Astra 6." Plan 69 recorded the reason: "the config model
-  `gpt-6.1-sol` is rejected for the ChatGPT login". Its final-review seat ran with the per-run override
-  `-c 'model="gpt-6-astra"'` (`specs/plans/completed/69-agent-payload-probe.md:63`, D5). So a Codex
-  acceptance run names its model on every run, and the probe records the model of each Codex run. Where the
-  skill text names the model is left to the builder. `skills/requesting-code-review/codex-review.md` names no
-  model either. This design does not change that recipe. A separate session, running on the owner's machine
-  on 2026-11-08, checks which models the login accepts and where the recipe should name one. The probe plan
-  starts from its result.
+- **Codex model.** A check on 2026-11-08, with codex-cli 0.163.0 and the owner's ChatGPT login, found that
+  `gpt-6-sol`, `gpt-6-astra` and `gpt-6.1-sol` all run. Seven real Codex reviews on 2026-11-06 and 2026-11-07
+  ran on `gpt-6.1-sol` with no override. The rejection that plan 69 recorded (codex-cli 0.154.0,
+  `specs/plans/completed/69-agent-payload-probe.md:63`, D5) had stopped by 2026-10-29. The fall-back to Astra
+  6 that the owner described came from a stale memory entry. Commit `2f35f81` adds `-m gpt-6-sol` to the
+  launch command in `skills/requesting-code-review/codex-review.md`. It is on branch
+  `claude/codex-review-model-93f992`, not yet on `main`. A Codex acceptance run names its model with `-m` in
+  the same way, and the probe records the model of each Codex run. This design does not change the review
+  recipe.
 - **Lints.** `build/run_commit_lints.sh` passes before each commit.
 
 ## Provenance
@@ -395,7 +396,8 @@ These were not discussed with the owner:
     when that line names none.
 19. **The probe plants each misread everywhere the plan states the value.**
 20. **A bar of at most one unclear case per plan.** The bars replace the backlog item's keep rule.
-21. **The Codex arms run Sol 6 first,** then Astra 6 only when needed.
+21. **The Codex arms run `gpt-6-sol` first,** and the config default, `gpt-6.1-sol`, only when `gpt-6-sol`
+    misses a bar.
 
 ## Left to the builder
 
@@ -403,6 +405,7 @@ These were not discussed with the owner:
 - The acceptance tests' path and file layout.
 - The exact format of the `## Acceptance` section.
 - The adjudicator's agent name and prompt text.
-- The Codex command and its sandbox options, and where the skill text names the Codex model.
+- The Codex command and its sandbox options. The command names its model with `-m`, as the review recipe does
+  after `2f35f81`.
 - How the task that makes a test runnable is found from the Produces lines.
 - The micro-test cases and their bars.
