@@ -43,9 +43,11 @@ code-reviewer's contract forbids it from spawning further reviewers.
 
    ```bash
    mkdir -p /tmp/codex-review
-   codex exec review -c sandbox_mode=read-only --base <BASE> -o /tmp/codex-review/<short-HEAD>.md > /tmp/codex-review/<short-HEAD>.log 2>&1
+   codex exec review -m gpt-6-sol -c sandbox_mode=read-only --base <BASE> -o /tmp/codex-review/<short-HEAD>.md > /tmp/codex-review/<short-HEAD>.log 2>&1
    ```
 
+   - `-m gpt-6-sol` — the review model, named here so the seat does not
+     depend on the model your partner's `~/.codex/config.toml` sets.
    - `--base <BASE>` — Codex runs `git merge-base HEAD <BASE>` and reviews
      everything since. BASE is either the branch's merge base with its base
      branch, computed just before launch and shared with code-reviewer; or,

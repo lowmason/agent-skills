@@ -6060,3 +6060,19 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/<name>-roadmap.md`. The deferred-items heading in §5 Parking now uses `<name>-roadmap`. Size:
       design. Done when: one of the two texts changes or states the difference, and `dr-offer-yes` and
       `dr-tracks` still pass their bars under the kit.
+
+## spec-drift-finding-22 (no plan; brainstorming session for finding 22, branch claude/spec-drift-history) — 2026-11-08
+- [ ] **Retired plans point at the live backlog after their deferred section has moved to the archive (handoff trap
+      T1, first found in the 2026-11-08 handoff brief for finding 22).** Protocol step 2 writes the fixed status
+      line `deferred items in specs/deferred_items.md` (`skills/writing-plans/SKILL.md`). When a section's last
+      item closes, `skills/writing-plans/scripts/archive_deferred.py` moves the whole section to
+      `specs/completed/deferred_items.md`, and nothing updates the plan. On 2026-11-08, 15 plan sections were in
+      the archive only, and 14 of their retired plans kept the old pointer: plans 7, 8, 11-17, 20, 22, 23, 28 and
+      29 (for example `specs/plans/completed/13-llm-wiki.md:3`). The owner kept this apart from the
+      development-history design (`specs/development-history-record.md`, D4), which replaced the trigger that
+      would have fixed it. Open choices: a status-line form that names both files, an update that the archive
+      script makes, or a one-time fix of the 14 plans. An edit to a retired plan not in
+      `build/deferral_baseline.txt` can fail the deferral lint
+      (`skills/writing-plans/references/deferred-backlog.md`, Markers). Size: design. Done when: a retired plan
+      whose section is in the archive only points at a file that holds that section, and the rule that keeps
+      it so is in writing-plans or `archive_deferred.py`.
