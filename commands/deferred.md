@@ -58,9 +58,15 @@ backlog (derive-roadmap's gap rubric records the same boundary).
      note written later sets the item's state, and the Hold is the decision
      made with the signal in view.
 
+   When the pass ticked at least one item `→ done <YYYY-MM-DD> (/deferred quick fix)`,
+   run the writing-plans skill's `scripts/history_entry.py deferred` with `uv run`
+   before the archive run. Finish its draft and append it to `specs/history.md`, as
+   that skill's `references/history.md` says. No output means no entry.
+
    End the pass by running the writing-plans skill's
    `scripts/archive_deferred.py` with `uv run`. It moves ticked items more
    than 45 days old, and removed items, to `specs/completed/deferred_items.md`.
    If it holds an item back, tell the user which one. On their word, resolve
-   the listed text as **Markers** says and run it again. Commit both files
-   with the pass's other edits.
+   the listed text as **Markers** says and run it again. Commit both files,
+   and `specs/history.md` when the pass wrote an entry, with the pass's other
+   edits.
