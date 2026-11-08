@@ -325,17 +325,6 @@ pass above still runs. Items follow the **Deferred-item schema** in
 gets an item and an `→ item:` marker, or `→ dropped:` only as **Markers**
 there allows.
 
-```markdown
-## 7-rate-limiter — 2026-07-04
-- [ ] Redis-backed counter store (plan Task 4, skipped): needs prod Redis
-      DSN decision. See specs/plans/completed/7-rate-limiter.md; touches
-      src/limiter/store.py. Size: design. Done when: the DSN decision is
-      recorded and the store lands behind it.
-- [ ] Declined review line: retry jitter is fixed-seed in tests only
-      (final review, owner ruled defer). Size: quick-fix. Revisit if: a
-      flake in tests/test_limiter.py traces to jitter.
-```
-
 When a later plan implements an item, tick its box with the dated note
 (**Item notes**, same reference). Never delete an item: removal and
 archiving move it to `specs/completed/deferred_items.md` (**Archive and
@@ -404,5 +393,8 @@ commit **only if** the spec file exists and no other live plan in
 `specs/plans/` implements it (match by the `<spec-name>` suffix in plan
 filenames); otherwise it stays. Re-point moved files' relative links
 (`../skills/…` becomes `../../skills/…`).
+Before the `chore(specs): retire plan <id>` commit, draft this plan's
+history entry with `scripts/history_entry.py`, finish it and append it to
+`specs/history.md` in that commit (`references/history.md`).
 
 A merge or PR carries these final commits; a discarded branch takes them.
