@@ -211,10 +211,14 @@ def _deviation_text(plan: PlanText, index: int, note: re.Match[str]) -> str:
 
     The blockquote ends at a line that does not start with `>`, at a bare `>` line,
     and at a line that opens the next deviation note. The lines are joined with
-    single spaces and one trailing `.` is removed.
+    single spaces and one trailing `.` is removed. A line that starts with `>` but is
+    blank in `masked` lies in a fenced block inside the blockquote. It adds no text
+    and ends nothing, so a bare `>` line inside the fence does not end the note.
     '''
     parts = [plan.lines[index][note.end():].strip()]
     for original, masked in zip(plan.lines[index + 1:], plan.masked[index + 1:]):
+        if BLOCKQUOTE_RE.match(original) and not masked.strip():
+            continue
         if (not BLOCKQUOTE_RE.match(masked) or BARE_BLOCKQUOTE_RE.match(original)
                 or DEVIATION_RE.match(masked)):
             break

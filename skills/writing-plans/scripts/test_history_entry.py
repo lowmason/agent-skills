@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from history_entry import closed_item_line, main, read_plan_text
 
 PLAN = '''# Rate Limiter Implementation Plan
@@ -105,6 +107,20 @@ Add a one-line `> Deviation: …` note.
 '''
 
 DATE = '2026-07-04'
+
+FENCED_NOTE = '''
+### Task 3: Notes
+
+> Deviation: ran the command below
+> {mark}bash
+> make all
+>
+> {mark}
+> and it then passed.
+> Deviation: second.
+>
+> not part of any note.
+'''
 
 AMENDMENT_FORMS = '''- **D3** (owner, plan review, 2026-07-01): the retry count is three. Applied in: Task 1 (spec amendment A2).
 - **D4** (owner, plan review, 2026-07-01): the window slides. Applied in: Task 2 (spec amendments: R6.11, R8.5).
@@ -458,6 +474,20 @@ def test_unclosed_quoted_fence_ends_with_its_blockquote():
 def test_backtick_fence_with_backticks_in_its_info_is_not_an_opener():
     text = '> ```x``` is not a fence\n> Deviation: real.'
     assert read_plan_text(text).masked[1] == '> Deviation: real.'
+
+
+@pytest.mark.parametrize('mark', ['~~~', '```'])
+def test_deviation_keeps_its_text_across_a_quoted_fence(tmp_path, capsys, mark):
+    plan_text = PLAN + FENCED_NOTE.format(mark=mark)
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', plan_text, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    deviations = [line for line in out.splitlines() if line.startswith('- Deviation (Task 3)')]
+    assert deviations == [
+        '- Deviation (Task 3): ran the command below and it then passed. Source: plan, Task 3.',
+        '- Deviation (Task 3): second. Source: plan, Task 3.',
+    ]
+    assert 'make all' not in out
 
 
 def test_plan_id_matches_whole_word(tmp_path, capsys):
