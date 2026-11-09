@@ -123,6 +123,16 @@ def test_task_start_handles_a_plan_path_with_a_space(repo):
     assert Path(line[len('brief: '):]).resolve() == expected.resolve()
 
 
+def test_task_start_refuses_a_repository_with_no_commit(tmp_path):
+    git('init', '-q', tmp_path, cwd=tmp_path)
+    (tmp_path / 'plan.md').write_text(PLAN)
+    result = run(TASK_START, 'plan.md', 1, cwd=tmp_path)
+    assert result.returncode == 2
+    assert 'make a first commit' in result.stderr
+    assert 'base:' not in result.stdout
+    assert not (tmp_path / '.sdd' / 'plan' / 'task-1-brief.md').exists()
+
+
 # -- task-done ---------------------------------------------------------------
 
 
@@ -315,3 +325,13 @@ def test_task_done_rejects_a_bad_base(repo):
     result = run(TASK_DONE, 'plan.md', 1, 'nope', '--', 'true', cwd=repo)
     assert result.returncode == 2
     assert 'bad BASE' in result.stderr
+
+
+def test_task_done_refuses_a_repository_with_no_commit(tmp_path):
+    git('init', '-q', tmp_path, cwd=tmp_path)
+    (tmp_path / 'plan.md').write_text(PLAN)
+    result = run(TASK_DONE, 'plan.md', 1, 'HEAD', '--', 'sh', '-c', 'touch ran', cwd=tmp_path)
+    assert result.returncode == 2
+    assert 'bad BASE' in result.stderr
+    assert not (tmp_path / 'ran').exists()
+    assert not (tmp_path / '.sdd').exists()

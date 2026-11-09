@@ -1,11 +1,11 @@
-"""Tests for the three bundled bash scripts — run from this directory.
+"""Tests for the four bundled bash scripts — run from this directory.
 
 cd skills/subagent-driven-development/scripts && uv run --with pytest \
   python -m pytest -q
 
 These are bash, not Python, so each test drives the script as a subprocess and
 asserts on exit code, stdout, and written files. That keeps this repo on one test
-runner instead of adding bats/shunit2 for three files.
+runner instead of adding bats/shunit2 for four files.
 """
 
 import os
@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 SCRIPTS = Path(__file__).resolve().parent
+SDD_REPO = SCRIPTS / 'sdd-repo'
 WORKSPACE = SCRIPTS / 'sdd-workspace'
 TASK_BRIEF = SCRIPTS / 'task-brief'
 REVIEW_PACKAGE = SCRIPTS / 'review-package'
@@ -25,6 +26,8 @@ REVIEW_PACKAGE = SCRIPTS / 'review-package'
 # setup `git commit` can fail silently and the real cause surfaces as a
 # confusing downstream assertion on the script under test.
 GIT_ENV = {**os.environ, 'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1'}
+
+NEW_PROJECT = "If this is a new project, run 'git init' and make a first commit, then rerun."
 
 PLAN = """\
 # Demo Plan
@@ -97,10 +100,15 @@ Worktree path for this plan.
 """
 
 
-def run(*argv, cwd=None):
+def run(*argv, cwd=None, env=GIT_ENV):
     return subprocess.run(
-        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True, env=GIT_ENV
+        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True, env=env
     )
+
+
+def outside_env(path):
+    '''GIT_ENV with git's upward search stopped at path, so no repository above it is found.'''
+    return {**GIT_ENV, 'GIT_CEILING_DIRECTORIES': str(path)}
 
 
 def git(*argv, cwd):
@@ -120,6 +128,39 @@ def repo(tmp_path):
     git('config', 'user.name', 'T', cwd=tmp_path)
     (tmp_path / 'plan.md').write_text(PLAN)
     return tmp_path
+
+
+# ── sdd-repo ─────────────────────────────────────────────────────────────
+
+
+def test_sdd_repo_prints_the_top_level_from_a_subdirectory(repo):
+    (repo / 'sub').mkdir()
+    result = run(SDD_REPO, cwd=repo / 'sub')
+    assert result.returncode == 0, result.stderr
+    assert Path(result.stdout.strip()).resolve() == repo.resolve()
+
+
+def test_sdd_repo_with_commit_refuses_a_repository_with_no_commit(repo):
+    assert run(SDD_REPO, cwd=repo).returncode == 0
+    result = run(SDD_REPO, '--with-commit', cwd=repo)
+    assert result.returncode == 2
+    first, second = result.stderr.splitlines()[:2]
+    assert first.startswith('SDD scripts must run from inside the git working tree')
+    assert first.endswith(NEW_PROJECT)
+    assert second.startswith('git said: fatal:')
+
+
+def test_sdd_repo_refuses_outside_a_working_tree(tmp_path):
+    result = run(SDD_REPO, cwd=tmp_path, env=outside_env(tmp_path))
+    assert result.returncode == 2
+    assert NEW_PROJECT in result.stderr
+    assert 'git said: fatal: not a git repository' in result.stderr
+
+
+def test_sdd_repo_rejects_any_other_argument(repo):
+    result = run(SDD_REPO, '-C', repo, cwd=repo)
+    assert result.returncode == 2
+    assert 'usage: sdd-repo [--with-commit]' in result.stderr
 
 
 # ── sdd-workspace ────────────────────────────────────────────────────────
@@ -217,6 +258,14 @@ def test_workspace_rejects_bad_arguments(repo, argv, message):
     result = run(WORKSPACE, *argv, cwd=repo)
     assert result.returncode == 2
     assert message in result.stderr
+
+
+def test_workspace_refuses_outside_a_working_tree_and_writes_nothing(tmp_path):
+    (tmp_path / 'plan.md').write_text(PLAN)
+    result = run(WORKSPACE, 'plan.md', cwd=tmp_path, env=outside_env(tmp_path))
+    assert result.returncode == 2
+    assert NEW_PROJECT in result.stderr
+    assert not (tmp_path / '.sdd').exists()
 
 
 # ── task-brief ───────────────────────────────────────────────────────────
@@ -451,6 +500,15 @@ def test_review_package_rejects_a_missing_plan_file(repo):
     result = run(REVIEW_PACKAGE, 'HEAD', 'HEAD', repo / 'p.diff', cwd=repo)
     assert result.returncode == 2
     assert 'no such plan file' in result.stderr
+
+
+def test_review_package_refuses_a_repository_with_no_commit(repo):
+    out = repo / 'p.diff'
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', 'HEAD', 'HEAD', out, cwd=repo)
+    assert result.returncode == 2
+    assert NEW_PROJECT in result.stderr
+    assert 'bad BASE' not in result.stderr
+    assert not out.exists()
 
 
 def test_review_package_rejects_an_empty_range(repo):
