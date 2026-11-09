@@ -1,6 +1,10 @@
 # Statement-level readings at plan review — Design Spec
 
-**Status:** DRAFT (2026-11-09), for the owner's review.
+**Status:** APPROVED (2026-11-09). The owner approved this file, its designer's calls included, on 2026-11-09. The
+question was "Do you approve the spec, with its two carried gates?", and the owner answered "Approve the spec". So
+the approval also covers the two gates carried from the old spec. The probe plan comes before any build plan, and
+the owner reviews its results first (D8). Each session that runs Codex asks for the owner's approval first
+(Constraints, "Codex data").
 
 This spec redesigns the finding 24 half of `specs/spec-derived-acceptance-tests.md`, called "the old spec" below.
 Finding 24 is "Planner-authored tests can share a spec misreading" (`specs/superpowers-drift-spec-v7-0-2.md`). The
