@@ -58,6 +58,8 @@
 ## Decisions
 
 - **D14** (owner, plan review, 2026-11-09): approved the plan as written ("Approve as written"). It keeps both two-reading plants, `p55-exit` included, and the defaults DF-ARMS, DF-AMEND and PD1–PD13. Applied in: Defaults (approved, D14).
+- **D15** (owner, before Task 1, 2026-11-09): execute inline (executing-plans) on Opus ("Inline on Opus (Recommended)"). Before the question, the owner confirmed that no other plan execution runs: "Plan 82 is not executing." Applied in: the execution session.
+- **D16** (owner, before Task 1, 2026-11-09): "Approve Codex runs", the answer to Task 4 Step 8's question. The session asked it word for word before Task 1, not at Step 8, and so before its first Codex run (Global Constraints, "Codex data"). Applied in: Task 4 Steps 8–9, Task 5 Steps 2, 6 and 8.
 
 ## Defaults (approved, D14)
 
