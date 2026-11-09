@@ -1,0 +1,5 @@
+rep1 catch=yes near=- findings=9 cost=0.9186
+rep2 catch=yes near=- findings=6 cost=0.2675
+rep3 catch=yes near=- findings=6 cost=0.2110
+rep4 catch=yes near=- findings=5 cost=0.2103
+rep5 catch=yes near=- findings=7 cost=0.1986

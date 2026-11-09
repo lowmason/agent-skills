@@ -1,0 +1,5 @@
+rep1 entries=84 other=4 returned=0 cost=0.3078
+rep2 entries=80 other=4 returned=0 cost=0.2317
+rep3 entries=85 other=4 returned=0 cost=0.2250
+rep4 entries=85 other=4 returned=0 cost=0.2299
+rep5 entries=88 other=4 returned=0 cost=0.2289

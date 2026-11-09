@@ -1,0 +1,5 @@
+rep1 fidelity=n/a amended_missing=0 amended_extra=0 entries=38 returned=0 notes=8 notes_on_plant=0 cost=0.5163
+rep2 fidelity=n/a amended_missing=0 amended_extra=0 entries=33 returned=0 notes=7 notes_on_plant=0 cost=0.1224
+rep3 fidelity=n/a amended_missing=0 amended_extra=0 entries=36 returned=0 notes=7 notes_on_plant=0 cost=0.1497
+rep4 fidelity=n/a amended_missing=0 amended_extra=0 entries=38 returned=0 notes=7 notes_on_plant=0 cost=0.1448
+rep5 fidelity=n/a amended_missing=0 amended_extra=0 entries=37 returned=0 notes=9 notes_on_plant=0 cost=0.1341

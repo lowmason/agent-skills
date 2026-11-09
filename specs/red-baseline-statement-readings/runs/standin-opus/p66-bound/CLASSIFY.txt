@@ -1,0 +1,4 @@
+rep1 fidelity1 faithful the S110 entry's value <freeze date>T00:00:00Z is the planted cutoff, 00:00:00Z on the freeze date (plan lines 106 and 804), in timestamp form; its note says the spec puts it on the day after
+rep2 fidelity1 faithful the S110 entry's value <freeze date>T00:00:00Z is the planted cutoff, 00:00:00Z on the freeze date (plan lines 106 and 804), in timestamp form; its note says the spec puts it on the day after
+rep3 fidelity1 faithful the S110 entry's value <freeze date>T00:00:00Z is the planted cutoff, 00:00:00Z on the freeze date (plan lines 106 and 804), in timestamp form; its note says the spec puts it on the day after
+rep4 fidelity1 faithful the S110 entry's value 'freeze date T00:00:00Z' is the planted cutoff, 00:00:00Z on the freeze date (plan lines 106 and 804), in timestamp form; its note says the spec puts it on the day after

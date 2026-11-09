@@ -1,0 +1,38 @@
+rep1 S2: The spec gives plan id 54. The plan renumbers itself to 55 under decision D4, because another plan had already claimed 54. The plan does not amend the spec sentence.
+rep1 S10: The plan measures 199 lines at commit `151ea9f`, not at `456e3fb`.
+rep1 S49: The spec names the suite `cc-guide`. The plan names it `cc_guide`.
+rep1 S62: The spec names the suite `cc-guide`. The plan names it `cc_guide`.
+rep1 S96: The spec names the suite `cc-guide`. The plan names it `cc_guide`.
+rep1 S123: The spec has the comment name the suite `run_suites.py cc-guide`. The plan writes `suite cc_guide`.
+rep1 S144: The spec names the file `skills/<name>/scripts/test_new.py`. The plan uses `skills/tech-debt/scripts/test_scan.py` (DF6).
+rep1 S164: The spec compares three suites: `hooks`, `build` and `bayesian-workflow`. The plan compares all 18 suites (DF8).
+rep2 S2: The spec gives plan id 54. My plan uses 55 because of the owner's renumbering (D4) after the collision with the entry-check plan. No task amends the spec sentence.
+rep2 S10: My plan measured 199 lines at commit `151ea9f`, not `456e3fb`.
+rep2 S49: The spec uses `cc-guide`. My plan names the suite `cc_guide` (D1).
+rep2 S62: The spec uses `cc-guide`. My plan uses `cc_guide` (D1).
+rep2 S96: The spec uses `cc-guide`. My plan uses `cc_guide` (D1).
+rep2 S123: The spec says `run_suites.py cc-guide`. My plan writes "suite cc_guide" (D1, DF7).
+rep2 S144: The spec names `skills/<name>/scripts/test_new.py`. My plan uses `skills/tech-debt/scripts/test_scan.py` (DF6). No task amends the spec sentence.
+rep3 S2: The spec gives plan id 54. The plan was renumbered to 55 after a collision (D4). No task amends this spec sentence.
+rep3 S49: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1), and Task 1 amends the spec to match.
+rep3 S62: The spec names the suite `cc-guide`. The plan uses `cc_guide` (D1).
+rep3 S96: The spec names the skipped suite `cc-guide`. The plan uses `cc_guide` (D1).
+rep3 S123: The spec has the comment name the suite `run_suites.py cc-guide`. The plan writes "suite cc_guide" (D1, DF7).
+rep3 S144: The spec gives the generic `skills/<name>/scripts/test_new.py`. The plan uses the concrete `skills/tech-debt/scripts/test_scan.py` (DF6).
+rep3 S164: The spec compares only `hooks`, `build` and `bayesian-workflow`. The plan compares every suite (DF8).
+rep4 S2: The spec gives plan id 54. The plan was renumbered to 55 under D4, because the entry-check plan took 54 first. Decision D4 made this change, not a spec amendment task.
+rep4 S10: The plan measured 199 lines at commit `151ea9f`, not at `456e3fb`. The line count is the same, but the commit is different.
+rep4 S49: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1).
+rep4 S62: The spec names this suite `cc-guide`. The plan names it `cc_guide`.
+rep4 S96: The spec names the skipped suite `cc-guide`. The plan names it `cc_guide`.
+rep4 S123: The spec has the comment say `run_suites.py cc-guide`. The plan's comment says `suite cc_guide`.
+rep4 S144: The spec gives the generic path `skills/<name>/scripts/test_new.py`. The plan uses the concrete file `skills/tech-debt/scripts/test_scan.py` (DF6).
+rep5 S2: The spec says 54. The plan renumbers itself to 55 under D4, because the entry-check plan took 54 first. No task amends the spec sentence.
+rep5 S10: The plan measures 199 lines at `151ea9f` and `fca3433`, not at `456e3fb`. Line 103 says CLAUDE.md is unchanged between those commits.
+rep5 S49: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1).
+rep5 S62: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1).
+rep5 S96: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1).
+rep5 S111: The plan adds `-z` to the spec's command and strips git's repo-local variables. It also counts only files that exist in the working tree (DF3).
+rep5 S123: The spec has `run_suites.py cc-guide`. The plan writes `suite cc_guide` (D1, DF7).
+rep5 S144: The spec gives a generic `skills/<name>/scripts/test_new.py`. The plan uses the concrete file `skills/tech-debt/scripts/test_scan.py` (DF6).
+rep5 S164: The spec compares three suites. The plan compares all 18 suites (DF8).

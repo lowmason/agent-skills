@@ -1,0 +1,5 @@
+rep1 fidelity=faithful amended_missing=0 amended_extra=0 entries=54 returned=0 notes=8 notes_on_plant=1 cost=0.5623
+rep2 fidelity=faithful amended_missing=0 amended_extra=0 entries=25 returned=0 notes=8 notes_on_plant=1 cost=0.1092
+rep3 fidelity=faithful amended_missing=0 amended_extra=0 entries=31 returned=0 notes=3 notes_on_plant=1 cost=0.1220
+rep4 fidelity=faithful amended_missing=0 amended_extra=0 entries=47 returned=0 notes=4 notes_on_plant=1 cost=0.1745
+rep5 fidelity=faithful amended_missing=1 amended_extra=0 entries=29 returned=0 notes=2 notes_on_plant=1 cost=0.1078

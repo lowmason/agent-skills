@@ -1,0 +1,46 @@
+rep1 S96: The plan writes 2026-10-21, not the spec example's 2026-10-19. The first bump then replaces it with the UTC day of execution (S97-S98 allow this).
+rep1 S96: The plan does not write 1.3.0, 0.22.0 or 0.12.0. It writes '0' placeholders and lets bump resolve the values on the day. It also adds optuna to [packages].
+rep1 S96: Optuna moves from [cited] to [packages] (amendment A2).
+rep1 S118: The plan pins Tier 2 on the snippets stack instead of leaving it unpinned (amendment A3).
+rep1 S168: The spec asks for a match. The plan accepts any script floor at or below the promised floor (owner decision D4) and has no amendment task for this sentence.
+rep1 S62: The plan's re-probe, run with the cache off, finds that both limit the header. This is the opposite of the spec.
+rep1 S63: The amended text says this cutoff gives polars 1.44.2, not 2.0.0.
+rep1 S65: The plan finds 2.0.0. It attributes 1.44.2 to a cached environment.
+rep1 S68: The plan names a cause: uv reused a cached environment.
+rep2 S63: The spec says this cutoff did not limit the header (polars 2.0.0). The plan's probe expects the header to be limited (polars 1.44.2), and amendment A1 rewrites the sentence to say so.
+rep2 S65: The spec says 1.44.2. The plan says 2.0.0, because the 1.44.2 result came from a cached environment. Amendment A1 rewrites the sentence.
+rep2 S96: The spec's example has 2026-10-19. The plan writes 2026-10-21, and then `bump` moves it to the day of execution.
+rep2 S96: The spec lists optuna under [cited]. The plan puts it in [packages], and amendment A2 moves it there in the spec example.
+rep2 S118: The spec keeps Tier 2 unpinned. The plan pins Tier 2 to the snippets stack, and amendment A3 rewrites the sentence.
+rep2 S161: The plan's regex also matches the `--python=3.<n>` form.
+rep2 S168: The spec requires an exact match. The plan passes a lower script floor and fails only a higher one. No amendment task changes the spec sentence.
+rep3 S26: The plan keeps the 3.9 floor out of the file and does not set it. It only keeps the hooks suite's /usr/bin/python3 run.
+rep3 S62: The plan's amendment A1 reverses the spec: the CLI flag and the env var do limit the header.
+rep3 S63: Under A1, polars 1.44.2 is installed with this cutoff, not 2.0.0.
+rep3 S65: Under A1, a bare header resolves to 2.0.0 on 3.14.
+rep3 S68: A1 names the cache as the cause.
+rep3 S96: The plan writes 2026-10-21, not 2026-10-19, and the first bump then moves it to the day of execution.
+rep3 S96: The plan adds optuna to [packages]. The versions start as '0' placeholders that bump sets.
+rep3 S96: optuna = 5.0.0 is no longer in [cited].
+rep3 S118: The plan pins Tier 2 on the snippets stack instead of leaving it unpinned.
+rep3 S168: The spec requires an exact match. The plan lets a lower script floor pass and fails only when the script's floor is above the promised one.
+rep4 S62: The plan's amendment A1 reverses the spec: with the uv cache off, both settings limit a script header. The plan's probe still expects the spec's result for P2a and P2b, and it forecasts that both rows FAIL.
+rep4 S63: The spec reports polars 2.0.0 for this cutoff. Amendment A1 states that the cutoff limits the header and gives polars 1.44.2.
+rep4 S65: The spec says 1.44.2. The plan's amendment A1 says 2.0.0 and attributes the 1.44.2 result to a cached environment.
+rep4 S68: The spec says the cause is unknown. Amendment A1 names the cause.
+rep4 S96: The spec's example has 2026-10-19. The plan writes 2026-10-21 and then sets the real date with bump.
+rep4 S96: Amendment A2 adds optuna to the spec's [packages] example. The plan's file starts each value at the placeholder '0' and sets the real versions with bump; it does not use the spec's example versions.
+rep4 S96: Amendment A2 moves optuna out of [cited] and into [packages].
+rep4 S118: The spec keeps Tier 2 unpinned. Amendment A3 pins Tier 2 to the snippets stack.
+rep4 S168: The spec requires the script floor to match the SKILL.md floor. The plan accepts any script floor at or below the promised floor, so a lower script floor passes.
+rep4 S197: The plan accepts a pin below PyPI's latest release when that release came out after the freeze cutoff. It fails only when the pin is below 2.0.
+rep4 S219: The spec says plan 63 edits `build/run_commit_lints.sh`. The plan says it only runs that file.
+rep5 S62: The plan's cache-off re-probe found that both do limit a script header. Amendment A1 in Task 1 rewrites this item.
+rep5 S63: The plan observes polars 1.44.2 under this cutoff, not 2.0.0. A1 replaces the sentence.
+rep5 S65: The plan's forecast is 2.0.0 on 3.14. It attributes the 1.44.2 result to a cached environment. A1 rewrites item 3.
+rep5 S96: The spec example has 2026-10-19. The plan writes 2026-10-21, and the first bump then moves it to the day of execution (UTC).
+rep5 S96: The plan writes the placeholder '0', and bump replaces it with the resolved version. It does not write 1.3.0.
+rep5 S96: The plan writes the placeholder '0' and bump sets the value. It does not write 0.22.0.
+rep5 S96: The plan writes the placeholder '0' and bump sets the value. It does not write 0.12.0.
+rep5 S96: The plan moves optuna from [cited] to [packages] (A2), writes the placeholder '0' there, and bump then sets it.
+rep5 S118: The plan pins Tier 2 on the snippets stack instead of leaving it unpinned (A3).
