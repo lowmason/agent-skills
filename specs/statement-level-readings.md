@@ -7,7 +7,8 @@ Finding 24 is "Planner-authored tests can share a spec misreading" (`specs/super
 design came from a brainstorming session on 2026-11-09. That session followed the owner's ruling at plan 81's
 review gate on 2026-11-08 (`specs/deferred_items.md:5352`). Decisions D9–D13 are the owner's. They continue the old
 spec's D1–D8, so every id stays unique. Text marked *(designer's call)* is the designer's choice. The list under
-"Designer's calls" collects them.
+"Designer's calls" collects them. Line numbers in this spec are as of `d067b7e`, the `main` commit that this design
+read.
 
 > **For agentic workers:** plan the probe first, as its own plan (Verification, "Probe first"). Write no build
 > plan until the owner has reviewed the probe's results (D8, carried).
@@ -359,9 +360,14 @@ its results. Nobody writes a build plan before that review.
 3. **The readers.** The readers see only the numbered spec, so one set of reader runs serves every copy of one spec.
    Five Claude runs and five Codex runs for each distinct spec: the three originals and the two edited specs.
 4. **The planner stand-in** (D13). A fresh `claude -p` call plays the planner for each copy. It gets the copy and the
-   numbered spec, is told that it wrote the plan, and states each value as its plan uses it. Five runs for each
-   copy. The scorer reports the stand-in's **fidelity** apart from the catches: how often its statement carries the
-   planted value.
+   numbered spec, is told that it wrote the plan, and states each value as its plan holds it. Five runs for each
+   copy. A stand-in cannot fix the plan. So when it notices that its plan and the spec differ, it still states the
+   plan's value, and it adds a note *(designer's call)*. For each planted sentence, the scorer reports the
+   stand-in's **fidelity** apart from the catches, as one of these outcomes:
+   - `faithful`: the entry holds the planted value, with or without a note.
+   - `spec value`: the entry holds the spec's value, so the plant escapes the comparison.
+   - `amended`: the entry marks the sentence as amended, so comparison rule 9 skips it.
+   - `absent`: the statement has no entry for the sentence.
 5. **The comparison.** Run *i* pairs reader run *i* with stand-in run *i*. The comparison script and the adjudicator
    (`opus`) run on that pair. The adjudicator's prompt holds the numbered spec and the readers' entries, never the
    copy or the stand-in's statement (D10).
@@ -378,7 +384,8 @@ its results. Nobody writes a build plan before that review.
      `unclear` ruling on the planted sentence, so that it reaches the owner. The scorer reports a plan conflict on
      that sentence apart. For the control, plan 81's catch rule applies on an argued plant. On a two-reading plant,
      any control finding that quotes the edited sentence is a catch *(designer's call)*. The scorer reports near
-     catches apart, as plan 81's did.
+     catches apart, as plan 81's did. A stand-in's note is not a catch, because a planner that misread the spec
+     has no reason to write one.
    - **False alarms**, on the clean copy: each plan conflict against a plan value that agrees with the spec. A
      person labels each plan conflict by hand with a reason line, as in plan 81's `CLASSIFY.txt` files. A conflict on
      a real error in the approved plan gets the label real, not false alarm.
@@ -388,11 +395,13 @@ its results. Nobody writes a build plan before that review.
      results report both counts, for the owner's review.
    - **Owner load:** the unclear rulings and plan conflicts for each plan. No planner answers a plan conflict in the
      probe, so this count is an upper bound.
-   - **Fidelity** (step 4), and the missing entries for each plan.
+   - **Fidelity:** the stand-in outcomes of step 4, and the stand-in's notes. Also the missing entries for each
+     plan.
    - **Cost:** dollars for Claude, tokens for Codex.
 9. **The bars** (D12):
-   - The step catches each new plant in at least 4 of 5 runs, and the control catches it in at most 2 of 5. On a
-     plant that the control catches in 3 or more runs, the step shows no gain.
+   - The step catches each new plant in at least 4 of 5 runs, and the control catches it in at most 2 of 5. A catch
+     is what step 8 defines, so a stand-in's note does not count. On a plant that the control catches in 3 or more
+     runs, the step shows no gain.
    - On the clean copy, the step raises at most one false alarm and at most one unclear case per plan. Each bar uses
      the mean over the 5 runs.
    - The second reader stays only if the pair beats Claude alone on catches or on false alarms. This adapts the old
@@ -511,7 +520,9 @@ These were not put to the owner one by one:
 12. **The adjudicator's output:** a reading in the slots, or `no value`, with the deciding quote, or `unclear`.
 13. **The kit path,** `specs/red-baseline-statement-readings/kit/`.
 14. **Where the planted defense sits,** and that it is not an owner decision.
-15. **Five stand-in runs per copy.** The stand-in itself, and its fidelity count, come from D13.
+15. **The stand-in's runs and outcomes.** Five runs per copy. The stand-in states its plan's value even when it
+    notices a difference, and adds a note. Its fidelity is reported as four outcomes for each planted sentence. The
+    stand-in itself, and its fidelity count, come from D13.
 16. **The control's catch on a two-reading plant:** any finding that quotes the edited sentence. The control does
     not rerun the clean copy.
 17. **Unclear cases on the clean copy.** Every one counts against the unclear bar. Each also gets a hand label,
