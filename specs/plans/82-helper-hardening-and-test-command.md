@@ -48,8 +48,11 @@
 ## Decisions
 
 - **D1** (owner, brief, 2026-11-09): plan the drift spec's fix-directly batch (findings 18, 28 and 31) before the build plan for finding 21, and stop at the owner's approval of this plan. Its execution comes in a later session, and the finding-21 build plan after that. This settles one link of the order that the drift spec reports as unverified. This plan edits neither passage that reports it. Applied in: Global Constraints (Completion).
+- **D2** (owner, plan review, 2026-11-09): approve plan 82 as written, with all nine Open for plan review items, including item 2's third caller (`review-package` calls `sdd-repo --with-commit`). Applied in: Open for plan review.
 
 ## Open for plan review
+
+All nine items were approved as written by D2 (2026-11-09).
 
 Items 1, 3 and 4 settle the defaults that the brief flagged (A, B and C). Items 2 and 5-9 are this plan's own choices.
 
