@@ -249,7 +249,7 @@ only the first kind: each plant is a value that the spec states and the copy cha
    "reads both test sets for each task". But `build_prompts.py` split the reader's module before every `def`
    and decorator line. So each test's `# spec:` and `# task:` lines went into its task's `<acceptance-tests>`
    section. The test function itself went into one shared `<acceptance-tests-without-a-task>` section, without
-   those lines. Multi-line `parametrize` decorators went into the shared preamble, apart from their tests. All
+   those lines. The decorators of all 433 decorated tests went into the shared preamble, apart from their tests. All
    60 treatment-arm adjudicator prompts have this layout, and so does the Task 2 pilot prompt: their task
    sections hold 3,222 comment pairs and no test code. The adjudicator therefore had to match each test to its
    task and its spec sentence by itself.
@@ -261,7 +261,9 @@ only the first kind: each plant is a value that the spec states and the copy cha
    - The final review found the defect (code-reviewer and Codex). Its fix pass corrected the split, and
      `build_prompts.py selftest` pins it on a sample and on the 60 committed reader replies. Built with the
      fix, the 60 prompts hold all 3,222 reader tests under their tasks. The committed prompts and runs are
-     unchanged, and no rep was rerun. A rerun of the 60 adjudicator reps is the owner's decision (D8).
+     unchanged, and no rep was rerun. The committed prompts come from the kit as it was before the fix, so the
+     kit now builds different prompts from the same replies. A rerun of the 60 adjudicator reps is the owner's
+     decision (D8).
 2. **The `p53-unit` plant almost never reached the adjudicator as a case.** The plan's own test of R1.3 uses
    `'x' * 500` and `'x' * 501`. Of the 15 reader reps, 14 also tested R1.3 with ASCII values only, and no
    reader flagged the unit (the plant has no Interfaces site, so no reader saw it). For ASCII text,
