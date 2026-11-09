@@ -289,6 +289,8 @@ on its own, so it lands first."
 The results go to `specs/red-baseline-acceptance-tests.md`, linked from this spec *(designer's call)*. The
 probe plan's completion adds a progress note to the backlog item that points at that file.
 
+Results: `specs/red-baseline-acceptance-tests.md` (plan 81, 2026-11-08).
+
 ### Micro-tests
 
 The wording changes shape agent behavior. So each one gets a micro-test against a no-guidance control, with the

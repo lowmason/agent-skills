@@ -5346,6 +5346,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Progress (plan 73, 2026-10-30): layer 5's spec-path handoff landed (spec D3). Both executors
       pass the spec path and the plan's Review Focus section to the final code-reviewer. The item
       stays open.
+      Progress (plan 81, 2026-11-08): the planted-misread probe of `specs/spec-derived-acceptance-tests.md`
+      ran, with its results in `specs/red-baseline-acceptance-tests.md`. The owner reviews them before the
+      build plan is written. The item stays open.
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
 - [x] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
