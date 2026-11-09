@@ -5349,6 +5349,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Progress (plan 81, 2026-11-08): the planted-misread probe of `specs/spec-derived-acceptance-tests.md`
       ran, with its results in `specs/red-baseline-acceptance-tests.md`. The owner reviews them before the
       build plan is written. The item stays open.
+      → progress 2026-11-08 (plan 81, owner ruling at D8): the control, a fresh `claude -p` session that runs the Self-Review checklist, caught 15 of 15 plants, and no treatment arm caught more than 11 (`specs/red-baseline-acceptance-tests.md`). The spec's part for drift finding 21 (a test-run script, the task-reviewer change and the `task-done` change) goes to a build plan from `specs/spec-derived-acceptance-tests.md`. The second reader goes to a spec revision for statement-level readings: Claude and Codex each state what the spec asks, in fixed slots, from the spec alone, and one step compares the statements with each other and with the plan's values. A probe with harder plants (a wrong value that the plan argues for, and spec sentences with two readings) tests that design against the fresh-session control. The item stays open.
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
 - [x] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
@@ -6079,3 +6080,20 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`skills/writing-plans/references/deferred-backlog.md`, Markers). Size: design. Done when: a retired plan
       whose section is in the archive only points at a file that holds that section, and the rule that keeps
       it so is in writing-plans or `archive_deferred.py`.
+
+## 81-spec-derived-acceptance-tests — 2026-11-09
+- [ ] **`measure.py score` does not VOID a Codex reader rep whose log shows tool activity (plan 81 final review,
+      Codex [P2], owner ruled defer).** `score_codex` in `specs/red-baseline-acceptance-tests/kit/measure.py`
+      checks only the model in the log header. Task 4 ran `measure.py residual` on each Codex reader folder by
+      hand, under a VOID rule fixed before the first rep, and found no leftover line in the 40 reader logs
+      (`specs/red-baseline-acceptance-tests.md`, Appendix A). The fix, about 20 lines and a selftest case, runs
+      the residual check inside `score` for each `codex-` reader rep. Size: quick-fix. Revisit if: a plan runs
+      new Codex reader reps with `specs/red-baseline-acceptance-tests/kit/measure.py`.
+- [ ] **Rerun the 60 adjudicator reps on paired prompts (plan 81 final review, owner ruled defer at D8).** The
+      adjudicator prompts that Tasks 3 and 4 ran did not pair the reader's tests with their tasks, so every
+      treatment-arm number in `specs/red-baseline-acceptance-tests.md` comes from a layout that the plan did not
+      specify (the record's section 8, item 1). `2624af0` fixed the split in
+      `specs/red-baseline-acceptance-tests/kit/build_prompts.py`, and the committed reader replies can build the
+      paired prompts again. A rerun is 60 `opus` adjudicator reps (about $23, the cost of the first run), a new
+      score and classification, and a record update. Size: plan. Revisit if: the spec revision for
+      statement-level readings keeps test-writing second readers.

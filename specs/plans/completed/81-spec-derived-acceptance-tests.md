@@ -1,5 +1,7 @@
 # Acceptance-tests probe Implementation Plan
 
+**Status: COMPLETE (2026-11-09)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Measure, before any skill text changes, how many planted spec misreads a second reader plus an Opus
@@ -193,7 +195,7 @@ them.
     `plan_tests(task: Task) -> str`, `section_of(plan: str, line: int) -> str`.
 - Produces: the four copies, and `MANIFEST.txt` with one line per file: `<sha256>  <path>  <commit>:<source path>`.
 
-- [ ] **Step 1: Write the selftests**
+- [x] **Step 1: Write the selftests**
 
 In `extract.py`, `selftest` builds a small inline plan with a `## ` heading and a `def test_` inside a code fence in
 an Interfaces block, and asserts:
@@ -226,17 +228,17 @@ for leak in ('def test_', '- [ ] **Step', '## Global Constraints', '## Review Fo
 
 It prints each plant's sites, one line each: `<line>  <section>  <new text, first 80 characters>`.
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python specs/red-baseline-acceptance-tests/kit/extract.py selftest` and the same with `make_copies.py`.
 Expected: FAIL (`NameError` or `ImportError`): nothing is defined yet.
 
-- [ ] **Step 3: Implement `extract.py`**
+- [x] **Step 3: Implement `extract.py`**
 
 A line-by-line scan that tracks code fences (```` ``` ```` and `~~~`, any length of three or more). Headings and
 `**Files:**` or `**Interfaces:**` markers inside a fence are text.
 
-- [ ] **Step 4: Write the plants in `plants.py`**
+- [x] **Step 4: Write the plants in `plants.py`**
 
 For each plant, find every place where the copy's plan states the value, with `grep -n` on the source plan, and write
 one replacement for each form. The planted copy must read as a planner who misread the spec would write it: values,
@@ -255,12 +257,12 @@ plan 53's `Keep under 500 characters if possible` (upstream skill-creator text, 
 `uv run --python 3.13 python build/run_suites.py` (R3.1's interpreter, not the default), or plan 55's explicit
 `pythons = ['3.13', '/usr/bin/python3']`.
 
-- [ ] **Step 5: Implement `make_copies.py build`**
+- [x] **Step 5: Implement `make_copies.py build`**
 
 It writes the files listed under this task and refuses to overwrite a differing file. `SITES.txt` holds the site
 lines that `selftest` prints.
 
-- [ ] **Step 6: Run the selftests and build**
+- [x] **Step 6: Run the selftests and build**
 
 Run: `uv run python specs/red-baseline-acceptance-tests/kit/extract.py selftest`, then `make_copies.py selftest`,
 then `make_copies.py build`.
@@ -269,7 +271,7 @@ Expected: `extract selftest ok`, `make_copies selftest ok` with the site lines, 
 states the value there, in the Interfaces blocks when it states it there, and in at least one test step and one code
 step.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/red-baseline-acceptance-tests/kit/plants.py specs/red-baseline-acceptance-tests/kit/extract.py \
@@ -312,7 +314,9 @@ git commit -m "test(specs): plant three misreads in copies of plans 53, 55 and 6
     or `<rulings></rulings>` when no case conflicts.
   - Control: one `<findings>` block of `<finding task="N"><quote>…</quote><plan>…</plan><fix>…</fix></finding>`.
 
-- [ ] **Step 1: Write `measure.py selftest`**
+- [x] **Step 1: Write `measure.py selftest`**
+
+> Deviation: `CLASSIFY.txt` takes two more labels, `near-catch` and `near-miss`, for the executor's judgment of a near catch. `table` counts a `near-catch` as a catch and refuses an unjudged near catch.
 
 Inline fixture replies, scored against `p66-bound`'s plant:
 
@@ -336,18 +340,22 @@ names a planted token but fails another part. `table` counts a rep's false alarm
 lines read `rep<i> ruling<j> <false-alarm|real|interface> <reason>`, and refuses a run directory with an
 unclassified ruling.
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `uv run python specs/red-baseline-acceptance-tests/kit/measure.py selftest`
 Expected: FAIL: nothing is defined yet.
 
-- [ ] **Step 3: Implement `measure.py`**
+- [x] **Step 3: Implement `measure.py`**
 
-- [ ] **Step 4: Run it to verify it passes**
+> Deviation: `score` picks its kind from the arm name. It scores a reader reply only as valid or VOID, because the adjudicator replies carry the catches.
+
+- [x] **Step 4: Run it to verify it passes**
 
 Run: the same command. Expected: `measure selftest ok`.
 
-- [ ] **Step 5: Write the prompts and `build_prompts.py`**
+- [x] **Step 5: Write the prompts and `build_prompts.py`**
+
+> Deviation: where a copy's Files list names its own plan, the reader and adjudicator prompts read `<this plan>` (spec Design 2). The adjudicator prompts that Tasks 3 and 4 ran did not pair the reader's tests with their tasks: the old split put every reader test in the without-a-task section. The final review found this, and `2624af0` fixed the split under a selftest. The owner chose no rerun (record, section 8, item 1).
 
 - `control.txt`: writing-plans' `SKILL.md` body, then "You wrote the plan below from the spec below. Run your
   Self-Review now", the spec, the whole copy, and the `<findings>` format (DF11). No hint of a plant.
@@ -361,19 +369,19 @@ Run: the same command. Expected: `measure selftest ok`.
 `build_prompts.py` refuses to write a reader or adjudicator prompt that contains `def test_` from outside the
 reader reply and `plan_tests`, or the copy's path.
 
-- [ ] **Step 6: Adapt the runners**
+- [x] **Step 6: Adapt the runners**
 
 `run_reps.sh` is plan 73's script with `/tmp/plan81-rep-XXXXXX` directories and the prompt-directory form.
 `run_codex.sh` runs each rep from a fresh empty `/tmp/plan81-codex-XXXXXX` directory, with the prompt on stdin:
 `codex exec -m <model> -c sandbox_mode=read-only --skip-git-repo-check -C <rep-dir> -o <out>/rep<i>.md - < <prompt> > <out>/rep<i>.log 2>&1`.
 Both refuse an existing `rep<i>` file and a run directory inside a git repository.
 
-- [ ] **Step 7: Check isolation**
+- [x] **Step 7: Check isolation**
 
 Run: `bash RB/kit/run_reps.sh specs/red-baseline-reviewer-planning-contract/kit/isolation_probe.txt RB/runs/pilot/isolation 1 1 opus`
 Expected: all five lines of the reply read `NO`. Any `YES` stops the task: report it.
 
-- [ ] **Step 8: Pilot one rep of each Claude arm on `p55-default`**
+- [x] **Step 8: Pilot one rep of each Claude arm on `p55-default`**
 
 Build the prompts, then run rep 1 of `control-opus`, `reader-opus` and, on that reader reply, `adjudicator-opus`,
 under `RB/runs/pilot/`. Score each with `measure.py score`.
@@ -381,7 +389,7 @@ Expected: three non-VOID reps that parse. Record each rep's `total_cost_usd`. Pr
 20 control reps plus 20 reader and 20 adjudicator reps, scaled by each copy's prompt size. Above $150, stop and ask
 the owner (DF8).
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add specs/red-baseline-acceptance-tests/kit specs/red-baseline-acceptance-tests/runs/pilot
@@ -397,21 +405,23 @@ git commit -m "test(specs): add the probe's prompts, runners and scorer, and pil
 - Consumes: everything Task 2 produces.
 - Produces: for each arm and copy, 5 scored reps with `SCORE.txt` and `CLASSIFY.txt`.
 
-- [ ] **Step 1: Run the control arm**
+- [x] **Step 1: Run the control arm**
 
 For each copy, build the control prompt and run reps 1–5 on `opus`. Rerun each VOID rep under a new rep number until
 5 reps score.
 
-- [ ] **Step 2: Run the Claude reader**
+- [x] **Step 2: Run the Claude reader**
 
 For each copy, build the reader prompt and run reps 1–5 on `opus`, VOID reps rerun as in Step 1.
 
-- [ ] **Step 3: Run the adjudicator on each reader reply**
+- [x] **Step 3: Run the adjudicator on each reader reply**
 
 For each copy, build `adjudicator-opus/<copy>/prompts/rep<i>.txt` from reader rep `i`, and run reps 1–5 on `opus`
 with the prompt-directory form. A VOID adjudicator rep reruns on the same reader reply.
 
-- [ ] **Step 4: Score and classify**
+- [x] **Step 4: Score and classify**
+
+> Deviation: `CLASSIFY.txt` judges each finding and ruling against the copy's spec only. A control finding about today's plan format is a `false-alarm`. A ruling against a value that the plan's own approved spec amendment sets is a `false-alarm` whose reason starts `amendment:`, and the record gives each count with and without those lines. `p66-bound` rep 4 ruling 6, about the plant but with no planted token, is a `near-miss`.
 
 Run `measure.py score` on each run directory. Write `CLASSIFY.txt` for each ruling or finding that `SCORE.txt` lists
 to classify (DF10), and judge each near catch: a ruling counts as a catch only when its quote is the spec sentence
@@ -419,7 +429,7 @@ that holds the `spec_key`. Record each judgment's reason. Then run `measure.py t
 Expected: a table with, for each arm and copy, the catches out of 5, the false alarms per rep and the unclear cases
 per rep. Every cell is filled.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/red-baseline-acceptance-tests/runs
@@ -439,36 +449,46 @@ The cloud executor pushes Task 3, then hands this task over with the branch name
 - Consumes: the reader prompts and the kit from Task 2.
 - Produces: for each copy, 5 scored Codex-arm reps with the model of each Codex run recorded.
 
-- [ ] **Step 1: Ask the owner**
+- [x] **Step 1: Ask the owner**
 
 Ask once: "The Codex arm sends the probe's specs and reader inputs to OpenAI. Approve the Codex runs for this
 session?" Without a yes, skip this task. The record then says the Codex arm did not run, and why.
 
-- [ ] **Step 2: Check the CLI**
+- [x] **Step 2: Check the CLI**
+
+> Deviation: this step ran before Step 1. It runs local commands only and sends nothing.
 
 Run: `codex --version` and `codex exec --help`.
 Expected: a version line, and help that lists `-m`, `-c`, `--skip-git-repo-check`, `-C` and `-o`. A missing flag
 stops the task: report it.
 
-- [ ] **Step 3: Run the Codex reader on `gpt-6-sol`**
+- [x] **Step 3: Run the Codex reader on `gpt-6-sol`**
+
+> Deviation: `run_codex.sh` adds isolation flags and a pinned effort (`ultra`) to Task 2's command, and each Codex rep runs under `env -i`. `~/.codex/AGENTS.md` and the skills list still load, and the owner chose to record that and run. A rule fixed before the first rep made a rep VOID on tool activity, and the new `measure.py residual` found none.
 
 For each copy, run reps 1–5 of the copy's reader prompt with `run_codex.sh` and the model `gpt-6-sol`.
 Expected: each `rep<i>.log` header reads `model: gpt-6-sol`. A rep on any other model is VOID and reruns.
 
-- [ ] **Step 4: Adjudicate**
+- [x] **Step 4: Adjudicate**
+
+> Deviation: the `opus` reps run under `env -i`, because a child `claude -p` inherits the variables of the Desktop session that ran this task. Task 3 ran in a cloud container.
 
 As Task 3 Step 3, from the Codex replies, into `adjudicator-codex-gpt-6-sol/<copy>/`, on `opus`.
 
-- [ ] **Step 5: Score and classify**
+- [x] **Step 5: Score and classify**
+
+> Deviation: `table` now counts the labels of near items too. Only the control's `p53-unit` false-alarm row moved, from 2.6 to 2.8.
 
 As Task 3 Step 4.
 
-- [ ] **Step 6: Run `gpt-6.1-sol` only on a miss**
+- [x] **Step 6: Run `gpt-6.1-sol` only on a miss**
 
 If `gpt-6-sol`'s arm misses a bar, repeat Steps 3–5 with `gpt-6.1-sol`. Otherwise skip this step, and the record
 says so.
 
-- [ ] **Step 7: Commit and push**
+- [x] **Step 7: Commit and push**
+
+> Deviation: the commit also holds `kit/run_codex.sh` and `kit/measure.py`. The push went to `claude/acceptance-tests-probe-plan`, the branch that Tasks 1–3 pushed.
 
 ```bash
 git add specs/red-baseline-acceptance-tests/runs
@@ -486,7 +506,7 @@ git push -u origin <execution branch>
 **Interfaces:**
 - Consumes: `measure.py table RB/runs`, every `CLASSIFY.txt`, `MANIFEST.txt`, and each run's `SOURCES.txt`.
 
-- [ ] **Step 1: Write the record**
+- [x] **Step 1: Write the record**
 
 The record gives, in this order: the date and the shas used (the copies' source commits, writing-plans at
 `origin/main`, Claude Code and codex-cli versions, and the Codex models from the log headers); the plants, with each
@@ -495,13 +515,13 @@ site count from `SITES.txt`; the table from `measure.py table`; each bar from Gl
 and false alarms; every `real` ruling with its spec quote; the cost; and what the probe cannot show (the spec's
 "What a second reading can and cannot catch"). It recommends nothing about the build plan. The owner decides (D8).
 
-- [ ] **Step 2: Link it and note the backlog**
+- [x] **Step 2: Link it and note the backlog**
 
 Under the spec's Verification, "Probe first", add one line: "Results: `specs/red-baseline-acceptance-tests.md`
 (plan 81, <date>)." Under the backlog item "Spec-reading test check", add a line in its existing `Progress (…)` form
 that names plan 81 and the record's path. Leave the item open.
 
-- [ ] **Step 3: Check and commit**
+- [x] **Step 3: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`. Expected: `commit lints passed`.
 
@@ -510,7 +530,9 @@ git add specs/red-baseline-acceptance-tests.md specs/spec-derived-acceptance-tes
 git commit -m "docs(specs): record the acceptance-tests probe results (plan 81 task 5)"
 ```
 
-- [ ] **Step 4: Owner gate (D8)**
+- [x] **Step 4: Owner gate (D8)**
+
+> Deviation: the final review ran before this gate (handoff DF-B). Its fixes, `2624af0` and `f8d4a14`, changed the kit and the record first. The owner's decision (2026-11-08) skips the rerun, adds section 8, item 7 to the record (`9b129ea`), and sends the build plan and a spec revision to new sessions. The backlog item "Spec-reading test check" records it.
 
 Present the record's table and bar results to the owner, and stop. The owner reviews them and decides what the
 build plan keeps. Do not write the build plan.

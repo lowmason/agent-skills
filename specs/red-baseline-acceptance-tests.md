@@ -1,6 +1,6 @@
 # Acceptance-tests probe: results
 
-**Plan:** `specs/plans/81-spec-derived-acceptance-tests.md` (plan 81). **Spec:**
+**Plan:** `specs/plans/completed/81-spec-derived-acceptance-tests.md` (plan 81). **Spec:**
 `specs/spec-derived-acceptance-tests.md`, Verification, "Probe first". **Date:** 2026-11-08.
 
 This record gives the probe's results. It recommends nothing about the build plan. The owner reviews the
