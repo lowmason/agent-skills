@@ -84,9 +84,12 @@ The brief has no decisions. It flagged two defaults, and this plan settles both 
   | Reading A, the plan's | Today's date in UTC: plan `:1258` (`help='the new freeze date (default: today, UTC)'`), `:1263` (`datetime.datetime.now(datetime.timezone.utc).date()`), `:1357` | Exit 1: plan `:807` and `:827` (`assert rs.main(['--check'], …) == 1`) |
   | Reading B | Today's date in the local time zone of the machine that runs `bump` | Exit 2, the status that R3.7 gives "a usage error, an unknown suite name, or a registry that fails validation" |
   | Screening | "UTC" appears elsewhere only in R2.1's `uv.toml` row (`:174`), about upload times. The same row says that uv "reads a bare date in local time". "today" appears elsewhere only at `:89`, a dated fact. No amendment changes the edited row (PD3). Plan 66 quotes only its parenthetical, in the `:1258` help string, which is reading A. | No other sentence gives `--check`'s status for a finding. R3.7 covers runs and gives exit 2 to "a registry that fails validation". R3.9 stops the other modes with exit 2, and says that `--check` reports the same failures "as findings (R4.3)". R6.1's "with exit 2" tests the R3.9 failures. No amendment changes R4.3 (PD3), and plan 55 does not quote it. |
-  | Known risk | An adjudicator may quote R2.1's "(UTC)" and rule reading A, or its "local time" and rule reading B. | An adjudicator may read R3.7's validation clause, or R6.1's "with exit 2", as covering `--check`, and rule reading B. |
+  | Lean toward A | R2.1's row puts the freeze date in UTC: "00:00:00Z", "(UTC)". | R3.9 sets `--check` apart from the modes that stop "with exit 2". |
+  | Lean toward B | The same row says that uv "reads a bare date in local time". | R3.9 sends `--check`'s validation failures to R4.3 "as findings", and R3.7 gives exit 2 to "a registry that fails validation". R6.1's "with exit 2" may read as covering `--check` too. |
 
   Both edits fill a slot that a reader must commit to, the `default` or the `value`. Plan 81's three plant sentences stay unedited, so no sentence carries two kinds of plant.
+
+  The decider regexes (Task 2) screen one sentence at a time, by its words. The cross-references in the two lean rows were checked by hand on 2026-11-09. An adjudicator that follows a lean rules a reading, not `unclear`. Reading A makes the rep a miss, and reading B makes it a plan conflict, which PD10 counts apart. So a lean can lower the step's catches on a plant for a reason in the plant, not in the step. The results file gives the adjudicator's deciding quote for each ruling on these sentences, so the owner can tell the two apart. Whether to keep `p55-exit`, whose leans run through two requirements, is the first question at plan review.
 - **PD3. The amendment answer keys.** These are the source-spec lines that each plan's amendment tasks change. They were found on 2026-11-09 by matching each replace block's old text in the source spec:
   - plan 53, Task 1 (A1–A11): `104, 159, 181-182, 192, 203, 238-240, 268-270, 276-277, 371-377, 394, 401-402, 419`;
   - plan 55, Task 1 Step 5 (Q1): `83, 98, 144-145, 186`;
@@ -134,10 +137,12 @@ The brief has no decisions. It flagged two defaults, and this plan settles both 
   | Copy | Spec's value | Planted value, or reading A | Reading B |
   |---|---|---|---|
   | `p53-unit` | `character` | `byte` | |
-  | `p66-bound` | `day after`, `next day`, `following day`, `+1 day`, `+ 1 day` | `on the freeze date`, `start of the freeze date` | |
+  | `p66-bound` | `day after`, `next day`, `following day`, `+1 day`, `+ 1 day` | `00:00:00z on the freeze date`, `start of the freeze date` | |
   | `p55-default` | `3.13` | `3.12` | |
   | `p66-today` | | `utc` (whole word, `default` slot) | `local` (whole word, `default` slot) |
   | `p55-exit` | | `1` (whole word, `value` slot) | `2` (whole word, `value` slot) |
+
+  The `p66-bound` planted tokens keep the `00:00:00z` prefix. R2.1's row also says "Files uploaded on the freeze date itself (UTC) are included", and a correct reading may copy that into its `edge` slot.
 
   - **A catch on an argued plant** is a `plan-conflict` outcome on the planted sentence. Its agreed reading holds a spec token and no plant token, and the stand-in entry holds a plant token (spec Verification 8).
   - **A catch on a two-reading plant** is an `unclear` outcome on the planted sentence. A `plan-conflict` on that sentence is counted apart.
@@ -324,6 +329,9 @@ sentences = number(spec)
 if copy.plant or copy.two:
     target = planted_sentence(copy, sentences)                        # exactly one sentence holds the key
     assert target.n not in amended_sentences(copy, sentences)          # Review Focus 1, trap 3
+if copy.plant:
+    flat = flatten(target.text)                                        # PD10: the spec's words hold a spec token
+    assert any(t in flat for t in copy.plant.spec_tokens) and not any(t in flat for t in copy.plant.plant_tokens)
 if copy.two is None:
     assert spec == source_spec
 else:
@@ -746,7 +754,7 @@ It gives these sections, in this order:
    - the owner load, an upper bound because no planner answers a case.
 7. **Real conflicts.** Each `real` label, with its spec quote.
 8. **Cost.**
-9. **What the probe cannot show.** The limits of spec Verification 10, PD2's known risks, and each limit found in execution.
+9. **What the probe cannot show.** The limits of spec Verification 10, PD2's leans with the adjudicator's deciding quotes on the two edited sentences, and each limit found in execution.
 10. **Appendix A:** isolation, with what reached the Codex reps.
 11. **Appendix B:** the executor's rulings and the owner's decisions, word for word.
 
