@@ -5350,6 +5350,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       ran, with its results in `specs/red-baseline-acceptance-tests.md`. The owner reviews them before the
       build plan is written. The item stays open.
       → progress 2026-11-08 (plan 81, owner ruling at D8): the control, a fresh `claude -p` session that runs the Self-Review checklist, caught 15 of 15 plants, and no treatment arm caught more than 11 (`specs/red-baseline-acceptance-tests.md`). The spec's part for drift finding 21 (a test-run script, the task-reviewer change and the `task-done` change) goes to a build plan from `specs/spec-derived-acceptance-tests.md`. The second reader goes to a spec revision for statement-level readings: Claude and Codex each state what the spec asks, in fixed slots, from the spec alone, and one step compares the statements with each other and with the plan's values. A probe with harder plants (a wrong value that the plan argues for, and spec sentences with two readings) tests that design against the fresh-session control. The item stays open.
+      → progress 2026-11-09 (plan 83): the statement-readings probe ran, and its results are in `specs/red-baseline-statement-readings.md`. The owner reviews them before any build plan. The item stays open.
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
 - [x] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,

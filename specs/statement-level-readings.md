@@ -423,6 +423,8 @@ its results. Nobody writes a build plan before that review.
     - The control's checklist has no item for ambiguity. So on a two-reading plant, the comparison mostly measures
       the step's own catch rate, and the clean-copy bars carry more of the verdict.
 
+Results: `specs/red-baseline-statement-readings.md` (plan 83, 2026-11-09).
+
 ### If the owner approves a build
 
 The build plan, if any, adds the step to writing-plans. This section outlines it, so that the probe tests what would
