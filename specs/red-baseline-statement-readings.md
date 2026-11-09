@@ -5,6 +5,7 @@ Verification, "Probe first". **Date:** 2026-11-09.
 
 This record gives the probe's results. It recommends nothing about a build plan. The owner reviews the results
 against the spec's bars and decides whether anyone writes a build plan, and what it keeps (spec decision D8).
+At D8, the owner decided on no build plan (Appendix B).
 The kit, the copies and every rep's prompt and reply are in `specs/red-baseline-statement-readings/`.
 
 Terms used in this record:
@@ -494,7 +495,14 @@ misread: a value that the plan changes, and a sentence that allows two readings.
    lines.
 10. **The adjudicator rules a reading.** On the clean copy, it ruled `unclear` 0 to 2 times in 5 reps per arm,
     and on the edited sentences once in 50 reps (item 5). Where a case offered two readings, it chose one or
-    kept the sentence's literal words.
+    kept the sentence's literal words. The readers did offer the second reading at times. On `p66-today`, the
+    Codex reader named the UTC reading as another reading in 5 of its 10 reps, and the adjudicator ruled the
+    literal `today` in all 10 cases that held one of them. Suppose that every case whose entries name another
+    reading had gone to the owner unruled. On `p66-today`, such a case fell on the edited sentence in 3 of 5
+    reps in each `gpt-6.1-sol` arm, 2 of 5 in each `gpt-6-sol` arm and 0 of 5 in the claude arm. On
+    `p55-exit`, it fell there in 1 of 5 reps in the claude and pair arms, and 0 of 5 in the codex arms. So no
+    arm would reach 4 of 5 on either plant. On the clean copy, such cases come to 2.2 to 3.2 per rep in the
+    claude and pair arms, above the unclear bar, and 0.0 to 0.2 in the codex arms.
 
 ## Appendix A. Isolation of the reps
 
@@ -538,7 +546,7 @@ Reader A and Reader B, never the stand-in's statement or the plan. The control s
 
 These lines are copied word for word, in order, from the execution ledger,
 `.sdd/83-statement-level-readings/progress.md`, which git ignores. They hold the owner's decisions, and every
-ruling and deviation of the executor. The owner's D8 decision follows them after the owner's review.
+ruling and deviation of the executor. The last two lines are the owner's D8 decision.
 
 ```text
 Owner, before Task 1: "Plan 82 is not executing." Plan 82's file names no edit to skills/writing-plans/SKILL.md (grep), so the order does not move the control's skill text.
@@ -569,4 +577,6 @@ Task 5 Step 7 (gpt-6-sol arms): Ruling: the S126 unclear label stays false in ev
 Task 5 Step 7: Ruling (advisor check): one test for every near-catch label — near-catch only when the reading and the stand-in's paired entry state the same facet of the planted sentence and their values differ as the spec's value against the planted value; when they state different facets, the conflict would stand with a correct plan too, so it is a pairing artifact (the pattern labeled false-alarm pairing: on p55-clean) and gets near-miss. Two labels change: step-claude/p66-bound rep5 outcome18 (the inclusion fact against the cutoff timestamp) and step-codex-gpt-6-sol/p66-bound rep1 outcome77 (the one-day offset against the exclusion of uploads), both near-catch to near-miss. claude p66-bound 5/5 to 4/5, codex 2/5 to 1/5; no bar verdict moves (the control is 5/5); second reader catches pair 15 vs claude 14 — costs if wrong: the claude arm's catches are 15, not 14, and pair and claude tie on catches.
 Task 5 Step 7: Ruling (advisor check): the S126 unclear rulings (claude rep5 outcome3; pair gpt-6-sol rep5 outcomes 27 and 28) are labeled ambiguous, not false — "Whatever lies between them goes" reads edge out, while the 66–125 range of 60 per-suite lines reads edge in; the executor reached each answer from the text in turn, so the sentence truly allows two readings (designer's call 17); the plan takes edge in — costs if wrong: none on any count (every unclear counts against the bar); the ambiguous and false counts each move by 3.
 Task 5 Step 8: Ruling: four codex-gpt-6.1-sol conflicts on p55-clean S144 (rep1 outcome179, rep2 outcome217, rep3 outcome193, rep5 outcome227) are labeled false-alarm, cause pairing, not real — each sets the test's name, or CHECKS's new member suite_registry, against the stand-in's new-file path, so by the same-facet test it would stand with a plan that writes the spec's test_new.py; in those reps the reader's test_new.py reading paired with no stand-in entry (reps 1, 2, 5) or its cases were ruled no-value (rep 3), so no outcome states S144's real difference. The S144 real ruling above holds for conflicts that set path against path — costs if wrong: codex-gpt-6.1-sol's false-alarm mean falls from 4.4 to 3.6 per rep and its real count rises from 1 to 5; no bar verdict moves.
+D8 (owner, 2026-11-09): "D8: no build plan. Close finding 24’s line by the spec’s no-build path, retire the statement-readings spec with plan 83, and file (or don’t file) the ambiguity gap as a backlog item."
+Owner, at D8, on the ambiguity gap: asked "Should I file it?", the owner chose "File it (Recommended)", then wrote "Don't file..." in a later message. The later message governs: no backlog item for the ambiguity gap; the record's section 9 documents the gap.
 ```
