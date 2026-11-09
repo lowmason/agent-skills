@@ -133,6 +133,14 @@ def test_task_start_refuses_a_repository_with_no_commit(tmp_path):
     assert not (tmp_path / '.sdd' / 'plan' / 'task-1-brief.md').exists()
 
 
+def test_task_start_passes_an_unclosed_fence_refusal_through(repo):
+    (repo / 'unclosed.md').write_text('# P\n\n### Task 1: One\n\n```bash\necho open\n\n### Task 2: Two\n')
+    result = run(TASK_START, 'unclosed.md', 1, cwd=repo)
+    assert result.returncode == 4
+    assert 'never closes' in result.stderr
+    assert 'base:' not in result.stdout
+
+
 # -- task-done ---------------------------------------------------------------
 
 

@@ -26,29 +26,100 @@ else
   out="$dir/task-${n}-brief.md"
 fi
 
-# The task's section: starts at its own "Task N" heading and ends at the next
-# heading of the same or shallower level — Task heading or not, so trailing
-# plan sections ("## Verification", "## Success Criteria") never leak into
-# the last task's brief. Fences are tracked by backtick count (CommonMark):
-# a ````-fenced block may legally contain ``` lines, and headings inside any
-# fence are content, not boundaries.
-task=$(awk -v n="$n" '
+# Both awk passes begin with these functions. A task heading is "Task", then
+# an ID: letters and digits, optionally dot-separated, with at least one digit
+# (3, 6b, A1, 2.1). The digit keeps "## Task Overview" and "#### Task notes"
+# from becoming task boundaries. task_id returns the ID, or "" for any line
+# that is not a task heading. The word stays the English literal "Task",
+# whatever language the rest of the plan is in.
+awk_lib='
   function hlevel(s,  i) { i = 0; while (substr(s, i + 1, 1) == "#") i++; return i }
+  function task_id(s,  id) {
+    if (s !~ /^#+[ \t]+Task[ \t]/) return ""
+    id = s
+    sub(/^#+[ \t]+Task[ \t]+/, "", id)
+    if (!match(id, /^[A-Za-z0-9]+(\.[A-Za-z0-9]+)*/)) return ""
+    id = substr(id, 1, RLENGTH)
+    return (id ~ /[0-9]/) ? id : ""
+  }
+'
+
+# The task's section: starts at its own task heading and ends at the next
+# heading of the same or shallower level, so trailing plan sections
+# ("## Verification", "## Success Criteria") never leak into the last task's
+# brief, or at the next task heading at any depth (plans drift from
+# "## Task 1" to "### Task 2"). The ID is compared to TASK_NUMBER as a whole
+# string, so Task 6 never takes Task 6b, Task 2 never takes Task 2.1, and
+# TASK_NUMBER never reaches awk as a regex. One exception: a deeper task
+# heading whose ID is TASK_NUMBER and then a letter or a dot is a sub-task
+# and stays in the brief (### Task 7 keeps #### Task 7a and #### Task 7b),
+# and the section keeps the task's own level across its sub-tasks. Fences are
+# tracked by backtick count (CommonMark): a ````-fenced block may legally
+# contain ``` lines, and headings inside any fence are content, not
+# boundaries.
+#
+# A fence that never closes hides every task heading after it. When it hides
+# one while the requested task is being captured, that task's end cannot be
+# found and the brief would run on through every later task: refuse (exit 4)
+# and leave no brief at OUTFILE, rather than hand an implementer several
+# tasks as its requirements. When nothing was captured, name the fence before
+# the not-found error. A stray fence that hides no task heading (a plan that
+# ends with a lone ``` line) leaves the brief complete, so write it with a
+# warning. A plan with no task heading at all usually translated the word
+# ("### Tarea 1"), so list up to five headings shaped like tasks before the
+# not-found error. The plan path reaches awk through ENVIRON, not -v, which
+# would mangle the backslashes of a Windows path.
+rc=0
+task=$(TASK_BRIEF_PLAN="$plan" awk -v n="$n" "$awk_lib"'
+  BEGIN { want = n "" }
   /^```/ {
     flen = 0
     while (substr($0, flen + 1, 1) == "`") flen++
-    if (!infence) { infence = 1; openlen = flen }
+    if (!infence) { infence = 1; openlen = flen; fence_line = NR; hidden = 0 }
     else if (flen >= openlen) infence = 0
   }
-  !infence && /^#+[ \t]+Task[ \t]+[0-9]+/ {
-    intask = ($0 ~ ("^#+[ \t]+Task[ \t]+" n "([^0-9]|$)"))
-    if (intask) { tlvl = hlevel($0); print; next }
+  infence && /^#+[ \t]+Task[ \t]/ { hidden = 1 }
+  !infence && shaped < 5 && /^#+[ \t]+[^ \t]+[ \t]+[A-Za-z0-9.]*[0-9]/ { shaped_heading[++shaped] = $0 }
+  !infence && /^#+[ \t]+Task[ \t]/ {
+    id = task_id($0)
+    if (id != "") {
+      tasks++
+      lvl = hlevel($0)
+      subtask = intask && lvl > tlvl && substr(id, 1, length(want)) == want \
+        && substr(id, length(want) + 1, 1) ~ /[A-Za-z.]/
+      if (!subtask) {
+        intask = (id == want)
+        if (intask) tlvl = lvl
+      }
+      if (intask) { print; found = 1 }
+      next
+    }
   }
   !infence && intask && /^#+[ \t]/ {
     if (hlevel($0) <= tlvl) { intask = 0; next }
   }
-  intask { print }
-' "$plan")
+  intask { print; found = 1 }
+  END {
+    where = "the code fence opened at line " fence_line " of " ENVIRON["TASK_BRIEF_PLAN"] " never closes"
+    if (infence && hidden && (intask || !found)) {
+      print "task-brief: " where ", so no Task heading after it can be seen; close that fence in the plan and rerun" | "cat >&2"
+      if (intask) { close("cat >&2"); exit 4 }
+    } else if (infence && intask) {
+      print "task-brief: warning: " where "; it hides no Task heading, so this brief is complete" | "cat >&2"
+    }
+    # An open fence that hid task headings already explains why none were
+    # seen, and the English-word hint would contradict it.
+    if (!tasks && shaped && !(infence && hidden)) {
+      print "task-brief: no task headings found. Task headings must use the English word \"Task\" (\"### Task 1: ...\"), even when the rest of the plan is in another language. Headings shaped like tasks:" | "cat >&2"
+      for (i = 1; i <= shaped; i++) print "  " shaped_heading[i] | "cat >&2"
+    }
+    close("cat >&2")
+  }
+' "$plan") || rc=$?
+if [ "$rc" -ne 0 ]; then
+  if [ -f "$out" ]; then rm -f "$out"; fi
+  exit "$rc"
+fi
 
 if [ -z "$task" ]; then
   echo "task ${n} not found in ${plan} (no heading matching 'Task ${n}')" >&2
@@ -60,10 +131,10 @@ fi
 # at the next heading of the same or shallower level, not at any heading. A
 # level test alone would swallow every task, though: the writing-plans
 # template puts "### Task N" directly under a "## Global Constraints", so a
-# Task heading at any depth ends it too. The !ingc guard keeps a subsection
-# whose title also says "Global Constraints" from resetting the level.
-gc=$(awk '
-  function hlevel(s,  i) { i = 0; while (substr(s, i + 1, 1) == "#") i++; return i }
+# task heading at any depth (task_id's grammar, letter-first IDs included)
+# ends it too. The !ingc guard keeps a subsection whose title also says
+# "Global Constraints" from resetting the level.
+gc=$(awk "$awk_lib"'
   /^```/ {
     flen = 0
     while (substr($0, flen + 1, 1) == "`") flen++
@@ -72,7 +143,7 @@ gc=$(awk '
   }
   !infence && !ingc && /^#+[ \t]+Global Constraints/ { ingc = 1; glvl = hlevel($0); print; next }
   !infence && ingc && /^#+[ \t]/ {
-    if (hlevel($0) <= glvl || /^#+[ \t]+Task[ \t]+[0-9]+/) ingc = 0
+    if (hlevel($0) <= glvl || task_id($0) != "") ingc = 0
   }
   ingc { print }
 ' "$plan")

@@ -417,6 +417,195 @@ def test_task_brief_writes_to_and_prints_the_default_workspace_path(repo):
     assert (repo / '.sdd' / '.gitignore').read_text() == '*\n'
 
 
+IDS_PLAN = """\
+# Ids Plan
+
+### Task 2: Two
+
+Body of 2.
+
+### Task 2.1: Two point one
+
+Body of 2.1.
+
+### Task 6: Six
+
+Body of 6.
+
+### Task 6b: Six b
+
+Body of 6b.
+
+### Task A1: A one
+
+Body of A1.
+
+### Task 7: Seven
+
+Body of 7.
+
+#### Task 7a: Seven a
+
+Body of 7a.
+
+#### Task 7b: Seven b
+
+Body of 7b.
+"""
+
+TAREA_PLAN = """\
+# Tarea Plan
+
+### Tarea 1: Uno
+
+Cuerpo.
+"""
+
+LETTER_GC_PLAN = """\
+# Letter Plan
+
+## Global Constraints
+
+- Rule X.
+
+### Task A1: First
+
+Body of A1.
+
+### Task A2: Second
+
+Body of A2.
+"""
+
+# Line 9 opens a fence inside Task 2 that never closes.
+UNCLOSED_PLAN = """\
+# Unclosed Plan
+
+### Task 1: First
+
+Body of 1.
+
+### Task 2: Second
+
+```bash
+echo open
+
+### Task 3: Third
+
+Body of 3.
+"""
+
+# Line 11, the last line, opens a fence that hides no task heading.
+STRAY_PLAN = """\
+# Stray Plan
+
+### Task 1: First
+
+Body of 1.
+
+### Task 2: Second
+
+Body of 2.
+
+```
+"""
+
+
+def brief(repo, name, text, n, out=None):
+    '''Write text to repo/name and run task-brief on it, with out as OUTFILE when given.'''
+    (repo / name).write_text(text)
+    return run(TASK_BRIEF, repo / name, n, *([out] if out else []), cwd=repo)
+
+
+@pytest.mark.parametrize('n, own, other', [('2', 'Body of 2.', 'Task 2.1'), ('6', 'Body of 6.', 'Task 6b')])
+def test_task_brief_does_not_take_a_same_level_task_whose_id_extends_the_number(repo, n, own, other):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, n, out)
+    assert result.returncode == 0, result.stderr
+    assert own in out.read_text()
+    assert other not in out.read_text()
+
+
+@pytest.mark.parametrize('n', ['A1', '6b', '2.1'])
+def test_task_brief_finds_every_id_form(repo, n):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, n, out)
+    assert result.returncode == 0, result.stderr
+    body = out.read_text()
+    assert f'Body of {n}.' in body
+    assert body.count('### Task') == 1
+
+
+def test_task_brief_reads_the_task_number_as_a_string_not_a_regex(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, '6.', out)
+    assert result.returncode == 3
+    assert 'task 6. not found' in result.stderr
+    assert not out.exists()
+
+
+def test_task_brief_keeps_a_deeper_sub_task_in_its_brief(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, '7', out)
+    assert result.returncode == 0, result.stderr
+    assert '#### Task 7a: Seven a' in out.read_text()
+    assert 'Body of 7a.' in out.read_text()
+    assert 'Body of 7b.' in out.read_text()
+
+
+def test_task_brief_lists_headings_shaped_like_tasks_when_none_say_task(repo):
+    result = brief(repo, 'tarea.md', TAREA_PLAN, '1', repo / 'brief.md')
+    assert result.returncode == 3
+    assert '  ### Tarea 1: Uno' in result.stderr
+    assert result.stderr.index('no task headings found') < result.stderr.index('task 1 not found')
+
+
+def test_task_brief_ends_global_constraints_at_a_letter_first_task_heading(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'letter.md', LETTER_GC_PLAN, 'A2', out)
+    assert result.returncode == 0, result.stderr
+    body = out.read_text()
+    assert 'Rule X.' in body
+    assert 'Body of A1.' not in body
+    assert body.count('### Task A2') == 1
+
+
+def test_task_brief_refuses_a_task_that_an_unclosed_fence_runs_past(repo):
+    stale = repo / '.sdd' / 'unclosed' / 'task-2-brief.md'
+    stale.parent.mkdir(parents=True)
+    stale.write_text('stale brief\n')
+    result = brief(repo, 'unclosed.md', UNCLOSED_PLAN, '2')
+    assert result.returncode == 4
+    assert 'the code fence opened at line 9 of' in result.stderr
+    assert 'close that fence in the plan and rerun' in result.stderr
+    assert not stale.exists()
+    assert 'wrote' not in result.stdout
+
+
+def test_task_brief_names_an_unclosed_fence_that_hides_the_requested_task(repo):
+    result = brief(repo, 'unclosed.md', UNCLOSED_PLAN, '3', repo / 'brief.md')
+    assert result.returncode == 3
+    assert 'line 9' in result.stderr
+    assert result.stderr.index('never closes') < result.stderr.index('task 3 not found')
+
+
+def test_task_brief_is_unaffected_by_an_unclosed_fence_after_the_task(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'unclosed.md', UNCLOSED_PLAN, '1', out)
+    assert result.returncode == 0, result.stderr
+    assert 'never closes' not in result.stderr
+    assert 'Body of 1.' in out.read_text()
+
+
+def test_task_brief_warns_on_a_stray_fence_that_hides_no_task(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'stray.md', STRAY_PLAN, '2', out)
+    assert result.returncode == 0, result.stderr
+    assert 'warning: the code fence opened at line 11 of' in result.stderr
+    assert 'it hides no Task heading, so this brief is complete' in result.stderr
+    assert 'Body of 2.' in out.read_text()
+
+
 # ── review-package ───────────────────────────────────────────────────────
 
 
