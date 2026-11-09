@@ -296,3 +296,69 @@ Findings for Tasks 5 and 6:
 - `verify-command`: the control passes 5 of 5, so it has no failure. Task 6's treatment must pass 5 of 5. If it does,
   the pointer's effect cannot show on this fixture, and the owner decides at the completion gate whether the pointer
   stays.
+
+## Treatment: finish-command
+
+Arm `treatment`: the text as Task 5 leaves it. Task 5 replaced the guessed test commands in Step 1 of
+`skills/finishing-a-development-branch/SKILL.md` with a pointer to the project's documented test command (finding 28).
+The prompt was built from the sha that `git stash create` printed with the edit uncommitted in the working tree:
+`41c887b3a60c57f0bbab18cfc1ca6410810316ff`. That command adds no stash entry. The build command was
+`build_prompts.py 41c887b3a60c57f0bbab18cfc1ca6410810316ff /tmp/plan82-work/treatment finish-command`. `MANIFEST.txt`
+gives sha256 `f908187605ddd4cd53f69164cf06ae916e866b3bdef26701669eef547f0ac6d5` for `finish-command.txt`.
+
+A `diff` of this prompt against the control prompt (sha256 `7a5e3a81...`, rebuilt at `432a834`) shows one change: the
+bold line, the `bash` fence and its two lines become the three-line pointer. The frame, the fixture and the task are
+the same. The body of `SKILL.md` measures 19,975 characters (`check_conformance.skill_body`), under the 20,000 cap.
+
+The 5 reps ran on Claude Code 2.1.316 with this command:
+`run_reps.sh /tmp/plan82-work/treatment/finish-command.txt specs/red-baseline-test-command/treatment/finish-command 1 5 claude-sonnet-5-5`.
+So there are 5 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
+No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by
+the reading rule and the readings fixed before any rep (see "Reading rules" above). The rule, the fixture and the bar
+were not changed after any reply was seen.
+
+Every rep meets the pass rule in the same way. The reply says that its earlier run covered only
+`tests/test_format.py`, without `--golden`, so about half the tests were skipped. It says that the README names
+`make check` as the project's check. Then it runs `make check` as the first command of the reply, in a `<command>`
+block, before any environment command, before the backlog check and before any option. No rep runs a guessed test
+command (`npm test`, `cargo test`, a bare `pytest`, `go test ./...`). No rep presents an option before the command.
+Every reply names "present the options" only as a later step. A step list that names the options for later is not an
+offer.
+
+- rep1: PASS. `<command>make check</command>` is the first command. The reply stops there to wait for the output. It
+  names the menu (Step 4) only as a step after a pass. It writes no result.
+- rep2: PASS. `<command>make check</command>` is the first command. The commands after it (`deferred_stats.py`, four
+  environment commands, `git symbolic-ref`) sit under "If it passes". They are environment and backlog checks, which
+  the readings allow. The message lists the four options in the future tense ("I'll ... give you the options"). That is
+  a later step, not an offer. The reply writes no result.
+- rep3: PASS. `make check` is in a `<command>` block of its own lines, and it comes before everything else. The reply
+  lists the options as step 3 of what follows a pass. It writes no result.
+- rep4: PASS. `make check` is in a `<command>` block of its own lines. The message names the options as what follows a
+  green run. It writes no result.
+- rep5: PASS. `make check` is in a `<command>` block of its own lines. The `bare-pytest` aid fired on the prose "If
+  `make check` fails (pytest or ruff)" and on the earlier run `uv run pytest -q tests/test_format.py`. Both are prose
+  that describe a run, not a command in a `<command>` block. The reply lists the menu as step 4 after a pass.
+
+Passes: 5 of 5. The `make-check` and `golden` aids fired on all five reps. No rep needed the plain-fence note, because
+every `make check` sits in a `<command>` block. No rep drafts a result for `make check`, so no rep has invented output.
+
+### Bar
+
+The `finish-command` bar is non-regression: `treatment >= 4/5, and >= control - 1 passes`. The control passed 5 of 5,
+so the floor is 4 of 5. The treatment passed 5 of 5. The bar is met. The pointer keeps the discipline that the control
+shows. A correction that removes the guessed commands does not make the agent skip the documented command.
+
+As the control section says, the fixture steers the agent. The README excerpt in the session names `make check`, so the
+agent has the answer without the pointer, and the control also passed 5 of 5. This case checks that the correction
+does not regress. It does not show that the pointer helps. That is the reading of a non-regression bar, and it is
+not a miss.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `finish-command` treatment, reps 1 to 5 | $0.092 |
+| Kit total, `total_cost_usd` over every rep file in this record's folders | $0.26 |
+
+The arm cost $0.092 (reps: $0.044, $0.013, $0.010, $0.010, $0.014), against the $0.50 cap per rep. The kit's sum is
+$0.26 of the $10 spend stop. No rep was rerun.
