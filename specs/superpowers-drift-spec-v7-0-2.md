@@ -808,10 +808,10 @@ tester-seat brainstorm became `specs/spec-derived-acceptance-tests.md`. Its prob
 `specs/red-baseline-acceptance-tests.md`) found that a fresh Self-Review caught all 15 planted
 misreads, more than any test-writing arm. The redesign, `specs/completed/statement-level-readings.md`,
 had two readers state what the spec asks. Its probe (plan 83, `specs/red-baseline-statement-readings.md`)
-missed every bar, with 4.4 to 11.0 false alarms per plan against a bar of 1.0. The backlog item
-"Spec-reading test check" is closed. Its layer 4, spec excerpts in the implementer brief, stays open as
-an item in `specs/deferred_items.md` (`83-statement-level-readings — 2026-11-09`). Finding 21's part
-goes to its own build plan from `specs/spec-derived-acceptance-tests.md`.
+missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of
+1.0. The backlog item "Spec-reading test check" is closed. Its layer 4, spec excerpts in the implementer
+brief, stays open as an item in `specs/deferred_items.md` (`83-statement-level-readings — 2026-11-09`).
+Finding 21's part goes to its own build plan from `specs/spec-derived-acceptance-tests.md`.
 
 ## Findings on the other shared skills (2026-11-07 review)
 

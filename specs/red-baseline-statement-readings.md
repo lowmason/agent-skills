@@ -273,9 +273,12 @@ the control on one plant or more, and the step also meets both clean-copy bars. 
 - The plants on which the step beats the control: one, `p55-exit`, in one arm. The pair `gpt-6.1-sol` arm
   caught it in 1 of 5 reps, and the control in 0 of 5. That catch is one `unclear` ruling on a Claude reader
   entry that the claude and pair `gpt-6-sol` arms ruled a reading (section 5). No arm beats the control on any
-  other plant.
+  other plant. With quote-less rulings read as `unclear` (section 9, item 11), the arm caught `p55-exit` in 2
+  of 5.
 - The false-alarm bar: missed in every arm, at 4.4 to 11.0 per rep.
-- The unclear bar: met in every arm, at 0.0 to 0.4 per rep.
+- The unclear bar: met in every arm as scored, at 0.0 to 0.4 per rep. Read as `unclear`, the 255
+  clean-copy `no-value` rulings that quote no words put every arm above the bar, at 1.2 to 28.0 per rep
+  (section 9, item 11).
 
 `gpt-6-sol` missed bars, so Step 8 ran the Codex reader and the two Codex arms again on `gpt-6.1-sol` (default
 PD9). Step 8 started before Step 7's labels and `TABLE.txt`. By then the pair `gpt-6-sol` arm had caught each
@@ -504,6 +507,26 @@ misread: a value that the plan changes, and a sentence that allows two readings.
     arm would reach 4 of 5 on either plant. On the clean copy, such cases come to 2.2 to 3.2 per rep in the
     claude and pair arms, above the unclear bar, and 0.0 to 0.2 in the codex arms.
 
+**Found in the final review:**
+
+11. **Rulings that quote no words.** The adjudicator quotes the words that decide each case, and rules
+    `unclear` when no words decide it (spec Design 7). PD6's VOID list has no item for a missing quote, and
+    the kit's scorer does not check the adjudicator's quote. So the scorer took 1,045 `no-value` rulings with
+    an empty quote, in 31 of the 150 step reps and up to 92 in one rep. Five were in one claude rep, and the
+    rest in the arms with a Codex reader. As scored, each counts as `no-value`. Read as `unclear`, by Design
+    7's rule for a ruling with no deciding words, they change three results:
+    - The unclear bar on the clean copy: claude 1.2, pair `gpt-6-sol` 10.6, codex `gpt-6-sol` 3.6, pair
+      `gpt-6.1-sol` 8.2 and codex `gpt-6.1-sol` 28.0 per rep. Every arm misses it.
+    - `p55-exit`: the pair `gpt-6.1-sol` arm catches it in 2 of 5 reps, not 1 (rep 3, case C146 on S115).
+    - The owner load (section 6): each such ruling adds one case.
+
+    No other catch moves. The three such rulings on an argued plant's sentence fall in reps that already
+    count as catches, and none falls on the `p66-today` sentence. No false-alarm count moves, because a
+    `no-value` ruling makes no plan conflict. The other quotes are spec text: 19,640 come from the case's
+    sentence, 51 from elsewhere in the spec, and 16 drop the spec's bold marks. Codex found this gap in the
+    final review. The kit stays frozen (PD12), so this record reports the effect and does not re-score
+    (Appendix B).
+
 ## Appendix A. Isolation of the reps
 
 **Claude reps.** Every `claude -p` rep ran from a fresh empty folder under `/tmp`, outside every repository,
@@ -546,7 +569,8 @@ Reader A and Reader B, never the stand-in's statement or the plan. The control s
 
 These lines are copied word for word, in order, from the execution ledger,
 `.sdd/83-statement-level-readings/progress.md`, which git ignores. They hold the owner's decisions, and every
-ruling and deviation of the executor. The last two lines are the owner's D8 decision.
+ruling and deviation of the executor through the final review. The owner's D8 decision is in the two lines
+that start `D8 (owner` and `Owner, at D8`.
 
 ```text
 Owner, before Task 1: "Plan 82 is not executing." Plan 82's file names no edit to skills/writing-plans/SKILL.md (grep), so the order does not move the control's skill text.
@@ -579,4 +603,10 @@ Task 5 Step 7: Ruling (advisor check): the S126 unclear rulings (claude rep5 out
 Task 5 Step 8: Ruling: four codex-gpt-6.1-sol conflicts on p55-clean S144 (rep1 outcome179, rep2 outcome217, rep3 outcome193, rep5 outcome227) are labeled false-alarm, cause pairing, not real — each sets the test's name, or CHECKS's new member suite_registry, against the stand-in's new-file path, so by the same-facet test it would stand with a plan that writes the spec's test_new.py; in those reps the reader's test_new.py reading paired with no stand-in entry (reps 1, 2, 5) or its cases were ruled no-value (rep 3), so no outcome states S144's real difference. The S144 real ruling above holds for conflicts that set path against path — costs if wrong: codex-gpt-6.1-sol's false-alarm mean falls from 4.4 to 3.6 per rep and its real count rises from 1 to 5; no bar verdict moves.
 D8 (owner, 2026-11-09): "D8: no build plan. Close finding 24’s line by the spec’s no-build path, retire the statement-readings spec with plan 83, and file (or don’t file) the ambiguity gap as a backlog item."
 Owner, at D8, on the ambiguity gap: asked "Should I file it?", the owner chose "File it (Recommended)", then wrote "Don't file..." in a later message. The later message governs: no backlog item for the ambiguity gap; the record's section 9 documents the gap.
+Task 6 Step 5: Ruling: the layer 4 item goes into this plan's section (83-statement-level-readings — 2026-11-09) with the tick, not later in the Plan Completion Protocol — the done note's → item: marker then never names a missing section; the protocol adds any later deferred items to the same section — costs if wrong: none, the item and its section are the same either way.
+Task 6 Step 5: Ruling: finding 24's row in the drift spec's summary table (line 139) gets the same status as its Disposition line, beyond the two places the step names — otherwise the drift spec contradicts itself — costs if wrong: one table cell to revert.
+Task 6 Step 5: Ruling: the drift spec and the new backlog item cite the spec at its retired path, specs/completed/statement-level-readings.md, which the Plan Completion Protocol's retire commit creates on this branch — the merged branch is consistent, and only the commits in between name a path that does not exist yet — costs if wrong: three paths to fix if the spec does not retire.
+Task 6 Step 5: Ruling: the drift spec's "Reported order" bullet keeps its original text as history and adds a dated update; its finding 18 sentence stays as written, because plan 82 is not on main and its order with finding 18 cannot be checked here — costs if wrong: one stale clause about a seat's plan that will not be written.
+Final: Ruling: Codex P2, measure.py scores rulings that quote no deciding words (all 1,045 such rulings are no-value): the scores stand, with no re-score — the kit is frozen from Task 5's first run (PD12), PD6's VOID list has no quote item, and a re-score is a kit change for the owner; the record's section 4 and section 9 item 11 now give both counts (in 31 of 150 step reps; read as unclear, every arm misses the unclear bar, at 1.2 to 28.0 per rep on the clean copy, and pair-gpt-6.1-sol catches p55-exit in 2 of 5; no other catch and no false-alarm count moves; every other quote is spec text) — costs if wrong: TABLE.txt and section 3 read the unclear bar met where Design 7's rule reads it missed; no input moves toward a build plan, and the owner can still ask for a re-score as a backlog item.
+Final: Ruling: Codex P2, four citations of specs/completed/statement-level-readings.md (specs/deferred_items.md:5354 and :6125, the drift spec's :809 and :1073) name a path that does not exist at d6469ca: no change — Task 6 Step 5's ruling covers it, and the Plan Completion Protocol's retire commit creates the path on this branch before it merges — costs if wrong: four paths to fix if the spec does not retire (that ruling said three).
 ```
