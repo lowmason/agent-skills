@@ -41,7 +41,7 @@
 
 1. A brand-new project, a repository with no commit, where inline execution starts. `task-start` stops with exit 2 and the new-project message. It prints no `base:` line and writes no brief. Pinned in Task 2 (`test_task_start_refuses_a_repository_with_no_commit`).
 2. A plan whose task IDs start with a letter, under a flat `## Global Constraints`. Each brief carries the constraints once and no other task. Pinned in Task 3 (`test_task_brief_ends_global_constraints_at_a_letter_first_task_heading`).
-3. A sub-task heading one level deeper (`#### Task 7a` under `### Task 7`) stays in Task 7's brief, while a same-level `### Task 6b` ends Task 6's brief. Pinned in Task 3 (`test_task_brief_keeps_a_deeper_sub_task_in_its_brief`, `test_task_brief_does_not_take_a_same_level_task_whose_id_extends_the_number`).
+3. A sub-task heading one level deeper (`#### Task 7a` under `### Task 7`) stays in Task 7's brief, and so does its sibling `#### Task 7b`. A same-level `### Task 6b` ends Task 6's brief. Pinned in Task 3 (`test_task_brief_keeps_a_deeper_sub_task_in_its_brief`, `test_task_brief_does_not_take_a_same_level_task_whose_id_extends_the_number`).
 4. A plan edited to hold an unclosed fence after an earlier run wrote its brief. The refusal (exit 4) leaves no stale brief behind, and `task-start` passes the 4 through with no `base:` line. Pinned in Task 3 (`test_task_brief_refuses_a_task_that_an_unclosed_fence_runs_past`, `test_task_start_passes_an_unclosed_fence_refusal_through`).
 5. A stray fence at a plan's end that hides no task heading. The brief is written with a warning and exit 0, so a common plan shape keeps working. Pinned in Task 3 (`test_task_brief_warns_on_a_stray_fence_that_hides_no_task`), and on real plans by Task 3 Step 7.
 
@@ -53,7 +53,7 @@
 
 Items 1, 3 and 4 settle the defaults that the brief flagged (A, B and C). Items 2 and 5-9 are this plan's own choices.
 
-1. **One guard that finding 21's script can call (brief default A).** Three texts disagree. The acceptance-tests spec's Design section 1 uses "the commit guard that finding 18's helper fixes add to `task-start` and `task-done`". Finding 18's disposition asks for a `task-start` guard and a message in `sdd-workspace`. Finding 21 calls upstream's `--with-commit` guard "the version to copy". Proposed: Task 2 adds `skills/subagent-driven-development/scripts/sdd-repo`, upstream's guard, and its Interfaces block fixes the modes, the exit code and the message. `sdd-workspace` calls it plain. `task-start` calls it with `--with-commit` before it writes a brief. `task-done` keeps its own BASE check (`task-done:30`), which already refuses a repository with no commit (`test_task_done_rejects_a_bad_base`). The finding-21 script calls `sdd-repo --with-commit`. If declined, the finding-21 plan builds its own guard or changes this plan's code.
+1. **One guard that finding 21's script can call (brief default A).** Three texts disagree. The acceptance-tests spec's Design section 1 uses "the commit guard that finding 18's helper fixes add to `task-start` and `task-done`". Finding 18's disposition asks for a `task-start` guard and a message in `sdd-workspace`. Finding 21 calls upstream's `--with-commit` guard "the version to copy". Proposed: Task 2 adds `skills/subagent-driven-development/scripts/sdd-repo`, upstream's guard, and its Interfaces block fixes the modes, the exit code and the message. `sdd-workspace` calls it plain. `task-start` calls it with `--with-commit` before it writes a brief. `task-done` keeps its own BASE check (`task-done:30`). A probe at `d067b7e` shows that this check refuses a repository with no commit before the test command runs: `bad BASE: HEAD`, exit 2, and no ledger. Task 2 pins that with `test_task_done_refuses_a_repository_with_no_commit`. The finding-21 script calls `sdd-repo --with-commit`. If declined, the finding-21 plan builds its own guard or changes this plan's code.
 2. **`review-package` as a third caller.** The drift spec says that the `sdd-workspace` message reaches `review-package`. A probe at `d067b7e` shows that it does not. Outside a repository, `review-package` prints git's own error and `bad BASE: HEAD` (exit 2) before it reaches `sdd-workspace`. In a repository with no commit, it prints `bad BASE: HEAD`. Proposed: `review-package` calls `sdd-repo --with-commit` after its plan-file check, as upstream does (Task 2 Step 3). If declined, Task 2 drops that line and `test_review_package_refuses_a_repository_with_no_commit`, and `review-package` keeps its `bad BASE` message. `task-done` gives the same `bad BASE` outside a repository, and that stays either way.
 3. **No `-C DIR` (brief default B).** The drift spec calls it optional and low. Our controller `cd`s into its worktree (using-git-worktrees Step 1b), and no local text needs it. If declined, a later plan adds `-C DIR` to every helper.
 4. **The drift spec at completion (brief default C).** The completion marks findings 18, 28 and 31 done in `specs/superpowers-drift-spec-v7-0-2.md`, as Global Constraints (Completion) lists. The drift spec stays live. If declined, the drift spec keeps showing the three as open.
@@ -192,17 +192,27 @@ def test_task_start_refuses_a_repository_with_no_commit(tmp_path):
     assert 'make a first commit' in result.stderr
     assert 'base:' not in result.stdout
     assert not (tmp_path / '.sdd' / 'plan' / 'task-1-brief.md').exists()
+
+
+def test_task_done_refuses_a_repository_with_no_commit(tmp_path):
+    git('init', '-q', tmp_path, cwd=tmp_path)
+    (tmp_path / 'plan.md').write_text(PLAN)
+    result = run(TASK_DONE, 'plan.md', 1, 'HEAD', '--', 'sh', '-c', 'touch ran', cwd=tmp_path)
+    assert result.returncode == 2
+    assert 'bad BASE' in result.stderr
+    assert not (tmp_path / 'ran').exists()
+    assert not (tmp_path / '.sdd').exists()
 ```
 
 - [ ] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py subagent-driven-development executing-plans`.
-Expected: 7 failures. The four `sdd-repo` tests raise `FileNotFoundError`. The workspace test gets exit 128. The `review-package` test finds `bad BASE` and no message. The `task-start` test gets exit 0. Every older test passes.
+Expected: 7 failures. The four `sdd-repo` tests raise `FileNotFoundError`. The workspace test gets exit 128. The `review-package` test finds `bad BASE` and no message. The `task-start` test gets exit 0. `test_task_done_refuses_a_repository_with_no_commit` passes now: it guards the BASE check that `task-done` keeps (Open for plan review, item 1). Every older test passes.
 - [ ] **Step 3: Create `sdd-repo` and wire its callers.**
   - `sdd-repo`: port upstream's `skills/subagent-driven-development/scripts/sdd-repo`, lines 25-54, with both messages verbatim. Write the header comment for this repository: what the script prints, why the plan file's location never picks the repository, the two refusals and the three callers. Leave out upstream's `-C DIR` sentence. Make it executable with `chmod 755`.
   - `sdd-workspace:43`: `root=$(git rev-parse --show-toplevel)` becomes `root=$("$(cd "$(dirname "$0")" && pwd)/sdd-repo")`.
   - `review-package`, after the plan-file check at `:20`: add `"$(cd "$(dirname "$0")" && pwd)/sdd-repo" --with-commit > /dev/null`, so the guard runs before the BASE check (Open for plan review, item 2).
   - `task-start`: after the `sdd=` line (`:23`), add `repo=$("$sdd/sdd-repo" --with-commit)`. Replace the last line with `base=$(git -C "$repo" rev-parse --verify HEAD)` and `echo "base: $base"`. The header gains an exit line: 2 for bad arguments, no working tree or no commit, and `task-brief`'s 3 and 4 pass through.
 - [ ] **Step 4: Run the suites.** Same command as Step 2.
-Expected: `suite runs passed`, with 6 more tests in subagent-driven-development and 1 more in executing-plans.
+Expected: `suite runs passed`, with 6 more tests in subagent-driven-development and 2 more in executing-plans.
 - [ ] **Step 5: Check the mode.** Run `git add skills/subagent-driven-development/scripts/sdd-repo && git ls-files -s skills/subagent-driven-development/scripts/sdd-repo`.
 Expected: the line starts with `100755`.
 - [ ] **Step 6: Run the suites under bash 3.2.** Run `PATH="/bin:$PATH" env bash -c 'echo $BASH_VERSION'`, then `PATH="/bin:$PATH" uv run python build/run_suites.py subagent-driven-development executing-plans`.
@@ -234,7 +244,7 @@ The rules. Both awk passes keep counting backticks to track fences, at column 0 
 
 1. A task heading is a heading line whose text is the word `Task`, whitespace, then an ID. The ID is letters and digits, optionally dot-separated (`[A-Za-z0-9]+(\.[A-Za-z0-9]+)*`), with at least one digit (`3`, `6b`, `A1`, `2.1`). `## Task Overview` and `#### Task notes` are not task headings.
 2. TASK_NUMBER matches an ID as a whole string, and it never reaches awk as a regex. The plan path reaches awk through `ENVIRON`, as upstream's does, not through `-v`.
-3. The requested task starts at its own heading. It ends at the next heading of the same or shallower level, or at the next task heading at any depth. One exception: a deeper task heading whose ID is TASK_NUMBER followed by a letter or a dot (`#### Task 7a` under `### Task 7`) is a sub-task, and it stays in the brief.
+3. The requested task starts at its own heading. It ends at the next heading of the same or shallower level, or at the next task heading at any depth. One exception: a deeper task heading whose ID is TASK_NUMBER followed by a letter or a dot (`#### Task 7a` under `### Task 7`) is a sub-task, and it stays in the brief. The section keeps the requested task's level across its sub-tasks, so a sibling sub-task (`#### Task 7b`) stays too. Today's script resets the level at every matching heading, and that reset must go.
 4. The Global Constraints pass ends its section at a task heading by rule 1, as well as at a heading of its own level or shallower. Define the grammar once: an awk function `task_id(line)` that returns the ID, or an empty string for any other line, kept in a shell variable that both awk programs begin with.
 5. When a fence opens, record its line number and clear a hidden flag. A line inside an open fence that starts like a task heading (`^#+[ \t]+Task[ \t]`) sets the flag.
 6. At the end of the plan, a fence may still be open.
@@ -276,6 +286,10 @@ Body of 7.
 #### Task 7a: Seven a
 
 Body of 7a.
+
+#### Task 7b: Seven b
+
+Body of 7b.
 """
 
 TAREA_PLAN = """\
@@ -375,6 +389,7 @@ def test_task_brief_keeps_a_deeper_sub_task_in_its_brief(repo):
     assert result.returncode == 0, result.stderr
     assert '#### Task 7a: Seven a' in out.read_text()
     assert 'Body of 7a.' in out.read_text()
+    assert 'Body of 7b.' in out.read_text()
 
 
 def test_task_brief_lists_headings_shaped_like_tasks_when_none_say_task(repo):
