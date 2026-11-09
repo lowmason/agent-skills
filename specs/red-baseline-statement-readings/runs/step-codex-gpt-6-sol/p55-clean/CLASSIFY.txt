@@ -1,0 +1,37 @@
+rep1 outcome98 false-alarm pairing: the reading takes the stdlib modules, the stand-in the Python version; plan lines 9 and 17 state both as R3.1 does
+rep1 outcome106 false-alarm pairing: the reading takes one exit status (0), the stand-in all three ([0, 1, 2]); plan line 19 quotes R3.7 and lines 886-892 and 951-961 return 0, 1 and 2
+rep1 outcome111 false-alarm slot: the same exit 2, with unit exit code on one side only (plan lines 951-955)
+rep1 outcome113 false-alarm form: the success output and its exit status are written apart on one side and bundled on the other; plan lines 943-950 print suite registry ok and return 0, or return 1 on findings
+rep1 outcome123 false-alarm pairing: the reading takes the block's four commands, the stand-in the row's line range 66–125; the plan's BLOCK (plan lines 1521-1528) holds the four commands and replaces that range (lines 1540-1543)
+rep1 outcome124 false-alarm pairing: the reading takes the word nine, the stand-in the row's line range 127–132; the plan's new comment (plan lines 1582-1587) says nine and keeps that range
+rep1 outcome144 false-alarm scope: the plan's DF8 runs every registered suite directly and through the runner, so it runs hooks, build and bayesian-workflow as the sentence asks, and more (plan lines 74, 1473, 1496); no spec value is contradicted
+rep1 outcome148 false-alarm pairing: the reading takes the gate's command, the stand-in its output suite registry ok; plan lines 1198-1201 state both, as the sentence does
+rep2 outcome50 false-alarm slot: the same limit, 200 lines: the check fails at 200, so 200 is out, as the plan's 'under 200 lines' says (plan lines 24, 1638); the ruled reading marks the edge in
+rep2 outcome58 false-alarm slot: the same default ['3.13'], with unit interpreters on one side only; the plan's default is ('3.13',) (plan lines 399, 413)
+rep2 outcome118 false-alarm pairing: the reading takes pytest's exit 5 (no tests collected), the stand-in the runner's three statuses [0, 1, 2]; plan lines 19 and 757-758 state both, as R3.7 does
+rep2 outcome122 false-alarm pairing: the reading takes one of the two patterns (test_*.py), the stand-in both; the plan's TEST_FILE_PATTERNS holds both (plan line 400)
+rep2 outcome129 false-alarm pairing: the reading takes a value inside the row's instruction (its one-line length, or the Python 3.13 that the paragraph keeps), the stand-in the row's line number 60; the plan's new paragraph (plan lines 46, 1559-1565) replaces line 60 with one line that keeps Python 3.13
+rep2 outcome131 false-alarm pairing: the reading takes the block's four commands, the stand-in the row's line range 66–125; the plan's BLOCK (plan lines 1521-1528) holds the four commands and replaces that range (lines 1540-1543)
+rep3 outcome54 false-alarm slot: the same pythons list; the ruled reading also puts the column default ['3.13'] in the default slot, where this row's list replaces it (plan lines 1115-1118)
+rep3 outcome111 false-alarm pairing: the reading takes a value inside the row's instruction (its one-line length, or the Python 3.13 that the paragraph keeps), the stand-in the row's line number 60; the plan's new paragraph (plan lines 46, 1559-1565) replaces line 60 with one line that keeps Python 3.13
+rep3 outcome116 false-alarm pairing: the reading takes the word nine, the stand-in the row's line range 127–132; the plan's new comment (plan lines 1582-1587) says nine and keeps that range
+rep3 outcome129 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real
+rep3 outcome136 false-alarm scope: the plan's DF8 runs every registered suite directly and through the runner, so it runs hooks, build and bayesian-workflow as the sentence asks, and more (plan lines 74, 1473, 1496); no spec value is contradicted
+rep4 outcome9 false-alarm slot: the same limit, 200 lines: the check fails at 200, so 200 is out, as the plan's 'under 200 lines' says (plan lines 24, 1638); the ruled reading marks the edge in
+rep4 outcome37 false-alarm pairing: the reading takes the row's suite name, the stand-in its with list; the plan's row (lines 1048-1051) matches the spec row
+rep4 outcome44 false-alarm pairing: the two sides take different fields of the row (dir, with or extras); the plan's row (lines 1066-1069) matches the spec row
+rep4 outcome61 false-alarm pairing: the reading takes the row's suite name, the stand-in its with list; the plan's row (lines 1109-1111) matches the spec row
+rep4 outcome82 false-alarm pairing: the reading takes the row's suite name, the stand-in its with list; the plan's row (lines 1160-1162) matches the spec row
+rep4 outcome114 false-alarm pairing: the reading takes one exit status (0), the stand-in all three ([0, 1, 2]); plan line 19 quotes R3.7 and lines 886-892 and 951-961 return 0, 1 and 2
+rep4 outcome126 false-alarm form: the success output and its exit status are written apart on one side and bundled on the other; plan lines 943-950 print suite registry ok and return 0, or return 1 on findings
+rep4 outcome132 false-alarm pairing: the reading takes a value inside the row's instruction (its one-line length, or the Python 3.13 that the paragraph keeps), the stand-in the row's line number 60; the plan's new paragraph (plan lines 46, 1559-1565) replaces line 60 with one line that keeps Python 3.13
+rep4 outcome137 false-alarm pairing: the reading takes the word nine, the stand-in the row's line range 127–132; the plan's new comment (plan lines 1582-1587) says nine and keeps that range
+rep4 outcome154 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real
+rep5 outcome45 false-alarm pairing: the two sides take different fields of the row (dir, with or extras); the plan's row (lines 1066-1069) matches the spec row
+rep5 outcome92 false-alarm form: the same command, with the spec's trailing ellipsis on one side only (plan lines 376-379)
+rep5 outcome99 false-alarm pairing: the reading takes one exit status (0), the stand-in all three ([0, 1, 2]); plan line 19 quotes R3.7 and lines 886-892 and 951-961 return 0, 1 and 2
+rep5 outcome100 false-alarm slot: the same pytest exit 5, with unit exit code on one side only (plan lines 19, 757-758)
+rep5 outcome104 false-alarm slot: the same exit 2, with unit exit code on one side only (plan lines 951-955)
+rep5 outcome105 false-alarm pairing: the reading takes one of the two patterns (test_*.py), the stand-in both; the plan's TEST_FILE_PATTERNS holds both (plan line 400)
+rep5 outcome116 false-alarm pairing: the reading takes the block's four commands, the stand-in the row's line range 66–125; the plan's BLOCK (plan lines 1521-1528) holds the four commands and replaces that range (lines 1540-1543)
+rep5 outcome145 false-alarm scope: the plan's DF8 runs every registered suite directly and through the runner, so it runs hooks, build and bayesian-workflow as the sentence asks, and more (plan lines 74, 1473, 1496); no spec value is contradicted

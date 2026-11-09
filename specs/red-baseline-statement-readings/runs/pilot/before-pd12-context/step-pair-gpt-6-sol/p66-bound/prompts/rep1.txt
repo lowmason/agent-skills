@@ -1,0 +1,1352 @@
+Two readers each stated, from the spec alone, what the spec asks. Each case below is a sentence where they differ, where one reader alone states a value, or where a reader names another reading.
+
+For each case, rule on the reading that the text supports. Give the verdict `reading` with its value, unit, edge and default, or `no-value` when the sentence states no value. Quote the words that decide the case, word for word, from the numbered spec. When no words decide it, rule `unclear` with an empty quote.
+
+You see no plan. You have no tools, and you edit no file.
+
+The slot forms: `value` is a literal in plain notation (a number, a string, a list in brackets, a date or time). `unit` is what the value counts or measures, or `none`. `edge` says, for each limit in the value, whether the limit itself is in: `in`, `out`, or `n/a` with no limit. `default` is the value used when the input is absent, or `none`.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
+
+<spec>
+# Package versions: one source for every pinned or cited version
+S1. **Status:** approved by the owner on 2026-10-21, after a section-by-section design review and a review of the written text.
+S2. Next skill: writing-plans.
+
+## Problem
+S3. The repo fixes package versions by hand in many places, and nothing ties the copies together.
+S4. On 2026-10-21 the owner found NumPyro at 0.21.0 in one deferred item and at 0.22.0 in `PINNED`.
+S5. The owner wants one mechanism for every package that a skill names or runs, the Python interpreter included.
+S6. It must give one or both of these properties:
+S7. 1. A way to always use the latest release.
+S8. 2. The version as a parameter, set in one place and not copied by hand.
+S9. This work is not part of plan 64 (bayesian-workflow and recommend-probabilistic-model routing).
+
+## Inventory (2026-10-21, branch `claude/admiring-haslett-c81ea8` at 7612c6e)
+S10. "Version" has four roles here.
+S11. They change for different reasons, so the design keeps them apart.
+
+### Role 1. Gate pins: the versions that a repo gate verifies against
+S12. | Where | What | Notes |
+S13. | `build/snippet_preamble.py:199-203` | `PINNED`: arviz==1.3.0, arviz-stats==1.3.3, arviz-plots==1.3.2, numpyro==0.22.0, jax==0.12.0. arviz-base, numpy and matplotlib float | The Tier 3 snippet gate (`check_snippets.py --run`, which executes the bayesian-workflow code blocks). Comment: "Verified resolving 2026-10-19" |
+S14. | `build/check_snippets.py:87-90` | `RUN_REMEDIATION` builds the Tier 3 command from `PINNED` | Already a single source in code |
+S15. | `CLAUDE.md:122` | The Tier 3 command, with the `PINNED` versions copied by hand | No check compares it with `PINNED` (deferred item F9, done 2026-10-19, says so) |
+S16. | `build/check_snippets.py:84-86`, `CLAUDE.md:120` | Tier 2 (`--api`, which resolves library names) floats: `arviz>=1.0` and unpinned rest | Floats by design |
+S17. | `specs/verification/32-jax-cpu.in` -> `32-jax-cpu.txt` | Full lock for the deep-learning CPU examples: jax==0.11.2, jaxlib==0.11.2, flax==0.12.10, optax==0.2.8, orbax-checkpoint==0.12.6, equinox==0.13.8, diffrax==0.7.2, e3nn-jax==0.21.0, numpy==2.5.3, plus transitive pins | Made by `uv pip compile --python-version 3.13`. Run by `CLAUDE.md:130` (`check_jax_examples.py`) |
+S18. | `build/suites.toml` | `with` and `extras` deps for each test suite, all unpinned (`build` extras: `arviz>=1.0` and the rest bare) | Float |
+S19. Conflict: the two gates pin different JAX releases.
+S20. The CPU lock has 0.11.2 and `PINNED` has 0.12.0.
+
+### Role 2. Interpreter versions
+S21. The interpreter is not one value.
+S22. Three separate roles exist:
+S23. | Role | Value | Where |
+S24. | Dev and gate interpreter | 3.13 | `--python 3.13` in 26 lines of `CLAUDE.md`, 9 of `build/run_commit_lints.sh`, `build/githooks/pre-commit:15`, `build/cc_guide/notice.sh:114`, `build/cc_guide/lint.py:12`, `build/run_suites.py:35` (`DEFAULT_PYTHONS`), the usage docstrings of most `build/*.py` files and of about 13 skill test files, `skills/geographic-codes/SKILL.md:250`, `skills/classification-codes/SKILL.md:246`, `skills/writing-skills/SKILL.md:292`, `hooks/README.md:195`, `AGENTS.md`, `GEMINI.md`, `NOTICE`, `.claude/skills/cc-guide/SKILL.md`. Also `32-jax-cpu.txt` (compiled for 3.13) and `rules/clean-code-python.md:30` ("agent-skills: 3.13; work repos: 3.12") |
+S25. | Floor that skill scripts promise users | 3.11 or 3.12 | `requires-python` in 18 script headers under `skills/*/scripts/` (3.12 for the arviz scripts, 3.11 for the rest). `compatibility:` frontmatter in 12 `SKILL.md` files (`Python 3.11+` or `3.12+`). Prose: `recommend-probabilistic-model/SKILL.md:96`, `recommend-visualization/SKILL.md:107`, `document-python-package/SKILL.md:105` |
+S26. | Floor for system-Python tools | 3.9 | `install.py` (`install.py:237` handles a 3.9 behavior) and the read-only agent guard (`build/suites.toml`, `hooks` suite: `pythons = ['3.13', '/usr/bin/python3']`) |
+S27. Tests assert the dev value in expected strings: `build/test_run_suites.py:79-86,250` and `build/test_check_frontmatter.py:434`.
+
+### Role 3. User floors: what a skill script needs, as `>=` ranges
+S28. | Where | Floors |
+S29. | `skills/explore-data/scripts/profile.py`, `recommend-visualization/scripts/recommend.py`, `recommend-probabilistic-model/scripts/characterize.py` | `polars>=2.0` |
+S30. | `skills/geographic-codes/scripts/build.py`, `classification-codes/scripts/build.py` | `polars>=1.0`, `fastexcel>=0.12` |
+S31. | `skills/bayesian-workflow/scripts/diagnose_model.py`, `track-model-experiments/scripts/compare_experiments.py` | `arviz>=1.0`, `numpy>=2.0`, `h5netcdf>=1.0`, `h5py>=3.0` |
+S32. | `skills/bayesian-workflow/scripts/calibration_check.py` | `numpy>=2.0`, `arviz-base>=1.0`, `arviz-plots>=1.1`, `arviz-stats>=1.1`, `xarray>=2026.0`, `scipy>=1.0`, `h5netcdf>=1.0`, `h5py>=3.0`, `matplotlib>=3.0` |
+S33. | `skills/document-python-package/SKILL.md:13,24,94,105`, `scripts/preflight.py:34` | `great-docs>=0.17.0,<0.18` (an upper bound, tied to a tested range), `numpydoc>=1.11` |
+S34. | bayesian-workflow prose: `SKILL.md:34,69,119,121,318`, `references/priors.md:64,71`, `references/diagnostics.md:54`, `README.md:65` | API floors: `arviz-stats >= 1.0.0` for `diagnose`, `NumPyro ≥ 0.22` for `Hurdle*`, the ArviZ ≥ 1.0 stack |
+S35. A floor states when an API appeared.
+S36. A new upstream release does not make it stale.
+
+### Role 4. Prose that cites a version as an observed fact
+S37. | Where | Citation | Gate behind it? |
+S38. | `skills/bayesian-workflow/references/diagnostics.md:49` | NumPyro "checked in the 0.22.0" source | Tier 3 pins 0.22.0 |
+S39. | `skills/bayesian-workflow/references/model-comparison.md:130` | "verified on arviz 1.3.0 / arviz-stats 1.3.1" | Tier 3 now pins arviz-stats 1.3.3 |
+S40. | `skills/bayesian-workflow/references/model-criticism.md:196` | "arviz-plots 1.3.1" | Tier 3 now pins 1.3.2 |
+S41. | `skills/deep-learning/references/frameworks.md:94-95` | A hand copy of the CPU lock's versions, and "Python 3.13.8" | The CPU lock |
+S42. | `skills/recommend-visualization/SKILL.md:112`, `README.md:30-31`, `references/altair.md:5`, `references/plotly.md:4`, `references/matplotlib.md:4-5` | "Verified on Polars 1.42, Altair 6.2, matplotlib 3.11, plotly 6.8" | None |
+S43. | `skills/explore-data/SKILL.md:83` | "verified on Polars 1.38" | None |
+S44. | `skills/tune-hyperparameters/SKILL.md:102` | "verified against Optuna 5.0.0" | None |
+S45. | bayesian-workflow porting text: `SKILL.md:59,122,130`, `references/model-comparison.md:74,196`, `references/visualize.md:125`, `references/diagnostics.md:111,175` | "ArviZ 0.23" as the classic stack | History, by design |
+S46. Conflict: the Polars citations disagree. explore-data says 1.38, recommend-visualization says 1.42, and three script headers require `polars>=2.0`.
+
+### Records, out of scope for any lint
+S47. `specs/deferred_items.md`, `specs/plans/completed/`, `specs/completed/` and `specs/verification/*.md` are dated records.
+S48. They keep the versions of their day.
+S49. One open deferred item is stale in a way that misleads: the Gaussian-process item at `specs/deferred_items.md:4492` says "on the pinned 0.21.0".
+S50. `skills/evaluate-deep-learning/references/experiments.md:86-87` is an illustrative run manifest, and the `build/test_check_frontmatter.py` header strings are test data.
+
+### Latest releases on 2026-10-21 (PyPI)
+S51. | Package | Latest | Uploaded | Repo pin or citation |
+S52. | jax | 0.12.0.1 | 2026-10-21 | 0.12.0 (`PINNED`), 0.11.2 (CPU lock) |
+S53. | polars | 2.0.0 | 2026-10-06 | 1.38 and 1.42 cited; `>=2.0` and `>=1.0` floors |
+S54. | numpyro | 0.22.0 | 2026-09-18 | 0.22.0 |
+S55. | arviz / arviz-stats / arviz-plots / arviz-base | 1.3.0 / 1.3.3 / 1.3.2 / 1.3.1 | 2026-08-11 to 2026-09-25 | same; arviz-base floats |
+S56. | flax / optax / equinox | 0.12.10 / 0.2.8 / 0.13.8 | | same as the CPU lock |
+S57. | plotly / altair / matplotlib | 7.1.0 / 6.3.0 / 3.11.2 | 2026-09 | 6.8 / 6.2 / 3.11 cited |
+S58. | optuna / great-docs | 5.0.0 / 0.17.0 | | same |
+S59. A floating gate would have changed today: jax 0.12.0.1 was uploaded on 2026-10-21.
+
+### uv behavior that constrains the design (uv 0.13.1, probed 2026-10-21 in `/tmp/vprobe`)
+S60. 1. `uv run --exclude-newer <date> --with jax` respects the cutoff.
+S61. With 2026-10-20 it gave jax 0.12.0, not 0.12.0.1.
+S62. 2. For a PEP 723 script (`uv run script.py`), the command-line `--exclude-newer` and `UV_EXCLUDE_NEWER` did not limit the header's dependencies.
+S63. With a 2026-10-01 cutoff it still installed polars 2.0.0 (uploaded 2026-10-06).
+S64. A `[tool.uv] exclude-newer = "..."` table inside the script header did limit them (polars 1.44.2).
+S65. 3. With no `--python`, uv picked Python 3.14 for a script, and a bare `polars` header resolved to 1.44.2, not 2.0.0.
+S66. Under `--python 3.13` it resolved to 2.0.0.
+S67. But `uv run --python 3.14 --with 'polars>=2.0'` also resolved to 2.0.0, so the three `polars>=2.0` scripts work on 3.14.
+S68. The cause of the 1.44.2 result is unknown.
+S69. 4. A `uv.toml` with `exclude-newer` at the repo root reached `--with` deps and script headers in every subdirectory.
+S70. `constraint-dependencies` and `override-dependencies` in `uv.toml` did not affect `uv run --with`, and neither did `UV_CONSTRAINT`.
+S71. A command-line `--exclude-newer` or `UV_EXCLUDE_NEWER` overrode the `uv.toml` date.
+S72. A `--with 'polars==X'` on a script run overrode the script header's range.
+S73. 5. A script run by its real path inside the repo picked up the repo's `uv.toml`, even from another working directory.
+S74. The same script run through a symlink, which is how `~/.claude/skills` reaches this repo, did not.
+S75. 6. A `.python-version` file was found from subdirectories, also with `--no-project`.
+S76. 7. uv compares the date with the upload time of each file, not of the release.
+S77. It reads a bare date (`2026-10-19`) in the machine's local time zone, and an RFC 3339 timestamp (`2026-10-20T00:00:00Z`) as written.
+S78. The plan must re-check items 2 to 6 before it relies on them.
+S79. Nested worktrees: this repo's worktrees live inside the main checkout, at `.claude/worktrees/<name>/`. uv searches parent directories for `uv.toml` and `.python-version`.
+S80. So after the change merges, a worktree on a branch that lacks those files inherits the main checkout's freeze date and interpreter, with no sign of it.
+
+### Related live work
+S81. - Plan 63 (conformance gaps, branch `claude/plan-35-conformance-gaps-427f5e`) touches `build/run_commit_lints.sh`, `install.py` and `build/test_runtime_support.py`.
+S82. - Plan 64 (bayesian-workflow and recommend-probabilistic-model routing) edits bayesian-workflow prose that holds Role 3 and Role 4 citations.
+S83. - The model-lifecycle spec (PR #106) adds bayesian-workflow sections.
+S84. - `CLAUDE.md` has 153 lines against a 200-line budget.
+
+## Decisions (owner, 2026-10-21)
+S85. | # | Question | Decision |
+S86. | D1 | How the checks choose versions | Exact pins in one file, plus a separate drift run on the newest releases. Not a floating gate |
+S87. | D2 | Pin scope | One version per package for the whole repo. A check differs only through a named override with a reason |
+S88. | D3 | Packages the file does not name | One freeze date. Every check resolves as of that date (uv `exclude-newer`). No lock file |
+S89. | D4 | Python | The file sets only the dev interpreter. Script floors (3.11, 3.12) and the 3.9 floor stay user promises in their own files |
+S90. | D5 | Prose citations | An offline lint compares each version literal in `skills/` with the file |
+S91. | D6 | When the drift run happens | On demand, and in a weekly advisory CI job |
+S92. | D7 | Shape | One file that a person edits, with synced outputs that uv reads natively, and a `--check` mode as a commit lint |
+S93. | D8 | User runs of skill scripts | They float within the header floors. The freeze date covers only the repo's checks |
+
+### R1. The versions file
+S94. R1.1. `build/versions.toml` is the only file in which a person sets a package version or the dev interpreter.
+S95. Its tables:
+S96. ```toml
+[python]
+dev = '3.13'                 # repo checks and documented commands
+
+[freeze]
+date = 2026-10-19            # a TOML date; every check resolves as of this date
+
+[packages]                   # one exact version each; a check runs these
+arviz = '1.3.0'
+numpyro = '0.22.0'
+jax = '0.12.0'
+# ... every package that a [gates] entry or a skill citation names and a check runs
+
+[cited]                      # prose cites these, but no check runs them
+altair = '6.2'
+plotly = '6.8'
+optuna = '5.0.0'
+great-docs = '0.17.0'
+
+[gates]                      # the packages each check installs, pinned from [packages]
+snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']
+jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']
+
+# [[override]]               # gate, package, version, reason; empty at the start
+```
+S97. The values above are the 2026-10-21 state.
+S98. The plan sets the real values with `bump` (R3).
+S99. R1.2. A package gets a `[packages]` entry in two cases.
+S100. The first is when a `[gates]` list names it.
+S101. The second is when a check installs it and skill text or a script header states a version for it.
+S102. Polars is in `[packages]` by the second case: the suites install it, and three headers floor it.
+S103. Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry, and the freeze date fixes them.
+S104. R1.3. A package gets a `[cited]` entry when skill prose cites a version for it and no check runs it.
+S105. R1.4. A check uses a version other than the `[packages]` value only through an `[[override]]` entry with four keys: `gate`, `package`, `version` and `reason`.
+S106. R1.5. The file does not hold the script floors (`requires-python`, `compatibility:`) or the 3.9 floor of `install.py` and the read-only agent guard.
+
+### R2. Synced outputs and readers
+S107. R2.1. `build/versions.py sync` writes three files from `build/versions.toml`, and `sync --check` fails when any of them differs:
+S108. | Output | Content | Effect |
+S109. | `.python-version` (repo root) | the `[python] dev` value | Every `uv run` in the repo uses the dev interpreter with no `--python` flag, from any subdirectory |
+S110. | `uv.toml` (repo root) | `exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date | Every `uv run` from the repo root resolves as of the freeze date, script headers included. Files uploaded on the freeze date itself (UTC) are included. CI and a local machine resolve alike, because uv reads a bare date in local time (Inventory, uv item 7) |
+S111. | `skills/uv.toml` | no settings, and a comment that names `build/versions.toml` | It shadows the root date under `skills/`, so a skill script that a user runs floats within its floors (D8), whatever the path form |
+S112. `skills/uv.toml` is a file, not a skill.
+S113. `install.py:97-101`, `build/check_frontmatter.py:574-575` and `build/check_provenance.py:40-44` read only directories that hold a `SKILL.md`, so they skip it.
+S114. The plan confirms that Claude Code, Codex and Gemini also ignore a plain file in a skills directory.
+S115. R2.2. `build/versions.py` gives the other build scripts these values: the dev Python, the freeze date, and `stack(gate)`, the list of `pkg==version` strings for a gate after overrides.
+S116. R2.3. These readers take their versions from R2.2 and from no literal:
+S117. - `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`.
+S118. Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date.
+S119. - `build/check_jax_examples.py` and its documented command: they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`.
+S120. - `build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python.
+S121. A `with` or `extras` package that `[packages]` names gets its pin.
+S122. Each run passes `--exclude-newer <date>` explicitly, because suites under `skills/` sit below the shadow file.
+S123. The `hooks` suite keeps its explicit `/usr/bin/python3` run.
+S124. - `build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`: they can run outside the repo's working directory, so they take the interpreter from the file and not from a literal.
+S125. R2.4. Documented commands spell no interpreter or package version.
+S126. This covers `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `build/run_commit_lints.sh`, the usage docstrings in `build/`, `hooks/` and the skill test files, and the commands in skill text.
+S127. A command that needs a pinned stack uses the runner (R3):
+S128. ```bash
+uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/
+```
+
+### R3. Operations
+S129. R3.1. `build/versions.py` has these subcommands:
+S130. | Subcommand | Network | Effect |
+S131. | `sync [--check]` | no | Writes or checks the R2.1 outputs |
+S132. | `run <gate> [--pin pkg==X ...] -- <cmd>` | yes | Runs `<cmd>` under `uv run` with the gate's stack and the freeze date |
+S133. | `verify [--pin pkg==X ...]` | yes | Runs the re-verify set on the file's versions: Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras` |
+S134. | `bump [--date D] [--only pkg ...]` | yes | Sets the freeze date (default: today, UTC) and does one joint resolve, as of that date and on the dev Python, of every `[packages]` entry together. It rewrites `[packages]` from the result and runs `sync`. With `--only`, the other entries stay at their pins in the joint resolve |
+S135. | `drift [--pin pkg==X ...]` | yes | Does the same joint resolve as `bump`, with no freeze date and no pins, in two passes: first on the dev Python, then on the newest stable Python. For each pass it reports, for each `[packages]` and `[cited]` entry, the pinned version, the resolved version, the newest release and its upload date. It flags each package that resolves below its newest release. It then runs the re-verify set on each pass's versions and reports each gate's result for each pass |
+S136. | `check` | no | The R4 lint |
+S137. R3.2. `bump` never changes `[cited]`.
+S138. A person changes a `[cited]` entry only after re-checking the cited behavior.
+S139. R3.3. `--pin` changes one package for one run and never edits the file.
+S140. R3.4. A bump follows these steps, in one change:
+S141. 1. Run `bump`.
+S142. 2. Run `verify`.
+S143. 3. Run `check`, which lists each prose citation that the bump made stale.
+S144. 4. Re-verify or rewrite each stale citation (R5.5).
+S145. 5. Commit.
+S146. R3.5. Exit codes:
+S147. - `run` and `verify` exit non-zero on any failure.
+S148. - `drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network.
+S149. The report states which.
+S150. - `bump` exits 2 on a network or resolve failure and names the step.
+S151. R3.6. Errors name their cause:
+S152. - A missing or invalid file names the key.
+S153. - An unknown package in `[gates]` or `[[override]]` names the package.
+S154. - An invalid date names the value.
+S155. - A pin uploaded after the freeze date names the package and the date.
+S156. - A joint resolve that fails in `bump` or `drift` names the packages in conflict.
+S157. This is how a conflict under D2 (one version per package) becomes visible.
+
+### R4. The `check` lint
+S158. R4.1. `versions.py check` runs offline.
+S159. It fails on any of these:
+S160. 1. **Sync.** An R2.1 output differs from the file.
+S161. 2. **Interpreter literals.** A live file spells `--python 3.<n>`.
+S162. Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`.
+S163. An interpreter path such as `/usr/bin/python3` is not a literal.
+S164. 3. **Prose citations.** In `skills/**/*.md` and the script headers under `skills/*/scripts/`, `check` finds each version that stands next to a `[packages]` name, a `[cited]` name or "Python", and classifies it by form:
+S165. - **Equality** ("verified on Polars 1.42", `numpyro==0.22.0`, "checked in the 0.22.0") must equal the file's value at the cited precision.
+S166. - **Range** (`>=`, `≥`, `<`, `,<0.18`, "3.11+") must contain the file's value.
+S167. - **History** ("ArviZ 0.23", "and earlier") passes only through the `HISTORICAL` allowlist.
+S168. 4. **Floors.** Each script's `requires-python` must match the Python floor in its `SKILL.md` `compatibility:` line.
+S169. The dev Python must satisfy each floor.
+S170. R4.2. `HISTORICAL` is keyed by the literal phrase, not by file and line, and each entry gives its reason.
+S171. It follows the model of `DOCUMENTED_ABSENT` in `build/check_snippets.py`.
+S172. R4.3. `check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures.
+S173. Illustrative text, such as the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`, goes on `HISTORICAL` with a reason.
+S174. R4.4. Known limit: `check` sees only the package names that the file lists.
+S175. The `drift` report states this limit.
+
+### R5. Commit lints and CI
+S176. R5.1. `versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint in `build/run_commit_lints.sh`.
+S177. `CLAUDE.md`'s count of commit lints, `build/githooks/pre-commit` and `build/test_commit_lints.py` change with it.
+S178. R5.2. `.github/workflows/lints.yml` keeps its steps.
+S179. `setup-uv` takes the interpreter from `.python-version`.
+S180. R5.3. A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch.
+S181. It follows these rules:
+S182. - It has `permissions: contents: read`, and it pins its actions by SHA, as `lints.yml` does.
+S183. - It writes the drift report to the job summary.
+S184. - The job may go red, but it is not a required check.
+S185. - It never opens an issue or a PR, and it never commits.
+S186. R5.4. Known limit: GitHub disables scheduled workflows in a public repository after 60 days with no activity.
+S187. The spec accepts this.
+S188. It does not work around it.
+
+### R6. Migration
+S189. The first plan does these, in order:
+S190. 1. Re-probe the uv behaviors in the Inventory (items 2 to 6, the shadow file under `skills/`, and nested-worktree inheritance) on the uv version of the day.
+S191. Record the results in `specs/verification/`.
+S192. If a behavior changed, stop and bring the change to the owner before going on.
+S193. 2. Write `build/versions.toml`, then run `bump` and `verify` on the day of execution.
+S194. 3. Use one JAX version for both gates.
+S195. The JAX CPU examples must pass on it.
+S196. If they fail, add a temporary `[[override]]` for `jax-cpu` with its reason, and log a deferred item to remove it.
+S197. 4. Pin Polars at the latest release (2.0.0 on 2026-10-21).
+S198. This keeps the `polars>=2.0` floors that the portability plan set on purpose (`specs/plans/completed/53-agent-skills-portability.md`, decision DF4).
+S199. 5. For each stale citation, either re-verify the cited behavior on the file's version and update the citation, or move it to `HISTORICAL` with the reason "verified on X, not re-checked on Y" and log a deferred item to re-check it.
+S200. Never change a citation's version without a re-check.
+S201. The known stale citations are the Polars, Altair and plotly lines, `skills/bayesian-workflow/references/model-comparison.md:130`, `references/model-criticism.md:196` and `skills/deep-learning/references/frameworks.md:94-95`.
+S202. 6. Correct the open Gaussian-process item at `specs/deferred_items.md:4492`, which says "on the pinned 0.21.0".
+S203. 7. Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`, and point their readers at `build/versions.toml`.
+S204. The plan-32 verification records keep their old versions as history.
+S205. 8. Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python.
+
+### R7. Tests
+S206. The plan writes each test before its code (red, then green).
+S207. - **`versions.py` units.** Cover schema validation, `stack()` with and without an override, and the exact text that `sync` writes.
+S208. - **`check` findings.** Cover each form (equality, range, history), the interpreter-literal rule and the floors rule.
+S209. Each finding has a positive control: a seeded stale literal that must fail.
+S210. - **`run_suites.py` tests.** `build/test_run_suites.py` and `build/test_check_frontmatter.py:434` build their expected commands from the file, not from a `3.13` literal.
+S211. - **Exit codes.** Test the `drift`, `verify` and `bump` exit codes against a stub uv, as `hooks/test_project_hooks.py` does.
+
+## Out of scope
+S212. - GitHub Action SHAs, the uv version, Claude Code binaries and Node.
+S213. - The data-source vintages in geographic-codes and classification-codes.
+S214. - The upstream Great Docs skills that `skills/document-python-package/scripts/preflight.py` fetches.
+S215. - Dated records in `specs/`.
+S216. - Raising user floors automatically.
+
+## Provenance and conformance
+S217. No third-party text enters the repo, so `NOTICE` and the license files do not change.
+S218. The `CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`, and `check_conformance.py` runs before each commit.
+
+## Order with other work
+S219. - **Plan 63.** It edits `build/run_commit_lints.sh`.
+S220. This work lands after plan 63, or the plan that lands second rebases onto the other and re-reads the anchors.
+S221. - **Plan 64 and the model-lifecycle spec.** They edit bayesian-workflow prose that holds Role 3 and Role 4 citations.
+S222. The R6 prose fixes rebase onto them and re-take the line numbers.
+S223. - **`CLAUDE.md` line budget.** R2.4 removes the version flags from the commands, so `CLAUDE.md` gets shorter.
+</spec>
+
+The cases:
+
+<case id="C1" sentence="S2">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S2"><quote>Next skill: writing-plans</quote><subject>Next skill</subject><value>writing-plans</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C2" sentence="S5">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S5"><quote>one mechanism for every package that a skill names or runs</quote><subject>mechanism</subject><value>1</value><unit>mechanism</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C3" sentence="S6">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S6"><quote>one or both of these properties</quote><subject>properties</subject><value>[1, 2]</value><unit>properties</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C4" sentence="S8">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S8"><quote>set in one place and not copied by hand</quote><subject>place</subject><value>1</value><unit>place</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C5" sentence="S9">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S9"><quote>not part of plan 64</quote><subject>plan</subject><value>64</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C6" sentence="S25">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S25"><quote>3.12 for the arviz scripts</quote><subject>arviz scripts</subject><value>3.12</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S25"><quote>3.11 for the rest</quote><subject>rest</subject><value>3.11</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C7" sentence="S25">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S25"><quote>3.12 for the arviz scripts</quote><subject>arviz scripts</subject><value>3.12</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S25"><quote>3.11 for the rest</quote><subject>rest</subject><value>3.11</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C8" sentence="S26">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S26"><quote>Floor for system-Python tools | 3.9</quote><subject>system-Python tools</subject><value>3.9</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C9" sentence="S29">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S29"><quote>polars>=2.0</quote><subject>polars</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C10" sentence="S30">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S30"><quote>polars>=1.0</quote><subject>polars</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S30"><quote>fastexcel>=0.12</quote><subject>fastexcel</subject><value>0.12</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C11" sentence="S30">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S30"><quote>polars>=1.0</quote><subject>polars</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S30"><quote>fastexcel>=0.12</quote><subject>fastexcel</subject><value>0.12</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C12" sentence="S31">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C13" sentence="S31">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C14" sentence="S31">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C15" sentence="S31">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C16" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C17" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C18" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C19" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C20" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C21" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C22" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C23" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C24" sentence="S32">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C25" sentence="S33">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C26" sentence="S33">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C27" sentence="S33">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C28" sentence="S34">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C29" sentence="S34">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C30" sentence="S34">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C31" sentence="S45">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S45"><quote>"ArviZ 0.23" as the classic stack | History, by design</quote><subject>classic stack</subject><value>0.23</value><unit>ArviZ version</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C32" sentence="S79">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S79"><quote>this repo's worktrees live inside the main checkout, at `.claude/worktrees/<name>/`</quote><subject>worktrees</subject><value>.claude/worktrees/<name>/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C33" sentence="S84">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S84"><quote>a 200-line budget</quote><subject>CLAUDE.md</subject><value>200</value><unit>lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C34" sentence="S86">
+Reader A:
+<entry sentence="S86"><quote>Exact pins in one file, plus a separate drift run on the newest releases. Not a floating gate</quote><subject>How the checks choose versions</subject><value>exact pins</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S86"><quote>Exact pins in one file</quote><subject>Exact pins</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C35" sentence="S88">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S88"><quote>One freeze date</quote><subject>freeze date</subject><value>1</value><unit>date</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S88"><quote>No lock file</quote><subject>lock file</subject><value>0</value><unit>files</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C36" sentence="S88">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S88"><quote>One freeze date</quote><subject>freeze date</subject><value>1</value><unit>date</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S88"><quote>No lock file</quote><subject>lock file</subject><value>0</value><unit>files</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C37" sentence="S89">
+Reader A:
+<entry sentence="S89"><quote>Script floors (3.11, 3.12) and the 3.9 floor stay user promises in their own files</quote><subject>Script floors</subject><value>[3.11, 3.12, 3.9]</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+</case>
+
+<case id="C38" sentence="S90">
+Reader A:
+<entry sentence="S90"><quote>An offline lint compares each version literal in `skills/` with the file</quote><subject>Prose citations</subject><value>skills/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+</case>
+
+<case id="C39" sentence="S91">
+Reader A:
+<entry sentence="S91"><quote>On demand, and in a weekly advisory CI job</quote><subject>When the drift run happens</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S91"><quote>On demand, and in a weekly advisory CI job</quote><subject>drift run</subject><value>[on demand, weekly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C40" sentence="S92">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S92"><quote>One file that a person edits</quote><subject>file</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S92"><quote>a `--check` mode as a commit lint</quote><subject>mode</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C41" sentence="S92">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S92"><quote>One file that a person edits</quote><subject>file</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S92"><quote>a `--check` mode as a commit lint</quote><subject>mode</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C42" sentence="S96">
+Reader A:
+<entry sentence="S96"><quote>[python] dev = '3.13'</quote><subject>[python] dev</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S96"><quote>dev = '3.13'                 # repo checks and documented commands</quote><subject>dev</subject><value>3.13</value><unit>Python version</unit><edge>n/a</edge><default>3.13</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C43" sentence="S96">
+Reader A:
+<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote>snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']</quote><subject>[gates] snippets</subject><value>['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S96"><quote>snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']</quote><subject>snippets</subject><value>[arviz, arviz-base, arviz-stats, arviz-plots, numpyro, jax, numpy, matplotlib]</value><unit>packages</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C44" sentence="S96">
+Reader A:
+<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote>jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']</quote><subject>[gates] jax-cpu</subject><value>['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S96"><quote>jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']</quote><subject>jax-cpu</subject><value>[jax, jaxlib, flax, optax, orbax-checkpoint, equinox, diffrax, e3nn-jax, numpy]</value><unit>packages</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C45" sentence="S96">
+Reader A:
+<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+</case>
+
+<case id="C46" sentence="S96">
+Reader A:
+<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+</case>
+
+<case id="C47" sentence="S96">
+Reader A:
+<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+</case>
+
+<case id="C48" sentence="S96">
+Reader A:
+<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+</case>
+
+<case id="C49" sentence="S102">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S102"><quote>Polars is in `[packages]`</quote><subject>[packages]</subject><value>polars</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C50" sentence="S103">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S103"><quote>Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry</quote><subject>Other packages</subject><value>[pytest, pyyaml, scipy, tensorstore]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C51" sentence="S107">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S107"><quote>`sync --check` fails when any of them differs</quote><subject>sync</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C52" sentence="S110">
+Reader A:
+<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date</quote><subject>`uv.toml` (repo root)</subject><value>freeze date + 1 day, T00:00:00Z</value><unit>RFC 3339 timestamp</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S110"><quote>`uv.toml` (repo root)</quote><subject>uv.toml</subject><value>uv.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
+<entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C53" sentence="S110">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
+<entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C54" sentence="S110">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
+<entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C55" sentence="S110">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
+<entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C56" sentence="S111">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S111"><quote>no settings</quote><subject>skills/uv.toml</subject><value>0</value><unit>settings</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S111"><quote>a comment that names `build/versions.toml`</quote><subject>comment</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C57" sentence="S111">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S111"><quote>no settings</quote><subject>skills/uv.toml</subject><value>0</value><unit>settings</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S111"><quote>a comment that names `build/versions.toml`</quote><subject>comment</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C58" sentence="S114">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S114"><quote>Claude Code, Codex and Gemini</quote><subject>plan</subject><value>[Claude Code, Codex, Gemini]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C59" sentence="S115">
+Reader A:
+<entry sentence="S115"><quote>`stack(gate)`, the list of `pkg==version` strings for a gate after overrides</quote><subject>`stack(gate)`</subject><value>pkg==version</value><unit>strings</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S115"><quote>`stack(gate)`, the list of `pkg==version` strings</quote><subject>build/versions.py</subject><value>stack(gate)</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C60" sentence="S117">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S117"><quote>`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`</quote><subject>build/check_snippets.py</subject><value>[PINNED, RUN_REMEDIATION, API_REMEDIATION]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S117"><quote>`PINNED` (moved out of `build/snippet_preamble.py`)</quote><subject>PINNED</subject><value>build/snippet_preamble.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C61" sentence="S117">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S117"><quote>`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`</quote><subject>build/check_snippets.py</subject><value>[PINNED, RUN_REMEDIATION, API_REMEDIATION]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S117"><quote>`PINNED` (moved out of `build/snippet_preamble.py`)</quote><subject>PINNED</subject><value>build/snippet_preamble.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C62" sentence="S118">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S118"><quote>Tier 2 (`--api`)</quote><subject>Tier 2</subject><value>--api</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C63" sentence="S120">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S120"><quote>`build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python</quote><subject>build/run_suites.py</subject><value>DEFAULT_PYTHONS</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C64" sentence="S122">
+Reader A:
+<entry sentence="S122"><quote>Each run passes `--exclude-newer <date>` explicitly</quote><subject>`build/run_suites.py`</subject><value>--exclude-newer <date></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S122"><quote>Each run passes `--exclude-newer <date>` explicitly</quote><subject>Each run</subject><value>--exclude-newer</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C65" sentence="S124">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S124"><quote>`build/cc_guide/notice.sh:114`</quote><subject>build/cc_guide/notice.sh:114</subject><value>build/cc_guide/notice.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S124"><quote>`build/githooks/pre-commit:15`</quote><subject>build/githooks/pre-commit:15</subject><value>build/githooks/pre-commit</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C66" sentence="S124">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S124"><quote>`build/cc_guide/notice.sh:114`</quote><subject>build/cc_guide/notice.sh:114</subject><value>build/cc_guide/notice.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S124"><quote>`build/githooks/pre-commit:15`</quote><subject>build/githooks/pre-commit:15</subject><value>build/githooks/pre-commit</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C67" sentence="S126">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S126"><quote>`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `build/run_commit_lints.sh`, the usage docstrings in `build/`, `hooks/` and the skill test files</quote><subject>usage docstrings</subject><value>[CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, build/, hooks/]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C68" sentence="S133">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S133"><quote>`verify [--pin pkg==X ...]`</quote><subject>verify</subject><value>verify [--pin pkg==X ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C69" sentence="S134">
+Reader A:
+<entry sentence="S134"><quote>Sets the freeze date (default: today, UTC)</quote><subject>`bump [--date D] [--only pkg ...]`</subject><value>D</value><unit>date</unit><edge>n/a</edge><default>today, UTC</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S134"><quote>`bump [--date D] [--only pkg ...]`</quote><subject>bump</subject><value>bump [--date D] [--only pkg ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S134"><quote>freeze date (default: today, UTC)</quote><subject>freeze date</subject><value>today, UTC</value><unit>date</unit><edge>n/a</edge><default>today, UTC</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C70" sentence="S135">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S135"><quote>`drift [--pin pkg==X ...]`</quote><subject>drift</subject><value>drift [--pin pkg==X ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S135"><quote>the pinned version, the resolved version, the newest release and its upload date</quote><subject>reports</subject><value>[pinned version, resolved version, newest release, upload date]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C71" sentence="S135">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S135"><quote>`drift [--pin pkg==X ...]`</quote><subject>drift</subject><value>drift [--pin pkg==X ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S135"><quote>the pinned version, the resolved version, the newest release and its upload date</quote><subject>reports</subject><value>[pinned version, resolved version, newest release, upload date]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C72" sentence="S139">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>package</subject><value>1</value><unit>package</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>run</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C73" sentence="S139">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>package</subject><value>1</value><unit>package</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>run</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C74" sentence="S140">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S140"><quote>A bump follows these steps, in one change</quote><subject>change</subject><value>1</value><unit>change</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C75" sentence="S147">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S147"><quote>`run` and `verify` exit non-zero on any failure</quote><subject>run and verify</subject><value>0</value><unit>exit code</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C76" sentence="S148">
+Reader A:
+<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C77" sentence="S148">
+Reader A:
+<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C78" sentence="S148">
+Reader A:
+<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C79" sentence="S163">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S163"><quote>An interpreter path such as `/usr/bin/python3` is not a literal</quote><subject>interpreter path</subject><value>/usr/bin/python3</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C80" sentence="S164">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S164"><quote>a `[packages]` name, a `[cited]` name or "Python"</quote><subject>version</subject><value>[[packages], [cited], Python]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C81" sentence="S165">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S165"><quote>Equality ("verified on Polars 1.42", `numpyro==0.22.0`, "checked in the 0.22.0")</quote><subject>Equality</subject><value>[verified on, ==, checked in]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C82" sentence="S166">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S166"><quote>Range (`>=`, `≥`, `<`, `,<0.18`, "3.11+")</quote><subject>Range</subject><value>[>=, ≥, <, +]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C83" sentence="S167">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S167"><quote>passes only through the `HISTORICAL` allowlist</quote><subject>History</subject><value>HISTORICAL</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C84" sentence="S172">
+Reader A:
+<entry sentence="S172"><quote>`check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures</quote><subject>`check`</subject><value>[specs/, LICENSE*, data/, test fixtures]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S172"><quote>`check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures</quote><subject>check</subject><value>[specs/, LICENSE*, data/]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C85" sentence="S173">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S173"><quote>the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`</quote><subject>run manifest</subject><value>skills/evaluate-deep-learning/references/experiments.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C86" sentence="S176">
+Reader A:
+<entry sentence="S176"><quote>`versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint</quote><subject>`versions_check`</subject><value>10</value><unit>commit lint position</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S176"><quote>`uv run python build/versions.py check`</quote><subject>versions_check</subject><value>uv run python build/versions.py check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C87" sentence="S176">
+Reader A:
+<entry sentence="S176"><quote>`versions_check` (`uv run python build/versions.py check`)</quote><subject>`versions_check` command</subject><value>uv run python build/versions.py check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S176"><quote>the tenth commit lint</quote><subject>versions_check</subject><value>10</value><unit>commit lints</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C88" sentence="S176">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C89" sentence="S176">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C90" sentence="S178">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S178"><quote>`.github/workflows/lints.yml` keeps its steps</quote><subject>workflow</subject><value>.github/workflows/lints.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C91" sentence="S179">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S179"><quote>`setup-uv` takes the interpreter from `.python-version`</quote><subject>setup-uv</subject><value>.python-version</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C92" sentence="S180">
+Reader A:
+<entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C93" sentence="S180">
+Reader A:
+<entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C94" sentence="S180">
+Reader A:
+<entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C95" sentence="S180">
+Reader A:
+<entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C96" sentence="S182">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S182"><quote>pins its actions by SHA</quote><subject>actions</subject><value>SHA</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C97" sentence="S186">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S186"><quote>after 60 days with no activity</quote><subject>scheduled workflows</subject><value>60</value><unit>days</unit><edge>out</edge><default>none</default><other_reading><value>60</value><unit>days</unit><edge>in</edge><default>none</default></other_reading></entry>
+</case>
+
+<case id="C98" sentence="S190">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S190"><quote>items 2 to 6</quote><subject>uv behaviors</subject><value>[2, 6]</value><unit>items</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C99" sentence="S191">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S191"><quote>in `specs/verification/`</quote><subject>results</subject><value>specs/verification/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C100" sentence="S194">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S194"><quote>Use one JAX version for both gates</quote><subject>JAX</subject><value>1</value><unit>version</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C101" sentence="S196">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S196"><quote>a temporary `[[override]]` for `jax-cpu`</quote><subject>[[override]]</subject><value>jax-cpu</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C102" sentence="S197">
+Reader A:
+<entry sentence="S197"><quote>Pin Polars at the latest release (2.0.0 on 2026-10-21)</quote><subject>Polars</subject><value>2.0.0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>latest Polars release on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader B:
+(no entry)
+</case>
+
+<case id="C103" sentence="S198">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S198"><quote>keeps the `polars>=2.0` floors</quote><subject>polars</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C104" sentence="S201">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C105" sentence="S201">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C106" sentence="S201">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C107" sentence="S201">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C108" sentence="S202">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S202"><quote>the open Gaussian-process item at `specs/deferred_items.md:4492`</quote><subject>Gaussian-process item</subject><value>specs/deferred_items.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S202"><quote>"on the pinned 0.21.0"</quote><subject>Gaussian-process item</subject><value>on the pinned 0.21.0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C109" sentence="S202">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S202"><quote>the open Gaussian-process item at `specs/deferred_items.md:4492`</quote><subject>Gaussian-process item</subject><value>specs/deferred_items.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S202"><quote>"on the pinned 0.21.0"</quote><subject>Gaussian-process item</subject><value>on the pinned 0.21.0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C110" sentence="S203">
+Reader A:
+<entry sentence="S203"><quote>Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`</quote><subject>`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`</subject><value>[specs/verification/32-jax-cpu.in, specs/verification/32-jax-cpu.txt]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S203"><quote>`specs/verification/32-jax-cpu.in`</quote><subject>specs/verification/32-jax-cpu.in</subject><value>specs/verification/32-jax-cpu.in</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C111" sentence="S203">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C112" sentence="S203">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C113" sentence="S205">
+Reader A:
+<entry sentence="S205"><quote>Change `rules/clean-code-python.md:30` to name `build/versions.toml`</quote><subject>`rules/clean-code-python.md:30`</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S205"><quote>Change `rules/clean-code-python.md:30`</quote><subject>rules/clean-code-python.md:30</subject><value>rules/clean-code-python.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S205"><quote>name `build/versions.toml` as this repo's source for the target Python</quote><subject>target Python</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C114" sentence="S205">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S205"><quote>name `build/versions.toml` as this repo's source for the target Python</quote><subject>target Python</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C115" sentence="S208">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S208"><quote>each form (equality, range, history)</quote><subject>check findings</subject><value>[equality, range, history]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C116" sentence="S210">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S210"><quote>`build/test_run_suites.py`</quote><subject>run_suites.py tests</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S210"><quote>`build/test_check_frontmatter.py:434`</quote><subject>run_suites.py tests</subject><value>build/test_check_frontmatter.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C117" sentence="S210">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S210"><quote>`build/test_run_suites.py`</quote><subject>run_suites.py tests</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S210"><quote>`build/test_check_frontmatter.py:434`</quote><subject>run_suites.py tests</subject><value>build/test_check_frontmatter.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C118" sentence="S218">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S218"><quote>`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`</quote><subject>CLAUDE.md edits</subject><value>build/cc_guide/conformance.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S218"><quote>`check_conformance.py` runs before each commit</quote><subject>commit</subject><value>check_conformance.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C119" sentence="S218">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S218"><quote>`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`</quote><subject>CLAUDE.md edits</subject><value>build/cc_guide/conformance.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S218"><quote>`check_conformance.py` runs before each commit</quote><subject>commit</subject><value>check_conformance.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C120" sentence="S220">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S220"><quote>This work lands after plan 63</quote><subject>This work</subject><value>63</value><unit>plan</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C121" sentence="S221">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S221"><quote>Plan 64 and the model-lifecycle spec</quote><subject>Plan</subject><value>64</value><unit>plan</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+Reply with exactly one <rulings> block and nothing else. Give each case one <ruling> element:
+
+<rulings>
+<ruling case="C<n>" verdict="reading|no-value|unclear"><quote>the words that decide the case, copied word for word (empty for unclear)</quote><value>...</value><unit>...</unit><edge>...</edge><default>...</default></ruling>
+</rulings>
+
+Write the four slots only with the verdict reading. Write text as it is, with no XML escapes.

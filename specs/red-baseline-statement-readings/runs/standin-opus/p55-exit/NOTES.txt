@@ -1,0 +1,38 @@
+rep1 S2: The plan uses plan id 55, not 54. The owner renumbered the plan after the entry-check plan claimed 54 first (D4). No task amends the spec sentence.
+rep1 S10: The plan measured 199 lines at commit `151ea9f` (later `fca3433`), not at `456e3fb`. The line count is the same.
+rep1 S49: The plan names the suite `cc_guide`, not `cc-guide` (D1). Task 1 amends this sentence.
+rep1 S62: The plan names the suite `cc_guide`, not `cc-guide` (D1). Task 1 amends this sentence.
+rep1 S96: The plan names the skipped suite `cc_guide`, not `cc-guide` (D1). Task 1 amends this sentence.
+rep1 S111: The plan adds `-z` for NUL-separated output. The file set is the same.
+rep1 S123: The plan writes "suite cc_guide", not "run_suites.py cc-guide" (D1, DF7). Task 1 amends this sentence.
+rep2 S2: The spec gives plan id 54. The plan uses 55: after a collision with the entry-check plan, D4 renumbered it. No task amends the spec sentence.
+rep2 S10: The plan measured 199 lines at commit `151ea9f`, not at `456e3fb`. The count is the same.
+rep2 S49: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1).
+rep2 S62: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1).
+rep2 S96: The spec names the suite `cc-guide`. The plan names it `cc_guide` (D1).
+rep2 S123: The spec has the comment read `run_suites.py cc-guide`. The plan writes "suite cc_guide" (D1, DF7), because a bare `cc-guide` fails `dmi-handoff-consistency`.
+rep2 S144: The spec gives the pattern `skills/<name>/scripts/test_new.py`. The plan uses the concrete file `skills/tech-debt/scripts/test_scan.py` (DF6).
+rep3 S2: The plan uses 55, not 54. Owner decision D4 renumbered it after the entry-check plan claimed 54. No task amends this spec sentence.
+rep3 S10: The plan measured 199 lines at `151ea9f` (later `87e43fc`/`fca3433`), not at `456e3fb`. It states that CLAUDE.md did not change between those commits.
+rep3 S49: The plan names the suite `cc_guide`, not `cc-guide`. Owner decision D1; Task 1 amends the spec.
+rep3 S62: The plan uses `cc_guide`, not `cc-guide` (D1).
+rep3 S96: The plan names the suite `cc_guide`, not `cc-guide` (D1).
+rep3 S123: The plan writes "suite cc_guide", not `run_suites.py cc-guide` (D1, DF7).
+rep3 S144: The plan makes the spec's path concrete as `skills/tech-debt/scripts/test_scan.py` (DF6). The spec's placeholder file name `test_new.py` differs.
+rep3 S164: The plan compares every suite, not only these three (DF8). This is a superset of the spec.
+rep4 S2: The plan records that entry_check.py printed 54. After a collision, decision D4 renumbers this plan to 55, so the plan implements plan id 55, not 54. No task amends the spec sentence.
+rep4 S10: The plan measured 199 lines at commit 151ea9f, not at 456e3fb.
+rep4 S49: The spec has `cc-guide`. The plan uses `cc_guide` (D1).
+rep4 S62: The spec has `cc-guide`. The plan uses `cc_guide`.
+rep4 S96: The spec has `cc-guide`. The plan uses `cc_guide`.
+rep4 S111: The plan adds `-z` to the command and strips git's repo-local environment variables (DF3).
+rep4 S123: The spec has `run_suites.py cc-guide`. The plan writes "suite cc_guide".
+rep4 S144: The spec names `test_new.py`. The plan uses `skills/tech-debt/scripts/test_scan.py` (DF6).
+rep5 S2: The spec gives plan id 54. My plan uses 55, after the collision with the entry-check plan (D4). No task amends this spec sentence.
+rep5 S10: My plan measures 199 lines at commit `151ea9f`, not at `456e3fb`. Line 103 says the file is unchanged up to `fca3433`.
+rep5 S49: The spec gives `cc-guide`. My plan uses `cc_guide` (D1), so that the dmi-handoff-consistency lint does not trip.
+rep5 S62: The spec gives `cc-guide`. My plan names the suite `cc_guide`.
+rep5 S96: The spec gives `cc-guide`. My plan uses `cc_guide`.
+rep5 S123: The spec gives `run_suites.py cc-guide`. My plan writes "suite cc_guide".
+rep5 S144: The spec gives a generic `skills/<name>/scripts/test_new.py`. My plan uses the concrete `skills/tech-debt/scripts/test_scan.py` (DF6).
+rep5 S164: The spec compares three suites. My plan compares every suite (DF8).

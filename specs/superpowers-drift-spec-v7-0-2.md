@@ -136,7 +136,7 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 21 | Per-task test evidence is self-reported in SDD | **New**, workflow. Gap on both sides; a local design item that the tester-seat work also needs |
 | 22 | Spec drift is unaddressed | **New**, workflow. Partly covered by the `## Decisions` log and amendment tasks; a local design item for mid-run rulings |
 | 23 | "Tasks mostly independent" is stated for both executors | **New**, workflow. **Already covered**: our executing-plans routes coupled plans inline |
-| 24 | Planner-authored tests can share a spec misreading | **New**, workflow. Open; a spec-derived tester seat is a design candidate. The reported 2026-11-07 handoff and session state have no repository artifact to verify |
+| 24 | Planner-authored tests can share a spec misreading | **New**, workflow. Closed with no build (plan 83, owner decision D8, 2026-11-09). Layer 4 of its backlog item stays open in `specs/deferred_items.md` |
 | 25 | requesting-code-review still leads with `HEAD~1` | **New.** **Already covered**; record |
 | 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low |
 | 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides |
@@ -803,10 +803,15 @@ handoff brief for the brainstorm, with nine defaults, was reportedly written
 in that session on 2026-11-07. No artifact path or transcript is available here
 to verify the handoff or whether that brainstorm has run.
 
-**Disposition: open; the tester-seat brainstorm decides it**, after this
-drift pass and finding 18's helper fixes land. Finding 3's falsifiability
-material and finding 13's suite rule are inputs to that brainstorm, not
-substitutes for it.
+**Disposition: closed with no build (plan 83, owner decision D8, 2026-11-09).** The
+tester-seat brainstorm became `specs/spec-derived-acceptance-tests.md`. Its probe (plan 81,
+`specs/red-baseline-acceptance-tests.md`) found that a fresh Self-Review caught all 15 planted
+misreads, more than any test-writing arm. The redesign, `specs/completed/statement-level-readings.md`,
+had two readers state what the spec asks. Its probe (plan 83, `specs/red-baseline-statement-readings.md`)
+missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of
+1.0. The backlog item "Spec-reading test check" is closed. Its layer 4, spec excerpts in the implementer
+brief, stays open as an item in `specs/deferred_items.md` (`83-statement-level-readings — 2026-11-09`).
+Finding 21's part goes to its own build plan from `specs/spec-derived-acceptance-tests.md`.
 
 ## Findings on the other shared skills (2026-11-07 review)
 
@@ -1060,11 +1065,16 @@ Under this repo's proportional-process rule:
   tester-seat brainstorm. The original author reports that recommendation
   from a review session; the claimed saving on nine defaults is unverified.
   Plan 70's isolated T7 rerun, rather than its original GREEN claim, is the
-  current local baseline evidence.
+  current local baseline evidence. **Update 2026-11-09 (plan 83):** the
+  tester-seat brainstorm has run, and finding 24 closed with no build plan
+  (D8). The order question no longer applies.
 - **Reported order (unverified 2026-11-07 session context):** this drift pass; then the tester-seat
   brainstorm (finding 24, handoff reported without an artifact path); then its plan. Finding 18's helper
   fixes land before the seat's plan, since both touch `task-brief` and the
-  helper finding 21 asks for.
+  helper finding 21 asks for. **Update 2026-11-09 (plan 83):** the brainstorm ran as
+  `specs/spec-derived-acceptance-tests.md`, then as `specs/completed/statement-level-readings.md`.
+  Neither probe's step met its bars against a fresh Self-Review, and the owner chose no build plan for
+  finding 24 (D8), so no seat's plan follows. Finding 21's part keeps its own build plan.
 - **Local design proposals, not yet logged in `specs/deferred_items.md`, no spec yet:**
   finding 21 (the controller runs the task's tests before the review; one
   design with the tester seat); finding 22 (a ruling that contradicts spec

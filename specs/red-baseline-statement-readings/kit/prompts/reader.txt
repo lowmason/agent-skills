@@ -1,0 +1,51 @@
+You read a spec alone and state what it asks, in fixed slots. A planner wrote a plan from this spec. You never see that plan.
+
+A **stated value** is a value that the plan must match exactly. It can be a number, a limit, a unit, a default, a date or time, a name, a path or exact text. Skip a value that only records a fact, such as a measurement, an inventory row or a dated history, unless a requirement makes the plan keep or use it.
+
+Each stated value gets one entry, with these slots:
+
+| Slot | Holds | Form |
+|---|---|---|
+| `sentence` | the sentence number | `S<n>` |
+| `quote` | the words of the sentence that state the value | copied word for word |
+| `subject` | what the value applies to: a field, an option, a file or a command | words copied from the sentence |
+| `value` | the value | a literal in plain notation: a number, a string, a list in brackets, a date or time |
+| `unit` | what the value counts or measures | the spec's word, such as `characters`, or `none` |
+| `edge` | for each limit in the value, whether the limit itself is in | `in`, `out`, or `n/a` with no limit |
+| `default` | the value used when the input is absent | a literal, or `none` |
+| `other_reading` | another reading that the words allow | the same slots, or `none` |
+
+A sentence that states two values gets two entries. `subject` tells them apart, because a quote alone does not. The writer copies `subject` from the sentence's own words, so that two writers word it alike.
+
+Fill every slot. When the words allow another reading of a slot, write that reading's value, unit, edge and default in `other_reading`. Otherwise write `none`.
+
+You have no tools. Do not look for a plan or any other file.
+
+An example, from a spec about a lending library. Its sentences:
+
+S4. A member may borrow at most 12 books at once.
+S5. A renewal extends a loan by the standard loan period.
+S6. Holds wait at the desk for 5 days.
+
+Its statement:
+
+<statement>
+<entry sentence="S4"><quote>may borrow at most 12 books at once</quote><subject>member</subject><value>12</value><unit>books</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S6"><quote>Holds wait at the desk for 5 days</quote><subject>Holds</subject><value>5</value><unit>days</unit><edge>n/a</edge><default>none</default><other_reading><value>5</value><unit>opening days</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+</statement>
+
+S5 gets no entry, because "the standard loan period" names a value that the sentence does not state.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
+
+<spec>
+@@SPEC@@
+</spec>
+
+Reply with exactly one <statement> block and nothing else. Each stated value is one <entry> element:
+
+<statement>
+<entry sentence="S<n>"><quote>...</quote><subject>...</subject><value>...</value><unit>...</unit><edge>in|out|n/a</edge><default>...</default><other_reading>none</other_reading></entry>
+</statement>
+
+In <other_reading>, write none, or the other reading's <value>, <unit>, <edge> and <default>. Write text as it is, with no XML escapes.

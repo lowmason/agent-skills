@@ -1,0 +1,68 @@
+rep1 S48: The plan adds `agent`, which the spec's R1.1 does not list. Task 1's amendment A1 (decision D5) changes this sentence.
+rep1 S51: The spec counts characters. The plan counts UTF-8 bytes after stripping, so a non-ASCII value of 500 or fewer characters can fail. No amendment covers this change, and plan line 25 calls the byte wording "copied verbatim" from the spec, which is wrong.
+rep1 S71: The plan's re-check passes 37 descriptions on 2026-10-18. Amendment A2 adds this count to the spec.
+rep1 S83: The plan's note uses the cut re-measured on 2026-10-18: 316–320 characters with 105 skills listed, Codex 0.163. It keeps 156–164 characters (93 skills, Codex 0.154) as history. Amendment A3 (decision D8) makes this change.
+rep1 S87: The plan counts 17 runnable scripts, adding writing-plans' entry_check.py. Amendment A4 makes this change.
+rep1 S88: The plan gives 15 scripts a header. Amendment A4 makes this change.
+rep1 S97: The plan adds entry_check.py to this list. Amendment A4 makes this change.
+rep1 S110: The spec's example floor is 'polars>=1.0'. The plan declares 'polars>=2.0' because the suites resolve polars 2.0.0, which follows the spec's rule. The two existing build.py headers keep 'polars>=1.0'.
+rep1 S115: The plan applies this rule to 17 scripts, not 16. Amendment A5 makes this change.
+rep1 S129: The plan's example is a teaching example in a skill that bundles no such script, because the named file was removed on 2026-10-11. Amendment A6 makes this change.
+rep1 S132: The plan's execution proof runs 17 scripts. Amendment A7 makes this change.
+rep1 S194: The plan records the proof for 17 scripts. Amendment A9 makes this change.
+rep1 S199: The plan limits this rule to writing-skills' description guidance and exempts Stage A's key-list, template and checklist edits. Amendment A10 (decision D6) makes this change.
+rep1 S213: The plan records that the repo has one CI workflow, which runs the commit lints as an advisory check. Amendment A11 makes this change.
+rep2 S48: The plan adds `agent` to HOST_KEYS (D5); Task 1's amendment A1 changes this sentence.
+rep2 S51: The spec counts characters. The plan measures UTF-8 bytes, and line 25 calls that a verbatim copy of the spec, which it is not. No amendment covers this.
+rep2 S69: The spec adds the `--strict` invocation to CLAUDE.md's Commands section. The plan adds no line and names `--strict` in an existing comment (D7).
+rep2 S71: Amendment A2 adds a 2026-10-18 re-check of 37 descriptions beside the original 32.
+rep2 S82: The plan's note runs across 5 source lines, one of them shared with existing text. The spec asks for 2–4 lines.
+rep2 S83: Amendment A3 records the cut re-measured on 2026-10-18 (316–320) and keeps 156–164 as history.
+rep2 S83: Amendment A3: 105 skills on 2026-10-18; 93 is kept as history.
+rep2 S83: Amendment A3 replaces the version and date; the old ones are kept as history.
+rep2 S87: Amendment A4 adds `writing-plans/scripts/entry_check.py`.
+rep2 S88: Amendment A4 makes it fifteen.
+rep2 S97: Amendment A4 adds `entry_check.py`.
+rep2 S115: Amendment A5 changes 16 to 17.
+rep2 S129: Amendment A6 replaces the example, whose file was removed on 2026-10-11.
+rep2 S132: Amendment A7 changes 16 to 17.
+rep2 S182: Amendment A8 records that the JAX skills and recommend-causal-design have merged.
+rep2 S194: Amendment A9 changes 16 to 17.
+rep2 S199: Amendment A10 narrows Validation 6 to the description guidance (D6).
+rep2 S213: Amendment A11 records the advisory CI added by plan 41.
+rep3 S48: The plan adds `agent` to the spec's five host keys (D5, amendment A1).
+rep3 S51: The plan measures the stripped value in UTF-8 bytes, not characters as the spec says. Plan line 25 calls this verbatim spec text, but it is not, and no amendment covers the change.
+rep3 S71: The plan re-checked 37 descriptions on 2026-10-18; the spec counts 32 (amendment A2).
+rep3 S83: The note carries the 2026-10-18 re-measurement (316–320, 105 skills, Codex 0.163) instead of the spec's 156–164, 93 skills, Codex 0.154 figures (D8, amendment A3).
+rep3 S87: The plan counts 17 runnable scripts, adding `writing-plans/scripts/entry_check.py` (amendment A4).
+rep3 S88: Fifteen scripts gain a header in the plan; the spec says fourteen (amendment A4).
+rep3 S97: The plan adds `entry_check.py` to the list (amendment A4).
+rep3 S115: The plan covers 17 scripts, not the spec's 16 (amendment A5).
+rep3 S129: The spec's example file was removed on 2026-10-11, so the plan cites a generic teaching example (amendment A6).
+rep3 S132: The execution proof runs 17 scripts, not the spec's 16 (amendment A7).
+rep3 S194: The proof is recorded for 17 scripts, not the spec's 16 (amendment A9).
+rep4 S48: The plan adds `agent` to HOST_KEYS (D5), which the spec's set does not list; amendment A1 changes this sentence.
+rep4 S51: The plan measures the stripped value in UTF-8 bytes, not characters. Line 25 also says it was "copied verbatim" as "1–500 UTF-8 bytes", which is not the spec's wording. No amendment covers this.
+rep4 S69: The plan names --strict inside an existing comment rather than adding a command line (D7).
+rep4 S71: Amendment A2 adds that all 37 descriptions pass on 2026-10-18.
+rep4 S82: The plan's note extends an existing line and then adds four more, so it spans five lines. That may exceed the spec's 2–4.
+rep4 S83: Amendment A3 (D8) replaces the spec's figures with the cut re-measured when the note is written.
+rep4 S87: The plan counts 17 runnable scripts by adding `entry_check.py`, per amendment A4.
+rep4 S88: Under amendment A4, 15 scripts gain a header in the plan.
+rep4 S110: The plan writes `polars>=2.0`, where the spec's example reads `polars>=1.0`; polars 2.0.0 is the resolved version. `arviz-plots` and `arviz-stats` take the code's stated `>=1.1` minimum rather than a major-version floor.
+rep4 S115: Amendment A5 raises the count to 17 scripts.
+rep4 S129: Amendment A6 replaces the example, because the file it named was removed.
+rep4 S132: Amendment A7 raises the count to 17 scripts.
+rep4 S182: Amendment A8 records that the JAX skills have merged.
+rep4 S194: Amendment A9 raises the count to 17 scripts.
+rep4 S199: Amendment A10 (D6) limits this sentence to description guidance.
+rep4 S213: Amendment A11 records the advisory CI.
+rep5 S48: The plan adds `agent` to HOST_KEYS (D5); Task 1's amendment A1 changes this sentence.
+rep5 S51: The spec measures characters. The plan measures the stripped value in UTF-8 bytes. Line 25 also labels "1–500 UTF-8 bytes" as copied verbatim from the spec, and it is not. No task amends R1.3.
+rep5 S69: R1.9 asks for the `--strict` invocation to be added to CLAUDE.md's Commands section. Under D7 the plan adds no command line. It only extends an existing comment to name `--strict`. No task amends R1.9.
+rep5 S71: Amendment A2 adds that all 37 descriptions pass on 2026-10-18.
+rep5 S76: The scenario has 9 conditions. That meets the spec's floor of at least 8.
+rep5 S82: The plan's note extends an existing bullet and spans parts of 5 wrapped lines. It may exceed the 2–4 line limit.
+rep5 S83: Under D8 and amendment A3, the note carries the cut re-measured when it is written, not the spec's 156–164.
+rep5 S87: Amendment A4 adds `entry_check.py`.
+rep5 S110: The plan uses polars>=2.0, the major version resolved on 2026-10-18, not the spec's example polars>=1.0. Two arviz floors take a code-stated minor floor (1.1).

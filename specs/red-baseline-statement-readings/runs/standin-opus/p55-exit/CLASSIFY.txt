@@ -1,0 +1,5 @@
+rep1 fidelity1 other the S115 entry states only the success output `suite registry ok` (plan lines 949-950); no entry states the exit status on findings, so neither reading (A: exit 1, B: exit 2) is stated
+rep2 fidelity1 other the S115 entry states only the success output `suite registry ok` (plan lines 943-950); no entry states the exit status on findings, so neither reading (A: exit 1, B: exit 2) is stated
+rep3 fidelity1 other the S115 entry states only the success output `suite registry ok` (plan lines 943-950); no entry states the exit status on findings, so neither reading (A: exit 1, B: exit 2) is stated
+rep4 fidelity1 other the S115 entry states only the success output `suite registry ok` (plan lines 943-950); no entry states the exit status on findings, so neither reading (A: exit 1, B: exit 2) is stated
+rep5 fidelity1 other the S115 entry states only the success output `suite registry ok` (plan lines 949-950); no entry states the exit status on findings, so neither reading (A: exit 1, B: exit 2) is stated

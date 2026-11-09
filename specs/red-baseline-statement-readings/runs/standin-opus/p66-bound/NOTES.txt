@@ -1,0 +1,39 @@
+rep1 S96: The plan writes 2026-10-21 as the starting date, and `bump` then replaces it with the day of execution. The spec example shows 2026-10-19. S97-S98 let the plan set the real values with `bump`.
+rep1 S96: Optuna moves from [cited] to [packages] (amendment A2). The spec example lists optuna = '5.0.0' under [cited].
+rep1 S110: The plan sets the cutoff to 00:00:00Z on the freeze date itself. The spec sets it to 00:00:00Z on the day after the freeze date.
+rep1 S110: With the plan's cutoff, files uploaded on the freeze date are excluded, and `late_pins` rejects them. The spec says they are included.
+rep1 S118: Under amendment A3, Tier 2 runs on the pinned `snippets` stack. The spec keeps it unpinned.
+rep1 S168: The plan passes a script floor at or below the promised floor (D4). The spec requires an exact match.
+rep1 S62: Amendment A1 states that both limit the header. The spec says they did not.
+rep1 S63: Under A1, the 2026-10-01 cutoff gives polars 1.44.2, not 2.0.0.
+rep1 S65: Under A1, it resolves to 2.0.0 on Python 3.14. The 1.44.2 result came from a cached environment.
+rep1 S68: A1 names the cause as uv's environment cache.
+rep2 S62: The plan's amendment A1 reverses the spec's claim. The spec says the command-line date and the environment date do not limit a script header. The plan says both limit it.
+rep2 S63: The spec says polars 2.0.0. Amendment A1 says the cutoff gives polars 1.44.2.
+rep2 S65: The spec says 1.44.2. Amendment A1 says 2.0.0.
+rep2 S68: The spec says the cause is unknown. Amendment A1 names a cached environment as the cause.
+rep2 S96: The spec's example uses 2026-10-19. The plan writes 2026-10-21 and then lets bump set the day of execution.
+rep2 S96: Amendment A2 moves optuna from [cited] to [packages].
+rep2 S96: The plan adds optuna to [packages]. The spec's example lists optuna under [cited].
+rep2 S110: The plan sets the cutoff to 00:00:00Z on the freeze date itself. The spec sets it to 00:00:00Z on the day after. Under the plan, files uploaded on the freeze date are excluded, and the spec includes them.
+rep2 S118: The spec leaves Tier 2 unpinned. Amendment A3 pins Tier 2 to the snippets stack.
+rep3 S96: The plan writes 2026-10-21, not the example's 2026-10-19, and then runs bump, which sets the freeze date to the day of execution (UTC).
+rep3 S96: The plan writes the value 0 for each package and then lets bump set it on the day of execution. It does not use the example's literal versions. It also adds optuna to [packages].
+rep3 S96: optuna moves from [cited] to [packages] (amendment A2).
+rep3 S110: The plan sets the cutoff to 00:00:00Z on the freeze date itself, not on the day after. So files uploaded on the freeze date are excluded, while the spec includes them. The late-pin check also rejects uploads at or after 00:00:00Z on the freeze date (lines 1569-1577).
+rep3 S168: The plan does not require an exact match. A script floor at or below the SKILL.md floor passes (owner default for Q4). No task amends the spec sentence.
+rep4 S62: The plan's amendment A1 states that both do limit a script header. The spec says they did not.
+rep4 S63: A1 replaces this: with the 2026-10-01 cutoff the plan expects polars 1.44.2, not 2.0.0.
+rep4 S65: A1 says that a bare polars header resolves to 2.0.0 on 3.14. The spec says 1.44.2.
+rep4 S68: A1 names the cause as uv's cached environment. The spec calls it unknown.
+rep4 S96: The plan writes 2026-10-21, and the first bump then sets the date to the day of execution. The spec example shows 2026-10-19.
+rep4 S96: Amendment A2 moves optuna from [cited] to [packages].
+rep4 S110: The plan sets the cutoff to 00:00:00Z on the freeze date itself. The spec sets it to 00:00:00Z on the day after. With the plan's cutoff, files uploaded on the freeze date are excluded, and late_pins rejects them. The spec includes them. No amendment task covers this change.
+rep4 S118: Amendment A3 pins Tier 2 on the snippets stack. The spec leaves Tier 2 unpinned.
+rep4 S168: The plan fails a script only when its floor is above the promised floor. A lower floor passes. The spec requires an exact match.
+rep4 S202: The plan locates the item near line 4496. The spec gives line 4492.
+rep5 S96: The plan writes 2026-10-21 as the starting date, not the spec example's 2026-10-19. The first bump then replaces it with the UTC day of execution.
+rep5 S96: The plan moves optuna from [cited] to [packages] through amendment A2, so [cited] no longer holds optuna = 5.0.0.
+rep5 S110: The spec puts the cutoff at 00:00:00Z on the day after the freeze date, which includes files uploaded on the freeze date itself. The plan puts it at 00:00:00Z on the freeze date, which excludes those files. The plan also has no amendment that covers this change.
+rep5 S118: The spec keeps Tier 2 unpinned. The plan runs Tier 2 on the pinned snippets stack, through amendment A3.
+rep5 S168: The spec requires a match. The plan also passes a script floor that is lower than the floor its skill promises, under owner decision D4. The plan has no spec amendment for this.

@@ -1,0 +1,17 @@
+19  global-constraints  - A suite with no `pythons` key runs on 3.12, the oldest Python that every suite
+64  planning-record  - one `--all` run printed the `skip cc_guide` line, passed every run except `bui
+244  interfaces  - constants `REPO: Path` (the repo root), `REGISTRY = 'build/suites.toml'`, `DEF
+329  test-step  assert run.label == 'alpha (3.12)'
+330  test-step  assert run.argv == ('uv', 'run', '--python', '3.12', '--with', 'pytest', '--with
+332  test-step  assert run.shell() == ('cd skills/alpha/scripts && uv run --python 3.12 --with p
+338  test-step  assert run.shell() == ("cd skills/alpha/scripts && uv run --python 3.12 --with p
+400  code-step  DEFAULT_PYTHONS = ('3.12',)
+754  test-step  assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)', '
+759  test-step  assert rs.main(['alpha'], root=repo, run_one=FakeRuns({'alpha (3.12)': 5})) == 1
+764  test-step  assert capsys.readouterr().out.splitlines()[:2] == ['== alpha (3.12)', 'note: Re
+770  test-step  assert fake.argvs == [('uv', 'run', '--python', '3.12', '--with', 'pytest', '--w
+777  test-step  assert fake.labels == ['alpha (3.12)', 'outer (3.12)']
+787  test-step  '  cd skills/alpha/scripts && uv run --python 3.12 --with pytest --with polars p
+836  test-step  assert 'ghost (3.12): cannot start' in capsys.readouterr().err
+1044  code-step  #   pythons  optional: one run per interpreter, in order (default ['3.12'])
+1505  step-text  Expected: a `skip cc_guide: the build suite collects build/cc_guide` line. Then 

@@ -1,0 +1,5271 @@
+{
+ "cases": [
+  {
+   "id": "C1",
+   "rule": 3,
+   "sentence": 2,
+   "subject": "plan id",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 2,
+      "quote": "`entry_check.py` reported plan id 54 as next free on 2026-10-18",
+      "subject": "plan id",
+      "slots": {
+       "value": "54",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 2,
+      "quote": "`entry_check.py` reported plan id 54 as next free on 2026-10-18",
+      "subject": "plan id",
+      "slots": {
+       "value": "54",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C2",
+   "rule": 3,
+   "sentence": 4,
+   "subject": "`build/suites.toml`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 4,
+      "quote": "`build/suites.toml` holds one entry per suite",
+      "subject": "`build/suites.toml`",
+      "slots": {
+       "value": "\"build/suites.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 4,
+      "quote": "`build/suites.toml` holds one entry per suite",
+      "subject": "`build/suites.toml`",
+      "slots": {
+       "value": "\"build/suites.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C3",
+   "rule": 3,
+   "sentence": 5,
+   "subject": "`build/run_suites.py`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 5,
+      "quote": "`build/run_suites.py` (stdlib only)",
+      "subject": "`build/run_suites.py`",
+      "slots": {
+       "value": "\"build/run_suites.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 5,
+      "quote": "`build/run_suites.py` (stdlib only)",
+      "subject": "`build/run_suites.py`",
+      "slots": {
+       "value": "\"build/run_suites.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C4",
+   "rule": 3,
+   "sentence": 24,
+   "subject": "`run_suites.py --check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 24,
+      "quote": "\"`run_suites.py --check` joins build/run_commit_lints.sh, so the pre-commit hook and CI run it.\"",
+      "subject": "`run_suites.py --check`",
+      "slots": {
+       "value": "\"build/run_commit_lints.sh\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 24,
+      "quote": "\"`run_suites.py --check` joins build/run_commit_lints.sh, so the pre-commit hook and CI run it.\"",
+      "subject": "`run_suites.py --check`",
+      "slots": {
+       "value": "\"build/run_commit_lints.sh\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C5",
+   "rule": 3,
+   "sentence": 28,
+   "subject": "build/run_suites.py",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 28,
+      "quote": "build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)",
+      "subject": "build/run_suites.py",
+      "slots": {
+       "value": "[\"stdlib\", \"tomllib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 28,
+      "quote": "build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)",
+      "subject": "build/run_suites.py",
+      "slots": {
+       "value": "[\"stdlib\", \"tomllib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C6",
+   "rule": 3,
+   "sentence": 30,
+   "subject": "One central file",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 30,
+      "quote": "One central file, sorted by name.",
+      "subject": "One central file",
+      "slots": {
+       "value": "\"name\"",
+       "unit": "sort key",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 30,
+      "quote": "One central file, sorted by name.",
+      "subject": "One central file",
+      "slots": {
+       "value": "\"name\"",
+       "unit": "sort key",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C7",
+   "rule": 3,
+   "sentence": 38,
+   "subject": "`CLAUDE.md` lines",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 38,
+      "quote": "On `main` at `456e3fb` there are 18",
+      "subject": "directory suite",
+      "slots": {
+       "value": "18",
+       "unit": "suites",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 38,
+      "quote": "the 17 in `CLAUDE.md` lines 66–125",
+      "subject": "`CLAUDE.md` lines",
+      "slots": {
+       "value": "[66, 125]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 38,
+      "quote": "and `build/cc_guide`, whose command is line 145",
+      "subject": "`build/cc_guide`",
+      "slots": {
+       "value": "145",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 38,
+      "quote": "the 17 in `CLAUDE.md` lines 66–125",
+      "subject": "`CLAUDE.md` lines",
+      "slots": {
+       "value": "[66, 125]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C8",
+   "rule": 3,
+   "sentence": 41,
+   "subject": "`test_runtime_support.py`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 41,
+      "quote": "`test_runtime_support.py` (lines 63–64)",
+      "subject": "`test_runtime_support.py`",
+      "slots": {
+       "value": "[63, 64]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 41,
+      "quote": "`test_runtime_support.py` (lines 63–64)",
+      "subject": "`test_runtime_support.py`",
+      "slots": {
+       "value": "[63, 64]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C9",
+   "rule": 3,
+   "sentence": 45,
+   "subject": "`[[suite]]` table",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 45,
+      "quote": "One `[[suite]]` table per directory suite, sorted by `name`.",
+      "subject": "`[[suite]]` table",
+      "slots": {
+       "value": "\"[[suite]]\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 45,
+      "quote": "sorted by `name`",
+      "subject": "`[[suite]]` table",
+      "slots": {
+       "value": "\"name\"",
+       "unit": "sort key",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 45,
+      "quote": "One `[[suite]]` table per directory suite, sorted by `name`.",
+      "subject": "`[[suite]]` table",
+      "slots": {
+       "value": "\"[[suite]]\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C10",
+   "rule": 3,
+   "sentence": 45,
+   "subject": "`[[suite]]` table",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 45,
+      "quote": "One `[[suite]]` table per directory suite, sorted by `name`.",
+      "subject": "`[[suite]]` table",
+      "slots": {
+       "value": "\"[[suite]]\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 45,
+      "quote": "sorted by `name`",
+      "subject": "`[[suite]]` table",
+      "slots": {
+       "value": "\"name\"",
+       "unit": "sort key",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 45,
+      "quote": "sorted by `name`",
+      "subject": "`[[suite]]` table",
+      "slots": {
+       "value": "\"name\"",
+       "unit": "sort key",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C11",
+   "rule": 3,
+   "sentence": 49,
+   "subject": "`name`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 49,
+      "quote": "| `name` | string | yes |",
+      "subject": "`name`",
+      "slots": {
+       "value": "\"string\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 49,
+      "quote": "the others are `build`, `cc-guide` and `hooks`",
+      "subject": "`name`",
+      "slots": {
+       "value": "[\"build\", \"cc-guide\", \"hooks\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 49,
+      "quote": "| `name` | string | yes |",
+      "subject": "`name`",
+      "slots": {
+       "value": "\"string\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C12",
+   "rule": 3,
+   "sentence": 49,
+   "subject": "`name`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 49,
+      "quote": "| `name` | string | yes |",
+      "subject": "`name`",
+      "slots": {
+       "value": "\"string\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 49,
+      "quote": "the others are `build`, `cc-guide` and `hooks`",
+      "subject": "`name`",
+      "slots": {
+       "value": "[\"build\", \"cc-guide\", \"hooks\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 49,
+      "quote": "the others are `build`, `cc-guide` and `hooks`",
+      "subject": "`name`",
+      "slots": {
+       "value": "[\"build\", \"cc-guide\", \"hooks\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C13",
+   "rule": 3,
+   "sentence": 50,
+   "subject": "`dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 50,
+      "quote": "| `dir` | string | yes |",
+      "subject": "`dir`",
+      "slots": {
+       "value": "\"string\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 50,
+      "quote": "| `dir` | string | yes |",
+      "subject": "`dir`",
+      "slots": {
+       "value": "\"string\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C14",
+   "rule": 3,
+   "sentence": 51,
+   "subject": "`with`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 51,
+      "quote": "| `with` | list of strings | yes |",
+      "subject": "`with`",
+      "slots": {
+       "value": "\"list of strings\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 51,
+      "quote": "It includes `pytest`.",
+      "subject": "`with`",
+      "slots": {
+       "value": "\"pytest\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 51,
+      "quote": "| `with` | list of strings | yes |",
+      "subject": "`with`",
+      "slots": {
+       "value": "\"list of strings\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C15",
+   "rule": 3,
+   "sentence": 51,
+   "subject": "`with`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 51,
+      "quote": "| `with` | list of strings | yes |",
+      "subject": "`with`",
+      "slots": {
+       "value": "\"list of strings\", required",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 51,
+      "quote": "It includes `pytest`.",
+      "subject": "`with`",
+      "slots": {
+       "value": "\"pytest\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 51,
+      "quote": "It includes `pytest`.",
+      "subject": "`with`",
+      "slots": {
+       "value": "\"pytest\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C16",
+   "rule": 4,
+   "sentence": 52,
+   "subject": "`extras`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 52,
+      "quote": "| `extras` | list of strings | no |",
+      "subject": "`extras`",
+      "slots": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 52,
+      "quote": "| `extras` | list of strings | no |",
+      "subject": "`extras`",
+      "slots": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C17",
+   "rule": 3,
+   "sentence": 53,
+   "subject": "`pythons`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 53,
+      "quote": "| `pythons` | list of strings | no |",
+      "subject": "`pythons`",
+      "slots": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "['3.13']"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 53,
+      "quote": "Default `['3.13']`.",
+      "subject": "`pythons`",
+      "slots": {
+       "value": "['3.13']",
+       "unit": "interpreters",
+       "edge": "n/a",
+       "default": "['3.13']"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 53,
+      "quote": "| `pythons` | list of strings | no |",
+      "subject": "`pythons`",
+      "slots": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "['3.13']"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C18",
+   "rule": 3,
+   "sentence": 53,
+   "subject": "`pythons`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 53,
+      "quote": "| `pythons` | list of strings | no |",
+      "subject": "`pythons`",
+      "slots": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "['3.13']"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 53,
+      "quote": "Default `['3.13']`.",
+      "subject": "`pythons`",
+      "slots": {
+       "value": "['3.13']",
+       "unit": "interpreters",
+       "edge": "n/a",
+       "default": "['3.13']"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 53,
+      "quote": "Default `['3.13']`.",
+      "subject": "`pythons`",
+      "slots": {
+       "value": "['3.13']",
+       "unit": "interpreters",
+       "edge": "n/a",
+       "default": "['3.13']"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C19",
+   "rule": 4,
+   "sentence": 54,
+   "subject": "`notes`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 54,
+      "quote": "| `notes` | list of strings | no |",
+      "subject": "`notes`",
+      "slots": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 54,
+      "quote": "| `notes` | list of strings | no |",
+      "subject": "`notes`",
+      "slots": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "\"list of strings\", optional",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C20",
+   "rule": 3,
+   "sentence": 59,
+   "subject": "`bayesian-workflow` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "| `bayesian-workflow` | `skills/bayesian-workflow/scripts` |",
+      "subject": "`bayesian-workflow` `dir`",
+      "slots": {
+       "value": "\"skills/bayesian-workflow/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "arviz, arviz-stats, numpy, xarray",
+      "subject": "`bayesian-workflow` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-stats\", \"numpy\", \"xarray\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "| matplotlib |",
+      "subject": "`bayesian-workflow` `extras`",
+      "slots": {
+       "value": "[\"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "| `bayesian-workflow` | `skills/bayesian-workflow/scripts` |",
+      "subject": "`bayesian-workflow` `dir`",
+      "slots": {
+       "value": "\"skills/bayesian-workflow/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C21",
+   "rule": 3,
+   "sentence": 59,
+   "subject": "`bayesian-workflow` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "| `bayesian-workflow` | `skills/bayesian-workflow/scripts` |",
+      "subject": "`bayesian-workflow` `dir`",
+      "slots": {
+       "value": "\"skills/bayesian-workflow/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "arviz, arviz-stats, numpy, xarray",
+      "subject": "`bayesian-workflow` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-stats\", \"numpy\", \"xarray\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "| matplotlib |",
+      "subject": "`bayesian-workflow` `extras`",
+      "slots": {
+       "value": "[\"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "arviz, arviz-stats, numpy, xarray",
+      "subject": "`bayesian-workflow` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-stats\", \"numpy\", \"xarray\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C22",
+   "rule": 3,
+   "sentence": 59,
+   "subject": "`bayesian-workflow` `extras`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "| `bayesian-workflow` | `skills/bayesian-workflow/scripts` |",
+      "subject": "`bayesian-workflow` `dir`",
+      "slots": {
+       "value": "\"skills/bayesian-workflow/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "arviz, arviz-stats, numpy, xarray",
+      "subject": "`bayesian-workflow` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-stats\", \"numpy\", \"xarray\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "| matplotlib |",
+      "subject": "`bayesian-workflow` `extras`",
+      "slots": {
+       "value": "[\"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "| matplotlib |",
+      "subject": "`bayesian-workflow` `extras`",
+      "slots": {
+       "value": "[\"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C23",
+   "rule": 3,
+   "sentence": 60,
+   "subject": "`brainstorming` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 60,
+      "quote": "| `brainstorming` | `skills/brainstorming/scripts` |",
+      "subject": "`brainstorming` `dir`",
+      "slots": {
+       "value": "\"skills/brainstorming/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 60,
+      "quote": "| `brainstorming` | `skills/brainstorming/scripts` |",
+      "subject": "`brainstorming` `dir`",
+      "slots": {
+       "value": "\"skills/brainstorming/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C24",
+   "rule": 3,
+   "sentence": 61,
+   "subject": "`build` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 61,
+      "quote": "| `build` | `build` |",
+      "subject": "`build` `dir`",
+      "slots": {
+       "value": "\"build\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 61,
+      "quote": "numpy, polars, pyyaml",
+      "subject": "`build` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\", \"pyyaml\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 61,
+      "quote": "arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib",
+      "subject": "`build` `extras`",
+      "slots": {
+       "value": "[\"arviz>=1.0\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 61,
+      "quote": "| `build` | `build` |",
+      "subject": "`build` `dir`",
+      "slots": {
+       "value": "\"build\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C25",
+   "rule": 3,
+   "sentence": 61,
+   "subject": "`build` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 61,
+      "quote": "| `build` | `build` |",
+      "subject": "`build` `dir`",
+      "slots": {
+       "value": "\"build\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 61,
+      "quote": "numpy, polars, pyyaml",
+      "subject": "`build` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\", \"pyyaml\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 61,
+      "quote": "arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib",
+      "subject": "`build` `extras`",
+      "slots": {
+       "value": "[\"arviz>=1.0\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 61,
+      "quote": "numpy, polars, pyyaml",
+      "subject": "`build` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\", \"pyyaml\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C26",
+   "rule": 3,
+   "sentence": 61,
+   "subject": "`build` `extras`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 61,
+      "quote": "| `build` | `build` |",
+      "subject": "`build` `dir`",
+      "slots": {
+       "value": "\"build\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 61,
+      "quote": "numpy, polars, pyyaml",
+      "subject": "`build` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\", \"pyyaml\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 61,
+      "quote": "arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib",
+      "subject": "`build` `extras`",
+      "slots": {
+       "value": "[\"arviz>=1.0\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 61,
+      "quote": "arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib",
+      "subject": "`build` `extras`",
+      "slots": {
+       "value": "[\"arviz>=1.0\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"matplotlib\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C27",
+   "rule": 3,
+   "sentence": 62,
+   "subject": "`cc-guide` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 62,
+      "quote": "| `cc-guide` | `build/cc_guide` |",
+      "subject": "`cc-guide` `dir`",
+      "slots": {
+       "value": "\"build/cc_guide\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 62,
+      "quote": "| `cc-guide` | `build/cc_guide` |",
+      "subject": "`cc-guide` `dir`",
+      "slots": {
+       "value": "\"build/cc_guide\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C28",
+   "rule": 3,
+   "sentence": 63,
+   "subject": "`classification-codes` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 63,
+      "quote": "| `classification-codes` | `skills/classification-codes/scripts` |",
+      "subject": "`classification-codes` `dir`",
+      "slots": {
+       "value": "\"skills/classification-codes/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 63,
+      "quote": "| polars |",
+      "subject": "`classification-codes` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 63,
+      "quote": "| `classification-codes` | `skills/classification-codes/scripts` |",
+      "subject": "`classification-codes` `dir`",
+      "slots": {
+       "value": "\"skills/classification-codes/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C29",
+   "rule": 3,
+   "sentence": 63,
+   "subject": "`classification-codes` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 63,
+      "quote": "| `classification-codes` | `skills/classification-codes/scripts` |",
+      "subject": "`classification-codes` `dir`",
+      "slots": {
+       "value": "\"skills/classification-codes/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 63,
+      "quote": "| polars |",
+      "subject": "`classification-codes` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 63,
+      "quote": "| polars |",
+      "subject": "`classification-codes` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C30",
+   "rule": 3,
+   "sentence": 64,
+   "subject": "`describe-critique-methodology` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 64,
+      "quote": "| `describe-critique-methodology` | `skills/describe-critique-methodology/scripts` |",
+      "subject": "`describe-critique-methodology` `dir`",
+      "slots": {
+       "value": "\"skills/describe-critique-methodology/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 64,
+      "quote": "| `describe-critique-methodology` | `skills/describe-critique-methodology/scripts` |",
+      "subject": "`describe-critique-methodology` `dir`",
+      "slots": {
+       "value": "\"skills/describe-critique-methodology/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C31",
+   "rule": 3,
+   "sentence": 65,
+   "subject": "`design-architecture` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 65,
+      "quote": "| `design-architecture` | `skills/design-architecture/scripts` |",
+      "subject": "`design-architecture` `dir`",
+      "slots": {
+       "value": "\"skills/design-architecture/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 65,
+      "quote": "| `design-architecture` | `skills/design-architecture/scripts` |",
+      "subject": "`design-architecture` `dir`",
+      "slots": {
+       "value": "\"skills/design-architecture/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C32",
+   "rule": 3,
+   "sentence": 66,
+   "subject": "`explore-data` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 66,
+      "quote": "| `explore-data` | `skills/explore-data/scripts` |",
+      "subject": "`explore-data` `dir`",
+      "slots": {
+       "value": "\"skills/explore-data/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 66,
+      "quote": "| polars |",
+      "subject": "`explore-data` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 66,
+      "quote": "| `explore-data` | `skills/explore-data/scripts` |",
+      "subject": "`explore-data` `dir`",
+      "slots": {
+       "value": "\"skills/explore-data/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C33",
+   "rule": 3,
+   "sentence": 66,
+   "subject": "`explore-data` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 66,
+      "quote": "| `explore-data` | `skills/explore-data/scripts` |",
+      "subject": "`explore-data` `dir`",
+      "slots": {
+       "value": "\"skills/explore-data/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 66,
+      "quote": "| polars |",
+      "subject": "`explore-data` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 66,
+      "quote": "| polars |",
+      "subject": "`explore-data` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C34",
+   "rule": 3,
+   "sentence": 67,
+   "subject": "`geographic-codes` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 67,
+      "quote": "| `geographic-codes` | `skills/geographic-codes/scripts` |",
+      "subject": "`geographic-codes` `dir`",
+      "slots": {
+       "value": "\"skills/geographic-codes/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 67,
+      "quote": "polars, fastexcel",
+      "subject": "`geographic-codes` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\", \"fastexcel\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 67,
+      "quote": "| `geographic-codes` | `skills/geographic-codes/scripts` |",
+      "subject": "`geographic-codes` `dir`",
+      "slots": {
+       "value": "\"skills/geographic-codes/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C35",
+   "rule": 3,
+   "sentence": 67,
+   "subject": "`geographic-codes` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 67,
+      "quote": "| `geographic-codes` | `skills/geographic-codes/scripts` |",
+      "subject": "`geographic-codes` `dir`",
+      "slots": {
+       "value": "\"skills/geographic-codes/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 67,
+      "quote": "polars, fastexcel",
+      "subject": "`geographic-codes` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\", \"fastexcel\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 67,
+      "quote": "polars, fastexcel",
+      "subject": "`geographic-codes` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"polars\", \"fastexcel\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C36",
+   "rule": 3,
+   "sentence": 68,
+   "subject": "`hooks` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 68,
+      "quote": "| `hooks` | `hooks` |",
+      "subject": "`hooks` `dir`",
+      "slots": {
+       "value": "\"hooks\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 68,
+      "quote": "| 3.13, /usr/bin/python3 |",
+      "subject": "`hooks` `pythons`",
+      "slots": {
+       "value": "[\"3.13\", \"/usr/bin/python3\"]",
+       "unit": "interpreters",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 68,
+      "quote": "| `hooks` | `hooks` |",
+      "subject": "`hooks` `dir`",
+      "slots": {
+       "value": "\"hooks\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C37",
+   "rule": 3,
+   "sentence": 68,
+   "subject": "`hooks` `pythons`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 68,
+      "quote": "| `hooks` | `hooks` |",
+      "subject": "`hooks` `dir`",
+      "slots": {
+       "value": "\"hooks\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 68,
+      "quote": "| 3.13, /usr/bin/python3 |",
+      "subject": "`hooks` `pythons`",
+      "slots": {
+       "value": "[\"3.13\", \"/usr/bin/python3\"]",
+       "unit": "interpreters",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 68,
+      "quote": "| 3.13, /usr/bin/python3 |",
+      "subject": "`hooks` `pythons`",
+      "slots": {
+       "value": "[\"3.13\", \"/usr/bin/python3\"]",
+       "unit": "interpreters",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C38",
+   "rule": 3,
+   "sentence": 69,
+   "subject": "`llm-wiki` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 69,
+      "quote": "| `llm-wiki` | `skills/llm-wiki/scripts` |",
+      "subject": "`llm-wiki` `dir`",
+      "slots": {
+       "value": "\"skills/llm-wiki/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 69,
+      "quote": "| `llm-wiki` | `skills/llm-wiki/scripts` |",
+      "subject": "`llm-wiki` `dir`",
+      "slots": {
+       "value": "\"skills/llm-wiki/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C39",
+   "rule": 3,
+   "sentence": 70,
+   "subject": "`recommend-probabilistic-model` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 70,
+      "quote": "| `recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` |",
+      "subject": "`recommend-probabilistic-model` `dir`",
+      "slots": {
+       "value": "\"skills/recommend-probabilistic-model/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 70,
+      "quote": "numpy, polars",
+      "subject": "`recommend-probabilistic-model` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 70,
+      "quote": "| `recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` |",
+      "subject": "`recommend-probabilistic-model` `dir`",
+      "slots": {
+       "value": "\"skills/recommend-probabilistic-model/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C40",
+   "rule": 3,
+   "sentence": 70,
+   "subject": "`recommend-probabilistic-model` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 70,
+      "quote": "| `recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` |",
+      "subject": "`recommend-probabilistic-model` `dir`",
+      "slots": {
+       "value": "\"skills/recommend-probabilistic-model/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 70,
+      "quote": "numpy, polars",
+      "subject": "`recommend-probabilistic-model` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 70,
+      "quote": "numpy, polars",
+      "subject": "`recommend-probabilistic-model` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C41",
+   "rule": 3,
+   "sentence": 71,
+   "subject": "`recommend-visualization` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 71,
+      "quote": "| `recommend-visualization` | `skills/recommend-visualization/scripts` |",
+      "subject": "`recommend-visualization` `dir`",
+      "slots": {
+       "value": "\"skills/recommend-visualization/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 71,
+      "quote": "numpy, polars",
+      "subject": "`recommend-visualization` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 71,
+      "quote": "| `recommend-visualization` | `skills/recommend-visualization/scripts` |",
+      "subject": "`recommend-visualization` `dir`",
+      "slots": {
+       "value": "\"skills/recommend-visualization/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C42",
+   "rule": 3,
+   "sentence": 71,
+   "subject": "`recommend-visualization` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 71,
+      "quote": "| `recommend-visualization` | `skills/recommend-visualization/scripts` |",
+      "subject": "`recommend-visualization` `dir`",
+      "slots": {
+       "value": "\"skills/recommend-visualization/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 71,
+      "quote": "numpy, polars",
+      "subject": "`recommend-visualization` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 71,
+      "quote": "numpy, polars",
+      "subject": "`recommend-visualization` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C43",
+   "rule": 3,
+   "sentence": 72,
+   "subject": "`subagent-driven-development` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 72,
+      "quote": "| `subagent-driven-development` | `skills/subagent-driven-development/scripts` |",
+      "subject": "`subagent-driven-development` `dir`",
+      "slots": {
+       "value": "\"skills/subagent-driven-development/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 72,
+      "quote": "| `subagent-driven-development` | `skills/subagent-driven-development/scripts` |",
+      "subject": "`subagent-driven-development` `dir`",
+      "slots": {
+       "value": "\"skills/subagent-driven-development/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C44",
+   "rule": 3,
+   "sentence": 73,
+   "subject": "`systematic-debugging` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 73,
+      "quote": "| `systematic-debugging` | `skills/systematic-debugging` |",
+      "subject": "`systematic-debugging` `dir`",
+      "slots": {
+       "value": "\"skills/systematic-debugging\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 73,
+      "quote": "| `systematic-debugging` | `skills/systematic-debugging` |",
+      "subject": "`systematic-debugging` `dir`",
+      "slots": {
+       "value": "\"skills/systematic-debugging\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C45",
+   "rule": 3,
+   "sentence": 74,
+   "subject": "`track-model-experiments` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 74,
+      "quote": "| `track-model-experiments` | `skills/track-model-experiments/scripts` |",
+      "subject": "`track-model-experiments` `dir`",
+      "slots": {
+       "value": "\"skills/track-model-experiments/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 74,
+      "quote": "numpy, polars, arviz, numpyro, h5netcdf, h5py",
+      "subject": "`track-model-experiments` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\", \"arviz\", \"numpyro\", \"h5netcdf\", \"h5py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 74,
+      "quote": "| `track-model-experiments` | `skills/track-model-experiments/scripts` |",
+      "subject": "`track-model-experiments` `dir`",
+      "slots": {
+       "value": "\"skills/track-model-experiments/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C46",
+   "rule": 3,
+   "sentence": 74,
+   "subject": "`track-model-experiments` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 74,
+      "quote": "| `track-model-experiments` | `skills/track-model-experiments/scripts` |",
+      "subject": "`track-model-experiments` `dir`",
+      "slots": {
+       "value": "\"skills/track-model-experiments/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 74,
+      "quote": "numpy, polars, arviz, numpyro, h5netcdf, h5py",
+      "subject": "`track-model-experiments` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\", \"arviz\", \"numpyro\", \"h5netcdf\", \"h5py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 74,
+      "quote": "numpy, polars, arviz, numpyro, h5netcdf, h5py",
+      "subject": "`track-model-experiments` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\", \"arviz\", \"numpyro\", \"h5netcdf\", \"h5py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C47",
+   "rule": 3,
+   "sentence": 75,
+   "subject": "`tune-hyperparameters` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 75,
+      "quote": "| `tune-hyperparameters` | `skills/tune-hyperparameters/scripts` |",
+      "subject": "`tune-hyperparameters` `dir`",
+      "slots": {
+       "value": "\"skills/tune-hyperparameters/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 75,
+      "quote": "numpy, polars",
+      "subject": "`tune-hyperparameters` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 75,
+      "quote": "scikit-learn, optuna",
+      "subject": "`tune-hyperparameters` `extras`",
+      "slots": {
+       "value": "[\"scikit-learn\", \"optuna\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 75,
+      "quote": "| `tune-hyperparameters` | `skills/tune-hyperparameters/scripts` |",
+      "subject": "`tune-hyperparameters` `dir`",
+      "slots": {
+       "value": "\"skills/tune-hyperparameters/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C48",
+   "rule": 3,
+   "sentence": 75,
+   "subject": "`tune-hyperparameters` `with` (after `pytest`)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 75,
+      "quote": "| `tune-hyperparameters` | `skills/tune-hyperparameters/scripts` |",
+      "subject": "`tune-hyperparameters` `dir`",
+      "slots": {
+       "value": "\"skills/tune-hyperparameters/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 75,
+      "quote": "numpy, polars",
+      "subject": "`tune-hyperparameters` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 75,
+      "quote": "scikit-learn, optuna",
+      "subject": "`tune-hyperparameters` `extras`",
+      "slots": {
+       "value": "[\"scikit-learn\", \"optuna\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 75,
+      "quote": "numpy, polars",
+      "subject": "`tune-hyperparameters` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C49",
+   "rule": 3,
+   "sentence": 75,
+   "subject": "`tune-hyperparameters` `extras`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 75,
+      "quote": "| `tune-hyperparameters` | `skills/tune-hyperparameters/scripts` |",
+      "subject": "`tune-hyperparameters` `dir`",
+      "slots": {
+       "value": "\"skills/tune-hyperparameters/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 75,
+      "quote": "numpy, polars",
+      "subject": "`tune-hyperparameters` `with` (after `pytest`)",
+      "slots": {
+       "value": "[\"numpy\", \"polars\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 75,
+      "quote": "scikit-learn, optuna",
+      "subject": "`tune-hyperparameters` `extras`",
+      "slots": {
+       "value": "[\"scikit-learn\", \"optuna\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 75,
+      "quote": "scikit-learn, optuna",
+      "subject": "`tune-hyperparameters` `extras`",
+      "slots": {
+       "value": "[\"scikit-learn\", \"optuna\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C50",
+   "rule": 3,
+   "sentence": 76,
+   "subject": "`writing-plans` `dir`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 76,
+      "quote": "| `writing-plans` | `skills/writing-plans/scripts` |",
+      "subject": "`writing-plans` `dir`",
+      "slots": {
+       "value": "\"skills/writing-plans/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 76,
+      "quote": "| `writing-plans` | `skills/writing-plans/scripts` |",
+      "subject": "`writing-plans` `dir`",
+      "slots": {
+       "value": "\"skills/writing-plans/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C51",
+   "rule": 3,
+   "sentence": 79,
+   "subject": "runner",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 79,
+      "quote": "Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13.",
+      "subject": "runner",
+      "slots": {
+       "value": "[\"tomllib\", \"argparse\", \"subprocess\", \"shlex\"]",
+       "unit": "modules",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 79,
+      "quote": "Python 3.13",
+      "subject": "runner",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 79,
+      "quote": "Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13.",
+      "subject": "runner",
+      "slots": {
+       "value": "[\"tomllib\", \"argparse\", \"subprocess\", \"shlex\"]",
+       "unit": "modules",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C52",
+   "rule": 3,
+   "sentence": 80,
+   "subject": "runner",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 80,
+      "quote": "Invoked as `uv run --python 3.13 python build/run_suites.py …` from any directory.",
+      "subject": "runner",
+      "slots": {
+       "value": "\"uv run --python 3.13 python build/run_suites.py …\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 80,
+      "quote": "Invoked as `uv run --python 3.13 python build/run_suites.py …` from any directory.",
+      "subject": "runner",
+      "slots": {
+       "value": "\"uv run --python 3.13 python build/run_suites.py …\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C53",
+   "rule": 3,
+   "sentence": 84,
+   "subject": "shell form",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 84,
+      "quote": "Its shell form is `cd <dir> && <command>`",
+      "subject": "shell form",
+      "slots": {
+       "value": "\"cd <dir> && <command>\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 84,
+      "quote": "Its shell form is `cd <dir> && <command>`",
+      "subject": "shell form",
+      "slots": {
+       "value": "\"cd <dir> && <command>\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C54",
+   "rule": 3,
+   "sentence": 86,
+   "subject": "`hooks`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 86,
+      "quote": "the two shell forms are `cd hooks && A` and `cd hooks && B`",
+      "subject": "`hooks`",
+      "slots": {
+       "value": "[\"cd hooks && A\", \"cd hooks && B\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 86,
+      "quote": "the two shell forms are `cd hooks && A` and `cd hooks && B`",
+      "subject": "`hooks`",
+      "slots": {
+       "value": "[\"cd hooks && A\", \"cd hooks && B\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C55",
+   "rule": 3,
+   "sentence": 87,
+   "subject": "`--list`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 87,
+      "quote": "**`--list [NAME …]`** prints, for each named suite (default: all)",
+      "subject": "`--list`",
+      "slots": {
+       "value": "\"--list [NAME …]\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "all suites"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 87,
+      "quote": "**`--list [NAME …]`** prints, for each named suite (default: all)",
+      "subject": "`--list`",
+      "slots": {
+       "value": "\"--list [NAME …]\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "all suites"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C56",
+   "rule": 3,
+   "sentence": 96,
+   "subject": "`--all`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "Today that is `cc-guide`",
+      "subject": "`--all`",
+      "slots": {
+       "value": "\"cc-guide\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "Today that is `cc-guide`",
+      "subject": "`--all`",
+      "slots": {
+       "value": "\"cc-guide\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C57",
+   "rule": 3,
+   "sentence": 99,
+   "subject": "Exit status",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "0 when every run exits 0",
+      "subject": "Exit status",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "1 when any run fails (pytest's exit 5, no tests collected, counts as a failure)",
+      "subject": "Exit status",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "pytest's exit 5, no tests collected, counts as a failure",
+      "subject": "pytest's exit",
+      "slots": {
+       "value": "5",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "2 for a usage error, an unknown suite name, or a registry that fails validation",
+      "subject": "Exit status",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "0 when every run exits 0",
+      "subject": "Exit status",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C58",
+   "rule": 3,
+   "sentence": 99,
+   "subject": "Exit status",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "0 when every run exits 0",
+      "subject": "Exit status",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "1 when any run fails (pytest's exit 5, no tests collected, counts as a failure)",
+      "subject": "Exit status",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "pytest's exit 5, no tests collected, counts as a failure",
+      "subject": "pytest's exit",
+      "slots": {
+       "value": "5",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "2 for a usage error, an unknown suite name, or a registry that fails validation",
+      "subject": "Exit status",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "1 when any run fails (pytest's exit 5, no tests collected, counts as a failure)",
+      "subject": "Exit status",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C59",
+   "rule": 3,
+   "sentence": 99,
+   "subject": "pytest's exit",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "0 when every run exits 0",
+      "subject": "Exit status",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "1 when any run fails (pytest's exit 5, no tests collected, counts as a failure)",
+      "subject": "Exit status",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "pytest's exit 5, no tests collected, counts as a failure",
+      "subject": "pytest's exit",
+      "slots": {
+       "value": "5",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "2 for a usage error, an unknown suite name, or a registry that fails validation",
+      "subject": "Exit status",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "pytest's exit 5, no tests collected, counts as a failure",
+      "subject": "pytest's exit",
+      "slots": {
+       "value": "5",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C60",
+   "rule": 3,
+   "sentence": 99,
+   "subject": "Exit status",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "0 when every run exits 0",
+      "subject": "Exit status",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "1 when any run fails (pytest's exit 5, no tests collected, counts as a failure)",
+      "subject": "Exit status",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "pytest's exit 5, no tests collected, counts as a failure",
+      "subject": "pytest's exit",
+      "slots": {
+       "value": "5",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 99,
+      "quote": "2 for a usage error, an unknown suite name, or a registry that fails validation",
+      "subject": "Exit status",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 99,
+      "quote": "2 for a usage error, an unknown suite name, or a registry that fails validation",
+      "subject": "Exit status",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C61",
+   "rule": 3,
+   "sentence": 103,
+   "subject": "`CALIBRATION_SWEEP`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 103,
+      "quote": "`CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s`",
+      "subject": "`CALIBRATION_SWEEP`",
+      "slots": {
+       "value": "\"1\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 103,
+      "quote": "`CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s`",
+      "subject": "`CALIBRATION_SWEEP`",
+      "slots": {
+       "value": "\"1\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C62",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "pytest file",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "a pytest file (`test_*.py` or `*_test.py`, pytest's default patterns)",
+      "subject": "pytest file",
+      "slots": {
+       "value": "[\"test_*.py\", \"*_test.py\"]",
+       "unit": "file patterns",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "a pytest file (`test_*.py` or `*_test.py`, pytest's default patterns)",
+      "subject": "pytest file",
+      "slots": {
+       "value": "[\"test_*.py\", \"*_test.py\"]",
+       "unit": "file patterns",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C63",
+   "rule": 3,
+   "sentence": 111,
+   "subject": "file list",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "The file list is `git ls-files --cached --others --exclude-standard`, run at the repo root.",
+      "subject": "file list",
+      "slots": {
+       "value": "\"git ls-files --cached --others --exclude-standard\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "The file list is `git ls-files --cached --others --exclude-standard`, run at the repo root.",
+      "subject": "file list",
+      "slots": {
+       "value": "\"git ls-files --cached --others --exclude-standard\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C64",
+   "rule": 3,
+   "sentence": 112,
+   "subject": "Ignored trees",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 112,
+      "quote": "Ignored trees, `.claude/worktrees/` and `build/.scratch/` among them, drop out.",
+      "subject": "Ignored trees",
+      "slots": {
+       "value": "[\".claude/worktrees/\", \"build/.scratch/\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 112,
+      "quote": "Ignored trees, `.claude/worktrees/` and `build/.scratch/` among them, drop out.",
+      "subject": "Ignored trees",
+      "slots": {
+       "value": "[\".claude/worktrees/\", \"build/.scratch/\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C65",
+   "rule": 3,
+   "sentence": 115,
+   "subject": "Output",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "Output: `suite registry ok` and exit 0",
+      "subject": "Output",
+      "slots": {
+       "value": "\"suite registry ok\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 115,
+      "quote": "and exit 0",
+      "subject": "Output",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 115,
+      "quote": "or one line per finding and an error exit",
+      "subject": "Output",
+      "slots": {
+       "value": "non-zero",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "and exit 0",
+      "subject": "Output",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C66",
+   "rule": 4,
+   "sentence": 115,
+   "subject": "Output",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "Output: `suite registry ok` and exit 0",
+      "subject": "Output",
+      "slots": {
+       "value": "\"suite registry ok\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 115,
+      "quote": "and exit 0",
+      "subject": "Output",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 115,
+      "quote": "or one line per finding and an error exit",
+      "subject": "Output",
+      "slots": {
+       "value": "non-zero",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "or one line per finding and an error exit",
+      "subject": "Output",
+      "slots": {
+       "value": "non-zero",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C67",
+   "rule": 3,
+   "sentence": 116,
+   "subject": "ninth lint",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 116,
+      "quote": "runs it as the ninth lint, named `suite_registry`",
+      "subject": "ninth lint",
+      "slots": {
+       "value": "\"suite_registry\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 116,
+      "quote": "`run suite_registry uv run --python 3.13 python build/run_suites.py --check`",
+      "subject": "`build/run_commit_lints.sh`",
+      "slots": {
+       "value": "\"run suite_registry uv run --python 3.13 python build/run_suites.py --check\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 116,
+      "quote": "runs it as the ninth lint, named `suite_registry`",
+      "subject": "ninth lint",
+      "slots": {
+       "value": "\"suite_registry\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C68",
+   "rule": 3,
+   "sentence": 118,
+   "subject": "`CLAUDE.md`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 118,
+      "quote": "`CLAUDE.md`, from `main` at `456e3fb`",
+      "subject": "`CLAUDE.md`",
+      "slots": {
+       "value": "\"456e3fb\"",
+       "unit": "commit",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 118,
+      "quote": "`CLAUDE.md`, from `main` at `456e3fb`",
+      "subject": "`CLAUDE.md`",
+      "slots": {
+       "value": "\"456e3fb\"",
+       "unit": "commit",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C69",
+   "rule": 3,
+   "sentence": 120,
+   "subject": "intro paragraph",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 120,
+      "quote": "| 60 | Rewrite the intro paragraph.",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "60",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 120,
+      "quote": "Drop \"There is no root test runner\"",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "\"There is no root test runner\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 120,
+      "quote": "One line.",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 120,
+      "quote": "Drop \"There is no root test runner\"",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "\"There is no root test runner\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C70",
+   "rule": 3,
+   "sentence": 120,
+   "subject": "intro paragraph",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 120,
+      "quote": "| 60 | Rewrite the intro paragraph.",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "60",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 120,
+      "quote": "Drop \"There is no root test runner\"",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "\"There is no root test runner\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 120,
+      "quote": "One line.",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 120,
+      "quote": "One line.",
+      "subject": "intro paragraph",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C71",
+   "rule": 3,
+   "sentence": 121,
+   "subject": "Commands block",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 121,
+      "quote": "| 66–125 | Replace with one block",
+      "subject": "Commands block",
+      "slots": {
+       "value": "[66, 125]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 121,
+      "quote": "then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands",
+      "subject": "one block",
+      "slots": {
+       "value": "[\"--list\", \"<name> [--extras] [-- <pytest args>]\", \"--all\", \"--check\"]",
+       "unit": "commands",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 121,
+      "quote": "| 66–125 | Replace with one block",
+      "subject": "Commands block",
+      "slots": {
+       "value": "[66, 125]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C72",
+   "rule": 3,
+   "sentence": 121,
+   "subject": "one block",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 121,
+      "quote": "| 66–125 | Replace with one block",
+      "subject": "Commands block",
+      "slots": {
+       "value": "[66, 125]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 121,
+      "quote": "then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands",
+      "subject": "one block",
+      "slots": {
+       "value": "[\"--list\", \"<name> [--extras] [-- <pytest args>]\", \"--all\", \"--check\"]",
+       "unit": "commands",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 121,
+      "quote": "then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands",
+      "subject": "one block",
+      "slots": {
+       "value": "[\"--list\", \"<name> [--extras] [-- <pytest args>]\", \"--all\", \"--check\"]",
+       "unit": "commands",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C73",
+   "rule": 3,
+   "sentence": 122,
+   "subject": "commit-lint comment",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "| 127–132 | The commit-lint comment names the suite-registry check and says \"nine\".",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "[127, 132]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "says \"nine\"",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "\"nine\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "Line 133 is not touched",
+      "subject": "Line 133",
+      "slots": {
+       "value": "133",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "| 127–132 | The commit-lint comment names the suite-registry check and says \"nine\".",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "[127, 132]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C74",
+   "rule": 3,
+   "sentence": 122,
+   "subject": "commit-lint comment",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "| 127–132 | The commit-lint comment names the suite-registry check and says \"nine\".",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "[127, 132]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "says \"nine\"",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "\"nine\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "Line 133 is not touched",
+      "subject": "Line 133",
+      "slots": {
+       "value": "133",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "says \"nine\"",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "\"nine\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C75",
+   "rule": 3,
+   "sentence": 122,
+   "subject": "Line 133",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "| 127–132 | The commit-lint comment names the suite-registry check and says \"nine\".",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "[127, 132]",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "says \"nine\"",
+      "subject": "commit-lint comment",
+      "slots": {
+       "value": "\"nine\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "Line 133 is not touched",
+      "subject": "Line 133",
+      "slots": {
+       "value": "133",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "Line 133 is not touched",
+      "subject": "Line 133",
+      "slots": {
+       "value": "133",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C76",
+   "rule": 3,
+   "sentence": 123,
+   "subject": "line 145",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "| 141–145 | Drop line 145, the `cd build/cc_guide && …` command.",
+      "subject": "line 145",
+      "slots": {
+       "value": "145",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 123,
+      "quote": "The comment names the suite `run_suites.py cc-guide` instead of \"its suite\".",
+      "subject": "comment",
+      "slots": {
+       "value": "\"run_suites.py cc-guide\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "| 141–145 | Drop line 145, the `cd build/cc_guide && …` command.",
+      "subject": "line 145",
+      "slots": {
+       "value": "145",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C77",
+   "rule": 3,
+   "sentence": 123,
+   "subject": "comment",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "| 141–145 | Drop line 145, the `cd build/cc_guide && …` command.",
+      "subject": "line 145",
+      "slots": {
+       "value": "145",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 123,
+      "quote": "The comment names the suite `run_suites.py cc-guide` instead of \"its suite\".",
+      "subject": "comment",
+      "slots": {
+       "value": "\"run_suites.py cc-guide\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "The comment names the suite `run_suites.py cc-guide` instead of \"its suite\".",
+      "subject": "comment",
+      "slots": {
+       "value": "\"run_suites.py cc-guide\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C78",
+   "rule": 4,
+   "sentence": 124,
+   "subject": "The file",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 124,
+      "quote": "The file ends at about 145 lines.",
+      "subject": "The file",
+      "slots": {
+       "value": "145",
+       "unit": "lines",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "145",
+       "unit": "lines (exact)",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 124,
+      "quote": "The file ends at about 145 lines.",
+      "subject": "The file",
+      "slots": {
+       "value": "145",
+       "unit": "lines",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "145",
+       "unit": "lines (exact)",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C79",
+   "rule": 4,
+   "sentence": 126,
+   "subject": "deletion of lines 66–125",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 126,
+      "quote": "the `# Full build-directory tests` comment and the `cd hooks && …` command",
+      "subject": "deletion of lines 66–125",
+      "slots": {
+       "value": "[\"# Full build-directory tests\", \"cd hooks && …\"]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "[\"# Full build-directory tests\", \"cd hooks && …\"]",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 126,
+      "quote": "the `# Full build-directory tests` comment and the `cd hooks && …` command",
+      "subject": "deletion of lines 66–125",
+      "slots": {
+       "value": "[\"# Full build-directory tests\", \"cd hooks && …\"]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "[\"# Full build-directory tests\", \"cd hooks && …\"]",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C80",
+   "rule": 3,
+   "sentence": 129,
+   "subject": "`build/test_check_conformance.py`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 129,
+      "quote": "`test_claude_md_import_resolves_passes_on_the_repo` asserts `'@needs_pilot' in text`",
+      "subject": "`build/test_check_conformance.py`",
+      "slots": {
+       "value": "\"test_claude_md_import_resolves_passes_on_the_repo\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 129,
+      "quote": "`test_claude_md_import_resolves_passes_on_the_repo` asserts `'@needs_pilot' in text`",
+      "subject": "`build/test_check_conformance.py`",
+      "slots": {
+       "value": "\"test_claude_md_import_resolves_passes_on_the_repo\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C81",
+   "rule": 3,
+   "sentence": 130,
+   "subject": "control",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 130,
+      "quote": "a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp",
+      "subject": "control",
+      "slots": {
+       "value": "\"<!-- cc-guide: … @<version> -->\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 130,
+      "quote": "line 1",
+      "subject": "control",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 130,
+      "quote": "a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp",
+      "subject": "control",
+      "slots": {
+       "value": "\"<!-- cc-guide: … @<version> -->\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C82",
+   "rule": 3,
+   "sentence": 130,
+   "subject": "control",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 130,
+      "quote": "a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp",
+      "subject": "control",
+      "slots": {
+       "value": "\"<!-- cc-guide: … @<version> -->\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 130,
+      "quote": "line 1",
+      "subject": "control",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 130,
+      "quote": "line 1",
+      "subject": "control",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C83",
+   "rule": 3,
+   "sentence": 135,
+   "subject": "tests",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 135,
+      "quote": "`build/test_run_suites.py`, stdlib and pytest only",
+      "subject": "tests",
+      "slots": {
+       "value": "\"build/test_run_suites.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 135,
+      "quote": "`build/test_run_suites.py`, stdlib and pytest only",
+      "subject": "tests",
+      "slots": {
+       "value": "\"build/test_run_suites.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C84",
+   "rule": 3,
+   "sentence": 144,
+   "subject": "`build/test_commit_lints.py`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 144,
+      "quote": "`suite_registry` joins `CHECKS`",
+      "subject": "`build/test_commit_lints.py`",
+      "slots": {
+       "value": "\"suite_registry\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 144,
+      "quote": "`test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py`",
+      "subject": "`test_unregistered_suite_is_refused`",
+      "slots": {
+       "value": "\"skills/<name>/scripts/test_new.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 144,
+      "quote": "`suite_registry` joins `CHECKS`",
+      "subject": "`build/test_commit_lints.py`",
+      "slots": {
+       "value": "\"suite_registry\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C85",
+   "rule": 3,
+   "sentence": 144,
+   "subject": "`test_unregistered_suite_is_refused`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 144,
+      "quote": "`suite_registry` joins `CHECKS`",
+      "subject": "`build/test_commit_lints.py`",
+      "slots": {
+       "value": "\"suite_registry\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 144,
+      "quote": "`test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py`",
+      "subject": "`test_unregistered_suite_is_refused`",
+      "slots": {
+       "value": "\"skills/<name>/scripts/test_new.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 144,
+      "quote": "`test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py`",
+      "subject": "`test_unregistered_suite_is_refused`",
+      "slots": {
+       "value": "\"skills/<name>/scripts/test_new.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C86",
+   "rule": 3,
+   "sentence": 146,
+   "subject": "plan 52's Task 6",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 146,
+      "quote": "adds one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts` instead",
+      "subject": "plan 52's Task 6",
+      "slots": {
+       "value": "\"skills/write-with-asd-ste100/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 146,
+      "quote": "adds one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts` instead",
+      "subject": "plan 52's Task 6",
+      "slots": {
+       "value": "\"skills/write-with-asd-ste100/scripts\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C87",
+   "rule": 3,
+   "sentence": 167,
+   "subject": "Gates",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 167,
+      "quote": "`uv run --python 3.13 python build/run_suites.py --check` prints `suite registry ok`",
+      "subject": "Gates",
+      "slots": {
+       "value": "\"suite registry ok\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 167,
+      "quote": "`uv run --python 3.13 python build/run_suites.py --check` prints `suite registry ok`",
+      "subject": "Gates",
+      "slots": {
+       "value": "\"suite registry ok\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C88",
+   "rule": 3,
+   "sentence": 169,
+   "subject": "`bash build/run_commit_lints.sh`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 169,
+      "quote": "`bash build/run_commit_lints.sh` prints `commit lints passed`",
+      "subject": "`bash build/run_commit_lints.sh`",
+      "slots": {
+       "value": "\"commit lints passed\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 169,
+      "quote": "`bash build/run_commit_lints.sh` prints `commit lints passed`",
+      "subject": "`bash build/run_commit_lints.sh`",
+      "slots": {
+       "value": "\"commit lints passed\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  }
+ ],
+ "agreed": [
+  {
+   "sentence": 6,
+   "subject": "`run_suites.py --check`",
+   "slots": {
+    "value": "9",
+    "unit": "commit lints",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 9,
+   "subject": "`claude-md-size` check",
+   "slots": {
+    "value": "200",
+    "unit": "lines",
+    "edge": "out",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 38,
+   "subject": "directory suite",
+   "slots": {
+    "value": "18",
+    "unit": "suites",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 38,
+   "subject": "`build/cc_guide`",
+   "slots": {
+    "value": "145",
+    "unit": "line",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 79,
+   "subject": "runner",
+   "slots": {
+    "value": "\"3.13\"",
+    "unit": "Python version",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 83,
+   "subject": "One run",
+   "slots": {
+    "value": "\"uv run --python <python> --with <dep> … python -m pytest -q [<args>]\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 90,
+   "subject": "run header",
+   "slots": {
+    "value": "\"== <name> (<python>)\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 105,
+   "subject": "validation",
+   "slots": {
+    "value": "2",
+    "unit": "exit code",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 115,
+   "subject": "Output",
+   "slots": {
+    "value": "\"suite registry ok\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 116,
+   "subject": "`build/run_commit_lints.sh`",
+   "slots": {
+    "value": "\"run suite_registry uv run --python 3.13 python build/run_suites.py --check\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 117,
+   "subject": "header",
+   "slots": {
+    "value": "\"nine\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 120,
+   "subject": "intro paragraph",
+   "slots": {
+    "value": "60",
+    "unit": "line",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 128,
+   "subject": "`build/CLAUDE.md`",
+   "slots": {
+    "value": "\"the nine commit lints\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 173,
+   "subject": "`CLAUDE.md`",
+   "slots": {
+    "value": "200",
+    "unit": "lines",
+    "edge": "out",
+    "default": "none"
+   }
+  }
+ ],
+ "outcomes": [
+  {
+   "kind": "unchecked",
+   "sentence": 10,
+   "subject": "`CLAUDE.md`",
+   "agreed": null,
+   "planner": {
+    "value": "199",
+    "unit": "lines",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 24, 46, 139; note: The plan measured 199 lines at commit `151ea9f` (later `fca3433`), not at `456e3fb`. The line count is the same."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 11,
+   "subject": "Commands block",
+   "agreed": null,
+   "planner": {
+    "value": "[66, 125]",
+    "unit": "line numbers",
+    "edge": "in",
+    "default": "none"
+   },
+   "detail": "planner lines 46, 139, 1552"
+  }
+ ]
+}

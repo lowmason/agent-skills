@@ -1,0 +1,1359 @@
+Two readers each stated, from the spec alone, what the spec asks. Each case below is a sentence where they differ, where one reader alone states a value, or where a reader names another reading.
+
+For each case, rule on the reading that the text supports. Give the verdict `reading` with its value, unit, edge and default, or `no-value` when the sentence states no value. Quote the words that decide the case, word for word, from the numbered spec. When no words decide it, rule `unclear` with an empty quote.
+
+You see no plan. You have no tools, and you edit no file.
+
+The slot forms: `value` is a literal in plain notation (a number, a string, a list in brackets, a date or time). `unit` is what the value counts or measures, or `none`. `edge` says, for each limit in the value, whether the limit itself is in: `in`, `out`, or `n/a` with no limit. `default` is the value used when the input is absent, or `none`.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
+
+<spec>
+# Agent-skills portability — Design Spec
+S1. **Status: APPROVED (2026-10-18).** The owner approved the design on 2026-10-03 and the written spec on 2026-10-18.
+S2. Next step: an implementation plan from the writing-plans skill.
+S3. The owner approved all five design sections in a brainstorming pass over `specs/completed/agent-skills-best-practices.md` (a September 2026 survey of Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot, and others).
+S4. This document is the handoff for implementation planning.
+S5. One piece has landed since: a 2026-10-15 quick fix made `build/check_frontmatter.py` accept `compatibility`, and R1.3's check of its value is still to do.
+S6. The survey is this spec's input; it was retired ahead of the spec, to `specs/completed/` in `79ad04f` (2026-10-03).
+
+## Purpose and scope
+S7. Bring the repo to the parts of the survey that apply to it, in four themes the owner selected:
+S8. 1. **Frontmatter conformance** — the lint accepts every Agent Skills spec field, separates spec keys from host extensions, and checks the shapes the spec defines (R1).
+S9. 2. **Codex-visible openings** — description openings work under Codex's per-description truncation, and `writing-skills` records the measured fact (R2).
+S10. 3. **Self-contained scripts** — every runnable bundled script carries a PEP 723 header and is invoked with `uv run` (R3).
+S11. 4. **License travel** — each skill directory carries the license texts that apply to it, so a single-skill install keeps MIT's required notice (R4).
+S12. Most of the survey is already true here and needs no work: `name` matches its directory and descriptions are within 1,024 characters (`build/check_frontmatter.py`); `install.py` links `skills/` into `~/.claude/skills` and the cross-runtime `~/.agents/skills`, with a `--copy` fallback; skill bodies name no runtime tool (`TodoWrite`, Skill/Task/Agent tool) and use no `$ARGUMENTS` or `` !`cmd` `` injection, and bundled paths use `<this-skill-dir>`; side-effect gates live in skill bodies; every command is `disable-model-invocation: true`.
+
+## Measured baseline (2026-10-03)
+S13. | Fact | Evidence |
+S14. | `ALLOWED_KEYS` lacks the spec field `compatibility`, so the lint rejects a spec-valid skill | `build/check_frontmatter.py` |
+S15. | Gemini CLI 0.46.0 loads the three skills carrying Claude host keys (`effort`: bayesian-workflow, tune-hyperparameters; `context`: tech-debt) as `[Enabled]` | `gemini skills list --all`, run from a neutral directory |
+S16. | Codex CLI 0.154.0 lists the same three skills | `codex debug prompt-input`, run from `/tmp/bwprobe/` |
+S17. | Codex shortens descriptions when its listing exceeds its budget. With 93 skills listed (66 from `~/.agents/skills`, the rest system and plugin skills), 31 of this repo's 32 descriptions were cut to 156–164 characters (median 158); only `test-driven-development` (79 characters) appeared whole. Measured at this one skill count only. That the cutoff moves with the number of skills sharing the budget is an inference from Codex's documented budget, not a measurement | same `codex debug prompt-input` render |
+S18. | All 32 descriptions lead with "Use when" and name their primary trigger within the first 150 characters | per-skill review of each description's opening (R2.1) |
+S19. | One description contains angle brackets: llm-wiki's `'verify <page>'` | YAML parse of every `SKILL.md` |
+S20. | Two of 16 runnable scripts carry PEP 723 headers (both `build.py`); others are invoked as `python`, `python3`, or `uv run --python 3.13 --with … python …` | grep of `skills/**` |
+S21. | The 13 superpowers skills have no `license` field; no skill directory contains a license file | YAML parse; `ls skills/*/LICENSE*` |
+S22. | NOTICE credits `bayesian-workflow` to Alexandre Andorra's MIT skill, but no copyright line or license text for it exists in the repo | `grep -i andorra NOTICE` and the repo tree |
+S23. | Only `writing-skills` has a body over 500 lines (696) | line count after the closing frontmatter `---` |
+
+## Decisions and alternatives
+S24. 1. **Keep `skills/` as the canonical tree.** Moving it to `.agents/skills/` has a large blast radius (installer, tests, CLAUDE.md, symlinks) and buys nothing: the installer already links into every runtime's discovery path, which is the survey's own alternative.
+S25. *Rejected.*
+S26. 2. **No in-repo `.claude/skills` symlink.** The skills already load user-level from the same checkout; a project-level link would list each one twice.
+S27. *Rejected.*
+S28. 3. **No manual-only conversion of side-effecting skills.** `disable-model-invocation: true` removes a skill from the model's reach, which would break bare-name handoffs (`finishing-a-development-branch`, `using-git-worktrees`, and the others are invoked by name from other skills).
+S29. Their side effects are already gated in their bodies, the survey's portable pattern.
+S30. *Rejected.*
+S31. 4. **Keep the "Use when…" description convention.** The survey suggests "Does X.
+S32. Use when Y".
+S33. `writing-skills`, the governing meta-skill, requires trigger-only descriptions on tested evidence that a workflow summary in the description lets agents skip the body.
+S34. "Use when" already front-loads the trigger.
+S35. *Rejected.*
+S36. 5. **No description rewrites in this spec.** R2.1's review found none needed, and no trigger evals exist to catch a regression.
+S37. The one exception is the angle-bracket fix (R1.5), which is wording-equivalent.
+S38. 6. **The strict profile is a report, not the gate.** Both measured non-Claude runtimes load skills with host keys; strictness matters only for claude.ai uploads and `skills-ref`-style validators (R1.8).
+S39. 7. **No secondary-source numbers become lint caps.** The survey's 1,536-character truncation, Codex's 2% / 8,000-character budget, and Claude Code's listing fraction stay out of the lint; it keeps the spec's 1,024 cap.
+S40. Claude Code listing behavior is documented in `specs/guides/claude-code-customization-guide.md`.
+S41. 8. **House PEP 723 form, not `#!/usr/bin/env -S uv run --script`.** A plain `#!/usr/bin/env python3` shebang keeps the script runnable by bare `python3` where uv is absent; `uv run <path>` reads the header either way.
+S42. The two existing `build.py` headers are the template.
+S43. 9. **All runnable scripts become self-contained**, including the three that read saved model artifacts.
+S44. No single work venv pairs NumPyro with ArviZ, so the project interpreter can lack the imports these scripts need, and work repos that install `hooks/uv-guard.sh` deny bare `python …` anyway.
+S45. 10. **Every skill bundles license text**, not only those with third-party content: one uniform rule, enforced byte-for-byte, at no context cost (the files are never referenced, so never loaded).
+
+### R1 — Frontmatter conformance (`build/check_frontmatter.py`)
+S46. R1.1 **Key sets.** Replace `ALLOWED_KEYS` with two named sets and allow their union in a `SKILL.md`:
+S47. - `SPEC_KEYS = {name, description, license, compatibility, metadata, allowed-tools}`
+S48. - `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation}`
+S49. R1.2 **`metadata`.** When present, a mapping whose keys and values are all strings.
+S50. All current values pass.
+S51. R1.3 **`compatibility`.** When present, a string of 1–500 characters after stripping.
+S52. R1.4 **`license`.** Required in every `SKILL.md`, a non-empty string (repo policy, beyond the spec).
+S53. The 13 superpowers skills gain `license: MIT` and
+S54. ```yaml
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
+```
+S55. mirroring `bayesian-workflow`'s existing `author` / `adapted_by` pattern.
+S56. R1.5 **No angle brackets.** `name` and `description` contain no `<` or `>`.
+S57. Fix llm-wiki's trigger phrase `'verify <page>'` to `'verify a page'`.
+S58. R1.6 **Invocation parity with Codex.** For a `SKILL.md`, `disable-model-invocation` must be a YAML boolean when present.
+S59. A skill with `disable-model-invocation: true` must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`.
+S60. Conversely, a skill whose `agents/openai.yaml` sets that policy to `false` must set `disable-model-invocation: true`.
+S61. No skill trips this today; it exists so that the first manual-only skill cannot auto-fire in Codex.
+S62. R1.7 **Body-length advisory.** A `SKILL.md` body (the lines after the closing frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not change the exit code.
+S63. Today only `writing-skills` warns; splitting it is deferred.
+S64. When Stage A adds this warning, it also adds a `skill-body-size` `[[check]]` to `build/cc_guide/conformance.toml` that maps `skills.overview` to it, with `enforced_by = 'check_frontmatter'` (conformance R6 P3).
+S65. R1.8 **`--strict` profile.** `check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or `anthropic`.
+S66. It is not part of the default gate.
+S67. Expected result today: exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail.
+S68. Agents and commands are not Agent Skills and are unaffected.
+S69. R1.9 The module docstring describes the new rules and the `--strict` flag, and CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run), under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance register").
+
+### R2 — Codex-visible openings
+S70. R2.1 **Review verdict (recorded here, no rewrites).** Criterion: within its first 150 characters, a description names the skill's primary trigger, the task or symptom it exists for, so an agent shown only that prefix would load it for its canonical use.
+S71. All 32 descriptions pass as of 2026-10-03.
+S72. The closest calls are `creative-thinking` (its quoted examples carry the "fuzzy target" trigger) and the `clean-code` / `clean-coder` pair, whose openings both lead with editing Python.
+S73. Both pass, so neither is rewritten.
+S74. R2.2 **RED baseline micro-test for `writing-skills`.** Before any edit to `writing-skills`, run a baseline:
+S75. - 5 reps, each a fresh agent given the current `writing-skills` description guidance (the control: no new wording).
+S76. Each is asked to write a SKILL.md description for a synthetic skill that is not from this repo and has at least 8 trigger conditions, one of them designated in the scenario as primary.
+S77. - Run from a session whose cwd was never this repo.
+S78. - A rep passes if the designated primary trigger lies within the first 150 characters.
+S79. The controller reads each output and records the verbatim 150-character prefix.
+S80. - Record the scenario, prompts, outputs, and verdicts in `specs/red-baseline-description-openings-<YYYY-MM-DD>.md`, the house red-baseline format.
+S81. R2.3 **Edit by outcome.**
+S82. - **Baseline ≥ 4/5:** add only a factual note of 2–4 lines to `writing-skills`' "Token Efficiency" section.
+S83. The note covers three points: Codex shortens every description when its listing exceeds its budget; the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure (`codex debug prompt-input` from a directory outside any repo, reading the Skills list).
+S84. No new rule.
+S85. - **Baseline ≤ 3/5:** also add one checklist line ("the primary trigger falls within the first ~150 characters") and GREEN-test it: 5 reps with the new wording, at least 4/5 passing, recorded in the same red-baseline file.
+
+### R3 — Self-contained scripts
+S86. R3.1 **Inventory.** The runnable scripts are the `skills/*/scripts/*.py` files with a `__main__` guard.
+S87. There are 16.
+S88. Fourteen gain a header:
+S89. - `bayesian-workflow`: `calibration_check.py`, `check_diagnostics.py`, `diagnose_model.py`
+S90. - `describe-critique-methodology`: `check_decoupling.py`
+S91. - `design-architecture`: `new_adr.py`
+S92. - `explore-data`: `profile.py`
+S93. - `llm-wiki`: `bootstrap_wiki.py`, `distill_sessions.py`, `distill_specs.py`, `lint_wiki.py`
+S94. - `recommend-probabilistic-model`: `characterize.py`
+S95. - `recommend-visualization`: `recommend.py`
+S96. - `track-model-experiments`: `compare_experiments.py`
+S97. - `writing-plans`: `deferred_stats.py`
+S98. The two `build.py` scripts (`classification-codes`, `geographic-codes`) already conform.
+S99. `tune-hyperparameters/scripts/time_series_cv.py` has no `__main__` guard; it is a library imported into the user's code and stays header-less.
+S100. Bash scripts are out of scope.
+S101. R3.2 **Header form.** Follow the `build.py` template exactly:
+S102. - Line 1 is `#!/usr/bin/env python3`; add it where missing.
+S103. - Then a `# /// script` block with single-quoted TOML strings, a `requires-python`, and a `dependencies` list (`[]` for stdlib-only scripts).
+S104. R3.3 **`requires-python`.**
+S105. - Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes, run with `uv run --python 3.X` and that suite's CLAUDE.md dependencies.
+S106. - Scripts covered by one suite share its floor, unless a failure is attributable to one script, which then alone takes the higher floor.
+S107. - Prose floors that disagree with the header are aligned or removed (e.g. "Python ≥ 3.9" in `recommend-probabilistic-model` and `recommend-visualization`).
+S108. The header and the skill's `compatibility` field become the statement of record.
+S109. R3.4 **`dependencies`.**
+S110. - Every third-party import, including function-level imports, is declared with a `>=` floor at the major version the suite currently resolves (e.g. `'polars>=1.0'`).
+S111. No upper pins.
+S112. - Imports inside a `try` whose handler catches `ImportError` or `ModuleNotFoundError` are optional and may be left undeclared.
+S113. - Runtime backends that the script never imports but needs to read its inputs (e.g. `h5netcdf` for NetCDF) are added when R3.8's fixture run shows them needed.
+S114. R3.5 **Invocations.**
+S115. - Every documented invocation in `skills/**/*.md` of a path that resolves to one of the 16 scripts uses the form `uv run <path> [args]`, replacing `python`, `python3`, `uv run --no-project --python 3.13 python`, and `uv run --python 3.13 --with … python`.
+S116. - Path forms in use: `<this-skill-dir>/scripts/x.py`, `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py` (llm-wiki's INSTALL.md), and repo-relative `skills/<skill>/scripts/build.py`.
+S117. - Each skill with such an invocation gets this sentence once, near its first invocation: "Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header."
+S118. R3.6 **`compatibility`.** Every skill whose markdown runs a bundled script with `uv run` declares `compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.X+.`
+S119. Here 3.X is the highest `requires-python` floor among the scripts that skill invokes.
+S120. That set includes `finishing-a-development-branch`, which runs `writing-plans`' `deferred_stats.py`.
+S121. R3.7 **Lint, in `check_frontmatter.py`.** Each rule gets a RED test first.
+S122. - A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block that parses with `tomllib` and has `requires-python` and `dependencies`.
+S123. - In such a script, every non-stdlib, non-local import is declared in `dependencies`:
+S124. - stdlib is detected via `sys.stdlib_module_names`;
+S125. - local means a sibling module file in the same directory;
+S126. - import names map to distributions through a small alias table, e.g. `yaml` → `pyyaml`;
+S127. - R3.4's optional-import exemption applies.
+S128. - No skill markdown invokes a resolving bundled-script path with bare `python` or `python3`, including line-continued forms (`python \` followed by the path on the next line).
+S129. A path that does not resolve to a bundled script, such as `writing-skills/anthropic-best-practices.md`'s teaching example `scripts/migrate.py`, is not flagged.
+S130. - A skill whose markdown runs a bundled script via `uv run` declares a `compatibility` value containing `uv`.
+S131. R3.8 **Execution proof**, one time, recorded in the plan's completion notes.
+S132. - From an empty scratch directory (a subdirectory such as `/tmp/bwprobe/`, never `/tmp` itself), each of the 16 scripts runs `uv run <absolute-path>` on a minimal real input that exercises its main code path.
+S133. - `--help` alone is enough only for a script with no input-reading path.
+S134. - The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`) each read a small saved InferenceData fixture.
+S135. - One script is also run from inside a directory holding an unrelated `pyproject.toml`.
+S136. This proves the header isolates it from the project environment.
+S137. R3.9 The dependency-drift check still passes.
+S138. Invocation text changes, but no cross-skill reference is added or dropped; finishing → `writing-plans`' `deferred_stats.py` is an existing `DEPENDENCIES` edge.
+
+### R4 — License text travels with each skill
+S139. R4.1 **Bundled copies.** Each skill directory carries regular files (never symlinks, which `install.py --copy` refuses) that are byte-identical to the root license files and carry the same names:
+S140. | File | Skills | Basis |
+S141. | `LICENSE` | every skill under `skills/` | every skill contains Lowell Mason's original work or modifications |
+S142. | `LICENSE-superpowers` | the 13 superpowers skills | adapted from obra/superpowers (NOTICE) |
+S143. | `LICENSE-coding-skills` | `bayesian-workflow`, `clean-code` | NOTICE records *adapted* Mancuso Lab content (`references/jax-numerics.md`, `references/modules.md`). `tech-debt` took "only the idea" and gets no copy |
+S144. | `LICENSE-andorra` | `bayesian-workflow` | only if R4.5 finds an upstream notice |
+S145. R4.2 **Provenance lint (`build/check_provenance.py`)**, driven by one `BUNDLED_LICENSES` table (root file → skills; `LICENSE` implied for every skill).
+S146. RED tests first.
+S147. - Every required copy exists, is a regular file, and is byte-identical to its root file.
+S148. - No skill directory holds a `LICENSE*` file outside its mapping.
+S149. - Every root `LICENSE*` file is mapped to at least one skill.
+S150. - The script stays stdlib-only, so its CLAUDE.md command keeps no `--with`.
+S151. R4.3 **Frontmatter** carries the license fields per R1.4.
+S152. R4.4 **Documentation.**
+S153. - NOTICE gains one paragraph near the top: each skill directory carries copies of the license texts that apply to it, so a single-skill install (`install.py --copy --skill`, or a third-party installer) keeps the notice MIT requires.
+S154. The root files are canonical, and `check_provenance.py` enforces the copies.
+S155. - README's License section gains one sentence to the same effect.
+S156. - CLAUDE.md's provenance section gains the invariant and names the enforcing lint, under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance register").
+S157. R4.5 **Andorra lookup** (a plan task).
+S158. - Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its license.
+S159. There are three outcomes:
+S160. 1. **A notice exists.** Add the upstream license text verbatim as root `LICENSE-andorra`, map it to `bayesian-workflow`, and extend NOTICE's `bayesian-workflow/` block with the source URL and the quoted copyright line.
+S161. 2. **Upstream declares MIT but ships no notice.** NOTICE records that, in the form already used for the Fonnesbeck repository.
+S162. Nothing is bundled.
+S163. 3. **Upstream cannot be located.** NOTICE is unchanged and a deferred item is logged with what was searched.
+S164. - Never compose a copyright line that is not quoted from the source.
+S165. - The 2026-08-26 intake review (`specs/completed/skill-intake-review-2026-08-26.md`) already found that Andorra appears nowhere in the history of pymc-labs/python-analytics-skills (only Fonnesbeck and Dean commit there), so start the search from his own publications rather than that repository.
+
+## Sequencing and execution constraints
+S166. Stages, in order.
+S167. D is independent of C and may run alongside it.
+S168. - **A — R1.** Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix, so the new hard rules are green on arrival.
+S169. - **B — R4.** License files, `BUNDLED_LICENSES`, the documentation, and the Andorra lookup.
+S170. - **C — R3.** Headers, invocations, `compatibility`, the script lint, and R3.8's execution proof.
+S171. - **D — R2.** The baseline micro-test and the `writing-skills` edit.
+S172. Constraints:
+S173. - **Conformance register** (`specs/completed/claude-code-guide-conformance.md`, R6):
+S174. - The CLAUDE.md lines from R1.9 and R4.4 stay under the `claude-md-size` check's 200-line limit in `build/cc_guide/conformance.toml`.
+S175. No ceiling remains to raise: a change whose lines would breach the limit trims CLAUDE.md elsewhere (R6 P1, whose ceiling option drift spec R12.7 removed).
+S176. - When Stage A or Stage D fixes a gap the register tracks to it, the same change removes or narrows that `[[exception]]` and runs `build/check_conformance.py` (R6 P2).
+S177. - **Work in a worktree.** The plan edits skills the executing session loads (`writing-plans`, `finishing-a-development-branch`, `writing-skills`), and `~/.claude/skills` resolves to the main checkout.
+S178. Commit from the worktree; the shared checkout's branch can change under a concurrent session.
+S179. - **Stage D's micro-test** runs from a session whose cwd was never this repo; inherited session context voids reps otherwise.
+S180. - **State test changes as +N deltas** against the suite, never absolute totals.
+S181. - **Before allocating the plan id**, check `specs/plans/` on every branch (`git ls-tree`); ids are allocated per branch and have collided.
+S182. - **Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills` and defines three skills (`skills/deep-learning` is on that branch as of 2026-10-03).
+S183. R1.4's required `license`, R3's header and invocation rules, and R4's per-skill license copies apply to them too.
+S184. Whichever branch merges second brings the other's skills into conformance in the same merge, or the new lints fail on arrival.
+
+## Validation and acceptance
+S185. 1. Every gate in CLAUDE.md's Commands passes:
+S186. - `check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)
+S187. - `check_provenance.py`
+S188. - `check_snippets.py skills/` (Tier 1)
+S189. - the dependency-drift test
+S190. - the full `build/` suite, plus every script suite whose script gained a header
+S191. - `sync_runtime_assets.py --check` (no adapter change is expected)
+S192. 2. `check_frontmatter.py --strict` fails on exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt`.
+S193. 3. Each new lint rule has a test that failed before its implementation and passes after.
+S194. 4. R3.8's execution proof is recorded for all 16 scripts.
+S195. 5. **Cross-runtime load check**, from a directory outside any repo:
+S196. - `gemini skills list --all` shows every skill under `skills/` as `[Enabled]`;
+S197. - `codex debug prompt-input` lists every skill under `skills/` by name.
+S198. This shows the new `compatibility`, `license`, and `metadata` values and the bundled license files break loading in neither runtime.
+S199. 6. R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows.
+
+## Out of scope (deferred; logged to `specs/deferred_items.md` at plan completion)
+S200. - **Trigger-eval suites** (about 20 labeled queries per skill, near-miss negatives, train/validation split), starting with the overlapping data-and-modeling skills.
+S201. They are expensive and need isolated sessions.
+S202. They are also the prerequisite for any future description rewrite.
+S203. - **Distribution channels**: a Claude Code `marketplace.json`, `npx skills`, `gh skill`, or a Codex plugin.
+S204. These are outward-facing.
+S205. Plugin namespacing (`/plugin:skill`) also conflicts with the bare-name cross-reference invariant.
+S206. - **Codex adapters for `/deferred`, `/fix-issue`, `/license-audit`**, as manual-only skills with `agents/openai.yaml`.
+S207. R1.6 is the groundwork.
+S208. - **Tables of contents for long `references/` files** (Anthropic's partial-read guidance).
+S209. This needs a reliable detector first; a crude grep was not one.
+S210. - **Splitting `writing-skills`** below 500 body lines (R1.7's warning).
+S211. - **A versioning policy**: CHANGELOG, git tags, and `metadata.version` bumps.
+S212. - **Skill security scanning** (e.g. Cisco's `skill-scanner`).
+S213. The repo has no CI.
+S214. - **License travel for single-file agents.** `agents/code-reviewer.md` and `agents/task-reviewer.md` are distilled from superpowers and install as single files without `LICENSE-superpowers`: the same gap R4 closes for skills.
+
+## Sources and verification notes
+S215. - `specs/completed/agent-skills-best-practices.md`: the survey.
+S216. Its Claude Code numbers are secondary; `specs/guides/claude-code-customization-guide.md` governs Claude Code facts.
+S217. Its 2026-10-03 re-verification against official docs (at 2.1.288) landed on main via lowmason/agent-skills#19 (merge `c33bc99`).
+S218. - [Agent Skills specification](https://agentskills.io/specification): the six frontmatter fields, the `compatibility` ≤ 500 limit, and `metadata` as a string-to-string map.
+S219. - [Codex skills docs](https://developers.openai.com/codex/skills): the `agents/openai.yaml` `policy.allow_implicit_invocation` key.
+S220. - uv documentation: a script with inline metadata runs in its own environment even inside a project.
+S221. R3.8's pyproject run verifies this rather than assuming it.
+S222. - Runtime measurements in "Measured baseline" were taken on 2026-10-03 with Gemini CLI 0.46.0 and Codex CLI 0.154.0, on this machine's installed skill set (93 skills in Codex's listing).
+</spec>
+
+The cases follow. Rule only on the entries under the reader names. The lines after `Context` are the readers' other entries on the same sentence, for context only.
+
+<case id="C1" sentence="S2">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S2"><quote>an implementation plan from the writing-plans skill</quote><subject>implementation plan</subject><value>"writing-plans"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C2" sentence="S9">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S9"><quote>`writing-skills` records the measured fact</quote><subject>measured fact</subject><value>"writing-skills"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C3" sentence="S10">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S10"><quote>every runnable bundled script carries a PEP 723 header</quote><subject>header</subject><value>"PEP 723"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S10:
+Reader B: <entry sentence="S10"><quote>is invoked with `uv run`</quote><subject>runnable bundled script</subject><value>"uv run"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C4" sentence="S10">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S10"><quote>is invoked with `uv run`</quote><subject>runnable bundled script</subject><value>"uv run"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S10:
+Reader B: <entry sentence="S10"><quote>every runnable bundled script carries a PEP 723 header</quote><subject>header</subject><value>"PEP 723"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C5" sentence="S24">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S24"><quote>Keep `skills/` as the canonical tree.</quote><subject>canonical tree</subject><value>"skills/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C6" sentence="S26">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S26"><quote>No in-repo `.claude/skills` symlink.</quote><subject>symlink</subject><value>".claude/skills"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C7" sentence="S31">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S31"><quote>Keep the "Use when…" description convention.</quote><subject>description convention</subject><value>"Use when"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C8" sentence="S41">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S41"><quote>A plain `#!/usr/bin/env python3` shebang</quote><subject>shebang</subject><value>"#!/usr/bin/env python3"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C9" sentence="S42">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S42"><quote>The two existing `build.py` headers are the template.</quote><subject>template</subject><value>"build.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C10" sentence="S46">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S46"><quote>Replace `ALLOWED_KEYS` with two named sets</quote><subject>ALLOWED_KEYS</subject><value>2</value><unit>sets</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C11" sentence="S49">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S49"><quote>When present, a mapping whose keys and values are all strings.</quote><subject>metadata</subject><value>"mapping"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S49:
+Reader B: <entry sentence="S49"><quote>keys and values are all strings</quote><subject>keys and values</subject><value>"strings"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C12" sentence="S49">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S49"><quote>keys and values are all strings</quote><subject>keys and values</subject><value>"strings"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S49:
+Reader B: <entry sentence="S49"><quote>When present, a mapping whose keys and values are all strings.</quote><subject>metadata</subject><value>"mapping"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C13" sentence="S51">
+Reader A:
+<entry sentence="S51"><quote>When present, a string of 1–500 characters after stripping.</quote><subject>`compatibility`</subject><value>1–500</value><unit>characters</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S51"><quote>a string of 1–500 characters after stripping</quote><subject>compatibility</subject><value>[1, 500]</value><unit>characters</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C14" sentence="S52">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S52"><quote>Required in every `SKILL.md`, a non-empty string</quote><subject>license</subject><value>"non-empty string"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C15" sentence="S56">
+Reader A:
+<entry sentence="S56"><quote>`name` and `description` contain no `<` or `>`.</quote><subject>`name` and `description`</subject><value>[<, >]</value><unit>characters</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S56"><quote>`name` and `description` contain no `<` or `>`</quote><subject>name</subject><value>["<", ">"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S56:
+Reader B: <entry sentence="S56"><quote>`name` and `description` contain no `<` or `>`</quote><subject>description</subject><value>["<", ">"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C16" sentence="S59">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S59"><quote>A skill with `disable-model-invocation: true`</quote><subject>disable-model-invocation</subject><value>true</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C17" sentence="S60">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S60"><quote>a skill whose `agents/openai.yaml` sets that policy to `false`</quote><subject>policy</subject><value>false</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S60:
+Reader B: <entry sentence="S60"><quote>must set `disable-model-invocation: true`</quote><subject>disable-model-invocation</subject><value>true</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C18" sentence="S60">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S60"><quote>must set `disable-model-invocation: true`</quote><subject>disable-model-invocation</subject><value>true</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S60:
+Reader B: <entry sentence="S60"><quote>a skill whose `agents/openai.yaml` sets that policy to `false`</quote><subject>policy</subject><value>false</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C19" sentence="S62">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S62"><quote>the lines after the closing frontmatter `---`</quote><subject>closing frontmatter</subject><value>"---"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S62:
+Reader B: <entry sentence="S62"><quote>prints one `WARN` line to stderr</quote><subject>line</subject><value>"WARN"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S62"><quote>prints one `WARN` line to stderr</quote><subject>line</subject><value>"stderr"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C20" sentence="S62">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S62"><quote>prints one `WARN` line to stderr</quote><subject>line</subject><value>"WARN"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S62:
+Reader B: <entry sentence="S62"><quote>the lines after the closing frontmatter `---`</quote><subject>closing frontmatter</subject><value>"---"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S62"><quote>prints one `WARN` line to stderr</quote><subject>line</subject><value>"stderr"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C21" sentence="S62">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S62"><quote>prints one `WARN` line to stderr</quote><subject>line</subject><value>"stderr"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S62:
+Reader B: <entry sentence="S62"><quote>the lines after the closing frontmatter `---`</quote><subject>closing frontmatter</subject><value>"---"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S62"><quote>prints one `WARN` line to stderr</quote><subject>line</subject><value>"WARN"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C22" sentence="S64">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S64"><quote>adds a `skill-body-size` `[[check]]` to `build/cc_guide/conformance.toml`</quote><subject>[[check]]</subject><value>"build/cc_guide/conformance.toml"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C23" sentence="S65">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S65"><quote>`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`</quote><subject>check_frontmatter.py</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C24" sentence="S69">
+Reader A:
+<entry sentence="S69"><quote>under the `claude-md-size` check's 200-line limit</quote><subject>CLAUDE.md</subject><value>200</value><unit>lines</unit><edge>out</edge><default>none</default><other_reading><value>200</value><unit>lines</unit><edge>in</edge><default>none</default></other_reading></entry>
+Reader B:
+<entry sentence="S69"><quote>under the `claude-md-size` check's 200-line limit</quote><subject>CLAUDE.md</subject><value>200</value><unit>line</unit><edge>in</edge><default>none</default><other_reading><value>200</value><unit>line</unit><edge>out</edge><default>none</default></other_reading></entry>
+Context, other entries on S69:
+Reader B: <entry sentence="S69"><quote>The module docstring describes the new rules and the `--strict` flag</quote><subject>module docstring</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S69"><quote>CLAUDE.md's Commands section gains the `--strict` invocation</quote><subject>CLAUDE.md's Commands section</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S69"><quote>with one line on when to use it</quote><subject>CLAUDE.md's Commands section</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C25" sentence="S69">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S69"><quote>The module docstring describes the new rules and the `--strict` flag</quote><subject>module docstring</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S69:
+Reader B: <entry sentence="S69"><quote>CLAUDE.md's Commands section gains the `--strict` invocation</quote><subject>CLAUDE.md's Commands section</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S69"><quote>with one line on when to use it</quote><subject>CLAUDE.md's Commands section</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C26" sentence="S69">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S69"><quote>CLAUDE.md's Commands section gains the `--strict` invocation</quote><subject>CLAUDE.md's Commands section</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S69:
+Reader B: <entry sentence="S69"><quote>The module docstring describes the new rules and the `--strict` flag</quote><subject>module docstring</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S69"><quote>with one line on when to use it</quote><subject>CLAUDE.md's Commands section</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C27" sentence="S69">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S69"><quote>with one line on when to use it</quote><subject>CLAUDE.md's Commands section</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S69:
+Reader B: <entry sentence="S69"><quote>The module docstring describes the new rules and the `--strict` flag</quote><subject>module docstring</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S69"><quote>CLAUDE.md's Commands section gains the `--strict` invocation</quote><subject>CLAUDE.md's Commands section</subject><value>"--strict"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C28" sentence="S76">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S76"><quote>one of them designated in the scenario as primary</quote><subject>trigger conditions</subject><value>1</value><unit>trigger conditions</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C29" sentence="S82">
+Reader A:
+<entry sentence="S82"><quote>**Baseline ≥ 4/5:**</quote><subject>Baseline</subject><value>4/5</value><unit>reps</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S82"><quote>Baseline ≥ 4/5</quote><subject>Baseline</subject><value>4/5</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C30" sentence="S82">
+Reader A:
+<entry sentence="S82"><quote>add only a factual note of 2–4 lines to `writing-skills`' "Token Efficiency" section</quote><subject>factual note</subject><value>2–4</value><unit>lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S82"><quote>add only a factual note of 2–4 lines</quote><subject>factual note</subject><value>[2, 4]</value><unit>lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C31" sentence="S83">
+Reader A:
+<entry sentence="S83"><quote>the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)</quote><subject>the measured cut</subject><value>156–164</value><unit>characters</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S83"><quote>the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)</quote><subject>measured cut</subject><value>[156, 164]</value><unit>characters</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S83:
+Reader A: <entry sentence="S83"><quote>2026-10-03</quote><subject>the measured cut</subject><value>2026-10-03</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>The note covers three points</quote><subject>note</subject><value>3</value><unit>points</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>with 93 skills listed</quote><subject>skills listed</subject><value>93</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C32" sentence="S83">
+Reader A:
+<entry sentence="S83"><quote>with 93 skills listed</quote><subject>the measured cut</subject><value>93</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S83"><quote>the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)</quote><subject>measured cut</subject><value>2026-10-03</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S83:
+Reader A: <entry sentence="S83"><quote>2026-10-03</quote><subject>the measured cut</subject><value>2026-10-03</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>The note covers three points</quote><subject>note</subject><value>3</value><unit>points</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>with 93 skills listed</quote><subject>skills listed</subject><value>93</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C33" sentence="S83">
+Reader A:
+<entry sentence="S83"><quote>Codex 0.154</quote><subject>the measured cut</subject><value>0.154</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>0.154.0</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader B:
+<entry sentence="S83"><quote>Codex 0.154</quote><subject>Codex</subject><value>"0.154"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S83:
+Reader A: <entry sentence="S83"><quote>2026-10-03</quote><subject>the measured cut</subject><value>2026-10-03</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>The note covers three points</quote><subject>note</subject><value>3</value><unit>points</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>with 93 skills listed</quote><subject>skills listed</subject><value>93</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C34" sentence="S83">
+Reader A:
+<entry sentence="S83"><quote>2026-10-03</quote><subject>the measured cut</subject><value>2026-10-03</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+Context, other entries on S83:
+Reader B: <entry sentence="S83"><quote>The note covers three points</quote><subject>note</subject><value>3</value><unit>points</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>with 93 skills listed</quote><subject>skills listed</subject><value>93</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C35" sentence="S83">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S83"><quote>The note covers three points</quote><subject>note</subject><value>3</value><unit>points</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S83:
+Reader A: <entry sentence="S83"><quote>2026-10-03</quote><subject>the measured cut</subject><value>2026-10-03</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>with 93 skills listed</quote><subject>skills listed</subject><value>93</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C36" sentence="S83">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S83"><quote>with 93 skills listed</quote><subject>skills listed</subject><value>93</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S83:
+Reader A: <entry sentence="S83"><quote>2026-10-03</quote><subject>the measured cut</subject><value>2026-10-03</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S83"><quote>The note covers three points</quote><subject>note</subject><value>3</value><unit>points</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C37" sentence="S85">
+Reader A:
+<entry sentence="S85"><quote>**Baseline ≤ 3/5:**</quote><subject>Baseline</subject><value>3/5</value><unit>reps</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S85"><quote>Baseline ≤ 3/5</quote><subject>Baseline</subject><value>3/5</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S85:
+Reader B: <entry sentence="S85"><quote>one checklist line ("the primary trigger falls within the first ~150 characters")</quote><subject>checklist line</subject><value>"the primary trigger falls within the first ~150 characters"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C38" sentence="S85">
+Reader A:
+<entry sentence="S85"><quote>also add one checklist line ("the primary trigger falls within the first ~150 characters")</quote><subject>checklist line</subject><value>the primary trigger falls within the first ~150 characters</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S85"><quote>add one checklist line</quote><subject>checklist line</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S85:
+Reader B: <entry sentence="S85"><quote>one checklist line ("the primary trigger falls within the first ~150 characters")</quote><subject>checklist line</subject><value>"the primary trigger falls within the first ~150 characters"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C39" sentence="S85">
+Reader A:
+<entry sentence="S85"><quote>at least 4/5 passing</quote><subject>GREEN-test</subject><value>4/5</value><unit>reps</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S85"><quote>at least 4/5 passing</quote><subject>GREEN-test</subject><value>4/5</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S85:
+Reader B: <entry sentence="S85"><quote>one checklist line ("the primary trigger falls within the first ~150 characters")</quote><subject>checklist line</subject><value>"the primary trigger falls within the first ~150 characters"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C40" sentence="S85">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S85"><quote>one checklist line ("the primary trigger falls within the first ~150 characters")</quote><subject>checklist line</subject><value>"the primary trigger falls within the first ~150 characters"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C41" sentence="S86">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S86"><quote>with a `__main__` guard</quote><subject>guard</subject><value>"__main__"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C42" sentence="S89">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S89"><quote>`bayesian-workflow`: `calibration_check.py`, `check_diagnostics.py`, `diagnose_model.py`</quote><subject>bayesian-workflow</subject><value>["calibration_check.py", "check_diagnostics.py", "diagnose_model.py"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C43" sentence="S90">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S90"><quote>`describe-critique-methodology`: `check_decoupling.py`</quote><subject>describe-critique-methodology</subject><value>"check_decoupling.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C44" sentence="S91">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S91"><quote>`design-architecture`: `new_adr.py`</quote><subject>design-architecture</subject><value>"new_adr.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C45" sentence="S92">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S92"><quote>`explore-data`: `profile.py`</quote><subject>explore-data</subject><value>"profile.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C46" sentence="S93">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S93"><quote>`llm-wiki`: `bootstrap_wiki.py`, `distill_sessions.py`, `distill_specs.py`, `lint_wiki.py`</quote><subject>llm-wiki</subject><value>["bootstrap_wiki.py", "distill_sessions.py", "distill_specs.py", "lint_wiki.py"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C47" sentence="S94">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S94"><quote>`recommend-probabilistic-model`: `characterize.py`</quote><subject>recommend-probabilistic-model</subject><value>"characterize.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C48" sentence="S95">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S95"><quote>`recommend-visualization`: `recommend.py`</quote><subject>recommend-visualization</subject><value>"recommend.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C49" sentence="S96">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S96"><quote>`track-model-experiments`: `compare_experiments.py`</quote><subject>track-model-experiments</subject><value>"compare_experiments.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C50" sentence="S97">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S97"><quote>`writing-plans`: `deferred_stats.py`</quote><subject>writing-plans</subject><value>"deferred_stats.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C51" sentence="S98">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S98"><quote>The two `build.py` scripts (`classification-codes`, `geographic-codes`) already conform.</quote><subject>build.py</subject><value>["classification-codes", "geographic-codes"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C52" sentence="S99">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S99"><quote>`tune-hyperparameters/scripts/time_series_cv.py` has no `__main__` guard; it is a library imported into the user's code and stays header-less.</quote><subject>library</subject><value>"tune-hyperparameters/scripts/time_series_cv.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C53" sentence="S101">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S101"><quote>Follow the `build.py` template exactly</quote><subject>template</subject><value>"build.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C54" sentence="S102">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S102"><quote>Line 1 is `#!/usr/bin/env python3`</quote><subject>#!/usr/bin/env python3</subject><value>1</value><unit>Line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C55" sentence="S103">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S103"><quote>with single-quoted TOML strings</quote><subject>TOML strings</subject><value>"single-quoted"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S103:
+Reader B: <entry sentence="S103"><quote>a `requires-python`, and a `dependencies` list</quote><subject>block</subject><value>["requires-python", "dependencies"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C56" sentence="S103">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S103"><quote>a `requires-python`, and a `dependencies` list</quote><subject>block</subject><value>["requires-python", "dependencies"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S103:
+Reader B: <entry sentence="S103"><quote>with single-quoted TOML strings</quote><subject>TOML strings</subject><value>"single-quoted"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C57" sentence="S105">
+Reader A:
+<entry sentence="S105"><quote>Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes</quote><subject>`requires-python`</subject><value>['>=3.11', '>=3.12', '>=3.13']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+Context, other entries on S105:
+Reader B: <entry sentence="S105"><quote>Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes</quote><subject>script</subject><value>[">=3.11", ">=3.12", ">=3.13"]</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C58" sentence="S105">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S105"><quote>Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes</quote><subject>script</subject><value>[">=3.11", ">=3.12", ">=3.13"]</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S105:
+Reader A: <entry sentence="S105"><quote>Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes</quote><subject>`requires-python`</subject><value>['>=3.11', '>=3.12', '>=3.13']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C59" sentence="S112">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S112"><quote>a `try` whose handler catches `ImportError` or `ModuleNotFoundError`</quote><subject>handler</subject><value>["ImportError", "ModuleNotFoundError"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C60" sentence="S115">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S115"><quote>Every documented invocation in `skills/**/*.md`</quote><subject>documented invocation</subject><value>"skills/**/*.md"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C61" sentence="S116">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S116"><quote>Path forms in use: `<this-skill-dir>/scripts/x.py`, `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py` (llm-wiki's INSTALL.md), and repo-relative `skills/<skill>/scripts/build.py`.</quote><subject>Path forms</subject><value>["<this-skill-dir>/scripts/x.py", "<this-skill-dir>/../<skill>/scripts/x.py", "$LLM_WIKI_ROOT/scripts/x.py", "~/Projects/agent-skills/skills/llm-wiki/scripts/x.py", "skills/<skill>/scripts/build.py"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C62" sentence="S117">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S117"><quote>Each skill with such an invocation gets this sentence once</quote><subject>sentence</subject><value>1</value><unit>sentence</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C63" sentence="S120">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S120"><quote>That set includes `finishing-a-development-branch`</quote><subject>set</subject><value>"finishing-a-development-branch"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S120:
+Reader B: <entry sentence="S120"><quote>`finishing-a-development-branch`, which runs `writing-plans`' `deferred_stats.py`</quote><subject>finishing-a-development-branch</subject><value>"writing-plans' deferred_stats.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C64" sentence="S120">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S120"><quote>`finishing-a-development-branch`, which runs `writing-plans`' `deferred_stats.py`</quote><subject>finishing-a-development-branch</subject><value>"writing-plans' deferred_stats.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S120:
+Reader B: <entry sentence="S120"><quote>That set includes `finishing-a-development-branch`</quote><subject>set</subject><value>"finishing-a-development-branch"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C65" sentence="S121">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S121"><quote>Lint, in `check_frontmatter.py`.</quote><subject>Lint</subject><value>"check_frontmatter.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C66" sentence="S122">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S122"><quote>A `skills/*/scripts/*.py` file with a `__main__` guard</quote><subject>file</subject><value>"skills/*/scripts/*.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S122:
+Reader B: <entry sentence="S122"><quote>with a `__main__` guard</quote><subject>guard</subject><value>"__main__"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>carries a PEP 723 block</quote><subject>block</subject><value>"PEP 723"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>a PEP 723 block that parses with `tomllib`</quote><subject>PEP 723 block</subject><value>"tomllib"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>has `requires-python` and `dependencies`</quote><subject>PEP 723 block</subject><value>["requires-python", "dependencies"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C67" sentence="S122">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S122"><quote>with a `__main__` guard</quote><subject>guard</subject><value>"__main__"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S122:
+Reader B: <entry sentence="S122"><quote>A `skills/*/scripts/*.py` file with a `__main__` guard</quote><subject>file</subject><value>"skills/*/scripts/*.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>carries a PEP 723 block</quote><subject>block</subject><value>"PEP 723"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>a PEP 723 block that parses with `tomllib`</quote><subject>PEP 723 block</subject><value>"tomllib"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>has `requires-python` and `dependencies`</quote><subject>PEP 723 block</subject><value>["requires-python", "dependencies"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C68" sentence="S122">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S122"><quote>carries a PEP 723 block</quote><subject>block</subject><value>"PEP 723"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S122:
+Reader B: <entry sentence="S122"><quote>A `skills/*/scripts/*.py` file with a `__main__` guard</quote><subject>file</subject><value>"skills/*/scripts/*.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>with a `__main__` guard</quote><subject>guard</subject><value>"__main__"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>a PEP 723 block that parses with `tomllib`</quote><subject>PEP 723 block</subject><value>"tomllib"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>has `requires-python` and `dependencies`</quote><subject>PEP 723 block</subject><value>["requires-python", "dependencies"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C69" sentence="S122">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S122"><quote>a PEP 723 block that parses with `tomllib`</quote><subject>PEP 723 block</subject><value>"tomllib"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S122:
+Reader B: <entry sentence="S122"><quote>A `skills/*/scripts/*.py` file with a `__main__` guard</quote><subject>file</subject><value>"skills/*/scripts/*.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>with a `__main__` guard</quote><subject>guard</subject><value>"__main__"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>carries a PEP 723 block</quote><subject>block</subject><value>"PEP 723"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>has `requires-python` and `dependencies`</quote><subject>PEP 723 block</subject><value>["requires-python", "dependencies"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C70" sentence="S122">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S122"><quote>has `requires-python` and `dependencies`</quote><subject>PEP 723 block</subject><value>["requires-python", "dependencies"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S122:
+Reader B: <entry sentence="S122"><quote>A `skills/*/scripts/*.py` file with a `__main__` guard</quote><subject>file</subject><value>"skills/*/scripts/*.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>with a `__main__` guard</quote><subject>guard</subject><value>"__main__"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>carries a PEP 723 block</quote><subject>block</subject><value>"PEP 723"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S122"><quote>a PEP 723 block that parses with `tomllib`</quote><subject>PEP 723 block</subject><value>"tomllib"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C71" sentence="S124">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S124"><quote>stdlib is detected via `sys.stdlib_module_names`</quote><subject>stdlib</subject><value>"sys.stdlib_module_names"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C72" sentence="S126">
+Reader A:
+<entry sentence="S126"><quote>e.g. `yaml` → `pyyaml`</quote><subject>alias table</subject><value>yaml → pyyaml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S126"><quote>`yaml` → `pyyaml`</quote><subject>yaml</subject><value>"pyyaml"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C73" sentence="S128">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S128"><quote>No skill markdown invokes a resolving bundled-script path with bare `python` or `python3`</quote><subject>skill markdown</subject><value>["python", "python3"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C74" sentence="S129">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S129"><quote>such as `writing-skills/anthropic-best-practices.md`'s teaching example `scripts/migrate.py`, is not flagged</quote><subject>teaching example</subject><value>"scripts/migrate.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C75" sentence="S131">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S131"><quote>Execution proof**, one time</quote><subject>Execution proof</subject><value>1</value><unit>time</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C76" sentence="S132">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S132"><quote>never `/tmp` itself</quote><subject>scratch directory</subject><value>"/tmp"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S132:
+Reader B: <entry sentence="S132"><quote>each of the 16 scripts runs `uv run <absolute-path>`</quote><subject>scripts</subject><value>16</value><unit>scripts</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C77" sentence="S132">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S132"><quote>each of the 16 scripts runs `uv run <absolute-path>`</quote><subject>scripts</subject><value>16</value><unit>scripts</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S132:
+Reader B: <entry sentence="S132"><quote>never `/tmp` itself</quote><subject>scratch directory</subject><value>"/tmp"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C78" sentence="S133">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S133"><quote>`--help` alone is enough only for a script with no input-reading path</quote><subject>script with no input-reading path</subject><value>"--help"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C79" sentence="S134">
+Reader A:
+<entry sentence="S134"><quote>The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)</quote><subject>ArviZ-reading scripts</subject><value>[diagnose_model.py, calibration_check.py, compare_experiments.py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S134"><quote>The three ArviZ-reading scripts</quote><subject>ArviZ-reading scripts</subject><value>3</value><unit>scripts</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S134:
+Reader B: <entry sentence="S134"><quote>The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)</quote><subject>ArviZ-reading scripts</subject><value>["diagnose_model.py", "calibration_check.py", "compare_experiments.py"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S134"><quote>each read a small saved InferenceData fixture</quote><subject>fixture</subject><value>"InferenceData"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C80" sentence="S134">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S134"><quote>The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)</quote><subject>ArviZ-reading scripts</subject><value>["diagnose_model.py", "calibration_check.py", "compare_experiments.py"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S134:
+Reader B: <entry sentence="S134"><quote>each read a small saved InferenceData fixture</quote><subject>fixture</subject><value>"InferenceData"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C81" sentence="S134">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S134"><quote>each read a small saved InferenceData fixture</quote><subject>fixture</subject><value>"InferenceData"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S134:
+Reader B: <entry sentence="S134"><quote>The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)</quote><subject>ArviZ-reading scripts</subject><value>["diagnose_model.py", "calibration_check.py", "compare_experiments.py"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C82" sentence="S135">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S135"><quote>a directory holding an unrelated `pyproject.toml`</quote><subject>directory</subject><value>"pyproject.toml"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S135:
+Reader B: <entry sentence="S135"><quote>One script is also run from inside a directory holding an unrelated `pyproject.toml`.</quote><subject>script</subject><value>1</value><unit>script</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C83" sentence="S139">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S139"><quote>Each skill directory carries regular files (never symlinks, which `install.py --copy` refuses)</quote><subject>files</subject><value>"regular files"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C84" sentence="S141">
+Reader A:
+<entry sentence="S141"><quote>`LICENSE` | every skill under `skills/`</quote><subject>`LICENSE`</subject><value>every skill under skills/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S141"><quote>`LICENSE` | every skill under `skills/`</quote><subject>every skill under `skills/`</subject><value>"LICENSE"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C85" sentence="S142">
+Reader A:
+<entry sentence="S142"><quote>`LICENSE-superpowers` | the 13 superpowers skills</quote><subject>`LICENSE-superpowers`</subject><value>the 13 superpowers skills</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+(no entry)
+Context, other entries on S142:
+Reader B: <entry sentence="S142"><quote>`LICENSE-superpowers` | the 13 superpowers skills</quote><subject>superpowers skills</subject><value>"LICENSE-superpowers"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S142"><quote>the 13 superpowers skills</quote><subject>superpowers skills</subject><value>13</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C86" sentence="S142">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S142"><quote>`LICENSE-superpowers` | the 13 superpowers skills</quote><subject>superpowers skills</subject><value>"LICENSE-superpowers"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S142:
+Reader A: <entry sentence="S142"><quote>`LICENSE-superpowers` | the 13 superpowers skills</quote><subject>`LICENSE-superpowers`</subject><value>the 13 superpowers skills</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S142"><quote>the 13 superpowers skills</quote><subject>superpowers skills</subject><value>13</value><unit>skills</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C87" sentence="S143">
+Reader A:
+<entry sentence="S143"><quote>`LICENSE-coding-skills` | `bayesian-workflow`, `clean-code`</quote><subject>`LICENSE-coding-skills`</subject><value>[bayesian-workflow, clean-code]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S143"><quote>`LICENSE-coding-skills` | `bayesian-workflow`, `clean-code`</quote><subject>`bayesian-workflow`, `clean-code`</subject><value>"LICENSE-coding-skills"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C88" sentence="S144">
+Reader A:
+<entry sentence="S144"><quote>`LICENSE-andorra` | `bayesian-workflow` | only if R4.5 finds an upstream notice</quote><subject>`LICENSE-andorra`</subject><value>[bayesian-workflow]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S144"><quote>`LICENSE-andorra` | `bayesian-workflow` | only if R4.5 finds an upstream notice</quote><subject>bayesian-workflow</subject><value>"LICENSE-andorra"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C89" sentence="S145">
+Reader A:
+<entry sentence="S145"><quote>driven by one `BUNDLED_LICENSES` table</quote><subject>table</subject><value>BUNDLED_LICENSES</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S145"><quote>driven by one `BUNDLED_LICENSES` table</quote><subject>table</subject><value>1</value><unit>table</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S145:
+Reader B: <entry sentence="S145"><quote>one `BUNDLED_LICENSES` table</quote><subject>table</subject><value>"BUNDLED_LICENSES"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S145"><quote>`LICENSE` implied for every skill</quote><subject>every skill</subject><value>"LICENSE"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C90" sentence="S145">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S145"><quote>one `BUNDLED_LICENSES` table</quote><subject>table</subject><value>"BUNDLED_LICENSES"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S145:
+Reader B: <entry sentence="S145"><quote>`LICENSE` implied for every skill</quote><subject>every skill</subject><value>"LICENSE"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C91" sentence="S145">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S145"><quote>`LICENSE` implied for every skill</quote><subject>every skill</subject><value>"LICENSE"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S145:
+Reader B: <entry sentence="S145"><quote>one `BUNDLED_LICENSES` table</quote><subject>table</subject><value>"BUNDLED_LICENSES"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C92" sentence="S148">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S148"><quote>No skill directory holds a `LICENSE*` file outside its mapping.</quote><subject>skill directory</subject><value>"LICENSE*"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C93" sentence="S150">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S150"><quote>its CLAUDE.md command keeps no `--with`</quote><subject>CLAUDE.md command</subject><value>"--with"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C94" sentence="S153">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S153"><quote>NOTICE gains one paragraph near the top</quote><subject>NOTICE</subject><value>1</value><unit>paragraph</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C95" sentence="S154">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S154"><quote>`check_provenance.py` enforces the copies</quote><subject>copies</subject><value>"check_provenance.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C96" sentence="S155">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S155"><quote>README's License section gains one sentence</quote><subject>README's License section</subject><value>1</value><unit>sentence</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C97" sentence="S156">
+Reader A:
+<entry sentence="S156"><quote>under the `claude-md-size` check's 200-line limit</quote><subject>CLAUDE.md's provenance section</subject><value>200</value><unit>lines</unit><edge>out</edge><default>none</default><other_reading><value>200</value><unit>lines</unit><edge>in</edge><default>none</default></other_reading></entry>
+Reader B:
+<entry sentence="S156"><quote>under the `claude-md-size` check's 200-line limit</quote><subject>CLAUDE.md</subject><value>200</value><unit>line</unit><edge>in</edge><default>none</default><other_reading><value>200</value><unit>line</unit><edge>out</edge><default>none</default></other_reading></entry>
+</case>
+
+<case id="C98" sentence="S158">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S158"><quote>Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its license.</quote><subject>original PyMC Bayesian-workflow skill</subject><value>"Alexandre Andorra"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C99" sentence="S159">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S159"><quote>There are three outcomes</quote><subject>outcomes</subject><value>3</value><unit>outcomes</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C100" sentence="S160">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S160"><quote>map it to `bayesian-workflow`</quote><subject>LICENSE-andorra</subject><value>"bayesian-workflow"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S160:
+Reader B: <entry sentence="S160"><quote>extend NOTICE's `bayesian-workflow/` block</quote><subject>NOTICE</subject><value>"bayesian-workflow/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C101" sentence="S160">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S160"><quote>extend NOTICE's `bayesian-workflow/` block</quote><subject>NOTICE</subject><value>"bayesian-workflow/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S160:
+Reader B: <entry sentence="S160"><quote>map it to `bayesian-workflow`</quote><subject>LICENSE-andorra</subject><value>"bayesian-workflow"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C102" sentence="S161">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S161"><quote>Upstream declares MIT but ships no notice.</quote><subject>Upstream</subject><value>"MIT"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C103" sentence="S167">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S167"><quote>D is independent of C and may run alongside it.</quote><subject>D</subject><value>"C"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C104" sentence="S168">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S168"><quote>A — R1.</quote><subject>A</subject><value>"R1"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S168:
+Reader B: <entry sentence="S168"><quote>Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix</quote><subject>superpowers frontmatter additions</subject><value>13</value><unit>additions</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C105" sentence="S168">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S168"><quote>Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix</quote><subject>superpowers frontmatter additions</subject><value>13</value><unit>additions</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S168:
+Reader B: <entry sentence="S168"><quote>A — R1.</quote><subject>A</subject><value>"R1"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C106" sentence="S169">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S169"><quote>B — R4.</quote><subject>B</subject><value>"R4"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C107" sentence="S170">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S170"><quote>C — R3.</quote><subject>C</subject><value>"R3"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C108" sentence="S171">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S171"><quote>D — R2.</quote><subject>D</subject><value>"R2"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C109" sentence="S173">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S173"><quote>Conformance register** (`specs/completed/claude-code-guide-conformance.md`, R6)</quote><subject>Conformance register</subject><value>"specs/completed/claude-code-guide-conformance.md"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C110" sentence="S174">
+Reader A:
+<entry sentence="S174"><quote>stay under the `claude-md-size` check's 200-line limit in `build/cc_guide/conformance.toml`</quote><subject>The CLAUDE.md lines from R1.9 and R4.4</subject><value>200</value><unit>lines</unit><edge>out</edge><default>none</default><other_reading><value>200</value><unit>lines</unit><edge>in</edge><default>none</default></other_reading></entry>
+Reader B:
+<entry sentence="S174"><quote>The CLAUDE.md lines from R1.9 and R4.4 stay under the `claude-md-size` check's 200-line limit</quote><subject>CLAUDE.md</subject><value>200</value><unit>line</unit><edge>in</edge><default>none</default><other_reading><value>200</value><unit>line</unit><edge>out</edge><default>none</default></other_reading></entry>
+</case>
+
+<case id="C111" sentence="S176">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S176"><quote>the same change removes or narrows that `[[exception]]`</quote><subject>change</subject><value>"[[exception]]"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S176:
+Reader B: <entry sentence="S176"><quote>runs `build/check_conformance.py`</quote><subject>change</subject><value>"build/check_conformance.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C112" sentence="S176">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S176"><quote>runs `build/check_conformance.py`</quote><subject>change</subject><value>"build/check_conformance.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S176:
+Reader B: <entry sentence="S176"><quote>the same change removes or narrows that `[[exception]]`</quote><subject>change</subject><value>"[[exception]]"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C113" sentence="S180">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S180"><quote>State test changes as +N deltas</quote><subject>test changes</subject><value>"+N"</value><unit>deltas</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C114" sentence="S181">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S181"><quote>check `specs/plans/` on every branch (`git ls-tree`)</quote><subject>plan id</subject><value>"specs/plans/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S181:
+Reader B: <entry sentence="S181"><quote>check `specs/plans/` on every branch (`git ls-tree`)</quote><subject>specs/plans/</subject><value>"git ls-tree"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C115" sentence="S181">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S181"><quote>check `specs/plans/` on every branch (`git ls-tree`)</quote><subject>specs/plans/</subject><value>"git ls-tree"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S181:
+Reader B: <entry sentence="S181"><quote>check `specs/plans/` on every branch (`git ls-tree`)</quote><subject>plan id</subject><value>"specs/plans/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C116" sentence="S182">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S182"><quote>Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`</quote><subject>JAX spec</subject><value>"specs/jax-deep-learning-skills.md"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S182:
+Reader B: <entry sentence="S182"><quote>`specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills`</quote><subject>specs/jax-deep-learning-skills.md</subject><value>"codex/jax-deep-learning-skills"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C117" sentence="S182">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S182"><quote>`specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills`</quote><subject>specs/jax-deep-learning-skills.md</subject><value>"codex/jax-deep-learning-skills"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S182:
+Reader B: <entry sentence="S182"><quote>Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`</quote><subject>JAX spec</subject><value>"specs/jax-deep-learning-skills.md"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C118" sentence="S186">
+Reader A:
+<entry sentence="S186"><quote>`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)</quote><subject>`check_frontmatter.py`</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B:
+<entry sentence="S186"><quote>`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)</quote><subject>check_frontmatter.py</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S186:
+Reader B: <entry sentence="S186"><quote>the only `WARN` is `writing-skills`' body length</quote><subject>WARN</subject><value>"writing-skills"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C119" sentence="S186">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S186"><quote>the only `WARN` is `writing-skills`' body length</quote><subject>WARN</subject><value>"writing-skills"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C120" sentence="S187">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S187"><quote>`check_provenance.py`</quote><subject>check_provenance.py</subject><value>"check_provenance.py"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C121" sentence="S188">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S188"><quote>`check_snippets.py skills/`</quote><subject>check_snippets.py</subject><value>"skills/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S188:
+Reader B: <entry sentence="S188"><quote>`check_snippets.py skills/` (Tier 1)</quote><subject>check_snippets.py skills/</subject><value>1</value><unit>Tier</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C122" sentence="S188">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S188"><quote>`check_snippets.py skills/` (Tier 1)</quote><subject>check_snippets.py skills/</subject><value>1</value><unit>Tier</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S188:
+Reader B: <entry sentence="S188"><quote>`check_snippets.py skills/`</quote><subject>check_snippets.py</subject><value>"skills/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C123" sentence="S190">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S190"><quote>the full `build/` suite</quote><subject>suite</subject><value>"build/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C124" sentence="S191">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S191"><quote>`sync_runtime_assets.py --check`</quote><subject>sync_runtime_assets.py</subject><value>"--check"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C125" sentence="S197">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S197"><quote>`codex debug prompt-input` lists every skill under `skills/` by name</quote><subject>skill</subject><value>"codex debug prompt-input"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C126" sentence="S200">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S200"><quote>about 20 labeled queries per skill</quote><subject>Trigger-eval suites</subject><value>20</value><unit>labeled queries per skill</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C127" sentence="S203">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S203"><quote>a Claude Code `marketplace.json`, `npx skills`, `gh skill`, or a Codex plugin</quote><subject>Distribution channels</subject><value>["marketplace.json", "npx skills", "gh skill", "Codex plugin"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C128" sentence="S206">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S206"><quote>Codex adapters for `/deferred`, `/fix-issue`, `/license-audit`</quote><subject>Codex adapters</subject><value>["/deferred", "/fix-issue", "/license-audit"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S206:
+Reader B: <entry sentence="S206"><quote>as manual-only skills with `agents/openai.yaml`</quote><subject>manual-only skills</subject><value>"agents/openai.yaml"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C129" sentence="S206">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S206"><quote>as manual-only skills with `agents/openai.yaml`</quote><subject>manual-only skills</subject><value>"agents/openai.yaml"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S206:
+Reader B: <entry sentence="S206"><quote>Codex adapters for `/deferred`, `/fix-issue`, `/license-audit`</quote><subject>Codex adapters</subject><value>["/deferred", "/fix-issue", "/license-audit"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C130" sentence="S208">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S208"><quote>Tables of contents for long `references/` files</quote><subject>Tables of contents</subject><value>"references/"</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C131" sentence="S210">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S210"><quote>Splitting `writing-skills`** below 500 body lines</quote><subject>writing-skills</subject><value>500</value><unit>body lines</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C132" sentence="S211">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S211"><quote>CHANGELOG, git tags, and `metadata.version` bumps</quote><subject>versioning policy</subject><value>["CHANGELOG", "git tags", "metadata.version"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C133" sentence="S214">
+Reader A:
+(no entry)
+Reader B:
+<entry sentence="S214"><quote>`agents/code-reviewer.md` and `agents/task-reviewer.md`</quote><subject>single-file agents</subject><value>["agents/code-reviewer.md", "agents/task-reviewer.md"]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+Reply with exactly one <rulings> block and nothing else. Give each case one <ruling> element:
+
+<rulings>
+<ruling case="C<n>" verdict="reading|no-value|unclear"><quote>the words that decide the case, copied word for word (empty for unclear)</quote><value>...</value><unit>...</unit><edge>...</edge><default>...</default></ruling>
+</rulings>
+
+Write the four slots only with the verdict reading. Write text as it is, with no XML escapes.

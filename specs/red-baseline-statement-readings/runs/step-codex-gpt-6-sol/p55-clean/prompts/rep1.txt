@@ -1,0 +1,1329 @@
+A reader stated, from the spec alone, what the spec asks. Each case below is a sentence where the reader states a value that needs a ruling, or where the reader names another reading.
+
+For each case, rule on the reading that the text supports. Give the verdict `reading` with its value, unit, edge and default, or `no-value` when the sentence states no value. Quote the words that decide the case, word for word, from the numbered spec. When no words decide it, rule `unclear` with an empty quote.
+
+You see no plan. You have no tools, and you edit no file.
+
+The slot forms: `value` is a literal in plain notation (a number, a string, a list in brackets, a date or time). `unit` is what the value counts or measures, or `none`. `edge` says, for each limit in the value, whether the limit itself is in: `in`, `out`, or `n/a` with no limit. `default` is the value used when the input is absent, or `none`.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
+
+<spec>
+# Test-suite registry and runner — Design Spec
+S1. **Status:** Design approved in brainstorming on 2026-10-18.
+S2. Next step: an implementation plan from the writing-plans skill (`entry_check.py` reported plan id 54 as next free on 2026-10-18).
+
+## What this builds
+S3. A registry of the repo's directory-scoped pytest suites, a runner that reads it, and a commit lint that keeps it complete:
+S4. - `build/suites.toml` holds one entry per suite: its directory, its `--with` deps, the extra deps that unlock its skips, its interpreters, and its notes.
+S5. - `build/run_suites.py` (stdlib only) lists the suites, runs one or more of them, runs all of them, and checks the registry.
+S6. - `run_suites.py --check` becomes the ninth commit lint.
+S7. It fails when a directory that holds tests is not registered.
+S8. The root `CLAUDE.md` then replaces its per-suite commands with a short block that points at the runner.
+
+## Why
+S9. - **The 200-line limit.** The `claude-md-size` check (a commit lint, through `build/check_conformance.py`) fails at 200 lines.
+S10. `CLAUDE.md` had 199 on `main` at `456e3fb`.
+S11. Its Commands block spends lines 66–125, 60 lines, on one `cd <dir> && uv run … python -m pytest -q` command and comment per suite.
+S12. Each new suite costs two or three more lines.
+S13. - **Three plans competed for the last lines on 2026-10-18.** Plan 50 (the superpowers upstream fixes, lowmason/agent-skills#56) took the file from 195 to 199.
+S14. Plan 52 (the write-with-asd-ste100 skill, not merged) needs two more lines.
+S15. Its open question Q4 asked where they come from: (a) fold seven suites under one comment, (b) record a size deviation, or (c) move the per-suite commands out of the root file first.
+S16. This spec is option (c).
+S17. - **Plan 38 fixed the same problem once.** In plan 38, Task 2 condensed `CLAUDE.md` from 224 lines to 170 and kept every command in place.
+S18. The file then grew back to 199 by 2026-10-18.
+S19. A registry removes the per-suite growth.
+S20. - **Compound commands.** Worktree-isolated sessions and their subagents have refused compound shell such as `cd X && Y` (seen on 2026-10-12).
+S21. A runner gives each suite a single simple command.
+
+## Decisions taken in brainstorming
+S22. The owner took these decisions on 2026-10-18.
+S23. Each records the option that the owner chose.
+S24. 1. **The coverage guard is a ninth commit lint:** "`run_suites.py --check` joins build/run_commit_lints.sh, so the pre-commit hook and CI run it."
+S25. 2. **Plan 52's Q4 is (c):** "This work lands whole, registry and CLAUDE.md shrink, ahead of plan 52's Task 6.
+S26. Task 6 then adds one build/suites.toml entry instead of editing Commands.
+S27. Plan 52's planning session amends its plan to match and records Q4 as (c)."
+S28. 3. **Approach A:** "build/suites.toml (data) + build/run_suites.py (stdlib, tomllib).
+S29. Matches conformance.toml and manifest.toml.
+S30. One central file, sorted by name."
+S31. Rejected: a Python list inside the runner (every suite change becomes a code edit), and one manifest per suite directory (`install.py` copies skill directories, so the manifests would ship with installed skills).
+S32. An `@`-imported document was ruled out before the vote: the guide says imported files load at launch too, so it only moves lines.
+S33. 4. **Design section 1** (the registry keys and the runner's behaviour) was approved as presented.
+S34. It is R1–R3 below.
+S35. 5. **Design section 2** (the guard, the file edits, the tests and the couplings) was approved as presented.
+S36. It is R4–R7 below.
+
+### R1 — Scope
+S37. R1.1 The registry holds every **directory suite**: a directory where pytest runs as a whole, with no selection argument.
+S38. On `main` at `456e3fb` there are 18: the 17 in `CLAUDE.md` lines 66–125, and `build/cc_guide`, whose command is line 145.
+S39. R1.2 These commands **stay literal in `CLAUDE.md`**.
+S40. They are selections or tools, not directory suites, and their comments say when to run them:
+S41. - `test_runtime_support.py` (lines 63–64), `test_commit_lints.py`, the `-k declared_dependencies` and `-k test_real_skill` lints, `test_check_jax_examples.py`, and the "Single test" example;
+S42. - the commit lints, the snippet tiers, the JAX CPU examples, the smoke test, the two `build.py` rebuilds, `verify_citations.py`, `extract_structure.py`, and `cli.py lint` and `check`.
+S43. R1.3 `build/run_commit_lints.sh` keeps its literal commands.
+S44. It does not call the runner, except for the new `--check` lint (R4).
+
+### R2 — The registry: `build/suites.toml`
+S45. R2.1 One `[[suite]]` table per directory suite, sorted by `name`.
+S46. A header comment states the keys, the sort order, and that the ninth commit lint checks the file.
+S47. R2.2 Keys:
+S48. | Key | Type | Required | Meaning |
+S49. | `name` | string | yes | The name that the runner takes. A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`. |
+S50. | `dir` | string | yes | The repo-relative directory that pytest runs from. |
+S51. | `with` | list of strings | yes | The default `--with` deps, in the order the current command gives them. It includes `pytest`. |
+S52. | `extras` | list of strings | no | The deps that unlock skips. Only `--extras` adds them. |
+S53. | `pythons` | list of strings | no | The interpreters, one run each, in order. Default `['3.13']`. |
+S54. | `notes` | list of strings | no | What the suite covers or needs: opt-in environment variables, expected warnings, run times, why some tests skip or fail. |
+S55. R2.3 The entries carry the text of today's commands and comments.
+S56. Every command, dependency and note survives; the only change is the form.
+S57. The inventory, from `CLAUDE.md` at `456e3fb`:
+S58. | `name` | `dir` | `with` (after `pytest`) | `extras` | `pythons` |
+S59. | `bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default |
+S60. | `brainstorming` | `skills/brainstorming/scripts` | — | — | default |
+S61. | `build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default |
+S62. | `cc-guide` | `build/cc_guide` | — | — | default |
+S63. | `classification-codes` | `skills/classification-codes/scripts` | polars | — | default |
+S64. | `describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default |
+S65. | `design-architecture` | `skills/design-architecture/scripts` | — | — | default |
+S66. | `explore-data` | `skills/explore-data/scripts` | polars | — | default |
+S67. | `geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default |
+S68. | `hooks` | `hooks` | — | — | 3.13, /usr/bin/python3 |
+S69. | `llm-wiki` | `skills/llm-wiki/scripts` | — | — | default |
+S70. | `recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default |
+S71. | `recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default |
+S72. | `subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default |
+S73. | `systematic-debugging` | `skills/systematic-debugging` | — | — | default |
+S74. | `track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default |
+S75. | `tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default |
+S76. | `writing-plans` | `skills/writing-plans/scripts` | — | — | default |
+S77. The notes carry the rest of each comment.
+S78. Examples: `build`'s missing `build/.scratch/` in a fresh clone or worktree; `bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep and its expected arviz warnings; `llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`; `brainstorming`'s node skip; `tune-hyperparameters`' "`--with sklearn` fails"; `track-model-experiments`' run time; the guard's 3.9 floor, its launchd-PATH skips and its Gate B probe for `hooks`.
+
+### R3 — The runner: `build/run_suites.py`
+S79. R3.1 Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13.
+S80. Invoked as `uv run --python 3.13 python build/run_suites.py …` from any directory.
+S81. It finds the repo root from its own path, never from the working directory.
+S82. R3.2 **One run** is one interpreter of one suite.
+S83. Its command is `uv run --python <python> --with <dep> … python -m pytest -q [<args>]`, run with the suite's `dir` as its working directory.
+S84. Its shell form is `cd <dir> && <command>`, with shell quoting where a word needs it.
+S85. With default options, the shell form equals the suite's current `CLAUDE.md` command, character for character.
+S86. For `hooks`, whose line chains two runs as `cd hooks && A && B`, the two shell forms are `cd hooks && A` and `cd hooks && B`.
+S87. R3.3 **`--list [NAME …]`** prints, for each named suite (default: all): its name and directory, the shell form of each run, its extras, and its notes.
+S88. `--extras` and the `--` arguments apply here too, so `--list` prints the exact command that a run would use.
+S89. R3.4 **`NAME [NAME …]`** runs the named suites, in the order given, one run per interpreter in `pythons`.
+S90. Each run starts with a `== <name> (<python>)` header, and the suite's notes follow its first run's header.
+S91. Then pytest's output streams.
+S92. A failed run does not stop the next one.
+S93. R3.5 **`--extras`** adds each suite's `extras` after its `with` deps.
+S94. Arguments after **`--`** go to pytest (a test node ID, `-k`, `-s`, `-rs`) in every run.
+S95. R3.6 **`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`.
+S96. Today that is `cc-guide`: `cd build && pytest` collects `build/cc_guide` already.
+S97. `--all` prints one line for each suite that it skips.
+S98. A suite named on the command line always runs.
+S99. R3.7 **Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected, counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation.
+S100. The last line names the failed runs, or says that every run passed.
+S101. A run whose `uv` cannot start counts as failed.
+S102. R3.8 The runner passes its environment to every run unchanged.
+S103. `CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s` therefore runs the sweep.
+S104. R3.9 Validation fails closed.
+S105. An unknown key, a missing required key, a wrong type, a duplicate name or directory, or a `with` list without `pytest` stops `--list`, a named run and `--all` with exit 2.
+S106. `--check` reports the same failures as findings (R4.3).
+S107. A misspelled key can therefore never run a suite without its deps.
+
+### R4 — The guard: `run_suites.py --check`
+S108. R4.1 `--check` reports two kinds of findings:
+S109. - **registry:** R3.9's validation, plus a registered `dir` that does not exist or holds no pytest file;
+S110. - **coverage:** a directory that holds a pytest file (`test_*.py` or `*_test.py`, pytest's default patterns) and does not lie inside any registered `dir`.
+S111. R4.2 The file list is `git ls-files --cached --others --exclude-standard`, run at the repo root.
+S112. Ignored trees, `.claude/worktrees/` and `build/.scratch/` among them, drop out.
+S113. Untracked new suites count, as the hook's other lints read untracked drafts too.
+S114. If git fails, `--check` fails.
+S115. R4.3 Output: `suite registry ok` and exit 0, or one line per finding and exit 1.
+S116. R4.4 `build/run_commit_lints.sh` runs it as the ninth lint, named `suite_registry`: `run suite_registry uv run --python 3.13 python build/run_suites.py --check`.
+S117. Its header says "nine".
+
+### R5 — `CLAUDE.md` and the other edits
+S118. R5.1 `CLAUDE.md`, from `main` at `456e3fb`:
+S119. | Lines | Change |
+S120. | 60 | Rewrite the intro paragraph. Drop "There is no root test runner" and the sentence that comments name the skip-unlocking deps. Keep the uv and Python 3.13 rule, the directory scope, and the `test_build.py` basename-collision reason. Name `build/suites.toml` and `build/run_suites.py`, and say that the runner prints a suite's notes before it runs. One line. |
+S121. | 66–125 | Replace with one block: a comment, then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands. |
+S122. | 127–132 | The commit-lint comment names the suite-registry check and says "nine". Same number of lines. Line 133 is not touched (plan 53's Task 7 edits it). |
+S123. | 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `run_suites.py cc-guide` instead of "its suite". |
+S124. The file ends at about 145 lines.
+S125. The new text states no count of suites or tests (the `claude-md-count-claims` check).
+S126. R5.2 The deletion of lines 66–125 is bounded by two lines that no other plan edits: the `# Full build-directory tests` comment and the `cd hooks && …` command.
+S127. Whatever lies between them goes, so the edit works in either landing order with plan 52 (R7.1).
+S128. R5.3 `build/CLAUDE.md`: "the eight commit lints" becomes "the nine commit lints", and one sentence names `suites.toml` and `run_suites.py` and says that `--check` is a commit lint.
+S129. R5.4 `build/test_check_conformance.py`: `test_claude_md_import_resolves_passes_on_the_repo` asserts `'@needs_pilot' in text` as its positive control, and that note moves to the registry.
+S130. The control becomes a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp.
+S131. A naive scan would flag the `@` in it, and the stamp keeps its form when its version changes.
+S132. R5.5 No change to `AGENTS.md`, `GEMINI.md`, `.github/workflows/lints.yml`, `install.py` or `NOTICE`.
+S133. The new files are the owner's original tooling.
+S134. The register's deviation `claude-md-serves-codex-gemini` still holds as written: a condensed Commands block stays in the root file, and the registry is a plain file that every runtime can read.
+
+### R6 — Tests
+S135. R6.1 `build/test_run_suites.py`, stdlib and pytest only, which the build suite collects.
+S136. It covers:
+S137. - validation: each R3.9 failure, with exit 2;
+S138. - commands: the default argv and shell form, two `pythons` runs, `--extras`, `--` arguments, quoting;
+S139. - `--list` output for a fixture registry;
+S140. - the `--all` nesting rule, and that a named nested suite runs;
+S141. - running, through an injected run function so the tests start no real `uv`: every run happens after a failure; exit 0, 1 and 2; exit 5 counts as failed; the notes print before the first run;
+S142. - `--check` on throwaway git repos: an unregistered test directory, a missing registered directory, a registered directory without tests, an ignored directory (no finding), an untracked test directory (a finding);
+S143. - the real registry: `--check` passes on the repo.
+S144. R6.2 `build/test_commit_lints.py`: `suite_registry` joins `CHECKS`, and `test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py` in a clone and asserts that `suite_registry` is the only failed lint.
+S145. R6.3 Write each test before its code and see it fail first (red, then green).
+
+### R7 — Couplings with other plans
+S146. R7.1 **Plan 52 (write-with-asd-ste100).** Under decision 2, plan 52's Task 6 drops its `CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits and adds one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts` instead.
+S147. Its expectations of 199 and 197 lines (Task 1, DF19, Q4, Coupling (e)) change with it.
+S148. Its `CLAUDE.md:sources` and `CLAUDE.md:bullet` edits are outside the Commands block and still apply.
+S149. A note in the session group's shared notes folder gives the exact entry.
+S150. Until plan 52 adds the entry, the ninth lint refuses its new suite directory.
+S151. If plan 52 lands first after all, R5.2's deletion still works, and this plan registers that suite itself.
+S152. R7.2 **Plan 53 (agent-skills portability).** None of the lines that R5.1 deletes carries one of its edit anchors.
+S153. Its Task 7 edits line 133, which stays.
+S154. Its own suite commands are written out in full in the plan, so they work without `CLAUDE.md`.
+S155. R7.3 **Plan 51 (drift automation, rebaseline pin).** It edits one sentence of `build/CLAUDE.md`'s `cc_guide/` paragraph.
+S156. R5.3 edits the `run_commit_lints.sh` paragraph and adds a sentence.
+S157. If an edit block does not match, merge by hand.
+
+## Testing
+S158. - **R6's tests** run red first, then green.
+S159. - **The Stage 2 audit** (one time, a scratch script that is never committed, as in plan 38's Task 2).
+S160. Run it before the `CLAUDE.md` deletion.
+S161. It extracts every `cd <dir> && uv run …` command from lines 66–125 and 145, splitting the hooks `&&` chain into one command per run.
+S162. It asserts that the set equals the set of default shell forms that `--list` prints: nothing is missing on either side.
+S163. It also checks each comment's skip-unlocking deps against that suite's `extras`.
+S164. - **Behaviour.** Run `hooks`, `build` and `bayesian-workflow` once directly and once through the runner, in the same checkout.
+S165. Their pytest summary lines match.
+S166. Then run `--all` once, and record each run's result beside the direct result.
+S167. - **Gates.** `uv run --python 3.13 python build/run_suites.py --check` prints `suite registry ok`.
+S168. The build suite passes (where the missing `build/.scratch/` lets it).
+S169. `bash build/run_commit_lints.sh` prints `commit lints passed`.
+
+## Done when
+S170. 1. `build/suites.toml` registers every directory suite (R2.3) and `--check` passes.
+S171. 2. `build/run_suites.py` and its tests are committed, and the ninth lint runs in `run_commit_lints.sh`.
+S172. 3. The Stage 2 audit passes, and the behaviour runs match.
+S173. 4. `CLAUDE.md` has no directory-suite command left (R5.1) and stays under 200 lines.
+S174. 5. `bash build/run_commit_lints.sh` prints `commit lints passed`.
+S175. 6. The shared note for plan 52 (R7.1) is written.
+
+## Consequences to know
+S176. - Agents no longer see each suite's notes at session start.
+S177. They see them in `--list`, and the runner prints them before it runs a suite.
+S178. - No commit can add a test directory without a registry entry, plan 52's new suite included.
+S179. - The commit hook runs one more fast, stdlib-only check.
+S180. - Codex and Gemini reach the runner commands through `AGENTS.md` and `GEMINI.md`, as before.
+
+## Out of scope (deferred items)
+S181. - CI running the suites (`--all` in `.github/workflows/lints.yml`).
+S182. It would need node, a 3.9 `/usr/bin/python3` and `build/.scratch/`.
+S183. Size: design.
+S184. Revisit if: the owner wants suites in CI.
+S185. - Parallel runs, per-suite timeouts and machine-readable output.
+S186. Size: plan.
+S187. Revisit if: `--all` gets slow or a tool needs to parse its results.
+S188. - Moving the lint, snippet, JAX, smoke, rebuild and citation commands into the runner.
+S189. Size: design.
+S190. Revisit if: `CLAUDE.md` nears its limit again.
+</spec>
+
+The cases follow. Rule only on the entries under the reader names. The lines after `Context` are the readers' other entries on the same sentence, for context only.
+
+<case id="C1" sentence="S4">
+Reader A:
+<entry sentence="S4"><quote>`build/suites.toml` holds one entry per suite</quote><subject>`build/suites.toml`</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S4:
+Reader A: <entry sentence="S4"><quote>one entry per suite</quote><subject>suite</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C2" sentence="S4">
+Reader A:
+<entry sentence="S4"><quote>one entry per suite</quote><subject>suite</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S4:
+Reader A: <entry sentence="S4"><quote>`build/suites.toml` holds one entry per suite</quote><subject>`build/suites.toml`</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C3" sentence="S5">
+Reader A:
+<entry sentence="S5"><quote>`build/run_suites.py` (stdlib only)</quote><subject>`build/run_suites.py`</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C4" sentence="S6">
+Reader A:
+<entry sentence="S6"><quote>`run_suites.py --check` becomes the ninth commit lint</quote><subject>`run_suites.py --check`</subject><value>run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S6:
+Reader A: <entry sentence="S6"><quote>the ninth commit lint</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C5" sentence="S24">
+Reader A:
+<entry sentence="S24"><quote>`run_suites.py --check` joins build/run_commit_lints.sh</quote><subject>commit lint</subject><value>run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S24:
+Reader A: <entry sentence="S24"><quote>a ninth commit lint</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C6" sentence="S24">
+Reader A:
+<entry sentence="S24"><quote>a ninth commit lint</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S24:
+Reader A: <entry sentence="S24"><quote>`run_suites.py --check` joins build/run_commit_lints.sh</quote><subject>commit lint</subject><value>run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C7" sentence="S25">
+Reader A:
+<entry sentence="S25"><quote>Plan 52's Q4 is (c)</quote><subject>Q4</subject><value>(c)</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C8" sentence="S26">
+Reader A:
+<entry sentence="S26"><quote>one build/suites.toml entry</quote><subject>build/suites.toml entry</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C9" sentence="S27">
+Reader A:
+<entry sentence="S27"><quote>records Q4 as (c)</quote><subject>Q4</subject><value>(c)</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C10" sentence="S28">
+Reader A:
+<entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S28:
+Reader A: <entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C11" sentence="S28">
+Reader A:
+<entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S28:
+Reader A: <entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C12" sentence="S30">
+Reader A:
+<entry sentence="S30"><quote>One central file, sorted by name</quote><subject>file</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S30:
+Reader A: <entry sentence="S30"><quote>sorted by name</quote><subject>file</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C13" sentence="S30">
+Reader A:
+<entry sentence="S30"><quote>sorted by name</quote><subject>file</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S30:
+Reader A: <entry sentence="S30"><quote>One central file, sorted by name</quote><subject>file</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C14" sentence="S41">
+Reader A:
+<entry sentence="S41"><quote>`test_runtime_support.py` (lines 63–64), `test_commit_lints.py`, the `-k declared_dependencies` and `-k test_real_skill` lints, `test_check_jax_examples.py`, and the "Single test" example</quote><subject>commands</subject><value>[test_runtime_support.py, test_commit_lints.py, -k declared_dependencies, -k test_real_skill, test_check_jax_examples.py, Single test]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C15" sentence="S42">
+Reader A:
+<entry sentence="S42"><quote>the two `build.py` rebuilds</quote><subject>`build.py` rebuilds</subject><value>2</value><unit>rebuilds</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S42:
+Reader A: <entry sentence="S42"><quote>`verify_citations.py`, `extract_structure.py`, and `cli.py lint` and `check`</quote><subject>commands</subject><value>[verify_citations.py, extract_structure.py, cli.py lint, cli.py check]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C16" sentence="S42">
+Reader A:
+<entry sentence="S42"><quote>`verify_citations.py`, `extract_structure.py`, and `cli.py lint` and `check`</quote><subject>commands</subject><value>[verify_citations.py, extract_structure.py, cli.py lint, cli.py check]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S42:
+Reader A: <entry sentence="S42"><quote>the two `build.py` rebuilds</quote><subject>`build.py` rebuilds</subject><value>2</value><unit>rebuilds</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C17" sentence="S45">
+Reader A:
+<entry sentence="S45"><quote>One `[[suite]]` table per directory suite</quote><subject>`[[suite]]`</subject><value>1</value><unit>table</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S45:
+Reader A: <entry sentence="S45"><quote>sorted by `name`</quote><subject>`[[suite]]`</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C18" sentence="S45">
+Reader A:
+<entry sentence="S45"><quote>sorted by `name`</quote><subject>`[[suite]]`</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S45:
+Reader A: <entry sentence="S45"><quote>One `[[suite]]` table per directory suite</quote><subject>`[[suite]]`</subject><value>1</value><unit>table</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C19" sentence="S46">
+Reader A:
+<entry sentence="S46"><quote>the ninth commit lint checks the file</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C20" sentence="S49">
+Reader A:
+<entry sentence="S49"><quote>The name that the runner takes. A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`.</quote><subject>the others</subject><value>[build, cc-guide, hooks]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C21" sentence="S59">
+Reader A:
+<entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`name`</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S59:
+Reader A: <entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`dir`</subject><value>skills/bayesian-workflow/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>arviz, arviz-stats, numpy, xarray</quote><subject>`with`</subject><value>[pytest, arviz, arviz-stats, numpy, xarray]</value><unit>none</unit><edge>n/a</edge><default>[pytest, arviz, arviz-stats, numpy, xarray]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>matplotlib</quote><subject>`extras`</subject><value>[matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C22" sentence="S59">
+Reader A:
+<entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`dir`</subject><value>skills/bayesian-workflow/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S59:
+Reader A: <entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`name`</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>arviz, arviz-stats, numpy, xarray</quote><subject>`with`</subject><value>[pytest, arviz, arviz-stats, numpy, xarray]</value><unit>none</unit><edge>n/a</edge><default>[pytest, arviz, arviz-stats, numpy, xarray]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>matplotlib</quote><subject>`extras`</subject><value>[matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C23" sentence="S59">
+Reader A:
+<entry sentence="S59"><quote>arviz, arviz-stats, numpy, xarray</quote><subject>`with`</subject><value>[pytest, arviz, arviz-stats, numpy, xarray]</value><unit>none</unit><edge>n/a</edge><default>[pytest, arviz, arviz-stats, numpy, xarray]</default><other_reading>none</other_reading></entry>
+Context, other entries on S59:
+Reader A: <entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`name`</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`dir`</subject><value>skills/bayesian-workflow/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>matplotlib</quote><subject>`extras`</subject><value>[matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C24" sentence="S59">
+Reader A:
+<entry sentence="S59"><quote>matplotlib</quote><subject>`extras`</subject><value>[matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S59:
+Reader A: <entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`name`</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>`dir`</subject><value>skills/bayesian-workflow/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S59"><quote>arviz, arviz-stats, numpy, xarray</quote><subject>`with`</subject><value>[pytest, arviz, arviz-stats, numpy, xarray]</value><unit>none</unit><edge>n/a</edge><default>[pytest, arviz, arviz-stats, numpy, xarray]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C25" sentence="S60">
+Reader A:
+<entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`name`</subject><value>brainstorming</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S60:
+Reader A: <entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/brainstorming/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C26" sentence="S60">
+Reader A:
+<entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/brainstorming/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S60:
+Reader A: <entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`name`</subject><value>brainstorming</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C27" sentence="S60">
+Reader A:
+<entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S60:
+Reader A: <entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`name`</subject><value>brainstorming</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/brainstorming/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C28" sentence="S61">
+Reader A:
+<entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`name`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S61:
+Reader A: <entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`dir`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>numpy, polars, pyyaml</quote><subject>`with`</subject><value>[pytest, numpy, polars, pyyaml]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars, pyyaml]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</quote><subject>`extras`</subject><value>[arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C29" sentence="S61">
+Reader A:
+<entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`dir`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S61:
+Reader A: <entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`name`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>numpy, polars, pyyaml</quote><subject>`with`</subject><value>[pytest, numpy, polars, pyyaml]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars, pyyaml]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</quote><subject>`extras`</subject><value>[arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C30" sentence="S61">
+Reader A:
+<entry sentence="S61"><quote>numpy, polars, pyyaml</quote><subject>`with`</subject><value>[pytest, numpy, polars, pyyaml]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars, pyyaml]</default><other_reading>none</other_reading></entry>
+Context, other entries on S61:
+Reader A: <entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`name`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`dir`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</quote><subject>`extras`</subject><value>[arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C31" sentence="S61">
+Reader A:
+<entry sentence="S61"><quote>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</quote><subject>`extras`</subject><value>[arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S61:
+Reader A: <entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`name`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>`dir`</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S61"><quote>numpy, polars, pyyaml</quote><subject>`with`</subject><value>[pytest, numpy, polars, pyyaml]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars, pyyaml]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C32" sentence="S62">
+Reader A:
+<entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`name`</subject><value>cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S62:
+Reader A: <entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`dir`</subject><value>build/cc_guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C33" sentence="S62">
+Reader A:
+<entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`dir`</subject><value>build/cc_guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S62:
+Reader A: <entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`name`</subject><value>cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C34" sentence="S62">
+Reader A:
+<entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S62:
+Reader A: <entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`name`</subject><value>cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S62"><quote>`cc-guide` | `build/cc_guide` | — | — | default</quote><subject>`dir`</subject><value>build/cc_guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C35" sentence="S63">
+Reader A:
+<entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars | — | default</quote><subject>`name`</subject><value>classification-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S63:
+Reader A: <entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars | — | default</quote><subject>`dir`</subject><value>skills/classification-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S63"><quote>polars</quote><subject>`with`</subject><value>[pytest, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C36" sentence="S63">
+Reader A:
+<entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars | — | default</quote><subject>`dir`</subject><value>skills/classification-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S63:
+Reader A: <entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars | — | default</quote><subject>`name`</subject><value>classification-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S63"><quote>polars</quote><subject>`with`</subject><value>[pytest, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C37" sentence="S63">
+Reader A:
+<entry sentence="S63"><quote>polars</quote><subject>`with`</subject><value>[pytest, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars]</default><other_reading>none</other_reading></entry>
+Context, other entries on S63:
+Reader A: <entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars | — | default</quote><subject>`name`</subject><value>classification-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars | — | default</quote><subject>`dir`</subject><value>skills/classification-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C38" sentence="S64">
+Reader A:
+<entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`name`</subject><value>describe-critique-methodology</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S64:
+Reader A: <entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/describe-critique-methodology/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C39" sentence="S64">
+Reader A:
+<entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/describe-critique-methodology/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S64:
+Reader A: <entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`name`</subject><value>describe-critique-methodology</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C40" sentence="S64">
+Reader A:
+<entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S64:
+Reader A: <entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`name`</subject><value>describe-critique-methodology</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/describe-critique-methodology/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C41" sentence="S65">
+Reader A:
+<entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`name`</subject><value>design-architecture</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S65:
+Reader A: <entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/design-architecture/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C42" sentence="S65">
+Reader A:
+<entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/design-architecture/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S65:
+Reader A: <entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`name`</subject><value>design-architecture</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C43" sentence="S65">
+Reader A:
+<entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S65:
+Reader A: <entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`name`</subject><value>design-architecture</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/design-architecture/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C44" sentence="S66">
+Reader A:
+<entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars | — | default</quote><subject>`name`</subject><value>explore-data</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S66:
+Reader A: <entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars | — | default</quote><subject>`dir`</subject><value>skills/explore-data/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S66"><quote>polars</quote><subject>`with`</subject><value>[pytest, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C45" sentence="S66">
+Reader A:
+<entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars | — | default</quote><subject>`dir`</subject><value>skills/explore-data/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S66:
+Reader A: <entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars | — | default</quote><subject>`name`</subject><value>explore-data</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S66"><quote>polars</quote><subject>`with`</subject><value>[pytest, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C46" sentence="S66">
+Reader A:
+<entry sentence="S66"><quote>polars</quote><subject>`with`</subject><value>[pytest, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars]</default><other_reading>none</other_reading></entry>
+Context, other entries on S66:
+Reader A: <entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars | — | default</quote><subject>`name`</subject><value>explore-data</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars | — | default</quote><subject>`dir`</subject><value>skills/explore-data/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C47" sentence="S67">
+Reader A:
+<entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default</quote><subject>`name`</subject><value>geographic-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S67:
+Reader A: <entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default</quote><subject>`dir`</subject><value>skills/geographic-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S67"><quote>polars, fastexcel</quote><subject>`with`</subject><value>[pytest, polars, fastexcel]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars, fastexcel]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C48" sentence="S67">
+Reader A:
+<entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default</quote><subject>`dir`</subject><value>skills/geographic-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S67:
+Reader A: <entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default</quote><subject>`name`</subject><value>geographic-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S67"><quote>polars, fastexcel</quote><subject>`with`</subject><value>[pytest, polars, fastexcel]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars, fastexcel]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C49" sentence="S67">
+Reader A:
+<entry sentence="S67"><quote>polars, fastexcel</quote><subject>`with`</subject><value>[pytest, polars, fastexcel]</value><unit>none</unit><edge>n/a</edge><default>[pytest, polars, fastexcel]</default><other_reading>none</other_reading></entry>
+Context, other entries on S67:
+Reader A: <entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default</quote><subject>`name`</subject><value>geographic-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default</quote><subject>`dir`</subject><value>skills/geographic-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C50" sentence="S68">
+Reader A:
+<entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`name`</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S68:
+Reader A: <entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`dir`</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S68"><quote>3.13, /usr/bin/python3</quote><subject>`pythons`</subject><value>[3.13, /usr/bin/python3]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C51" sentence="S68">
+Reader A:
+<entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`dir`</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S68:
+Reader A: <entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`name`</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S68"><quote>3.13, /usr/bin/python3</quote><subject>`pythons`</subject><value>[3.13, /usr/bin/python3]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C52" sentence="S68">
+Reader A:
+<entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S68:
+Reader A: <entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`name`</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>`dir`</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S68"><quote>3.13, /usr/bin/python3</quote><subject>`pythons`</subject><value>[3.13, /usr/bin/python3]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C53" sentence="S69">
+Reader A:
+<entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`name`</subject><value>llm-wiki</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S69:
+Reader A: <entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/llm-wiki/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C54" sentence="S69">
+Reader A:
+<entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/llm-wiki/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S69:
+Reader A: <entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`name`</subject><value>llm-wiki</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C55" sentence="S69">
+Reader A:
+<entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S69:
+Reader A: <entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`name`</subject><value>llm-wiki</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/llm-wiki/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C56" sentence="S70">
+Reader A:
+<entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default</quote><subject>`name`</subject><value>recommend-probabilistic-model</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S70:
+Reader A: <entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default</quote><subject>`dir`</subject><value>skills/recommend-probabilistic-model/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S70"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C57" sentence="S70">
+Reader A:
+<entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default</quote><subject>`dir`</subject><value>skills/recommend-probabilistic-model/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S70:
+Reader A: <entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default</quote><subject>`name`</subject><value>recommend-probabilistic-model</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S70"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C58" sentence="S70">
+Reader A:
+<entry sentence="S70"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+Context, other entries on S70:
+Reader A: <entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default</quote><subject>`name`</subject><value>recommend-probabilistic-model</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default</quote><subject>`dir`</subject><value>skills/recommend-probabilistic-model/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C59" sentence="S71">
+Reader A:
+<entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default</quote><subject>`name`</subject><value>recommend-visualization</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S71:
+Reader A: <entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default</quote><subject>`dir`</subject><value>skills/recommend-visualization/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S71"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C60" sentence="S71">
+Reader A:
+<entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default</quote><subject>`dir`</subject><value>skills/recommend-visualization/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S71:
+Reader A: <entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default</quote><subject>`name`</subject><value>recommend-visualization</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S71"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C61" sentence="S71">
+Reader A:
+<entry sentence="S71"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+Context, other entries on S71:
+Reader A: <entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default</quote><subject>`name`</subject><value>recommend-visualization</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default</quote><subject>`dir`</subject><value>skills/recommend-visualization/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C62" sentence="S72">
+Reader A:
+<entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`name`</subject><value>subagent-driven-development</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S72:
+Reader A: <entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/subagent-driven-development/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C63" sentence="S72">
+Reader A:
+<entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/subagent-driven-development/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S72:
+Reader A: <entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`name`</subject><value>subagent-driven-development</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C64" sentence="S72">
+Reader A:
+<entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S72:
+Reader A: <entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`name`</subject><value>subagent-driven-development</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/subagent-driven-development/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C65" sentence="S73">
+Reader A:
+<entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`name`</subject><value>systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S73:
+Reader A: <entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`dir`</subject><value>skills/systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C66" sentence="S73">
+Reader A:
+<entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`dir`</subject><value>skills/systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S73:
+Reader A: <entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`name`</subject><value>systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C67" sentence="S73">
+Reader A:
+<entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S73:
+Reader A: <entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`name`</subject><value>systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging` | — | — | default</quote><subject>`dir`</subject><value>skills/systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C68" sentence="S74">
+Reader A:
+<entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default</quote><subject>`name`</subject><value>track-model-experiments</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S74:
+Reader A: <entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default</quote><subject>`dir`</subject><value>skills/track-model-experiments/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S74"><quote>numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>`with`</subject><value>[pytest, numpy, polars, arviz, numpyro, h5netcdf, h5py]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars, arviz, numpyro, h5netcdf, h5py]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C69" sentence="S74">
+Reader A:
+<entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default</quote><subject>`dir`</subject><value>skills/track-model-experiments/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S74:
+Reader A: <entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default</quote><subject>`name`</subject><value>track-model-experiments</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S74"><quote>numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>`with`</subject><value>[pytest, numpy, polars, arviz, numpyro, h5netcdf, h5py]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars, arviz, numpyro, h5netcdf, h5py]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C70" sentence="S74">
+Reader A:
+<entry sentence="S74"><quote>numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>`with`</subject><value>[pytest, numpy, polars, arviz, numpyro, h5netcdf, h5py]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars, arviz, numpyro, h5netcdf, h5py]</default><other_reading>none</other_reading></entry>
+Context, other entries on S74:
+Reader A: <entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default</quote><subject>`name`</subject><value>track-model-experiments</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default</quote><subject>`dir`</subject><value>skills/track-model-experiments/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C71" sentence="S75">
+Reader A:
+<entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`name`</subject><value>tune-hyperparameters</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S75:
+Reader A: <entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`dir`</subject><value>skills/tune-hyperparameters/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>scikit-learn, optuna</quote><subject>`extras`</subject><value>[scikit-learn, optuna]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C72" sentence="S75">
+Reader A:
+<entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`dir`</subject><value>skills/tune-hyperparameters/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S75:
+Reader A: <entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`name`</subject><value>tune-hyperparameters</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>scikit-learn, optuna</quote><subject>`extras`</subject><value>[scikit-learn, optuna]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C73" sentence="S75">
+Reader A:
+<entry sentence="S75"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+Context, other entries on S75:
+Reader A: <entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`name`</subject><value>tune-hyperparameters</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`dir`</subject><value>skills/tune-hyperparameters/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>scikit-learn, optuna</quote><subject>`extras`</subject><value>[scikit-learn, optuna]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C74" sentence="S75">
+Reader A:
+<entry sentence="S75"><quote>scikit-learn, optuna</quote><subject>`extras`</subject><value>[scikit-learn, optuna]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S75:
+Reader A: <entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`name`</subject><value>tune-hyperparameters</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default</quote><subject>`dir`</subject><value>skills/tune-hyperparameters/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S75"><quote>numpy, polars</quote><subject>`with`</subject><value>[pytest, numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>[pytest, numpy, polars]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C75" sentence="S76">
+Reader A:
+<entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`name`</subject><value>writing-plans</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S76:
+Reader A: <entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/writing-plans/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C76" sentence="S76">
+Reader A:
+<entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/writing-plans/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S76:
+Reader A: <entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`name`</subject><value>writing-plans</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C77" sentence="S76">
+Reader A:
+<entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`with`</subject><value>[pytest]</value><unit>none</unit><edge>n/a</edge><default>[pytest]</default><other_reading>none</other_reading></entry>
+Context, other entries on S76:
+Reader A: <entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`name`</subject><value>writing-plans</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts` | — | — | default</quote><subject>`dir`</subject><value>skills/writing-plans/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C78" sentence="S78">
+Reader A:
+<entry sentence="S78"><quote>`build`'s missing `build/.scratch/`</quote><subject>`build`</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S78:
+Reader A: <entry sentence="S78"><quote>`bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep</quote><subject>`CALIBRATION_SWEEP`</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`</quote><subject>`llm-wiki`</subject><value>[@needs_pilot, $LLM_WIKI_ROOT]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`tune-hyperparameters`' "`--with sklearn` fails"</quote><subject>`tune-hyperparameters`</subject><value>--with sklearn fails</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>the guard's 3.9 floor</quote><subject>guard</subject><value>3.9</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C79" sentence="S78">
+Reader A:
+<entry sentence="S78"><quote>`bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep</quote><subject>`CALIBRATION_SWEEP`</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S78:
+Reader A: <entry sentence="S78"><quote>`build`'s missing `build/.scratch/`</quote><subject>`build`</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`</quote><subject>`llm-wiki`</subject><value>[@needs_pilot, $LLM_WIKI_ROOT]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`tune-hyperparameters`' "`--with sklearn` fails"</quote><subject>`tune-hyperparameters`</subject><value>--with sklearn fails</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>the guard's 3.9 floor</quote><subject>guard</subject><value>3.9</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C80" sentence="S78">
+Reader A:
+<entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`</quote><subject>`llm-wiki`</subject><value>[@needs_pilot, $LLM_WIKI_ROOT]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S78:
+Reader A: <entry sentence="S78"><quote>`build`'s missing `build/.scratch/`</quote><subject>`build`</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep</quote><subject>`CALIBRATION_SWEEP`</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`tune-hyperparameters`' "`--with sklearn` fails"</quote><subject>`tune-hyperparameters`</subject><value>--with sklearn fails</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>the guard's 3.9 floor</quote><subject>guard</subject><value>3.9</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C81" sentence="S78">
+Reader A:
+<entry sentence="S78"><quote>`tune-hyperparameters`' "`--with sklearn` fails"</quote><subject>`tune-hyperparameters`</subject><value>--with sklearn fails</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S78:
+Reader A: <entry sentence="S78"><quote>`build`'s missing `build/.scratch/`</quote><subject>`build`</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep</quote><subject>`CALIBRATION_SWEEP`</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`</quote><subject>`llm-wiki`</subject><value>[@needs_pilot, $LLM_WIKI_ROOT]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>the guard's 3.9 floor</quote><subject>guard</subject><value>3.9</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C82" sentence="S78">
+Reader A:
+<entry sentence="S78"><quote>the guard's 3.9 floor</quote><subject>guard</subject><value>3.9</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S78:
+Reader A: <entry sentence="S78"><quote>`build`'s missing `build/.scratch/`</quote><subject>`build`</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep</quote><subject>`CALIBRATION_SWEEP`</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`</quote><subject>`llm-wiki`</subject><value>[@needs_pilot, $LLM_WIKI_ROOT]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S78"><quote>`tune-hyperparameters`' "`--with sklearn` fails"</quote><subject>`tune-hyperparameters`</subject><value>--with sklearn fails</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C83" sentence="S79">
+Reader A:
+<entry sentence="S79"><quote>Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13</quote><subject>runner</subject><value>[tomllib, argparse, subprocess, shlex]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S79:
+Reader A: <entry sentence="S79"><quote>Python 3.13</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C84" sentence="S79">
+Reader A:
+<entry sentence="S79"><quote>Python 3.13</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S79:
+Reader A: <entry sentence="S79"><quote>Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13</quote><subject>runner</subject><value>[tomllib, argparse, subprocess, shlex]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C85" sentence="S82">
+Reader A:
+<entry sentence="S82"><quote>one interpreter of one suite</quote><subject>run</subject><value>1</value><unit>interpreter</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S82:
+Reader A: <entry sentence="S82"><quote>one interpreter of one suite</quote><subject>run</subject><value>1</value><unit>suite</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C86" sentence="S82">
+Reader A:
+<entry sentence="S82"><quote>one interpreter of one suite</quote><subject>run</subject><value>1</value><unit>suite</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S82:
+Reader A: <entry sentence="S82"><quote>one interpreter of one suite</quote><subject>run</subject><value>1</value><unit>interpreter</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C87" sentence="S84">
+Reader A:
+<entry sentence="S84"><quote>`cd <dir> && <command>`</quote><subject>shell form</subject><value>cd <dir> && <command></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C88" sentence="S86">
+Reader A:
+<entry sentence="S86"><quote>`cd hooks && A` and `cd hooks && B`</quote><subject>shell forms</subject><value>[cd hooks && A, cd hooks && B]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C89" sentence="S87">
+Reader A:
+<entry sentence="S87"><quote>`--list [NAME …]`</quote><subject>`--list`</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S87:
+Reader A: <entry sentence="S87"><quote>default: all</quote><subject>`--list [NAME …]`</subject><value>all</value><unit>none</unit><edge>n/a</edge><default>all</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C90" sentence="S87">
+Reader A:
+<entry sentence="S87"><quote>default: all</quote><subject>`--list [NAME …]`</subject><value>all</value><unit>none</unit><edge>n/a</edge><default>all</default><other_reading>none</other_reading></entry>
+Context, other entries on S87:
+Reader A: <entry sentence="S87"><quote>`--list [NAME …]`</quote><subject>`--list`</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C91" sentence="S93">
+Reader A:
+<entry sentence="S93"><quote>`--extras`</quote><subject>`--extras`</subject><value>--extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C92" sentence="S94">
+Reader A:
+<entry sentence="S94"><quote>Arguments after **`--`** go to pytest</quote><subject>Arguments</subject><value>--</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C93" sentence="S95">
+Reader A:
+<entry sentence="S95"><quote>`--all`</quote><subject>`--all`</subject><value>--all</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C94" sentence="S97">
+Reader A:
+<entry sentence="S97"><quote>one line for each suite that it skips</quote><subject>suite that it skips</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C95" sentence="S99">
+Reader A:
+<entry sentence="S99"><quote>0 when every run exits 0</quote><subject>Exit status</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S99:
+Reader A: <entry sentence="S99"><quote>1 when any run fails</quote><subject>Exit status</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>pytest's exit 5, no tests collected, counts as a failure</quote><subject>pytest's exit</subject><value>5</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>2 for a usage error, an unknown suite name, or a registry that fails validation</quote><subject>Exit status</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C96" sentence="S99">
+Reader A:
+<entry sentence="S99"><quote>1 when any run fails</quote><subject>Exit status</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S99:
+Reader A: <entry sentence="S99"><quote>0 when every run exits 0</quote><subject>Exit status</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>pytest's exit 5, no tests collected, counts as a failure</quote><subject>pytest's exit</subject><value>5</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>2 for a usage error, an unknown suite name, or a registry that fails validation</quote><subject>Exit status</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C97" sentence="S99">
+Reader A:
+<entry sentence="S99"><quote>pytest's exit 5, no tests collected, counts as a failure</quote><subject>pytest's exit</subject><value>5</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S99:
+Reader A: <entry sentence="S99"><quote>0 when every run exits 0</quote><subject>Exit status</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>1 when any run fails</quote><subject>Exit status</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>2 for a usage error, an unknown suite name, or a registry that fails validation</quote><subject>Exit status</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C98" sentence="S99">
+Reader A:
+<entry sentence="S99"><quote>2 for a usage error, an unknown suite name, or a registry that fails validation</quote><subject>Exit status</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S99:
+Reader A: <entry sentence="S99"><quote>0 when every run exits 0</quote><subject>Exit status</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>1 when any run fails</quote><subject>Exit status</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S99"><quote>pytest's exit 5, no tests collected, counts as a failure</quote><subject>pytest's exit</subject><value>5</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C99" sentence="S103">
+Reader A:
+<entry sentence="S103"><quote>`CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s`</quote><subject>sweep</subject><value>CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C100" sentence="S105">
+Reader A:
+<entry sentence="S105"><quote>exit 2</quote><subject>validation</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C101" sentence="S112">
+Reader A:
+<entry sentence="S112"><quote>`.claude/worktrees/` and `build/.scratch/`</quote><subject>Ignored trees</subject><value>[.claude/worktrees/, build/.scratch/]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C102" sentence="S115">
+Reader A:
+<entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>Output</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S115:
+Reader A: <entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>exit</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>one line per finding and exit 1</quote><subject>exit</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>one line per finding</quote><subject>finding</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C103" sentence="S115">
+Reader A:
+<entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>exit</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S115:
+Reader A: <entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>Output</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>one line per finding and exit 1</quote><subject>exit</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>one line per finding</quote><subject>finding</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C104" sentence="S115">
+Reader A:
+<entry sentence="S115"><quote>one line per finding and exit 1</quote><subject>exit</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S115:
+Reader A: <entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>Output</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>exit</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>one line per finding</quote><subject>finding</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C105" sentence="S115">
+Reader A:
+<entry sentence="S115"><quote>one line per finding</quote><subject>finding</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S115:
+Reader A: <entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>Output</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>`suite registry ok` and exit 0</quote><subject>exit</subject><value>0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S115"><quote>one line per finding and exit 1</quote><subject>exit</subject><value>1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C106" sentence="S116">
+Reader A:
+<entry sentence="S116"><quote>as the ninth lint, named `suite_registry`</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S116:
+Reader A: <entry sentence="S116"><quote>named `suite_registry`</quote><subject>lint</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S116"><quote>`run suite_registry uv run --python 3.13 python build/run_suites.py --check`</quote><subject>`build/run_commit_lints.sh`</subject><value>run suite_registry uv run --python 3.13 python build/run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C107" sentence="S116">
+Reader A:
+<entry sentence="S116"><quote>named `suite_registry`</quote><subject>lint</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S116:
+Reader A: <entry sentence="S116"><quote>as the ninth lint, named `suite_registry`</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S116"><quote>`run suite_registry uv run --python 3.13 python build/run_suites.py --check`</quote><subject>`build/run_commit_lints.sh`</subject><value>run suite_registry uv run --python 3.13 python build/run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C108" sentence="S120">
+Reader A:
+<entry sentence="S120"><quote>Keep the uv and Python 3.13 rule</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S120:
+Reader A: <entry sentence="S120"><quote>the `test_build.py` basename-collision reason</quote><subject>basename-collision reason</subject><value>test_build.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>intro paragraph</subject><value>[build/suites.toml, build/run_suites.py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>One line</quote><subject>intro paragraph</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C109" sentence="S120">
+Reader A:
+<entry sentence="S120"><quote>the `test_build.py` basename-collision reason</quote><subject>basename-collision reason</subject><value>test_build.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S120:
+Reader A: <entry sentence="S120"><quote>Keep the uv and Python 3.13 rule</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>intro paragraph</subject><value>[build/suites.toml, build/run_suites.py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>One line</quote><subject>intro paragraph</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C110" sentence="S120">
+Reader A:
+<entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>intro paragraph</subject><value>[build/suites.toml, build/run_suites.py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S120:
+Reader A: <entry sentence="S120"><quote>Keep the uv and Python 3.13 rule</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>the `test_build.py` basename-collision reason</quote><subject>basename-collision reason</subject><value>test_build.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>One line</quote><subject>intro paragraph</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C111" sentence="S120">
+Reader A:
+<entry sentence="S120"><quote>One line</quote><subject>intro paragraph</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S120:
+Reader A: <entry sentence="S120"><quote>Keep the uv and Python 3.13 rule</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>the `test_build.py` basename-collision reason</quote><subject>basename-collision reason</subject><value>test_build.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>intro paragraph</subject><value>[build/suites.toml, build/run_suites.py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C112" sentence="S121">
+Reader A:
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject>commands</subject><value>[--list, <name> [--extras] [-- <pytest args>], --all, --check]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C113" sentence="S122">
+Reader A:
+<entry sentence="S122"><quote>says "nine"</quote><subject>commit-lint comment</subject><value>nine</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C114" sentence="S123">
+Reader A:
+<entry sentence="S123"><quote>`run_suites.py cc-guide`</quote><subject>comment</subject><value>run_suites.py cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C115" sentence="S126">
+Reader A:
+<entry sentence="S126"><quote>the `# Full build-directory tests` comment and the `cd hooks && …` command</quote><subject>deletion</subject><value>[# Full build-directory tests, cd hooks && …]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C116" sentence="S128">
+Reader A:
+<entry sentence="S128"><quote>one sentence names `suites.toml` and `run_suites.py` and says that `--check` is a commit lint</quote><subject>sentence</subject><value>[suites.toml, run_suites.py, --check]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S128:
+Reader A: <entry sentence="S128"><quote>"the eight commit lints" becomes "the nine commit lints"</quote><subject>`build/CLAUDE.md`</subject><value>the nine commit lints</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C117" sentence="S129">
+Reader A:
+<entry sentence="S129"><quote>`test_claude_md_import_resolves_passes_on_the_repo` asserts `'@needs_pilot' in text`</quote><subject>`test_claude_md_import_resolves_passes_on_the_repo`</subject><value>'@needs_pilot' in text</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C118" sentence="S130">
+Reader A:
+<entry sentence="S130"><quote>line 1 is the `<!-- cc-guide: … @<version> -->` stamp</quote><subject>stamp</subject><value><!-- cc-guide: … @<version> --></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S130:
+Reader A: <entry sentence="S130"><quote>line 1</quote><subject>stamp</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C119" sentence="S130">
+Reader A:
+<entry sentence="S130"><quote>line 1</quote><subject>stamp</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S130:
+Reader A: <entry sentence="S130"><quote>line 1 is the `<!-- cc-guide: … @<version> -->` stamp</quote><subject>stamp</subject><value><!-- cc-guide: … @<version> --></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C120" sentence="S135">
+Reader A:
+<entry sentence="S135"><quote>`build/test_run_suites.py`</quote><subject>tests</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C121" sentence="S137">
+Reader A:
+<entry sentence="S137"><quote>exit 2</quote><subject>validation</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C122" sentence="S138">
+Reader A:
+<entry sentence="S138"><quote>two `pythons` runs</quote><subject>`pythons` runs</subject><value>2</value><unit>runs</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C123" sentence="S141">
+Reader A:
+<entry sentence="S141"><quote>exit 0, 1 and 2; exit 5 counts as failed</quote><subject>exit</subject><value>[0, 1, 2, 5]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C124" sentence="S144">
+Reader A:
+<entry sentence="S144"><quote>`build/test_commit_lints.py`</quote><subject>`suite_registry`</subject><value>build/test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S144:
+Reader A: <entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>`CHECKS`</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`test_unregistered_suite_is_refused`</quote><subject>`build/test_commit_lints.py`</subject><value>test_unregistered_suite_is_refused</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`skills/<name>/scripts/test_new.py`</quote><subject>new suite</subject><value>skills/<name>/scripts/test_new.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`suite_registry` is the only failed lint</quote><subject>failed lint</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C125" sentence="S144">
+Reader A:
+<entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>`CHECKS`</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S144:
+Reader A: <entry sentence="S144"><quote>`build/test_commit_lints.py`</quote><subject>`suite_registry`</subject><value>build/test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`test_unregistered_suite_is_refused`</quote><subject>`build/test_commit_lints.py`</subject><value>test_unregistered_suite_is_refused</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`skills/<name>/scripts/test_new.py`</quote><subject>new suite</subject><value>skills/<name>/scripts/test_new.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`suite_registry` is the only failed lint</quote><subject>failed lint</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C126" sentence="S144">
+Reader A:
+<entry sentence="S144"><quote>`test_unregistered_suite_is_refused`</quote><subject>`build/test_commit_lints.py`</subject><value>test_unregistered_suite_is_refused</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S144:
+Reader A: <entry sentence="S144"><quote>`build/test_commit_lints.py`</quote><subject>`suite_registry`</subject><value>build/test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>`CHECKS`</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`skills/<name>/scripts/test_new.py`</quote><subject>new suite</subject><value>skills/<name>/scripts/test_new.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`suite_registry` is the only failed lint</quote><subject>failed lint</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C127" sentence="S144">
+Reader A:
+<entry sentence="S144"><quote>`skills/<name>/scripts/test_new.py`</quote><subject>new suite</subject><value>skills/<name>/scripts/test_new.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S144:
+Reader A: <entry sentence="S144"><quote>`build/test_commit_lints.py`</quote><subject>`suite_registry`</subject><value>build/test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>`CHECKS`</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`test_unregistered_suite_is_refused`</quote><subject>`build/test_commit_lints.py`</subject><value>test_unregistered_suite_is_refused</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`suite_registry` is the only failed lint</quote><subject>failed lint</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C128" sentence="S144">
+Reader A:
+<entry sentence="S144"><quote>`suite_registry` is the only failed lint</quote><subject>failed lint</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S144:
+Reader A: <entry sentence="S144"><quote>`build/test_commit_lints.py`</quote><subject>`suite_registry`</subject><value>build/test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>`CHECKS`</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`test_unregistered_suite_is_refused`</quote><subject>`build/test_commit_lints.py`</subject><value>test_unregistered_suite_is_refused</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S144"><quote>`skills/<name>/scripts/test_new.py`</quote><subject>new suite</subject><value>skills/<name>/scripts/test_new.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C129" sentence="S146">
+Reader A:
+<entry sentence="S146"><quote>one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts`</quote><subject>`skills/write-with-asd-ste100/scripts`</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S146:
+Reader A: <entry sentence="S146"><quote>`skills/write-with-asd-ste100/scripts`</quote><subject>`[[suite]]`</subject><value>skills/write-with-asd-ste100/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C130" sentence="S146">
+Reader A:
+<entry sentence="S146"><quote>`skills/write-with-asd-ste100/scripts`</quote><subject>`[[suite]]`</subject><value>skills/write-with-asd-ste100/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S146:
+Reader A: <entry sentence="S146"><quote>one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts`</quote><subject>`skills/write-with-asd-ste100/scripts`</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C131" sentence="S150">
+Reader A:
+<entry sentence="S150"><quote>the ninth lint</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C132" sentence="S159">
+Reader A:
+<entry sentence="S159"><quote>The Stage 2 audit</quote><subject>audit</subject><value>Stage 2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S159:
+Reader A: <entry sentence="S159"><quote>one time</quote><subject>audit</subject><value>1</value><unit>time</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C133" sentence="S159">
+Reader A:
+<entry sentence="S159"><quote>one time</quote><subject>audit</subject><value>1</value><unit>time</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S159:
+Reader A: <entry sentence="S159"><quote>The Stage 2 audit</quote><subject>audit</subject><value>Stage 2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C134" sentence="S161">
+Reader A:
+<entry sentence="S161"><quote>`cd <dir> && uv run …` command</quote><subject>audit</subject><value>cd <dir> && uv run …</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C135" sentence="S164">
+Reader A:
+<entry sentence="S164"><quote>`hooks`, `build` and `bayesian-workflow`</quote><subject>Behaviour</subject><value>[hooks, build, bayesian-workflow]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S164:
+Reader A: <entry sentence="S164"><quote>once directly and once through the runner</quote><subject>Behaviour</subject><value>1</value><unit>direct run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S164"><quote>once directly and once through the runner</quote><subject>Behaviour</subject><value>1</value><unit>runner run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C136" sentence="S164">
+Reader A:
+<entry sentence="S164"><quote>once directly and once through the runner</quote><subject>Behaviour</subject><value>1</value><unit>direct run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S164:
+Reader A: <entry sentence="S164"><quote>`hooks`, `build` and `bayesian-workflow`</quote><subject>Behaviour</subject><value>[hooks, build, bayesian-workflow]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S164"><quote>once directly and once through the runner</quote><subject>Behaviour</subject><value>1</value><unit>runner run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C137" sentence="S164">
+Reader A:
+<entry sentence="S164"><quote>once directly and once through the runner</quote><subject>Behaviour</subject><value>1</value><unit>runner run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S164:
+Reader A: <entry sentence="S164"><quote>`hooks`, `build` and `bayesian-workflow`</quote><subject>Behaviour</subject><value>[hooks, build, bayesian-workflow]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S164"><quote>once directly and once through the runner</quote><subject>Behaviour</subject><value>1</value><unit>direct run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C138" sentence="S166">
+Reader A:
+<entry sentence="S166"><quote>run `--all` once</quote><subject>`--all`</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C139" sentence="S167">
+Reader A:
+<entry sentence="S167"><quote>`uv run --python 3.13 python build/run_suites.py --check`</quote><subject>Gates</subject><value>uv run --python 3.13 python build/run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S167:
+Reader A: <entry sentence="S167"><quote>`suite registry ok`</quote><subject>`--check`</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C140" sentence="S169">
+Reader A:
+<entry sentence="S169"><quote>`bash build/run_commit_lints.sh`</quote><subject>Gates</subject><value>bash build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S169:
+Reader A: <entry sentence="S169"><quote>`commit lints passed`</quote><subject>`bash build/run_commit_lints.sh`</subject><value>commit lints passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C141" sentence="S170">
+Reader A:
+<entry sentence="S170"><quote>`build/suites.toml` registers every directory suite</quote><subject>registry</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C142" sentence="S171">
+Reader A:
+<entry sentence="S171"><quote>`build/run_suites.py`</quote><subject>runner</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S171:
+Reader A: <entry sentence="S171"><quote>the ninth lint runs in `run_commit_lints.sh`</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C143" sentence="S171">
+Reader A:
+<entry sentence="S171"><quote>the ninth lint runs in `run_commit_lints.sh`</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S171:
+Reader A: <entry sentence="S171"><quote>`build/run_suites.py`</quote><subject>runner</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C144" sentence="S174">
+Reader A:
+<entry sentence="S174"><quote>`bash build/run_commit_lints.sh`</quote><subject>Done when</subject><value>bash build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S174:
+Reader A: <entry sentence="S174"><quote>`commit lints passed`</quote><subject>`bash build/run_commit_lints.sh`</subject><value>commit lints passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+<case id="C145" sentence="S174">
+Reader A:
+<entry sentence="S174"><quote>`commit lints passed`</quote><subject>`bash build/run_commit_lints.sh`</subject><value>commit lints passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S174:
+Reader A: <entry sentence="S174"><quote>`bash build/run_commit_lints.sh`</quote><subject>Done when</subject><value>bash build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</case>
+
+Reply with exactly one <rulings> block and nothing else. Give each case one <ruling> element:
+
+<rulings>
+<ruling case="C<n>" verdict="reading|no-value|unclear"><quote>the words that decide the case, copied word for word (empty for unclear)</quote><value>...</value><unit>...</unit><edge>...</edge><default>...</default></ruling>
+</rulings>
+
+Write the four slots only with the verdict reading. Write text as it is, with no XML escapes.

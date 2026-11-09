@@ -1,0 +1,94 @@
+control-opus             p53-unit     scored=5 catches=5/5 near=- findings/rep=6.6 cost=$1.81
+control-opus             p55-default  scored=5 catches=5/5 near=- findings/rep=5.8 cost=$0.70
+control-opus             p55-exit     scored=5 catches=0/5 near=- findings/rep=7.4 cost=$1.30
+control-opus             p66-bound    scored=5 catches=5/5 near=rep2:1 findings/rep=9.2 cost=$1.01
+control-opus             p66-today    scored=5 catches=0/5 near=- findings/rep=11.6 cost=$2.29
+reader-gpt-6-sol         p53          scored=5 entries/rep=157.2 other/rep=2.4 returned/rep=0.4 tokens=202,915
+reader-gpt-6-sol         p55          scored=5 entries/rep=167.6 other/rep=0.0 returned/rep=0.0 tokens=172,577
+reader-gpt-6-sol         p55-exit     scored=5 entries/rep=218.0 other/rep=0.4 returned/rep=0.0 tokens=177,674
+reader-gpt-6-sol         p66          scored=5 entries/rep=125.4 other/rep=0.6 returned/rep=0.2 tokens=175,887
+reader-gpt-6-sol         p66-today    scored=5 entries/rep=129.0 other/rep=1.0 returned/rep=0.0 tokens=206,719
+reader-gpt-6.1-sol       p53          scored=5 entries/rep=172.6 other/rep=3.4 returned/rep=0.0 tokens=259,186
+reader-gpt-6.1-sol       p55          scored=5 entries/rep=246.0 other/rep=0.2 returned/rep=0.0 tokens=244,250
+reader-gpt-6.1-sol       p55-exit     scored=5 entries/rep=235.2 other/rep=0.0 returned/rep=0.2 tokens=286,507
+reader-gpt-6.1-sol       p66          scored=5 entries/rep=130.6 other/rep=0.4 returned/rep=0.0 tokens=246,223
+reader-gpt-6.1-sol       p66-today    scored=5 entries/rep=136.2 other/rep=1.0 returned/rep=0.0 tokens=224,602
+reader-opus              p53          scored=5 entries/rep=74.8 other/rep=3.2 returned/rep=0.2 cost=$1.00
+reader-opus              p55          scored=5 entries/rep=84.4 other/rep=4.0 returned/rep=0.0 cost=$1.22
+reader-opus              p55-exit     scored=5 entries/rep=86.8 other/rep=4.2 returned/rep=1.0 cost=$1.24
+reader-opus              p66          scored=5 entries/rep=44.8 other/rep=3.8 returned/rep=0.0 cost=$0.70
+reader-opus              p66-today    scored=5 entries/rep=45.2 other/rep=3.6 returned/rep=0.6 cost=$0.82
+standin-opus             p53-unit     scored=5 fidelity=faithful:5 amended_missing/rep=0.6 amended_extra/rep=0.0 notes=68 notes_on_plant=5 returned/rep=1.6 cost=$1.85
+standin-opus             p55-clean    scored=5 fidelity=n/a:5 amended_missing/rep=0.0 amended_extra/rep=0.0 notes=38 notes_on_plant=0 returned/rep=0.0 cost=$1.07
+standin-opus             p55-default  scored=5 fidelity=faithful:5 amended_missing/rep=0.2 amended_extra/rep=0.0 notes=25 notes_on_plant=5 returned/rep=0.0 cost=$1.08
+standin-opus             p55-exit     scored=5 fidelity=other (label):5 amended_missing/rep=0.0 amended_extra/rep=0.0 notes=38 notes_on_plant=0 returned/rep=0.0 cost=$1.02
+standin-opus             p66-bound    scored=5 fidelity=faithful:1,faithful (label):4 amended_missing/rep=4.0 amended_extra/rep=0.2 notes=39 notes_on_plant=6 returned/rep=0.0 cost=$0.83
+standin-opus             p66-today    scored=5 fidelity=faithful:5 amended_missing/rep=3.2 amended_extra/rep=0.0 notes=46 notes_on_plant=0 returned/rep=0.0 cost=$1.70
+step-claude              p53-unit     scored=5 catches=5/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=2.4 (ambiguous=0 false=0) owner_load/rep=15.2 missing/rep=33.2 unchecked/rep=10.2 skipped/rep=7.2 returned/rep=1.8 returned_on_plant=0 misses=- cost=$1.61
+step-claude              p55-clean    scored=5 catches=n/a near=- conflicts_on_plant=0 false_alarms/rep=11.0/11.0 [9, 7, 20, 12, 7] unclear/rep=0.2 (ambiguous=1 false=0) owner_load/rep=12.2 missing/rep=48.4 unchecked/rep=3.4 skipped/rep=3.8 returned/rep=0.0 returned_on_plant=0 misses=- cost=$1.78
+step-claude              p55-default  scored=5 catches=5/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=16.8 missing/rep=48.4 unchecked/rep=4.0 skipped/rep=3.8 returned/rep=0.0 returned_on_plant=0 misses=- cost=$1.82
+step-claude              p55-exit     scored=5 catches=0/5 near=- conflicts_on_plant=1 false_alarms/rep=- unclear/rep=1.0 (ambiguous=0 false=0) owner_load/rep=14.0 missing/rep=48.2 unchecked/rep=3.4 skipped/rep=3.8 returned/rep=1.0 returned_on_plant=0 misses=absent:3,agreed:1,other:1 cost=$1.81
+step-claude              p66-bound    scored=5 catches=4/5 near=rep1:15,rep1:16,rep2:19,rep3:21,rep4:24,rep5:9,rep5:18 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.2 (ambiguous=0 false=0) owner_load/rep=10.8 missing/rep=21.6 unchecked/rep=12.4 skipped/rep=1.0 returned/rep=0.0 returned_on_plant=0 misses=other:1 cost=$1.63
+step-claude              p66-today    scored=5 catches=0/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.2 (ambiguous=0 false=0) owner_load/rep=10.0 missing/rep=19.4 unchecked/rep=10.8 skipped/rep=1.0 returned/rep=0.6 returned_on_plant=0 misses=other:5 cost=$1.60
+step-codex-gpt-6-sol     p53-unit     scored=5 catches=4/5 near=rep4:26 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=1.8 (ambiguous=0 false=0) owner_load/rep=11.8 missing/rep=109.8 unchecked/rep=10.8 skipped/rep=8.4 returned/rep=2.0 returned_on_plant=0 misses=absent:1 cost=$3.28
+step-codex-gpt-6-sol     p55-clean    scored=5 catches=n/a near=- conflicts_on_plant=0 false_alarms/rep=7.0/7.0 [8, 6, 4, 9, 8] unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=7.4 missing/rep=120.6 unchecked/rep=8.2 skipped/rep=3.8 returned/rep=0.0 returned_on_plant=0 misses=- cost=$3.75
+step-codex-gpt-6-sol     p55-default  scored=5 catches=4/5 near=rep3:19 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=10.0 missing/rep=117.6 unchecked/rep=9.0 skipped/rep=3.8 returned/rep=0.0 returned_on_plant=0 misses=absent:1 cost=$3.81
+step-codex-gpt-6-sol     p55-exit     scored=5 catches=0/5 near=- conflicts_on_plant=0 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=7.4 missing/rep=151.2 unchecked/rep=7.0 skipped/rep=3.8 returned/rep=0.0 returned_on_plant=0 misses=absent:5 cost=$4.89
+step-codex-gpt-6-sol     p66-bound    scored=5 catches=1/5 near=rep1:76,rep1:77,rep2:45,rep3:52,rep4:43,rep5:61 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=12.4 missing/rep=94.4 unchecked/rep=8.6 skipped/rep=1.6 returned/rep=0.2 returned_on_plant=0 misses=absent:4 cost=$3.10
+step-codex-gpt-6-sol     p66-today    scored=5 catches=0/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=8.6 missing/rep=82.4 unchecked/rep=9.4 skipped/rep=1.4 returned/rep=0.0 returned_on_plant=0 misses=absent:3,other:2 cost=$3.11
+step-codex-gpt-6.1-sol   p53-unit     scored=5 catches=3/5 near=rep2:22,rep4:28 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=1.6 (ambiguous=0 false=0) owner_load/rep=12.4 missing/rep=125.6 unchecked/rep=11.6 skipped/rep=8.4 returned/rep=1.6 returned_on_plant=0 misses=absent:2 cost=$3.72
+step-codex-gpt-6.1-sol   p55-clean    scored=5 catches=n/a near=- conflicts_on_plant=0 false_alarms/rep=4.4/4.4 [7, 2, 4, 2, 7] unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=4.6 missing/rep=172.0 unchecked/rep=6.4 skipped/rep=3.2 returned/rep=0.0 returned_on_plant=0 misses=- cost=$5.83
+step-codex-gpt-6.1-sol   p55-default  scored=5 catches=5/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=10.4 missing/rep=163.8 unchecked/rep=5.2 skipped/rep=3.2 returned/rep=0.0 returned_on_plant=0 misses=- cost=$5.89
+step-codex-gpt-6.1-sol   p55-exit     scored=5 catches=0/5 near=- conflicts_on_plant=0 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=7.0 missing/rep=171.2 unchecked/rep=5.4 skipped/rep=3.8 returned/rep=0.2 returned_on_plant=0 misses=absent:5 cost=$5.63
+step-codex-gpt-6.1-sol   p66-bound    scored=5 catches=0/5 near=rep1:36,rep1:37,rep2:7,rep2:39,rep3:72,rep4:73,rep5:38 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.4 (ambiguous=0 false=0) owner_load/rep=13.0 missing/rep=105.8 unchecked/rep=10.0 skipped/rep=1.6 returned/rep=0.0 returned_on_plant=0 misses=absent:5 cost=$3.27
+step-codex-gpt-6.1-sol   p66-today    scored=5 catches=0/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=10.6 missing/rep=98.6 unchecked/rep=10.0 skipped/rep=1.2 returned/rep=0.0 returned_on_plant=0 misses=absent:5 cost=$3.26
+step-pair-gpt-6-sol      p53-unit     scored=5 catches=5/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.6 (ambiguous=0 false=0) owner_load/rep=13.6 missing/rep=108.6 unchecked/rep=7.2 skipped/rep=9.0 returned/rep=2.2 returned_on_plant=0 misses=- cost=$2.76
+step-pair-gpt-6-sol      p55-clean    scored=5 catches=n/a near=- conflicts_on_plant=0 false_alarms/rep=9.4/9.4 [11, 4, 16, 8, 8] unclear/rep=0.4 (ambiguous=2 false=0) owner_load/rep=10.8 missing/rep=135.6 unchecked/rep=2.8 skipped/rep=4.0 returned/rep=0.0 returned_on_plant=0 misses=- cost=$4.25
+step-pair-gpt-6-sol      p55-default  scored=5 catches=5/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.6 (ambiguous=0 false=0) owner_load/rep=15.4 missing/rep=127.0 unchecked/rep=3.0 skipped/rep=4.0 returned/rep=0.0 returned_on_plant=0 misses=- cost=$4.18
+step-pair-gpt-6-sol      p55-exit     scored=5 catches=0/5 near=- conflicts_on_plant=1 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=12.2 missing/rep=140.4 unchecked/rep=2.4 skipped/rep=4.0 returned/rep=1.0 returned_on_plant=0 misses=absent:5 cost=$4.89
+step-pair-gpt-6-sol      p66-bound    scored=5 catches=5/5 near=rep1:125,rep1:126,rep2:66,rep3:82,rep4:112 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=11.4 missing/rep=51.2 unchecked/rep=7.0 skipped/rep=1.0 returned/rep=0.2 returned_on_plant=0 misses=- cost=$2.88
+step-pair-gpt-6-sol      p66-today    scored=5 catches=0/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=12.0 missing/rep=81.0 unchecked/rep=6.8 skipped/rep=1.2 returned/rep=0.6 returned_on_plant=0 misses=absent:5 cost=$3.21
+step-pair-gpt-6.1-sol    p53-unit     scored=5 catches=5/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.8 (ambiguous=0 false=0) owner_load/rep=13.2 missing/rep=84.0 unchecked/rep=6.8 skipped/rep=8.6 returned/rep=1.8 returned_on_plant=0 misses=- cost=$3.10
+step-pair-gpt-6.1-sol    p55-clean    scored=5 catches=n/a near=- conflicts_on_plant=0 false_alarms/rep=8.4/8.4 [8, 4, 16, 6, 8] unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=9.4 missing/rep=144.4 unchecked/rep=3.4 skipped/rep=3.8 returned/rep=0.0 returned_on_plant=0 misses=- cost=$5.49
+step-pair-gpt-6.1-sol    p55-default  scored=5 catches=5/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.6 (ambiguous=0 false=0) owner_load/rep=14.4 missing/rep=159.0 unchecked/rep=3.0 skipped/rep=3.8 returned/rep=0.0 returned_on_plant=0 misses=- cost=$5.59
+step-pair-gpt-6.1-sol    p55-exit     scored=5 catches=1/5 near=- conflicts_on_plant=0 false_alarms/rep=- unclear/rep=0.2 (ambiguous=0 false=0) owner_load/rep=9.8 missing/rep=146.0 unchecked/rep=2.2 skipped/rep=3.8 returned/rep=1.2 returned_on_plant=0 misses=absent:4 cost=$5.09
+step-pair-gpt-6.1-sol    p66-bound    scored=5 catches=5/5 near=rep1:87,rep1:88,rep2:42,rep3:101,rep4:95 conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.2 (ambiguous=0 false=0) owner_load/rep=13.2 missing/rep=64.4 unchecked/rep=8.0 skipped/rep=1.0 returned/rep=0.0 returned_on_plant=0 misses=- cost=$3.28
+step-pair-gpt-6.1-sol    p66-today    scored=5 catches=0/5 near=- conflicts_on_plant=5 false_alarms/rep=- unclear/rep=0.0 (ambiguous=0 false=0) owner_load/rep=11.8 missing/rep=88.6 unchecked/rep=7.8 skipped/rep=1.0 returned/rep=0.6 returned_on_plant=0 misses=absent:5 cost=$3.39
+catch bar p53-unit: step 5/5, control 5/5: missed [step-claude]
+catch bar p66-bound: step 4/5, control 5/5: missed [step-claude]
+catch bar p55-default: step 5/5, control 5/5: missed [step-claude]
+catch bar p66-today: step 0/5, control 0/5: missed [step-claude]
+catch bar p55-exit: step 0/5, control 0/5: missed [step-claude]
+false-alarm bar p55-clean: 11.0 literal, 11.0 without amendment per rep: missed literal, missed without amendment [step-claude]
+unclear bar p55-clean: 0.2 per rep (ambiguous 1, false 0): met [step-claude]
+catch bar p53-unit: step 4/5, control 5/5: missed [step-codex-gpt-6-sol]
+catch bar p66-bound: step 1/5, control 5/5: missed [step-codex-gpt-6-sol]
+catch bar p55-default: step 4/5, control 5/5: missed [step-codex-gpt-6-sol]
+catch bar p66-today: step 0/5, control 0/5: missed [step-codex-gpt-6-sol]
+catch bar p55-exit: step 0/5, control 0/5: missed [step-codex-gpt-6-sol]
+false-alarm bar p55-clean: 7.0 literal, 7.0 without amendment per rep: missed literal, missed without amendment [step-codex-gpt-6-sol]
+unclear bar p55-clean: 0.0 per rep (ambiguous 0, false 0): met [step-codex-gpt-6-sol]
+catch bar p53-unit: step 3/5, control 5/5: missed [step-codex-gpt-6.1-sol]
+catch bar p66-bound: step 0/5, control 5/5: missed [step-codex-gpt-6.1-sol]
+catch bar p55-default: step 5/5, control 5/5: missed [step-codex-gpt-6.1-sol]
+catch bar p66-today: step 0/5, control 0/5: missed [step-codex-gpt-6.1-sol]
+catch bar p55-exit: step 0/5, control 0/5: missed [step-codex-gpt-6.1-sol]
+false-alarm bar p55-clean: 4.4 literal, 4.4 without amendment per rep: missed literal, missed without amendment [step-codex-gpt-6.1-sol]
+unclear bar p55-clean: 0.0 per rep (ambiguous 0, false 0): met [step-codex-gpt-6.1-sol]
+catch bar p53-unit: step 5/5, control 5/5: missed [step-pair-gpt-6-sol]
+catch bar p66-bound: step 5/5, control 5/5: missed [step-pair-gpt-6-sol]
+catch bar p55-default: step 5/5, control 5/5: missed [step-pair-gpt-6-sol]
+catch bar p66-today: step 0/5, control 0/5: missed [step-pair-gpt-6-sol]
+catch bar p55-exit: step 0/5, control 0/5: missed [step-pair-gpt-6-sol]
+false-alarm bar p55-clean: 9.4 literal, 9.4 without amendment per rep: missed literal, missed without amendment [step-pair-gpt-6-sol]
+unclear bar p55-clean: 0.4 per rep (ambiguous 2, false 0): met [step-pair-gpt-6-sol]
+catch bar p53-unit: step 5/5, control 5/5: missed [step-pair-gpt-6.1-sol]
+catch bar p66-bound: step 5/5, control 5/5: missed [step-pair-gpt-6.1-sol]
+catch bar p55-default: step 5/5, control 5/5: missed [step-pair-gpt-6.1-sol]
+catch bar p66-today: step 0/5, control 0/5: missed [step-pair-gpt-6.1-sol]
+catch bar p55-exit: step 1/5, control 0/5: missed [step-pair-gpt-6.1-sol]
+false-alarm bar p55-clean: 8.4 literal, 8.4 without amendment per rep: missed literal, missed without amendment [step-pair-gpt-6.1-sol]
+unclear bar p55-clean: 0.0 per rep (ambiguous 0, false 0): met [step-pair-gpt-6.1-sol]
+second reader [step-pair-gpt-6-sol]: catches pair 15 vs claude 14; clean false alarms pair 9.4/9.4 vs claude 11.0/11.0: pair beats claude alone
+second reader [step-pair-gpt-6.1-sol]: catches pair 16 vs claude 14; clean false alarms pair 8.4/8.4 vs claude 11.0/11.0: pair beats claude alone
+PD9 trigger: yes (catch p66-today 0/5; catch p55-exit 0/5; false alarms 9.4/9.4)

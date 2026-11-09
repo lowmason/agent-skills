@@ -1,0 +1,1744 @@
+[
+ {
+  "kind": "unchecked",
+  "sentence": 61,
+  "subject": "jax",
+  "agreed": null,
+  "planner": {
+   "value": "0.12.0",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 317-319",
+  "index": 0,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 62,
+  "subject": "`--exclude-newer` and `UV_EXCLUDE_NEWER`",
+  "agreed": null,
+  "planner": {
+   "value": "limit the header's dependencies",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 28-33, 338-341, 501; note: The plan's amendment A1 states that both do limit a script header. The spec says they did not.",
+  "index": 1,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 63,
+  "subject": "polars",
+  "agreed": null,
+  "planner": {
+   "value": "1.44.2",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 32, 235, 501; note: A1 replaces this: with the 2026-10-01 cutoff the plan expects polars 1.44.2, not 2.0.0.",
+  "index": 2,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 64,
+  "subject": "`[tool.uv] exclude-newer` table inside the script header",
+  "agreed": null,
+  "planner": {
+   "value": "1.44.2",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 248, 342-343, 501",
+  "index": 3,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 65,
+  "subject": "a bare `polars` header",
+  "agreed": null,
+  "planner": {
+   "value": "2.0.0",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 33, 167, 513; note: A1 says that a bare polars header resolves to 2.0.0 on 3.14. The spec says 1.44.2.",
+  "index": 4,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 66,
+  "subject": "polars",
+  "agreed": null,
+  "planner": {
+   "value": "2.0.0",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 345-346, 513",
+  "index": 5,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 67,
+  "subject": "polars",
+  "agreed": null,
+  "planner": {
+   "value": "2.0.0",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 347-349, 513",
+  "index": 6,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 68,
+  "subject": "the 1.44.2 result",
+  "agreed": null,
+  "planner": {
+   "value": "a cached environment",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 28, 33, 513; note: A1 names the cause as uv's cached environment. The spec calls it unknown.",
+  "index": 7,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 186,
+  "subject": "scheduled workflows",
+  "agreed": null,
+  "planner": {
+   "value": "60",
+   "unit": "days",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 4125, 4174",
+  "index": 8,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 2,
+  "subject": "Next skill",
+  "agreed": null,
+  "planner": null,
+  "detail": "C1 rule 3; quote: Next skill: writing-plans",
+  "index": 9,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 5,
+  "subject": "mechanism",
+  "agreed": null,
+  "planner": null,
+  "detail": "C2 rule 3; quote: one mechanism for every package that a skill names or runs",
+  "index": 10,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 6,
+  "subject": "properties",
+  "agreed": null,
+  "planner": null,
+  "detail": "C3 rule 3; quote: one or both of these properties",
+  "index": 11,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 8,
+  "subject": "version",
+  "agreed": null,
+  "planner": null,
+  "detail": "C4 rule 3; quote: set in one place and not copied by hand",
+  "index": 12,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 9,
+  "subject": "plan",
+  "agreed": null,
+  "planner": null,
+  "detail": "C5 rule 3; quote: This work is not part of plan 64",
+  "index": 13,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 79,
+  "subject": "worktrees",
+  "agreed": null,
+  "planner": null,
+  "detail": "C7 rule 3; quote: this repo's worktrees live inside the main checkout, at `.claude/worktrees/<name>/`",
+  "index": 14,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 86,
+  "subject": "Exact pins",
+  "agreed": null,
+  "planner": null,
+  "detail": "C9 rule 3; quote: Exact pins in one file",
+  "index": 15,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 87,
+  "subject": "version per package",
+  "agreed": null,
+  "planner": null,
+  "detail": "C10 rule 3; quote: One version per package for the whole repo",
+  "index": 16,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 88,
+  "subject": "freeze date",
+  "agreed": null,
+  "planner": null,
+  "detail": "C11 rule 3; quote: One freeze date",
+  "index": 17,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 88,
+  "subject": "uv",
+  "agreed": null,
+  "planner": null,
+  "detail": "C12 rule 3; quote: Every check resolves as of that date (uv `exclude-newer`)",
+  "index": 18,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 88,
+  "subject": "lock file",
+  "agreed": null,
+  "planner": null,
+  "detail": "C13 rule 3; quote: No lock file",
+  "index": 19,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 90,
+  "subject": "version literal",
+  "agreed": null,
+  "planner": null,
+  "detail": "C16 rule 3; quote: An offline lint compares each version literal in `skills/` with the file",
+  "index": 20,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 92,
+  "subject": "file",
+  "agreed": null,
+  "planner": null,
+  "detail": "C18 rule 3; quote: One file that a person edits",
+  "index": 21,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 92,
+  "subject": "mode",
+  "agreed": null,
+  "planner": null,
+  "detail": "C19 rule 3; quote: a `--check` mode as a commit lint",
+  "index": 22,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 94,
+  "subject": "versions file",
+  "agreed": null,
+  "planner": null,
+  "detail": "C20 rule 2; quote: `build/versions.toml` is the only file in which a person sets a package version or the dev interpreter",
+  "index": 23,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 98,
+  "subject": "plan",
+  "agreed": null,
+  "planner": null,
+  "detail": "C29 rule 3; quote: The plan sets the real values with `bump` (R3).",
+  "index": 24,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 99,
+  "subject": "package",
+  "agreed": null,
+  "planner": null,
+  "detail": "C30 rule 3; quote: A package gets a `[packages]` entry in two cases.",
+  "index": 25,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 102,
+  "subject": "Polars",
+  "agreed": null,
+  "planner": null,
+  "detail": "C31 rule 3; quote: Polars is in `[packages]` by the second case",
+  "index": 26,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 104,
+  "subject": "package",
+  "agreed": null,
+  "planner": null,
+  "detail": "C32 rule 3; quote: A package gets a `[cited]` entry when skill prose cites a version for it and no check runs it.",
+  "index": 27,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 106,
+  "subject": "script floors",
+  "agreed": null,
+  "planner": null,
+  "detail": "C33 rule 3; quote: The file does not hold the script floors (`requires-python`, `compatibility:`)",
+  "index": 28,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 107,
+  "subject": "sync",
+  "agreed": null,
+  "planner": null,
+  "detail": "C35 rule 3; quote: `build/versions.py sync` writes three files from `build/versions.toml`",
+  "index": 29,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 107,
+  "subject": "sync",
+  "agreed": null,
+  "planner": null,
+  "detail": "C36 rule 3; quote: `sync --check` fails when any of them differs",
+  "index": 30,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 109,
+  "subject": "`.python-version`",
+  "agreed": null,
+  "planner": {
+   "value": "3.13",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C37 rule 2; quote: `.python-version` (repo root) | the `[python] dev` value",
+  "index": 31,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 110,
+  "subject": "Output",
+  "agreed": null,
+  "planner": {
+   "value": "freeze date T00:00:00Z",
+   "unit": "none",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "C40 rule 3; quote: `uv.toml` (repo root)",
+  "index": 32,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 111,
+  "subject": "`skills/uv.toml`",
+  "agreed": null,
+  "planner": {
+   "value": "no settings; a comment naming build/versions.toml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C41 rule 2; quote: `skills/uv.toml` | no settings, and a comment that names `build/versions.toml`",
+  "index": 33,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 111,
+  "subject": "Output",
+  "agreed": null,
+  "planner": {
+   "value": "no settings; a comment naming build/versions.toml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C42 rule 3; quote: `skills/uv.toml`",
+  "index": 34,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 111,
+  "subject": "comment",
+  "agreed": null,
+  "planner": {
+   "value": "no settings; a comment naming build/versions.toml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C43 rule 3; quote: a comment that names `build/versions.toml`",
+  "index": 35,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 114,
+  "subject": "plan",
+  "agreed": null,
+  "planner": null,
+  "detail": "C44 rule 3; quote: The plan confirms that Claude Code, Codex and Gemini also ignore a plain file in a skills directory.",
+  "index": 36,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 115,
+  "subject": "`build/versions.py`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C46 rule 3; quote: `build/versions.py` gives the other build scripts these values: the dev Python, the freeze date, and `stack(gate)`",
+  "index": 37,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 117,
+  "subject": "`PINNED`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C47 rule 2; quote: `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`)",
+  "index": 38,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 117,
+  "subject": "`build/check_snippets.py`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C48 rule 3; quote: `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`",
+  "index": 39,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 118,
+  "subject": "Tier 2",
+  "agreed": null,
+  "planner": {
+   "value": "pinned `snippets` stack",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C49 rule 3; quote: Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date.",
+  "index": 40,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 119,
+  "subject": "reader",
+  "agreed": null,
+  "planner": null,
+  "detail": "C50 rule 3; quote: `build/check_jax_examples.py` and its documented command",
+  "index": 41,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 119,
+  "subject": "stack",
+  "agreed": null,
+  "planner": null,
+  "detail": "C51 rule 3; quote: they install `stack('jax-cpu')`",
+  "index": 42,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 119,
+  "subject": "documented command",
+  "agreed": null,
+  "planner": null,
+  "detail": "C52 rule 3; quote: in place of `--with-requirements specs/verification/32-jax-cpu.txt`",
+  "index": 43,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 120,
+  "subject": "`build/run_suites.py`",
+  "agreed": null,
+  "planner": {
+   "value": "['dev']",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "['dev']"
+  },
+  "detail": "C53 rule 3; quote: `build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python.",
+  "index": 44,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 121,
+  "subject": "package",
+  "agreed": null,
+  "planner": null,
+  "detail": "C54 rule 3; quote: A `with` or `extras` package that `[packages]` names gets its pin.",
+  "index": 45,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 122,
+  "subject": "Each run",
+  "agreed": null,
+  "planner": null,
+  "detail": "C55 rule 3; quote: Each run passes `--exclude-newer <date>` explicitly",
+  "index": 46,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 124,
+  "subject": "they",
+  "agreed": null,
+  "planner": {
+   "value": "uv run --directory repo root (reads .python-version)",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C57 rule 3; quote: `build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`: they can run outside the repo's working directory",
+  "index": 47,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 126,
+  "subject": "This",
+  "agreed": null,
+  "planner": null,
+  "detail": "C58 rule 3; quote: This covers `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `build/run_commit_lints.sh`, the usage docstrings in `build/`, `hooks/` and the skill test files, and the commands in skill text.",
+  "index": 48,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 128,
+  "subject": "A command that needs a pinned stack",
+  "agreed": null,
+  "planner": {
+   "value": "uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C59 rule 2; quote: uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/",
+  "index": 49,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 131,
+  "subject": "sync",
+  "agreed": null,
+  "planner": null,
+  "detail": "C60 rule 3; quote: `sync [--check]`",
+  "index": 50,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 132,
+  "subject": "run",
+  "agreed": null,
+  "planner": null,
+  "detail": "C61 rule 3; quote: `run <gate> [--pin pkg==X ...] -- <cmd>`",
+  "index": 51,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 132,
+  "subject": "`<cmd>`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C62 rule 3; quote: Runs `<cmd>` under `uv run` with the gate's stack and the freeze date",
+  "index": 52,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 133,
+  "subject": "verify",
+  "agreed": null,
+  "planner": {
+   "value": "[tier 2 (--api), tier 3 (--run), jax cpu examples, run_suites.py --all --extras]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C63 rule 3; quote: `verify [--pin pkg==X ...]`",
+  "index": 53,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 133,
+  "subject": "re-verify set",
+  "agreed": null,
+  "planner": {
+   "value": "[tier 2 (--api), tier 3 (--run), jax cpu examples, run_suites.py --all --extras]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C64 rule 3; quote: Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras`",
+  "index": 54,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 135,
+  "subject": "reports",
+  "agreed": null,
+  "planner": {
+   "value": "[dev Python, newest stable Python]",
+   "unit": "passes",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C68 rule 3; quote: the pinned version, the resolved version, the newest release and its upload date",
+  "index": 55,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 136,
+  "subject": "Subcommand",
+  "agreed": null,
+  "planner": null,
+  "detail": "C69 rule 3; quote: `check` | no | The R4 lint",
+  "index": 56,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 139,
+  "subject": "`--pin`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C70 rule 3; quote: `--pin` changes one package for one run and never edits the file.",
+  "index": 57,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 139,
+  "subject": "run",
+  "agreed": null,
+  "planner": null,
+  "detail": "C71 rule 3; quote: `--pin` changes one package for one run and never edits the file.",
+  "index": 58,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 140,
+  "subject": "bump",
+  "agreed": null,
+  "planner": null,
+  "detail": "C72 rule 3; quote: A bump follows these steps, in one change",
+  "index": 59,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 141,
+  "subject": "Run",
+  "agreed": null,
+  "planner": null,
+  "detail": "C73 rule 3; quote: Run `bump`.",
+  "index": 60,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 142,
+  "subject": "Run",
+  "agreed": null,
+  "planner": null,
+  "detail": "C74 rule 3; quote: Run `verify`.",
+  "index": 61,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 143,
+  "subject": "Run",
+  "agreed": null,
+  "planner": null,
+  "detail": "C75 rule 3; quote: Run `check`, which lists each prose citation that the bump made stale.",
+  "index": 62,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 158,
+  "subject": "`versions.py check`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C77 rule 3; quote: `versions.py check` runs offline.",
+  "index": 63,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 163,
+  "subject": "interpreter path",
+  "agreed": null,
+  "planner": null,
+  "detail": "C80 rule 3; quote: An interpreter path such as `/usr/bin/python3` is not a literal.",
+  "index": 64,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 164,
+  "subject": "version",
+  "agreed": null,
+  "planner": null,
+  "detail": "C83 rule 3; quote: each version that stands next to a `[packages]` name, a `[cited]` name or \"Python\"",
+  "index": 65,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 167,
+  "subject": "History",
+  "agreed": null,
+  "planner": null,
+  "detail": "C84 rule 3; quote: passes only through the `HISTORICAL` allowlist",
+  "index": 66,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 168,
+  "subject": "Python floor",
+  "agreed": null,
+  "planner": {
+   "value": "at most the SKILL.md floor",
+   "unit": "none",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "C85 rule 3; quote: Each script's `requires-python` must match the Python floor in its `SKILL.md` `compatibility:` line.",
+  "index": 67,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 170,
+  "subject": "`HISTORICAL`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C86 rule 2; quote: `HISTORICAL` is keyed by the literal phrase, not by file and line",
+  "index": 68,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 173,
+  "subject": "run manifest",
+  "agreed": null,
+  "planner": null,
+  "detail": "C88 rule 3; quote: such as the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`, goes on `HISTORICAL` with a reason",
+  "index": 69,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 176,
+  "subject": "`versions_check`",
+  "agreed": null,
+  "planner": {
+   "value": "10",
+   "unit": "commit lints",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C89 rule 2; quote: `versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint",
+  "index": 70,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 176,
+  "subject": "commit lint",
+  "agreed": null,
+  "planner": {
+   "value": "10",
+   "unit": "commit lints",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C91 rule 3; quote: `versions_check` (`uv run python build/versions.py check`)",
+  "index": 71,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 176,
+  "subject": "`versions_check`",
+  "agreed": null,
+  "planner": {
+   "value": "10",
+   "unit": "commit lints",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C92 rule 3; quote: in `build/run_commit_lints.sh`",
+  "index": 72,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 177,
+  "subject": "change",
+  "agreed": null,
+  "planner": null,
+  "detail": "C93 rule 3; quote: `CLAUDE.md`'s count of commit lints, `build/githooks/pre-commit` and `build/test_commit_lints.py` change with it.",
+  "index": 73,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 178,
+  "subject": "workflow",
+  "agreed": null,
+  "planner": null,
+  "detail": "C94 rule 3; quote: `.github/workflows/lints.yml` keeps its steps.",
+  "index": 74,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 179,
+  "subject": "`setup-uv`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C95 rule 3; quote: `setup-uv` takes the interpreter from `.python-version`.",
+  "index": 75,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 180,
+  "subject": "new workflow",
+  "agreed": null,
+  "planner": {
+   "value": "weekly (cron 17 6 * * 1) and workflow_dispatch",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C96 rule 2; quote: A new workflow, `.github/workflows/versions-drift.yml`",
+  "index": 76,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 180,
+  "subject": "new workflow",
+  "agreed": null,
+  "planner": {
+   "value": "weekly (cron 17 6 * * 1) and workflow_dispatch",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C98 rule 3; quote: runs `versions.py drift`",
+  "index": 77,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 182,
+  "subject": "actions",
+  "agreed": null,
+  "planner": {
+   "value": "contents: read",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C100 rule 3; quote: it pins its actions by SHA, as `lints.yml` does",
+  "index": 78,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 183,
+  "subject": "drift report",
+  "agreed": null,
+  "planner": null,
+  "detail": "C101 rule 3; quote: It writes the drift report to the job summary.",
+  "index": 79,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 190,
+  "subject": "shadow file",
+  "agreed": null,
+  "planner": null,
+  "detail": "C103 rule 3; quote: the shadow file under `skills/`",
+  "index": 80,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 191,
+  "subject": "results",
+  "agreed": null,
+  "planner": null,
+  "detail": "C104 rule 2; quote: Record the results in `specs/verification/`.",
+  "index": 81,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 193,
+  "subject": "file",
+  "agreed": null,
+  "planner": null,
+  "detail": "C105 rule 3; quote: Write `build/versions.toml`",
+  "index": 82,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 194,
+  "subject": "JAX version",
+  "agreed": null,
+  "planner": null,
+  "detail": "C106 rule 3; quote: Use one JAX version for both gates.",
+  "index": 83,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 196,
+  "subject": "`jax-cpu`",
+  "agreed": null,
+  "planner": {
+   "value": "jax 0.11.2, jaxlib 0.11.2",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C107 rule 3; quote: add a temporary `[[override]]` for `jax-cpu` with its reason",
+  "index": 84,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 199,
+  "subject": "stale citation",
+  "agreed": null,
+  "planner": null,
+  "detail": "C111 rule 3; quote: move it to `HISTORICAL`",
+  "index": 85,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 201,
+  "subject": "known stale citations",
+  "agreed": null,
+  "planner": null,
+  "detail": "C112 rule 3; quote: The known stale citations are the Polars, Altair and plotly lines",
+  "index": 86,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 202,
+  "subject": "Gaussian-process item",
+  "agreed": null,
+  "planner": {
+   "value": "4496",
+   "unit": "line",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C113 rule 2; quote: Correct the open Gaussian-process item at `specs/deferred_items.md:4492`",
+  "index": 87,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 202,
+  "subject": "Gaussian-process item",
+  "agreed": null,
+  "planner": {
+   "value": "4496",
+   "unit": "line",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C114 rule 3; quote: which says \"on the pinned 0.21.0\"",
+  "index": 88,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 203,
+  "subject": "files to retire",
+  "agreed": null,
+  "planner": null,
+  "detail": "C115 rule 2; quote: Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+  "index": 89,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 203,
+  "subject": "readers",
+  "agreed": null,
+  "planner": null,
+  "detail": "C116 rule 3; quote: point their readers at `build/versions.toml`",
+  "index": 90,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 205,
+  "subject": "`rules/clean-code-python.md:30`",
+  "agreed": null,
+  "planner": {
+   "value": "build/versions.toml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C117 rule 3; quote: Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python.",
+  "index": 91,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 205,
+  "subject": "Change",
+  "agreed": null,
+  "planner": {
+   "value": "build/versions.toml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C118 rule 3; quote: Change `rules/clean-code-python.md:30`",
+  "index": 92,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 206,
+  "subject": "each test",
+  "agreed": null,
+  "planner": null,
+  "detail": "C119 rule 3; quote: The plan writes each test before its code (red, then green).",
+  "index": 93,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 207,
+  "subject": "units",
+  "agreed": null,
+  "planner": null,
+  "detail": "C120 rule 3; quote: **`versions.py` units.**",
+  "index": 94,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 207,
+  "subject": "units",
+  "agreed": null,
+  "planner": null,
+  "detail": "C121 rule 3; quote: Cover schema validation, `stack()` with and without an override, and the exact text that `sync` writes.",
+  "index": 95,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 208,
+  "subject": "form",
+  "agreed": null,
+  "planner": null,
+  "detail": "C122 rule 3; quote: Cover each form (equality, range, history)",
+  "index": 96,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 209,
+  "subject": "finding",
+  "agreed": null,
+  "planner": null,
+  "detail": "C123 rule 3; quote: Each finding has a positive control: a seeded stale literal that must fail.",
+  "index": 97,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 210,
+  "subject": "tests",
+  "agreed": null,
+  "planner": null,
+  "detail": "C124 rule 3; quote: `build/test_run_suites.py` and `build/test_check_frontmatter.py:434` build their expected commands from the file",
+  "index": 98,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 211,
+  "subject": "Exit codes",
+  "agreed": null,
+  "planner": null,
+  "detail": "C125 rule 3; quote: Test the `drift`, `verify` and `bump` exit codes against a stub uv",
+  "index": 99,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 218,
+  "subject": "`CLAUDE.md` edits",
+  "agreed": null,
+  "planner": null,
+  "detail": "C126 rule 3; quote: The `CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`, and `check_conformance.py` runs before each commit.",
+  "index": 100,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 219,
+  "subject": "Plan",
+  "agreed": null,
+  "planner": null,
+  "detail": "C127 rule 3; quote: **Plan 63.**",
+  "index": 101,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 219,
+  "subject": "Plan 63",
+  "agreed": null,
+  "planner": null,
+  "detail": "C128 rule 3; quote: It edits `build/run_commit_lints.sh`.",
+  "index": 102,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 221,
+  "subject": "Plan",
+  "agreed": null,
+  "planner": null,
+  "detail": "C129 rule 3; quote: **Plan 64 and the model-lifecycle spec.**",
+  "index": 103,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 78,
+  "subject": "items",
+  "agreed": {
+   "value": "[2, 6]",
+   "unit": "items",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 104,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 84,
+  "subject": "`CLAUDE.md`",
+  "agreed": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "planner lines 116, 3899, 4047",
+  "index": 105,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 89,
+  "subject": "Script floors",
+  "agreed": {
+   "value": "[\"3.11\", \"3.12\"]",
+   "unit": "Python version",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 106,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 89,
+  "subject": "the 3.9 floor",
+  "agreed": {
+   "value": "3.9",
+   "unit": "Python version",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 107,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 91,
+  "subject": "drift run",
+  "agreed": {
+   "value": "[\"on demand\", \"weekly advisory CI job\"]",
+   "unit": "schedule",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 108,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 96,
+  "subject": "dev",
+  "agreed": {
+   "value": "3.13",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[packages] (bump sets the version)",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 4",
+  "index": 109,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 106,
+  "subject": "floor",
+  "agreed": {
+   "value": "3.9",
+   "unit": "Python version",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 110,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 107,
+  "subject": "`build/versions.py sync`",
+  "agreed": {
+   "value": "3",
+   "unit": "files",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 111,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 110,
+  "subject": "`uv.toml` (repo root) `exclude-newer`",
+  "agreed": {
+   "value": "<freeze date + 1 day>T00:00:00Z",
+   "unit": "RFC 3339 timestamp",
+   "edge": "out",
+   "default": "none"
+  },
+  "planner": {
+   "value": "freeze date T00:00:00Z",
+   "unit": "none",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "planner lines 21, 106-107, 598-600, 802-804, 910-912, 1577; note: The plan sets the cutoff to 00:00:00Z on the freeze date itself. The spec sets it to 00:00:00Z on the day after. With the plan's cutoff, files uploaded on the freeze date are excluded, and late_pins rejects them. The spec includes them. No amendment task covers this change.",
+  "index": 112,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 110,
+  "subject": "Files uploaded on the freeze date",
+  "agreed": {
+   "value": "freeze date",
+   "unit": "UTC date",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 113,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 115,
+  "subject": "`stack(gate)`",
+  "agreed": {
+   "value": "pkg==version",
+   "unit": "string form",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 114,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 123,
+  "subject": "`hooks` suite",
+  "agreed": {
+   "value": "/usr/bin/python3",
+   "unit": "interpreter path",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "['dev', '/usr/bin/python3']",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 2416",
+  "index": 115,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 134,
+  "subject": "`bump [--date D]`",
+  "agreed": {
+   "value": "D",
+   "unit": "date",
+   "edge": "n/a",
+   "default": "today, UTC"
+  },
+  "planner": {
+   "value": "today, UTC",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "today, UTC"
+  },
+  "detail": "planner lines 1259, 1264",
+  "index": 116,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 134,
+  "subject": "freeze date",
+  "agreed": {
+   "value": "D",
+   "unit": "date",
+   "edge": "n/a",
+   "default": "today, UTC"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 117,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 135,
+  "subject": "passes",
+  "agreed": {
+   "value": "[\"dev Python\", \"newest stable Python\"]",
+   "unit": "passes",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 118,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 147,
+  "subject": "`run` and `verify`",
+  "agreed": {
+   "value": "0",
+   "unit": "exit code",
+   "edge": "out",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 119,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 148,
+  "subject": "`drift` exit code, all gates pass",
+  "agreed": {
+   "value": "0",
+   "unit": "exit code",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[0, 1, 2]",
+   "unit": "exit code",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 110, 2704-2725",
+  "index": 120,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 148,
+  "subject": "`drift` exit code, a gate fails",
+  "agreed": {
+   "value": "1",
+   "unit": "exit code",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 121,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 148,
+  "subject": "`drift` exit code, resolve or network failure",
+  "agreed": {
+   "value": "2",
+   "unit": "exit code",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 122,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 161,
+  "subject": "Interpreter literals",
+  "agreed": {
+   "value": "--python 3.<n>",
+   "unit": "text pattern",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "--python[ =]3.<n>",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 3106",
+  "index": 123,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 162,
+  "subject": "Live files",
+  "agreed": {
+   "value": "[\"CLAUDE.md\", \"AGENTS.md\", \"GEMINI.md\", \"build/\", \"hooks/\", \"skills/\", \".claude/skills/\"]",
+   "unit": "paths",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/, hooks/, skills/, .claude/skills/]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 3104-3105",
+  "index": 124,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 164,
+  "subject": "Prose citations",
+  "agreed": {
+   "value": "[\"skills/**/*.md\", \"skills/*/scripts/\"]",
+   "unit": "paths",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 125,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 164,
+  "subject": "`check`",
+  "agreed": {
+   "value": "[\"skills/**/*.md\", \"skills/*/scripts/\"]",
+   "unit": "paths",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 126,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 172,
+  "subject": "`check`",
+  "agreed": {
+   "value": "[\"specs/\", \"LICENSE*\", \"data/\", \"test fixtures\"]",
+   "unit": "paths",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[specs/, LICENSE*, data/, fixtures/]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 96, 3113-3115, 3202",
+  "index": 127,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 180,
+  "subject": "`versions.py drift`",
+  "agreed": {
+   "value": "weekly",
+   "unit": "schedule",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 128,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 180,
+  "subject": "new workflow",
+  "agreed": {
+   "value": "[\"weekly cron\", \"manual dispatch\"]",
+   "unit": "schedule",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 129,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 180,
+  "subject": "`.github/workflows/versions-drift.yml`",
+  "agreed": null,
+  "planner": {
+   "value": "weekly (cron 17 6 * * 1) and workflow_dispatch",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "unpaired; planner lines 4128-4131, 4148",
+  "index": 130,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 190,
+  "subject": "Inventory",
+  "agreed": {
+   "value": "[2, 6]",
+   "unit": "items",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 131,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 197,
+  "subject": "Polars",
+  "agreed": {
+   "value": "latest release on the day of execution",
+   "unit": "version",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "2.0.0",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 3341-3356",
+  "index": 132,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 198,
+  "subject": "polars",
+  "agreed": {
+   "value": "2.0",
+   "unit": "version",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 133,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 199,
+  "subject": "reason",
+  "agreed": {
+   "value": "\"verified on X, not re-checked on Y\"",
+   "unit": "text",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 134,
+  "flags": []
+ }
+]

@@ -5304,7 +5304,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/red-baseline-writing-skills-split.md`.
 
 ## spec-reading-test-check (no plan; owner-approved local design idea from session "Obra superpowers writing-plans mechanism") — 2026-10-28
-- [ ] Spec-reading test check (local design, not an upstream finding, owner-approved
+- [x] Spec-reading test check (local design, not an upstream finding, owner-approved
       2026-10-28): the planner authors each task's test recipe, and the implementer writes its
       tests and code from that recipe. No separate seat writes independent spec-derived
       acceptance tests. A shared misreading can therefore survive passing tests. The task
@@ -5350,6 +5350,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       ran, with its results in `specs/red-baseline-acceptance-tests.md`. The owner reviews them before the
       build plan is written. The item stays open.
       → progress 2026-11-08 (plan 81, owner ruling at D8): the control, a fresh `claude -p` session that runs the Self-Review checklist, caught 15 of 15 plants, and no treatment arm caught more than 11 (`specs/red-baseline-acceptance-tests.md`). The spec's part for drift finding 21 (a test-run script, the task-reviewer change and the `task-done` change) goes to a build plan from `specs/spec-derived-acceptance-tests.md`. The second reader goes to a spec revision for statement-level readings: Claude and Codex each state what the spec asks, in fixed slots, from the spec alone, and one step compares the statements with each other and with the plan's values. A probe with harder plants (a wrong value that the plan argues for, and spec sentences with two readings) tests that design against the fresh-session control. The item stays open.
+      → progress 2026-11-09 (plan 83): the statement-readings probe ran, and its results are in `specs/red-baseline-statement-readings.md`. The owner reviews them before any build plan. The item stays open.
+      → done 2026-11-09 (plan 83): `specs/completed/statement-level-readings.md` decided the layers, and its probe recorded the baseline in `specs/red-baseline-statement-readings.md`. At D8 the owner chose no build plan. Layer 3, a reading step at plan review, is not kept: the probe's statement step missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of 1.0, and a fresh Self-Review caught every planted value change (15 of 15 in plan 81 and in plan 83). Layer 5's independent acceptance tests go, by the owner's direction D9 that two readers state what the spec asks instead of writing tests. Its spec-path handoff to the final reviewer landed in plan 73. Layer 1 applies only when a spec has worked examples (old D4). Layer 4, spec excerpts in the implementer brief, stays open → item: 83-statement-level-readings — 2026-11-09
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
 - [x] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
@@ -6115,3 +6117,29 @@ review and the Plan Completion gate (2026-10-27) add the others.
       paired prompts again. A rerun is 60 `opus` adjudicator reps (about $23, the cost of the first run), a new
       score and classification, and a record update. Size: plan. Revisit if: the spec revision for
       statement-level readings keeps test-writing second readers.
+
+## 83-statement-level-readings — 2026-11-09
+- [ ] **Layer 4 of the spec-reading test check: spec excerpts in the implementer brief (plan 83, Task 6
+      Step 5; the owner chose no build plan at D8).** The closed item "Spec-reading test check" proposed five
+      layers against a spec misreading that the plan's own tests share. Plan 73 adopted layer 2, and
+      `specs/completed/statement-level-readings.md` decided layers 1, 3 and 5 (plan 83). Layer 4 is the one
+      still open. In execution, the implementer brief would carry the spec excerpts that its task rests on. The
+      implementer would report a plan test that conflicts with the spec as DONE_WITH_CONCERNS, and never edit
+      the test to fit its own reading. The status exists in
+      `skills/subagent-driven-development/implementer-prompt.md`, but no brief carries spec excerpts, and no
+      rule names a test that conflicts with the spec. Neither probe tested this layer
+      (`specs/red-baseline-acceptance-tests.md`, `specs/red-baseline-statement-readings.md`). It was first
+      found in specs/deferred_items.md (spec-reading-test-check), 2026-10-28. Size: design. Done when: a spec
+      decides layer 4 for subagent-driven-development and executing-plans, and its plan lands.
+- [ ] **The statement-readings kit's scorer accepts adjudicator rulings that quote no words (plan 83, final
+      review, Codex's finding).** Spec Design 7 in `specs/completed/statement-level-readings.md` has the
+      adjudicator quote the words that decide each case, or rule `unclear`. The kit's scorer
+      (`specs/red-baseline-statement-readings/kit/measure.py`, with `parse_rulings` and `resolve` in
+      `compare.py`) does not check an adjudicator's quote, and the plan's VOID rules (PD6) have no such item.
+      In plan 83's runs it took 1,045 `no-value` rulings with an empty quote, in 31 of the 150 step reps. Read
+      as `unclear`, they put every arm above the unclear bar, at 1.2 to 28.0 per rep on the clean copy
+      (`specs/red-baseline-statement-readings.md`, section 9, item 11). The kit was frozen (PD12), so plan 83
+      reported the effect and did not re-score. At the completion gate the owner chose this item over a
+      re-score. The fix: score a ruling other than `unclear` whose quote is empty as `unclear`, with a selftest
+      that fails first. Size: quick-fix. Revisit if: a plan copies `specs/red-baseline-statement-readings/kit/`,
+      as plan 83 copied plan 81's kit.

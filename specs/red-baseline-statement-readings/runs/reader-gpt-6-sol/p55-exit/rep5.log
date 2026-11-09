@@ -1,0 +1,749 @@
+OpenAI Codex v0.163.0
+--------
+workdir: /tmp/plan83-codex-f4zszs
+model: gpt-6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: ultra
+reasoning summaries: none
+session id: 01a1c18a-35dc-7ec2-a6a9-688ebe4bade2
+--------
+user
+You read a spec alone and state what it asks, in fixed slots. A planner wrote a plan from this spec. You never see that plan.
+
+A **stated value** is a value that the plan must match exactly. It can be a number, a limit, a unit, a default, a date or time, a name, a path or exact text. Skip a value that only records a fact, such as a measurement, an inventory row or a dated history, unless a requirement makes the plan keep or use it.
+
+Each stated value gets one entry, with these slots:
+
+| Slot | Holds | Form |
+|---|---|---|
+| `sentence` | the sentence number | `S<n>` |
+| `quote` | the words of the sentence that state the value | copied word for word |
+| `subject` | what the value applies to: a field, an option, a file or a command | words copied from the sentence |
+| `value` | the value | a literal in plain notation: a number, a string, a list in brackets, a date or time |
+| `unit` | what the value counts or measures | the spec's word, such as `characters`, or `none` |
+| `edge` | for each limit in the value, whether the limit itself is in | `in`, `out`, or `n/a` with no limit |
+| `default` | the value used when the input is absent | a literal, or `none` |
+| `other_reading` | another reading that the words allow | the same slots, or `none` |
+
+A sentence that states two values gets two entries. `subject` tells them apart, because a quote alone does not. The writer copies `subject` from the sentence's own words, so that two writers word it alike.
+
+Fill every slot. When the words allow another reading of a slot, write that reading's value, unit, edge and default in `other_reading`. Otherwise write `none`.
+
+You have no tools. Do not look for a plan or any other file.
+
+An example, from a spec about a lending library. Its sentences:
+
+S4. A member may borrow at most 12 books at once.
+S5. A renewal extends a loan by the standard loan period.
+S6. Holds wait at the desk for 5 days.
+
+Its statement:
+
+<statement>
+<entry sentence="S4"><quote>may borrow at most 12 books at once</quote><subject>member</subject><value>12</value><unit>books</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S6"><quote>Holds wait at the desk for 5 days</quote><subject>Holds</subject><value>5</value><unit>days</unit><edge>n/a</edge><default>none</default><other_reading><value>5</value><unit>opening days</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+</statement>
+
+S5 gets no entry, because "the standard loan period" names a value that the sentence does not state.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
+
+<spec>
+# Test-suite registry and runner — Design Spec
+S1. **Status:** Design approved in brainstorming on 2026-10-18.
+S2. Next step: an implementation plan from the writing-plans skill (`entry_check.py` reported plan id 54 as next free on 2026-10-18).
+
+## What this builds
+S3. A registry of the repo's directory-scoped pytest suites, a runner that reads it, and a commit lint that keeps it complete:
+S4. - `build/suites.toml` holds one entry per suite: its directory, its `--with` deps, the extra deps that unlock its skips, its interpreters, and its notes.
+S5. - `build/run_suites.py` (stdlib only) lists the suites, runs one or more of them, runs all of them, and checks the registry.
+S6. - `run_suites.py --check` becomes the ninth commit lint.
+S7. It fails when a directory that holds tests is not registered.
+S8. The root `CLAUDE.md` then replaces its per-suite commands with a short block that points at the runner.
+
+## Why
+S9. - **The 200-line limit.** The `claude-md-size` check (a commit lint, through `build/check_conformance.py`) fails at 200 lines.
+S10. `CLAUDE.md` had 199 on `main` at `456e3fb`.
+S11. Its Commands block spends lines 66–125, 60 lines, on one `cd <dir> && uv run … python -m pytest -q` command and comment per suite.
+S12. Each new suite costs two or three more lines.
+S13. - **Three plans competed for the last lines on 2026-10-18.** Plan 50 (the superpowers upstream fixes, lowmason/agent-skills#56) took the file from 195 to 199.
+S14. Plan 52 (the write-with-asd-ste100 skill, not merged) needs two more lines.
+S15. Its open question Q4 asked where they come from: (a) fold seven suites under one comment, (b) record a size deviation, or (c) move the per-suite commands out of the root file first.
+S16. This spec is option (c).
+S17. - **Plan 38 fixed the same problem once.** In plan 38, Task 2 condensed `CLAUDE.md` from 224 lines to 170 and kept every command in place.
+S18. The file then grew back to 199 by 2026-10-18.
+S19. A registry removes the per-suite growth.
+S20. - **Compound commands.** Worktree-isolated sessions and their subagents have refused compound shell such as `cd X && Y` (seen on 2026-10-12).
+S21. A runner gives each suite a single simple command.
+
+## Decisions taken in brainstorming
+S22. The owner took these decisions on 2026-10-18.
+S23. Each records the option that the owner chose.
+S24. 1. **The coverage guard is a ninth commit lint:** "`run_suites.py --check` joins build/run_commit_lints.sh, so the pre-commit hook and CI run it."
+S25. 2. **Plan 52's Q4 is (c):** "This work lands whole, registry and CLAUDE.md shrink, ahead of plan 52's Task 6.
+S26. Task 6 then adds one build/suites.toml entry instead of editing Commands.
+S27. Plan 52's planning session amends its plan to match and records Q4 as (c)."
+S28. 3. **Approach A:** "build/suites.toml (data) + build/run_suites.py (stdlib, tomllib).
+S29. Matches conformance.toml and manifest.toml.
+S30. One central file, sorted by name."
+S31. Rejected: a Python list inside the runner (every suite change becomes a code edit), and one manifest per suite directory (`install.py` copies skill directories, so the manifests would ship with installed skills).
+S32. An `@`-imported document was ruled out before the vote: the guide says imported files load at launch too, so it only moves lines.
+S33. 4. **Design section 1** (the registry keys and the runner's behaviour) was approved as presented.
+S34. It is R1–R3 below.
+S35. 5. **Design section 2** (the guard, the file edits, the tests and the couplings) was approved as presented.
+S36. It is R4–R7 below.
+
+### R1 — Scope
+S37. R1.1 The registry holds every **directory suite**: a directory where pytest runs as a whole, with no selection argument.
+S38. On `main` at `456e3fb` there are 18: the 17 in `CLAUDE.md` lines 66–125, and `build/cc_guide`, whose command is line 145.
+S39. R1.2 These commands **stay literal in `CLAUDE.md`**.
+S40. They are selections or tools, not directory suites, and their comments say when to run them:
+S41. - `test_runtime_support.py` (lines 63–64), `test_commit_lints.py`, the `-k declared_dependencies` and `-k test_real_skill` lints, `test_check_jax_examples.py`, and the "Single test" example;
+S42. - the commit lints, the snippet tiers, the JAX CPU examples, the smoke test, the two `build.py` rebuilds, `verify_citations.py`, `extract_structure.py`, and `cli.py lint` and `check`.
+S43. R1.3 `build/run_commit_lints.sh` keeps its literal commands.
+S44. It does not call the runner, except for the new `--check` lint (R4).
+
+### R2 — The registry: `build/suites.toml`
+S45. R2.1 One `[[suite]]` table per directory suite, sorted by `name`.
+S46. A header comment states the keys, the sort order, and that the ninth commit lint checks the file.
+S47. R2.2 Keys:
+S48. | Key | Type | Required | Meaning |
+S49. | `name` | string | yes | The name that the runner takes. A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`. |
+S50. | `dir` | string | yes | The repo-relative directory that pytest runs from. |
+S51. | `with` | list of strings | yes | The default `--with` deps, in the order the current command gives them. It includes `pytest`. |
+S52. | `extras` | list of strings | no | The deps that unlock skips. Only `--extras` adds them. |
+S53. | `pythons` | list of strings | no | The interpreters, one run each, in order. Default `['3.13']`. |
+S54. | `notes` | list of strings | no | What the suite covers or needs: opt-in environment variables, expected warnings, run times, why some tests skip or fail. |
+S55. R2.3 The entries carry the text of today's commands and comments.
+S56. Every command, dependency and note survives; the only change is the form.
+S57. The inventory, from `CLAUDE.md` at `456e3fb`:
+S58. | `name` | `dir` | `with` (after `pytest`) | `extras` | `pythons` |
+S59. | `bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default |
+S60. | `brainstorming` | `skills/brainstorming/scripts` | — | — | default |
+S61. | `build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default |
+S62. | `cc-guide` | `build/cc_guide` | — | — | default |
+S63. | `classification-codes` | `skills/classification-codes/scripts` | polars | — | default |
+S64. | `describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default |
+S65. | `design-architecture` | `skills/design-architecture/scripts` | — | — | default |
+S66. | `explore-data` | `skills/explore-data/scripts` | polars | — | default |
+S67. | `geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel | — | default |
+S68. | `hooks` | `hooks` | — | — | 3.13, /usr/bin/python3 |
+S69. | `llm-wiki` | `skills/llm-wiki/scripts` | — | — | default |
+S70. | `recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars | — | default |
+S71. | `recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars | — | default |
+S72. | `subagent-driven-development` | `skills/subagent-driven-development/scripts` | — | — | default |
+S73. | `systematic-debugging` | `skills/systematic-debugging` | — | — | default |
+S74. | `track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py | — | default |
+S75. | `tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna | default |
+S76. | `writing-plans` | `skills/writing-plans/scripts` | — | — | default |
+S77. The notes carry the rest of each comment.
+S78. Examples: `build`'s missing `build/.scratch/` in a fresh clone or worktree; `bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep and its expected arviz warnings; `llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`; `brainstorming`'s node skip; `tune-hyperparameters`' "`--with sklearn` fails"; `track-model-experiments`' run time; the guard's 3.9 floor, its launchd-PATH skips and its Gate B probe for `hooks`.
+
+### R3 — The runner: `build/run_suites.py`
+S79. R3.1 Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13.
+S80. Invoked as `uv run --python 3.13 python build/run_suites.py …` from any directory.
+S81. It finds the repo root from its own path, never from the working directory.
+S82. R3.2 **One run** is one interpreter of one suite.
+S83. Its command is `uv run --python <python> --with <dep> … python -m pytest -q [<args>]`, run with the suite's `dir` as its working directory.
+S84. Its shell form is `cd <dir> && <command>`, with shell quoting where a word needs it.
+S85. With default options, the shell form equals the suite's current `CLAUDE.md` command, character for character.
+S86. For `hooks`, whose line chains two runs as `cd hooks && A && B`, the two shell forms are `cd hooks && A` and `cd hooks && B`.
+S87. R3.3 **`--list [NAME …]`** prints, for each named suite (default: all): its name and directory, the shell form of each run, its extras, and its notes.
+S88. `--extras` and the `--` arguments apply here too, so `--list` prints the exact command that a run would use.
+S89. R3.4 **`NAME [NAME …]`** runs the named suites, in the order given, one run per interpreter in `pythons`.
+S90. Each run starts with a `== <name> (<python>)` header, and the suite's notes follow its first run's header.
+S91. Then pytest's output streams.
+S92. A failed run does not stop the next one.
+S93. R3.5 **`--extras`** adds each suite's `extras` after its `with` deps.
+S94. Arguments after **`--`** go to pytest (a test node ID, `-k`, `-s`, `-rs`) in every run.
+S95. R3.6 **`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`.
+S96. Today that is `cc-guide`: `cd build && pytest` collects `build/cc_guide` already.
+S97. `--all` prints one line for each suite that it skips.
+S98. A suite named on the command line always runs.
+S99. R3.7 **Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected, counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation.
+S100. The last line names the failed runs, or says that every run passed.
+S101. A run whose `uv` cannot start counts as failed.
+S102. R3.8 The runner passes its environment to every run unchanged.
+S103. `CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s` therefore runs the sweep.
+S104. R3.9 Validation fails closed.
+S105. An unknown key, a missing required key, a wrong type, a duplicate name or directory, or a `with` list without `pytest` stops `--list`, a named run and `--all` with exit 2.
+S106. `--check` reports the same failures as findings (R4.3).
+S107. A misspelled key can therefore never run a suite without its deps.
+
+### R4 — The guard: `run_suites.py --check`
+S108. R4.1 `--check` reports two kinds of findings:
+S109. - **registry:** R3.9's validation, plus a registered `dir` that does not exist or holds no pytest file;
+S110. - **coverage:** a directory that holds a pytest file (`test_*.py` or `*_test.py`, pytest's default patterns) and does not lie inside any registered `dir`.
+S111. R4.2 The file list is `git ls-files --cached --others --exclude-standard`, run at the repo root.
+S112. Ignored trees, `.claude/worktrees/` and `build/.scratch/` among them, drop out.
+S113. Untracked new suites count, as the hook's other lints read untracked drafts too.
+S114. If git fails, `--check` fails.
+S115. R4.3 Output: `suite registry ok` and exit 0, or one line per finding and an error exit.
+S116. R4.4 `build/run_commit_lints.sh` runs it as the ninth lint, named `suite_registry`: `run suite_registry uv run --python 3.13 python build/run_suites.py --check`.
+S117. Its header says "nine".
+
+### R5 — `CLAUDE.md` and the other edits
+S118. R5.1 `CLAUDE.md`, from `main` at `456e3fb`:
+S119. | Lines | Change |
+S120. | 60 | Rewrite the intro paragraph. Drop "There is no root test runner" and the sentence that comments name the skip-unlocking deps. Keep the uv and Python 3.13 rule, the directory scope, and the `test_build.py` basename-collision reason. Name `build/suites.toml` and `build/run_suites.py`, and say that the runner prints a suite's notes before it runs. One line. |
+S121. | 66–125 | Replace with one block: a comment, then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands. |
+S122. | 127–132 | The commit-lint comment names the suite-registry check and says "nine". Same number of lines. Line 133 is not touched (plan 53's Task 7 edits it). |
+S123. | 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `run_suites.py cc-guide` instead of "its suite". |
+S124. The file ends at about 145 lines.
+S125. The new text states no count of suites or tests (the `claude-md-count-claims` check).
+S126. R5.2 The deletion of lines 66–125 is bounded by two lines that no other plan edits: the `# Full build-directory tests` comment and the `cd hooks && …` command.
+S127. Whatever lies between them goes, so the edit works in either landing order with plan 52 (R7.1).
+S128. R5.3 `build/CLAUDE.md`: "the eight commit lints" becomes "the nine commit lints", and one sentence names `suites.toml` and `run_suites.py` and says that `--check` is a commit lint.
+S129. R5.4 `build/test_check_conformance.py`: `test_claude_md_import_resolves_passes_on_the_repo` asserts `'@needs_pilot' in text` as its positive control, and that note moves to the registry.
+S130. The control becomes a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp.
+S131. A naive scan would flag the `@` in it, and the stamp keeps its form when its version changes.
+S132. R5.5 No change to `AGENTS.md`, `GEMINI.md`, `.github/workflows/lints.yml`, `install.py` or `NOTICE`.
+S133. The new files are the owner's original tooling.
+S134. The register's deviation `claude-md-serves-codex-gemini` still holds as written: a condensed Commands block stays in the root file, and the registry is a plain file that every runtime can read.
+
+### R6 — Tests
+S135. R6.1 `build/test_run_suites.py`, stdlib and pytest only, which the build suite collects.
+S136. It covers:
+S137. - validation: each R3.9 failure, with exit 2;
+S138. - commands: the default argv and shell form, two `pythons` runs, `--extras`, `--` arguments, quoting;
+S139. - `--list` output for a fixture registry;
+S140. - the `--all` nesting rule, and that a named nested suite runs;
+S141. - running, through an injected run function so the tests start no real `uv`: every run happens after a failure; exit 0, 1 and 2; exit 5 counts as failed; the notes print before the first run;
+S142. - `--check` on throwaway git repos: an unregistered test directory, a missing registered directory, a registered directory without tests, an ignored directory (no finding), an untracked test directory (a finding);
+S143. - the real registry: `--check` passes on the repo.
+S144. R6.2 `build/test_commit_lints.py`: `suite_registry` joins `CHECKS`, and `test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py` in a clone and asserts that `suite_registry` is the only failed lint.
+S145. R6.3 Write each test before its code and see it fail first (red, then green).
+
+### R7 — Couplings with other plans
+S146. R7.1 **Plan 52 (write-with-asd-ste100).** Under decision 2, plan 52's Task 6 drops its `CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits and adds one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts` instead.
+S147. Its expectations of 199 and 197 lines (Task 1, DF19, Q4, Coupling (e)) change with it.
+S148. Its `CLAUDE.md:sources` and `CLAUDE.md:bullet` edits are outside the Commands block and still apply.
+S149. A note in the session group's shared notes folder gives the exact entry.
+S150. Until plan 52 adds the entry, the ninth lint refuses its new suite directory.
+S151. If plan 52 lands first after all, R5.2's deletion still works, and this plan registers that suite itself.
+S152. R7.2 **Plan 53 (agent-skills portability).** None of the lines that R5.1 deletes carries one of its edit anchors.
+S153. Its Task 7 edits line 133, which stays.
+S154. Its own suite commands are written out in full in the plan, so they work without `CLAUDE.md`.
+S155. R7.3 **Plan 51 (drift automation, rebaseline pin).** It edits one sentence of `build/CLAUDE.md`'s `cc_guide/` paragraph.
+S156. R5.3 edits the `run_commit_lints.sh` paragraph and adds a sentence.
+S157. If an edit block does not match, merge by hand.
+
+## Testing
+S158. - **R6's tests** run red first, then green.
+S159. - **The Stage 2 audit** (one time, a scratch script that is never committed, as in plan 38's Task 2).
+S160. Run it before the `CLAUDE.md` deletion.
+S161. It extracts every `cd <dir> && uv run …` command from lines 66–125 and 145, splitting the hooks `&&` chain into one command per run.
+S162. It asserts that the set equals the set of default shell forms that `--list` prints: nothing is missing on either side.
+S163. It also checks each comment's skip-unlocking deps against that suite's `extras`.
+S164. - **Behaviour.** Run `hooks`, `build` and `bayesian-workflow` once directly and once through the runner, in the same checkout.
+S165. Their pytest summary lines match.
+S166. Then run `--all` once, and record each run's result beside the direct result.
+S167. - **Gates.** `uv run --python 3.13 python build/run_suites.py --check` prints `suite registry ok`.
+S168. The build suite passes (where the missing `build/.scratch/` lets it).
+S169. `bash build/run_commit_lints.sh` prints `commit lints passed`.
+
+## Done when
+S170. 1. `build/suites.toml` registers every directory suite (R2.3) and `--check` passes.
+S171. 2. `build/run_suites.py` and its tests are committed, and the ninth lint runs in `run_commit_lints.sh`.
+S172. 3. The Stage 2 audit passes, and the behaviour runs match.
+S173. 4. `CLAUDE.md` has no directory-suite command left (R5.1) and stays under 200 lines.
+S174. 5. `bash build/run_commit_lints.sh` prints `commit lints passed`.
+S175. 6. The shared note for plan 52 (R7.1) is written.
+
+## Consequences to know
+S176. - Agents no longer see each suite's notes at session start.
+S177. They see them in `--list`, and the runner prints them before it runs a suite.
+S178. - No commit can add a test directory without a registry entry, plan 52's new suite included.
+S179. - The commit hook runs one more fast, stdlib-only check.
+S180. - Codex and Gemini reach the runner commands through `AGENTS.md` and `GEMINI.md`, as before.
+
+## Out of scope (deferred items)
+S181. - CI running the suites (`--all` in `.github/workflows/lints.yml`).
+S182. It would need node, a 3.9 `/usr/bin/python3` and `build/.scratch/`.
+S183. Size: design.
+S184. Revisit if: the owner wants suites in CI.
+S185. - Parallel runs, per-suite timeouts and machine-readable output.
+S186. Size: plan.
+S187. Revisit if: `--all` gets slow or a tool needs to parse its results.
+S188. - Moving the lint, snippet, JAX, smoke, rebuild and citation commands into the runner.
+S189. Size: design.
+S190. Revisit if: `CLAUDE.md` nears its limit again.
+</spec>
+
+Reply with exactly one <statement> block and nothing else. Each stated value is one <entry> element:
+
+<statement>
+<entry sentence="S<n>"><quote>...</quote><subject>...</subject><value>...</value><unit>...</unit><edge>in|out|n/a</edge><default>...</default><other_reading>none</other_reading></entry>
+</statement>
+
+In <other_reading>, write none, or the other reading's <value>, <unit>, <edge> and <default>. Write text as it is, with no XML escapes.
+
+warning: Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/lowell/.codex/config.toml.
+warning: Code Mode is unavailable because code-mode host is disabled. Code mode will fail closed; enable `features.code_mode_host` and install `codex-code-mode-host`.
+codex
+<statement>
+<entry sentence="S4"><quote>`build/suites.toml` holds one entry per suite</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S4"><quote>one entry per suite</quote><subject>suite</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S5"><quote>`build/run_suites.py` (stdlib only)</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S6"><quote>`run_suites.py --check` becomes the ninth commit lint</quote><subject>run_suites.py --check</subject><value>run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S6"><quote>the ninth commit lint</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S8"><quote>The root `CLAUDE.md` then replaces its per-suite commands</quote><subject>CLAUDE.md</subject><value>CLAUDE.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S9"><quote>The `claude-md-size` check (a commit lint, through `build/check_conformance.py`) fails at 200 lines</quote><subject>claude-md-size</subject><value>200</value><unit>lines</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S24"><quote>`run_suites.py --check` joins build/run_commit_lints.sh</quote><subject>run_suites.py --check</subject><value>run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S24"><quote>`run_suites.py --check` joins build/run_commit_lints.sh</quote><subject>build/run_commit_lints.sh</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S24"><quote>The coverage guard is a ninth commit lint</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S25"><quote>ahead of plan 52's Task 6</quote><subject>plan 52's Task 6</subject><value>plan 52's Task 6</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S26"><quote>Task 6 then adds one build/suites.toml entry</quote><subject>Task 6</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S26"><quote>one build/suites.toml entry</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S27"><quote>records Q4 as (c)</quote><subject>Q4</subject><value>(c)</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S28"><quote>build/run_suites.py (stdlib, tomllib)</quote><subject>build/run_suites.py</subject><value>tomllib</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S30"><quote>sorted by name</quote><subject>name</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S37"><quote>a directory where pytest runs as a whole, with no selection argument</quote><subject>selection argument</subject><value>0</value><unit>selection argument</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S39"><quote>These commands **stay literal in `CLAUDE.md`**</quote><subject>CLAUDE.md</subject><value>CLAUDE.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>`test_runtime_support.py`</quote><subject>test_runtime_support.py</subject><value>test_runtime_support.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>`test_commit_lints.py`</quote><subject>test_commit_lints.py</subject><value>test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>the `-k declared_dependencies` and `-k test_real_skill` lints</quote><subject>-k declared_dependencies</subject><value>-k declared_dependencies</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>the `-k declared_dependencies` and `-k test_real_skill` lints</quote><subject>-k test_real_skill</subject><value>-k test_real_skill</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>`test_check_jax_examples.py`</quote><subject>test_check_jax_examples.py</subject><value>test_check_jax_examples.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>the "Single test" example</quote><subject>Single test</subject><value>Single test</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>the two `build.py` rebuilds</quote><subject>build.py rebuilds</subject><value>2</value><unit>rebuilds</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`verify_citations.py`</quote><subject>verify_citations.py</subject><value>verify_citations.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`extract_structure.py`</quote><subject>extract_structure.py</subject><value>extract_structure.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`cli.py lint` and `check`</quote><subject>cli.py lint</subject><value>cli.py lint</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`cli.py lint` and `check`</quote><subject>check</subject><value>cli.py check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S44"><quote>except for the new `--check` lint</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S45"><quote>One `[[suite]]` table per directory suite</quote><subject>directory suite</subject><value>1</value><unit>[[suite]] table</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S45"><quote>sorted by `name`</quote><subject>name</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S46"><quote>the ninth commit lint checks the file</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S49"><quote>`name` | string | yes</quote><subject>name</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S49"><quote>the others are `build`, `cc-guide` and `hooks`</quote><subject>the others</subject><value>[build, cc-guide, hooks]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S50"><quote>`dir` | string | yes</quote><subject>dir</subject><value>dir</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S51"><quote>`with` | list of strings | yes</quote><subject>with</subject><value>with</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S51"><quote>The default `--with` deps</quote><subject>--with</subject><value>--with</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S51"><quote>It includes `pytest`</quote><subject>with</subject><value>pytest</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S52"><quote>`extras` | list of strings | no</quote><subject>extras</subject><value>extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S52"><quote>Only `--extras` adds them</quote><subject>--extras</subject><value>--extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S53"><quote>`pythons` | list of strings | no</quote><subject>pythons</subject><value>pythons</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S53"><quote>Default `['3.13']`</quote><subject>pythons</subject><value>['3.13']</value><unit>none</unit><edge>n/a</edge><default>['3.13']</default><other_reading>none</other_reading></entry>
+<entry sentence="S54"><quote>`notes` | list of strings | no</quote><subject>notes</subject><value>notes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>bayesian-workflow</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>skills/bayesian-workflow/scripts</subject><value>skills/bayesian-workflow/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>arviz, arviz-stats, numpy, xarray</quote><subject>arviz, arviz-stats, numpy, xarray</subject><value>[arviz, arviz-stats, numpy, xarray]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>matplotlib</quote><subject>matplotlib</subject><value>matplotlib</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts`</quote><subject>brainstorming</subject><value>brainstorming</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts`</quote><subject>skills/brainstorming/scripts</subject><value>skills/brainstorming/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>build</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S61"><quote>numpy, polars, pyyaml</quote><subject>numpy, polars, pyyaml</subject><value>[numpy, polars, pyyaml]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S61"><quote>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</quote><subject>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</subject><value>[arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S62"><quote>`cc-guide` | `build/cc_guide`</quote><subject>cc-guide</subject><value>cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S62"><quote>`cc-guide` | `build/cc_guide`</quote><subject>build/cc_guide</subject><value>build/cc_guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars</quote><subject>classification-codes</subject><value>classification-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars</quote><subject>skills/classification-codes/scripts</subject><value>skills/classification-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S63"><quote>polars</quote><subject>polars</subject><value>polars</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts`</quote><subject>describe-critique-methodology</subject><value>describe-critique-methodology</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts`</quote><subject>skills/describe-critique-methodology/scripts</subject><value>skills/describe-critique-methodology/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts`</quote><subject>design-architecture</subject><value>design-architecture</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts`</quote><subject>skills/design-architecture/scripts</subject><value>skills/design-architecture/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars</quote><subject>explore-data</subject><value>explore-data</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars</quote><subject>skills/explore-data/scripts</subject><value>skills/explore-data/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S66"><quote>polars</quote><subject>polars</subject><value>polars</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel</quote><subject>geographic-codes</subject><value>geographic-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel</quote><subject>skills/geographic-codes/scripts</subject><value>skills/geographic-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S67"><quote>polars, fastexcel</quote><subject>polars, fastexcel</subject><value>[polars, fastexcel]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>hooks</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S68"><quote>3.13, /usr/bin/python3</quote><subject>3.13, /usr/bin/python3</subject><value>['3.13', '/usr/bin/python3']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts`</quote><subject>llm-wiki</subject><value>llm-wiki</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts`</quote><subject>skills/llm-wiki/scripts</subject><value>skills/llm-wiki/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars</quote><subject>recommend-probabilistic-model</subject><value>recommend-probabilistic-model</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars</quote><subject>skills/recommend-probabilistic-model/scripts</subject><value>skills/recommend-probabilistic-model/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S70"><quote>numpy, polars</quote><subject>numpy, polars</subject><value>[numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars</quote><subject>recommend-visualization</subject><value>recommend-visualization</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars</quote><subject>skills/recommend-visualization/scripts</subject><value>skills/recommend-visualization/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S71"><quote>numpy, polars</quote><subject>numpy, polars</subject><value>[numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts`</quote><subject>subagent-driven-development</subject><value>subagent-driven-development</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts`</quote><subject>skills/subagent-driven-development/scripts</subject><value>skills/subagent-driven-development/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging`</quote><subject>systematic-debugging</subject><value>systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging`</quote><subject>skills/systematic-debugging</subject><value>skills/systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>track-model-experiments</subject><value>track-model-experiments</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>skills/track-model-experiments/scripts</subject><value>skills/track-model-experiments/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S74"><quote>numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>numpy, polars, arviz, numpyro, h5netcdf, h5py</subject><value>[numpy, polars, arviz, numpyro, h5netcdf, h5py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna</quote><subject>tune-hyperparameters</subject><value>tune-hyperparameters</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna</quote><subject>skills/tune-hyperparameters/scripts</subject><value>skills/tune-hyperparameters/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>numpy, polars</quote><subject>numpy, polars</subject><value>[numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>scikit-learn, optuna</quote><subject>scikit-learn, optuna</subject><value>[scikit-learn, optuna]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts`</quote><subject>writing-plans</subject><value>writing-plans</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts`</quote><subject>skills/writing-plans/scripts</subject><value>skills/writing-plans/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`build`'s missing `build/.scratch/`</quote><subject>build</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep</quote><subject>bayesian-workflow</subject><value>CALIBRATION_SWEEP=1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests</quote><subject>llm-wiki</subject><value>@needs_pilot</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`</quote><subject>llm-wiki</subject><value>$LLM_WIKI_ROOT</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`tune-hyperparameters`' "`--with sklearn` fails"</quote><subject>tune-hyperparameters</subject><value>--with sklearn</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>the guard's 3.9 floor</quote><subject>guard</subject><value>3.9</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>its Gate B probe for `hooks`</quote><subject>hooks</subject><value>Gate B</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S79"><quote>Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`)</quote><subject>Stdlib</subject><value>[tomllib, argparse, subprocess, shlex]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S79"><quote>Python 3.13</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S80"><quote>`uv run --python 3.13 python build/run_suites.py …`</quote><subject>uv run --python 3.13 python build/run_suites.py …</subject><value>uv run --python 3.13 python build/run_suites.py …</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S82"><quote>One run is one interpreter of one suite</quote><subject>interpreter</subject><value>1</value><unit>interpreter</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S82"><quote>One run is one interpreter of one suite</quote><subject>suite</subject><value>1</value><unit>suite</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S83"><quote>`uv run --python <python> --with <dep> … python -m pytest -q [<args>]`</quote><subject>command</subject><value>uv run --python <python> --with <dep> … python -m pytest -q [<args>]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S84"><quote>`cd <dir> && <command>`</quote><subject>shell form</subject><value>cd <dir> && <command></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S86"><quote>the two shell forms are `cd hooks && A` and `cd hooks && B`</quote><subject>shell forms</subject><value>[cd hooks && A, cd hooks && B]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S87"><quote>`--list [NAME …]`</quote><subject>--list [NAME …]</subject><value>--list [NAME …]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S87"><quote>named suite (default: all)</quote><subject>named suite</subject><value>all</value><unit>none</unit><edge>n/a</edge><default>all</default><other_reading>none</other_reading></entry>
+<entry sentence="S88"><quote>`--extras` and the `--` arguments apply here too</quote><subject>--extras</subject><value>--extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S88"><quote>`--extras` and the `--` arguments apply here too</quote><subject>--</subject><value>--</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S89"><quote>`NAME [NAME …]`</quote><subject>NAME [NAME …]</subject><value>NAME [NAME …]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S90"><quote>`== <name> (<python>)` header</quote><subject>header</subject><value>== <name> (<python>)</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S93"><quote>`--extras` adds each suite's `extras` after its `with` deps</quote><subject>--extras</subject><value>--extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S94"><quote>Arguments after **`--`** go to pytest</quote><subject>--</subject><value>--</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S95"><quote>**`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`</quote><subject>--all</subject><value>--all</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote>Today that is `cc-guide`</quote><subject>cc-guide</subject><value>cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S97"><quote>`--all` prints one line for each suite that it skips</quote><subject>suite that it skips</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>0 when every run exits 0</quote><subject>every run</subject><value>0</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>1 when any run fails</quote><subject>any run</subject><value>1</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>2 for a usage error, an unknown suite name, or a registry that fails validation</quote><subject>usage error</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>pytest's exit 5, no tests collected, counts as a failure</quote><subject>pytest's exit</subject><value>5</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S100"><quote>or says that every run passed</quote><subject>last line</subject><value>every run passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S103"><quote>`CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s`</quote><subject>CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s</subject><value>CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S105"><quote>stops `--list`, a named run and `--all` with exit 2</quote><subject>registry validation</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S105"><quote>a `with` list without `pytest`</quote><subject>with</subject><value>pytest</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S106"><quote>`--check` reports the same failures as findings</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S108"><quote>`--check` reports two kinds of findings</quote><subject>findings</subject><value>2</value><unit>kinds</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S109"><quote>**registry:** R3.9's validation</quote><subject>registry</subject><value>registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>**coverage:** a directory that holds a pytest file</quote><subject>coverage</subject><value>coverage</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>`test_*.py` or `*_test.py`</quote><subject>pytest file</subject><value>[test_*.py, *_test.py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S111"><quote>`git ls-files --cached --others --exclude-standard`</quote><subject>file list</subject><value>git ls-files --cached --others --exclude-standard</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S112"><quote>`.claude/worktrees/` and `build/.scratch/` among them</quote><subject>Ignored trees</subject><value>[.claude/worktrees/, build/.scratch/]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S115"><quote>`suite registry ok`</quote><subject>Output</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S115"><quote>exit 0</quote><subject>exit</subject><value>0</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S115"><quote>one line per finding</quote><subject>finding</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S116"><quote>as the ninth lint</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S116"><quote>named `suite_registry`</quote><subject>suite_registry</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S116"><quote>`run suite_registry uv run --python 3.13 python build/run_suites.py --check`</quote><subject>build/run_commit_lints.sh</subject><value>run suite_registry uv run --python 3.13 python build/run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S117"><quote>Its header says "nine"</quote><subject>header</subject><value>nine</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Drop "There is no root test runner"</quote><subject>intro paragraph</subject><value>There is no root test runner</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Keep the uv and Python 3.13 rule</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>the `test_build.py` basename-collision reason</quote><subject>test_build.py</subject><value>test_build.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>One line</quote><subject>intro paragraph</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>66–125</quote><subject>Lines</subject><value>[66, 125]</value><unit>Lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>Replace with one block</quote><subject>block</subject><value>1</value><unit>block</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject>--list</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject><name> [--extras] [-- <pytest args>]</subject><value><name> [--extras] [-- <pytest args>]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject>--all</subject><value>--all</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S122"><quote>127–132</quote><subject>Lines</subject><value>[127, 132]</value><unit>Lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S122"><quote>says "nine"</quote><subject>commit-lint comment</subject><value>nine</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S122"><quote>Line 133 is not touched</quote><subject>Line</subject><value>133</value><unit>Line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S123"><quote>141–145</quote><subject>Lines</subject><value>[141, 145]</value><unit>Lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S123"><quote>Drop line 145</quote><subject>line</subject><value>145</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S123"><quote>names the suite `run_suites.py cc-guide`</quote><subject>suite</subject><value>run_suites.py cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S126"><quote>the `# Full build-directory tests` comment</quote><subject>comment</subject><value># Full build-directory tests</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S126"><quote>the `cd hooks && …` command</quote><subject>command</subject><value>cd hooks && …</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>"the eight commit lints" becomes "the nine commit lints"</quote><subject>the eight commit lints</subject><value>the eight commit lints</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>"the eight commit lints" becomes "the nine commit lints"</quote><subject>the nine commit lints</subject><value>the nine commit lints</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>names `suites.toml` and `run_suites.py`</quote><subject>suites.toml</subject><value>suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>names `suites.toml` and `run_suites.py`</quote><subject>run_suites.py</subject><value>run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>`--check` is a commit lint</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S129"><quote>`build/test_check_conformance.py`</quote><subject>build/test_check_conformance.py</subject><value>build/test_check_conformance.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S129"><quote>`'@needs_pilot' in text`</quote><subject>positive control</subject><value>'@needs_pilot' in text</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S130"><quote>line 1</quote><subject>line</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S130"><quote>`<!-- cc-guide: … @<version> -->` stamp</quote><subject>stamp</subject><value><!-- cc-guide: … @<version> --></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S132"><quote>`AGENTS.md`, `GEMINI.md`, `.github/workflows/lints.yml`, `install.py` or `NOTICE`</quote><subject>No change</subject><value>[AGENTS.md, GEMINI.md, .github/workflows/lints.yml, install.py, NOTICE]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S134"><quote>`claude-md-serves-codex-gemini` still holds as written</quote><subject>deviation</subject><value>claude-md-serves-codex-gemini</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S135"><quote>`build/test_run_suites.py`</quote><subject>build/test_run_suites.py</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S135"><quote>stdlib and pytest only</quote><subject>build/test_run_suites.py</subject><value>[stdlib, pytest]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S137"><quote>with exit 2</quote><subject>validation</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S138"><quote>two `pythons` runs</quote><subject>pythons</subject><value>2</value><unit>runs</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S139"><quote>`--list` output</quote><subject>--list</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S140"><quote>the `--all` nesting rule</quote><subject>--all</subject><value>--all</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 0, 1 and 2</quote><subject>exit 0</subject><value>0</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 0, 1 and 2</quote><subject>exit 1</subject><value>1</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 0, 1 and 2</quote><subject>exit 2</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 5 counts as failed</quote><subject>exit 5</subject><value>5</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S142"><quote>`--check` on throwaway git repos</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S143"><quote>`--check` passes on the repo</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`build/test_commit_lints.py`</quote><subject>build/test_commit_lints.py</subject><value>build/test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>suite_registry</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>CHECKS</subject><value>CHECKS</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`test_unregistered_suite_is_refused`</quote><subject>test_unregistered_suite_is_refused</subject><value>test_unregistered_suite_is_refused</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`skills/<name>/scripts/test_new.py`</quote><subject>skills/<name>/scripts/test_new.py</subject><value>skills/<name>/scripts/test_new.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`suite_registry` is the only failed lint</quote><subject>failed lint</subject><value>1</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>**Plan 52 (write-with-asd-ste100)**</quote><subject>Plan</subject><value>52</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>**Plan 52 (write-with-asd-ste100)**</quote><subject>write-with-asd-ste100</subject><value>write-with-asd-ste100</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>Task 6 drops its `CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits</quote><subject>Task</subject><value>6</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>`CLAUDE.md:commands-moved`</quote><subject>CLAUDE.md:commands-moved</subject><value>CLAUDE.md:commands-moved</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>`CLAUDE.md:commands`</quote><subject>CLAUDE.md:commands</subject><value>CLAUDE.md:commands</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>adds one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts`</quote><subject>skills/write-with-asd-ste100/scripts</subject><value>skills/write-with-asd-ste100/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>adds one `[[suite]]` entry</quote><subject>[[suite]]</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>`CLAUDE.md:sources` and `CLAUDE.md:bullet` edits</quote><subject>CLAUDE.md:sources</subject><value>CLAUDE.md:sources</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>`CLAUDE.md:sources` and `CLAUDE.md:bullet` edits</quote><subject>CLAUDE.md:bullet</subject><value>CLAUDE.md:bullet</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S150"><quote>the ninth lint refuses its new suite directory</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S153"><quote>Its Task 7 edits line 133, which stays</quote><subject>line</subject><value>133</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S159"><quote>The Stage 2 audit</quote><subject>Stage</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S159"><quote>one time</quote><subject>audit</subject><value>1</value><unit>time</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S161"><quote>`cd <dir> && uv run …` command</quote><subject>command</subject><value>cd <dir> && uv run …</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S161"><quote>lines 66–125 and 145</quote><subject>lines 66–125</subject><value>[66, 125]</value><unit>lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S161"><quote>lines 66–125 and 145</quote><subject>145</subject><value>145</value><unit>lines</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S162"><quote>default shell forms that `--list` prints</quote><subject>--list</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>Run `hooks`, `build` and `bayesian-workflow`</quote><subject>hooks</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>Run `hooks`, `build` and `bayesian-workflow`</quote><subject>build</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>Run `hooks`, `build` and `bayesian-workflow`</quote><subject>bayesian-workflow</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>once directly and once through the runner</quote><subject>directly</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>once directly and once through the runner</quote><subject>through the runner</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S166"><quote>run `--all` once</quote><subject>--all</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S167"><quote>`uv run --python 3.13 python build/run_suites.py --check`</quote><subject>Gates</subject><value>uv run --python 3.13 python build/run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S167"><quote>`suite registry ok`</quote><subject>Gates</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S168"><quote>missing `build/.scratch/`</quote><subject>build suite</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S169"><quote>`bash build/run_commit_lints.sh`</quote><subject>Gates</subject><value>bash build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S169"><quote>`commit lints passed`</quote><subject>Gates</subject><value>commit lints passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S170"><quote>`build/suites.toml` registers every directory suite</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S170"><quote>`--check` passes</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S171"><quote>`build/run_suites.py` and its tests are committed</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S171"><quote>the ninth lint runs in `run_commit_lints.sh`</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S171"><quote>the ninth lint runs in `run_commit_lints.sh`</quote><subject>run_commit_lints.sh</subject><value>run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S173"><quote>`CLAUDE.md` has no directory-suite command left</quote><subject>CLAUDE.md</subject><value>CLAUDE.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S173"><quote>stays under 200 lines</quote><subject>CLAUDE.md</subject><value>200</value><unit>lines</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S174"><quote>`bash build/run_commit_lints.sh`</quote><subject>commit lints</subject><value>bash build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S174"><quote>`commit lints passed`</quote><subject>commit lints</subject><value>commit lints passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S175"><quote>shared note for plan 52</quote><subject>plan</subject><value>52</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S181"><quote>`--all` in `.github/workflows/lints.yml`</quote><subject>CI running the suites</subject><value>--all in .github/workflows/lints.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</statement>
+tokens used
+31,264
+<statement>
+<entry sentence="S4"><quote>`build/suites.toml` holds one entry per suite</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S4"><quote>one entry per suite</quote><subject>suite</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S5"><quote>`build/run_suites.py` (stdlib only)</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S6"><quote>`run_suites.py --check` becomes the ninth commit lint</quote><subject>run_suites.py --check</subject><value>run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S6"><quote>the ninth commit lint</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S8"><quote>The root `CLAUDE.md` then replaces its per-suite commands</quote><subject>CLAUDE.md</subject><value>CLAUDE.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S9"><quote>The `claude-md-size` check (a commit lint, through `build/check_conformance.py`) fails at 200 lines</quote><subject>claude-md-size</subject><value>200</value><unit>lines</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S24"><quote>`run_suites.py --check` joins build/run_commit_lints.sh</quote><subject>run_suites.py --check</subject><value>run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S24"><quote>`run_suites.py --check` joins build/run_commit_lints.sh</quote><subject>build/run_commit_lints.sh</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S24"><quote>The coverage guard is a ninth commit lint</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S25"><quote>ahead of plan 52's Task 6</quote><subject>plan 52's Task 6</subject><value>plan 52's Task 6</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S26"><quote>Task 6 then adds one build/suites.toml entry</quote><subject>Task 6</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S26"><quote>one build/suites.toml entry</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S27"><quote>records Q4 as (c)</quote><subject>Q4</subject><value>(c)</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S28"><quote>build/suites.toml (data) + build/run_suites.py (stdlib, tomllib)</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S28"><quote>build/run_suites.py (stdlib, tomllib)</quote><subject>build/run_suites.py</subject><value>tomllib</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S30"><quote>sorted by name</quote><subject>name</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S37"><quote>a directory where pytest runs as a whole, with no selection argument</quote><subject>selection argument</subject><value>0</value><unit>selection argument</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S39"><quote>These commands **stay literal in `CLAUDE.md`**</quote><subject>CLAUDE.md</subject><value>CLAUDE.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>`test_runtime_support.py`</quote><subject>test_runtime_support.py</subject><value>test_runtime_support.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>`test_commit_lints.py`</quote><subject>test_commit_lints.py</subject><value>test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>the `-k declared_dependencies` and `-k test_real_skill` lints</quote><subject>-k declared_dependencies</subject><value>-k declared_dependencies</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>the `-k declared_dependencies` and `-k test_real_skill` lints</quote><subject>-k test_real_skill</subject><value>-k test_real_skill</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>`test_check_jax_examples.py`</quote><subject>test_check_jax_examples.py</subject><value>test_check_jax_examples.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S41"><quote>the "Single test" example</quote><subject>Single test</subject><value>Single test</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>the two `build.py` rebuilds</quote><subject>build.py rebuilds</subject><value>2</value><unit>rebuilds</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`verify_citations.py`</quote><subject>verify_citations.py</subject><value>verify_citations.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`extract_structure.py`</quote><subject>extract_structure.py</subject><value>extract_structure.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`cli.py lint` and `check`</quote><subject>cli.py lint</subject><value>cli.py lint</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S42"><quote>`cli.py lint` and `check`</quote><subject>check</subject><value>cli.py check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S44"><quote>except for the new `--check` lint</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S45"><quote>One `[[suite]]` table per directory suite</quote><subject>directory suite</subject><value>1</value><unit>[[suite]] table</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S45"><quote>sorted by `name`</quote><subject>name</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S46"><quote>the ninth commit lint checks the file</quote><subject>commit lint</subject><value>9</value><unit>commit lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S49"><quote>`name` | string | yes</quote><subject>name</subject><value>name</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S49"><quote>the others are `build`, `cc-guide` and `hooks`</quote><subject>the others</subject><value>[build, cc-guide, hooks]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S50"><quote>`dir` | string | yes</quote><subject>dir</subject><value>dir</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S51"><quote>`with` | list of strings | yes</quote><subject>with</subject><value>with</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S51"><quote>The default `--with` deps</quote><subject>--with</subject><value>--with</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S51"><quote>It includes `pytest`</quote><subject>with</subject><value>pytest</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S52"><quote>`extras` | list of strings | no</quote><subject>extras</subject><value>extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S52"><quote>Only `--extras` adds them</quote><subject>--extras</subject><value>--extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S53"><quote>`pythons` | list of strings | no</quote><subject>pythons</subject><value>pythons</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S53"><quote>Default `['3.13']`</quote><subject>pythons</subject><value>['3.13']</value><unit>none</unit><edge>n/a</edge><default>['3.13']</default><other_reading>none</other_reading></entry>
+<entry sentence="S54"><quote>`notes` | list of strings | no</quote><subject>notes</subject><value>notes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>bayesian-workflow</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>`bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default</quote><subject>skills/bayesian-workflow/scripts</subject><value>skills/bayesian-workflow/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>arviz, arviz-stats, numpy, xarray</quote><subject>arviz, arviz-stats, numpy, xarray</subject><value>[arviz, arviz-stats, numpy, xarray]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S59"><quote>matplotlib</quote><subject>matplotlib</subject><value>matplotlib</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts`</quote><subject>brainstorming</subject><value>brainstorming</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S60"><quote>`brainstorming` | `skills/brainstorming/scripts`</quote><subject>skills/brainstorming/scripts</subject><value>skills/brainstorming/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S61"><quote>`build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default</quote><subject>build</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S61"><quote>numpy, polars, pyyaml</quote><subject>numpy, polars, pyyaml</subject><value>[numpy, polars, pyyaml]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S61"><quote>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</quote><subject>arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib</subject><value>[arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S62"><quote>`cc-guide` | `build/cc_guide`</quote><subject>cc-guide</subject><value>cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S62"><quote>`cc-guide` | `build/cc_guide`</quote><subject>build/cc_guide</subject><value>build/cc_guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars</quote><subject>classification-codes</subject><value>classification-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S63"><quote>`classification-codes` | `skills/classification-codes/scripts` | polars</quote><subject>skills/classification-codes/scripts</subject><value>skills/classification-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S63"><quote>polars</quote><subject>polars</subject><value>polars</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts`</quote><subject>describe-critique-methodology</subject><value>describe-critique-methodology</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S64"><quote>`describe-critique-methodology` | `skills/describe-critique-methodology/scripts`</quote><subject>skills/describe-critique-methodology/scripts</subject><value>skills/describe-critique-methodology/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts`</quote><subject>design-architecture</subject><value>design-architecture</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S65"><quote>`design-architecture` | `skills/design-architecture/scripts`</quote><subject>skills/design-architecture/scripts</subject><value>skills/design-architecture/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars</quote><subject>explore-data</subject><value>explore-data</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S66"><quote>`explore-data` | `skills/explore-data/scripts` | polars</quote><subject>skills/explore-data/scripts</subject><value>skills/explore-data/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S66"><quote>polars</quote><subject>polars</subject><value>polars</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel</quote><subject>geographic-codes</subject><value>geographic-codes</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S67"><quote>`geographic-codes` | `skills/geographic-codes/scripts` | polars, fastexcel</quote><subject>skills/geographic-codes/scripts</subject><value>skills/geographic-codes/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S67"><quote>polars, fastexcel</quote><subject>polars, fastexcel</subject><value>[polars, fastexcel]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S68"><quote>`hooks` | `hooks` | — | — | 3.13, /usr/bin/python3</quote><subject>hooks</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S68"><quote>3.13, /usr/bin/python3</quote><subject>3.13, /usr/bin/python3</subject><value>['3.13', '/usr/bin/python3']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts`</quote><subject>llm-wiki</subject><value>llm-wiki</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S69"><quote>`llm-wiki` | `skills/llm-wiki/scripts`</quote><subject>skills/llm-wiki/scripts</subject><value>skills/llm-wiki/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars</quote><subject>recommend-probabilistic-model</subject><value>recommend-probabilistic-model</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S70"><quote>`recommend-probabilistic-model` | `skills/recommend-probabilistic-model/scripts` | numpy, polars</quote><subject>skills/recommend-probabilistic-model/scripts</subject><value>skills/recommend-probabilistic-model/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S70"><quote>numpy, polars</quote><subject>numpy, polars</subject><value>[numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars</quote><subject>recommend-visualization</subject><value>recommend-visualization</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S71"><quote>`recommend-visualization` | `skills/recommend-visualization/scripts` | numpy, polars</quote><subject>skills/recommend-visualization/scripts</subject><value>skills/recommend-visualization/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S71"><quote>numpy, polars</quote><subject>numpy, polars</subject><value>[numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts`</quote><subject>subagent-driven-development</subject><value>subagent-driven-development</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S72"><quote>`subagent-driven-development` | `skills/subagent-driven-development/scripts`</quote><subject>skills/subagent-driven-development/scripts</subject><value>skills/subagent-driven-development/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging`</quote><subject>systematic-debugging</subject><value>systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S73"><quote>`systematic-debugging` | `skills/systematic-debugging`</quote><subject>skills/systematic-debugging</subject><value>skills/systematic-debugging</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>track-model-experiments</subject><value>track-model-experiments</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S74"><quote>`track-model-experiments` | `skills/track-model-experiments/scripts` | numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>skills/track-model-experiments/scripts</subject><value>skills/track-model-experiments/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S74"><quote>numpy, polars, arviz, numpyro, h5netcdf, h5py</quote><subject>numpy, polars, arviz, numpyro, h5netcdf, h5py</subject><value>[numpy, polars, arviz, numpyro, h5netcdf, h5py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna</quote><subject>tune-hyperparameters</subject><value>tune-hyperparameters</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>`tune-hyperparameters` | `skills/tune-hyperparameters/scripts` | numpy, polars | scikit-learn, optuna</quote><subject>skills/tune-hyperparameters/scripts</subject><value>skills/tune-hyperparameters/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>numpy, polars</quote><subject>numpy, polars</subject><value>[numpy, polars]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S75"><quote>scikit-learn, optuna</quote><subject>scikit-learn, optuna</subject><value>[scikit-learn, optuna]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts`</quote><subject>writing-plans</subject><value>writing-plans</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S76"><quote>`writing-plans` | `skills/writing-plans/scripts`</quote><subject>skills/writing-plans/scripts</subject><value>skills/writing-plans/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`build`'s missing `build/.scratch/`</quote><subject>build</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep</quote><subject>bayesian-workflow</subject><value>CALIBRATION_SWEEP=1</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests</quote><subject>llm-wiki</subject><value>@needs_pilot</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`</quote><subject>llm-wiki</subject><value>$LLM_WIKI_ROOT</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>`tune-hyperparameters`' "`--with sklearn` fails"</quote><subject>tune-hyperparameters</subject><value>--with sklearn</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>the guard's 3.9 floor</quote><subject>guard</subject><value>3.9</value><unit>none</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S78"><quote>its Gate B probe for `hooks`</quote><subject>hooks</subject><value>Gate B</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S79"><quote>Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`)</quote><subject>Stdlib</subject><value>[tomllib, argparse, subprocess, shlex]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S79"><quote>Python 3.13</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S80"><quote>`uv run --python 3.13 python build/run_suites.py …`</quote><subject>uv run --python 3.13 python build/run_suites.py …</subject><value>uv run --python 3.13 python build/run_suites.py …</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S82"><quote>One run is one interpreter of one suite</quote><subject>interpreter</subject><value>1</value><unit>interpreter</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S82"><quote>One run is one interpreter of one suite</quote><subject>suite</subject><value>1</value><unit>suite</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S83"><quote>`uv run --python <python> --with <dep> … python -m pytest -q [<args>]`</quote><subject>command</subject><value>uv run --python <python> --with <dep> … python -m pytest -q [<args>]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S84"><quote>`cd <dir> && <command>`</quote><subject>shell form</subject><value>cd <dir> && <command></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S86"><quote>the two shell forms are `cd hooks && A` and `cd hooks && B`</quote><subject>shell forms</subject><value>[cd hooks && A, cd hooks && B]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S87"><quote>`--list [NAME …]`</quote><subject>--list [NAME …]</subject><value>--list [NAME …]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S87"><quote>named suite (default: all)</quote><subject>named suite</subject><value>all</value><unit>none</unit><edge>n/a</edge><default>all</default><other_reading>none</other_reading></entry>
+<entry sentence="S88"><quote>`--extras` and the `--` arguments apply here too</quote><subject>--extras</subject><value>--extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S88"><quote>`--extras` and the `--` arguments apply here too</quote><subject>--</subject><value>--</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S89"><quote>`NAME [NAME …]`</quote><subject>NAME [NAME …]</subject><value>NAME [NAME …]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S90"><quote>`== <name> (<python>)` header</quote><subject>header</subject><value>== <name> (<python>)</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S93"><quote>`--extras` adds each suite's `extras` after its `with` deps</quote><subject>--extras</subject><value>--extras</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S94"><quote>Arguments after **`--`** go to pytest</quote><subject>--</subject><value>--</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S95"><quote>**`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`</quote><subject>--all</subject><value>--all</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S96"><quote>Today that is `cc-guide`</quote><subject>cc-guide</subject><value>cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S97"><quote>`--all` prints one line for each suite that it skips</quote><subject>suite that it skips</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>0 when every run exits 0</quote><subject>every run</subject><value>0</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>1 when any run fails</quote><subject>any run</subject><value>1</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>2 for a usage error, an unknown suite name, or a registry that fails validation</quote><subject>usage error</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S99"><quote>pytest's exit 5, no tests collected, counts as a failure</quote><subject>pytest's exit</subject><value>5</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S100"><quote>or says that every run passed</quote><subject>last line</subject><value>every run passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S103"><quote>`CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s`</quote><subject>CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s</subject><value>CALIBRATION_SWEEP=1 uv run --python 3.13 python build/run_suites.py bayesian-workflow -- -s</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S105"><quote>stops `--list`, a named run and `--all` with exit 2</quote><subject>registry validation</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S105"><quote>a `with` list without `pytest`</quote><subject>with</subject><value>pytest</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S106"><quote>`--check` reports the same failures as findings</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S108"><quote>`--check` reports two kinds of findings</quote><subject>findings</subject><value>2</value><unit>kinds</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S109"><quote>**registry:** R3.9's validation</quote><subject>registry</subject><value>registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>**coverage:** a directory that holds a pytest file</quote><subject>coverage</subject><value>coverage</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S110"><quote>`test_*.py` or `*_test.py`</quote><subject>pytest file</subject><value>[test_*.py, *_test.py]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S111"><quote>`git ls-files --cached --others --exclude-standard`</quote><subject>file list</subject><value>git ls-files --cached --others --exclude-standard</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S112"><quote>`.claude/worktrees/` and `build/.scratch/` among them</quote><subject>Ignored trees</subject><value>[.claude/worktrees/, build/.scratch/]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S115"><quote>`suite registry ok`</quote><subject>Output</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S115"><quote>exit 0</quote><subject>exit</subject><value>0</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S115"><quote>one line per finding</quote><subject>finding</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S116"><quote>as the ninth lint</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S116"><quote>named `suite_registry`</quote><subject>suite_registry</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S116"><quote>`run suite_registry uv run --python 3.13 python build/run_suites.py --check`</quote><subject>build/run_commit_lints.sh</subject><value>run suite_registry uv run --python 3.13 python build/run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S117"><quote>Its header says "nine"</quote><subject>header</subject><value>nine</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Drop "There is no root test runner"</quote><subject>intro paragraph</subject><value>There is no root test runner</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Keep the uv and Python 3.13 rule</quote><subject>Python</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>the `test_build.py` basename-collision reason</quote><subject>test_build.py</subject><value>test_build.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>Name `build/suites.toml` and `build/run_suites.py`</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S120"><quote>One line</quote><subject>intro paragraph</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>66–125</quote><subject>Lines</subject><value>[66, 125]</value><unit>Lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>Replace with one block</quote><subject>block</subject><value>1</value><unit>block</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject>--list</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject><name> [--extras] [-- <pytest args>]</subject><value><name> [--extras] [-- <pytest args>]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject>--all</subject><value>--all</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S121"><quote>the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S122"><quote>127–132</quote><subject>Lines</subject><value>[127, 132]</value><unit>Lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S122"><quote>says "nine"</quote><subject>commit-lint comment</subject><value>nine</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S122"><quote>Line 133 is not touched</quote><subject>Line</subject><value>133</value><unit>Line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S123"><quote>141–145</quote><subject>Lines</subject><value>[141, 145]</value><unit>Lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S123"><quote>Drop line 145</quote><subject>line</subject><value>145</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S123"><quote>names the suite `run_suites.py cc-guide`</quote><subject>suite</subject><value>run_suites.py cc-guide</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S126"><quote>the `# Full build-directory tests` comment</quote><subject>comment</subject><value># Full build-directory tests</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S126"><quote>the `cd hooks && …` command</quote><subject>command</subject><value>cd hooks && …</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>"the eight commit lints" becomes "the nine commit lints"</quote><subject>the eight commit lints</subject><value>the eight commit lints</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>"the eight commit lints" becomes "the nine commit lints"</quote><subject>the nine commit lints</subject><value>the nine commit lints</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>names `suites.toml` and `run_suites.py`</quote><subject>suites.toml</subject><value>suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>names `suites.toml` and `run_suites.py`</quote><subject>run_suites.py</subject><value>run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S128"><quote>`--check` is a commit lint</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S129"><quote>`build/test_check_conformance.py`</quote><subject>build/test_check_conformance.py</subject><value>build/test_check_conformance.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S129"><quote>`'@needs_pilot' in text`</quote><subject>positive control</subject><value>'@needs_pilot' in text</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S130"><quote>line 1</quote><subject>line</subject><value>1</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S130"><quote>`<!-- cc-guide: … @<version> -->` stamp</quote><subject>stamp</subject><value><!-- cc-guide: … @<version> --></value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S132"><quote>`AGENTS.md`, `GEMINI.md`, `.github/workflows/lints.yml`, `install.py` or `NOTICE`</quote><subject>No change</subject><value>[AGENTS.md, GEMINI.md, .github/workflows/lints.yml, install.py, NOTICE]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S134"><quote>`claude-md-serves-codex-gemini` still holds as written</quote><subject>deviation</subject><value>claude-md-serves-codex-gemini</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S135"><quote>`build/test_run_suites.py`</quote><subject>build/test_run_suites.py</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S135"><quote>stdlib and pytest only</quote><subject>build/test_run_suites.py</subject><value>[stdlib, pytest]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S137"><quote>with exit 2</quote><subject>validation</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S138"><quote>two `pythons` runs</quote><subject>pythons</subject><value>2</value><unit>runs</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S139"><quote>`--list` output</quote><subject>--list</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S140"><quote>the `--all` nesting rule</quote><subject>--all</subject><value>--all</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 0, 1 and 2</quote><subject>exit 0</subject><value>0</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 0, 1 and 2</quote><subject>exit 1</subject><value>1</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 0, 1 and 2</quote><subject>exit 2</subject><value>2</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S141"><quote>exit 5 counts as failed</quote><subject>exit 5</subject><value>5</value><unit>exit status</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S142"><quote>`--check` on throwaway git repos</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S143"><quote>`--check` passes on the repo</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`build/test_commit_lints.py`</quote><subject>build/test_commit_lints.py</subject><value>build/test_commit_lints.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>suite_registry</subject><value>suite_registry</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`suite_registry` joins `CHECKS`</quote><subject>CHECKS</subject><value>CHECKS</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`test_unregistered_suite_is_refused`</quote><subject>test_unregistered_suite_is_refused</subject><value>test_unregistered_suite_is_refused</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`skills/<name>/scripts/test_new.py`</quote><subject>skills/<name>/scripts/test_new.py</subject><value>skills/<name>/scripts/test_new.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S144"><quote>`suite_registry` is the only failed lint</quote><subject>failed lint</subject><value>1</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>**Plan 52 (write-with-asd-ste100)**</quote><subject>Plan</subject><value>52</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>**Plan 52 (write-with-asd-ste100)**</quote><subject>write-with-asd-ste100</subject><value>write-with-asd-ste100</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>Task 6 drops its `CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits</quote><subject>Task</subject><value>6</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>`CLAUDE.md:commands-moved`</quote><subject>CLAUDE.md:commands-moved</subject><value>CLAUDE.md:commands-moved</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>`CLAUDE.md:commands`</quote><subject>CLAUDE.md:commands</subject><value>CLAUDE.md:commands</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>adds one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts`</quote><subject>skills/write-with-asd-ste100/scripts</subject><value>skills/write-with-asd-ste100/scripts</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S146"><quote>adds one `[[suite]]` entry</quote><subject>[[suite]]</subject><value>1</value><unit>entry</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>`CLAUDE.md:sources` and `CLAUDE.md:bullet` edits</quote><subject>CLAUDE.md:sources</subject><value>CLAUDE.md:sources</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S148"><quote>`CLAUDE.md:sources` and `CLAUDE.md:bullet` edits</quote><subject>CLAUDE.md:bullet</subject><value>CLAUDE.md:bullet</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S150"><quote>the ninth lint refuses its new suite directory</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S153"><quote>Its Task 7 edits line 133, which stays</quote><subject>line</subject><value>133</value><unit>line</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S159"><quote>The Stage 2 audit</quote><subject>Stage</subject><value>2</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S159"><quote>one time</quote><subject>audit</subject><value>1</value><unit>time</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S161"><quote>`cd <dir> && uv run …` command</quote><subject>command</subject><value>cd <dir> && uv run …</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S161"><quote>lines 66–125 and 145</quote><subject>lines 66–125</subject><value>[66, 125]</value><unit>lines</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S161"><quote>lines 66–125 and 145</quote><subject>145</subject><value>145</value><unit>lines</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S162"><quote>default shell forms that `--list` prints</quote><subject>--list</subject><value>--list</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>Run `hooks`, `build` and `bayesian-workflow`</quote><subject>hooks</subject><value>hooks</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>Run `hooks`, `build` and `bayesian-workflow`</quote><subject>build</subject><value>build</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>Run `hooks`, `build` and `bayesian-workflow`</quote><subject>bayesian-workflow</subject><value>bayesian-workflow</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>once directly and once through the runner</quote><subject>directly</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S164"><quote>once directly and once through the runner</quote><subject>through the runner</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S166"><quote>run `--all` once</quote><subject>--all</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S167"><quote>`uv run --python 3.13 python build/run_suites.py --check`</quote><subject>Gates</subject><value>uv run --python 3.13 python build/run_suites.py --check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S167"><quote>`suite registry ok`</quote><subject>Gates</subject><value>suite registry ok</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S168"><quote>missing `build/.scratch/`</quote><subject>build suite</subject><value>build/.scratch/</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S169"><quote>`bash build/run_commit_lints.sh`</quote><subject>Gates</subject><value>bash build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S169"><quote>`commit lints passed`</quote><subject>Gates</subject><value>commit lints passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S170"><quote>`build/suites.toml` registers every directory suite</quote><subject>build/suites.toml</subject><value>build/suites.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S170"><quote>`--check` passes</quote><subject>--check</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S171"><quote>`build/run_suites.py` and its tests are committed</quote><subject>build/run_suites.py</subject><value>build/run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S171"><quote>the ninth lint runs in `run_commit_lints.sh`</quote><subject>lint</subject><value>9</value><unit>lint</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S171"><quote>the ninth lint runs in `run_commit_lints.sh`</quote><subject>run_commit_lints.sh</subject><value>run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S173"><quote>`CLAUDE.md` has no directory-suite command left</quote><subject>CLAUDE.md</subject><value>CLAUDE.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S173"><quote>stays under 200 lines</quote><subject>CLAUDE.md</subject><value>200</value><unit>lines</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S174"><quote>`bash build/run_commit_lints.sh`</quote><subject>commit lints</subject><value>bash build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S174"><quote>`commit lints passed`</quote><subject>commit lints</subject><value>commit lints passed</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S175"><quote>shared note for plan 52</quote><subject>plan</subject><value>52</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+<entry sentence="S181"><quote>`--all` in `.github/workflows/lints.yml`</quote><subject>CI running the suites</subject><value>--all in .github/workflows/lints.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+</statement>

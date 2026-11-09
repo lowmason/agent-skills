@@ -1,0 +1,1 @@
+rep3 outcome19 near-miss the ruled reading is the type list of strings (C17) and states no default, so the conflict does not set the spec's ['3.13'] against the planted ["3.12"] (plan lines 400, 414); C19's reading, default ['3.13'], paired with no stand-in entry

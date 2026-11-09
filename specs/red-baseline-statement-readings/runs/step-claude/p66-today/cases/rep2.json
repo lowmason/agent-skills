@@ -1,0 +1,2348 @@
+{
+ "cases": [
+  {
+   "id": "C1",
+   "rule": 3,
+   "sentence": 94,
+   "subject": "file in which a person sets a package version or the dev interpreter",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 94,
+      "quote": "`build/versions.toml` is the only file in which a person sets a package version or the dev interpreter",
+      "subject": "file in which a person sets a package version or the dev interpreter",
+      "slots": {
+       "value": "\"build/versions.toml\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 94,
+      "quote": "`build/versions.toml` is the only file in which a person sets a package version or the dev interpreter",
+      "subject": "file in which a person sets a package version or the dev interpreter",
+      "slots": {
+       "value": "\"build/versions.toml\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C2",
+   "rule": 4,
+   "sentence": 96,
+   "subject": "[python] dev",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "dev = '3.13'                 # repo checks and documented commands",
+      "subject": "[python] dev",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "value set by bump on the day of execution",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "the day of execution, set by bump",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2'\nplotly = '6.8'\noptuna = '5.0.0'\ngreat-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: \"6.2\", plotly: \"6.8\", optuna: \"5.0.0\", great-docs: \"0.17.0\"}",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "values updated after re-check during migration",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "dev = '3.13'                 # repo checks and documented commands",
+      "subject": "[python] dev",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "value set by bump on the day of execution",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C3",
+   "rule": 4,
+   "sentence": 96,
+   "subject": "[freeze] date",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "dev = '3.13'                 # repo checks and documented commands",
+      "subject": "[python] dev",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "value set by bump on the day of execution",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "the day of execution, set by bump",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2'\nplotly = '6.8'\noptuna = '5.0.0'\ngreat-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: \"6.2\", plotly: \"6.8\", optuna: \"5.0.0\", great-docs: \"0.17.0\"}",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "values updated after re-check during migration",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "the day of execution, set by bump",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C4",
+   "rule": 3,
+   "sentence": 96,
+   "subject": "[gates] snippets",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "dev = '3.13'                 # repo checks and documented commands",
+      "subject": "[python] dev",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "value set by bump on the day of execution",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "the day of execution, set by bump",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2'\nplotly = '6.8'\noptuna = '5.0.0'\ngreat-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: \"6.2\", plotly: \"6.8\", optuna: \"5.0.0\", great-docs: \"0.17.0\"}",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "values updated after re-check during migration",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C5",
+   "rule": 3,
+   "sentence": 96,
+   "subject": "[gates] jax-cpu",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "dev = '3.13'                 # repo checks and documented commands",
+      "subject": "[python] dev",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "value set by bump on the day of execution",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "the day of execution, set by bump",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2'\nplotly = '6.8'\noptuna = '5.0.0'\ngreat-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: \"6.2\", plotly: \"6.8\", optuna: \"5.0.0\", great-docs: \"0.17.0\"}",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "values updated after re-check during migration",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C6",
+   "rule": 4,
+   "sentence": 96,
+   "subject": "[cited]",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "dev = '3.13'                 # repo checks and documented commands",
+      "subject": "[python] dev",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "value set by bump on the day of execution",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "the day of execution, set by bump",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2'\nplotly = '6.8'\noptuna = '5.0.0'\ngreat-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: \"6.2\", plotly: \"6.8\", optuna: \"5.0.0\", great-docs: \"0.17.0\"}",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "values updated after re-check during migration",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2'\nplotly = '6.8'\noptuna = '5.0.0'\ngreat-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: \"6.2\", plotly: \"6.8\", optuna: \"5.0.0\", great-docs: \"0.17.0\"}",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "values updated after re-check during migration",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C7",
+   "rule": 3,
+   "sentence": 96,
+   "subject": "[[override]]",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "dev = '3.13'                 # repo checks and documented commands",
+      "subject": "[python] dev",
+      "slots": {
+       "value": "\"3.13\"",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "value set by bump on the day of execution",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "the day of execution, set by bump",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2'\nplotly = '6.8'\noptuna = '5.0.0'\ngreat-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: \"6.2\", plotly: \"6.8\", optuna: \"5.0.0\", great-docs: \"0.17.0\"}",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "values updated after re-check during migration",
+       "unit": "versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C8",
+   "rule": 3,
+   "sentence": 107,
+   "subject": "`build/versions.py sync`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 107,
+      "quote": "`build/versions.py sync` writes three files from `build/versions.toml`",
+      "subject": "`build/versions.py sync`",
+      "slots": {
+       "value": "3",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 107,
+      "quote": "`build/versions.py sync` writes three files from `build/versions.toml`",
+      "subject": "`build/versions.py sync`",
+      "slots": {
+       "value": "3",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C9",
+   "rule": 3,
+   "sentence": 109,
+   "subject": "`.python-version`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root) | the `[python] dev` value",
+      "subject": "`.python-version`",
+      "slots": {
+       "value": "\".python-version\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root) | the `[python] dev` value",
+      "subject": "`.python-version`",
+      "slots": {
+       "value": "\".python-version\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C10",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "`uv.toml` (repo root) `exclude-newer`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "`uv.toml` (repo root) `exclude-newer`",
+      "slots": {
+       "value": "\"<freeze date + 1 day>T00:00:00Z\"",
+       "unit": "RFC 3339 timestamp",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "Files uploaded on the freeze date itself (UTC) are included",
+      "subject": "Files uploaded on the freeze date",
+      "slots": {
+       "value": "freeze date",
+       "unit": "UTC day",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "`uv.toml` (repo root) `exclude-newer`",
+      "slots": {
+       "value": "\"<freeze date + 1 day>T00:00:00Z\"",
+       "unit": "RFC 3339 timestamp",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C11",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "Files uploaded on the freeze date",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "`uv.toml` (repo root) `exclude-newer`",
+      "slots": {
+       "value": "\"<freeze date + 1 day>T00:00:00Z\"",
+       "unit": "RFC 3339 timestamp",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "Files uploaded on the freeze date itself (UTC) are included",
+      "subject": "Files uploaded on the freeze date",
+      "slots": {
+       "value": "freeze date",
+       "unit": "UTC day",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "Files uploaded on the freeze date itself (UTC) are included",
+      "subject": "Files uploaded on the freeze date",
+      "slots": {
+       "value": "freeze date",
+       "unit": "UTC day",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C12",
+   "rule": 3,
+   "sentence": 111,
+   "subject": "`skills/uv.toml`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml` | no settings, and a comment that names `build/versions.toml`",
+      "subject": "`skills/uv.toml`",
+      "slots": {
+       "value": "\"skills/uv.toml\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml` | no settings, and a comment that names `build/versions.toml`",
+      "subject": "`skills/uv.toml`",
+      "slots": {
+       "value": "\"skills/uv.toml\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C13",
+   "rule": 3,
+   "sentence": 115,
+   "subject": "`stack(gate)`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`, the list of `pkg==version` strings for a gate after overrides",
+      "subject": "`stack(gate)`",
+      "slots": {
+       "value": "\"pkg==version\"",
+       "unit": "string format",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`, the list of `pkg==version` strings for a gate after overrides",
+      "subject": "`stack(gate)`",
+      "slots": {
+       "value": "\"pkg==version\"",
+       "unit": "string format",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C14",
+   "rule": 3,
+   "sentence": 117,
+   "subject": "`PINNED`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 117,
+      "quote": "`PINNED` (moved out of `build/snippet_preamble.py`)",
+      "subject": "`PINNED`",
+      "slots": {
+       "value": "\"build/check_snippets.py\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 117,
+      "quote": "`PINNED` (moved out of `build/snippet_preamble.py`)",
+      "subject": "`PINNED`",
+      "slots": {
+       "value": "\"build/check_snippets.py\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C15",
+   "rule": 3,
+   "sentence": 119,
+   "subject": "`build/check_jax_examples.py`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 119,
+      "quote": "they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`",
+      "subject": "`build/check_jax_examples.py`",
+      "slots": {
+       "value": "\"stack('jax-cpu')\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 119,
+      "quote": "they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`",
+      "subject": "`build/check_jax_examples.py`",
+      "slots": {
+       "value": "\"stack('jax-cpu')\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C16",
+   "rule": 3,
+   "sentence": 122,
+   "subject": "`build/run_suites.py` run",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "Each run passes `--exclude-newer <date>` explicitly",
+      "subject": "`build/run_suites.py` run",
+      "slots": {
+       "value": "\"--exclude-newer <date>\"",
+       "unit": "flag",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 122,
+      "quote": "Each run passes `--exclude-newer <date>` explicitly",
+      "subject": "`build/run_suites.py` run",
+      "slots": {
+       "value": "\"--exclude-newer <date>\"",
+       "unit": "flag",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C17",
+   "rule": 3,
+   "sentence": 123,
+   "subject": "`hooks` suite",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "The `hooks` suite keeps its explicit `/usr/bin/python3` run",
+      "subject": "`hooks` suite",
+      "slots": {
+       "value": "\"/usr/bin/python3\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "The `hooks` suite keeps its explicit `/usr/bin/python3` run",
+      "subject": "`hooks` suite",
+      "slots": {
+       "value": "\"/usr/bin/python3\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C18",
+   "rule": 3,
+   "sentence": 128,
+   "subject": "A command that needs a pinned stack",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 128,
+      "quote": "uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/",
+      "subject": "A command that needs a pinned stack",
+      "slots": {
+       "value": "\"uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/\"",
+       "unit": "command",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 128,
+      "quote": "uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/",
+      "subject": "A command that needs a pinned stack",
+      "slots": {
+       "value": "\"uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/\"",
+       "unit": "command",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C19",
+   "rule": 3,
+   "sentence": 129,
+   "subject": "`build/versions.py` subcommands",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 129,
+      "quote": "`build/versions.py` has these subcommands",
+      "subject": "`build/versions.py` subcommands",
+      "slots": {
+       "value": "[\"sync\", \"run\", \"verify\", \"bump\", \"drift\", \"check\"]",
+       "unit": "subcommands",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 129,
+      "quote": "`build/versions.py` has these subcommands",
+      "subject": "`build/versions.py` subcommands",
+      "slots": {
+       "value": "[\"sync\", \"run\", \"verify\", \"bump\", \"drift\", \"check\"]",
+       "unit": "subcommands",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C20",
+   "rule": 3,
+   "sentence": 134,
+   "subject": "`bump [--date D]`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "`bump [--date D]`",
+      "slots": {
+       "value": "--date D",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "`bump [--date D]`",
+      "slots": {
+       "value": "--date D",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C21",
+   "rule": 3,
+   "sentence": 135,
+   "subject": "`drift`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 135,
+      "quote": "in two passes: first on the dev Python, then on the newest stable Python",
+      "subject": "`drift`",
+      "slots": {
+       "value": "[\"dev Python\", \"newest stable Python\"]",
+       "unit": "passes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 135,
+      "quote": "in two passes: first on the dev Python, then on the newest stable Python",
+      "subject": "`drift`",
+      "slots": {
+       "value": "[\"dev Python\", \"newest stable Python\"]",
+       "unit": "passes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C22",
+   "rule": 3,
+   "sentence": 148,
+   "subject": "`drift` all gates pass",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions",
+      "subject": "`drift` all gates pass",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "`drift` a gate fails",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "`drift` cannot resolve or reach the network",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions",
+      "subject": "`drift` all gates pass",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C23",
+   "rule": 3,
+   "sentence": 148,
+   "subject": "`drift` a gate fails",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions",
+      "subject": "`drift` all gates pass",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "`drift` a gate fails",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "`drift` cannot resolve or reach the network",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "`drift` a gate fails",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C24",
+   "rule": 3,
+   "sentence": 148,
+   "subject": "`drift` cannot resolve or reach the network",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions",
+      "subject": "`drift` all gates pass",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "`drift` a gate fails",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "`drift` cannot resolve or reach the network",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "`drift` cannot resolve or reach the network",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C25",
+   "rule": 3,
+   "sentence": 161,
+   "subject": "Interpreter literals",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 161,
+      "quote": "A live file spells `--python 3.<n>`",
+      "subject": "Interpreter literals",
+      "slots": {
+       "value": "\"--python 3.<n>\"",
+       "unit": "pattern",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 161,
+      "quote": "A live file spells `--python 3.<n>`",
+      "subject": "Interpreter literals",
+      "slots": {
+       "value": "\"--python 3.<n>\"",
+       "unit": "pattern",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C26",
+   "rule": 3,
+   "sentence": 162,
+   "subject": "Live files",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 162,
+      "quote": "Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "[\"CLAUDE.md\", \"AGENTS.md\", \"GEMINI.md\", \"build/\", \"hooks/\", \"skills/\", \".claude/skills/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 162,
+      "quote": "Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "[\"CLAUDE.md\", \"AGENTS.md\", \"GEMINI.md\", \"build/\", \"hooks/\", \"skills/\", \".claude/skills/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C27",
+   "rule": 3,
+   "sentence": 164,
+   "subject": "Prose citations",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "[\"skills/**/*.md\", \"skills/*/scripts/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "[\"skills/**/*.md\", \"skills/*/scripts/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C28",
+   "rule": 3,
+   "sentence": 176,
+   "subject": "`versions_check` command",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "10",
+       "unit": "commit lint position",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`)",
+      "subject": "`versions_check` command",
+      "slots": {
+       "value": "\"uv run python build/versions.py check\"",
+       "unit": "command",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`)",
+      "subject": "`versions_check` command",
+      "slots": {
+       "value": "\"uv run python build/versions.py check\"",
+       "unit": "command",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C29",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "`.github/workflows/versions-drift.yml`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": "\"weekly\"",
+       "unit": "schedule",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": "\"weekly\"",
+       "unit": "schedule",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C30",
+   "rule": 3,
+   "sentence": 191,
+   "subject": "results",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 191,
+      "quote": "Record the results in `specs/verification/`",
+      "subject": "results",
+      "slots": {
+       "value": "\"specs/verification/\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 191,
+      "quote": "Record the results in `specs/verification/`",
+      "subject": "results",
+      "slots": {
+       "value": "\"specs/verification/\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C31",
+   "rule": 3,
+   "sentence": 196,
+   "subject": "temporary `[[override]]`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 196,
+      "quote": "add a temporary `[[override]]` for `jax-cpu` with its reason",
+      "subject": "temporary `[[override]]`",
+      "slots": {
+       "value": "\"jax-cpu\"",
+       "unit": "gate",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 196,
+      "quote": "add a temporary `[[override]]` for `jax-cpu` with its reason",
+      "subject": "temporary `[[override]]`",
+      "slots": {
+       "value": "\"jax-cpu\"",
+       "unit": "gate",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C32",
+   "rule": 4,
+   "sentence": 197,
+   "subject": "Polars",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "Pin Polars at the latest release (2.0.0 on 2026-10-21)",
+      "subject": "Polars",
+      "slots": {
+       "value": "\"2.0.0\"",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "latest release on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "Pin Polars at the latest release (2.0.0 on 2026-10-21)",
+      "subject": "Polars",
+      "slots": {
+       "value": "\"2.0.0\"",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "latest release on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C33",
+   "rule": 3,
+   "sentence": 199,
+   "subject": "`HISTORICAL` reason",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 199,
+      "quote": "move it to `HISTORICAL` with the reason \"verified on X, not re-checked on Y\"",
+      "subject": "`HISTORICAL` reason",
+      "slots": {
+       "value": "\"verified on X, not re-checked on Y\"",
+       "unit": "text",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 199,
+      "quote": "move it to `HISTORICAL` with the reason \"verified on X, not re-checked on Y\"",
+      "subject": "`HISTORICAL` reason",
+      "slots": {
+       "value": "\"verified on X, not re-checked on Y\"",
+       "unit": "text",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C34",
+   "rule": 3,
+   "sentence": 205,
+   "subject": "`rules/clean-code-python.md:30`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml`",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "\"build/versions.toml\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml`",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "\"build/versions.toml\"",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  }
+ ],
+ "agreed": [
+  {
+   "sentence": 105,
+   "subject": "`[[override]]` entry",
+   "slots": {
+    "value": "[\"gate\", \"package\", \"version\", \"reason\"]",
+    "unit": "keys",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 150,
+   "subject": "`bump`",
+   "slots": {
+    "value": "2",
+    "unit": "exit code",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 176,
+   "subject": "`versions_check`",
+   "slots": {
+    "value": "10",
+    "unit": "commit lint position",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 182,
+   "subject": "`.github/workflows/versions-drift.yml` permissions",
+   "slots": {
+    "value": "\"contents: read\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  }
+ ],
+ "outcomes": [
+  {
+   "kind": "unchecked",
+   "sentence": 61,
+   "subject": "jax",
+   "agreed": null,
+   "planner": {
+    "value": "2026-10-20T00:00:00Z gives 0.12.0",
+    "unit": "none",
+    "edge": "out",
+    "default": "none"
+   },
+   "detail": "planner lines 316-318"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 63,
+   "subject": "polars",
+   "agreed": null,
+   "planner": {
+    "value": "2026-10-01T00:00:00Z cutoff gives polars below 2.0.0",
+    "unit": "none",
+    "edge": "out",
+    "default": "none"
+   },
+   "detail": "planner lines 234, 337-340, 499-501; note: The spec says this cutoff did not limit the header (polars 2.0.0). The plan's probe expects the header to be limited (polars 1.44.2), and amendment A1 rewrites the sentence to say so."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 65,
+   "subject": "a bare `polars` header",
+   "agreed": null,
+   "planner": {
+    "value": "2.0.0 on Python 3.14",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 349-350, 511-513; note: The spec says 1.44.2. The plan says 2.0.0, because the 1.44.2 result came from a cached environment. Amendment A1 rewrites the sentence."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 84,
+   "subject": "`CLAUDE.md`",
+   "agreed": null,
+   "planner": {
+    "value": "153 now, under 200",
+    "unit": "lines",
+    "edge": "out",
+    "default": "none"
+   },
+   "detail": "planner lines 115, 3898, 4046"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 118,
+   "subject": "Tier 2 (`--api`)",
+   "agreed": null,
+   "planner": {
+    "value": "pinned snippets stack with the freeze date",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 129, 1748, 1786-1796, 2618-2619; note: The spec keeps Tier 2 unpinned. The plan pins Tier 2 to the snippets stack, and amendment A3 rewrites the sentence."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 120,
+   "subject": "`DEFAULT_PYTHONS`",
+   "agreed": null,
+   "planner": {
+    "value": "['dev'], which resolves to the [python] dev value",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "dev Python"
+   },
+   "detail": "planner lines 2217-2218, 2278"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 168,
+   "subject": "`requires-python`",
+   "agreed": null,
+   "planner": {
+    "value": "script floor at or below the SKILL.md floor",
+    "unit": "Python version",
+    "edge": "in",
+    "default": "none"
+   },
+   "detail": "planner lines 127, 3238-3255; note: The spec requires an exact match. The plan passes a lower script floor and fails only a higher one. No amendment task changes the spec sentence."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 186,
+   "subject": "scheduled workflows",
+   "agreed": null,
+   "planner": {
+    "value": "60",
+    "unit": "days",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 4124, 4173"
+  }
+ ]
+}

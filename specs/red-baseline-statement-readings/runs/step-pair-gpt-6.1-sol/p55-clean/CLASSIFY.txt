@@ -1,0 +1,47 @@
+rep1 outcome43 false-alarm pairing: the reading is the id that entry_check.py reported (54); the stand-in's entry is the plan's own id, 55 after owner decision D4; plan line 101 states the same reported 54
+rep1 outcome75 false-alarm form: the reading bundles dir, with, extras and pythons in one value, the stand-in lists with and extras; the plan's row (lines 1048-1051) matches the spec row
+rep1 outcome82 false-alarm form: the reading bundles dir, with, extras and pythons in one value, the stand-in lists with and extras; the plan's row (lines 1066-1069) matches the spec row
+rep1 outcome122 false-alarm form: the reading bundles dir, with, extras and pythons in one value; the plan's row (lines 1169-1172) matches the spec row
+rep1 outcome130 false-alarm pairing: the reading takes the stdlib modules, the stand-in the Python version; plan lines 9 and 17 state both as R3.1 does
+rep1 outcome143 false-alarm pairing: the reading takes one exit status (0), the stand-in all three ([0, 1, 2]); plan line 19 quotes R3.7 and lines 886-892 and 951-961 return 0, 1 and 2
+rep1 outcome149 false-alarm slot: the same exit 2, with unit exit code on one side only (plan lines 951-955)
+rep1 outcome153 false-alarm form: the success output and its exit status are written apart on one side and bundled on the other; plan lines 943-950 print suite registry ok and return 0, or return 1 on findings
+rep1 outcome181 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real
+rep2 outcome106 false-alarm pairing: the reading is the id that entry_check.py reported (54); the stand-in's entry is the plan's own id, 55 after owner decision D4; plan line 101 states the same reported 54
+rep2 outcome188 false-alarm pairing: the reading takes one exit status (0), the stand-in all three ([0, 1, 2]); plan line 19 quotes R3.7 and lines 886-892 and 951-961 return 0, 1 and 2
+rep2 outcome202 false-alarm form: the success output and its exit status are written apart on one side and bundled on the other; plan lines 943-950 print suite registry ok and return 0, or return 1 on findings
+rep2 outcome207 false-alarm pairing: the reading takes the lint's name suite_registry, the stand-in its whole run line; the plan's run line (plan line 1365) holds both, as R4.4 does
+rep2 outcome236 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real
+rep3 outcome115 false-alarm slot: the same default ['3.13'], with unit interpreters on one side only; the plan's default is ('3.13',) (plan lines 399, 413)
+rep3 outcome118 false-alarm pairing: the reading takes the row's dir, the stand-in its with list; the plan's row (lines 1048-1051) matches the spec row
+rep3 outcome126 false-alarm pairing: the two sides take different fields of the row (dir, with or extras); the plan's row (lines 1066-1069) matches the spec row
+rep3 outcome166 false-alarm pairing: the reading takes the stdlib modules, the stand-in the Python version; plan lines 9 and 17 state both as R3.1 does
+rep3 outcome171 false-alarm slot: the same command, with unit command on one side only (plan lines 492-498)
+rep3 outcome176 false-alarm slot: the same header, with unit text on one side only (plan lines 426, 882)
+rep3 outcome178 false-alarm slot: the same exit status, with unit exit code on one side only; plan line 19 quotes R3.7
+rep3 outcome179 false-alarm slot: the same exit status, with unit exit code on one side only; plan line 19 quotes R3.7
+rep3 outcome180 false-alarm slot: the same exit status, with unit exit code on one side only; plan line 19 quotes R3.7
+rep3 outcome189 false-alarm slot: the same two patterns, with unit file patterns on one side only (plan line 400)
+rep3 outcome190 false-alarm slot: the same git ls-files command, with unit command on one side only; plan lines 655-657 add -z, which keeps the same file list
+rep3 outcome191 false-alarm slot: the same output, with unit text on one side only (plan lines 943-950)
+rep3 outcome200 false-alarm slot: the same word nine, with unit text on one side only (plan line 1359)
+rep3 outcome209 false-alarm slot: the same phrase, with unit text on one side only (plan lines 1376-1386)
+rep3 outcome219 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real
+rep3 outcome235 false-alarm pairing: the reading takes the gate's command, the stand-in its output suite registry ok; plan lines 1198-1201 state both, as the sentence does
+rep3 outcome237 false-alarm slot: the same output, with unit text on one side only (plan lines 155, 1414, 1656)
+rep4 outcome56 false-alarm pairing: the reading is the id that entry_check.py reported (54); the stand-in's entry is the plan's own id, 55 after owner decision D4; plan line 101 states the same reported 54
+rep4 outcome92 false-alarm pairing: the two sides take different fields of the row (dir, with or extras); the plan's row (lines 1066-1069) matches the spec row
+rep4 outcome138 false-alarm pairing: the reading takes one exit status (0), the stand-in all three ([0, 1, 2]); plan line 19 quotes R3.7 and lines 886-892 and 951-961 return 0, 1 and 2
+rep4 outcome144 false-alarm slot: the same exit 2, with unit exit code on one side only (plan lines 951-955)
+rep4 outcome147 false-alarm form: the success output and its exit status are written apart on one side and bundled on the other; plan lines 943-950 print suite registry ok and return 0, or return 1 on findings
+rep4 outcome159 false-alarm pairing: the reading takes the word nine, the stand-in the row's line range 127–132; the plan's new comment (plan lines 1582-1587) says nine and keeps that range
+rep4 outcome175 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real
+rep5 outcome64 false-alarm pairing: the reading is the id that entry_check.py reported (54); the stand-in's entry is the plan's own id, 55 after owner decision D4; plan line 101 states the same reported 54
+rep5 outcome68 false-alarm slot: the same position nine, with unit commit lint position on one side only (plan lines 71, 1359, 1365)
+rep5 outcome70 false-alarm slot: the same limit, 200 lines: the check fails at 200, so 200 is out, as the plan's 'under 200 lines' says (plan lines 24, 1638); the ruled reading marks the edge in
+rep5 outcome109 false-alarm pairing: the two sides take different fields of the row (dir, with or extras); the plan's row (lines 1066-1069) matches the spec row
+rep5 outcome173 false-alarm form: the same command, with the spec's trailing ellipsis on one side only (plan lines 376-379)
+rep5 outcome183 false-alarm pairing: the reading takes one exit status (0), the stand-in all three ([0, 1, 2]); plan line 19 quotes R3.7 and lines 886-892 and 951-961 return 0, 1 and 2
+rep5 outcome184 false-alarm slot: the same pytest exit 5, with unit exit code on one side only (plan lines 19, 757-758)
+rep5 outcome225 false-alarm form: the reading states the stamp, the stand-in the plan's DF9 test for it (line 1 starts with `<!-- cc-guide: ` and contains ` @`, plan lines 75, 1623-1626)
+rep5 outcome234 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real

@@ -7,7 +7,8 @@
 misreading"). Finding 22 (spec drift) moved to its own session on the same day (D2). Decisions D1–D8 are the
 owner's. Text marked *(designer's call)* is the designer's choice. The list under "Designer's calls" collects them.
 
-**Finding 24** moved to `specs/statement-level-readings.md`. Its first section lists the parts here that it replaces.
+**Finding 24** moved to `specs/completed/statement-level-readings.md`. Its first section lists the parts here that
+it replaces.
 
 > **For agentic workers:** this spec gets two plans (D8). Plan the probe first, as its own plan
 > (Verification, "Probe first"). Write the build plan only after the owner has reviewed the probe's results.

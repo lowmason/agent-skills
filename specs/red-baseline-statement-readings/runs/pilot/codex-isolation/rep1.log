@@ -1,0 +1,40 @@
+OpenAI Codex v0.163.0
+--------
+workdir: /tmp/plan83-codex-ZStRT3
+model: gpt-6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: ultra
+reasoning summaries: none
+session id: 01a1c14a-783e-73a3-afaa-7b0ccab142f1
+--------
+user
+This is a context diagnostic, not a task. Report only what is literally present in your context before this message. Do not run any command and do not call any tool. Do not use any special formatting or boxes. Answer lines 1 to 6, each with YES or NO and, if YES, a short verbatim quote of at most 12 words. Then answer line 7.
+1. Text loaded from an AGENTS.md file (quote its first heading).
+2. An instruction naming an output style, such as Explanatory or Learning, or Insight boxes (quote the style name).
+3. A rule headed "Plain technical English" or "AWS Guidance" (quote the heading).
+4. Additional context injected by a SessionStart hook (quote its first words).
+5. Any memory content or a memory index (quote its first line).
+6. A list of skills that you can use (quote one skill name).
+7. On the last line, write TOOLS: and then the names of every tool that you can call, separated by commas, or NONE.
+
+warning: Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/lowell/.codex/config.toml.
+warning: Code Mode is unavailable because code-mode host is disabled. Code mode will fail closed; enable `features.code_mode_host` and install `codex-code-mode-host`.
+codex
+1. YES — “# Global instructions”
+2. NO
+3. YES — “AWS Guidance”
+4. NO
+5. NO
+6. YES — “imagegen”
+7. TOOLS: functions.wait, functions.request_user_input_async, functions.exec, collaboration.followup_task, collaboration.interrupt_agent, collaboration.list_agents, collaboration.send_message, collaboration.spawn_agent, collaboration.wait_agent, tools.apply_patch, tools.list_mcp_resource_templates, tools.list_mcp_resources, tools.read_mcp_resource, tools.clock__curr_time
+tokens used
+17,027
+1. YES — “# Global instructions”
+2. NO
+3. YES — “AWS Guidance”
+4. NO
+5. NO
+6. YES — “imagegen”
+7. TOOLS: functions.wait, functions.request_user_input_async, functions.exec, collaboration.followup_task, collaboration.interrupt_agent, collaboration.list_agents, collaboration.send_message, collaboration.spawn_agent, collaboration.wait_agent, tools.apply_patch, tools.list_mcp_resource_templates, tools.list_mcp_resources, tools.read_mcp_resource, tools.clock__curr_time

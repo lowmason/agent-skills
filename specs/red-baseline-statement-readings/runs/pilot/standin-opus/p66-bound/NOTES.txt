@@ -1,0 +1,10 @@
+rep1 S62: The plan's amendment A1 reverses this: both limit the header (cache-off probe).
+rep1 S63: The plan records polars 1.44.2 under that cutoff, not 2.0.0.
+rep1 S65: The plan's amendment says it resolves to 2.0.0, not 1.44.2.
+rep1 S68: The plan attributes the result to uv's environment cache.
+rep1 S96: The plan writes 2026-10-21 as the starting date and then `bump` sets it to the day of execution. The spec example shows 2026-10-19.
+rep1 S96: The plan moves optuna from [cited] to [packages] (amendment A2).
+rep1 S110: The plan sets the cutoff at 00:00:00Z on the freeze date itself, not on the day after.
+rep1 S110: Under the plan's cutoff, files uploaded on the freeze date are excluded and a pin uploaded on that day is rejected.
+rep1 S118: The plan pins Tier 2 to the snippets stack (amendment A3).
+rep1 S168: The plan only fails a script floor that is above the promised floor. A lower script floor passes, which is weaker than "must match".

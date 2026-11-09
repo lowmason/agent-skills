@@ -1,0 +1,1 @@
+rep1 catch=yes near=- conflict_on_plant=yes conflicts=8 unclear=0 missing=22 unchecked=11 skipped=1 returned=0 returned_on_plant=no miss=- to_label_conflict=- to_label_unclear=- amended_sentence=1,2,3,4,6,17 cost=0.3032

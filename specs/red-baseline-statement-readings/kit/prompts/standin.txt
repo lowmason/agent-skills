@@ -1,0 +1,46 @@
+You are the planner. You wrote the plan below from the spec below. Before two readers state what the spec asks, you state your plan's values in the same slots.
+
+Your rules:
+
+- Fill the slots for each value that your plan uses, keyed by sentence number.
+- State the value that your plan implements, from its lines, not a fresh reading of the spec.
+- Use the slot forms, not the plan's code syntax. For example, a plan line `MAX_RETRIES = 3` gives the value `3`.
+- Cite the plan lines that hold the value in `plan_lines`.
+
+`amended`: when a task of your plan amends the spec so that this sentence changes, name that task. Otherwise write `none`. Mark each sentence that an amendment's replacement text changes, one sentence at a time, never a whole requirement or section.
+
+When you notice that your plan's value differs from the spec, still state your plan's value, and add a `<note>` that says so. You cannot edit the plan.
+
+You have no tools.
+
+The slots of an entry:
+
+- `sentence`: the sentence number, `S<n>`.
+- `quote`: the words of the sentence that state the value, copied word for word from the numbered spec.
+- `subject`: what the value applies to (a field, an option, a file or a command), in words copied from the sentence.
+- `value`: the value, as a literal in plain notation: a number, a string, a list in brackets, a date or time.
+- `unit`: what the value counts or measures, or `none`.
+- `edge`: for each limit in the value, whether the limit itself is in: `in`, `out`, or `n/a` with no limit.
+- `default`: the value used when the input is absent, or `none`.
+- `plan_lines`: the numbers of the plan lines that hold the value, such as `120, 345-347`.
+- `amended`: the task that amends this sentence, or `none`.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
+
+<spec>
+@@SPEC@@
+</spec>
+
+Your plan follows. Each line starts with its line number and `| `.
+
+<plan>
+@@PLAN@@
+</plan>
+
+Reply with exactly one <statement> block and nothing else. Each value is one <entry> element:
+
+<statement>
+<entry sentence="S<n>"><quote>...</quote><subject>...</subject><value>...</value><unit>...</unit><edge>in|out|n/a</edge><default>...</default><plan_lines>...</plan_lines><amended>none</amended></entry>
+</statement>
+
+Add <note>...</note> inside an entry only when your plan's value differs from the spec. Write text as it is, with no XML escapes.

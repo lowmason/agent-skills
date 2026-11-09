@@ -1,0 +1,25 @@
+rep1 S2: The spec records plan id 54. The plan was renumbered to 55 after a collision (D4). The shared note keeps the file name plan-54-suite-registry-for-plan-52.md.
+rep1 S10: The plan measured 199 lines at `151ea9f`, not at `456e3fb`.
+rep1 S49: The plan names the suite `cc_guide`, not `cc-guide` (D1).
+rep1 S53: The spec's default is ['3.13']. The plan uses ['3.12'], and no task amends the spec for this.
+rep1 S62: The plan names the suite `cc_guide`, not `cc-guide` (D1).
+rep1 S96: The plan names the suite `cc_guide`, not `cc-guide` (D1).
+rep1 S123: The comment says `suite cc_guide`, not `run_suites.py cc-guide`, because of the D1 rename.
+rep1 S144: The plan uses `test_scan.py` in tech-debt, not a file named `test_new.py` (DF6).
+rep2 S2: The plan uses id 55, not 54. Under D4 the owner renumbered it after another plan took 54. The shared note keeps the file name plan-54-suite-registry-for-plan-52.md.
+rep2 S10: The plan measured 199 at commit 151ea9f, not at 456e3fb. Line 104 states that CLAUDE.md is unchanged between those commits.
+rep2 S49: The plan names the suite cc_guide, not cc-guide (D1).
+rep2 S53: The plan's default is ['3.12']. The spec's default is ['3.13'], and no task amends it. With this default, a suite's default shell form also no longer equals its CLAUDE.md command (R3.2).
+rep2 S62: The plan names the suite cc_guide, not cc-guide (D1).
+rep2 S96: The plan names the suite cc_guide, not cc-guide (D1).
+rep2 S123: The plan writes "suite cc_guide", not "run_suites.py cc-guide" (D1, DF7).
+rep2 S144: The plan's test file is test_scan.py, not test_new.py. DF6 makes the spec's skills/<name>/scripts/test_new.py concrete as skills/tech-debt/scripts/test_scan.py.
+rep3 S2: The plan was renumbered from 54 to 55 under decision D4 because another plan had already claimed 54. The spec states 54.
+rep3 S53: The plan's default interpreter is 3.12. The spec's default is ['3.13'], and no task amends this sentence. With 3.12, the default shell forms (`--python 3.12`) do not equal the current `CLAUDE.md` commands (`--python 3.13`). This breaks S85 and the audit.
+rep3 S144: The plan commits `test_scan.py` instead of `test_new.py` (DF6). The spec names `test_new.py`.
+rep4 S2: The plan uses id 55, not the spec's 54: D4 renumbered it after the entry-check plan took 54. No task amends the spec sentence.
+rep4 S10: The plan measures 199 lines at `151ea9f`, not at `456e3fb`.
+rep4 S53: The plan's default is ['3.12'], not the spec's ['3.13']. No task amends the spec for this change.
+rep4 S144: The plan's file name is test_scan.py, not the spec's test_new.py (DF6 makes the path concrete). No task amends the spec.
+rep5 S10: The plan measures 199 lines at `151ea9f` and `fca3433`, not at `456e3fb`. Line 104 says `CLAUDE.md` is unchanged between them.
+rep5 S53: The spec sets the default to ['3.13']. The plan uses ['3.12']. No task amends this sentence, so every default run, every expected label and every shell form in the plan (for example lines 329, 332, 1505) uses 3.12. Those shell forms then differ from the current `CLAUDE.md` commands that R3.2 requires them to match.

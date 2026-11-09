@@ -1,0 +1,7792 @@
+{
+ "cases": [
+  {
+   "id": "C1",
+   "rule": 3,
+   "sentence": 2,
+   "subject": "Next skill",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 2,
+      "quote": "Next skill: writing-plans",
+      "subject": "Next skill",
+      "slots": {
+       "value": "writing-plans",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 2,
+      "quote": "Next skill: writing-plans",
+      "subject": "Next skill",
+      "slots": {
+       "value": "writing-plans",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C2",
+   "rule": 3,
+   "sentence": 6,
+   "subject": "properties",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 6,
+      "quote": "one or both of these properties",
+      "subject": "properties",
+      "slots": {
+       "value": "[1, 2]",
+       "unit": "properties",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 6,
+      "quote": "one or both of these properties",
+      "subject": "properties",
+      "slots": {
+       "value": "[1, 2]",
+       "unit": "properties",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C3",
+   "rule": 3,
+   "sentence": 8,
+   "subject": "version",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 8,
+      "quote": "the version as a parameter, set in one place",
+      "subject": "version",
+      "slots": {
+       "value": "1",
+       "unit": "place",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 8,
+      "quote": "the version as a parameter, set in one place",
+      "subject": "version",
+      "slots": {
+       "value": "1",
+       "unit": "place",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C4",
+   "rule": 3,
+   "sentence": 9,
+   "subject": "plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 9,
+      "quote": "plan 64",
+      "subject": "plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 9,
+      "quote": "plan 64",
+      "subject": "plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C5",
+   "rule": 2,
+   "sentence": 86,
+   "subject": "How the checks choose versions",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 86,
+      "quote": "Exact pins in one file, plus a separate drift run on the newest releases",
+      "subject": "How the checks choose versions",
+      "slots": {
+       "value": "exact pins in one file",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 86,
+      "quote": "Exact pins in one file",
+      "subject": "Exact pins",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 86,
+      "quote": "Exact pins in one file, plus a separate drift run on the newest releases",
+      "subject": "How the checks choose versions",
+      "slots": {
+       "value": "exact pins in one file",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 86,
+      "quote": "Exact pins in one file",
+      "subject": "Exact pins",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C6",
+   "rule": 3,
+   "sentence": 88,
+   "subject": "lock file",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 88,
+      "quote": "No lock file",
+      "subject": "lock file",
+      "slots": {
+       "value": "0",
+       "unit": "lock files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 88,
+      "quote": "No lock file",
+      "subject": "lock file",
+      "slots": {
+       "value": "0",
+       "unit": "lock files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C7",
+   "rule": 3,
+   "sentence": 89,
+   "subject": "Script floors",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "Script floors (3.11, 3.12)",
+      "subject": "Script floors",
+      "slots": {
+       "value": "[3.11, 3.12]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 89,
+      "quote": "the 3.9 floor",
+      "subject": "3.9 floor",
+      "slots": {
+       "value": "3.9",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "Script floors (3.11, 3.12)",
+      "subject": "Script floors",
+      "slots": {
+       "value": "[3.11, 3.12]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C8",
+   "rule": 3,
+   "sentence": 89,
+   "subject": "3.9 floor",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "Script floors (3.11, 3.12)",
+      "subject": "Script floors",
+      "slots": {
+       "value": "[3.11, 3.12]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 89,
+      "quote": "the 3.9 floor",
+      "subject": "3.9 floor",
+      "slots": {
+       "value": "3.9",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "the 3.9 floor",
+      "subject": "3.9 floor",
+      "slots": {
+       "value": "3.9",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C9",
+   "rule": 3,
+   "sentence": 90,
+   "subject": "version literal",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 90,
+      "quote": "each version literal in `skills/`",
+      "subject": "version literal",
+      "slots": {
+       "value": "skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 90,
+      "quote": "each version literal in `skills/`",
+      "subject": "version literal",
+      "slots": {
+       "value": "skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C10",
+   "rule": 2,
+   "sentence": 91,
+   "subject": "When the drift run happens",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 91,
+      "quote": "On demand, and in a weekly advisory CI job",
+      "subject": "When the drift run happens",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 91,
+      "quote": "in a weekly advisory CI job",
+      "subject": "drift run",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 91,
+      "quote": "On demand, and in a weekly advisory CI job",
+      "subject": "When the drift run happens",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 91,
+      "quote": "in a weekly advisory CI job",
+      "subject": "drift run",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C11",
+   "rule": 3,
+   "sentence": 92,
+   "subject": "file that a person edits",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "One file that a person edits",
+      "subject": "file that a person edits",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 92,
+      "quote": "a `--check` mode as a commit lint",
+      "subject": "mode",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "One file that a person edits",
+      "subject": "file that a person edits",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C12",
+   "rule": 3,
+   "sentence": 92,
+   "subject": "mode",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "One file that a person edits",
+      "subject": "file that a person edits",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 92,
+      "quote": "a `--check` mode as a commit lint",
+      "subject": "mode",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "a `--check` mode as a commit lint",
+      "subject": "mode",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C13",
+   "rule": 2,
+   "sentence": 94,
+   "subject": "The versions file",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 94,
+      "quote": "`build/versions.toml` is the only file in which a person sets a package version or the dev interpreter",
+      "subject": "The versions file",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 94,
+      "quote": "`build/versions.toml` is the only file in which a person sets a package version or the dev interpreter",
+      "subject": "only file",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 94,
+      "quote": "`build/versions.toml` is the only file in which a person sets a package version or the dev interpreter",
+      "subject": "The versions file",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 94,
+      "quote": "`build/versions.toml` is the only file in which a person sets a package version or the dev interpreter",
+      "subject": "only file",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C14",
+   "rule": 2,
+   "sentence": 96,
+   "subject": "[[override]]",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "day of execution (set by bump)",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'",
+      "subject": "[packages]",
+      "slots": {
+       "value": "{arviz: '1.3.0', numpyro: '0.22.0', jax: '0.12.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "versions resolved by bump on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: '6.2', plotly: '6.8', optuna: '5.0.0', great-docs: '0.17.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "overrides",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 96,
+      "quote": "# [[override]]               # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "overrides",
+       "edge": "n/a",
+       "default": "[]"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C15",
+   "rule": 4,
+   "sentence": 96,
+   "subject": "[freeze] date",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "day of execution (set by bump)",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'",
+      "subject": "[packages]",
+      "slots": {
+       "value": "{arviz: '1.3.0', numpyro: '0.22.0', jax: '0.12.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "versions resolved by bump on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: '6.2', plotly: '6.8', optuna: '5.0.0', great-docs: '0.17.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "day of execution (set by bump)",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C16",
+   "rule": 4,
+   "sentence": 96,
+   "subject": "[packages]",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "day of execution (set by bump)",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'",
+      "subject": "[packages]",
+      "slots": {
+       "value": "{arviz: '1.3.0', numpyro: '0.22.0', jax: '0.12.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "versions resolved by bump on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: '6.2', plotly: '6.8', optuna: '5.0.0', great-docs: '0.17.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'",
+      "subject": "[packages]",
+      "slots": {
+       "value": "{arviz: '1.3.0', numpyro: '0.22.0', jax: '0.12.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "versions resolved by bump on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C17",
+   "rule": 3,
+   "sentence": 96,
+   "subject": "[cited]",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19            # a TOML date; every check resolves as of this date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "day of execution (set by bump)",
+       "unit": "TOML date",
+       "edge": "in",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'",
+      "subject": "[packages]",
+      "slots": {
+       "value": "{arviz: '1.3.0', numpyro: '0.22.0', jax: '0.12.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "versions resolved by bump on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: '6.2', plotly: '6.8', optuna: '5.0.0', great-docs: '0.17.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'",
+      "subject": "[cited]",
+      "slots": {
+       "value": "{altair: '6.2', plotly: '6.8', optuna: '5.0.0', great-docs: '0.17.0'}",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C18",
+   "rule": 3,
+   "sentence": 98,
+   "subject": "plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 98,
+      "quote": "The plan sets the real values with `bump`",
+      "subject": "plan",
+      "slots": {
+       "value": "bump",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 98,
+      "quote": "The plan sets the real values with `bump`",
+      "subject": "plan",
+      "slots": {
+       "value": "bump",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C19",
+   "rule": 3,
+   "sentence": 99,
+   "subject": "package",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 99,
+      "quote": "A package gets a `[packages]` entry in two cases",
+      "subject": "package",
+      "slots": {
+       "value": "2",
+       "unit": "cases",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 99,
+      "quote": "A package gets a `[packages]` entry in two cases",
+      "subject": "package",
+      "slots": {
+       "value": "2",
+       "unit": "cases",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C20",
+   "rule": 3,
+   "sentence": 102,
+   "subject": "[packages]",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 102,
+      "quote": "Polars is in `[packages]`",
+      "subject": "[packages]",
+      "slots": {
+       "value": "Polars",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 102,
+      "quote": "Polars is in `[packages]`",
+      "subject": "[packages]",
+      "slots": {
+       "value": "Polars",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C21",
+   "rule": 3,
+   "sentence": 107,
+   "subject": "sync",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 107,
+      "quote": "`sync --check` fails when any of them differs",
+      "subject": "sync",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 107,
+      "quote": "`sync --check` fails when any of them differs",
+      "subject": "sync",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C22",
+   "rule": 2,
+   "sentence": 109,
+   "subject": "`.python-version`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root) | the `[python] dev` value",
+      "subject": "`.python-version`",
+      "slots": {
+       "value": ".python-version",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root)",
+      "subject": "Output",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root) | the `[python] dev` value",
+      "subject": "`.python-version`",
+      "slots": {
+       "value": ".python-version",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root)",
+      "subject": "Output",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C23",
+   "rule": 2,
+   "sentence": 110,
+   "subject": "`uv.toml` (repo root) `exclude-newer`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "`uv.toml` (repo root) `exclude-newer`",
+      "slots": {
+       "value": "<freeze date + 1 day>T00:00:00Z",
+       "unit": "RFC 3339 timestamp",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": {
+       "value": "<freeze date + 1 day>T00:00:00Z",
+       "unit": "RFC 3339 timestamp",
+       "edge": "in",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "`uv.toml` (repo root)",
+      "subject": "Output",
+      "slots": {
+       "value": "uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "RFC 3339",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "the day after the freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "day",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "`uv.toml` (repo root) `exclude-newer`",
+      "slots": {
+       "value": "<freeze date + 1 day>T00:00:00Z",
+       "unit": "RFC 3339 timestamp",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": {
+       "value": "<freeze date + 1 day>T00:00:00Z",
+       "unit": "RFC 3339 timestamp",
+       "edge": "in",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "RFC 3339",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C24",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "Output",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "`uv.toml` (repo root)",
+      "subject": "Output",
+      "slots": {
+       "value": "uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "the day after the freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "day",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "`uv.toml` (repo root)",
+      "subject": "Output",
+      "slots": {
+       "value": "uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C25",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "exclude-newer",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "`uv.toml` (repo root)",
+      "subject": "Output",
+      "slots": {
+       "value": "uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "the day after the freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "day",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C26",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "freeze date",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "`uv.toml` (repo root)",
+      "subject": "Output",
+      "slots": {
+       "value": "uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "the day after the freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "day",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "the day after the freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "day",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C27",
+   "rule": 2,
+   "sentence": 111,
+   "subject": "`skills/uv.toml`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml` | no settings, and a comment that names `build/versions.toml`",
+      "subject": "`skills/uv.toml`",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml`",
+      "subject": "Output",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "no settings",
+      "subject": "skills/uv.toml",
+      "slots": {
+       "value": "0",
+       "unit": "settings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "a comment that names `build/versions.toml`",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml` | no settings, and a comment that names `build/versions.toml`",
+      "subject": "`skills/uv.toml`",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "no settings",
+      "subject": "skills/uv.toml",
+      "slots": {
+       "value": "0",
+       "unit": "settings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C28",
+   "rule": 3,
+   "sentence": 111,
+   "subject": "Output",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml`",
+      "subject": "Output",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "a comment that names `build/versions.toml`",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml`",
+      "subject": "Output",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C29",
+   "rule": 3,
+   "sentence": 111,
+   "subject": "comment",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml`",
+      "subject": "Output",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "a comment that names `build/versions.toml`",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "a comment that names `build/versions.toml`",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C30",
+   "rule": 3,
+   "sentence": 114,
+   "subject": "plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 114,
+      "quote": "Claude Code, Codex and Gemini",
+      "subject": "plan",
+      "slots": {
+       "value": "[Claude Code, Codex, Gemini]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 114,
+      "quote": "Claude Code, Codex and Gemini",
+      "subject": "plan",
+      "slots": {
+       "value": "[Claude Code, Codex, Gemini]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C31",
+   "rule": 2,
+   "sentence": 115,
+   "subject": "`stack(gate)`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`, the list of `pkg==version` strings for a gate after overrides",
+      "subject": "`stack(gate)`",
+      "slots": {
+       "value": "['pkg==version', ...]",
+       "unit": "strings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`",
+      "subject": "build/versions.py",
+      "slots": {
+       "value": "stack(gate)",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`, the list of `pkg==version` strings for a gate after overrides",
+      "subject": "`stack(gate)`",
+      "slots": {
+       "value": "['pkg==version', ...]",
+       "unit": "strings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`",
+      "subject": "build/versions.py",
+      "slots": {
+       "value": "stack(gate)",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C32",
+   "rule": 3,
+   "sentence": 117,
+   "subject": "build/check_snippets.py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`",
+      "subject": "build/check_snippets.py",
+      "slots": {
+       "value": "[PINNED, RUN_REMEDIATION, API_REMEDIATION]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`",
+      "subject": "build/check_snippets.py",
+      "slots": {
+       "value": "[PINNED, RUN_REMEDIATION, API_REMEDIATION]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C33",
+   "rule": 3,
+   "sentence": 118,
+   "subject": "Tier 2",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 118,
+      "quote": "Tier 2 (`--api`)",
+      "subject": "Tier 2",
+      "slots": {
+       "value": "--api",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 118,
+      "quote": "Tier 2 (`--api`)",
+      "subject": "Tier 2",
+      "slots": {
+       "value": "--api",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C34",
+   "rule": 3,
+   "sentence": 120,
+   "subject": "build/run_suites.py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 120,
+      "quote": "`build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python",
+      "subject": "build/run_suites.py",
+      "slots": {
+       "value": "DEFAULT_PYTHONS",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 120,
+      "quote": "`build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python",
+      "subject": "build/run_suites.py",
+      "slots": {
+       "value": "DEFAULT_PYTHONS",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C35",
+   "rule": 2,
+   "sentence": 123,
+   "subject": "`hooks` suite",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "The `hooks` suite keeps its explicit `/usr/bin/python3` run",
+      "subject": "`hooks` suite",
+      "slots": {
+       "value": "/usr/bin/python3",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 123,
+      "quote": "The `hooks` suite keeps its explicit `/usr/bin/python3` run",
+      "subject": "hooks suite",
+      "slots": {
+       "value": "/usr/bin/python3",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 123,
+      "quote": "The `hooks` suite keeps its explicit `/usr/bin/python3` run",
+      "subject": "`hooks` suite",
+      "slots": {
+       "value": "/usr/bin/python3",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 123,
+      "quote": "The `hooks` suite keeps its explicit `/usr/bin/python3` run",
+      "subject": "hooks suite",
+      "slots": {
+       "value": "/usr/bin/python3",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C36",
+   "rule": 3,
+   "sentence": 124,
+   "subject": "build/cc_guide/notice.sh:114",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 124,
+      "quote": "`build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`",
+      "subject": "build/cc_guide/notice.sh:114",
+      "slots": {
+       "value": "build/cc_guide/notice.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 124,
+      "quote": "`build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`",
+      "subject": "build/githooks/pre-commit:15",
+      "slots": {
+       "value": "build/githooks/pre-commit",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 124,
+      "quote": "`build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`",
+      "subject": "build/cc_guide/notice.sh:114",
+      "slots": {
+       "value": "build/cc_guide/notice.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C37",
+   "rule": 3,
+   "sentence": 124,
+   "subject": "build/githooks/pre-commit:15",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 124,
+      "quote": "`build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`",
+      "subject": "build/cc_guide/notice.sh:114",
+      "slots": {
+       "value": "build/cc_guide/notice.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 124,
+      "quote": "`build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`",
+      "subject": "build/githooks/pre-commit:15",
+      "slots": {
+       "value": "build/githooks/pre-commit",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 124,
+      "quote": "`build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`",
+      "subject": "build/githooks/pre-commit:15",
+      "slots": {
+       "value": "build/githooks/pre-commit",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C38",
+   "rule": 3,
+   "sentence": 125,
+   "subject": "Documented commands",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 125,
+      "quote": "Documented commands spell no interpreter or package version",
+      "subject": "Documented commands",
+      "slots": {
+       "value": "0",
+       "unit": "interpreter or package versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 125,
+      "quote": "Documented commands spell no interpreter or package version",
+      "subject": "Documented commands",
+      "slots": {
+       "value": "0",
+       "unit": "interpreter or package versions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C39",
+   "rule": 3,
+   "sentence": 126,
+   "subject": "Documented commands",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 126,
+      "quote": "`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `build/run_commit_lints.sh`, the usage docstrings in `build/`, `hooks/` and the skill test files, and the commands in skill text",
+      "subject": "Documented commands",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, build/, hooks/, skill test files, skill text]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 126,
+      "quote": "`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `build/run_commit_lints.sh`, the usage docstrings in `build/`, `hooks/` and the skill test files, and the commands in skill text",
+      "subject": "Documented commands",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, build/, hooks/, skill test files, skill text]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C40",
+   "rule": 3,
+   "sentence": 129,
+   "subject": "`build/versions.py` subcommands",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 129,
+      "quote": "`build/versions.py` has these subcommands",
+      "subject": "`build/versions.py` subcommands",
+      "slots": {
+       "value": "['sync [--check]', 'run <gate> [--pin pkg==X ...] -- <cmd>', 'verify [--pin pkg==X ...]', 'bump [--date D] [--only pkg ...]', 'drift [--pin pkg==X ...]', 'check']",
+       "unit": "subcommands",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 129,
+      "quote": "`build/versions.py` has these subcommands",
+      "subject": "`build/versions.py` subcommands",
+      "slots": {
+       "value": "['sync [--check]', 'run <gate> [--pin pkg==X ...] -- <cmd>', 'verify [--pin pkg==X ...]', 'bump [--date D] [--only pkg ...]', 'drift [--pin pkg==X ...]', 'check']",
+       "unit": "subcommands",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C41",
+   "rule": 3,
+   "sentence": 131,
+   "subject": "Subcommand",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 131,
+      "quote": "`sync [--check]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "sync [--check]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 131,
+      "quote": "`sync [--check]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "sync [--check]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C42",
+   "rule": 3,
+   "sentence": 132,
+   "subject": "Subcommand",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "`run <gate> [--pin pkg==X ...] -- <cmd>`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "run <gate> [--pin pkg==X ...] -- <cmd>",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "`run <gate> [--pin pkg==X ...] -- <cmd>`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "run <gate> [--pin pkg==X ...] -- <cmd>",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C43",
+   "rule": 3,
+   "sentence": 133,
+   "subject": "Subcommand",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "`verify [--pin pkg==X ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "verify [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 133,
+      "quote": "Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras`",
+      "subject": "re-verify set",
+      "slots": {
+       "value": "[Tier 2, Tier 3, JAX CPU examples, run_suites.py --all --extras]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "`verify [--pin pkg==X ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "verify [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C44",
+   "rule": 3,
+   "sentence": 133,
+   "subject": "re-verify set",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "`verify [--pin pkg==X ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "verify [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 133,
+      "quote": "Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras`",
+      "subject": "re-verify set",
+      "slots": {
+       "value": "[Tier 2, Tier 3, JAX CPU examples, run_suites.py --all --extras]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras`",
+      "subject": "re-verify set",
+      "slots": {
+       "value": "[Tier 2, Tier 3, JAX CPU examples, run_suites.py --all --extras]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C45",
+   "rule": 2,
+   "sentence": 134,
+   "subject": "`bump [--date D]`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "`bump [--date D]`",
+      "slots": {
+       "value": "D",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "`bump [--date D] [--only pkg ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "bump [--date D] [--only pkg ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "freeze date",
+      "slots": {
+       "value": "today",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": {
+       "value": "today",
+       "unit": "UTC date",
+       "edge": "n/a",
+       "default": "UTC today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "does one joint resolve",
+      "subject": "bump",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "`bump [--date D]`",
+      "slots": {
+       "value": "D",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "freeze date",
+      "slots": {
+       "value": "today",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": {
+       "value": "today",
+       "unit": "UTC date",
+       "edge": "n/a",
+       "default": "UTC today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C46",
+   "rule": 3,
+   "sentence": 134,
+   "subject": "Subcommand",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "`bump [--date D] [--only pkg ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "bump [--date D] [--only pkg ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "does one joint resolve",
+      "subject": "bump",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "`bump [--date D] [--only pkg ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "bump [--date D] [--only pkg ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C47",
+   "rule": 3,
+   "sentence": 134,
+   "subject": "bump",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "`bump [--date D] [--only pkg ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "bump [--date D] [--only pkg ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "does one joint resolve",
+      "subject": "bump",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "does one joint resolve",
+      "subject": "bump",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C48",
+   "rule": 2,
+   "sentence": 135,
+   "subject": "`drift`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 135,
+      "quote": "in two passes: first on the dev Python, then on the newest stable Python",
+      "subject": "`drift`",
+      "slots": {
+       "value": "['dev Python', 'newest stable Python']",
+       "unit": "passes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "`drift [--pin pkg==X ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "drift [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 135,
+      "quote": "in two passes: first on the dev Python, then on the newest stable Python",
+      "subject": "drift",
+      "slots": {
+       "value": "2",
+       "unit": "passes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 135,
+      "quote": "in two passes: first on the dev Python, then on the newest stable Python",
+      "subject": "`drift`",
+      "slots": {
+       "value": "['dev Python', 'newest stable Python']",
+       "unit": "passes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "in two passes: first on the dev Python, then on the newest stable Python",
+      "subject": "drift",
+      "slots": {
+       "value": "2",
+       "unit": "passes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C49",
+   "rule": 3,
+   "sentence": 135,
+   "subject": "Subcommand",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "`drift [--pin pkg==X ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "drift [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "`drift [--pin pkg==X ...]`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "drift [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C50",
+   "rule": 3,
+   "sentence": 136,
+   "subject": "Subcommand",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 136,
+      "quote": "`check`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 136,
+      "quote": "`check`",
+      "subject": "Subcommand",
+      "slots": {
+       "value": "check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C51",
+   "rule": 3,
+   "sentence": 139,
+   "subject": "--pin",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "`--pin` changes one package",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "package",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 139,
+      "quote": "for one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "run",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "`--pin` changes one package",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "package",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C52",
+   "rule": 3,
+   "sentence": 139,
+   "subject": "--pin",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "`--pin` changes one package",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "package",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 139,
+      "quote": "for one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "run",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "for one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "run",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C53",
+   "rule": 3,
+   "sentence": 140,
+   "subject": "bump",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 140,
+      "quote": "A bump follows these steps, in one change",
+      "subject": "bump",
+      "slots": {
+       "value": "1",
+       "unit": "change",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 140,
+      "quote": "A bump follows these steps, in one change",
+      "subject": "bump",
+      "slots": {
+       "value": "1",
+       "unit": "change",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C54",
+   "rule": 3,
+   "sentence": 141,
+   "subject": "Run",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 141,
+      "quote": "Run `bump`",
+      "subject": "Run",
+      "slots": {
+       "value": "bump",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 141,
+      "quote": "Run `bump`",
+      "subject": "Run",
+      "slots": {
+       "value": "bump",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C55",
+   "rule": 3,
+   "sentence": 142,
+   "subject": "Run",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 142,
+      "quote": "Run `verify`",
+      "subject": "Run",
+      "slots": {
+       "value": "verify",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 142,
+      "quote": "Run `verify`",
+      "subject": "Run",
+      "slots": {
+       "value": "verify",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C56",
+   "rule": 3,
+   "sentence": 143,
+   "subject": "Run",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 143,
+      "quote": "Run `check`",
+      "subject": "Run",
+      "slots": {
+       "value": "check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 143,
+      "quote": "Run `check`",
+      "subject": "Run",
+      "slots": {
+       "value": "check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C57",
+   "rule": 3,
+   "sentence": 147,
+   "subject": "run and verify",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 147,
+      "quote": "`run` and `verify` exit non-zero on any failure",
+      "subject": "run and verify",
+      "slots": {
+       "value": "non-zero",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 147,
+      "quote": "`run` and `verify` exit non-zero on any failure",
+      "subject": "run and verify",
+      "slots": {
+       "value": "non-zero",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C58",
+   "rule": 2,
+   "sentence": 148,
+   "subject": "`drift`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network",
+      "subject": "`drift`",
+      "slots": {
+       "value": "{pass: 0, gate fails: 1, cannot resolve or reach network: 2}",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions",
+      "subject": "drift",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "drift",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "drift",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network",
+      "subject": "`drift`",
+      "slots": {
+       "value": "{pass: 0, gate fails: 1, cannot resolve or reach network: 2}",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "`drift` exits 0 when each gate passes on the latest versions",
+      "subject": "drift",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C59",
+   "rule": 3,
+   "sentence": 148,
+   "subject": "drift",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "drift",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "drift",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "drift",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C60",
+   "rule": 3,
+   "sentence": 148,
+   "subject": "drift",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "1 when a gate fails",
+      "subject": "drift",
+      "slots": {
+       "value": "1",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "drift",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "2 when it cannot resolve or reach the network",
+      "subject": "drift",
+      "slots": {
+       "value": "2",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C61",
+   "rule": 3,
+   "sentence": 158,
+   "subject": "versions.py check",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 158,
+      "quote": "`versions.py check` runs offline",
+      "subject": "versions.py check",
+      "slots": {
+       "value": "offline",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 158,
+      "quote": "`versions.py check` runs offline",
+      "subject": "versions.py check",
+      "slots": {
+       "value": "offline",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C62",
+   "rule": 2,
+   "sentence": 162,
+   "subject": "Live files",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 162,
+      "quote": "Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "['CLAUDE.md', 'AGENTS.md', 'GEMINI.md', 'build/', 'hooks/', 'skills/', '.claude/skills/']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 162,
+      "quote": "`CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/, hooks/, skills/, .claude/skills/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 162,
+      "quote": "Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "['CLAUDE.md', 'AGENTS.md', 'GEMINI.md', 'build/', 'hooks/', 'skills/', '.claude/skills/']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 162,
+      "quote": "`CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/, hooks/, skills/, .claude/skills/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C63",
+   "rule": 3,
+   "sentence": 163,
+   "subject": "interpreter path",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 163,
+      "quote": "An interpreter path such as `/usr/bin/python3` is not a literal",
+      "subject": "interpreter path",
+      "slots": {
+       "value": "/usr/bin/python3",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 163,
+      "quote": "An interpreter path such as `/usr/bin/python3` is not a literal",
+      "subject": "interpreter path",
+      "slots": {
+       "value": "/usr/bin/python3",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C64",
+   "rule": 3,
+   "sentence": 164,
+   "subject": "Prose citations",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "['skills/**/*.md', 'skills/*/scripts/']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "check",
+      "slots": {
+       "value": "[skills/**/*.md, skills/*/scripts/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "check",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "['skills/**/*.md', 'skills/*/scripts/']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C65",
+   "rule": 3,
+   "sentence": 164,
+   "subject": "check",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "['skills/**/*.md', 'skills/*/scripts/']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "check",
+      "slots": {
+       "value": "[skills/**/*.md, skills/*/scripts/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "check",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "check",
+      "slots": {
+       "value": "[skills/**/*.md, skills/*/scripts/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C66",
+   "rule": 3,
+   "sentence": 164,
+   "subject": "check",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "['skills/**/*.md', 'skills/*/scripts/']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "check",
+      "slots": {
+       "value": "[skills/**/*.md, skills/*/scripts/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "check",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "check",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C67",
+   "rule": 3,
+   "sentence": 167,
+   "subject": "History",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 167,
+      "quote": "passes only through the `HISTORICAL` allowlist",
+      "subject": "History",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 167,
+      "quote": "passes only through the `HISTORICAL` allowlist",
+      "subject": "History",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C68",
+   "rule": 3,
+   "sentence": 168,
+   "subject": "Python floor",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "Each script's `requires-python` must match the Python floor in its `SKILL.md` `compatibility:` line",
+      "subject": "Python floor",
+      "slots": {
+       "value": "[requires-python, compatibility:]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "Each script's `requires-python` must match the Python floor in its `SKILL.md` `compatibility:` line",
+      "subject": "Python floor",
+      "slots": {
+       "value": "[requires-python, compatibility:]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C69",
+   "rule": 2,
+   "sentence": 172,
+   "subject": "`check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 172,
+      "quote": "`check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures",
+      "subject": "`check`",
+      "slots": {
+       "value": "['specs/', 'LICENSE*', 'data/', 'test fixtures']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 172,
+      "quote": "`specs/`, `LICENSE*` files, `data/` directories or test fixtures",
+      "subject": "check",
+      "slots": {
+       "value": "[specs/, LICENSE*, data/, test fixtures]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 172,
+      "quote": "`check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures",
+      "subject": "`check`",
+      "slots": {
+       "value": "['specs/', 'LICENSE*', 'data/', 'test fixtures']",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 172,
+      "quote": "`specs/`, `LICENSE*` files, `data/` directories or test fixtures",
+      "subject": "check",
+      "slots": {
+       "value": "[specs/, LICENSE*, data/, test fixtures]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C70",
+   "rule": 3,
+   "sentence": 173,
+   "subject": "Illustrative text",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 173,
+      "quote": "`skills/evaluate-deep-learning/references/experiments.md:86-87`",
+      "subject": "Illustrative text",
+      "slots": {
+       "value": "skills/evaluate-deep-learning/references/experiments.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 173,
+      "quote": "`skills/evaluate-deep-learning/references/experiments.md:86-87`",
+      "subject": "Illustrative text",
+      "slots": {
+       "value": "skills/evaluate-deep-learning/references/experiments.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C71",
+   "rule": 2,
+   "sentence": 176,
+   "subject": "`versions_check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint in `build/run_commit_lints.sh`",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "10",
+       "unit": "commit lint position",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check`",
+      "subject": "commit lint",
+      "slots": {
+       "value": "versions_check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "`uv run python build/versions.py check`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "in `build/run_commit_lints.sh`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint in `build/run_commit_lints.sh`",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "10",
+       "unit": "commit lint position",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "`uv run python build/versions.py check`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C72",
+   "rule": 2,
+   "sentence": 176,
+   "subject": "`versions_check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`)",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check`",
+      "subject": "commit lint",
+      "slots": {
+       "value": "versions_check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "the tenth commit lint",
+      "subject": "versions_check",
+      "slots": {
+       "value": "10",
+       "unit": "commit lint",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "in `build/run_commit_lints.sh`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`)",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "the tenth commit lint",
+      "subject": "versions_check",
+      "slots": {
+       "value": "10",
+       "unit": "commit lint",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C73",
+   "rule": 3,
+   "sentence": 176,
+   "subject": "commit lint",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check`",
+      "subject": "commit lint",
+      "slots": {
+       "value": "versions_check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "in `build/run_commit_lints.sh`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check`",
+      "subject": "commit lint",
+      "slots": {
+       "value": "versions_check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C74",
+   "rule": 3,
+   "sentence": 176,
+   "subject": "versions_check",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check`",
+      "subject": "commit lint",
+      "slots": {
+       "value": "versions_check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "in `build/run_commit_lints.sh`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "in `build/run_commit_lints.sh`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C75",
+   "rule": 3,
+   "sentence": 177,
+   "subject": "count of commit lints",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 177,
+      "quote": "`CLAUDE.md`'s count of commit lints, `build/githooks/pre-commit` and `build/test_commit_lints.py`",
+      "subject": "count of commit lints",
+      "slots": {
+       "value": "10",
+       "unit": "commit lints",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 177,
+      "quote": "`build/githooks/pre-commit` and `build/test_commit_lints.py`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "[build/githooks/pre-commit, build/test_commit_lints.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 177,
+      "quote": "`CLAUDE.md`'s count of commit lints, `build/githooks/pre-commit` and `build/test_commit_lints.py`",
+      "subject": "count of commit lints",
+      "slots": {
+       "value": "10",
+       "unit": "commit lints",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C76",
+   "rule": 3,
+   "sentence": 177,
+   "subject": "versions_check",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 177,
+      "quote": "`CLAUDE.md`'s count of commit lints, `build/githooks/pre-commit` and `build/test_commit_lints.py`",
+      "subject": "count of commit lints",
+      "slots": {
+       "value": "10",
+       "unit": "commit lints",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 177,
+      "quote": "`build/githooks/pre-commit` and `build/test_commit_lints.py`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "[build/githooks/pre-commit, build/test_commit_lints.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 177,
+      "quote": "`build/githooks/pre-commit` and `build/test_commit_lints.py`",
+      "subject": "versions_check",
+      "slots": {
+       "value": "[build/githooks/pre-commit, build/test_commit_lints.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C77",
+   "rule": 3,
+   "sentence": 178,
+   "subject": "workflow",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 178,
+      "quote": "`.github/workflows/lints.yml` keeps its steps",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/lints.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 178,
+      "quote": "`.github/workflows/lints.yml` keeps its steps",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/lints.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C78",
+   "rule": 3,
+   "sentence": 179,
+   "subject": "setup-uv",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 179,
+      "quote": "`setup-uv` takes the interpreter from `.python-version`",
+      "subject": "setup-uv",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 179,
+      "quote": "`setup-uv` takes the interpreter from `.python-version`",
+      "subject": "setup-uv",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C79",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "`.github/workflows/versions-drift.yml`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "`.github/workflows/versions-drift.yml`",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift`",
+      "subject": "workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C80",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "`versions.py drift`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "`.github/workflows/versions-drift.yml`",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift`",
+      "subject": "workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C81",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "workflow",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "`.github/workflows/versions-drift.yml`",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift`",
+      "subject": "workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "`.github/workflows/versions-drift.yml`",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C82",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "workflow",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "`.github/workflows/versions-drift.yml`",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift`",
+      "subject": "workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift`",
+      "subject": "workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C83",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "workflow",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "`.github/workflows/versions-drift.yml`",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift`",
+      "subject": "workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C84",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "workflow",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`.github/workflows/versions-drift.yml`",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift` weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "`.github/workflows/versions-drift.yml`",
+      "subject": "workflow",
+      "slots": {
+       "value": ".github/workflows/versions-drift.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "runs `versions.py drift`",
+      "subject": "workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C85",
+   "rule": 3,
+   "sentence": 183,
+   "subject": "drift report",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 183,
+      "quote": "the drift report to the job summary",
+      "subject": "drift report",
+      "slots": {
+       "value": "job summary",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 183,
+      "quote": "the drift report to the job summary",
+      "subject": "drift report",
+      "slots": {
+       "value": "job summary",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C86",
+   "rule": 3,
+   "sentence": 190,
+   "subject": "uv behaviors",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 190,
+      "quote": "items 2 to 6",
+      "subject": "uv behaviors",
+      "slots": {
+       "value": "[2, 3, 4, 5, 6]",
+       "unit": "items",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 190,
+      "quote": "items 2 to 6",
+      "subject": "uv behaviors",
+      "slots": {
+       "value": "[2, 3, 4, 5, 6]",
+       "unit": "items",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C87",
+   "rule": 2,
+   "sentence": 191,
+   "subject": "results",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 191,
+      "quote": "Record the results in `specs/verification/`",
+      "subject": "results",
+      "slots": {
+       "value": "specs/verification/",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 191,
+      "quote": "in `specs/verification/`",
+      "subject": "results",
+      "slots": {
+       "value": "specs/verification/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 191,
+      "quote": "Record the results in `specs/verification/`",
+      "subject": "results",
+      "slots": {
+       "value": "specs/verification/",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 191,
+      "quote": "in `specs/verification/`",
+      "subject": "results",
+      "slots": {
+       "value": "specs/verification/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C88",
+   "rule": 3,
+   "sentence": 193,
+   "subject": "Write",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "Write `build/versions.toml`",
+      "subject": "Write",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 193,
+      "quote": "then run `bump` and `verify`",
+      "subject": "run",
+      "slots": {
+       "value": "[bump, verify]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "Write `build/versions.toml`",
+      "subject": "Write",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C89",
+   "rule": 3,
+   "sentence": 193,
+   "subject": "run",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "Write `build/versions.toml`",
+      "subject": "Write",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 193,
+      "quote": "then run `bump` and `verify`",
+      "subject": "run",
+      "slots": {
+       "value": "[bump, verify]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "then run `bump` and `verify`",
+      "subject": "run",
+      "slots": {
+       "value": "[bump, verify]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C90",
+   "rule": 3,
+   "sentence": 194,
+   "subject": "JAX",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 194,
+      "quote": "one JAX version for both gates",
+      "subject": "JAX",
+      "slots": {
+       "value": "1",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 194,
+      "quote": "one JAX version for both gates",
+      "subject": "JAX",
+      "slots": {
+       "value": "1",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C91",
+   "rule": 2,
+   "sentence": 196,
+   "subject": "`[[override]]`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 196,
+      "quote": "add a temporary `[[override]]` for `jax-cpu` with its reason",
+      "subject": "`[[override]]`",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "gate",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 196,
+      "quote": "a temporary `[[override]]` for `jax-cpu`",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 196,
+      "quote": "add a temporary `[[override]]` for `jax-cpu` with its reason",
+      "subject": "`[[override]]`",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "gate",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 196,
+      "quote": "a temporary `[[override]]` for `jax-cpu`",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C92",
+   "rule": 4,
+   "sentence": 197,
+   "subject": "Polars",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "Pin Polars at the latest release (2.0.0 on 2026-10-21)",
+      "subject": "Polars",
+      "slots": {
+       "value": "2.0.0",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "latest release on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "Pin Polars at the latest release (2.0.0 on 2026-10-21)",
+      "subject": "Polars",
+      "slots": {
+       "value": "2.0.0",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "latest release on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C93",
+   "rule": 3,
+   "sentence": 198,
+   "subject": "polars",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 198,
+      "quote": "the `polars>=2.0` floors",
+      "subject": "polars",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 198,
+      "quote": "the `polars>=2.0` floors",
+      "subject": "polars",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C94",
+   "rule": 3,
+   "sentence": 199,
+   "subject": "stale citation",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 199,
+      "quote": "move it to `HISTORICAL`",
+      "subject": "stale citation",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 199,
+      "quote": "move it to `HISTORICAL`",
+      "subject": "stale citation",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C95",
+   "rule": 3,
+   "sentence": 201,
+   "subject": "known stale citations",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 201,
+      "quote": "the Polars, Altair and plotly lines",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[Polars, Altair, plotly]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 201,
+      "quote": "`skills/bayesian-workflow/references/model-comparison.md:130`, `references/model-criticism.md:196` and `skills/deep-learning/references/frameworks.md:94-95`",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[skills/bayesian-workflow/references/model-comparison.md, references/model-criticism.md, skills/deep-learning/references/frameworks.md]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 201,
+      "quote": "the Polars, Altair and plotly lines",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[Polars, Altair, plotly]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C96",
+   "rule": 3,
+   "sentence": 201,
+   "subject": "known stale citations",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 201,
+      "quote": "the Polars, Altair and plotly lines",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[Polars, Altair, plotly]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 201,
+      "quote": "`skills/bayesian-workflow/references/model-comparison.md:130`, `references/model-criticism.md:196` and `skills/deep-learning/references/frameworks.md:94-95`",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[skills/bayesian-workflow/references/model-comparison.md, references/model-criticism.md, skills/deep-learning/references/frameworks.md]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 201,
+      "quote": "`skills/bayesian-workflow/references/model-comparison.md:130`, `references/model-criticism.md:196` and `skills/deep-learning/references/frameworks.md:94-95`",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[skills/bayesian-workflow/references/model-comparison.md, references/model-criticism.md, skills/deep-learning/references/frameworks.md]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C97",
+   "rule": 3,
+   "sentence": 202,
+   "subject": "open Gaussian-process item",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 202,
+      "quote": "`specs/deferred_items.md:4492`",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "specs/deferred_items.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 202,
+      "quote": "\"on the pinned 0.21.0\"",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "on the pinned 0.21.0",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 202,
+      "quote": "`specs/deferred_items.md:4492`",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "specs/deferred_items.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C98",
+   "rule": 3,
+   "sentence": 202,
+   "subject": "open Gaussian-process item",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 202,
+      "quote": "`specs/deferred_items.md:4492`",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "specs/deferred_items.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 202,
+      "quote": "\"on the pinned 0.21.0\"",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "on the pinned 0.21.0",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 202,
+      "quote": "\"on the pinned 0.21.0\"",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "on the pinned 0.21.0",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C99",
+   "rule": 3,
+   "sentence": 203,
+   "subject": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 203,
+      "quote": "Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`, and point their readers at `build/versions.toml`",
+      "subject": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "subject": "Retire",
+      "slots": {
+       "value": "[specs/verification/32-jax-cpu.in, specs/verification/32-jax-cpu.txt]",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 203,
+      "quote": "point their readers at `build/versions.toml`",
+      "subject": "readers",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 203,
+      "quote": "Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`, and point their readers at `build/versions.toml`",
+      "subject": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C100",
+   "rule": 3,
+   "sentence": 203,
+   "subject": "Retire",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 203,
+      "quote": "Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`, and point their readers at `build/versions.toml`",
+      "subject": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "subject": "Retire",
+      "slots": {
+       "value": "[specs/verification/32-jax-cpu.in, specs/verification/32-jax-cpu.txt]",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 203,
+      "quote": "point their readers at `build/versions.toml`",
+      "subject": "readers",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "subject": "Retire",
+      "slots": {
+       "value": "[specs/verification/32-jax-cpu.in, specs/verification/32-jax-cpu.txt]",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C101",
+   "rule": 3,
+   "sentence": 203,
+   "subject": "readers",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 203,
+      "quote": "Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`, and point their readers at `build/versions.toml`",
+      "subject": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "subject": "Retire",
+      "slots": {
+       "value": "[specs/verification/32-jax-cpu.in, specs/verification/32-jax-cpu.txt]",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 203,
+      "quote": "point their readers at `build/versions.toml`",
+      "subject": "readers",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "point their readers at `build/versions.toml`",
+      "subject": "readers",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C102",
+   "rule": 3,
+   "sentence": 205,
+   "subject": "`rules/clean-code-python.md:30`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "`rules/clean-code-python.md:30`",
+      "subject": "Change",
+      "slots": {
+       "value": "rules/clean-code-python.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 205,
+      "quote": "`build/versions.toml` as this repo's source for the target Python",
+      "subject": "source for the target Python",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C103",
+   "rule": 3,
+   "sentence": 205,
+   "subject": "Change",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "`rules/clean-code-python.md:30`",
+      "subject": "Change",
+      "slots": {
+       "value": "rules/clean-code-python.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 205,
+      "quote": "`build/versions.toml` as this repo's source for the target Python",
+      "subject": "source for the target Python",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "`rules/clean-code-python.md:30`",
+      "subject": "Change",
+      "slots": {
+       "value": "rules/clean-code-python.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C104",
+   "rule": 3,
+   "sentence": 205,
+   "subject": "source for the target Python",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml` as this repo's source for the target Python",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "path",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "`rules/clean-code-python.md:30`",
+      "subject": "Change",
+      "slots": {
+       "value": "rules/clean-code-python.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 205,
+      "quote": "`build/versions.toml` as this repo's source for the target Python",
+      "subject": "source for the target Python",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "`build/versions.toml` as this repo's source for the target Python",
+      "subject": "source for the target Python",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C105",
+   "rule": 3,
+   "sentence": 207,
+   "subject": "versions.py units",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 207,
+      "quote": "**`versions.py` units.** Cover schema validation, `stack()` with and without an override, and the exact text that `sync` writes",
+      "subject": "versions.py units",
+      "slots": {
+       "value": "[stack(), sync]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 207,
+      "quote": "**`versions.py` units.** Cover schema validation, `stack()` with and without an override, and the exact text that `sync` writes",
+      "subject": "versions.py units",
+      "slots": {
+       "value": "[stack(), sync]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C106",
+   "rule": 3,
+   "sentence": 209,
+   "subject": "finding",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 209,
+      "quote": "Each finding has a positive control",
+      "subject": "finding",
+      "slots": {
+       "value": "1",
+       "unit": "positive control",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 209,
+      "quote": "Each finding has a positive control",
+      "subject": "finding",
+      "slots": {
+       "value": "1",
+       "unit": "positive control",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C107",
+   "rule": 3,
+   "sentence": 210,
+   "subject": "run_suites.py tests",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 210,
+      "quote": "`build/test_run_suites.py` and `build/test_check_frontmatter.py:434`",
+      "subject": "run_suites.py tests",
+      "slots": {
+       "value": "[build/test_run_suites.py, build/test_check_frontmatter.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 210,
+      "quote": "`build/test_run_suites.py` and `build/test_check_frontmatter.py:434`",
+      "subject": "run_suites.py tests",
+      "slots": {
+       "value": "[build/test_run_suites.py, build/test_check_frontmatter.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C108",
+   "rule": 3,
+   "sentence": 211,
+   "subject": "Exit codes",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "the `drift`, `verify` and `bump` exit codes",
+      "subject": "Exit codes",
+      "slots": {
+       "value": "[drift, verify, bump]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 211,
+      "quote": "as `hooks/test_project_hooks.py` does",
+      "subject": "stub uv",
+      "slots": {
+       "value": "hooks/test_project_hooks.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "the `drift`, `verify` and `bump` exit codes",
+      "subject": "Exit codes",
+      "slots": {
+       "value": "[drift, verify, bump]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C109",
+   "rule": 3,
+   "sentence": 211,
+   "subject": "stub uv",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "the `drift`, `verify` and `bump` exit codes",
+      "subject": "Exit codes",
+      "slots": {
+       "value": "[drift, verify, bump]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 211,
+      "quote": "as `hooks/test_project_hooks.py` does",
+      "subject": "stub uv",
+      "slots": {
+       "value": "hooks/test_project_hooks.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "as `hooks/test_project_hooks.py` does",
+      "subject": "stub uv",
+      "slots": {
+       "value": "hooks/test_project_hooks.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C110",
+   "rule": 3,
+   "sentence": 217,
+   "subject": "files",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 217,
+      "quote": "`NOTICE` and the license files do not change",
+      "subject": "files",
+      "slots": {
+       "value": "[NOTICE, license files]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 217,
+      "quote": "`NOTICE` and the license files do not change",
+      "subject": "files",
+      "slots": {
+       "value": "[NOTICE, license files]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C111",
+   "rule": 3,
+   "sentence": 218,
+   "subject": "CLAUDE.md edits",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 218,
+      "quote": "`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`",
+      "subject": "CLAUDE.md edits",
+      "slots": {
+       "value": "build/cc_guide/conformance.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 218,
+      "quote": "`check_conformance.py` runs before each commit",
+      "subject": "commit",
+      "slots": {
+       "value": "check_conformance.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 218,
+      "quote": "`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`",
+      "subject": "CLAUDE.md edits",
+      "slots": {
+       "value": "build/cc_guide/conformance.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C112",
+   "rule": 3,
+   "sentence": 218,
+   "subject": "commit",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 218,
+      "quote": "`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`",
+      "subject": "CLAUDE.md edits",
+      "slots": {
+       "value": "build/cc_guide/conformance.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 218,
+      "quote": "`check_conformance.py` runs before each commit",
+      "subject": "commit",
+      "slots": {
+       "value": "check_conformance.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 218,
+      "quote": "`check_conformance.py` runs before each commit",
+      "subject": "commit",
+      "slots": {
+       "value": "check_conformance.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C113",
+   "rule": 3,
+   "sentence": 219,
+   "subject": "Plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 219,
+      "quote": "Plan 63",
+      "subject": "Plan",
+      "slots": {
+       "value": "63",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 219,
+      "quote": "Plan 63",
+      "subject": "Plan",
+      "slots": {
+       "value": "63",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C114",
+   "rule": 3,
+   "sentence": 220,
+   "subject": "plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 220,
+      "quote": "after plan 63",
+      "subject": "plan",
+      "slots": {
+       "value": "63",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 220,
+      "quote": "after plan 63",
+      "subject": "plan",
+      "slots": {
+       "value": "63",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C115",
+   "rule": 3,
+   "sentence": 221,
+   "subject": "Plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 221,
+      "quote": "Plan 64",
+      "subject": "Plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 221,
+      "quote": "Plan 64",
+      "subject": "Plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  }
+ ],
+ "agreed": [
+  {
+   "sentence": 87,
+   "subject": "Pin scope",
+   "slots": {
+    "value": "1",
+    "unit": "version per package",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 88,
+   "subject": "Packages the file does not name",
+   "slots": {
+    "value": "1",
+    "unit": "freeze date",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 96,
+   "subject": "[python] dev",
+   "slots": {
+    "value": "'3.13'",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 96,
+   "subject": "[gates] snippets",
+   "slots": {
+    "value": "['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+    "unit": "packages",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 96,
+   "subject": "[gates] jax-cpu",
+   "slots": {
+    "value": "['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+    "unit": "packages",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 105,
+   "subject": "`[[override]]` entry",
+   "slots": {
+    "value": "['gate', 'package', 'version', 'reason']",
+    "unit": "keys",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 107,
+   "subject": "`build/versions.py sync`",
+   "slots": {
+    "value": "3",
+    "unit": "files",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 119,
+   "subject": "`build/check_jax_examples.py`",
+   "slots": {
+    "value": "stack('jax-cpu')",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 122,
+   "subject": "`build/run_suites.py` run",
+   "slots": {
+    "value": "--exclude-newer <date>",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 128,
+   "subject": "A command that needs a pinned stack",
+   "slots": {
+    "value": "uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 150,
+   "subject": "`bump`",
+   "slots": {
+    "value": "2",
+    "unit": "exit code",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 161,
+   "subject": "Interpreter literals",
+   "slots": {
+    "value": "--python 3.<n>",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 182,
+   "subject": "permissions",
+   "slots": {
+    "value": "contents: read",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 199,
+   "subject": "`HISTORICAL` reason",
+   "slots": {
+    "value": "\"verified on X, not re-checked on Y\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  }
+ ],
+ "outcomes": [
+  {
+   "kind": "unchecked",
+   "sentence": 24,
+   "subject": "Dev and gate interpreter",
+   "agreed": null,
+   "planner": {
+    "value": "3.13",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 1315, 1349"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 62,
+   "subject": "command-line `--exclude-newer` and `UV_EXCLUDE_NEWER`",
+   "agreed": null,
+   "planner": {
+    "value": "limit the header's dependencies",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 28-35, 337-340, 499-501; note: The plan's cache-off re-probe found that both do limit a script header. Amendment A1 in Task 1 rewrites this item."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 63,
+   "subject": "cutoff",
+   "agreed": null,
+   "planner": {
+    "value": "2026-10-01T00:00:00Z",
+    "unit": "none",
+    "edge": "out",
+    "default": "none"
+   },
+   "detail": "planner lines 234, 500; note: The plan observes polars 1.44.2 under this cutoff, not 2.0.0. A1 replaces the sentence."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 65,
+   "subject": "a bare `polars` header",
+   "agreed": null,
+   "planner": {
+    "value": "2.0.0",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 33, 166, 349-350, 511-513; note: The plan's forecast is 2.0.0 on 3.14. It attributes the 1.44.2 result to a cached environment. A1 rewrites item 3."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 84,
+   "subject": "`CLAUDE.md`",
+   "agreed": null,
+   "planner": {
+    "value": "200",
+    "unit": "lines",
+    "edge": "out",
+    "default": "none"
+   },
+   "detail": "planner lines 115, 3898, 4046"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 186,
+   "subject": "scheduled workflows",
+   "agreed": null,
+   "planner": {
+    "value": "60",
+    "unit": "days",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 4124, 4173"
+  }
+ ]
+}

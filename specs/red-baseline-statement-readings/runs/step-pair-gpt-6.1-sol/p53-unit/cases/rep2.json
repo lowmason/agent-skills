@@ -1,0 +1,8120 @@
+{
+ "cases": [
+  {
+   "id": "C1",
+   "rule": 3,
+   "sentence": 2,
+   "subject": "skill",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 2,
+      "quote": "an implementation plan from the writing-plans skill",
+      "subject": "skill",
+      "slots": {
+       "value": "\"writing-plans\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 2,
+      "quote": "an implementation plan from the writing-plans skill",
+      "subject": "skill",
+      "slots": {
+       "value": "\"writing-plans\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C2",
+   "rule": 3,
+   "sentence": 7,
+   "subject": "themes",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 7,
+      "quote": "in four themes the owner selected",
+      "subject": "themes",
+      "slots": {
+       "value": "4",
+       "unit": "themes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 7,
+      "quote": "in four themes the owner selected",
+      "subject": "themes",
+      "slots": {
+       "value": "4",
+       "unit": "themes",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C3",
+   "rule": 3,
+   "sentence": 10,
+   "subject": "every runnable bundled script",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 10,
+      "quote": "every runnable bundled script carries a PEP 723 header",
+      "subject": "every runnable bundled script",
+      "slots": {
+       "value": "\"PEP 723\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 10,
+      "quote": "is invoked with `uv run`",
+      "subject": "every runnable bundled script",
+      "slots": {
+       "value": "\"uv run\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 10,
+      "quote": "every runnable bundled script carries a PEP 723 header",
+      "subject": "every runnable bundled script",
+      "slots": {
+       "value": "\"PEP 723\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C4",
+   "rule": 3,
+   "sentence": 10,
+   "subject": "every runnable bundled script",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 10,
+      "quote": "every runnable bundled script carries a PEP 723 header",
+      "subject": "every runnable bundled script",
+      "slots": {
+       "value": "\"PEP 723\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 10,
+      "quote": "is invoked with `uv run`",
+      "subject": "every runnable bundled script",
+      "slots": {
+       "value": "\"uv run\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 10,
+      "quote": "is invoked with `uv run`",
+      "subject": "every runnable bundled script",
+      "slots": {
+       "value": "\"uv run\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C5",
+   "rule": 3,
+   "sentence": 24,
+   "subject": "canonical tree",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 24,
+      "quote": "Keep `skills/` as the canonical tree.",
+      "subject": "canonical tree",
+      "slots": {
+       "value": "\"skills/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 24,
+      "quote": "Keep `skills/` as the canonical tree.",
+      "subject": "canonical tree",
+      "slots": {
+       "value": "\"skills/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C6",
+   "rule": 3,
+   "sentence": 26,
+   "subject": "in-repo",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 26,
+      "quote": "No in-repo `.claude/skills` symlink.",
+      "subject": "in-repo",
+      "slots": {
+       "value": "\".claude/skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 26,
+      "quote": "No in-repo `.claude/skills` symlink.",
+      "subject": "in-repo",
+      "slots": {
+       "value": "\".claude/skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C7",
+   "rule": 3,
+   "sentence": 31,
+   "subject": "description convention",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "Keep the \"Use when…\" description convention.",
+      "subject": "description convention",
+      "slots": {
+       "value": "\"Use when…\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "Keep the \"Use when…\" description convention.",
+      "subject": "description convention",
+      "slots": {
+       "value": "\"Use when…\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C8",
+   "rule": 3,
+   "sentence": 46,
+   "subject": "ALLOWED_KEYS",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 46,
+      "quote": "Replace `ALLOWED_KEYS` with two named sets",
+      "subject": "ALLOWED_KEYS",
+      "slots": {
+       "value": "2",
+       "unit": "sets",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 46,
+      "quote": "Replace `ALLOWED_KEYS` with two named sets",
+      "subject": "ALLOWED_KEYS",
+      "slots": {
+       "value": "2",
+       "unit": "sets",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C9",
+   "rule": 3,
+   "sentence": 49,
+   "subject": "metadata",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 49,
+      "quote": "When present, a mapping whose keys and values are all strings.",
+      "subject": "metadata",
+      "slots": {
+       "value": "\"mapping\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 49,
+      "quote": "whose keys and values are all strings",
+      "subject": "keys and values",
+      "slots": {
+       "value": "\"strings\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 49,
+      "quote": "When present, a mapping whose keys and values are all strings.",
+      "subject": "metadata",
+      "slots": {
+       "value": "\"mapping\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C10",
+   "rule": 3,
+   "sentence": 49,
+   "subject": "keys and values",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 49,
+      "quote": "When present, a mapping whose keys and values are all strings.",
+      "subject": "metadata",
+      "slots": {
+       "value": "\"mapping\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 49,
+      "quote": "whose keys and values are all strings",
+      "subject": "keys and values",
+      "slots": {
+       "value": "\"strings\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 49,
+      "quote": "whose keys and values are all strings",
+      "subject": "keys and values",
+      "slots": {
+       "value": "\"strings\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C11",
+   "rule": 2,
+   "sentence": 51,
+   "subject": "`compatibility`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 51,
+      "quote": "When present, a string of 1–500 characters after stripping.",
+      "subject": "`compatibility`",
+      "slots": {
+       "value": "[1, 500]",
+       "unit": "characters",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 51,
+      "quote": "When present, a string of 1–500 characters after stripping.",
+      "subject": "compatibility",
+      "slots": {
+       "value": "\"string\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 51,
+      "quote": "1–500 characters after stripping",
+      "subject": "compatibility",
+      "slots": {
+       "value": "[1, 500]",
+       "unit": "characters",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 51,
+      "quote": "When present, a string of 1–500 characters after stripping.",
+      "subject": "`compatibility`",
+      "slots": {
+       "value": "[1, 500]",
+       "unit": "characters",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 51,
+      "quote": "When present, a string of 1–500 characters after stripping.",
+      "subject": "compatibility",
+      "slots": {
+       "value": "\"string\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C12",
+   "rule": 3,
+   "sentence": 51,
+   "subject": "compatibility",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 51,
+      "quote": "1–500 characters after stripping",
+      "subject": "compatibility",
+      "slots": {
+       "value": "[1, 500]",
+       "unit": "characters",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 51,
+      "quote": "1–500 characters after stripping",
+      "subject": "compatibility",
+      "slots": {
+       "value": "[1, 500]",
+       "unit": "characters",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C13",
+   "rule": 3,
+   "sentence": 52,
+   "subject": "license",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 52,
+      "quote": "Required in every `SKILL.md`, a non-empty string",
+      "subject": "license",
+      "slots": {
+       "value": "\"non-empty string\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 52,
+      "quote": "Required in every `SKILL.md`, a non-empty string",
+      "subject": "license",
+      "slots": {
+       "value": "\"non-empty string\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C14",
+   "rule": 3,
+   "sentence": 53,
+   "subject": "superpowers skills",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 53,
+      "quote": "The 13 superpowers skills gain `license: MIT`",
+      "subject": "superpowers skills",
+      "slots": {
+       "value": "13",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 53,
+      "quote": "The 13 superpowers skills gain `license: MIT`",
+      "subject": "superpowers skills",
+      "slots": {
+       "value": "13",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C15",
+   "rule": 2,
+   "sentence": 56,
+   "subject": "`name` and `description`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 56,
+      "quote": "`name` and `description` contain no `<` or `>`.",
+      "subject": "`name` and `description`",
+      "slots": {
+       "value": "[<, >]",
+       "unit": "characters",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 56,
+      "quote": "`name` and `description` contain no `<` or `>`.",
+      "subject": "`name` and `description`",
+      "slots": {
+       "value": "[\"<\", \">\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 56,
+      "quote": "`name` and `description` contain no `<` or `>`.",
+      "subject": "`name` and `description`",
+      "slots": {
+       "value": "[<, >]",
+       "unit": "characters",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 56,
+      "quote": "`name` and `description` contain no `<` or `>`.",
+      "subject": "`name` and `description`",
+      "slots": {
+       "value": "[\"<\", \">\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C16",
+   "rule": 3,
+   "sentence": 58,
+   "subject": "disable-model-invocation",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 58,
+      "quote": "`disable-model-invocation` must be a YAML boolean when present",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "\"YAML boolean\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 58,
+      "quote": "`disable-model-invocation` must be a YAML boolean when present",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "\"YAML boolean\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C17",
+   "rule": 3,
+   "sentence": 59,
+   "subject": "`agents/openai.yaml`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`",
+      "subject": "`agents/openai.yaml`",
+      "slots": {
+       "value": "policy.allow_implicit_invocation: false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 59,
+      "quote": "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses",
+      "subject": "skill",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "sets `policy.allow_implicit_invocation: false`",
+      "subject": "policy.allow_implicit_invocation",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`",
+      "subject": "`agents/openai.yaml`",
+      "slots": {
+       "value": "policy.allow_implicit_invocation: false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C18",
+   "rule": 3,
+   "sentence": 59,
+   "subject": "disable-model-invocation",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`",
+      "subject": "`agents/openai.yaml`",
+      "slots": {
+       "value": "policy.allow_implicit_invocation: false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 59,
+      "quote": "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses",
+      "subject": "skill",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "sets `policy.allow_implicit_invocation: false`",
+      "subject": "policy.allow_implicit_invocation",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 59,
+      "quote": "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C19",
+   "rule": 3,
+   "sentence": 59,
+   "subject": "skill",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`",
+      "subject": "`agents/openai.yaml`",
+      "slots": {
+       "value": "policy.allow_implicit_invocation: false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 59,
+      "quote": "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses",
+      "subject": "skill",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "sets `policy.allow_implicit_invocation: false`",
+      "subject": "policy.allow_implicit_invocation",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses",
+      "subject": "skill",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C20",
+   "rule": 3,
+   "sentence": 59,
+   "subject": "policy.allow_implicit_invocation",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`",
+      "subject": "`agents/openai.yaml`",
+      "slots": {
+       "value": "policy.allow_implicit_invocation: false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 59,
+      "quote": "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "must ship `agents/openai.yaml` that parses",
+      "subject": "skill",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 59,
+      "quote": "sets `policy.allow_implicit_invocation: false`",
+      "subject": "policy.allow_implicit_invocation",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 59,
+      "quote": "sets `policy.allow_implicit_invocation: false`",
+      "subject": "policy.allow_implicit_invocation",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C21",
+   "rule": 3,
+   "sentence": 60,
+   "subject": "that policy",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 60,
+      "quote": "a skill whose `agents/openai.yaml` sets that policy to `false`",
+      "subject": "that policy",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 60,
+      "quote": "must set `disable-model-invocation: true`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 60,
+      "quote": "a skill whose `agents/openai.yaml` sets that policy to `false`",
+      "subject": "that policy",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C22",
+   "rule": 3,
+   "sentence": 60,
+   "subject": "disable-model-invocation",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 60,
+      "quote": "a skill whose `agents/openai.yaml` sets that policy to `false`",
+      "subject": "that policy",
+      "slots": {
+       "value": "false",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 60,
+      "quote": "must set `disable-model-invocation: true`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 60,
+      "quote": "must set `disable-model-invocation: true`",
+      "subject": "disable-model-invocation",
+      "slots": {
+       "value": "true",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C23",
+   "rule": 3,
+   "sentence": 62,
+   "subject": "closing frontmatter",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "the lines after the closing frontmatter `---`",
+      "subject": "closing frontmatter",
+      "slots": {
+       "value": "\"---\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`SKILL.md` body",
+      "slots": {
+       "value": "\"WARN\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "\"stderr\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "the lines after the closing frontmatter `---`",
+      "subject": "closing frontmatter",
+      "slots": {
+       "value": "\"---\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C24",
+   "rule": 3,
+   "sentence": 62,
+   "subject": "`WARN` line",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "the lines after the closing frontmatter `---`",
+      "subject": "closing frontmatter",
+      "slots": {
+       "value": "\"---\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`SKILL.md` body",
+      "slots": {
+       "value": "\"WARN\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "\"stderr\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C25",
+   "rule": 3,
+   "sentence": 62,
+   "subject": "`SKILL.md` body",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "the lines after the closing frontmatter `---`",
+      "subject": "closing frontmatter",
+      "slots": {
+       "value": "\"---\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`SKILL.md` body",
+      "slots": {
+       "value": "\"WARN\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "\"stderr\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`SKILL.md` body",
+      "slots": {
+       "value": "\"WARN\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C26",
+   "rule": 3,
+   "sentence": 62,
+   "subject": "`WARN` line",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "the lines after the closing frontmatter `---`",
+      "subject": "closing frontmatter",
+      "slots": {
+       "value": "\"---\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`SKILL.md` body",
+      "slots": {
+       "value": "\"WARN\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "\"stderr\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 62,
+      "quote": "prints one `WARN` line to stderr",
+      "subject": "`WARN` line",
+      "slots": {
+       "value": "\"stderr\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C27",
+   "rule": 3,
+   "sentence": 64,
+   "subject": "`skill-body-size` `[[check]]`",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 64,
+      "quote": "a `skill-body-size` `[[check]]` to `build/cc_guide/conformance.toml`",
+      "subject": "`skill-body-size` `[[check]]`",
+      "slots": {
+       "value": "\"build/cc_guide/conformance.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 64,
+      "quote": "maps `skills.overview` to it",
+      "subject": "skills.overview",
+      "slots": {
+       "value": "\"skill-body-size\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 64,
+      "quote": "a `skill-body-size` `[[check]]` to `build/cc_guide/conformance.toml`",
+      "subject": "`skill-body-size` `[[check]]`",
+      "slots": {
+       "value": "\"build/cc_guide/conformance.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C28",
+   "rule": 3,
+   "sentence": 64,
+   "subject": "skills.overview",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 64,
+      "quote": "a `skill-body-size` `[[check]]` to `build/cc_guide/conformance.toml`",
+      "subject": "`skill-body-size` `[[check]]`",
+      "slots": {
+       "value": "\"build/cc_guide/conformance.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 64,
+      "quote": "maps `skills.overview` to it",
+      "subject": "skills.overview",
+      "slots": {
+       "value": "\"skill-body-size\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 64,
+      "quote": "maps `skills.overview` to it",
+      "subject": "skills.overview",
+      "slots": {
+       "value": "\"skill-body-size\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C29",
+   "rule": 3,
+   "sentence": 65,
+   "subject": "check_frontmatter.py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 65,
+      "quote": "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`",
+      "subject": "check_frontmatter.py",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 65,
+      "quote": "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`",
+      "subject": "check_frontmatter.py",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C30",
+   "rule": 2,
+   "sentence": 67,
+   "subject": "Expected result today",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 67,
+      "quote": "exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail",
+      "subject": "Expected result today",
+      "slots": {
+       "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 67,
+      "quote": "exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail",
+      "subject": "Expected result today",
+      "slots": {
+       "value": "[\"bayesian-workflow\", \"tune-hyperparameters\", \"tech-debt\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 67,
+      "quote": "exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail",
+      "subject": "Expected result today",
+      "slots": {
+       "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 67,
+      "quote": "exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail",
+      "subject": "Expected result today",
+      "slots": {
+       "value": "[\"bayesian-workflow\", \"tune-hyperparameters\", \"tech-debt\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C31",
+   "rule": 4,
+   "sentence": 69,
+   "subject": "CLAUDE.md",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 69,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "CLAUDE.md",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "The module docstring describes the new rules and the `--strict` flag",
+      "subject": "module docstring",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "200",
+       "unit": "line",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "line",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 69,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "CLAUDE.md",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "200",
+       "unit": "line",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "line",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C32",
+   "rule": 3,
+   "sentence": 69,
+   "subject": "module docstring",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "The module docstring describes the new rules and the `--strict` flag",
+      "subject": "module docstring",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "The module docstring describes the new rules and the `--strict` flag",
+      "subject": "module docstring",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C33",
+   "rule": 3,
+   "sentence": 69,
+   "subject": "CLAUDE.md's Commands section",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "The module docstring describes the new rules and the `--strict` flag",
+      "subject": "module docstring",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C34",
+   "rule": 3,
+   "sentence": 69,
+   "subject": "CLAUDE.md's Commands section",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "The module docstring describes the new rules and the `--strict` flag",
+      "subject": "module docstring",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "\"--strict\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 69,
+      "quote": "with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 69,
+      "quote": "with one line on when to use it",
+      "subject": "CLAUDE.md's Commands section",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C35",
+   "rule": 3,
+   "sentence": 76,
+   "subject": "trigger conditions",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 76,
+      "quote": "one of them designated in the scenario as primary",
+      "subject": "trigger conditions",
+      "slots": {
+       "value": "1",
+       "unit": "trigger conditions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 76,
+      "quote": "one of them designated in the scenario as primary",
+      "subject": "trigger conditions",
+      "slots": {
+       "value": "1",
+       "unit": "trigger conditions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C36",
+   "rule": 2,
+   "sentence": 82,
+   "subject": "Baseline",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 82,
+      "quote": "**Baseline ≥ 4/5:**",
+      "subject": "Baseline",
+      "slots": {
+       "value": "4/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 82,
+      "quote": "Baseline ≥ 4/5",
+      "subject": "Baseline",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 82,
+      "quote": "**Baseline ≥ 4/5:**",
+      "subject": "Baseline",
+      "slots": {
+       "value": "4/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 82,
+      "quote": "Baseline ≥ 4/5",
+      "subject": "Baseline",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C37",
+   "rule": 2,
+   "sentence": 83,
+   "subject": "measured cut",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "measured cut",
+      "slots": {
+       "value": "[156, 164]",
+       "unit": "characters",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed, Codex 0.154, 2026-10-03",
+      "subject": "measured cut",
+      "slots": {
+       "value": "93 skills; Codex 0.154; 2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "The note covers three points",
+      "subject": "note",
+      "slots": {
+       "value": "3",
+       "unit": "points",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "measured cut",
+      "slots": {
+       "value": "[156, 164]",
+       "unit": "characters",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed",
+      "subject": "skills listed",
+      "slots": {
+       "value": "93",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "Codex 0.154",
+      "subject": "Codex",
+      "slots": {
+       "value": "\"0.154\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "note",
+      "slots": {
+       "value": "2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "measured cut",
+      "slots": {
+       "value": "[156, 164]",
+       "unit": "characters",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "measured cut",
+      "slots": {
+       "value": "[156, 164]",
+       "unit": "characters",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C38",
+   "rule": 3,
+   "sentence": 83,
+   "subject": "measured cut",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed, Codex 0.154, 2026-10-03",
+      "subject": "measured cut",
+      "slots": {
+       "value": "93 skills; Codex 0.154; 2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "The note covers three points",
+      "subject": "note",
+      "slots": {
+       "value": "3",
+       "unit": "points",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed",
+      "subject": "skills listed",
+      "slots": {
+       "value": "93",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "Codex 0.154",
+      "subject": "Codex",
+      "slots": {
+       "value": "\"0.154\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "note",
+      "slots": {
+       "value": "2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed, Codex 0.154, 2026-10-03",
+      "subject": "measured cut",
+      "slots": {
+       "value": "93 skills; Codex 0.154; 2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C39",
+   "rule": 3,
+   "sentence": 83,
+   "subject": "note",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed, Codex 0.154, 2026-10-03",
+      "subject": "measured cut",
+      "slots": {
+       "value": "93 skills; Codex 0.154; 2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "The note covers three points",
+      "subject": "note",
+      "slots": {
+       "value": "3",
+       "unit": "points",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed",
+      "subject": "skills listed",
+      "slots": {
+       "value": "93",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "Codex 0.154",
+      "subject": "Codex",
+      "slots": {
+       "value": "\"0.154\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "note",
+      "slots": {
+       "value": "2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "The note covers three points",
+      "subject": "note",
+      "slots": {
+       "value": "3",
+       "unit": "points",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C40",
+   "rule": 3,
+   "sentence": 83,
+   "subject": "skills listed",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed, Codex 0.154, 2026-10-03",
+      "subject": "measured cut",
+      "slots": {
+       "value": "93 skills; Codex 0.154; 2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "The note covers three points",
+      "subject": "note",
+      "slots": {
+       "value": "3",
+       "unit": "points",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed",
+      "subject": "skills listed",
+      "slots": {
+       "value": "93",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "Codex 0.154",
+      "subject": "Codex",
+      "slots": {
+       "value": "\"0.154\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "note",
+      "slots": {
+       "value": "2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed",
+      "subject": "skills listed",
+      "slots": {
+       "value": "93",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C41",
+   "rule": 3,
+   "sentence": 83,
+   "subject": "Codex",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed, Codex 0.154, 2026-10-03",
+      "subject": "measured cut",
+      "slots": {
+       "value": "93 skills; Codex 0.154; 2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "The note covers three points",
+      "subject": "note",
+      "slots": {
+       "value": "3",
+       "unit": "points",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed",
+      "subject": "skills listed",
+      "slots": {
+       "value": "93",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "Codex 0.154",
+      "subject": "Codex",
+      "slots": {
+       "value": "\"0.154\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "note",
+      "slots": {
+       "value": "2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "Codex 0.154",
+      "subject": "Codex",
+      "slots": {
+       "value": "\"0.154\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C42",
+   "rule": 3,
+   "sentence": 83,
+   "subject": "note",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed, Codex 0.154, 2026-10-03",
+      "subject": "measured cut",
+      "slots": {
+       "value": "93 skills; Codex 0.154; 2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "The note covers three points",
+      "subject": "note",
+      "slots": {
+       "value": "3",
+       "unit": "points",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "with 93 skills listed",
+      "subject": "skills listed",
+      "slots": {
+       "value": "93",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "Codex 0.154",
+      "subject": "Codex",
+      "slots": {
+       "value": "\"0.154\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "note",
+      "slots": {
+       "value": "2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 83,
+      "quote": "the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03)",
+      "subject": "note",
+      "slots": {
+       "value": "2026-10-03",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C43",
+   "rule": 2,
+   "sentence": 85,
+   "subject": "Baseline",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 85,
+      "quote": "**Baseline ≤ 3/5:**",
+      "subject": "Baseline",
+      "slots": {
+       "value": "3/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording, at least 4/5 passing",
+      "subject": "GREEN-test",
+      "slots": {
+       "value": "4/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "Baseline ≤ 3/5",
+      "subject": "Baseline",
+      "slots": {
+       "value": "3/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "(\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "\"the primary trigger falls within the first ~150 characters\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording",
+      "subject": "reps with the new wording",
+      "slots": {
+       "value": "5",
+       "unit": "reps",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "at least 4/5 passing",
+      "subject": "passing",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 85,
+      "quote": "**Baseline ≤ 3/5:**",
+      "subject": "Baseline",
+      "slots": {
+       "value": "3/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "Baseline ≤ 3/5",
+      "subject": "Baseline",
+      "slots": {
+       "value": "3/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C44",
+   "rule": 2,
+   "sentence": 85,
+   "subject": "checklist line",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 85,
+      "quote": "one checklist line (\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "the primary trigger falls within the first ~150 characters",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording, at least 4/5 passing",
+      "subject": "GREEN-test",
+      "slots": {
+       "value": "4/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "also add one checklist line",
+      "subject": "checklist line",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "(\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "\"the primary trigger falls within the first ~150 characters\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording",
+      "subject": "reps with the new wording",
+      "slots": {
+       "value": "5",
+       "unit": "reps",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "at least 4/5 passing",
+      "subject": "passing",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 85,
+      "quote": "one checklist line (\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "the primary trigger falls within the first ~150 characters",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "also add one checklist line",
+      "subject": "checklist line",
+      "slots": {
+       "value": "1",
+       "unit": "line",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C45",
+   "rule": 3,
+   "sentence": 85,
+   "subject": "checklist line",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording, at least 4/5 passing",
+      "subject": "GREEN-test",
+      "slots": {
+       "value": "4/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "(\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "\"the primary trigger falls within the first ~150 characters\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording",
+      "subject": "reps with the new wording",
+      "slots": {
+       "value": "5",
+       "unit": "reps",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "at least 4/5 passing",
+      "subject": "passing",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "(\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "\"the primary trigger falls within the first ~150 characters\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C46",
+   "rule": 3,
+   "sentence": 85,
+   "subject": "reps with the new wording",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording, at least 4/5 passing",
+      "subject": "GREEN-test",
+      "slots": {
+       "value": "4/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "(\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "\"the primary trigger falls within the first ~150 characters\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording",
+      "subject": "reps with the new wording",
+      "slots": {
+       "value": "5",
+       "unit": "reps",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "at least 4/5 passing",
+      "subject": "passing",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording",
+      "subject": "reps with the new wording",
+      "slots": {
+       "value": "5",
+       "unit": "reps",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C47",
+   "rule": 3,
+   "sentence": 85,
+   "subject": "passing",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording, at least 4/5 passing",
+      "subject": "GREEN-test",
+      "slots": {
+       "value": "4/5",
+       "unit": "reps",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "(\"the primary trigger falls within the first ~150 characters\")",
+      "subject": "checklist line",
+      "slots": {
+       "value": "\"the primary trigger falls within the first ~150 characters\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "5 reps with the new wording",
+      "subject": "reps with the new wording",
+      "slots": {
+       "value": "5",
+       "unit": "reps",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 85,
+      "quote": "at least 4/5 passing",
+      "subject": "passing",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 85,
+      "quote": "at least 4/5 passing",
+      "subject": "passing",
+      "slots": {
+       "value": "4/5",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C48",
+   "rule": 3,
+   "sentence": 86,
+   "subject": "guard",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 86,
+      "quote": "with a `__main__` guard",
+      "subject": "guard",
+      "slots": {
+       "value": "\"__main__\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 86,
+      "quote": "with a `__main__` guard",
+      "subject": "guard",
+      "slots": {
+       "value": "\"__main__\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C49",
+   "rule": 3,
+   "sentence": 87,
+   "subject": "runnable scripts",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 87,
+      "quote": "There are 16.",
+      "subject": "runnable scripts",
+      "slots": {
+       "value": "16",
+       "unit": "scripts",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 87,
+      "quote": "There are 16.",
+      "subject": "runnable scripts",
+      "slots": {
+       "value": "16",
+       "unit": "scripts",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C50",
+   "rule": 3,
+   "sentence": 103,
+   "subject": "TOML strings",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 103,
+      "quote": "with single-quoted TOML strings",
+      "subject": "TOML strings",
+      "slots": {
+       "value": "\"single-quoted\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 103,
+      "quote": "a `requires-python`, and a `dependencies` list",
+      "subject": "block",
+      "slots": {
+       "value": "[\"requires-python\", \"dependencies\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 103,
+      "quote": "with single-quoted TOML strings",
+      "subject": "TOML strings",
+      "slots": {
+       "value": "\"single-quoted\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C51",
+   "rule": 3,
+   "sentence": 103,
+   "subject": "block",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 103,
+      "quote": "with single-quoted TOML strings",
+      "subject": "TOML strings",
+      "slots": {
+       "value": "\"single-quoted\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 103,
+      "quote": "a `requires-python`, and a `dependencies` list",
+      "subject": "block",
+      "slots": {
+       "value": "[\"requires-python\", \"dependencies\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 103,
+      "quote": "a `requires-python`, and a `dependencies` list",
+      "subject": "block",
+      "slots": {
+       "value": "[\"requires-python\", \"dependencies\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C52",
+   "rule": 3,
+   "sentence": 105,
+   "subject": "`requires-python`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 105,
+      "quote": "Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes",
+      "subject": "`requires-python`",
+      "slots": {
+       "value": "['>=3.11', '>=3.12', '>=3.13']",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 105,
+      "quote": "Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes",
+      "subject": "script",
+      "slots": {
+       "value": "[\">=3.11\", \">=3.12\", \">=3.13\"]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 105,
+      "quote": "Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes",
+      "subject": "`requires-python`",
+      "slots": {
+       "value": "['>=3.11', '>=3.12', '>=3.13']",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C53",
+   "rule": 3,
+   "sentence": 105,
+   "subject": "script",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 105,
+      "quote": "Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes",
+      "subject": "`requires-python`",
+      "slots": {
+       "value": "['>=3.11', '>=3.12', '>=3.13']",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 105,
+      "quote": "Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes",
+      "subject": "script",
+      "slots": {
+       "value": "[\">=3.11\", \">=3.12\", \">=3.13\"]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 105,
+      "quote": "Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes",
+      "subject": "script",
+      "slots": {
+       "value": "[\">=3.11\", \">=3.12\", \">=3.13\"]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C54",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "third-party import",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "declared with a `>=` floor at the major version the suite currently resolves (e.g. `'polars>=1.0'`)",
+      "subject": "third-party import",
+      "slots": {
+       "value": ">=",
+       "unit": "major version",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "declared with a `>=` floor at the major version the suite currently resolves (e.g. `'polars>=1.0'`)",
+      "subject": "third-party import",
+      "slots": {
+       "value": ">=",
+       "unit": "major version",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C55",
+   "rule": 3,
+   "sentence": 112,
+   "subject": "handler",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 112,
+      "quote": "Imports inside a `try` whose handler catches `ImportError` or `ModuleNotFoundError` are optional and may be left undeclared.",
+      "subject": "handler",
+      "slots": {
+       "value": "[\"ImportError\", \"ModuleNotFoundError\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 112,
+      "quote": "Imports inside a `try` whose handler catches `ImportError` or `ModuleNotFoundError` are optional and may be left undeclared.",
+      "subject": "handler",
+      "slots": {
+       "value": "[\"ImportError\", \"ModuleNotFoundError\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C56",
+   "rule": 3,
+   "sentence": 115,
+   "subject": "Every documented invocation",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 115,
+      "quote": "Every documented invocation in `skills/**/*.md`",
+      "subject": "Every documented invocation",
+      "slots": {
+       "value": "\"skills/**/*.md\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 115,
+      "quote": "Every documented invocation in `skills/**/*.md`",
+      "subject": "Every documented invocation",
+      "slots": {
+       "value": "\"skills/**/*.md\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C57",
+   "rule": 3,
+   "sentence": 116,
+   "subject": "Path forms",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 116,
+      "quote": "Path forms in use: `<this-skill-dir>/scripts/x.py`, `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py` (llm-wiki's INSTALL.md), and repo-relative `skills/<skill>/scripts/build.py`.",
+      "subject": "Path forms",
+      "slots": {
+       "value": "[\"<this-skill-dir>/scripts/x.py\", \"<this-skill-dir>/../<skill>/scripts/x.py\", \"$LLM_WIKI_ROOT/scripts/x.py\", \"~/Projects/agent-skills/skills/llm-wiki/scripts/x.py\", \"skills/<skill>/scripts/build.py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 116,
+      "quote": "Path forms in use: `<this-skill-dir>/scripts/x.py`, `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py` (llm-wiki's INSTALL.md), and repo-relative `skills/<skill>/scripts/build.py`.",
+      "subject": "Path forms",
+      "slots": {
+       "value": "[\"<this-skill-dir>/scripts/x.py\", \"<this-skill-dir>/../<skill>/scripts/x.py\", \"$LLM_WIKI_ROOT/scripts/x.py\", \"~/Projects/agent-skills/skills/llm-wiki/scripts/x.py\", \"skills/<skill>/scripts/build.py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C58",
+   "rule": 3,
+   "sentence": 117,
+   "subject": "Each skill with such an invocation",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "Each skill with such an invocation gets this sentence once",
+      "subject": "Each skill with such an invocation",
+      "slots": {
+       "value": "1",
+       "unit": "sentence",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "Each skill with such an invocation gets this sentence once",
+      "subject": "Each skill with such an invocation",
+      "slots": {
+       "value": "1",
+       "unit": "sentence",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C59",
+   "rule": 3,
+   "sentence": 119,
+   "subject": "3.X",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 119,
+      "quote": "3.X is the highest `requires-python` floor among the scripts that skill invokes",
+      "subject": "3.X",
+      "slots": {
+       "value": "highest requires-python floor",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 119,
+      "quote": "3.X is the highest `requires-python` floor among the scripts that skill invokes",
+      "subject": "3.X",
+      "slots": {
+       "value": "highest requires-python floor",
+       "unit": "Python version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C60",
+   "rule": 3,
+   "sentence": 120,
+   "subject": "set",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 120,
+      "quote": "That set includes `finishing-a-development-branch`",
+      "subject": "set",
+      "slots": {
+       "value": "\"finishing-a-development-branch\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 120,
+      "quote": "That set includes `finishing-a-development-branch`",
+      "subject": "set",
+      "slots": {
+       "value": "\"finishing-a-development-branch\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C61",
+   "rule": 3,
+   "sentence": 122,
+   "subject": "file with a `__main__` guard",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 122,
+      "quote": "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block",
+      "subject": "file with a `__main__` guard",
+      "slots": {
+       "value": "\"skills/*/scripts/*.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "has `requires-python` and `dependencies`",
+      "subject": "PEP 723 block",
+      "slots": {
+       "value": "[\"requires-python\", \"dependencies\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 122,
+      "quote": "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block",
+      "subject": "file with a `__main__` guard",
+      "slots": {
+       "value": "\"skills/*/scripts/*.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C62",
+   "rule": 3,
+   "sentence": 122,
+   "subject": "PEP 723 block",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 122,
+      "quote": "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block",
+      "subject": "file with a `__main__` guard",
+      "slots": {
+       "value": "\"skills/*/scripts/*.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 122,
+      "quote": "has `requires-python` and `dependencies`",
+      "subject": "PEP 723 block",
+      "slots": {
+       "value": "[\"requires-python\", \"dependencies\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 122,
+      "quote": "has `requires-python` and `dependencies`",
+      "subject": "PEP 723 block",
+      "slots": {
+       "value": "[\"requires-python\", \"dependencies\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C63",
+   "rule": 3,
+   "sentence": 126,
+   "subject": "alias table",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 126,
+      "quote": "e.g. `yaml` → `pyyaml`",
+      "subject": "alias table",
+      "slots": {
+       "value": "yaml → pyyaml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 126,
+      "quote": "e.g. `yaml` → `pyyaml`",
+      "subject": "alias table",
+      "slots": {
+       "value": "yaml → pyyaml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C64",
+   "rule": 3,
+   "sentence": 129,
+   "subject": "teaching example",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 129,
+      "quote": "such as `writing-skills/anthropic-best-practices.md`'s teaching example `scripts/migrate.py`, is not flagged",
+      "subject": "teaching example",
+      "slots": {
+       "value": "\"scripts/migrate.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 129,
+      "quote": "such as `writing-skills/anthropic-best-practices.md`'s teaching example `scripts/migrate.py`, is not flagged",
+      "subject": "teaching example",
+      "slots": {
+       "value": "\"scripts/migrate.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C65",
+   "rule": 3,
+   "sentence": 131,
+   "subject": "Execution proof",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 131,
+      "quote": "Execution proof**, one time, recorded in the plan's completion notes.",
+      "subject": "Execution proof",
+      "slots": {
+       "value": "1",
+       "unit": "time",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 131,
+      "quote": "Execution proof**, one time, recorded in the plan's completion notes.",
+      "subject": "Execution proof",
+      "slots": {
+       "value": "1",
+       "unit": "time",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C66",
+   "rule": 2,
+   "sentence": 132,
+   "subject": "empty scratch directory",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 132,
+      "quote": "(a subdirectory such as `/tmp/bwprobe/`, never `/tmp` itself)",
+      "subject": "empty scratch directory",
+      "slots": {
+       "value": "/tmp/bwprobe/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "never `/tmp` itself",
+      "subject": "scratch directory",
+      "slots": {
+       "value": "\"/tmp\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 132,
+      "quote": "runs `uv run <absolute-path>`",
+      "subject": "each of the 16 scripts",
+      "slots": {
+       "value": "\"uv run <absolute-path>\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 132,
+      "quote": "(a subdirectory such as `/tmp/bwprobe/`, never `/tmp` itself)",
+      "subject": "empty scratch directory",
+      "slots": {
+       "value": "/tmp/bwprobe/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "never `/tmp` itself",
+      "subject": "scratch directory",
+      "slots": {
+       "value": "\"/tmp\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C67",
+   "rule": 2,
+   "sentence": 132,
+   "subject": "scripts",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 132,
+      "quote": "each of the 16 scripts runs `uv run <absolute-path>`",
+      "subject": "scripts",
+      "slots": {
+       "value": "uv run <absolute-path>",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "each of the 16 scripts runs `uv run <absolute-path>` on a minimal real input that exercises its main code path",
+      "subject": "scripts",
+      "slots": {
+       "value": "16",
+       "unit": "scripts",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 132,
+      "quote": "runs `uv run <absolute-path>`",
+      "subject": "each of the 16 scripts",
+      "slots": {
+       "value": "\"uv run <absolute-path>\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 132,
+      "quote": "each of the 16 scripts runs `uv run <absolute-path>`",
+      "subject": "scripts",
+      "slots": {
+       "value": "uv run <absolute-path>",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "each of the 16 scripts runs `uv run <absolute-path>` on a minimal real input that exercises its main code path",
+      "subject": "scripts",
+      "slots": {
+       "value": "16",
+       "unit": "scripts",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C68",
+   "rule": 3,
+   "sentence": 132,
+   "subject": "each of the 16 scripts",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "runs `uv run <absolute-path>`",
+      "subject": "each of the 16 scripts",
+      "slots": {
+       "value": "\"uv run <absolute-path>\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 132,
+      "quote": "runs `uv run <absolute-path>`",
+      "subject": "each of the 16 scripts",
+      "slots": {
+       "value": "\"uv run <absolute-path>\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C69",
+   "rule": 2,
+   "sentence": 134,
+   "subject": "ArviZ-reading scripts",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "[diagnose_model.py, calibration_check.py, compare_experiments.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "3",
+       "unit": "scripts",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "[\"diagnose_model.py\", \"calibration_check.py\", \"compare_experiments.py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "each read a small saved InferenceData fixture",
+      "subject": "fixture",
+      "slots": {
+       "value": "\"InferenceData\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "[diagnose_model.py, calibration_check.py, compare_experiments.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "3",
+       "unit": "scripts",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C70",
+   "rule": 3,
+   "sentence": 134,
+   "subject": "ArviZ-reading scripts",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "[\"diagnose_model.py\", \"calibration_check.py\", \"compare_experiments.py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "each read a small saved InferenceData fixture",
+      "subject": "fixture",
+      "slots": {
+       "value": "\"InferenceData\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "[\"diagnose_model.py\", \"calibration_check.py\", \"compare_experiments.py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C71",
+   "rule": 3,
+   "sentence": 134,
+   "subject": "fixture",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`)",
+      "subject": "ArviZ-reading scripts",
+      "slots": {
+       "value": "[\"diagnose_model.py\", \"calibration_check.py\", \"compare_experiments.py\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "each read a small saved InferenceData fixture",
+      "subject": "fixture",
+      "slots": {
+       "value": "\"InferenceData\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "each read a small saved InferenceData fixture",
+      "subject": "fixture",
+      "slots": {
+       "value": "\"InferenceData\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C72",
+   "rule": 3,
+   "sentence": 135,
+   "subject": "directory",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "a directory holding an unrelated `pyproject.toml`",
+      "subject": "directory",
+      "slots": {
+       "value": "\"pyproject.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "a directory holding an unrelated `pyproject.toml`",
+      "subject": "directory",
+      "slots": {
+       "value": "\"pyproject.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C73",
+   "rule": 2,
+   "sentence": 141,
+   "subject": "`LICENSE`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 141,
+      "quote": "`LICENSE` | every skill under `skills/`",
+      "subject": "`LICENSE`",
+      "slots": {
+       "value": "every skill under skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 141,
+      "quote": "`LICENSE` | every skill under `skills/`",
+      "subject": "every skill under `skills/`",
+      "slots": {
+       "value": "\"LICENSE\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 141,
+      "quote": "`LICENSE` | every skill under `skills/`",
+      "subject": "`LICENSE`",
+      "slots": {
+       "value": "every skill under skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 141,
+      "quote": "`LICENSE` | every skill under `skills/`",
+      "subject": "every skill under `skills/`",
+      "slots": {
+       "value": "\"LICENSE\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C74",
+   "rule": 3,
+   "sentence": 142,
+   "subject": "13 superpowers skills",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 142,
+      "quote": "`LICENSE-superpowers` | the 13 superpowers skills",
+      "subject": "13 superpowers skills",
+      "slots": {
+       "value": "\"LICENSE-superpowers\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 142,
+      "quote": "`LICENSE-superpowers` | the 13 superpowers skills",
+      "subject": "13 superpowers skills",
+      "slots": {
+       "value": "\"LICENSE-superpowers\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C75",
+   "rule": 3,
+   "sentence": 143,
+   "subject": "tech-debt",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 143,
+      "quote": "`tech-debt` took \"only the idea\" and gets no copy",
+      "subject": "tech-debt",
+      "slots": {
+       "value": "\"LICENSE-coding-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 143,
+      "quote": "`tech-debt` took \"only the idea\" and gets no copy",
+      "subject": "tech-debt",
+      "slots": {
+       "value": "\"LICENSE-coding-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C76",
+   "rule": 3,
+   "sentence": 145,
+   "subject": "BUNDLED_LICENSES",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 145,
+      "quote": "driven by one `BUNDLED_LICENSES` table",
+      "subject": "BUNDLED_LICENSES",
+      "slots": {
+       "value": "1",
+       "unit": "table",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 145,
+      "quote": "driven by one `BUNDLED_LICENSES` table",
+      "subject": "BUNDLED_LICENSES",
+      "slots": {
+       "value": "1",
+       "unit": "table",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C77",
+   "rule": 3,
+   "sentence": 148,
+   "subject": "file",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "No skill directory holds a `LICENSE*` file outside its mapping.",
+      "subject": "file",
+      "slots": {
+       "value": "\"LICENSE*\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 148,
+      "quote": "No skill directory holds a `LICENSE*` file outside its mapping.",
+      "subject": "file",
+      "slots": {
+       "value": "\"LICENSE*\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C78",
+   "rule": 3,
+   "sentence": 150,
+   "subject": "CLAUDE.md command",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 150,
+      "quote": "its CLAUDE.md command keeps no `--with`",
+      "subject": "CLAUDE.md command",
+      "slots": {
+       "value": "\"--with\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 150,
+      "quote": "its CLAUDE.md command keeps no `--with`",
+      "subject": "CLAUDE.md command",
+      "slots": {
+       "value": "\"--with\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C79",
+   "rule": 2,
+   "sentence": 153,
+   "subject": "single-skill install",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 153,
+      "quote": "`install.py --copy --skill`",
+      "subject": "single-skill install",
+      "slots": {
+       "value": "install.py --copy --skill",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 153,
+      "quote": "NOTICE gains one paragraph near the top",
+      "subject": "NOTICE",
+      "slots": {
+       "value": "1",
+       "unit": "paragraph",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 153,
+      "quote": "`install.py --copy --skill`",
+      "subject": "single-skill install",
+      "slots": {
+       "value": "install.py --copy --skill",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 153,
+      "quote": "NOTICE gains one paragraph near the top",
+      "subject": "NOTICE",
+      "slots": {
+       "value": "1",
+       "unit": "paragraph",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C80",
+   "rule": 3,
+   "sentence": 155,
+   "subject": "README's License section",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 155,
+      "quote": "README's License section gains one sentence to the same effect.",
+      "subject": "README's License section",
+      "slots": {
+       "value": "1",
+       "unit": "sentence",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 155,
+      "quote": "README's License section gains one sentence to the same effect.",
+      "subject": "README's License section",
+      "slots": {
+       "value": "1",
+       "unit": "sentence",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C81",
+   "rule": 4,
+   "sentence": 156,
+   "subject": "CLAUDE.md's provenance section",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 156,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "CLAUDE.md's provenance section",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 156,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "200",
+       "unit": "line",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "line",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 156,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "CLAUDE.md's provenance section",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 156,
+      "quote": "under the `claude-md-size` check's 200-line limit",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "200",
+       "unit": "line",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "line",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C82",
+   "rule": 3,
+   "sentence": 158,
+   "subject": "original PyMC Bayesian-workflow skill",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 158,
+      "quote": "Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its license.",
+      "subject": "original PyMC Bayesian-workflow skill",
+      "slots": {
+       "value": "\"Alexandre Andorra\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 158,
+      "quote": "Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its license.",
+      "subject": "original PyMC Bayesian-workflow skill",
+      "slots": {
+       "value": "\"Alexandre Andorra\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C83",
+   "rule": 3,
+   "sentence": 160,
+   "subject": "LICENSE-andorra",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 160,
+      "quote": "map it to `bayesian-workflow`",
+      "subject": "LICENSE-andorra",
+      "slots": {
+       "value": "\"bayesian-workflow\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 160,
+      "quote": "extend NOTICE's `bayesian-workflow/` block with the source URL and the quoted copyright line",
+      "subject": "NOTICE's",
+      "slots": {
+       "value": "\"bayesian-workflow/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 160,
+      "quote": "map it to `bayesian-workflow`",
+      "subject": "LICENSE-andorra",
+      "slots": {
+       "value": "\"bayesian-workflow\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C84",
+   "rule": 3,
+   "sentence": 160,
+   "subject": "NOTICE's",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 160,
+      "quote": "map it to `bayesian-workflow`",
+      "subject": "LICENSE-andorra",
+      "slots": {
+       "value": "\"bayesian-workflow\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 160,
+      "quote": "extend NOTICE's `bayesian-workflow/` block with the source URL and the quoted copyright line",
+      "subject": "NOTICE's",
+      "slots": {
+       "value": "\"bayesian-workflow/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 160,
+      "quote": "extend NOTICE's `bayesian-workflow/` block with the source URL and the quoted copyright line",
+      "subject": "NOTICE's",
+      "slots": {
+       "value": "\"bayesian-workflow/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C85",
+   "rule": 3,
+   "sentence": 168,
+   "subject": "A",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "A — R1.",
+      "subject": "A",
+      "slots": {
+       "value": "\"R1\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 168,
+      "quote": "Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix",
+      "subject": "superpowers frontmatter additions",
+      "slots": {
+       "value": "13",
+       "unit": "additions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "A — R1.",
+      "subject": "A",
+      "slots": {
+       "value": "\"R1\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C86",
+   "rule": 3,
+   "sentence": 168,
+   "subject": "superpowers frontmatter additions",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "A — R1.",
+      "subject": "A",
+      "slots": {
+       "value": "\"R1\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 168,
+      "quote": "Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix",
+      "subject": "superpowers frontmatter additions",
+      "slots": {
+       "value": "13",
+       "unit": "additions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix",
+      "subject": "superpowers frontmatter additions",
+      "slots": {
+       "value": "13",
+       "unit": "additions",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C87",
+   "rule": 3,
+   "sentence": 169,
+   "subject": "B",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 169,
+      "quote": "B — R4.",
+      "subject": "B",
+      "slots": {
+       "value": "\"R4\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 169,
+      "quote": "B — R4.",
+      "subject": "B",
+      "slots": {
+       "value": "\"R4\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C88",
+   "rule": 3,
+   "sentence": 170,
+   "subject": "C",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 170,
+      "quote": "C — R3.",
+      "subject": "C",
+      "slots": {
+       "value": "\"R3\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 170,
+      "quote": "C — R3.",
+      "subject": "C",
+      "slots": {
+       "value": "\"R3\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C89",
+   "rule": 3,
+   "sentence": 171,
+   "subject": "D",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 171,
+      "quote": "D — R2.",
+      "subject": "D",
+      "slots": {
+       "value": "\"R2\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 171,
+      "quote": "D — R2.",
+      "subject": "D",
+      "slots": {
+       "value": "\"R2\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C90",
+   "rule": 3,
+   "sentence": 173,
+   "subject": "Conformance register",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 173,
+      "quote": "Conformance register** (`specs/completed/claude-code-guide-conformance.md`, R6)",
+      "subject": "Conformance register",
+      "slots": {
+       "value": "\"specs/completed/claude-code-guide-conformance.md\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 173,
+      "quote": "Conformance register** (`specs/completed/claude-code-guide-conformance.md`, R6)",
+      "subject": "Conformance register",
+      "slots": {
+       "value": "\"specs/completed/claude-code-guide-conformance.md\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C91",
+   "rule": 4,
+   "sentence": 174,
+   "subject": "CLAUDE.md lines",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 174,
+      "quote": "stay under the `claude-md-size` check's 200-line limit in `build/cc_guide/conformance.toml`",
+      "subject": "CLAUDE.md lines",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 174,
+      "quote": "stay under the `claude-md-size` check's 200-line limit",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "200",
+       "unit": "line",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "line",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 174,
+      "quote": "the `claude-md-size` check's 200-line limit in `build/cc_guide/conformance.toml`",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "\"build/cc_guide/conformance.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 174,
+      "quote": "stay under the `claude-md-size` check's 200-line limit in `build/cc_guide/conformance.toml`",
+      "subject": "CLAUDE.md lines",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 174,
+      "quote": "stay under the `claude-md-size` check's 200-line limit",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "200",
+       "unit": "line",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": {
+       "value": "200",
+       "unit": "line",
+       "edge": "out",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C92",
+   "rule": 3,
+   "sentence": 174,
+   "subject": "claude-md-size",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 174,
+      "quote": "the `claude-md-size` check's 200-line limit in `build/cc_guide/conformance.toml`",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "\"build/cc_guide/conformance.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 174,
+      "quote": "the `claude-md-size` check's 200-line limit in `build/cc_guide/conformance.toml`",
+      "subject": "claude-md-size",
+      "slots": {
+       "value": "\"build/cc_guide/conformance.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C93",
+   "rule": 2,
+   "sentence": 180,
+   "subject": "test changes",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "State test changes as +N deltas against the suite",
+      "subject": "test changes",
+      "slots": {
+       "value": "+N",
+       "unit": "tests",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "State test changes as +N deltas",
+      "subject": "test changes",
+      "slots": {
+       "value": "\"+N\"",
+       "unit": "deltas",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "State test changes as +N deltas against the suite",
+      "subject": "test changes",
+      "slots": {
+       "value": "+N",
+       "unit": "tests",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "State test changes as +N deltas",
+      "subject": "test changes",
+      "slots": {
+       "value": "\"+N\"",
+       "unit": "deltas",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C94",
+   "rule": 2,
+   "sentence": 181,
+   "subject": "plan id",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 181,
+      "quote": "check `specs/plans/` on every branch (`git ls-tree`)",
+      "subject": "plan id",
+      "slots": {
+       "value": "specs/plans/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 181,
+      "quote": "check `specs/plans/` on every branch (`git ls-tree`)",
+      "subject": "specs/plans/",
+      "slots": {
+       "value": "\"git ls-tree\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 181,
+      "quote": "check `specs/plans/` on every branch (`git ls-tree`)",
+      "subject": "plan id",
+      "slots": {
+       "value": "specs/plans/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 181,
+      "quote": "check `specs/plans/` on every branch (`git ls-tree`)",
+      "subject": "specs/plans/",
+      "slots": {
+       "value": "\"git ls-tree\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C95",
+   "rule": 3,
+   "sentence": 182,
+   "subject": "in-flight JAX spec",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 182,
+      "quote": "Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`",
+      "subject": "in-flight JAX spec",
+      "slots": {
+       "value": "\"specs/jax-deep-learning-skills.md\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 182,
+      "quote": "`specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills`",
+      "subject": "specs/jax-deep-learning-skills.md",
+      "slots": {
+       "value": "\"codex/jax-deep-learning-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 182,
+      "quote": "Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`",
+      "subject": "in-flight JAX spec",
+      "slots": {
+       "value": "\"specs/jax-deep-learning-skills.md\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C96",
+   "rule": 3,
+   "sentence": 182,
+   "subject": "specs/jax-deep-learning-skills.md",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 182,
+      "quote": "Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`",
+      "subject": "in-flight JAX spec",
+      "slots": {
+       "value": "\"specs/jax-deep-learning-skills.md\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 182,
+      "quote": "`specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills`",
+      "subject": "specs/jax-deep-learning-skills.md",
+      "slots": {
+       "value": "\"codex/jax-deep-learning-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 182,
+      "quote": "`specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills`",
+      "subject": "specs/jax-deep-learning-skills.md",
+      "slots": {
+       "value": "\"codex/jax-deep-learning-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C97",
+   "rule": 2,
+   "sentence": 186,
+   "subject": "`check_frontmatter.py`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 186,
+      "quote": "`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)",
+      "subject": "`check_frontmatter.py`",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 186,
+      "quote": "`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)",
+      "subject": "check_frontmatter.py",
+      "slots": {
+       "value": "0",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 186,
+      "quote": "the only `WARN` is `writing-skills`' body length",
+      "subject": "WARN",
+      "slots": {
+       "value": "\"writing-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 186,
+      "quote": "`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)",
+      "subject": "`check_frontmatter.py`",
+      "slots": {
+       "value": "0",
+       "unit": "exit code",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 186,
+      "quote": "`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)",
+      "subject": "check_frontmatter.py",
+      "slots": {
+       "value": "0",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C98",
+   "rule": 3,
+   "sentence": 186,
+   "subject": "WARN",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 186,
+      "quote": "the only `WARN` is `writing-skills`' body length",
+      "subject": "WARN",
+      "slots": {
+       "value": "\"writing-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 186,
+      "quote": "the only `WARN` is `writing-skills`' body length",
+      "subject": "WARN",
+      "slots": {
+       "value": "\"writing-skills\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C99",
+   "rule": 3,
+   "sentence": 187,
+   "subject": "check_provenance.py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 187,
+      "quote": "`check_provenance.py`",
+      "subject": "check_provenance.py",
+      "slots": {
+       "value": "\"check_provenance.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 187,
+      "quote": "`check_provenance.py`",
+      "subject": "check_provenance.py",
+      "slots": {
+       "value": "\"check_provenance.py\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C100",
+   "rule": 2,
+   "sentence": 188,
+   "subject": "`check_snippets.py`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 188,
+      "quote": "`check_snippets.py skills/` (Tier 1)",
+      "subject": "`check_snippets.py`",
+      "slots": {
+       "value": "Tier 1",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 188,
+      "quote": "`check_snippets.py skills/` (Tier 1)",
+      "subject": "check_snippets.py",
+      "slots": {
+       "value": "\"skills/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 188,
+      "quote": "(Tier 1)",
+      "subject": "check_snippets.py",
+      "slots": {
+       "value": "1",
+       "unit": "Tier",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 188,
+      "quote": "`check_snippets.py skills/` (Tier 1)",
+      "subject": "`check_snippets.py`",
+      "slots": {
+       "value": "Tier 1",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 188,
+      "quote": "`check_snippets.py skills/` (Tier 1)",
+      "subject": "check_snippets.py",
+      "slots": {
+       "value": "\"skills/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C101",
+   "rule": 3,
+   "sentence": 188,
+   "subject": "check_snippets.py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 188,
+      "quote": "(Tier 1)",
+      "subject": "check_snippets.py",
+      "slots": {
+       "value": "1",
+       "unit": "Tier",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 188,
+      "quote": "(Tier 1)",
+      "subject": "check_snippets.py",
+      "slots": {
+       "value": "1",
+       "unit": "Tier",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C102",
+   "rule": 3,
+   "sentence": 190,
+   "subject": "suite",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 190,
+      "quote": "the full `build/` suite",
+      "subject": "suite",
+      "slots": {
+       "value": "\"build/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 190,
+      "quote": "the full `build/` suite",
+      "subject": "suite",
+      "slots": {
+       "value": "\"build/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C103",
+   "rule": 2,
+   "sentence": 192,
+   "subject": "`check_frontmatter.py --strict`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 192,
+      "quote": "`check_frontmatter.py --strict` fails on exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt`",
+      "subject": "`check_frontmatter.py --strict`",
+      "slots": {
+       "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 192,
+      "quote": "`check_frontmatter.py --strict` fails on exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt`.",
+      "subject": "check_frontmatter.py --strict",
+      "slots": {
+       "value": "[\"bayesian-workflow\", \"tune-hyperparameters\", \"tech-debt\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 192,
+      "quote": "`check_frontmatter.py --strict` fails on exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt`",
+      "subject": "`check_frontmatter.py --strict`",
+      "slots": {
+       "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+       "unit": "skills",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 192,
+      "quote": "`check_frontmatter.py --strict` fails on exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt`.",
+      "subject": "check_frontmatter.py --strict",
+      "slots": {
+       "value": "[\"bayesian-workflow\", \"tune-hyperparameters\", \"tech-debt\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C104",
+   "rule": 2,
+   "sentence": 197,
+   "subject": "`codex debug prompt-input`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "`codex debug prompt-input` lists every skill under `skills/` by name",
+      "subject": "`codex debug prompt-input`",
+      "slots": {
+       "value": "every skill under skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 197,
+      "quote": "`codex debug prompt-input` lists every skill under `skills/` by name",
+      "subject": "codex debug prompt-input",
+      "slots": {
+       "value": "\"skills/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "`codex debug prompt-input` lists every skill under `skills/` by name",
+      "subject": "`codex debug prompt-input`",
+      "slots": {
+       "value": "every skill under skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 197,
+      "quote": "`codex debug prompt-input` lists every skill under `skills/` by name",
+      "subject": "codex debug prompt-input",
+      "slots": {
+       "value": "\"skills/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C105",
+   "rule": 3,
+   "sentence": 200,
+   "subject": "Trigger-eval suites",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 200,
+      "quote": "about 20 labeled queries per skill",
+      "subject": "Trigger-eval suites",
+      "slots": {
+       "value": "20",
+       "unit": "labeled queries per skill",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 200,
+      "quote": "about 20 labeled queries per skill",
+      "subject": "Trigger-eval suites",
+      "slots": {
+       "value": "20",
+       "unit": "labeled queries per skill",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C106",
+   "rule": 3,
+   "sentence": 203,
+   "subject": "Distribution channels",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "Distribution channels**: a Claude Code `marketplace.json`, `npx skills`, `gh skill`, or a Codex plugin.",
+      "subject": "Distribution channels",
+      "slots": {
+       "value": "[\"marketplace.json\", \"npx skills\", \"gh skill\", \"Codex plugin\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "Distribution channels**: a Claude Code `marketplace.json`, `npx skills`, `gh skill`, or a Codex plugin.",
+      "subject": "Distribution channels",
+      "slots": {
+       "value": "[\"marketplace.json\", \"npx skills\", \"gh skill\", \"Codex plugin\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C107",
+   "rule": 3,
+   "sentence": 206,
+   "subject": "Codex adapters",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 206,
+      "quote": "Codex adapters for `/deferred`, `/fix-issue`, `/license-audit`",
+      "subject": "Codex adapters",
+      "slots": {
+       "value": "[\"/deferred\", \"/fix-issue\", \"/license-audit\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 206,
+      "quote": "as manual-only skills with `agents/openai.yaml`",
+      "subject": "manual-only skills",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 206,
+      "quote": "Codex adapters for `/deferred`, `/fix-issue`, `/license-audit`",
+      "subject": "Codex adapters",
+      "slots": {
+       "value": "[\"/deferred\", \"/fix-issue\", \"/license-audit\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C108",
+   "rule": 3,
+   "sentence": 206,
+   "subject": "manual-only skills",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 206,
+      "quote": "Codex adapters for `/deferred`, `/fix-issue`, `/license-audit`",
+      "subject": "Codex adapters",
+      "slots": {
+       "value": "[\"/deferred\", \"/fix-issue\", \"/license-audit\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 206,
+      "quote": "as manual-only skills with `agents/openai.yaml`",
+      "subject": "manual-only skills",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 206,
+      "quote": "as manual-only skills with `agents/openai.yaml`",
+      "subject": "manual-only skills",
+      "slots": {
+       "value": "\"agents/openai.yaml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C109",
+   "rule": 3,
+   "sentence": 208,
+   "subject": "Tables of contents",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 208,
+      "quote": "Tables of contents for long `references/` files",
+      "subject": "Tables of contents",
+      "slots": {
+       "value": "\"references/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 208,
+      "quote": "Tables of contents for long `references/` files",
+      "subject": "Tables of contents",
+      "slots": {
+       "value": "\"references/\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C110",
+   "rule": 3,
+   "sentence": 211,
+   "subject": "versioning policy",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "A versioning policy**: CHANGELOG, git tags, and `metadata.version` bumps.",
+      "subject": "versioning policy",
+      "slots": {
+       "value": "[\"CHANGELOG\", \"git tags\", \"metadata.version\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "A versioning policy**: CHANGELOG, git tags, and `metadata.version` bumps.",
+      "subject": "versioning policy",
+      "slots": {
+       "value": "[\"CHANGELOG\", \"git tags\", \"metadata.version\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C111",
+   "rule": 3,
+   "sentence": 214,
+   "subject": "single-file agents",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 214,
+      "quote": "License travel for single-file agents.** `agents/code-reviewer.md` and `agents/task-reviewer.md`",
+      "subject": "single-file agents",
+      "slots": {
+       "value": "[\"agents/code-reviewer.md\", \"agents/task-reviewer.md\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 214,
+      "quote": "License travel for single-file agents.** `agents/code-reviewer.md` and `agents/task-reviewer.md`",
+      "subject": "single-file agents",
+      "slots": {
+       "value": "[\"agents/code-reviewer.md\", \"agents/task-reviewer.md\"]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  }
+ ],
+ "agreed": [
+  {
+   "sentence": 39,
+   "subject": "lint",
+   "slots": {
+    "value": "1024",
+    "unit": "characters",
+    "edge": "in",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 41,
+   "subject": "shebang",
+   "slots": {
+    "value": "#!/usr/bin/env python3",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 47,
+   "subject": "SPEC_KEYS",
+   "slots": {
+    "value": "[name, description, license, compatibility, metadata, allowed-tools]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 48,
+   "subject": "HOST_KEYS",
+   "slots": {
+    "value": "[when_to_use, model, effort, context, disable-model-invocation]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 53,
+   "subject": "license",
+   "slots": {
+    "value": "MIT",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 54,
+   "subject": "author",
+   "slots": {
+    "value": "Jesse Vincent",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 54,
+   "subject": "adapted_by",
+   "slots": {
+    "value": "Lowell Mason",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 54,
+   "subject": "source",
+   "slots": {
+    "value": "https://github.com/obra/superpowers",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 57,
+   "subject": "llm-wiki's trigger phrase",
+   "slots": {
+    "value": "verify a page",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 62,
+   "subject": "`SKILL.md` body",
+   "slots": {
+    "value": "500",
+    "unit": "lines",
+    "edge": "out",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 64,
+   "subject": "`[[check]]`",
+   "slots": {
+    "value": "skill-body-size",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 64,
+   "subject": "`enforced_by`",
+   "slots": {
+    "value": "check_frontmatter",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 65,
+   "subject": "`name`",
+   "slots": {
+    "value": "[claude, anthropic]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 70,
+   "subject": "description",
+   "slots": {
+    "value": "150",
+    "unit": "characters",
+    "edge": "in",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 75,
+   "subject": "baseline",
+   "slots": {
+    "value": "5",
+    "unit": "reps",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 76,
+   "subject": "synthetic skill",
+   "slots": {
+    "value": "8",
+    "unit": "trigger conditions",
+    "edge": "in",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 78,
+   "subject": "rep",
+   "slots": {
+    "value": "150",
+    "unit": "characters",
+    "edge": "in",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 79,
+   "subject": "controller",
+   "slots": {
+    "value": "150",
+    "unit": "characters",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 80,
+   "subject": "Record",
+   "slots": {
+    "value": "specs/red-baseline-description-openings-<YYYY-MM-DD>.md",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 82,
+   "subject": "factual note",
+   "slots": {
+    "value": "[2, 4]",
+    "unit": "lines",
+    "edge": "in",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 82,
+   "subject": "section",
+   "slots": {
+    "value": "Token Efficiency",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 83,
+   "subject": "how to re-measure",
+   "slots": {
+    "value": "codex debug prompt-input",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 85,
+   "subject": "GREEN-test",
+   "slots": {
+    "value": "4/5",
+    "unit": "reps",
+    "edge": "in",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 86,
+   "subject": "runnable scripts",
+   "slots": {
+    "value": "skills/*/scripts/*.py",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 88,
+   "subject": "header",
+   "slots": {
+    "value": "14",
+    "unit": "scripts",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 89,
+   "subject": "`bayesian-workflow`",
+   "slots": {
+    "value": "[calibration_check.py, check_diagnostics.py, diagnose_model.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 90,
+   "subject": "`describe-critique-methodology`",
+   "slots": {
+    "value": "[check_decoupling.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 91,
+   "subject": "`design-architecture`",
+   "slots": {
+    "value": "[new_adr.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 92,
+   "subject": "`explore-data`",
+   "slots": {
+    "value": "[profile.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 93,
+   "subject": "`llm-wiki`",
+   "slots": {
+    "value": "[bootstrap_wiki.py, distill_sessions.py, distill_specs.py, lint_wiki.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 94,
+   "subject": "`recommend-probabilistic-model`",
+   "slots": {
+    "value": "[characterize.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 95,
+   "subject": "`recommend-visualization`",
+   "slots": {
+    "value": "[recommend.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 96,
+   "subject": "`track-model-experiments`",
+   "slots": {
+    "value": "[compare_experiments.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 97,
+   "subject": "`writing-plans`",
+   "slots": {
+    "value": "[deferred_stats.py]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 102,
+   "subject": "Line 1",
+   "slots": {
+    "value": "#!/usr/bin/env python3",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 103,
+   "subject": "block",
+   "slots": {
+    "value": "# /// script",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 103,
+   "subject": "`dependencies`",
+   "slots": {
+    "value": "[]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 105,
+   "subject": "test suite",
+   "slots": {
+    "value": "uv run --python 3.X",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 115,
+   "subject": "documented invocation",
+   "slots": {
+    "value": "uv run <path> [args]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 117,
+   "subject": "sentence",
+   "slots": {
+    "value": "Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header.",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 118,
+   "subject": "`compatibility`",
+   "slots": {
+    "value": "Requires uv to run bundled scripts (dependencies are declared inline); Python 3.X+.",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 122,
+   "subject": "PEP 723 block",
+   "slots": {
+    "value": "tomllib",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 124,
+   "subject": "stdlib",
+   "slots": {
+    "value": "sys.stdlib_module_names",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 128,
+   "subject": "skill markdown",
+   "slots": {
+    "value": "[python, python3]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 130,
+   "subject": "`compatibility`",
+   "slots": {
+    "value": "uv",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 133,
+   "subject": "script with no input-reading path",
+   "slots": {
+    "value": "--help",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 135,
+   "subject": "script",
+   "slots": {
+    "value": "1",
+    "unit": "script",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 142,
+   "subject": "`LICENSE-superpowers`",
+   "slots": {
+    "value": "13",
+    "unit": "skills",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 143,
+   "subject": "`LICENSE-coding-skills`",
+   "slots": {
+    "value": "[bayesian-workflow, clean-code]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 144,
+   "subject": "`LICENSE-andorra`",
+   "slots": {
+    "value": "[bayesian-workflow]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 145,
+   "subject": "Provenance lint",
+   "slots": {
+    "value": "build/check_provenance.py",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 145,
+   "subject": "table",
+   "slots": {
+    "value": "BUNDLED_LICENSES",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 149,
+   "subject": "root `LICENSE*` file",
+   "slots": {
+    "value": "1",
+    "unit": "skill",
+    "edge": "in",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 160,
+   "subject": "upstream license text",
+   "slots": {
+    "value": "LICENSE-andorra",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 176,
+   "subject": "same change",
+   "slots": {
+    "value": "build/check_conformance.py",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 191,
+   "subject": "`sync_runtime_assets.py`",
+   "slots": {
+    "value": "--check",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 194,
+   "subject": "execution proof",
+   "slots": {
+    "value": "16",
+    "unit": "scripts",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 196,
+   "subject": "`gemini skills list --all`",
+   "slots": {
+    "value": "[Enabled]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 210,
+   "subject": "writing-skills",
+   "slots": {
+    "value": "500",
+    "unit": "body lines",
+    "edge": "out",
+    "default": "none"
+   }
+  }
+ ],
+ "outcomes": [
+  {
+   "kind": "unchecked",
+   "sentence": 71,
+   "subject": "descriptions",
+   "agreed": null,
+   "planner": {
+    "value": "37",
+    "unit": "descriptions",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 67, 193-194; note: Amendment A2 adds a 2026-10-18 re-check of 37 descriptions beside the original 32."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 107,
+   "subject": "Prose floors",
+   "agreed": null,
+   "planner": {
+    "value": "\"Python ≥ 3.11\"",
+    "unit": "none",
+    "edge": "in",
+    "default": "none"
+   },
+   "detail": "planner lines 94, 3338, 3350"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 113,
+   "subject": "`dependencies`",
+   "agreed": null,
+   "planner": {
+    "value": "[\"h5netcdf>=1.0\", \"h5py>=3.0\"]",
+    "unit": "none",
+    "edge": "in",
+    "default": "none"
+   },
+   "detail": "planner lines 90, 2351"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 199,
+   "subject": "`writing-skills`",
+   "agreed": null,
+   "planner": {
+    "value": "description guidance changed only as R2.3 allows; Stage A's key list, template and checklist edits are outside R2",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 349-352, 3781; note: Amendment A10 narrows Validation 6 to the description guidance (D6)."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 213,
+   "subject": "The repo",
+   "agreed": null,
+   "planner": {
+    "value": "advisory CI: `.github/workflows/lints.yml`",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 366-368; note: Amendment A11 records the advisory CI added by plan 41."
+  }
+ ]
+}

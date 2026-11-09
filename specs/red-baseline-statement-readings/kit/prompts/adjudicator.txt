@@ -1,0 +1,25 @@
+@@INTRO@@
+
+For each case, rule on the reading that the text supports. Give the verdict `reading` with its value, unit, edge and default, or `no-value` when the sentence states no value. Quote the words that decide the case, word for word, from the numbered spec. When no words decide it, rule `unclear` with an empty quote.
+
+You see no plan. You have no tools, and you edit no file.
+
+The slot forms: `value` is a literal in plain notation (a number, a string, a list in brackets, a date or time). `unit` is what the value counts or measures, or `none`. `edge` says, for each limit in the value, whether the limit itself is in: `in`, `out`, or `n/a` with no limit. `default` is the value used when the input is absent, or `none`.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
+
+<spec>
+@@SPEC@@
+</spec>
+
+The cases follow. Rule only on the entries under the reader names. The lines after `Context` are the readers' other entries on the same sentence, for context only.
+
+@@CASES@@
+
+Reply with exactly one <rulings> block and nothing else. Give each case one <ruling> element:
+
+<rulings>
+<ruling case="C<n>" verdict="reading|no-value|unclear"><quote>the words that decide the case, copied word for word (empty for unclear)</quote><value>...</value><unit>...</unit><edge>...</edge><default>...</default></ruling>
+</rulings>
+
+Write the four slots only with the verdict reading. Write text as it is, with no XML escapes.

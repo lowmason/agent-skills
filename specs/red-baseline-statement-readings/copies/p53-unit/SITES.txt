@@ -1,0 +1,16 @@
+25  global-constraints  - R1.3: `compatibility` is "a string of 1–500 UTF-8 bytes after stripping".
+31  global-constraints  - R1.3's cap guards a stored field, so the lint measures the stripped value in U
+615  test-step  def test_compatibility_must_be_a_string_of_1_to_500_bytes(tmp_path):
+616  test-step  # Portability R1.3, both edges: 500 bytes pass, 501 bytes and a blank value fail
+620  test-step  msg = 'compatibility must be a string of 1-500 bytes'
+665  code-step  compatibility is a string of 1-500 bytes;
+691  code-step  # The spec caps compatibility at 500 UTF-8 bytes.
+721  code-step  of 1 to COMPATIBILITY_CAP UTF-8 bytes.'''
+730  code-step  if not (isinstance(compat, str) and 1 <= len(compat.strip().encode('utf-8')) <= 
+731  code-step  errs.append(f'{sk}: compatibility must be a string of 1-{COMPATIBILITY_CAP} byte
+1135  code-step  compatibility is a string of 1-500 bytes;
+1142  code-step  compatibility is a string of 1-500 bytes;
+1150  code-step  # The spec caps compatibility at 500 UTF-8 bytes.
+1157  code-step  # The spec caps compatibility at 500 UTF-8 bytes.
+1327  code-step  # The spec caps compatibility at 500 UTF-8 bytes.
+1334  code-step  # The spec caps compatibility at 500 UTF-8 bytes.

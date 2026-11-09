@@ -1,0 +1,2386 @@
+[
+ {
+  "kind": "returned",
+  "sentence": 199,
+  "subject": "Out of scope",
+  "agreed": null,
+  "planner": null,
+  "detail": "codex#169: quote not in S199",
+  "index": 0,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "returned",
+  "sentence": 85,
+  "subject": "GREEN test",
+  "agreed": null,
+  "planner": {
+   "value": "4/5",
+   "unit": "reps passing",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner#20: quote not in S85",
+  "index": 1,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 71,
+  "subject": "descriptions",
+  "agreed": null,
+  "planner": {
+   "value": "37",
+   "unit": "descriptions",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 67, 193-194; note: The plan re-checked 37 descriptions on 2026-10-18; the spec counts 32 (amendment A2).",
+  "index": 2,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 87,
+  "subject": "runnable scripts",
+  "agreed": null,
+  "planner": {
+   "value": "17",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 61, 226-227; note: The plan counts 17 runnable scripts, adding `writing-plans/scripts/entry_check.py` (amendment A4).",
+  "index": 3,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unclear",
+  "sentence": 69,
+  "subject": "CLAUDE.md's Commands section",
+  "agreed": null,
+  "planner": null,
+  "detail": "C36 rule 4; quote: ",
+  "index": 4,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 156,
+  "subject": "CLAUDE.md's provenance section",
+  "agreed": null,
+  "planner": null,
+  "detail": "C112 rule 3; quote: names the enforcing lint",
+  "index": 5,
+  "flags": []
+ },
+ {
+  "kind": "unclear",
+  "sentence": 156,
+  "subject": "CLAUDE.md's provenance section",
+  "agreed": null,
+  "planner": null,
+  "detail": "C113 rule 4; quote: ",
+  "index": 6,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 166,
+  "subject": "Stages",
+  "agreed": null,
+  "planner": null,
+  "detail": "C119 rule 3; quote: Stages, in order.",
+  "index": 7,
+  "flags": []
+ },
+ {
+  "kind": "unclear",
+  "sentence": 174,
+  "subject": "CLAUDE.md lines",
+  "agreed": null,
+  "planner": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "C127 rule 4; quote: ",
+  "index": 8,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 183,
+  "subject": "skills",
+  "agreed": null,
+  "planner": null,
+  "detail": "C135 rule 3; quote: apply to them too",
+  "index": 9,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 2,
+  "subject": "implementation plan",
+  "agreed": {
+   "value": "writing-plans",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 10,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 7,
+  "subject": "themes",
+  "agreed": {
+   "value": "4",
+   "unit": "themes",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 11,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 10,
+  "subject": "every runnable bundled script",
+  "agreed": {
+   "value": "PEP 723",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 12,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 10,
+  "subject": "every runnable bundled script",
+  "agreed": {
+   "value": "uv run",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 13,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 24,
+  "subject": "canonical tree",
+  "agreed": {
+   "value": "skills/",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 14,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 26,
+  "subject": "in-repo symlink",
+  "agreed": {
+   "value": ".claude/skills",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 15,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 31,
+  "subject": "description convention",
+  "agreed": {
+   "value": "Use when…",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 16,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 39,
+  "subject": "the lint",
+  "agreed": {
+   "value": "1024",
+   "unit": "characters",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 17,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 41,
+  "subject": "shebang",
+  "agreed": {
+   "value": "#!/usr/bin/env python3",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 18,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 41,
+  "subject": "header",
+  "agreed": {
+   "value": "uv run <path>",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 19,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 43,
+  "subject": "scripts that read saved model artifacts",
+  "agreed": {
+   "value": "3",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 20,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 46,
+  "subject": "named sets",
+  "agreed": {
+   "value": "2",
+   "unit": "sets",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 21,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 48,
+  "subject": "HOST_KEYS",
+  "agreed": {
+   "value": "[when_to_use, model, effort, context, disable-model-invocation]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[when_to_use, model, effort, context, disable-model-invocation, agent]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 22,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 49,
+  "subject": "metadata",
+  "agreed": {
+   "value": "string-to-string mapping",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 23,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 51,
+  "subject": "compatibility",
+  "agreed": {
+   "value": "[1, 500]",
+   "unit": "characters",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "1–500",
+   "unit": "UTF-8 bytes",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 25, 31, 692, 728-731; note: The plan measures the stripped value in UTF-8 bytes, not characters as the spec says. Plan line 25 calls this verbatim spec text, but it is not, and no amendment covers the change.",
+  "index": 24,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 53,
+  "subject": "superpowers skills",
+  "agreed": {
+   "value": "13",
+   "unit": "skills",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 25,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 54,
+  "subject": "author",
+  "agreed": {
+   "value": "Jesse Vincent",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 26,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 54,
+  "subject": "adapted_by",
+  "agreed": {
+   "value": "Lowell Mason",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 27,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 54,
+  "subject": "source",
+  "agreed": {
+   "value": "https://github.com/obra/superpowers",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 28,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 54,
+  "subject": "metadata",
+  "agreed": null,
+  "planner": {
+   "value": "[author: \"Jesse Vincent\", adapted_by: \"Lowell Mason\", source: \"https://github.com/obra/superpowers\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "unpaired; planner lines 26, 1019-1025",
+  "index": 29,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 56,
+  "subject": "name",
+  "agreed": {
+   "value": "[<, >]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 30,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 56,
+  "subject": "description",
+  "agreed": {
+   "value": "[<, >]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 31,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 58,
+  "subject": "disable-model-invocation",
+  "agreed": {
+   "value": "YAML boolean",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 32,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 59,
+  "subject": "disable-model-invocation",
+  "agreed": {
+   "value": "true",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 33,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 59,
+  "subject": "A skill with disable-model-invocation: true",
+  "agreed": {
+   "value": "agents/openai.yaml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 34,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 60,
+  "subject": "that policy",
+  "agreed": {
+   "value": "false",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 35,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 60,
+  "subject": "disable-model-invocation",
+  "agreed": {
+   "value": "true",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 36,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 62,
+  "subject": "WARN line",
+  "agreed": {
+   "value": "1",
+   "unit": "lines",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 37,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 62,
+  "subject": "line",
+  "agreed": {
+   "value": "WARN",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 38,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 64,
+  "subject": "skill-body-size [[check]]",
+  "agreed": {
+   "value": "build/cc_guide/conformance.toml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[id: \"skill-body-size\", sections: [\"skills.overview\"], enforced_by: \"check_frontmatter\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 1393-1399",
+  "index": 39,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 64,
+  "subject": "[[check]]",
+  "agreed": {
+   "value": "skill-body-size",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 40,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 64,
+  "subject": "skill-body-size",
+  "agreed": {
+   "value": "skills.overview",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 41,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 64,
+  "subject": "enforced_by",
+  "agreed": {
+   "value": "check_frontmatter",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 42,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 65,
+  "subject": "check_frontmatter.py",
+  "agreed": {
+   "value": "--strict",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 43,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 65,
+  "subject": "--strict",
+  "agreed": {
+   "value": "HOST_KEYS",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 44,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 69,
+  "subject": "CLAUDE.md's Commands section",
+  "agreed": {
+   "value": "--strict",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 45,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 76,
+  "subject": "trigger conditions",
+  "agreed": {
+   "value": "8",
+   "unit": "trigger conditions",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 46,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 76,
+  "subject": "trigger conditions",
+  "agreed": {
+   "value": "1",
+   "unit": "trigger conditions",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 47,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 76,
+  "subject": "synthetic skill",
+  "agreed": null,
+  "planner": {
+   "value": "9",
+   "unit": "trigger conditions",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "unpaired; planner lines 415-425",
+  "index": 48,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 79,
+  "subject": "prefix",
+  "agreed": {
+   "value": "150",
+   "unit": "characters",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 49,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 82,
+  "subject": "factual note",
+  "agreed": {
+   "value": "[2, 4]",
+   "unit": "lines",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 50,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 82,
+  "subject": "writing-skills' section",
+  "agreed": {
+   "value": "Token Efficiency",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 51,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 83,
+  "subject": "measured cut",
+  "agreed": {
+   "value": "[156, 164]",
+   "unit": "characters",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "316–320 characters with 105 skills listed, Codex 0.163, 2026-10-18 (156–164 with 93 kept as history)",
+   "unit": "characters",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 52,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "Baseline",
+  "agreed": {
+   "value": "3/5",
+   "unit": "reps",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 53,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "checklist line",
+  "agreed": {
+   "value": "the primary trigger falls within the first ~150 characters",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 54,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "GREEN-test",
+  "agreed": {
+   "value": "5",
+   "unit": "reps",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 55,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "GREEN-test",
+  "agreed": {
+   "value": "4/5",
+   "unit": "reps",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 56,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 86,
+  "subject": "runnable scripts",
+  "agreed": {
+   "value": "skills/*/scripts/*.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 57,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 86,
+  "subject": "runnable scripts",
+  "agreed": {
+   "value": "__main__",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 58,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 88,
+  "subject": "runnable scripts",
+  "agreed": {
+   "value": "14",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "15",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 59,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 89,
+  "subject": "bayesian-workflow",
+  "agreed": {
+   "value": "calibration_check.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 60,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 89,
+  "subject": "bayesian-workflow",
+  "agreed": {
+   "value": "check_diagnostics.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 61,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 89,
+  "subject": "bayesian-workflow",
+  "agreed": {
+   "value": "diagnose_model.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 62,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 90,
+  "subject": "describe-critique-methodology",
+  "agreed": {
+   "value": "check_decoupling.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 63,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 91,
+  "subject": "design-architecture",
+  "agreed": {
+   "value": "new_adr.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 64,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 92,
+  "subject": "explore-data",
+  "agreed": {
+   "value": "profile.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 65,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 93,
+  "subject": "llm-wiki",
+  "agreed": {
+   "value": "bootstrap_wiki.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 66,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 93,
+  "subject": "llm-wiki",
+  "agreed": {
+   "value": "distill_sessions.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 67,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 93,
+  "subject": "llm-wiki",
+  "agreed": {
+   "value": "distill_specs.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 68,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 93,
+  "subject": "llm-wiki",
+  "agreed": {
+   "value": "lint_wiki.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 69,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 94,
+  "subject": "recommend-probabilistic-model",
+  "agreed": {
+   "value": "characterize.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 70,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 95,
+  "subject": "recommend-visualization",
+  "agreed": {
+   "value": "recommend.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 71,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 96,
+  "subject": "track-model-experiments",
+  "agreed": {
+   "value": "compare_experiments.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 72,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 97,
+  "subject": "writing-plans",
+  "agreed": {
+   "value": "deferred_stats.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[deferred_stats.py, entry_check.py]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 73,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 99,
+  "subject": "library imported into the user's code",
+  "agreed": {
+   "value": "tune-hyperparameters/scripts/time_series_cv.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 74,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 102,
+  "subject": "shebang",
+  "agreed": {
+   "value": "1",
+   "unit": "line",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 75,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 103,
+  "subject": "block",
+  "agreed": {
+   "value": "# /// script",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 76,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 103,
+  "subject": "TOML strings",
+  "agreed": {
+   "value": "single-quoted",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 77,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 103,
+  "subject": "block",
+  "agreed": {
+   "value": "requires-python",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 78,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 103,
+  "subject": "block",
+  "agreed": {
+   "value": "dependencies",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 79,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 105,
+  "subject": "requires-python",
+  "agreed": {
+   "value": "[>=3.11, >=3.12, >=3.13]",
+   "unit": "Python versions",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[\">=3.11\" for twelve scripts, \">=3.12\" for calibration_check.py, diagnose_model.py, compare_experiments.py]",
+   "unit": "Python version",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 88, 2349-2367",
+  "index": 80,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 105,
+  "subject": "test suite covering the script",
+  "agreed": {
+   "value": "uv run --python 3.X",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 81,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 110,
+  "subject": "Every third-party import",
+  "agreed": {
+   "value": ">=",
+   "unit": "none",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "\"polars>=2.0\"",
+   "unit": "none",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 63, 89, 2350",
+  "index": 82,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 112,
+  "subject": "handler",
+  "agreed": {
+   "value": "[ImportError, ModuleNotFoundError]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 83,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 115,
+  "subject": "documented invocation",
+  "agreed": {
+   "value": "16",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "17",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 84,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 116,
+  "subject": "Path forms in use",
+  "agreed": {
+   "value": "<this-skill-dir>/scripts/x.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 85,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 116,
+  "subject": "Path forms in use",
+  "agreed": {
+   "value": "<this-skill-dir>/../<skill>/scripts/x.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 86,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 116,
+  "subject": "Path forms in use",
+  "agreed": {
+   "value": "$LLM_WIKI_ROOT/scripts/x.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 87,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 116,
+  "subject": "Path forms in use",
+  "agreed": {
+   "value": "~/Projects/agent-skills/skills/llm-wiki/scripts/x.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 88,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 116,
+  "subject": "Path forms in use",
+  "agreed": {
+   "value": "skills/<skill>/scripts/build.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 89,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 117,
+  "subject": "Each skill with such an invocation",
+  "agreed": {
+   "value": "1",
+   "unit": "sentence",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 90,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 120,
+  "subject": "That set",
+  "agreed": {
+   "value": "finishing-a-development-branch",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 91,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 120,
+  "subject": "finishing-a-development-branch",
+  "agreed": {
+   "value": "writing-plans' deferred_stats.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 92,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 122,
+  "subject": "script",
+  "agreed": {
+   "value": "PEP 723",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 93,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 122,
+  "subject": "PEP 723 block",
+  "agreed": {
+   "value": "tomllib",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 94,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 122,
+  "subject": "PEP 723 block",
+  "agreed": {
+   "value": "[requires-python, dependencies]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 95,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 124,
+  "subject": "stdlib",
+  "agreed": {
+   "value": "sys.stdlib_module_names",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 96,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 126,
+  "subject": "yaml",
+  "agreed": {
+   "value": "pyyaml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 97,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 128,
+  "subject": "skill markdown",
+  "agreed": {
+   "value": "[python, python3]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 98,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 129,
+  "subject": "teaching example",
+  "agreed": {
+   "value": "scripts/migrate.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "\"scripts/migrate.py\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 99,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 130,
+  "subject": "compatibility",
+  "agreed": {
+   "value": "uv",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 100,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 132,
+  "subject": "scripts",
+  "agreed": {
+   "value": "16",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "17",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 101,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 133,
+  "subject": "script with no input-reading path",
+  "agreed": {
+   "value": "--help",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 102,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 134,
+  "subject": "fixture",
+  "agreed": {
+   "value": "InferenceData",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 103,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 135,
+  "subject": "script",
+  "agreed": {
+   "value": "1",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 104,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 135,
+  "subject": "directory",
+  "agreed": {
+   "value": "pyproject.toml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 105,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 141,
+  "subject": "every skill under skills/",
+  "agreed": {
+   "value": "LICENSE",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 106,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 142,
+  "subject": "13 superpowers skills",
+  "agreed": {
+   "value": "LICENSE-superpowers",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 107,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 143,
+  "subject": "bayesian-workflow, clean-code",
+  "agreed": {
+   "value": "LICENSE-coding-skills",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[bayesian-workflow, clean-code]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 1745",
+  "index": 108,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 144,
+  "subject": "bayesian-workflow",
+  "agreed": {
+   "value": "LICENSE-andorra",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[bayesian-workflow]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 2005",
+  "index": 109,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 145,
+  "subject": "Provenance lint",
+  "agreed": {
+   "value": "BUNDLED_LICENSES",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 110,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 145,
+  "subject": "every skill",
+  "agreed": {
+   "value": "LICENSE",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 111,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 148,
+  "subject": "skill directory",
+  "agreed": {
+   "value": "LICENSE*",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 112,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 149,
+  "subject": "root file",
+  "agreed": {
+   "value": "LICENSE*",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 113,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 150,
+  "subject": "CLAUDE.md command",
+  "agreed": {
+   "value": "--with",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 114,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 153,
+  "subject": "single-skill install",
+  "agreed": {
+   "value": "install.py --copy --skill",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 115,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 154,
+  "subject": "copies",
+  "agreed": {
+   "value": "check_provenance.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 116,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 158,
+  "subject": "original PyMC Bayesian-workflow skill",
+  "agreed": {
+   "value": "Alexandre Andorra",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 117,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 160,
+  "subject": "root license text",
+  "agreed": {
+   "value": "LICENSE-andorra",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 118,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 160,
+  "subject": "LICENSE-andorra",
+  "agreed": {
+   "value": "bayesian-workflow",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 119,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 161,
+  "subject": "Upstream",
+  "agreed": {
+   "value": "MIT",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 120,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 165,
+  "subject": "intake review",
+  "agreed": {
+   "value": "specs/completed/skill-intake-review-2026-08-26.md",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 121,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 167,
+  "subject": "independent stages",
+  "agreed": {
+   "value": "[D, C]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 122,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 168,
+  "subject": "A",
+  "agreed": {
+   "value": "R1",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 123,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 168,
+  "subject": "superpowers frontmatter additions",
+  "agreed": {
+   "value": "13",
+   "unit": "skills",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 124,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 169,
+  "subject": "B",
+  "agreed": {
+   "value": "R4",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 125,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 170,
+  "subject": "C",
+  "agreed": {
+   "value": "R3",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 126,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 171,
+  "subject": "D",
+  "agreed": {
+   "value": "R2",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 127,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 173,
+  "subject": "Conformance register",
+  "agreed": {
+   "value": "specs/completed/claude-code-guide-conformance.md",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 128,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 176,
+  "subject": "register",
+  "agreed": {
+   "value": "[[exception]]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 129,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 176,
+  "subject": "Stage A or Stage D",
+  "agreed": {
+   "value": "build/check_conformance.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 130,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 180,
+  "subject": "test changes",
+  "agreed": {
+   "value": "+N",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 131,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 181,
+  "subject": "plan id",
+  "agreed": {
+   "value": "specs/plans/",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 132,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 181,
+  "subject": "check",
+  "agreed": {
+   "value": "git ls-tree",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 133,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 182,
+  "subject": "in-flight JAX spec",
+  "agreed": {
+   "value": "specs/jax-deep-learning-skills.md",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 134,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 182,
+  "subject": "in-flight JAX spec",
+  "agreed": {
+   "value": "codex/jax-deep-learning-skills",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 135,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 186,
+  "subject": "gate",
+  "agreed": {
+   "value": "check_frontmatter.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 136,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 186,
+  "subject": "WARN",
+  "agreed": {
+   "value": "writing-skills",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 137,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 187,
+  "subject": "gate",
+  "agreed": {
+   "value": "check_provenance.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 138,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 188,
+  "subject": "gate",
+  "agreed": {
+   "value": "check_snippets.py skills/",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 139,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 188,
+  "subject": "check_snippets.py skills/",
+  "agreed": {
+   "value": "1",
+   "unit": "tier",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 140,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 190,
+  "subject": "suite",
+  "agreed": {
+   "value": "build/",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 141,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 191,
+  "subject": "gate",
+  "agreed": {
+   "value": "sync_runtime_assets.py --check",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 142,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 192,
+  "subject": "strict command",
+  "agreed": {
+   "value": "check_frontmatter.py --strict",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 143,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 194,
+  "subject": "execution proof",
+  "agreed": {
+   "value": "16",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "17",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 144,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 196,
+  "subject": "Cross-runtime load check",
+  "agreed": {
+   "value": "gemini skills list --all",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 145,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 196,
+  "subject": "every skill under skills/",
+  "agreed": {
+   "value": "[Enabled]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 146,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 197,
+  "subject": "Cross-runtime load check",
+  "agreed": {
+   "value": "codex debug prompt-input",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 147,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 203,
+  "subject": "Distribution channels",
+  "agreed": {
+   "value": "[marketplace.json, npx skills, gh skill, Codex plugin]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 148,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 206,
+  "subject": "Codex adapters",
+  "agreed": {
+   "value": "[/deferred, /fix-issue, /license-audit]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 149,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 210,
+  "subject": "writing-skills",
+  "agreed": {
+   "value": "500",
+   "unit": "body lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 150,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 211,
+  "subject": "versioning policy",
+  "agreed": {
+   "value": "[CHANGELOG, git tags, metadata.version]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 151,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 214,
+  "subject": "single-file agents",
+  "agreed": {
+   "value": "[agents/code-reviewer.md, agents/task-reviewer.md]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 152,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 214,
+  "subject": "single-file agents",
+  "agreed": {
+   "value": "LICENSE-superpowers",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 153,
+  "flags": []
+ }
+]

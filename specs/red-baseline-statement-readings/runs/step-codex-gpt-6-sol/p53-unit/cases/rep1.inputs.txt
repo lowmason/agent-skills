@@ -1,0 +1,2 @@
+standin: specs/red-baseline-statement-readings/runs/standin-opus/p53-unit/rep1.json
+codex: specs/red-baseline-statement-readings/runs/reader-gpt-6-sol/p53/rep1.md

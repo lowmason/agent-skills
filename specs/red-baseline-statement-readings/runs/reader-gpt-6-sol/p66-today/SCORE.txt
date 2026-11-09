@@ -1,0 +1,5 @@
+rep1 entries=133 other=1 returned=0 tokens=40100
+rep2 entries=142 other=1 returned=0 tokens=44049
+rep3 entries=123 other=0 returned=0 tokens=40652
+rep4 entries=128 other=2 returned=0 tokens=44827
+rep5 entries=119 other=1 returned=0 tokens=37091
