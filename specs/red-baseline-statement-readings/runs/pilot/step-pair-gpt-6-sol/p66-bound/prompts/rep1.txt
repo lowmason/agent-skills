@@ -303,7 +303,7 @@ S222. The R6 prose fixes rebase onto them and re-take the line numbers.
 S223. - **`CLAUDE.md` line budget.** R2.4 removes the version flags from the commands, so `CLAUDE.md` gets shorter.
 </spec>
 
-The cases:
+The cases follow. Rule only on the entries under the reader names. The lines after `Context` are the readers' other entries on the same sentence, for context only.
 
 <case id="C1" sentence="S2">
 Reader A:
@@ -345,15 +345,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S25"><quote>3.12 for the arviz scripts</quote><subject>arviz scripts</subject><value>3.12</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S25"><quote>3.11 for the rest</quote><subject>rest</subject><value>3.11</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S25:
+Reader B: <entry sentence="S25"><quote>3.11 for the rest</quote><subject>rest</subject><value>3.11</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C7" sentence="S25">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S25"><quote>3.12 for the arviz scripts</quote><subject>arviz scripts</subject><value>3.12</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S25"><quote>3.11 for the rest</quote><subject>rest</subject><value>3.11</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S25:
+Reader B: <entry sentence="S25"><quote>3.12 for the arviz scripts</quote><subject>arviz scripts</subject><value>3.12</value><unit>Python version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C8" sentence="S26">
@@ -375,15 +377,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S30"><quote>polars>=1.0</quote><subject>polars</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S30"><quote>fastexcel>=0.12</quote><subject>fastexcel</subject><value>0.12</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S30:
+Reader B: <entry sentence="S30"><quote>fastexcel>=0.12</quote><subject>fastexcel</subject><value>0.12</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C11" sentence="S30">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S30"><quote>polars>=1.0</quote><subject>polars</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S30"><quote>fastexcel>=0.12</quote><subject>fastexcel</subject><value>0.12</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S30:
+Reader B: <entry sentence="S30"><quote>polars>=1.0</quote><subject>polars</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C12" sentence="S31">
@@ -391,39 +395,43 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S31:
+Reader B: <entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C13" sentence="S31">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S31:
+Reader B: <entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C14" sentence="S31">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S31:
+Reader B: <entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C15" sentence="S31">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S31"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S31:
+Reader B: <entry sentence="S31"><quote>arviz>=1.0</quote><subject>arviz</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S31"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C16" sentence="S32">
@@ -431,134 +439,143 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C17" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C18" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C19" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C20" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C21" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C22" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C23" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C24" sentence="S32">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S32"><quote>matplotlib>=3.0</quote><subject>matplotlib</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S32:
+Reader B: <entry sentence="S32"><quote>numpy>=2.0</quote><subject>numpy</subject><value>2.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-base>=1.0</quote><subject>arviz-base</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-plots>=1.1</quote><subject>arviz-plots</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>arviz-stats>=1.1</quote><subject>arviz-stats</subject><value>1.1</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>xarray>=2026.0</quote><subject>xarray</subject><value>2026.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>scipy>=1.0</quote><subject>scipy</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5netcdf>=1.0</quote><subject>h5netcdf</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S32"><quote>h5py>=3.0</quote><subject>h5py</subject><value>3.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C25" sentence="S33">
@@ -566,26 +583,29 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S33:
+Reader B: <entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C26" sentence="S33">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S33:
+Reader B: <entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C27" sentence="S33">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S33"><quote>numpydoc>=1.11</quote><subject>numpydoc</subject><value>1.11</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S33:
+Reader B: <entry sentence="S33"><quote>great-docs>=0.17.0</quote><subject>great-docs</subject><value>0.17.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S33"><quote>great-docs>=0.17.0,<0.18</quote><subject>great-docs</subject><value>0.18</value><unit>version</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C28" sentence="S34">
@@ -593,26 +613,29 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S34:
+Reader B: <entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C29" sentence="S34">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S34:
+Reader B: <entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C30" sentence="S34">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S34"><quote>ArviZ ≥ 1.0 stack</quote><subject>ArviZ</subject><value>1.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S34:
+Reader B: <entry sentence="S34"><quote>arviz-stats >= 1.0.0</quote><subject>arviz-stats</subject><value>1.0.0</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S34"><quote>NumPyro ≥ 0.22</quote><subject>NumPyro</subject><value>0.22</value><unit>version</unit><edge>in</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C31" sentence="S45">
@@ -648,15 +671,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S88"><quote>One freeze date</quote><subject>freeze date</subject><value>1</value><unit>date</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S88"><quote>No lock file</quote><subject>lock file</subject><value>0</value><unit>files</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S88:
+Reader B: <entry sentence="S88"><quote>No lock file</quote><subject>lock file</subject><value>0</value><unit>files</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C36" sentence="S88">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S88"><quote>One freeze date</quote><subject>freeze date</subject><value>1</value><unit>date</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S88"><quote>No lock file</quote><subject>lock file</subject><value>0</value><unit>files</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S88:
+Reader B: <entry sentence="S88"><quote>One freeze date</quote><subject>freeze date</subject><value>1</value><unit>date</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C37" sentence="S89">
@@ -685,88 +710,97 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S92"><quote>One file that a person edits</quote><subject>file</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S92"><quote>a `--check` mode as a commit lint</quote><subject>mode</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S92:
+Reader B: <entry sentence="S92"><quote>a `--check` mode as a commit lint</quote><subject>mode</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C41" sentence="S92">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S92"><quote>One file that a person edits</quote><subject>file</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S92"><quote>a `--check` mode as a commit lint</quote><subject>mode</subject><value>--check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S92:
+Reader B: <entry sentence="S92"><quote>One file that a person edits</quote><subject>file</subject><value>1</value><unit>file</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C42" sentence="S96">
 Reader A:
 <entry sentence="S96"><quote>[python] dev = '3.13'</quote><subject>[python] dev</subject><value>3.13</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 <entry sentence="S96"><quote>dev = '3.13'                 # repo checks and documented commands</quote><subject>dev</subject><value>3.13</value><unit>Python version</unit><edge>n/a</edge><default>3.13</default><other_reading>none</other_reading></entry>
+Context, other entries on S96:
+Reader A: <entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C43" sentence="S96">
 Reader A:
-<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S96"><quote>snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']</quote><subject>[gates] snippets</subject><value>['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 <entry sentence="S96"><quote>snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']</quote><subject>snippets</subject><value>[arviz, arviz-base, arviz-stats, arviz-plots, numpyro, jax, numpy, matplotlib]</value><unit>packages</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S96:
+Reader A: <entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C44" sentence="S96">
 Reader A:
-<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S96"><quote>jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']</quote><subject>[gates] jax-cpu</subject><value>['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 <entry sentence="S96"><quote>jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']</quote><subject>jax-cpu</subject><value>[jax, jaxlib, flax, optax, orbax-checkpoint, equinox, diffrax, e3nn-jax, numpy]</value><unit>packages</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S96:
+Reader A: <entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C45" sentence="S96">
 Reader A:
 <entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 (no entry)
+Context, other entries on S96:
+Reader A: <entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C46" sentence="S96">
 Reader A:
-<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
 <entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 (no entry)
+Context, other entries on S96:
+Reader A: <entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader A: <entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C47" sentence="S96">
 Reader A:
-<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
 <entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 (no entry)
+Context, other entries on S96:
+Reader A: <entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C48" sentence="S96">
 Reader A:
-<entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
-<entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S96"><quote># [[override]]               # gate, package, version, reason; empty at the start</quote><subject>[[override]]</subject><value>[]</value><unit>entries</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 (no entry)
+Context, other entries on S96:
+Reader A: <entry sentence="S96"><quote>[freeze] date = 2026-10-19            # a TOML date</quote><subject>[freeze] date</subject><value>2026-10-19</value><unit>TOML date</unit><edge>n/a</edge><default>none</default><other_reading><value>date set by bump on the day of execution</value><unit>TOML date</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>arviz = '1.3.0' numpyro = '0.22.0' jax = '0.12.0'</quote><subject>[packages]</subject><value>[arviz = '1.3.0', numpyro = '0.22.0', jax = '0.12.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading><value>values set by bump on the day of execution</value><unit>none</unit><edge>n/a</edge><default>none</default></other_reading></entry>
+Reader A: <entry sentence="S96"><quote>altair = '6.2' plotly = '6.8' optuna = '5.0.0' great-docs = '0.17.0'</quote><subject>[cited]</subject><value>[altair = '6.2', plotly = '6.8', optuna = '5.0.0', great-docs = '0.17.0']</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C49" sentence="S102">
@@ -795,9 +829,10 @@ Reader A:
 <entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date</quote><subject>`uv.toml` (repo root)</subject><value>freeze date + 1 day, T00:00:00Z</value><unit>RFC 3339 timestamp</unit><edge>out</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 <entry sentence="S110"><quote>`uv.toml` (repo root)</quote><subject>uv.toml</subject><value>uv.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
-<entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S110:
+Reader B: <entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
+Reader B: <entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C53" sentence="S110">
@@ -805,26 +840,29 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
-<entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S110:
+Reader B: <entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
+Reader B: <entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C54" sentence="S110">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
-<entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S110:
+Reader B: <entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C55" sentence="S110">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
 <entry sentence="S110"><quote>the day after the freeze date</quote><subject>freeze date</subject><value>1</value><unit>day</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S110:
+Reader B: <entry sentence="S110"><quote>`exclude-newer` set to the RFC 3339 timestamp</quote><subject>exclude-newer</subject><value>RFC 3339</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S110"><quote>00:00:00Z on the day after the freeze date</quote><subject>exclude-newer</subject><value>00:00:00Z</value><unit>time</unit><edge>out</edge><default>none</default><other_reading><value>00:00:00Z</value><unit>time</unit><edge>in</edge><default>none</default></other_reading></entry>
 </case>
 
 <case id="C56" sentence="S111">
@@ -832,15 +870,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S111"><quote>no settings</quote><subject>skills/uv.toml</subject><value>0</value><unit>settings</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S111"><quote>a comment that names `build/versions.toml`</quote><subject>comment</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S111:
+Reader B: <entry sentence="S111"><quote>a comment that names `build/versions.toml`</quote><subject>comment</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C57" sentence="S111">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S111"><quote>no settings</quote><subject>skills/uv.toml</subject><value>0</value><unit>settings</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S111"><quote>a comment that names `build/versions.toml`</quote><subject>comment</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S111:
+Reader B: <entry sentence="S111"><quote>no settings</quote><subject>skills/uv.toml</subject><value>0</value><unit>settings</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C58" sentence="S114">
@@ -862,15 +902,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S117"><quote>`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`</quote><subject>build/check_snippets.py</subject><value>[PINNED, RUN_REMEDIATION, API_REMEDIATION]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S117"><quote>`PINNED` (moved out of `build/snippet_preamble.py`)</quote><subject>PINNED</subject><value>build/snippet_preamble.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S117:
+Reader B: <entry sentence="S117"><quote>`PINNED` (moved out of `build/snippet_preamble.py`)</quote><subject>PINNED</subject><value>build/snippet_preamble.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C61" sentence="S117">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S117"><quote>`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`</quote><subject>build/check_snippets.py</subject><value>[PINNED, RUN_REMEDIATION, API_REMEDIATION]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S117"><quote>`PINNED` (moved out of `build/snippet_preamble.py`)</quote><subject>PINNED</subject><value>build/snippet_preamble.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S117:
+Reader B: <entry sentence="S117"><quote>`build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`</quote><subject>build/check_snippets.py</subject><value>[PINNED, RUN_REMEDIATION, API_REMEDIATION]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C62" sentence="S118">
@@ -899,15 +941,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S124"><quote>`build/cc_guide/notice.sh:114`</quote><subject>build/cc_guide/notice.sh:114</subject><value>build/cc_guide/notice.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S124"><quote>`build/githooks/pre-commit:15`</quote><subject>build/githooks/pre-commit:15</subject><value>build/githooks/pre-commit</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S124:
+Reader B: <entry sentence="S124"><quote>`build/githooks/pre-commit:15`</quote><subject>build/githooks/pre-commit:15</subject><value>build/githooks/pre-commit</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C66" sentence="S124">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S124"><quote>`build/cc_guide/notice.sh:114`</quote><subject>build/cc_guide/notice.sh:114</subject><value>build/cc_guide/notice.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S124"><quote>`build/githooks/pre-commit:15`</quote><subject>build/githooks/pre-commit:15</subject><value>build/githooks/pre-commit</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S124:
+Reader B: <entry sentence="S124"><quote>`build/cc_guide/notice.sh:114`</quote><subject>build/cc_guide/notice.sh:114</subject><value>build/cc_guide/notice.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C67" sentence="S126">
@@ -929,7 +973,8 @@ Reader A:
 <entry sentence="S134"><quote>Sets the freeze date (default: today, UTC)</quote><subject>`bump [--date D] [--only pkg ...]`</subject><value>D</value><unit>date</unit><edge>n/a</edge><default>today, UTC</default><other_reading>none</other_reading></entry>
 Reader B:
 <entry sentence="S134"><quote>`bump [--date D] [--only pkg ...]`</quote><subject>bump</subject><value>bump [--date D] [--only pkg ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S134"><quote>freeze date (default: today, UTC)</quote><subject>freeze date</subject><value>today, UTC</value><unit>date</unit><edge>n/a</edge><default>today, UTC</default><other_reading>none</other_reading></entry>
+Context, other entries on S134:
+Reader B: <entry sentence="S134"><quote>freeze date (default: today, UTC)</quote><subject>freeze date</subject><value>today, UTC</value><unit>date</unit><edge>n/a</edge><default>today, UTC</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C70" sentence="S135">
@@ -937,15 +982,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S135"><quote>`drift [--pin pkg==X ...]`</quote><subject>drift</subject><value>drift [--pin pkg==X ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S135"><quote>the pinned version, the resolved version, the newest release and its upload date</quote><subject>reports</subject><value>[pinned version, resolved version, newest release, upload date]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S135:
+Reader B: <entry sentence="S135"><quote>the pinned version, the resolved version, the newest release and its upload date</quote><subject>reports</subject><value>[pinned version, resolved version, newest release, upload date]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C71" sentence="S135">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S135"><quote>`drift [--pin pkg==X ...]`</quote><subject>drift</subject><value>drift [--pin pkg==X ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S135"><quote>the pinned version, the resolved version, the newest release and its upload date</quote><subject>reports</subject><value>[pinned version, resolved version, newest release, upload date]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S135:
+Reader B: <entry sentence="S135"><quote>`drift [--pin pkg==X ...]`</quote><subject>drift</subject><value>drift [--pin pkg==X ...]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C72" sentence="S139">
@@ -953,15 +1000,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>package</subject><value>1</value><unit>package</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>run</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S139:
+Reader B: <entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>run</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C73" sentence="S139">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>package</subject><value>1</value><unit>package</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>run</subject><value>1</value><unit>run</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S139:
+Reader B: <entry sentence="S139"><quote>`--pin` changes one package for one run</quote><subject>package</subject><value>1</value><unit>package</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C74" sentence="S140">
@@ -980,29 +1029,35 @@ Reader B:
 
 <case id="C76" sentence="S148">
 Reader A:
-<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+(no entry)
 Reader B:
 <entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S148:
+Reader A: <entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C77" sentence="S148">
 Reader A:
-<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+(no entry)
 Reader B:
-<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S148:
+Reader A: <entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C78" sentence="S148">
 Reader A:
-<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+(no entry)
 Reader B:
-<entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S148"><quote>2 when it cannot resolve or reach the network</quote><subject>cannot resolve or reach the network</subject><value>2</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S148:
+Reader A: <entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions, 1 when a gate fails, and 2 when it cannot resolve or reach the network</quote><subject>`drift`</subject><value>[0, 1, 2]</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S148"><quote>`drift` exits 0 when each gate passes on the latest versions</quote><subject>each gate passes on the latest versions</subject><value>0</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S148"><quote>1 when a gate fails</quote><subject>a gate fails</subject><value>1</value><unit>exit code</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C79" sentence="S163">
@@ -1058,18 +1113,20 @@ Reader B:
 Reader A:
 <entry sentence="S176"><quote>`versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint</quote><subject>`versions_check`</subject><value>10</value><unit>commit lint position</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
-<entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S176"><quote>`uv run python build/versions.py check`</quote><subject>versions_check</subject><value>uv run python build/versions.py check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S176:
+Reader B: <entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C87" sentence="S176">
 Reader A:
 <entry sentence="S176"><quote>`versions_check` (`uv run python build/versions.py check`)</quote><subject>`versions_check` command</subject><value>uv run python build/versions.py check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
-<entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S176"><quote>the tenth commit lint</quote><subject>versions_check</subject><value>10</value><unit>commit lints</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S176:
+Reader B: <entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C88" sentence="S176">
@@ -1077,15 +1134,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S176:
+Reader B: <entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C89" sentence="S176">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S176"><quote>in `build/run_commit_lints.sh`</quote><subject>versions_check</subject><value>build/run_commit_lints.sh</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S176:
+Reader B: <entry sentence="S176"><quote>`versions_check`</quote><subject>commit lint</subject><value>versions_check</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C90" sentence="S178">
@@ -1106,36 +1165,44 @@ Reader B:
 Reader A:
 <entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
-<entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+(no entry)
+Context, other entries on S180:
+Reader B: <entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C93" sentence="S180">
 Reader A:
-<entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+(no entry)
 Reader B:
 <entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S180:
+Reader A: <entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C94" sentence="S180">
 Reader A:
-<entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+(no entry)
 Reader B:
-<entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S180:
+Reader A: <entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C95" sentence="S180">
 Reader A:
-<entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+(no entry)
 Reader B:
-<entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S180"><quote>weekly on a cron schedule and on manual dispatch</quote><subject>workflow</subject><value>[weekly cron, manual dispatch]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S180:
+Reader A: <entry sentence="S180"><quote>A new workflow, `.github/workflows/versions-drift.yml`, runs `versions.py drift` weekly on a cron schedule and on manual dispatch</quote><subject>`.github/workflows/versions-drift.yml`</subject><value>weekly</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>`.github/workflows/versions-drift.yml`</quote><subject>workflow</subject><value>.github/workflows/versions-drift.yml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S180"><quote>runs `versions.py drift`</quote><subject>workflow</subject><value>versions.py drift</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C96" sentence="S182">
@@ -1199,39 +1266,43 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S201:
+Reader B: <entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C105" sentence="S201">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S201:
+Reader B: <entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C106" sentence="S201">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S201:
+Reader B: <entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C107" sentence="S201">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S201"><quote>`skills/deep-learning/references/frameworks.md:94-95`</quote><subject>known stale citations</subject><value>skills/deep-learning/references/frameworks.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S201:
+Reader B: <entry sentence="S201"><quote>the Polars, Altair and plotly lines</quote><subject>known stale citations</subject><value>[Polars, Altair, plotly]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`skills/bayesian-workflow/references/model-comparison.md:130`</quote><subject>known stale citations</subject><value>skills/bayesian-workflow/references/model-comparison.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S201"><quote>`references/model-criticism.md:196`</quote><subject>known stale citations</subject><value>references/model-criticism.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C108" sentence="S202">
@@ -1239,15 +1310,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S202"><quote>the open Gaussian-process item at `specs/deferred_items.md:4492`</quote><subject>Gaussian-process item</subject><value>specs/deferred_items.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S202"><quote>"on the pinned 0.21.0"</quote><subject>Gaussian-process item</subject><value>on the pinned 0.21.0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S202:
+Reader B: <entry sentence="S202"><quote>"on the pinned 0.21.0"</quote><subject>Gaussian-process item</subject><value>on the pinned 0.21.0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C109" sentence="S202">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S202"><quote>the open Gaussian-process item at `specs/deferred_items.md:4492`</quote><subject>Gaussian-process item</subject><value>specs/deferred_items.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S202"><quote>"on the pinned 0.21.0"</quote><subject>Gaussian-process item</subject><value>on the pinned 0.21.0</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S202:
+Reader B: <entry sentence="S202"><quote>the open Gaussian-process item at `specs/deferred_items.md:4492`</quote><subject>Gaussian-process item</subject><value>specs/deferred_items.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C110" sentence="S203">
@@ -1255,8 +1328,9 @@ Reader A:
 <entry sentence="S203"><quote>Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`</quote><subject>`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`</subject><value>[specs/verification/32-jax-cpu.in, specs/verification/32-jax-cpu.txt]</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 <entry sentence="S203"><quote>`specs/verification/32-jax-cpu.in`</quote><subject>specs/verification/32-jax-cpu.in</subject><value>specs/verification/32-jax-cpu.in</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S203:
+Reader B: <entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Reader B: <entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C111" sentence="S203">
@@ -1264,15 +1338,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S203:
+Reader B: <entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C112" sentence="S203">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S203"><quote>point their readers at `build/versions.toml`</quote><subject>readers</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S203:
+Reader B: <entry sentence="S203"><quote>`32-jax-cpu.txt`</quote><subject>32-jax-cpu.txt</subject><value>specs/verification/32-jax-cpu.txt</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C113" sentence="S205">
@@ -1280,7 +1356,8 @@ Reader A:
 <entry sentence="S205"><quote>Change `rules/clean-code-python.md:30` to name `build/versions.toml`</quote><subject>`rules/clean-code-python.md:30`</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 Reader B:
 <entry sentence="S205"><quote>Change `rules/clean-code-python.md:30`</quote><subject>rules/clean-code-python.md:30</subject><value>rules/clean-code-python.md</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S205"><quote>name `build/versions.toml` as this repo's source for the target Python</quote><subject>target Python</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S205:
+Reader B: <entry sentence="S205"><quote>name `build/versions.toml` as this repo's source for the target Python</quote><subject>target Python</subject><value>build/versions.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C114" sentence="S205">
@@ -1302,15 +1379,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S210"><quote>`build/test_run_suites.py`</quote><subject>run_suites.py tests</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S210"><quote>`build/test_check_frontmatter.py:434`</quote><subject>run_suites.py tests</subject><value>build/test_check_frontmatter.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S210:
+Reader B: <entry sentence="S210"><quote>`build/test_check_frontmatter.py:434`</quote><subject>run_suites.py tests</subject><value>build/test_check_frontmatter.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C117" sentence="S210">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S210"><quote>`build/test_run_suites.py`</quote><subject>run_suites.py tests</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S210"><quote>`build/test_check_frontmatter.py:434`</quote><subject>run_suites.py tests</subject><value>build/test_check_frontmatter.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S210:
+Reader B: <entry sentence="S210"><quote>`build/test_run_suites.py`</quote><subject>run_suites.py tests</subject><value>build/test_run_suites.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C118" sentence="S218">
@@ -1318,15 +1397,17 @@ Reader A:
 (no entry)
 Reader B:
 <entry sentence="S218"><quote>`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`</quote><subject>CLAUDE.md edits</subject><value>build/cc_guide/conformance.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
-<entry sentence="S218"><quote>`check_conformance.py` runs before each commit</quote><subject>commit</subject><value>check_conformance.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S218:
+Reader B: <entry sentence="S218"><quote>`check_conformance.py` runs before each commit</quote><subject>commit</subject><value>check_conformance.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C119" sentence="S218">
 Reader A:
 (no entry)
 Reader B:
-<entry sentence="S218"><quote>`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`</quote><subject>CLAUDE.md edits</subject><value>build/cc_guide/conformance.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 <entry sentence="S218"><quote>`check_conformance.py` runs before each commit</quote><subject>commit</subject><value>check_conformance.py</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
+Context, other entries on S218:
+Reader B: <entry sentence="S218"><quote>`CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`</quote><subject>CLAUDE.md edits</subject><value>build/cc_guide/conformance.toml</value><unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>
 </case>
 
 <case id="C120" sentence="S220">

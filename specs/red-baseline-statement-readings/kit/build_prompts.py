@@ -168,11 +168,22 @@ def _names(phase: Phase) -> dict[str, str]:
 
 
 def _case_xml(case: Case, names: dict[str, str]) -> str:
-    parts = [f'<case id="{case.id}" sentence="S{case.sentence}">']
+    '''The entries the case rules on under each reader's name, then the readers' other entries on its sentence as
+    context (PD12). A case with no `asked` (built before it existed) shows all its entries under the names.'''
+    asked = case.asked or case.entries
+    parts, context = [f'<case id="{case.id}" sentence="S{case.sentence}">'], []
     for reader_name, label in names.items():
-        entries = case.entries.get(reader_name, [])
+        own = asked.get(reader_name, [])
         parts.append(f'{label}:')
-        parts += [_entry_xml(e) for e in entries] or ['(no entry)']
+        parts += [_entry_xml(e) for e in own] or ['(no entry)']
+        others = list(case.entries.get(reader_name, []))
+        for e in own:
+            if e in others:
+                others.remove(e)
+        context += [f'{label}: {_entry_xml(e)}' for e in others]
+    if context:
+        parts.append(f'Context, other entries on S{case.sentence}:')
+        parts += context
     parts.append('</case>')
     return '\n'.join(parts)
 
@@ -258,6 +269,17 @@ def _sentinel_phases():
     return reader_phase(sentences, claude, codex, planner), reader_phase(sentences, claude, None, planner)
 
 
+def _duo_phase() -> Phase:
+    '''A Claude-only phase with two lone entries on one p55 sentence, so two cases on that sentence.'''
+    sentences = {s.n: s.text for s in number((COPIES_DIR / 'p55-clean' / 'spec.md').read_text())}
+    n = next(k for k, text in sentences.items() if "Default `['3.13']`" in text)
+    entry = ('<entry sentence="S{n}"><quote>Default `[\'3.13\']`</quote><subject>{s}</subject><value>{v}</value>'
+             '<unit>none</unit><edge>n/a</edge><default>none</default><other_reading>none</other_reading></entry>')
+    claude = parse_statement('<statement>' + entry.format(n=n, s='pythons', v="['3.13']")
+                             + entry.format(n=n, s='interpreters', v='list of strings') + '</statement>')
+    return reader_phase(sentences, claude, None, [])
+
+
 def selftest() -> None:
     for spec_id in ('p53', 'p66', 'p55', 'p66-today', 'p55-exit'):
         text = reader(spec_id)
@@ -270,6 +292,12 @@ def selftest() -> None:
     assert 'Reader A' in pair and 'Reader B' in pair and CODEX_SENTINEL in pair and PLANNER_SENTINEL not in pair
     adj = adjudicator_prompt(CLAUDE_ONLY_PHASE, 'p55')                          # a one-reader arm
     assert 'Reader B' not in adj and CODEX_SENTINEL not in adj and PLANNER_SENTINEL not in adj
+    duo = _duo_phase()                                                          # two cases on one sentence (PD12)
+    xml = [_case_xml(c, _names(duo)) for c in duo.cases]
+    assert len(xml) == 2 and xml[0] != xml[1] and all('\nContext, ' in x for x in xml), xml
+    assert all(x.index('pythons') < x.index('interpreters') for x in xml[:1]) and \
+        xml[1].index('interpreters') < xml[1].index('pythons'), xml
+    assert '\nContext, ' in adjudicator_prompt(duo, 'p55')
     try:
         guard(reader('p53') + COPIES[1].plant.defense[1], 'p53')
         raise AssertionError('guard passed a defense line')

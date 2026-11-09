@@ -18,12 +18,14 @@ reader is then a lone entry (rule 3, or rule 4 when it names another reading). A
 matches is no case: it joins the agreed readings, so that resolve pairs it with that planner entry.
 Rule 9 is per sentence: a planner entry on the sentence that names an amendment skips the whole sentence.
 A planner entry that pairs with no agreed reading on a sentence with agreed readings is `unchecked` (unpaired).
+A case's `entries` holds its own entries and the arm's unpaired entries on its sentence; `asked` holds only its
+own, the ones it rules on (a PD12 change: the pilot's cases on one sentence listed the same entries).
 '''
 import html
 import json
 import re
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -71,6 +73,7 @@ class Case:
     sentence: int
     subject: str
     entries: dict[str, list[Entry]]
+    asked: dict[str, list[Entry]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -314,8 +317,10 @@ def reader_phase(sentences: dict[int, str], claude: list[Entry] | None, codex: l
             members = {id(x) for x in present}
             entries = {name: [e for e in listed[name] if id(e) in members or e in unpaired[name]]
                        for name in names}
-            found.append((n, rule, subject, entries))
-    cases = [Case(f'C{i}', rule, n, subject, entries) for i, (n, rule, subject, entries) in enumerate(found, 1)]
+            asked = {name: [e for e in listed[name] if id(e) in members] for name in names}
+            found.append((n, rule, subject, entries, asked))
+    cases = [Case(f'C{i}', rule, n, subject, entries, asked)
+             for i, (n, rule, subject, entries, asked) in enumerate(found, 1)]
     return Phase(cases, agreed, outcomes)
 
 
@@ -388,7 +393,9 @@ def phase_to_json(phase: Phase) -> str:
 def phase_from_json(text: str) -> Phase:
     d = json.loads(text)
     cases = [Case(c['id'], c['rule'], c['sentence'], c['subject'],
-                  {name: [_entry_from(e) for e in es] for name, es in c['entries'].items()}) for c in d['cases']]
+                  {name: [_entry_from(e) for e in es] for name, es in c['entries'].items()},
+                  {name: [_entry_from(e) for e in es] for name, es in c.get('asked', {}).items()})
+             for c in d['cases']]
     agreed = [Reading(r['sentence'], r['subject'], Slots(**r['slots'])) for r in d['agreed']]
     return Phase(cases, agreed, outcomes_from_json(json.dumps(d['outcomes'])))
 
@@ -448,6 +455,8 @@ def selftest() -> None:
     phase = reader_phase(SENTENCES, A, B, P)
     assert sorted((c.sentence, c.rule) for c in phase.cases) == [(4, 2), (5, 2), (8, 3), (10, 4)], phase.cases
     assert all(set(c.entries) <= {'claude', 'codex'} for c in phase.cases)        # no stand-in entry (D10)
+    asked = {c.sentence: sum(map(len, c.asked.values())) for c in phase.cases}      # the entries each case rules on
+    assert asked == {4: 2, 5: 2, 8: 1, 10: 2}, asked
     assert parse_rulings('<rulings></rulings>', phase.cases) is None               # a case without a ruling
     out = resolve(phase, parse_rulings(RULINGS, phase.cases), P)
     assert sorted((o.sentence, o.kind) for o in out) == [(2, 'plan-conflict'), (3, 'missing'), (5, 'unclear'),
@@ -499,6 +508,14 @@ def selftest() -> None:
                                                    subject='uploads', other='none') + '</statement>')
     assert resolve(reader_phase(row, same, None, p), [], p) == [
         Outcome('unchecked', 1, '`uv.toml` `exclude-newer`', None, p[0].slots, 'unpaired; planner lines 106')]
+    # Two lone entries on one sentence are two cases. Each lists both entries and asks about its own: the pilot's
+    # pair-arm cases C53-C55 on p66-bound S110 listed the same three entries, with nothing to tell them apart (PD12).
+    duo = parse_statement('<statement>' + _entry(1, '3', quote='the floor is 3', subject='floor', other='none')
+                          + _entry(1, '7', quote='the cap is 7', subject='cap', other='none') + '</statement>')
+    split = reader_phase(two, duo, None, [])
+    assert [[e.subject for e in c.entries['claude']] for c in split.cases] == [['floor', 'cap'], ['floor', 'cap']]
+    assert [[e.subject for e in c.asked['claude']] for c in split.cases] == [['floor'], ['cap']], split.cases
+    assert phase_from_json(phase_to_json(split)) == split
     print('compare selftest ok')
 
 

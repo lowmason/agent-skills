@@ -165,7 +165,7 @@
   "subject": "How the checks choose versions",
   "agreed": null,
   "planner": null,
-  "detail": "C1 rule 3; quote: ",
+  "detail": "C1 rule 3; quote: Exact pins in one file, plus a separate drift run on the newest releases. Not a floating gate",
   "index": 10,
   "flags": []
  },
@@ -175,7 +175,7 @@
   "subject": "Packages the file does not name",
   "agreed": null,
   "planner": null,
-  "detail": "C3 rule 3; quote: ",
+  "detail": "C3 rule 3; quote: One freeze date. Every check resolves as of that date (uv `exclude-newer`). No lock file",
   "index": 11,
   "flags": []
  },
@@ -229,7 +229,7 @@
   "sentence": 91,
   "subject": "When the drift run happens",
   "agreed": {
-   "value": "[on demand, weekly]",
+   "value": "weekly",
    "unit": "none",
    "edge": "n/a",
    "default": "none"
@@ -296,8 +296,8 @@
   "sentence": 109,
   "subject": "`.python-version`",
   "agreed": {
-   "value": ".python-version",
-   "unit": "none",
+   "value": "3.13",
+   "unit": "Python version",
    "edge": "n/a",
    "default": "none"
   },
@@ -456,7 +456,7 @@
   "sentence": 132,
   "subject": "`run`",
   "agreed": {
-   "value": "run <gate> [--pin pkg==X ...] -- <cmd>",
+   "value": "yes",
    "unit": "none",
    "edge": "n/a",
    "default": "none"
@@ -521,7 +521,7 @@
   "sentence": 136,
   "subject": "`check`",
   "agreed": {
-   "value": "check",
+   "value": "no",
    "unit": "none",
    "edge": "n/a",
    "default": "none"
@@ -581,8 +581,8 @@
   "sentence": 176,
   "subject": "`versions_check` command",
   "agreed": {
-   "value": "10",
-   "unit": "commit lint position",
+   "value": "uv run python build/versions.py check",
+   "unit": "none",
    "edge": "n/a",
    "default": "none"
   },
@@ -616,7 +616,7 @@
   "sentence": 197,
   "subject": "Polars",
   "agreed": {
-   "value": "latest Polars release on the day of execution (2.0.0 on 2026-10-21)",
+   "value": "latest Polars release on the day of execution",
    "unit": "none",
    "edge": "n/a",
    "default": "none"

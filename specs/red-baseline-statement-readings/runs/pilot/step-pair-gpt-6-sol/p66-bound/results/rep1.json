@@ -99,12 +99,22 @@
  },
  {
   "kind": "no-value",
+  "sentence": 2,
+  "subject": "Next skill",
+  "agreed": null,
+  "planner": null,
+  "detail": "C1 rule 3; quote: Next skill: writing-plans",
+  "index": 6,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
   "sentence": 9,
   "subject": "plan",
   "agreed": null,
   "planner": null,
-  "detail": "C5 rule 3; quote: This work is not part of plan 64",
-  "index": 6,
+  "detail": "C5 rule 3; quote: not part of plan 64",
+  "index": 7,
   "flags": []
  },
  {
@@ -114,7 +124,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C32 rule 3; quote: this repo's worktrees live inside the main checkout, at `.claude/worktrees/<name>/`",
-  "index": 7,
+  "index": 8,
   "flags": []
  },
  {
@@ -124,7 +134,27 @@
   "agreed": null,
   "planner": null,
   "detail": "C41 rule 3; quote: a `--check` mode as a commit lint",
-  "index": 8,
+  "index": 9,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 102,
+  "subject": "[packages]",
+  "agreed": null,
+  "planner": null,
+  "detail": "C49 rule 3; quote: Polars is in `[packages]`",
+  "index": 10,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 103,
+  "subject": "Other packages",
+  "agreed": null,
+  "planner": null,
+  "detail": "C50 rule 3; quote: Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry",
+  "index": 11,
   "flags": []
  },
  {
@@ -134,27 +164,27 @@
   "agreed": null,
   "planner": null,
   "detail": "C51 rule 3; quote: `sync --check` fails when any of them differs",
-  "index": 9,
+  "index": 12,
   "flags": []
  },
  {
   "kind": "no-value",
-  "sentence": 110,
-  "subject": "exclude-newer",
+  "sentence": 111,
+  "subject": "comment",
   "agreed": null,
   "planner": null,
-  "detail": "C53 rule 3; quote: `exclude-newer` set to the RFC 3339 timestamp",
-  "index": 10,
+  "detail": "C57 rule 3; quote: a comment that names `build/versions.toml`",
+  "index": 13,
   "flags": []
  },
  {
   "kind": "no-value",
-  "sentence": 115,
-  "subject": "`stack(gate)`",
+  "sentence": 114,
+  "subject": "plan",
   "agreed": null,
   "planner": null,
-  "detail": "C59 rule 2; quote: `stack(gate)`, the list of `pkg==version` strings for a gate after overrides",
-  "index": 11,
+  "detail": "C58 rule 3; quote: Claude Code, Codex and Gemini",
+  "index": 14,
   "flags": []
  },
  {
@@ -164,7 +194,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C60 rule 3; quote: `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`",
-  "index": 12,
+  "index": 15,
   "flags": [
    "amended-sentence"
   ]
@@ -176,7 +206,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C61 rule 3; quote: `PINNED` (moved out of `build/snippet_preamble.py`)",
-  "index": 13,
+  "index": 16,
   "flags": [
    "amended-sentence"
   ]
@@ -192,8 +222,8 @@
    "edge": "n/a",
    "default": "none"
   },
-  "detail": "C62 rule 3; quote: Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date",
-  "index": 14,
+  "detail": "C62 rule 3; quote: Tier 2 (`--api`)",
+  "index": 17,
   "flags": [
    "amended-sentence"
   ]
@@ -204,18 +234,8 @@
   "subject": "build/run_suites.py",
   "agreed": null,
   "planner": null,
-  "detail": "C63 rule 3; quote: `DEFAULT_PYTHONS` comes from the dev Python",
-  "index": 15,
-  "flags": []
- },
- {
-  "kind": "no-value",
-  "sentence": 122,
-  "subject": "`build/run_suites.py`",
-  "agreed": null,
-  "planner": null,
-  "detail": "C64 rule 2; quote: Each run passes `--exclude-newer <date>` explicitly",
-  "index": 16,
+  "detail": "C63 rule 3; quote: `build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python",
+  "index": 18,
   "flags": []
  },
  {
@@ -225,7 +245,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C65 rule 3; quote: `build/cc_guide/notice.sh:114`",
-  "index": 17,
+  "index": 19,
   "flags": []
  },
  {
@@ -235,7 +255,17 @@
   "agreed": null,
   "planner": null,
   "detail": "C66 rule 3; quote: `build/githooks/pre-commit:15`",
-  "index": 18,
+  "index": 20,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 126,
+  "subject": "usage docstrings",
+  "agreed": null,
+  "planner": null,
+  "detail": "C67 rule 3; quote: `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `build/run_commit_lints.sh`, the usage docstrings in `build/`, `hooks/` and the skill test files",
+  "index": 21,
   "flags": []
  },
  {
@@ -245,7 +275,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C68 rule 3; quote: `verify [--pin pkg==X ...]`",
-  "index": 19,
+  "index": 22,
   "flags": []
  },
  {
@@ -255,7 +285,17 @@
   "agreed": null,
   "planner": null,
   "detail": "C70 rule 3; quote: `drift [--pin pkg==X ...]`",
-  "index": 20,
+  "index": 23,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 135,
+  "subject": "reports",
+  "agreed": null,
+  "planner": null,
+  "detail": "C71 rule 3; quote: the pinned version, the resolved version, the newest release and its upload date",
+  "index": 24,
   "flags": []
  },
  {
@@ -265,7 +305,17 @@
   "agreed": null,
   "planner": null,
   "detail": "C79 rule 3; quote: An interpreter path such as `/usr/bin/python3` is not a literal",
-  "index": 21,
+  "index": 25,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 164,
+  "subject": "version",
+  "agreed": null,
+  "planner": null,
+  "detail": "C80 rule 3; quote: a `[packages]` name, a `[cited]` name or \"Python\"",
+  "index": 26,
   "flags": []
  },
  {
@@ -274,8 +324,8 @@
   "subject": "Equality",
   "agreed": null,
   "planner": null,
-  "detail": "C81 rule 3; quote: must equal the file's value at the cited precision",
-  "index": 22,
+  "detail": "C81 rule 3; quote: Equality (\"verified on Polars 1.42\", `numpyro==0.22.0`, \"checked in the 0.22.0\")",
+  "index": 27,
   "flags": []
  },
  {
@@ -284,8 +334,8 @@
   "subject": "Range",
   "agreed": null,
   "planner": null,
-  "detail": "C82 rule 3; quote: must contain the file's value",
-  "index": 23,
+  "detail": "C82 rule 3; quote: Range (`>=`, `≥`, `<`, `,<0.18`, \"3.11+\")",
+  "index": 28,
   "flags": []
  },
  {
@@ -295,7 +345,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C83 rule 3; quote: passes only through the `HISTORICAL` allowlist",
-  "index": 24,
+  "index": 29,
   "flags": []
  },
  {
@@ -305,22 +355,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C85 rule 3; quote: the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`",
-  "index": 25,
-  "flags": []
- },
- {
-  "kind": "no-value",
-  "sentence": 176,
-  "subject": "`versions_check` command",
-  "agreed": null,
-  "planner": {
-   "value": "10",
-   "unit": "commit lints",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "detail": "C87 rule 2; quote: `versions_check` (`uv run python build/versions.py check`)",
-  "index": 26,
+  "index": 30,
   "flags": []
  },
  {
@@ -335,7 +370,7 @@
    "default": "none"
   },
   "detail": "C88 rule 3; quote: `versions_check`",
-  "index": 27,
+  "index": 31,
   "flags": []
  },
  {
@@ -350,7 +385,7 @@
    "default": "none"
   },
   "detail": "C89 rule 3; quote: in `build/run_commit_lints.sh`",
-  "index": 28,
+  "index": 32,
   "flags": []
  },
  {
@@ -360,7 +395,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C90 rule 3; quote: `.github/workflows/lints.yml` keeps its steps",
-  "index": 29,
+  "index": 33,
   "flags": []
  },
  {
@@ -370,7 +405,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C91 rule 3; quote: `setup-uv` takes the interpreter from `.python-version`",
-  "index": 30,
+  "index": 34,
   "flags": []
  },
  {
@@ -384,8 +419,8 @@
    "edge": "n/a",
    "default": "none"
   },
-  "detail": "C93 rule 3; quote: A new workflow, `.github/workflows/versions-drift.yml`",
-  "index": 31,
+  "detail": "C93 rule 3; quote: `.github/workflows/versions-drift.yml`",
+  "index": 35,
   "flags": []
  },
  {
@@ -400,7 +435,7 @@
    "default": "none"
   },
   "detail": "C94 rule 3; quote: runs `versions.py drift`",
-  "index": 32,
+  "index": 36,
   "flags": []
  },
  {
@@ -414,8 +449,8 @@
    "edge": "n/a",
    "default": "none"
   },
-  "detail": "C96 rule 3; quote: it pins its actions by SHA, as `lints.yml` does",
-  "index": 33,
+  "detail": "C96 rule 3; quote: pins its actions by SHA",
+  "index": 37,
   "flags": []
  },
  {
@@ -424,8 +459,33 @@
   "subject": "results",
   "agreed": null,
   "planner": null,
-  "detail": "C99 rule 3; quote: Record the results in `specs/verification/`",
-  "index": 34,
+  "detail": "C99 rule 3; quote: in `specs/verification/`",
+  "index": 38,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 196,
+  "subject": "[[override]]",
+  "agreed": null,
+  "planner": {
+   "value": "jax 0.11.2, jaxlib 0.11.2",
+   "unit": "package version",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C101 rule 3; quote: a temporary `[[override]]` for `jax-cpu`",
+  "index": 39,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 201,
+  "subject": "known stale citations",
+  "agreed": null,
+  "planner": null,
+  "detail": "C104 rule 3; quote: the Polars, Altair and plotly lines",
+  "index": 40,
   "flags": []
  },
  {
@@ -435,7 +495,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C105 rule 3; quote: `skills/bayesian-workflow/references/model-comparison.md:130`",
-  "index": 35,
+  "index": 41,
   "flags": []
  },
  {
@@ -445,7 +505,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C106 rule 3; quote: `references/model-criticism.md:196`",
-  "index": 36,
+  "index": 42,
   "flags": []
  },
  {
@@ -455,7 +515,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C107 rule 3; quote: `skills/deep-learning/references/frameworks.md:94-95`",
-  "index": 37,
+  "index": 43,
   "flags": []
  },
  {
@@ -465,7 +525,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C108 rule 3; quote: the open Gaussian-process item at `specs/deferred_items.md:4492`",
-  "index": 38,
+  "index": 44,
   "flags": []
  },
  {
@@ -474,8 +534,18 @@
   "subject": "Gaussian-process item",
   "agreed": null,
   "planner": null,
-  "detail": "C109 rule 3; quote: which says \"on the pinned 0.21.0\"",
-  "index": 39,
+  "detail": "C109 rule 3; quote: \"on the pinned 0.21.0\"",
+  "index": 45,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 203,
+  "subject": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C110 rule 2; quote: Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+  "index": 46,
   "flags": []
  },
  {
@@ -485,7 +555,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C111 rule 3; quote: `32-jax-cpu.txt`",
-  "index": 40,
+  "index": 47,
   "flags": []
  },
  {
@@ -495,7 +565,37 @@
   "agreed": null,
   "planner": null,
   "detail": "C112 rule 3; quote: point their readers at `build/versions.toml`",
-  "index": 41,
+  "index": 48,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 205,
+  "subject": "`rules/clean-code-python.md:30`",
+  "agreed": null,
+  "planner": null,
+  "detail": "C113 rule 2; quote: Change `rules/clean-code-python.md:30` to name `build/versions.toml`",
+  "index": 49,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 205,
+  "subject": "target Python",
+  "agreed": null,
+  "planner": null,
+  "detail": "C114 rule 3; quote: name `build/versions.toml` as this repo's source for the target Python",
+  "index": 50,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 208,
+  "subject": "check findings",
+  "agreed": null,
+  "planner": null,
+  "detail": "C115 rule 3; quote: each form (equality, range, history)",
+  "index": 51,
   "flags": []
  },
  {
@@ -505,7 +605,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C116 rule 3; quote: `build/test_run_suites.py`",
-  "index": 42,
+  "index": 52,
   "flags": []
  },
  {
@@ -515,7 +615,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C117 rule 3; quote: `build/test_check_frontmatter.py:434`",
-  "index": 43,
+  "index": 53,
   "flags": []
  },
  {
@@ -524,8 +624,8 @@
   "subject": "CLAUDE.md edits",
   "agreed": null,
   "planner": null,
-  "detail": "C118 rule 3; quote: The `CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`",
-  "index": 44,
+  "detail": "C118 rule 3; quote: `CLAUDE.md` edits follow the guide sections that `build/cc_guide/conformance.toml` maps to `CLAUDE.md`",
+  "index": 54,
   "flags": []
  },
  {
@@ -535,7 +635,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C119 rule 3; quote: `check_conformance.py` runs before each commit",
-  "index": 45,
+  "index": 55,
   "flags": []
  },
  {
@@ -544,8 +644,8 @@
   "subject": "This work",
   "agreed": null,
   "planner": null,
-  "detail": "C120 rule 3; quote: This work lands after plan 63, or the plan that lands second rebases onto the other and re-reads the anchors",
-  "index": 46,
+  "detail": "C120 rule 3; quote: This work lands after plan 63",
+  "index": 56,
   "flags": []
  },
  {
@@ -555,22 +655,7 @@
   "agreed": null,
   "planner": null,
   "detail": "C121 rule 3; quote: Plan 64 and the model-lifecycle spec",
-  "index": 47,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 2,
-  "subject": "Next skill",
-  "agreed": {
-   "value": "writing-plans",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 48,
+  "index": 57,
   "flags": []
  },
  {
@@ -585,7 +670,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 49,
+  "index": 58,
   "flags": []
  },
  {
@@ -600,7 +685,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 50,
+  "index": 59,
   "flags": []
  },
  {
@@ -615,7 +700,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 51,
+  "index": 60,
   "flags": []
  },
  {
@@ -630,7 +715,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 52,
+  "index": 61,
   "flags": []
  },
  {
@@ -645,7 +730,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 53,
+  "index": 62,
   "flags": []
  },
  {
@@ -660,7 +745,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 54,
+  "index": 63,
   "flags": []
  },
  {
@@ -675,7 +760,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 55,
+  "index": 64,
   "flags": []
  },
  {
@@ -690,7 +775,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 56,
+  "index": 65,
   "flags": []
  },
  {
@@ -705,7 +790,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 57,
+  "index": 66,
   "flags": []
  },
  {
@@ -720,7 +805,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 58,
+  "index": 67,
   "flags": []
  },
  {
@@ -735,7 +820,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 59,
+  "index": 68,
   "flags": []
  },
  {
@@ -750,7 +835,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 60,
+  "index": 69,
   "flags": []
  },
  {
@@ -765,7 +850,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 61,
+  "index": 70,
   "flags": []
  },
  {
@@ -780,7 +865,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 62,
+  "index": 71,
   "flags": []
  },
  {
@@ -795,7 +880,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 63,
+  "index": 72,
   "flags": []
  },
  {
@@ -810,7 +895,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 64,
+  "index": 73,
   "flags": []
  },
  {
@@ -825,7 +910,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 65,
+  "index": 74,
   "flags": []
  },
  {
@@ -840,7 +925,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 66,
+  "index": 75,
   "flags": []
  },
  {
@@ -855,7 +940,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 67,
+  "index": 76,
   "flags": []
  },
  {
@@ -870,7 +955,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 68,
+  "index": 77,
   "flags": []
  },
  {
@@ -885,7 +970,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 69,
+  "index": 78,
   "flags": []
  },
  {
@@ -900,7 +985,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 70,
+  "index": 79,
   "flags": []
  },
  {
@@ -915,7 +1000,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 71,
+  "index": 80,
   "flags": []
  },
  {
@@ -930,7 +1015,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 72,
+  "index": 81,
   "flags": []
  },
  {
@@ -945,7 +1030,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 73,
+  "index": 82,
   "flags": []
  },
  {
@@ -960,7 +1045,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 74,
+  "index": 83,
   "flags": []
  },
  {
@@ -975,7 +1060,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 75,
+  "index": 84,
   "flags": []
  },
  {
@@ -990,7 +1075,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 76,
+  "index": 85,
   "flags": []
  },
  {
@@ -1005,7 +1090,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 77,
+  "index": 86,
   "flags": []
  },
  {
@@ -1025,7 +1110,7 @@
    "default": "none"
   },
   "detail": "planner lines 116, 3899, 4047",
-  "index": 78,
+  "index": 87,
   "flags": []
  },
  {
@@ -1033,14 +1118,14 @@
   "sentence": 86,
   "subject": "How the checks choose versions",
   "agreed": {
-   "value": "exact pins in one file",
+   "value": "exact pins",
    "unit": "none",
    "edge": "n/a",
    "default": "none"
   },
   "planner": null,
   "detail": "",
-  "index": 79,
+  "index": 88,
   "flags": []
  },
  {
@@ -1055,7 +1140,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 80,
+  "index": 89,
   "flags": []
  },
  {
@@ -1070,7 +1155,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 81,
+  "index": 90,
   "flags": []
  },
  {
@@ -1085,7 +1170,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 82,
+  "index": 91,
   "flags": []
  },
  {
@@ -1100,7 +1185,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 83,
+  "index": 92,
   "flags": []
  },
  {
@@ -1115,7 +1200,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 84,
+  "index": 93,
   "flags": []
  },
  {
@@ -1130,7 +1215,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 85,
+  "index": 94,
   "flags": []
  },
  {
@@ -1145,7 +1230,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 86,
+  "index": 95,
   "flags": []
  },
  {
@@ -1160,7 +1245,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 87,
+  "index": 96,
   "flags": []
  },
  {
@@ -1175,7 +1260,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 88,
+  "index": 97,
   "flags": []
  },
  {
@@ -1195,40 +1280,10 @@
    "default": "none"
   },
   "detail": "amended: Task 4",
-  "index": 89,
+  "index": 98,
   "flags": [
    "amended-sentence"
   ]
- },
- {
-  "kind": "missing",
-  "sentence": 102,
-  "subject": "[packages]",
-  "agreed": {
-   "value": "polars",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 90,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 103,
-  "subject": "Other packages",
-  "agreed": {
-   "value": "[pytest, pyyaml, scipy, tensorstore]",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 91,
-  "flags": []
  },
  {
   "kind": "missing",
@@ -1242,7 +1297,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 92,
+  "index": 99,
   "flags": []
  },
  {
@@ -1257,7 +1312,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 93,
+  "index": 100,
   "flags": []
  },
  {
@@ -1277,7 +1332,7 @@
    "default": "none"
   },
   "detail": "planner lines 21, 106-107, 801-804, 910-912; note: The plan sets the cutoff at 00:00:00Z on the freeze date itself, not on the day after.",
-  "index": 94,
+  "index": 101,
   "flags": []
  },
  {
@@ -1285,9 +1340,9 @@
   "sentence": 110,
   "subject": "freeze date",
   "agreed": {
-   "value": "1",
-   "unit": "day",
-   "edge": "n/a",
+   "value": "freeze date + 1 day, T00:00:00Z",
+   "unit": "RFC 3339 timestamp",
+   "edge": "out",
    "default": "none"
   },
   "planner": {
@@ -1297,7 +1352,7 @@
    "default": "none"
   },
   "detail": "planner lines 107, 911, 1569-1578; note: Under the plan's cutoff, files uploaded on the freeze date are excluded and a pin uploaded on that day is rejected.",
-  "index": 95,
+  "index": 102,
   "flags": []
  },
  {
@@ -1312,7 +1367,22 @@
   },
   "planner": null,
   "detail": "",
-  "index": 96,
+  "index": 103,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 110,
+  "subject": "exclude-newer",
+  "agreed": {
+   "value": "freeze date + 1 day, T00:00:00Z",
+   "unit": "RFC 3339 timestamp",
+   "edge": "out",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 104,
   "flags": []
  },
  {
@@ -1327,7 +1397,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 97,
+  "index": 105,
   "flags": []
  },
  {
@@ -1342,37 +1412,22 @@
   },
   "planner": null,
   "detail": "",
-  "index": 98,
+  "index": 106,
   "flags": []
  },
  {
   "kind": "missing",
-  "sentence": 111,
-  "subject": "comment",
+  "sentence": 115,
+  "subject": "`stack(gate)`",
   "agreed": {
-   "value": "build/versions.toml",
-   "unit": "none",
+   "value": "pkg==version",
+   "unit": "strings",
    "edge": "n/a",
    "default": "none"
   },
   "planner": null,
   "detail": "",
-  "index": 99,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 114,
-  "subject": "plan",
-  "agreed": {
-   "value": "[Claude Code, Codex, Gemini]",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 100,
+  "index": 107,
   "flags": []
  },
  {
@@ -1387,7 +1442,22 @@
   },
   "planner": null,
   "detail": "",
-  "index": 101,
+  "index": 108,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 122,
+  "subject": "`build/run_suites.py`",
+  "agreed": {
+   "value": "--exclude-newer <date>",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 109,
   "flags": []
  },
  {
@@ -1407,22 +1477,7 @@
    "default": "[dev]"
   },
   "detail": "planner lines 72, 2218-2219, 2416",
-  "index": 102,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 126,
-  "subject": "usage docstrings",
-  "agreed": {
-   "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, usage docstrings in build/, hooks/ and the skill test files, commands in skill text]",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 103,
+  "index": 110,
   "flags": []
  },
  {
@@ -1437,7 +1492,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 104,
+  "index": 111,
   "flags": []
  },
  {
@@ -1452,7 +1507,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 105,
+  "index": 112,
   "flags": []
  },
  {
@@ -1467,7 +1522,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 106,
+  "index": 113,
   "flags": []
  },
  {
@@ -1482,7 +1537,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 107,
+  "index": 114,
   "flags": []
  },
  {
@@ -1497,7 +1552,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 108,
+  "index": 115,
   "flags": []
  },
  {
@@ -1512,22 +1567,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 109,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 135,
-  "subject": "reports",
-  "agreed": {
-   "value": "[pinned version, resolved version, newest release, upload date]",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 110,
+  "index": 116,
   "flags": []
  },
  {
@@ -1542,7 +1582,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 111,
+  "index": 117,
   "flags": []
  },
  {
@@ -1557,7 +1597,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 112,
+  "index": 118,
   "flags": []
  },
  {
@@ -1572,7 +1612,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 113,
+  "index": 119,
   "flags": []
  },
  {
@@ -1587,7 +1627,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 114,
+  "index": 120,
   "flags": []
  },
  {
@@ -1602,7 +1642,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 115,
+  "index": 121,
   "flags": []
  },
  {
@@ -1617,7 +1657,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 116,
+  "index": 122,
   "flags": []
  },
  {
@@ -1632,7 +1672,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 117,
+  "index": 123,
   "flags": []
  },
  {
@@ -1647,7 +1687,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 118,
+  "index": 124,
   "flags": []
  },
  {
@@ -1662,7 +1702,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 119,
+  "index": 125,
   "flags": []
  },
  {
@@ -1677,22 +1717,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 120,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 164,
-  "subject": "version",
-  "agreed": {
-   "value": "[[packages] names, [cited] names, Python]",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 121,
+  "index": 126,
   "flags": []
  },
  {
@@ -1707,7 +1732,22 @@
   },
   "planner": null,
   "detail": "",
-  "index": 122,
+  "index": 127,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 176,
+  "subject": "`versions_check` command",
+  "agreed": {
+   "value": "uv run python build/versions.py check",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 128,
   "flags": []
  },
  {
@@ -1727,7 +1767,7 @@
    "default": "none"
   },
   "detail": "planner lines 4128-4131",
-  "index": 123,
+  "index": 129,
   "flags": []
  },
  {
@@ -1742,7 +1782,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 124,
+  "index": 130,
   "flags": []
  },
  {
@@ -1762,7 +1802,7 @@
    "default": "none"
   },
   "detail": "planner lines 4125, 4174",
-  "index": 125,
+  "index": 131,
   "flags": []
  },
  {
@@ -1777,7 +1817,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 126,
+  "index": 132,
   "flags": []
  },
  {
@@ -1792,27 +1832,7 @@
   },
   "planner": null,
   "detail": "",
-  "index": 127,
-  "flags": []
- },
- {
-  "kind": "plan-conflict",
-  "sentence": 196,
-  "subject": "[[override]]",
-  "agreed": {
-   "value": "jax-cpu",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": {
-   "value": "jax 0.11.2, jaxlib 0.11.2",
-   "unit": "package version",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "detail": "planner lines 3370-3384",
-  "index": 128,
+  "index": 133,
   "flags": []
  },
  {
@@ -1820,8 +1840,8 @@
   "sentence": 197,
   "subject": "Polars",
   "agreed": {
-   "value": "latest Polars release",
-   "unit": "none",
+   "value": "2.0.0",
+   "unit": "version",
    "edge": "n/a",
    "default": "none"
   },
@@ -1832,7 +1852,7 @@
    "default": "none"
   },
   "detail": "planner lines 3341-3356",
-  "index": 129,
+  "index": 134,
   "flags": []
  },
  {
@@ -1843,81 +1863,6 @@
    "value": "2.0",
    "unit": "version",
    "edge": "in",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 130,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 201,
-  "subject": "known stale citations",
-  "agreed": {
-   "value": "[Polars lines, Altair lines, plotly lines, skills/bayesian-workflow/references/model-comparison.md:130, references/model-criticism.md:196, skills/deep-learning/references/frameworks.md:94-95]",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 131,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 203,
-  "subject": "`specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
-  "agreed": {
-   "value": "[specs/verification/32-jax-cpu.in, specs/verification/32-jax-cpu.txt]",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 132,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 205,
-  "subject": "`rules/clean-code-python.md:30`",
-  "agreed": {
-   "value": "build/versions.toml",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 133,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 205,
-  "subject": "target Python",
-  "agreed": {
-   "value": "build/versions.toml",
-   "unit": "none",
-   "edge": "n/a",
-   "default": "none"
-  },
-  "planner": null,
-  "detail": "",
-  "index": 134,
-  "flags": []
- },
- {
-  "kind": "missing",
-  "sentence": 208,
-  "subject": "check findings",
-  "agreed": {
-   "value": "[equality, range, history]",
-   "unit": "none",
-   "edge": "n/a",
    "default": "none"
   },
   "planner": null,

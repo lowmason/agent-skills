@@ -12,7 +12,7 @@ The spec follows, numbered by sentence. A line that starts with `#` is a heading
 @@SPEC@@
 </spec>
 
-The cases:
+The cases follow. Rule only on the entries under the reader names. The lines after `Context` are the readers' other entries on the same sentence, for context only.
 
 @@CASES@@
 

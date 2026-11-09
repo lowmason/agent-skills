@@ -7,9 +7,12 @@
 - reader-opus p66: $0.2289, prompt 29154 chars (reader-opus/p66/rep1.json)
 - standin-opus p66-bound: $1.0185, prompt 250083 chars (standin-opus/p66-bound/rep1.json)
 - control-opus p66-bound: $1.0375, prompt 242738 chars (control-opus/p66-bound/rep1.json)
-- adjudicator, claude arm, p66-bound, before the PD12 changes: $0.3032, prompt 51359 chars (before-pd12/step-claude/p66-bound/rep1.json)
-- adjudicator, claude arm, p66-bound: $0.3014, prompt 50047 chars (step-claude/p66-bound/rep1.json)
-- adjudicator, pair-gpt-6-sol arm, p66-bound: $0.7402, prompt 116547 chars (step-pair-gpt-6-sol/p66-bound/rep1.json)
+- adjudicator, claude arm, p66-bound, before the PD12 pairing and unit changes: $0.3032, prompt 51359 chars (before-pd12/step-claude/p66-bound/rep1.json)
+- adjudicator, claude arm, p66-bound, before the PD12 case-context change: $0.3014, prompt 50047 chars (before-pd12-context/step-claude/p66-bound/rep1.json)
+- adjudicator, pair-gpt-6-sol arm, p66-bound, before the PD12 case-context change: $0.7402, prompt 116547 chars (before-pd12-context/step-pair-gpt-6-sol/p66-bound/rep1.json)
+- adjudicator, claude arm, p66-bound: $0.2844, prompt 50697 chars (step-claude/p66-bound/rep1.json)
+- adjudicator, pair-gpt-6-sol arm, p66-bound: $0.6684, prompt 121091 chars (step-pair-gpt-6-sol/p66-bound/rep1.json)
+- pilot total: $4.84
 
 ## Codex reps (gpt-6-sol, effort ultra): tokens used, from the log; no USD figure
 
@@ -38,27 +41,27 @@ Each call is the pilot cost of its role, scaled by its prompt size against the p
 | control-opus | p55-default | $0.511 | 5 | $2.55 |
 | control-opus | p66-today | $1.037 | 5 | $5.19 |
 | control-opus | p55-exit | $0.510 | 5 | $2.55 |
-| adjudicator claude | p53-unit | $0.304 | 5 | $1.52 |
-| adjudicator claude | p66-bound | $0.301 | 5 | $1.51 |
-| adjudicator claude | p55-default | $0.221 | 5 | $1.10 |
-| adjudicator claude | p55-clean | $0.221 | 5 | $1.10 |
-| adjudicator claude | p66-today | $0.301 | 5 | $1.51 |
-| adjudicator claude | p55-exit | $0.221 | 5 | $1.10 |
-| adjudicator pair-gpt-6-sol | p53-unit | $0.747 | 5 | $3.73 |
-| adjudicator pair-gpt-6-sol | p66-bound | $0.740 | 5 | $3.70 |
-| adjudicator pair-gpt-6-sol | p55-default | $0.542 | 5 | $2.71 |
-| adjudicator pair-gpt-6-sol | p55-clean | $0.542 | 5 | $2.71 |
-| adjudicator pair-gpt-6-sol | p66-today | $0.740 | 5 | $3.70 |
-| adjudicator pair-gpt-6-sol | p55-exit | $0.542 | 5 | $2.71 |
-| adjudicator codex-gpt-6-sol | p53-unit | $0.747 | 5 | $3.73 |
-| adjudicator codex-gpt-6-sol | p66-bound | $0.740 | 5 | $3.70 |
-| adjudicator codex-gpt-6-sol | p55-default | $0.542 | 5 | $2.71 |
-| adjudicator codex-gpt-6-sol | p55-clean | $0.542 | 5 | $2.71 |
-| adjudicator codex-gpt-6-sol | p66-today | $0.740 | 5 | $3.70 |
-| adjudicator codex-gpt-6-sol | p55-exit | $0.542 | 5 | $2.71 |
+| adjudicator claude | p53-unit | $0.287 | 5 | $1.43 |
+| adjudicator claude | p66-bound | $0.284 | 5 | $1.42 |
+| adjudicator claude | p55-default | $0.208 | 5 | $1.04 |
+| adjudicator claude | p55-clean | $0.208 | 5 | $1.04 |
+| adjudicator claude | p66-today | $0.284 | 5 | $1.42 |
+| adjudicator claude | p55-exit | $0.208 | 5 | $1.04 |
+| adjudicator pair-gpt-6-sol | p53-unit | $0.674 | 5 | $3.37 |
+| adjudicator pair-gpt-6-sol | p66-bound | $0.668 | 5 | $3.34 |
+| adjudicator pair-gpt-6-sol | p55-default | $0.490 | 5 | $2.45 |
+| adjudicator pair-gpt-6-sol | p55-clean | $0.490 | 5 | $2.45 |
+| adjudicator pair-gpt-6-sol | p66-today | $0.668 | 5 | $3.34 |
+| adjudicator pair-gpt-6-sol | p55-exit | $0.490 | 5 | $2.45 |
+| adjudicator codex-gpt-6-sol | p53-unit | $0.674 | 5 | $3.37 |
+| adjudicator codex-gpt-6-sol | p66-bound | $0.668 | 5 | $3.34 |
+| adjudicator codex-gpt-6-sol | p55-default | $0.490 | 5 | $2.45 |
+| adjudicator codex-gpt-6-sol | p55-clean | $0.490 | 5 | $2.45 |
+| adjudicator codex-gpt-6-sol | p66-today | $0.668 | 5 | $3.34 |
+| adjudicator codex-gpt-6-sol | p55-exit | $0.490 | 5 | $2.45 |
 
 Calls: reader-opus 25, standin-opus 30, control-opus 25, adjudicator 90.
-Projected Task 5 total: $93.72. PD7 cap: $150: under the cap, no owner question.
-If PD9 triggers, Step 8 adds 60 adjudicator calls (the pair and codex arms on gpt-6.1-sol): about $38.54 more, $132.26 in all.
+Projected Task 5 total: $89.54. PD7 cap: $150: under the cap, no owner question.
+If PD9 triggers, Step 8 adds 60 adjudicator calls (the pair and codex arms on gpt-6.1-sol): about $34.80 more, $124.34 in all.
 No pilot rep cost more than $3.00 (the highest: $1.0375), so every role keeps the $4.00 cap.
 Codex readers (25 reps on gpt-6-sol), scaled the same way: about 1,337,112 tokens.
