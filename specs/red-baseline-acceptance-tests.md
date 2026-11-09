@@ -284,10 +284,17 @@ only the first kind: each plant is a value that the spec states and the copy cha
 6. **The approved plans are older than today's writing-plans.** The control judged them by today's
    checklist. Findings on format only (Review Focus, plan length, the Decisions-line form) count as false
    alarms (Appendix B, Task 3), so the control's false-alarm counts measure format drift as well.
-7. **The arms did not run in one place.** The Claude arm's adjudicator ran on Claude Code 2.1.319 in a cloud
+7. **The control is a fresh session, so it is a best case for Self-Review.** The spec's control is "a fresh
+   planner session" (Verification, step 3), told that it wrote the plan (DF11). To that session, each plant is
+   a plain contradiction between the spec and the plan, and nothing ties it to the planted value. The plants
+   also give no reason for the planted value. A real misread comes from the planner's own reading of the spec,
+   and a Self-Review in the same session can read the spec the same way again. So the control's 15 of 15
+   catches is an upper bound for Self-Review on these plants. The probe does not test the case that a second,
+   independent reading exists for: a misread that the planner repeats when it reviews its own plan.
+8. **The arms did not run in one place.** The Claude arm's adjudicator ran on Claude Code 2.1.319 in a cloud
    container. The Codex arms' adjudicators ran on 2.1.316 on the owner's Mac, under `env -i`. All used the
    same prompt form, model and flags.
-8. **The Codex reader is not the owner's everyday Codex.** Its isolation flags drop the user's
+9. **The Codex reader is not the owner's everyday Codex.** Its isolation flags drop the user's
    `config.toml` (Appendix A). Its context still held the owner's global `~/.codex/AGENTS.md` and the skills
    list, by the owner's decision.
 
