@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 HELPERS = ('sdd-workspace', 'task-brief', 'review-package', 'task-start', 'task-done')
 # A mention is `scripts/<helper>` that no word character or hyphen follows, so
-# `scripts/task-briefing` and `scripts/task-brief.py` are other files.
+# `scripts/task-briefing` is another file. A dot may follow a mention (a sentence end).
 MENTION = re.compile(r'scripts/(' + '|'.join(HELPERS) + r')(?![\w-])')
 ANCHOR = re.compile(r'<this-skill-dir>/(?:\.\./[a-z0-9-]+/)?$')
 STALE = 'no helper reference under skills/; the pattern is stale'
