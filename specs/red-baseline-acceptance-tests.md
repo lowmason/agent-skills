@@ -7,6 +7,10 @@ This record gives the probe's results. It recommends nothing about the build pla
 results against the spec's bars and decides what the build plan keeps (spec decision D8). The kit, the copies
 and every rep's prompt and reply are in `specs/red-baseline-acceptance-tests/`.
 
+**Read section 8, item 1 first.** The final review found that the adjudicator prompts did not pair the
+reader's tests with their tasks. Every treatment-arm number in this record comes from those prompts. The
+control's numbers do not.
+
 Terms used in this record:
 
 - A **copy** is a completed plan with one planted misread, or with none (`p55-clean`).
@@ -72,7 +76,8 @@ tests to disagree with the plan's tests, so that the adjudicator gets a case to 
 counts of the false alarms from the `CLASSIFY.txt` files. Each row gives an arm and a copy: the scored reps,
 the catches out of 5 (`n/a` for the clean copy), the false alarms per rep (the mean, then each rep), the
 unclear cases per rep, and the real and interface rulings in all 5 reps. Every rep of every arm scored. No
-rep was VOID, and none was rerun.
+rep was VOID, and none was rerun. The treatment-arm rows come from adjudicator prompts that did not pair the
+reader's tests with their tasks (section 8, item 1).
 
 ```text
 adjudicator-codex-gpt-6-sol p53-unit     scored=5 catches=1/5 false_alarms/rep=3.2 [3, 4, 3, 3, 3] unclear/rep=1.8 [2, 0, 3, 2, 2] real=5 interface=0
@@ -112,7 +117,7 @@ False alarms per rep without the `amendment:` lines:
 | `p66-bound` | 0.2 [0, 0, 1, 0, 0] | 0.6 [2, 0, 1, 0, 0] | 0.2 [1, 0, 0, 0, 0] | 4.0 [3, 4, 5, 4, 4] |
 
 59 of the control's 72 false alarms are findings on today's writing-plans format, which the approved plans
-predate (section 8, item 5).
+predate (section 8, item 6).
 
 ## 4. The bars
 
@@ -164,6 +169,9 @@ numbers follow. The owner applies the rule (D8).
 
 - `gpt-6-sol` rep 4: the adjudicator ruled the plan wrong on the message in the plan's own test,
   "compatibility must be a string of 1-500 bytes", and quoted R1.3. The reader's tests used ASCII values only.
+  The two test sets agree on all of those inputs, so this ruling did not come from a conflict between them.
+  Adjudicator rule 5 says not to rule on such a case. The scorer counts it because it meets the spec's
+  definition of a catch. Without it, `gpt-6-sol` ties the Claude arm on catches, 10 of 15.
 - `gpt-6.1-sol` rep 3: the reader's test passes `"é" * 500` (500 characters, 1,000 UTF-8 bytes), the one input
   that separates the spec from the plant. It is the only such test in the 15 reader reps of the three arms.
 
@@ -236,7 +244,25 @@ The spec's own assessment, "What a second reading can and cannot catch", is that
 transcription errors, finds ambiguity without resolving it, and misses shared blind spots. The probe tests
 only the first kind: each plant is a value that the spec states and the copy changed. These are its limits:
 
-1. **The `p53-unit` plant almost never reached the adjudicator as a case.** The plan's own test of R1.3 uses
+1. **The adjudicator prompts did not pair the reader's tests with their tasks.** Plan Task 2 Step 5 gives each
+   task section "the reader's tests and flags for that task", and spec Design 4 says that the adjudicator
+   "reads both test sets for each task". But `build_prompts.py` split the reader's module before every `def`
+   and decorator line. So each test's `# spec:` and `# task:` lines went into its task's `<acceptance-tests>`
+   section. The test function itself went into one shared `<acceptance-tests-without-a-task>` section, without
+   those lines. Multi-line `parametrize` decorators went into the shared preamble, apart from their tests. All
+   60 treatment-arm adjudicator prompts have this layout, and so does the Task 2 pilot prompt: their task
+   sections hold 3,222 comment pairs and no test code. The adjudicator therefore had to match each test to its
+   task and its spec sentence by itself.
+   - Not affected: the control (its catches, its false alarms and its bar miss), the 60 reader replies, and
+     the reason for the `p53-unit` result (item 2), which does not depend on the prompt layout.
+   - Measured with this layout: every treatment-arm count in sections 3 to 6, the treatment rows of the bars
+     in section 4, and the comparison in section 5. The size and the direction of the effect are unknown. The
+     catches could move as well.
+   - The final review found the defect (code-reviewer and Codex). Its fix pass corrected the split, and
+     `build_prompts.py selftest` pins it on a sample and on the 60 committed reader replies. Built with the
+     fix, the 60 prompts hold all 3,222 reader tests under their tasks. The committed prompts and runs are
+     unchanged, and no rep was rerun. A rerun of the 60 adjudicator reps is the owner's decision (D8).
+2. **The `p53-unit` plant almost never reached the adjudicator as a case.** The plan's own test of R1.3 uses
    `'x' * 500` and `'x' * 501`. Of the 15 reader reps, 14 also tested R1.3 with ASCII values only, and no
    reader flagged the unit (the plant has no Interfaces site, so no reader saw it). For ASCII text,
    characters and UTF-8 bytes give the same count. So the two test sets agreed on every input, and the
@@ -244,22 +270,22 @@ only the first kind: each plant is a value that the spec states and the copy cha
    in 1 of 5 (section 5). This is the blind-spot pattern in a small form: nearly every reading left out the
    one input that tells the two readings apart. The control reads the whole copy, the plan's prose included,
    and it caught the plant in 5 of 5 reps.
-2. **Amendments read as false alarms.** Each copy keeps its spec as it stood at plan review (DF2). A plan
+3. **Amendments read as false alarms.** Each copy keeps its spec as it stood at plan review (DF2). A plan
    that amends its own spec in a task therefore states values that the copy's spec contradicts. Most of the
    treatment arms' false alarms are rulings against those values (section 3). At a real plan review, the
    spec has not yet received the plan's amendments either.
-3. **Small sample.** Three plants in three plans, one clean copy, 5 reps per arm and copy. With 5 reps, a
+4. **Small sample.** Three plants in three plans, one clean copy, 5 reps per arm and copy. With 5 reps, a
    true catch rate of 70% still meets the 4-of-5 bar about half the time (53%).
-4. **One judge.** The executors labeled every false alarm, real ruling and near catch by hand (DF10), with
+5. **One judge.** The executors labeled every false alarm, real ruling and near catch by hand (DF10), with
    one reason line each. Task 4 reused Task 3's reason lines word for word where a plan value recurs. No
    second person checked the labels. Section 4 names the one label that moves a bar.
-5. **The approved plans are older than today's writing-plans.** The control judged them by today's
+6. **The approved plans are older than today's writing-plans.** The control judged them by today's
    checklist. Findings on format only (Review Focus, plan length, the Decisions-line form) count as false
    alarms (Appendix B, Task 3), so the control's false-alarm counts measure format drift as well.
-6. **The arms did not run in one place.** The Claude arm's adjudicator ran on Claude Code 2.1.319 in a cloud
+7. **The arms did not run in one place.** The Claude arm's adjudicator ran on Claude Code 2.1.319 in a cloud
    container. The Codex arms' adjudicators ran on 2.1.316 on the owner's Mac, under `env -i`. All used the
    same prompt form, model and flags.
-7. **The Codex reader is not the owner's everyday Codex.** Its isolation flags drop the user's
+8. **The Codex reader is not the owner's everyday Codex.** Its isolation flags drop the user's
    `config.toml` (Appendix A). Its context still held the owner's global `~/.codex/AGENTS.md` and the skills
    list, by the owner's decision.
 
@@ -290,8 +316,10 @@ Task 4's flags are `--ignore-user-config`, `--ignore-rules`, `--ephemeral`, `-c 
 `--disable` list in `kit/run_codex.sh` and a pinned `-c model_reasoning_effort="ultra"`. None of them edits
 `~/.codex`. The owner decided that the reps run although `AGENTS.md` and the skills list still load ("Record
 it and run"). Without a shell, a rep can read no file. `measure.py residual` checks each Codex log for any
-line that is not the prompt, the reply or a known status line, such as a tool call. It found none in the 40
-reader logs.
+line that is not the prompt, the reply or a known status line, such as a tool call. `measure.py score` checks
+only a Codex rep's model, so the executor ran `residual` on each reader folder by hand. A rule fixed before the
+first rep made a rep VOID if its leftover lines showed a tool call or any event other than the reply. The
+check found no leftover line in the 40 reader logs.
 
 ## Appendix B. The executors' rulings
 
@@ -318,4 +346,6 @@ Task 4: Ruling: measure.py gains codex_residual() and `residual <run-dir> <promp
 Task 4: Owner decision (2026-11-08, mid-run message): "Increase spend budget if needed" — a rep that stops on its --max-budget-usd cap (DF8: 4.00) reruns with a higher cap, ledgered; no cap had been reached when it arrived.
 Task 4: Ruling: measure.py table counts the false-alarm, real and interface labels of near items too (selftest RED → GREEN) — control-opus/p53-unit rep2 ruling3 is a near item that Task 3 labeled false-alarm, which table dropped, so TABLE.txt read 2.6 [2, 2, 3, 3, 3] beside 14 false-alarm lines; regenerated, only that row moves, to 2.8 [2, 3, 3, 3, 3] — if wrong, the control's p53 false-alarm mean is 0.2 high, which no bar reads (the control's bar is catches). Task 3's CLASSIFY line is unchanged.
 Task 4: Ruling: the Task 4 commit adds kit/run_codex.sh and kit/measure.py beside runs/ (Step 7's command adds runs/ only) — the runs depend on the isolation flags and the residual check, and the table fix changes TABLE.txt — if wrong, the kit changes sit in the Task 4 commit rather than in a commit of their own.
+Final: Ruling: measure.py keeps crediting gpt-6-sol p53-unit rep4's catch (Codex P1) — spec Verification step 5 defines a catch as a ruling that the plan is wrong which quotes the right sentence, with no test-set-conflict condition; the record now says that the ruling broke adjudicator rule 5 and that gpt-6-sol ties the Claude arm on catches without it — if wrong, gpt-6-sol's catches are 10 of 15, not 11.
+Final: Declined to judge (Codex P2): measure.py score() does not VOID a Codex reader rep whose log shows tool activity — the plan's scorer checks the model only (score_codex), and Task 4's pre-registered VOID rule runs measure.py residual as its own step, with a judgment on the leftover lines; it ran on all 40 reader reps with 0 leftover lines, and no Codex reader rep reruns. For the owner to rule.
 ```

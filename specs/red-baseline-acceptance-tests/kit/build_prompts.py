@@ -4,6 +4,7 @@ Usage, from the repository root:
   uv run python <kit>/build_prompts.py control <copy> <out-file>
   uv run python <kit>/build_prompts.py reader <copy> <out-file>
   uv run python <kit>/build_prompts.py adjudicator <copy> <reader-reply-file> <out-file>
+  uv run python <kit>/build_prompts.py selftest   checks the reader-test split on a sample and on every committed reader reply
 `control` reads skills/writing-plans/SKILL.md with `git show origin/main:` and writes that sha into the
 prompt's first comment line and into the run directory's SOURCES.txt. A reader or adjudicator prompt
 that holds `def test_` from outside the reader reply and the plan's tests, or a path of the copy or of
@@ -29,7 +30,9 @@ FRONTMATTER_RE = re.compile(r'^---\n.*?\n---\n', re.S)
 TESTS_RE = re.compile(r'<tests>(.*?)</tests>', re.S)
 FLAG_RE = re.compile(r'<flag task="(\d+)">(.*?)</flag>', re.S)
 TASK_TAG_RE = re.compile(r'^\s*#\s*task:\s*(\d+)', re.M)
-TOP_LEVEL_RE = re.compile(r'^(?=(?:@|def |class |# spec:))', re.M)
+UNIT_HEADER_RE = re.compile(r'(?:# spec:|# task:|@)')
+DEF_START_RE = re.compile(r'^(?:async\s+def|def|class)\s', re.M)
+TEST_START_RE = re.compile(r'^(?:async\s+def\s+test_|def\s+test_|class\s+Test)', re.M)
 LEAK = 'def test_'
 PLAN_STAND_IN = '<this plan>'
 
@@ -110,15 +113,33 @@ def reader(copy_id: str) -> tuple[str, list[str]]:
     return text, []
 
 
+def top_level_chunks(tests: str) -> list[str]:
+    '''Split the reader module where a top-level unit starts: at a `# spec:`, `# task:` or decorator line, or at a
+    def or class line that no such line opens. So each test keeps its comment lines, decorators and body.'''
+    chunks, current, in_header = [], [], False
+    for line in tests.split('\n'):
+        header, starts_def = UNIT_HEADER_RE.match(line), DEF_START_RE.match(line)
+        if (header or starts_def) and not in_header:
+            chunks.append('\n'.join(current))
+            current = []
+        current.append(line)
+        if header:
+            in_header = True
+        elif starts_def:
+            in_header = False
+    chunks.append('\n'.join(current))
+    return [chunk for chunk in chunks if chunk.strip()]
+
+
 def split_reader_tests(tests: str) -> tuple[str, dict[int, list[str]], list[str]]:
     '''The reader module's preamble, its top-level chunks by `# task: N`, and the chunks with no task.'''
-    chunks = [c for c in TOP_LEVEL_RE.split(tests) if c.strip()]
+    chunks = top_level_chunks(tests)
     preamble, by_task, loose = [], {}, []
     for chunk in chunks:
         tag = TASK_TAG_RE.search(chunk)
         if tag:
             by_task.setdefault(int(tag.group(1)), []).append(chunk.strip('\n'))
-        elif LEAK in chunk:
+        elif TEST_START_RE.search(chunk):
             loose.append(chunk.strip('\n'))
         else:
             preamble.append(chunk.strip('\n'))
@@ -160,8 +181,71 @@ def adjudicator(copy_id: str, reply_file: Path) -> tuple[str, list[str]]:
     return text, [f'reader reply: {reply_file}']
 
 
+SAMPLE_TESTS = '''import pytest
+
+from pkg import mod
+
+BODY = "def test_x(): pass"
+
+
+# spec: "A sentence."
+# task: 2
+def test_one():
+    assert mod.one() == 1
+
+
+def _helper():
+    return 2
+
+
+# spec: "Another sentence."
+# task: 3
+@pytest.mark.parametrize(
+    'value',
+    [1, 2],
+)
+def test_two(value):
+    assert _helper() == value
+
+
+@pytest.fixture
+def repo(tmp_path):
+    return tmp_path'''
+READER_REPLIES = ('reader-opus/*/rep[0-9]*.json', 'codex-gpt-6-sol/*/rep[0-9]*.md', 'codex-gpt-6.1-sol/*/rep[0-9]*.md')
+MIN_READER_REPLIES = 60
+
+
+def selftest() -> None:
+    '''Each reader test stays whole under its task, and other top-level code goes to the preamble.'''
+    preamble, by_task, loose = split_reader_tests(SAMPLE_TESTS)
+    assert loose == [], loose
+    assert by_task == {
+        2: ['# spec: "A sentence."\n# task: 2\ndef test_one():\n    assert mod.one() == 1'],
+        3: ['# spec: "Another sentence."\n# task: 3\n@pytest.mark.parametrize(\n    \'value\',\n    [1, 2],\n)\n'
+            'def test_two(value):\n    assert _helper() == value'],
+    }, by_task
+    assert preamble == ('import pytest\n\nfrom pkg import mod\n\nBODY = "def test_x(): pass"\n\ndef _helper():\n    return 2\n\n'
+                        '@pytest.fixture\ndef repo(tmp_path):\n    return tmp_path'), preamble
+    checked = 0
+    for pattern in READER_REPLIES:
+        for path in sorted((KIT.parent / 'runs').glob(pattern)):
+            tests = TESTS_RE.search(reply(path) or '').group(1).strip('\n')
+            preamble, by_task, loose = split_reader_tests(tests)
+            chunks = [chunk for task_chunks in by_task.values() for chunk in task_chunks]
+            assert not loose, (path, loose[0][:200])
+            assert all(len(DEF_START_RE.findall(chunk)) == 1 for chunk in chunks), path
+            assert sum(len(TEST_START_RE.findall(chunk)) for chunk in chunks) == len(TEST_START_RE.findall(tests)), path
+            assert '@pytest.mark.parametrize' not in preamble, path
+            checked += 1
+    assert checked >= MIN_READER_REPLIES, checked
+    print('build_prompts selftest ok')
+
+
 def main() -> None:
     args = sys.argv[1:]
+    if args == ['selftest']:
+        selftest()
+        return
     if len(args) == 3 and args[0] in ('control', 'reader'):
         kind, copy_id, out = args
         text, sources = (control if kind == 'control' else reader)(copy_id)
