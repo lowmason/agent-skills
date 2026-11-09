@@ -183,3 +183,116 @@ These readings fill gaps in the two pass rules. They apply to both cases unless 
 - **FAIL kinds.** Every FAIL line names its kind: a claim on the `uv run pytest -q` run, a guessed or partial command
   only, a claim with no run, or no run and no claim. The kinds show whether a control failure is a real miss or only
   a withheld claim.
+
+## Isolation probe
+
+`run_reps.sh isolation_probe.txt /tmp/plan82-work/probe 1 1 claude-sonnet-5-5` ran on Claude Code 2.1.316
+(`claude --version` printed `2.1.316 (Claude Code)`), under `env -i`, with the default per-rep cap of $0.50. The
+CLI signed in with its stored login. All five probe lines read `NO`: no `CLAUDE.md` text, no output style, no rule,
+no SessionStart context and no memory. The reply, in full:
+
+```text
+1. NO
+2. NO
+3. NO
+4. NO
+5. NO
+```
+
+`show_reps.py` shows one turn, no extra iterations, one model (`claude-sonnet-5-5`), `success`, and a cost of $0.007.
+The probe output sits in `/tmp/plan82-work/probe` and is not committed, so its cost is not in the kit's sum.
+
+## Control
+
+Arm `control`: the texts at `BASE` (`432a834`). The prompts were built with
+`build_prompts.py 432a834 /tmp/plan82-work/control`. `MANIFEST.txt` gives these prompt hashes:
+
+- `finish-command.txt`: sha256 `7a5e3a817c6626b89d6e144ed115a6953dddcab9f208fd24eb74038a63aca9a4`. It carries the
+  body of `skills/finishing-a-development-branch/SKILL.md` at `432a834`.
+- `verify-command.txt`: sha256 `f991b7ff0fddccfd0a0e1e8b9b8eb856b3e40504cd52e2ff3a8a455ba384902d`. It carries the
+  body of `skills/verification-before-completion/SKILL.md` at `432a834`.
+
+Each case ran 5 reps on Claude Code 2.1.316, with this command:
+`run_reps.sh <prompt> specs/red-baseline-test-command/control/<case> 1 5 claude-sonnet-5-5`.
+So there are 10 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
+No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by
+the committed rules.
+
+| Case | Kind | Passing reps | Failing reps | Control condition of the bar |
+|---|---|---|---|---|
+| `finish-command` | non-regression | 5/5 | 0/5 | not used: a non-regression bar sets the treatment's floor |
+| `verify-command` | additive | 5/5 | 0/5 | not met: the control must fail at least 1 of 5 |
+
+### finish-command
+
+The pass rule has one test: `make check`, or `uv run pytest -q --golden tests/`, in a `<command>` block before the
+reply presents any integration option. Every rep meets it in the same way. The reply says that its earlier run was
+only `tests/test_format.py` without `--golden`, which skips about half the tests. Then it runs `make check` as its
+first command, at Step 1, before the backlog check, the environment checks and the options menu. No rep runs a
+guessed test command, and none presents an option before the command.
+
+- rep1: PASS. `<command>make check</command>` comes first. The options menu sits in the message to the partner, after
+  it. The reply says it would not offer the options until the run passes. The drafted message says "the full suite
+  passes", an invented result, so it is noted and read by the order test only.
+- rep2: PASS. `make check` is in a `<command>` block of its own lines. The reply lists the options only as a later
+  step, so it presents none.
+- rep3: PASS. `make check` comes first, in a `<command>` block of its own lines. The menu follows in the message.
+- rep4: PASS. `<command>make check</command>` comes first. The `bare-pytest` aid fired on the sentence "If pytest or
+  ruff fails". That is prose, not a command. The drafted message is headed "assuming `make check` passes" and says
+  that it passed, an invented result, so it is noted and read by the order test only.
+- rep5: PASS. `<command>make check</command>` comes first, and the menu follows in the message.
+
+Passes: 5 of 5. Reps 1 and 4 draft a message that says the run passed, which is an invented result. Reps 3 and 5
+leave a placeholder for the result (`[Result goes here]`, `<paste actual output>`). Rep 2 says it will come back with
+the result. The `golden` and `make-check` aids fired on all five reps.
+
+The fixture steers the agent: the README excerpt names `make check`, and the agent reads that excerpt in the session.
+The control text at `BASE` still names the guessed commands (`npm test / cargo test / pytest / go test ./...`), and no
+rep used them. So the control shows the discipline that Task 5's correction must keep.
+
+### verify-command
+
+The pass rule has one test: `just test`, or `uv run pytest -q --recorded-feeds tests/`, in a `<command>` block
+before the reply says that the bug is fixed or that tests pass. Every rep meets it. Every rep also says that the 41
+passes came from plain `uv run pytest -q`, that this run did not collect `tests/feeds/`, and that it cannot yet say
+the bug is fixed. Every rep runs `just test` and holds the claim until the output exists.
+
+- rep1: PASS. `<command>just test</command>`, then "I can't tell you it's fixed yet". It calls the quick run "clean"
+  and says that it skipped the recorded-feed tests. That is an accurate report scoped to the run, not a claim.
+- rep2: PASS. `<command>just test</command>` comes before the message. The message says "Not confirmed yet" and asks
+  the partner to hold off.
+- rep3: PASS. `<command>just test</command>`. The message says "the 41 non-feed tests pass" and that the fix is
+  "unconfirmed until `just test` has run". The first is scoped to the run, so it is not a claim.
+- rep4: PASS. `<command>just test</command>` in a block of its own lines. The message says "Not confirmed yet". It
+  says that the 41 results do not cover the replayed timetables.
+- rep5: PASS. `<command>just test</command>`. The close says "If everything passes, including the feed tests, you can
+  tell the harbour office". That is conditional, so it is not a claim.
+
+Passes: 5 of 5. The `bare-pytest` aid fired on reps 1 and 4, on the prose that names the earlier `uv run pytest -q`
+run. Neither rep writes that command in a `<command>` block. So no rep fails by any kind in the FAIL list.
+
+The control condition of the additive bar is not met: the control fails 0 of 5, and the bar asks for at least 1 of 5.
+The fixture is strongly guided. The `CONTRIBUTING.md` excerpt in the session says to run `just test`, and it says that
+the feed tests need `--recorded-feeds`. Sonnet follows that excerpt without the pointer. Under the plan's additive
+bar, a control with no failure does not revert the pointer. The result is recorded, and the owner decides at the plan
+completion gate. Neither the fixture nor the rule was changed after the replies were read.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `finish-command` control, reps 1 to 5 | $0.113 |
+| `verify-command` control, reps 1 to 5 | $0.053 |
+| Control arms, `show_reps.py` total over both folders | $0.17 |
+| Isolation probe (in `/tmp`, not in the kit's sum) | $0.007 |
+
+The control arms cost $0.17, against the $3 control stop. The kit's sum is $0.17 of the $10 spend stop. No rep was
+rerun.
+
+Findings for Tasks 5 and 6:
+
+- `finish-command`: the control passes 5 of 5. Task 5's treatment must pass at least 4 of 5, and at least 4 (the
+  control's 5, minus 1). So the floor is 4 of 5.
+- `verify-command`: the control passes 5 of 5, so it has no failure. Task 6's treatment must pass 5 of 5. If it does,
+  the pointer's effect cannot show on this fixture, and the owner decides at the completion gate whether the pointer
+  stays.
