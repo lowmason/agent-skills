@@ -13,7 +13,7 @@
 ## Labels used in this plan
 
 - **D3, D7 and D8** are the old spec's decisions that the spec carries: the `opus` adjudicator that quotes the deciding text or rules `unclear` (D3), the cheaper Codex model first (D7), and the probe as its own plan before any build plan (D8). **D9–D13** are the spec's own owner decisions. Owner decisions at this plan's review take D14 onward, so every id stays unique.
-- **DF-ARMS** and **DF-AMEND** are the two defaults that the handoff brief flagged. **PD1–PD13** are this plan's own defaults ("planner defaults"). They are not plan 81's DF1–DF11 or its handoff's DF-A. All are under "Defaults for review".
+- **DF-ARMS** and **DF-AMEND** are the two defaults that the handoff brief flagged. **PD1–PD13** are this plan's own defaults ("planner defaults"). They are not plan 81's DF1–DF11 or its handoff's DF-A. All are under "Defaults (approved, D14)".
 - **`RS/`** is `specs/red-baseline-statement-readings/`. **`RB/`** is plan 81's folder, `specs/red-baseline-acceptance-tests/`. **The record** is plan 81's results file, `specs/red-baseline-acceptance-tests.md`. **The results file** is this plan's, `specs/red-baseline-statement-readings.md`.
 - A **copy** is a spec-and-plan pair with one plant or none. A **spec id** names one distinct spec text: `p53`, `p66`, `p55`, `p66-today` or `p55-exit`. The **planted sentence** is the spec sentence that a copy's plant or edit is about.
 - A **statement** is one run's list of slot entries (spec Design 3). The **stand-in** is the `claude -p` call that plays the planner (spec Verification 4).
@@ -57,11 +57,11 @@
 
 ## Decisions
 
-None.
+- **D14** (owner, plan review, 2026-11-09): approved the plan as written ("Approve as written"). It keeps both two-reading plants, `p55-exit` included, and the defaults DF-ARMS, DF-AMEND and PD1–PD13. Applied in: Defaults (approved, D14).
 
-## Defaults for review
+## Defaults (approved, D14)
 
-The brief has no decisions. It flagged two defaults, and this plan settles both as the brief recommends. PD1–PD13 are this plan's own. The owner reviews all of them at plan review.
+The brief has no decisions. It flagged two defaults, and this plan settles both as the brief recommends. PD1–PD13 are this plan's own. The owner approved all of them as written at plan review (D14).
 
 - **DF-ARMS. Every arm runs on the owner's Mac, on one Claude Code binary.** The Codex reader can run only where the owner's `codex` CLI is logged in. Plan 81 ran its Claude arms in a cloud container and its Codex arms on the Mac, and the record lists that split as limit 8 (`:294-296`). One split remains: plan 81's control results on the bare plants, the reference for plants with no defense, ran on Claude Code 2.1.319 in the cloud, and the Mac had no 2.1.319 (record `:43-44`). `env -i` is not part of this choice, because the spec requires it when a Desktop session drives the runs (Constraints, "Isolation"). If wrong: the arms differ in place and version again, and the results file repeats limit 8.
 - **DF-AMEND. A plan conflict that a copy's own amendment causes** gets the label `false-alarm` with a reason that starts `amendment:`, as in plan 81 (record `:345`). The clean-copy false-alarm bar is judged both on the literal count and on the count without those lines, as plan 81's owner ruled (record `:124-126`, `:351`). Each copy keeps its spec as it stood at plan review. So a value that the plan's own amendment sets, such as plan 55's `cc_guide` suite name, disagrees with the copy's spec. A stand-in that marks the sentence `amended` makes rule 9 skip it. A stand-in that does not raises a plan conflict, which is neither a false alarm nor real. If wrong: the bar counts a known amendment as a false alarm, or the label hides a real one.
@@ -89,7 +89,7 @@ The brief has no decisions. It flagged two defaults, and this plan settles both 
 
   Both edits fill a slot that a reader must commit to, the `default` or the `value`. Plan 81's three plant sentences stay unedited, so no sentence carries two kinds of plant.
 
-  The decider regexes (Task 2) screen one sentence at a time, by its words. The cross-references in the two lean rows were checked by hand on 2026-11-09. An adjudicator that follows a lean rules a reading, not `unclear`. Reading A makes the rep a miss, and reading B makes it a plan conflict, which PD10 counts apart. So a lean can lower the step's catches on a plant for a reason in the plant, not in the step. The results file gives the adjudicator's deciding quote for each ruling on these sentences, so the owner can tell the two apart. Whether to keep `p55-exit`, whose leans run through two requirements, is the first question at plan review.
+  The decider regexes (Task 2) screen one sentence at a time, by its words. The cross-references in the two lean rows were checked by hand on 2026-11-09. An adjudicator that follows a lean rules a reading, not `unclear`. Reading A makes the rep a miss, and reading B makes it a plan conflict, which PD10 counts apart. So a lean can lower the step's catches on a plant for a reason in the plant, not in the step. The results file gives the adjudicator's deciding quote for each ruling on these sentences, so the owner can tell the two apart. The owner kept `p55-exit`, whose leans run through two requirements, at plan review (D14).
 - **PD3. The amendment answer keys.** These are the source-spec lines that each plan's amendment tasks change. They were found on 2026-11-09 by matching each replace block's old text in the source spec:
   - plan 53, Task 1 (A1–A11): `104, 159, 181-182, 192, 203, 238-240, 268-270, 276-277, 371-377, 394, 401-402, 419`;
   - plan 55, Task 1 Step 5 (Q1): `83, 98, 144-145, 186`;
