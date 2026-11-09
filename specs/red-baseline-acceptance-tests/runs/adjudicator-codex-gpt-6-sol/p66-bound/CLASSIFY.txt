@@ -1,0 +1,11 @@
+rep1 ruling2 near-miss the planted cutoff, ruled plan-wrong, but the quote is "Files uploaded on the freeze date itself (UTC) are included", not the sentence that holds the spec_key; the rep catches the plant in another ruling
+rep1 ruling4 false-alarm amendment: owner decision D6 applies amendment A3 to R2.3 (Task 6), which pins Tier 2 on the snippets stack; DF2 leaves the copy spec unamended
+rep1 ruling5 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment
+rep1 ruling6 false-alarm a test-wrong ruling whose acceptance field only quotes the spec's bump sentence ("It rewrites [packages] from the result and runs sync"), which the plan follows; no conflicting assertion is shown
+rep1 ruling7 false-alarm a test-wrong ruling whose acceptance field only quotes the spec's retire sentence for 32-jax-cpu.in and 32-jax-cpu.txt, which the plan follows by moving them to specs/verification/completed/; no conflicting assertion is shown
+rep2 ruling3 false-alarm amendment: owner decision D6 applies amendment A3 to R2.3 (Task 6), which pins Tier 2 on the snippets stack; DF2 leaves the copy spec unamended
+rep3 ruling5 false-alarm amendment: owner decision D6 applies amendment A3 to R2.3 (Task 6), which pins Tier 2 on the snippets stack; DF2 leaves the copy spec unamended
+rep3 ruling6 false-alarm the plan test checks the drift run, which the spec's drift row resolves "with no freeze date and no pins" and passes when "each gate passes on the latest versions"; the Tier 2 sentence does not govern drift
+rep4 ruling5 interface the ruling is on late_pins return shape (messages or specs) against the Interfaces wording; spec R3.6 only asks that the error name the package and the date, which the plan message does
+rep5 ruling2 near-miss the planted cutoff, ruled plan-wrong, but the quote is "Files uploaded on the freeze date itself (UTC) are included", not the sentence that holds the spec_key; the rep catches the plant in another ruling
+rep5 ruling6 false-alarm amendment: owner decision D6 applies amendment A3 to R2.3 (Task 6), which pins Tier 2 on the snippets stack; DF2 leaves the copy spec unamended

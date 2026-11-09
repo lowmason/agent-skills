@@ -1,0 +1,3560 @@
+OpenAI Codex v0.163.0
+--------
+workdir: /tmp/plan81-codex-8E75Pq
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: ultra
+reasoning summaries: none
+session id: 01a1bdae-9924-7e51-98ee-8d76f6b08ebc
+--------
+user
+You are the second reader of a spec. Another agent wrote an implementation plan from this spec. You do not see that plan, its steps or its tests. Your task is to turn the spec into acceptance tests on your own reading.
+
+Rules:
+
+1. Your inputs are the requirement text (the spec), the plan's Tech Stack line, and each task's Files list and Interfaces block. You get nothing else from the plan: no Global Constraints, task steps, test code, approach lines, Review Focus section or Decisions section.
+2. Use the Interfaces blocks for names, paths and types only. Take every value from the requirement text. Flag each plan value in the Interfaces blocks or Files lists that differs from the requirement text.
+3. Do not search for a plan file or any other file. You have no tools, and you need none.
+4. Write the tests in pytest, against the modules, functions and paths that the Interfaces blocks name. Each test names the spec sentence that it checks, and the task whose Produces it needs.
+5. List each spec sentence that you could not turn into a test.
+
+<spec>
+# Agent-skills portability — Design Spec
+
+**Status: APPROVED (2026-10-18).** The owner approved the design on 2026-10-03
+and the written spec on 2026-10-18. Next step: an implementation plan from the
+writing-plans skill.
+The owner approved all five design sections in a brainstorming pass over
+`specs/completed/agent-skills-best-practices.md` (a September 2026 survey of
+Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot,
+and others). This document is the handoff for implementation planning. One
+piece has landed since: a 2026-10-15 quick fix made `build/check_frontmatter.py`
+accept `compatibility`, and R1.3's check of its value is still to do. The
+survey is this spec's input; it was retired ahead of the spec, to
+`specs/completed/` in `79ad04f` (2026-10-03).
+
+## Purpose and scope
+
+Bring the repo to the parts of the survey that apply to it, in four themes the
+owner selected:
+
+1. **Frontmatter conformance** — the lint accepts every Agent Skills spec field,
+   separates spec keys from host extensions, and checks the shapes the spec
+   defines (R1).
+2. **Codex-visible openings** — description openings work under Codex's
+   per-description truncation, and `writing-skills` records the measured fact
+   (R2).
+3. **Self-contained scripts** — every runnable bundled script carries a PEP 723
+   header and is invoked with `uv run` (R3).
+4. **License travel** — each skill directory carries the license texts that
+   apply to it, so a single-skill install keeps MIT's required notice (R4).
+
+Most of the survey is already true here and needs no work: `name` matches its
+directory and descriptions are within 1,024 characters (`build/check_frontmatter.py`);
+`install.py` links `skills/` into `~/.claude/skills` and the cross-runtime
+`~/.agents/skills`, with a `--copy` fallback; skill bodies name no runtime tool
+(`TodoWrite`, Skill/Task/Agent tool) and use no `$ARGUMENTS` or `` !`cmd` ``
+injection, and bundled paths use `<this-skill-dir>`; side-effect gates live in
+skill bodies; every command is `disable-model-invocation: true`.
+
+## Measured baseline (2026-10-03)
+
+| Fact | Evidence |
+|---|---|
+| `ALLOWED_KEYS` lacks the spec field `compatibility`, so the lint rejects a spec-valid skill | `build/check_frontmatter.py` |
+| Gemini CLI 0.46.0 loads the three skills carrying Claude host keys (`effort`: bayesian-workflow, tune-hyperparameters; `context`: tech-debt) as `[Enabled]` | `gemini skills list --all`, run from a neutral directory |
+| Codex CLI 0.154.0 lists the same three skills | `codex debug prompt-input`, run from `/tmp/bwprobe/` |
+| Codex shortens descriptions when its listing exceeds its budget. With 93 skills listed (66 from `~/.agents/skills`, the rest system and plugin skills), 31 of this repo's 32 descriptions were cut to 156–164 characters (median 158); only `test-driven-development` (79 characters) appeared whole. Measured at this one skill count only. That the cutoff moves with the number of skills sharing the budget is an inference from Codex's documented budget, not a measurement | same `codex debug prompt-input` render |
+| All 32 descriptions lead with "Use when" and name their primary trigger within the first 150 characters | per-skill review of each description's opening (R2.1) |
+| One description contains angle brackets: llm-wiki's `'verify <page>'` | YAML parse of every `SKILL.md` |
+| Two of 16 runnable scripts carry PEP 723 headers (both `build.py`); others are invoked as `python`, `python3`, or `uv run --python 3.13 --with … python …` | grep of `skills/**` |
+| The 13 superpowers skills have no `license` field; no skill directory contains a license file | YAML parse; `ls skills/*/LICENSE*` |
+| NOTICE credits `bayesian-workflow` to Alexandre Andorra's MIT skill, but no copyright line or license text for it exists in the repo | `grep -i andorra NOTICE` and the repo tree |
+| Only `writing-skills` has a body over 500 lines (696) | line count after the closing frontmatter `---` |
+
+## Decisions and alternatives
+
+1. **Keep `skills/` as the canonical tree.** Moving it to `.agents/skills/` has a
+   large blast radius (installer, tests, CLAUDE.md, symlinks) and buys nothing:
+   the installer already links into every runtime's discovery path, which is the
+   survey's own alternative. *Rejected.*
+2. **No in-repo `.claude/skills` symlink.** The skills already load user-level
+   from the same checkout; a project-level link would list each one twice.
+   *Rejected.*
+3. **No manual-only conversion of side-effecting skills.**
+   `disable-model-invocation: true` removes a skill from the model's reach,
+   which would break bare-name handoffs (`finishing-a-development-branch`,
+   `using-git-worktrees`, and the others are invoked by name from other skills).
+   Their side effects are already gated in their bodies, the survey's portable
+   pattern. *Rejected.*
+4. **Keep the "Use when…" description convention.** The survey suggests "Does X.
+   Use when Y". `writing-skills`, the governing meta-skill, requires trigger-only
+   descriptions on tested evidence that a workflow summary in the description
+   lets agents skip the body. "Use when" already front-loads the trigger.
+   *Rejected.*
+5. **No description rewrites in this spec.** R2.1's review found none needed,
+   and no trigger evals exist to catch a regression. The one exception is the
+   angle-bracket fix (R1.5), which is wording-equivalent.
+6. **The strict profile is a report, not the gate.** Both measured non-Claude
+   runtimes load skills with host keys; strictness matters only for claude.ai
+   uploads and `skills-ref`-style validators (R1.8).
+7. **No secondary-source numbers become lint caps.** The survey's 1,536-character
+   truncation, Codex's 2% / 8,000-character budget, and Claude Code's listing
+   fraction stay out of the lint; it keeps the spec's 1,024 cap. Claude Code
+   listing behavior is documented in
+   `specs/guides/claude-code-customization-guide.md`.
+8. **House PEP 723 form, not `#!/usr/bin/env -S uv run --script`.** A plain
+   `#!/usr/bin/env python3` shebang keeps the script runnable by bare `python3`
+   where uv is absent; `uv run <path>` reads the header either way. The two
+   existing `build.py` headers are the template.
+9. **All runnable scripts become self-contained**, including the three that read
+   saved model artifacts. No single work venv pairs NumPyro with ArviZ, so the
+   project interpreter can lack the imports these scripts need, and work repos
+   that install `hooks/uv-guard.sh` deny bare `python …` anyway.
+10. **Every skill bundles license text**, not only those with third-party
+    content: one uniform rule, enforced byte-for-byte, at no context cost (the
+    files are never referenced, so never loaded).
+
+## Requirements
+
+### R1 — Frontmatter conformance (`build/check_frontmatter.py`)
+
+R1.1 **Key sets.** Replace `ALLOWED_KEYS` with two named sets and allow their
+union in a `SKILL.md`:
+- `SPEC_KEYS = {name, description, license, compatibility, metadata, allowed-tools}`
+- `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation}`
+
+R1.2 **`metadata`.** When present, a mapping whose keys and values are all
+strings. All current values pass.
+
+R1.3 **`compatibility`.** When present, a string of 1–500 characters after
+stripping.
+
+R1.4 **`license`.** Required in every `SKILL.md`, a non-empty string (repo
+policy, beyond the spec). The 13 superpowers skills gain `license: MIT` and
+
+```yaml
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
+```
+
+mirroring `bayesian-workflow`'s existing `author` / `adapted_by` pattern.
+
+R1.5 **No angle brackets.** `name` and `description` contain no `<` or `>`.
+Fix llm-wiki's trigger phrase `'verify <page>'` to `'verify a page'`.
+
+R1.6 **Invocation parity with Codex.** For a `SKILL.md`, `disable-model-invocation`
+must be a YAML boolean when present. A skill with `disable-model-invocation: true`
+must ship `agents/openai.yaml` that parses and sets
+`policy.allow_implicit_invocation: false`. Conversely, a skill whose
+`agents/openai.yaml` sets that policy to `false` must set
+`disable-model-invocation: true`. No skill trips this today; it exists so that
+the first manual-only skill cannot auto-fire in Codex.
+
+R1.7 **Body-length advisory.** A `SKILL.md` body (the lines after the closing
+frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not
+change the exit code. Today only `writing-skills` warns; splitting it is
+deferred. When Stage A adds this warning, it also adds a `skill-body-size`
+`[[check]]` to `build/cc_guide/conformance.toml` that maps `skills.overview` to
+it, with `enforced_by = 'check_frontmatter'` (conformance R6 P3).
+
+R1.8 **`--strict` profile.** `check_frontmatter.py --strict` additionally fails
+on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or
+`anthropic`. It is not part of the default gate. Expected result today: exactly
+`bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail. Agents and
+commands are not Agent Skills and are unaffected.
+
+R1.9 The module docstring describes the new rules and the `--strict` flag, and
+CLAUDE.md's Commands section gains the `--strict` invocation with one line on
+when to use it (preparing a claude.ai upload or a spec-only validator run),
+under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance
+register").
+
+### R2 — Codex-visible openings
+
+R2.1 **Review verdict (recorded here, no rewrites).** Criterion: within its first
+150 characters, a description names the skill's primary trigger, the task or
+symptom it exists for, so an agent shown only that prefix would load it for its
+canonical use. All 32 descriptions pass as of 2026-10-03. The closest calls are
+`creative-thinking` (its quoted examples carry the "fuzzy target" trigger) and
+the `clean-code` / `clean-coder` pair, whose openings both lead with editing
+Python. Both pass, so neither is rewritten.
+
+R2.2 **RED baseline micro-test for `writing-skills`.** Before any edit to
+`writing-skills`, run a baseline:
+- 5 reps, each a fresh agent given the current `writing-skills` description
+  guidance (the control: no new wording). Each is asked to write a SKILL.md
+  description for a synthetic skill that is not from this repo and has at least
+  8 trigger conditions, one of them designated in the scenario as primary.
+- Run from a session whose cwd was never this repo.
+- A rep passes if the designated primary trigger lies within the first 150
+  characters. The controller reads each output and records the verbatim
+  150-character prefix.
+- Record the scenario, prompts, outputs, and verdicts in
+  `specs/red-baseline-description-openings-<YYYY-MM-DD>.md`, the house
+  red-baseline format.
+
+R2.3 **Edit by outcome.**
+- **Baseline ≥ 4/5:** add only a factual note of 2–4 lines to `writing-skills`'
+  "Token Efficiency" section. The note covers three points: Codex shortens every
+  description when its listing exceeds its budget; the measured cut (156–164
+  characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure
+  (`codex debug prompt-input` from a directory outside any repo, reading the
+  Skills list). No new rule.
+- **Baseline ≤ 3/5:** also add one checklist line ("the primary trigger falls
+  within the first ~150 characters") and GREEN-test it: 5 reps with the new
+  wording, at least 4/5 passing, recorded in the same red-baseline file.
+
+### R3 — Self-contained scripts
+
+R3.1 **Inventory.** The runnable scripts are the `skills/*/scripts/*.py` files
+with a `__main__` guard. There are 16. Fourteen gain a header:
+- `bayesian-workflow`: `calibration_check.py`, `check_diagnostics.py`,
+  `diagnose_model.py`
+- `describe-critique-methodology`: `check_decoupling.py`
+- `design-architecture`: `new_adr.py`
+- `explore-data`: `profile.py`
+- `llm-wiki`: `bootstrap_wiki.py`, `distill_sessions.py`, `distill_specs.py`,
+  `lint_wiki.py`
+- `recommend-probabilistic-model`: `characterize.py`
+- `recommend-visualization`: `recommend.py`
+- `track-model-experiments`: `compare_experiments.py`
+- `writing-plans`: `deferred_stats.py`
+
+The two `build.py` scripts (`classification-codes`, `geographic-codes`) already
+conform. `tune-hyperparameters/scripts/time_series_cv.py` has no `__main__`
+guard; it is a library imported into the user's code and stays header-less.
+Bash scripts are out of scope.
+
+R3.2 **Header form.** Follow the `build.py` template exactly:
+- Line 1 is `#!/usr/bin/env python3`; add it where missing.
+- Then a `# /// script` block with single-quoted TOML strings, a
+  `requires-python`, and a `dependencies` list (`[]` for stdlib-only scripts).
+
+R3.3 **`requires-python`.**
+- Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite
+  covering the script passes, run with `uv run --python 3.X` and that suite's
+  CLAUDE.md dependencies.
+- Scripts covered by one suite share its floor, unless a failure is attributable
+  to one script, which then alone takes the higher floor.
+- Prose floors that disagree with the header are aligned or removed (e.g.
+  "Python ≥ 3.9" in `recommend-probabilistic-model` and `recommend-visualization`).
+  The header and the skill's `compatibility` field become the statement of
+  record.
+
+R3.4 **`dependencies`.**
+- Every third-party import, including function-level imports, is declared with a
+  `>=` floor at the major version the suite currently resolves (e.g.
+  `'polars>=1.0'`). No upper pins.
+- Imports inside a `try` whose handler catches `ImportError` or
+  `ModuleNotFoundError` are optional and may be left undeclared.
+- Runtime backends that the script never imports but needs to read its inputs
+  (e.g. `h5netcdf` for NetCDF) are added when R3.8's fixture run shows them
+  needed.
+
+R3.5 **Invocations.**
+- Every documented invocation in `skills/**/*.md` of a path that resolves to one
+  of the 16 scripts uses the form `uv run <path> [args]`, replacing `python`,
+  `python3`, `uv run --no-project --python 3.13 python`, and
+  `uv run --python 3.13 --with … python`.
+- Path forms in use: `<this-skill-dir>/scripts/x.py`,
+  `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the
+  installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py`
+  (llm-wiki's INSTALL.md), and repo-relative `skills/<skill>/scripts/build.py`.
+- Each skill with such an invocation gets this sentence once, near its first
+  invocation: "Without uv, run the same path with `python3` in an environment
+  that has the dependencies listed in the script's header."
+
+R3.6 **`compatibility`.** Every skill whose markdown runs a bundled script with
+`uv run` declares
+`compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.X+.`
+Here 3.X is the highest `requires-python` floor among the scripts that skill
+invokes. That set includes `finishing-a-development-branch`, which runs
+`writing-plans`' `deferred_stats.py`.
+
+R3.7 **Lint, in `check_frontmatter.py`.** Each rule gets a RED test first.
+- A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block
+  that parses with `tomllib` and has `requires-python` and `dependencies`.
+- In such a script, every non-stdlib, non-local import is declared in
+  `dependencies`:
+  - stdlib is detected via `sys.stdlib_module_names`;
+  - local means a sibling module file in the same directory;
+  - import names map to distributions through a small alias table, e.g.
+    `yaml` → `pyyaml`;
+  - R3.4's optional-import exemption applies.
+- No skill markdown invokes a resolving bundled-script path with bare `python` or
+  `python3`, including line-continued forms (`python \` followed by the path on
+  the next line). A path that does not resolve to a bundled script, such as
+  `writing-skills/anthropic-best-practices.md`'s teaching example
+  `scripts/migrate.py`, is not flagged.
+- A skill whose markdown runs a bundled script via `uv run` declares a
+  `compatibility` value containing `uv`.
+
+R3.8 **Execution proof**, one time, recorded in the plan's completion notes.
+- From an empty scratch directory (a subdirectory such as `/tmp/bwprobe/`, never
+  `/tmp` itself), each of the 16 scripts runs `uv run <absolute-path>` on a
+  minimal real input that exercises its main code path.
+- `--help` alone is enough only for a script with no input-reading path.
+- The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`,
+  `compare_experiments.py`) each read a small saved InferenceData fixture.
+- One script is also run from inside a directory holding an unrelated
+  `pyproject.toml`. This proves the header isolates it from the project
+  environment.
+
+R3.9 The dependency-drift check still passes. Invocation text changes, but no
+cross-skill reference is added or dropped; finishing → `writing-plans`'
+`deferred_stats.py` is an existing `DEPENDENCIES` edge.
+
+### R4 — License text travels with each skill
+
+R4.1 **Bundled copies.** Each skill directory carries regular files (never
+symlinks, which `install.py --copy` refuses) that are byte-identical to the root
+license files and carry the same names:
+
+| File | Skills | Basis |
+|---|---|---|
+| `LICENSE` | every skill under `skills/` | every skill contains Lowell Mason's original work or modifications |
+| `LICENSE-superpowers` | the 13 superpowers skills | adapted from obra/superpowers (NOTICE) |
+| `LICENSE-coding-skills` | `bayesian-workflow`, `clean-code` | NOTICE records *adapted* Mancuso Lab content (`references/jax-numerics.md`, `references/modules.md`). `tech-debt` took "only the idea" and gets no copy |
+| `LICENSE-andorra` | `bayesian-workflow` | only if R4.5 finds an upstream notice |
+
+R4.2 **Provenance lint (`build/check_provenance.py`)**, driven by one
+`BUNDLED_LICENSES` table (root file → skills; `LICENSE` implied for every skill).
+RED tests first.
+- Every required copy exists, is a regular file, and is byte-identical to its
+  root file.
+- No skill directory holds a `LICENSE*` file outside its mapping.
+- Every root `LICENSE*` file is mapped to at least one skill.
+- The script stays stdlib-only, so its CLAUDE.md command keeps no `--with`.
+
+R4.3 **Frontmatter** carries the license fields per R1.4.
+
+R4.4 **Documentation.**
+- NOTICE gains one paragraph near the top: each skill directory carries copies
+  of the license texts that apply to it, so a single-skill install
+  (`install.py --copy --skill`, or a third-party installer) keeps the notice MIT
+  requires. The root files are canonical, and `check_provenance.py` enforces
+  the copies.
+- README's License section gains one sentence to the same effect.
+- CLAUDE.md's provenance section gains the invariant and names the enforcing
+  lint, under the `claude-md-size` check's 200-line limit (Sequencing,
+  "Conformance register").
+
+R4.5 **Andorra lookup** (a plan task).
+- Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its
+  license. There are three outcomes:
+  1. **A notice exists.** Add the upstream license text verbatim as root
+     `LICENSE-andorra`, map it to `bayesian-workflow`, and extend NOTICE's
+     `bayesian-workflow/` block with the source URL and the quoted copyright line.
+  2. **Upstream declares MIT but ships no notice.** NOTICE records that, in the
+     form already used for the Fonnesbeck repository. Nothing is bundled.
+  3. **Upstream cannot be located.** NOTICE is unchanged and a deferred item is
+     logged with what was searched.
+- Never compose a copyright line that is not quoted from the source.
+- The 2026-08-26 intake review (`specs/completed/skill-intake-review-2026-08-26.md`)
+  already found that Andorra appears nowhere in the history of
+  pymc-labs/python-analytics-skills (only Fonnesbeck and Dean commit there), so
+  start the search from his own publications rather than that repository.
+
+## Sequencing and execution constraints
+
+Stages, in order. D is independent of C and may run alongside it.
+
+- **A — R1.** Lands together with the 13 superpowers frontmatter additions and
+  the llm-wiki fix, so the new hard rules are green on arrival.
+- **B — R4.** License files, `BUNDLED_LICENSES`, the documentation, and the
+  Andorra lookup.
+- **C — R3.** Headers, invocations, `compatibility`, the script lint, and R3.8's
+  execution proof.
+- **D — R2.** The baseline micro-test and the `writing-skills` edit.
+
+Constraints:
+- **Conformance register** (`specs/completed/claude-code-guide-conformance.md`,
+  R6):
+  - The CLAUDE.md lines from R1.9 and R4.4 stay under the `claude-md-size`
+    check's 200-line limit in `build/cc_guide/conformance.toml`. No ceiling
+    remains to raise: a change whose lines would breach the limit trims
+    CLAUDE.md elsewhere (R6 P1, whose ceiling option drift spec R12.7 removed).
+  - When Stage A or Stage D fixes a gap the register tracks to it, the same
+    change removes or narrows that `[[exception]]` and runs
+    `build/check_conformance.py` (R6 P2).
+- **Work in a worktree.** The plan edits skills the executing session loads
+  (`writing-plans`, `finishing-a-development-branch`, `writing-skills`), and
+  `~/.claude/skills` resolves to the main checkout. Commit from the worktree;
+  the shared checkout's branch can change under a concurrent session.
+- **Stage D's micro-test** runs from a session whose cwd was never this repo;
+  inherited session context voids reps otherwise.
+- **State test changes as +N deltas** against the suite, never absolute totals.
+- **Before allocating the plan id**, check `specs/plans/` on every branch
+  (`git ls-tree`); ids are allocated per branch and have collided.
+- **Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`
+  is being implemented on `codex/jax-deep-learning-skills` and defines three
+  skills (`skills/deep-learning` is on that branch as of 2026-10-03).
+  R1.4's required `license`, R3's header and invocation rules, and R4's per-skill
+  license copies apply to them too. Whichever branch merges second brings the
+  other's skills into conformance in the same merge, or the new lints fail on
+  arrival.
+
+## Validation and acceptance
+
+1. Every gate in CLAUDE.md's Commands passes:
+   - `check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body
+     length)
+   - `check_provenance.py`
+   - `check_snippets.py skills/` (Tier 1)
+   - the dependency-drift test
+   - the full `build/` suite, plus every script suite whose script gained a
+     header
+   - `sync_runtime_assets.py --check` (no adapter change is expected)
+2. `check_frontmatter.py --strict` fails on exactly `bayesian-workflow`,
+   `tune-hyperparameters`, and `tech-debt`.
+3. Each new lint rule has a test that failed before its implementation and
+   passes after.
+4. R3.8's execution proof is recorded for all 16 scripts.
+5. **Cross-runtime load check**, from a directory outside any repo:
+   - `gemini skills list --all` shows every skill under `skills/` as `[Enabled]`;
+   - `codex debug prompt-input` lists every skill under `skills/` by name.
+
+   This shows the new `compatibility`, `license`, and `metadata` values and the
+   bundled license files break loading in neither runtime.
+6. R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's
+   outcome branch allows.
+
+## Out of scope (deferred; logged to `specs/deferred_items.md` at plan completion)
+
+- **Trigger-eval suites** (about 20 labeled queries per skill, near-miss
+  negatives, train/validation split), starting with the overlapping
+  data-and-modeling skills. They are expensive and need isolated sessions. They
+  are also the prerequisite for any future description rewrite.
+- **Distribution channels**: a Claude Code `marketplace.json`, `npx skills`,
+  `gh skill`, or a Codex plugin. These are outward-facing. Plugin namespacing
+  (`/plugin:skill`) also conflicts with the bare-name cross-reference invariant.
+- **Codex adapters for `/deferred`, `/fix-issue`, `/license-audit`**, as
+  manual-only skills with `agents/openai.yaml`. R1.6 is the groundwork.
+- **Tables of contents for long `references/` files** (Anthropic's partial-read
+  guidance). This needs a reliable detector first; a crude grep was not one.
+- **Splitting `writing-skills`** below 500 body lines (R1.7's warning).
+- **A versioning policy**: CHANGELOG, git tags, and `metadata.version` bumps.
+- **Skill security scanning** (e.g. Cisco's `skill-scanner`). The repo has no CI.
+- **License travel for single-file agents.** `agents/code-reviewer.md` and
+  `agents/task-reviewer.md` are distilled from superpowers and install as single
+  files without `LICENSE-superpowers`: the same gap R4 closes for skills.
+
+## Sources and verification notes
+
+- `specs/completed/agent-skills-best-practices.md`: the survey. Its Claude Code
+  numbers are secondary; `specs/guides/claude-code-customization-guide.md`
+  governs Claude Code facts. Its 2026-10-03 re-verification against official
+  docs (at 2.1.288) landed on main via lowmason/agent-skills#19 (merge
+  `c33bc99`).
+- [Agent Skills specification](https://agentskills.io/specification): the six
+  frontmatter fields, the `compatibility` ≤ 500 limit, and `metadata` as a
+  string-to-string map.
+- [Codex skills docs](https://developers.openai.com/codex/skills): the
+  `agents/openai.yaml` `policy.allow_implicit_invocation` key.
+- uv documentation: a script with inline metadata runs in its own environment
+  even inside a project. R3.8's pyproject run verifies this rather than
+  assuming it.
+- Runtime measurements in "Measured baseline" were taken on 2026-10-03 with
+  Gemini CLI 0.46.0 and Codex CLI 0.154.0, on this machine's installed skill set
+  (93 skills in Codex's listing).
+</spec>
+
+<plan-inputs>
+**Tech Stack:** Python 3.13 through `uv run` (stdlib `ast`, `tomllib`, `argparse`; PyYAML in `check_frontmatter.py`), pytest; PEP 723 inline script metadata; bash for the one-time execution proof and the micro-test runner; Claude Code's `claude -p` for Stage D's reps; Gemini CLI and Codex CLI for the load check; `gh` for one read-only fetch.
+
+### Task 1: Spec amendments (A1–A11)
+
+**Files:**
+- Modify: `specs/agent-skills-portability-spec.md` (R1.1, R2.1, R2.3, R3.1, R3.5, R3.7, R3.8, Sequencing, Validation 4 and 6, Out of scope)
+
+**Interfaces:**
+- Consumes: decisions D5, D6 and D8.
+- Produces: a spec whose counts and rules match Tasks 2–15.
+
+### Task 2: Stage D's RED baseline (R2.2), before any edit to writing-skills
+
+**Files:**
+- Create: `specs/red-baseline-description-openings-<run-date>.md`, where `<run-date>` is the day the reps run (`YYYY-MM-DD`)
+- Scratch, outside every repository: `/tmp/portability-stage-d/kit/` (three files) and `/tmp/portability-stage-d/red/` (the reps)
+
+**Interfaces:**
+- Produces: the RED verdict, n of 5, which picks Task 14's branch (R2.3: at least 4/5, the note alone; at most 3/5, the note, a checklist line and a GREEN arm). Task 14 reuses the kit.
+
+### Task 3: Frontmatter key sets and value shapes (R1.1–R1.3, R1.5)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (module docstring; `ALLOWED_KEYS` becomes `SPEC_KEYS` and `HOST_KEYS`; new `_check_value_shapes`; `check_skill`)
+- Test: `build/test_check_frontmatter.py` (+4)
+- Modify: `skills/llm-wiki/SKILL.md` (its description), `skills/writing-skills/SKILL.md` (the optional-keys bullet), `build/cc_guide/conformance.toml` (two comments)
+
+**Interfaces:**
+- Produces, in `check_frontmatter.py`: `SPEC_KEYS: frozenset[str]`; `HOST_KEYS: frozenset[str]`, which Task 7's `strict_violations` reads; `COMPATIBILITY_CAP = 500`; `ANGLE_BRACKET_RE`; `_check_value_shapes(sk: Path, fm: dict) -> list[str]`.
+
+### Task 4: `license` is required; the superpowers metadata (R1.4, R4.3)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (new `_check_license`, called from `check_skill`)
+- Test: `build/test_check_frontmatter.py` (+1; `make_skill` adds `license: MIT` unless told not to)
+- Modify: the 13 superpowers `SKILL.md` files (helper script), `skills/writing-skills/SKILL.md` (required fields, optional keys, template, checklist), `NOTICE` (one entry)
+
+**Interfaces:**
+- Consumes: Task 3's `check_skill` layout.
+- Produces: `_check_license(sk: Path, fm: dict) -> list[str]`; `make_skill(tmp_path, name, frontmatter, *, licensed=True)` in the tests, which later tasks' tests use.
+
+### Task 5: Codex invocation parity (R1.6)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (new `DMI_KEY`, `CODEX_POLICY`, `_check_invocation_parity`)
+- Test: `build/test_check_frontmatter.py` (+6)
+
+**Interfaces:**
+- Produces: `_check_invocation_parity(skill_dir: Path, fm: dict) -> list[str]`, called from `check_skill`; `CODEX_POLICY = Path('agents') / 'openai.yaml'`.
+
+### Task 6: The body-length advisory (R1.7)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (new `BODY_LINE_ADVISORY`, `FRONTMATTER_RE`, `skill_body_warning`; `main` prints the warning)
+- Test: `build/test_check_frontmatter.py` (+2)
+- Modify: `build/cc_guide/conformance.toml` (new check `skill-body-size`, R1.7's register row)
+
+**Interfaces:**
+- Produces: `skill_body_warning(skill_dir: Path) -> str | None`; `FRONTMATTER_RE`, which Task 7 does not use and later code may.
+
+### Task 7: `--strict` and its docs (R1.8, R1.9)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (new `RESERVED_NAME_WORDS`, `strict_violations`; `main` takes `--strict`; docstring)
+- Test: `build/test_check_frontmatter.py` (+2)
+- Modify: `CLAUDE.md` (Commands: the frontmatter lint's comment names `--strict`; no line added, D7)
+
+**Interfaces:**
+- Consumes: Task 3's `HOST_KEYS`.
+- Produces: `strict_violations(skill_dir: Path) -> list[str]`; `main(argv: list[str] | None = None) -> int`.
+
+### Task 8: License copies travel with each skill (R4.1, R4.2, R4.4)
+
+**Files:**
+- Modify: `build/check_provenance.py` (docstring; new `PLAIN_LICENSE`, `BUNDLED_LICENSES`, `bundled_license_violations`; `main`)
+- Test: `build/test_check_provenance.py` (+7)
+- Rename: `skills/recommend-causal-design/LICENSE` to `skills/recommend-causal-design/LICENSE-causal-design-sources`, and re-point its links in that skill's `SKILL.md`, `README.md` and `references/sources.md`
+- Create: a copy of each applicable root license file in every skill directory (helper script)
+- Modify: `build/cc_guide/conformance.toml` (`orphan-bundled-file` exempts `LICENSE*`), `NOTICE`, `README.md`, `CLAUDE.md` (R4.4)
+
+**Interfaces:**
+- Produces, in `check_provenance.py`: `PLAIN_LICENSE = 'LICENSE'`; `BUNDLED_LICENSES: dict[str, tuple[str, ...]]`, which Task 9 extends and the helper imports; `bundled_license_violations(repo: Path, skills: list[str], table: dict[str, tuple[str, ...]]) -> list[str]`.
+
+### Task 9: The Andorra lookup (R4.5)
+
+**Files:**
+- Create: `LICENSE-andorra` (upstream's text, verbatim) and its copy `skills/bayesian-workflow/LICENSE-andorra`
+- Modify: `build/check_provenance.py` (one `BUNDLED_LICENSES` row), `NOTICE` (`bayesian-workflow/` block), `README.md`, `CLAUDE.md`
+
+**Interfaces:**
+- Consumes: Task 8's `BUNDLED_LICENSES` and helper.
+
+### Task 10: PEP 723 headers and the header lint (R3.1–R3.4, R3.7)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (imports `ast` and `tomllib`; new `MAIN_GUARD_RE`, `PEP723_RE`, `IMPORT_DISTRIBUTIONS`, `VENDORED_SCRIPTS`, `runnable_scripts`, `script_metadata`, `required_imports`, `check_script_headers`)
+- Test: `build/test_check_frontmatter.py` (+8)
+- Modify: the 15 header-less runnable scripts (helper script): a shebang where missing, then the header
+
+**Interfaces:**
+- Produces: `MAIN_GUARD_RE`; `runnable_scripts(skill_dir: Path) -> list[Path]`; `script_metadata(text: str) -> dict | None` (raises `tomllib.TOMLDecodeError`); `required_imports(tree: ast.Module, siblings: set[str]) -> set[str]`; `check_script_headers(skill_dir: Path, vendored: frozenset[str] = VENDORED_SCRIPTS) -> list[str]`; `VENDORED_SCRIPTS: frozenset[str]`, keyed `skills/<skill>/scripts/<file>`. Task 11 uses `MAIN_GUARD_RE`.
+
+### Task 11: `uv run` invocations and the invocation lint (R3.5, R3.7)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (new `CONTINUATION_RE`, `SCRIPT_PATH_RE`, `RUNNER_RE`, `THIS_SKILL`, `PATH_ALIASES`, `resolve_bundled_script`, `bundled_invocations`, `check_invocations`)
+- Test: `build/test_check_frontmatter.py` (+6)
+- Modify: 14 markdown files in 11 skills (Step 5), `NOTICE` (one entry)
+
+**Interfaces:**
+- Consumes: Task 10's `MAIN_GUARD_RE`.
+- Produces: `bundled_invocations(skill_dir: Path) -> list[tuple[Path, str, str]]`, giving (markdown file, runner, path) with runner one of `'python'`, `'python3'` or `'uv run'`; Task 12 reads it. `check_invocations(skill_dir: Path) -> list[str]`; `resolve_bundled_script(path: str, skill_dir: Path) -> Path | None`.
+
+### Task 12: `compatibility` and the prose floors (R3.3, R3.6, R3.7)
+
+**Files:**
+- Modify: `build/check_frontmatter.py` (new `UV_WORD_RE`, `_check_compatibility_names_uv`)
+- Test: `build/test_check_frontmatter.py` (+2)
+- Modify: the 11 SKILL.md files of the skills that run a bundled script (helper script); `skills/recommend-visualization/SKILL.md` and `skills/recommend-probabilistic-model/SKILL.md` (prose floors); `NOTICE`
+
+**Interfaces:**
+- Consumes: Task 11's `bundled_invocations`.
+- Produces: `_check_compatibility_names_uv(skill_dir: Path, fm: dict) -> list[str]`, called from `check_skill`.
+
+### Task 13: The execution proof (R3.8)
+
+**Files:**
+- Modify: this plan, <this plan> (Plan completion notes, "R3.8 execution proof")
+- Scratch: `/tmp/portability-plan/r38.sh`; the run's directory `/tmp/portability-r38/` (the script refuses an existing one)
+
+**Interfaces:**
+- Consumes: Tasks 10–12's headers.
+- Produces: Validation 4's record.
+
+### Task 14: Stage D's edit (R2.3) and the register (DF20)
+
+**Files:**
+- Modify: `skills/writing-skills/SKILL.md` (the Token Efficiency `description` bullet; on the at-most-3/5 branch, also the checklist), `NOTICE`, `build/cc_guide/conformance.toml` (three exceptions)
+- Modify, on the at-most-3/5 branch: `specs/red-baseline-description-openings-<run-date>.md` (the GREEN arm)
+- Scratch: `/tmp/portability-stage-d/` (the Codex measurement; the GREEN reps)
+
+**Interfaces:**
+- Consumes: Task 2's verdict and kit.
+
+### Task 15: Acceptance (Validation 1–6)
+
+**Files:** none changed. A scratch HOME at `/tmp/portability-home/`.
+
+**Interfaces:**
+- Consumes: Tasks 1–14.
+</plan-inputs>
+
+Reply with exactly these three blocks, in this order, and nothing else:
+
+<tests>
+Python source: one pytest module. Put the imports first. Above each test function, write two comment lines:
+# spec: "<the spec sentence that the test checks, copied word for word>"
+# task: <the number of the task whose Produces the test needs>
+</tests>
+<flags>
+<flag task="N"><spec>the spec text, copied word for word</spec><plan>the plan value that differs from it, copied word for word</plan></flag>
+</flags>
+<untestable>
+One spec sentence on each line, copied word for word.
+</untestable>
+
+Leave the <flags> block empty when no plan value differs from the spec.
+
+warning: Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/lowell/.codex/config.toml.
+warning: Code Mode is unavailable because code-mode host is disabled. Code mode will fail closed; enable `features.code_mode_host` and install `codex-code-mode-host`.
+codex
+<tests>
+import ast
+import importlib.util
+import os
+import re
+import subprocess
+import sys
+import tomllib
+from datetime import date
+from pathlib import Path
+
+import pytest
+import yaml
+
+
+REPO = Path(os.environ.get("PORTABILITY_REPO", Path.cwd())).resolve()
+
+SPEC_KEYS = {
+    "name",
+    "description",
+    "license",
+    "compatibility",
+    "metadata",
+    "allowed-tools",
+}
+HOST_KEYS = {
+    "when_to_use",
+    "model",
+    "effort",
+    "context",
+    "disable-model-invocation",
+}
+EXPECTED_SCRIPTS = {
+    "skills/bayesian-workflow/scripts/calibration_check.py",
+    "skills/bayesian-workflow/scripts/check_diagnostics.py",
+    "skills/bayesian-workflow/scripts/diagnose_model.py",
+    "skills/describe-critique-methodology/scripts/check_decoupling.py",
+    "skills/design-architecture/scripts/new_adr.py",
+    "skills/explore-data/scripts/profile.py",
+    "skills/llm-wiki/scripts/bootstrap_wiki.py",
+    "skills/llm-wiki/scripts/distill_sessions.py",
+    "skills/llm-wiki/scripts/distill_specs.py",
+    "skills/llm-wiki/scripts/lint_wiki.py",
+    "skills/recommend-probabilistic-model/scripts/characterize.py",
+    "skills/recommend-visualization/scripts/recommend.py",
+    "skills/track-model-experiments/scripts/compare_experiments.py",
+    "skills/writing-plans/scripts/deferred_stats.py",
+    "skills/classification-codes/scripts/build.py",
+    "skills/geographic-codes/scripts/build.py",
+}
+FALLBACK_SENTENCE = (
+    "Without uv, run the same path with `python3` in an environment "
+    "that has the dependencies listed in the script's header."
+)
+SOURCE_URL = "https://github.com/obra/superpowers"
+
+
+def _load_module(name, relative_path):
+    spec = importlib.util.spec_from_file_location(name, REPO / relative_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.fixture(scope="session")
+def frontmatter():
+    return _load_module(
+        "portability_acceptance_frontmatter", "build/check_frontmatter.py"
+    )
+
+
+@pytest.fixture(scope="session")
+def provenance():
+    return _load_module(
+        "portability_acceptance_provenance", "build/check_provenance.py"
+    )
+
+
+def _write(path, text):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def _skill(parent, name="synthetic", frontmatter=None, body=""):
+    values = {
+        "name": name,
+        "description": "Use when checking a synthetic skill.",
+        "license": "MIT",
+    }
+    if frontmatter is not None:
+        values.update(frontmatter)
+    directory = parent / name
+    _write(
+        directory / "SKILL.md",
+        "---\n"
+        + yaml.safe_dump(values, sort_keys=False)
+        + "---\n"
+        + body,
+    )
+    return directory
+
+
+def _read_frontmatter(directory):
+    lines = (directory / "SKILL.md").read_text(encoding="utf-8").splitlines()
+    assert lines[0] == "---"
+    closing = next(i for i in range(1, len(lines)) if lines[i] == "---")
+    return yaml.safe_load("\n".join(lines[1:closing]))
+
+
+def _skills():
+    return sorted(
+        directory
+        for directory in (REPO / "skills").iterdir()
+        if directory.is_dir() and (directory / "SKILL.md").is_file()
+    )
+
+
+def _script_text(dependencies=(), requires_python=">=3.11", payload=None):
+    if payload is None:
+        payload = "if __name__ == '__main__':\n    pass\n"
+    return (
+        "#!/usr/bin/env python3\n"
+        "# /// script\n"
+        f"# requires-python = '{requires_python}'\n"
+        "# dependencies = ["
+        + ", ".join(f"'{dependency}'" for dependency in dependencies)
+        + "]\n"
+        "# ///\n\n"
+        + payload
+    )
+
+
+def _script(directory, filename="profile.py", text=None):
+    return _write(
+        directory / "scripts" / filename,
+        _script_text() if text is None else text,
+    )
+
+
+def _inline_metadata(text):
+    lines = text.splitlines()
+    start = lines.index("# /// script")
+    end = next(
+        i for i in range(start + 1, len(lines)) if lines[i] == "# ///"
+    )
+    block = lines[start + 1:end]
+    assert all(line.startswith("#") for line in block)
+    contents = "\n".join(
+        line.removeprefix("#").removeprefix(" ") for line in block
+    )
+    return tomllib.loads(contents), contents
+
+
+def _has_main_guard(path):
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.If):
+            continue
+        comparison = node.test
+        if (
+            not isinstance(comparison, ast.Compare)
+            or len(comparison.ops) != 1
+            or not isinstance(comparison.ops[0], ast.Eq)
+            or len(comparison.comparators) != 1
+        ):
+            continue
+        left, right = comparison.left, comparison.comparators[0]
+        pairs = ((left, right), (right, left))
+        if any(
+            isinstance(a, ast.Name)
+            and a.id == "__name__"
+            and isinstance(b, ast.Constant)
+            and b.value == "__main__"
+            for a, b in pairs
+        ):
+            return True
+    return False
+
+
+def _license_repo(tmp_path):
+    repo = tmp_path / "repo"
+    names = ["bayesian-workflow", "clean-code", "tech-debt"]
+    table = {
+        "LICENSE-coding-skills": ("bayesian-workflow", "clean-code"),
+    }
+    canonical = {
+        "LICENSE": b"MIT\n",
+        "LICENSE-coding-skills": b"MIT\nSource notice\n",
+    }
+    repo.mkdir()
+    for filename, contents in canonical.items():
+        (repo / filename).write_bytes(contents)
+    for name in names:
+        directory = repo / "skills" / name
+        directory.mkdir(parents=True)
+        (directory / "LICENSE").write_bytes(canonical["LICENSE"])
+    for filename, recipients in table.items():
+        for name in recipients:
+            (repo / "skills" / name / filename).write_bytes(
+                canonical[filename]
+            )
+    return repo, names, table
+
+
+def _atoms(value):
+    if isinstance(value, dict):
+        for nested in value.values():
+            yield from _atoms(nested)
+    elif isinstance(value, (list, tuple)):
+        for nested in value:
+            yield from _atoms(nested)
+    else:
+        yield value
+
+
+def _section(text, title):
+    heading = re.search(
+        rf"(?mi)^(#{{1,6}})[ \t]+{re.escape(title)}[ \t]*$",
+        text,
+    )
+    assert heading is not None, f"Missing section: {title}"
+    level = len(heading.group(1))
+    remainder = text[heading.end():]
+    following = re.search(
+        rf"(?m)^#{{1,{level}}}[ \t]+", remainder
+    )
+    return remainder[:following.start()] if following else remainder
+
+
+# spec: "Replace `ALLOWED_KEYS` with two named sets and allow their union in a `SKILL.md`:"
+# task: 3
+def test_frontmatter_key_sets(frontmatter):
+    assert isinstance(frontmatter.SPEC_KEYS, frozenset)
+    assert isinstance(frontmatter.HOST_KEYS, frozenset)
+    assert frontmatter.SPEC_KEYS == SPEC_KEYS
+    assert frontmatter.HOST_KEYS == HOST_KEYS
+    assert not hasattr(frontmatter, "ALLOWED_KEYS")
+
+
+# spec: "When present, a mapping whose keys and values are all strings."
+# task: 3
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {},
+        {"": ""},
+        {
+            "author": "Jesse Vincent",
+            "adapted_by": "Lowell Mason",
+            "source": SOURCE_URL,
+        },
+    ],
+)
+def test_metadata_accepts_string_mappings(frontmatter, tmp_path, metadata):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"metadata": metadata}
+    ) == []
+
+
+# spec: "When present, a mapping whose keys and values are all strings."
+# task: 3
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        None,
+        "",
+        [],
+        True,
+        1,
+        {"author": 1},
+        {1: "author"},
+        {"author": None},
+        {"author": ["Jesse Vincent"]},
+    ],
+)
+def test_metadata_rejects_other_shapes(frontmatter, tmp_path, metadata):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"metadata": metadata}
+    )
+
+
+# spec: "When present, a string of 1–500 characters after stripping."
+# task: 3
+@pytest.mark.parametrize(
+    "compatibility", ["x", "x" * 500, " \n" + "x" * 500 + "\t "]
+)
+def test_compatibility_accepts_stripped_boundaries(
+    frontmatter, tmp_path, compatibility
+):
+    skill = _skill(tmp_path)
+    assert frontmatter.COMPATIBILITY_CAP == 500
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"compatibility": compatibility}
+    ) == []
+
+
+# spec: "When present, a string of 1–500 characters after stripping."
+# task: 3
+@pytest.mark.parametrize(
+    "compatibility",
+    ["", " \n\t ", "x" * 501, None, True, 500, [], {}],
+)
+def test_compatibility_rejects_invalid_values(
+    frontmatter, tmp_path, compatibility
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"compatibility": compatibility}
+    )
+
+
+# spec: "`name` and `description` contain no `<` or `>`."
+# task: 3
+@pytest.mark.parametrize("field", ["name", "description"])
+@pytest.mark.parametrize("bracket", ["<", ">"])
+def test_angle_brackets_are_rejected(
+    frontmatter, tmp_path, field, bracket
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {field: f"synthetic{bracket}value"}
+    )
+
+
+# spec: "Fix llm-wiki's trigger phrase `'verify <page>'` to `'verify a page'`."
+# task: 3
+def test_llm_wiki_trigger_is_wording_equivalent():
+    description = _read_frontmatter(REPO / "skills" / "llm-wiki")[
+        "description"
+    ]
+    assert "verify a page" in description
+    assert "verify <page>" not in description
+    assert "<" not in description and ">" not in description
+
+
+# spec: "Required in every `SKILL.md`, a non-empty string (repo policy, beyond the spec)."
+# task: 4
+@pytest.mark.parametrize(
+    "values",
+    [{}, {"license": ""}, {"license": None}, {"license": True},
+     {"license": 1}, {"license": []}, {"license": {}}],
+)
+def test_license_is_required_and_must_be_a_nonempty_string(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_license(skill / "SKILL.md", values)
+
+
+# spec: "Required in every `SKILL.md`, a non-empty string (repo policy, beyond the spec)."
+# task: 4
+def test_license_accepts_mit(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_license(
+        skill / "SKILL.md", {"license": "MIT"}
+    ) == []
+
+
+# spec: "Required in every `SKILL.md`, a non-empty string (repo policy, beyond the spec)."
+# task: 4
+def test_every_repository_skill_has_a_license():
+    skills = _skills()
+    assert skills
+    for skill in skills:
+        license_value = _read_frontmatter(skill).get("license")
+        assert isinstance(license_value, str), skill
+        assert license_value, skill
+
+
+# spec: "The 13 superpowers skills gain `license: MIT` and"
+# task: 4
+def test_thirteen_superpowers_attributions_have_required_values():
+    attributed = [
+        skill
+        for skill in _skills()
+        if _read_frontmatter(skill).get("metadata", {}).get("source")
+        == SOURCE_URL
+    ]
+    assert len(attributed) == 13
+    for skill in attributed:
+        values = _read_frontmatter(skill)
+        assert values["license"] == "MIT"
+        assert values["metadata"]["author"] == "Jesse Vincent"
+        assert values["metadata"]["adapted_by"] == "Lowell Mason"
+
+
+# spec: "For a `SKILL.md`, `disable-model-invocation` must be a YAML boolean when present."
+# task: 5
+@pytest.mark.parametrize("value", ["true", "false", 0, 1, None, [], {}])
+def test_disable_model_invocation_rejects_non_booleans(
+    frontmatter, tmp_path, value
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_invocation_parity(
+        skill, {"disable-model-invocation": value}
+    )
+
+
+# spec: "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`."
+# task: 5
+@pytest.mark.parametrize(
+    "policy_text",
+    [
+        None,
+        "policy: [",
+        "{}\n",
+        "policy: {}\n",
+        "policy:\n  allow_implicit_invocation: true\n",
+        "policy:\n  allow_implicit_invocation: 'false'\n",
+        "policy:\n  allow_implicit_invocation: 0\n",
+    ],
+)
+def test_manual_only_skill_requires_a_valid_false_codex_policy(
+    frontmatter, tmp_path, policy_text
+):
+    skill = _skill(tmp_path)
+    if policy_text is not None:
+        _write(skill / "agents" / "openai.yaml", policy_text)
+    assert frontmatter.CODEX_POLICY == Path("agents") / "openai.yaml"
+    assert frontmatter._check_invocation_parity(
+        skill, {"disable-model-invocation": True}
+    )
+
+
+# spec: "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`."
+# task: 5
+def test_matching_manual_only_settings_pass(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    _write(
+        skill / "agents" / "openai.yaml",
+        "policy:\n  allow_implicit_invocation: false\n",
+    )
+    assert frontmatter._check_invocation_parity(
+        skill, {"disable-model-invocation": True}
+    ) == []
+
+
+# spec: "Conversely, a skill whose `agents/openai.yaml` sets that policy to `false` must set `disable-model-invocation: true`."
+# task: 5
+@pytest.mark.parametrize("values", [{}, {"disable-model-invocation": False}])
+def test_codex_manual_only_policy_requires_matching_frontmatter(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(tmp_path)
+    _write(
+        skill / "agents" / "openai.yaml",
+        "policy:\n  allow_implicit_invocation: false\n",
+    )
+    assert frontmatter._check_invocation_parity(skill, values)
+
+
+# spec: "For a `SKILL.md`, `disable-model-invocation` must be a YAML boolean when present."
+# task: 5
+@pytest.mark.parametrize("values", [{}, {"disable-model-invocation": False}])
+def test_nonmanual_skill_does_not_require_a_codex_policy(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_invocation_parity(skill, values) == []
+
+
+# spec: "A `SKILL.md` body (the lines after the closing frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not change the exit code."
+# task: 6
+@pytest.mark.parametrize("body_lines", [0, 1, 499, 500, 501])
+def test_body_warning_boundary(frontmatter, tmp_path, body_lines):
+    skill = _skill(tmp_path, body="body line\n" * body_lines)
+    warning = frontmatter.skill_body_warning(skill)
+    if body_lines <= 500:
+        assert warning is None
+    else:
+        assert isinstance(warning, str) and warning
+
+
+# spec: "A `SKILL.md` body (the lines after the closing frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not change the exit code."
+# task: 6
+def test_frontmatter_lines_do_not_count_toward_body_size(
+    frontmatter, tmp_path
+):
+    skill = _skill(
+        tmp_path,
+        frontmatter={
+            "metadata": {f"key-{i}": "value" for i in range(501)}
+        },
+        body="body line\n" * 500,
+    )
+    assert frontmatter.skill_body_warning(skill) is None
+
+
+# spec: "When Stage A adds this warning, it also adds a `skill-body-size` `[[check]]` to `build/cc_guide/conformance.toml` that maps `skills.overview` to it, with `enforced_by = 'check_frontmatter'` (conformance R6 P3)."
+# task: 6
+def test_body_size_advisory_has_a_conformance_record():
+    data = tomllib.loads(
+        (REPO / "build/cc_guide/conformance.toml").read_text(
+            encoding="utf-8"
+        )
+    )
+    matches = [
+        record
+        for record in data["check"]
+        if "skill-body-size" in set(_atoms(record))
+    ]
+    assert len(matches) == 1
+    assert "skills.overview" in set(_atoms(matches[0]))
+    assert matches[0]["enforced_by"] == "check_frontmatter"
+
+
+# spec: "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or `anthropic`."
+# task: 7
+@pytest.mark.parametrize("key", sorted(HOST_KEYS))
+def test_strict_rejects_each_host_key(frontmatter, tmp_path, key):
+    value = False if key == "disable-model-invocation" else "synthetic"
+    skill = _skill(tmp_path, frontmatter={key: value})
+    assert frontmatter.strict_violations(skill)
+
+
+# spec: "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or `anthropic`."
+# task: 7
+@pytest.mark.parametrize(
+    "name", ["claude", "anthropic", "pre-claude-post", "pre-anthropic-post"]
+)
+def test_strict_rejects_reserved_substrings(frontmatter, tmp_path, name):
+    skill = _skill(tmp_path, name=name)
+    assert frontmatter.strict_violations(skill)
+
+
+# spec: "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or `anthropic`."
+# task: 7
+def test_strict_accepts_spec_fields_and_reserved_words_in_description(
+    frontmatter, tmp_path
+):
+    skill = _skill(
+        tmp_path,
+        frontmatter={
+            "description": "Use when comparing claude and anthropic.",
+            "compatibility": "Requires uv.",
+            "metadata": {"author": "Lowell Mason"},
+            "allowed-tools": "Read",
+        },
+    )
+    assert frontmatter.strict_violations(skill) == []
+
+
+# spec: "Expected result today: exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail."
+# task: 7
+def test_repository_strict_failure_set(frontmatter):
+    failing = {
+        skill.name
+        for skill in _skills()
+        if frontmatter.strict_violations(skill)
+    }
+    assert failing == {
+        "bayesian-workflow", "tune-hyperparameters", "tech-debt"
+    }
+
+
+# spec: "`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)"
+# task: 7
+def test_default_gate_passes_with_only_the_expected_warning(
+    frontmatter, capsys
+):
+    assert frontmatter.main([]) == 0
+    captured = capsys.readouterr()
+    warnings = [
+        line for line in captured.err.splitlines() if "WARN" in line
+    ]
+    assert len(warnings) == 1
+    assert "writing-skills" in warnings[0]
+
+
+# spec: "`check_frontmatter.py --strict` fails on exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt`."
+# task: 7
+def test_strict_cli_has_a_failing_exit_status(frontmatter, capsys):
+    assert frontmatter.main(["--strict"]) != 0
+    capsys.readouterr()
+
+
+# spec: "The module docstring describes the new rules and the `--strict` flag, and CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run), under the `claude-md-size` check's 200-line limit (Sequencing, \"Conformance register\")."
+# task: 7
+def test_strict_invocation_is_documented_and_claude_stays_within_limit(
+    frontmatter
+):
+    assert frontmatter.__doc__
+    assert "--strict" in frontmatter.__doc__
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    assert len(text.splitlines()) <= 200
+    commands = _section(text, "Commands")
+    assert any(
+        "check_frontmatter.py --strict" in line
+        and not line.lstrip().startswith("#")
+        for line in commands.splitlines()
+    )
+    assert "claude.ai" in commands
+    assert re.search(r"upload|spec.only|validator", commands, re.I)
+
+
+# spec: "Every required copy exists, is a regular file, and is byte-identical to its root file."
+# task: 8
+def test_valid_bundled_license_copies_pass(provenance, tmp_path):
+    repo, names, table = _license_repo(tmp_path)
+    assert provenance.PLAIN_LICENSE == "LICENSE"
+    assert provenance.bundled_license_violations(repo, names, table) == []
+
+
+# spec: "Every required copy exists, is a regular file, and is byte-identical to its root file."
+# task: 8
+@pytest.mark.parametrize("filename", ["LICENSE", "LICENSE-coding-skills"])
+@pytest.mark.parametrize("failure", ["missing", "directory", "symlink", "bytes"])
+def test_required_license_copy_failures(
+    provenance, tmp_path, filename, failure
+):
+    repo, names, table = _license_repo(tmp_path)
+    copy = repo / "skills" / "bayesian-workflow" / filename
+    copy.unlink()
+    if failure == "directory":
+        copy.mkdir()
+    elif failure == "symlink":
+        copy.symlink_to(repo / filename)
+    elif failure == "bytes":
+        copy.write_bytes((repo / filename).read_bytes() + b"\n")
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "No skill directory holds a `LICENSE*` file outside its mapping."
+# task: 8
+def test_unmapped_skill_license_is_rejected(provenance, tmp_path):
+    repo, names, table = _license_repo(tmp_path)
+    (repo / "skills" / "tech-debt" / "LICENSE-coding-skills").write_bytes(
+        (repo / "LICENSE-coding-skills").read_bytes()
+    )
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "No skill directory holds a `LICENSE*` file outside its mapping."
+# task: 8
+def test_unknown_skill_license_filename_is_rejected(provenance, tmp_path):
+    repo, names, table = _license_repo(tmp_path)
+    (repo / "skills" / "clean-code" / "LICENSE-unmapped").write_bytes(
+        b"MIT\n"
+    )
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "Every root `LICENSE*` file is mapped to at least one skill."
+# task: 8
+@pytest.mark.parametrize("empty_mapping", [False, True])
+def test_root_licenses_need_nonempty_mappings(
+    provenance, tmp_path, empty_mapping
+):
+    repo, names, table = _license_repo(tmp_path)
+    (repo / "LICENSE-andorra").write_bytes(b"MIT\n")
+    if empty_mapping:
+        table["LICENSE-andorra"] = ()
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "Each skill directory carries regular files (never symlinks, which `install.py --copy` refuses) that are byte-identical to the root license files and carry the same names:"
+# task: 8
+def test_repository_license_mapping_and_copies(provenance):
+    skills = _skills()
+    names = [skill.name for skill in skills]
+    table = provenance.BUNDLED_LICENSES
+    assert isinstance(table, dict)
+    assert all(
+        isinstance(key, str)
+        and isinstance(value, tuple)
+        and all(isinstance(name, str) for name in value)
+        for key, value in table.items()
+    )
+    assert provenance.bundled_license_violations(REPO, names, table) == []
+
+    expected_roots = {
+        "LICENSE", "LICENSE-superpowers", "LICENSE-coding-skills"
+    }
+    if (REPO / "LICENSE-andorra").exists():
+        expected_roots.add("LICENSE-andorra")
+
+    mapping = {"LICENSE": tuple(names), **table}
+    assert set(mapping) == expected_roots
+    assert set(mapping["LICENSE"]) == set(names)
+    assert set(mapping["LICENSE-coding-skills"]) == {
+        "bayesian-workflow", "clean-code"
+    }
+
+    superpowers = {
+        skill.name
+        for skill in skills
+        if _read_frontmatter(skill).get("metadata", {}).get("source")
+        == SOURCE_URL
+    }
+    assert len(superpowers) == 13
+    assert set(mapping["LICENSE-superpowers"]) == superpowers
+    if "LICENSE-andorra" in mapping:
+        assert set(mapping["LICENSE-andorra"]) == {"bayesian-workflow"}
+
+    assert {
+        path.name for path in REPO.glob("LICENSE*")
+    } == expected_roots
+    for filename, recipients in mapping.items():
+        canonical = (REPO / filename).read_bytes()
+        for name in recipients:
+            copy = REPO / "skills" / name / filename
+            assert not copy.is_symlink(), copy
+            assert copy.is_file(), copy
+            assert copy.read_bytes() == canonical, copy
+    for skill in skills:
+        expected = {
+            filename
+            for filename, recipients in mapping.items()
+            if skill.name in recipients
+        }
+        assert {
+            path.name for path in skill.glob("LICENSE*")
+        } == expected
+
+
+# spec: "The script stays stdlib-only, so its CLAUDE.md command keeps no `--with`."
+# task: 8
+def test_provenance_remains_stdlib_only():
+    source = (REPO / "build/check_provenance.py").read_text(
+        encoding="utf-8"
+    )
+    tree = ast.parse(source)
+    imports = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imports.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            assert node.level == 0
+            if node.module:
+                imports.add(node.module.split(".")[0])
+    assert imports <= (
+        set(sys.stdlib_module_names)
+        | set(sys.builtin_module_names)
+        | {"__future__"}
+    )
+    commands = _section(
+        (REPO / "CLAUDE.md").read_text(encoding="utf-8"), "Commands"
+    )
+    invocations = [
+        line
+        for line in commands.splitlines()
+        if "check_provenance.py" in line
+    ]
+    assert invocations
+    assert all("--with" not in line for line in invocations)
+
+
+# spec: "`check_provenance.py`"
+# task: 8
+def test_provenance_gate_passes():
+    result = subprocess.run(
+        [sys.executable, str(REPO / "build/check_provenance.py")],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+# spec: "The runnable scripts are the `skills/*/scripts/*.py` files with a `__main__` guard."
+# task: 10
+def test_runnable_script_discovery_ignores_libraries_and_examples(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path)
+    runnable = _script(skill)
+    _script(skill, "time_series_cv.py", "def split():\n    pass\n")
+    _script(
+        skill,
+        "example.py",
+        'EXAMPLE = """\nif __name__ == "__main__":\n    pass\n"""\n',
+    )
+    _write(
+        skill / "scripts" / "nested" / "profile.py",
+        "if __name__ == '__main__':\n    pass\n",
+    )
+    assert set(frontmatter.runnable_scripts(skill)) == {runnable}
+
+
+# spec: "There are 16."
+# task: 10
+def test_runnable_inventory_matches_the_spec(frontmatter):
+    discovered = {
+        str(path.relative_to(REPO))
+        for path in (REPO / "skills").glob("*/scripts/*.py")
+        if _has_main_guard(path)
+    }
+    assert discovered == EXPECTED_SCRIPTS
+    assert len(discovered) == 16
+    lint_inventory = {
+        str(path.relative_to(REPO))
+        for skill in _skills()
+        for path in frontmatter.runnable_scripts(skill)
+    }
+    assert lint_inventory == EXPECTED_SCRIPTS
+
+
+# spec: "`tune-hyperparameters/scripts/time_series_cv.py` has no `__main__` guard; it is a library imported into the user's code and stays header-less."
+# task: 10
+def test_time_series_cv_stays_a_headerless_library(frontmatter):
+    path = (
+        REPO / "skills/tune-hyperparameters/scripts/time_series_cv.py"
+    )
+    assert not _has_main_guard(path)
+    assert frontmatter.script_metadata(
+        path.read_text(encoding="utf-8")
+    ) is None
+
+
+# spec: "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block that parses with `tomllib` and has `requires-python` and `dependencies`."
+# task: 10
+@pytest.mark.parametrize(
+    "text",
+    [
+        "if __name__ == '__main__':\n    pass\n",
+        (
+            "#!/usr/bin/env python3\n"
+            "# /// script\n"
+            "# requires-python = [\n"
+            "# dependencies = []\n"
+            "# ///\n"
+            "if __name__ == '__main__':\n    pass\n"
+        ),
+        _script_text().replace("# requires-python = '>=3.11'\n", ""),
+        _script_text().replace("# dependencies = []\n", ""),
+    ],
+)
+def test_header_lint_rejects_missing_invalid_or_incomplete_metadata(
+    frontmatter, tmp_path, text
+):
+    skill = _skill(tmp_path)
+    _script(skill, text=text)
+    assert frontmatter.check_script_headers(skill)
+
+
+# spec: "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block that parses with `tomllib` and has `requires-python` and `dependencies`."
+# task: 10
+def test_header_requirement_has_no_vendored_script_exemption(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path / "skills", name="bayesian-workflow")
+    _script(
+        skill,
+        "calibration_check.py",
+        "if __name__ == '__main__':\n    pass\n",
+    )
+    assert frontmatter.check_script_headers(
+        skill,
+        vendored=frozenset(
+            {"skills/bayesian-workflow/scripts/calibration_check.py"}
+        ),
+    )
+
+
+# spec: "Then a `# /// script` block with single-quoted TOML strings, a `requires-python`, and a `dependencies` list (`[]` for stdlib-only scripts)."
+# task: 10
+def test_stdlib_script_accepts_empty_dependencies(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    text = _script_text(
+        payload=(
+            "import ast\nimport argparse\nimport tomllib\n"
+            "if __name__ == '__main__':\n    pass\n"
+        )
+    )
+    _script(skill, text=text)
+    assert frontmatter.script_metadata(text) == {
+        "requires-python": ">=3.11",
+        "dependencies": [],
+    }
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "Line 1 is `#!/usr/bin/env python3`; add it where missing."
+# task: 10
+def test_every_runnable_script_has_the_house_header():
+    for relative in sorted(EXPECTED_SCRIPTS):
+        path = REPO / relative
+        text = path.read_text(encoding="utf-8")
+        assert text.splitlines()[0] == "#!/usr/bin/env python3", path
+        metadata, block = _inline_metadata(text)
+        floor = metadata["requires-python"]
+        assert floor in {">=3.11", ">=3.12", ">=3.13"}, path
+        assert re.search(
+            r"requires-python\s*=\s*'" + re.escape(floor) + r"'",
+            block,
+        ), path
+        assert isinstance(metadata["dependencies"], list), path
+        for dependency in metadata["dependencies"]:
+            assert isinstance(dependency, str), path
+            assert f"'{dependency}'" in block, path
+
+
+# spec: "Every third-party import, including function-level imports, is declared with a `>=` floor at the major version the suite currently resolves (e.g. `'polars>=1.0'`)."
+# task: 10
+def test_function_level_import_requires_a_dependency(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path)
+    payload = (
+        "def profile():\n"
+        "    import polars\n"
+        "if __name__ == '__main__':\n"
+        "    profile()\n"
+    )
+    path = _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill)
+    path.write_text(
+        _script_text(["polars>=1.0"], payload=payload),
+        encoding="utf-8",
+    )
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "No upper pins."
+# task: 10
+def test_real_script_dependencies_use_only_lower_bounds():
+    pattern = re.compile(
+        r"[A-Za-z0-9][A-Za-z0-9_.-]*"
+        r"(?:\[[A-Za-z0-9_,.-]+\])?"
+        r">=\d+(?:\.\d+){0,2}"
+    )
+    for relative in sorted(EXPECTED_SCRIPTS):
+        path = REPO / relative
+        metadata, _ = _inline_metadata(path.read_text(encoding="utf-8"))
+        for dependency in metadata["dependencies"]:
+            assert pattern.fullmatch(dependency), (path, dependency)
+
+
+# spec: "stdlib is detected via `sys.stdlib_module_names`;"
+# task: 10
+def test_stdlib_imports_need_no_distribution(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    payload = (
+        "import sys\nfrom pathlib import Path\nimport argparse\n"
+        "if __name__ == '__main__':\n    pass\n"
+    )
+    _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "local means a sibling module file in the same directory;"
+# task: 10
+def test_sibling_import_needs_no_distribution(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    _write(skill / "scripts" / "local_helper.py", "VALUE = 1\n")
+    _script(
+        skill,
+        text=_script_text(
+            payload=(
+                "from local_helper import VALUE\n"
+                "if __name__ == '__main__':\n    pass\n"
+            )
+        ),
+    )
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "import names map to distributions through a small alias table, e.g. `yaml` → `pyyaml`;"
+# task: 10
+def test_yaml_import_is_satisfied_by_pyyaml(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    payload = (
+        "from yaml import safe_load\n"
+        "if __name__ == '__main__':\n    pass\n"
+    )
+    path = _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill)
+    path.write_text(
+        _script_text(["pyyaml>=1.0"], payload=payload),
+        encoding="utf-8",
+    )
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "Imports inside a `try` whose handler catches `ImportError` or `ModuleNotFoundError` are optional and may be left undeclared."
+# task: 10
+@pytest.mark.parametrize(
+    "exception",
+    ["ImportError", "ModuleNotFoundError",
+     "(ImportError, ModuleNotFoundError)"],
+)
+def test_optional_import_exemption(frontmatter, tmp_path, exception):
+    skill = _skill(tmp_path)
+    payload = (
+        "try:\n"
+        "    import polars\n"
+        f"except {exception}:\n"
+        "    pass\n"
+        "if __name__ == '__main__':\n"
+        "    pass\n"
+    )
+    _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "Imports inside a `try` whose handler catches `ImportError` or `ModuleNotFoundError` are optional and may be left undeclared."
+# task: 10
+@pytest.mark.parametrize(
+    "payload",
+    [
+        (
+            "try:\n    import polars\n"
+            "except ValueError:\n    pass\n"
+        ),
+        (
+            "try:\n    pass\n"
+            "except ImportError:\n    import polars\n"
+        ),
+        (
+            "try:\n    pass\n"
+            "except ImportError:\n    pass\n"
+            "finally:\n    import polars\n"
+        ),
+    ],
+)
+def test_optional_import_exemption_does_not_cover_other_imports(
+    frontmatter, tmp_path, payload
+):
+    skill = _skill(tmp_path)
+    _script(
+        skill,
+        text=_script_text(
+            payload=payload + "if __name__ == '__main__':\n    pass\n"
+        ),
+    )
+    assert frontmatter.check_script_headers(skill)
+
+
+# spec: "In such a script, every non-stdlib, non-local import is declared in `dependencies`:"
+# task: 10
+def test_repository_script_header_lint_passes(frontmatter):
+    for skill in _skills():
+        assert frontmatter.check_script_headers(skill) == [], skill
+
+
+# spec: "Path forms in use: `<this-skill-dir>/scripts/x.py`, `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py` (llm-wiki's INSTALL.md), and repo-relative `skills/<skill>/scripts/build.py`."
+# task: 11
+@pytest.mark.parametrize(
+    ("skill_name", "spelling", "relative"),
+    [
+        (
+            "llm-wiki",
+            "<this-skill-dir>/scripts/lint_wiki.py",
+            "skills/llm-wiki/scripts/lint_wiki.py",
+        ),
+        (
+            "finishing-a-development-branch",
+            "<this-skill-dir>/../writing-plans/scripts/deferred_stats.py",
+            "skills/writing-plans/scripts/deferred_stats.py",
+        ),
+        (
+            "llm-wiki",
+            "$LLM_WIKI_ROOT/scripts/lint_wiki.py",
+            "skills/llm-wiki/scripts/lint_wiki.py",
+        ),
+        (
+            "llm-wiki",
+            "~/Projects/agent-skills/skills/llm-wiki/scripts/lint_wiki.py",
+            "skills/llm-wiki/scripts/lint_wiki.py",
+        ),
+        (
+            "classification-codes",
+            "skills/classification-codes/scripts/build.py",
+            "skills/classification-codes/scripts/build.py",
+        ),
+    ],
+)
+def test_resolves_each_documented_path_form(
+    frontmatter, skill_name, spelling, relative
+):
+    resolved = frontmatter.resolve_bundled_script(
+        spelling, REPO / "skills" / skill_name
+    )
+    assert resolved is not None
+    assert resolved.resolve() == (REPO / relative).resolve()
+
+
+# spec: "No skill markdown invokes a resolving bundled-script path with bare `python` or `python3`, including line-continued forms (`python \` followed by the path on the next line)."
+# task: 11
+@pytest.mark.parametrize("runner", ["python", "python3"])
+@pytest.mark.parametrize("separator", [" ", " \\\n    "])
+@pytest.mark.parametrize(
+    "markdown", ["SKILL.md", "README.md", "references/example.md"]
+)
+def test_bare_python_invocations_are_rejected_in_all_skill_markdown(
+    frontmatter, tmp_path, runner, separator, markdown
+):
+    skill = _skill(tmp_path)
+    _script(skill)
+    command = (
+        f"{runner}{separator}<this-skill-dir>/scripts/profile.py"
+    )
+    _write(skill / markdown, f"```sh\n{command}\n```\n")
+    assert frontmatter.check_invocations(skill)
+
+
+# spec: "Every documented invocation in `skills/**/*.md` of a path that resolves to one of the 16 scripts uses the form `uv run <path> [args]`, replacing `python`, `python3`, `uv run --no-project --python 3.13 python`, and `uv run --python 3.13 --with … python`."
+# task: 11
+def test_plain_uv_run_invocation_passes(frontmatter, tmp_path):
+    skill = _skill(
+        tmp_path,
+        body=(
+            "```sh\n"
+            "uv run <this-skill-dir>/scripts/profile.py input.csv\n"
+            "```\n"
+        ),
+    )
+    _script(skill)
+    assert frontmatter.check_invocations(skill) == []
+    invocations = frontmatter.bundled_invocations(skill)
+    assert len(invocations) == 1
+    markdown, runner, path = invocations[0]
+    assert markdown == skill / "SKILL.md"
+    assert runner == "uv run"
+    assert frontmatter.resolve_bundled_script(path, skill) == (
+        skill / "scripts" / "profile.py"
+    )
+
+
+# spec: "A path that does not resolve to a bundled script, such as `writing-skills/anthropic-best-practices.md`'s teaching example `scripts/migrate.py`, is not flagged."
+# task: 11
+def test_nonresolving_teaching_example_is_not_flagged(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path)
+    _write(
+        skill / "anthropic-best-practices.md",
+        "```sh\npython scripts/migrate.py\n```\n",
+    )
+    assert frontmatter.resolve_bundled_script(
+        "scripts/migrate.py", skill
+    ) is None
+    assert frontmatter.check_invocations(skill) == []
+
+
+# spec: "Every documented invocation in `skills/**/*.md` of a path that resolves to one of the 16 scripts uses the form `uv run <path> [args]`, replacing `python`, `python3`, `uv run --no-project --python 3.13 python`, and `uv run --python 3.13 --with … python`."
+# task: 11
+def test_repository_invocations_use_plain_uv_run(frontmatter):
+    for skill in _skills():
+        assert frontmatter.check_invocations(skill) == [], skill
+        for markdown, runner, spelling in frontmatter.bundled_invocations(
+            skill
+        ):
+            assert runner == "uv run", (markdown, spelling)
+            text = re.sub(
+                r"\\\r?\n[ \t]*",
+                " ",
+                markdown.read_text(encoding="utf-8"),
+            )
+            candidate_lines = [
+                line
+                for line in text.splitlines()
+                if spelling in line
+                and re.search(
+                    r"\b(?:python3?|uv[ \t]+run)\b", line
+                )
+            ]
+            assert candidate_lines, (markdown, spelling)
+            simple_invocation = re.compile(
+                r"\buv[ \t]+run[ \t]+['\"]?"
+                + re.escape(spelling)
+            )
+            assert all(
+                simple_invocation.search(line)
+                for line in candidate_lines
+            ), (markdown, spelling, candidate_lines)
+
+
+# spec: "Each skill with such an invocation gets this sentence once, near its first invocation: \"Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header.\""
+# task: 11
+def test_each_invoking_skill_has_exactly_one_fallback_sentence(
+    frontmatter
+):
+    for skill in _skills():
+        if frontmatter.bundled_invocations(skill):
+            occurrences = sum(
+                markdown.read_text(encoding="utf-8").count(
+                    FALLBACK_SENTENCE
+                )
+                for markdown in skill.rglob("*.md")
+            )
+            assert occurrences == 1, skill
+
+
+# spec: "A skill whose markdown runs a bundled script via `uv run` declares a `compatibility` value containing `uv`."
+# task: 12
+@pytest.mark.parametrize(
+    "values", [{}, {"compatibility": "Requires Python 3.11+."}]
+)
+def test_uv_invocation_requires_uv_compatibility(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(
+        tmp_path,
+        body="uv run <this-skill-dir>/scripts/profile.py\n",
+    )
+    _script(skill)
+    assert frontmatter._check_compatibility_names_uv(skill, values)
+
+
+# spec: "A skill whose markdown runs a bundled script via `uv run` declares a `compatibility` value containing `uv`."
+# task: 12
+def test_uv_compatibility_passes_and_noninvoking_skill_is_exempt(
+    frontmatter, tmp_path
+):
+    invoking = _skill(
+        tmp_path,
+        name="invoking",
+        body="uv run <this-skill-dir>/scripts/profile.py\n",
+    )
+    _script(invoking)
+    assert frontmatter._check_compatibility_names_uv(
+        invoking,
+        {
+            "compatibility": (
+                "Requires uv to run bundled scripts "
+                "(dependencies are declared inline); Python 3.11+."
+            )
+        },
+    ) == []
+    noninvoking = _skill(tmp_path, name="noninvoking")
+    assert frontmatter._check_compatibility_names_uv(
+        noninvoking, {}
+    ) == []
+
+
+# spec: "Here 3.X is the highest `requires-python` floor among the scripts that skill invokes."
+# task: 12
+def test_repository_compatibility_uses_highest_invoked_script_floor(
+    frontmatter
+):
+    for skill in _skills():
+        invocations = frontmatter.bundled_invocations(skill)
+        if not invocations:
+            continue
+        floors = []
+        for _, runner, spelling in invocations:
+            assert runner == "uv run"
+            path = frontmatter.resolve_bundled_script(spelling, skill)
+            assert path is not None
+            metadata, _ = _inline_metadata(
+                path.read_text(encoding="utf-8")
+            )
+            match = re.fullmatch(
+                r">=(3\.(?:11|12|13))",
+                metadata["requires-python"],
+            )
+            assert match is not None, path
+            floors.append(tuple(map(int, match.group(1).split("."))))
+        highest = ".".join(map(str, max(floors)))
+        assert _read_frontmatter(skill)["compatibility"] == (
+            "Requires uv to run bundled scripts "
+            f"(dependencies are declared inline); Python {highest}+."
+        ), skill
+
+
+# spec: "That set includes `finishing-a-development-branch`, which runs `writing-plans`' `deferred_stats.py`."
+# task: 12
+def test_finishing_includes_writing_plans_script_compatibility(
+    frontmatter
+):
+    skill = REPO / "skills" / "finishing-a-development-branch"
+    targets = {
+        frontmatter.resolve_bundled_script(spelling, skill).resolve()
+        for _, runner, spelling in frontmatter.bundled_invocations(skill)
+        if runner == "uv run"
+    }
+    assert (
+        REPO / "skills/writing-plans/scripts/deferred_stats.py"
+    ).resolve() in targets
+    assert "uv" in _read_frontmatter(skill)["compatibility"]
+
+
+# spec: "Prose floors that disagree with the header are aligned or removed (e.g. \"Python ≥ 3.9\" in `recommend-probabilistic-model` and `recommend-visualization`)."
+# task: 12
+@pytest.mark.parametrize(
+    "name", ["recommend-probabilistic-model", "recommend-visualization"]
+)
+def test_documented_python_floors_agree_with_compatibility(name):
+    skill = REPO / "skills" / name
+    compatibility = _read_frontmatter(skill)["compatibility"]
+    expected = re.search(r"Python (3\.\d+)\+\.", compatibility)
+    assert expected is not None
+    for markdown in skill.rglob("*.md"):
+        text = markdown.read_text(encoding="utf-8")
+        floors = re.findall(
+            r"\bPython\s*(?:≥|>=)\s*(3\.\d+)", text
+        )
+        assert all(
+            floor == expected.group(1) for floor in floors
+        ), markdown
+
+
+# spec: "R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows."
+# task: 2
+def test_red_baseline_file_exists_with_a_valid_date():
+    files = list(
+        (REPO / "specs").glob(
+            "red-baseline-description-openings-????-??-??.md"
+        )
+    )
+    assert files
+    for path in files:
+        suffix = path.stem.removeprefix(
+            "red-baseline-description-openings-"
+        )
+        date.fromisoformat(suffix)
+        assert path.read_text(encoding="utf-8").strip()
+
+
+# spec: "The note covers three points: Codex shortens every description when its listing exceeds its budget; the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure (`codex debug prompt-input` from a directory outside any repo, reading the Skills list)."
+# task: 14
+def test_token_efficiency_records_the_measured_values_and_command():
+    text = (
+        REPO / "skills/writing-skills/SKILL.md"
+    ).read_text(encoding="utf-8")
+    section = _section(text, "Token Efficiency")
+    assert "Codex" in section
+    assert re.search(r"\bbudget\b", section, re.I)
+    assert re.search(r"156\s*[–-]\s*164", section)
+    assert re.search(r"\b93\b", section)
+    assert re.search(r"\b0\.154(?:\.0)?\b", section)
+    assert "2026-10-03" in section
+    assert "codex debug prompt-input" in section
+</tests>
+<flags>
+<flag task="3"><spec>R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows.</spec><plan>`skills/writing-skills/SKILL.md` (the optional-keys bullet)</plan></flag>
+<flag task="4"><spec>R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows.</spec><plan>`skills/writing-skills/SKILL.md` (required fields, optional keys, template, checklist)</plan></flag>
+<flag task="7"><spec>CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run)</spec><plan>Modify: `CLAUDE.md` (Commands: the frontmatter lint's comment names `--strict`; no line added, D7)</plan></flag>
+<flag task="8"><spec>No skill directory holds a `LICENSE*` file outside its mapping.</spec><plan>Rename: `skills/recommend-causal-design/LICENSE` to `skills/recommend-causal-design/LICENSE-causal-design-sources`, and re-point its links in that skill's `SKILL.md`, `README.md` and `references/sources.md`</plan></flag>
+<flag task="9"><spec>only if R4.5 finds an upstream notice</spec><plan>Create: `LICENSE-andorra` (upstream's text, verbatim) and its copy `skills/bayesian-workflow/LICENSE-andorra`</plan></flag>
+<flag task="10"><spec>Fourteen gain a header:</spec><plan>Modify: the 15 header-less runnable scripts (helper script): a shebang where missing, then the header</plan></flag>
+</flags>
+<untestable>
+The owner approved the design on 2026-10-03 and the written spec on 2026-10-18.
+Next step: an implementation plan from the writing-plans skill.
+The owner approved all five design sections in a brainstorming pass over `specs/completed/agent-skills-best-practices.md` (a September 2026 survey of Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot, and others).
+This document is the handoff for implementation planning.
+One piece has landed since: a 2026-10-15 quick fix made `build/check_frontmatter.py` accept `compatibility`, and R1.3's check of its value is still to do.
+The survey is this spec's input; it was retired ahead of the spec, to `specs/completed/` in `79ad04f` (2026-10-03).
+Most of the survey is already true here and needs no work: `name` matches its directory and descriptions are within 1,024 characters (`build/check_frontmatter.py`); `install.py` links `skills/` into `~/.claude/skills` and the cross-runtime `~/.agents/skills`, with a `--copy` fallback; skill bodies name no runtime tool (`TodoWrite`, Skill/Task/Agent tool) and use no `$ARGUMENTS` or `` !`cmd` `` injection, and bundled paths use `<this-skill-dir>`; side-effect gates live in skill bodies; every command is `disable-model-invocation: true`.
+Gemini CLI 0.46.0 loads the three skills carrying Claude host keys (`effort`: bayesian-workflow, tune-hyperparameters; `context`: tech-debt) as `[Enabled]`
+Codex CLI 0.154.0 lists the same three skills
+Codex shortens descriptions when its listing exceeds its budget.
+With 93 skills listed (66 from `~/.agents/skills`, the rest system and plugin skills), 31 of this repo's 32 descriptions were cut to 156–164 characters (median 158); only `test-driven-development` (79 characters) appeared whole.
+Measured at this one skill count only.
+That the cutoff moves with the number of skills sharing the budget is an inference from Codex's documented budget, not a measurement
+All 32 descriptions lead with "Use when" and name their primary trigger within the first 150 characters
+One description contains angle brackets: llm-wiki's `'verify <page>'`
+Two of 16 runnable scripts carry PEP 723 headers (both `build.py`); others are invoked as `python`, `python3`, or `uv run --python 3.13 --with … python …`
+The 13 superpowers skills have no `license` field; no skill directory contains a license file
+NOTICE credits `bayesian-workflow` to Alexandre Andorra's MIT skill, but no copyright line or license text for it exists in the repo
+Only `writing-skills` has a body over 500 lines (696)
+Moving it to `.agents/skills/` has a large blast radius (installer, tests, CLAUDE.md, symlinks) and buys nothing: the installer already links into every runtime's discovery path, which is the survey's own alternative.
+The skills already load user-level from the same checkout; a project-level link would list each one twice.
+`disable-model-invocation: true` removes a skill from the model's reach, which would break bare-name handoffs (`finishing-a-development-branch`, `using-git-worktrees`, and the others are invoked by name from other skills).
+Their side effects are already gated in their bodies, the survey's portable pattern.
+The survey suggests "Does X. Use when Y".
+`writing-skills`, the governing meta-skill, requires trigger-only descriptions on tested evidence that a workflow summary in the description lets agents skip the body.
+"Use when" already front-loads the trigger.
+R2.1's review found none needed, and no trigger evals exist to catch a regression.
+The one exception is the angle-bracket fix (R1.5), which is wording-equivalent.
+Both measured non-Claude runtimes load skills with host keys; strictness matters only for claude.ai uploads and `skills-ref`-style validators (R1.8).
+The survey's 1,536-character truncation, Codex's 2% / 8,000-character budget, and Claude Code's listing fraction stay out of the lint; it keeps the spec's 1,024 cap.
+Claude Code listing behavior is documented in `specs/guides/claude-code-customization-guide.md`.
+A plain `#!/usr/bin/env python3` shebang keeps the script runnable by bare `python3` where uv is absent; `uv run <path>` reads the header either way.
+The two existing `build.py` headers are the template.
+No single work venv pairs NumPyro with ArviZ, so the project interpreter can lack the imports these scripts need, and work repos that install `hooks/uv-guard.sh` deny bare `python …` anyway.
+Every skill bundles license text, not only those with third-party content: one uniform rule, enforced byte-for-byte, at no context cost (the files are never referenced, so never loaded).
+All current values pass.
+No skill trips this today; it exists so that the first manual-only skill cannot auto-fire in Codex.
+Today only `writing-skills` warns; splitting it is deferred.
+Agents and commands are not Agent Skills and are unaffected.
+The module docstring describes the new rules and the `--strict` flag, and CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run), under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance register").
+Criterion: within its first 150 characters, a description names the skill's primary trigger, the task or symptom it exists for, so an agent shown only that prefix would load it for its canonical use.
+All 32 descriptions pass as of 2026-10-03.
+The closest calls are `creative-thinking` (its quoted examples carry the "fuzzy target" trigger) and the `clean-code` / `clean-coder` pair, whose openings both lead with editing Python.
+Both pass, so neither is rewritten.
+Before any edit to `writing-skills`, run a baseline:
+5 reps, each a fresh agent given the current `writing-skills` description guidance (the control: no new wording).
+Each is asked to write a SKILL.md description for a synthetic skill that is not from this repo and has at least 8 trigger conditions, one of them designated in the scenario as primary.
+Run from a session whose cwd was never this repo.
+A rep passes if the designated primary trigger lies within the first 150 characters.
+The controller reads each output and records the verbatim 150-character prefix.
+Record the scenario, prompts, outputs, and verdicts in `specs/red-baseline-description-openings-<YYYY-MM-DD>.md`, the house red-baseline format.
+**Baseline ≥ 4/5:** add only a factual note of 2–4 lines to `writing-skills`' "Token Efficiency" section.
+The note covers three points: Codex shortens every description when its listing exceeds its budget; the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure (`codex debug prompt-input` from a directory outside any repo, reading the Skills list).
+No new rule.
+**Baseline ≤ 3/5:** also add one checklist line ("the primary trigger falls within the first ~150 characters") and GREEN-test it: 5 reps with the new wording, at least 4/5 passing, recorded in the same red-baseline file.
+Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes, run with `uv run --python 3.X` and that suite's CLAUDE.md dependencies.
+Scripts covered by one suite share its floor, unless a failure is attributable to one script, which then alone takes the higher floor.
+Every third-party import, including function-level imports, is declared with a `>=` floor at the major version the suite currently resolves (e.g. `'polars>=1.0'`).
+Runtime backends that the script never imports but needs to read its inputs (e.g. `h5netcdf` for NetCDF) are added when R3.8's fixture run shows them needed.
+Each skill with such an invocation gets this sentence once, near its first invocation: "Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header."
+Each rule gets a RED test first.
+From an empty scratch directory (a subdirectory such as `/tmp/bwprobe/`, never `/tmp` itself), each of the 16 scripts runs `uv run <absolute-path>` on a minimal real input that exercises its main code path.
+`--help` alone is enough only for a script with no input-reading path.
+The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`) each read a small saved InferenceData fixture.
+One script is also run from inside a directory holding an unrelated `pyproject.toml`.
+This proves the header isolates it from the project environment.
+The dependency-drift check still passes.
+Invocation text changes, but no cross-skill reference is added or dropped; finishing → `writing-plans`' `deferred_stats.py` is an existing `DEPENDENCIES` edge.
+NOTICE gains one paragraph near the top: each skill directory carries copies of the license texts that apply to it, so a single-skill install (`install.py --copy --skill`, or a third-party installer) keeps the notice MIT requires.
+The root files are canonical, and `check_provenance.py` enforces the copies.
+README's License section gains one sentence to the same effect.
+CLAUDE.md's provenance section gains the invariant and names the enforcing lint, under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance register").
+Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its license.
+Add the upstream license text verbatim as root `LICENSE-andorra`, map it to `bayesian-workflow`, and extend NOTICE's `bayesian-workflow/` block with the source URL and the quoted copyright line.
+NOTICE records that, in the form already used for the Fonnesbeck repository.
+Nothing is bundled.
+NOTICE is unchanged and a deferred item is logged with what was searched.
+Never compose a copyright line that is not quoted from the source.
+The 2026-08-26 intake review (`specs/completed/skill-intake-review-2026-08-26.md`) already found that Andorra appears nowhere in the history of pymc-labs/python-analytics-skills (only Fonnesbeck and Dean commit there), so start the search from his own publications rather than that repository.
+Stages, in order.
+D is independent of C and may run alongside it.
+**A — R1.** Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix, so the new hard rules are green on arrival.
+No ceiling remains to raise: a change whose lines would breach the limit trims CLAUDE.md elsewhere (R6 P1, whose ceiling option drift spec R12.7 removed).
+When Stage A or Stage D fixes a gap the register tracks to it, the same change removes or narrows that `[[exception]]` and runs `build/check_conformance.py` (R6 P2).
+**Work in a worktree.**
+The plan edits skills the executing session loads (`writing-plans`, `finishing-a-development-branch`, `writing-skills`), and `~/.claude/skills` resolves to the main checkout.
+Commit from the worktree; the shared checkout's branch can change under a concurrent session.
+**Stage D's micro-test** runs from a session whose cwd was never this repo; inherited session context voids reps otherwise.
+**State test changes as +N deltas** against the suite, never absolute totals.
+**Before allocating the plan id**, check `specs/plans/` on every branch (`git ls-tree`); ids are allocated per branch and have collided.
+**Coordinate with the in-flight JAX spec.**
+`specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills` and defines three skills (`skills/deep-learning` is on that branch as of 2026-10-03).
+R1.4's required `license`, R3's header and invocation rules, and R4's per-skill license copies apply to them too.
+Whichever branch merges second brings the other's skills into conformance in the same merge, or the new lints fail on arrival.
+Every gate in CLAUDE.md's Commands passes:
+`check_snippets.py skills/` (Tier 1)
+the dependency-drift test
+the full `build/` suite, plus every script suite whose script gained a header
+`sync_runtime_assets.py --check` (no adapter change is expected)
+Each new lint rule has a test that failed before its implementation and passes after.
+R3.8's execution proof is recorded for all 16 scripts.
+**Cross-runtime load check**, from a directory outside any repo:
+`gemini skills list --all` shows every skill under `skills/` as `[Enabled]`;
+`codex debug prompt-input` lists every skill under `skills/` by name.
+This shows the new `compatibility`, `license`, and `metadata` values and the bundled license files break loading in neither runtime.
+R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows.
+They are expensive and need isolated sessions.
+They are also the prerequisite for any future description rewrite.
+These are outward-facing.
+Plugin namespacing (`/plugin:skill`) also conflicts with the bare-name cross-reference invariant.
+R1.6 is the groundwork.
+This needs a reliable detector first; a crude grep was not one.
+The repo has no CI.
+`agents/code-reviewer.md` and `agents/task-reviewer.md` are distilled from superpowers and install as single files without `LICENSE-superpowers`: the same gap R4 closes for skills.
+Its Claude Code numbers are secondary; `specs/guides/claude-code-customization-guide.md` governs Claude Code facts.
+Its 2026-10-03 re-verification against official docs (at 2.1.288) landed on main via lowmason/agent-skills#19 (merge `c33bc99`).
+uv documentation: a script with inline metadata runs in its own environment even inside a project.
+R3.8's pyproject run verifies this rather than assuming it.
+Runtime measurements in "Measured baseline" were taken on 2026-10-03 with Gemini CLI 0.46.0 and Codex CLI 0.154.0, on this machine's installed skill set (93 skills in Codex's listing).
+</untestable>
+tokens used
+61,427
+<tests>
+import ast
+import importlib.util
+import os
+import re
+import subprocess
+import sys
+import tomllib
+from datetime import date
+from pathlib import Path
+
+import pytest
+import yaml
+
+
+REPO = Path(os.environ.get("PORTABILITY_REPO", Path.cwd())).resolve()
+
+SPEC_KEYS = {
+    "name",
+    "description",
+    "license",
+    "compatibility",
+    "metadata",
+    "allowed-tools",
+}
+HOST_KEYS = {
+    "when_to_use",
+    "model",
+    "effort",
+    "context",
+    "disable-model-invocation",
+}
+EXPECTED_SCRIPTS = {
+    "skills/bayesian-workflow/scripts/calibration_check.py",
+    "skills/bayesian-workflow/scripts/check_diagnostics.py",
+    "skills/bayesian-workflow/scripts/diagnose_model.py",
+    "skills/describe-critique-methodology/scripts/check_decoupling.py",
+    "skills/design-architecture/scripts/new_adr.py",
+    "skills/explore-data/scripts/profile.py",
+    "skills/llm-wiki/scripts/bootstrap_wiki.py",
+    "skills/llm-wiki/scripts/distill_sessions.py",
+    "skills/llm-wiki/scripts/distill_specs.py",
+    "skills/llm-wiki/scripts/lint_wiki.py",
+    "skills/recommend-probabilistic-model/scripts/characterize.py",
+    "skills/recommend-visualization/scripts/recommend.py",
+    "skills/track-model-experiments/scripts/compare_experiments.py",
+    "skills/writing-plans/scripts/deferred_stats.py",
+    "skills/classification-codes/scripts/build.py",
+    "skills/geographic-codes/scripts/build.py",
+}
+FALLBACK_SENTENCE = (
+    "Without uv, run the same path with `python3` in an environment "
+    "that has the dependencies listed in the script's header."
+)
+SOURCE_URL = "https://github.com/obra/superpowers"
+
+
+def _load_module(name, relative_path):
+    spec = importlib.util.spec_from_file_location(name, REPO / relative_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.fixture(scope="session")
+def frontmatter():
+    return _load_module(
+        "portability_acceptance_frontmatter", "build/check_frontmatter.py"
+    )
+
+
+@pytest.fixture(scope="session")
+def provenance():
+    return _load_module(
+        "portability_acceptance_provenance", "build/check_provenance.py"
+    )
+
+
+def _write(path, text):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def _skill(parent, name="synthetic", frontmatter=None, body=""):
+    values = {
+        "name": name,
+        "description": "Use when checking a synthetic skill.",
+        "license": "MIT",
+    }
+    if frontmatter is not None:
+        values.update(frontmatter)
+    directory = parent / name
+    _write(
+        directory / "SKILL.md",
+        "---\n"
+        + yaml.safe_dump(values, sort_keys=False)
+        + "---\n"
+        + body,
+    )
+    return directory
+
+
+def _read_frontmatter(directory):
+    lines = (directory / "SKILL.md").read_text(encoding="utf-8").splitlines()
+    assert lines[0] == "---"
+    closing = next(i for i in range(1, len(lines)) if lines[i] == "---")
+    return yaml.safe_load("\n".join(lines[1:closing]))
+
+
+def _skills():
+    return sorted(
+        directory
+        for directory in (REPO / "skills").iterdir()
+        if directory.is_dir() and (directory / "SKILL.md").is_file()
+    )
+
+
+def _script_text(dependencies=(), requires_python=">=3.11", payload=None):
+    if payload is None:
+        payload = "if __name__ == '__main__':\n    pass\n"
+    return (
+        "#!/usr/bin/env python3\n"
+        "# /// script\n"
+        f"# requires-python = '{requires_python}'\n"
+        "# dependencies = ["
+        + ", ".join(f"'{dependency}'" for dependency in dependencies)
+        + "]\n"
+        "# ///\n\n"
+        + payload
+    )
+
+
+def _script(directory, filename="profile.py", text=None):
+    return _write(
+        directory / "scripts" / filename,
+        _script_text() if text is None else text,
+    )
+
+
+def _inline_metadata(text):
+    lines = text.splitlines()
+    start = lines.index("# /// script")
+    end = next(
+        i for i in range(start + 1, len(lines)) if lines[i] == "# ///"
+    )
+    block = lines[start + 1:end]
+    assert all(line.startswith("#") for line in block)
+    contents = "\n".join(
+        line.removeprefix("#").removeprefix(" ") for line in block
+    )
+    return tomllib.loads(contents), contents
+
+
+def _has_main_guard(path):
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.If):
+            continue
+        comparison = node.test
+        if (
+            not isinstance(comparison, ast.Compare)
+            or len(comparison.ops) != 1
+            or not isinstance(comparison.ops[0], ast.Eq)
+            or len(comparison.comparators) != 1
+        ):
+            continue
+        left, right = comparison.left, comparison.comparators[0]
+        pairs = ((left, right), (right, left))
+        if any(
+            isinstance(a, ast.Name)
+            and a.id == "__name__"
+            and isinstance(b, ast.Constant)
+            and b.value == "__main__"
+            for a, b in pairs
+        ):
+            return True
+    return False
+
+
+def _license_repo(tmp_path):
+    repo = tmp_path / "repo"
+    names = ["bayesian-workflow", "clean-code", "tech-debt"]
+    table = {
+        "LICENSE-coding-skills": ("bayesian-workflow", "clean-code"),
+    }
+    canonical = {
+        "LICENSE": b"MIT\n",
+        "LICENSE-coding-skills": b"MIT\nSource notice\n",
+    }
+    repo.mkdir()
+    for filename, contents in canonical.items():
+        (repo / filename).write_bytes(contents)
+    for name in names:
+        directory = repo / "skills" / name
+        directory.mkdir(parents=True)
+        (directory / "LICENSE").write_bytes(canonical["LICENSE"])
+    for filename, recipients in table.items():
+        for name in recipients:
+            (repo / "skills" / name / filename).write_bytes(
+                canonical[filename]
+            )
+    return repo, names, table
+
+
+def _atoms(value):
+    if isinstance(value, dict):
+        for nested in value.values():
+            yield from _atoms(nested)
+    elif isinstance(value, (list, tuple)):
+        for nested in value:
+            yield from _atoms(nested)
+    else:
+        yield value
+
+
+def _section(text, title):
+    heading = re.search(
+        rf"(?mi)^(#{{1,6}})[ \t]+{re.escape(title)}[ \t]*$",
+        text,
+    )
+    assert heading is not None, f"Missing section: {title}"
+    level = len(heading.group(1))
+    remainder = text[heading.end():]
+    following = re.search(
+        rf"(?m)^#{{1,{level}}}[ \t]+", remainder
+    )
+    return remainder[:following.start()] if following else remainder
+
+
+# spec: "Replace `ALLOWED_KEYS` with two named sets and allow their union in a `SKILL.md`:"
+# task: 3
+def test_frontmatter_key_sets(frontmatter):
+    assert isinstance(frontmatter.SPEC_KEYS, frozenset)
+    assert isinstance(frontmatter.HOST_KEYS, frozenset)
+    assert frontmatter.SPEC_KEYS == SPEC_KEYS
+    assert frontmatter.HOST_KEYS == HOST_KEYS
+    assert not hasattr(frontmatter, "ALLOWED_KEYS")
+
+
+# spec: "When present, a mapping whose keys and values are all strings."
+# task: 3
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {},
+        {"": ""},
+        {
+            "author": "Jesse Vincent",
+            "adapted_by": "Lowell Mason",
+            "source": SOURCE_URL,
+        },
+    ],
+)
+def test_metadata_accepts_string_mappings(frontmatter, tmp_path, metadata):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"metadata": metadata}
+    ) == []
+
+
+# spec: "When present, a mapping whose keys and values are all strings."
+# task: 3
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        None,
+        "",
+        [],
+        True,
+        1,
+        {"author": 1},
+        {1: "author"},
+        {"author": None},
+        {"author": ["Jesse Vincent"]},
+    ],
+)
+def test_metadata_rejects_other_shapes(frontmatter, tmp_path, metadata):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"metadata": metadata}
+    )
+
+
+# spec: "When present, a string of 1–500 characters after stripping."
+# task: 3
+@pytest.mark.parametrize(
+    "compatibility", ["x", "x" * 500, " \n" + "x" * 500 + "\t "]
+)
+def test_compatibility_accepts_stripped_boundaries(
+    frontmatter, tmp_path, compatibility
+):
+    skill = _skill(tmp_path)
+    assert frontmatter.COMPATIBILITY_CAP == 500
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"compatibility": compatibility}
+    ) == []
+
+
+# spec: "When present, a string of 1–500 characters after stripping."
+# task: 3
+@pytest.mark.parametrize(
+    "compatibility",
+    ["", " \n\t ", "x" * 501, None, True, 500, [], {}],
+)
+def test_compatibility_rejects_invalid_values(
+    frontmatter, tmp_path, compatibility
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {"compatibility": compatibility}
+    )
+
+
+# spec: "`name` and `description` contain no `<` or `>`."
+# task: 3
+@pytest.mark.parametrize("field", ["name", "description"])
+@pytest.mark.parametrize("bracket", ["<", ">"])
+def test_angle_brackets_are_rejected(
+    frontmatter, tmp_path, field, bracket
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_value_shapes(
+        skill / "SKILL.md", {field: f"synthetic{bracket}value"}
+    )
+
+
+# spec: "Fix llm-wiki's trigger phrase `'verify <page>'` to `'verify a page'`."
+# task: 3
+def test_llm_wiki_trigger_is_wording_equivalent():
+    description = _read_frontmatter(REPO / "skills" / "llm-wiki")[
+        "description"
+    ]
+    assert "verify a page" in description
+    assert "verify <page>" not in description
+    assert "<" not in description and ">" not in description
+
+
+# spec: "Required in every `SKILL.md`, a non-empty string (repo policy, beyond the spec)."
+# task: 4
+@pytest.mark.parametrize(
+    "values",
+    [{}, {"license": ""}, {"license": None}, {"license": True},
+     {"license": 1}, {"license": []}, {"license": {}}],
+)
+def test_license_is_required_and_must_be_a_nonempty_string(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_license(skill / "SKILL.md", values)
+
+
+# spec: "Required in every `SKILL.md`, a non-empty string (repo policy, beyond the spec)."
+# task: 4
+def test_license_accepts_mit(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_license(
+        skill / "SKILL.md", {"license": "MIT"}
+    ) == []
+
+
+# spec: "Required in every `SKILL.md`, a non-empty string (repo policy, beyond the spec)."
+# task: 4
+def test_every_repository_skill_has_a_license():
+    skills = _skills()
+    assert skills
+    for skill in skills:
+        license_value = _read_frontmatter(skill).get("license")
+        assert isinstance(license_value, str), skill
+        assert license_value, skill
+
+
+# spec: "The 13 superpowers skills gain `license: MIT` and"
+# task: 4
+def test_thirteen_superpowers_attributions_have_required_values():
+    attributed = [
+        skill
+        for skill in _skills()
+        if _read_frontmatter(skill).get("metadata", {}).get("source")
+        == SOURCE_URL
+    ]
+    assert len(attributed) == 13
+    for skill in attributed:
+        values = _read_frontmatter(skill)
+        assert values["license"] == "MIT"
+        assert values["metadata"]["author"] == "Jesse Vincent"
+        assert values["metadata"]["adapted_by"] == "Lowell Mason"
+
+
+# spec: "For a `SKILL.md`, `disable-model-invocation` must be a YAML boolean when present."
+# task: 5
+@pytest.mark.parametrize("value", ["true", "false", 0, 1, None, [], {}])
+def test_disable_model_invocation_rejects_non_booleans(
+    frontmatter, tmp_path, value
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_invocation_parity(
+        skill, {"disable-model-invocation": value}
+    )
+
+
+# spec: "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`."
+# task: 5
+@pytest.mark.parametrize(
+    "policy_text",
+    [
+        None,
+        "policy: [",
+        "{}\n",
+        "policy: {}\n",
+        "policy:\n  allow_implicit_invocation: true\n",
+        "policy:\n  allow_implicit_invocation: 'false'\n",
+        "policy:\n  allow_implicit_invocation: 0\n",
+    ],
+)
+def test_manual_only_skill_requires_a_valid_false_codex_policy(
+    frontmatter, tmp_path, policy_text
+):
+    skill = _skill(tmp_path)
+    if policy_text is not None:
+        _write(skill / "agents" / "openai.yaml", policy_text)
+    assert frontmatter.CODEX_POLICY == Path("agents") / "openai.yaml"
+    assert frontmatter._check_invocation_parity(
+        skill, {"disable-model-invocation": True}
+    )
+
+
+# spec: "A skill with `disable-model-invocation: true` must ship `agents/openai.yaml` that parses and sets `policy.allow_implicit_invocation: false`."
+# task: 5
+def test_matching_manual_only_settings_pass(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    _write(
+        skill / "agents" / "openai.yaml",
+        "policy:\n  allow_implicit_invocation: false\n",
+    )
+    assert frontmatter._check_invocation_parity(
+        skill, {"disable-model-invocation": True}
+    ) == []
+
+
+# spec: "Conversely, a skill whose `agents/openai.yaml` sets that policy to `false` must set `disable-model-invocation: true`."
+# task: 5
+@pytest.mark.parametrize("values", [{}, {"disable-model-invocation": False}])
+def test_codex_manual_only_policy_requires_matching_frontmatter(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(tmp_path)
+    _write(
+        skill / "agents" / "openai.yaml",
+        "policy:\n  allow_implicit_invocation: false\n",
+    )
+    assert frontmatter._check_invocation_parity(skill, values)
+
+
+# spec: "For a `SKILL.md`, `disable-model-invocation` must be a YAML boolean when present."
+# task: 5
+@pytest.mark.parametrize("values", [{}, {"disable-model-invocation": False}])
+def test_nonmanual_skill_does_not_require_a_codex_policy(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(tmp_path)
+    assert frontmatter._check_invocation_parity(skill, values) == []
+
+
+# spec: "A `SKILL.md` body (the lines after the closing frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not change the exit code."
+# task: 6
+@pytest.mark.parametrize("body_lines", [0, 1, 499, 500, 501])
+def test_body_warning_boundary(frontmatter, tmp_path, body_lines):
+    skill = _skill(tmp_path, body="body line\n" * body_lines)
+    warning = frontmatter.skill_body_warning(skill)
+    if body_lines <= 500:
+        assert warning is None
+    else:
+        assert isinstance(warning, str) and warning
+
+
+# spec: "A `SKILL.md` body (the lines after the closing frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not change the exit code."
+# task: 6
+def test_frontmatter_lines_do_not_count_toward_body_size(
+    frontmatter, tmp_path
+):
+    skill = _skill(
+        tmp_path,
+        frontmatter={
+            "metadata": {f"key-{i}": "value" for i in range(501)}
+        },
+        body="body line\n" * 500,
+    )
+    assert frontmatter.skill_body_warning(skill) is None
+
+
+# spec: "When Stage A adds this warning, it also adds a `skill-body-size` `[[check]]` to `build/cc_guide/conformance.toml` that maps `skills.overview` to it, with `enforced_by = 'check_frontmatter'` (conformance R6 P3)."
+# task: 6
+def test_body_size_advisory_has_a_conformance_record():
+    data = tomllib.loads(
+        (REPO / "build/cc_guide/conformance.toml").read_text(
+            encoding="utf-8"
+        )
+    )
+    matches = [
+        record
+        for record in data["check"]
+        if "skill-body-size" in set(_atoms(record))
+    ]
+    assert len(matches) == 1
+    assert "skills.overview" in set(_atoms(matches[0]))
+    assert matches[0]["enforced_by"] == "check_frontmatter"
+
+
+# spec: "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or `anthropic`."
+# task: 7
+@pytest.mark.parametrize("key", sorted(HOST_KEYS))
+def test_strict_rejects_each_host_key(frontmatter, tmp_path, key):
+    value = False if key == "disable-model-invocation" else "synthetic"
+    skill = _skill(tmp_path, frontmatter={key: value})
+    assert frontmatter.strict_violations(skill)
+
+
+# spec: "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or `anthropic`."
+# task: 7
+@pytest.mark.parametrize(
+    "name", ["claude", "anthropic", "pre-claude-post", "pre-anthropic-post"]
+)
+def test_strict_rejects_reserved_substrings(frontmatter, tmp_path, name):
+    skill = _skill(tmp_path, name=name)
+    assert frontmatter.strict_violations(skill)
+
+
+# spec: "`check_frontmatter.py --strict` additionally fails on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or `anthropic`."
+# task: 7
+def test_strict_accepts_spec_fields_and_reserved_words_in_description(
+    frontmatter, tmp_path
+):
+    skill = _skill(
+        tmp_path,
+        frontmatter={
+            "description": "Use when comparing claude and anthropic.",
+            "compatibility": "Requires uv.",
+            "metadata": {"author": "Lowell Mason"},
+            "allowed-tools": "Read",
+        },
+    )
+    assert frontmatter.strict_violations(skill) == []
+
+
+# spec: "Expected result today: exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt` fail."
+# task: 7
+def test_repository_strict_failure_set(frontmatter):
+    failing = {
+        skill.name
+        for skill in _skills()
+        if frontmatter.strict_violations(skill)
+    }
+    assert failing == {
+        "bayesian-workflow", "tune-hyperparameters", "tech-debt"
+    }
+
+
+# spec: "`check_frontmatter.py` (exit 0; the only `WARN` is `writing-skills`' body length)"
+# task: 7
+def test_default_gate_passes_with_only_the_expected_warning(
+    frontmatter, capsys
+):
+    assert frontmatter.main([]) == 0
+    captured = capsys.readouterr()
+    warnings = [
+        line for line in captured.err.splitlines() if "WARN" in line
+    ]
+    assert len(warnings) == 1
+    assert "writing-skills" in warnings[0]
+
+
+# spec: "`check_frontmatter.py --strict` fails on exactly `bayesian-workflow`, `tune-hyperparameters`, and `tech-debt`."
+# task: 7
+def test_strict_cli_has_a_failing_exit_status(frontmatter, capsys):
+    assert frontmatter.main(["--strict"]) != 0
+    capsys.readouterr()
+
+
+# spec: "The module docstring describes the new rules and the `--strict` flag, and CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run), under the `claude-md-size` check's 200-line limit (Sequencing, \"Conformance register\")."
+# task: 7
+def test_strict_invocation_is_documented_and_claude_stays_within_limit(
+    frontmatter
+):
+    assert frontmatter.__doc__
+    assert "--strict" in frontmatter.__doc__
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    assert len(text.splitlines()) <= 200
+    commands = _section(text, "Commands")
+    assert any(
+        "check_frontmatter.py --strict" in line
+        and not line.lstrip().startswith("#")
+        for line in commands.splitlines()
+    )
+    assert "claude.ai" in commands
+    assert re.search(r"upload|spec.only|validator", commands, re.I)
+
+
+# spec: "Every required copy exists, is a regular file, and is byte-identical to its root file."
+# task: 8
+def test_valid_bundled_license_copies_pass(provenance, tmp_path):
+    repo, names, table = _license_repo(tmp_path)
+    assert provenance.PLAIN_LICENSE == "LICENSE"
+    assert provenance.bundled_license_violations(repo, names, table) == []
+
+
+# spec: "Every required copy exists, is a regular file, and is byte-identical to its root file."
+# task: 8
+@pytest.mark.parametrize("filename", ["LICENSE", "LICENSE-coding-skills"])
+@pytest.mark.parametrize("failure", ["missing", "directory", "symlink", "bytes"])
+def test_required_license_copy_failures(
+    provenance, tmp_path, filename, failure
+):
+    repo, names, table = _license_repo(tmp_path)
+    copy = repo / "skills" / "bayesian-workflow" / filename
+    copy.unlink()
+    if failure == "directory":
+        copy.mkdir()
+    elif failure == "symlink":
+        copy.symlink_to(repo / filename)
+    elif failure == "bytes":
+        copy.write_bytes((repo / filename).read_bytes() + b"\n")
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "No skill directory holds a `LICENSE*` file outside its mapping."
+# task: 8
+def test_unmapped_skill_license_is_rejected(provenance, tmp_path):
+    repo, names, table = _license_repo(tmp_path)
+    (repo / "skills" / "tech-debt" / "LICENSE-coding-skills").write_bytes(
+        (repo / "LICENSE-coding-skills").read_bytes()
+    )
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "No skill directory holds a `LICENSE*` file outside its mapping."
+# task: 8
+def test_unknown_skill_license_filename_is_rejected(provenance, tmp_path):
+    repo, names, table = _license_repo(tmp_path)
+    (repo / "skills" / "clean-code" / "LICENSE-unmapped").write_bytes(
+        b"MIT\n"
+    )
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "Every root `LICENSE*` file is mapped to at least one skill."
+# task: 8
+@pytest.mark.parametrize("empty_mapping", [False, True])
+def test_root_licenses_need_nonempty_mappings(
+    provenance, tmp_path, empty_mapping
+):
+    repo, names, table = _license_repo(tmp_path)
+    (repo / "LICENSE-andorra").write_bytes(b"MIT\n")
+    if empty_mapping:
+        table["LICENSE-andorra"] = ()
+    assert provenance.bundled_license_violations(repo, names, table)
+
+
+# spec: "Each skill directory carries regular files (never symlinks, which `install.py --copy` refuses) that are byte-identical to the root license files and carry the same names:"
+# task: 8
+def test_repository_license_mapping_and_copies(provenance):
+    skills = _skills()
+    names = [skill.name for skill in skills]
+    table = provenance.BUNDLED_LICENSES
+    assert isinstance(table, dict)
+    assert all(
+        isinstance(key, str)
+        and isinstance(value, tuple)
+        and all(isinstance(name, str) for name in value)
+        for key, value in table.items()
+    )
+    assert provenance.bundled_license_violations(REPO, names, table) == []
+
+    expected_roots = {
+        "LICENSE", "LICENSE-superpowers", "LICENSE-coding-skills"
+    }
+    if (REPO / "LICENSE-andorra").exists():
+        expected_roots.add("LICENSE-andorra")
+
+    mapping = {"LICENSE": tuple(names), **table}
+    assert set(mapping) == expected_roots
+    assert set(mapping["LICENSE"]) == set(names)
+    assert set(mapping["LICENSE-coding-skills"]) == {
+        "bayesian-workflow", "clean-code"
+    }
+
+    superpowers = {
+        skill.name
+        for skill in skills
+        if _read_frontmatter(skill).get("metadata", {}).get("source")
+        == SOURCE_URL
+    }
+    assert len(superpowers) == 13
+    assert set(mapping["LICENSE-superpowers"]) == superpowers
+    if "LICENSE-andorra" in mapping:
+        assert set(mapping["LICENSE-andorra"]) == {"bayesian-workflow"}
+
+    assert {
+        path.name for path in REPO.glob("LICENSE*")
+    } == expected_roots
+    for filename, recipients in mapping.items():
+        canonical = (REPO / filename).read_bytes()
+        for name in recipients:
+            copy = REPO / "skills" / name / filename
+            assert not copy.is_symlink(), copy
+            assert copy.is_file(), copy
+            assert copy.read_bytes() == canonical, copy
+    for skill in skills:
+        expected = {
+            filename
+            for filename, recipients in mapping.items()
+            if skill.name in recipients
+        }
+        assert {
+            path.name for path in skill.glob("LICENSE*")
+        } == expected
+
+
+# spec: "The script stays stdlib-only, so its CLAUDE.md command keeps no `--with`."
+# task: 8
+def test_provenance_remains_stdlib_only():
+    source = (REPO / "build/check_provenance.py").read_text(
+        encoding="utf-8"
+    )
+    tree = ast.parse(source)
+    imports = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imports.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            assert node.level == 0
+            if node.module:
+                imports.add(node.module.split(".")[0])
+    assert imports <= (
+        set(sys.stdlib_module_names)
+        | set(sys.builtin_module_names)
+        | {"__future__"}
+    )
+    commands = _section(
+        (REPO / "CLAUDE.md").read_text(encoding="utf-8"), "Commands"
+    )
+    invocations = [
+        line
+        for line in commands.splitlines()
+        if "check_provenance.py" in line
+    ]
+    assert invocations
+    assert all("--with" not in line for line in invocations)
+
+
+# spec: "`check_provenance.py`"
+# task: 8
+def test_provenance_gate_passes():
+    result = subprocess.run(
+        [sys.executable, str(REPO / "build/check_provenance.py")],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+# spec: "The runnable scripts are the `skills/*/scripts/*.py` files with a `__main__` guard."
+# task: 10
+def test_runnable_script_discovery_ignores_libraries_and_examples(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path)
+    runnable = _script(skill)
+    _script(skill, "time_series_cv.py", "def split():\n    pass\n")
+    _script(
+        skill,
+        "example.py",
+        'EXAMPLE = """\nif __name__ == "__main__":\n    pass\n"""\n',
+    )
+    _write(
+        skill / "scripts" / "nested" / "profile.py",
+        "if __name__ == '__main__':\n    pass\n",
+    )
+    assert set(frontmatter.runnable_scripts(skill)) == {runnable}
+
+
+# spec: "There are 16."
+# task: 10
+def test_runnable_inventory_matches_the_spec(frontmatter):
+    discovered = {
+        str(path.relative_to(REPO))
+        for path in (REPO / "skills").glob("*/scripts/*.py")
+        if _has_main_guard(path)
+    }
+    assert discovered == EXPECTED_SCRIPTS
+    assert len(discovered) == 16
+    lint_inventory = {
+        str(path.relative_to(REPO))
+        for skill in _skills()
+        for path in frontmatter.runnable_scripts(skill)
+    }
+    assert lint_inventory == EXPECTED_SCRIPTS
+
+
+# spec: "`tune-hyperparameters/scripts/time_series_cv.py` has no `__main__` guard; it is a library imported into the user's code and stays header-less."
+# task: 10
+def test_time_series_cv_stays_a_headerless_library(frontmatter):
+    path = (
+        REPO / "skills/tune-hyperparameters/scripts/time_series_cv.py"
+    )
+    assert not _has_main_guard(path)
+    assert frontmatter.script_metadata(
+        path.read_text(encoding="utf-8")
+    ) is None
+
+
+# spec: "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block that parses with `tomllib` and has `requires-python` and `dependencies`."
+# task: 10
+@pytest.mark.parametrize(
+    "text",
+    [
+        "if __name__ == '__main__':\n    pass\n",
+        (
+            "#!/usr/bin/env python3\n"
+            "# /// script\n"
+            "# requires-python = [\n"
+            "# dependencies = []\n"
+            "# ///\n"
+            "if __name__ == '__main__':\n    pass\n"
+        ),
+        _script_text().replace("# requires-python = '>=3.11'\n", ""),
+        _script_text().replace("# dependencies = []\n", ""),
+    ],
+)
+def test_header_lint_rejects_missing_invalid_or_incomplete_metadata(
+    frontmatter, tmp_path, text
+):
+    skill = _skill(tmp_path)
+    _script(skill, text=text)
+    assert frontmatter.check_script_headers(skill)
+
+
+# spec: "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block that parses with `tomllib` and has `requires-python` and `dependencies`."
+# task: 10
+def test_header_requirement_has_no_vendored_script_exemption(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path / "skills", name="bayesian-workflow")
+    _script(
+        skill,
+        "calibration_check.py",
+        "if __name__ == '__main__':\n    pass\n",
+    )
+    assert frontmatter.check_script_headers(
+        skill,
+        vendored=frozenset(
+            {"skills/bayesian-workflow/scripts/calibration_check.py"}
+        ),
+    )
+
+
+# spec: "Then a `# /// script` block with single-quoted TOML strings, a `requires-python`, and a `dependencies` list (`[]` for stdlib-only scripts)."
+# task: 10
+def test_stdlib_script_accepts_empty_dependencies(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    text = _script_text(
+        payload=(
+            "import ast\nimport argparse\nimport tomllib\n"
+            "if __name__ == '__main__':\n    pass\n"
+        )
+    )
+    _script(skill, text=text)
+    assert frontmatter.script_metadata(text) == {
+        "requires-python": ">=3.11",
+        "dependencies": [],
+    }
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "Line 1 is `#!/usr/bin/env python3`; add it where missing."
+# task: 10
+def test_every_runnable_script_has_the_house_header():
+    for relative in sorted(EXPECTED_SCRIPTS):
+        path = REPO / relative
+        text = path.read_text(encoding="utf-8")
+        assert text.splitlines()[0] == "#!/usr/bin/env python3", path
+        metadata, block = _inline_metadata(text)
+        floor = metadata["requires-python"]
+        assert floor in {">=3.11", ">=3.12", ">=3.13"}, path
+        assert re.search(
+            r"requires-python\s*=\s*'" + re.escape(floor) + r"'",
+            block,
+        ), path
+        assert isinstance(metadata["dependencies"], list), path
+        for dependency in metadata["dependencies"]:
+            assert isinstance(dependency, str), path
+            assert f"'{dependency}'" in block, path
+
+
+# spec: "Every third-party import, including function-level imports, is declared with a `>=` floor at the major version the suite currently resolves (e.g. `'polars>=1.0'`)."
+# task: 10
+def test_function_level_import_requires_a_dependency(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path)
+    payload = (
+        "def profile():\n"
+        "    import polars\n"
+        "if __name__ == '__main__':\n"
+        "    profile()\n"
+    )
+    path = _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill)
+    path.write_text(
+        _script_text(["polars>=1.0"], payload=payload),
+        encoding="utf-8",
+    )
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "No upper pins."
+# task: 10
+def test_real_script_dependencies_use_only_lower_bounds():
+    pattern = re.compile(
+        r"[A-Za-z0-9][A-Za-z0-9_.-]*"
+        r"(?:\[[A-Za-z0-9_,.-]+\])?"
+        r">=\d+(?:\.\d+){0,2}"
+    )
+    for relative in sorted(EXPECTED_SCRIPTS):
+        path = REPO / relative
+        metadata, _ = _inline_metadata(path.read_text(encoding="utf-8"))
+        for dependency in metadata["dependencies"]:
+            assert pattern.fullmatch(dependency), (path, dependency)
+
+
+# spec: "stdlib is detected via `sys.stdlib_module_names`;"
+# task: 10
+def test_stdlib_imports_need_no_distribution(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    payload = (
+        "import sys\nfrom pathlib import Path\nimport argparse\n"
+        "if __name__ == '__main__':\n    pass\n"
+    )
+    _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "local means a sibling module file in the same directory;"
+# task: 10
+def test_sibling_import_needs_no_distribution(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    _write(skill / "scripts" / "local_helper.py", "VALUE = 1\n")
+    _script(
+        skill,
+        text=_script_text(
+            payload=(
+                "from local_helper import VALUE\n"
+                "if __name__ == '__main__':\n    pass\n"
+            )
+        ),
+    )
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "import names map to distributions through a small alias table, e.g. `yaml` → `pyyaml`;"
+# task: 10
+def test_yaml_import_is_satisfied_by_pyyaml(frontmatter, tmp_path):
+    skill = _skill(tmp_path)
+    payload = (
+        "from yaml import safe_load\n"
+        "if __name__ == '__main__':\n    pass\n"
+    )
+    path = _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill)
+    path.write_text(
+        _script_text(["pyyaml>=1.0"], payload=payload),
+        encoding="utf-8",
+    )
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "Imports inside a `try` whose handler catches `ImportError` or `ModuleNotFoundError` are optional and may be left undeclared."
+# task: 10
+@pytest.mark.parametrize(
+    "exception",
+    ["ImportError", "ModuleNotFoundError",
+     "(ImportError, ModuleNotFoundError)"],
+)
+def test_optional_import_exemption(frontmatter, tmp_path, exception):
+    skill = _skill(tmp_path)
+    payload = (
+        "try:\n"
+        "    import polars\n"
+        f"except {exception}:\n"
+        "    pass\n"
+        "if __name__ == '__main__':\n"
+        "    pass\n"
+    )
+    _script(skill, text=_script_text(payload=payload))
+    assert frontmatter.check_script_headers(skill) == []
+
+
+# spec: "Imports inside a `try` whose handler catches `ImportError` or `ModuleNotFoundError` are optional and may be left undeclared."
+# task: 10
+@pytest.mark.parametrize(
+    "payload",
+    [
+        (
+            "try:\n    import polars\n"
+            "except ValueError:\n    pass\n"
+        ),
+        (
+            "try:\n    pass\n"
+            "except ImportError:\n    import polars\n"
+        ),
+        (
+            "try:\n    pass\n"
+            "except ImportError:\n    pass\n"
+            "finally:\n    import polars\n"
+        ),
+    ],
+)
+def test_optional_import_exemption_does_not_cover_other_imports(
+    frontmatter, tmp_path, payload
+):
+    skill = _skill(tmp_path)
+    _script(
+        skill,
+        text=_script_text(
+            payload=payload + "if __name__ == '__main__':\n    pass\n"
+        ),
+    )
+    assert frontmatter.check_script_headers(skill)
+
+
+# spec: "In such a script, every non-stdlib, non-local import is declared in `dependencies`:"
+# task: 10
+def test_repository_script_header_lint_passes(frontmatter):
+    for skill in _skills():
+        assert frontmatter.check_script_headers(skill) == [], skill
+
+
+# spec: "Path forms in use: `<this-skill-dir>/scripts/x.py`, `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py` (llm-wiki's INSTALL.md), and repo-relative `skills/<skill>/scripts/build.py`."
+# task: 11
+@pytest.mark.parametrize(
+    ("skill_name", "spelling", "relative"),
+    [
+        (
+            "llm-wiki",
+            "<this-skill-dir>/scripts/lint_wiki.py",
+            "skills/llm-wiki/scripts/lint_wiki.py",
+        ),
+        (
+            "finishing-a-development-branch",
+            "<this-skill-dir>/../writing-plans/scripts/deferred_stats.py",
+            "skills/writing-plans/scripts/deferred_stats.py",
+        ),
+        (
+            "llm-wiki",
+            "$LLM_WIKI_ROOT/scripts/lint_wiki.py",
+            "skills/llm-wiki/scripts/lint_wiki.py",
+        ),
+        (
+            "llm-wiki",
+            "~/Projects/agent-skills/skills/llm-wiki/scripts/lint_wiki.py",
+            "skills/llm-wiki/scripts/lint_wiki.py",
+        ),
+        (
+            "classification-codes",
+            "skills/classification-codes/scripts/build.py",
+            "skills/classification-codes/scripts/build.py",
+        ),
+    ],
+)
+def test_resolves_each_documented_path_form(
+    frontmatter, skill_name, spelling, relative
+):
+    resolved = frontmatter.resolve_bundled_script(
+        spelling, REPO / "skills" / skill_name
+    )
+    assert resolved is not None
+    assert resolved.resolve() == (REPO / relative).resolve()
+
+
+# spec: "No skill markdown invokes a resolving bundled-script path with bare `python` or `python3`, including line-continued forms (`python \` followed by the path on the next line)."
+# task: 11
+@pytest.mark.parametrize("runner", ["python", "python3"])
+@pytest.mark.parametrize("separator", [" ", " \\\n    "])
+@pytest.mark.parametrize(
+    "markdown", ["SKILL.md", "README.md", "references/example.md"]
+)
+def test_bare_python_invocations_are_rejected_in_all_skill_markdown(
+    frontmatter, tmp_path, runner, separator, markdown
+):
+    skill = _skill(tmp_path)
+    _script(skill)
+    command = (
+        f"{runner}{separator}<this-skill-dir>/scripts/profile.py"
+    )
+    _write(skill / markdown, f"```sh\n{command}\n```\n")
+    assert frontmatter.check_invocations(skill)
+
+
+# spec: "Every documented invocation in `skills/**/*.md` of a path that resolves to one of the 16 scripts uses the form `uv run <path> [args]`, replacing `python`, `python3`, `uv run --no-project --python 3.13 python`, and `uv run --python 3.13 --with … python`."
+# task: 11
+def test_plain_uv_run_invocation_passes(frontmatter, tmp_path):
+    skill = _skill(
+        tmp_path,
+        body=(
+            "```sh\n"
+            "uv run <this-skill-dir>/scripts/profile.py input.csv\n"
+            "```\n"
+        ),
+    )
+    _script(skill)
+    assert frontmatter.check_invocations(skill) == []
+    invocations = frontmatter.bundled_invocations(skill)
+    assert len(invocations) == 1
+    markdown, runner, path = invocations[0]
+    assert markdown == skill / "SKILL.md"
+    assert runner == "uv run"
+    assert frontmatter.resolve_bundled_script(path, skill) == (
+        skill / "scripts" / "profile.py"
+    )
+
+
+# spec: "A path that does not resolve to a bundled script, such as `writing-skills/anthropic-best-practices.md`'s teaching example `scripts/migrate.py`, is not flagged."
+# task: 11
+def test_nonresolving_teaching_example_is_not_flagged(
+    frontmatter, tmp_path
+):
+    skill = _skill(tmp_path)
+    _write(
+        skill / "anthropic-best-practices.md",
+        "```sh\npython scripts/migrate.py\n```\n",
+    )
+    assert frontmatter.resolve_bundled_script(
+        "scripts/migrate.py", skill
+    ) is None
+    assert frontmatter.check_invocations(skill) == []
+
+
+# spec: "Every documented invocation in `skills/**/*.md` of a path that resolves to one of the 16 scripts uses the form `uv run <path> [args]`, replacing `python`, `python3`, `uv run --no-project --python 3.13 python`, and `uv run --python 3.13 --with … python`."
+# task: 11
+def test_repository_invocations_use_plain_uv_run(frontmatter):
+    for skill in _skills():
+        assert frontmatter.check_invocations(skill) == [], skill
+        for markdown, runner, spelling in frontmatter.bundled_invocations(
+            skill
+        ):
+            assert runner == "uv run", (markdown, spelling)
+            text = re.sub(
+                r"\\\r?\n[ \t]*",
+                " ",
+                markdown.read_text(encoding="utf-8"),
+            )
+            candidate_lines = [
+                line
+                for line in text.splitlines()
+                if spelling in line
+                and re.search(
+                    r"\b(?:python3?|uv[ \t]+run)\b", line
+                )
+            ]
+            assert candidate_lines, (markdown, spelling)
+            simple_invocation = re.compile(
+                r"\buv[ \t]+run[ \t]+['\"]?"
+                + re.escape(spelling)
+            )
+            assert all(
+                simple_invocation.search(line)
+                for line in candidate_lines
+            ), (markdown, spelling, candidate_lines)
+
+
+# spec: "Each skill with such an invocation gets this sentence once, near its first invocation: \"Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header.\""
+# task: 11
+def test_each_invoking_skill_has_exactly_one_fallback_sentence(
+    frontmatter
+):
+    for skill in _skills():
+        if frontmatter.bundled_invocations(skill):
+            occurrences = sum(
+                markdown.read_text(encoding="utf-8").count(
+                    FALLBACK_SENTENCE
+                )
+                for markdown in skill.rglob("*.md")
+            )
+            assert occurrences == 1, skill
+
+
+# spec: "A skill whose markdown runs a bundled script via `uv run` declares a `compatibility` value containing `uv`."
+# task: 12
+@pytest.mark.parametrize(
+    "values", [{}, {"compatibility": "Requires Python 3.11+."}]
+)
+def test_uv_invocation_requires_uv_compatibility(
+    frontmatter, tmp_path, values
+):
+    skill = _skill(
+        tmp_path,
+        body="uv run <this-skill-dir>/scripts/profile.py\n",
+    )
+    _script(skill)
+    assert frontmatter._check_compatibility_names_uv(skill, values)
+
+
+# spec: "A skill whose markdown runs a bundled script via `uv run` declares a `compatibility` value containing `uv`."
+# task: 12
+def test_uv_compatibility_passes_and_noninvoking_skill_is_exempt(
+    frontmatter, tmp_path
+):
+    invoking = _skill(
+        tmp_path,
+        name="invoking",
+        body="uv run <this-skill-dir>/scripts/profile.py\n",
+    )
+    _script(invoking)
+    assert frontmatter._check_compatibility_names_uv(
+        invoking,
+        {
+            "compatibility": (
+                "Requires uv to run bundled scripts "
+                "(dependencies are declared inline); Python 3.11+."
+            )
+        },
+    ) == []
+    noninvoking = _skill(tmp_path, name="noninvoking")
+    assert frontmatter._check_compatibility_names_uv(
+        noninvoking, {}
+    ) == []
+
+
+# spec: "Here 3.X is the highest `requires-python` floor among the scripts that skill invokes."
+# task: 12
+def test_repository_compatibility_uses_highest_invoked_script_floor(
+    frontmatter
+):
+    for skill in _skills():
+        invocations = frontmatter.bundled_invocations(skill)
+        if not invocations:
+            continue
+        floors = []
+        for _, runner, spelling in invocations:
+            assert runner == "uv run"
+            path = frontmatter.resolve_bundled_script(spelling, skill)
+            assert path is not None
+            metadata, _ = _inline_metadata(
+                path.read_text(encoding="utf-8")
+            )
+            match = re.fullmatch(
+                r">=(3\.(?:11|12|13))",
+                metadata["requires-python"],
+            )
+            assert match is not None, path
+            floors.append(tuple(map(int, match.group(1).split("."))))
+        highest = ".".join(map(str, max(floors)))
+        assert _read_frontmatter(skill)["compatibility"] == (
+            "Requires uv to run bundled scripts "
+            f"(dependencies are declared inline); Python {highest}+."
+        ), skill
+
+
+# spec: "That set includes `finishing-a-development-branch`, which runs `writing-plans`' `deferred_stats.py`."
+# task: 12
+def test_finishing_includes_writing_plans_script_compatibility(
+    frontmatter
+):
+    skill = REPO / "skills" / "finishing-a-development-branch"
+    targets = {
+        frontmatter.resolve_bundled_script(spelling, skill).resolve()
+        for _, runner, spelling in frontmatter.bundled_invocations(skill)
+        if runner == "uv run"
+    }
+    assert (
+        REPO / "skills/writing-plans/scripts/deferred_stats.py"
+    ).resolve() in targets
+    assert "uv" in _read_frontmatter(skill)["compatibility"]
+
+
+# spec: "Prose floors that disagree with the header are aligned or removed (e.g. \"Python ≥ 3.9\" in `recommend-probabilistic-model` and `recommend-visualization`)."
+# task: 12
+@pytest.mark.parametrize(
+    "name", ["recommend-probabilistic-model", "recommend-visualization"]
+)
+def test_documented_python_floors_agree_with_compatibility(name):
+    skill = REPO / "skills" / name
+    compatibility = _read_frontmatter(skill)["compatibility"]
+    expected = re.search(r"Python (3\.\d+)\+\.", compatibility)
+    assert expected is not None
+    for markdown in skill.rglob("*.md"):
+        text = markdown.read_text(encoding="utf-8")
+        floors = re.findall(
+            r"\bPython\s*(?:≥|>=)\s*(3\.\d+)", text
+        )
+        assert all(
+            floor == expected.group(1) for floor in floors
+        ), markdown
+
+
+# spec: "R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows."
+# task: 2
+def test_red_baseline_file_exists_with_a_valid_date():
+    files = list(
+        (REPO / "specs").glob(
+            "red-baseline-description-openings-????-??-??.md"
+        )
+    )
+    assert files
+    for path in files:
+        suffix = path.stem.removeprefix(
+            "red-baseline-description-openings-"
+        )
+        date.fromisoformat(suffix)
+        assert path.read_text(encoding="utf-8").strip()
+
+
+# spec: "The note covers three points: Codex shortens every description when its listing exceeds its budget; the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure (`codex debug prompt-input` from a directory outside any repo, reading the Skills list)."
+# task: 14
+def test_token_efficiency_records_the_measured_values_and_command():
+    text = (
+        REPO / "skills/writing-skills/SKILL.md"
+    ).read_text(encoding="utf-8")
+    section = _section(text, "Token Efficiency")
+    assert "Codex" in section
+    assert re.search(r"\bbudget\b", section, re.I)
+    assert re.search(r"156\s*[–-]\s*164", section)
+    assert re.search(r"\b93\b", section)
+    assert re.search(r"\b0\.154(?:\.0)?\b", section)
+    assert "2026-10-03" in section
+    assert "codex debug prompt-input" in section
+</tests>
+<flags>
+<flag task="3"><spec>R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows.</spec><plan>`skills/writing-skills/SKILL.md` (the optional-keys bullet)</plan></flag>
+<flag task="4"><spec>R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows.</spec><plan>`skills/writing-skills/SKILL.md` (required fields, optional keys, template, checklist)</plan></flag>
+<flag task="7"><spec>CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run)</spec><plan>Modify: `CLAUDE.md` (Commands: the frontmatter lint's comment names `--strict`; no line added, D7)</plan></flag>
+<flag task="8"><spec>No skill directory holds a `LICENSE*` file outside its mapping.</spec><plan>Rename: `skills/recommend-causal-design/LICENSE` to `skills/recommend-causal-design/LICENSE-causal-design-sources`, and re-point its links in that skill's `SKILL.md`, `README.md` and `references/sources.md`</plan></flag>
+<flag task="9"><spec>only if R4.5 finds an upstream notice</spec><plan>Create: `LICENSE-andorra` (upstream's text, verbatim) and its copy `skills/bayesian-workflow/LICENSE-andorra`</plan></flag>
+<flag task="10"><spec>Fourteen gain a header:</spec><plan>Modify: the 15 header-less runnable scripts (helper script): a shebang where missing, then the header</plan></flag>
+</flags>
+<untestable>
+The owner approved the design on 2026-10-03 and the written spec on 2026-10-18.
+Next step: an implementation plan from the writing-plans skill.
+The owner approved all five design sections in a brainstorming pass over `specs/completed/agent-skills-best-practices.md` (a September 2026 survey of Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot, and others).
+This document is the handoff for implementation planning.
+One piece has landed since: a 2026-10-15 quick fix made `build/check_frontmatter.py` accept `compatibility`, and R1.3's check of its value is still to do.
+The survey is this spec's input; it was retired ahead of the spec, to `specs/completed/` in `79ad04f` (2026-10-03).
+Most of the survey is already true here and needs no work: `name` matches its directory and descriptions are within 1,024 characters (`build/check_frontmatter.py`); `install.py` links `skills/` into `~/.claude/skills` and the cross-runtime `~/.agents/skills`, with a `--copy` fallback; skill bodies name no runtime tool (`TodoWrite`, Skill/Task/Agent tool) and use no `$ARGUMENTS` or `` !`cmd` `` injection, and bundled paths use `<this-skill-dir>`; side-effect gates live in skill bodies; every command is `disable-model-invocation: true`.
+Gemini CLI 0.46.0 loads the three skills carrying Claude host keys (`effort`: bayesian-workflow, tune-hyperparameters; `context`: tech-debt) as `[Enabled]`
+Codex CLI 0.154.0 lists the same three skills
+Codex shortens descriptions when its listing exceeds its budget.
+With 93 skills listed (66 from `~/.agents/skills`, the rest system and plugin skills), 31 of this repo's 32 descriptions were cut to 156–164 characters (median 158); only `test-driven-development` (79 characters) appeared whole.
+Measured at this one skill count only.
+That the cutoff moves with the number of skills sharing the budget is an inference from Codex's documented budget, not a measurement
+All 32 descriptions lead with "Use when" and name their primary trigger within the first 150 characters
+One description contains angle brackets: llm-wiki's `'verify <page>'`
+Two of 16 runnable scripts carry PEP 723 headers (both `build.py`); others are invoked as `python`, `python3`, or `uv run --python 3.13 --with … python …`
+The 13 superpowers skills have no `license` field; no skill directory contains a license file
+NOTICE credits `bayesian-workflow` to Alexandre Andorra's MIT skill, but no copyright line or license text for it exists in the repo
+Only `writing-skills` has a body over 500 lines (696)
+Moving it to `.agents/skills/` has a large blast radius (installer, tests, CLAUDE.md, symlinks) and buys nothing: the installer already links into every runtime's discovery path, which is the survey's own alternative.
+The skills already load user-level from the same checkout; a project-level link would list each one twice.
+`disable-model-invocation: true` removes a skill from the model's reach, which would break bare-name handoffs (`finishing-a-development-branch`, `using-git-worktrees`, and the others are invoked by name from other skills).
+Their side effects are already gated in their bodies, the survey's portable pattern.
+The survey suggests "Does X. Use when Y".
+`writing-skills`, the governing meta-skill, requires trigger-only descriptions on tested evidence that a workflow summary in the description lets agents skip the body.
+"Use when" already front-loads the trigger.
+R2.1's review found none needed, and no trigger evals exist to catch a regression.
+The one exception is the angle-bracket fix (R1.5), which is wording-equivalent.
+Both measured non-Claude runtimes load skills with host keys; strictness matters only for claude.ai uploads and `skills-ref`-style validators (R1.8).
+The survey's 1,536-character truncation, Codex's 2% / 8,000-character budget, and Claude Code's listing fraction stay out of the lint; it keeps the spec's 1,024 cap.
+Claude Code listing behavior is documented in `specs/guides/claude-code-customization-guide.md`.
+A plain `#!/usr/bin/env python3` shebang keeps the script runnable by bare `python3` where uv is absent; `uv run <path>` reads the header either way.
+The two existing `build.py` headers are the template.
+No single work venv pairs NumPyro with ArviZ, so the project interpreter can lack the imports these scripts need, and work repos that install `hooks/uv-guard.sh` deny bare `python …` anyway.
+Every skill bundles license text, not only those with third-party content: one uniform rule, enforced byte-for-byte, at no context cost (the files are never referenced, so never loaded).
+All current values pass.
+No skill trips this today; it exists so that the first manual-only skill cannot auto-fire in Codex.
+Today only `writing-skills` warns; splitting it is deferred.
+Agents and commands are not Agent Skills and are unaffected.
+The module docstring describes the new rules and the `--strict` flag, and CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run), under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance register").
+Criterion: within its first 150 characters, a description names the skill's primary trigger, the task or symptom it exists for, so an agent shown only that prefix would load it for its canonical use.
+All 32 descriptions pass as of 2026-10-03.
+The closest calls are `creative-thinking` (its quoted examples carry the "fuzzy target" trigger) and the `clean-code` / `clean-coder` pair, whose openings both lead with editing Python.
+Both pass, so neither is rewritten.
+Before any edit to `writing-skills`, run a baseline:
+5 reps, each a fresh agent given the current `writing-skills` description guidance (the control: no new wording).
+Each is asked to write a SKILL.md description for a synthetic skill that is not from this repo and has at least 8 trigger conditions, one of them designated in the scenario as primary.
+Run from a session whose cwd was never this repo.
+A rep passes if the designated primary trigger lies within the first 150 characters.
+The controller reads each output and records the verbatim 150-character prefix.
+Record the scenario, prompts, outputs, and verdicts in `specs/red-baseline-description-openings-<YYYY-MM-DD>.md`, the house red-baseline format.
+**Baseline ≥ 4/5:** add only a factual note of 2–4 lines to `writing-skills`' "Token Efficiency" section.
+The note covers three points: Codex shortens every description when its listing exceeds its budget; the measured cut (156–164 characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure (`codex debug prompt-input` from a directory outside any repo, reading the Skills list).
+No new rule.
+**Baseline ≤ 3/5:** also add one checklist line ("the primary trigger falls within the first ~150 characters") and GREEN-test it: 5 reps with the new wording, at least 4/5 passing, recorded in the same red-baseline file.
+Use the lowest of `'>=3.11'`, `'>=3.12'`, `'>=3.13'` under which the test suite covering the script passes, run with `uv run --python 3.X` and that suite's CLAUDE.md dependencies.
+Scripts covered by one suite share its floor, unless a failure is attributable to one script, which then alone takes the higher floor.
+Every third-party import, including function-level imports, is declared with a `>=` floor at the major version the suite currently resolves (e.g. `'polars>=1.0'`).
+Runtime backends that the script never imports but needs to read its inputs (e.g. `h5netcdf` for NetCDF) are added when R3.8's fixture run shows them needed.
+Each skill with such an invocation gets this sentence once, near its first invocation: "Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header."
+Each rule gets a RED test first.
+From an empty scratch directory (a subdirectory such as `/tmp/bwprobe/`, never `/tmp` itself), each of the 16 scripts runs `uv run <absolute-path>` on a minimal real input that exercises its main code path.
+`--help` alone is enough only for a script with no input-reading path.
+The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`, `compare_experiments.py`) each read a small saved InferenceData fixture.
+One script is also run from inside a directory holding an unrelated `pyproject.toml`.
+This proves the header isolates it from the project environment.
+The dependency-drift check still passes.
+Invocation text changes, but no cross-skill reference is added or dropped; finishing → `writing-plans`' `deferred_stats.py` is an existing `DEPENDENCIES` edge.
+NOTICE gains one paragraph near the top: each skill directory carries copies of the license texts that apply to it, so a single-skill install (`install.py --copy --skill`, or a third-party installer) keeps the notice MIT requires.
+The root files are canonical, and `check_provenance.py` enforces the copies.
+README's License section gains one sentence to the same effect.
+CLAUDE.md's provenance section gains the invariant and names the enforcing lint, under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance register").
+Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its license.
+Add the upstream license text verbatim as root `LICENSE-andorra`, map it to `bayesian-workflow`, and extend NOTICE's `bayesian-workflow/` block with the source URL and the quoted copyright line.
+NOTICE records that, in the form already used for the Fonnesbeck repository.
+Nothing is bundled.
+NOTICE is unchanged and a deferred item is logged with what was searched.
+Never compose a copyright line that is not quoted from the source.
+The 2026-08-26 intake review (`specs/completed/skill-intake-review-2026-08-26.md`) already found that Andorra appears nowhere in the history of pymc-labs/python-analytics-skills (only Fonnesbeck and Dean commit there), so start the search from his own publications rather than that repository.
+Stages, in order.
+D is independent of C and may run alongside it.
+**A — R1.** Lands together with the 13 superpowers frontmatter additions and the llm-wiki fix, so the new hard rules are green on arrival.
+No ceiling remains to raise: a change whose lines would breach the limit trims CLAUDE.md elsewhere (R6 P1, whose ceiling option drift spec R12.7 removed).
+When Stage A or Stage D fixes a gap the register tracks to it, the same change removes or narrows that `[[exception]]` and runs `build/check_conformance.py` (R6 P2).
+**Work in a worktree.**
+The plan edits skills the executing session loads (`writing-plans`, `finishing-a-development-branch`, `writing-skills`), and `~/.claude/skills` resolves to the main checkout.
+Commit from the worktree; the shared checkout's branch can change under a concurrent session.
+**Stage D's micro-test** runs from a session whose cwd was never this repo; inherited session context voids reps otherwise.
+**State test changes as +N deltas** against the suite, never absolute totals.
+**Before allocating the plan id**, check `specs/plans/` on every branch (`git ls-tree`); ids are allocated per branch and have collided.
+**Coordinate with the in-flight JAX spec.**
+`specs/jax-deep-learning-skills.md` is being implemented on `codex/jax-deep-learning-skills` and defines three skills (`skills/deep-learning` is on that branch as of 2026-10-03).
+R1.4's required `license`, R3's header and invocation rules, and R4's per-skill license copies apply to them too.
+Whichever branch merges second brings the other's skills into conformance in the same merge, or the new lints fail on arrival.
+Every gate in CLAUDE.md's Commands passes:
+`check_snippets.py skills/` (Tier 1)
+the dependency-drift test
+the full `build/` suite, plus every script suite whose script gained a header
+`sync_runtime_assets.py --check` (no adapter change is expected)
+Each new lint rule has a test that failed before its implementation and passes after.
+R3.8's execution proof is recorded for all 16 scripts.
+**Cross-runtime load check**, from a directory outside any repo:
+`gemini skills list --all` shows every skill under `skills/` as `[Enabled]`;
+`codex debug prompt-input` lists every skill under `skills/` by name.
+This shows the new `compatibility`, `license`, and `metadata` values and the bundled license files break loading in neither runtime.
+R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's outcome branch allows.
+They are expensive and need isolated sessions.
+They are also the prerequisite for any future description rewrite.
+These are outward-facing.
+Plugin namespacing (`/plugin:skill`) also conflicts with the bare-name cross-reference invariant.
+R1.6 is the groundwork.
+This needs a reliable detector first; a crude grep was not one.
+The repo has no CI.
+`agents/code-reviewer.md` and `agents/task-reviewer.md` are distilled from superpowers and install as single files without `LICENSE-superpowers`: the same gap R4 closes for skills.
+Its Claude Code numbers are secondary; `specs/guides/claude-code-customization-guide.md` governs Claude Code facts.
+Its 2026-10-03 re-verification against official docs (at 2.1.288) landed on main via lowmason/agent-skills#19 (merge `c33bc99`).
+uv documentation: a script with inline metadata runs in its own environment even inside a project.
+R3.8's pyproject run verifies this rather than assuming it.
+Runtime measurements in "Measured baseline" were taken on 2026-10-03 with Gemini CLI 0.46.0 and Codex CLI 0.154.0, on this machine's installed skill set (93 skills in Codex's listing).
+</untestable>

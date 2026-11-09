@@ -1,0 +1,19 @@
+21  labels-used-in-this-plan  - **Freeze date** is the day from which uv ignores new package releases. The **c
+106  global-constraints  - **Freeze.** `uv.toml` sets `exclude-newer` to the RFC 3339 timestamp of 00:00:
+597  test-step  def test_cutoff_is_midnight_utc_on_the_freeze_date():
+598  test-step  assert versions.parse(GOOD).cutoff == '2026-10-19T00:00:00Z'
+599  test-step  assert versions.parse(GOOD.replace('2026-10-19', '2026-12-31')).cutoff == '2026-
+665  test-step  assert out['uv.toml'].endswith('exclude-newer = "2026-10-19T00:00:00Z"\n')
+802  code-step  '''00:00:00Z on the freeze date, so uv resolves as of the start of that day.'''
+803  code-step  return f'{self.freeze:%Y-%m-%d}T00:00:00Z'
+909  code-step  'uv.toml': (f'{SYNC_NOTE}# Every uv run in this repo resolves packages as of thi
+910  code-step  f'# date, {v.freeze.isoformat()}, so files uploaded before the freeze date are i
+1091  test-step  assert seen == {'reqs': ['alpha', 'beta-two', 'gamma'], 'python': '3.13', 'cutof
+1095  test-step  assert 'exclude-newer = "2026-11-02T00:00:00Z"' in (root / 'uv.toml').read_text(
+1108  test-step  got = versions.resolve(['alpha', 'beta-two'], '3.13', '2026-11-02T00:00:00Z')
+1111  test-step  '--quiet', '--exclude-newer', '2026-11-02T00:00:00Z']]
+1371  step-text  Expected: the four files changed or new, `3.13`, a `uv.toml` with `exclude-newer
+1456  test-step  assert versions.late_pins(v, ['alpha==1.2.0'], fake_pypi('2026-10-18T23:59:59.00
+1462  test-step  assert argv == ['uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-19T
+1468  test-step  'uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-19T00:00:00Z', 'pyt
+1481  test-step  assert stub_uv.calls() == [['run', '--python', '3.13', '--exclude-newer', '2026-

@@ -1,0 +1,2 @@
+copy: p55-clean from f0ebef6 (specs/plans/55-test-suite-registry.md, specs/test-suite-registry.md)
+writing-plans: skills/writing-plans/SKILL.md at origin/main ca3404fdeef464b49d7c90fe1beecf9918313cf9

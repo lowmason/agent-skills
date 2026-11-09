@@ -1,0 +1,2 @@
+copy: p53-unit from b8f4d0f (specs/plans/53-agent-skills-portability.md, specs/agent-skills-portability-spec.md)
+writing-plans: skills/writing-plans/SKILL.md at origin/main ca3404fdeef464b49d7c90fe1beecf9918313cf9

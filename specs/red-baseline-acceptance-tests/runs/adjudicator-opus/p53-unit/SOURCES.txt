@@ -1,0 +1,6 @@
+copy: p53-unit from b8f4d0f (specs/plans/53-agent-skills-portability.md, specs/agent-skills-portability-spec.md)
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p53-unit/rep1.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p53-unit/rep2.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p53-unit/rep3.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p53-unit/rep4.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p53-unit/rep5.json

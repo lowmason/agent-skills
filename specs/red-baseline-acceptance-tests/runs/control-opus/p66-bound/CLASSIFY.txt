@@ -1,0 +1,40 @@
+rep1 ruling2 real spec R2.3 swaps only --with-requirements for the jax-cpu stack; the plan rewrite also drops JAX_PLATFORMS=cpu from the documented command
+rep1 ruling3 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment
+rep1 ruling4 real spec Constraints "Plan 63. It edits build/run_commit_lints.sh"; the plan states it does not, and drops the landing-order rule
+rep1 ruling5 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep1 ruling6 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep1 ruling7 false-alarm plan Decisions reuse the D1-D8 labels; a labeling clash, no spec sentence contradicted
+rep2 ruling2 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment
+rep2 ruling3 real spec R5 names the experiments.md:86-87 run manifest for HISTORICAL; the plan never handles that file
+rep2 ruling4 real spec R7 says test_check_frontmatter.py:434 builds its expected command from the file; the plan leaves that test on its literal
+rep2 ruling5 real spec R2.3 swaps only --with-requirements for the jax-cpu stack; the plan rewrite also drops JAX_PLATFORMS=cpu from the documented command
+rep2 ruling6 false-alarm plan Decisions reuse the D1-D8 labels; a labeling clash, no spec sentence contradicted
+rep2 ruling7 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep2 ruling8 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep2 ruling9 false-alarm skill format (current writing-plans), no spec sentence contradicted: the execution handoff wording
+rep3 ruling2 near-miss names the planted cutoff but quotes "Files uploaded on the freeze date itself (UTC) are included", not the sentence that holds the spec_key; the rep catches the plant in another finding
+rep3 ruling3 false-alarm owner decision D1 applies amendment A1 to R6.1 in Task 1, so going on without a second stop is the amended spec
+rep3 ruling4 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment
+rep3 ruling5 real spec R5 names the experiments.md:86-87 run manifest for HISTORICAL; the plan never handles that file
+rep3 ruling6 real spec R5 step 5 lists the Altair and plotly lines as known stale citations; the plan keeps them in [cited] and no task re-checks them
+rep3 ruling7 real spec R2.3 swaps only --with-requirements for the jax-cpu stack; the plan rewrite also drops JAX_PLATFORMS=cpu from the documented command
+rep3 ruling8 real spec R1.3 gives a [cited] entry to each package that skill prose cites and no check runs; the inventory lists numpydoc>=1.11, and the plan's [cited] leaves it out
+rep3 ruling9 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep3 ruling10 false-alarm plan Decisions reuse the D1-D8 labels; a labeling clash, no spec sentence contradicted
+rep3 ruling11 false-alarm skill format (current writing-plans), no spec sentence contradicted: the execution handoff wording
+rep3 ruling12 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep4 ruling2 near-miss names the planted cutoff but quotes R3.6's error sentence, not the sentence that holds the spec_key; the rep catches the plant in another finding
+rep4 ruling3 real spec R2.3 swaps only --with-requirements for the jax-cpu stack; the plan rewrite also drops JAX_PLATFORMS=cpu from the documented command
+rep4 ruling4 real spec R2.3 points the readers of 32-jax-cpu.txt at versions.toml; no task edits build/check_jax_examples.py, which names that path
+rep4 ruling5 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment
+rep4 ruling6 false-alarm plan Decisions reuse the D1-D8 labels; a labeling clash, no spec sentence contradicted
+rep4 ruling7 false-alarm skill format (current writing-plans), no spec sentence contradicted: the execution handoff wording
+rep4 ruling8 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep4 ruling9 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep5 ruling3 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep5 ruling4 false-alarm skill format (current writing-plans), no spec sentence contradicted: the execution handoff wording
+rep5 ruling5 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment
+rep5 ruling6 real spec R5 names the experiments.md:86-87 run manifest for HISTORICAL; the plan never handles that file
+rep5 ruling7 real spec R7 says test_check_frontmatter.py:434 builds its expected command from the file; the plan leaves that test on its literal
+rep5 ruling8 false-alarm the plan's error carries uv's "Because alpha and gamma conflict" text, which names the packages in conflict as R3.6 asks
+rep5 ruling9 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)

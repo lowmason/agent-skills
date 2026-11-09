@@ -1,0 +1,1238 @@
+<tests>
+import ast
+import copy
+import importlib
+import json
+import os
+import re
+import shlex
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+import pytest
+
+import run_suites as runner
+
+
+REPO = Path(runner.__file__).resolve().parents[1]
+
+EXPECTED = (
+    ("bayesian-workflow", "skills/bayesian-workflow/scripts",
+     ("pytest", "arviz", "arviz-stats", "numpy", "xarray"),
+     ("matplotlib",), ("3.13",)),
+    ("brainstorming", "skills/brainstorming/scripts",
+     ("pytest",), (), ("3.13",)),
+    ("build", "build",
+     ("pytest", "numpy", "polars", "pyyaml"),
+     ("arviz>=1.0", "arviz-base", "arviz-stats", "arviz-plots",
+      "numpyro", "jax", "matplotlib"), ("3.13",)),
+    ("cc-guide", "build/cc_guide",
+     ("pytest",), (), ("3.13",)),
+    ("classification-codes", "skills/classification-codes/scripts",
+     ("pytest", "polars"), (), ("3.13",)),
+    ("describe-critique-methodology",
+     "skills/describe-critique-methodology/scripts",
+     ("pytest",), (), ("3.13",)),
+    ("design-architecture", "skills/design-architecture/scripts",
+     ("pytest",), (), ("3.13",)),
+    ("explore-data", "skills/explore-data/scripts",
+     ("pytest", "polars"), (), ("3.13",)),
+    ("geographic-codes", "skills/geographic-codes/scripts",
+     ("pytest", "polars", "fastexcel"), (), ("3.13",)),
+    ("hooks", "hooks",
+     ("pytest",), (), ("3.13", "/usr/bin/python3")),
+    ("llm-wiki", "skills/llm-wiki/scripts",
+     ("pytest",), (), ("3.13",)),
+    ("recommend-probabilistic-model",
+     "skills/recommend-probabilistic-model/scripts",
+     ("pytest", "numpy", "polars"), (), ("3.13",)),
+    ("recommend-visualization", "skills/recommend-visualization/scripts",
+     ("pytest", "numpy", "polars"), (), ("3.13",)),
+    ("subagent-driven-development",
+     "skills/subagent-driven-development/scripts",
+     ("pytest",), (), ("3.13",)),
+    ("systematic-debugging", "skills/systematic-debugging",
+     ("pytest",), (), ("3.13",)),
+    ("track-model-experiments", "skills/track-model-experiments/scripts",
+     ("pytest", "numpy", "polars", "arviz", "numpyro", "h5netcdf", "h5py"),
+     (), ("3.13",)),
+    ("tune-hyperparameters", "skills/tune-hyperparameters/scripts",
+     ("pytest", "numpy", "polars"),
+     ("scikit-learn", "optuna"), ("3.13",)),
+    ("writing-plans", "skills/writing-plans/scripts",
+     ("pytest",), (), ("3.13",)),
+)
+
+INVALID_CASES = (
+    "unknown-key",
+    "missing-name",
+    "missing-dir",
+    "missing-with",
+    "wrong-name",
+    "wrong-dir",
+    "wrong-with",
+    "wrong-with-item",
+    "wrong-extras",
+    "wrong-extras-item",
+    "wrong-pythons",
+    "wrong-pythons-item",
+    "wrong-notes",
+    "wrong-notes-item",
+    "duplicate-name",
+    "duplicate-dir",
+    "without-pytest",
+    "empty-with",
+)
+
+
+def entry(name="build", directory="build", deps=("pytest",), **options):
+    return {
+        "name": name,
+        "dir": directory,
+        "with": list(deps),
+        **options,
+    }
+
+
+def fixture_data():
+    return {
+        "suite": [
+            entry(
+                deps=("pytest", "numpy", "polars", "pyyaml"),
+                extras=["matplotlib"],
+                notes=["build/.scratch/"],
+            ),
+            entry("cc-guide", "build/cc_guide"),
+            entry(
+                "hooks",
+                "hooks",
+                pythons=["3.13", "/usr/bin/python3"],
+                notes=["Gate B"],
+            ),
+        ]
+    }
+
+
+def invalid_data(case):
+    data = {"suite": [entry()]}
+    table = data["suite"][0]
+    if case == "unknown-key":
+        table["withh"] = ["pytest"]
+    elif case.startswith("missing-"):
+        del table[case.removeprefix("missing-")]
+    elif case.startswith("wrong-"):
+        key = case.removeprefix("wrong-")
+        if key.endswith("-item"):
+            table[key.removesuffix("-item")] = [1]
+        elif key in {"name", "dir"}:
+            table[key] = 1
+        else:
+            table[key] = "pytest"
+    elif case == "duplicate-name":
+        data["suite"].append(entry("build", "hooks"))
+    elif case == "duplicate-dir":
+        data["suite"].append(entry("hooks", "build"))
+    elif case == "without-pytest":
+        table["with"] = ["numpy"]
+    elif case == "empty-with":
+        table["with"] = []
+    else:
+        raise AssertionError(case)
+    return data
+
+
+def write_registry(root, data):
+    path = root / "build/suites.toml"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for table in data["suite"]:
+        lines.append("[[suite]]")
+        lines.extend(
+            f"{key} = {json.dumps(value)}"
+            for key, value in table.items()
+        )
+        lines.append("")
+    path.write_text("\n".join(lines), encoding="utf-8")
+    return path
+
+
+def write_file(root, relative, text=""):
+    path = root / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def prepare_suites(root, data):
+    write_registry(root, data)
+    for table in data["suite"]:
+        write_file(root, f"{table['dir']}/test_new.py", "def test_new(): pass\n")
+
+
+def main_status(argv, root, run_one):
+    try:
+        return runner.main(argv, root=root, run_one=run_one)
+    except SystemExit as exc:
+        return exc.code
+
+
+def git(root, *args):
+    return subprocess.run(
+        ["git", "-C", str(root), *args],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def git_repo(root, files):
+    root.mkdir(parents=True, exist_ok=True)
+    git(root, "init", "--quiet")
+    for relative, text in files.items():
+        write_file(root, relative, text)
+    return root
+
+
+def real_data():
+    return tomllib.loads((REPO / "build/suites.toml").read_text(encoding="utf-8"))
+
+
+def baseline_text(relative):
+    return git(REPO, "show", f"456e3fb:{relative}").stdout
+
+
+def lint_run_lines(text):
+    return [
+        line.strip()
+        for line in text.splitlines()
+        if re.match(r"^\s*run\s+[A-Za-z_][A-Za-z_0-9]*\s+", line)
+    ]
+
+
+def final_line(captured):
+    lines = (captured.err or captured.out).strip().splitlines()
+    assert lines, "A final result line is required"
+    return lines[-1]
+
+
+# spec: "The interpreters, one run each, in order. Default `['3.13']`."
+# task: 2
+def test_default_interpreter_is_313():
+    assert runner.DEFAULT_PYTHONS == ("3.13",)
+    assert runner.Suite("build", "build", ("pytest",)).pythons == ("3.13",)
+    assert runner.parse({"suite": [entry()]})[0].pythons == ("3.13",)
+
+
+# spec: "It finds the repo root from its own path, never from the working directory."
+# task: 2
+def test_repo_constant_comes_from_module_path(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    assert runner.REPO == Path(runner.__file__).resolve().parents[1]
+    assert runner.REGISTRY == "build/suites.toml"
+
+
+# spec: "The default `--with` deps, in the order the current command gives them."
+# task: 2
+def test_parse_preserves_dependency_order():
+    data = {
+        "suite": [
+            entry(
+                deps=("pytest", "numpy", "polars", "pyyaml"),
+                extras=["scikit-learn", "optuna"],
+                pythons=["3.13", "/usr/bin/python3"],
+                notes=["CALIBRATION_SWEEP=1", "@needs_pilot"],
+            )
+        ]
+    }
+    assert runner.validate(data) == []
+    suite = runner.parse(data)[0]
+    assert suite.name == "build"
+    assert suite.dir == "build"
+    assert suite.deps == ("pytest", "numpy", "polars", "pyyaml")
+    assert suite.extras == ("scikit-learn", "optuna")
+    assert suite.pythons == ("3.13", "/usr/bin/python3")
+    assert suite.notes == ("CALIBRATION_SWEEP=1", "@needs_pilot")
+
+
+# spec: "An unknown key, a missing required key, a wrong type, a duplicate name or directory, or a `with` list without `pytest` stops `--list`, a named run and `--all` with exit 2."
+# task: 2
+@pytest.mark.parametrize("case", INVALID_CASES)
+def test_validation_rejects_each_required_failure(case):
+    problems = runner.validate(invalid_data(case))
+    assert problems
+    assert all(isinstance(problem, str) and problem for problem in problems)
+
+
+# spec: "An unknown key, a missing required key, a wrong type, a duplicate name or directory, or a `with` list without `pytest` stops `--list`, a named run and `--all` with exit 2."
+# task: 4
+@pytest.mark.parametrize("case", INVALID_CASES)
+@pytest.mark.parametrize("argv", [["--list"], ["build"], ["--all"]])
+def test_invalid_registry_blocks_every_execution_mode(tmp_path, case, argv):
+    write_registry(tmp_path, invalid_data(case))
+    calls = []
+    status = main_status(
+        argv,
+        tmp_path,
+        lambda root, run: calls.append((root, run)) or 0,
+    )
+    assert status == 2
+    assert calls == []
+
+
+# spec: "`--check` reports the same failures as findings (R4.3)."
+# task: 3
+@pytest.mark.parametrize("case", INVALID_CASES)
+def test_check_reports_validation_failures(tmp_path, case):
+    git_repo(tmp_path, {})
+    data = invalid_data(case)
+    findings = runner.check(tmp_path, data)
+    assert findings
+    for problem in runner.validate(data):
+        assert any(problem in finding for finding in findings)
+
+
+# spec: "Its command is `uv run --python <python> --with <dep> … python -m pytest -q [<args>]`, run with the suite's `dir` as its working directory."
+# task: 2
+def test_default_argv_and_shell_form():
+    suite = runner.parse({
+        "suite": [entry(deps=("pytest", "numpy", "polars", "pyyaml"))]
+    })[0]
+    runs = runner.runs(suite)
+    assert len(runs) == 1
+    assert runs[0].argv == (
+        "uv", "run", "--python", "3.13",
+        "--with", "pytest",
+        "--with", "numpy",
+        "--with", "polars",
+        "--with", "pyyaml",
+        "python", "-m", "pytest", "-q",
+    )
+    assert runs[0].label == "build (3.13)"
+    assert runs[0].shell() == (
+        "cd build && uv run --python 3.13 --with pytest --with numpy "
+        "--with polars --with pyyaml python -m pytest -q"
+    )
+
+
+# spec: "For `hooks`, whose line chains two runs as `cd hooks && A && B`, the two shell forms are `cd hooks && A` and `cd hooks && B`."
+# task: 2
+def test_hooks_has_two_separate_runs_in_interpreter_order():
+    suite = runner.parse({
+        "suite": [
+            entry("hooks", "hooks", pythons=["3.13", "/usr/bin/python3"])
+        ]
+    })[0]
+    runs = runner.runs(suite)
+    assert [run.python for run in runs] == ["3.13", "/usr/bin/python3"]
+    assert [run.shell() for run in runs] == [
+        "cd hooks && uv run --python 3.13 --with pytest python -m pytest -q",
+        "cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q",
+    ]
+
+
+# spec: "**`--extras`** adds each suite's `extras` after its `with` deps."
+# task: 2
+def test_extras_are_opt_in_and_follow_default_dependencies():
+    suite = runner.parse({
+        "suite": [
+            entry(
+                deps=("pytest", "numpy", "polars"),
+                extras=["scikit-learn", "optuna"],
+            )
+        ]
+    })[0]
+    assert runner.runs(suite)[0].argv == (
+        "uv", "run", "--python", "3.13",
+        "--with", "pytest", "--with", "numpy", "--with", "polars",
+        "python", "-m", "pytest", "-q",
+    )
+    assert runner.runs(suite, extras=True)[0].argv == (
+        "uv", "run", "--python", "3.13",
+        "--with", "pytest", "--with", "numpy", "--with", "polars",
+        "--with", "scikit-learn", "--with", "optuna",
+        "python", "-m", "pytest", "-q",
+    )
+
+
+# spec: "Arguments after **`--`** go to pytest (a test node ID, `-k`, `-s`, `-rs`) in every run."
+# task: 2
+def test_pytest_arguments_are_appended_to_every_interpreter():
+    suite = runner.parse({
+        "suite": [
+            entry("hooks", "hooks", pythons=["3.13", "/usr/bin/python3"])
+        ]
+    })[0]
+    arguments = ("test_new.py::test_new", "-k", "declared_dependencies", "-s", "-rs")
+    for run in runner.runs(suite, pytest_args=arguments):
+        assert run.argv[-len(arguments):] == arguments
+        assert run.argv[-len(arguments) - 1] == "-q"
+
+
+# spec: "Its shell form is `cd <dir> && <command>`, with shell quoting where a word needs it."
+# task: 2
+def test_shell_quotes_directory_dependency_and_pytest_expression():
+    directory = "skills/suite with spaces/scripts"
+    suite = runner.parse({
+        "suite": [
+            entry(
+                directory=directory,
+                extras=["arviz>=1.0"],
+            )
+        ]
+    })[0]
+    expected = (
+        "uv", "run", "--python", "3.13",
+        "--with", "pytest", "--with", "arviz>=1.0",
+        "python", "-m", "pytest", "-q", "-k", "declared_dependencies or test_real_skill",
+    )
+    run = runner.runs(
+        suite,
+        extras=True,
+        pytest_args=("-k", "declared_dependencies or test_real_skill"),
+    )[0]
+    assert run.argv == expected
+    assert run.shell() == f"cd {shlex.quote(directory)} && {shlex.join(expected)}"
+
+
+# spec: "**`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`."
+# task: 2
+def test_containment_uses_directory_boundaries_and_excludes_self():
+    suites = runner.parse({
+        "suite": [
+            entry("build", "build"),
+            entry("cc-guide", "build/cc_guide"),
+            entry("hooks", "build-other"),
+        ]
+    })
+    outer, nested, sibling = suites
+    assert runner.container(outer, suites) is None
+    assert runner.container(nested, suites) == outer
+    assert runner.container(sibling, suites) is None
+    assert runner.container(nested, [nested]) is None
+
+
+# spec: "Stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`), Python 3.13."
+# task: 4
+def test_runner_imports_only_the_standard_library():
+    tree = ast.parse((REPO / "build/run_suites.py").read_text(encoding="utf-8"))
+    imported = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            assert node.level == 0
+            imported.add(node.module.split(".")[0])
+    assert imported <= set(sys.stdlib_module_names) | {"__future__"}
+
+
+# spec: "It finds the repo root from its own path, never from the working directory."
+# task: 4
+def test_script_can_list_from_an_unrelated_working_directory(tmp_path):
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO / "build/run_suites.py"),
+            "--list",
+            "hooks",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "cd hooks && uv run --python 3.13 --with pytest python -m pytest -q" in result.stdout
+    assert "cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q" in result.stdout
+
+
+# spec: "**`--list [NAME …]`** prints, for each named suite (default: all): its name and directory, the shell form of each run, its extras, and its notes."
+# task: 4
+def test_list_defaults_to_all_and_never_executes(tmp_path, capsys):
+    prepare_suites(tmp_path, fixture_data())
+    calls = []
+    assert main_status(
+        ["--list"], tmp_path, lambda root, run: calls.append(run) or 0
+    ) == 0
+    output = capsys.readouterr().out
+    assert calls == []
+    for name, directory in (("build", "build"), ("cc-guide", "build/cc_guide"), ("hooks", "hooks")):
+        assert name in output
+        assert directory in output
+    assert "matplotlib" in output
+    assert "build/.scratch/" in output
+    assert "Gate B" in output
+    assert "cd build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q" in output
+    assert "cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q" in output
+
+
+# spec: "`--extras` and the `--` arguments apply here too, so `--list` prints the exact command that a run would use."
+# task: 4
+def test_list_selected_suites_applies_extras_and_forwarded_arguments(tmp_path, capsys):
+    prepare_suites(tmp_path, fixture_data())
+    calls = []
+    assert main_status(
+        ["--list", "build", "--extras", "--", "-k", "declared_dependencies", "-s", "-rs"],
+        tmp_path,
+        lambda root, run: calls.append(run) or 0,
+    ) == 0
+    output = capsys.readouterr().out
+    assert calls == []
+    assert (
+        "cd build && uv run --python 3.13 --with pytest --with numpy "
+        "--with polars --with pyyaml --with matplotlib "
+        "python -m pytest -q -k declared_dependencies -s -rs"
+    ) in output
+    assert "cd hooks &&" not in output
+    assert "cd build/cc_guide &&" not in output
+
+
+# spec: "**`NAME [NAME …]`** runs the named suites, in the order given, one run per interpreter in `pythons`."
+# task: 4
+def test_named_order_interpreter_order_and_continuation_after_failure(tmp_path, capsys):
+    prepare_suites(tmp_path, fixture_data())
+    calls = []
+    results = iter([5, 0, 1])
+
+    def run_one(root, run):
+        assert root == tmp_path
+        calls.append(run.label)
+        print(f"pytest output for {run.label}")
+        return next(results)
+
+    status = main_status(["hooks", "build"], tmp_path, run_one)
+    captured = capsys.readouterr()
+    assert status == 1
+    assert calls == ["hooks (3.13)", "hooks (/usr/bin/python3)", "build (3.13)"]
+    assert captured.out.index("== hooks (3.13)") < captured.out.index("pytest output for hooks (3.13)")
+    assert captured.out.index("== hooks (/usr/bin/python3)") < captured.out.index("pytest output for hooks (/usr/bin/python3)")
+    assert captured.out.index("== build (3.13)") < captured.out.index("pytest output for build (3.13)")
+    summary = final_line(captured)
+    assert "hooks (3.13)" in summary
+    assert "build (3.13)" in summary
+    assert "hooks (/usr/bin/python3)" not in summary
+
+
+# spec: "Each run starts with a `== <name> (<python>)` header, and the suite's notes follow its first run's header."
+# task: 4
+def test_notes_print_once_after_first_header_and_before_execution(capsys, tmp_path):
+    suites = runner.parse({
+        "suite": [
+            entry(
+                "hooks",
+                "hooks",
+                pythons=["3.13", "/usr/bin/python3"],
+                notes=["Gate B", "launchd-PATH"],
+            )
+        ]
+    })
+
+    def run_one(root, run):
+        print(f"pytest output for {run.label}")
+        return 0
+
+    assert runner.execute(tmp_path, suites, False, (), run_one) == 0
+    output = capsys.readouterr().out
+    header = output.index("== hooks (3.13)")
+    first_output = output.index("pytest output for hooks (3.13)")
+    for note in ("Gate B", "launchd-PATH"):
+        assert output.count(note) == 1
+        assert header < output.index(note) < first_output
+
+
+# spec: "**Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected, counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation."
+# task: 4
+@pytest.mark.parametrize("child_status", [0, 1, 2, 5, 127, -9])
+def test_child_exit_status_is_normalized(child_status, tmp_path, capsys):
+    suite = runner.parse({"suite": [entry()]})
+    status = runner.execute(
+        tmp_path, suite, False, (), lambda root, run: child_status
+    )
+    captured = capsys.readouterr()
+    assert status == (0 if child_status == 0 else 1)
+    summary = final_line(captured)
+    if child_status:
+        assert "build (3.13)" in summary
+    else:
+        assert "pass" in summary.lower()
+        assert "fail" not in summary.lower()
+
+
+# spec: "The runner passes its environment to every run unchanged."
+# task: 4
+def test_subprocess_receives_exact_environment_cwd_and_argv(tmp_path, monkeypatch, capfd):
+    root = tmp_path / "repo"
+    data = {
+        "suite": [
+            entry(
+                "bayesian-workflow",
+                "skills/bayesian-workflow/scripts",
+                deps=("pytest", "arviz", "arviz-stats", "numpy", "xarray"),
+            )
+        ]
+    }
+    prepare_suites(root, data)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    capture = tmp_path / "child.json"
+    uv = bin_dir / "uv"
+    uv.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, sys\n"
+        "from pathlib import Path\n"
+        "Path(os.environ['ACCEPTANCE_CAPTURE']).write_text(json.dumps({\n"
+        "    'argv': sys.argv[1:], 'cwd': os.getcwd(), 'env': dict(os.environ)\n"
+        "}))\n"
+        "print('pytest output streamed', flush=True)\n",
+        encoding="utf-8",
+    )
+    uv.chmod(0o755)
+    monkeypatch.setenv("PATH", str(bin_dir) + os.pathsep + os.environ.get("PATH", ""))
+    monkeypatch.setenv("ACCEPTANCE_CAPTURE", str(capture))
+    monkeypatch.setenv("CALIBRATION_SWEEP", "1")
+    monkeypatch.chdir(tmp_path)
+    expected_environment = dict(os.environ)
+
+    assert main_status(
+        ["bayesian-workflow", "--", "-s"],
+        root,
+        runner.run_subprocess,
+    ) == 0
+
+    observed = json.loads(capture.read_text(encoding="utf-8"))
+    assert observed["env"] == expected_environment
+    assert Path(observed["cwd"]) == root / "skills/bayesian-workflow/scripts"
+    assert observed["argv"] == [
+        "run", "--python", "3.13",
+        "--with", "pytest", "--with", "arviz", "--with", "arviz-stats",
+        "--with", "numpy", "--with", "xarray",
+        "python", "-m", "pytest", "-q", "-s",
+    ]
+    output = capfd.readouterr().out
+    assert output.index("== bayesian-workflow (3.13)") < output.index("pytest output streamed")
+
+
+# spec: "A run whose `uv` cannot start counts as failed."
+# task: 4
+def test_missing_uv_is_a_failed_run_and_later_runs_are_attempted(tmp_path, monkeypatch, capsys):
+    prepare_suites(tmp_path, fixture_data())
+    empty_path = tmp_path / "empty-path"
+    empty_path.mkdir()
+    monkeypatch.setenv("PATH", str(empty_path))
+    calls = []
+
+    def run_one(root, run):
+        calls.append(run.label)
+        return runner.run_subprocess(root, run)
+
+    assert main_status(["hooks"], tmp_path, run_one) == 1
+    assert calls == ["hooks (3.13)", "hooks (/usr/bin/python3)"]
+    summary = final_line(capsys.readouterr())
+    assert "hooks (3.13)" in summary
+    assert "hooks (/usr/bin/python3)" in summary
+
+
+# spec: "**`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`."
+# task: 4
+def test_all_skips_nested_suite_and_reports_it_once(tmp_path, capsys):
+    prepare_suites(tmp_path, fixture_data())
+    calls = []
+    assert main_status(
+        ["--all"], tmp_path, lambda root, run: calls.append(run.label) or 0
+    ) == 0
+    assert calls == ["build (3.13)", "hooks (3.13)", "hooks (/usr/bin/python3)"]
+    output = capsys.readouterr().out
+    skipped = [line for line in output.splitlines() if "cc-guide" in line]
+    assert len(skipped) == 1
+    assert "skip" in skipped[0].lower()
+
+
+# spec: "A suite named on the command line always runs."
+# task: 4
+def test_explicitly_named_nested_suite_runs(tmp_path):
+    prepare_suites(tmp_path, fixture_data())
+    calls = []
+    assert main_status(
+        ["cc-guide"], tmp_path, lambda root, run: calls.append(run.label) or 0
+    ) == 0
+    assert calls == ["cc-guide (3.13)"]
+
+
+# spec: "**Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected, counts as a failure); 2 for a usage error, an unknown suite name, or a registry that fails validation."
+# task: 4
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["--not-a-runner-option"],
+        ["unknown-suite"],
+        ["--list", "unknown-suite"],
+    ],
+)
+def test_usage_errors_return_two(tmp_path, argv):
+    prepare_suites(tmp_path, fixture_data())
+    calls = []
+    assert main_status(
+        argv, tmp_path, lambda root, run: calls.append(run) or 0
+    ) == 2
+    assert calls == []
+
+
+# spec: "Validation fails closed."
+# task: 4
+@pytest.mark.parametrize(
+    ("argv", "expected"),
+    [(["--list"], 2), (["build"], 2), (["--all"], 2), (["--check"], 1)],
+)
+def test_malformed_toml_fails_without_execution(tmp_path, argv, expected):
+    git_repo(tmp_path, {})
+    write_file(tmp_path, "build/suites.toml", "[[suite]\n")
+    calls = []
+    assert main_status(
+        argv, tmp_path, lambda root, run: calls.append(run) or 0
+    ) == expected
+    assert calls == []
+
+
+# spec: "**coverage:** a directory that holds a pytest file (`test_*.py` or `*_test.py`, pytest's default patterns) and does not lie inside any registered `dir`."
+# task: 3
+def test_discovery_uses_both_pytest_default_filename_patterns(tmp_path):
+    root = git_repo(tmp_path, {
+        "build/test_new.py": "",
+        "hooks/new_test.py": "",
+        "skills/brainstorming/scripts/helper.py": "",
+        "skills/brainstorming/scripts/tests.py": "",
+        "skills/brainstorming/scripts/test_new.txt": "",
+        "skills/brainstorming/scripts/new_test.txt": "",
+    })
+    git(root, "add", "--", "build/test_new.py")
+    assert set(runner.TEST_FILE_PATTERNS) == {"test_*.py", "*_test.py"}
+    assert runner.pytest_dirs(root) == {"build", "hooks"}
+
+
+# spec: "Untracked new suites count, as the hook's other lints read untracked drafts too."
+# task: 3
+@pytest.mark.parametrize("filename", ["test_new.py", "new_test.py"])
+def test_untracked_unregistered_directory_is_a_finding(tmp_path, filename):
+    root = git_repo(tmp_path, {
+        "build/test_new.py": "",
+        f"skills/brainstorming/scripts/{filename}": "",
+    })
+    data = {"suite": [entry()]}
+    findings = runner.check(root, data)
+    assert len(findings) == 1
+    assert "skills/brainstorming/scripts" in findings[0]
+
+
+# spec: "**registry:** R3.9's validation, plus a registered `dir` that does not exist or holds no pytest file;"
+# task: 3
+def test_missing_registered_directory_is_a_finding(tmp_path):
+    root = git_repo(tmp_path, {})
+    findings = runner.check(root, {"suite": [entry("hooks", "hooks")]})
+    assert findings
+    assert any("hooks" in finding for finding in findings)
+
+
+# spec: "**registry:** R3.9's validation, plus a registered `dir` that does not exist or holds no pytest file;"
+# task: 3
+def test_registered_directory_without_pytest_files_is_a_finding(tmp_path):
+    root = git_repo(tmp_path, {"hooks/helper.py": ""})
+    findings = runner.check(root, {"suite": [entry("hooks", "hooks")]})
+    assert findings
+    assert any("hooks" in finding for finding in findings)
+
+
+# spec: "**coverage:** a directory that holds a pytest file (`test_*.py` or `*_test.py`, pytest's default patterns) and does not lie inside any registered `dir`."
+# task: 3
+def test_registered_parent_covers_descendants_but_not_textual_prefixes(tmp_path):
+    root = git_repo(tmp_path, {
+        "build/cc_guide/test_new.py": "",
+        "build-other/test_new.py": "",
+    })
+    findings = runner.check(root, {"suite": [entry()]})
+    assert len(findings) == 1
+    assert "build-other" in findings[0]
+
+
+# spec: "Ignored trees, `.claude/worktrees/` and `build/.scratch/` among them, drop out."
+# task: 3
+def test_git_ignored_worktrees_and_scratch_are_excluded(tmp_path):
+    root = git_repo(tmp_path, {
+        ".gitignore": ".claude/worktrees/\nbuild/.scratch/\n",
+        "build/test_new.py": "",
+        ".claude/worktrees/hooks/test_new.py": "",
+        "build/.scratch/test_new.py": "",
+    })
+    assert runner.pytest_dirs(root) == {"build"}
+    assert runner.check(root, {"suite": [entry()]}) == []
+
+
+# spec: "If git fails, `--check` fails."
+# task: 4
+def test_git_failure_is_not_reported_as_success(tmp_path, capsys):
+    prepare_suites(tmp_path, {"suite": [entry()]})
+    assert runner.check(tmp_path, {"suite": [entry()]})
+    assert main_status(
+        ["--check"], tmp_path, lambda root, run: pytest.fail("check ran a suite")
+    ) == 1
+    output = capsys.readouterr()
+    assert "suite registry ok" not in output.out
+
+
+# spec: "Output: `suite registry ok` and exit 0, or one line per finding and exit 1."
+# task: 4
+def test_check_success_output_is_exact(tmp_path, capsys):
+    root = git_repo(tmp_path, {"build/test_new.py": ""})
+    write_registry(root, {"suite": [entry()]})
+    assert main_status(
+        ["--check"], root, lambda root, run: pytest.fail("check ran a suite")
+    ) == 0
+    captured = capsys.readouterr()
+    assert captured.out == "suite registry ok\n"
+    assert captured.err == ""
+
+
+# spec: "Output: `suite registry ok` and exit 0, or one line per finding and exit 1."
+# task: 4
+def test_check_prints_each_finding_on_its_own_line(tmp_path, capsys):
+    root = git_repo(tmp_path, {
+        "build/test_new.py": "",
+        "hooks/test_new.py": "",
+        "skills/brainstorming/scripts/test_new.py": "",
+    })
+    data = {"suite": [entry()]}
+    write_registry(root, data)
+    expected = runner.check(root, data)
+    assert len(expected) == 2
+    assert main_status(
+        ["--check"], root, lambda root, run: pytest.fail("check ran a suite")
+    ) == 1
+    captured = capsys.readouterr()
+    lines = [line for line in (captured.out + captured.err).splitlines() if line]
+    assert sorted(lines) == sorted(expected)
+
+
+# spec: "The inventory, from `CLAUDE.md` at `456e3fb`:"
+# task: 5
+@pytest.mark.parametrize("name,directory,deps,extras,pythons", EXPECTED)
+def test_real_registry_matches_spec_inventory(name, directory, deps, extras, pythons):
+    data = real_data()
+    assert runner.validate(data) == []
+    tables = {table["name"]: table for table in data["suite"]}
+    assert name in tables
+    table = tables[name]
+    assert table["dir"] == directory
+    assert table["with"] == list(deps)
+    assert table.get("extras", []) == list(extras)
+    assert table.get("pythons", ["3.13"]) == list(pythons)
+    suite = next(suite for suite in runner.parse(data) if suite.name == name)
+    assert suite.deps == deps
+    assert suite.extras == extras
+    assert suite.pythons == pythons
+
+
+# spec: "One `[[suite]]` table per directory suite, sorted by `name`."
+# task: 5
+def test_real_registry_is_sorted_and_has_unique_names_and_directories():
+    tables = real_data()["suite"]
+    names = [table["name"] for table in tables]
+    directories = [table["dir"] for table in tables]
+    assert names == sorted(names)
+    assert len(names) == len(set(names))
+    assert len(directories) == len(set(directories))
+
+
+# spec: "A header comment states the keys, the sort order, and that the ninth commit lint checks the file."
+# task: 5
+def test_registry_header_documents_keys_sorting_and_ninth_lint():
+    text = (REPO / "build/suites.toml").read_text(encoding="utf-8")
+    header = text.split("[[suite]]", 1)[0]
+    comments = "\n".join(
+        line.lstrip()[1:] for line in header.splitlines()
+        if line.lstrip().startswith("#")
+    ).lower()
+    for key in ("name", "dir", "with", "extras", "pythons", "notes"):
+        assert re.search(rf"\b{key}\b", comments)
+    assert "sort" in comments
+    assert re.search(r"\b(?:ninth|nine|9)\b", comments)
+    assert "commit" in comments
+    assert "lint" in comments
+    assert "check" in comments
+
+
+# spec: "The notes carry the rest of each comment."
+# task: 5
+@pytest.mark.parametrize(
+    ("name", "fragments"),
+    [
+        ("build", ("build/.scratch/",)),
+        ("bayesian-workflow", ("CALIBRATION_SWEEP=1", "arviz", "warn")),
+        ("llm-wiki", ("@needs_pilot", "LLM_WIKI_ROOT")),
+        ("brainstorming", ("node",)),
+        ("tune-hyperparameters", ("--with sklearn", "fail")),
+        ("hooks", ("3.9", "launchd", "PATH", "Gate B")),
+    ],
+)
+def test_real_registry_preserves_explicit_note_details(name, fragments):
+    table = next(table for table in real_data()["suite"] if table["name"] == name)
+    notes = "\n".join(table.get("notes", []))
+    for fragment in fragments:
+        assert fragment.lower() in notes.lower()
+
+
+# spec: "`build/suites.toml` registers every directory suite (R2.3) and `--check` passes."
+# task: 5
+def test_real_registry_passes_check(capsys):
+    assert runner.check(REPO, real_data()) == []
+    assert main_status(
+        ["--check"], REPO, lambda root, run: pytest.fail("check ran a suite")
+    ) == 0
+    assert capsys.readouterr().out == "suite registry ok\n"
+
+
+# spec: "With default options, the shell form equals the suite's current `CLAUDE.md` command, character for character."
+# task: 5
+def test_default_shell_forms_preserve_the_specified_baseline_commands():
+    lines = baseline_text("CLAUDE.md").splitlines()
+    old_commands = set()
+    for line in lines[65:125] + lines[144:145]:
+        if not line.startswith("cd "):
+            continue
+        parts = line.split(" && ")
+        assert parts[0].startswith("cd ")
+        assert all(part.startswith("uv run ") for part in parts[1:])
+        old_commands.update(f"{parts[0]} && {part}" for part in parts[1:])
+
+    assert old_commands
+    required_names = {row[0] for row in EXPECTED}
+    suites = [
+        suite for suite in runner.parse(real_data())
+        if suite.name in required_names
+    ]
+    actual_commands = {
+        run.shell() for suite in suites for run in runner.runs(suite)
+    }
+    assert actual_commands == old_commands
+
+
+# spec: "`build/run_commit_lints.sh` runs it as the ninth lint, named `suite_registry`: `run suite_registry uv run --python 3.13 python build/run_suites.py --check`."
+# task: 6
+def test_suite_registry_is_the_ninth_literal_commit_lint():
+    text = (REPO / "build/run_commit_lints.sh").read_text(encoding="utf-8")
+    commands = lint_run_lines(text)
+    expected = (
+        "run suite_registry uv run --python 3.13 "
+        "python build/run_suites.py --check"
+    )
+    assert len(commands) == 9
+    assert commands[8] == expected
+    assert [line for line in commands if "run_suites.py" in line] == [expected]
+    header = text.split(commands[0], 1)[0]
+    assert re.search(r"\bnine\b", header, re.IGNORECASE)
+
+
+# spec: "`build/run_commit_lints.sh` keeps its literal commands."
+# task: 6
+def test_existing_commit_lint_commands_remain_literal():
+    before = lint_run_lines(baseline_text("build/run_commit_lints.sh"))
+    after = lint_run_lines(
+        (REPO / "build/run_commit_lints.sh").read_text(encoding="utf-8")
+    )
+    assert before
+    assert after[:-1] == before
+
+
+# spec: "`build/test_commit_lints.py`: `suite_registry` joins `CHECKS`, and `test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py` in a clone and asserts that `suite_registry` is the only failed lint."
+# task: 6
+def test_commit_lint_test_inventory_includes_suite_registry():
+    module = importlib.import_module("test_commit_lints")
+    assert "suite_registry" in module.CHECKS
+    assert callable(module.test_unregistered_suite_is_refused)
+
+
+# spec: "`build/test_commit_lints.py`: `suite_registry` joins `CHECKS`, and `test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py` in a clone and asserts that `suite_registry` is the only failed lint."
+# task: 6
+def test_committed_unregistered_suite_is_the_only_failing_lint(tmp_path):
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-hardlinks", str(REPO), str(clone)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    relative = "skills/acceptance-unregistered/scripts/test_new.py"
+    write_file(clone, relative, "def test_new():\n    assert True\n")
+    git(clone, "add", "--", relative)
+    git(
+        clone,
+        "-c", "core.hooksPath=/dev/null",
+        "-c", "commit.gpgsign=false",
+        "-c", "user.name=Acceptance Test",
+        "-c", "user.email=acceptance@example.invalid",
+        "commit", "--quiet", "-m", "Add an unregistered directory suite",
+    )
+
+    commands = lint_run_lines(
+        (clone / "build/run_commit_lints.sh").read_text(encoding="utf-8")
+    )
+    failed = set()
+    for line in commands:
+        name = shlex.split(line)[1]
+        result = subprocess.run(
+            ["bash", "-c", 'run() { shift; "$@"; }\n' + line],
+            cwd=clone,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode:
+            failed.add(name)
+    assert failed == {"suite_registry"}
+
+    result = subprocess.run(
+        ["bash", "build/run_commit_lints.sh"],
+        cwd=clone,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "suite_registry" in result.stdout + result.stderr
+
+
+# spec: "Keep the uv and Python 3.13 rule, the directory scope, and the `test_build.py` basename-collision reason."
+# task: 7
+def test_root_intro_retains_rules_and_names_registry_runner_and_notes():
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    candidates = [
+        line for line in text.splitlines()
+        if "build/suites.toml" in line and "build/run_suites.py" in line
+    ]
+    assert len(candidates) == 1
+    intro = candidates[0]
+    for fragment in ("uv", "3.13", "test_build.py", "director", "note"):
+        assert fragment.lower() in intro.lower()
+    assert re.search(r"colli(?:de|sion)", intro, re.IGNORECASE)
+    assert "There is no root test runner" not in text
+
+
+# spec: "Replace with one block: a comment, then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands."
+# task: 7
+def test_root_commands_block_documents_all_runner_modes():
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    prefix = "uv run --python 3.13 python build/run_suites.py "
+    commands = [
+        prefix + "--list",
+        prefix + "<name> [--extras] [-- <pytest args>]",
+        prefix + "--all",
+        prefix + "--check",
+    ]
+    positions = [text.index(command) for command in commands]
+    assert positions == sorted(positions)
+    lines = text.splitlines()
+    first = next(i for i, line in enumerate(lines) if commands[0] in line)
+    assert lines[first - 1].lstrip().startswith("#")
+    block = text[positions[0]:positions[-1] + len(commands[-1])]
+    assert not re.search(
+        r"\b(?:\d+|seventeen|eighteen|nineteen)\s+(?:suites|tests)\b",
+        block,
+        re.IGNORECASE,
+    )
+
+
+# spec: "`CLAUDE.md` has no directory-suite command left (R5.1) and stays under 200 lines."
+# task: 7
+def test_root_is_under_200_lines_and_contains_no_directory_suite_command():
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    assert len(text.splitlines()) < 200
+    suites = runner.parse(real_data())
+    directories = {suite.dir for suite in suites}
+    for suite in suites:
+        for run in runner.runs(suite):
+            assert run.shell() not in text
+    for line in text.splitlines():
+        match = re.match(
+            r"^cd (\S+) && .*python -m pytest -q(?: && .*)?$",
+            line.strip(),
+        )
+        if match:
+            assert match.group(1) not in directories
+
+
+# spec: "These commands **stay literal in `CLAUDE.md`**."
+# task: 7
+def test_literal_tool_and_selection_commands_survive():
+    before = baseline_text("CLAUDE.md").splitlines()
+    after = (REPO / "CLAUDE.md").read_text(encoding="utf-8").splitlines()
+    removed = set(range(66, 126)) | {145}
+    separately_owned = {133}
+    changed_comments = set(range(127, 133)) | set(range(141, 146))
+    prefixes = ("uv ", "bash ", "cd ", "python ", "python3 ", "./", "node ")
+    checked = []
+    for number, line in enumerate(before, start=1):
+        if number in removed | separately_owned:
+            continue
+        if not line.lstrip().startswith(prefixes):
+            continue
+        assert line in after
+        checked.append(line)
+        previous = number - 1
+        if previous > 0 and previous not in changed_comments:
+            comment = before[previous - 1]
+            if comment.lstrip().startswith("#"):
+                assert comment in after
+    assert checked
+
+
+# spec: "The comment names the suite `run_suites.py cc-guide` instead of \"its suite\"."
+# task: 7
+def test_cc_guide_comment_uses_the_spec_suite_name():
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "run_suites.py cc-guide" in text
+    assert "run_suites.py cc_guide" not in text
+
+
+# spec: "`build/CLAUDE.md`: \"the eight commit lints\" becomes \"the nine commit lints\", and one sentence names `suites.toml` and `run_suites.py` and says that `--check` is a commit lint."
+# task: 6
+def test_build_documentation_describes_the_ninth_lint():
+    text = (REPO / "build/CLAUDE.md").read_text(encoding="utf-8")
+    assert "the nine commit lints" in text
+    assert "the eight commit lints" not in text
+    sentences = re.split(r"(?<=[.!?])\s+", text.replace("\n", " "))
+    assert any(
+        all(fragment in sentence for fragment in (
+            "suites.toml", "run_suites.py", "--check", "commit lint",
+        ))
+        for sentence in sentences
+    )
+
+
+# spec: "The control becomes a check that line 1 is the `<!-- cc-guide: … @<version> -->` stamp."
+# task: 7
+def test_import_positive_control_passes_after_pilot_note_moves():
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    assert re.fullmatch(r"<!-- cc-guide: .+ @\S+ -->", text.splitlines()[0])
+    assert "@needs_pilot" not in text
+    assert any(
+        "@needs_pilot" in note
+        for table in real_data()["suite"]
+        for note in table.get("notes", [])
+    )
+    result = subprocess.run(
+        [
+            sys.executable, "-m", "pytest", "-q",
+            "build/test_check_conformance.py::test_claude_md_import_resolves_passes_on_the_repo",
+        ],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+# spec: "The commit-lint comment names the suite-registry check and says \"nine\"."
+# task: 7
+def test_root_commit_lint_comment_names_nine_and_suite_registry():
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    comment_blocks = re.findall(r"(?m)(?:^[ \t]*#[^\n]*(?:\n|$))+", text)
+    assert any(
+        re.search(r"\bnine\b", block, re.IGNORECASE)
+        and re.search(r"suite[-_ ]registry", block, re.IGNORECASE)
+        for block in comment_blocks
+    )
+
+
+# spec: "`build/run_suites.py` and its tests are committed, and the ninth lint runs in `run_commit_lints.sh`."
+# task: 6
+def test_runner_and_its_required_test_file_are_committed():
+    for relative in ("build/run_suites.py", "build/test_run_suites.py"):
+        result = subprocess.run(
+            ["git", "-C", str(REPO), "show", f"HEAD:{relative}"],
+            capture_output=True,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        assert result.stdout == (REPO / relative).read_bytes()
+
+
+# spec: "`bash build/run_commit_lints.sh` prints `commit lints passed`."
+# task: 6
+def test_commit_lint_gate_passes():
+    result = subprocess.run(
+        ["bash", "build/run_commit_lints.sh"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.rstrip().splitlines()[-1] == "commit lints passed"
+</tests>
+<flags>
+<flag task="1"><spec>A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`.</spec><plan>the base facts that Tasks 5 and 7 check against, and a spec that names the suite `cc_guide`.</plan></flag>
+<flag task="2"><spec>The interpreters, one run each, in order. Default `['3.13']`.</spec><plan>DEFAULT_PYTHONS = ('3.12',)</plan></flag>
+<flag task="5"><spec>A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`.</spec><plan>`cc_guide`</plan></flag>
+</flags>
+<untestable>
+**Status:** Design approved in brainstorming on 2026-10-18.
+Next step: an implementation plan from the writing-plans skill (`entry_check.py` reported plan id 54 as next free on 2026-10-18).
+The `claude-md-size` check (a commit lint, through `build/check_conformance.py`) fails at 200 lines.
+`CLAUDE.md` had 199 on `main` at `456e3fb`.
+Its Commands block spends lines 66–125, 60 lines, on one `cd <dir> && uv run … python -m pytest -q` command and comment per suite.
+Each new suite costs two or three more lines.
+Plan 50 (the superpowers upstream fixes, lowmason/agent-skills#56) took the file from 195 to 199.
+Plan 52 (the write-with-asd-ste100 skill, not merged) needs two more lines.
+Its open question Q4 asked where they come from: (a) fold seven suites under one comment, (b) record a size deviation, or (c) move the per-suite commands out of the root file first.
+This spec is option (c).
+In plan 38, Task 2 condensed `CLAUDE.md` from 224 lines to 170 and kept every command in place.
+The file then grew back to 199 by 2026-10-18.
+Worktree-isolated sessions and their subagents have refused compound shell such as `cd X && Y` (seen on 2026-10-12).
+The owner took these decisions on 2026-10-18.
+Each records the option that the owner chose.
+"This work lands whole, registry and CLAUDE.md shrink, ahead of plan 52's Task 6.
+Task 6 then adds one build/suites.toml entry instead of editing Commands.
+Plan 52's planning session amends its plan to match and records Q4 as (c)."
+Rejected: a Python list inside the runner (every suite change becomes a code edit), and one manifest per suite directory (`install.py` copies skill directories, so the manifests would ship with installed skills).
+An `@`-imported document was ruled out before the vote: the guide says imported files load at launch too, so it only moves lines.
+**Design section 1** (the registry keys and the runner's behaviour) was approved as presented.
+**Design section 2** (the guard, the file edits, the tests and the couplings) was approved as presented.
+Every command, dependency and note survives; the only change is the form.
+Examples: `build`'s missing `build/.scratch/` in a fresh clone or worktree; `bayesian-workflow`'s `CALIBRATION_SWEEP=1` sweep and its expected arviz warnings; `llm-wiki`'s `@needs_pilot` tests and `$LLM_WIKI_ROOT`; `brainstorming`'s node skip; `tune-hyperparameters`' "`--with sklearn` fails"; `track-model-experiments`' run time; the guard's 3.9 floor, its launchd-PATH skips and its Gate B probe for `hooks`.
+Same number of lines.
+Line 133 is not touched (plan 53's Task 7 edits it).
+The file ends at about 145 lines.
+The deletion of lines 66–125 is bounded by two lines that no other plan edits: the `# Full build-directory tests` comment and the `cd hooks && …` command.
+Whatever lies between them goes, so the edit works in either landing order with plan 52 (R7.1).
+A naive scan would flag the `@` in it, and the stamp keeps its form when its version changes.
+No change to `AGENTS.md`, `GEMINI.md`, `.github/workflows/lints.yml`, `install.py` or `NOTICE`.
+The new files are the owner's original tooling.
+The register's deviation `claude-md-serves-codex-gemini` still holds as written: a condensed Commands block stays in the root file, and the registry is a plain file that every runtime can read.
+Write each test before its code and see it fail first (red, then green).
+Under decision 2, plan 52's Task 6 drops its `CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits and adds one `[[suite]]` entry for `skills/write-with-asd-ste100/scripts` instead.
+Its expectations of 199 and 197 lines (Task 1, DF19, Q4, Coupling (e)) change with it.
+Its `CLAUDE.md:sources` and `CLAUDE.md:bullet` edits are outside the Commands block and still apply.
+A note in the session group's shared notes folder gives the exact entry.
+Until plan 52 adds the entry, the ninth lint refuses its new suite directory.
+If plan 52 lands first after all, R5.2's deletion still works, and this plan registers that suite itself.
+None of the lines that R5.1 deletes carries one of its edit anchors.
+Its Task 7 edits line 133, which stays.
+Its own suite commands are written out in full in the plan, so they work without `CLAUDE.md`.
+It edits one sentence of `build/CLAUDE.md`'s `cc_guide/` paragraph.
+R5.3 edits the `run_commit_lints.sh` paragraph and adds a sentence.
+If an edit block does not match, merge by hand.
+**R6's tests** run red first, then green.
+**The Stage 2 audit** (one time, a scratch script that is never committed, as in plan 38's Task 2).
+Run it before the `CLAUDE.md` deletion.
+It also checks each comment's skip-unlocking deps against that suite's `extras`.
+Run `hooks`, `build` and `bayesian-workflow` once directly and once through the runner, in the same checkout.
+Their pytest summary lines match.
+Then run `--all` once, and record each run's result beside the direct result.
+The build suite passes (where the missing `build/.scratch/` lets it).
+The Stage 2 audit passes, and the behaviour runs match.
+The shared note for plan 52 (R7.1) is written.
+Agents no longer see each suite's notes at session start.
+The commit hook runs one more fast, stdlib-only check.
+Codex and Gemini reach the runner commands through `AGENTS.md` and `GEMINI.md`, as before.
+CI running the suites (`--all` in `.github/workflows/lints.yml`).
+It would need node, a 3.9 `/usr/bin/python3` and `build/.scratch/`.
+Revisit if: the owner wants suites in CI.
+Parallel runs, per-suite timeouts and machine-readable output.
+Revisit if: `--all` gets slow or a tool needs to parse its results.
+Moving the lint, snippet, JAX, smoke, rebuild and citation commands into the runner.
+Revisit if: `CLAUDE.md` nears its limit again.
+</untestable>

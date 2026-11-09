@@ -1,0 +1,6 @@
+copy: p66-bound from 526b7de (specs/plans/66-package-versions.md, specs/package-versions.md)
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6.1-sol/p66-bound/rep1.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6.1-sol/p66-bound/rep2.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6.1-sol/p66-bound/rep3.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6.1-sol/p66-bound/rep4.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6.1-sol/p66-bound/rep5.md

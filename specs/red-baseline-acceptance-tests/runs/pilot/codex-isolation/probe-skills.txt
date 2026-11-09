@@ -1,0 +1,8 @@
+This is a context diagnostic, not a task. Report only what is literally present in your context before this message. Do not run any command and do not call any tool. Do not use any special formatting or boxes. Answer lines 1 to 5, each with YES or NO and, if YES, a short verbatim quote of at most 12 words. Then answer lines 6 and 7.
+1. Text loaded from an AGENTS.md file (quote its first heading).
+2. An instruction naming an output style, such as Explanatory or Learning, or Insight boxes (quote the style name).
+3. A rule headed "Plain technical English" or "AWS Guidance" (quote the heading).
+4. Additional context injected by a SessionStart hook (quote its first words).
+5. Any memory content or a memory index (quote its first line).
+6. On its own line, write SKILLS: and then the name of every skill that is listed in your context, separated by commas, or NONE.
+7. On the last line, write TOOLS: and then the names of every tool that you can call, separated by commas, or NONE.

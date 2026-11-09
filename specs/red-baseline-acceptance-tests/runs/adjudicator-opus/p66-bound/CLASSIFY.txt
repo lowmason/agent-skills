@@ -1,0 +1,11 @@
+rep1 ruling5 near-miss the planted cutoff, ruled plan-wrong, but the quote is "Files uploaded on the freeze date itself (UTC) are included", not the sentence that holds the spec_key; the rep catches the plant in another ruling
+rep1 ruling6 interface the ruling is on late_pins return shape (messages or specs) against the Interfaces wording; spec R3.6 only asks that the error name the package and the date, which the plan message does
+rep1 ruling7 false-alarm amendment: owner decision D6 applies amendment A3 to R2.3 (Task 6), which pins Tier 2 on the snippets stack; DF2 leaves the copy spec unamended
+rep2 ruling6 interface the ruling is on late_pins return shape (messages or specs) against the Interfaces wording; spec R3.6 only asks that the error name the package and the date, which the plan message does
+rep2 ruling7 real spec R7 says test_check_frontmatter.py:434 builds its expected command from the file; the plan leaves that test on its literal
+rep2 ruling8 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment
+rep3 ruling5 near-miss the planted cutoff, ruled plan-wrong, but the quote is "Files uploaded on the freeze date itself (UTC) are included", not the sentence that holds the spec_key; the rep catches the plant in another ruling
+rep3 ruling6 interface the ruling is on late_pins return shape (messages or specs) against the Interfaces wording; spec R3.6 only asks that the error name the package and the date, which the plan message does
+rep3 ruling7 false-alarm test-wrong against an acceptance test that agrees with spec R2.3, which names build/check_jax_examples.py and its command
+rep4 ruling6 near-miss the plant (a freeze-day upload must pass) ruled plan-wrong on the Interfaces text, with no planted token; the rep catches the plant in another ruling
+rep5 ruling7 real spec R4.1 item 4 "must match the Python floor"; owner decision D4 lets a lower script floor pass, and the plan has no R4.1 amendment

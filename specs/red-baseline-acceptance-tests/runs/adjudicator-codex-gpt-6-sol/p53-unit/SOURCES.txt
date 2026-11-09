@@ -1,0 +1,6 @@
+copy: p53-unit from b8f4d0f (specs/plans/53-agent-skills-portability.md, specs/agent-skills-portability-spec.md)
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p53-unit/rep1.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p53-unit/rep2.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p53-unit/rep3.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p53-unit/rep4.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p53-unit/rep5.md

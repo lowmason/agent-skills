@@ -1,0 +1,6 @@
+copy: p66-bound from 526b7de (specs/plans/66-package-versions.md, specs/package-versions.md)
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p66-bound/rep1.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p66-bound/rep2.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p66-bound/rep3.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p66-bound/rep4.json
+reader reply: specs/red-baseline-acceptance-tests/runs/reader-opus/p66-bound/rep5.json

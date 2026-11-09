@@ -1,0 +1,31 @@
+rep1 ruling3 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep1 ruling4 real spec Verification "record each run's result beside the direct result"; Task 7 Step 3 records no --all result
+rep1 ruling5 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep1 ruling6 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep1 ruling7 false-alarm skill format (current writing-plans), no spec sentence contradicted: a Decisions-line source value
+rep1 ruling8 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep2 ruling2 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep2 ruling3 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep2 ruling4 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep2 ruling5 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep2 ruling6 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep2 ruling7 false-alarm a test-count base that Task 1 does not record; R6.3 (red, then green) is not contradicted
+rep3 ruling3 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep3 ruling4 real spec R5.1 drops "the sentence that comments name the skip-unlocking deps"; the plan keeps its clause "pytest's summary line gives the counts"
+rep3 ruling5 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep3 ruling6 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep4 ruling2 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep4 ruling3 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep4 ruling4 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep4 ruling5 real spec R6.1 lists "validation: each R3.9 failure, with exit 2"; the plan tests exit 2 for one failure kind only
+rep4 ruling6 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep4 ruling7 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep4 ruling8 false-alarm skill format (current writing-plans), no spec sentence contradicted: a Decisions-line source value
+rep4 ruling9 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep5 ruling2 near-miss names the planted 3.12 but quotes another sentence, not the pythons default; the rep catches the plant in another finding
+rep5 ruling3 real spec R2.1 "the ninth commit lint checks the file"; the plan's header says "a commit lint"
+rep5 ruling4 false-alarm the planning session wrote the R7.1 shared note (plan Couplings); the completion check agrees with spec done-when item 6
+rep5 ruling5 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep5 ruling6 false-alarm skill format (current writing-plans), no spec sentence contradicted: a Decisions-line source value
+rep5 ruling7 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep5 ruling8 false-alarm skill format (current writing-plans), no spec sentence contradicted: the execution handoff wording

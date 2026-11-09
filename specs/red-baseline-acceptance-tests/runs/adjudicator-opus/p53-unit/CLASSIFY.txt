@@ -1,0 +1,23 @@
+rep1 ruling1 false-alarm amendment: owner decision D5 and amendment A1 (Task 1) add agent to R1.1 HOST_KEYS; DF2 leaves the copy spec unamended
+rep1 ruling2 real spec R1.9 asks that CLAUDE.md gains the --strict invocation with one line; owner decision D7 drops the line and the plan has no R1.9 amendment
+rep1 ruling6 false-alarm amendment: amendment A4 (Task 1) corrects R3.1 to 17 runnable scripts, 15 of which gain a header; DF2 leaves the copy spec unamended
+rep1 ruling7 real spec R3.7 gives no exemption to a script with a __main__ guard; DF6 adds VENDORED_SCRIPTS, and the plan test asserts that a vendored script without a header passes
+rep2 ruling2 false-alarm amendment: owner decision D5 and amendment A1 (Task 1) add agent to R1.1 HOST_KEYS; DF2 leaves the copy spec unamended
+rep2 ruling3 real spec R1.9 asks that CLAUDE.md gains the --strict invocation with one line; owner decision D7 drops the line and the plan has no R1.9 amendment
+rep2 ruling5 false-alarm amendment: amendment A4 (Task 1) corrects R3.1 to 17 runnable scripts, 15 of which gain a header; DF2 leaves the copy spec unamended
+rep2 ruling6 real spec R3.7 gives no exemption to a script with a __main__ guard; DF6 adds VENDORED_SCRIPTS, and the plan test asserts that a vendored script without a header passes
+rep3 ruling2 false-alarm amendment: owner decision D5 and amendment A1 (Task 1) add agent to R1.1 HOST_KEYS; DF2 leaves the copy spec unamended
+rep3 ruling3 real spec R1.9 asks that CLAUDE.md gains the --strict invocation with one line; owner decision D7 drops the line and the plan has no R1.9 amendment
+rep3 ruling5 false-alarm DF11 renames the file to LICENSE-causal-design-sources and maps it to recommend-causal-design, so no LICENSE* file lies outside its mapping
+rep3 ruling6 false-alarm planning found outcome 1 of R4.5 (DF14: upstream ships an MIT notice), so Task 9 creates LICENSE-andorra as the spec's "A notice exists" branch asks
+rep3 ruling7 false-alarm amendment: amendment A4 (Task 1) corrects R3.1 to 17 runnable scripts, 15 of which gain a header; DF2 leaves the copy spec unamended
+rep3 ruling8 real spec R3.7 gives no exemption to a script with a __main__ guard; DF6 adds VENDORED_SCRIPTS, and the plan test asserts that a vendored script without a header passes
+rep4 ruling1 false-alarm amendment: owner decision D5 and amendment A1 (Task 1) add agent to R1.1 HOST_KEYS; DF2 leaves the copy spec unamended
+rep4 ruling2 real spec R1.9 asks that CLAUDE.md gains the --strict invocation with one line; owner decision D7 drops the line and the plan has no R1.9 amendment
+rep4 ruling6 false-alarm a test-wrong ruling whose acceptance field only quotes the spec's "A notice exists" branch, which the plan follows; no conflicting assertion is shown
+rep4 ruling7 false-alarm amendment: amendment A4 (Task 1) corrects R3.1 to 17 runnable scripts, 15 of which gain a header; DF2 leaves the copy spec unamended
+rep4 ruling8 real spec R3.7 gives no exemption to a script with a __main__ guard; DF6 adds VENDORED_SCRIPTS, and the plan test asserts that a vendored script without a header passes
+rep5 ruling1 false-alarm amendment: owner decision D5 and amendment A1 (Task 1) add agent to R1.1 HOST_KEYS; DF2 leaves the copy spec unamended
+rep5 ruling2 real spec R1.9 asks that CLAUDE.md gains the --strict invocation with one line; owner decision D7 drops the line and the plan has no R1.9 amendment
+rep5 ruling5 false-alarm amendment: amendment A4 (Task 1) corrects R3.1 to 17 runnable scripts, 15 of which gain a header; DF2 leaves the copy spec unamended
+rep5 ruling6 real spec R3.7 gives no exemption to a script with a __main__ guard; DF6 adds VENDORED_SCRIPTS, and the plan test asserts that a vendored script without a header passes

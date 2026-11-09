@@ -1,0 +1,6 @@
+copy: p55-default from f0ebef6 (specs/plans/55-test-suite-registry.md, specs/test-suite-registry.md)
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p55-default/rep1.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p55-default/rep2.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p55-default/rep3.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p55-default/rep4.md
+reader reply: specs/red-baseline-acceptance-tests/runs/codex-gpt-6-sol/p55-default/rep5.md

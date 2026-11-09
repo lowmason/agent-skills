@@ -1,0 +1,2 @@
+copy: p55-default from f0ebef6 (specs/plans/55-test-suite-registry.md, specs/test-suite-registry.md)
+reader reply: specs/red-baseline-acceptance-tests/runs/pilot/reader-opus/p55-default/rep1.json

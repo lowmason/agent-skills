@@ -1,0 +1,36 @@
+rep1 ruling1 false-alarm the planning session wrote the R7.1 shared note (plan Couplings); the completion check agrees with spec done-when item 6
+rep1 ruling2 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep1 ruling3 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep1 ruling4 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep1 ruling5 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep1 ruling6 real spec R6.1 lists "validation: each R3.9 failure, with exit 2"; the plan tests exit 2 for one failure kind only
+rep1 ruling7 real spec R2.1 "A header comment states ... that the ninth commit lint checks the file"; the plan's header says "a commit lint"
+rep1 ruling8 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep2 ruling1 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep2 ruling2 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep2 ruling3 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep2 ruling4 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep2 ruling5 real spec R6.1 lists "validation: each R3.9 failure, with exit 2"; the plan tests exit 2 for one failure kind only
+rep2 ruling6 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep2 ruling7 real spec R6.2 names skills/<name>/scripts/test_new.py; the plan's test writes test_scan.py
+rep2 ruling8 real spec Verification "record each run's result beside the direct result"; Task 7 Step 3 records no --all result
+rep3 ruling1 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep3 ruling2 false-alarm skill format (current writing-plans), no spec sentence contradicted: a Decisions-line source value
+rep3 ruling3 false-alarm the planning session wrote the R7.1 shared note (plan Couplings); the completion check agrees with spec done-when item 6
+rep3 ruling4 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep3 ruling5 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep3 ruling6 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep3 ruling7 real spec R2.1 "the ninth commit lint checks the file"; the plan's header says "a commit lint"
+rep3 ruling8 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep4 ruling1 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep4 ruling2 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep4 ruling3 real spec R6.1 lists "validation: each R3.9 failure, with exit 2"; the plan tests exit 2 for one failure kind only
+rep4 ruling4 false-alarm spec R6.1's quoted case "an untracked test directory (a finding)" is tested; the --cached side is no spec sentence the plan contradicts
+rep4 ruling5 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep4 ruling6 real spec R2.1 "the ninth commit lint checks the file"; the plan's header says "a commit lint"
+rep5 ruling1 false-alarm skill format (current writing-plans), no spec sentence contradicted: a missing Review Focus section
+rep5 ruling2 false-alarm skill format (current writing-plans), no spec sentence contradicted: plan length (code bodies)
+rep5 ruling3 false-alarm skill format (current writing-plans), no spec sentence contradicted: a Decisions-line source value
+rep5 ruling4 real spec R6.2 names skills/<name>/scripts/test_new.py; the plan's test writes test_scan.py
+rep5 ruling5 real spec R5.3 asks for "one sentence"; the plan adds a two-sentence paragraph
+rep5 ruling6 false-alarm the planning session wrote the R7.1 shared note (plan Couplings); the completion check agrees with spec done-when item 6

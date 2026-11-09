@@ -1,0 +1,52 @@
+adjudicator-codex-gpt-6-sol p53-unit     scored=5 catches=1/5 false_alarms/rep=3.2 [3, 4, 3, 3, 3] unclear/rep=1.8 [2, 0, 3, 2, 2] real=5 interface=0
+adjudicator-codex-gpt-6-sol p55-clean    scored=5 catches=n/a false_alarms/rep=2.0 [2, 2, 2, 2, 2] unclear/rep=0.6 [0, 0, 1, 2, 0] real=2 interface=0
+adjudicator-codex-gpt-6-sol p55-default  scored=5 catches=5/5 false_alarms/rep=2.0 [2, 2, 2, 2, 2] unclear/rep=0.8 [1, 1, 1, 1, 0] real=0 interface=0
+adjudicator-codex-gpt-6-sol p66-bound    scored=5 catches=5/5 false_alarms/rep=1.4 [3, 1, 2, 0, 1] unclear/rep=2.4 [0, 2, 3, 0, 7] real=1 interface=1
+adjudicator-codex-gpt-6.1-sol p53-unit     scored=5 catches=1/5 false_alarms/rep=5.0 [5, 5, 6, 3, 6] unclear/rep=0.8 [1, 1, 0, 1, 1] real=9 interface=0
+adjudicator-codex-gpt-6.1-sol p55-clean    scored=5 catches=n/a false_alarms/rep=2.0 [2, 2, 2, 2, 2] unclear/rep=0.4 [1, 0, 0, 0, 1] real=0 interface=0
+adjudicator-codex-gpt-6.1-sol p55-default  scored=5 catches=5/5 false_alarms/rep=2.0 [2, 2, 2, 2, 2] unclear/rep=0.0 [0, 0, 0, 0, 0] real=0 interface=0
+adjudicator-codex-gpt-6.1-sol p66-bound    scored=5 catches=5/5 false_alarms/rep=0.8 [2, 0, 1, 1, 0] unclear/rep=2.6 [3, 1, 2, 3, 4] real=2 interface=1
+adjudicator-opus       p53-unit     scored=5 catches=0/5 false_alarms/rep=2.6 [2, 2, 4, 3, 2] unclear/rep=2.6 [4, 2, 2, 3, 2] real=10 interface=0
+adjudicator-opus       p55-clean    scored=5 catches=n/a false_alarms/rep=2.8 [3, 2, 2, 3, 4] unclear/rep=3.0 [1, 3, 4, 3, 4] real=3 interface=0
+adjudicator-opus       p55-default  scored=5 catches=5/5 false_alarms/rep=2.6 [2, 3, 2, 2, 4] unclear/rep=2.6 [3, 0, 4, 4, 2] real=3 interface=0
+adjudicator-opus       p66-bound    scored=5 catches=5/5 false_alarms/rep=0.4 [1, 0, 1, 0, 0] unclear/rep=1.6 [1, 3, 2, 0, 2] real=3 interface=3
+control-opus           p53-unit     scored=5 catches=5/5 false_alarms/rep=2.8 [2, 3, 3, 3, 3] unclear/rep=0.0 [0, 0, 0, 0, 0] real=5 interface=0
+control-opus           p55-clean    scored=5 catches=n/a false_alarms/rep=4.4 [5, 4, 6, 3, 4] unclear/rep=0.0 [0, 0, 0, 0, 0] real=14 interface=0
+control-opus           p55-default  scored=5 catches=5/5 false_alarms/rep=3.2 [3, 3, 2, 3, 5] unclear/rep=0.0 [0, 0, 0, 0, 0] real=7 interface=0
+control-opus           p66-bound    scored=5 catches=5/5 false_alarms/rep=4.0 [3, 4, 5, 4, 4] unclear/rep=0.0 [0, 0, 0, 0, 0] real=18 interface=0
+
+False alarms whose CLASSIFY reason starts 'amendment:' (a ruling against a plan value that the plan's own approved spec amendment sets; DF2 keeps amendments out of the copy spec):
+  adjudicator-codex-gpt-6-sol/p53-unit: 10 of 16
+  adjudicator-codex-gpt-6-sol/p55-clean: 10 of 10
+  adjudicator-codex-gpt-6-sol/p55-default: 10 of 10
+  adjudicator-codex-gpt-6-sol/p66-bound: 4 of 7
+  adjudicator-codex-gpt-6.1-sol/p53-unit: 18 of 25
+  adjudicator-codex-gpt-6.1-sol/p55-clean: 10 of 10
+  adjudicator-codex-gpt-6.1-sol/p55-default: 10 of 10
+  adjudicator-codex-gpt-6.1-sol/p66-bound: 3 of 4
+  adjudicator-opus/p53-unit: 10 of 13
+  adjudicator-opus/p55-clean: 14 of 14
+  adjudicator-opus/p55-default: 13 of 13
+  adjudicator-opus/p66-bound: 1 of 2
+  control-opus/p53-unit: 0 of 14
+  control-opus/p55-clean: 0 of 22
+  control-opus/p55-default: 0 of 16
+  control-opus/p66-bound: 0 of 20
+
+False alarms per rep without the 'amendment:' lines (owner, 2026-11-08: each bar is judged on the literal counts and on these):
+  adjudicator-codex-gpt-6-sol/p53-unit: 1.2 [1, 2, 1, 1, 1]
+  adjudicator-codex-gpt-6-sol/p55-clean: 0.0 [0, 0, 0, 0, 0]
+  adjudicator-codex-gpt-6-sol/p55-default: 0.0 [0, 0, 0, 0, 0]
+  adjudicator-codex-gpt-6-sol/p66-bound: 0.6 [2, 0, 1, 0, 0]
+  adjudicator-codex-gpt-6.1-sol/p53-unit: 1.4 [1, 1, 2, 1, 2]
+  adjudicator-codex-gpt-6.1-sol/p55-clean: 0.0 [0, 0, 0, 0, 0]
+  adjudicator-codex-gpt-6.1-sol/p55-default: 0.0 [0, 0, 0, 0, 0]
+  adjudicator-codex-gpt-6.1-sol/p66-bound: 0.2 [1, 0, 0, 0, 0]
+  adjudicator-opus/p53-unit: 0.6 [0, 0, 2, 1, 0]
+  adjudicator-opus/p55-clean: 0.0 [0, 0, 0, 0, 0]
+  adjudicator-opus/p55-default: 0.0 [0, 0, 0, 0, 0]
+  adjudicator-opus/p66-bound: 0.2 [0, 0, 1, 0, 0]
+  control-opus/p53-unit: 2.8 [2, 3, 3, 3, 3]
+  control-opus/p55-clean: 4.4 [5, 4, 6, 3, 4]
+  control-opus/p55-default: 3.2 [3, 3, 2, 3, 5]
+  control-opus/p66-bound: 4.0 [3, 4, 5, 4, 4]
