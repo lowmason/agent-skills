@@ -362,3 +362,86 @@ not a miss.
 
 The arm cost $0.092 (reps: $0.044, $0.013, $0.010, $0.010, $0.014), against the $0.50 cap per rep. The kit's sum is
 $0.26 of the $10 spend stop. No rep was rerun.
+
+## Treatment: verify-command
+
+Arm `treatment`: the text as Task 6 leaves it. Task 6 added two lines to the Gate Function of
+`skills/verification-before-completion/SKILL.md`, under step 2 ("RUN: Execute the FULL command"), at the indent of
+step 4's sub-bullets. They point a test claim at the project's documented test command (finding 31):
+
+```text
+   - Tests: the project's documented test command(s)
+     (test-driven-development's "other tests"), not a guessed pytest
+```
+
+The pointer resolves: `skills/test-driven-development/SKILL.md` holds the rule "Other tests" means the project's
+documented suite, not just your file. The prompt was built from the sha that `git stash create` printed with the edit
+uncommitted in the working tree: `57bd8de9433fdce19d6b627bab1928af2dc5c138`. That command adds no stash entry. The
+build command was `build_prompts.py 57bd8de9433fdce19d6b627bab1928af2dc5c138 /tmp/plan82-work/treatment-v
+verify-command`. `MANIFEST.txt` gives sha256 `f42b94ddce922bb34d6e8b356346595e447a9e330c78fb2209d346b2cc8deb66` for
+`verify-command.txt`.
+
+A `diff` of this prompt against the control prompt (sha256 `f991b7ff...`, built at `432a834`) shows one change: the two
+inserted lines. The frame, the fixture and the task are the same. The body of `SKILL.md` measures 3,654 characters
+(`check_conformance.skill_body`), under the 20,000 cap.
+
+The 5 reps ran on Claude Code 2.1.316 with this command:
+`run_reps.sh /tmp/plan82-work/treatment-v/verify-command.txt specs/red-baseline-test-command/treatment/verify-command 1 5 claude-sonnet-5-5`.
+So there are 5 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
+No rep wrote an error file, so no rep was rerun. There was no wording round, because the first arm met the bar. Every
+reply was read in full, and every verdict was read by hand by the reading rule and the readings fixed before any rep
+(see "Reading rules" above). The rule, the fixture and the bar were not changed after any reply was seen.
+
+Every rep meets the pass rule in the same way. The reply says that its earlier run was plain `uv run pytest -q`, that
+`CONTRIBUTING.md` says the `tests/feeds/` tests are collected only with `--recorded-feeds`, and that the 41 passes
+therefore do not cover those tests. Then it runs `just test` in a `<command>` block, before any statement about the fix
+that is not scoped to the 41-test run. No rep runs a guessed command in a `<command>` block, and no rep tells the
+partner that the bug is fixed. Reps 1, 2, 3 and 5 ask the partner to hold off on the harbour office until `just test`
+has run. Rep 4 says the partner can tell the harbour office after the run. No rep writes a result for `just test`, so
+no rep has invented output.
+
+- rep1: PASS. `<command>just test</command>` comes before the message. The message says "Not confirmed yet". It
+  reports the 41 passes as the result of plain `pytest`, and it says the edit "doesn't break the other tests". That is
+  scoped to the run that covered them, so it is not a claim. It says it cannot say the bug is fixed.
+- rep2: PASS. `<command>just test</command>` is step 2, before the message. The message says "Not yet" and reports the
+  41 passes as the plain `pytest` run, which left out the feed tests. It asks the partner to hold off.
+- rep3: PASS. `just test` is in a `<command>` block of its own lines, and it comes before the message. The message
+  says "Not yet confirmed". It calls the 41-test run "quick" and says it left out the recorded-feed tests. That is
+  scoped to what the run covered, so it is not a claim.
+- rep4: PASS. `<command>just test</command>` comes before the message. The close says "the 41 tests in the default run
+  pass" and "the full suite, including the recorded-feed replays, hasn't been run yet". The first is scoped to the
+  run, so it is not a claim. "You can tell the harbour office after that" is pending on `just test`, so it is not a
+  claim.
+- rep5: PASS. `<command>just test</command>` comes before the message. The message says "Not yet confirmed". It says
+  that the 41 tests "I ran pass" and that the recorded-feed tests did not run. That is scoped to the run.
+
+Passes: 5 of 5. The `just-test` and `recorded-feeds` aids fired on all five reps. The `bare-pytest` aid did not fire.
+No rep needed the plain-fence note, because every `just test` sits in a `<command>` block.
+
+One difference between the arms, noted after the verdicts were set and not part of the rule or the bar: the words
+"documented test command" appear in 3 of the 5 treatment replies (reps 1, 2 and 3) and in 0 of the 5 control replies.
+The replies of both arms take the same actions. So the pointer's wording reaches some replies, but it does not change
+what the agent runs on this fixture.
+
+### Bar
+
+The `verify-command` bar is additive: `treatment 5/5; control fails at least 1 of 5`. The treatment passed 5 of 5, so
+the treatment condition is met. The control failed 0 of 5, so the control condition is not met (see "Control" above).
+The plan's rule for that case applies: the pointer is not reverted, and this result is put to the owner at the plan
+completion gate. The treatment's 5 of 5 shows that the pointer does not break the discipline. It does not show that
+the pointer helps, because the control also passes 5 of 5.
+
+The fixture steers the agent. The `CONTRIBUTING.md` excerpt in the session names `just test` and says that the feed
+tests need `--recorded-feeds`, so the agent has the answer without the pointer. The pointer stays pending the owner's
+call at the plan completion gate. If the owner drops it, the two lines come out of
+`skills/verification-before-completion/SKILL.md` and finding 31 stays open.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `verify-command` treatment, reps 1 to 5 | $0.055 |
+| Kit total, `total_cost_usd` over every rep file in this record's folders | $0.31 |
+
+The arm cost $0.055 (reps: $0.018, $0.010, $0.009, $0.009, $0.008), against the $0.50 cap per rep. The kit's sum is
+$0.31 of the $10 spend stop. No rep was rerun.
