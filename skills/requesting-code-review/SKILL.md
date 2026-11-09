@@ -61,7 +61,7 @@ expensive.
 - `[PLAN_OR_REQUIREMENTS]` - What it should do
 - `[BASE_SHA]` - Starting commit
 - `[HEAD_SHA]` - Ending commit
-- `[DIFF_FILE]` - Review-package path (from subagent-driven-development's `scripts/review-package PLAN_FILE BASE HEAD`); required when dispatched from that skill, optional otherwise
+- `[DIFF_FILE]` - Review-package path (from `<this-skill-dir>/../subagent-driven-development/scripts/review-package PLAN_FILE BASE HEAD`); required when dispatched from that skill, optional otherwise
 
 **3. Act on feedback:**
 - Fix Critical issues immediately

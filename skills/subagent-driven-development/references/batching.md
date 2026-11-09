@@ -10,18 +10,18 @@ change, send the whole batch to a single implementer, and review its diff as
 one unit. Reserve one-dispatch-per-task for work that needs its own judgment,
 its own tests, or its own review surface.
 
-You write the batch brief yourself; `scripts/task-brief` still extracts exactly
-one task and gains no multi-task mode. That is a deliberate exception to the
-rule that task text stays out of your context: batching applies only to changes
-small enough to state in a line each, so the cost is bounded — and teaching
-`task-brief` to concatenate sections would pull full task text through your
-context for exactly the tasks that need it least.
+You write the batch brief yourself; `<this-skill-dir>/scripts/task-brief`
+still extracts exactly one task and gains no multi-task mode. That is a
+deliberate exception to the rule that task text stays out of your context:
+batching applies only to changes small enough to state in a line each, so the
+cost is bounded — and teaching `task-brief` to concatenate sections would pull
+full task text through your context for exactly the tasks that need it least.
 
 Write the composed brief to `batch-N-M-brief.md` (the covered task numbers,
-e.g. `batch-4-7-brief.md`) in this plan's workspace — the directory this
-skill's `scripts/sdd-workspace <plan-file>` prints. Hand that one path to
-both the implementer and the reviewer as `[BRIEF_FILE]`, the same handoff
-**File Handoffs** gives a single-task brief.
+e.g. `batch-4-7-brief.md`) in this plan's workspace — the directory
+`<this-skill-dir>/scripts/sdd-workspace <plan-file>` prints. Hand that one
+path to both the implementer and the reviewer as `[BRIEF_FILE]`, the same
+handoff **File Handoffs** gives a single-task brief.
 
 Open that brief with the plan's Global Constraints, copied verbatim.
 `task-brief` prepends them to every brief it writes, which is what lets

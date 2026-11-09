@@ -44,7 +44,7 @@ manual execution or a separate session:
 - Proceed with unfixed issues
 - Dispatch multiple implementation subagents in parallel (conflicts)
 - Make a subagent read the whole plan file (hand it its task brief —
-  `scripts/task-brief` — instead)
+  `<this-skill-dir>/scripts/task-brief` — instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore a NEEDS_CONTEXT report (answer the questions and re-dispatch before moving on)
 - Accept "close enough" on spec compliance (reviewer found spec issues = not done)

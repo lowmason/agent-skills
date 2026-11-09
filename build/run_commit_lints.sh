@@ -29,6 +29,7 @@ run suite_registry uv run python build/run_suites.py --check
 run versions_check uv run python build/versions.py check
 run reviewer_block uv run python build/check_reviewer_block.py
 run deferral_lint uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt
+run helper_paths uv run python build/check_helper_paths.py
 if [ "${#failed[@]}" -gt 0 ]; then
   echo "commit lints failed: ${failed[*]}" >&2
   exit 1
