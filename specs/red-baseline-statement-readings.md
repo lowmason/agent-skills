@@ -239,7 +239,8 @@ The bars come from spec Verification 9 (decision D12). Each mean is over the 5 s
 
 **The control** must catch a plant in at most 2 of 5 reps. It caught each argued plant in 5 of 5 reps. On
 `p66-bound`, 4 of those meet its catch rule, and the fifth is a near catch that the executor labeled
-`near-catch`. It caught each two-reading plant in 0 of 5 reps.
+`near-catch`. It caught each two-reading plant in 0 of 5 reps. The reference for plants with no defense line
+stays plan 81's control: it caught the same three plants, bare, in 15 of 15 reps (spec Verification 6).
 
 **The step arms.** A catch bar needs the step to catch the plant in at least 4 of 5 reps and the control in at
 most 2 of 5. The step's catches are in parentheses.
@@ -275,8 +276,10 @@ the control on one plant or more, and the step also meets both clean-copy bars. 
 - The false-alarm bar: missed in every arm, at 4.4 to 11.0 per rep.
 - The unclear bar: met in every arm, at 0.0 to 0.4 per rep.
 
-`gpt-6-sol` missed bars, and the `PD9 trigger:` line read yes. So Step 8 ran the Codex reader and the two Codex
-arms again on `gpt-6.1-sol` (default PD9). No bar was "not run".
+`gpt-6-sol` missed bars, so Step 8 ran the Codex reader and the two Codex arms again on `gpt-6.1-sol` (default
+PD9). Step 8 started before Step 7's labels and `TABLE.txt`. By then the pair `gpt-6-sol` arm had caught each
+two-reading plant in 0 of 5 reps, with no near catch to label there, so no label could change the trigger
+(Appendix B). The `PD9 trigger:` line, written after the labels, read yes. No bar was "not run".
 
 ## 5. The second reader
 
@@ -303,10 +306,11 @@ The numbers follow. The owner applies the rule (D8).
   label. So the pair arm leads by one catch on `p66-bound`, where the claude arm's rep 5 label is `near-miss`,
   and by one on `p55-exit`.
 - The `p55-exit` catch is the adjudicator's `unclear` ruling on case C101 in rep 1. C101 holds one entry, from
-  the Claude reader's rep 1: `non-zero`, with the other reading `2`. It holds no Codex entry. The claude arm
-  (C66) and the pair `gpt-6-sol` arm (C91) put the same entry to their adjudicators, and both ruled it a
-  reading, `non-zero`. So the lead on `p55-exit` comes from one adjudicator verdict on an entry that the claude
-  arm also had.
+  the Claude reader's rep 1: `non-zero`, with the other reading `2`. Its Reader B line is empty. Its context
+  lines list the Codex reader's other entries on S115, and these differ between the two pair arms. The claude
+  arm (C66) and the pair `gpt-6-sol` arm (C91) put the same entry to their adjudicators, and both ruled it a
+  reading, `non-zero`. C66 had no Reader B and no Codex context. So the lead on `p55-exit` rests on one
+  adjudicator verdict on an entry that the claude arm also had.
 - False alarms on `p55-clean`: 8.4 [8, 4, 16, 6, 8] against 11.0 [9, 7, 20, 12, 7] per rep. The pair arm has
   fewer, so it beats the claude arm by the rule. The two ranges overlap: 4 to 16 against 7 to 20.
 - Unclear rulings on `p55-clean`: 0.0 against 0.2 per rep.
