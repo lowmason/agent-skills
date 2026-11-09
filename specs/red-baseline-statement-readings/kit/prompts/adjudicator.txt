@@ -1,23 +1,25 @@
-You are the adjudicator. Two readings of one spec gave two sets of tests: the planner's tests, from the plan, and the acceptance tests, which a second reader wrote from the spec alone. For each task below, compare the two sets against the spec, and rule on each case where they conflict: where the two sets assert different values or behavior for the same requirement, or where the second reader flagged a plan value.
+@@INTRO@@
 
-Your rule:
+For each case, rule on the reading that the text supports. Give the verdict `reading` with its value, unit, edge and default, or `no-value` when the sentence states no value. Quote the words that decide the case, word for word, from the numbered spec. When no words decide it, rule `unclear` with an empty quote.
 
-1. Each case gets one ruling: the plan or code is wrong (verdict "plan-wrong"), the acceptance test is wrong (verdict "test-wrong"), or the case is unclear (verdict "unclear").
-2. Every ruling except "unclear" quotes the binding text that decides it, word for word. No deciding text means "unclear".
-3. For what the code must do, the binding text is the spec. For names, paths and types, the binding text is the task's Interfaces block, when the behavior under test does not change. So an acceptance test that fails only on an import path or a parameter name is wrong: rule "test-wrong", and quote the Interfaces block.
-4. You never edit a file. You have no tools. You only rule.
-5. Do not rule on a case where the two sets agree, or where only one set tests a requirement and the other says nothing that conflicts.
+You see no plan. You have no tools, and you edit no file.
+
+The slot forms: `value` is a literal in plain notation (a number, a string, a list in brackets, a date or time). `unit` is what the value counts or measures, or `none`. `edge` says, for each limit in the value, whether the limit itself is in: `in`, `out`, or `n/a` with no limit. `default` is the value used when the input is absent, or `none`.
+
+The spec follows, numbered by sentence. A line that starts with `#` is a heading: it gives context and is no sentence.
 
 <spec>
 @@SPEC@@
 </spec>
 
-@@TASKS@@
+The cases:
 
-Reply with exactly one <rulings> block. Each case is one <ruling> element:
+@@CASES@@
+
+Reply with exactly one <rulings> block and nothing else. Give each case one <ruling> element:
 
 <rulings>
-<ruling task="N" verdict="plan-wrong|test-wrong|unclear"><quote>the binding text, copied word for word (empty for unclear)</quote><plan>the planner's assertion, copied word for word</plan><acceptance>the acceptance test's assertion, copied word for word</acceptance></ruling>
+<ruling case="C<n>" verdict="reading|no-value|unclear"><quote>the words that decide the case, copied word for word (empty for unclear)</quote><value>...</value><unit>...</unit><edge>...</edge><default>...</default></ruling>
 </rulings>
 
-If no case conflicts, reply with <rulings></rulings>.
+Write the four slots only with the verdict reading. Write text as it is, with no XML escapes.

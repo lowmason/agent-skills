@@ -1,0 +1,1 @@
+rep1 entries=49 other=3 returned=0 cost=0.2372

@@ -1,14 +1,22 @@
-'''Fill the probe's three prompts from a plan copy (plan 81).
+'''Fill the statement-readings probe's prompts (plan 83), rewritten from plan 81's build_prompts.py.
 
 Usage, from the repository root:
-  uv run python <kit>/build_prompts.py control <copy> <out-file>
-  uv run python <kit>/build_prompts.py reader <copy> <out-file>
-  uv run python <kit>/build_prompts.py adjudicator <copy> <reader-reply-file> <out-file>
-  uv run python <kit>/build_prompts.py selftest   checks the reader-test split on a sample and on every committed reader reply
-`control` reads skills/writing-plans/SKILL.md with `git show origin/main:` and writes that sha into the
-prompt's first comment line and into the run directory's SOURCES.txt. A reader or adjudicator prompt
-that holds `def test_` from outside the reader reply and the plan's tests, or a path of the copy or of
-its source plan, is refused.
+  uv run python <kit>/build_prompts.py reader <spec-id> <out-file>
+  uv run python <kit>/build_prompts.py standin <copy> <out-file>
+  uv run python <kit>/build_prompts.py control <copy> <out-file> <sha>
+  uv run python <kit>/build_prompts.py adjudicator <runs-dir> <arm> <copy>
+  uv run python <kit>/build_prompts.py selftest
+A reader gets reader.txt with one numbered spec, and nothing from any plan (D9). The stand-in gets standin.txt
+with the numbered spec and its copy's plan, each plan line prefixed `<n>| ` (D13). The control gets plan 81's
+control.txt with writing-plans' SKILL.md at <sha>, the copy's spec.md and its plan.md: one sha for all control
+prompts. `adjudicator` reads, for each k up to 5 for which every input has a k-th scored rep, that rep of the
+arm's readers and of standin-opus/<copy>/, runs compare.reader_phase, and writes step-<arm>/<copy>/cases/
+rep<k>.json and rep<k>.inputs.txt, and either prompts/rep<k>.txt or, with no case, prompts/rep<k>.skip. The arm
+is `pair-<model>` (both readers), `claude` or `codex-<model>`. The adjudicator's prompt holds the numbered spec
+and the arm's reader entries only, named Reader A and Reader B, never by model (PD8). `guard` refuses a reader or
+adjudicator prompt that holds a copy folder or a source plan path, a PD1 defense line, or a plant or edit token
+that the spec text lacks; the reader entries in an adjudicator prompt are the readers' own text and are
+exempt from the token check. Every built prompt appends one line to SOURCES.txt.
 '''
 import hashlib
 import re
@@ -17,9 +25,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from extract import plan_tests, reader_inputs, split_tasks  # noqa: E402
-from measure import reply  # noqa: E402
-from plants import COPIES  # noqa: E402
+from compare import Case, Entry, Phase, parse_statement, phase_to_json, reader_phase  # noqa: E402
+from measure import reply, scored_reps  # noqa: E402
+from number import flatten, number  # noqa: E402
+from plants import COPIES, Copy  # noqa: E402
 
 KIT = Path(__file__).resolve().parent
 REPO = KIT.parents[2]
@@ -27,35 +36,46 @@ COPIES_DIR = KIT.parent / 'copies'
 PROMPTS = KIT / 'prompts'
 SKILL_PATH = 'skills/writing-plans/SKILL.md'
 FRONTMATTER_RE = re.compile(r'^---\n.*?\n---\n', re.S)
-TESTS_RE = re.compile(r'<tests>(.*?)</tests>', re.S)
-FLAG_RE = re.compile(r'<flag task="(\d+)">(.*?)</flag>', re.S)
-TASK_TAG_RE = re.compile(r'^\s*#\s*task:\s*(\d+)', re.M)
-UNIT_HEADER_RE = re.compile(r'(?:# spec:|# task:|@)')
-DEF_START_RE = re.compile(r'^(?:async\s+def|def|class)\s', re.M)
-TEST_START_RE = re.compile(r'^(?:async\s+def\s+test_|def\s+test_|class\s+Test)', re.M)
-LEAK = 'def test_'
-PLAN_STAND_IN = '<this plan>'
+REPS = 5
+CODEX_SENTINEL = 'zeta-codex-sentinel'
+PLANNER_SENTINEL = 'omega-planner-sentinel'
+CLAUDE_READER = 'reader-opus'
+STANDIN = 'standin-opus'
+INTRO_TWO = ('Two readers each stated, from the spec alone, what the spec asks. Each case below is a sentence where '
+             'they differ, where one reader alone states a value, or where a reader names another reading.')
+INTRO_ONE = ('A reader stated, from the spec alone, what the spec asks. Each case below is a sentence where the '
+             'reader states a value that needs a ruling, or where the reader names another reading.')
 
 
 def git(*args: str) -> str:
     return subprocess.run(['git', *args], cwd=REPO, check=True, capture_output=True, text=True).stdout
 
 
-def copy_files(copy_id: str) -> tuple[str, str]:
-    '''The copy's spec and plan, checked against MANIFEST.txt.'''
-    manifest = {}
+def _manifest() -> dict[str, str]:
+    out = {}
     for line in (COPIES_DIR / 'MANIFEST.txt').read_text().split('\n'):
         if line.strip():
             digest, path, _origin = line.split('  ')
-            manifest[path] = digest
-    texts = []
-    for name in ('spec.md', 'plan.md'):
-        path = COPIES_DIR / copy_id / name
-        text = path.read_text()
-        if hashlib.sha256(text.encode('utf-8')).hexdigest() != manifest[str(path.relative_to(REPO))]:
-            raise SystemExit(f'refusing: {path} differs from MANIFEST.txt')
-        texts.append(text)
-    return texts[0], texts[1]
+            out[path] = digest
+    return out
+
+
+def _checked(copy_id: str, name: str) -> tuple[str, str]:
+    '''A copy file's text and sha256, checked against MANIFEST.txt.'''
+    path = COPIES_DIR / copy_id / name
+    text = path.read_text()
+    digest = hashlib.sha256(text.encode('utf-8')).hexdigest()
+    if digest != _manifest()[str(path.relative_to(REPO))]:
+        raise SystemExit(f'refusing: {path} differs from MANIFEST.txt')
+    return text, digest
+
+
+def _spec_copy(spec_id: str) -> Copy:
+    return next(c for c in COPIES if c.spec_id == spec_id)
+
+
+def numbered(spec_id: str) -> str:
+    return _checked(_spec_copy(spec_id).id, 'numbered.txt')[0].strip('\n')
 
 
 def fill(template: str, **parts: str) -> str:
@@ -67,177 +87,200 @@ def fill(template: str, **parts: str) -> str:
     return text
 
 
-def guard(text: str, copy_id: str, allowed: list[str]) -> None:
-    copy = next(c for c in COPIES if c.id == copy_id)
+def _word(token: str, text: str) -> bool:
+    lead = r'(?<![\w.])' if token[:1].isalnum() else ''
+    tail = r'(?![\w.])' if token[-1:].isalnum() else ''
+    return re.search(lead + re.escape(token) + tail, text) is not None
+
+
+def _tokens() -> list[str]:
+    out = []
+    for c in COPIES:
+        if c.plant:
+            out += [*c.plant.plant_tokens, *c.plant.planted_tokens]
+        if c.two:
+            out += [*c.two.a_tokens, *c.two.b_tokens, *c.two.edit]
+    return sorted({flatten(t) for t in out})
+
+
+def guard(text: str, spec_id: str, allowed: tuple[str, ...] = ()) -> None:
+    '''Refuse a reader or adjudicator prompt that holds plan text (spec anti-goals 1 and 2).'''
+    for c in COPIES:
+        for path in (str((COPIES_DIR / c.id).relative_to(REPO)), f'copies/{c.id}', c.plan_path):
+            if path in text:
+                raise SystemExit(f'refusing: the prompt names {path}')
+        if c.plant and c.plant.defense[1] in text:
+            raise SystemExit(f'refusing: the prompt holds the {c.id} defense line')
     rest = text
     for part in allowed:
         rest = rest.replace(part, '')
-    if LEAK in rest:
-        raise SystemExit(f'refusing: the prompt holds {LEAK!r} from outside the reader reply and the plan tests')
-    for path in (str((COPIES_DIR / copy_id).relative_to(REPO)), f'copies/{copy_id}', copy.plan_path):
-        if path in text:
-            raise SystemExit(f'refusing: the prompt names {path}')
+    spec, rest = flatten(numbered(spec_id)), flatten(rest)
+    for token in _tokens():
+        if _word(token, rest) and not _word(token, spec):
+            raise SystemExit(f'refusing: the prompt holds {token!r}, which the spec text lacks')
 
 
 def run_dir_of(out: Path) -> Path:
     return out.parent.parent if out.parent.name == 'prompts' else out.parent
 
 
-def record(out: Path, lines: list[str]) -> None:
-    sources = run_dir_of(out) / 'SOURCES.txt'
+def record(run_dir: Path, line: str) -> None:
+    sources = run_dir / 'SOURCES.txt'
     have = sources.read_text().split('\n') if sources.exists() else []
-    new = [line for line in lines if line not in have]
-    if new:
+    if line not in have:
         with sources.open('a') as f:
-            f.write(''.join(f'{line}\n' for line in new))
+            f.write(f'{line}\n')
 
 
-def control(copy_id: str) -> tuple[str, list[str]]:
-    spec, plan = copy_files(copy_id)
-    sha = git('rev-parse', 'origin/main').strip()
+def reader(spec_id: str) -> str:
+    text = fill('reader.txt', spec=numbered(spec_id))
+    guard(text, spec_id)
+    return text
+
+
+def standin(copy_id: str) -> str:
+    copy = next(c for c in COPIES if c.id == copy_id)
+    plan = _checked(copy_id, 'plan.md')[0]
+    lines = plan.split('\n')
+    if lines and lines[-1] == '':
+        lines.pop()
+    return fill('standin.txt', spec=numbered(copy.spec_id), plan='\n'.join(f'{n}| {line}' for n, line in enumerate(lines, 1)))
+
+
+def control(copy_id: str, sha: str) -> str:
+    spec, plan = _checked(copy_id, 'spec.md')[0], _checked(copy_id, 'plan.md')[0]
     skill = FRONTMATTER_RE.sub('', git('show', f'{sha}:{SKILL_PATH}'), count=1).strip()
-    source = f'<!-- writing-plans {SKILL_PATH} at origin/main {sha} -->'
-    text = fill('control.txt', source=source, skill=skill, spec=spec.strip(), plan=plan.strip())
-    return text, [f'writing-plans: {SKILL_PATH} at origin/main {sha}']
+    source = f'<!-- writing-plans {SKILL_PATH} at {sha} -->'
+    return fill('control.txt', source=source, skill=skill, spec=spec.strip(), plan=plan.strip())
 
 
-def redact(text: str, copy_id: str) -> str:
-    '''Design 2 lets no prompt name a plan path: a Files list that names the plan itself reads <this plan>.'''
-    return text.replace(f'`{next(c for c in COPIES if c.id == copy_id).plan_path}`', PLAN_STAND_IN)
+def _entry_xml(e: Entry) -> str:
+    other = 'none' if e.other is None else (f'<value>{e.other.value}</value><unit>{e.other.unit}</unit>'
+                                            f'<edge>{e.other.edge}</edge><default>{e.other.default}</default>')
+    return (f'<entry sentence="S{e.sentence}"><quote>{e.quote}</quote><subject>{e.subject}</subject>'
+            f'<value>{e.slots.value}</value><unit>{e.slots.unit}</unit><edge>{e.slots.edge}</edge>'
+            f'<default>{e.slots.default}</default><other_reading>{other}</other_reading></entry>')
 
 
-def reader(copy_id: str) -> tuple[str, list[str]]:
-    spec, plan = copy_files(copy_id)
-    text = fill('reader.txt', spec=spec.strip(), inputs=redact(reader_inputs(plan).strip(), copy_id))
-    guard(text, copy_id, [])
-    return text, []
+def _names(phase: Phase) -> dict[str, str]:
+    readers = sorted({name for c in phase.cases for name in c.entries}, key=('claude', 'codex').index)
+    return dict(zip(readers, ('Reader A', 'Reader B')))
 
 
-def top_level_chunks(tests: str) -> list[str]:
-    '''Split the reader module where a top-level unit starts: at a `# spec:`, `# task:` or decorator line, or at a
-    def or class line that no such line opens. So each test keeps its comment lines, decorators and body.'''
-    chunks, current, in_header = [], [], False
-    for line in tests.split('\n'):
-        header, starts_def = UNIT_HEADER_RE.match(line), DEF_START_RE.match(line)
-        if (header or starts_def) and not in_header:
-            chunks.append('\n'.join(current))
-            current = []
-        current.append(line)
-        if header:
-            in_header = True
-        elif starts_def:
-            in_header = False
-    chunks.append('\n'.join(current))
-    return [chunk for chunk in chunks if chunk.strip()]
+def _case_xml(case: Case, names: dict[str, str]) -> str:
+    parts = [f'<case id="{case.id}" sentence="S{case.sentence}">']
+    for reader_name, label in names.items():
+        entries = case.entries.get(reader_name, [])
+        parts.append(f'{label}:')
+        parts += [_entry_xml(e) for e in entries] or ['(no entry)']
+    parts.append('</case>')
+    return '\n'.join(parts)
 
 
-def split_reader_tests(tests: str) -> tuple[str, dict[int, list[str]], list[str]]:
-    '''The reader module's preamble, its top-level chunks by `# task: N`, and the chunks with no task.'''
-    chunks = top_level_chunks(tests)
-    preamble, by_task, loose = [], {}, []
-    for chunk in chunks:
-        tag = TASK_TAG_RE.search(chunk)
-        if tag:
-            by_task.setdefault(int(tag.group(1)), []).append(chunk.strip('\n'))
-        elif TEST_START_RE.search(chunk):
-            loose.append(chunk.strip('\n'))
+def adjudicator_prompt(phase: Phase, spec_id: str) -> str:
+    names = _names(phase)
+    intro = INTRO_TWO if len(names) == 2 else INTRO_ONE
+    text = fill('adjudicator.txt', intro=intro, spec=numbered(spec_id),
+                cases='\n\n'.join(_case_xml(c, names) for c in phase.cases))
+    allowed = tuple(_entry_xml(e) for c in phase.cases for es in c.entries.values() for e in es)
+    guard(text, spec_id, allowed)
+    return text
+
+
+def arm_readers(arm: str) -> dict[str, tuple[str, str | None]]:
+    '''The arm's readers: name -> (run folder, Codex model or None).'''
+    if arm == 'claude':
+        return {'claude': (CLAUDE_READER, None)}
+    if arm.startswith('pair-'):
+        model = arm.removeprefix('pair-')
+        return {'claude': (CLAUDE_READER, None), 'codex': (f'reader-{model}', model)}
+    if arm.startswith('codex-'):
+        model = arm.removeprefix('codex-')
+        return {'codex': (f'reader-{model}', model)}
+    raise SystemExit(f'unknown arm {arm!r}')
+
+
+def _rel(path: Path) -> Path:
+    '''The path from the repository root, or the absolute path outside it.'''
+    path = path.resolve()
+    return path.relative_to(REPO) if path.is_relative_to(REPO) else path
+
+
+def adjudicator(runs_dir: Path, arm: str, copy_id: str) -> list[str]:
+    runs_dir = runs_dir.resolve()
+    copy = next(c for c in COPIES if c.id == copy_id)
+    sentences = {s.n: s.text for s in number(_checked(copy_id, 'spec.md')[0])}
+    reader_prompt = (runs_dir / 'prompts' / f'reader-{copy.spec_id}.txt').read_text()
+    reps = {name: scored_reps(runs_dir / folder / copy.spec_id, 'statement', model,
+                              reader_prompt if model else None)
+            for name, (folder, model) in arm_readers(arm).items()}
+    standins = scored_reps(runs_dir / STANDIN / copy_id, 'statement')
+    step = runs_dir / f'step-{arm}' / copy_id
+    (step / 'cases').mkdir(parents=True, exist_ok=True)
+    (step / 'prompts').mkdir(parents=True, exist_ok=True)
+    out = []
+    for k in range(1, REPS + 1):
+        if k > len(standins) or any(k > len(r) for r in reps.values()):
+            break
+        stated = {name: parse_statement(reply(r[k - 1])) for name, r in reps.items()}
+        planner = parse_statement(reply(standins[k - 1]))
+        phase = reader_phase(sentences, stated.get('claude'), stated.get('codex'), planner)
+        (step / 'cases' / f'rep{k}.json').write_text(phase_to_json(phase))
+        inputs = {'standin': standins[k - 1], **{name: r[k - 1] for name, r in reps.items()}}
+        (step / 'cases' / f'rep{k}.inputs.txt').write_text(
+            ''.join(f'{name}: {_rel(path)}\n' for name, path in inputs.items()))
+        if phase.cases:
+            prompt = adjudicator_prompt(phase, copy.spec_id)
+            (step / 'prompts' / f'rep{k}.txt').write_text(prompt)
+            out.append(f'rep{k}: {len(phase.cases)} cases, {len(prompt)} chars')
         else:
-            preamble.append(chunk.strip('\n'))
-    return '\n\n'.join(preamble), by_task, loose
+            (step / 'prompts' / f'rep{k}.skip').write_text('no case\n')
+            out.append(f'rep{k}: no case')
+        record(step, f'rep{k}: copy {copy_id}, numbered.txt sha256 {_checked(copy.id, "numbered.txt")[1]}; '
+                     + '; '.join(f'{name} {_rel(path)}' for name, path in inputs.items()))
+    return out
 
 
-def adjudicator(copy_id: str, reply_file: Path) -> tuple[str, list[str]]:
-    spec, plan = copy_files(copy_id)
-    answer = reply(reply_file)
-    tests = TESTS_RE.search(answer or '')
-    if not tests:
-        raise SystemExit(f'refusing: {reply_file} is a VOID reader reply')
-    preamble, by_task, loose = split_reader_tests(tests.group(1).strip('\n'))
-    flags = {}
-    for number, body in FLAG_RE.findall(answer):
-        flags.setdefault(int(number), []).append(f'<flag>{body.strip()}</flag>')
-    allowed, sections = [], []
-    if preamble:
-        allowed.append(preamble)
-        sections.append(f'<acceptance-preamble>\n{preamble}\n</acceptance-preamble>')
-    for task in split_tasks(plan):
-        ours, theirs, flagged = plan_tests(task), by_task.get(task.number, []), flags.get(task.number, [])
-        if not (ours or theirs or flagged):
-            continue
-        allowed += [ours, *theirs]
-        part = [f'<task number="{task.number}" title="{task.title}">',
-                f'<interfaces>\n{redact(task.interfaces, copy_id)}\n</interfaces>',
-                f'<planner-tests>\n{ours}\n</planner-tests>',
-                '<acceptance-tests>\n' + '\n\n'.join(theirs) + '\n</acceptance-tests>',
-                '<acceptance-flags>\n' + '\n'.join(flagged) + '\n</acceptance-flags>',
-                '</task>']
-        sections.append('\n'.join(part))
-    if loose:
-        allowed += loose
-        sections.append('<acceptance-tests-without-a-task>\n' + '\n\n'.join(loose)
-                        + '\n</acceptance-tests-without-a-task>')
-    text = fill('adjudicator.txt', spec=spec.strip(), tasks='\n\n'.join(sections))
-    guard(text, copy_id, allowed)
-    return text, [f'reader reply: {reply_file}']
-
-
-SAMPLE_TESTS = '''import pytest
-
-from pkg import mod
-
-BODY = "def test_x(): pass"
-
-
-# spec: "A sentence."
-# task: 2
-def test_one():
-    assert mod.one() == 1
-
-
-def _helper():
-    return 2
-
-
-# spec: "Another sentence."
-# task: 3
-@pytest.mark.parametrize(
-    'value',
-    [1, 2],
-)
-def test_two(value):
-    assert _helper() == value
-
-
-@pytest.fixture
-def repo(tmp_path):
-    return tmp_path'''
-READER_REPLIES = ('reader-opus/*/rep[0-9]*.json', 'codex-gpt-6-sol/*/rep[0-9]*.md', 'codex-gpt-6.1-sol/*/rep[0-9]*.md')
-MIN_READER_REPLIES = 60
+def _sentinel_phases():
+    '''A pair phase and a Claude-only phase on the p55 spec, from statements that carry sentinels.'''
+    from number import number
+    sentences = {s.n: s.text for s in number((COPIES_DIR / 'p55-clean' / 'spec.md').read_text())}
+    n = next(k for k, text in sentences.items() if "Default `['3.13']`" in text)
+    entry = ('<entry sentence="S{n}"><quote>Default `[\'3.13\']`</quote><subject>pythons</subject><value>{v}</value>'
+             '<unit>none</unit><edge>n/a</edge><default>none</default>{extra}</entry>')
+    claude = parse_statement('<statement>' + entry.format(n=n, v="['3.13']", extra='<other_reading>none</other_reading>')
+                             + '</statement>')
+    codex = parse_statement('<statement>' + entry.format(n=n, v=CODEX_SENTINEL, extra='<other_reading>none</other_reading>')
+                            + '</statement>')
+    planner = parse_statement('<statement>' + entry.format(n=n, v=PLANNER_SENTINEL,
+                                                           extra='<plan_lines>1</plan_lines><amended>none</amended>')
+                              + '</statement>')
+    return reader_phase(sentences, claude, codex, planner), reader_phase(sentences, claude, None, planner)
 
 
 def selftest() -> None:
-    '''Each reader test stays whole under its task, and other top-level code goes to the preamble.'''
-    preamble, by_task, loose = split_reader_tests(SAMPLE_TESTS)
-    assert loose == [], loose
-    assert by_task == {
-        2: ['# spec: "A sentence."\n# task: 2\ndef test_one():\n    assert mod.one() == 1'],
-        3: ['# spec: "Another sentence."\n# task: 3\n@pytest.mark.parametrize(\n    \'value\',\n    [1, 2],\n)\n'
-            'def test_two(value):\n    assert _helper() == value'],
-    }, by_task
-    assert preamble == ('import pytest\n\nfrom pkg import mod\n\nBODY = "def test_x(): pass"\n\ndef _helper():\n    return 2\n\n'
-                        '@pytest.fixture\ndef repo(tmp_path):\n    return tmp_path'), preamble
-    checked = 0
-    for pattern in READER_REPLIES:
-        for path in sorted((KIT.parent / 'runs').glob(pattern)):
-            tests = TESTS_RE.search(reply(path) or '').group(1).strip('\n')
-            preamble, by_task, loose = split_reader_tests(tests)
-            chunks = [chunk for task_chunks in by_task.values() for chunk in task_chunks]
-            assert not loose, (path, loose[0][:200])
-            assert all(len(DEF_START_RE.findall(chunk)) == 1 for chunk in chunks), path
-            assert sum(len(TEST_START_RE.findall(chunk)) for chunk in chunks) == len(TEST_START_RE.findall(tests)), path
-            assert '@pytest.mark.parametrize' not in preamble, path
-            checked += 1
-    assert checked >= MIN_READER_REPLIES, checked
+    for spec_id in ('p53', 'p66', 'p55', 'p66-today', 'p55-exit'):
+        text = reader(spec_id)
+        rest = text.replace(numbered(spec_id), '')                              # the spec's own words may name a path
+        assert '@@' not in text and 'copies/' not in text and 'specs/plans/' not in rest, spec_id
+        assert not any(c.plan_path in text for c in COPIES), spec_id
+        assert not any(c.plant and c.plant.defense[1] in text for c in COPIES), spec_id
+    PAIR_PHASE, CLAUDE_ONLY_PHASE = _sentinel_phases()
+    pair = adjudicator_prompt(PAIR_PHASE, 'p55')                               # the positive control
+    assert 'Reader A' in pair and 'Reader B' in pair and CODEX_SENTINEL in pair and PLANNER_SENTINEL not in pair
+    adj = adjudicator_prompt(CLAUDE_ONLY_PHASE, 'p55')                          # a one-reader arm
+    assert 'Reader B' not in adj and CODEX_SENTINEL not in adj and PLANNER_SENTINEL not in adj
+    try:
+        guard(reader('p53') + COPIES[1].plant.defense[1], 'p53')
+        raise AssertionError('guard passed a defense line')
+    except SystemExit:
+        pass
+    for leak in ('specs/red-baseline-statement-readings/copies/p55-clean', COPIES[0].plan_path, '3.12'):
+        try:
+            guard(reader('p55') + leak, 'p55')
+            raise AssertionError(f'guard passed {leak!r}')
+        except SystemExit:
+            pass
     print('build_prompts selftest ok')
 
 
@@ -246,19 +289,29 @@ def main() -> None:
     if args == ['selftest']:
         selftest()
         return
-    if len(args) == 3 and args[0] in ('control', 'reader'):
-        kind, copy_id, out = args
-        text, sources = (control if kind == 'control' else reader)(copy_id)
-    elif len(args) == 4 and args[0] == 'adjudicator':
-        kind, copy_id, reply_file, out = args
-        text, sources = adjudicator(copy_id, Path(reply_file))
+    if len(args) == 4 and args[0] == 'adjudicator':
+        print('\n'.join(adjudicator(Path(args[1]), args[2], args[3])))
+        return
+    if len(args) == 3 and args[0] == 'reader':
+        _, spec_id, out = args
+        text = reader(spec_id)
+        line = f'reader-{spec_id}: numbered.txt sha256 {_checked(_spec_copy(spec_id).id, "numbered.txt")[1]}'
+    elif len(args) == 3 and args[0] == 'standin':
+        _, copy_id, out = args
+        text = standin(copy_id)
+        line = (f'standin-{copy_id}: numbered.txt sha256 {_checked(copy_id, "numbered.txt")[1]}, '
+                f'plan.md sha256 {_checked(copy_id, "plan.md")[1]}')
+    elif len(args) == 4 and args[0] == 'control':
+        _, copy_id, out, sha = args
+        text = control(copy_id, sha)
+        line = (f'control-{copy_id}: spec.md sha256 {_checked(copy_id, "spec.md")[1]}, plan.md sha256 '
+                f'{_checked(copy_id, "plan.md")[1]}, writing-plans {SKILL_PATH} at {sha}')
     else:
         sys.exit(__doc__)
-    copy = next(c for c in COPIES if c.id == copy_id)
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text)
-    record(out, [f'copy: {copy_id} from {copy.commit} ({copy.plan_path}, {copy.spec_path})', *sources])
+    record(run_dir_of(out), line)
     print(f'wrote {out}: {len(text)} chars')
 
 

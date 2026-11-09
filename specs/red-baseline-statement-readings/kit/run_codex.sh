@@ -1,8 +1,10 @@
 #!/bin/bash
-# Run the Codex reader for plan 81's probe (Task 4, on the owner's machine). Each rep runs
-# `codex exec` from a fresh empty directory under /tmp, outside every repository, with the prompt
-# on stdin and a read-only sandbox. rep<i>.md holds the last message, rep<i>.log the whole log,
-# whose header names the model that ran (measure.py refuses a rep on another model).
+# Run the Codex reader for plan 83's statement-readings probe, adapted from plan 81's runner
+# (specs/red-baseline-acceptance-tests/kit/run_codex.sh), on the owner's machine (DF-ARMS). Each rep runs
+# `codex exec` from a fresh empty directory under /tmp, outside every repository, under `env -i` with only
+# HOME, USER, LOGNAME, PATH, SHELL, TMPDIR and LANG, with the prompt on stdin and a read-only sandbox.
+# rep<i>.md holds the last message, rep<i>.log the whole log, whose header names the model that ran
+# (measure.py makes a rep on another model VOID).
 # Isolation (Task 4): the flags drop the user's config.toml (its plugins and their SessionStart
 # hooks, its MCP servers, personality and effort), the execpolicy rules and session persistence,
 # and they disable the tools that runs/pilot/codex-isolation/ found, the shell included, so that a
@@ -34,11 +36,13 @@ echo "reps $FIRST-$LAST: prompt $1 sha256 $(shasum -a 256 < "$PROMPT" | cut -d' 
   "model $MODEL, effort $EFFORT, flags ${ISOLATION[*]}" >> "$OUT/SOURCES.txt"
 i="$FIRST"
 while [ "$i" -le "$LAST" ]; do
-  run="$(mktemp -d /tmp/plan81-codex-XXXXXX)" || exit 2
+  run="$(mktemp -d /tmp/plan83-codex-XXXXXX)" || exit 2
   (
     cd "$run" || exit 2
     git rev-parse --show-toplevel > /dev/null 2>&1 && { echo "refusing: $run is inside a git repository"; exit 2; }
-    codex exec -m "$MODEL" -c sandbox_mode=read-only -c "model_reasoning_effort=\"$EFFORT\"" "${ISOLATION[@]}" \
+    env -i HOME="$HOME" USER="$USER" LOGNAME="$LOGNAME" PATH="$PATH" SHELL="$SHELL" TMPDIR="$TMPDIR" \
+      LANG="${LANG:-en_US.UTF-8}" \
+      codex exec -m "$MODEL" -c sandbox_mode=read-only -c "model_reasoning_effort=\"$EFFORT\"" "${ISOLATION[@]}" \
       --skip-git-repo-check -C "$run" -o "$OUT/rep$i.md" - < "$PROMPT" > "$OUT/rep$i.log" 2>&1
   )
   echo "rep$i exit=$?"

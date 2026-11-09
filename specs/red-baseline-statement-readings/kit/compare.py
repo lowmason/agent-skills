@@ -9,7 +9,10 @@ The quote check keeps an entry whose flattened quote occurs in its flattened sen
 the planner's included: a returned entry is dropped and listed as a `returned` outcome (PD5).
 Pairing (spec Design 6): entries pair by sentence number. When each list has at most one entry for a sentence,
 those pair, whatever their subject. Otherwise they pair by subject key: the flattened subject with punctuation
-at its ends and a leading article dropped. Entries with one key pair in their order. An unpaired entry is absent.
+at its ends and a leading article dropped. Entries with one key pair in their order. Then, a PD12 change from the
+pilot: the rest pair where their slots match, and then by the most content words that their subjects share.
+An unpaired entry is absent. Two units match when they are equal after normalization or share a content word
+(another PD12 change), so `exit code` matches `exit status` while `characters` and `UTF-8 bytes` still differ.
 Rules 1-5 run in reader_phase and rules 6-9 in resolve. A missing reader passes None, and each entry of the other
 reader is then a lone entry (rule 3, or rule 4 when it names another reading). A lone entry that a planner entry
 matches is no case: it joins the agreed readings, so that resolve pairs it with that planner entry.
@@ -36,6 +39,8 @@ SLOT_NAMES = ('value', 'unit', 'edge', 'default')
 NONE_FORMS = ('', 'none', 'n/a', '-')
 VERDICTS = ('reading', 'no-value', 'unclear')
 ARTICLES = ('the ', 'a ', 'an ')
+STOPWORDS = {'the', 'a', 'an', 'of', 'on', 'in', 'at', 'to', 'for', 'and', 'or', 'by', 'with', 'from',
+             'as', 'is', 'are', 'be', 'its', 'it', 'that', 'this', 'each', 'every', 'per'}
 RETURNED_RE = re.compile(r'^(claude|codex|planner)#(\d+):')
 
 
@@ -150,10 +155,23 @@ def normalize_slot(text: str) -> str:
     return t
 
 
+def _unit_match(a: str, b: str) -> bool:
+    '''Units are equal after normalize_slot, or both name a unit and share a content word, a final `s` dropped
+    (a PD12 change from the pilot: `exit code` and `exit status`).'''
+    a, b = normalize_slot(a), normalize_slot(b)
+    if a == b:
+        return True
+    if 'none' in (a, b):
+        return False
+    stems = [{w.removesuffix('s') for w in _words(u)} - {''} for u in (a, b)]
+    return bool(stems[0] & stems[1])
+
+
 def match(a: Slots, b: Slots) -> bool:
-    '''The four slots are equal after normalize_slot.'''
-    return all(normalize_slot(x) == normalize_slot(y) for x, y in zip(
-        (a.value, a.unit, a.edge, a.default), (b.value, b.unit, b.edge, b.default)))
+    '''The value, edge and default slots are equal after normalize_slot, and the units match (_unit_match).'''
+    return (all(normalize_slot(x) == normalize_slot(y) for x, y in zip((a.value, a.edge, a.default),
+                                                                      (b.value, b.edge, b.default)))
+            and _unit_match(a.unit, b.unit))
 
 
 def _quote_reason(entry: Entry, sentences: dict[int, str]) -> str:
@@ -182,22 +200,50 @@ def _subject_key(subject: str) -> str:
     return key
 
 
+def _words(subject: str) -> set[str]:
+    words = {w.strip('.-/') for w in re.split(r'[^\w.\-/]+', flatten(subject))}
+    return {w for w in words if w and w not in STOPWORDS}
+
+
 def _pair(lists: list[list]) -> list[tuple]:
     '''Group one sentence's entries across lists (spec Design 6). Each item of `lists` holds entries or
-    readings with a `subject`. A group holds one item or None from each list.'''
+    readings with a `subject` and `slots`. A group holds one item or None from each list. When each list has
+    at most one item, they pair. Otherwise two lists pair, in this order: by subject key; then, among the
+    rest, items whose slots match; then the rest by the most content words that their subjects share, at least
+    one (the PD12 change, from the pilot's p66-bound S110). An item left over is alone in its group.'''
     if all(len(items) <= 1 for items in lists):
         group = tuple(items[0] if items else None for items in lists)
         return [group] if any(x is not None for x in group) else []
-    keys = []
-    for items in lists:
-        for item in items:
-            if _subject_key(item.subject) not in keys:
-                keys.append(_subject_key(item.subject))
-    groups = []
-    for key in keys:
-        same = [[item for item in items if _subject_key(item.subject) == key] for items in lists]
-        for k in range(max(len(s) for s in same)):
-            groups.append(tuple(s[k] if k < len(s) else None for s in same))
+    if len(lists) == 1:
+        return [(item,) for item in lists[0]]
+    left, right = lists
+    pairs, used_l, used_r = [], set(), set()
+
+    def take(i: int, j: int) -> None:
+        pairs.append((i, j))
+        used_l.add(i)
+        used_r.add(j)
+
+    for i, a in enumerate(left):
+        j = next((j for j, b in enumerate(right) if j not in used_r
+                  and _subject_key(b.subject) == _subject_key(a.subject)), None)
+        if j is not None:
+            take(i, j)
+    for i, a in enumerate(left):
+        if i in used_l:
+            continue
+        j = next((j for j, b in enumerate(right) if j not in used_r and match(a.slots, b.slots)), None)
+        if j is not None:
+            take(i, j)
+    shared = sorted((-len(_words(a.subject) & _words(b.subject)), i, j)
+                    for i, a in enumerate(left) if i not in used_l
+                    for j, b in enumerate(right) if j not in used_r and _words(a.subject) & _words(b.subject))
+    for _count, i, j in shared:
+        if i not in used_l and j not in used_r:
+            take(i, j)
+    groups = [(left[i], right[j]) for i, j in sorted(pairs)]
+    groups += [(a, None) for i, a in enumerate(left) if i not in used_l]
+    groups += [(None, b) for j, b in enumerate(right) if j not in used_r]
     return groups
 
 
@@ -427,6 +473,32 @@ def selftest() -> None:
     out = resolve(phase, [Ruling('C1', 'reading', 'no `<` or `>`', Slots('[<, >]', 'none', 'n/a', 'none'))], p)
     assert sorted((o.sentence, o.kind, o.subject) for o in out) == [
         (1, 'plan-conflict', 'the cap'), (2, 'missing', 'Names'), (3, 'returned', 'key3')], out
+    # The pilot's p66-bound S110 (PD12): one reader entry, two planner entries, no subject alike. The reading
+    # pairs with the planner entry whose subject shares a word; slots that match pair before any word count.
+    row = {1: '| `uv.toml` (repo root) | `exclude-newer` set to 00:00:00Z on the day after the freeze date | '
+              'Files uploaded on the freeze date itself (UTC) are included |'}
+    r = parse_statement('<statement>' + _entry(1, 'day after', quote='on the day after the freeze date',
+                                                subject='`uv.toml` (repo root)', other='none') + '</statement>')
+    p = parse_statement('<statement>' + _entry(1, 'on the freeze date', quote='`exclude-newer` set to 00:00:00Z',
+                                                subject='`uv.toml` `exclude-newer`', plan_lines='106')
+                        + _entry(1, 'excluded', quote='Files uploaded on the freeze date',
+                                 subject='Files uploaded on the freeze date', plan_lines='107') + '</statement>')
+    phase = reader_phase(row, r, None, p)
+    assert [(c.sentence, c.rule) for c in phase.cases] == [(1, 3)], phase.cases
+    out = resolve(phase, [Ruling('C1', 'reading', 'on the day after the freeze date',
+                                 Slots('day after', 'none', 'n/a', 'none'))], p)
+    assert sorted((o.kind, o.subject) for o in out) == [
+        ('plan-conflict', '`uv.toml` (repo root)'), ('unchecked', 'Files uploaded on the freeze date')], out
+    # The pilot's p66-bound S148, S150 and S176 (PD12): units that share a content word match. The unit plant
+    # (characters against UTF-8 bytes) and a unit against none still differ.
+    assert match(Slots('2', 'exit code', 'n/a', 'none'), Slots('2', 'exit status', 'n/a', 'none'))
+    assert match(Slots('10', 'commit lint position', 'n/a', 'none'), Slots('10', 'commit lints', 'n/a', 'none'))
+    assert not match(Slots('500', 'characters', 'in', 'none'), Slots('500', 'UTF-8 bytes', 'in', 'none'))
+    assert not match(Slots('5', 'none', 'n/a', 'none'), Slots('5', 'days', 'n/a', 'none'))
+    same = parse_statement('<statement>' + _entry(1, 'excluded', quote='Files uploaded on the freeze date',
+                                                   subject='uploads', other='none') + '</statement>')
+    assert resolve(reader_phase(row, same, None, p), [], p) == [
+        Outcome('unchecked', 1, '`uv.toml` `exclude-newer`', None, p[0].slots, 'unpaired; planner lines 106')]
     print('compare selftest ok')
 
 

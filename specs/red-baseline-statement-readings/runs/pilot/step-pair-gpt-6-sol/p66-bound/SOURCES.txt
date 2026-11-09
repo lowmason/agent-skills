@@ -1,0 +1,1 @@
+rep1: copy p66-bound, numbered.txt sha256 83ec06c290e7766ee477a9e853c71176349a137e3e95eb25670b283f244370e4; standin specs/red-baseline-statement-readings/runs/pilot/standin-opus/p66-bound/rep1.json; claude specs/red-baseline-statement-readings/runs/pilot/reader-opus/p66/rep1.json; codex specs/red-baseline-statement-readings/runs/pilot/reader-gpt-6-sol/p66/rep1.md
