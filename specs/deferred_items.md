@@ -6131,3 +6131,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`specs/red-baseline-acceptance-tests.md`, `specs/red-baseline-statement-readings.md`). It was first
       found in specs/deferred_items.md (spec-reading-test-check), 2026-10-28. Size: design. Done when: a spec
       decides layer 4 for subagent-driven-development and executing-plans, and its plan lands.
+- [ ] **The statement-readings kit's scorer accepts adjudicator rulings that quote no words (plan 83, final
+      review, Codex's finding).** Spec Design 7 in `specs/completed/statement-level-readings.md` has the
+      adjudicator quote the words that decide each case, or rule `unclear`. The kit's scorer
+      (`specs/red-baseline-statement-readings/kit/measure.py`, with `parse_rulings` and `resolve` in
+      `compare.py`) does not check an adjudicator's quote, and the plan's VOID rules (PD6) have no such item.
+      In plan 83's runs it took 1,045 `no-value` rulings with an empty quote, in 31 of the 150 step reps. Read
+      as `unclear`, they put every arm above the unclear bar, at 1.2 to 28.0 per rep on the clean copy
+      (`specs/red-baseline-statement-readings.md`, section 9, item 11). The kit was frozen (PD12), so plan 83
+      reported the effect and did not re-score. At the completion gate the owner chose this item over a
+      re-score. The fix: score a ruling other than `unclear` whose quote is empty as `unclear`, with a selftest
+      that fails first. Size: quick-fix. Revisit if: a plan copies `specs/red-baseline-statement-readings/kit/`,
+      as plan 83 copied plan 81's kit.

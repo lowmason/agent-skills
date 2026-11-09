@@ -1,7 +1,7 @@
 # Statement-readings probe: results
 
-**Plan:** `specs/plans/83-statement-level-readings.md` (plan 83). **Spec:** `specs/statement-level-readings.md`,
-Verification, "Probe first". **Date:** 2026-11-09.
+**Plan:** `specs/plans/completed/83-statement-level-readings.md` (plan 83). **Spec:**
+`specs/completed/statement-level-readings.md`, Verification, "Probe first". **Date:** 2026-11-09.
 
 This record gives the probe's results. It recommends nothing about a build plan. The owner reviews the results
 against the spec's bars and decides whether anyone writes a build plan, and what it keeps (spec decision D8).

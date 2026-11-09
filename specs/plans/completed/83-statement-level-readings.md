@@ -1,5 +1,7 @@
 # Statement-readings probe Implementation Plan
 
+**Status: COMPLETE (2026-11-09)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Measure, before any skill text changes, how often statement-level readings at plan review catch harder plants than plan 81's (a wrong value that the plan argues for, and a spec sentence with two readings), against a fresh Self-Review, and how many false alarms and unclear cases they raise on an unchanged plan.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Python 3.13 stdlib scripts run with `uv run python`, bash, `claude -p` (one Claude Code binary, pinned in Task 4; the PATH `claude` was 2.1.316 at planning), `codex exec` (codex-cli 0.163.0 at planning), git.
 
-**Spec:** `specs/statement-level-readings.md` (APPROVED 2026-11-09; owner decisions D9–D13, with D3, D7 and D8 carried from `specs/spec-derived-acceptance-tests.md`). This plan implements its Verification, "Probe first", only. A build plan comes only after the owner reviews this plan's results (D8).
+**Spec:** `specs/completed/statement-level-readings.md` (APPROVED 2026-11-09; owner decisions D9–D13, with D3, D7 and D8 carried from `specs/spec-derived-acceptance-tests.md`). This plan implements its Verification, "Probe first", only. A build plan comes only after the owner reviews this plan's results (D8).
 
 ## Labels used in this plan
 
@@ -224,7 +226,7 @@ The run folders under `RS/runs/` are these:
   - `numbered_text(sentences: list[Sentence]) -> str`: each heading line once, where it changes, then one `S<n>. <text>` item for each sentence.
   - `uv run python RS/kit/number.py <spec.md>` prints `numbered_text(number(text))`. `selftest`.
 
-- [ ] **Step 1: Copy the kit, and commit the copy alone**
+- [x] **Step 1: Copy the kit, and commit the copy alone**
 
 ```bash
 mkdir -p specs/red-baseline-statement-readings
@@ -241,7 +243,7 @@ git commit -m "chore(specs): copy plan 81's probe kit for the statement-readings
 
 Later tasks change the copy, so `git log -p` on `RS/kit/` shows each change against plan 81's kit.
 
-- [ ] **Step 2: Write `number.py selftest`**
+- [x] **Step 2: Write `number.py selftest`**
 
 `FENCE = '`' * 3` keeps a literal fence out of the source. The selftest numbers this 20-line sample:
 
@@ -267,20 +269,20 @@ assert number(SAMPLE) == s
 assert flatten('A “Quoted” – `x`  **y**') == 'a quoted - x y'
 ```
 
-- [ ] **Step 3: Run it to verify it fails**
+- [x] **Step 3: Run it to verify it fails**
 
 Run: `uv run python specs/red-baseline-statement-readings/kit/number.py selftest`
 Expected: FAIL with `NameError`, because nothing is defined yet.
 
-- [ ] **Step 4: Implement `number.py`**
+- [x] **Step 4: Implement `number.py`**
 
 One line-by-line scan, fence-aware as `extract.py` is: a heading or a table row inside a fence is text. The split rules are PD4's.
 
-- [ ] **Step 5: Run it to verify it passes**
+- [x] **Step 5: Run it to verify it passes**
 
 Run: the same command. Expected: `number selftest ok`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/red-baseline-statement-readings/kit/number.py
@@ -311,7 +313,7 @@ git commit -m "test(specs): add the sentence-numbering script to the statement-r
   - `amended_sentences(copy: Copy, sentences: list[Sentence]) -> set[int]`: the `n` of each sentence whose `lines` meet the copy's answer key.
   - `build` writes the files above. `MANIFEST.txt` gains the `numbered.txt` lines, with the origin `built`. `selftest`.
 
-- [ ] **Step 1: Write the new selftest assertions**
+- [x] **Step 1: Write the new selftest assertions**
 
 Plan 81's assertions stay, on `replacements` and on `true_hits`. These are added for each copy, where `source` and `source_spec` come from `git show` at the copy's commit, and `plan81` is `Path('specs/red-baseline-acceptance-tests/copies')`:
 
@@ -347,25 +349,25 @@ else:
 
 The selftest prints, for each copy, its site lines in plan 81's form, its planted sentence (`S<n>` and the first 80 characters), and its amended sentence numbers.
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `uv run python specs/red-baseline-statement-readings/kit/make_copies.py selftest`
 Expected: FAIL with `AttributeError` or `ImportError`, because the new fields and functions are not defined yet.
 
-- [ ] **Step 3: Write the values into `plants.py`**
+- [x] **Step 3: Write the values into `plants.py`**
 
 Copy each value from PD1, PD2, PD3 and PD10, character for character. The defense anchors are `'  - R4.1: copies are "regular files'`, `'- **Freeze.**'` and `'- **Shell forms (R3.2):**'`.
 
-- [ ] **Step 4: Implement the changes to `make_copies.py`**
+- [x] **Step 4: Implement the changes to `make_copies.py`**
 
 `build` writes `RS/copies/`. It refuses to overwrite a file that differs, as plan 81's did. `SITES.txt` holds the site lines, and `numbered.txt` holds `numbered_text(number(spec))`.
 
-- [ ] **Step 5: Run the selftest, then build**
+- [x] **Step 5: Run the selftest, then build**
 
 Run: `uv run python specs/red-baseline-statement-readings/kit/make_copies.py selftest`, then the same with `build`.
 Expected: `make_copies selftest ok`, then six copy folders and a `MANIFEST.txt` of 24 lines. Each argued copy's `SITES.txt` holds plan 81's sites plus one `global-constraints` line for its defense. Each two-reading copy's `SITES.txt` is empty.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/red-baseline-statement-readings/kit/plants.py specs/red-baseline-statement-readings/kit/make_copies.py \
@@ -397,7 +399,9 @@ git commit -m "test(specs): plant argued and two-reading copies for the statemen
   - `phase_to_json(phase: Phase) -> str`, `phase_from_json(text: str) -> Phase`, `outcomes_to_json(outcomes: list[Outcome]) -> str` and `outcomes_from_json(text: str) -> list[Outcome]`.
   - `uv run python RS/kit/compare.py selftest`.
 
-- [ ] **Step 1: Write `compare.py selftest`**
+- [x] **Step 1: Write `compare.py selftest`**
+
+> Deviation: the selftest adds a second fixture beyond the plan's assertions. In it, two values in one sentence pair by subject, entities unescape, and a planner entry with no sentence is returned, never compared.
 
 The fixtures are `SENTENCES` (S1–S10), the statements `READER_A` (Claude), `READER_B` (Codex) and `PLANNER`, and `RULINGS`. They use the values `x`, `y` and `z`, chosen so that each sentence tests one rule:
 
@@ -433,20 +437,22 @@ assert all(set(c.entries) == {'claude'} for c in alone.cases)
 assert phase_from_json(phase_to_json(phase)) == phase and outcomes_from_json(outcomes_to_json(out)) == out
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `uv run python specs/red-baseline-statement-readings/kit/compare.py selftest`
 Expected: FAIL with `NameError`.
 
-- [ ] **Step 3: Implement `compare.py`**
+- [x] **Step 3: Implement `compare.py`**
+
+> Deviation: PD5's comma rule drops only a thousands separator. `parse_rulings` is also VOID for an unknown verdict or two rulings on one case. The builder's choices are in the docstring: subject keys, a lone matched entry that joins the agreed readings, `unchecked` for an unpaired planner entry, the quote check on the planner's entries, and HTML-unescaped fields.
 
 Tags are parsed with regular expressions, as plan 81's `measure.py` parsed its blocks. Case ids run `C1`, `C2` and on, in sentence order.
 
-- [ ] **Step 4: Run it to verify it passes**
+- [x] **Step 4: Run it to verify it passes**
 
 Run: the same command. Expected: `compare selftest ok`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/red-baseline-statement-readings/kit/compare.py
@@ -489,7 +495,9 @@ git commit -m "test(specs): add the statement comparison script to the statement
     - in the directory form, it skips rep *i* when `rep<i>.skip` exists.
   - `bash RS/kit/run_codex.sh` keeps plan 81's arguments. It runs under the same `env -i`, from `/tmp/plan83-codex-XXXXXX` folders.
 
-- [ ] **Step 1: Write `measure.py selftest`**
+- [x] **Step 1: Write `measure.py selftest`**
+
+> Deviation: the selftest uses `TODAY_N` for `p66-today`, whose planted sentence is S134, not S115. It also adds `_control_selftest` and `_step_selftest`, and two mutants fail them.
 
 The inline fixtures are scored against `p66-bound`, `p66-today` and `p55-exit` from `plants.COPIES`:
 
@@ -518,12 +526,14 @@ A temporary runs folder then checks `table`:
 - it counts `false-alarm` lines both with and without the `amendment:` reasons;
 - it prints `catch bar p66-bound: step 4/5, control 1/5: met`.
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `uv run python specs/red-baseline-statement-readings/kit/measure.py selftest`
 Expected: FAIL with `NameError` or `ImportError`.
 
-- [ ] **Step 3: Implement `measure.py`**
+- [x] **Step 3: Implement `measure.py`**
+
+> Deviation: `void_reason` also makes a Claude rep VOID (`model`) when it used a second model, and a step rep whose rulings fail `parse_rulings` is VOID (`cases`). `score_step` takes a `listed` flag to tell `agreed` from `absent`. Near catches are listed only for a rep with no catch.
 
 `score` picks the kind of rep from the arm's prefix:
 
@@ -544,11 +554,13 @@ Each line of a `table` row gives these columns:
 
 Each stand-in row gives the fidelity counts, the amended marks (missing and extra) and the notes. The bar lines follow spec Verification 9 and PD9. "Beats" means more catches, or a lower clean-copy false-alarm mean on either DF-AMEND count.
 
-- [ ] **Step 4: Run it to verify it passes**
+- [x] **Step 4: Run it to verify it passes**
 
 Run: the same command. Expected: `measure selftest ok`.
 
-- [ ] **Step 5: Write the prompts and `build_prompts.py`, with its selftest**
+- [x] **Step 5: Write the prompts and `build_prompts.py`, with its selftest**
+
+> Deviation: the selftest checks for `specs/plans/` outside the numbered spec only, because three spec sentences name it. `reader.txt` drops the *(designer's call)* mark. `adjudicator.txt` gets a one-reader opening and a paragraph on slot forms. The guard skips the reader entries inside an adjudicator prompt, and matches tokens as whole words.
 
 `reader.txt` states, in this order:
 
@@ -598,11 +610,11 @@ except SystemExit:
 
 Run: `uv run python specs/red-baseline-statement-readings/kit/build_prompts.py selftest`. Expected: FAIL before the code exists, then `build_prompts selftest ok`.
 
-- [ ] **Step 6: Adapt the runners**
+- [x] **Step 6: Adapt the runners**
 
 The changes are the ones listed under Interfaces. When Step 9 finds a reply cut off at the output limit, `run_reps.sh` passes `CLAUDE_CODE_MAX_OUTPUT_TOKENS` through `env -i` for every role, and the pilot record says so.
 
-- [ ] **Step 7: Pin the binary, and check isolation**
+- [x] **Step 7: Pin the binary, and check isolation**
 
 ```bash
 claude --version
@@ -620,7 +632,9 @@ CLAUDE_BIN="$HOME/.cache/agent-skills/scratch/plan83-bin/claude" bash specs/red-
 
 Expected: the reply's five lines each read `NO`. Any `YES` stops the task: report it.
 
-- [ ] **Step 8: Ask the owner about Codex, then probe Codex's context**
+- [x] **Step 8: Ask the owner about Codex, then probe Codex's context**
+
+> Deviation: the session asked this question word for word before Task 1, and the owner answered "Approve Codex runs" (D16).
 
 Ask once in this session: "The probe's Codex reader sends five numbered spec texts to OpenAI: the specs of plans 53, 55 and 66 as they stood at plan review, and two copies with one sentence edited (plan 66's `bump` default and plan 55's R4.3). It also sends plan 81's Codex context probe. Approve the Codex runs for this session? That is 1 context probe and 1 pilot rep, then 25 reader reps on `gpt-6-sol`, and 25 more on `gpt-6.1-sol` only if `gpt-6-sol` misses a bar." Without a yes, skip the Codex parts of this task and of Task 5 (Global Constraints, "Codex data").
 
@@ -633,7 +647,9 @@ bash specs/red-baseline-statement-readings/kit/run_codex.sh specs/red-baseline-a
 
 Expected: the reply matches the column "With Task 4's flags" of the record's Appendix A table. If a shell, web search or an MCP server is in reach, stop the task and report it.
 
-- [ ] **Step 9: Pilot one rep of each role on the largest inputs**
+- [x] **Step 9: Pilot one rep of each role on the largest inputs**
+
+> Deviation: the pilot made three kit changes (PD12). Pairing falls back to matching slots, then to shared subject words, where spec Design 6 pairs by subject only. Units match when both name a unit and share a content word. Each case shows the entries it asks about apart from the other entries on its sentence. Also, `runs/CONTROL_SHA.txt` pins one `origin/main` sha for every control prompt, and a free dry run of a whole Task 5 tree came before the freeze.
 
 Build the prompts. Run `git rev-parse origin/main` once, and pass that sha to the `control` build. Then run rep 1 of each of these under `RS/runs/pilot/`:
 
@@ -646,7 +662,7 @@ Build the prompts. Run `git rev-parse origin/main` once, and pass that sha to th
 Score each.
 Expected: every rep scores, with no VOID. Read the last entry and the closing tag of each statement. Record each rep's `total_cost_usd` in `RS/runs/pilot/COST.txt`. Then project Task 5: 25 reader, 30 stand-in, 25 control and 90 adjudicator calls, each scaled by its prompt size against the pilot's. Above $150, stop and ask the owner (PD7). Any change that the pilot leads to follows PD12.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add specs/red-baseline-statement-readings/kit specs/red-baseline-statement-readings/runs
@@ -664,7 +680,9 @@ git commit -m "test(specs): add the statement-readings prompts, runners and scor
 
 The kit is frozen (PD12). If this session did not ask the owner about Codex in Task 4, ask now, with Task 4 Step 8's question. In the commands below, `$K` stands for `specs/red-baseline-statement-readings/kit` and `$R` for `specs/red-baseline-statement-readings/runs`. Write each command out in full.
 
-- [ ] **Step 1: Build the shared prompts**
+- [x] **Step 1: Build the shared prompts**
+
+> Deviation: the 16 Claude-role folders (readers, stand-ins and control) have no `SOURCES.txt` of their own. The shared `runs/SOURCES.txt` holds exactly their 16 lines, and every Codex and step folder has its own (owner, completion gate).
 
 - `build_prompts.py reader <s> $R/prompts/reader-<s>.txt` for each spec id;
 - `build_prompts.py standin <copy> $R/prompts/standin-<copy>.txt` for each of the six copies;
@@ -672,24 +690,26 @@ The kit is frozen (PD12). If this session did not ask the owner about Codex in T
 
 Expected: 16 prompt files. `SOURCES.txt` holds one sha for all five control prompts.
 
-- [ ] **Step 2: Run the readers**
+- [x] **Step 2: Run the readers**
 
 - `CLAUDE_BIN=… bash $K/run_reps.sh $R/prompts/reader-<s>.txt $R/reader-opus/<s> 1 5 opus` for each spec id;
 - `bash $K/run_codex.sh $R/prompts/reader-<s>.txt $R/reader-gpt-6-sol/<s> 1 5 gpt-6-sol` for each spec id. The five Codex runs can run in parallel, in the background; each takes about 50 minutes.
 
-- [ ] **Step 3: Run the stand-ins**
+- [x] **Step 3: Run the stand-ins**
 
 `CLAUDE_BIN=… bash $K/run_reps.sh $R/prompts/standin-<copy>.txt $R/standin-opus/<copy> 1 5 opus` for each of the six copies.
 
-- [ ] **Step 4: Run the control**
+- [x] **Step 4: Run the control**
 
 `CLAUDE_BIN=… bash $K/run_reps.sh $R/prompts/control-<copy>.txt $R/control-opus/<copy> 1 5 opus` for each planted copy. It does not run on `p55-clean` (designer's call 16).
 
-- [ ] **Step 5: Score them, and rerun each VOID rep**
+- [x] **Step 5: Score them, and rerun each VOID rep**
 
 `uv run python $K/measure.py score $R <arm> <id>` for each folder of Steps 2–4. Rerun each VOID rep under the next rep number (PD6) until each folder has 5 scored reps.
 
-- [ ] **Step 6: Run the three step arms**
+- [x] **Step 6: Run the three step arms**
+
+> Deviation: the claude arm ran before the Codex readers finished, because it reads no Codex rep.
 
 For each arm (`pair-gpt-6-sol`, `claude`, `codex-gpt-6-sol`) and each of the six copies:
 
@@ -699,7 +719,9 @@ uv run python specs/red-baseline-statement-readings/kit/build_prompts.py adjudic
 
 Then run `CLAUDE_BIN=… bash $K/run_reps.sh $R/step-<arm>/<copy>/prompts $R/step-<arm>/<copy> 1 5 opus` and `uv run python $K/measure.py score $R step-<arm> <copy>`. A VOID adjudicator rep reruns on its own prompt (PD6).
 
-- [ ] **Step 7: Label, then tabulate**
+- [x] **Step 7: Label, then tabulate**
+
+> Deviation: each false-alarm reason starts with its cause: `pairing:`, `form:`, `slot:` or `scope:`. S144 on `p55-clean` is `real`, as in plan 81. One same-facet test decides every near-catch label, and the S126 unclear rulings are `ambiguous`.
 
 Write a `CLASSIFY.txt` line for each item that a `SCORE.txt` lists to label (PD11). Judge each against the copy's spec only. For each label, check the reason against the plan line that the outcome's stand-in entry cites. Then run:
 
@@ -710,7 +732,9 @@ uv run python specs/red-baseline-statement-readings/kit/measure.py table specs/r
 Write its output to `RS/runs/TABLE.txt`.
 Expected: a row for each arm and copy with every cell filled, the bar lines, and the `PD9 trigger:` line.
 
-- [ ] **Step 8: Run `gpt-6.1-sol` only when PD9 triggers**
+- [x] **Step 8: Run `gpt-6.1-sol` only when PD9 triggers**
+
+> Deviation: this step started before Step 7's labels and `TABLE.txt`, because the PD9 trigger was already certain, and `TABLE.txt` later read yes. Four `codex-gpt-6.1-sol` conflicts on S144 are `false-alarm`, with the cause `pairing:`.
 
 If the line reads `PD9 trigger: yes`, repeat these with the model `gpt-6.1-sol`:
 
@@ -719,7 +743,7 @@ If the line reads `PD9 trigger: yes`, repeat these with the model `gpt-6.1-sol`:
 
 Otherwise skip this step, and the results file says so.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add specs/red-baseline-statement-readings/runs
@@ -736,7 +760,7 @@ git commit -m "test(specs): run the readers, stand-ins, control and step arms of
 **Interfaces:**
 - Consumes: `TABLE.txt`, every `CLASSIFY.txt` and `SOURCES.txt`, `RS/runs/BINARY.txt`, `RS/runs/pilot/COST.txt` and `RS/copies/MANIFEST.txt`.
 
-- [ ] **Step 1: Write the results file**
+- [x] **Step 1: Write the results file**
 
 It gives these sections, in this order:
 
@@ -762,7 +786,7 @@ It gives these sections, in this order:
 
 The results file recommends nothing about a build plan (D8). It states plan 81's 15 of 15 control catches as the reference for the bare plants.
 
-- [ ] **Step 2: Link it, and note the backlog**
+- [x] **Step 2: Link it, and note the backlog**
 
 Under the spec's Verification, "Probe first", after item 10, add one line: "Results: `specs/red-baseline-statement-readings.md` (plan 83, <date>)."
 
@@ -770,7 +794,7 @@ Under the item "Spec-reading test check" (`specs/deferred_items.md`, section `sp
 
 Edit neither plan 81 watch item.
 
-- [ ] **Step 3: Check and commit**
+- [x] **Step 3: Check and commit**
 
 Run: `bash build/run_commit_lints.sh`. Expected: `commit lints passed`.
 
@@ -779,11 +803,13 @@ git add specs/red-baseline-statement-readings.md specs/statement-level-readings.
 git commit -m "docs(specs): record the statement-readings probe results (plan 83 task 6)"
 ```
 
-- [ ] **Step 4: Owner gate (D8)**
+- [x] **Step 4: Owner gate (D8)**
 
 Present the table, the bars and the second-reader comparison, and stop. The owner decides whether anyone writes a build plan, and what it keeps. Write no build plan. Copy the owner's decision, word for word, into the results file's Appendix B, and commit it.
 
-- [ ] **Step 5: With no build plan only, close finding 24's line**
+- [x] **Step 5: With no build plan only, close finding 24's line**
+
+> Deviation: the layer 4 item went into this plan's backlog section in this step, not in the Plan Completion Protocol. Finding 24's row in the drift spec's summary table changed too. The Reported-order bullet kept its text and got a dated update. The new citations use the spec's retired path.
 
 Skip this step when a build plan is to come. The spec then stays live (Global Constraints, "Completion").
 

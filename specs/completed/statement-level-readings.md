@@ -1,6 +1,8 @@
 # Statement-level readings at plan review — Design Spec
 
-**Status:** APPROVED (2026-11-09). The owner approved this file, its designer's calls included, on 2026-11-09. The
+**Status:** COMPLETE (2026-11-09), implemented by plan 83 (`specs/plans/completed/83-statement-level-readings.md`),
+the probe plan. At D8 the owner chose no build plan, so plan 83 also closed finding 24. It was APPROVED on
+2026-11-09. The owner approved this file, its designer's calls included, on 2026-11-09. The
 question was "Do you approve the spec, with its two carried gates?", and the owner answered "Approve the spec". So
 the approval also covers the two gates carried from the old spec. The probe plan comes before any build plan, and
 the owner reviews its results first (D8). Each session that runs Codex asks for the owner's approval first

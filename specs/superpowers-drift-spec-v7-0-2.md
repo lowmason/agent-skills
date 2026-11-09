@@ -1065,14 +1065,16 @@ Under this repo's proportional-process rule:
   tester-seat brainstorm. The original author reports that recommendation
   from a review session; the claimed saving on nine defaults is unverified.
   Plan 70's isolated T7 rerun, rather than its original GREEN claim, is the
-  current local baseline evidence.
+  current local baseline evidence. **Update 2026-11-09 (plan 83):** the
+  tester-seat brainstorm has run, and finding 24 closed with no build plan
+  (D8). The order question no longer applies.
 - **Reported order (unverified 2026-11-07 session context):** this drift pass; then the tester-seat
   brainstorm (finding 24, handoff reported without an artifact path); then its plan. Finding 18's helper
   fixes land before the seat's plan, since both touch `task-brief` and the
   helper finding 21 asks for. **Update 2026-11-09 (plan 83):** the brainstorm ran as
   `specs/spec-derived-acceptance-tests.md`, then as `specs/completed/statement-level-readings.md`.
-  Neither probe's step beat a fresh Self-Review, and the owner chose no build plan for finding 24 (D8),
-  so no seat's plan follows. Finding 21's part keeps its own build plan.
+  Neither probe's step met its bars against a fresh Self-Review, and the owner chose no build plan for
+  finding 24 (D8), so no seat's plan follows. Finding 21's part keeps its own build plan.
 - **Local design proposals, not yet logged in `specs/deferred_items.md`, no spec yet:**
   finding 21 (the controller runs the task's tests before the review; one
   design with the tester seat); finding 22 (a ruling that contradicts spec
