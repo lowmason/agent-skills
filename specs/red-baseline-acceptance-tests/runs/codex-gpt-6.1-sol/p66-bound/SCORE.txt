@@ -1,0 +1,5 @@
+rep1 reader tests=77 flags=2 untestable=62 cost=0.0000
+rep2 reader tests=54 flags=0 untestable=30 cost=0.0000
+rep3 reader tests=55 flags=0 untestable=45 cost=0.0000
+rep4 reader tests=66 flags=2 untestable=91 cost=0.0000
+rep5 reader tests=61 flags=1 untestable=91 cost=0.0000

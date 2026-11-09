@@ -1,0 +1,10 @@
+rep1 ruling1 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep1 ruling2 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep2 ruling1 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep2 ruling6 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep3 ruling1 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep3 ruling5 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep4 ruling1 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep4 ruling6 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep5 ruling1 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
+rep5 ruling4 false-alarm amendment: the plan applies the owner-approved Q1 amendment (D1, Task 1) that names the suite cc_guide; DF2 leaves the copy spec unamended, and the reader never sees the amendment text
