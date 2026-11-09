@@ -1,0 +1,2408 @@
+[
+ {
+  "kind": "returned",
+  "sentence": 64,
+  "subject": "`skill-body-size` check",
+  "agreed": null,
+  "planner": {
+   "value": "{sections: [skills.overview], enforced_by: \"check_frontmatter\"}",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner#13: quote not in S64",
+  "index": 0,
+  "flags": []
+ },
+ {
+  "kind": "returned",
+  "sentence": 85,
+  "subject": "GREEN arm",
+  "agreed": null,
+  "planner": {
+   "value": "≤3/5 triggers; GREEN 5 reps, ≥4/5 pass",
+   "unit": "reps",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner#25: quote not in S85",
+  "index": 1,
+  "flags": []
+ },
+ {
+  "kind": "returned",
+  "sentence": 134,
+  "subject": "ArviZ-reading scripts",
+  "agreed": null,
+  "planner": {
+   "value": "[diagnose_model.py, calibration_check.py, compare_experiments.py]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner#40: quote not in S134",
+  "index": 2,
+  "flags": []
+ },
+ {
+  "kind": "returned",
+  "sentence": 139,
+  "subject": "bundled license copies",
+  "agreed": null,
+  "planner": {
+   "value": "byte-identical regular files, same names",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner#42: quote not in S139",
+  "index": 3,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 71,
+  "subject": "descriptions",
+  "agreed": null,
+  "planner": {
+   "value": "37",
+   "unit": "descriptions",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 67, 193-194; note: Amendment A2 adds that all 37 descriptions pass on 2026-10-18.",
+  "index": 4,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 113,
+  "subject": "runtime backends",
+  "agreed": null,
+  "planner": {
+   "value": "[h5netcdf>=1.0, h5py>=3.0]",
+   "unit": "none",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 90, 2351",
+  "index": 5,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 119,
+  "subject": "3.X",
+  "agreed": null,
+  "planner": {
+   "value": "3.12 for bayesian-workflow, track-model-experiments; 3.11 for the other nine",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 3299-3305",
+  "index": 6,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 199,
+  "subject": "`writing-skills`",
+  "agreed": null,
+  "planner": {
+   "value": "description guidance changed only per R2.3; Stage A key list, template and checklist edits allowed",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 349-352, 3781",
+  "index": 7,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 213,
+  "subject": "CI",
+  "agreed": null,
+  "planner": {
+   "value": "advisory CI `.github/workflows/lints.yml` runs commit lints",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 366-368",
+  "index": 8,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 2,
+  "subject": "implementation plan",
+  "agreed": null,
+  "planner": null,
+  "detail": "C1 rule 3; quote: ",
+  "index": 9,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 9,
+  "subject": "measured fact",
+  "agreed": null,
+  "planner": null,
+  "detail": "C2 rule 3; quote: ",
+  "index": 10,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 10,
+  "subject": "header",
+  "agreed": null,
+  "planner": null,
+  "detail": "C3 rule 3; quote: ",
+  "index": 11,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 10,
+  "subject": "runnable bundled script",
+  "agreed": null,
+  "planner": null,
+  "detail": "C4 rule 3; quote: ",
+  "index": 12,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 24,
+  "subject": "canonical tree",
+  "agreed": null,
+  "planner": null,
+  "detail": "C5 rule 3; quote: ",
+  "index": 13,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 26,
+  "subject": "symlink",
+  "agreed": null,
+  "planner": null,
+  "detail": "C6 rule 3; quote: ",
+  "index": 14,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 31,
+  "subject": "description convention",
+  "agreed": null,
+  "planner": null,
+  "detail": "C7 rule 3; quote: ",
+  "index": 15,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 41,
+  "subject": "shebang",
+  "agreed": null,
+  "planner": null,
+  "detail": "C8 rule 3; quote: ",
+  "index": 16,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 42,
+  "subject": "template",
+  "agreed": null,
+  "planner": null,
+  "detail": "C9 rule 3; quote: ",
+  "index": 17,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 49,
+  "subject": "metadata",
+  "agreed": null,
+  "planner": {
+   "value": "mapping of string to string",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C11 rule 3; quote: ",
+  "index": 18,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 49,
+  "subject": "keys and values",
+  "agreed": null,
+  "planner": {
+   "value": "mapping of string to string",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C12 rule 3; quote: ",
+  "index": 19,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 52,
+  "subject": "license",
+  "agreed": null,
+  "planner": {
+   "value": "required non-empty string",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C14 rule 3; quote: ",
+  "index": 20,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 62,
+  "subject": "closing frontmatter",
+  "agreed": null,
+  "planner": {
+   "value": "500",
+   "unit": "lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "C19 rule 3; quote: ",
+  "index": 21,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 64,
+  "subject": "[[check]]",
+  "agreed": null,
+  "planner": null,
+  "detail": "C22 rule 3; quote: ",
+  "index": 22,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 65,
+  "subject": "check_frontmatter.py",
+  "agreed": null,
+  "planner": {
+   "value": "[claude, anthropic]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C23 rule 3; quote: ",
+  "index": 23,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 69,
+  "subject": "module docstring",
+  "agreed": null,
+  "planner": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "C25 rule 3; quote: ",
+  "index": 24,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 69,
+  "subject": "CLAUDE.md's Commands section",
+  "agreed": null,
+  "planner": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "C26 rule 3; quote: ",
+  "index": 25,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 86,
+  "subject": "guard",
+  "agreed": null,
+  "planner": null,
+  "detail": "C41 rule 3; quote: ",
+  "index": 26,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 99,
+  "subject": "library",
+  "agreed": null,
+  "planner": null,
+  "detail": "C52 rule 3; quote: ",
+  "index": 27,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 101,
+  "subject": "template",
+  "agreed": null,
+  "planner": null,
+  "detail": "C53 rule 3; quote: ",
+  "index": 28,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 115,
+  "subject": "documented invocation",
+  "agreed": null,
+  "planner": {
+   "value": "\"uv run <path> [args]\" for 17 scripts",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C60 rule 3; quote: ",
+  "index": 29,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 120,
+  "subject": "finishing-a-development-branch",
+  "agreed": null,
+  "planner": null,
+  "detail": "C64 rule 3; quote: ",
+  "index": 30,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 121,
+  "subject": "Lint",
+  "agreed": null,
+  "planner": null,
+  "detail": "C65 rule 3; quote: ",
+  "index": 31,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 122,
+  "subject": "file",
+  "agreed": null,
+  "planner": null,
+  "detail": "C66 rule 3; quote: ",
+  "index": 32,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 122,
+  "subject": "guard",
+  "agreed": null,
+  "planner": null,
+  "detail": "C67 rule 3; quote: ",
+  "index": 33,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 122,
+  "subject": "block",
+  "agreed": null,
+  "planner": null,
+  "detail": "C68 rule 3; quote: ",
+  "index": 34,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 122,
+  "subject": "PEP 723 block",
+  "agreed": null,
+  "planner": null,
+  "detail": "C69 rule 3; quote: ",
+  "index": 35,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 129,
+  "subject": "teaching example",
+  "agreed": null,
+  "planner": {
+   "value": "\"scripts/migrate.py\" in a skill that bundles no such script",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C74 rule 3; quote: ",
+  "index": 36,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 134,
+  "subject": "fixture",
+  "agreed": null,
+  "planner": null,
+  "detail": "C81 rule 3; quote: ",
+  "index": 37,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 135,
+  "subject": "directory",
+  "agreed": null,
+  "planner": {
+   "value": "1",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C82 rule 3; quote: ",
+  "index": 38,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 139,
+  "subject": "files",
+  "agreed": null,
+  "planner": null,
+  "detail": "C83 rule 3; quote: ",
+  "index": 39,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 148,
+  "subject": "skill directory",
+  "agreed": null,
+  "planner": null,
+  "detail": "C92 rule 3; quote: ",
+  "index": 40,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 150,
+  "subject": "CLAUDE.md command",
+  "agreed": null,
+  "planner": null,
+  "detail": "C93 rule 3; quote: ",
+  "index": 41,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 154,
+  "subject": "copies",
+  "agreed": null,
+  "planner": null,
+  "detail": "C95 rule 3; quote: ",
+  "index": 42,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 158,
+  "subject": "original PyMC Bayesian-workflow skill",
+  "agreed": null,
+  "planner": null,
+  "detail": "C98 rule 3; quote: ",
+  "index": 43,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 159,
+  "subject": "outcomes",
+  "agreed": null,
+  "planner": null,
+  "detail": "C99 rule 3; quote: ",
+  "index": 44,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 160,
+  "subject": "NOTICE",
+  "agreed": null,
+  "planner": null,
+  "detail": "C101 rule 3; quote: ",
+  "index": 45,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 161,
+  "subject": "Upstream",
+  "agreed": null,
+  "planner": null,
+  "detail": "C102 rule 3; quote: ",
+  "index": 46,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 167,
+  "subject": "D",
+  "agreed": null,
+  "planner": null,
+  "detail": "C103 rule 3; quote: ",
+  "index": 47,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 168,
+  "subject": "A",
+  "agreed": null,
+  "planner": null,
+  "detail": "C104 rule 3; quote: ",
+  "index": 48,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 168,
+  "subject": "superpowers frontmatter additions",
+  "agreed": null,
+  "planner": null,
+  "detail": "C105 rule 3; quote: ",
+  "index": 49,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 169,
+  "subject": "B",
+  "agreed": null,
+  "planner": null,
+  "detail": "C106 rule 3; quote: ",
+  "index": 50,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 170,
+  "subject": "C",
+  "agreed": null,
+  "planner": null,
+  "detail": "C107 rule 3; quote: ",
+  "index": 51,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 171,
+  "subject": "D",
+  "agreed": null,
+  "planner": null,
+  "detail": "C108 rule 3; quote: ",
+  "index": 52,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 173,
+  "subject": "Conformance register",
+  "agreed": null,
+  "planner": null,
+  "detail": "C109 rule 3; quote: ",
+  "index": 53,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 176,
+  "subject": "change",
+  "agreed": null,
+  "planner": null,
+  "detail": "C111 rule 3; quote: ",
+  "index": 54,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 176,
+  "subject": "change",
+  "agreed": null,
+  "planner": null,
+  "detail": "C112 rule 3; quote: ",
+  "index": 55,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 180,
+  "subject": "test changes",
+  "agreed": null,
+  "planner": null,
+  "detail": "C113 rule 3; quote: ",
+  "index": 56,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 181,
+  "subject": "plan id",
+  "agreed": null,
+  "planner": null,
+  "detail": "C114 rule 3; quote: ",
+  "index": 57,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 181,
+  "subject": "specs/plans/",
+  "agreed": null,
+  "planner": null,
+  "detail": "C115 rule 3; quote: ",
+  "index": 58,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 182,
+  "subject": "JAX spec",
+  "agreed": null,
+  "planner": {
+   "value": "JAX skills and recommend-causal-design merged; in scope",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C116 rule 3; quote: ",
+  "index": 59,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 182,
+  "subject": "specs/jax-deep-learning-skills.md",
+  "agreed": null,
+  "planner": {
+   "value": "JAX skills and recommend-causal-design merged; in scope",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "C117 rule 3; quote: ",
+  "index": 60,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "no-value",
+  "sentence": 187,
+  "subject": "check_provenance.py",
+  "agreed": null,
+  "planner": null,
+  "detail": "C120 rule 3; quote: ",
+  "index": 61,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 188,
+  "subject": "check_snippets.py",
+  "agreed": null,
+  "planner": null,
+  "detail": "C121 rule 3; quote: ",
+  "index": 62,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 190,
+  "subject": "suite",
+  "agreed": null,
+  "planner": null,
+  "detail": "C123 rule 3; quote: ",
+  "index": 63,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 191,
+  "subject": "sync_runtime_assets.py",
+  "agreed": null,
+  "planner": null,
+  "detail": "C124 rule 3; quote: ",
+  "index": 64,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 197,
+  "subject": "skill",
+  "agreed": null,
+  "planner": null,
+  "detail": "C125 rule 3; quote: ",
+  "index": 65,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 200,
+  "subject": "Trigger-eval suites",
+  "agreed": null,
+  "planner": null,
+  "detail": "C126 rule 3; quote: ",
+  "index": 66,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 203,
+  "subject": "Distribution channels",
+  "agreed": null,
+  "planner": null,
+  "detail": "C127 rule 3; quote: ",
+  "index": 67,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 206,
+  "subject": "Codex adapters",
+  "agreed": null,
+  "planner": null,
+  "detail": "C128 rule 3; quote: ",
+  "index": 68,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 206,
+  "subject": "manual-only skills",
+  "agreed": null,
+  "planner": null,
+  "detail": "C129 rule 3; quote: ",
+  "index": 69,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 208,
+  "subject": "Tables of contents",
+  "agreed": null,
+  "planner": null,
+  "detail": "C130 rule 3; quote: ",
+  "index": 70,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 210,
+  "subject": "writing-skills",
+  "agreed": null,
+  "planner": null,
+  "detail": "C131 rule 3; quote: ",
+  "index": 71,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 211,
+  "subject": "versioning policy",
+  "agreed": null,
+  "planner": null,
+  "detail": "C132 rule 3; quote: ",
+  "index": 72,
+  "flags": []
+ },
+ {
+  "kind": "no-value",
+  "sentence": 214,
+  "subject": "single-file agents",
+  "agreed": null,
+  "planner": null,
+  "detail": "C133 rule 3; quote: ",
+  "index": 73,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 46,
+  "subject": "ALLOWED_KEYS",
+  "agreed": {
+   "value": "2",
+   "unit": "sets",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 74,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 48,
+  "subject": "HOST_KEYS",
+  "agreed": {
+   "value": "[when_to_use, model, effort, context, disable-model-invocation]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[when_to_use, model, effort, context, disable-model-invocation, agent]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 75,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 51,
+  "subject": "`compatibility`",
+  "agreed": {
+   "value": "[1, 500]",
+   "unit": "characters",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[1, 500]",
+   "unit": "UTF-8 bytes",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 25, 31, 691-692, 728-731; note: The spec measures characters. The plan measures the stripped value in UTF-8 bytes. Line 25 also labels \"1–500 UTF-8 bytes\" as copied verbatim from the spec, and it is not. No task amends R1.3.",
+  "index": 76,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 53,
+  "subject": "superpowers skills",
+  "agreed": {
+   "value": "13",
+   "unit": "skills",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 77,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 54,
+  "subject": "author",
+  "agreed": {
+   "value": "Jesse Vincent",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 78,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 54,
+  "subject": "adapted_by",
+  "agreed": {
+   "value": "Lowell Mason",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 79,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 54,
+  "subject": "source",
+  "agreed": {
+   "value": "https://github.com/obra/superpowers",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 80,
+  "flags": []
+ },
+ {
+  "kind": "unchecked",
+  "sentence": 54,
+  "subject": "metadata",
+  "agreed": null,
+  "planner": {
+   "value": "{author: \"Jesse Vincent\", adapted_by: \"Lowell Mason\", source: \"https://github.com/obra/superpowers\"}",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "unpaired; planner lines 26, 1021-1024",
+  "index": 81,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 56,
+  "subject": "`name` and `description`",
+  "agreed": {
+   "value": "[\"<\", \">\"]",
+   "unit": "characters",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[<, >]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 693, 722-723",
+  "index": 82,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 56,
+  "subject": "description",
+  "agreed": {
+   "value": "[\"<\", \">\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 83,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 59,
+  "subject": "A skill with `disable-model-invocation: true`",
+  "agreed": {
+   "value": "agents/openai.yaml",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 84,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 59,
+  "subject": "disable-model-invocation",
+  "agreed": {
+   "value": "true",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 85,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 60,
+  "subject": "policy",
+  "agreed": {
+   "value": "false",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 86,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 60,
+  "subject": "disable-model-invocation",
+  "agreed": {
+   "value": "true",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 87,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 62,
+  "subject": "`WARN` line",
+  "agreed": {
+   "value": "1",
+   "unit": "lines",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 88,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 62,
+  "subject": "line",
+  "agreed": {
+   "value": "\"WARN\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 89,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 62,
+  "subject": "line",
+  "agreed": {
+   "value": "\"stderr\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 90,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 64,
+  "subject": "`[[check]]`",
+  "agreed": {
+   "value": "skill-body-size",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 91,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 64,
+  "subject": "`skill-body-size` `[[check]]`",
+  "agreed": {
+   "value": "skills.overview",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 92,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 64,
+  "subject": "`enforced_by`",
+  "agreed": {
+   "value": "check_frontmatter",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 93,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 67,
+  "subject": "Expected result today",
+  "agreed": {
+   "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+   "unit": "skills",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 60, 1589",
+  "index": 94,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 69,
+  "subject": "CLAUDE.md",
+  "agreed": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "planner lines 21, 1577-1589; note: R1.9 asks for the `--strict` invocation to be added to CLAUDE.md's Commands section. Under D7 the plan adds no command line. It only extends an existing comment to name `--strict`. No task amends R1.9.",
+  "index": 95,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 69,
+  "subject": "CLAUDE.md's Commands section",
+  "agreed": {
+   "value": "1",
+   "unit": "lines",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 96,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 76,
+  "subject": "a synthetic skill",
+  "agreed": {
+   "value": "8",
+   "unit": "trigger conditions",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "9",
+   "unit": "trigger conditions",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 415-425; note: The scenario has 9 conditions. That meets the spec's floor of at least 8.",
+  "index": 97,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 76,
+  "subject": "trigger conditions",
+  "agreed": {
+   "value": "1",
+   "unit": "trigger conditions",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 98,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 79,
+  "subject": "prefix",
+  "agreed": {
+   "value": "150",
+   "unit": "characters",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 99,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 80,
+  "subject": "the scenario, prompts, outputs, and verdicts",
+  "agreed": {
+   "value": "specs/red-baseline-description-openings-<YYYY-MM-DD>.md",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "\"specs/red-baseline-description-openings-<run-date>.md\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 391, 526",
+  "index": 100,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 82,
+  "subject": "Baseline",
+  "agreed": {
+   "value": "4/5",
+   "unit": "reps",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "4/5; [2, 4]",
+   "unit": "passing reps of 5; lines",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 395, 558, 3614-3618; note: The plan's note extends an existing bullet and spans parts of 5 wrapped lines. It may exceed the 2–4 line limit.",
+  "index": 101,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 82,
+  "subject": "section",
+  "agreed": {
+   "value": "Token Efficiency",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 102,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 82,
+  "subject": "factual note",
+  "agreed": {
+   "value": "[2, 4]",
+   "unit": "lines",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 103,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 83,
+  "subject": "how to re-measure",
+  "agreed": {
+   "value": "codex debug prompt-input",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[316, 320] with 105 skills, Codex 0.163, 2026-10-18 (2026-10-03 figures kept as history)",
+   "unit": "characters",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 104,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "GREEN-test",
+  "agreed": {
+   "value": "5",
+   "unit": "reps",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 105,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "Baseline",
+  "agreed": {
+   "value": "3/5",
+   "unit": "reps",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 106,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "checklist line",
+  "agreed": {
+   "value": "\"the primary trigger falls within the first ~150 characters\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 107,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "GREEN-test",
+  "agreed": {
+   "value": "4/5",
+   "unit": "reps",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 108,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 85,
+  "subject": "checklist line",
+  "agreed": {
+   "value": "\"the primary trigger falls within the first ~150 characters\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 109,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 86,
+  "subject": "runnable scripts",
+  "agreed": {
+   "value": "skills/*/scripts/*.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 110,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 87,
+  "subject": "runnable scripts",
+  "agreed": {
+   "value": "16",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "17",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 111,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 88,
+  "subject": "header",
+  "agreed": {
+   "value": "14",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "15",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 112,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 89,
+  "subject": "bayesian-workflow",
+  "agreed": {
+   "value": "[\"calibration_check.py\", \"check_diagnostics.py\", \"diagnose_model.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 113,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 90,
+  "subject": "describe-critique-methodology",
+  "agreed": {
+   "value": "[\"check_decoupling.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 114,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 91,
+  "subject": "design-architecture",
+  "agreed": {
+   "value": "[\"new_adr.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 115,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 92,
+  "subject": "explore-data",
+  "agreed": {
+   "value": "[\"profile.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 116,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 93,
+  "subject": "llm-wiki",
+  "agreed": {
+   "value": "[\"bootstrap_wiki.py\", \"distill_sessions.py\", \"distill_specs.py\", \"lint_wiki.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 117,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 94,
+  "subject": "recommend-probabilistic-model",
+  "agreed": {
+   "value": "[\"characterize.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 118,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 95,
+  "subject": "recommend-visualization",
+  "agreed": {
+   "value": "[\"recommend.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 119,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 96,
+  "subject": "track-model-experiments",
+  "agreed": {
+   "value": "[\"compare_experiments.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 120,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 97,
+  "subject": "writing-plans",
+  "agreed": {
+   "value": "[\"deferred_stats.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[deferred_stats.py, entry_check.py]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 121,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 98,
+  "subject": "build.py",
+  "agreed": {
+   "value": "[\"classification-codes\", \"geographic-codes\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 122,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 102,
+  "subject": "#!/usr/bin/env python3",
+  "agreed": {
+   "value": "\"#!/usr/bin/env python3\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 123,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 103,
+  "subject": "`dependencies`",
+  "agreed": {
+   "value": "[]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "[]"
+  },
+  "detail": "planner lines 2349, 2375",
+  "index": 124,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 103,
+  "subject": "block",
+  "agreed": {
+   "value": "# /// script",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 125,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 103,
+  "subject": "TOML strings",
+  "agreed": {
+   "value": "\"single-quoted\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 126,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 103,
+  "subject": "block",
+  "agreed": {
+   "value": "[\"requires-python\", \"dependencies\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 127,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 105,
+  "subject": "`requires-python`",
+  "agreed": {
+   "value": "[\">=3.11\", \">=3.12\", \">=3.13\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "\">=3.12\" for calibration_check.py, diagnose_model.py, compare_experiments.py; \">=3.11\" for the other twelve",
+   "unit": "none",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 88, 2349-2369",
+  "index": 128,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 105,
+  "subject": "the test suite",
+  "agreed": {
+   "value": "uv run --python 3.X",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 129,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 105,
+  "subject": "script",
+  "agreed": {
+   "value": "[\">=3.11\", \">=3.12\", \">=3.13\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 130,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 110,
+  "subject": "Every third-party import",
+  "agreed": {
+   "value": ">=",
+   "unit": "none",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[polars>=2.0, numpy>=2.0, arviz>=1.0, arviz-base>=1.0, xarray>=2026.0, scipy>=1.0, arviz-plots>=1.1, arviz-stats>=1.1]",
+   "unit": "none",
+   "edge": "in",
+   "default": "none"
+  },
+  "detail": "planner lines 89, 2350-2367; note: The plan uses polars>=2.0, the major version resolved on 2026-10-18, not the spec's example polars>=1.0. Two arviz floors take a code-stated minor floor (1.1).",
+  "index": 131,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 112,
+  "subject": "handler",
+  "agreed": {
+   "value": "[\"ImportError\", \"ModuleNotFoundError\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 132,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 115,
+  "subject": "Every documented invocation",
+  "agreed": {
+   "value": "uv run <path> [args]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "\"uv run <path> [args]\" for 17 scripts",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 133,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 116,
+  "subject": "Path forms",
+  "agreed": {
+   "value": "[\"<this-skill-dir>/scripts/x.py\", \"<this-skill-dir>/../<skill>/scripts/x.py\", \"$LLM_WIKI_ROOT/scripts/x.py\", \"~/Projects/agent-skills/skills/llm-wiki/scripts/x.py\", \"skills/<skill>/scripts/build.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 134,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 117,
+  "subject": "sentence",
+  "agreed": {
+   "value": "1",
+   "unit": "sentence",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 135,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 120,
+  "subject": "set",
+  "agreed": {
+   "value": "\"finishing-a-development-branch\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 136,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 122,
+  "subject": "PEP 723 block",
+  "agreed": {
+   "value": "[\"requires-python\", \"dependencies\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 137,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 124,
+  "subject": "stdlib",
+  "agreed": {
+   "value": "\"sys.stdlib_module_names\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 138,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 126,
+  "subject": "alias table",
+  "agreed": {
+   "value": "\"yaml\" → \"pyyaml\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 139,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 128,
+  "subject": "skill markdown",
+  "agreed": {
+   "value": "[\"python\", \"python3\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 140,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 130,
+  "subject": "`compatibility`",
+  "agreed": {
+   "value": "uv",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 141,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 131,
+  "subject": "Execution proof",
+  "agreed": {
+   "value": "1",
+   "unit": "time",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 142,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 132,
+  "subject": "each of the 16 scripts",
+  "agreed": {
+   "value": "uv run <absolute-path>",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "17",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 143,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 133,
+  "subject": "script with no input-reading path",
+  "agreed": {
+   "value": "\"--help\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 144,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 134,
+  "subject": "ArviZ-reading scripts",
+  "agreed": {
+   "value": "[\"diagnose_model.py\", \"calibration_check.py\", \"compare_experiments.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 145,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 134,
+  "subject": "ArviZ-reading scripts",
+  "agreed": {
+   "value": "[\"diagnose_model.py\", \"calibration_check.py\", \"compare_experiments.py\"]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 146,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 141,
+  "subject": "`LICENSE`",
+  "agreed": {
+   "value": "\"every skill under skills/\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "every skill",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 1731-1734, 1769",
+  "index": 147,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 142,
+  "subject": "`LICENSE-superpowers`",
+  "agreed": {
+   "value": "\"the 13 superpowers skills\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "13",
+   "unit": "skills",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 1736-1742",
+  "index": 148,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 142,
+  "subject": "superpowers skills",
+  "agreed": {
+   "value": "13",
+   "unit": "skills",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 149,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 142,
+  "subject": "superpowers skills",
+  "agreed": {
+   "value": "\"LICENSE-superpowers\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 150,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 145,
+  "subject": "Provenance lint",
+  "agreed": {
+   "value": "build/check_provenance.py",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 151,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 145,
+  "subject": "table",
+  "agreed": {
+   "value": "\"BUNDLED_LICENSES\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 152,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 145,
+  "subject": "table",
+  "agreed": {
+   "value": "\"BUNDLED_LICENSES\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 153,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 145,
+  "subject": "every skill",
+  "agreed": {
+   "value": "\"LICENSE\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 154,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 149,
+  "subject": "Every root `LICENSE*` file",
+  "agreed": {
+   "value": "1",
+   "unit": "skills",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 155,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 153,
+  "subject": "NOTICE",
+  "agreed": {
+   "value": "1",
+   "unit": "paragraph",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 156,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 155,
+  "subject": "README's License section",
+  "agreed": {
+   "value": "1",
+   "unit": "sentence",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 157,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 156,
+  "subject": "CLAUDE.md's provenance section",
+  "agreed": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 158,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 160,
+  "subject": "upstream license text",
+  "agreed": {
+   "value": "LICENSE-andorra",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 159,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 160,
+  "subject": "LICENSE-andorra",
+  "agreed": {
+   "value": "\"bayesian-workflow\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 160,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 174,
+  "subject": "The CLAUDE.md lines from R1.9 and R4.4",
+  "agreed": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "in",
+   "default": "none"
+  },
+  "planner": {
+   "value": "200",
+   "unit": "lines",
+   "edge": "out",
+   "default": "none"
+  },
+  "detail": "planner lines 21, 149",
+  "index": 161,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 186,
+  "subject": "`check_frontmatter.py`",
+  "agreed": {
+   "value": "0",
+   "unit": "exit code",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "exit 0, one WARN for writing-skills",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 3734",
+  "index": 162,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 186,
+  "subject": "WARN",
+  "agreed": {
+   "value": "\"writing-skills\"",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 163,
+  "flags": []
+ },
+ {
+  "kind": "missing",
+  "sentence": 188,
+  "subject": "check_snippets.py skills/",
+  "agreed": {
+   "value": "1",
+   "unit": "tier",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 164,
+  "flags": []
+ },
+ {
+  "kind": "plan-conflict",
+  "sentence": 192,
+  "subject": "`check_frontmatter.py --strict`",
+  "agreed": {
+   "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "[bayesian-workflow, tune-hyperparameters, tech-debt]",
+   "unit": "skills",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "planner lines 3735",
+  "index": 165,
+  "flags": []
+ },
+ {
+  "kind": "amended-skip",
+  "sentence": 194,
+  "subject": "R3.8's execution proof",
+  "agreed": {
+   "value": "16",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": {
+   "value": "17",
+   "unit": "scripts",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "detail": "amended: Task 1",
+  "index": 166,
+  "flags": [
+   "amended-sentence"
+  ]
+ },
+ {
+  "kind": "missing",
+  "sentence": 196,
+  "subject": "`gemini skills list --all`",
+  "agreed": {
+   "value": "[Enabled]",
+   "unit": "none",
+   "edge": "n/a",
+   "default": "none"
+  },
+  "planner": null,
+  "detail": "",
+  "index": 167,
+  "flags": []
+ }
+]

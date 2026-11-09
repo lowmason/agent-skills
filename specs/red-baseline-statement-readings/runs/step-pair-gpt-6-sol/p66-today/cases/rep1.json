@@ -1,0 +1,8840 @@
+{
+ "cases": [
+  {
+   "id": "C1",
+   "rule": 3,
+   "sentence": 2,
+   "subject": "Next skill",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 2,
+      "quote": "Next skill: writing-plans",
+      "subject": "Next skill",
+      "slots": {
+       "value": "writing-plans",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 2,
+      "quote": "Next skill: writing-plans",
+      "subject": "Next skill",
+      "slots": {
+       "value": "writing-plans",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C2",
+   "rule": 3,
+   "sentence": 5,
+   "subject": "mechanism",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 5,
+      "quote": "one mechanism for every package that a skill names or runs",
+      "subject": "mechanism",
+      "slots": {
+       "value": "1",
+       "unit": "mechanism",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 5,
+      "quote": "one mechanism for every package that a skill names or runs",
+      "subject": "mechanism",
+      "slots": {
+       "value": "1",
+       "unit": "mechanism",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C3",
+   "rule": 3,
+   "sentence": 6,
+   "subject": "properties",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 6,
+      "quote": "one or both of these properties",
+      "subject": "properties",
+      "slots": {
+       "value": "[1, 2]",
+       "unit": "properties",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 6,
+      "quote": "one or both of these properties",
+      "subject": "properties",
+      "slots": {
+       "value": "[1, 2]",
+       "unit": "properties",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C4",
+   "rule": 3,
+   "sentence": 8,
+   "subject": "place",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 8,
+      "quote": "set in one place",
+      "subject": "place",
+      "slots": {
+       "value": "1",
+       "unit": "place",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 8,
+      "quote": "set in one place",
+      "subject": "place",
+      "slots": {
+       "value": "1",
+       "unit": "place",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C5",
+   "rule": 3,
+   "sentence": 9,
+   "subject": "plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 9,
+      "quote": "not part of plan 64",
+      "subject": "plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 9,
+      "quote": "not part of plan 64",
+      "subject": "plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C6",
+   "rule": 3,
+   "sentence": 25,
+   "subject": "arviz scripts",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 25,
+      "quote": "3.12 for the arviz scripts",
+      "subject": "arviz scripts",
+      "slots": {
+       "value": "3.12",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 25,
+      "quote": "3.11 for the rest",
+      "subject": "rest",
+      "slots": {
+       "value": "3.11",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 25,
+      "quote": "3.12 for the arviz scripts",
+      "subject": "arviz scripts",
+      "slots": {
+       "value": "3.12",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C7",
+   "rule": 3,
+   "sentence": 25,
+   "subject": "rest",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 25,
+      "quote": "3.12 for the arviz scripts",
+      "subject": "arviz scripts",
+      "slots": {
+       "value": "3.12",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 25,
+      "quote": "3.11 for the rest",
+      "subject": "rest",
+      "slots": {
+       "value": "3.11",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 25,
+      "quote": "3.11 for the rest",
+      "subject": "rest",
+      "slots": {
+       "value": "3.11",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C8",
+   "rule": 3,
+   "sentence": 26,
+   "subject": "Floor for system-Python tools",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 26,
+      "quote": "Floor for system-Python tools | 3.9",
+      "subject": "Floor for system-Python tools",
+      "slots": {
+       "value": "3.9",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 26,
+      "quote": "Floor for system-Python tools | 3.9",
+      "subject": "Floor for system-Python tools",
+      "slots": {
+       "value": "3.9",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C9",
+   "rule": 3,
+   "sentence": 29,
+   "subject": "polars",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 29,
+      "quote": "polars>=2.0",
+      "subject": "polars",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 29,
+      "quote": "polars>=2.0",
+      "subject": "polars",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C10",
+   "rule": 3,
+   "sentence": 30,
+   "subject": "polars",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 30,
+      "quote": "polars>=1.0",
+      "subject": "polars",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 30,
+      "quote": "fastexcel>=0.12",
+      "subject": "fastexcel",
+      "slots": {
+       "value": "0.12",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 30,
+      "quote": "polars>=1.0",
+      "subject": "polars",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C11",
+   "rule": 3,
+   "sentence": 30,
+   "subject": "fastexcel",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 30,
+      "quote": "polars>=1.0",
+      "subject": "polars",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 30,
+      "quote": "fastexcel>=0.12",
+      "subject": "fastexcel",
+      "slots": {
+       "value": "0.12",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 30,
+      "quote": "fastexcel>=0.12",
+      "subject": "fastexcel",
+      "slots": {
+       "value": "0.12",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C12",
+   "rule": 3,
+   "sentence": 31,
+   "subject": "arviz",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "arviz>=1.0",
+      "subject": "arviz",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "arviz>=1.0",
+      "subject": "arviz",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C13",
+   "rule": 3,
+   "sentence": 31,
+   "subject": "numpy",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "arviz>=1.0",
+      "subject": "arviz",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C14",
+   "rule": 3,
+   "sentence": 31,
+   "subject": "h5netcdf",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "arviz>=1.0",
+      "subject": "arviz",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C15",
+   "rule": 3,
+   "sentence": 31,
+   "subject": "h5py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "arviz>=1.0",
+      "subject": "arviz",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 31,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 31,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C16",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "numpy",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C17",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "arviz-base",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C18",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "arviz-plots",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C19",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "arviz-stats",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C20",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "xarray",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C21",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "scipy",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C22",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "h5netcdf",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C23",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "h5py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C24",
+   "rule": 3,
+   "sentence": 32,
+   "subject": "matplotlib",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "numpy>=2.0",
+      "subject": "numpy",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-base>=1.0",
+      "subject": "arviz-base",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-plots>=1.1",
+      "subject": "arviz-plots",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "arviz-stats>=1.1",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.1",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "xarray>=2026.0",
+      "subject": "xarray",
+      "slots": {
+       "value": "2026.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "scipy>=1.0",
+      "subject": "scipy",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5netcdf>=1.0",
+      "subject": "h5netcdf",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "h5py>=3.0",
+      "subject": "h5py",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 32,
+      "quote": "matplotlib>=3.0",
+      "subject": "matplotlib",
+      "slots": {
+       "value": "3.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C25",
+   "rule": 3,
+   "sentence": 33,
+   "subject": "great-docs",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 33,
+      "quote": "great-docs>=0.17.0",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.17.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 33,
+      "quote": "<0.18",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.18",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 33,
+      "quote": "numpydoc>=1.11",
+      "subject": "numpydoc",
+      "slots": {
+       "value": "1.11",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 33,
+      "quote": "great-docs>=0.17.0",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.17.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C26",
+   "rule": 3,
+   "sentence": 33,
+   "subject": "great-docs",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 33,
+      "quote": "great-docs>=0.17.0",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.17.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 33,
+      "quote": "<0.18",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.18",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 33,
+      "quote": "numpydoc>=1.11",
+      "subject": "numpydoc",
+      "slots": {
+       "value": "1.11",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 33,
+      "quote": "<0.18",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.18",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C27",
+   "rule": 3,
+   "sentence": 33,
+   "subject": "numpydoc",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 33,
+      "quote": "great-docs>=0.17.0",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.17.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 33,
+      "quote": "<0.18",
+      "subject": "great-docs",
+      "slots": {
+       "value": "0.18",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 33,
+      "quote": "numpydoc>=1.11",
+      "subject": "numpydoc",
+      "slots": {
+       "value": "1.11",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 33,
+      "quote": "numpydoc>=1.11",
+      "subject": "numpydoc",
+      "slots": {
+       "value": "1.11",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C28",
+   "rule": 3,
+   "sentence": 34,
+   "subject": "arviz-stats",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 34,
+      "quote": "arviz-stats >= 1.0.0",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.0.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 34,
+      "quote": "NumPyro ≥ 0.22",
+      "subject": "NumPyro",
+      "slots": {
+       "value": "0.22",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 34,
+      "quote": "ArviZ ≥ 1.0",
+      "subject": "ArviZ",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 34,
+      "quote": "arviz-stats >= 1.0.0",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.0.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C29",
+   "rule": 3,
+   "sentence": 34,
+   "subject": "NumPyro",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 34,
+      "quote": "arviz-stats >= 1.0.0",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.0.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 34,
+      "quote": "NumPyro ≥ 0.22",
+      "subject": "NumPyro",
+      "slots": {
+       "value": "0.22",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 34,
+      "quote": "ArviZ ≥ 1.0",
+      "subject": "ArviZ",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 34,
+      "quote": "NumPyro ≥ 0.22",
+      "subject": "NumPyro",
+      "slots": {
+       "value": "0.22",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C30",
+   "rule": 3,
+   "sentence": 34,
+   "subject": "ArviZ",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 34,
+      "quote": "arviz-stats >= 1.0.0",
+      "subject": "arviz-stats",
+      "slots": {
+       "value": "1.0.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 34,
+      "quote": "NumPyro ≥ 0.22",
+      "subject": "NumPyro",
+      "slots": {
+       "value": "0.22",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 34,
+      "quote": "ArviZ ≥ 1.0",
+      "subject": "ArviZ",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 34,
+      "quote": "ArviZ ≥ 1.0",
+      "subject": "ArviZ",
+      "slots": {
+       "value": "1.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C31",
+   "rule": 3,
+   "sentence": 45,
+   "subject": "ArviZ",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 45,
+      "quote": "\"ArviZ 0.23\" as the classic stack",
+      "subject": "ArviZ",
+      "slots": {
+       "value": "0.23",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 45,
+      "quote": "\"ArviZ 0.23\" as the classic stack",
+      "subject": "ArviZ",
+      "slots": {
+       "value": "0.23",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C32",
+   "rule": 3,
+   "sentence": 79,
+   "subject": "worktrees",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 79,
+      "quote": ".claude/worktrees/<name>/",
+      "subject": "worktrees",
+      "slots": {
+       "value": ".claude/worktrees/<name>/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 79,
+      "quote": ".claude/worktrees/<name>/",
+      "subject": "worktrees",
+      "slots": {
+       "value": ".claude/worktrees/<name>/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C33",
+   "rule": 3,
+   "sentence": 84,
+   "subject": "CLAUDE.md",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 84,
+      "quote": "a 200-line budget",
+      "subject": "CLAUDE.md",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 84,
+      "quote": "a 200-line budget",
+      "subject": "CLAUDE.md",
+      "slots": {
+       "value": "200",
+       "unit": "lines",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C34",
+   "rule": 3,
+   "sentence": 86,
+   "subject": "Exact pins",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 86,
+      "quote": "Exact pins in one file",
+      "subject": "Exact pins",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 86,
+      "quote": "Exact pins in one file",
+      "subject": "Exact pins",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C35",
+   "rule": 3,
+   "sentence": 87,
+   "subject": "version per package",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 87,
+      "quote": "One version per package for the whole repo",
+      "subject": "version per package",
+      "slots": {
+       "value": "1",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 87,
+      "quote": "One version per package for the whole repo",
+      "subject": "version per package",
+      "slots": {
+       "value": "1",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C36",
+   "rule": 3,
+   "sentence": 88,
+   "subject": "freeze date",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 88,
+      "quote": "One freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "freeze date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 88,
+      "quote": "No lock file",
+      "subject": "lock file",
+      "slots": {
+       "value": "0",
+       "unit": "lock files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 88,
+      "quote": "One freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "freeze date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C37",
+   "rule": 3,
+   "sentence": 88,
+   "subject": "lock file",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 88,
+      "quote": "One freeze date",
+      "subject": "freeze date",
+      "slots": {
+       "value": "1",
+       "unit": "freeze date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 88,
+      "quote": "No lock file",
+      "subject": "lock file",
+      "slots": {
+       "value": "0",
+       "unit": "lock files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 88,
+      "quote": "No lock file",
+      "subject": "lock file",
+      "slots": {
+       "value": "0",
+       "unit": "lock files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C38",
+   "rule": 2,
+   "sentence": 89,
+   "subject": "Script floors",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 89,
+      "quote": "Script floors (3.11, 3.12) and the 3.9 floor stay user promises in their own files",
+      "subject": "Script floors",
+      "slots": {
+       "value": "[3.11, 3.12]",
+       "unit": "Python version",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "Script floors (3.11, 3.12)",
+      "subject": "Script floors",
+      "slots": {
+       "value": "[3.11, 3.12]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 89,
+      "quote": "Script floors (3.11, 3.12) and the 3.9 floor stay user promises in their own files",
+      "subject": "Script floors",
+      "slots": {
+       "value": "[3.11, 3.12]",
+       "unit": "Python version",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "Script floors (3.11, 3.12)",
+      "subject": "Script floors",
+      "slots": {
+       "value": "[3.11, 3.12]",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C39",
+   "rule": 2,
+   "sentence": 89,
+   "subject": "the 3.9 floor",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 89,
+      "quote": "the 3.9 floor stay user promises in their own files",
+      "subject": "the 3.9 floor",
+      "slots": {
+       "value": "3.9",
+       "unit": "Python version",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "the 3.9 floor",
+      "subject": "3.9 floor",
+      "slots": {
+       "value": "3.9",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 89,
+      "quote": "the 3.9 floor stay user promises in their own files",
+      "subject": "the 3.9 floor",
+      "slots": {
+       "value": "3.9",
+       "unit": "Python version",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 89,
+      "quote": "the 3.9 floor",
+      "subject": "3.9 floor",
+      "slots": {
+       "value": "3.9",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C40",
+   "rule": 3,
+   "sentence": 90,
+   "subject": "skills/",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 90,
+      "quote": "in skills/",
+      "subject": "skills/",
+      "slots": {
+       "value": "skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 90,
+      "quote": "in skills/",
+      "subject": "skills/",
+      "slots": {
+       "value": "skills/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C41",
+   "rule": 2,
+   "sentence": 91,
+   "subject": "drift run",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 91,
+      "quote": "On demand, and in a weekly advisory CI job",
+      "subject": "drift run",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 91,
+      "quote": "weekly advisory CI job",
+      "subject": "advisory CI job",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 91,
+      "quote": "On demand, and in a weekly advisory CI job",
+      "subject": "drift run",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 91,
+      "quote": "weekly advisory CI job",
+      "subject": "advisory CI job",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C42",
+   "rule": 3,
+   "sentence": 92,
+   "subject": "file that a person edits",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "One file that a person edits",
+      "subject": "file that a person edits",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 92,
+      "quote": "a --check mode as a commit lint",
+      "subject": "--check mode",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "One file that a person edits",
+      "subject": "file that a person edits",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C43",
+   "rule": 3,
+   "sentence": 92,
+   "subject": "--check mode",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "One file that a person edits",
+      "subject": "file that a person edits",
+      "slots": {
+       "value": "1",
+       "unit": "file",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 92,
+      "quote": "a --check mode as a commit lint",
+      "subject": "--check mode",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 92,
+      "quote": "a --check mode as a commit lint",
+      "subject": "--check mode",
+      "slots": {
+       "value": "--check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C44",
+   "rule": 2,
+   "sentence": 96,
+   "subject": "[gates] snippets",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19 # a TOML date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "date set by bump on the day of execution",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]] # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "snippets",
+      "slots": {
+       "value": "[arviz, arviz-base, arviz-stats, arviz-plots, numpyro, jax, numpy, matplotlib]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "[gates] snippets",
+      "slots": {
+       "value": "[\"arviz\", \"arviz-base\", \"arviz-stats\", \"arviz-plots\", \"numpyro\", \"jax\", \"numpy\", \"matplotlib\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 96,
+      "quote": "snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']",
+      "subject": "snippets",
+      "slots": {
+       "value": "[arviz, arviz-base, arviz-stats, arviz-plots, numpyro, jax, numpy, matplotlib]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C45",
+   "rule": 2,
+   "sentence": 96,
+   "subject": "[gates] jax-cpu",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19 # a TOML date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "date set by bump on the day of execution",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]] # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "jax-cpu",
+      "slots": {
+       "value": "[jax, jaxlib, flax, optax, orbax-checkpoint, equinox, diffrax, e3nn-jax, numpy]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "[gates] jax-cpu",
+      "slots": {
+       "value": "[\"jax\", \"jaxlib\", \"flax\", \"optax\", \"orbax-checkpoint\", \"equinox\", \"diffrax\", \"e3nn-jax\", \"numpy\"]",
+       "unit": "packages",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 96,
+      "quote": "jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']",
+      "subject": "jax-cpu",
+      "slots": {
+       "value": "[jax, jaxlib, flax, optax, orbax-checkpoint, equinox, diffrax, e3nn-jax, numpy]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C46",
+   "rule": 4,
+   "sentence": 96,
+   "subject": "[freeze] date",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19 # a TOML date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "date set by bump on the day of execution",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]] # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19 # a TOML date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "date set by bump on the day of execution",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C47",
+   "rule": 3,
+   "sentence": 96,
+   "subject": "[[override]]",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "[freeze] date = 2026-10-19 # a TOML date",
+      "subject": "[freeze] date",
+      "slots": {
+       "value": "2026-10-19",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "date set by bump on the day of execution",
+       "unit": "TOML date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 96,
+      "quote": "# [[override]] # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 96,
+      "quote": "# [[override]] # gate, package, version, reason; empty at the start",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "[]",
+       "unit": "entries",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C48",
+   "rule": 3,
+   "sentence": 107,
+   "subject": "sync --check",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 107,
+      "quote": "sync --check fails when any of them differs",
+      "subject": "sync --check",
+      "slots": {
+       "value": "sync --check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 107,
+      "quote": "sync --check fails when any of them differs",
+      "subject": "sync --check",
+      "slots": {
+       "value": "sync --check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C49",
+   "rule": 2,
+   "sentence": 109,
+   "subject": "`.python-version` (repo root)",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root) | the `[python] dev` value",
+      "subject": "`.python-version` (repo root)",
+      "slots": {
+       "value": "3.13",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 109,
+      "quote": ".python-version (repo root)",
+      "subject": ".python-version",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 109,
+      "quote": "`.python-version` (repo root) | the `[python] dev` value",
+      "subject": "`.python-version` (repo root)",
+      "slots": {
+       "value": "3.13",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 109,
+      "quote": ".python-version (repo root)",
+      "subject": ".python-version",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C50",
+   "rule": 2,
+   "sentence": 110,
+   "subject": "`uv.toml` (repo root) `exclude-newer`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "`uv.toml` (repo root) `exclude-newer`",
+      "slots": {
+       "value": "(freeze date + 1 day)T00:00:00Z",
+       "unit": "RFC 3339 timestamp",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "Files uploaded on the freeze date itself (UTC) are included",
+      "subject": "Files uploaded on the freeze date itself",
+      "slots": {
+       "value": "freeze date (UTC)",
+       "unit": "day",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "uv.toml (repo root)",
+      "subject": "uv.toml",
+      "slots": {
+       "value": "uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 110,
+      "quote": "exclude-newer set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "`exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "`uv.toml` (repo root) `exclude-newer`",
+      "slots": {
+       "value": "(freeze date + 1 day)T00:00:00Z",
+       "unit": "RFC 3339 timestamp",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "uv.toml (repo root)",
+      "subject": "uv.toml",
+      "slots": {
+       "value": "uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C51",
+   "rule": 3,
+   "sentence": 110,
+   "subject": "Files uploaded on the freeze date itself",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "Files uploaded on the freeze date itself (UTC) are included",
+      "subject": "Files uploaded on the freeze date itself",
+      "slots": {
+       "value": "freeze date (UTC)",
+       "unit": "day",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "exclude-newer set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "Files uploaded on the freeze date itself (UTC) are included",
+      "subject": "Files uploaded on the freeze date itself",
+      "slots": {
+       "value": "freeze date (UTC)",
+       "unit": "day",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C52",
+   "rule": 4,
+   "sentence": 110,
+   "subject": "exclude-newer",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 110,
+      "quote": "Files uploaded on the freeze date itself (UTC) are included",
+      "subject": "Files uploaded on the freeze date itself",
+      "slots": {
+       "value": "freeze date (UTC)",
+       "unit": "day",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "exclude-newer set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 110,
+      "quote": "exclude-newer set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date",
+      "subject": "exclude-newer",
+      "slots": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "out",
+       "default": "none"
+      },
+      "other": {
+       "value": "00:00:00Z on the day after the freeze date",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C53",
+   "rule": 2,
+   "sentence": 111,
+   "subject": "`skills/uv.toml`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml` | no settings, and a comment that names `build/versions.toml`",
+      "subject": "`skills/uv.toml`",
+      "slots": {
+       "value": "no settings; comment naming \"build/versions.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "skills/uv.toml",
+      "subject": "skills/uv.toml",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "no settings",
+      "subject": "settings",
+      "slots": {
+       "value": "0",
+       "unit": "settings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "a comment that names build/versions.toml",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 111,
+      "quote": "`skills/uv.toml` | no settings, and a comment that names `build/versions.toml`",
+      "subject": "`skills/uv.toml`",
+      "slots": {
+       "value": "no settings; comment naming \"build/versions.toml\"",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "skills/uv.toml",
+      "subject": "skills/uv.toml",
+      "slots": {
+       "value": "skills/uv.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C54",
+   "rule": 3,
+   "sentence": 111,
+   "subject": "settings",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "no settings",
+      "subject": "settings",
+      "slots": {
+       "value": "0",
+       "unit": "settings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "a comment that names build/versions.toml",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "no settings",
+      "subject": "settings",
+      "slots": {
+       "value": "0",
+       "unit": "settings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C55",
+   "rule": 3,
+   "sentence": 111,
+   "subject": "comment",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "no settings",
+      "subject": "settings",
+      "slots": {
+       "value": "0",
+       "unit": "settings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 111,
+      "quote": "a comment that names build/versions.toml",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 111,
+      "quote": "a comment that names build/versions.toml",
+      "subject": "comment",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C56",
+   "rule": 3,
+   "sentence": 114,
+   "subject": "Claude Code, Codex and Gemini",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 114,
+      "quote": "Claude Code, Codex and Gemini",
+      "subject": "Claude Code, Codex and Gemini",
+      "slots": {
+       "value": "[Claude Code, Codex, Gemini]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 114,
+      "quote": "Claude Code, Codex and Gemini",
+      "subject": "Claude Code, Codex and Gemini",
+      "slots": {
+       "value": "[Claude Code, Codex, Gemini]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C57",
+   "rule": 2,
+   "sentence": 115,
+   "subject": "`stack(gate)`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`, the list of `pkg==version` strings for a gate after overrides",
+      "subject": "`stack(gate)`",
+      "slots": {
+       "value": "[\"pkg==version\", ...]",
+       "unit": "strings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 115,
+      "quote": "stack(gate), the list of pkg==version strings",
+      "subject": "stack(gate)",
+      "slots": {
+       "value": "pkg==version",
+       "unit": "strings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 115,
+      "quote": "`stack(gate)`, the list of `pkg==version` strings for a gate after overrides",
+      "subject": "`stack(gate)`",
+      "slots": {
+       "value": "[\"pkg==version\", ...]",
+       "unit": "strings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 115,
+      "quote": "stack(gate), the list of pkg==version strings",
+      "subject": "stack(gate)",
+      "slots": {
+       "value": "pkg==version",
+       "unit": "strings",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C58",
+   "rule": 2,
+   "sentence": 117,
+   "subject": "`PINNED`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 117,
+      "quote": "`PINNED` (moved out of `build/snippet_preamble.py`)",
+      "subject": "`PINNED`",
+      "slots": {
+       "value": "build/check_snippets.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "PINNED (moved out of build/snippet_preamble.py), RUN_REMEDIATION and API_REMEDIATION",
+      "subject": "build/check_snippets.py",
+      "slots": {
+       "value": "[PINNED, RUN_REMEDIATION, API_REMEDIATION]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 117,
+      "quote": "moved out of build/snippet_preamble.py",
+      "subject": "PINNED",
+      "slots": {
+       "value": "build/snippet_preamble.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 117,
+      "quote": "`PINNED` (moved out of `build/snippet_preamble.py`)",
+      "subject": "`PINNED`",
+      "slots": {
+       "value": "build/check_snippets.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "moved out of build/snippet_preamble.py",
+      "subject": "PINNED",
+      "slots": {
+       "value": "build/snippet_preamble.py",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C59",
+   "rule": 3,
+   "sentence": 117,
+   "subject": "build/check_snippets.py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "PINNED (moved out of build/snippet_preamble.py), RUN_REMEDIATION and API_REMEDIATION",
+      "subject": "build/check_snippets.py",
+      "slots": {
+       "value": "[PINNED, RUN_REMEDIATION, API_REMEDIATION]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 117,
+      "quote": "PINNED (moved out of build/snippet_preamble.py), RUN_REMEDIATION and API_REMEDIATION",
+      "subject": "build/check_snippets.py",
+      "slots": {
+       "value": "[PINNED, RUN_REMEDIATION, API_REMEDIATION]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C60",
+   "rule": 3,
+   "sentence": 118,
+   "subject": "Tier 2",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 118,
+      "quote": "Tier 2 (--api)",
+      "subject": "Tier 2",
+      "slots": {
+       "value": "--api",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 118,
+      "quote": "Tier 2 (--api)",
+      "subject": "Tier 2",
+      "slots": {
+       "value": "--api",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C61",
+   "rule": 2,
+   "sentence": 119,
+   "subject": "`build/check_jax_examples.py` and its documented command",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 119,
+      "quote": "they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`",
+      "subject": "`build/check_jax_examples.py` and its documented command",
+      "slots": {
+       "value": "stack('jax-cpu')",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 119,
+      "quote": "stack('jax-cpu')",
+      "subject": "build/check_jax_examples.py",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 119,
+      "quote": "specs/verification/32-jax-cpu.txt",
+      "subject": "--with-requirements",
+      "slots": {
+       "value": "specs/verification/32-jax-cpu.txt",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 119,
+      "quote": "they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`",
+      "subject": "`build/check_jax_examples.py` and its documented command",
+      "slots": {
+       "value": "stack('jax-cpu')",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 119,
+      "quote": "stack('jax-cpu')",
+      "subject": "build/check_jax_examples.py",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C62",
+   "rule": 3,
+   "sentence": 119,
+   "subject": "--with-requirements",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 119,
+      "quote": "specs/verification/32-jax-cpu.txt",
+      "subject": "--with-requirements",
+      "slots": {
+       "value": "specs/verification/32-jax-cpu.txt",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 119,
+      "quote": "specs/verification/32-jax-cpu.txt",
+      "subject": "--with-requirements",
+      "slots": {
+       "value": "specs/verification/32-jax-cpu.txt",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C63",
+   "rule": 3,
+   "sentence": 120,
+   "subject": "build/run_suites.py",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 120,
+      "quote": "build/run_suites.py: DEFAULT_PYTHONS",
+      "subject": "build/run_suites.py",
+      "slots": {
+       "value": "DEFAULT_PYTHONS",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 120,
+      "quote": "build/run_suites.py: DEFAULT_PYTHONS",
+      "subject": "build/run_suites.py",
+      "slots": {
+       "value": "DEFAULT_PYTHONS",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C64",
+   "rule": 3,
+   "sentence": 124,
+   "subject": "build/cc_guide/notice.sh:114 and build/githooks/pre-commit:15",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 124,
+      "quote": "build/cc_guide/notice.sh:114 and build/githooks/pre-commit:15",
+      "subject": "build/cc_guide/notice.sh:114 and build/githooks/pre-commit:15",
+      "slots": {
+       "value": "[build/cc_guide/notice.sh:114, build/githooks/pre-commit:15]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 124,
+      "quote": "build/cc_guide/notice.sh:114 and build/githooks/pre-commit:15",
+      "subject": "build/cc_guide/notice.sh:114 and build/githooks/pre-commit:15",
+      "slots": {
+       "value": "[build/cc_guide/notice.sh:114, build/githooks/pre-commit:15]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C65",
+   "rule": 3,
+   "sentence": 126,
+   "subject": "This",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 126,
+      "quote": "CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, the usage docstrings in build/, hooks/ and the skill test files",
+      "subject": "This",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, build/, hooks/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 126,
+      "quote": "CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, the usage docstrings in build/, hooks/ and the skill test files",
+      "subject": "This",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/run_commit_lints.sh, build/, hooks/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C66",
+   "rule": 2,
+   "sentence": 131,
+   "subject": "`sync [--check]`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 131,
+      "quote": "`sync [--check]` | no",
+      "subject": "`sync [--check]`",
+      "slots": {
+       "value": "no network",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 131,
+      "quote": "sync [--check]",
+      "subject": "sync",
+      "slots": {
+       "value": "sync [--check]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 131,
+      "quote": "`sync [--check]` | no",
+      "subject": "`sync [--check]`",
+      "slots": {
+       "value": "no network",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 131,
+      "quote": "sync [--check]",
+      "subject": "sync",
+      "slots": {
+       "value": "sync [--check]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C67",
+   "rule": 2,
+   "sentence": 133,
+   "subject": "`verify` re-verify set",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 133,
+      "quote": "Runs the re-verify set on the file's versions: Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras`",
+      "subject": "`verify` re-verify set",
+      "slots": {
+       "value": "[\"Tier 2\", \"Tier 3\", \"JAX CPU examples\", \"run_suites.py --all --extras\"]",
+       "unit": "checks",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "verify [--pin pkg==X ...]",
+      "subject": "verify",
+      "slots": {
+       "value": "verify [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 133,
+      "quote": "run_suites.py --all --extras",
+      "subject": "re-verify set",
+      "slots": {
+       "value": "run_suites.py --all --extras",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 133,
+      "quote": "Runs the re-verify set on the file's versions: Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras`",
+      "subject": "`verify` re-verify set",
+      "slots": {
+       "value": "[\"Tier 2\", \"Tier 3\", \"JAX CPU examples\", \"run_suites.py --all --extras\"]",
+       "unit": "checks",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "run_suites.py --all --extras",
+      "subject": "re-verify set",
+      "slots": {
+       "value": "run_suites.py --all --extras",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C68",
+   "rule": 3,
+   "sentence": 133,
+   "subject": "verify",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "verify [--pin pkg==X ...]",
+      "subject": "verify",
+      "slots": {
+       "value": "verify [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 133,
+      "quote": "verify [--pin pkg==X ...]",
+      "subject": "verify",
+      "slots": {
+       "value": "verify [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C69",
+   "rule": 2,
+   "sentence": 134,
+   "subject": "`bump [--date D]`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "`bump [--date D]`",
+      "slots": {
+       "value": "D",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "bump [--date D] [--only pkg ...]",
+      "subject": "bump",
+      "slots": {
+       "value": "bump [--date D] [--only pkg ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "freeze date (default: today)",
+      "subject": "freeze date",
+      "slots": {
+       "value": "today",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "one joint resolve",
+      "subject": "joint resolve",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 134,
+      "quote": "Sets the freeze date (default: today)",
+      "subject": "`bump [--date D]`",
+      "slots": {
+       "value": "D",
+       "unit": "date",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "bump [--date D] [--only pkg ...]",
+      "subject": "bump",
+      "slots": {
+       "value": "bump [--date D] [--only pkg ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C70",
+   "rule": 3,
+   "sentence": 134,
+   "subject": "freeze date",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "freeze date (default: today)",
+      "subject": "freeze date",
+      "slots": {
+       "value": "today",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "one joint resolve",
+      "subject": "joint resolve",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "freeze date (default: today)",
+      "subject": "freeze date",
+      "slots": {
+       "value": "today",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C71",
+   "rule": 3,
+   "sentence": 134,
+   "subject": "joint resolve",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "freeze date (default: today)",
+      "subject": "freeze date",
+      "slots": {
+       "value": "today",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "today"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 134,
+      "quote": "one joint resolve",
+      "subject": "joint resolve",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 134,
+      "quote": "one joint resolve",
+      "subject": "joint resolve",
+      "slots": {
+       "value": "1",
+       "unit": "joint resolve",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C72",
+   "rule": 3,
+   "sentence": 135,
+   "subject": "drift",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "drift [--pin pkg==X ...]",
+      "subject": "drift",
+      "slots": {
+       "value": "drift [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 135,
+      "quote": "drift [--pin pkg==X ...]",
+      "subject": "drift",
+      "slots": {
+       "value": "drift [--pin pkg==X ...]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C73",
+   "rule": 2,
+   "sentence": 136,
+   "subject": "`check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 136,
+      "quote": "`check` | no | The R4 lint",
+      "subject": "`check`",
+      "slots": {
+       "value": "no network",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 136,
+      "quote": "check",
+      "subject": "check",
+      "slots": {
+       "value": "check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 136,
+      "quote": "`check` | no | The R4 lint",
+      "subject": "`check`",
+      "slots": {
+       "value": "no network",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 136,
+      "quote": "check",
+      "subject": "check",
+      "slots": {
+       "value": "check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C74",
+   "rule": 3,
+   "sentence": 139,
+   "subject": "--pin",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "--pin changes one package for one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "package",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 139,
+      "quote": "one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "run",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "--pin changes one package for one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "package",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C75",
+   "rule": 3,
+   "sentence": 139,
+   "subject": "--pin",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "--pin changes one package for one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "package",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 139,
+      "quote": "one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "run",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 139,
+      "quote": "one run",
+      "subject": "--pin",
+      "slots": {
+       "value": "1",
+       "unit": "run",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C76",
+   "rule": 3,
+   "sentence": 140,
+   "subject": "A bump",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 140,
+      "quote": "in one change",
+      "subject": "A bump",
+      "slots": {
+       "value": "1",
+       "unit": "change",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 140,
+      "quote": "in one change",
+      "subject": "A bump",
+      "slots": {
+       "value": "1",
+       "unit": "change",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C77",
+   "rule": 2,
+   "sentence": 162,
+   "subject": "Live files",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 162,
+      "quote": "Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "[\"CLAUDE.md\", \"AGENTS.md\", \"GEMINI.md\", \"build/\", \"hooks/\", \"skills/\", \".claude/skills/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 162,
+      "quote": "CLAUDE.md, AGENTS.md, GEMINI.md and the files under build/, hooks/, skills/ and .claude/skills/",
+      "subject": "Live files",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/, hooks/, skills/, .claude/skills/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 162,
+      "quote": "Live files are `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and the files under `build/`, `hooks/`, `skills/` and `.claude/skills/`",
+      "subject": "Live files",
+      "slots": {
+       "value": "[\"CLAUDE.md\", \"AGENTS.md\", \"GEMINI.md\", \"build/\", \"hooks/\", \"skills/\", \".claude/skills/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 162,
+      "quote": "CLAUDE.md, AGENTS.md, GEMINI.md and the files under build/, hooks/, skills/ and .claude/skills/",
+      "subject": "Live files",
+      "slots": {
+       "value": "[CLAUDE.md, AGENTS.md, GEMINI.md, build/, hooks/, skills/, .claude/skills/]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C78",
+   "rule": 2,
+   "sentence": 164,
+   "subject": "Prose citations",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "[\"skills/**/*.md\", \"skills/*/scripts/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "skills/**/*.md",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "skills/**/*.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 164,
+      "quote": "skills/*/scripts/",
+      "subject": "script headers",
+      "slots": {
+       "value": "skills/*/scripts/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 164,
+      "quote": "In `skills/**/*.md` and the script headers under `skills/*/scripts/`",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "[\"skills/**/*.md\", \"skills/*/scripts/\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "skills/**/*.md",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "skills/**/*.md",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C79",
+   "rule": 3,
+   "sentence": 164,
+   "subject": "script headers",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "skills/*/scripts/",
+      "subject": "script headers",
+      "slots": {
+       "value": "skills/*/scripts/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "skills/*/scripts/",
+      "subject": "script headers",
+      "slots": {
+       "value": "skills/*/scripts/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C80",
+   "rule": 3,
+   "sentence": 164,
+   "subject": "Prose citations",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "skills/*/scripts/",
+      "subject": "script headers",
+      "slots": {
+       "value": "skills/*/scripts/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 164,
+      "quote": "or \"Python\"",
+      "subject": "Prose citations",
+      "slots": {
+       "value": "Python",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C81",
+   "rule": 3,
+   "sentence": 167,
+   "subject": "History",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 167,
+      "quote": "\"ArviZ 0.23\"",
+      "subject": "History",
+      "slots": {
+       "value": "ArviZ 0.23",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 167,
+      "quote": "HISTORICAL allowlist",
+      "subject": "History",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 167,
+      "quote": "\"ArviZ 0.23\"",
+      "subject": "History",
+      "slots": {
+       "value": "ArviZ 0.23",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C82",
+   "rule": 3,
+   "sentence": 167,
+   "subject": "History",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 167,
+      "quote": "\"ArviZ 0.23\"",
+      "subject": "History",
+      "slots": {
+       "value": "ArviZ 0.23",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 167,
+      "quote": "HISTORICAL allowlist",
+      "subject": "History",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 167,
+      "quote": "HISTORICAL allowlist",
+      "subject": "History",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C83",
+   "rule": 3,
+   "sentence": 168,
+   "subject": "Python floor",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "requires-python must match the Python floor in its SKILL.md compatibility: line",
+      "subject": "Python floor",
+      "slots": {
+       "value": "[requires-python, compatibility:]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 168,
+      "quote": "requires-python must match the Python floor in its SKILL.md compatibility: line",
+      "subject": "Python floor",
+      "slots": {
+       "value": "[requires-python, compatibility:]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C84",
+   "rule": 2,
+   "sentence": 170,
+   "subject": "`HISTORICAL`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 170,
+      "quote": "`HISTORICAL` is keyed by the literal phrase, not by file and line",
+      "subject": "`HISTORICAL`",
+      "slots": {
+       "value": "literal phrase",
+       "unit": "key",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 170,
+      "quote": "HISTORICAL",
+      "subject": "HISTORICAL",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 170,
+      "quote": "`HISTORICAL` is keyed by the literal phrase, not by file and line",
+      "subject": "`HISTORICAL`",
+      "slots": {
+       "value": "literal phrase",
+       "unit": "key",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 170,
+      "quote": "HISTORICAL",
+      "subject": "HISTORICAL",
+      "slots": {
+       "value": "HISTORICAL",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C85",
+   "rule": 2,
+   "sentence": 172,
+   "subject": "`check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 172,
+      "quote": "`check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures",
+      "subject": "`check`",
+      "slots": {
+       "value": "[\"specs/\", \"LICENSE*\", \"data/\", \"test fixtures\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 172,
+      "quote": "specs/, LICENSE* files, data/ directories or test fixtures",
+      "subject": "check",
+      "slots": {
+       "value": "[specs/, LICENSE*, data/, test fixtures]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 172,
+      "quote": "`check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures",
+      "subject": "`check`",
+      "slots": {
+       "value": "[\"specs/\", \"LICENSE*\", \"data/\", \"test fixtures\"]",
+       "unit": "paths",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 172,
+      "quote": "specs/, LICENSE* files, data/ directories or test fixtures",
+      "subject": "check",
+      "slots": {
+       "value": "[specs/, LICENSE*, data/, test fixtures]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C86",
+   "rule": 3,
+   "sentence": 173,
+   "subject": "run manifest",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 173,
+      "quote": "skills/evaluate-deep-learning/references/experiments.md:86-87",
+      "subject": "run manifest",
+      "slots": {
+       "value": "skills/evaluate-deep-learning/references/experiments.md:86-87",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 173,
+      "quote": "skills/evaluate-deep-learning/references/experiments.md:86-87",
+      "subject": "run manifest",
+      "slots": {
+       "value": "skills/evaluate-deep-learning/references/experiments.md:86-87",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C87",
+   "rule": 2,
+   "sentence": 176,
+   "subject": "`versions_check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint in `build/run_commit_lints.sh`",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "versions_check",
+      "subject": "versions_check",
+      "slots": {
+       "value": "versions_check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "the tenth commit lint",
+      "subject": "versions_check",
+      "slots": {
+       "value": "10",
+       "unit": "commit lints",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "`versions_check` (`uv run python build/versions.py check`) becomes the tenth commit lint in `build/run_commit_lints.sh`",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "versions_check",
+      "subject": "versions_check",
+      "slots": {
+       "value": "versions_check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C88",
+   "rule": 2,
+   "sentence": 176,
+   "subject": "`versions_check`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "becomes the tenth commit lint",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "10",
+       "unit": "commit lint position",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "10",
+       "unit": "total commit lints",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "uv run python build/versions.py check",
+      "subject": "versions_check",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 176,
+      "quote": "the tenth commit lint",
+      "subject": "versions_check",
+      "slots": {
+       "value": "10",
+       "unit": "commit lints",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 176,
+      "quote": "becomes the tenth commit lint",
+      "subject": "`versions_check`",
+      "slots": {
+       "value": "10",
+       "unit": "commit lint position",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "10",
+       "unit": "total commit lints",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 176,
+      "quote": "uv run python build/versions.py check",
+      "subject": "versions_check",
+      "slots": {
+       "value": "uv run python build/versions.py check",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C89",
+   "rule": 3,
+   "sentence": 177,
+   "subject": "count of commit lints",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 177,
+      "quote": "CLAUDE.md's count of commit lints, build/githooks/pre-commit and build/test_commit_lints.py",
+      "subject": "count of commit lints",
+      "slots": {
+       "value": "[CLAUDE.md, build/githooks/pre-commit, build/test_commit_lints.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 177,
+      "quote": "CLAUDE.md's count of commit lints, build/githooks/pre-commit and build/test_commit_lints.py",
+      "subject": "count of commit lints",
+      "slots": {
+       "value": "[CLAUDE.md, build/githooks/pre-commit, build/test_commit_lints.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C90",
+   "rule": 3,
+   "sentence": 178,
+   "subject": ".github/workflows/lints.yml",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 178,
+      "quote": ".github/workflows/lints.yml",
+      "subject": ".github/workflows/lints.yml",
+      "slots": {
+       "value": ".github/workflows/lints.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 178,
+      "quote": ".github/workflows/lints.yml",
+      "subject": ".github/workflows/lints.yml",
+      "slots": {
+       "value": ".github/workflows/lints.yml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C91",
+   "rule": 3,
+   "sentence": 179,
+   "subject": "setup-uv",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 179,
+      "quote": "setup-uv takes the interpreter from .python-version",
+      "subject": "setup-uv",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 179,
+      "quote": "setup-uv takes the interpreter from .python-version",
+      "subject": "setup-uv",
+      "slots": {
+       "value": ".python-version",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C92",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "`versions.py drift`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "versions.py drift",
+      "subject": "new workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "new workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "new workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C93",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "new workflow",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "versions.py drift",
+      "subject": "new workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "new workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "new workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "versions.py drift",
+      "subject": "new workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C94",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "new workflow",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "versions.py drift",
+      "subject": "new workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "new workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "new workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "new workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C95",
+   "rule": 3,
+   "sentence": 180,
+   "subject": "new workflow",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule and on manual dispatch",
+      "subject": "`versions.py drift`",
+      "slots": {
+       "value": "weekly",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "versions.py drift",
+      "subject": "new workflow",
+      "slots": {
+       "value": "versions.py drift",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "weekly on a cron schedule",
+      "subject": "new workflow",
+      "slots": {
+       "value": "1",
+       "unit": "week",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "new workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 180,
+      "quote": "on manual dispatch",
+      "subject": "new workflow",
+      "slots": {
+       "value": "manual dispatch",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C96",
+   "rule": 3,
+   "sentence": 190,
+   "subject": "uv behaviors",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 190,
+      "quote": "items 2 to 6",
+      "subject": "uv behaviors",
+      "slots": {
+       "value": "[2, 6]",
+       "unit": "items",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 190,
+      "quote": "items 2 to 6",
+      "subject": "uv behaviors",
+      "slots": {
+       "value": "[2, 6]",
+       "unit": "items",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C97",
+   "rule": 3,
+   "sentence": 191,
+   "subject": "results",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 191,
+      "quote": "specs/verification/",
+      "subject": "results",
+      "slots": {
+       "value": "specs/verification/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 191,
+      "quote": "specs/verification/",
+      "subject": "results",
+      "slots": {
+       "value": "specs/verification/",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C98",
+   "rule": 3,
+   "sentence": 193,
+   "subject": "build/versions.toml",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "build/versions.toml",
+      "subject": "build/versions.toml",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 193,
+      "quote": "bump and verify",
+      "subject": "run",
+      "slots": {
+       "value": "[bump, verify]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "build/versions.toml",
+      "subject": "build/versions.toml",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C99",
+   "rule": 3,
+   "sentence": 193,
+   "subject": "run",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "build/versions.toml",
+      "subject": "build/versions.toml",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 193,
+      "quote": "bump and verify",
+      "subject": "run",
+      "slots": {
+       "value": "[bump, verify]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 193,
+      "quote": "bump and verify",
+      "subject": "run",
+      "slots": {
+       "value": "[bump, verify]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C100",
+   "rule": 3,
+   "sentence": 194,
+   "subject": "JAX version",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 194,
+      "quote": "one JAX version for both gates",
+      "subject": "JAX version",
+      "slots": {
+       "value": "1",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 194,
+      "quote": "one JAX version for both gates",
+      "subject": "JAX version",
+      "slots": {
+       "value": "1",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C101",
+   "rule": 3,
+   "sentence": 196,
+   "subject": "[[override]]",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 196,
+      "quote": "[[override]] for jax-cpu",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 196,
+      "quote": "[[override]] for jax-cpu",
+      "subject": "[[override]]",
+      "slots": {
+       "value": "jax-cpu",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C102",
+   "rule": 4,
+   "sentence": 197,
+   "subject": "Polars",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "Pin Polars at the latest release (2.0.0 on 2026-10-21)",
+      "subject": "Polars",
+      "slots": {
+       "value": "2.0.0",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "latest release on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 197,
+      "quote": "Pin Polars at the latest release (2.0.0 on 2026-10-21)",
+      "subject": "Polars",
+      "slots": {
+       "value": "2.0.0",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": {
+       "value": "latest release on the day of execution",
+       "unit": "version",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": []
+   }
+  },
+  {
+   "id": "C103",
+   "rule": 3,
+   "sentence": 198,
+   "subject": "polars",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 198,
+      "quote": "polars>=2.0 floors",
+      "subject": "polars",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 198,
+      "quote": "polars>=2.0 floors",
+      "subject": "polars",
+      "slots": {
+       "value": "2.0",
+       "unit": "none",
+       "edge": "in",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C104",
+   "rule": 3,
+   "sentence": 201,
+   "subject": "known stale citations",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 201,
+      "quote": "the Polars, Altair and plotly lines, skills/bayesian-workflow/references/model-comparison.md:130, references/model-criticism.md:196 and skills/deep-learning/references/frameworks.md:94-95",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[Polars, Altair, plotly, skills/bayesian-workflow/references/model-comparison.md:130, references/model-criticism.md:196, skills/deep-learning/references/frameworks.md:94-95]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 201,
+      "quote": "the Polars, Altair and plotly lines, skills/bayesian-workflow/references/model-comparison.md:130, references/model-criticism.md:196 and skills/deep-learning/references/frameworks.md:94-95",
+      "subject": "known stale citations",
+      "slots": {
+       "value": "[Polars, Altair, plotly, skills/bayesian-workflow/references/model-comparison.md:130, references/model-criticism.md:196, skills/deep-learning/references/frameworks.md:94-95]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C105",
+   "rule": 3,
+   "sentence": 202,
+   "subject": "open Gaussian-process item",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 202,
+      "quote": "\"on the pinned 0.21.0\"",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "on the pinned 0.21.0",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 202,
+      "quote": "\"on the pinned 0.21.0\"",
+      "subject": "open Gaussian-process item",
+      "slots": {
+       "value": "on the pinned 0.21.0",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C106",
+   "rule": 2,
+   "sentence": 203,
+   "subject": "Retire",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 203,
+      "quote": "Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "subject": "Retire",
+      "slots": {
+       "value": "[\"specs/verification/32-jax-cpu.in\", \"specs/verification/32-jax-cpu.txt\"]",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "specs/verification/32-jax-cpu.in and 32-jax-cpu.txt",
+      "subject": "Retire",
+      "slots": {
+       "value": "[specs/verification/32-jax-cpu.in, 32-jax-cpu.txt]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 203,
+      "quote": "Retire `specs/verification/32-jax-cpu.in` and `32-jax-cpu.txt`",
+      "subject": "Retire",
+      "slots": {
+       "value": "[\"specs/verification/32-jax-cpu.in\", \"specs/verification/32-jax-cpu.txt\"]",
+       "unit": "files",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 203,
+      "quote": "specs/verification/32-jax-cpu.in and 32-jax-cpu.txt",
+      "subject": "Retire",
+      "slots": {
+       "value": "[specs/verification/32-jax-cpu.in, 32-jax-cpu.txt]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C107",
+   "rule": 2,
+   "sentence": 205,
+   "subject": "`rules/clean-code-python.md:30`",
+   "entries": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml`",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "rules/clean-code-python.md:30",
+      "subject": "rules/clean-code-python.md:30",
+      "slots": {
+       "value": "rules/clean-code-python.md:30",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 205,
+      "quote": "build/versions.toml",
+      "subject": "source for the target Python",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [
+     {
+      "sentence": 205,
+      "quote": "Change `rules/clean-code-python.md:30` to name `build/versions.toml`",
+      "subject": "`rules/clean-code-python.md:30`",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "rules/clean-code-python.md:30",
+      "subject": "rules/clean-code-python.md:30",
+      "slots": {
+       "value": "rules/clean-code-python.md:30",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C108",
+   "rule": 3,
+   "sentence": 205,
+   "subject": "source for the target Python",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "build/versions.toml",
+      "subject": "source for the target Python",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 205,
+      "quote": "build/versions.toml",
+      "subject": "source for the target Python",
+      "slots": {
+       "value": "build/versions.toml",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C109",
+   "rule": 3,
+   "sentence": 206,
+   "subject": "each test",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 206,
+      "quote": "red, then green",
+      "subject": "each test",
+      "slots": {
+       "value": "[red, green]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 206,
+      "quote": "red, then green",
+      "subject": "each test",
+      "slots": {
+       "value": "[red, green]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C110",
+   "rule": 3,
+   "sentence": 208,
+   "subject": "each form",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 208,
+      "quote": "equality, range, history",
+      "subject": "each form",
+      "slots": {
+       "value": "[equality, range, history]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 208,
+      "quote": "equality, range, history",
+      "subject": "each form",
+      "slots": {
+       "value": "[equality, range, history]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C111",
+   "rule": 3,
+   "sentence": 209,
+   "subject": "Each finding",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 209,
+      "quote": "a seeded stale literal",
+      "subject": "Each finding",
+      "slots": {
+       "value": "1",
+       "unit": "seeded stale literal",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 209,
+      "quote": "a seeded stale literal",
+      "subject": "Each finding",
+      "slots": {
+       "value": "1",
+       "unit": "seeded stale literal",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C112",
+   "rule": 3,
+   "sentence": 210,
+   "subject": "run_suites.py tests",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 210,
+      "quote": "build/test_run_suites.py and build/test_check_frontmatter.py:434",
+      "subject": "run_suites.py tests",
+      "slots": {
+       "value": "[build/test_run_suites.py, build/test_check_frontmatter.py:434]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 210,
+      "quote": "build/test_run_suites.py and build/test_check_frontmatter.py:434",
+      "subject": "run_suites.py tests",
+      "slots": {
+       "value": "[build/test_run_suites.py, build/test_check_frontmatter.py:434]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C113",
+   "rule": 3,
+   "sentence": 211,
+   "subject": "Exit codes",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "drift, verify and bump exit codes",
+      "subject": "Exit codes",
+      "slots": {
+       "value": "[drift, verify, bump]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 211,
+      "quote": "drift, verify and bump exit codes",
+      "subject": "Exit codes",
+      "slots": {
+       "value": "[drift, verify, bump]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C114",
+   "rule": 3,
+   "sentence": 217,
+   "subject": "NOTICE",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 217,
+      "quote": "NOTICE",
+      "subject": "NOTICE",
+      "slots": {
+       "value": "NOTICE",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 217,
+      "quote": "NOTICE",
+      "subject": "NOTICE",
+      "slots": {
+       "value": "NOTICE",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C115",
+   "rule": 3,
+   "sentence": 218,
+   "subject": "CLAUDE.md edits",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 218,
+      "quote": "CLAUDE.md edits follow the guide sections that build/cc_guide/conformance.toml maps to CLAUDE.md, and check_conformance.py runs before each commit",
+      "subject": "CLAUDE.md edits",
+      "slots": {
+       "value": "[CLAUDE.md, build/cc_guide/conformance.toml, check_conformance.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 218,
+      "quote": "CLAUDE.md edits follow the guide sections that build/cc_guide/conformance.toml maps to CLAUDE.md, and check_conformance.py runs before each commit",
+      "subject": "CLAUDE.md edits",
+      "slots": {
+       "value": "[CLAUDE.md, build/cc_guide/conformance.toml, check_conformance.py]",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C116",
+   "rule": 3,
+   "sentence": 219,
+   "subject": "Plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 219,
+      "quote": "Plan 63",
+      "subject": "Plan",
+      "slots": {
+       "value": "63",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 219,
+      "quote": "build/run_commit_lints.sh",
+      "subject": "Plan 63",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 219,
+      "quote": "Plan 63",
+      "subject": "Plan",
+      "slots": {
+       "value": "63",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C117",
+   "rule": 3,
+   "sentence": 219,
+   "subject": "Plan 63",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 219,
+      "quote": "Plan 63",
+      "subject": "Plan",
+      "slots": {
+       "value": "63",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     },
+     {
+      "sentence": 219,
+      "quote": "build/run_commit_lints.sh",
+      "subject": "Plan 63",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 219,
+      "quote": "build/run_commit_lints.sh",
+      "subject": "Plan 63",
+      "slots": {
+       "value": "build/run_commit_lints.sh",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  },
+  {
+   "id": "C118",
+   "rule": 3,
+   "sentence": 221,
+   "subject": "Plan",
+   "entries": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 221,
+      "quote": "Plan 64",
+      "subject": "Plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   },
+   "asked": {
+    "claude": [],
+    "codex": [
+     {
+      "sentence": 221,
+      "quote": "Plan 64",
+      "subject": "Plan",
+      "slots": {
+       "value": "64",
+       "unit": "none",
+       "edge": "n/a",
+       "default": "none"
+      },
+      "other": null,
+      "plan_lines": "",
+      "amended": "",
+      "note": ""
+     }
+    ]
+   }
+  }
+ ],
+ "agreed": [
+  {
+   "sentence": 94,
+   "subject": "the only file in which a person sets a package version or the dev interpreter",
+   "slots": {
+    "value": "build/versions.toml",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 96,
+   "subject": "[python] dev",
+   "slots": {
+    "value": "'3.13'",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 102,
+   "subject": "Polars",
+   "slots": {
+    "value": "[packages]",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 105,
+   "subject": "`[[override]]` entry",
+   "slots": {
+    "value": "[\"gate\", \"package\", \"version\", \"reason\"]",
+    "unit": "keys",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 107,
+   "subject": "`build/versions.py sync`",
+   "slots": {
+    "value": "3",
+    "unit": "files",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 122,
+   "subject": "`build/run_suites.py` each run",
+   "slots": {
+    "value": "--exclude-newer <date>",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 123,
+   "subject": "`hooks` suite",
+   "slots": {
+    "value": "/usr/bin/python3",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 128,
+   "subject": "A command that needs a pinned stack",
+   "slots": {
+    "value": "uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 132,
+   "subject": "`run`",
+   "slots": {
+    "value": "run <gate> [--pin pkg==X ...] -- <cmd>",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 135,
+   "subject": "`drift` passes",
+   "slots": {
+    "value": "[\"dev Python\", \"newest stable Python\"]",
+    "unit": "passes",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 148,
+   "subject": "`drift` each gate passes",
+   "slots": {
+    "value": "0",
+    "unit": "exit code",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 148,
+   "subject": "`drift` a gate fails",
+   "slots": {
+    "value": "1",
+    "unit": "exit code",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 148,
+   "subject": "`drift` cannot resolve or reach the network",
+   "slots": {
+    "value": "2",
+    "unit": "exit code",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 150,
+   "subject": "`bump`",
+   "slots": {
+    "value": "2",
+    "unit": "exit code",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 161,
+   "subject": "Interpreter literals",
+   "slots": {
+    "value": "--python 3.<n>",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 163,
+   "subject": "interpreter path",
+   "slots": {
+    "value": "/usr/bin/python3",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 176,
+   "subject": "versions_check",
+   "slots": {
+    "value": "10",
+    "unit": "commit lints",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 180,
+   "subject": "new workflow",
+   "slots": {
+    "value": ".github/workflows/versions-drift.yml",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 182,
+   "subject": "permissions",
+   "slots": {
+    "value": "contents: read",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 199,
+   "subject": "reason",
+   "slots": {
+    "value": "\"verified on X, not re-checked on Y\"",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  },
+  {
+   "sentence": 202,
+   "subject": "open Gaussian-process item",
+   "slots": {
+    "value": "specs/deferred_items.md:4492",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   }
+  }
+ ],
+ "outcomes": [
+  {
+   "kind": "returned",
+   "sentence": 96,
+   "subject": "Its tables",
+   "agreed": null,
+   "planner": null,
+   "detail": "claude#6: quote not in S96"
+  },
+  {
+   "kind": "returned",
+   "sentence": 96,
+   "subject": "[cited]",
+   "agreed": null,
+   "planner": null,
+   "detail": "claude#9: quote not in S96"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 61,
+   "subject": "`--exclude-newer`",
+   "agreed": null,
+   "planner": {
+    "value": "2026-10-20T00:00:00Z",
+    "unit": "timestamp",
+    "edge": "out",
+    "default": "none"
+   },
+   "detail": "planner lines 316-318"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 62,
+   "subject": "`--exclude-newer` and `UV_EXCLUDE_NEWER` for a PEP 723 script",
+   "agreed": null,
+   "planner": {
+    "value": "limit the header",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 28-35, 337-340, 499-501; note: The plan's re-probe, run with the cache off, finds that both limit the header. This is the opposite of the spec."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 63,
+   "subject": "cutoff",
+   "agreed": null,
+   "planner": {
+    "value": "2026-10-01T00:00:00Z",
+    "unit": "timestamp",
+    "edge": "out",
+    "default": "none"
+   },
+   "detail": "planner lines 234, 500; note: The amended text says this cutoff gives polars 1.44.2, not 2.0.0."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 64,
+   "subject": "`[tool.uv] exclude-newer` in the script header",
+   "agreed": null,
+   "planner": {
+    "value": "polars 1.44.2",
+    "unit": "version",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 247, 341-342, 500"
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 65,
+   "subject": "bare `polars` header on Python 3.14",
+   "agreed": null,
+   "planner": {
+    "value": "2.0.0",
+    "unit": "version",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 33, 349-350, 512; note: The plan finds 2.0.0. It attributes 1.44.2 to a cached environment."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 68,
+   "subject": "1.44.2 result",
+   "agreed": null,
+   "planner": {
+    "value": "cached environment",
+    "unit": "none",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 28, 512; note: The plan names a cause: uv reused a cached environment."
+  },
+  {
+   "kind": "unchecked",
+   "sentence": 186,
+   "subject": "scheduled workflows",
+   "agreed": null,
+   "planner": {
+    "value": "60",
+    "unit": "days",
+    "edge": "n/a",
+    "default": "none"
+   },
+   "detail": "planner lines 4124, 4173"
+  }
+ ]
+}

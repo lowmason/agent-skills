@@ -58,4 +58,4 @@ rep5 outcome50 false-alarm slot: the same exit status, with unit exit code on on
 rep5 outcome54 false-alarm slot: the same exit 2, with unit exit code on one side only (plan lines 951-955)
 rep5 outcome67 false-alarm form: the reading states the stamp, the stand-in the plan's DF9 test for it (line 1 starts with `<!-- cc-guide: ` and contains ` @`, plan lines 75, 1623-1626)
 rep5 outcome69 real R6.2 names the new file `skills/<name>/scripts/test_new.py`; the plan's DF6 writes `skills/tech-debt/scripts/test_scan.py` (plan lines 72, 1330-1332), and no task amends R6.2; plan 81 labeled the same plan value real
-rep5 outcome3 false the next sentence, "Whatever lies between them goes", keeps the two bounding lines, so the edge is out
+rep5 outcome3 ambiguous R5.2 allows two readings of its edge: "Whatever lies between them goes" keeps the two bounding lines (edge out), while the range 66–125, which the Why section counts as 60 lines of per-suite commands and comments, includes them (edge in); the plan deletes them (plan lines 1514-1515, 1543)

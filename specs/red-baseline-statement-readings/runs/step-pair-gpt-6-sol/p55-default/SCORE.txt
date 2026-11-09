@@ -1,0 +1,5 @@
+rep1 catch=yes near=- conflict_on_plant=yes conflicts=20 unclear=1 missing=124 unchecked=3 skipped=4 returned=0 returned_on_plant=no miss=- to_label_conflict=- to_label_unclear=- amended_sentence=8,41,58,121,122,144 cost=0.8875
+rep2 catch=yes near=- conflict_on_plant=yes conflicts=6 unclear=0 missing=101 unchecked=4 skipped=4 returned=0 returned_on_plant=no miss=- to_label_conflict=- to_label_unclear=- amended_sentence=14,30,31,71,84,128,154 cost=0.8217
+rep3 catch=yes near=- conflict_on_plant=yes conflicts=19 unclear=0 missing=160 unchecked=2 skipped=4 returned=0 returned_on_plant=no miss=- to_label_conflict=- to_label_unclear=- amended_sentence=17,49,134,135,160 cost=1.1563
+rep4 catch=yes near=- conflict_on_plant=yes conflicts=24 unclear=2 missing=142 unchecked=3 skipped=4 returned=0 returned_on_plant=no miss=- to_label_conflict=- to_label_unclear=- amended_sentence=36,61,116,117,143 cost=0.8240
+rep5 catch=yes near=- conflict_on_plant=yes conflicts=5 unclear=0 missing=108 unchecked=3 skipped=4 returned=0 returned_on_plant=no miss=- to_label_conflict=- to_label_unclear=- amended_sentence=51,63,109,129 cost=0.4924

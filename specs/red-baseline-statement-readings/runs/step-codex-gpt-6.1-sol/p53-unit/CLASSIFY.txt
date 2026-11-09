@@ -1,0 +1,2 @@
+rep2 outcome22 near-miss the ruled reading is the type string (C14) and states no unit, so the conflict does not set the spec's characters against the planted UTF-8 bytes (plan lines 25, 730); C15's reading, [1, 500] characters, paired with no stand-in entry
+rep4 outcome28 near-miss the ruled reading is the type string (C17) and states no unit, so the conflict does not set the spec's characters against the planted UTF-8 bytes (plan lines 25, 730); C18's reading, [1, 500] characters after stripping, paired with no stand-in entry
