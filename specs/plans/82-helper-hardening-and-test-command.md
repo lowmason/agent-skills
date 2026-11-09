@@ -28,7 +28,7 @@
 - **Leave alone.** `-C DIR` for the helpers, `task-done`'s own BASE check, finding 28's merge-conflict path, the other bullets of the drift spec's "Suggested disposition", `specs/spec-derived-acceptance-tests.md`, and bare `scripts/` references to bundled scripts other than the five helpers.
 - **Shell.** The Bash tool runs zsh. Quote any `===` or `====` in an echo. Use `/usr/bin/grep` for sweeps. Scratch files go under `/tmp/plan82-work/`.
 - **Public repository.** The plan, kit, record and commits hold no private detail. `build/.scratch/` is never committed.
-- **One execution at a time.** Execution starts only after the owner approves this plan, and only when no other plan executes in this repository.
+- **One execution at a time.** Execution starts only after the owner approves this plan, and only when no other plan executes in this repository. Plan 83's execution was running when the owner approved this plan (2026-11-09), so no execution of this plan starts before plan 83's execution ends.
 - **Completion (D1).** This plan implements no spec, so protocol step 5 retires the plan alone. `specs/superpowers-drift-spec-v7-0-2.md` stays live, because it still holds open findings. Before the retire commit, the protocol records what landed in that file, as it stands on `main` then. Find each place by its heading or its row, not by a line number:
   - "Scope and method", row "Adoption baselines": add `22f0b46` (v7.0.2) for plan 82.
   - "Status of earlier findings": rows 18, 28 and 31 say what plan 82 adopted, with its date. Rows 11 and 12 say that their v7.0.2 items landed under finding 18 in plan 82.
