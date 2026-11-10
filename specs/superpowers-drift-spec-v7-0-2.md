@@ -50,7 +50,7 @@ from the 2026-11-07 workflow review.
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
 | Adoption baselines | Unchanged from the 2026-10-28 revision: `b36e082` (v6.3.0) for plan 22; `8ca22db` (v6.4.2) for plan 40; per-fix commits for plan 50; `bb92a77` (v7.0.0) for plan 60's idea; `2ce8aa1` (v7.0.1) for plans 70, 71, 72 and 75. Nothing was adopted in this revision. Added by plan 82 (2026-11-09): `22f0b46` (v7.0.2) |
 | Previous review | `2ce8aa1` (v7.0.1, 2026-10-21), reviewed 2026-10-28, re-anchored 2026-10-31 |
-| Upstream HEAD | `22f0b46` (v7.0.2, 2026-11-03), still `main` on 2026-11-07 |
+| Upstream HEAD | `22f0b46` (v7.0.2, 2026-11-03), still `main` on 2026-11-07. Re-checked 2026-11-10 with `git ls-remote`: `main` is still `22f0b46`, `dev` is still `df2e996`, and no tag follows v7.0.2 |
 | Our tree | `5beacf5` (2026-11-07). Its unversioned assessment is byte-identical to the v7.0.1 copy before archival annotations; the v7.0.2 file was added later, in `44554e1` |
 | Commits since previous review | 1 on `main`: the release squash merge `22f0b46` (#2657). On upstream's `dev` branch the skill-relevant pull requests merged on 2026-11-02. Their change commits, excluding shared bases of stacked PRs, are: #2644 (`e8cc5c9`), #2654 (`4eb73b6`), #2604 (`f75c01f`, `750ba92`), #2605 (`3735a50`), #2606 (`614d80c`, `de67241`, `0d61007`, `8b0eefc`), #2607 (`6ab1c79`, `74500c1`, `402cfde`), #2602 (`bb3a5aa`), #2608 (`fa50d83`), #2609 (`f713233`) |
 | Files changed under `skills/` since previous review | 19 (+282 / −411). Without brainstorming's `SKILL.md`: 18 (+222 / −373). Five of the 19 are systematic-debugging files that moved out to `tests/` (−328), so the live change to skill text and scripts is 14 files, +282 / −83 |
@@ -129,23 +129,23 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted. v7.0.2 did not touch it |
 | 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |
-| 17 | Skill bodies run past the compaction re-attach cut | SDD and writing-skills splits **done** — plans 71, 72; the writing-skills guide rewrite remains open. Sizes re-taken 2026-11-07: three of our files fail upstream's byte bar, all pass ours, writing-plans by 6 characters. The byte bar stays not adopted until the probe |
+| 17 | Skill bodies run past the compaction re-attach cut | SDD and writing-skills splits **done** — plans 71, 72; the writing-skills guide rewrite remains open. Sizes re-taken 2026-11-07: three of our files fail upstream's byte bar, all pass ours, writing-plans by 6 characters. The byte bar stays not adopted until the probe. Re-taken 2026-11-10: finishing-a-development-branch is now the tightest, 25 characters inside ours, and writing-plans has 311 |
 | 18 | v7.0.2 helper hardening: repository, task IDs, fences, invocation | **New.** One local defect by probe (`task-start` in a repo with no commit); two shared gaps by probe (#2604, #2605); invocation wording partly covered. **Adopted** — plan 82 (2026-11-09), except `-C DIR`, which was not taken |
 | 19 | The autonomy dial is set hard | **New**, workflow. Decided by finding 7; we keep a wider human loop; record only |
 | 20 | No durable record of what wasn't built | **New**, workflow. **Already covered** by the plan-completion protocol; the upstreamable core is three rules |
-| 21 | Per-task test evidence is self-reported in SDD | **New**, workflow. Gap on both sides; a local design item that the tester-seat work also needs |
-| 22 | Spec drift is unaddressed | **New**, workflow. Partly covered by the `## Decisions` log and amendment tasks; a local design item for mid-run rulings |
+| 21 | Per-task test evidence is self-reported in SDD | **New**, workflow. Gap on both sides; a local design item that the tester-seat work also needs. Build plan: plan 84, approved 2026-11-10 |
+| 22 | Spec drift is unaddressed | **New**, workflow. Partly covered by the `## Decisions` log and amendment tasks; a local design item for mid-run rulings. **Addressed by a different design** — plan 80 (2026-11-08). The final-review gate tags a ruling that contradicts the spec, and `specs/history.md` records it. No spec is edited. See the finding |
 | 23 | "Tasks mostly independent" is stated for both executors | **New**, workflow. **Already covered**: our executing-plans routes coupled plans inline |
 | 24 | Planner-authored tests can share a spec misreading | **New**, workflow. Closed with no build (plan 83, owner decision D8, 2026-11-09). Layer 4 of its backlog item stays open in `specs/deferred_items.md` |
 | 25 | requesting-code-review still leads with `HEAD~1` | **New.** **Already covered**; record |
-| 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low |
-| 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides |
-| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone. Step 1 wording **adopted** — plan 82 (2026-11-09); the merge-conflict path stays open |
+| 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low. That half is logged in `specs/deferred_items.md` (2026-11-10) |
+| 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides. The one-sentence fix for the stall is logged in `specs/deferred_items.md` (2026-11-10) |
+| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone. Step 1 wording **adopted** — plan 82 (2026-11-09); the merge-conflict path stays open. It is logged in `specs/deferred_items.md` (2026-11-10) |
 | 29 | using-git-worktrees sets up Python projects wrongly and drops isolation silently | **New.** Setup half **already covered** (`169942a`); the sandbox fallback is a shared design choice |
 | 30 | systematic-debugging's `find-polluter.sh` is still invoked by a relative path upstream | **New.** **Already covered** here (plan 50); upstream's #2607 test does not reach it |
 | 31 | verification-before-completion lacks the documented-test-command pointer | **New.** Claim-specific command selection exists; the more explicit pointer is a wording proposal on both sides, low. **Adopted** — plan 82 (2026-11-09) |
 | 32 | test-driven-development | **New.** Nothing new at v7.0.2; findings 3, 13 and 24 carry it |
-| 33 | writing-skills says nothing about where test scenarios live | **New.** Record; a one-line placement rule on both sides, low |
+| 33 | writing-skills says nothing about where test scenarios live | **New.** Record; a one-line placement rule on both sides, low. Logged in `specs/deferred_items.md` (2026-11-10) |
 
 ## Dismissed without further review
 
@@ -429,6 +429,26 @@ the measure, and the owner's 2026-10-28 decision not to adopt the stricter bar
 until it runs stands. A `references/` split of writing-plans, on the pattern
 of plans 71 and 72, is the next move whichever bar wins, and it would also
 answer the local design items under findings 21 and 22 if those add text.
+
+**Sizes re-taken 2026-11-10** at `71a7025`, by the same two measures. Three
+plan commits changed four of the files. The other three rows above still hold.
+
+| Skill | Bytes | Body characters | Room under our check | Change since 2026-11-07 |
+|---|---|---|---|---|
+| finishing-a-development-branch | 20,792 | 19,975 | 25 | +51, plan 82's Step 1 wording (`f205e3d`) |
+| writing-plans | 20,538 | 19,689 | 311 | −305, plan 80 (`a119dc0`) |
+| subagent-driven-development | 20,270 | 19,426 | 574 | +17, plan 82's helper anchors (`3f1cea5`) |
+| executing-plans | 16,954 | 16,392 | 3,608 | +8, the same commit |
+
+The same three files still fail upstream's byte bar. finishing-a-development-branch
+is now the tightest file under our check: a net addition of 26 body characters
+fails it. So finding 28's conflict path cannot go into that body until text
+moves to `references/`. writing-plans is no longer the urgent case. Plan 84
+needs no writing-plans split: its spec's Constraints drop the split when the
+acceptance step is dropped, and the owner dropped that step when finding 24
+closed (see that finding). Plan 80 put finding 22's gate text in the
+executors' `references/final-review.md` files, and it left the writing-plans
+body 305 characters shorter.
 
 The original review's approximate loop undercounted writing-plans by four
 characters. The verification pass uses the lint's frontmatter boundary
@@ -733,6 +753,11 @@ tests, so the two are one design.
 brainstorm size it. Upstream's `task-done` is the ready pattern; its
 `--with-commit` guard (finding 18) is the version to copy.
 
+**Update 2026-11-10.** No backlog item was written for this finding. The
+tester-seat brainstorm took it into the approved spec that finding 24's
+Disposition names. Plan 84, approved 2026-11-10, is its build plan. It adds
+a `test-run` script that the SDD controller runs before each task review.
+
 ### 22. Spec drift is unaddressed
 
 **Upstream.** The spec is the binding authority and the plan its argument
@@ -755,6 +780,19 @@ than upstream's and still open.
 contradicts spec text becomes a spec amendment or a deferred item with the
 spec path as its closure condition. It can ride with the writing-plans split
 that finding 17 now calls for.
+
+**Update 2026-11-10: addressed by a different design (plan 80).** A
+brainstorm on 2026-11-08 took this finding alone. It became
+`specs/completed/development-history-record.md`, and plan 80 built it
+(merged as #150 on 2026-11-08). The design does not route a contradicting
+ruling into the spec. No spec is edited after its approval. Instead, both
+executors' final-review gates list a ruling that contradicts spec text with
+the tag `contradicts spec: <spec section>`. The plan-completion protocol then
+records it in that plan's entry in `specs/history.md`. Three open backlog
+items came out of this work: the one in section `spec-drift-finding-22`
+(retired plans that point at the live backlog), and the two in section
+`80-development-history-record` (one rule for a revert asked for at the gate,
+and a source for the gate's tags after a `/clear`).
 
 ### 23. "Tasks mostly independent" is stated for both executors — already covered
 
@@ -877,6 +915,8 @@ byte counts suggest.
 get disjoint file sets or separate worktrees, and the dispatcher says which.
 No upstream action.
 
+**Logged 2026-11-10:** the worktree half is a backlog item → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
+
 ### 27. receiving-code-review treats every reviewer as a person
 
 **Upstream.** The skill's reviewers are humans or "External Reviewers"
@@ -903,6 +943,8 @@ and this skill governs the standalone case.
 ruled on under the executor's rules, and that this skill's stop applies
 outside a run, would close the ambiguity on both sides. Low; a wording change
 to a discipline skill, so a micro-test if it is made.
+
+**Logged 2026-11-10:** the one sentence is a backlog item → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 
 ### 28. finishing-a-development-branch guesses the test command and has no conflict path
 
@@ -933,6 +975,8 @@ ask; never resolve a merge conflict on your own initiative.
 **Done** (plan 82, 2026-11-09): finishing-a-development-branch Step 1 runs the project's documented test
 command(s), not a guessed one. The micro-test held: the treatment passed 5 of 5 against a control at
 5 of 5. The conflict path stays open.
+
+**Logged 2026-11-10:** the conflict path is a backlog item → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 
 ### 29. using-git-worktrees sets up Python projects wrongly and drops isolation silently
 
@@ -1042,6 +1086,8 @@ enforces them, the same shape of fix.
 **Disposition: record; a one-line placement rule in the checklist, low.** Not
 a discipline wording; no micro-test.
 
+**Logged 2026-11-10:** the placement line is a backlog item → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
+
 ## Suggested disposition
 
 Under this repo's proportional-process rule:
@@ -1097,13 +1143,18 @@ Under this repo's proportional-process rule:
   design with the tester seat); finding 22 (a ruling that contradicts spec
   text becomes an amendment or a deferred item); finding 26's worktree half;
   finding 28's conflict path; finding 27's one sentence on subagent reviewers;
-  finding 33's placement line.
+  finding 33's placement line. **Update 2026-11-10:** plan 84 is finding
+  21's build plan. Plan 80 addressed finding 22 by a different design (see
+  the finding). The four items for findings 26, 27, 28 and 33 are now in the
+  backlog → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 - **Decided, record only:** finding 19 (finding 7's decision); finding 29's
   sandbox fallback; finding 30's figures; finding 32.
 - **Not adopted until the probe has run:** upstream's whole-file byte bar
   (finding 17). Three of our files now fail it and pass ours; writing-plans is
   6 characters inside our window, so its `references/` split is the next
-  move under either bar.
+  move under either bar. **Update 2026-11-10:** writing-plans now has 311
+  characters of room and finishing-a-development-branch has 25, so
+  finishing-a-development-branch is now the tightest file (finding 17).
 - **Not adopted, recorded:** finding 12's basename collision (M2) and
   interpreter prefixes, finding 14, finding 15 (unchanged at v7.0.2), the
   Windows path fix (#2602), upstream's layout test (#2654).

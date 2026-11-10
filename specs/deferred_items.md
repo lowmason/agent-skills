@@ -6144,3 +6144,51 @@ review and the Plan Completion gate (2026-10-27) add the others.
       re-score. The fix: score a ruling other than `unclear` whose quote is empty as `unclear`, with a selftest
       that fails first. Size: quick-fix. Revisit if: a plan copies `specs/baseline/red-baseline-statement-readings/kit/`,
       as plan 83 copied plan 81's kit.
+
+## superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
+- [ ] **dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift
+      finding 26, the worktree half).** The skill's own example sends three agents to fix three test files at
+      once, in one working tree (`skills/dispatching-parallel-agents/SKILL.md`, the dispatch example near line
+      84). Its only guards are the constraint "Don't change other code" (about line 74) and a full-suite run
+      afterwards. Nothing tells the dispatcher to give each agent a disjoint file set or its own worktree, and
+      using-git-worktrees is written for one session. Upstream has the same gap. The finding's model half is
+      already covered by the skill's explicit-model rule and `hooks/dispatch-model-guard.py`. The proposed fix
+      is one rule: agents that edit files get disjoint file sets or separate worktrees, and the dispatcher says
+      which. The skill is vendored from superpowers, so the edit follows the writing-skills skill and adds a
+      line to `NOTICE`'s superpowers change list. First found in specs/superpowers-drift-spec-v7-0-2.md,
+      2026-11-07. Size: quick-fix. Done when: the rule is in the skill and a `NOTICE` line names it.
+- [ ] **receiving-code-review does not say which rule wins for a subagent reviewer inside a plan run
+      (superpowers drift finding 27).** The skill treats every reviewer as a person. Its stop for a conflict
+      with the partner's prior decisions ("Stop and discuss with your human partner first",
+      `skills/receiving-code-review/SKILL.md`, about lines 91-92) is a stall inside a run whose fix loop rules
+      on each finding instead. executing-plans Step 3 works the whole-plan review's findings through this
+      skill, so the case is live here. In practice the fix loop's `Ruling:` line governs, but no text says so.
+      Upstream has the same gap. The proposed fix is one sentence: inside a plan run, a subagent reviewer's
+      finding is ruled on under the executor's rules, and this skill's stop applies outside a run. It is a
+      wording change to a discipline skill, so it needs a micro-test against a no-guidance control (the
+      writing-skills skill), and a line in `NOTICE`'s superpowers change list. The finding also records the
+      forge-specific `gh api` reply line (about line 214). This item does not cover that line. First found in
+      specs/superpowers-drift-spec-v7-0-2.md, 2026-11-07. Size: plan. Done when: the sentence is in the skill,
+      its micro-test meets its bar against the control, and a `NOTICE` line names it.
+- [ ] **finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the
+      conflict half).** Option 1 runs `git checkout <base-branch>`, `git pull` and `git merge <feature-branch>`
+      (`skills/finishing-a-development-branch/SKILL.md`, about lines 285-287) and says nothing about a
+      conflict. The step after it handles a test failure on the merged result. Upstream has the same gap. The
+      proposed rule: stop, show the conflict, and ask. Never resolve a merge conflict on your own initiative.
+      On 2026-11-10 the body has 25 characters of room under the `compaction-window` check in
+      `build/check_conformance.py` (19,975 of 20,000), so text must move to `references/` before the rule
+      fits. The skill is vendored from superpowers, so the edit follows the writing-skills skill and adds a
+      line to `NOTICE`'s superpowers change list. The finding's Step 1 half is done (plan 82). First found in
+      specs/superpowers-drift-spec-v7-0-2.md, 2026-11-07. Size: plan. Done when: every step that runs
+      `git merge` carries the rule, `build/check_conformance.py` passes, and a `NOTICE` line names it.
+- [ ] **writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The
+      skill tells an author to write pressure scenarios and run a baseline (`skills/writing-skills/SKILL.md`,
+      "RED: Write Failing Test (Baseline)", about line 301). Its Skill Creation Checklist (about line 372) does
+      not say where they go. This repository keeps them as `specs/baseline/red-baseline-<topic>.md`, with kits
+      in `specs/baseline/red-baseline-<topic>/` (CLAUDE.md, Specs & plans). Upstream #2654 moved such files out
+      of its skill directories and enforces that with a test, not with skill text. The proposed fix is one
+      checklist line: scenarios and baseline records go outside the skill directory, and the line names where.
+      The finding rules it is not a discipline wording, so it needs no micro-test. The skill is vendored from
+      superpowers, so add a line to `NOTICE`'s superpowers change list. First found in
+      specs/superpowers-drift-spec-v7-0-2.md, 2026-11-07. Size: quick-fix. Done when: the checklist line is in
+      the skill and a `NOTICE` line names it.
