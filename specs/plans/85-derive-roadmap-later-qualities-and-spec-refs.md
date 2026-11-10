@@ -150,8 +150,9 @@ Defaults this plan settles. The owner approves or amends them as one batch. Each
    task list (not the steps). Step A runs one counted rep. Its first rep that is not VOID feeds step B (fixed before
    any rep). Step B runs 3 reps, and the probe passes when at least 2 of 3 pass. The spec says "one stage plan"; 3 reps
    make one plan's read less noisy for about $1. The text set is writing-plans' `SKILL.md` only: its two references
-   serve the backlog and the history, which writing a stage plan does not reach. A step-B rep that stops on its budget
-   is rerun at a $2.00 cap, recorded.
+   serve the backlog and the history, which writing a stage plan does not reach. Step B reads whatever writing-plans
+   holds at the last skill commit, which plan 84 may have changed by then. A step-B rep that stops on its budget is
+   rerun at a $2.00 cap, recorded.
 7. **Untested passages.** No arm tests R6's answer (approval and decline), R7 (a quality found at a resume), R9 (the
    provisional label), R12 (§6) or R11's brainstorming half. The summary names each. The alternative is one more case
    for R6's answer, with its control (about $1.50).
@@ -186,7 +187,8 @@ Append `## Plan 85: base, cases and leak check` to the record. Give `BASE85` (sh
 `git diff --stat 5f52dfc <BASE85> -- skills/derive-roadmap`. Expected: both print nothing. If a line prints, stop and
 report it: an anchor or V1's premise may have moved. Run `claude --version`. If it is not `2.1.316`, run the isolation
 probe as the record's "Isolation probe (Task 1 Step 5)" does, into `pilot/probe-p85/`, and record that all five lines
-read `NO`.
+read `NO`. Record the blob sha of `skills/writing-plans/SKILL.md` at `BASE85` (`git rev-parse <BASE85>:skills/writing-plans/SKILL.md`):
+plan 84 may change that file before Task 5 reads it.
 
 - [ ] **Step 2: Write the constants and cases in `cases.py`**
 
@@ -205,10 +207,12 @@ WP_TASK = 'It is your turn. You have no tools in this turn. Write the start of t
    `LOCK_ROADMAP`'s O1 to O4 in that order. The same message says that the canal trust's board funds the study and will
    ask which gauge readings each closure estimate came from. A `[you, tools]` line lists a scaffold repository (a
    README, `pyproject.toml`, an empty package and one smoke test; no file under `specs/`). An `[earlier] You` line in
-   summary: you sent the outcome list, unranked, O1 to O4 with `LOCK_ROADMAP`'s cost notes, proposed one research
-   track and the name `lock-closures`, and asked your partner to rank. Your message ended with the line
-   `Qualities to place when the roadmap is written: traceability.` `[now] Your partner: One research track is right.
-   Rank them O1, O2, O3, O4. The name is fine. Go ahead.` Task: `ROADMAP_ASK_TASK`.
+   summary: your message gave the outcome list, unranked, O1 to O4, each with `LOCK_ROADMAP`'s cost note written with
+   no stage word (O1 "measured by the first run on real data", O2 "one model run a day, small once O1's model exists;
+   basis: the first fit's time", O3 "about 14 times the first run's data", O4 as it is); then the line
+   `Qualities to place when the roadmap is written: traceability.`; then one research track, Track A, and the name
+   `lock-closures`; and it asked your partner to rank the outcomes and confirm the track. `[now] Your partner: One
+   research track is right. Rank them O1, O2, O3, O4. The name is fine. Go ahead.` Task: `ROADMAP_ASK_TASK`.
 
    ```
    PASS needs every bar and conformance clause.
@@ -372,7 +376,7 @@ Exact copy. Rewrap to the file's width. Change nothing else. "Old" is the match 
 `SKILL.md`:
 
 1. §4, R4. Old: `Present the stage partition for approval before stage 1. On approval,`. New:
-   `Present the stage partition for approval before stage 1. In a new-project roadmap, a later quality that a research-track stage's `Leaves out` sends to the Ranked list is suggested in the same ONE question: its name, one line on why this project will need it, and the outcome line it would become. Ask your partner to approve it and, if they do, to give its place in the track's ranking. Record the answer per `references/roadmap-format.md` (Ranked list). On approval,`
+   `Present the stage partition for approval before stage 1. In a new-project roadmap, ask for the approval as ONE question. A later quality that a research-track stage's `Leaves out` sends to the Ranked list is suggested inside it: its name, one line on why this project will need it, and the outcome line it would become. The same question asks your partner to approve the quality and, if they do, to give its place in the track's ranking. Record the answer per `references/roadmap-format.md` (Ranked list). On approval,`
 2. §4, R11, the ROUTING writing-plans bullet. Old:
    `the plan is scoped to the stage entry's `Spec` refs, or its `Outcomes` refs in a new-project roadmap.` New:
    `the plan is scoped to the stage entry's `Spec` refs, or, in a new-project roadmap, to its `Outcomes` (with a spec, to the Scope line below).`
@@ -389,7 +393,7 @@ Exact copy. Rewrap to the file's width. Change nothing else. "Old" is the match 
 7. §7 step 5, R3. Old:
    `A quality the project needs eventually but not to work goes to a named later stage or a Ranked-list item, never into a core stage's Exit.`
    New:
-   `Now place each later quality the project will need (step 4's check). In a known progression it goes to a named later stage. In a research track it is suggested at the approval (§4), and it joins the Ranked list only once your partner approves and ranks it. None goes into a core stage's Exit.`
+   `Now check the project against the later qualities, and place every one it will need. In a known progression it goes to a named later stage. In a research track it is suggested at the approval (§4), and it joins the Ranked list only once your partner approves and ranks it. None goes into a core stage's Exit.`
 8. Common mistakes, last bullet. Old: `go to a named later stage or a Ranked-list item, recorded in `Leaves out`.` New:
    `go to a named later stage, or to a Ranked-list item once your partner approves it, recorded in `Leaves out`.`
 
@@ -402,7 +406,7 @@ Exact copy. Rewrap to the file's width. Change nothing else. "Old" is the match 
 10. Later qualities, R3. Old, from the bullet's start to `A core stage's Exit never requires one.`:
     `- **Later qualities.** A quality the project needs eventually but not to work goes to a named later stage in a known progression, or to a Ranked-list item in a research track. Examples: manifests, traceability, point-in-time awareness, full validation suites, scheduling and deployment. Check the project against each one, and place every one it will need. A core stage's Exit never requires one.`
     New:
-    `- **Later qualities.** A quality the project needs eventually but not to work. Examples: manifests, traceability, point-in-time awareness, full validation suites, scheduling and deployment. Check the project against each one before the one message, and name each one it will need only in that message's qualities line. Place them when you write the stages. In a known progression, each goes to a named later stage. In a research track, each is suggested at the approval (SKILL.md §4) and joins the Ranked list only once your partner approves and ranks it (`roadmap-format.md`, Ranked list). A core stage's Exit never requires one.`
+    `- **Later qualities.** A quality the project needs eventually but not to work. Examples: manifests, traceability, point-in-time awareness, full validation suites, scheduling and deployment. Check the project against each one before the one message, and name each one it will need only in that message's qualities line. When you write the stages, check again and place every one it will need. In a known progression, each goes to a named later stage. In a research track, each is suggested at the approval (SKILL.md §4) and joins the Ranked list only once your partner approves and ranks it (`roadmap-format.md`, Ranked list). A core stage's Exit never requires one.`
 
 `references/roadmap-format.md`:
 
@@ -425,7 +429,8 @@ For each row, run `tr '\n' ' ' < <file> | tr -s ' ' | /usr/bin/grep -o -F '<phra
 | `SKILL.md` | `Qualities to place when the roadmap is written: <names>.` | 1 |
 | `SKILL.md` | `The message names no stage, core or later` | 1 |
 | `SKILL.md` | `put one more line under the` | 1 |
-| `SKILL.md` | `is suggested in the same ONE question` | 1 |
+| `SKILL.md` | `ask for the approval as ONE question` | 1 |
+| `SKILL.md` | `against the later qualities, and place every one it will need` | 1 |
 | `SKILL.md` | `joins the same question in §4` | 1 |
 | `SKILL.md` | `cell cites, as unmet` | 1 |
 | `SKILL.md` | `and, with no spec, a proposed roadmap name` | 1 |
@@ -433,8 +438,8 @@ For each row, run `tr '\n' ' ' < <file> | tr -s ' ' | /usr/bin/grep -o -F '<phra
 | `SKILL.md` | `or a Ranked-list item, never into a core stage` | 0 |
 | `new-project-entry.md` | `Qualities to place when the roadmap is written: <names>.` | 1 |
 | `new-project-entry.md` | `With no quality to name, leave it out` | 1 |
-| `new-project-entry.md` | `Place them when you write the stages` | 1 |
-| `new-project-entry.md` | `and place every one it will need` | 0 |
+| `new-project-entry.md` | `When you write the stages, check again and place every one it will need` | 1 |
+| `new-project-entry.md` | `Check the project against each one, and place every one it will need` | 0 |
 | `roadmap-format.md` | `| # | Outcome | Spec | Track | Rank |` | 1 |
 | `roadmap-format.md` | `suggested, see the approval question` | 1 |
 | `roadmap-format.md` | `declined, <YYYY-MM-DD>` | 1 |
@@ -529,7 +534,13 @@ Add to `CASES`:
 objects with every worktree, so `git show <PROBE_A>:<path>` reads the committed rep. Check that the case count prints
 `26`. Build `leakview /tmp/plan85-work/leak-5 wp-stage-plan`, and grep it for `WP_STAGE_PLAN_LEAK`'s words and the
 Task 1 Step 4 quarantine words. Hits inside the pasted handoff are expected when step A wrote a `Scope:` line: it is
-the output under test, not a hand-written line. Trace and record every hit.
+the output under test, not a hand-written line. Trace and record every hit. Then commit, so that the case is committed
+before any of its reps runs:
+
+```bash
+git add specs/baseline/red-baseline-new-project-entry/kit/cases.py specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
+git commit -m "test(specs): add plan 85's probe step-B case"
+```
 
 - [ ] **Step 3: Run step B**
 
@@ -543,7 +554,9 @@ A rep that stops on its budget is rerun at a $2.00 cap with the next free number
 
 For each step-B rep, read the reply against `specs/sec-filing-index-ingestion-spec.md` §3 (R1, R2, R4, R9), §4.1,
 §4.2 and §4.5 at `22c6767f`, clause by clause, in a `### Plan 85 probe` section. The probe passes when at least 2 of 3
-reps pass clauses A and B. On a fail, run one wording round on edits 2 and 3 only (R11's handoff text, the only text
+reps pass clauses A and B. The section says that a pass cannot show that the `Scope:` line caused it, because
+`SEC_SPEC_ROADMAP` already carries Stage 1's Spec refs and its `Leaves out`, and it gives the blob sha of
+`skills/writing-plans/SKILL.md` at `T-probe` beside the one that Task 1 Step 1 recorded. On a fail, run one wording round on edits 2 and 3 only (R11's handoff text, the only text
 this spec can change for it), commit it, re-run Step 1 and Steps 2 and 3 with `-r1` folders and the entry pointed at
 the new step-A commit (record both shas), then put the result to the owner. Add the spend row.
 
