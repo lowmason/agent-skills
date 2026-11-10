@@ -25,7 +25,7 @@ Task 1 Step 1 checked for drift. `d067b7e` is the commit that the plan's line nu
 `git diff --stat d067b7e 432a834 -- skills/subagent-driven-development skills/executing-plans skills/requesting-code-review skills/finishing-a-development-branch skills/verification-before-completion build/run_commit_lints.sh build/test_commit_lints.py build/CLAUDE.md CLAUDE.md NOTICE`
 printed nothing. So no file that the plan edits changed since `d067b7e`, and no anchor needs a re-take.
 
-One file outside that path list changed: `specs/superpowers-drift-spec-v7-0-2.md` (17 lines added, 7 removed, in plan
+One file outside that path list changed: `specs/findings/superpowers-drift-v7-0-2.md` (17 lines added, 7 removed, in plan
 83's commits). Step 1 does not cover it, and no task of this plan edits it before the completion protocol.
 
 ## Kit

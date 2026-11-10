@@ -3,8 +3,12 @@
 **Status:** findings only. No skill files were edited. This document exists to
 decide *what, if anything, becomes a spec*.
 
+**Moved 2026-11-10** from `specs/superpowers-drift-spec-v7-0-2.md` to
+`specs/findings/`, because it is a findings document, not a design spec. The
+citations elsewhere in the repository moved with it.
+
 This versioned assessment continues the
-[archived v7.0.1 record](completed/superpowers-drift-spec-v7-0-1.md), formerly
+[archived v7.0.1 record](../completed/superpowers-drift-spec-v7-0-1.md), formerly
 `specs/superpowers-drift-spec.md`. This revision (2026-11-07) brings it to
 upstream v7.0.2 for every skill. It edits the status table, the Scope and method table, findings 4, 8, 11,
 15 and 17, and adds findings 18 to 33. Findings 1–2, 5–7, 9–10, 12–14 and 16
