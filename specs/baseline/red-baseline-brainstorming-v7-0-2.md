@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, the v7.0.2 retune (plan 86)
 
-**Date:** 2026-11-10 · **Status:** RED on today's copy is scored. The fixture check is at an owner gate before Task 2.
+**Date:** 2026-11-10 · **Status:** RED on today's copy is scored, and the owner ruled on the fixture check twice. T10 to T13 are fix targets. Task 2 (the port) is next.
 **Governs:** plan 86 (`specs/plans/86-brainstorming-v7-0-2-retune.md`), the port of upstream superpowers v7.0.2's brainstorming retune (#2644, `e8cc5c9`, read at `22f0b46`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-v7-0-2/` beside it, and plan 86's
@@ -66,9 +66,9 @@ All 45 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID. No r
 |---|---|---|
 | T7 first question | 21 of 25 (hand score, letter reading) | Compared by the blind panel in Task 3 |
 | T10 why first | 0 of 5 | Fix target |
-| T11 nothing open, a small change | 0 of 5 | Fix target |
+| T11 nothing open, a small change | 0 of 5 (first fixture). 0 of 5 on the `today-fix1` fixture, which sets the role | Fix target |
 | T12 a named choice, the why known | 0 of 5 | Fix target |
-| T13 nothing open, a project | 0 of 5 | Fix target |
+| T13 nothing open, a project | 0 of 5 (first fixture). 0 of 5 on the `today-fix1` fixture, which sets the role | Fix target |
 
 Rep verdicts in rep order (P pass, F fail), in groups of five:
 - T7: `PPPPF PPPPF PPPPP PPPFF PPPPP` (also in `red/today/T7/hand-scores.json`)
@@ -145,6 +145,52 @@ The fixture edits, made in `kit/cases.py` and committed with this note before an
 
 The rules for T11 and T13 do not change. RED re-runs T11 and T13 on today's copy, 5 reps each, from new prompts in `prompts/today-fix1/` into `red/today-fix1/<case>/`. The first T11 and T13 reps in `red/today/` stay as the record of the first fixtures. Their roles are replaced by the re-run. The fixture check runs again on the re-run. Two or more reps that build at once, or a question that the fixture leaves open, go back to the owner.
 
+### RED re-run with the first fixture fixes (`prompts/today-fix1/`)
+
+T11 and T13 ran 5 reps each on today's copy, 2026-11-10. All 10 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID, and none has an Insight box. The T7, T10 and T12 prompts in `prompts/today-fix1/` are byte-identical to those in `prompts/today/`.
+
+| Case | Today's copy | Reps that build at once |
+|---|---|---|
+| T11 (enlarged) | 0 of 5 (`FFFFF`) | 0 |
+| T13 (two gaps closed) | 0 of 5 (`FFFFF`) | 0 |
+
+FAIL lines:
+- T11 rep1: asks about a detail, "does the coordinator need to see that it's been phoned before, and how many times?"
+- T11 rep2: asks about a detail, "are both coordinators working through the list at the same moment"
+- T11 rep3: asks about a detail, "When a borrower has several overdue loans, should one call cover all of them?"
+- T11 rep4: asks about a detail, "should pressing "Phoned" still hide that loan for a week"
+- T11 rep5: asks about a detail, "Should they be back on the list this Saturday, or stay hidden until the Saturday after?"
+- T13 rep1: asks about something other than the approach, "If the server is down at 02:00, should the registrars still hear about it that night?"
+- T13 rep2: asks about something other than the approach, "is it for getting data back onto a server that's still working, or for starting over"
+- T13 rep3: asks about something other than the approach, "should it cover only "the server is fine but the data is bad," or also "the server is gone"
+- T13 rep4: asks about something other than the approach, "do you need the registrars to hear about it the next morning?"
+- T13 rep5: asks about something other than the approach, "do you need the registrars to hear about it that night"
+
+Descriptive: every T11 rep gives a design in a few lines (a panel through the shared template, a new date field with a migration, a button like "Mark returned"). Every one then asks a detail question instead of asking for approval. No T11 rep lays out two or more approaches. Every T13 rep names SQLite's own backup method and the need for a check outside the server, and none lays out approaches.
+
+Fixture check on the re-run. Each question, and whether the request or the `[you, tools]` line answers it:
+- T11 rep1, whether the panel shows earlier calls: not answered.
+- T11 rep2, whether both coordinators work at once: not answered.
+- T11 rep3, whether one call covers all of a borrower's overdue loans: not answered. The panel lists loans, and the goal is about people.
+- T11 rep4, whether an unanswered call counts as phoned: not answered.
+- T11 rep5, whether "seven days" brings a loan back on the next Saturday: not answered.
+- T13 reps 1, 4 and 5, whether a server that is down all night must still raise an alert, and how soon: the request now says "fails or doesn't happen", which covers the case. How soon is not answered.
+- T13 reps 2 and 3, whether the restore guide covers a dead server or only bad data on a live one: not answered.
+
+The partner gives the why in both cases. Under the new copy, a careful reply asks about the open thing that most changes the build, and both rules fail such a reply. So the fixture check fires again, and both cases go back to the owner.
+
+### Owner ruling on the second fixture check (2026-11-10)
+
+Today's copy has two exits from a detailed request. It builds a quick, clear task at once. Otherwise "Your First Message" ends with "one question about what they want: the thing their request leaves open whose answer would most change what gets built." So today's copy asks about some detail in any fixture that is not a quick task, and closing gaps does not converge: five T11 reps asked about five different details. The new copy (H3, H5) adds a third exit. It states the calls itself, gives the short design, and asks for approval.
+
+The owner chose "Keep fixtures, measure (Recommended)": "Keep the today-fix1 fixtures; T11 and T13 are fix targets at 0 of 5. Go on to Task 2, and let Task 3 measure whether the new copy makes these calls itself. A miss goes to the registered Task 3 gate (one wording round, accept as a known gap, or revert the hunk). I also register a descriptive count, no verdict: for each detail the RED reps asked, whether each new-copy rep states it as its own call, asks it, or skips it. No extra spend."
+
+**Descriptive count, registered here before Task 2 and before any rep on the new copy.** No verdict. For each T11 and T13 rep on the new copy, and for each detail below, the reader records one of three things: the rep states it as its own call, asks the partner about it, or does not mention it.
+- T11: (1) whether the panel shows earlier calls; (2) whether both coordinators work through the list at once; (3) whether one call covers all of a borrower's overdue loans; (4) whether an unanswered call counts as phoned; (5) whether "seven days" brings a loan back on the next Saturday.
+- T13: (1) whether a server that is down all night must still raise an alert, and how soon; (2) whether the restore guide covers a dead server or only bad data on a live one.
+
+Task 3 runs T11 and T13 on the new copy from the `today-fix1` fixtures, which `kit/cases.py` now holds.
+
 ## Spend
 
 Running total of `total_cost_usd` across every rep and panel vote of plan 86. The plan stops for the owner before the total passes $10.
@@ -153,3 +199,4 @@ Running total of `total_cost_usd` across every rep and panel vote of plan 86. Th
 |---|---|---|---|
 | Isolation pilot | 2 reps | $0.02 | $0.02 |
 | RED, today's copy: T7 ×25, T10 to T13 ×5 | 45 reps | $1.06 | $1.08 |
+| RED re-run, today's copy: T11, T13 ×5 (`today-fix1`) | 10 reps | $0.33 | $1.41 |

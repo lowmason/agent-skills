@@ -1,0 +1,25 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: /deferred
+
+[you, tools] The /deferred command listed the open items in `specs/deferred_items.md`. The partner picked item 7 with the disposition Design. Item 7 reads: "`release-notes` writes one bullet per merged pull request. Give each bullet a `breaking:` flag. `changelog-check` and `announce` parse that output and must accept the new field." You read `skills/release-notes/SKILL.md`, `skills/changelog-check/parse.py` and `skills/announce/SKILL.md`. `parse.py` splits each bullet on " — " and rejects a bullet with more than two parts.
+
+You: Who acts on the `breaking:` flag once it's there: a person reading the notes, or `announce` deciding what to post?
+
+Partner: Both. `announce` should put breaking changes first in its post, and readers should see them at a glance.
+
+You: I see two ways to carry the flag. (1) Append " — breaking: yes" as a third part of the bullet, and teach `parse.py` to accept three parts. (2) Start the bullet with a `[breaking]` tag, which `parse.py` reads before it splits. I recommend (2): bullets without the tag parse exactly as before, so older notes stay valid. Which do you want?
+
+Partner: 2.
+
+You: Here is the design. `release-notes` starts a bullet with `[breaking]` when the pull request carries the `breaking` label. `parse.py` strips a leading `[breaking]` before it splits, and sets `breaking=True` on the entry. `announce` lists breaking entries first. A test in `skills/changelog-check/` covers a tagged and an untagged bullet. Does that look right?
+
+Partner: Looks good.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.
