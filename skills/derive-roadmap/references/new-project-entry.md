@@ -61,7 +61,8 @@ the track's core stage measures it.
 
 Before any roadmap text, send one message that holds:
 
-1. the numbered outcome list, unranked, each line with its cost note;
+1. the numbered outcome list, unranked, each line with its cost note, then the
+   qualities line below when it applies;
 2. the proposed tracks, each with its kind and, for a split, the reason;
 3. the choices already made, one line each;
 4. with no spec, a proposed roadmap name, the `<name>` in
@@ -69,6 +70,13 @@ Before any roadmap text, send one message that holds:
 5. one request: rank the outcomes within each track and the tracks among
    themselves, and confirm or change the tracks, their kinds and, with no
    spec, the name.
+
+The qualities line reads, in exactly this form:
+`Qualities to place when the roadmap is written: <names>.` It gives names
+only, from the check under Stages (Later qualities): no reason, and none of
+the words "stage", "core", "first" or "later". With no quality to name, leave
+it out. The message names no stage, core or later, the rule that SKILL.md §1's
+offer already states: stages come only after your partner ranks the outcomes.
 
 Do not rank for your partner unless they ask: the ranking is their judgment of
 value. A list or a table both work. When the session cannot ask, write the
@@ -94,14 +102,18 @@ gave, or else by the list order, and label the ranking provisional.
   stage that your partner later promotes from the list also names its own
   findings file in `Produces` and the measured cost of its real run in
   `Exit`, so the next re-rank reads what that stage found and cost.
-- **Later qualities.** A quality the project needs eventually but not to work
-  goes to a named later stage in a known progression, or to a Ranked-list item
-  in a research track. Examples: manifests, traceability, point-in-time
-  awareness, full validation suites, scheduling and deployment. Check the
-  project against each one, and place every one it will need. A core stage's
-  Exit never requires one. Each stage entry's `Leaves out` field names what
-  that stage leaves out and which later stage or item picks it up, so the
-  stage's own brainstorming session or plan does not pull the quality back in.
+- **Later qualities.** A quality the project needs eventually but not to work.
+  Examples: manifests, traceability, point-in-time awareness, full validation
+  suites, scheduling and deployment. Check the project against each one before
+  the one message, and name each one it will need only in that message's
+  qualities line. When you write the stages, check again and place every one
+  it will need. In a known progression, each goes to a named later stage. In
+  a research track, each is suggested at the approval (SKILL.md §4) and joins
+  the Ranked list only once your partner approves and ranks it
+  (`roadmap-format.md`, Ranked list). A core stage's Exit never requires one.
+  Each stage entry's `Leaves out` field names what that stage leaves out and
+  which later stage or item picks it up, so the stage's own brainstorming
+  session or plan does not pull the quality back in.
   The later stage or item that picks a quality up names it in its own fields,
   by the name that `Leaves out` gives it.
 - **Order.** Sequence by SKILL.md §2. A core stage is the cheap information
