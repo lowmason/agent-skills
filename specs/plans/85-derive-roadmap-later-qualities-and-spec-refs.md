@@ -111,8 +111,13 @@ Requirements R1–R12 and verification items V1–V5 below are the spec's.
 - **D3** (brief, 2026-11-10): plan 79's three lessons are carried: the Date reading is set before any rep, arms run at
   the last skill commit with untested passages named, and a record commit stages the folder and its sibling `.md`.
   Applied in: Global Constraints.
+- **D4** (owner, plan review, 2026-11-10): "Approve as written". It covers the nine defaults of Open for plan review,
+  each as proposed, and confirms D1 to D3. Applied in: Global Constraints (Arms run at the last skill commit, Spend),
+  Task 1 Step 2, Task 2 Step 3, Task 3 Step 1, Tasks 4 to 6.
 
 ## Open for plan review
+
+Resolved at plan review on 2026-11-10: the owner approved each item as proposed and confirmed D1 to D3 (D4).
 
 Defaults this plan settles. The owner approves or amends them as one batch. Each was open in the spec or is new here.
 
