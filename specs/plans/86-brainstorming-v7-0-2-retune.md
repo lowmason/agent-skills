@@ -52,6 +52,13 @@
 
 ## Decisions
 
+The session that wrote this plan began from a task brief (2026-11-10). Its decisions:
+
+- **B1** (owner, brief, 2026-11-10): verification is micro-tests against plan 70's RED baseline, with its question-style cases re-run. Plan 70's isolated T7 rerun (2026-11-05, 13 of 25) is the current baseline evidence, not its original GREEN claim. Applied in: Global Constraints, Task 1 Step 5 (T7 bars), default 4.
+- **B2** (owner, brief, 2026-11-10): the plan includes a `NOTICE` change-list entry (what was taken, from v7.0.2, and where it diverges) and the drift spec's finding 4 status update. Applied in: Task 4.
+- **B3** (owner, brief, 2026-11-10): the plan id comes from writing-plans' `entry_check.py`, which reads every ref. It printed `next free: 86`. Applied in: the file name.
+- **B4** (owner, brief, 2026-11-10): no plan execution starts while another execution session runs, and the planning session does not execute the plan. Applied in: the Serialize note.
+
 - **D1** (owner, planning session, 2026-11-10): "Adopt (Recommended)": "Full port of #2644, with plan 70's divergences held and the two local choices in the next questions. I write a plan with micro-tests and no spec." Applied in: Tasks 1 to 4.
 - **D2** (owner, planning session, 2026-11-10): "Small change only (Recommended)": "Approval in chat covers the approach and the design, and the change is built in this session. A project still goes through the approaches, a committed spec and its approval." Applied in: Task 2 (H1, H3, H14).
 - **D3** (owner, planning session, 2026-11-10): "Keep, before the why (Recommended)": "Move it into "Get them describing" and limit it to the questions before the why is known. After that, upstream's options with a pick apply." Applied in: Task 2 (H5, H6).
@@ -108,9 +115,9 @@ Partner: Add a monthly statement to our allotment society's app. On the first of
 [you, tools] You read the repository, a Flask app with SQLite. `models.py` has `PlotHolder` (`name`, `email`, `plot_number`, `balance_pence`) and `MeterReading` (`plot_number`, `read_on`, `litres_total`), one reading for each plot each week. `mailer.py` sends the committee's newsletter through the SMTP settings in `config.py`, and a cron job on the same server runs `flask send-newsletter` each Friday. Nothing in the code charges for water or sends statements.
 '''},
     'T11': {'how': 'auto', 'conversation': '''
-Partner: The two coordinators of our tool library scroll through every loan on Saturday mornings to find the overdue ones before they phone people. Add an overdue panel to the staff dashboard: every loan past its due date that hasn't come back, oldest first, with the tool, the borrower's name and their phone number.
+Partner: The two coordinators of our tool library scroll through every loan on Saturday mornings to find the overdue ones before they phone people. Add an overdue panel to the staff dashboard, set out like the other two panels, listing every loan past its due date that hasn't come back.
 
-[you, tools] You read the repository, a Django app. `loans/models.py` has `Loan` with `tool`, `borrower`, `due_on` (a date) and `returned_on` (empty until the tool comes back). `Borrower` has `name` and `phone`. `dashboard/views.py` builds the staff dashboard from two panels, "Out today" and "Due this week". Each panel is a queryset shown through `{% include "dashboard/panel.html" %}`, and `dashboard/tests.py` has one test for each panel's queryset. Only the two coordinators have staff accounts, and the loan pages already show them each borrower's phone number.
+[you, tools] You read the repository, a Django app. `loans/models.py` has `Loan` with `tool`, `borrower`, `due_on` (a date) and `returned_on` (empty until the tool comes back). `Borrower` has `name` and `phone`. `dashboard/views.py` builds the staff dashboard from two panels, "Out today" and "Due this week". Each panel is a queryset shown through `{% include "dashboard/panel.html" %}`, which lists the tool, the borrower's name and their phone number, oldest due date first. `dashboard/tests.py` has one test for each panel's queryset. Only the two coordinators have staff accounts, and they already see each borrower's phone number on the loan pages.
 '''},
     'T12': {'how': 'auto', 'conversation': '''
 Partner: Here's the spec for lane-session reminders at our swimming club. We want fewer no-shows. When a member doesn't turn up for a booked lane, it sits empty while people on the waiting list miss out.
@@ -165,7 +172,7 @@ Check: `git diff --no-index` of the old and new `cases.py` shows only the docstr
 
 **Descriptive counts, no verdict.** T7 and T10 fails: a list, or three or more answers in one sentence. T10 passes: whether the question about the reason states one guessed reason. T11: whether the message gives a line on why other ways don't fit. T12: whether each way carries what it trades off.
 
-**Fixture check, after RED.** For each question that today's copy asks in T10 to T13, the reader records whether the request or the `[you, tools]` line already answers it. A question that neither answers means the fixture leaves something open, and the case's rule could fail a careful reply. Any such question is an owner gate before Task 2: the owner fixes the fixture (and RED re-runs for that case) or keeps it.
+**Fixture check, after RED.** For each question that today's copy asks in T10 to T13, the reader records whether the request or the `[you, tools]` line already answers it. A question that neither answers means the fixture leaves something open, and the case's rule could fail a careful reply. The reader also counts, for each of T10 to T13, the reps of today's copy that build at once. Two or more mean the fixture reads as a quick, clear task, which the skill tells the agent to do at once, so the case's rule would fail a reply that follows the skill. Any such question or count is an owner gate before Task 2: the owner fixes the fixture (and RED re-runs for that case) or keeps it.
 
 **Roles (from RED on today's copy).** T10 to T13: 3 of 5 or fewer is a fix target, and 4 of 5 or more is a guard. Either way the bar on the new copy is 4 of 5.
 
