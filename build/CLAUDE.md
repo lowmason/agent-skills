@@ -44,6 +44,13 @@ paragraph. The baseline is frozen, so never add a file to it.
 `run_commit_lints.sh` runs the lint, and `deferral_scan.py scan <file>…` is
 the advisory form.
 
+`check_helper_paths.py` is the thirteenth commit lint: it fails when a
+Markdown file under `../skills/` names one of the five subagent-driven-development
+and executing-plans helpers (`sdd-workspace`, `task-brief`, `review-package`,
+`task-start`, `task-done`) by a `scripts/` path without the `<this-skill-dir>/`
+anchor. It also fails when it finds no such mention, since its pattern is then
+stale.
+
 `versions.toml` is the one file where a person sets the dev Python, the freeze date, each pinned
 package version and each cited-only version (design: `specs/completed/package-versions.md`). `versions.py` reads
 it: `sync` writes `.python-version`, `uv.toml` and `skills/uv.toml`, `run` and `verify` install a

@@ -1,11 +1,11 @@
-"""Tests for the three bundled bash scripts — run from this directory.
+"""Tests for the four bundled bash scripts — run from this directory.
 
 cd skills/subagent-driven-development/scripts && uv run --with pytest \
   python -m pytest -q
 
 These are bash, not Python, so each test drives the script as a subprocess and
 asserts on exit code, stdout, and written files. That keeps this repo on one test
-runner instead of adding bats/shunit2 for three files.
+runner instead of adding bats/shunit2 for four files.
 """
 
 import os
@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 SCRIPTS = Path(__file__).resolve().parent
+SDD_REPO = SCRIPTS / 'sdd-repo'
 WORKSPACE = SCRIPTS / 'sdd-workspace'
 TASK_BRIEF = SCRIPTS / 'task-brief'
 REVIEW_PACKAGE = SCRIPTS / 'review-package'
@@ -25,6 +26,8 @@ REVIEW_PACKAGE = SCRIPTS / 'review-package'
 # setup `git commit` can fail silently and the real cause surfaces as a
 # confusing downstream assertion on the script under test.
 GIT_ENV = {**os.environ, 'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1'}
+
+NEW_PROJECT = "If this is a new project, run 'git init' and make a first commit, then rerun."
 
 PLAN = """\
 # Demo Plan
@@ -97,10 +100,15 @@ Worktree path for this plan.
 """
 
 
-def run(*argv, cwd=None):
+def run(*argv, cwd=None, env=GIT_ENV):
     return subprocess.run(
-        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True, env=GIT_ENV
+        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True, env=env
     )
+
+
+def outside_env(path):
+    '''GIT_ENV with git's upward search stopped at path, so no repository above it is found.'''
+    return {**GIT_ENV, 'GIT_CEILING_DIRECTORIES': str(path)}
 
 
 def git(*argv, cwd):
@@ -120,6 +128,39 @@ def repo(tmp_path):
     git('config', 'user.name', 'T', cwd=tmp_path)
     (tmp_path / 'plan.md').write_text(PLAN)
     return tmp_path
+
+
+# ── sdd-repo ─────────────────────────────────────────────────────────────
+
+
+def test_sdd_repo_prints_the_top_level_from_a_subdirectory(repo):
+    (repo / 'sub').mkdir()
+    result = run(SDD_REPO, cwd=repo / 'sub')
+    assert result.returncode == 0, result.stderr
+    assert Path(result.stdout.strip()).resolve() == repo.resolve()
+
+
+def test_sdd_repo_with_commit_refuses_a_repository_with_no_commit(repo):
+    assert run(SDD_REPO, cwd=repo).returncode == 0
+    result = run(SDD_REPO, '--with-commit', cwd=repo)
+    assert result.returncode == 2
+    first, second = result.stderr.splitlines()[:2]
+    assert first.startswith('SDD scripts must run from inside the git working tree')
+    assert first.endswith(NEW_PROJECT)
+    assert second.startswith('git said: fatal:')
+
+
+def test_sdd_repo_refuses_outside_a_working_tree(tmp_path):
+    result = run(SDD_REPO, cwd=tmp_path, env=outside_env(tmp_path))
+    assert result.returncode == 2
+    assert NEW_PROJECT in result.stderr
+    assert 'git said: fatal: not a git repository' in result.stderr
+
+
+def test_sdd_repo_rejects_any_other_argument(repo):
+    result = run(SDD_REPO, '-C', repo, cwd=repo)
+    assert result.returncode == 2
+    assert 'usage: sdd-repo [--with-commit]' in result.stderr
 
 
 # ── sdd-workspace ────────────────────────────────────────────────────────
@@ -217,6 +258,14 @@ def test_workspace_rejects_bad_arguments(repo, argv, message):
     result = run(WORKSPACE, *argv, cwd=repo)
     assert result.returncode == 2
     assert message in result.stderr
+
+
+def test_workspace_refuses_outside_a_working_tree_and_writes_nothing(tmp_path):
+    (tmp_path / 'plan.md').write_text(PLAN)
+    result = run(WORKSPACE, 'plan.md', cwd=tmp_path, env=outside_env(tmp_path))
+    assert result.returncode == 2
+    assert NEW_PROJECT in result.stderr
+    assert not (tmp_path / '.sdd').exists()
 
 
 # ── task-brief ───────────────────────────────────────────────────────────
@@ -368,6 +417,195 @@ def test_task_brief_writes_to_and_prints_the_default_workspace_path(repo):
     assert (repo / '.sdd' / '.gitignore').read_text() == '*\n'
 
 
+IDS_PLAN = """\
+# Ids Plan
+
+### Task 2: Two
+
+Body of 2.
+
+### Task 2.1: Two point one
+
+Body of 2.1.
+
+### Task 6: Six
+
+Body of 6.
+
+### Task 6b: Six b
+
+Body of 6b.
+
+### Task A1: A one
+
+Body of A1.
+
+### Task 7: Seven
+
+Body of 7.
+
+#### Task 7a: Seven a
+
+Body of 7a.
+
+#### Task 7b: Seven b
+
+Body of 7b.
+"""
+
+TAREA_PLAN = """\
+# Tarea Plan
+
+### Tarea 1: Uno
+
+Cuerpo.
+"""
+
+LETTER_GC_PLAN = """\
+# Letter Plan
+
+## Global Constraints
+
+- Rule X.
+
+### Task A1: First
+
+Body of A1.
+
+### Task A2: Second
+
+Body of A2.
+"""
+
+# Line 9 opens a fence inside Task 2 that never closes.
+UNCLOSED_PLAN = """\
+# Unclosed Plan
+
+### Task 1: First
+
+Body of 1.
+
+### Task 2: Second
+
+```bash
+echo open
+
+### Task 3: Third
+
+Body of 3.
+"""
+
+# Line 11, the last line, opens a fence that hides no task heading.
+STRAY_PLAN = """\
+# Stray Plan
+
+### Task 1: First
+
+Body of 1.
+
+### Task 2: Second
+
+Body of 2.
+
+```
+"""
+
+
+def brief(repo, name, text, n, out=None):
+    '''Write text to repo/name and run task-brief on it, with out as OUTFILE when given.'''
+    (repo / name).write_text(text)
+    return run(TASK_BRIEF, repo / name, n, *([out] if out else []), cwd=repo)
+
+
+@pytest.mark.parametrize('n, own, other', [('2', 'Body of 2.', 'Task 2.1'), ('6', 'Body of 6.', 'Task 6b')])
+def test_task_brief_does_not_take_a_same_level_task_whose_id_extends_the_number(repo, n, own, other):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, n, out)
+    assert result.returncode == 0, result.stderr
+    assert own in out.read_text()
+    assert other not in out.read_text()
+
+
+@pytest.mark.parametrize('n', ['A1', '6b', '2.1'])
+def test_task_brief_finds_every_id_form(repo, n):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, n, out)
+    assert result.returncode == 0, result.stderr
+    body = out.read_text()
+    assert f'Body of {n}.' in body
+    assert body.count('### Task') == 1
+
+
+def test_task_brief_reads_the_task_number_as_a_string_not_a_regex(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, '6.', out)
+    assert result.returncode == 3
+    assert 'task 6. not found' in result.stderr
+    assert not out.exists()
+
+
+def test_task_brief_keeps_a_deeper_sub_task_in_its_brief(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'ids.md', IDS_PLAN, '7', out)
+    assert result.returncode == 0, result.stderr
+    assert '#### Task 7a: Seven a' in out.read_text()
+    assert 'Body of 7a.' in out.read_text()
+    assert 'Body of 7b.' in out.read_text()
+
+
+def test_task_brief_lists_headings_shaped_like_tasks_when_none_say_task(repo):
+    result = brief(repo, 'tarea.md', TAREA_PLAN, '1', repo / 'brief.md')
+    assert result.returncode == 3
+    assert '  ### Tarea 1: Uno' in result.stderr
+    assert result.stderr.index('no task headings found') < result.stderr.index('task 1 not found')
+
+
+def test_task_brief_ends_global_constraints_at_a_letter_first_task_heading(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'letter.md', LETTER_GC_PLAN, 'A2', out)
+    assert result.returncode == 0, result.stderr
+    body = out.read_text()
+    assert 'Rule X.' in body
+    assert 'Body of A1.' not in body
+    assert body.count('### Task A2') == 1
+
+
+def test_task_brief_refuses_a_task_that_an_unclosed_fence_runs_past(repo):
+    stale = repo / '.sdd' / 'unclosed' / 'task-2-brief.md'
+    stale.parent.mkdir(parents=True)
+    stale.write_text('stale brief\n')
+    result = brief(repo, 'unclosed.md', UNCLOSED_PLAN, '2')
+    assert result.returncode == 4
+    assert 'the code fence opened at line 9 of' in result.stderr
+    assert 'close that fence in the plan and rerun' in result.stderr
+    assert not stale.exists()
+    assert 'wrote' not in result.stdout
+
+
+def test_task_brief_names_an_unclosed_fence_that_hides_the_requested_task(repo):
+    result = brief(repo, 'unclosed.md', UNCLOSED_PLAN, '3', repo / 'brief.md')
+    assert result.returncode == 3
+    assert 'line 9' in result.stderr
+    assert result.stderr.index('never closes') < result.stderr.index('task 3 not found')
+
+
+def test_task_brief_is_unaffected_by_an_unclosed_fence_after_the_task(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'unclosed.md', UNCLOSED_PLAN, '1', out)
+    assert result.returncode == 0, result.stderr
+    assert 'never closes' not in result.stderr
+    assert 'Body of 1.' in out.read_text()
+
+
+def test_task_brief_warns_on_a_stray_fence_that_hides_no_task(repo):
+    out = repo / 'brief.md'
+    result = brief(repo, 'stray.md', STRAY_PLAN, '2', out)
+    assert result.returncode == 0, result.stderr
+    assert 'warning: the code fence opened at line 11 of' in result.stderr
+    assert 'it hides no Task heading, so this brief is complete' in result.stderr
+    assert 'Body of 2.' in out.read_text()
+
+
 # ── review-package ───────────────────────────────────────────────────────
 
 
@@ -451,6 +689,15 @@ def test_review_package_rejects_a_missing_plan_file(repo):
     result = run(REVIEW_PACKAGE, 'HEAD', 'HEAD', repo / 'p.diff', cwd=repo)
     assert result.returncode == 2
     assert 'no such plan file' in result.stderr
+
+
+def test_review_package_refuses_a_repository_with_no_commit(repo):
+    out = repo / 'p.diff'
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', 'HEAD', 'HEAD', out, cwd=repo)
+    assert result.returncode == 2
+    assert NEW_PROJECT in result.stderr
+    assert 'bad BASE' not in result.stderr
+    assert not out.exists()
 
 
 def test_review_package_rejects_an_empty_range(repo):

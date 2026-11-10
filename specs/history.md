@@ -91,3 +91,15 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "Spec-reading test check (local design, not an upstream finding, owner-approved" (deferred by spec-reading-test-check).
+
+## 82-helper-hardening-and-test-command — 2026-11-09
+Plan: specs/plans/completed/82-helper-hardening-and-test-command.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 7): fix both plan-mandated NOTICE wording findings by hand — (1) "every mention of <helper>" overstates, since check_helper_paths.py matches only scripts/<helper> paths and name-only mentions stay, so NOTICE now says "every scripts/ path to <helpers>"; (2) "It has no -C DIR option" sat on sdd-repo, which upstream's sdd-repo also lacks, so NOTICE now says this repository's helpers take no -C DIR where upstream's sdd-workspace, review-package and task-brief do — NOTICE is an attribution record the owner reads closely and the plan's own Open item 5 and Leave alone list show the narrower facts; the edit stays inside NOTICE (Task 7's file), so it crosses no scope fence — if wrong, NOTICE keeps two imprecise claims in a public provenance file
+- Deviation (Task 3): the output step needed no edit, `hlevel` joined the shared awk prelude, and the plan path goes to awk through `ENVIRON` while TASK_NUMBER goes through `-v`. Source: plan, Task 3 Step 5.
+- Deviation (Task 4): Steps 2, 4 and 11 ran as `uv run --directory build …`, not `(cd build && …)`, because a Bash `cd` can move the session. Source: plan, Task 4 Steps 2 and 11.
+- Deviation (Task 4): a code comment in `build/check_helper_paths.py` called `scripts/task-brief.py` another file, so the controller corrected it in `bd4d169`. No behavior changed. Source: plan, Task 4 Step 10.
+- Deviation (Task 5): the size check ran as `uv run --directory build …`, for the same reason. Source: plan, Task 5 Step 3.
+- Deviation (Task 7): the entry says `every scripts/ path to` the five helpers, not `every mention of` them, since the lint matches only `scripts/<helper>` paths. Source: plan, Task 7 Step 1.
+- Deviation (Task 7): the `-C DIR` sentence now says this repository's helpers take no `-C DIR`, since upstream's `sdd-repo` has none either. Source: plan, Task 7 Step 3.

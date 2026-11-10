@@ -48,7 +48,7 @@ from the 2026-11-07 workflow review.
 | | |
 |---|---|
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
-| Adoption baselines | Unchanged from the 2026-10-28 revision: `b36e082` (v6.3.0) for plan 22; `8ca22db` (v6.4.2) for plan 40; per-fix commits for plan 50; `bb92a77` (v7.0.0) for plan 60's idea; `2ce8aa1` (v7.0.1) for plans 70, 71, 72 and 75. Nothing was adopted in this revision |
+| Adoption baselines | Unchanged from the 2026-10-28 revision: `b36e082` (v6.3.0) for plan 22; `8ca22db` (v6.4.2) for plan 40; per-fix commits for plan 50; `bb92a77` (v7.0.0) for plan 60's idea; `2ce8aa1` (v7.0.1) for plans 70, 71, 72 and 75. Nothing was adopted in this revision. Added by plan 82 (2026-11-09): `22f0b46` (v7.0.2) |
 | Previous review | `2ce8aa1` (v7.0.1, 2026-10-21), reviewed 2026-10-28, re-anchored 2026-10-31 |
 | Upstream HEAD | `22f0b46` (v7.0.2, 2026-11-03), still `main` on 2026-11-07 |
 | Our tree | `5beacf5` (2026-11-07). Its unversioned assessment is byte-identical to the v7.0.1 copy before archival annotations; the v7.0.2 file was added later, in `44554e1` |
@@ -123,14 +123,14 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50, hardened again `98c453e`; the untracked-file guard **adopted** as an idea — plan 60; `start-server.sh --project-dir` **already covered** (`3ad94f8`, 2026-11-01, two days before #2608 shipped); the discard menu and the worktree-guard format stay as they were |
 | 9 | writing-plans asks for code transcripts | **Adopted** — plan 73 |
 | 10 | Reviewers grade the spec's silence | **Adopted** — plan 73 |
-| 11 | executing-plans was rebuilt as a ledgered native mode | **Adopted** — plan 75 (2026-10-31), from v7.0.1. v7.0.2's `task-start` guard and #2607 wording are open under finding 18 |
-| 12 | SDD script hardening | Range guards and the create-only `.gitignore` **adopted** — plan 50; the basename collision stays decided (M2). v7.0.2's helper fixes are finding 18, not this one |
+| 11 | executing-plans was rebuilt as a ledgered native mode | **Adopted** — plan 75 (2026-10-31), from v7.0.1. v7.0.2's `task-start` guard and #2607 wording landed under finding 18 in plan 82 (2026-11-09) |
+| 12 | SDD script hardening | Range guards and the create-only `.gitignore` **adopted** — plan 50; the basename collision stays decided (M2). v7.0.2's helper fixes are finding 18, not this one, and they landed there in plan 82 (2026-11-09) |
 | 13 | TDD does not say what "other tests" means | **Adopted** — plan 75 |
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted. v7.0.2 did not touch it |
 | 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |
 | 17 | Skill bodies run past the compaction re-attach cut | SDD and writing-skills splits **done** — plans 71, 72; the writing-skills guide rewrite remains open. Sizes re-taken 2026-11-07: three of our files fail upstream's byte bar, all pass ours, writing-plans by 6 characters. The byte bar stays not adopted until the probe |
-| 18 | v7.0.2 helper hardening: repository, task IDs, fences, invocation | **New.** One local defect by probe (`task-start` in a repo with no commit); two shared gaps by probe (#2604, #2605); invocation wording partly covered |
+| 18 | v7.0.2 helper hardening: repository, task IDs, fences, invocation | **New.** One local defect by probe (`task-start` in a repo with no commit); two shared gaps by probe (#2604, #2605); invocation wording partly covered. **Adopted** — plan 82 (2026-11-09), except `-C DIR`, which was not taken |
 | 19 | The autonomy dial is set hard | **New**, workflow. Decided by finding 7; we keep a wider human loop; record only |
 | 20 | No durable record of what wasn't built | **New**, workflow. **Already covered** by the plan-completion protocol; the upstreamable core is three rules |
 | 21 | Per-task test evidence is self-reported in SDD | **New**, workflow. Gap on both sides; a local design item that the tester-seat work also needs |
@@ -140,10 +140,10 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 25 | requesting-code-review still leads with `HEAD~1` | **New.** **Already covered**; record |
 | 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low |
 | 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides |
-| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone |
+| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone. Step 1 wording **adopted** — plan 82 (2026-11-09); the merge-conflict path stays open |
 | 29 | using-git-worktrees sets up Python projects wrongly and drops isolation silently | **New.** Setup half **already covered** (`169942a`); the sandbox fallback is a shared design choice |
 | 30 | systematic-debugging's `find-polluter.sh` is still invoked by a relative path upstream | **New.** **Already covered** here (plan 50); upstream's #2607 test does not reach it |
-| 31 | verification-before-completion lacks the documented-test-command pointer | **New.** Claim-specific command selection exists; the more explicit pointer is a wording proposal on both sides, low |
+| 31 | verification-before-completion lacks the documented-test-command pointer | **New.** Claim-specific command selection exists; the more explicit pointer is a wording proposal on both sides, low. **Adopted** — plan 82 (2026-11-09) |
 | 32 | test-driven-development | **New.** Nothing new at v7.0.2; findings 3, 13 and 24 carry it |
 | 33 | writing-skills says nothing about where test scenarios live | **New.** Record; a one-line placement rule on both sides, low |
 
@@ -613,6 +613,13 @@ carries the anchor or the phrase would hold the line that `47dc45c` drew.
   Prose only; the anchor is established text.
 - **#2602: dismissed** (Windows).
 
+**Done** (plan 82, 2026-11-09): `task-start` and `review-package` stop in a repository with no commit,
+through a new `sdd-repo` guard (upstream #2606) that `sdd-workspace` also calls, with exit 2 and the
+new-project message. `task-brief` reads task IDs whole and refuses a task that an unclosed fence runs
+past, with exit 4 (#2604, #2605). The twelve bare helper references (this spec counted ten) carry the
+`<this-skill-dir>/` anchor, and `build/check_helper_paths.py` is the thirteenth commit lint (#2607).
+`-C DIR` was not taken.
+
 **Reported session context, not independently verified:** the original author
 reports an owner order from a 2026-11-07 review session: this drift pass, then
 the brainstorm for the spec-derived tester seat, then its plan. No transcript
@@ -923,6 +930,10 @@ of our own TDD line and needs no new micro-test case beyond re-running plan
 75's. The conflict path is a local design item, low: stop, show the conflict,
 ask; never resolve a merge conflict on your own initiative.
 
+**Done** (plan 82, 2026-11-09): finishing-a-development-branch Step 1 runs the project's documented test
+command(s), not a guessed one. The micro-test held: the treatment passed 5 of 5 against a control at
+5 of 5. The conflict path stays open.
+
 ### 29. using-git-worktrees sets up Python projects wrongly and drops isolation silently
 
 **Upstream.** Step 2's setup runs `pip install -r requirements.txt` and `poetry
@@ -997,6 +1008,10 @@ test command rule where "FULL command" appears, on our side. A wording change
 to a discipline skill, so a micro-test case: the "should pass" temptation
 with a project whose documented command is not `pytest`.
 
+**Done** (plan 82, 2026-11-09): verification-before-completion's RUN step points a test claim at the
+documented test command. The micro-test's control passed 5 of 5, so it could not show an effect. The
+owner kept the pointer at the plan's completion gate.
+
 ### 32. test-driven-development — nothing new at v7.0.2
 
 Upstream's file is unchanged since v7.0.1. Findings 3 (falsifiability,
@@ -1052,6 +1067,8 @@ Under this repo's proportional-process rule:
     test command.
   - Finding 31: verification-before-completion points "FULL command" at the
     same rule, with one micro-test case.
+
+  Done: plan 82 (2026-11-09).
 - **Earlier work still open:** finding 3's prospective falsifiability
   guidance; finding 8's discard-menu consideration and optional guard-format
   convergence; finding 17's compaction-cut probe and residual writing-skills

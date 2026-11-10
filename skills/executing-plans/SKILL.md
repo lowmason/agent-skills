@@ -202,8 +202,8 @@ in the workspace and read its tail; read a brief, not the whole plan.
 
 ### 1. Take the task
 
-- Run this skill's `scripts/task-start PLAN_FILE N`. It prints the brief
-  path and BASE (the commit the task's range is cut from) in one call.
+- Run `<this-skill-dir>/scripts/task-start PLAN_FILE N`. It prints the
+  brief path and BASE (the commit the task's range is cut from) in one call.
   Read the brief for every task, including ones you remember from setup:
   what you remember is a summary, the brief has the exact values,
   signatures, and test cases.
@@ -256,7 +256,7 @@ the claim. If any item is missing, the task is not complete: finish it.
 
 ### 4. Complete the task
 
-Run this skill's `scripts/task-done PLAN_FILE N BASE -- <test command>`
+Run `<this-skill-dir>/scripts/task-done PLAN_FILE N BASE -- <test command>`
 with the project's documented test command(s) that the change can reach.
 `task-done` takes one command, run from the current directory: put several
 documented commands, or suites that run from their own directories, into

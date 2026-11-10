@@ -303,9 +303,10 @@ Subagent (general-purpose):
 
 **Placeholders:**
 - `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
-- `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
-  prints the path; same file the implementer worked from) — or, for a batched
-  dispatch, the `batch-N-M-brief.md` the controller composed itself, which
+- `[BRIEF_FILE]` — REQUIRED: the task brief file
+  (`<this-skill-dir>/scripts/task-brief PLAN N` prints the path; same file the
+  implementer worked from) — or, for a batched dispatch, the
+  `batch-N-M-brief.md` the controller composed itself, which
   that script has no multi-task mode to produce
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from
   the plan's Global Constraints section or the spec: exact values, formats,
@@ -316,9 +317,9 @@ Subagent (general-purpose):
 - `[BASE_SHA]` — commit before this task
 - `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
-  package to (`scripts/review-package PLAN_FILE BASE HEAD` reports it in a
-  `wrote <path>: …` summary line — pass the path alone, not the line; the
-  package never enters the controller's context)
+  package to (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD`
+  reports it in a `wrote <path>: …` summary line — pass the path alone, not
+  the line; the package never enters the controller's context)
 
 **Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
 (Critical/Important), Declined to judge, Task quality verdict

@@ -28,12 +28,9 @@ Guide completion of development work by presenting clear options and handling ch
 
 ### Step 1: Verify Tests
 
-**Before presenting options, verify tests pass:**
-
-```bash
-# Run project's test suite
-npm test / cargo test / pytest / go test ./...
-```
+**Before presenting options, verify tests pass:** run the project's documented
+test command(s), what its `CLAUDE.md`, `AGENTS.md`, README or CI runs, not a
+guessed `npm test` or `pytest`.
 
 **If tests fail:**
 ```
