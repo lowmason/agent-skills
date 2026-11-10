@@ -2,7 +2,7 @@
 
 Usage, from the repository root:
   uv run python <kit>/make_copies.py selftest   builds every copy in memory, checks it, prints each plant's sites
-  uv run python <kit>/make_copies.py build      writes specs/red-baseline-acceptance-tests/copies/
+  uv run python <kit>/make_copies.py build      writes specs/baseline/red-baseline-acceptance-tests/copies/
 '''
 import difflib
 import hashlib
@@ -17,7 +17,7 @@ from extract import reader_inputs, section_of  # noqa: E402
 from plants import COPIES, Plant  # noqa: E402
 
 KIT = Path(__file__).resolve().parent
-REPO = KIT.parents[2]
+REPO = KIT.parents[3]
 COPIES_DIR = KIT.parent / 'copies'
 LEAKS = ('def test_', '- [ ] **Step', '## Global Constraints', '## Review Focus', '## Decisions')
 SITE_TEXT_WIDTH = 80

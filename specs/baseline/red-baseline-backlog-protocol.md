@@ -1,7 +1,7 @@
 # Plan 74 micro-tests: the backlog-protocol wording
 
-Kit: `specs/red-baseline-backlog-protocol/kit/`. `run_reps.sh` and `isolation_probe.txt` are
-copies of plan 73's kit (`specs/red-baseline-reviewer-planning-contract/kit/`). The runner's only
+Kit: `specs/baseline/red-baseline-backlog-protocol/kit/`. `run_reps.sh` and `isolation_probe.txt` are
+copies of plan 73's kit (`specs/baseline/red-baseline-reviewer-planning-contract/kit/`). The runner's only
 changes are its temp prefix (`/tmp/plan74-rep-`) and the plan number in a comment. `show_reps.py`
 is plan 73's helper, unchanged except for the plan number in its docstring. It reads each rep's
 VOID flags and cost. `cases.py` holds the five cases. `build_prompts.py <sha> <out-dir>` builds
@@ -36,7 +36,7 @@ Command (Task 1 Step 3), on the leak-view prompts, which hold only the frame, th
 the task:
 
 ```bash
-uv run python specs/red-baseline-backlog-protocol/kit/build_prompts.py leakview /tmp/plan74-leak
+uv run python specs/baseline/red-baseline-backlog-protocol/kit/build_prompts.py leakview /tmp/plan74-leak
 cd /tmp/plan74-leak && for c in R1:'item:|dropped' R2:'item:|dropped' R3:'acknowledged' R4:'triggered' R5:'planned'; do k=${c%%:*}; p=${c#*:}; echo "== $k /$p/"; /usr/bin/grep -n -i -E "$p" $k.txt; echo "exit=$?"; done
 ```
 

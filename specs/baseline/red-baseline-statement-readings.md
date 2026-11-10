@@ -6,7 +6,7 @@
 This record gives the probe's results. It recommends nothing about a build plan. The owner reviews the results
 against the spec's bars and decides whether anyone writes a build plan, and what it keeps (spec decision D8).
 At D8, the owner decided on no build plan (Appendix B).
-The kit, the copies and every rep's prompt and reply are in `specs/red-baseline-statement-readings/`.
+The kit, the copies and every rep's prompt and reply are in `specs/baseline/red-baseline-statement-readings/`.
 
 Terms used in this record:
 
@@ -101,7 +101,7 @@ defense line in the Global Constraints (PD1). So each has one site more than in 
 
 ## 3. The table
 
-`runs/TABLE.txt` holds the output of `measure.py table specs/red-baseline-statement-readings/runs`. It has one
+`runs/TABLE.txt` holds the output of `measure.py table specs/baseline/red-baseline-statement-readings/runs`. It has one
 row for each role and copy (or spec id), then the bar lines, the second-reader lines and the `PD9 trigger:`
 line. Every rep of every role scored. No rep was VOID, so none was rerun.
 

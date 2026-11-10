@@ -31,7 +31,7 @@ from number import flatten, number  # noqa: E402
 from plants import COPIES, Copy  # noqa: E402
 
 KIT = Path(__file__).resolve().parent
-REPO = KIT.parents[2]
+REPO = KIT.parents[3]
 COPIES_DIR = KIT.parent / 'copies'
 PROMPTS = KIT / 'prompts'
 SKILL_PATH = 'skills/writing-plans/SKILL.md'
@@ -303,7 +303,7 @@ def selftest() -> None:
         raise AssertionError('guard passed a defense line')
     except SystemExit:
         pass
-    for leak in ('specs/red-baseline-statement-readings/copies/p55-clean', COPIES[0].plan_path, '3.12'):
+    for leak in ('specs/baseline/red-baseline-statement-readings/copies/p55-clean', COPIES[0].plan_path, '3.12'):
         try:
             guard(reader('p55') + leak, 'p55')
             raise AssertionError(f'guard passed {leak!r}')

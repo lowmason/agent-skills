@@ -1,6 +1,6 @@
 #!/bin/bash
 # Run reps for plan 83's statement-readings probe, adapted from plan 81's runner
-# (specs/red-baseline-acceptance-tests/kit/run_reps.sh). Each rep is a fresh `claude -p` with no tools, run from
+# (specs/baseline/red-baseline-acceptance-tests/kit/run_reps.sh). Each rep is a fresh `claude -p` with no tools, run from
 # its own new, empty directory under /tmp, outside every repository, under `env -i` with only HOME, USER,
 # LOGNAME, PATH, SHELL, TMPDIR and LANG, so nothing of the Desktop session that drives the runs reaches a rep.
 # `--setting-sources ""` keeps user-level context out of the reps: the output style, plugin SessionStart hooks,

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Run the Codex reader for plan 83's statement-readings probe, adapted from plan 81's runner
-# (specs/red-baseline-acceptance-tests/kit/run_codex.sh), on the owner's machine (DF-ARMS). Each rep runs
+# (specs/baseline/red-baseline-acceptance-tests/kit/run_codex.sh), on the owner's machine (DF-ARMS). Each rep runs
 # `codex exec` from a fresh empty directory under /tmp, outside every repository, under `env -i` with only
 # HOME, USER, LOGNAME, PATH, SHELL, TMPDIR and LANG, with the prompt on stdin and a read-only sandbox.
 # rep<i>.md holds the last message, rep<i>.log the whole log, whose header names the model that ran

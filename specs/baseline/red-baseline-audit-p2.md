@@ -28,7 +28,7 @@ The plan took its line anchors at `1fbb203`. The drift check is `git diff --stat
 
 ## Kit
 
-Kit: `specs/red-baseline-audit-p2/kit/`. Four files are copies of plan 76's kit (`specs/red-baseline-review-fixes/kit/`).
+Kit: `specs/baseline/red-baseline-audit-p2/kit/`. Four files are copies of plan 76's kit (`specs/baseline/red-baseline-review-fixes/kit/`).
 No file of plan 76's kit was edited.
 
 - `run_reps.sh` changes its temp prefix to `/tmp/plan77-rep-` and the plan number in a comment. It also runs each rep
@@ -155,7 +155,7 @@ Deviation (a) stays in force for every rep of Tasks 1 to 4.
 ## Control
 
 Arm `control`: the texts at `817319e`. The prompts were built with `build_prompts.py 817319e /tmp/plan77-work/control`.
-There are 5 reps per case, so 15 rep files in `specs/red-baseline-audit-p2/control/<case>/`. The three cases ran
+There are 5 reps per case, so 15 rep files in `specs/baseline/red-baseline-audit-p2/control/<case>/`. The three cases ran
 together on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool and one model, and ended with
 `success`. No rep wrote an error file. Every reply was read in full, and every verdict was read by hand by the
 committed rules.
@@ -254,7 +254,7 @@ for the edited tree (`40fe3aa1db7e1d667feaaef601b2caca9349a34a`). It differs fro
 three lines and nowhere else.
 
 **Run.** The reps ran with `run_reps.sh`, the same flags and `env -i` as the control (Deviation (a)), on Claude Code
-2.1.316. Files: `specs/red-baseline-audit-p2/treatment/rcr-feedback/rep1.json` to `rep5.json`. No rep was VOID. Every
+2.1.316. Files: `specs/baseline/red-baseline-audit-p2/treatment/rcr-feedback/rep1.json` to `rep5.json`. No rep was VOID. Every
 rep ran one turn, no tool and one model, ended with `success`, and wrote no error file. So no rerun was needed. Every
 reply was read in full, and each verdict was read by hand under the committed rule and Amendment 1. Amendment 1 did
 not change this case.
@@ -321,8 +321,8 @@ develop-testing-strategy skill". It adds no rule and says nothing about deferral
 bar did not change.
 
 **Run.** The reps ran with `run_reps.sh`, the same flags and `env -i` as the control (Deviation (a)), on Claude Code
-2.1.316. Files: `specs/red-baseline-audit-p2/treatment/tdd-strategy/rep1.json` to `rep5.json` for arm 1, and
-`specs/red-baseline-audit-p2/treatment/tdd-strategy-round2/rep1.json` to `rep5.json` for arm 2. No rep in either arm
+2.1.316. Files: `specs/baseline/red-baseline-audit-p2/treatment/tdd-strategy/rep1.json` to `rep5.json` for arm 1, and
+`specs/baseline/red-baseline-audit-p2/treatment/tdd-strategy-round2/rep1.json` to `rep5.json` for arm 2. No rep in either arm
 was VOID. Every rep ran one turn, no tool and one model, ended with `success`, and wrote no error file. So no rerun
 was needed. Every reply was read in full, and each verdict was read by hand under the committed rule and Amendment 1.
 
@@ -399,7 +399,7 @@ with the other cases' results.
   arm 1's commit `831dd20d5e25c131bbd6db018f8fa338c9b6cd77`. The 0 of 5 score for arm 1 therefore belonged to the
   committed text at that commit. The change described under "After the final review" below came later and differs from
   it by three words.
-- **Round-2 data.** The replies in `specs/red-baseline-audit-p2/treatment/tdd-strategy-round2/` are the arm of the
+- **Round-2 data.** The replies in `specs/baseline/red-baseline-audit-p2/treatment/tdd-strategy-round2/` are the arm of the
   uncommitted reword. They stay in the record as evidence that a second wording, keyed to the situation, also scored
   0 of 5.
 - **What the arms show.** The control, arm 1 and arm 2 all scored 0 of 5 on both clauses. Every treatment rep deferred
@@ -442,7 +442,7 @@ from the commit that `git stash create` printed for the edited tree (`4c8a59f004
 A `diff` against the control prompt shows one differing line, the edited one, and nothing else.
 
 **Run.** The reps ran with `run_reps.sh`, the same flags and `env -i` as the control (Deviation (a)), on Claude Code
-2.1.316. Files: `specs/red-baseline-audit-p2/treatment/debug-architecture/rep1.json` to `rep5.json`. No rep was VOID
+2.1.316. Files: `specs/baseline/red-baseline-audit-p2/treatment/debug-architecture/rep1.json` to `rep5.json`. No rep was VOID
 (thrown out and rerun, not scored). Every rep ran one turn with no tool, used one model, ended with `success` and
 wrote no error file. So no rerun was needed. Every reply was read in full, and each verdict was read by hand under the committed rule and Amendment 1
 (the earlier amendment that realigned the "fourth fix" note). Amendment 1 does not change the result: no rep applies

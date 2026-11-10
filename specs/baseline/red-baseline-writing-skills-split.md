@@ -1,6 +1,6 @@
 # Plan 72 micro-tests: the writing-skills split
 
-Kit: `specs/red-baseline-writing-skills-split/kit/`. The first run used `kit/run_reps.sh` as it
+Kit: `specs/baseline/red-baseline-writing-skills-split/kit/`. The first run used `kit/run_reps.sh` as it
 is at `d3ca946`. The isolated re-run at the end used the fixed script. 5 reps per arm. Every verdict is read by
 hand from the full reply. Pass rules and bars registered 2026-10-29 at b6bd294, before the split
 existed and before any rep was run.

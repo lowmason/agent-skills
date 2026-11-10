@@ -194,7 +194,7 @@ Rationalizations, verbatim, one per FAIL rep. P1 has no FAIL rep.
 
 Task 3 ran the three pressure scenarios on the new skill text. P1 pulls with two hours of sunk work, a "sounds good" and a deadline. P2 pulls toward ceremony on a quick task. P3 pulls with impatience, the partner's authority and sunk work. The Pressure baseline above lists the control's results for the same three.
 
-- Method: as in the Method section above. Claude Code was 2.1.312. Before each round the check `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0`, so the kit did not change.
+- Method: as in the Method section above. Claude Code was 2.1.312. Before each round the check `git diff --quiet 649cc44 -- specs/baseline/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0`, so the kit did not change.
 - Round 1 used prompts built at `51df859` (`NEW1`, the commit that holds the new skill). The manifest's `SKILL.md` hash is `6cb4cb47ac49d81a849f76ec1a2faea70c80d5df5bd79e75e2b3a0dcb07016d6`. It equals `git show 51df859:skills/brainstorming/SKILL.md | shasum -a 256`.
 - Round 2 used prompts built at `1ac8ef8`, the commit that adds one Red Flags row. The manifest's `SKILL.md` hash is `90bd5ee6a148950db01be05a8dc8dd8368d691d048e6acc37837b01fd76c4830`. It equals the same check at `1ac8ef8`.
 - Rep files are in `red-baseline-brainstorming-2026-10-28/pressure-1/new/` and `pressure-2/new/`. Each round's `prompts/` folder holds its `MANIFEST.txt`.
@@ -274,7 +274,7 @@ Task 3 read the three hashes before the first rep of round 1 and again after the
 
 Task 4 ran the GREEN cases on the new skill text at `1ac8ef8`, the commit that added one Red Flags row in Task 3. Each case ran five reps. The bar is R11.1, the GREEN requirement in `specs/completed/brainstorming-proportional-rebuild.md`. Each fix target passes at least 4 of 5 reps. Each guard stays at 4 of 5 or better. T8 and T9 each pass at least 4 of 5, and T8 passes only when T8a and T8b both do. A guard is a case that passed on today's copy. A fix target is a case that failed on it (R10.2).
 
-- Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/green-1/new/`. Before the round, `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0`. The same check on `skills/brainstorming` against `1ac8ef8` printed `skill_clean=0`.
+- Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/green-1/new/`. Before the round, `git diff --quiet 649cc44 -- specs/baseline/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0`. The same check on `skills/brainstorming` against `1ac8ef8` printed `skill_clean=0`.
 - Prompts were built at `1ac8ef8`. The manifest's `SKILL.md` hash is `90bd5ee6a148950db01be05a8dc8dd8368d691d048e6acc37837b01fd76c4830`. It equals `git show 1ac8ef8:skills/brainstorming/SKILL.md | shasum -a 256`. It is also the manifest hash of pressure round 2, which used the same commit.
 - The 50 reps ran in four batches (T1 to T3, T4 to T6, T7 to T8b, T9). A spend check came before each batch.
 - Scoring follows the Rules section above, with both T4 readings from "Readings used". Task 4 read every reply whole, as printed by `kit/show_reps.py`. The verdicts below are the final ones, after the independent re-score.
@@ -596,7 +596,7 @@ Task 5 read the three hashes before the first rep and again after the last rep. 
 - `~/.claude/rules/aws-agent-toolkit.md` `5a941f7dec6c987732229537b350d4b3574ad0f0acd2fe9224cf8bf0816e9690`
 - `~/.claude/rules/write-with-asd-ste100.md` `77cedde5b9dc379e60b8c7df5356eab05ce494de081df6bc8268b394f9b4eefa`
 
-`git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0` before the first rep and again after the last. The same check on `skills/brainstorming` against `7b1ed85` printed `skill_clean=0` both times.
+`git diff --quiet 649cc44 -- specs/baseline/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0` before the first rep and again after the last. The same check on `skills/brainstorming` against `7b1ed85` printed `skill_clean=0` both times.
 
 Privacy scan, before the commit: no file under `trigger/` (26 files) holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
 
@@ -680,7 +680,7 @@ asked once they've opted out of the questions.
 - Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/rerun-1/new/` and `rerun-1/control/`. Each arm's `prompts/` folder holds its `MANIFEST.txt`.
 - Prompts for the new copy were built at `f518ec5` with `git show`. The manifest's `SKILL.md` hash is `990d34a3fad649d70cabdb0c1ee8fbee7b304f80b352719c085669d5079635e7`. It equals `git show f518ec5:skills/brainstorming/SKILL.md | shasum -a 256`.
 - Swap the `f518ec5` skill body back for the `7b1ed85` body in a new-copy prompt. Its sha256 then equals the one in `green-2/new/prompts/MANIFEST.txt` for the same case. So the prompts differ from GREEN round 2's only in the skill body. P2b is new. The control's manifest equals the RED control's for every case except P2b.
-- The kit changed since the baseline commit `649cc44` by the P2b case alone. `cases.py` gained 5 lines and lost none. So `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` prints `kit_clean=1` here, where earlier sections printed `kit_clean=0`.
+- The kit changed since the baseline commit `649cc44` by the P2b case alone. `cases.py` gained 5 lines and lost none. So `git diff --quiet 649cc44 -- specs/baseline/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` prints `kit_clean=1` here, where earlier sections printed `kit_clean=0`.
 - The Change paragraph's "nothing else" is about `skills/`. The command `git diff 7b1ed85 f518ec5 -- skills` shows two hunks. The full diff between the two commits also holds the work of Tasks 4 to 6.
 - The 35 reps ran in three batches (T1, T8a and T8b, then T9, P2 and P2b, then the control's P2b). A spend check came before each batch.
 - Scoring follows the rules registered above. They were committed at `5ff76a9`, before any prompt of this re-run was built. Task 8 read every reply whole, as printed by `kit/show_reps.py`. The verdicts below are the final ones, after the independent re-score.
@@ -894,7 +894,7 @@ result can cause that. The line number after each arm is the line of this record
 where the section was written.
 
 **Kit and inputs.**
-- Script: `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, plan 72's, unchanged. It adds
+- Script: `specs/baseline/red-baseline-writing-skills-split/kit/run_reps.sh`, plan 72's, unchanged. It adds
   `--setting-sources ""` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and gives each rep its own `/tmp`
   directory. The old files in `kit/` are unchanged.
 - Model `claude-opus-5-5` and 5 reps for every arm, as in the first runs (line 12).
@@ -904,7 +904,7 @@ where the section was written.
 - Output: `<round>/new-isolated/<case>/rep<N>.json`, beside the first-run `<round>/new/<case>/`.
 - Claude Code 2.1.316. The first runs used 2.1.312.
 
-**Pilot.** `specs/red-baseline-writing-skills-split/kit/isolation_probe.txt` asks a rep to report
+**Pilot.** `specs/baseline/red-baseline-writing-skills-split/kit/isolation_probe.txt` asks a rep to report
 what its context holds. Two Opus reps, run under the same flags, answered NO on all five lines
 (CLAUDE.md, output style, rules, SessionStart hook text, auto-memory). Files: `isolation-pilot/`.
 Pilot spend: $0.022. A reply to a rep with an Insight box would also show a leak.

@@ -2160,7 +2160,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       Fix Rounds paragraph because the micro-test prompt holds only SKILL.md; (2) the
       trivial-fix exception, tightened once after C2b scored 0/5; (3) tested against a control
       and dropped, because the control recovered 5/5 (stop rule D3). Results:
-      `specs/red-baseline-sdd-compaction.md`.
+      `specs/baseline/red-baseline-sdd-compaction.md`.
 - [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
@@ -2759,7 +2759,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       records findings 9 and 10 as declined in the drift spec.
       → done in plan 73 (2026-10-30): `specs/completed/reviewer-and-planning-contract.md` adopted finding 10
       and finding 9 (the step recipe, kept after the F1 comparison); the record is
-      `specs/red-baseline-reviewer-planning-contract.md`.
+      `specs/baseline/red-baseline-reviewer-planning-contract.md`.
 - [x] Open the brainstorming spec for superpowers drift finding 4 (audit-3-10-26 B5, found
       2026-10-03; drift spec "Spec candidate, brainstorming", re-verified 2026-10-18 against
       upstream v7.0.0). A contradiction is live on main: `skills/brainstorming/SKILL.md:22-24`
@@ -2780,7 +2780,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       two files is changed so they no longer contradict each other. → done in plan 70
       (2026-10-29): the spec `specs/completed/brainstorming-proportional-rebuild.md` was
       approved, and plan 70 rebuilt `skills/brainstorming/SKILL.md` from it. The rebuild
-      has its own RED baseline, `specs/red-baseline-brainstorming-2026-10-28.md`.
+      has its own RED baseline, `specs/baseline/red-baseline-brainstorming-2026-10-28.md`.
 - [x] Owner calls that gate the model-lifecycle spec (audit-3-10-26 O1–O3 and its Decision 2,
       found 2026-10-03; re-verified 2026-10-18: no answer is recorded in this file, a spec,
       a plan, a commit, a PR or a handoff brief). The JAX spec, approved the same day, went
@@ -5301,7 +5301,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `skills/writing-skills/references/{discovery,flowcharts,bulletproofing}.md`. The body is 434
       lines and 18,003 characters. Exception `writing-skills-late-critical-headings` and the
       `critical_placement` lint are gone (7c09ef3). Micro-test: 5/5 on every `t3` arm, $3.39; see
-      `specs/red-baseline-writing-skills-split.md`.
+      `specs/baseline/red-baseline-writing-skills-split.md`.
 
 ## spec-reading-test-check (no plan; owner-approved local design idea from session "Obra superpowers writing-plans mechanism") — 2026-10-28
 - [x] Spec-reading test check (local design, not an upstream finding, owner-approved
@@ -5347,21 +5347,21 @@ review and the Plan Completion gate (2026-10-27) add the others.
       pass the spec path and the plan's Review Focus section to the final code-reviewer. The item
       stays open.
       Progress (plan 81, 2026-11-08): the planted-misread probe of `specs/spec-derived-acceptance-tests.md`
-      ran, with its results in `specs/red-baseline-acceptance-tests.md`. The owner reviews them before the
+      ran, with its results in `specs/baseline/red-baseline-acceptance-tests.md`. The owner reviews them before the
       build plan is written. The item stays open.
-      → progress 2026-11-08 (plan 81, owner ruling at D8): the control, a fresh `claude -p` session that runs the Self-Review checklist, caught 15 of 15 plants, and no treatment arm caught more than 11 (`specs/red-baseline-acceptance-tests.md`). The spec's part for drift finding 21 (a test-run script, the task-reviewer change and the `task-done` change) goes to a build plan from `specs/spec-derived-acceptance-tests.md`. The second reader goes to a spec revision for statement-level readings: Claude and Codex each state what the spec asks, in fixed slots, from the spec alone, and one step compares the statements with each other and with the plan's values. A probe with harder plants (a wrong value that the plan argues for, and spec sentences with two readings) tests that design against the fresh-session control. The item stays open.
-      → progress 2026-11-09 (plan 83): the statement-readings probe ran, and its results are in `specs/red-baseline-statement-readings.md`. The owner reviews them before any build plan. The item stays open.
-      → done 2026-11-09 (plan 83): `specs/completed/statement-level-readings.md` decided the layers, and its probe recorded the baseline in `specs/red-baseline-statement-readings.md`. At D8 the owner chose no build plan. Layer 3, a reading step at plan review, is not kept: the probe's statement step missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of 1.0, and a fresh Self-Review caught every planted value change (15 of 15 in plan 81 and in plan 83). Layer 5's independent acceptance tests go, by the owner's direction D9 that two readers state what the spec asks instead of writing tests. Its spec-path handoff to the final reviewer landed in plan 73. Layer 1 applies only when a spec has worked examples (old D4). Layer 4, spec excerpts in the implementer brief, stays open → item: 83-statement-level-readings — 2026-11-09
+      → progress 2026-11-08 (plan 81, owner ruling at D8): the control, a fresh `claude -p` session that runs the Self-Review checklist, caught 15 of 15 plants, and no treatment arm caught more than 11 (`specs/baseline/red-baseline-acceptance-tests.md`). The spec's part for drift finding 21 (a test-run script, the task-reviewer change and the `task-done` change) goes to a build plan from `specs/spec-derived-acceptance-tests.md`. The second reader goes to a spec revision for statement-level readings: Claude and Codex each state what the spec asks, in fixed slots, from the spec alone, and one step compares the statements with each other and with the plan's values. A probe with harder plants (a wrong value that the plan argues for, and spec sentences with two readings) tests that design against the fresh-session control. The item stays open.
+      → progress 2026-11-09 (plan 83): the statement-readings probe ran, and its results are in `specs/baseline/red-baseline-statement-readings.md`. The owner reviews them before any build plan. The item stays open.
+      → done 2026-11-09 (plan 83): `specs/completed/statement-level-readings.md` decided the layers, and its probe recorded the baseline in `specs/baseline/red-baseline-statement-readings.md`. At D8 the owner chose no build plan. Layer 3, a reading step at plan review, is not kept: the probe's statement step missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of 1.0, and a fresh Self-Review caught every planted value change (15 of 15 in plan 81 and in plan 83). Layer 5's independent acceptance tests go, by the owner's direction D9 that two readers state what the spec asks instead of writing tests. Its spec-path handoff to the final reviewer landed in plan 73. Layer 1 applies only when a spec has worked examples (old D4). Layer 4, spec excerpts in the implementer brief, stays open → item: 83-statement-level-readings — 2026-11-09
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
 - [x] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
       deferred at the completion gate). The test case T6 simulates a `/deferred` item routed to the
       brainstorming skill. Its prompt quotes the command's own words, "a new spec through the
       normal design cycle" (case `T6` in
-      `specs/red-baseline-brainstorming-2026-10-28/kit/cases.py`). A T6 pass means the reply writes
+      `specs/baseline/red-baseline-brainstorming-2026-10-28/kit/cases.py`). A T6 pass means the reply writes
       the full design to a file under `specs/`, or says it does so next, and builds nothing. T6
       passed 5 of 5 with no skill (control), with the old skill, and in both rounds of the new copy
-      (table "All arms side by side" in `specs/red-baseline-brainstorming-2026-10-28.md`). So a
+      (table "All arms side by side" in `specs/baseline/red-baseline-brainstorming-2026-10-28.md`). So a
       pass does not show that the skill's own rule works. That rule is the passage in
       `skills/brainstorming/SKILL.md` that begins "When a command or skill routed the work here"
       (spec `specs/completed/brainstorming-proportional-rebuild.md`, rule R2.2: size such work as a
@@ -5373,7 +5373,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quote alone explains the control's 5 of 5. Size: quick-fix. Done when: the record shows both
       arms on the variant and says whether the skill alone reaches a spec file. If the skill fails
       the variant, add a new item for the wording change.
-      → done 2026-10-31 (/deferred quick fix): T6v run, both arms 5/5; the skill alone reaches a spec file, so no wording item (specs/red-baseline-brainstorming-2026-10-28.md, "T6 variant").
+      → done 2026-10-31 (/deferred quick fix): T6v run, both arms 5/5; the skill alone reaches a spec file, so no wording item (specs/baseline/red-baseline-brainstorming-2026-10-28.md, "T6 variant").
 - [x] Three wrong statements in `specs/completed/superpowers-drift-spec-v7-0-1.md`, found by the plan 70
       fact-check panels (2026-10-28). Plan 70 did not write them, and the owner's correction list
       (D19) did not name them, so they stayed. Find each one by its quoted text, because line
@@ -5432,7 +5432,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (found by that round's light check, 2026-10-29). The subagent-driven-development cap of five
       fix rounds ended further edits. None of the eight edits changes a score, a bar or a verdict.
       Find each one by its quoted text, because line numbers move. Every line is in
-      `specs/red-baseline-brainstorming-2026-10-28.md` unless it says otherwise. (1) The P2b bullet
+      `specs/baseline/red-baseline-brainstorming-2026-10-28.md` unless it says otherwise. (1) The P2b bullet
       in the re-run's Borderline calls (near line 747) ends "The P2b rule fails only a turn that
       holds the change for a question." The registered P2b rule (near line 672) also fails a hold
       for a design, approaches or an approval. Delete the sentence, or write "The P2b rule fails a
@@ -5507,7 +5507,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       dispatches") are silent. Adding a sentence changes SKILL.md after the plan 71
       micro-tests, so C2a and C2b must be re-run on the new SHA (about $1). Size: quick-fix.
       Done when: both copies of the exception say it, and C2a and C2b still pass at 5/5.
-      → done 2026-10-31 (/deferred quick fix): 971ec4d says a hand fix counts as one of the five attempts, in both copies; C2a and C2b 5/5 at 971ec4d (specs/red-baseline-sdd-compaction.md, "Re-run at `971ec4d`").
+      → done 2026-10-31 (/deferred quick fix): 971ec4d says a hand fix counts as one of the five attempts, in both copies; C2a and C2b 5/5 at 971ec4d (specs/baseline/red-baseline-sdd-compaction.md, "Re-run at `971ec4d`").
 
 ## 72-writing-skills-split — 2026-10-29
 - [x] `build/check_links.py` fails open on forms it does not parse (plan 72 final review, Minor;
@@ -5531,13 +5531,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [x] The micro-test kit lets user-level context into its `claude -p` reps (plan 72 final review,
       Minor; triaged defer). All 45 replies of plan 72's micro-test show an "Insight" box, and
       W1 Sonnet rep 2 quotes the user's global notes back. So
-      `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, copied from plan 71's kit
-      (`specs/red-baseline-sdd-compaction/kit/run_reps.sh`), does not isolate the reps from the
+      `specs/baseline/red-baseline-writing-skills-split/kit/run_reps.sh`, copied from plan 71's kit
+      (`specs/baseline/red-baseline-sdd-compaction/kit/run_reps.sh`), does not isolate the reps from the
       user's output style, hooks or user-level CLAUDE.md. The cause is not identified. That
       CLAUDE.md tells agents to check for a relevant skill, so the `t3` read-first passes are an
       upper bound. The same leak may touch plan 71's results. The kit also makes one
       `/tmp/plan72-rep-*` directory per call, not per rep. See
-      `specs/red-baseline-writing-skills-split.md`. Size: plan. Done when: a kit run shows no
+      `specs/baseline/red-baseline-writing-skills-split.md`. Size: plan. Done when: a kit run shows no
       Insight box and no quoted user-level file in any reply, plan 72's `t3` arms (30 reps, about
       $2) re-run under it, and the pass counts are recorded beside the first run's.
       → done on branch claude/what-is-next-2ccb0d (2026-10-29): the cause is the user setting
@@ -5553,7 +5553,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       reference text. 22 of the 30 `t3` passes came from the registered no-edit clause, and only
       8 reps wrote a read before a write. A test with tools enabled and the reference files in
       place would show whether an agent reads a pointer's target and then uses it. See
-      `specs/red-baseline-writing-skills-split.md`. Size: design. Revisit if: an agent is seen
+      `specs/baseline/red-baseline-writing-skills-split.md`. Size: design. Revisit if: an agent is seen
       skipping a writing-skills reference in real use, or a later pointer change needs evidence
       beyond "reads first".
 
@@ -5562,14 +5562,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Every `claude -p --tools ""` kit before plan 72's fix ran without `--setting-sources ""`.
       So the reps got the owner's output style, the output-style plugins' SessionStart hooks,
       `~/.claude/CLAUDE.md` and `~/.claude/rules/`. Kits and records that show it include
-      `specs/red-baseline-sdd-compaction/kit/run_reps.sh` (plan 71),
-      `specs/red-baseline-brainstorming-2026-10-28/kit/run_reps.sh` (plan 70) and the
+      `specs/baseline/red-baseline-sdd-compaction/kit/run_reps.sh` (plan 71),
+      `specs/baseline/red-baseline-brainstorming-2026-10-28/kit/run_reps.sh` (plan 70) and the
       `specs/verification/` micro-test records of plans 57, 59, 64, 65 and 67. An arm contrast is
       protected, because both arms got the same context. An absolute result in a single arm is
       not. The global CLAUDE.md tells agents to check for a relevant skill, so it can lift a
       control arm. The verdict most at risk is plan 71's ruling (3): the stop rule dropped it
       because the control arm recovered 5/5. Plan 72's `t3` arms re-ran clean and held 5/5
-      (`specs/red-baseline-writing-skills-split.md`, "Re-run with the isolated kit"). Size:
+      (`specs/baseline/red-baseline-writing-skills-split.md`, "Re-run with the isolated kit"). Size:
       plan. Done when: plan 71's control arm for ruling (3), and each plan 70 arm whose verdict
       decided a ruling or a stop rule, re-run under plan 72's fixed kit, and each record states
       whether its verdict holds.
@@ -5587,11 +5587,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       10/25). The wording moves the form of the failure and not its rate, so T7 is a known gap at
       about 50% and no skill text changes. The owner rules on the T7 text and on decision D17. The
       records of plans 57, 59, 64, 65 and 67 were not re-run. Spend $7.32. Results: "Re-run with
-      the isolated kit" in `specs/red-baseline-sdd-compaction.md` and
-      `specs/red-baseline-brainstorming-2026-10-28.md`.
+      the isolated kit" in `specs/baseline/red-baseline-sdd-compaction.md` and
+      `specs/baseline/red-baseline-brainstorming-2026-10-28.md`.
       → progress 2026-11-06 (owner ruling): accept T7 as a known gap near 50%, keep the text, and
       leave D17's letter reading in place. No skill text changes.
-      → done 2026-11-07 (drift-record reconciliation): the 2026-11-05 isolated reruns fulfilled the owner's Done-when-only scope. Plan 71's C3 control remains 5/5 (specs/red-baseline-sdd-compaction.md, "Re-run with the isolated kit"); plan 70's record reports each verdict and the T7 flip. The owner settled T7 and D17 on 2026-11-06 (specs/red-baseline-brainstorming-2026-10-28.md, "Owner ruling (2026-11-06)"). Plans 57, 59, 64, 65 and 67 were outside the selected rerun scope.
+      → done 2026-11-07 (drift-record reconciliation): the 2026-11-05 isolated reruns fulfilled the owner's Done-when-only scope. Plan 71's C3 control remains 5/5 (specs/baseline/red-baseline-sdd-compaction.md, "Re-run with the isolated kit"); plan 70's record reports each verdict and the T7 flip. The owner settled T7 and D17 on 2026-11-06 (specs/baseline/red-baseline-brainstorming-2026-10-28.md, "Owner ruling (2026-11-06)"). Plans 57, 59, 64, 65 and 67 were outside the selected rerun scope.
 
 ## backlog-protocol-design (no plan; brainstorming, branch claude/backlog-protocol-design-aa6201) — 2026-10-29
 - [ ] Split `specs/deferred_items.md` into one file per section, to cut merge conflicts
@@ -5623,7 +5623,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       copies) can be read to drop findings the same block keeps: "tests that assert nothing"
       (Important), test-output noise (task-reviewer, spec D6), Extra, and "follows the plan's
       file structure". No micro-test case plants a test-only finding, so the record could not
-      show a regression. See `specs/red-baseline-reviewer-planning-contract.md`. Size: design.
+      show a regression. See `specs/baseline/red-baseline-reviewer-planning-contract.md`. Size: design.
       Done when: a micro-test case with a test-only defect (a test that asserts nothing) shows
       both reviewers still report it, and the sentence is reworded in all four copies if they
       do not.
@@ -5687,7 +5687,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       four-backtick fence as the marker, so the first inner fence closes the outer one; the F1
       audit (`f1/score_f1.py`) still misses some spellings of a forbidden path (a quoted
       `"$HOME"/Projects`, `~lowell/Projects`, a path after `cd ~`). Files:
-      `specs/red-baseline-reviewer-planning-contract/kit/` and `.../f1/`. Size: quick-fix.
+      `specs/baseline/red-baseline-reviewer-planning-contract/kit/` and `.../f1/`. Size: quick-fix.
       Revisit if: the kit or F1 is reused for another plan, or a rep uses a four-backtick
       fence.
 - [ ] Watch the Proportion check's "cut it before you save it" (plan 73 final review
@@ -5696,7 +5696,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       template's fixed sections alone are 2.55 times a 1,015-character spec, so the check fires
       on nearly every small plan. F1 showed no loss, but both arms passed 12 of 12 hidden
       tests, so F1 could not show one (a ceiling), and its byte-order-mark test is passed by
-      any positional reader. See `specs/red-baseline-reviewer-planning-contract.md` ("F1").
+      any positional reader. See `specs/baseline/red-baseline-reviewer-planning-contract.md` ("F1").
       Size: design. Revisit if: a plan written under the recipe cuts a test or a task the spec
       needs, or an F1 extension with a harder defect shows arm 2 handling fewer.
 - [ ] Wording observations from plan 73's tests (Minors M14, M20, M22-M24): the Step
@@ -5741,8 +5741,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       substance alone the R1 control scored 4 of 5, so the passes show that the
       marker and note forms are taught, not that a lost deferral is caught. A
       fixture where the control loses real work would test the protocol
-      itself. See specs/red-baseline-backlog-protocol.md (Control, Verdicts
-      under the bar); touches specs/red-baseline-backlog-protocol/kit/cases.py.
+      itself. See specs/baseline/red-baseline-backlog-protocol.md (Control, Verdicts
+      under the bar); touches specs/baseline/red-baseline-backlog-protocol/kit/cases.py.
       Size: design. Revisit if: the marker or note wording changes again and
       needs a test that can fail.
 - [ ] **Scan gaps kept open (plan 74 Task 13).** The deferral scan still misses
@@ -5767,13 +5767,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [ ] **No micro-test reaches the reworded gates (plan 75 final review, owner ruled defer).**
       The SDD `final-review.md` gate (rulings listed first, then Declined to judge lines as
       questions) and the executing-plans fix pass load no fixture in the kit, so the wording
-      ships untested. See specs/red-baseline-executing-plans-port.md (Findings for the
-      owner); touches specs/red-baseline-executing-plans-port/kit/cases.py. Size: design.
+      ships untested. See specs/baseline/red-baseline-executing-plans-port.md (Findings for the
+      owner); touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size: design.
       Revisit if: a run lists rulings late or asks a question the ledger already answers.
 - [ ] **Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The
       registered S1 rule fails any force-push line inside a `<command>` or `<edit>` block,
       even one labelled "after approval", and G1 and G1p had control at 5/5. Both shipped on
-      a plain reading. Touches specs/red-baseline-executing-plans-port/kit/cases.py. Size:
+      a plain reading. Touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size:
       quick-fix. Revisit if: the kit is reused for a later plan.
 - [ ] **`SKILL.md` resume sentence overstates `resuming.md` (plan 75 Task 5).** The sentence
       says `resuming.md` describes `Ruling:` lines but it covers only deviation lines; the
@@ -5852,7 +5852,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       #22, left unchanged).** `skills/executing-plans/SKILL.md:50` says "Five things stop
       you, and only these", while pre-flight sends a conflict to the partner before Task 1.
       The stop-scope control scored 0/5 failures, so the plan's stop rule left the line
-      unchanged (Task 20 Steps 4 and 5). See specs/red-baseline-review-fixes.md. See specs/plans/completed/76-whole-repo-review-fixes.md.
+      unchanged (Task 20 Steps 4 and 5). See specs/baseline/red-baseline-review-fixes.md. See specs/plans/completed/76-whole-repo-review-fixes.md.
       Size: quick-fix. Revisit if: a run rules alone on a pre-flight conflict.
 - [ ] **Codex test-runner cannot write uv's cache (plan 76 Task 11).** Under Codex's
       read-only and workspace-write sandbox modes, uv cannot write ~/.cache/uv, so the Codex
@@ -5873,8 +5873,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       The v2 fixture's CLAUDE.md says "Run a suite before you call a change finished", so a
       0/5 control did not show whether fix-loop.md's old one-line-fix rule misled an agent.
       The owner applied D3 to fix-loop.md by decision D7 without a failing control, and no
-      treatment arm ran. See specs/red-baseline-review-fixes.md and
-      specs/red-baseline-review-fixes/kit/cases.py. See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix (closure note
+      treatment arm ran. See specs/baseline/red-baseline-review-fixes.md and
+      specs/baseline/red-baseline-review-fixes/kit/cases.py. See specs/plans/completed/76-whole-repo-review-fixes.md. Size: quick-fix (closure note
       only). Revisit if: a fix round skips the documented suites in a real run.
 
 ## 77-audit-p2-text-fixes — 2026-11-06
@@ -5904,7 +5904,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       line. No rep reached the pointer, so its effect and its last sentence are untested. The
       two non-regression cases (`rcr-feedback`, `debug-architecture`) also have little power:
       both controls scored 5 of 5 on fixtures that state the facts plainly. The owner kept the
-      pointer. See specs/red-baseline-audit-p2.md and
+      pointer. See specs/baseline/red-baseline-audit-p2.md and
       specs/plans/completed/77-audit-p2-text-fixes.md. Size: plan. Revisit if: a real session
       shows an agent that loaded the test-driven-development skill skip the
       develop-testing-strategy skill when adding the first tests to a scraper, pipeline or
@@ -5917,30 +5917,30 @@ review and the Plan Completion gate (2026-10-27) add the others.
       in Task 3 round 1, then 3 of 5 after the wording round, and 3 of 5 again in the Task 7 re-run.
       The verdict turns on one reading: a reply that names a core stage and later stages for the
       hardening, inside the offer or the one message, counts as a stage list. Without that reading
-      the case passes 4 of 5. See specs/red-baseline-new-project-entry.md (Task 3 summary and owner
+      the case passes 4 of 5. See specs/baseline/red-baseline-new-project-entry.md (Task 3 summary and owner
       gate; Task 7) and specs/plans/completed/78-derive-roadmap-new-project-entry.md. Size: design.
       Done when: the owner rules on that reading, or a re-run of the case passes 4 of 5 under the
-      kit in specs/red-baseline-new-project-entry/kit/.
+      kit in specs/baseline/red-baseline-new-project-entry/kit/.
       → retired 2026-11-07: the owner ruled that the core-and-later-stages text counts as a stage list, so plan 78's committed reading stands and the case stays at 3 of 5. The skill wording that would stop this text is filed → item: deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
 - [ ] **dr-tracks passes unstably (owner ruled accept and file at the completion gate).**
       `skills/derive-roadmap/SKILL.md` §7 step 2 and `references/new-project-entry.md` (Outcomes and
       tracks). Task 3 rounds 1 and 2 scored 2 of 5 each. The Task 7 re-run scored 5 of 5 on the
       readings applied, although no edit touched the track-split text, so most of the change is
       likely variance. By the other reading of clause C it scores 3 of 5 or fewer. See
-      specs/red-baseline-new-project-entry.md (Treatment: Task 3 and Task 7). Size: plan. Done when:
+      specs/baseline/red-baseline-new-project-entry.md (Treatment: Task 3 and Task 7). Size: plan. Done when:
       two independent five-rep runs of the case each pass 4 of 5 under the kit, or the owner accepts
       the Task 7 result as it stands.
       → progress 2026-11-07 (owner ruling): the Task 7 result is not accepted as it stands. The item stays open for the two independent five-rep runs.
       → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
       → progress 2026-11-07 (plan 79): two independent five-rep runs at `5f52dfc` scored 3 of 5 and 2 of 5 (bar 4 of 5
       each) and both missed on clause C. If an order attached to the phrase "name its stages first to last" counts as
-      an echo, both runs are 4 of 5. See specs/red-baseline-new-project-entry.md (Plan 79: summary, owner-gate items 1
+      an echo, both runs are 4 of 5. See specs/baseline/red-baseline-new-project-entry.md (Plan 79: summary, owner-gate items 1
       and 2). Filed → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
 - [x] **dr-known-progression fails conformance clause C: point-in-time awareness appears in 0 of 5
       reps (owner ruled accept and file at the completion gate).** The fixture's background spec
       never raises as-of reads, so the skill's Later-qualities example list in
       `skills/derive-roadmap/references/new-project-entry.md` is the only cue. Manifests (5 of 5)
-      and traceability (4 of 5) land in later stages. See specs/red-baseline-new-project-entry.md
+      and traceability (4 of 5) land in later stages. See specs/baseline/red-baseline-new-project-entry.md
       (Task 3 summary and owner gate; Task 7). Size: design. Done when: the owner decides whether
       the skill text must prompt for point-in-time awareness or whether clause C should fit the
       fixture, and the case is re-run under that decision.
@@ -5962,7 +5962,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (plan 78 final review, owner ruled file).** `skills/derive-roadmap/references/roadmap-format.md`
       (Ranked list) gives a list item an O-number and the partner's order. A quality that
       `Leaves out` hands to the list has neither, so replies add it as an unranked item. See
-      specs/red-baseline-new-project-entry.md. Size: design. Done when: the format states how a
+      specs/baseline/red-baseline-new-project-entry.md. Size: design. Done when: the format states how a
       later quality is listed in a Ranked list (for example an O-number and a rank request, or a
       named unranked class).
       → planned 2026-11-07: specs/derive-roadmap-later-qualities-and-spec-refs.md
@@ -5971,14 +5971,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       §5 and its Parking paragraph), a name collision when a spec exists (`references/roadmap-format.md`,
       New-project roadmaps), and a second re-rank round (the research-track paragraph in §5). Two
       reviewers and Codex found defects on these paths, and no case reaches them. See
-      specs/red-baseline-new-project-entry.md (Untested by micro-tests). Size: plan. Done when:
-      cases for the four paths exist in specs/red-baseline-new-project-entry/kit/cases.py, each
+      specs/baseline/red-baseline-new-project-entry.md (Untested by micro-tests). Size: plan. Done when:
+      cases for the four paths exist in specs/baseline/red-baseline-new-project-entry/kit/cases.py, each
       with a control run and a treatment run.
       → planned 2026-11-07: specs/plans/79-derive-roadmap-resume-and-route-tests.md
       → done 2026-11-07 (plan 79): the four cases exist in the kit and each has a control run (all four RED)
       and treatment runs. At the final text three meet their bar, and `dr-park-ranked` meets it by the owner's
       re-run rule (4 of 5, on the inline-fields reading of clause D). `dr-name-collision` was last run at `T3`
-      (4 of 5). See specs/red-baseline-new-project-entry.md (Plan 79: summary). Follow-ups are filed → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
+      (4 of 5). See specs/baseline/red-baseline-new-project-entry.md (Plan 79: summary). Follow-ups are filed → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
 - [x] **Two wording gaps left by plan 78's final review (owner ruled file).**
       `skills/derive-roadmap/references/roadmap-format.md` (Ranked list, last paragraph) names only a
       promotion and a track stop as ways an item leaves a Ranked list, and a whole-roadmap park also
@@ -6001,9 +6001,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       of 5). The record names a likely cause: the round-2 edit to the later-qualities rule ("Check
       the project against each one, and place every one it will need") may have drawn this text in.
       It would take a wording change to those sections and a re-run of `dr-offer-yes` under the kit
-      in specs/red-baseline-new-project-entry/kit/. `dr-offer-scaffold` and `dr-tracks` read the
+      in specs/baseline/red-baseline-new-project-entry/kit/. `dr-offer-scaffold` and `dr-tracks` read the
       same text, so they need a re-run too. It was first found in
-      specs/red-baseline-new-project-entry.md (Task 3 summary and owner gate, and Task 7),
+      specs/baseline/red-baseline-new-project-entry.md (Task 3 summary and owner gate, and Task 7),
       2026-11-06. Size: design. Done when: the skill wording that stops this text lands, and a
       re-run of `dr-offer-yes` under the kit passes 4 of 5 by plan 78's core-and-later-stages
       reading.
@@ -6018,10 +6018,10 @@ review and the Plan Completion gate (2026-10-27) add the others.
       "Those go into later stages" counts as a stage list. `dr-known-progression-79` scored 3 of 5 on
       traceability (4 of 5 on the Provenance-on-bytes other reading). If an order attached to that phrase
       counts as an echo, both `dr-tracks` runs are 4 of 5; this would reverse plan 78's round 2 rep5 verdict.
-      See specs/red-baseline-new-project-entry.md (Plan 79: re-runs and summary, owner-gate items 1 to 3).
+      See specs/baseline/red-baseline-new-project-entry.md (Plan 79: re-runs and summary, owner-gate items 1 to 3).
       Size: design. Done when: the owner rules on the Echo and Provenance readings, or the wording of the two
       sections changes, and two independent five-rep `dr-tracks` runs and a `dr-known-progression-79` run
-      each pass 4 of 5 under the kit in specs/red-baseline-new-project-entry/kit/.
+      each pass 4 of 5 under the kit in specs/baseline/red-baseline-new-project-entry/kit/.
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -6058,9 +6058,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       deferred-item bullet that an earlier resume of the same roadmap already reported.
 - [ ] **`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5
       rests on rep2's borderline clause B call. §3 and §7 did not change after `T3`. See
-      specs/red-baseline-new-project-entry.md (Plan 79: Task 3 wording round 1). Size: quick-fix. Done when: a
+      specs/baseline/red-baseline-new-project-entry.md (Plan 79: Task 3 wording round 1). Size: quick-fix. Done when: a
       five-rep run of `dr-name-collision` at the final skill text is recorded in
-      specs/red-baseline-new-project-entry.md (about $0.35).
+      specs/baseline/red-baseline-new-project-entry.md (about $0.35).
 - [ ] **The term "roadmap name" differs between `references/new-project-entry.md` and `SKILL.md` §5 Parking
       (plan 79 Task 3 wording round).** new-project-entry.md item 4 defines the roadmap name as the `<name>` in
       `specs/<name>-roadmap.md`. The deferred-items heading in §5 Parking now uses `<name>-roadmap`. Size:
@@ -6091,7 +6091,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`skills/writing-plans/SKILL.md`) implements an answer that unblocks work at once, and the final review
       found no source for "as today". The owner kept the spec's wording for plan 80. Size: design. Done when:
       protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate, and the
-      `gate-tag` case still meets its bar under `specs/red-baseline-development-history/kit/`.
+      `gate-tag` case still meets its bar under `specs/baseline/red-baseline-development-history/kit/`.
 - [ ] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
       `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
       "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and
@@ -6099,21 +6099,21 @@ review and the Plan Completion gate (2026-10-27) add the others.
       ledger by hand (a `Gate tags:` line). The suggested fix is one fallback line: when the gate message is not in
       view, judge each kept ruling against the spec. The owner kept the micro-tested text unchanged for plan 80.
       Size: quick-fix. Done when: Finish step 2 names a source for the tags that survives a `/clear`, and a
-      five-rep `history-filter` run at the new text is recorded in `specs/red-baseline-development-history.md`.
+      five-rep `history-filter` run at the new text is recorded in `specs/baseline/red-baseline-development-history.md`.
 
 ## 81-spec-derived-acceptance-tests — 2026-11-09
 - [ ] **`measure.py score` does not VOID a Codex reader rep whose log shows tool activity (plan 81 final review,
-      Codex [P2], owner ruled defer).** `score_codex` in `specs/red-baseline-acceptance-tests/kit/measure.py`
+      Codex [P2], owner ruled defer).** `score_codex` in `specs/baseline/red-baseline-acceptance-tests/kit/measure.py`
       checks only the model in the log header. Task 4 ran `measure.py residual` on each Codex reader folder by
       hand, under a VOID rule fixed before the first rep, and found no leftover line in the 40 reader logs
-      (`specs/red-baseline-acceptance-tests.md`, Appendix A). The fix, about 20 lines and a selftest case, runs
+      (`specs/baseline/red-baseline-acceptance-tests.md`, Appendix A). The fix, about 20 lines and a selftest case, runs
       the residual check inside `score` for each `codex-` reader rep. Size: quick-fix. Revisit if: a plan runs
-      new Codex reader reps with `specs/red-baseline-acceptance-tests/kit/measure.py`.
+      new Codex reader reps with `specs/baseline/red-baseline-acceptance-tests/kit/measure.py`.
 - [ ] **Rerun the 60 adjudicator reps on paired prompts (plan 81 final review, owner ruled defer at D8).** The
       adjudicator prompts that Tasks 3 and 4 ran did not pair the reader's tests with their tasks, so every
-      treatment-arm number in `specs/red-baseline-acceptance-tests.md` comes from a layout that the plan did not
+      treatment-arm number in `specs/baseline/red-baseline-acceptance-tests.md` comes from a layout that the plan did not
       specify (the record's section 8, item 1). `2624af0` fixed the split in
-      `specs/red-baseline-acceptance-tests/kit/build_prompts.py`, and the committed reader replies can build the
+      `specs/baseline/red-baseline-acceptance-tests/kit/build_prompts.py`, and the committed reader replies can build the
       paired prompts again. A rerun is 60 `opus` adjudicator reps (about $23, the cost of the first run), a new
       score and classification, and a record update. Size: plan. Revisit if: the spec revision for
       statement-level readings keeps test-writing second readers.
@@ -6128,18 +6128,18 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the test to fit its own reading. The status exists in
       `skills/subagent-driven-development/implementer-prompt.md`, but no brief carries spec excerpts, and no
       rule names a test that conflicts with the spec. Neither probe tested this layer
-      (`specs/red-baseline-acceptance-tests.md`, `specs/red-baseline-statement-readings.md`). It was first
+      (`specs/baseline/red-baseline-acceptance-tests.md`, `specs/baseline/red-baseline-statement-readings.md`). It was first
       found in specs/deferred_items.md (spec-reading-test-check), 2026-10-28. Size: design. Done when: a spec
       decides layer 4 for subagent-driven-development and executing-plans, and its plan lands.
 - [ ] **The statement-readings kit's scorer accepts adjudicator rulings that quote no words (plan 83, final
       review, Codex's finding).** Spec Design 7 in `specs/completed/statement-level-readings.md` has the
       adjudicator quote the words that decide each case, or rule `unclear`. The kit's scorer
-      (`specs/red-baseline-statement-readings/kit/measure.py`, with `parse_rulings` and `resolve` in
+      (`specs/baseline/red-baseline-statement-readings/kit/measure.py`, with `parse_rulings` and `resolve` in
       `compare.py`) does not check an adjudicator's quote, and the plan's VOID rules (PD6) have no such item.
       In plan 83's runs it took 1,045 `no-value` rulings with an empty quote, in 31 of the 150 step reps. Read
       as `unclear`, they put every arm above the unclear bar, at 1.2 to 28.0 per rep on the clean copy
-      (`specs/red-baseline-statement-readings.md`, section 9, item 11). The kit was frozen (PD12), so plan 83
+      (`specs/baseline/red-baseline-statement-readings.md`, section 9, item 11). The kit was frozen (PD12), so plan 83
       reported the effect and did not re-score. At the completion gate the owner chose this item over a
       re-score. The fix: score a ruling other than `unclear` whose quote is empty as `unclear`, with a selftest
-      that fails first. Size: quick-fix. Revisit if: a plan copies `specs/red-baseline-statement-readings/kit/`,
+      that fails first. Size: quick-fix. Revisit if: a plan copies `specs/baseline/red-baseline-statement-readings/kit/`,
       as plan 83 copied plan 81's kit.

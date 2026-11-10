@@ -15,7 +15,7 @@ Three items in `specs/deferred_items.md` came out of plan 78's micro-tests and f
 
 | Item (section) | What goes wrong | Evidence |
 |---|---|---|
-| "The derive-roadmap new-project offer still draws core-and-later-stages text before the partner ranks" (`deferred-2026-11-07`) | Replies describe a core stage and later stages in the one message, before the owner ranks anything. The owner ruled that this is a stage list, so `dr-offer-yes` stays at 3 of 5 (bar 4 of 5). | `specs/red-baseline-new-project-entry.md`, Task 3 summary and owner gate, Task 7. Quotes: "It would leave out manifests, pointers, the withdrawal gate and Azure, each placed in a named later stage." (round 2, rep2); "Some qualities go to later stages, never a core stage's Exit:" (dr-tracks, round 2, rep1). |
+| "The derive-roadmap new-project offer still draws core-and-later-stages text before the partner ranks" (`deferred-2026-11-07`) | Replies describe a core stage and later stages in the one message, before the owner ranks anything. The owner ruled that this is a stage list, so `dr-offer-yes` stays at 3 of 5 (bar 4 of 5). | `specs/baseline/red-baseline-new-project-entry.md`, Task 3 summary and owner gate, Task 7. Quotes: "It would leave out manifests, pointers, the withdrawal gate and Azure, each placed in a named later stage." (round 2, rep2); "Some qualities go to later stages, never a core stage's Exit:" (dr-tracks, round 2, rep1). |
 | "A later quality in a research track's Ranked list has no O-number and no partner rank" (`78-derive-roadmap-new-project-entry`) | A quality that a stage's `Leaves out` sends to the Ranked list has neither, so replies add it as an unranked item. | `skills/derive-roadmap/references/roadmap-format.md`, Ranked list. |
 | "A new-project roadmap built from a spec maps each outcome to no spec section reference" (`78-derive-roadmap-new-project-entry`) | `Outcomes` replaced `Spec` and `Gap closed` (plan 78's spec, R10). A stage plan is scoped to one-line outcomes, and the completion review audits only the Outcomes list. | `skills/derive-roadmap/SKILL.md` §4 handoff, §6. |
 
@@ -119,7 +119,7 @@ The owner picked 1 on 2026-11-07.
 
 ## Verification
 
-All micro-tests use plan 78's kit (`specs/red-baseline-new-project-entry/kit/`) and its runner, record and bars.
+All micro-tests use plan 78's kit (`specs/baseline/red-baseline-new-project-entry/kit/`) and its runner, record and bars.
 
 - **V1.** `dr-offer-yes` re-runs at the new text and passes its bar, 4 of 5, by plan 78's committed
   core-and-later-stages reading. This closes the item for early stage text.

@@ -22,7 +22,7 @@ from measure import reply  # noqa: E402
 from plants import COPIES  # noqa: E402
 
 KIT = Path(__file__).resolve().parent
-REPO = KIT.parents[2]
+REPO = KIT.parents[3]
 COPIES_DIR = KIT.parent / 'copies'
 PROMPTS = KIT / 'prompts'
 SKILL_PATH = 'skills/writing-plans/SKILL.md'

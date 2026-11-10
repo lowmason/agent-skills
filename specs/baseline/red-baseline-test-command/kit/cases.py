@@ -5,7 +5,7 @@ names the repository texts under test (read at a sha by build_prompts.py), its m
 budget, its fixture (the session so far), its task, its pass rule and a leak pattern. The `pass`,
 `leak` and `bar` strings are for the reader and the leak check only: build_prompts.py never writes
 them into a prompt. TASK_TAIL, VOID and G_FIXTURE are copied word for word from plan 75's
-specs/red-baseline-executing-plans-port/kit/cases.py. Both fixtures use a domain unrelated to this
+specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Both fixtures use a domain unrelated to this
 repository (a tide-table service, a ferry-timetable service).
 
 Cases: finish-command (finishing-a-development-branch Step 1, finding 28, a non-regression case);

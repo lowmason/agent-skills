@@ -1,6 +1,6 @@
 # Plan 71 micro-tests: subagent-driven-development compaction window and rulings
 
-Kit: `specs/red-baseline-sdd-compaction/kit/`. Model: `claude-sonnet-5-5`. 5 reps per arm.
+Kit: `specs/baseline/red-baseline-sdd-compaction/kit/`. Model: `claude-sonnet-5-5`. 5 reps per arm.
 Every verdict is read by hand from the full reply. Bars registered 2026-10-29 at 618e31d,
 before any rep was read.
 
@@ -429,7 +429,7 @@ at `971ec4d` above, so they are not repeated. The records of plans 57, 59, 64, 6
 re-run, because the item's Done-when does not name them. The owner capped the spend at $10.
 
 **Kit and inputs.**
-- Script: `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, plan 72's, unchanged. It adds
+- Script: `specs/baseline/red-baseline-writing-skills-split/kit/run_reps.sh`, plan 72's, unchanged. It adds
   `--setting-sources ""` and `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and gives each rep its own `/tmp`
   directory. The old kit files in `kit/` are unchanged.
 - Model `claude-sonnet-5-5` and 5 reps, as in the first run (line 3).
@@ -438,7 +438,7 @@ re-run, because the item's Done-when does not name them. The owner capped the sp
 - Output: `t1-isolated/C3/`.
 - Claude Code 2.1.316. The first run used 2.1.312.
 
-**Pilot.** `specs/red-baseline-writing-skills-split/kit/isolation_probe.txt` asks a rep to report
+**Pilot.** `specs/baseline/red-baseline-writing-skills-split/kit/isolation_probe.txt` asks a rep to report
 what its context holds. Two Sonnet reps, run under the same flags, answered NO on all five lines
 (CLAUDE.md, output style, rules, SessionStart hook text, auto-memory). Files: `isolation-pilot/`.
 Pilot spend: $0.011.

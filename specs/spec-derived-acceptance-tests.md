@@ -289,10 +289,10 @@ reviews the results against these bars, and decides what the build plan keeps (D
 `task-done` change do not depend on the second reader. The approaches message said so: "The script is useful
 on its own, so it lands first."
 
-The results go to `specs/red-baseline-acceptance-tests.md`, linked from this spec *(designer's call)*. The
+The results go to `specs/baseline/red-baseline-acceptance-tests.md`, linked from this spec *(designer's call)*. The
 probe plan's completion adds a progress note to the backlog item that points at that file.
 
-Results: `specs/red-baseline-acceptance-tests.md` (plan 81, 2026-11-08).
+Results: `specs/baseline/red-baseline-acceptance-tests.md` (plan 81, 2026-11-08).
 
 ### Micro-tests
 

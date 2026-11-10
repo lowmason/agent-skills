@@ -1,6 +1,6 @@
 #!/bin/bash
 # Run reps for plan 81's probe, adapted from plan 73's kit
-# (specs/red-baseline-reviewer-planning-contract/kit/run_reps.sh). Each rep is a fresh `claude -p`
+# (specs/baseline/red-baseline-reviewer-planning-contract/kit/run_reps.sh). Each rep is a fresh `claude -p`
 # with no tools, run from its own new, empty directory under /tmp, outside every repository.
 # `--setting-sources ""` keeps user-level context out of the reps: the output style, plugin
 # SessionStart hooks, ~/.claude/CLAUDE.md and ~/.claude/rules/. CLAUDE_CODE_DISABLE_AUTO_MEMORY

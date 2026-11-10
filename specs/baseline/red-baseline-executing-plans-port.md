@@ -1,7 +1,7 @@
 # Plan 75 micro-tests: the executing-plans port
 
-Kit: `specs/red-baseline-executing-plans-port/kit/`. `run_reps.sh`, `isolation_probe.txt` and
-`show_reps.py` are copies of plan 74's kit (`specs/red-baseline-backlog-protocol/kit/`). The runner's
+Kit: `specs/baseline/red-baseline-executing-plans-port/kit/`. `run_reps.sh`, `isolation_probe.txt` and
+`show_reps.py` are copies of plan 74's kit (`specs/baseline/red-baseline-backlog-protocol/kit/`). The runner's
 only changes are its temp prefix (`/tmp/plan75-rep-`) and the plan number in a comment. `show_reps.py`
 changes only the plan number in its docstring. `cases.py` holds the 16 cases. `build_prompts.py <sha>
 <out-dir> [<case> ...]` builds the prompts at a sha and writes `MANIFEST.txt`. It reads texts with
@@ -35,7 +35,7 @@ control-margin bar.
 Command (Task 1 Step 3), on the leak-view prompts, which hold only the frame, the fixture and the task:
 
 ```bash
-python3 specs/red-baseline-executing-plans-port/kit/build_prompts.py leakview /tmp/plan75-leak
+python3 specs/baseline/red-baseline-executing-plans-port/kit/build_prompts.py leakview /tmp/plan75-leak
 cd /tmp/plan75-leak && for c in G1:'documented|whole suite' G1p:'documented|whole suite' G2:'documented|whole suite' R1:'Ruling|rule on' R1p:'Ruling|rule on' R2:'Ruling|rule on' R2p:'Ruling|rule on' S3:'Ruling|rule on' S1-sdd:'fence|stop and ask' S1-ep:'fence|stop and ask' S2-sdd:'fence|stop and ask' S2-ep:'fence|stop and ask' S2p:'fence|stop and ask' P1:'batched|Pre-flight' L1:'task-start' C1:'task-done'; do k=${c%%:*}; p=${c#*:}; /usr/bin/grep -n -i -E "$p" $k.txt > /dev/null; echo "$k exit=$?"; done
 ```
 
@@ -143,7 +143,7 @@ record.
 
 Arm `control`: the texts at `a97f8dc` (HEAD after the registration commit; no skill wording had
 changed). Prompts built with `build_prompts.py a97f8dc /tmp/plan75-control`. 5 reps per case, 80 rep
-files in `specs/red-baseline-executing-plans-port/control/<case>/`, run 4 cases at a time on Claude
+files in `specs/baseline/red-baseline-executing-plans-port/control/<case>/`, run 4 cases at a time on Claude
 Code 2.1.316. No rep was VOID: every rep ran one turn, no tool, one model, and ended with `success`.
 Every verdict below was read by hand from the full reply, by the rules above.
 
@@ -184,7 +184,7 @@ Findings for Task 6, read before the treatment run:
 Arm `treatment`: the texts at `06e5a96` (HEAD after Task 5). Prompts built with
 `build_prompts.py 06e5a96 /tmp/plan75-treatment`. The leak grep was run again on the leak-view prompts and
 every case printed `exit=1`. 5 reps per case, 80 rep files in
-`specs/red-baseline-executing-plans-port/treatment/<case>/`, run 4 cases at a time on Claude Code 2.1.316.
+`specs/baseline/red-baseline-executing-plans-port/treatment/<case>/`, run 4 cases at a time on Claude Code 2.1.316.
 No rep was VOID: every rep ran one turn, no tool, one model, and ended with `success`. Every verdict below
 was read by hand from the full reply, by the rules above. The rules and cases were not edited.
 
@@ -263,7 +263,7 @@ The final-review fix pass changed `skills/executing-plans/SKILL.md` and `referen
 `05135af`. The 9 executing-plans cases (R2, R2p, S1-ep, S2-ep, S2p, S3, P1, L1, C1) were run again on it.
 Prompts: `build_prompts.py 05135af /tmp/plan75-treatment2 <cases>`. The leak grep on the leak-view prompts again
 printed `exit=1` for every case (the kit is unchanged). Reps are in
-`specs/red-baseline-executing-plans-port/treatment-final/<case>/`. The first-run reps stay in `treatment/`.
+`specs/baseline/red-baseline-executing-plans-port/treatment-final/<case>/`. The first-run reps stay in `treatment/`.
 No rep was VOID. The SDD cases (R1, R1p, S1-sdd, S2-sdd) and the TDD cases (G1, G1p, G2) read texts that did not
 change, so they were not run again.
 

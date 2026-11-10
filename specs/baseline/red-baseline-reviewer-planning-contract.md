@@ -1,6 +1,6 @@
 # Plan 73 micro-tests: the reviewer and planning contract
 
-Kit: `specs/red-baseline-reviewer-planning-contract/kit/`, copied from plan 72's isolated kit
+Kit: `specs/baseline/red-baseline-reviewer-planning-contract/kit/`, copied from plan 72's isolated kit
 (`claude -p --tools "" --strict-mcp-config --setting-sources ""`,
 `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`, `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`, a new empty
 directory under `/tmp` per rep). Isolation probe on Claude Code 2.1.312: all five lines NO;

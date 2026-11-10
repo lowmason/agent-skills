@@ -235,7 +235,7 @@ a fresh audit of today's suites.
 **Adopted by plan 70 (2026-10-28).** `skills/brainstorming/SKILL.md` follows
 upstream v7.0.1 (`2ce8aa1`). `NOTICE` names what was taken and each deliberate
 divergence. The behavior record is
-`specs/red-baseline-brainstorming-2026-10-28.md`. Since then plan 78 added the
+`specs/baseline/red-baseline-brainstorming-2026-10-28.md`. Since then plan 78 added the
 derive-roadmap route for a new multi-stage project (`SKILL.md:50-52`, `1f64a61`)
 and `caeba8f` wired the creative-thinking pointer into Lay out the approaches
 (`:165-166`). The 2026-10-28 text of this finding, from "Before plan 70" through
@@ -318,7 +318,7 @@ letter reading on 2026-10-28, is the one most likely to move). That original
 GREEN result is not the latest evidence: the isolated 2026-11-05 rerun scored
 T7 13/25 against an 80% bar, with no measured wording effect (52% after,
 48% before). On 2026-11-06 the owner accepted that known gap and kept D17's
-letter reading; see `specs/red-baseline-brainstorming-2026-10-28.md`,
+letter reading; see `specs/baseline/red-baseline-brainstorming-2026-10-28.md`,
 "Re-run with the isolated kit" and "Owner ruling (2026-11-06)". Reuse the
 isolated kit and this result rather than treating the original pass as current.
 The reported nine-default tester-seat handoff has no artifact path here, so
@@ -370,7 +370,7 @@ items rather than marking the whole adopted finding unfinished again.
 text: `skills/executing-plans/SKILL.md`, `references/final-review.md`,
 `scripts/task-start`, `task-done` and their test, with `install.py`,
 `build/suites.toml` and `NOTICE` changes; behavior record
-`specs/red-baseline-executing-plans-port.md`. Since the port: `686ffd7`
+`specs/baseline/red-baseline-executing-plans-port.md`. Since the port: `686ffd7`
 anchored the workspace script and counts batched tasks, `2b15ba0` and
 `e432a73` fixed `task-done`'s ledger match through symlinks, and `05135af`
 settled one `task-done` command, the Codex line and the literal workspace path.
@@ -812,9 +812,9 @@ to verify the handoff or whether that brainstorm has run.
 
 **Disposition: closed with no build (plan 83, owner decision D8, 2026-11-09).** The
 tester-seat brainstorm became `specs/spec-derived-acceptance-tests.md`. Its probe (plan 81,
-`specs/red-baseline-acceptance-tests.md`) found that a fresh Self-Review caught all 15 planted
+`specs/baseline/red-baseline-acceptance-tests.md`) found that a fresh Self-Review caught all 15 planted
 misreads, more than any test-writing arm. The redesign, `specs/completed/statement-level-readings.md`,
-had two readers state what the spec asks. Its probe (plan 83, `specs/red-baseline-statement-readings.md`)
+had two readers state what the spec asks. Its probe (plan 83, `specs/baseline/red-baseline-statement-readings.md`)
 missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of
 1.0. The backlog item "Spec-reading test check" is closed. Its layer 4, spec excerpts in the implementer
 brief, stays open as an item in `specs/deferred_items.md` (`83-statement-level-readings — 2026-11-09`).
@@ -1034,7 +1034,7 @@ nothing about where they go. The rule lives in a test, not in the skill an
 author reads; the next author puts the scenario beside `SKILL.md` and learns
 the rule from a red test. Unchanged otherwise since plan 72's map (finding 17).
 
-**Ours.** Our RED baselines live as `specs/red-baseline-<topic>.md`, by
+**Ours.** Our RED baselines live as `specs/baseline/red-baseline-<topic>.md`, by
 convention, and our checklist (`:384`) does not say so either. `f7a452f`
 (2026-11-01) aligned the plan-id and skill-name rules with the code that
 enforces them, the same shape of fix.

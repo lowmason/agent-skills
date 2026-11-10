@@ -31,8 +31,8 @@ Two checks ran before Task 1:
 
 ## Kit
 
-Kit: `specs/red-baseline-development-history/kit/`. Four files are copies of plan 77's kit
-(`specs/red-baseline-audit-p2/kit/`). No file of plan 77's kit was edited.
+Kit: `specs/baseline/red-baseline-development-history/kit/`. Four files are copies of plan 77's kit
+(`specs/baseline/red-baseline-audit-p2/kit/`). No file of plan 77's kit was edited.
 
 - `run_reps.sh` changes the plan number in its first comment line (77 to 80) and its temp prefix, from
   `/tmp/plan77-rep-` to `/tmp/plan80-rep-`. The comment `Plan 77 deviation (a)` keeps its number. It names the plan
@@ -43,7 +43,7 @@ Kit: `specs/red-baseline-development-history/kit/`. Four files are copies of pla
   `contradicts spec` (`contradicts-spec`), `Ruling` (`ruling`), `history` (`history`) and a question mark
   (`question`). Each aid ignores case. An aid only points the reader at a reply. It is never a verdict.
 - `build_prompts.py` changes only the plan number in its docstring.
-- `cases.py` is new. Its shape is the shape of plan 76's `specs/red-baseline-review-fixes/kit/cases.py`. It holds
+- `cases.py` is new. Its shape is the shape of plan 76's `specs/baseline/red-baseline-review-fixes/kit/cases.py`. It holds
   the two cases, the VOID rule (when a rep is thrown out and rerun, not scored), the model, the per-rep budget and
   the bar. The model constant is `MODEL = 'claude-opus-5-5'`, and the budget is `BUDGET = '1.00'`. The VOID rule is
   copied word for word from plan 76's `cases.py`.
@@ -174,7 +174,7 @@ Arm `control`: the texts at `BASE80` (`fb784f4`). The prompts were built with
   writing-plans `SKILL.md` body and no reference file, because the `histor*.md` glob matched nothing.
 
 Each case ran 5 reps on Claude Code 2.1.316, with this command:
-`run_reps.sh <prompt> specs/red-baseline-development-history/control/<case> 1 5 claude-opus-5-5 1.00`.
+`run_reps.sh <prompt> specs/baseline/red-baseline-development-history/control/<case> 1 5 claude-opus-5-5 1.00`.
 So there are 10 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with
 `success`. No rep wrote an error file, so no rep was rerun. Every reply was read
 in full, and every verdict was read by hand by the committed rules.
@@ -286,7 +286,7 @@ Three readings were fixed and written here before any treatment reply was read:
   the reference allows it when the file is absent.
 
 Each case ran 5 reps on Claude Code 2.1.316, the control's version, with this command:
-`run_reps.sh <prompt> specs/red-baseline-development-history/treatment/<case> 1 5 claude-opus-5-5 1.00`.
+`run_reps.sh <prompt> specs/baseline/red-baseline-development-history/treatment/<case> 1 5 claude-opus-5-5 1.00`.
 So there are 10 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with
 `success`. No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read
 by hand by the committed rules.
@@ -379,7 +379,7 @@ Arm `treatment2`: the `gate-tag` prompt at `fd4749b`, built with
 `build_prompts.py fd4749b /tmp/plan80-work/treatment2 gate-tag`. `MANIFEST.txt` gives `gate-tag.txt` sha256
 `1192ad9d611286de03daec0aec8bd00a6ed6942d7d69a157cf6fb43ee833cd96`. A diff against the `treatment` prompt shows the
 four added lines and nothing else. The 5 reps ran on Claude Code 2.1.316 with
-`run_reps.sh <prompt> specs/red-baseline-development-history/treatment2/gate-tag 1 5 claude-opus-5-5 1.00`. No rep
+`run_reps.sh <prompt> specs/baseline/red-baseline-development-history/treatment2/gate-tag 1 5 claude-opus-5-5 1.00`. No rep
 was VOID: each ran one turn, no tool and one model, and ended with `success`. No rep wrote an error file.
 
 | Case | Arm | Bar | Passing reps | Failing reps | Bar met |
@@ -467,7 +467,7 @@ Rulings: no ledger given
 Differences from the design:
 - Deviation (Task 1): the fixtures needed judgment calls the brief did not give (a new four-stage `OCCUPANCY_ROADMAP`, two extra `PROMOTED_ROADMAP` edits, a reworded Completion line), recorded in the record under `Plan 79: fixture judgment calls`. A review round (`fee932a`) removed two additions (an untracked-file sentence in dr-name-collision and a changed plan 3 Handoff in dr-resume-blocked). Source: plan, Task 1.
 - Deviation (Task 1): two commits, `abe5ec3` and the review fix `fee932a`. Source: plan, Task 1.
-- Deviation (Task 2): the plan's `git add specs/red-baseline-new-project-entry` stages the folder only, so the commit also staged the sibling record file. A second commit (`b4bf196`) recorded the controller's rulings on the readings and on the date conflict. Source: plan, Task 2.
+- Deviation (Task 2): the plan's `git add specs/baseline/red-baseline-new-project-entry` stages the folder only, so the commit also staged the sibling record file. A second commit (`b4bf196`) recorded the controller's rulings on the readings and on the date conflict. Source: plan, Task 2.
 - Deviation (Task 3): three further skill commits followed the plan's five edits (`c500e14`, `T3`): `T3-r1` `43fca10` (the wording round of Step 4), and `T3-r2` `99265a5` and `T3-r3` `5f52dfc` (review-found fixes to the unmet-`Consumes` text and the Parking heading). The final skill text is `5f52dfc`. Source: plan, Task 3.
 - Deviation (Task 3): dr-stop-track and dr-park-ranked missed their bar at `T3`. The wording round closed dr-stop-track. dr-park-ranked took the owner's ruling to re-run once more (3 of 5, then 4 of 5), and its met result rests on the inline-fields reading of clause D. Source: plan, Task 3.
 - Deviation (Task 4): `T-final` is `T3-r3` (`5f52dfc`), not `T3-r1`, because two review-found fixes followed the wording round. Source: plan, Task 4.
@@ -507,7 +507,7 @@ Differences from the design:
 - Deviation (Task 8): `build/test_runtime_support.py` gained `('skill:brainstorming', 'command:deferred')` in `SOFT_REFERENCES`, because brainstorming now names `/deferred` without running it. Source: plan, Task 8.
 - Deviation (Task 8): step 3 no longer spells the tick form. The form moved to the reference's `## Item notes` with a date, `→ done <YYYY-MM-DD> (plan <id>)` (D20). Source: plan, Task 8.
 - Deviation (Task 9): the review changed `commands/deferred.md` step 5 so a held-back item is resolved only on the user's word, and `→ dropped:` is written only on the user's word (commit 9057df7). Source: plan, Task 9.
-- Deviation (Task 10): the first GREEN run passed 5 of 5 in every case. Its record was corrected for two honesty findings (commit 9e7930f). The final-review fixes changed the texts, so R1-R4 were run again on the final text (commit 21417f8), and the R3 fixture gained the `Aged, carry unused:` line. Both runs are in `specs/red-baseline-backlog-protocol.md`. Source: plan, Task 10.
+- Deviation (Task 10): the first GREEN run passed 5 of 5 in every case. Its record was corrected for two honesty findings (commit 9e7930f). The final-review fixes changed the texts, so R1-R4 were run again on the final text (commit 21417f8), and the R3 fixture gained the `Aged, carry unused:` line. Both runs are in `specs/baseline/red-baseline-backlog-protocol.md`. Source: plan, Task 10.
 - Deviation (Task 11): the stats before and after are recorded above. The archive run moved 89 items and held back none. Source: plan, Task 11.
 - Deviation (Task 11): the final whole-branch review (after this task) had a fix wave, commits d360bb6, 0e97e03 and aeb16b6. It closed three Codex findings: the archive refuses the same path for `--file` and `--archive`, the hold-back scan keeps paragraph breaks, and code spans are masked by whole backtick runs. Source: plan, Task 11.
 - Decision D18 (spec amendment): approve Task 0's amendment. The scan must catch the five B1 instances that carry a deferral phrase; the four phraseless fixtures become `xfail` fixtures that record the limit. Source: plan, `## Decisions`.

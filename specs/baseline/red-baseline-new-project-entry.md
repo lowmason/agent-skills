@@ -11,7 +11,7 @@ Each case below cites the spec requirement (`R<n>`) or verification item (`V<n>`
 Task 1 builds the kit, registers the 15 cases and their reading rules, runs the isolation probe and sets the per-rep
 spend cap. Task 2 runs the control arms. Tasks 3 to 6 each run their treatment arms and append their own sections.
 
-> **Quarantine.** This plan, the spec and the record `specs/red-baseline-new-project-entry.md` with its folder name
+> **Quarantine.** This plan, the spec and the record `specs/baseline/red-baseline-new-project-entry.md` with its folder name
 > the cases, the pass rules and the expected behavior. Keep them out of every prompt, and quarantine them during any
 > later micro-test of derive-roadmap, describe-critique-methodology or brainstorming.
 
@@ -28,8 +28,8 @@ It printed nothing. No file that the plan edits changed, so every anchor holds a
 
 ## Kit
 
-Kit: `specs/red-baseline-new-project-entry/kit/`. Three files are copies of plan 77's kit
-(`specs/red-baseline-audit-p2/kit/`). No file of plan 77's kit was edited.
+Kit: `specs/baseline/red-baseline-new-project-entry/kit/`. Three files are copies of plan 77's kit
+(`specs/baseline/red-baseline-audit-p2/kit/`). No file of plan 77's kit was edited.
 
 - `run_reps.sh` changes its temp prefix to `/tmp/plan78-rep-` and names plan 78 in its comments. It keeps plan 77's
   `env -i` form (plan 77's Deviation (a)): only `HOME`, `USER`, `LOGNAME`, `PATH`, `SHELL`, `TMPDIR` and `LANG` pass
@@ -64,11 +64,11 @@ Kit: `specs/red-baseline-new-project-entry/kit/`. Three files are copies of plan
 
 Commands, from the repository root:
 
-- `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py <sha> <out-dir> [<case> ...]`
+- `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py <sha> <out-dir> [<case> ...]`
   builds the prompts at a sha and writes `MANIFEST.txt`. `build_prompts.py leakview <out-dir>` builds the leak view.
-- `bash specs/red-baseline-new-project-entry/kit/run_reps.sh <prompt> <out-dir> <first> <last> claude-opus-5-5 <cap>`
+- `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh <prompt> <out-dir> <first> <last> claude-opus-5-5 <cap>`
   runs the reps.
-- `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py <dir> ...` prints each rep for reading.
+- `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py <dir> ...` prints each rep for reading.
 
 Each rep is a fresh `claude -p --model claude-opus-5-5 --tools "" --strict-mcp-config --setting-sources ""
 --no-session-persistence --output-format json --max-budget-usd <cap>` under `env -i`. It runs from a new, empty
@@ -230,7 +230,7 @@ no Handoff sentence (`references/roadmap-format.md`). It has one track, so its s
 ## Leak check
 
 The leak view was built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan78-work/leak`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan78-work/leak`.
 It is the one leak build. The check ran in two parts:
 
 1. Each case's hand-written fixture lines and task line, from `cases.py`, were grepped case-insensitively for its
@@ -553,7 +553,7 @@ Reading notes. A way to build it is an approach to the whole script, such as a c
 
 ## Isolation probe (Task 1 Step 5)
 
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh specs/red-baseline-new-project-entry/kit/isolation_probe.txt specs/red-baseline-new-project-entry/pilot/probe 1 1 claude-opus-5-5 1.00`
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh specs/baseline/red-baseline-new-project-entry/kit/isolation_probe.txt specs/baseline/red-baseline-new-project-entry/pilot/probe 1 1 claude-opus-5-5 1.00`
 ran on Claude Code 2.1.316 (`claude --version` prints `2.1.316 (Claude Code)`), under `env -i`. The rep file is
 `pilot/probe/rep1.json`.
 
@@ -564,7 +564,7 @@ All five probe lines read `NO`: no CLAUDE.md text, no output style, no rule, no 
 ## Spend calibration (Task 1 Step 6)
 
 1. The control prompts were built with
-   `CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan78-work/calibrate`.
+   `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan78-work/calibrate`.
    Its `MANIFEST.txt` is copied to `pilot/calibrate-MANIFEST.txt`. It shows `budget None`, because the cap did not
    exist yet. Its prompt hashes are the same as those of the sanity build made before the Step 4 commit. It holds
    the hashes of dr-offer-inputs from before Amendment 1, because those are the prompt that the pilot ran.
@@ -618,11 +618,11 @@ dr-offer-inputs is unchanged. The cap and the estimate are unchanged: the prompt
 Claude Code 2.1.316, the version that the isolation probe ran on, so the probe still holds.
 
 **Step 2, the build.** The control prompts were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan78-work/control`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan78-work/control`.
 Its `MANIFEST.txt` is copied to `control/MANIFEST.txt`. It shows `budget 1.00` for every case. Its 15 prompt hashes
 and its case-repository reads are the same as those of the post-Amendment 1 build (`/tmp/plan78-work/fix1-control`).
 `dr-offer-inputs.txt` is `6bbb36f3…`. Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/control/<case>.txt specs/red-baseline-new-project-entry/control/<case> 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/control/<case>.txt specs/baseline/red-baseline-new-project-entry/control/<case> 1 5 claude-opus-5-5 1.00`,
 one case at a time. The pilot reply `pilot/dr-offer-inputs/rep1.json` is not a control rep and was not read again.
 
 **Step 3, the scores.** Each case was scored after its five reps were in, clause by clause, by its committed rule
@@ -1106,7 +1106,7 @@ Running total: $5.7991 of $60. Control arms: $5.5029 of $30.
 
 ### Control summary and spend
 
-`uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/control/*/`
+`uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py specs/baseline/red-baseline-new-project-entry/control/*/`
 ran once after the last rep. It shows 75 reps, none VOID, and prints `total cost $5.50`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun.
 
@@ -1144,7 +1144,7 @@ dr-known-progression, dr-tracks and dr-research-depth. Each rep is scored by its
 reading in the Control section. No rule and no reading changed.
 
 **Build, round 1.** The prompts were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 48d9847 /tmp/plan78-work/t3 trigger-stages trigger-decoy dr-offer-scaffold dr-offer-inputs dr-offer-yes dr-built-guard dr-known-progression dr-tracks dr-research-depth`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 48d9847 /tmp/plan78-work/t3 trigger-stages trigger-decoy dr-offer-scaffold dr-offer-inputs dr-offer-yes dr-built-guard dr-known-progression dr-tracks dr-research-depth`.
 Its `MANIFEST.txt` is copied to `treatment/t3-MANIFEST.txt`. Three checks ran on the build before any rep:
 
 - Each DR prompt holds `~/.claude/skills/derive-roadmap/references/new-project-entry.md` as a file block. The
@@ -1153,7 +1153,7 @@ Its `MANIFEST.txt` is copied to `treatment/t3-MANIFEST.txt`. Three checks ran on
 - No prompt holds `red-baseline`, `plan 78` or the spec's file name (the quarantine).
 
 Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t3/<case>.txt specs/red-baseline-new-project-entry/treatment/<case> 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t3/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case> 1 5 claude-opus-5-5 1.00`,
 one case at a time. Before each call, the running total plus the call's worst case ($5.00) stayed under $60.
 
 **Arm of record.** This rule was written here before any round-2 rep ran. Three cases miss their bar in round 1, so
@@ -1445,7 +1445,7 @@ progression, a Ranked-list item in a research track. After the edit the derive-r
 characters, and every Step 6 pin still prints `1`.
 
 **Build, round 2.** The prompts were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 3ca7344 /tmp/plan78-work/t3-r1 trigger-stages trigger-decoy dr-offer-scaffold dr-offer-inputs dr-offer-yes dr-built-guard dr-known-progression dr-tracks dr-research-depth`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 3ca7344 /tmp/plan78-work/t3-r1 trigger-stages trigger-decoy dr-offer-scaffold dr-offer-inputs dr-offer-yes dr-built-guard dr-known-progression dr-tracks dr-research-depth`.
 Its `MANIFEST.txt` is copied to `treatment/t3-r1-MANIFEST.txt`. Checks on the build:
 
 - The sha256 of `trigger-stages.txt` and `trigger-decoy.txt` is the same as in `t3-MANIFEST.txt`. Those prompts carry
@@ -1459,7 +1459,7 @@ Its `MANIFEST.txt` is copied to `treatment/t3-r1-MANIFEST.txt`. Checks on the bu
 **Re-run scope.** Every DR prompt carries the whole of `SKILL.md` and its references, and §1 and §7 sit on the path
 of every DR case's decision. So all seven DR cases were re-run, the four that met their bar in round 1 included.
 Each ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t3-r1/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-r1 1 5 claude-opus-5-5 1.00`.
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t3-r1/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-r1 1 5 claude-opus-5-5 1.00`.
 The `-r1` folders keep the round-1 rep files in place. Before each call, the running total plus $5.00 stayed under $60.
 
 ### Round 2: dr-offer-scaffold
@@ -1713,7 +1713,7 @@ scored on a close reading.
 | round 2, dr-tracks rep2, C | pass, borderline (no stage set out) | "in a named later stage or a Ranked-list item" |
 | round 2, dr-tracks reps 1, 2, 4 and 5, B | pass, borderline (dependency fact) | "There's one dependency regardless of ranking: B, C and D all consume A's panel, so A's core stage comes first." (rep2) |
 
-**Task 3 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/*/`
+**Task 3 spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py specs/baseline/red-baseline-new-project-entry/treatment/*/`
 ran once after the last rep. It shows 80 reps, none VOID, and prints `total cost $8.47`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. Round 1 cost $4.1340 (45 reps) and round 2 cost
 $4.3379 (35 reps), so Task 3 cost $8.4719. Running total: $14.2710 of $60. Control arms: $5.5029 of $30, unchanged.
@@ -1742,7 +1742,7 @@ scored by its case's committed rule and by every reading in the Control section.
 **Task 3's cases are not re-run.** They decide at entry, §1 and §7, which Task 4 does not touch.
 
 **Build.** The prompts were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py a98ff27 /tmp/plan78-work/t4 dr-resume-rerank dr-resume-legacy`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py a98ff27 /tmp/plan78-work/t4 dr-resume-rerank dr-resume-legacy`.
 Its `MANIFEST.txt` is copied to `treatment/t4-MANIFEST.txt`. Two checks ran on the build before any rep:
 
 - Each prompt holds the paragraph "A research track waiting on its Ranked list" once and
@@ -1750,7 +1750,7 @@ Its `MANIFEST.txt` is copied to `treatment/t4-MANIFEST.txt`. Two checks ran on t
 - No prompt holds `red-baseline`, `plan 78` or the spec's file name (the quarantine).
 
 Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t4/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t4 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t4/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-t4 1 5 claude-opus-5-5 1.00`,
 one case at a time, into folders with a `-t4` suffix, so Task 3's folders are untouched. Before each call, the
 running total plus the call's worst case ($5.00) stayed under $60.
 
@@ -1823,7 +1823,7 @@ scored on a close reading. None changes a verdict.
 | dr-resume-rerank all reps, A | pass (stopping the track offered as one option, not parking) | "The alternative is to stop Track A here, which would park O2, O3 and O4 in `specs/deferred_items.md`." (rep1) |
 | dr-resume-legacy rep3, guard | pass (a later question on audit exits, not a re-ranking) | "I'll put that choice to you as one question." |
 
-**Task 4 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/dr-resume-rerank-t4/ specs/red-baseline-new-project-entry/treatment/dr-resume-legacy-t4/`
+**Task 4 spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py specs/baseline/red-baseline-new-project-entry/treatment/dr-resume-rerank-t4/ specs/baseline/red-baseline-new-project-entry/treatment/dr-resume-legacy-t4/`
 ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.52`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.2646 and $0.2544, so Task 4
 cost $0.5190. Running total: $14.7900 of $60. Control arms: $5.5029 of $30, unchanged.
@@ -1853,7 +1853,7 @@ unchanged, so every skill listing is unchanged). The derive-roadmap and brainsto
 body nor a changed description, so their prompts and their scores are the same as before.
 
 **Build.** The prompts were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py abc1ecb /tmp/plan78-work/t5 dcm-describe-route dcm-synth-route`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py abc1ecb /tmp/plan78-work/t5 dcm-describe-route dcm-synth-route`.
 Its `MANIFEST.txt` is copied to `treatment/t5-MANIFEST.txt`. Two checks ran on the build before any rep:
 
 - Each prompt holds the paragraph "Built systems only" once, the Synthesize paragraph "First, check what the files
@@ -1861,7 +1861,7 @@ Its `MANIFEST.txt` is copied to `treatment/t5-MANIFEST.txt`. Two checks ran on t
 - No prompt holds `red-baseline`, `plan 78`, or the file name of the spec (the quarantine).
 
 Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t5/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t5 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t5/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-t5 1 5 claude-opus-5-5 1.00`,
 one case at a time, into folders with a `-t5` suffix, so earlier folders are untouched. Before each call, the running
 total plus the call's worst case ($5.00) stayed under $60.
 
@@ -1982,7 +1982,7 @@ the reply (an inventory, numbered questions to the reviewer, a notation table), 
 verdicts. The lines above are statements of absence, pointers to a later description, a design review offered beside
 the route, or lists to check and to discuss. They do not meet those definitions.
 
-**Task 5 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/dcm-describe-route-t5/ specs/red-baseline-new-project-entry/treatment/dcm-synth-route-t5/`
+**Task 5 spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py specs/baseline/red-baseline-new-project-entry/treatment/dcm-describe-route-t5/ specs/baseline/red-baseline-new-project-entry/treatment/dcm-synth-route-t5/`
 ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.50`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.2633 and $0.2398, so Task 5 cost
 $0.5031. Running total: $15.2931 of $60. Control arms: $5.5029 of $30, unchanged.
@@ -2004,7 +2004,7 @@ sha256 as in its earlier arm: the trigger cases as in `t3-MANIFEST.txt`, the two
 the same listing, so the change cannot reach them either.
 
 **Build.** The prompts were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1f64a61 /tmp/plan78-work/t6 bs-route bs-guard`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 1f64a61 /tmp/plan78-work/t6 bs-route bs-guard`.
 Its `MANIFEST.txt` is copied to `treatment/t6-MANIFEST.txt`. Two checks ran on the build before any rep:
 
 - Each prompt holds the paragraph "A new project of several stages goes to a roadmap" once and the name
@@ -2014,7 +2014,7 @@ Its `MANIFEST.txt` is copied to `treatment/t6-MANIFEST.txt`. Two checks ran on t
 - No prompt holds `red-baseline`, `plan 78` or the spec's file name (the quarantine).
 
 Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t6/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t6 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t6/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-t6 1 5 claude-opus-5-5 1.00`,
 one case at a time, into folders with a `-t6` suffix, so earlier folders are untouched. Before each call, the running
 total plus the call's worst case ($5.00) stayed under $60.
 
@@ -2118,7 +2118,7 @@ handing over now, and fail only a handoff put off to a later or fresh session or
 reply makes the call and says it is making it now. Its closing line does not move the call to a later session and
 asks no question.
 
-**Task 6 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py specs/red-baseline-new-project-entry/treatment/bs-route-t6/ specs/red-baseline-new-project-entry/treatment/bs-guard-t6/`
+**Task 6 spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py specs/baseline/red-baseline-new-project-entry/treatment/bs-route-t6/ specs/baseline/red-baseline-new-project-entry/treatment/bs-guard-t6/`
 ran once after the last rep. It shows 10 reps, none VOID, and prints `total cost $0.34`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. The two cases cost $0.1725 and $0.1651, so Task 6
 cost $0.3376. Running total: $15.6307 of $60. Control arms: $5.5029 of $30, unchanged.
@@ -2203,7 +2203,7 @@ new phrase occurs once, and `its core stage's`, `a stopped track's Ranked list` 
 each occur 0 times. No text was added to reach 4.
 
 **Build.** The prompts of all 15 cases were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py f824492 /tmp/plan78-work/t7`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py f824492 /tmp/plan78-work/t7`.
 Its `MANIFEST.txt` is copied to `treatment/t7-MANIFEST.txt`. Checks on the build before any rep:
 
 - The six cases that read no derive-roadmap text have prompts that `cmp` finds byte-identical to their arms of
@@ -2217,7 +2217,7 @@ Its `MANIFEST.txt` is copied to `treatment/t7-MANIFEST.txt`. Checks on the build
   holds `red-baseline`, `plan 78`, the spec's file name or `task-7` (the quarantine).
 
 Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t7/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t7 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t7/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-t7 1 5 claude-opus-5-5 1.00`,
 one case at a time, into folders with a `-t7` suffix, so earlier folders are untouched. Before each call, the running
 total plus the call's worst case ($5.00) stayed under $60. The largest such sum was $25.1399, before the last call.
 Each case's replies were read in full from `show_reps.py` over that case's folder alone.
@@ -2542,7 +2542,7 @@ readings, above). No other row changes a bar.
 | dr-tracks reps 2, 3 and 4, C | pass, borderline (outcomes ordered inside a known-progression track, not called stages, as round 2 reps 3 and 4) | rep2 "panel → stage-wise magnitude → supersectors", rep3 "*Known progression*, proposed: total SA → benchmark/wedge-back → supersector", rep4 "Known progression: total nonfarm first, then supersectors." Round 2 rep5 failed C for the same kind of content with the word "stages". Ruled the other way, PASS is 2 of 5 (1 of 5 with rep1) and the bar is missed. |
 | dr-resume-rerank rep4, C | pass (one question with a default and its alternatives) | "Approve the default, or amend it (a different item, a different order, or stop)?" |
 
-**Task 7 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` over the nine `-t7` folders
+**Task 7 spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` over the nine `-t7` folders
 ran once after the last rep. It shows 45 reps, none VOID, and prints `total cost $4.76`. No rep file is empty or
 unreadable, so none counts at its cap. There was no VOID rerun. The nine cases cost $0.4327, $0.6697, $0.6191,
 $0.3008, $0.8990, $0.6228, $0.6987, $0.2664 and $0.2497, so Task 7 cost $4.7589. Running total: $20.3896 of $60.
@@ -2626,7 +2626,7 @@ changed.
 commit lints passed.
 
 **Build.** The prompts of all 15 cases were built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py d3fc772 /tmp/plan78-work/t7b`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py d3fc772 /tmp/plan78-work/t7b`.
 Its `MANIFEST.txt` is copied to `treatment/t7b-MANIFEST.txt`. Checks on the build before any rep:
 
 - The six cases that read no derive-roadmap text have prompts that `cmp` finds byte-identical to their arms of
@@ -2638,7 +2638,7 @@ Its `MANIFEST.txt` is copied to `treatment/t7b-MANIFEST.txt`. Checks on the buil
   `plan 78`, the spec's file name or `task-7` (the quarantine).
 
 Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t7b/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-t7b 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan78-work/t7b/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-t7b 1 5 claude-opus-5-5 1.00`,
 one case at a time, into folders with a `-t7b` suffix. Before each call, the running total plus the call's worst
 case ($5.00) stayed under $60. The largest such sum was $27.2461, before the last call. Each case's replies were read
 in full from `show_reps.py` over that case's folder alone.
@@ -2789,7 +2789,7 @@ bar. dr-known-progression misses as before, and the owner's earlier ruling cover
 | dr-resume-rerank rep3, C | pass (a proposed re-rank as the default, then one question) | "**Do you approve this re-rank with O2 promoted to Stage 2, or would you change the order, promote a different item, or stop the track?**" |
 | dr-resume-rerank rep4, C | pass, borderline (the default and its alternatives in two sentences of one question) | "Or would you rather re-order the list, promote a different item, or stop the track" |
 
-**Fix round 1 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` over the four `-t7b`
+**Fix round 1 spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` over the four `-t7b`
 folders ran once after the last rep. It shows 20 reps, none VOID, and prints `total cost $2.12`. No rep file is empty
 or unreadable, so none counts at its cap. There was no VOID rerun. The four cases cost $0.9199, $0.6747, $0.2619 and
 $0.2594, so the fix round cost $2.1159. Running total: $22.5055 of $60. Control arms: $5.5029 of $30, unchanged.
@@ -2873,12 +2873,12 @@ behavior. Keep them out of every prompt.
   plan 79 in.
 
 The plan took its line anchors at `a849bd2`. The drift check is
-`git diff --stat a849bd2 5beacf5 -- skills/derive-roadmap specs/red-baseline-new-project-entry`. It printed nothing.
+`git diff --stat a849bd2 5beacf5 -- skills/derive-roadmap specs/baseline/red-baseline-new-project-entry`. It printed nothing.
 No skill file and no file in the record's folder changed, so every anchor holds. No deviation note is needed.
 
 ### Plan 79: cases
 
-The seven new cases are at the end of `CASES` in `specs/red-baseline-new-project-entry/kit/cases.py`. Each is
+The seven new cases are at the end of `CASES` in `specs/baseline/red-baseline-new-project-entry/kit/cases.py`. Each is
 additive, reads the texts `DR` and has the 1.00 USD cap. The 15 cases of plan 78 are unchanged: a script compared each
 with its copy at the base commit and found them equal. The seven pass rules were compared with the plan's text by
 script. Six are equal. The seventh, `DR_KNOWN_PROGRESSION_PASS_79`, equals `DR_KNOWN_PROGRESSION_PASS` with its clause C
@@ -3097,7 +3097,7 @@ words. No rep has run, so Task 2 can still change any of them before it reads a 
 ### Plan 79: leak check
 
 The first leak view was built with
-`CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan79-work/leak dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second dr-resume-marker dr-resume-blocked dr-known-progression-79`.
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan79-work/leak dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second dr-resume-marker dr-resume-blocked dr-known-progression-79`.
 It wrote 7 prompts. The check ran in two parts, as the plan 78 leak check does:
 
 1. Each new case's hand-written fixture lines and task line, from `cases.py`, were grepped case-insensitively for its
@@ -3198,8 +3198,8 @@ conformance clause alone does not make a control RED.
 **Builds.**
 
 ```
-CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan79-work/control-routes dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second
-CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 5beacf5e70a3516a5b3dc820ef6ecbc17cbb4769 /tmp/plan79-work/control-gaps dr-resume-marker dr-resume-blocked
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 1844bd8 /tmp/plan79-work/control-routes dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 5beacf5e70a3516a5b3dc820ef6ecbc17cbb4769 /tmp/plan79-work/control-gaps dr-resume-marker dr-resume-blocked
 ```
 
 They wrote 4 prompts and 2 prompts. The two `MANIFEST.txt` files are joined into `control/p79-MANIFEST.txt`, each under
@@ -3207,7 +3207,7 @@ a line that names its sha. The joined file shows `budget 1.00` for every case. T
 spec at `22c6767f`, for dr-name-collision) has the same sha256 as the read in `control/MANIFEST.txt`.
 
 **Reps.** Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/<build>/<case>.txt specs/red-baseline-new-project-entry/control/<case> 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/<build>/<case>.txt specs/baseline/red-baseline-new-project-entry/control/<case> 1 5 claude-opus-5-5 1.00`,
 one case at a time, in this order: dr-stop-track, dr-park-ranked, dr-name-collision, dr-rerank-second,
 dr-resume-marker, dr-resume-blocked. Before each call, the running total plus the call's worst case ($5.00) stayed under
 $30. The largest such sum was $6.40, before the last call. Each case's replies were read in full from `show_reps.py`
@@ -3497,7 +3497,7 @@ Running total: $1.7765 of $30.
 
 ### Plan 79 control summary and spend
 
-`uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over the six new folders after the last
+`uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over the six new folders after the last
 rep. It shows 30 reps, none VOID, and prints `total cost $1.78`. No rep file is empty or unreadable, so none counts at
 its cap. There was no VOID rerun. The folder `control/*/` was not used for this figure, because that glob also holds
 plan 78's 15 folders ($5.50).
@@ -3582,13 +3582,13 @@ and `skills/derive-roadmap/references/roadmap-format.md`.
 **Build.**
 
 ```
-CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py c500e1424cee823e0d1d6f6a8cb6373a55922f0c /tmp/plan79-work/t3 dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second dr-resume-marker dr-resume-blocked
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py c500e1424cee823e0d1d6f6a8cb6373a55922f0c /tmp/plan79-work/t3 dr-stop-track dr-park-ranked dr-name-collision dr-rerank-second dr-resume-marker dr-resume-blocked
 ```
 
 It wrote 6 prompts. `MANIFEST.txt` is copied to `treatment/p79-t3-MANIFEST.txt`. It shows `budget 1.00` for every case.
 
 **Reps.** Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-p79 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p79 1 5 claude-opus-5-5 1.00`,
 one case at a time, in this order: dr-stop-track, dr-park-ranked, dr-name-collision, dr-rerank-second, dr-resume-marker,
 dr-resume-blocked. Each call finished before the next began. Before each call, the running total plus the call's worst case
 ($5.00) stayed under $30. The largest such sum was $8.45, before the last call. Each case's replies were read in full from
@@ -4012,7 +4012,7 @@ cannot be met and the treatment reverts nothing. The treatment passes 5 of 5 in 
 treats the renamed table as an unmet `Consumes`: each amends it, so the new Ask text did not fire there. Both cases go to
 the owner at the plan completion gate, with the Task 2 note.
 
-**Spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the six `-p79`
+**Spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the six `-p79`
 folders after its last rep, and once over all six together (30 reps, none VOID, `total cost $2.03`). No rep file is empty
 or unreadable, so none counts at its cap. There was no VOID rerun. The figures per case, from each rep's
 `total_cost_usd`, are dr-stop-track $0.3619, dr-park-ranked $0.3357, dr-name-collision $0.3633, dr-rerank-second $0.3159,
@@ -4126,7 +4126,7 @@ again at the commit.
 **Build.**
 
 ```
-CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 43fca109af87f13d9ec04f905d7d78dc628f755c /tmp/plan79-work/t3-r1 dr-stop-track dr-park-ranked dr-rerank-second dr-resume-marker dr-resume-blocked
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 43fca109af87f13d9ec04f905d7d78dc628f755c /tmp/plan79-work/t3-r1 dr-stop-track dr-park-ranked dr-rerank-second dr-resume-marker dr-resume-blocked
 ```
 
 It wrote 5 prompts. `MANIFEST.txt` is copied to `treatment/p79-t3-r1-MANIFEST.txt`. It shows `budget 1.00` for every
@@ -4134,7 +4134,7 @@ case. No case of this round reads a case-repository file. (`treatment/t3-r1-MANI
 own wording round.)
 
 **Reps.** Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3-r1/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-p79-r1 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3-r1/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p79-r1 1 5 claude-opus-5-5 1.00`,
 one case at a time, in this order: dr-stop-track, dr-park-ranked, dr-rerank-second, dr-resume-marker, dr-resume-blocked.
 Each call finished before the next began. Before each call, the running total plus the call's worst case ($5.00) stayed
 under $30. The largest such sum was $10.05, before the last call. Each case's replies were read in full from
@@ -4415,7 +4415,7 @@ No rep was VOID. No case misses its bar, so the round ends here and no owner gat
 - Every other reading, counted against a bar, would leave each bar met: each moves one case to 4 of 5 at most.
 - Task 4 reads `T-final` = `T3-r1` = `43fca10`.
 
-**Spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the five `-p79-r1`
+**Spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the five `-p79-r1`
 folders after its last rep, and once over all five together (25 reps, none VOID, `total cost $1.60`). No rep file is
 empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per case, from each rep's
 `total_cost_usd`, are dr-stop-track $0.3148, dr-park-ranked $0.3336, dr-rerank-second $0.3091, dr-resume-marker $0.2931
@@ -4520,14 +4520,14 @@ pre-commit hook printed it again at the commit.
 **Build.**
 
 ```
-CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 99265a5ca9b783f5506b3b074a4645e3c1371b47 /tmp/plan79-work/t3-r2 dr-stop-track dr-park-ranked dr-rerank-second dr-resume-marker dr-resume-blocked
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 99265a5ca9b783f5506b3b074a4645e3c1371b47 /tmp/plan79-work/t3-r2 dr-stop-track dr-park-ranked dr-rerank-second dr-resume-marker dr-resume-blocked
 ```
 
 It wrote 5 prompts. `MANIFEST.txt` is copied to `treatment/p79-t3-r2-MANIFEST.txt`. It shows `budget 1.00` for every
 case. No case of this round reads a case-repository file.
 
 **Reps.** Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3-r2/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-p79-r2 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3-r2/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p79-r2 1 5 claude-opus-5-5 1.00`,
 one case at a time, in this order: dr-stop-track, dr-park-ranked, dr-rerank-second, dr-resume-marker, dr-resume-blocked.
 Each call finished before the next began. Before each call, the running total plus the call's worst case ($5.00) stayed
 under $30. The largest such sum was $11.67, before the last call. Each case's replies were read in full from
@@ -4827,7 +4827,7 @@ The owner rules on the Table items reading and on the case.
   is empty or unusable is caught only if "missing or not built" is read to include it.
 - `T3-r2` (`99265a5`) is the last skill commit. Task 4's `T-final` waits on the owner's ruling at this gate.
 
-**Spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the five `-p79-r2`
+**Spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the five `-p79-r2`
 folders after its last rep, and once over all five together (25 reps, none VOID, `total cost $1.61`). No rep file is
 empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per case, from each rep's
 `total_cost_usd`, are dr-stop-track $0.3294, dr-park-ranked $0.3252, dr-rerank-second $0.3123, dr-resume-marker $0.2965
@@ -4924,14 +4924,14 @@ again at the commit.
 **Build.**
 
 ```
-CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 5f52dfc75f7e55658b1f7eeb237845af7da06d54 /tmp/plan79-work/t3-r3 dr-stop-track dr-park-ranked dr-rerank-second dr-resume-marker dr-resume-blocked
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 5f52dfc75f7e55658b1f7eeb237845af7da06d54 /tmp/plan79-work/t3-r3 dr-stop-track dr-park-ranked dr-rerank-second dr-resume-marker dr-resume-blocked
 ```
 
 It wrote 5 prompts. `MANIFEST.txt` is copied to `treatment/p79-t3-r3-MANIFEST.txt`. It shows `budget 1.00` for every
 case. No case of this round reads a case-repository file.
 
 **Reps.** Each case ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3-r3/<case>.txt specs/red-baseline-new-project-entry/treatment/<case>-p79-r3 1 5 claude-opus-5-5 1.00`,
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t3-r3/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p79-r3 1 5 claude-opus-5-5 1.00`,
 one case at a time, in this order: dr-stop-track, dr-park-ranked, dr-rerank-second, dr-resume-marker, dr-resume-blocked.
 Each call finished before the next began. Before each call, the running total plus the call's worst case ($5.00) stayed
 under $30. The largest such sum was $13.27, before the last call. Each case's replies were read in full from
@@ -5230,7 +5230,7 @@ round-2 gate on dr-park-ranked is closed by the owner's re-run rule: the new run
   before that.
 - `T3-r3` (`5f52dfc`) is the last skill commit. Task 4 reads it as `T-final`, unless the owner rules otherwise.
 
-**Spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the five `-p79-r3`
+**Spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the five `-p79-r3`
 folders after its last rep, and once over all five together (25 reps, none VOID, `total cost $1.61`). No rep file is
 empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per case, from each rep's
 `total_cost_usd`, are dr-stop-track $0.3265, dr-park-ranked $0.3368, dr-rerank-second $0.2932, dr-resume-marker $0.2999
@@ -5253,13 +5253,13 @@ Task 4 runs six re-runs at the final skill text. A re-run has a treatment arm on
 **Build.**
 
 ```
-CASE_REPOS="$HOME/Projects" uv run python specs/red-baseline-new-project-entry/kit/build_prompts.py 5f52dfc75f7e55658b1f7eeb237845af7da06d54 /tmp/plan79-work/t4 dr-known-progression-79 dr-tracks dr-resume-rerank dr-resume-legacy dr-offer-yes
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 5f52dfc75f7e55658b1f7eeb237845af7da06d54 /tmp/plan79-work/t4 dr-known-progression-79 dr-tracks dr-resume-rerank dr-resume-legacy dr-offer-yes
 ```
 
 It wrote 5 prompts. `MANIFEST.txt` is copied to `treatment/p79-t4-MANIFEST.txt`. It shows `budget 1.00` for every case.
 
 **Reps.** Each folder ran with
-`bash specs/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t4/<case>.txt specs/red-baseline-new-project-entry/treatment/<folder> 1 5 claude-opus-5-5 1.00`.
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan79-work/t4/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<folder> 1 5 claude-opus-5-5 1.00`.
 The six calls ran in this order: dr-known-progression-79 into `dr-known-progression-79-p79`, dr-tracks into `dr-tracks-p79a`, dr-tracks again into `dr-tracks-p79b`, dr-resume-rerank into `dr-resume-rerank-p79`, dr-resume-legacy into `dr-resume-legacy-p79` and dr-offer-yes into `dr-offer-yes-p79`. The two dr-tracks runs are separate calls from the same prompt, so they are independent runs. Each call ran alone, as a background job. The next call started while the previous folder was being scored. No wording round could follow a score in this task, so the order did not change any result. Before each call, the running total plus the call's worst case ($5.00) stayed under $30. The largest such sum was $16.38, before the last call. No rep was VOID, so no rerun was needed. No `.err` file was left.
 
 **Readings applied.**
@@ -5475,7 +5475,7 @@ No rep was VOID. Three arms miss their bar, all through conformance clause C. In
 2. dr-tracks rep5 of run a. Does a sentence that sends named later qualities "into later stages, not into any core stage" count as a stage list? The owner ruled that it does for dr-offer-yes. The deferred item for that ruling also names dr-tracks for a re-run of the same text. If it does not count, run a is 4 of 5 and meets the bar, with or without Bare Echo.
 3. dr-known-progression-79. Does rep2's "Retain original bytes with provenance" name traceability? Three facts decide it. (a) The same Objective cites "(background spec R6, R9, §4.5, §4.6)". Section 4.5's row contract holds the per-row `source_id` and `source_sha256`. Those fields are what make plan 78's control RED, through the by-reference reading of rep5's Exit. That reading is scoped to Exit fields, so the treatment's citation of §4.5 in an Objective gets no credit, while the control's RED depends on the same section. (b) The call is new. Plan 78's fix round 1 rep2 had no "provenance" and no §4.5 citation. (c) PASS is 4 of 5 only if the owner also rules the First stage per outcome reading of clause A, because rep2 puts its full index history at Stage 5, after its 10-K core at Stage 3. Plan 78 never ruled on outcomes that interleave. On the strict reading, rep2 fails A and PASS stays 3 of 5. By the other reading of rep5's clause B, plan 78's control is clean, so the case has no RED to beat.
 
-**Task 4 spend.** `uv run python specs/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the six folders after its last rep, and once over all six together. The last run shows 30 reps, none VOID, and prints `total cost $3.44`. No rep file is empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per folder, from each rep's `total_cost_usd`, are dr-known-progression-79 $1.0925, dr-tracks run a $0.6731, dr-tracks run b $0.4561, dr-resume-rerank $0.2775, dr-resume-legacy $0.2579 and dr-offer-yes $0.6869. Task 4 cost $3.4439. Running total: $12.0639 of $30.
+**Task 4 spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over each of the six folders after its last rep, and once over all six together. The last run shows 30 reps, none VOID, and prints `total cost $3.44`. No rep file is empty or unreadable, so none counts at its cap. There was no VOID rerun. The figures per folder, from each rep's `total_cost_usd`, are dr-known-progression-79 $1.0925, dr-tracks run a $0.6731, dr-tracks run b $0.4561, dr-resume-rerank $0.2775, dr-resume-legacy $0.2579 and dr-offer-yes $0.6869. Task 4 cost $3.4439. Running total: $12.0639 of $30.
 
 ## Plan 79: summary
 
@@ -5576,5 +5576,5 @@ The plan completion gate needs these owner decisions. Each item gives its counts
 10. Skill text beyond the plan's five edits. Three commits followed them. `T3-r1` (`43fca10`) is the one bar-driven wording round that the Bars allow. `T3-r2` (`99265a5`) and `T3-r3` (`5f52dfc`) are review-found fixes that the controller accepted outside that cap. The derive-roadmap body measures 16,125 characters at `T3-r3` (limit 20,000). The `T3-r1` change to the Parking heading departs from the plan's literal brief, as the wording round section says.
 11. Untested paths. No arm tests the `T3-r3` clause about an unticked producer. A test needs a blocked chain: a Handoff shows Stage 3's input missing, and Stage 4 consumes Stage 3's output, so Stage 4 must not be handed off. No arm tests an output that a Handoff says shipped but is empty or unusable.
 12. The term clash. `references/new-project-entry.md` item 4 calls the `<name>` in `specs/<name>-roadmap.md` the "roadmap name". The §5 Parking heading is `## <name>-roadmap — <YYYY-MM-DD>`, which names the file's stem. The `T3-r1` edit changed the placeholder so that §5 would not define "roadmap name" a second way. The two texts now use `<name>-roadmap` and `<name>` for different things, and the reference is on the Leave-alone list.
-13. The plan's commit command. Task 4 Step 4 says `git add specs/red-baseline-new-project-entry`, which stages the folder only. The record is the sibling file `specs/red-baseline-new-project-entry.md`, so the commit stages both.
+13. The plan's commit command. Task 4 Step 4 says `git add specs/baseline/red-baseline-new-project-entry`, which stages the folder only. The record is the sibling file `specs/baseline/red-baseline-new-project-entry.md`, so the commit stages both.
 14. Items (a) to (d) are met as written. Item (e) is not met and stays open with a dated note, unless the owner rules Attached Echo.

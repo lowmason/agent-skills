@@ -1,7 +1,7 @@
 # Plan 76 micro-tests: the review-fix wording
 
-Kit: `specs/red-baseline-review-fixes/kit/`. `run_reps.sh`, `isolation_probe.txt` and `show_reps.py`
-are copies of plan 75's kit (`specs/red-baseline-executing-plans-port/kit/`). The runner changes only its
+Kit: `specs/baseline/red-baseline-review-fixes/kit/`. `run_reps.sh`, `isolation_probe.txt` and `show_reps.py`
+are copies of plan 75's kit (`specs/baseline/red-baseline-executing-plans-port/kit/`). The runner changes only its
 temp prefix (`/tmp/plan76-rep-`) and the plan number in a comment. `show_reps.py` changes the plan number
 and its reading aids (they flag `subagent_type`, a `"model"` field, `run_suites.py`, "before Task 1" and
 "ruling"). `build_prompts.py` changes only the plan number in its docstring. `cases.py` holds the 3
@@ -67,7 +67,7 @@ all five lines `NO` (no `CLAUDE.md` text, no output style, no rule, no SessionSt
 ## Control
 
 Arm `control`: the texts at `b3062c6`. Prompts built with `build_prompts.py b3062c6 /tmp/plan76-work/control`.
-5 reps per case, 15 rep files in `specs/red-baseline-review-fixes/control/<case>/`, the three cases run
+5 reps per case, 15 rep files in `specs/baseline/red-baseline-review-fixes/control/<case>/`, the three cases run
 together on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool, one model, and ended
 with `success`. Every verdict was read by hand from the full reply, by the rules above.
 
@@ -94,7 +94,7 @@ v1's 0/5 above was ruled a fixture artifact on reviewer finding: its CLAUDE.md e
 suites the change reaches (an Imports column, a note, and a third suite the change does not reach), so the
 base text could obey both gates at once. v2 supersedes v1 for Task 21. v1 and its reps stay as history.
 
-Arm `control`, texts at `b3062c6`, 5 reps in `specs/red-baseline-review-fixes/control/fix-round-gate-v2/`.
+Arm `control`, texts at `b3062c6`, 5 reps in `specs/baseline/red-baseline-review-fixes/control/fix-round-gate-v2/`.
 No rep VOID. Every verdict read by hand by the v2 rule, which was committed (30c4f4f) before any v2 rep.
 
 | Case | Failing reps | Verdicts and notes |
@@ -113,7 +113,7 @@ Spend: v2 control $0.048. Running total for the whole kit so far: $0.24 of $15.
 ## handoff-dispatch treatment (Task 13)
 
 Arm `treatment`: the edited `skills/prepare-handoff/SKILL.md` (working tree, built through a `git stash create`
-commit before the edit was committed). 5 reps in `specs/red-baseline-review-fixes/treatment/handoff-dispatch/`,
+commit before the edit was committed). 5 reps in `specs/baseline/red-baseline-review-fixes/treatment/handoff-dispatch/`,
 same isolation recipe and Claude Code version as the control. No rep VOID: each ran one turn, no tool, one
 model, and ended with `success`. Every verdict was read by hand by the committed rule.
 

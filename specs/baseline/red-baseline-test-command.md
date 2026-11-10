@@ -30,8 +30,8 @@ One file outside that path list changed: `specs/superpowers-drift-spec-v7-0-2.md
 
 ## Kit
 
-Kit: `specs/red-baseline-test-command/kit/`. Four files are copies of plan 80's kit
-(`specs/red-baseline-development-history/kit/`). No file of the old kit was edited.
+Kit: `specs/baseline/red-baseline-test-command/kit/`. Four files are copies of plan 80's kit
+(`specs/baseline/red-baseline-development-history/kit/`). No file of the old kit was edited.
 
 - `run_reps.sh` changes the plan number in its first comment (80 to 82) and its temp prefix, from
   `/tmp/plan80-rep-` to `/tmp/plan82-rep-`. The comment `Plan 77 deviation (a)` keeps its number. It names the plan
@@ -45,7 +45,7 @@ Kit: `specs/red-baseline-test-command/kit/`. Four files are copies of plan 80's 
 - `cases.py` is new. It has the shape of plan 80's `cases.py`: a `case()` function and a `CASES` table. It holds the
   two cases, the VOID rule, the model (`claude-sonnet-5-5`), the per-rep budget (`0.50`) and the bars. `TASK_TAIL`,
   `VOID` and `G_FIXTURE` are copied word for word from plan 75's kit
-  (`specs/red-baseline-executing-plans-port/kit/cases.py`). A script compared the three strings with the old
+  (`specs/baseline/red-baseline-executing-plans-port/kit/cases.py`). A script compared the three strings with the old
   module, and all three were equal.
 
 `build_prompts.py <sha> <out-dir> [<case> ...]` builds the prompts at a sha and writes `MANIFEST.txt`.
@@ -213,7 +213,7 @@ Arm `control`: the texts at `BASE` (`432a834`). The prompts were built with
   body of `skills/verification-before-completion/SKILL.md` at `432a834`.
 
 Each case ran 5 reps on Claude Code 2.1.316, with this command:
-`run_reps.sh <prompt> specs/red-baseline-test-command/control/<case> 1 5 claude-sonnet-5-5`.
+`run_reps.sh <prompt> specs/baseline/red-baseline-test-command/control/<case> 1 5 claude-sonnet-5-5`.
 So there are 10 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
 No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by
 the committed rules.
@@ -311,7 +311,7 @@ bold line, the `bash` fence and its two lines become the three-line pointer. The
 the same. The body of `SKILL.md` measures 19,975 characters (`check_conformance.skill_body`), under the 20,000 cap.
 
 The 5 reps ran on Claude Code 2.1.316 with this command:
-`run_reps.sh /tmp/plan82-work/treatment/finish-command.txt specs/red-baseline-test-command/treatment/finish-command 1 5 claude-sonnet-5-5`.
+`run_reps.sh /tmp/plan82-work/treatment/finish-command.txt specs/baseline/red-baseline-test-command/treatment/finish-command 1 5 claude-sonnet-5-5`.
 So there are 5 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
 No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by
 the reading rule and the readings fixed before any rep (see "Reading rules" above). The rule, the fixture and the bar
@@ -386,7 +386,7 @@ inserted lines. The frame, the fixture and the task are the same. The body of `S
 (`check_conformance.skill_body`), under the 20,000 cap.
 
 The 5 reps ran on Claude Code 2.1.316 with this command:
-`run_reps.sh /tmp/plan82-work/treatment-v/verify-command.txt specs/red-baseline-test-command/treatment/verify-command 1 5 claude-sonnet-5-5`.
+`run_reps.sh /tmp/plan82-work/treatment-v/verify-command.txt specs/baseline/red-baseline-test-command/treatment/verify-command 1 5 claude-sonnet-5-5`.
 So there are 5 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
 No rep wrote an error file, so no rep was rerun. There was no wording round, because the first arm met the bar. Every
 reply was read in full, and every verdict was read by hand by the reading rule and the readings fixed before any rep

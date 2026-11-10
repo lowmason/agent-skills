@@ -4,7 +4,7 @@ line (PD1), two specs with one sentence edited (PD2), and plan 55 unchanged.
 Usage, from the repository root:
   uv run python <kit>/make_copies.py selftest   builds every copy in memory, checks it, prints each copy's sites,
                                                 planted sentence and amended sentences
-  uv run python <kit>/make_copies.py build      writes specs/red-baseline-statement-readings/copies/
+  uv run python <kit>/make_copies.py build      writes specs/baseline/red-baseline-statement-readings/copies/
 Each copy folder holds spec.md, plan.md, numbered.txt (the spec numbered by number.py) and SITES.txt.
 '''
 import difflib
@@ -21,9 +21,9 @@ from number import Sentence, flatten, number, numbered_text  # noqa: E402
 from plants import AMENDED_LINES, COPIES, Copy, Plant, TwoReading, source_id  # noqa: E402
 
 KIT = Path(__file__).resolve().parent
-REPO = KIT.parents[2]
+REPO = KIT.parents[3]
 COPIES_DIR = KIT.parent / 'copies'
-PLAN81_COPIES = REPO / 'specs' / 'red-baseline-acceptance-tests' / 'copies'
+PLAN81_COPIES = REPO / 'specs' / 'baseline' / 'red-baseline-acceptance-tests' / 'copies'
 LEAKS = ('def test_', '- [ ] **Step', '## Global Constraints', '## Review Focus', '## Decisions')
 SITE_TEXT_WIDTH = 80
 

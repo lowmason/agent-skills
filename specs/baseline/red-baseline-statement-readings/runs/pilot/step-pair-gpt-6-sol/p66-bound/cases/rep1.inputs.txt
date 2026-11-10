@@ -1,3 +1,3 @@
-standin: specs/red-baseline-statement-readings/runs/pilot/standin-opus/p66-bound/rep1.json
-claude: specs/red-baseline-statement-readings/runs/pilot/reader-opus/p66/rep1.json
-codex: specs/red-baseline-statement-readings/runs/pilot/reader-gpt-6-sol/p66/rep1.md
+standin: specs/baseline/red-baseline-statement-readings/runs/pilot/standin-opus/p66-bound/rep1.json
+claude: specs/baseline/red-baseline-statement-readings/runs/pilot/reader-opus/p66/rep1.json
+codex: specs/baseline/red-baseline-statement-readings/runs/pilot/reader-gpt-6-sol/p66/rep1.md

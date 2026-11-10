@@ -5,7 +5,7 @@
 
 This record gives the probe's results. It recommends nothing about the build plan. The owner reviews the
 results against the spec's bars and decides what the build plan keeps (spec decision D8). The kit, the copies
-and every rep's prompt and reply are in `specs/red-baseline-acceptance-tests/`.
+and every rep's prompt and reply are in `specs/baseline/red-baseline-acceptance-tests/`.
 
 **Read section 8, item 1 first.** The final review found that the adjudicator prompts did not pair the
 reader's tests with their tasks. Every treatment-arm number in this record comes from those prompts. The
@@ -72,7 +72,7 @@ tests to disagree with the plan's tests, so that the adjudicator gets a case to 
 
 ## 3. The table
 
-`runs/TABLE.txt` holds the output of `measure.py table specs/red-baseline-acceptance-tests/runs`, and two
+`runs/TABLE.txt` holds the output of `measure.py table specs/baseline/red-baseline-acceptance-tests/runs`, and two
 counts of the false alarms from the `CLASSIFY.txt` files. Each row gives an arm and a copy: the scored reps,
 the catches out of 5 (`n/a` for the clean copy), the false alarms per rep (the mean, then each rep), the
 unclear cases per rep, and the real and interface rulings in all 5 reps. Every rep of every arm scored. No
@@ -206,7 +206,7 @@ number of reps that ruled on it. The control made 44 real rulings on 17 errors. 
 |---|---|---|---|---|---|---|
 | `p53-unit` | R1.9: "CLAUDE.md's Commands section gains the `--strict` invocation with one line on when to use it (preparing a claude.ai upload or a spec-only validator run)" | owner decision D7 drops the line, and the plan has no R1.9 amendment | 3 | 5 | 5 | 5 |
 | `p53-unit` | R3.7: "A `skills/*/scripts/*.py` file with a `__main__` guard carries a PEP 723 block that parses with `tomllib` and has `requires-python` and `dependencies`." | DF6 exempts vendored scripts (`VENDORED_SCRIPTS`), and a plan test passes one without a header | 1 | 5 | 0 | 4 |
-| `p53-unit` | Task 2 record: "Record the scenario, prompts, outputs, and verdicts in `specs/red-baseline-description-openings-<YYYY-MM-DD>.md`, the house red-baseline format." | keeps only a prompt hash and each output's first 150 characters | 1 | 0 | 0 | 0 |
+| `p53-unit` | Task 2 record: "Record the scenario, prompts, outputs, and verdicts in `specs/baseline/red-baseline-description-openings-<YYYY-MM-DD>.md`, the house red-baseline format." | keeps only a prompt hash and each output's first 150 characters | 1 | 0 | 0 | 0 |
 | `p55-clean`, `p55-default` | R6.2: "`test_unregistered_suite_is_refused` commits a new `skills/<name>/scripts/test_new.py` in a clone and asserts that `suite_registry` is the only failed lint." | the plan test writes `test_scan.py` | 2 | 6 | 2 | 0 |
 | `p55-clean`, `p55-default` | R5.3: "one sentence names `suites.toml` and `run_suites.py` and says that `--check` is a commit lint." | adds a two-sentence paragraph | 8 | 0 | 0 | 0 |
 | `p55-clean`, `p55-default` | R6.1: "validation: each R3.9 failure, with exit 2" | tests exit 2 for one failure kind only | 4 | 0 | 0 | 0 |
