@@ -103,3 +103,24 @@ Differences from the design:
 - Deviation (Task 5): the size check ran as `uv run --directory build …`, for the same reason. Source: plan, Task 5 Step 3.
 - Deviation (Task 7): the entry says `every scripts/ path to` the five helpers, not `every mention of` them, since the lint matches only `scripts/<helper>` paths. Source: plan, Task 7 Step 1.
 - Deviation (Task 7): the `-C DIR` sentence now says this repository's helpers take no `-C DIR`, since upstream's `sdd-repo` has none either. Source: plan, Task 7 Step 3.
+
+## 86-brainstorming-v7-0-2-retune — 2026-11-10
+Plan: specs/plans/completed/86-brainstorming-v7-0-2-retune.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 1): cases.py docstring addition wrapped over two lines (the plan's check says "the docstring line") — keeps the 92-column wrap of the docstring — cost if wrong: none, docstring only; FRAME/SKILL_BLOCK/HOW_LOADED/existing cases verified byte-identical by git diff --no-index.
+- Ruling (Task 1): run_reps.sh keeps plan 72's file mode (644) and header comment; only the two named changes plus the one comment line — plan says "everything else unchanged".
+- Ruling (Task 1): T7 reading — tools/fixes named in one sentence are where answers lead, not candidate answers, unless the closing question asks which tool — follows plan 70 A6 rep3 (hand P, panel 2-1 P) — cost if wrong: hand T7 today falls to 13/25; panel decides T7 anyway.
+- Ruling (Task 1): re-run prompts go to prompts/today-fix1/ and reps to red/today-fix1/<case>/ (build_prompts refuses an existing dir; first reps kept as the record of fixture v1) — Task 3 Step 1's "differs only inside the skill block" check compares T11/T13 against prompts/today-fix1/ — cost if wrong: none, paths only.
+- Ruling (Task 3): SKILL.md hash after Task 3 is 3194843f... (owner-approved wording round), not Task 2's 9510532... — the plan's Outcome (a) and Task 3 Step 5 allow it — cost if wrong: none, both hashes recorded.
+- Ruling (Task 4): NOTICE bullet = plan's exact copy (<date>=2026-11-10) plus appended sentences naming wording round 1 (local divergence; H6 is plan 70's sentence widened, H9 clause added to upstream's sentence) and the P3 known gap — plan's Step 1 asks for one sentence per (b)/(c) gate; the round is a new divergence NOTICE must carry — cost if wrong: prose only.
+- Ruling (Task 4): finding-4 reconciliation sentence matched across its line break (plan's string is single-line) — same words, wrap kept. Finding-4 paragraph brackets filled from <rec>.md with NEW-R1 figures, plus sentences on NEW's regression and the wording round.
+- Ruling (final review): T12 NEW-R1 rep4 scored PASS — it names the clash, two ways with trade-offs and a pick ("I'd go with email where possible"), and defers the decision ("Before we settle it, I can check…") under its bolded question, so it asks and does not settle the clash — cost if wrong: T12 on NEW-R1 is 3 of 5 and misses its bar, an owner gate.
+- Deviation (Task 1): `cases.py`'s docstring addition wraps over two lines. Source: plan, Task 1.
+- Deviation (Task 1): `run_reps.sh` gains one comment line on `env -i`. Source: plan, Task 1.
+- Deviation (Task 1): the fixture check fired twice. The owner fixed T11 and T13, and RED re-ran both. Source: plan, Task 1.
+- Deviation (Task 2): the owner kept plan 74's `/deferred` sentence as a local addition. Source: plan, Task 2.
+- Deviation (Task 3): one owner-approved wording round on H6 and H9 (NEW-R1, `9761c88`). P3 and T7 are known gaps. T12 ran on NEW-R1 at the final review, 4 of 5. Source: plan, Task 3.
+- Deviation (Task 4): the `NOTICE` bullet also names the wording round and the P3 and T7 gaps. Source: plan, Task 4.
+- Deviation (Task 4): finding 4 also gives NEW's regression, the round and the final-review figures. Source: plan, Task 4.
+- Deferred: 1 item. Source: specs/deferred_items.md, § 86-brainstorming-v7-0-2-retune.

@@ -6144,3 +6144,20 @@ review and the Plan Completion gate (2026-10-27) add the others.
       re-score. The fix: score a ruling other than `unclear` whose quote is empty as `unclear`, with a selftest
       that fails first. Size: quick-fix. Revisit if: a plan copies `specs/baseline/red-baseline-statement-readings/kit/`,
       as plan 83 copied plan 81's kit.
+
+## 86-brainstorming-v7-0-2-retune — 2026-11-10
+- [ ] **The scope of brainstorming's first-message design (plan 86, final review: Codex's finding and the
+      reviewer's third Declined line).** `skills/brainstorming/SKILL.md` lets the first message carry the short
+      design for a small change when nothing is open and there is one sensible way (Your First Message). Size the
+      Work still says the design's Approaches part records "the two or three ways you considered" and "which one
+      they picked", and "They pick in the conversation, before you write the design". A reader cannot follow
+      both, and may ask for a pick where approval is due: T11 rep1 on the shipped copy asked "Which do you
+      want?" (`specs/baseline/red-baseline-brainstorming-v7-0-2.md`, Wording round 1 results). Also, when
+      nothing is open but several approaches fit, the first message has no design path. Upstream superpowers at
+      `22f0b46` carries the same passages (its SKILL.md lines 72-75 and 219-221), so plan 86 ported them
+      unchanged. At the completion gate the owner chose "Accept 1, 2, 4; defer 3 + Codex (Recommended)": "Points
+      1, 2 and 4 stand as recorded. Point 3 and the Codex point become one backlog item on the scope of the
+      first-message design, with T11 rep1's 'Which do you want?' as evidence. A fix needs its own plan and test
+      budget." Size: design. Done when: Size the Work and the first-message path agree in
+      `skills/brainstorming/SKILL.md`, micro-tests on T11, T13 and the approach guards show no regression, and
+      `NOTICE` names the divergence.
