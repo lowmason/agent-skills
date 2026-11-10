@@ -5578,3 +5578,247 @@ The plan completion gate needs these owner decisions. Each item gives its counts
 12. The term clash. `references/new-project-entry.md` item 4 calls the `<name>` in `specs/<name>-roadmap.md` the "roadmap name". The §5 Parking heading is `## <name>-roadmap — <YYYY-MM-DD>`, which names the file's stem. The `T3-r1` edit changed the placeholder so that §5 would not define "roadmap name" a second way. The two texts now use `<name>-roadmap` and `<name>` for different things, and the reference is on the Leave-alone list.
 13. The plan's commit command. Task 4 Step 4 says `git add specs/baseline/red-baseline-new-project-entry`, which stages the folder only. The record is the sibling file `specs/baseline/red-baseline-new-project-entry.md`, so the commit stages both.
 14. Items (a) to (d) are met as written. Item (e) is not met and stays open with a dated note, unless the owner rules Attached Echo.
+
+## Plan 85: base, cases and leak check
+
+Plan 85 (`specs/plans/85-derive-roadmap-later-qualities-and-spec-refs.md`) changes the derive-roadmap skill text and
+tests the change with micro-test reps. Task 1 adds three cases and the constants of a stage-plan probe to plan 78's
+kit, then runs their leak check. It runs no rep and spends $0.00. It edits no skill file.
+
+The quarantine of plan 78 holds for plan 85. This section, the plan and the cases name the pass rules and the expected
+behavior. Keep them out of every prompt.
+
+### Plan 85: base
+
+`BASE85` is the execution branch's start commit. The plan says that it is the tip of the planning branch, or `main`
+once that branch has merged. It is `main`, after PR #163 and PR #164.
+
+- Short sha: `58337f5`.
+- Full sha: `58337f541a50e69f2f811039b636861340d22c56`.
+- Branch: `claude/compassionate-williamson-4d8a61`. Its start is the tip of `main`: the merge of PR #164 (plan 84).
+
+The plan took its line anchors at `91d49c4`. Two drift checks ran:
+
+- `git diff --stat 91d49c4 58337f5 -- skills/derive-roadmap specs/baseline/red-baseline-new-project-entry` printed
+  nothing.
+- `git diff --stat 5f52dfc 58337f5 -- skills/derive-roadmap` printed nothing. `5f52dfc` is plan 79's `T-final`.
+
+No derive-roadmap file and no file of the record's folder changed, so every anchor holds. No deviation note is needed.
+`claude --version` printed `2.1.316`. That is the version that the plan names, so the isolation probe is not needed and
+`pilot/probe-p85/` does not exist.
+
+The blob sha of `skills/writing-plans/SKILL.md` at `BASE85` is `41f4e91cc2bba1418cbbf88bdbea865a9cdcee3a`
+(`git rev-parse 58337f5:skills/writing-plans/SKILL.md`). Plan 84 merged before `BASE85`. The blob is the same at
+`91d49c4`: `git diff --stat 91d49c4 58337f5 -- skills/writing-plans/SKILL.md` printed nothing. Task 5 can compare the
+blob that it reads with this one.
+
+### Plan 85: cases
+
+Three cases are at the end of `CASES` in `specs/baseline/red-baseline-new-project-entry/kit/cases.py`. Each is
+additive, reads the texts `DR` and has the 1.00 USD cap. The 22 cases of plans 78 and 79 are unchanged. A script
+loaded `cases.py` at `58337f5` and at the working tree. It found each of the 22 entries equal, in the same order, and
+every earlier string, list and dict constant equal.
+
+| Case | Spec ref | What it checks | Arm that runs it |
+|---|---|---|---|
+| dr-quality-suggest | V3, R4, R5 | a later quality that the partner's words imply (traceability) is suggested in the one approval question and kept out of the roadmap's lists | control at `BASE85` (Task 2); treatment at the last skill commit (Task 4) |
+| dr-spec-column | V4, R10 | the Outcomes table of a new-project roadmap for a spec carries a Spec column of refs only | control at `BASE85` (Task 2); treatment at the last skill commit (Task 4) |
+| dr-handoff-spec | V5 step A, R11 | the handoff reply for Stage 1 names the stage's scope for writing-plans | probe step A, at the last skill commit (Task 5); no control, no bar |
+
+The other new names in `cases.py`:
+
+- `ROADMAP_ASK_TASK` and `WP_TASK`: the two task lines, exact copy from the plan.
+- `WP = ['skills/writing-plans/SKILL.md']`: the text set of the probe's step B.
+- `SEC_SPEC_ROADMAP`: a new-project roadmap for the sec-edgar spec, in plan 85's format. It is the roadmap that step A
+  starts from and that step B reads.
+- `WP_STAGE_PLAN_FIXTURE`, `WP_STAGE_PLAN_PASS` and `WP_STAGE_PLAN_LEAK`: the probe's step B. It has no `CASES` entry.
+  Task 5 adds `wp-stage-plan` once it has a sha. The fixture holds the markers `{file:handoff}` and `{file:spec}`.
+- `rep_result(text)`: the `result` field of a rep's JSON. It refuses (`SystemExit`) when the JSON is unreadable or is
+  not an object, and when `result` is missing, is not a string or is blank. An inline run on nine inputs (a good rep, an
+  empty string, `{}`, text that is not JSON, a list, a blank result, a `null` result, a number and a bare string) gave
+  the good rep back and refused the other eight.
+
+The pass rules and the two task lines were compared with the plan's text by script. All four pass-rule blocks
+(`dr-quality-suggest`, `dr-spec-column`, `dr-handoff-spec` and `WP_STAGE_PLAN_PASS`) and both task lines are equal, and
+the four leak patterns are equal.
+
+### Plan 85 case: dr-quality-suggest
+
+Spec ref: V3, R4, R5. Kind and bar: additive. Texts: DR. Task: `ROADMAP_ASK_TASK`.
+
+Fixture: lock-closures. The partner asks for a roadmap for a canal lock-closure study, says that nothing is built, and
+gives the four wants of `LOCK_ROADMAP` (O1 to O4) in plain words. The same message says that the canal trust's board
+funds the study and will ask which gauge readings each closure estimate came from. One tool line lists a scaffold
+(a README, `pyproject.toml`, an empty package and one smoke test; nothing under `specs/`). An `[earlier] You` line gives
+the unranked outcome list with the cost notes written with no stage word, then the line `Qualities to place when the
+roadmap is written: traceability.`, then one research track and the name, and asks the partner to rank and to confirm
+the track. The partner: one research track is right, rank them O1 to O4, the name is fine, go ahead.
+
+Leak words: `suggest`, `approv`, `Leaves out`, `O5`, `not yet`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): the roadmap file holds no Ranked-list item, no O-number and no Outcomes row for traceability.
+
+Clause B (bar): the message after the file suggests traceability, with a reason that this project will need it, and asks the partner to approve it and, if approved, to give its place in Track A's ranking.
+
+Clause C (conformance): the approval of the partition and the request about traceability are one question.
+
+Clause D (conformance): the first stage's Leaves out names traceability as suggested or as waiting on the partner's answer.
+
+Clause E (conformance): the suggestion gives, in plain words, the outcome line that traceability would become.
+
+Reading notes. Clause A: a list line that names traceability fails A, numbered or not, labeled suggested or not; traceability named only in Leaves out or in the message passes. Clause B: a reason is any statement of why this project needs it, such as the board's question; a rank request that proposes a default place passes. Clause C: one question may offer options and close with them; two or more separate questions fail C. Clause D: any wording that marks traceability as not yet approved passes; a Ranked list named as its destination with no such mark fails D. Clause E: the outcome line says what the partner gets.
+
+### Plan 85 case: dr-spec-column
+
+Spec ref: V4, R10. Kind and bar: additive. Texts: DR. Task: `ROADMAP_TASK`. Case file: the sec-edgar spec
+(`{'spec': SEC_SPEC}`).
+
+Fixture: sec-edgar at `22c6767f`. The lines of `DR_OFFER_YES_FIXTURE` with the partner's yes marked `[earlier]`. Then an
+`[earlier] You` line: you sent the one message with eleven outcomes (O1 to O11, one plain line each, in order from R1 to
+R11), one known-progression track, cost notes with their bases and the spec's stem as the roadmap name, and asked the
+partner to rank. The partner: rank them in the order you listed, one track, a known progression, go ahead and write the
+roadmap.
+
+Leak words: `Spec column`, `refs only`, `requirement text`, `restate`.
+
+PASS needs every bar and conformance clause.
+
+Clause A (bar): the Outcomes table has a column of spec refs, and every outcome row's cell in it holds at least one § or R ref of the spec.
+
+Clause B (bar): every cell of that column holds refs only.
+
+Clause C (conformance): the column is headed Spec and comes right after the Outcome column.
+
+Reading notes. Clause A: a ref is a § number (§4.2) or an R number (R1), alone, in a range (R1–R3) or in a list; refs written only inside an Outcome cell or a stage entry do not pass A. Clause B: a cell holds only § numbers, R numbers, ranges, commas and none; any other word fails B, such as a requirement's title ("R1 Baseline") or its text.
+
+### Plan 85 case: dr-handoff-spec (the probe's step A)
+
+Spec ref: V5 step A, R11. Kind: additive, but the probe applies no bar to step A. Texts: DR. Task: `STEP_TASK`. Case
+file: the sec-edgar spec (`{'spec': SEC_SPEC}`).
+
+Fixture: the fixture of dr-spec-column with the partner's last line marked `[earlier]`. Then one tool line: the roadmap
+`specs/sec-filing-index-ingestion-spec-roadmap.md` was written and committed, with its full text (`SEC_SPEC_ROADMAP`).
+Then an `[earlier] You` line: you sent the stage partition for approval, in one message. The partner: Approved.
+
+Leak words: `Scope:`, `scoped to`, `minus`, `leave out`.
+
+Probe step A. No PASS rule: both clauses are recorded, and the probe's verdict is read from step B.
+
+Clause A (recorded): the reply hands off Stage 1 to writing-plans with a "Next:" line and stops.
+
+Clause B (recorded): the reply names Stage 1's scope for the receiver: its O-numbers, the spec refs they carry, and what its Leaves out names.
+
+### Plan 85 probe step B (a constant, no case yet)
+
+`WP_STAGE_PLAN_FIXTURE`, `WP_STAGE_PLAN_PASS` and `WP_STAGE_PLAN_LEAK` are in `cases.py`. The fixture is a new session in
+sec-edgar. The partner pasted the message that ended the derive-roadmap session (`{file:handoff}`, which is the reply
+of step A). Then the tool lines give the roadmap (`SEC_SPEC_ROADMAP`), the spec (`{file:spec}`) and the plan-id check
+(`plan ids: none yet; next free: 1; collisions: none`). The task line is `WP_TASK`. Leak words: `Scope:`, `scoped to`,
+`minus`, `leave out`. Task 5 adds the `CASES` entry `wp-stage-plan` and its `handoff` file.
+
+PASS needs both bar clauses. Clause C is recorded.
+
+Clause A (bar): the plan cites as its scope R1, R2 and §4.2, the refs that the Spec cells of Stage 1's outcomes (O1 and O2) hold.
+
+Clause B (bar): no task and no Global Constraint builds the versioned quarter manifest or its active pointer (R9, §4.5) or Azure orchestration (R4: ADF, Container Apps Jobs, ADLS, Table Storage), the two qualities that Stage 1's Leaves out names.
+
+Clause C (recorded): the header carries the line Roadmap: specs/sec-filing-index-ingestion-spec-roadmap.md, Stage 1.
+
+Reading notes. Clause A: a citation in the header, the Spec line, Global Constraints or a task line counts; a range that covers a ref counts (R1–R2); a citation of the whole spec alone does not. Clause B: a task builds a quality when its title, Files block or line delivers it; a line that names a quality as out of scope passes, and so does a local stand-in such as a local directory in place of ADLS.
+
+### Plan 85: fixture judgment calls
+
+The plan gives the state of each fixture and leaves the text to the implementer. These choices went beyond the plan's
+words. No rep has run, so Task 2 can still change any of them before it reads a reply.
+
+1. **The Spec cells of `SEC_SPEC_ROADMAP`.** The plan pins four cells: O1 `R1, §4.2`, O2 `R2, §4.2`, O4 `R4, §4.1` and
+   O9 `R9, §4.5`. The other seven hold the requirement's R number and the §4 section of the spec that details it:
+   R3 `§4.6` (ETL and publication), R5 `§4.1` (one image, shared commands), R6 `§4.5` (the storage contract: raw paths
+   and the downloaded, transformed and published states), R7 `§4.4` (reconciliation), R8 `§4.3` (collection and SEC
+   access), R10 `§4.4` (the withdrawal gate) and R11 `§4.8` (configuration and stated defaults). R6 could also cite
+   `§4.3`, which keeps the downloaded bytes. The record picks `§4.5`, and each cell holds refs only.
+2. **The stage partition.** The plan fixes Stage 1 (O1 and O2), puts O9 in Stage 3 and O4 in Stage 4. The other
+   outcomes are placed so that each depends on earlier stages only. Stage 2 holds O3, O5, O6 and O8 (shared processing,
+   replay and one request budget). Stage 3 holds O7, O9 and O10 (versioned publication and corrections). Stage 4 holds
+   O4 and O11 (Azure orchestration and the stated defaults). Every stage routes to `writing-plans`, because the spec
+   determines each of them. The Stage 1 Exit names O1 and O2 in brackets, so that each O-number has its observable
+   outcome.
+3. **One track.** Every row is in Track A, so no stage entry has a `Track:` field and the roadmap has no Ranked list.
+   Its sections are the header, Outcomes, Stages, Stage-spec stamp and Completion.
+4. **The cost notes of `SEC_SPEC_ROADMAP`** are short hand-written estimates with a basis. They are not scored. Only
+   O1 and O2 use the plan's "measured by Stage 1".
+5. **The dr-quality-suggest scaffold line.** The plan says "a README, `pyproject.toml`, an empty package and one smoke
+   test". The line names `src/lock_closures/__init__.py` and `tests/test_smoke.py` and says that the package has no
+   code and that no file is under `specs/`. The fixture does not use `LOCK_ROADMAP` or `TWO_TRACK_ROADMAP`. `LOCK_ROADMAP`
+   holds `Leaves out:`, a leak word of this case. The four outcomes are written again, by hand.
+6. **The dr-spec-column `[earlier] You` line** adds one sentence beyond the plan's words: "You asked your partner to
+   rank the outcomes". The partner's answer, "Rank them in the order you listed", then answers a question.
+7. **`DR_SPEC_COLUMN_NOW`** is a new constant that holds the partner's last line of dr-spec-column. The fixture of
+   dr-handoff-spec swaps exactly that line (the swap refuses unless the line appears once), so dr-spec-column's own
+   fixture is not changed.
+8. **No test file.** `rep_result` was checked with an inline run. A test file in the kit folder would have to be
+   registered in `build/suites.toml`, and the plan's Task 1 lists only `cases.py` and this record.
+9. **The module docstring** of `cases.py` got one paragraph for plan 85. No other line of the file before the new block
+   changed.
+
+### Plan 85: leak check
+
+The leak view was built with
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan85-work/leak dr-quality-suggest dr-spec-column dr-handoff-spec`.
+It wrote 3 prompts. It is the one leak build. The check ran in two parts, as the plan 79 leak check does:
+
+1. Each new case's hand-written fixture lines and task line, from `cases.py`, were grepped case-insensitively (`re.I`)
+   for its leak words. The `{file:...}` markers were removed first, because a case-repository file is not
+   hand-written. Lines that plans 78 and 79 wrote for other cases and that the new fixtures reuse (the sec-edgar tree,
+   the ADR line, the gap line) count as hand-written lines.
+2. Each leak-view prompt was grepped case-insensitively for its case's leak words. Each hit was traced to its source.
+
+Part 1 found 0 hits in all three cases, so no line was reworded and no rebuild was needed.
+
+| Case | Leak words | Hits in the leak view | Verdict |
+|---|---|---|---|
+| dr-quality-suggest | `suggest`, `approv`, `Leaves out`, `O5`, `not yet` | none | none needed |
+| dr-spec-column | `Spec column`, `refs only`, `requirement text`, `restate` | none | none needed |
+| dr-handoff-spec | `Scope:`, `scoped to`, `minus`, `leave out` | none | none needed |
+
+The hand-written lines of `WP_STAGE_PLAN_FIXTURE` and `WP_TASK` have 0 hits for `Scope:`, `scoped to`, `minus` and
+`leave out`. Its leak view comes in Task 5. `leave out` does not match the stage field `Leaves out`, which
+`SEC_SPEC_ROADMAP` carries. The pattern needs a space right after `leave`.
+
+The three leak-view prompts were also grepped, case-insensitively, for `red-baseline`, `plan 7[89]`, `plan 85`,
+`micro-test` and `quarantine`. The plan expects 0 hits. The result:
+
+| Word | dr-quality-suggest | dr-spec-column | dr-handoff-spec | Source |
+|---|---|---|---|---|
+| `red-baseline` | 0 | 0 | 0 | |
+| `plan 7[89]` | 0 | 0 | 0 | |
+| `plan 85` | 0 | 0 | 0 | |
+| `micro-test` | 0 | 0 | 0 | |
+| `quarantine` | 0 | 7 | 7 | the sec-edgar spec's own text: "quarantined", "quarantine" and "Quarantine" in §4.3, §4.5, §4.6, §4.7 (twice), §5 and §8 |
+
+The 7 `quarantine` hits are the 7 lines of the sec-edgar spec at `22c6767f` that hold the word. A script confirmed that
+every hit line is a line of that spec, as `git show` returns it. The spec is a case-repository file read verbatim, so
+the hits are exempt, as in plans 78 and 79. The plan's "expected: 0 hits" did not allow for the spec's own text. The
+three hand-written parts of every prompt have 0 hits for the five words.
+
+## Plan 85: spend
+
+The controller keeps the running total here. Stop and ask the owner before the total passes **$30**. Before each
+`run_reps.sh` call, check the total plus that call's worst case (reps × cap). A task's spend is one `show_reps.py` run
+after its last rep. An unreadable or empty rep file counts at its cap.
+
+Stop: **$30**. Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.py`.
+
+| Item | Spent |
+|---|---|
+| Task 1, three cases, the probe's step-B constants and their leak check (no rep) | $0.00 |
+| Task 2, control arms (RED), before any skill edit | not run |
+| Task 3, the skill text | not run |
+| Task 4, treatment arms for V1, V3 and V4 | not run |
+| Task 5, the stage-plan probe (V5) | not run |
+| Task 6, the guards at the final text, and the summary | not run |
+| **Running total** | **$0.00 of $30** |
+
+Running total after Task 1: $0.00 of $30. Task 1 ran no `claude -p` rep.
