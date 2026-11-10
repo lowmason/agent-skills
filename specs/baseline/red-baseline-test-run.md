@@ -339,7 +339,10 @@ and must relate it to the report's claim.
 - rep3: FAIL, kind "no contrast in the finding that cites the skip". Important 1 grades the skip and quotes
   `2 passed, 1 skipped`, but it sets the count against the brief's required `3 passed`, not against the report.
   Important 3, "Report mismatch with the evidence", names the report's `3 passed` and `57 passed` and says that the
-  log shows a skip, without the test name or the counts. No one finding does both parts. The note: this rep would
+  log shows a skip, without the test name or the counts. No one finding does both parts. The Spec Compliance ❌ item
+  does state both parts, with the quoted counts (the report says "3 passed" and "57 passed", but the log shows
+  `2 passed, 1 skipped` and `56 passed, 1 skipped`), but it sits outside Issues, so the graded-finding reading leaves
+  it out. The note the contrast rule requires: no contrast: would PASS under a run-only reading. This rep would also
   PASS under a combined-findings reading, where the two parts may sit in two graded findings, and it would PASS under a
   reading of the contrast rule that counts any mention of `3 passed`. Both readings are looser than the one-finding
   reading that the rules' wording gives. The rep raised the mismatch as a graded finding, so the failure is a
