@@ -409,7 +409,7 @@ Three blind votes (`panel/T7-r1/`), seed 186, the same `rule.txt` and the contro
 
 - Panel, one-sided Fisher p: NEW-R1 above today 0.926, today above NEW-R1 **0.193**. No regression is shown, and no gain is shown.
 - Hand scores: NEW-R1 above today 0.987, today above NEW-R1 0.057.
-- NEW-R1 is below plan 70's bar (20 of 25), as today's copy is on the panel. Its 13 of 25 equals the 2026-11-05 isolated figure. T7 stays the known gap that the owner ruled on 2026-11-06.
+- NEW-R1 is below plan 70's bar (20 of 25), as today's copy is on the panel. Its 13 of 25 equals the 2026-11-05 isolated figure. The registered outcome sends this miss to the owner, who ruled at the final review (Disposition).
 - The second panel gave today's 25 reps the same verdicts as the first panel: `PFPFF FPPPF PPPPP PPPFF PFPPP`. NEW-R1: `FPPPF FPPFF FPFPP FPPPP FPFFF`.
 - Hand and panel differ on 6 reps, all in the same direction as before: today's reps 2, 4, 6 and 22, and NEW-R1 reps 10 and 21, each naming three tools or fixes in one sentence.
 - Fail forms on NEW-R1 (panel majorities): 1 list, 7 with three meanings of the blanks in one sentence, 3 with three tools, fixes or problems in one sentence, and 1 with three candidate answers to its own question. The round cut the tools-after-the-question form from 10 to 3. It did not cut the meanings-in-one-sentence form (7 on NEW, 7 on NEW-R1).
@@ -434,8 +434,8 @@ The shipped copy is NEW-R1, `9761c88`: the port (Task 2, `a120ef7`) plus the own
 - T10 why first: **met**. 5 of 5 on NEW and on NEW-R1, from 0 of 5 on today's copy.
 - T11 nothing open, a small change: **met** on NEW-R1, 4 of 5. NEW scored 3 of 5, and the owner chose "(b) Accept as known gap (Recommended)". Round 1 lifted it, as registered.
 - T12 a named choice, the why known: **met**. 5 of 5 on NEW, and 4 of 5 on NEW-R1 (`FPPPP`), run at the final review.
-- T13 nothing open, a project: **met**. 5 of 5 on NEW and on NEW-R1, on the owner's approach reading ("Yes, approach: 5 of 5 (Recommended)").
-- T7 first question: on NEW the panel showed a **regression** (today 17 of 25, NEW 8 of 25, p 0.011). The owner chose "(a) One wording round on H6 (Recommended)". On NEW-R1 **no regression is shown** (today 17 of 25, NEW-R1 13 of 25, p 0.193). Neither copy reaches plan 70's bar of 20 of 25 on the panel, so T7 stays the known gap the owner ruled on 2026-11-06.
+- T13 nothing open, a project: **met**. 5 of 5 on NEW and on NEW-R1, on the owner's approach reading ("Yes, approach: 5 of 5 (Recommended)"). Every rep laid out options for one part. No rep named one sensible way for the project and asked the partner to confirm it, so that sentence of H3 is not exercised.
+- T7 first question: on NEW the panel showed a **regression** (today 17 of 25, NEW 8 of 25, p 0.011). The owner chose "(a) One wording round on H6 (Recommended)". On NEW-R1 **no regression is shown** (today 17 of 25, NEW-R1 13 of 25, p 0.193). Neither copy reaches plan 70's bar of 20 of 25 on the panel. At the final review the owner chose "(b) Accept as known gap (Recommended)": "Record that T7 stays below the bar on the shipped copy, as it does on today's copy. Quote this choice in the record, in finding 4 and in one new NOTICE sentence. No spend, no skill change."
 - Guards T1, T2, T3, T4 (5 of 5 broad, 4 of 5 strict), T5, T6v, T8a, T8b, T9, P1 and P2b: **met** on NEW. T5, T8a, T8b, T9 and P1 met again on NEW-R1. T1, T2, T3, T4, T6v and P2b were not re-run, because round 1's two sentences do not reach them. That is a judgment, not a measurement.
 - Guard P3: **missed** on NEW (1 of 5) and on NEW-R1 (3 of 5). Today's copy scored 5 of 5 in the diagnostic. The owner chose "(b) Accept as known gap (Recommended)": "Record in the record, NOTICE and finding 4 that under "just write it up" pressure the new copy sometimes writes the design with its pick inside, so the partner first sees the approaches in the doc. No spend. The approval gate before any build still holds."
 

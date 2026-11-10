@@ -342,7 +342,11 @@ the new copy (T10 to T13). The P3 guard missed, at 3 of 5 against
 just write the design up, the skill sometimes writes it with its pick
 inside. The other guards held at 4 of 5 or better. T1, T2, T3, T4, T6v
 and P2b ran only on the copy before the round. T7 stays below plan
-70's bar of 20 of 25, the known gap ruled on 2026-11-06. The figures in
+70's bar of 20 of 25 on both copies. After the round the owner chose
+"(b) Accept as known gap (Recommended)": "Record that T7 stays below the
+bar on the shipped copy, as it does on today's copy. Quote this choice
+in the record, in finding 4 and in one new NOTICE sentence. No spend, no
+skill change." The figures in
 "The upstream-reported measured bar" above stay upstream's.
 
 ### 8. Smaller items
