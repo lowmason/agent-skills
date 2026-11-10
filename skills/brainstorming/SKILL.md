@@ -133,7 +133,7 @@ the rest.
 **Get them describing.** Until you know why they want it, ask open
 questions, with no example answers attached. Don't set out your guesses
 at the answer ("this could mean A, B or C"), or where each would lead,
-before the question either; that's a menu too. Their own words carry
+before or after the question; that's a menu too. Their own words carry
 intent that your options can't. Once you know why, when a decision has
 choices you can name, sketch each concretely, with what it trades off
 and which you'd pick. When they say "just guess" or "what do you think?",
@@ -183,10 +183,11 @@ use the creative-thinking skill to widen the set. Sketch the two or
 three that remain concretely enough to picture, grounded in what the
 project actually does, with what each trades off. Recommend one and say
 why, then ask which way they want to go; if they've handed you the how,
-say you'll go with your pick instead. When there's genuinely one
-sensible way, say so in that message and explain why the others don't
-fit; the design comes in the next one. This is for how it gets built;
-for what they want, get them describing first.
+say you'll go with your pick instead, and write the design in the next
+message. When there's genuinely one sensible way, say so in that message
+and explain why the others don't fit; the design comes in the next one.
+This is for how it gets built; for what they want, get them describing
+first.
 
 **Show, don't tell.** Whenever seeing would help more than reading,
 sketch it in text: a few lines of what they'd see. Offer the visual
