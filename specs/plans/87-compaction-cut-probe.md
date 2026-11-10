@@ -39,6 +39,7 @@ Two facts were measured on 2026-11-10 while this plan was written:
 - **O3. The scratch path stands in for a real install path.** The probe's skills live under a temporary directory, so its header is longer than `/Users/<name>/.claude/skills/<skill>` for most skills. A PASS therefore covers any install path no longer than the probe's. The finding prints the header length so the margin is visible.
 - **O4. How the register is corrected if the live run diverges (Task 4).** Default: a new `reserve_chars` parameter on the `compaction-window` check. The check's window becomes `tokens × chars_per_token − reserve_chars`. Its value is the smallest multiple of 50 that is at least the measured header's fixed part (the header less its path) plus 120 characters of path. If the run shows the frontmatter is re-attached, a second parameter, `counts_frontmatter = true`, also subtracts each file's own frontmatter length.
 - **O5. Files the corrected window fails (Task 4).** Default: one `[[exception]]` of type `gap` per file, in the form of the retired `writing-skills-late-critical-headings` exception, and one backlog item per file at completion. Plan 88 frees room in finishing-a-development-branch and removes that file's exception. Alternative: split each failing file in this plan.
+- **O6. The probe's running cost.** Registering the probe puts it in the weekly probe set (`probe_days = 7` in `manifest.toml`). Each weekly run is three invocations with a 32,000-character skill and a compaction, about $0.20–0.60. Default: register it, as the item asks ("a live probe beside the others"). Alternative: keep it out of the registry and run it by hand after a Claude Code release that mentions compaction.
 
 ## Global Constraints
 
@@ -63,7 +64,7 @@ Two facts were measured on 2026-11-10 while this plan was written:
 4. Path text in `cut.json`'s tail: the fixture must hold no path once `save_fixtures` redacts it.
 5. A register with no `reserve_chars`: the window is `tokens × chars_per_token`, today's value, so nothing changes until Task 4 adds it.
 
-Each line has its test: 1 and 3 in Task 1 (`measure_cut` and `reattached_after_boundary` cases), 2 in Task 1's assertion cases, 4 in Task 4's fixture check, 5 in Task 3's `register_window` test.
+Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assertion cases, 1 in Task 3 (the `reattached_after_boundary` case), 5 in Task 3's `register_window` test, 4 in Task 4's fixture check.
 
 ## Decisions
 
@@ -251,7 +252,7 @@ The controller runs this task itself: it needs the owner's answers and spends to
 **Files:**
 - Modify: `build/cc_guide/probes.py` (`PROBE_RUNS`), `build/cc_guide/manifest.toml`, `build/cc_guide/test_probes.py` (drop the `monkeypatch.setitem` lines), `build/cc_guide/test_probe_replay.py`, `build/cc_guide/PROBES.md`
 - Create: the two fixtures, written only by `save_fixtures`
-- Only on DIVERGES: `build/check_conformance.py`, `build/test_check_conformance.py`, `build/cc_guide/conformance.toml`
+- Only on DIVERGES: `build/check_conformance.py`, `build/test_check_conformance.py`, `build/cc_guide/conformance.toml`; with `counts_frontmatter`, also `build/cc_guide/probes.py` (`register_window`) and `build/cc_guide/test_probes.py`
 
 **Interfaces:**
 - Consumes: `CUT_PROBE` (Task 3).
@@ -292,7 +293,7 @@ Show the owner the finding and `cut.json`'s numbers, and propose the O4 value of
 
 Write `test_compaction_window_subtracts_reserve_chars` in `build/test_check_conformance.py`, after `test_compaction_window_flags_a_critical_heading_past_the_window`: with `WINDOW_PARAMS` plus `'reserve_chars': 5`, a body of 18 tokens' characters that passes today is flagged as `body is about 18 tokens; compaction re-attaches only the first 20`. If the owner took `counts_frontmatter`, add a second test in which a body that fits passes without its frontmatter and fails with it. Run `uv run python build/run_suites.py build -- test_check_conformance.py` and see them fail.
 
-Make `check_compaction_window` subtract `params.get('reserve_chars', 0)` from the window, and each file's frontmatter length when `params.get('counts_frontmatter')` is true. Use the same window for the late-heading scan. Add the owner's values to the `compaction-window` check in `conformance.toml`, with a comment naming plan 87. Add the exceptions that the owner chose in Step 4. Run the test again (expected: PASS, +1 or +2), then `uv run --with pyyaml python build/check_conformance.py` (expected: exit 0).
+Make `check_compaction_window` subtract `params.get('reserve_chars', 0)` from the window, and each file's frontmatter length when `params.get('counts_frontmatter')` is true. Use the same window for the late-heading scan. If the owner took `counts_frontmatter`, the probe's window must follow the same rule, or the reassessment below fails on the probe's own frontmatter: first write `test_register_window_subtracts_the_probe_frontmatter_when_counted` in `test_probes.py` (on a register copy with `counts_frontmatter = true`, `register_window() == 20000 - reserve_chars - len(cut_frontmatter('prose'))`), see it fail, then make `register_window()` subtract `len(cut_frontmatter('prose'))` when the check has `counts_frontmatter = true`. Add the owner's values to the `compaction-window` check in `conformance.toml`, with a comment naming plan 87. Add the exceptions that the owner chose in Step 4. Run the test again (expected: PASS, +1 or +2), then `uv run --with pyyaml python build/check_conformance.py` (expected: exit 0).
 
 Then reassess the recorded run against the corrected register:
 
@@ -324,6 +325,7 @@ git add build/cc_guide/probes.py build/cc_guide/manifest.toml build/cc_guide/tes
         build/cc_guide/test_probe_replay.py build/cc_guide/probe_streams/compaction-cut.compact.jsonl \
         build/cc_guide/probe_streams/compaction-cut.cut.json build/cc_guide/PROBES.md
 # on DIVERGES, also: build/check_conformance.py build/test_check_conformance.py build/cc_guide/conformance.toml
+# (probes.py and test_probes.py are already listed; they carry the counts_frontmatter change if any)
 git commit -m "$(cat <<'EOF'
 feat(cc-guide): register the compaction-cut probe with its first run
 
@@ -341,7 +343,7 @@ The commit message body says where the cut fell, and, on DIVERGES, the register'
 - [ ] **Step 1: Run the suites and the lints**
 
 Run: `uv run python build/run_suites.py cc_guide build`, `build/run_commit_lints.sh`, `uv run python build/cc_guide/cli.py lint`, `uv run --with pyyaml python build/check_conformance.py` and `uv run python build/run_suites.py --check`.
-Expected: all pass. Against the plan's base: `cc_guide` +20 (12 + 4 + 4), `build` the same plus Task 4's one or two.
+Expected: all pass. Against the plan's base: `cc_guide` +20 (12 + 4 + 4), or +21 with `counts_frontmatter`; `build` the same plus Task 4's one or two.
 
 - [ ] **Step 2: Check the scope fence**
 
