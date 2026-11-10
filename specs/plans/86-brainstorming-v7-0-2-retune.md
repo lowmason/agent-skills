@@ -62,10 +62,13 @@ The session that wrote this plan began from a task brief (2026-11-10). Its decis
 - **D1** (owner, planning session, 2026-11-10): "Adopt (Recommended)": "Full port of #2644, with plan 70's divergences held and the two local choices in the next questions. I write a plan with micro-tests and no spec." Applied in: Tasks 1 to 4.
 - **D2** (owner, planning session, 2026-11-10): "Small change only (Recommended)": "Approval in chat covers the approach and the design, and the change is built in this session. A project still goes through the approaches, a committed spec and its approval." Applied in: Task 2 (H1, H3, H14).
 - **D3** (owner, planning session, 2026-11-10): "Keep, before the why (Recommended)": "Move it into "Get them describing" and limit it to the questions before the why is known. After that, upstream's options with a pick apply." Applied in: Task 2 (H5, H6).
+- **D4 to D11** (owner, plan review, 2026-11-10): "Approve as written (Recommended)". The eight defaults below are approved as written, D4 for default 1 through D11 for default 8. The owner saw the size move to +1,360 characters (body 19,480) and default 4's same-run T7 control before approving. Applied in: where each default says.
+- **D12** (owner, plan review, 2026-11-10): "Push and open a PR (Recommended)": "Push the branch and open a PR against main with the plan alone. After you merge it, an execution session can start from main." Applied in: the planning session's handoff.
+- **D13** (owner, plan review, 2026-11-10): "Inline, fresh session (Recommended)": "executing-plans in a new session. One reader scores RED and GREEN, the record is shared across tasks, and the plan has several owner gates." Applied in: the execution handoff.
 
-## Defaults for plan review
+## Defaults (approved at plan review, D4 to D11)
 
-The planner set these. The owner approves or changes them at plan review, and each approved default is then logged under Decisions.
+The planner set these, and the owner approved them as written at plan review.
 
 1. **A project with nothing open** (D2's "A project still goes through the approaches"): the first message ends with the approach and why the others don't fit, and asks the partner to confirm it. The ordered list says step 1 happens in that message for a project. Applied in: H1, H3. Tested by T13.
 2. **The "write the doc" Red Flags row** says "(or, when nothing was open from the start, in your first message)". Upstream's row ends "in your first message's short design". The shorter form covers the project path too. Applied in: H14.
