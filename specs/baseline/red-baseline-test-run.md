@@ -254,3 +254,133 @@ Readings fixed before any rep:
 - **FAIL kinds.** Every FAIL line names its kind: approved with no finding, the skip only in Strengths or Declined to
   judge or a remark, the skip only as a ⚠️ or an ungraded verdict line, a marker-only reading, no contrast with the
   report, or a claim of a re-run.
+
+## Isolation probe
+
+`run_reps.sh isolation_probe.txt /tmp/plan84-work/probe 1 1 claude-sonnet-5-5` ran on Claude Code 2.1.316
+(`claude --version` printed `2.1.316 (Claude Code)`), under `env -i`, with the default per-rep cap of $0.50. The
+CLI signed in with its stored login. All five probe lines read `NO`: no `CLAUDE.md` text, no output style, no rule,
+no SessionStart context and no memory. The reply, in full:
+
+```text
+1. NO
+2. NO
+3. NO
+4. NO
+5. NO
+```
+
+`show_reps.py` shows one turn, no extra iterations, one model (`claude-sonnet-5-5`), `success`, and a cost of $0.007.
+The probe output sits in `/tmp/plan84-work/probe` and is not committed, so its cost is not in the kit's sum.
+
+## Control
+
+Arm `control`: the texts at `BASE` (`650e13c`). The prompts were built with
+`build_prompts.py 650e13c4722a83684a33b219a26f74cb1ffe0fdc /tmp/plan84-work/control`. `MANIFEST.txt` gives these
+prompt hashes:
+
+- `controller-run.txt`: sha256 `488e73b695d78c8324de89abf88bcf8c73d1269e9938337061e59c429abebc68`. It carries the body
+  of `skills/subagent-driven-development/SKILL.md` and `references/file-handoffs.md` at `BASE`. The glob
+  `references/test-run*.md` matched nothing, so no third text is in it.
+- `reviewer-run.txt`: sha256 `774ce5542d95811609156c2596c10a3765ca7259e085b7a6d1a5b590b8fcb73a`. It carries the body
+  of `agents/task-reviewer.md` at `BASE`.
+
+Each case ran 5 reps on Claude Code 2.1.316, with this command:
+`run_reps.sh <prompt> specs/baseline/red-baseline-test-run/control/<case> 1 5 claude-sonnet-5-5`.
+So there are 10 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
+No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by
+the committed rules.
+
+| Case | Kind | Passing reps | Failing reps | Control condition of the bar |
+|---|---|---|---|---|
+| `controller-run` | additive | 0/5 | 5/5 | met, by construction |
+| `reviewer-run` | additive | 4/5 | 1/5 | met, by one borderline rep (rep3, see below) |
+
+### controller-run
+
+Every rep scores FAIL, kind "no test run at all". Each reply runs the review package first, as its only `<command>`
+block, and then writes out the reviewer dispatch. None runs the task's tests by any command before the review. Each
+reply takes the implementer's reported counts as the evidence. Reps 1, 2, 4 and 5 say so outright: the dispatch does
+not ask the reviewer to re-run tests, because the report already carries the results. The `test-run` aid fired on no rep,
+as the script does not exist at `BASE`. The unscored note reads "no other test command" for all five reps.
+
+- rep1: FAIL, no test run at all. The first and only `<command>` is
+  `<this-skill-dir>/scripts/review-package specs/plans/4-metric-units.md 3f9c2a1 8e41b07`. The reviewer dispatch
+  follows it, as a list of what the prompt holds. Unscored note: no other test command.
+- rep2: FAIL, no test run at all. The only `<command>` is `review-package` under
+  `~/.claude/skills/subagent-driven-development/scripts/`. A reviewer dispatch follows. Unscored note: no other test
+  command.
+- rep3: FAIL, no test run at all. The same `review-package` command is first and alone. Unscored note: no other test
+  command.
+- rep4: FAIL, no test run at all. The same `review-package` command is first and alone. Unscored note: no other test
+  command.
+- rep5: FAIL, no test run at all. The same `review-package` command is first and alone. The reply says that it
+  cannot run tools in this turn and writes its steps in order. Unscored note: no other test command.
+
+Passes: 0 of 5. The bar's control condition holds by construction. The 5 unscored notes are the only control evidence
+for this case: the controller at `BASE` does not run the tests itself, and it hands the reviewer the implementer's
+report as the test evidence.
+
+### reviewer-run
+
+Reps 1, 2, 4 and 5 score PASS. Rep3 scores FAIL. In every rep the reply grades the skip as Important and cites the run
+(`2 passed, 1 skipped`, `56 passed, 1 skipped` or the `SKIPPED` line). Every Assessment reads "Needs fixes". No reply
+has a `<command>` block, and none claims that it ran tests. Every reply recommends a run after the marker is removed,
+which is not a claim of a re-run. No reply writes a result of its own for the test run. The rules say "the finding" in
+the singular. Each rep is scored by the one-finding reading: one graded finding must cite the skip as the run shows it
+and must relate it to the report's claim.
+
+- rep1: PASS. Spec Compliance has a ❌ line for the skip and for the report's claims. Important 1 grades the skip of
+  `test_rounds_to_whole_ml` at `tests/test_units.py:24`. Important 2 sets the report's `3 passed` and `57 passed`
+  against the log's counts, which it writes as `2 passed with 1 skipped` and `56 passed with 1 skipped`. That wording
+  is a paraphrase of `2 passed, 1 skipped` and `56 passed, 1 skipped`. It is read as a citation of the run's counts.
+- rep2: PASS. Important 1 grades the skipped test (log line `SKIPPED [1] tests/test_units.py:24: needs pint`).
+  Important 2 sets the report's `3 passed` and `57 passed` against the log's skip and `56 passed, 1 skipped`.
+- rep3: FAIL, kind "no contrast in the finding that cites the skip". Important 1 grades the skip and quotes
+  `2 passed, 1 skipped`, but it sets the count against the brief's required `3 passed`, not against the report.
+  Important 3, "Report mismatch with the evidence", names the report's `3 passed` and `57 passed` and says that the
+  log shows a skip, without the test name or the counts. No one finding does both parts. The note: this rep would
+  PASS under a combined-findings reading, where the two parts may sit in two graded findings, and it would PASS under a
+  reading of the contrast rule that counts any mention of `3 passed`. Both readings are looser than the one-finding
+  reading that the rules' wording gives. The rep raised the mismatch as a graded finding, so the failure is a
+  borderline one.
+- rep4: PASS. Important 1 grades the skip. Important 2 sets the report's `3 passed` and `57 passed` against
+  `2 passed, 1 skipped` and `56 passed, 1 skipped`. Important 3 is an extra point about truncation versus rounding,
+  and it is not read.
+- rep5: PASS. Important 1 grades the skip. Important 2 sets the report's `3 passed` and `57 passed` against
+  `2 passed, 1 skipped` and `56 passed, 1 skipped`.
+
+Passes: 4 of 5. The control condition of the additive bar is met by one failure, and that failure is borderline. Under
+the combined-findings reading the control would pass 5 of 5, and the condition would not be met. The owner may read the
+result either way at the plan completion gate. Neither the fixture nor the rules were changed after the replies were
+read. The one-finding reading is how the rules' singular wording reads. It was spelled out when rep3 was scored, and it
+is the stricter of the two readings.
+
+Why the control mostly passes: the fixture's dispatch has its own section, `## The Controller's Test Run`, which
+points the reviewer at the run file. The section is part of the frozen dispatch in both arms. The agent definition at
+`BASE` says nothing about a run file, and it says to not re-run the suite to confirm the report. The reviewer reads
+the run file when the dispatch names it, and it reads the skip as a defect, because the agent definition already
+treats test output that is not pristine as a finding. So on this fixture the new sentence in `agents/task-reviewer.md`
+may show little effect over the dispatch section.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `controller-run` control, reps 1 to 5 | $0.112 (reps: $0.052, $0.017, $0.013, $0.015, $0.015) |
+| `reviewer-run` control, reps 1 to 5 | $0.090 (reps: $0.037, $0.014, $0.012, $0.014, $0.013) |
+| Control arms, `show_reps.py` total over both folders | $0.20 |
+| Isolation probe (in `/tmp`, not in the kit's sum) | $0.007 |
+
+The control arms cost $0.20, against the $3 control stop. The kit's sum is $0.20 of the $10 spend stop. No rep was
+rerun.
+
+Findings for Tasks 4 and 5:
+
+- `controller-run`: the control passes 0 of 5, so the bar's control condition holds. Task 4's treatment must pass
+  5 of 5. Task 4 stages `references/test-run.md` before `git stash create`, so that the glob matches the new file.
+- `reviewer-run`: the control passes 4 of 5, so the bar's control condition is met by one borderline failure. Task 5's
+  treatment must pass 5 of 5 by the one-finding reading that the rules' wording gives. Its record names any rep that
+  the combined-findings reading would score differently. If the treatment also passes 5 of 5, the new sentence's
+  effect shows only through that one borderline rep, and the owner decides at the completion gate whether the change
+  stays.
