@@ -4534,7 +4534,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
 - [ ] Widening `build/check_frontmatter.py` to `.claude/skills` and `.claude/agents` (drift spec, Out
       of scope). Size: design. Revisit if: a project-local skill or agent ships a frontmatter defect
       the lint would have caught.
-- [ ] Hold, owner-only: remove plan 58's scratch files once the branch has merged (plan completion
+- [x] Hold, owner-only: remove plan 58's scratch files once the branch has merged (plan completion
       notes). They sit outside the repo: `~/.cache/agent-skills/scratch/plan58-bin/` (the held
       `claude` 2.1.304, `broken-claude`, `startup_check.py`, `startup.log`; keep the held binary if
       you want to re-record the fixtures later), `~/.cache/agent-skills/scratch/plan58-spike/`, the
@@ -4544,6 +4544,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `~/.claude/projects/` whose folder names start `-private-tmp-plan58-spike-` or hold
       `cc-guide-probe-agent-model-pins-`. Size: quick-fix. Done when: they are removed, or the owner
       decides to keep them.
+      → done 2026-11-10 (owner): on the owner's word, all 16 paths (the seven `plan58-*` scratch folders, held binary included, the four `20261020T190242-*` probe folders and the five persisted session folders) went to the macOS Trash with `/usr/bin/trash`; none is left in place.
 
 ## cc-guide-files-2026-10-21 (no plan; /cc-guide files, lowmason/agent-skills#94 and branch claude/cc-guide-hooks-files-2.1.306) — 2026-10-21
 
