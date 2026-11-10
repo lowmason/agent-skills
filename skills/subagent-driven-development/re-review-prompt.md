@@ -29,7 +29,11 @@ that the fixes introduced nothing new.
     its appended fix report, is at <REPORT_FILE>.
     The controller's run of the task's tests after the fixes is at
     <RUN_FILE>. A test result in the fix report that this run does not
-    show is a new Important finding.
+    show is a new Important finding. A run at a commit other than the
+    amended diff's head, or on a dirty working tree, is not evidence for
+    these fixes: report it as a gap for the controller. When <RUN_FILE>
+    is `none: <why>`, no run exists, and the fix report is the only test
+    evidence.
 
     For EACH numbered finding, return one verdict:
       ADDRESSED     — the diff resolves it; say which hunk does

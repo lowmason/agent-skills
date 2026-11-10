@@ -526,3 +526,92 @@ Strengths: it says that the run was at head `8e41b07` on a clean tree.
 | Kit total, `show_reps.py` over the four folders | $0.41 |
 
 The kit's sum is $0.41 of the $10 spend stop. No rep was rerun.
+
+## The controller-run treatment, second arm (final review's wording round)
+
+The final whole-branch review of plan 84 found five gaps in two skill texts. The fix changed
+`skills/subagent-driven-development/references/test-run.md`, which the `controller-run` case reads. So this section
+runs the case again on the new text. The case, its fixture and its reading rule did not change. The other file of the
+fix, `skills/subagent-driven-development/re-review-prompt.md`, is not a text of this case.
+
+The change, one line per gap:
+
+- A command list in one `sh -c` call left the shell in a directory that an earlier `cd` entered, so a later
+  root-relative command failed. The text now puts each command in its own parentheses: `(<cmd1>) && (<cmd2>)`.
+- The controller could rerun a passing operational `Run:` step, such as a `git restore`. The text now limits the list
+  to commands that run tests or checks, and it says never to rerun a command that edits files, rewrites git history or
+  restores state.
+- Nothing said what to do when the run file's header shows another commit or a dirty tree. A new bullet, "Check the
+  run", tells the controller to read the `head:` and `tree:` lines, to run `git status --porcelain`, to send a fix
+  round for the task's own leftovers, to remove stray artifacts and then to run the tests again.
+- Nothing said what to do when the script prints no `run:` line, for a refusal or for a run that the tool kills at its
+  timeout. A new bullet, "No `run:` line", tells the controller to run it again with a longer timeout, and to treat a
+  run that still does not finish as a failing run.
+- The scoped re-review prompt set the full-review contract aside, so the reviewer's rule for a `none: <why>` run file
+  and its rule for a run at another commit or on a dirty tree did not reach it. `re-review-prompt.md` now carries both
+  rules.
+
+The arm: `git add` staged the two edited files, then `git stash create` printed
+`6b1beee624bd30dbc68174ef6ab2b7f3b59d5393`. It added no stash entry (`git stash list` printed nothing). The prompt was
+built with
+`build_prompts.py 6b1beee624bd30dbc68174ef6ab2b7f3b59d5393 /tmp/plan84-work/treatment-final controller-run`.
+`MANIFEST.txt` gives sha256 `5061a640f0d77a93caa50eed17ac3549231197a011265ea87e00063c100f3a1e` and the same three texts
+as the first arm: `SKILL.md`, the glob `references/test-run*.md` and `references/file-handoffs.md`. Before any rep ran,
+a grep showed that the prompt holds `(<cmd1>) && (<cmd2>)`, the bullet "No `run:` line", the bullet "Check the run" and
+the sentence "Never rerun a command that edits files", once each, and that it does not hold the old form
+`sh -c '<cmd1> && <cmd2>'`.
+
+The five reps ran with
+`run_reps.sh /tmp/plan84-work/treatment-final/controller-run.txt specs/baseline/red-baseline-test-run/treatment/controller-run-2 1 5 claude-sonnet-5-5`
+on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`. No
+rep wrote an error file, so no rep was rerun. Every reply was read in full and scored by hand by the rule committed
+above. The rule and the readings did not change after the replies were read.
+
+In every reply the first `<command>` block calls a path that ends in `scripts/test-run` for task 2. That block comes
+before the first `review-package` command and before any reviewer dispatch. Every call runs the same two commands
+inside one `sh -c`: the brief's passing step (`uv run pytest tests/test_units.py -q -rs`) and the project's
+`make test`. Every reply leaves out the brief's step that is expected to fail. No reply needs a "plain fence" or "bare
+name" note. The `review-package` aid fired on every rep, and it is a later step in each. Unscored note, for every rep:
+no other test command. The only commands before the review package are the `test-run` call and, in reps 3 and 4, a
+`git status --porcelain`, which is not a test command.
+
+Unscored note on the new wording: whether the reply wraps each command in its own parentheses. All five replies do:
+`sh -c '(uv run pytest tests/test_units.py -q -rs) && (make test)'`. Rep5 adds a `cd /work/recipes &&` in front of
+the `test-run` call, outside the `sh -c`.
+
+- rep1: PASS. The first `<command>` is the `test-run` call, with the plan path, `2` and the parenthesised pair. A
+  numbered list of what the controller does with the run follows. Its first step is the head and tree check. The
+  `review-package` command is a second `<command>` block, inside step 3 of that list. Parentheses: yes.
+- rep2: PASS. The first `<command>` is the `test-run` call. A seven-step list follows. Its steps cover the new "No
+  `run:` line" case, a failing run, the head and tree check and a clean pass. The `review-package` command is a second
+  block, inside step 4 of that list. Parentheses: yes.
+- rep3: PASS. The first `<command>` is the `test-run` call. A second `<command>` holds `git status --porcelain`, before
+  the reply knows the run's result. The `review-package` command is a third block, after it. Parentheses: yes.
+- rep4: PASS. The first `<command>` is the `test-run` call, written inline. A second `<command>` holds
+  `git status --porcelain`. The `review-package` command is a third block. A line before the second block says what the
+  controller would read in the run file (exit status 0, `3 passed`, a clean tree). It is a plan for a read, not a
+  written result, so it is not an invented output. Parentheses: yes.
+- rep5: PASS. The first `<command>` is the `test-run` call, with `cd /work/recipes &&` in front. The `review-package`
+  command is a block inside a numbered step, after the run. Parentheses: yes.
+
+Passes: 5 of 5. The bar for `controller-run` is `treatment 5/5; control fails at least 1 of 5`. The control passed 0 of
+5 (see the Control section), and this second arm passes 5 of 5, so the bar's treatment condition holds on the text
+after the fix. No further wording round was needed.
+
+What the reps show beyond the verdict: the first arm's text gave the form `sh -c '<cmd1> && <cmd2>'`, and all five of
+its replies used `sh -c 'uv run pytest ... && make test'`. In this arm every reply uses the parenthesised form, so
+the new wording changes what the controller writes. All five replies also restate the new "Check the run" step
+(the `head:` and `tree:` lines and `git status --porcelain`). Rep2 also restates the "No `run:` line" step: it runs
+the script again with a longer timeout, and a run that still does not finish becomes a fix round. Rep5 folds that step
+into the failing-run branch ("Non-zero exit or no `run:` line" is a fix round) and leaves out the rerun with a longer
+timeout. Reps 1, 3 and 4 do not mention the step. The micro-test does not test that a controller acts on a stale `head:`, a dirty tree or a killed run. The fixture holds no
+run output, so those bullets are read by what the replies say they will do, not by what they do.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `controller-run` treatment, second arm, reps 1 to 5 | $0.116 (reps: $0.055, $0.015, $0.015, $0.016, $0.015) |
+| Kit total, over every `rep<N>.json` in this record's folders | $0.53 |
+
+The kit's sum is $0.53 of the $10 spend stop. No rep was rerun.
