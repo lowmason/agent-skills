@@ -801,6 +801,8 @@ Changes from upstream:
     82): it calls subagent-driven-development's sdd-repo --with-commit
     before it writes a brief, and takes BASE with rev-parse --verify.
     task-done keeps its own BASE check.
+    task-done runs its command through subagent-driven-development's
+    test-run (plan 84), and its ledger line is unchanged.
   - executing-plans was rebuilt from upstream v7.0.1, read at 2ce8aa1
     (#2318, with #2563's cut) (plan 75). It keeps these local parts. Its
     routing is by tight coupling, not by cost. Its workspace is under
@@ -935,6 +937,18 @@ Changes from upstream:
     case for the first question also stays below its bar after that
     round, as it does on the copy before the port, and is recorded as a
     known gap.
+  - Plan 84 (2026-11-10) adds subagent-driven-development/scripts/test-run
+    for finding 21 of specs/superpowers-drift-spec-v7-0-2.md. It adapts
+    executing-plans' task-done, which adapts upstream's scripts (MIT): it
+    runs one command and keeps its exit status and full output in the
+    plan's workspace, one file for each run. Its header lines, the
+    controller's run before every task review, the failing-run fix round
+    and the task reviewer's reading of the run are local. The task
+    reviewer's Tests section, in agents/task-reviewer.md and
+    task-reviewer-prompt.md, keeps upstream's rule not to re-run the
+    suite. Its new text, and the new sentences in the implementer
+    prompt's After Review Findings paragraph, are local and take no
+    upstream text.
 
     brainstorming/
     dispatching-parallel-agents/
