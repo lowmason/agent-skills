@@ -892,6 +892,46 @@ Changes from upstream:
     verification-before-completion's RUN step points a test claim at the
     same rule. Those two changes are local, and no upstream text was
     taken.
+  - Plan 86 (2026-11-10) took upstream v7.0.2's brainstorming retune into
+    brainstorming/SKILL.md, read at 22f0b46. It is pull request #2644
+    (e8cc5c9), which answers issue #2530. The skill asks a question only
+    when the answer would change what gets built and nothing already
+    answers it. Otherwise it states its call as a proposal. Process
+    steps are its own calls, said aloud. When the partner has not said
+    why, that is the first question, open, with nothing to pick from.
+    Once the why is known, a decision with choices it can name gets
+    each choice sketched, with what it trades off and a recommendation.
+    It reads from how the partner talks which how-it-gets-made choices
+    they want to make. It looks further without asking and says what it
+    found. It sketches in text before it offers the visual companion.
+    Outside a software repo it picks a place for the design and says
+    where. It never reopens what the partner has decided. When nothing
+    is open, its first message can carry the design. Two parts diverge
+    deliberately. That first-message design is for a small change only:
+    the partner approves it in chat, and it is built in the same
+    session. Upstream writes a short design doc and goes on to a plan.
+    For a project, the first message ends with the approach and asks
+    the partner to confirm it, and the committed spec follows. And plan
+    70's sentence against guesses at the answer set out before a
+    question stays, in Get them describing, for the questions asked
+    before the why is known. Three of plan 70's changes give way to
+    upstream's text: the split between open questions and options for
+    known alternatives, its wording in the "Options steer" Red Flags
+    row, and its list of what open questions cover. Plan 70's other
+    divergences and the later local additions hold. The micro-test
+    scenarios are this repository's own
+    (specs/baseline/red-baseline-brainstorming-v7-0-2.md). No text comes
+    from prime-radiant-inc/superpowers-evals, which carries no license.
+    Upstream's measured figures are cited as upstream's, not reproduced.
+    After the micro-tests, the owner approved one local wording round
+    (2026-11-10). Plan 70's sentence in Get them describing now counts
+    guesses at the answer, or where each would lead, as a menu before
+    or after the question. When the partner has handed over the how,
+    the skill states its pick and writes the design in the next message.
+    That last clause is local, added to upstream's sentence. The P3
+    pressure case, where the partner says "just write the design up",
+    missed its bar after that round and is recorded as a known gap. The
+    skill sometimes writes the design with its pick inside it.
 
     brainstorming/
     dispatching-parallel-agents/
