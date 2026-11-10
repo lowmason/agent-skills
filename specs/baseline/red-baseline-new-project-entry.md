@@ -6807,3 +6807,366 @@ folders after the last rep. It shows 45 reps, none VOID, and prints `total cost 
 unreadable, so none counts at its cap. There was no VOID rerun. The sum of each rep's `total_cost_usd` is $4.3833, the
 sum of the table above. Running total: $10.0665 of $30. The largest pre-call sum (running total plus $5.00) was $14.7896,
 before the last call.
+
+**Scores.** Each rep was scored clause by clause, by hand, from its full reply. The scores use the case's committed rule
+and reading notes, every reading in plan 78's Control section and plan 79's sections, Open for plan review in plan 85
+and the readings below. A clause count gives the number of the 5 scored reps that pass it. Each case section gives the
+comparison arm's counts beside its own. A script checked that each quote from a rep in these sections is in that rep's
+`result` text.
+
+**Readings applied (dr-offer-scaffold, dr-tracks, dr-known-progression-79, dr-research-depth and dr-resume-rerank).**
+Each guard keeps its reading of record (plan 85, Open for plan review item 3). Other readings go under "Other readings"
+and never count toward a bar.
+
+- *dr-offer-scaffold.* Plan 78's Stage list reading, with its carve-out for work areas that the reply does not call
+  stages, and its No outcome works end to end reading. The owner's core-and-later ruling of 2026-11-07, as plan 79 Task
+  4 applied it. The spec's phases (plan 85 Task 4): a reply that cites the spec's own phase labels does not set out a
+  stage list.
+- *dr-tracks.* Plan 79's item 4 reading (an order of outcomes inside a known-progression track, not called stages, is
+  not a stage list; Plan 79: re-runs) and the Stage word test. The owner's core-and-later ruling and plan 78's
+  Dependency fact reading also apply. Plan 85's item 1 says that R2's line in its exact form is never a stage list. That
+  reaches clause C here, because every rep carries the line. Echo and item 4's other reading are reported under Other
+  readings.
+- *dr-known-progression-79.* Provenance on bytes and First stage per outcome (plan 79 Task 4, both new and not
+  confirmed there). Plan 78's By reference reading, which reads Exit fields only. A row count is not a manifest (plan
+  78 Task 7 rep5 and fix round 1 rep2).
+- *dr-research-depth.* The committed rule and reading notes. Plan 78 fix round 1 passed the run's times recorded
+  without the word "measured" (its rep5); no rep here needs that call.
+- *dr-resume-rerank.* Plan 79's one-question reading: one question that gives its default and then its alternatives
+  is one question (plan 79 Task 4 rep2, plan 78 fix round 1 rep4). The One closing request reading of plan 85's
+  control section also applies, by extension and not confirmed for this case. That section says that "Each new
+  reading touches only one case". The text at `T-final` brings this case into it: §5's Ask now says that a later
+  quality that this resume finds for the first time, bound for a research track's Ranked list, "joins the same
+  question in §4's form". So a re-rank reply can carry a quality request into its one question, as dr-quality-suggest's
+  approval does. The test: clause C passes when the closing approve-or-amend request comes after any extra ask and
+  takes it in, by naming it or by asking for one answer. It fails when an extra ask stands apart from the approval.
+- *Date.* No clause of these five cases scores a date. Two reps date a `Source:` line with the run day, 2026-11-10.
+- *Plan 79's own readings* (Review by table, Another name, Carried citation, Pending bullet, Item by description and
+  Stage 2's live feed) belong to plan 79's route and resume cases. They do not apply to these five.
+
+### Plan 85 guard: dr-offer-scaffold
+
+Additive in `cases.py`, read as a guard here. Texts at `2e91b05` (`T-final`). Folder `treatment/dr-offer-scaffold-p85/`.
+Scored reps: rep1 to rep5. No VOID rep. Spend: $0.4574.
+
+The partner asks to derive the roadmap for the sec-edgar spec, and every requirement is missing. Clause A (bar): no
+stage partition, stage list or roadmap text. Clause B (bar): the reply says that no outcome works end to end yet.
+Clause C (bar): it asks whether to stage from an outcome list that the partner ranks, in place of a partition, and
+waits.
+
+| Rep | A (bar) | B (bar) | C (bar) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass (borderline) | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (Task 7 5 of 5). Clause B: 5 of 5 (Task 7 5 of 5). Clause C: 5 of 5 (Task 7 5 of 5). PASS: 5 of 5.
+
+Compared with plan 78's "Task 7: dr-offer-scaffold" (`f824492`): PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. No rep writes roadmap text or sets out a stage list. Each says that stages come only after the ranking. Rep1:
+  "You would then rank them, and stages would come only after your ranking." Rep5: "Only after that would I propose any
+  partition."
+  - Rep3 passes, borderline (work areas). Its acceptance question puts one work area after a decision and calls nothing
+    a stage: "If not, that choice is still open, and anything Azure-specific should be sequenced after it." Task 7 rep4
+    passed the same kind of text.
+  - Rep5 asks "Should the roadmap cover them, or end at the Phase 1 deployment checkpoint?" "Phase 1" is the spec's own
+    §7 label, so The spec's phases passes it.
+- B. Every rep makes an absolute statement. Rep2: "**Nothing is built.** No row is implemented, so no outcome of this
+  system works end to end on real data." Rep4: "So nothing works end to end on real data."
+- C. Every rep offers the New-Project Entry beside a partition of the gap table and waits. Rep1: "**Do you want the
+  New-Project Entry: yes or no?**" Rep4: "Shall I do that? If you say no, I'll partition the gap table as it stands."
+  No stage, partition or roadmap text follows the question.
+- The new text. No rep carries the qualities line or names a later quality. The offer comes before the one message, so
+  the qualities check of §7 does not reach this decision.
+
+Other readings: if rep3's sentence counts as a stage list, rep3 fails A. PASS is then 4 of 5, and the guard is still
+met.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+### Plan 85 guard: dr-tracks
+
+Additive in `cases.py`, read as a guard here. Texts at `2e91b05`. Folder `treatment/dr-tracks-p85/`. Scored reps: rep1
+to rep5. No VOID rep. Spend: $0.6968.
+
+The partner says "Go ahead and stage it." for the CES revisions brief. Clause A (bar): the collection-interval outcome
+and the budget and staffing outcome sit in different tracks, and the reply says why. Clause B (conformance): no ranking
+is given as settled, and the reply asks the partner to rank. Clause C (conformance): one message with no roadmap text
+and no stage list. Clause D (conformance): a cost note for model fitting, with a basis or a statement that a run
+measures it.
+
+| Rep | A (bar) | B (conformance) | C (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass (borderline) | pass | yes |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (run a 5 of 5). Clause B: 5 of 5 (run a 5 of 5). Clause C: 5 of 5 (run a 3 of 5). Clause D: 5 of 5 (run
+a 5 of 5). PASS: 5 of 5 (run a 3 of 5).
+
+Compared with plan 79's "Plan 79 Task 4: dr-tracks, run a" (`5f52dfc`): PASS 3 of 5. The guard needs at least 3 − 1 =
+2.
+
+- A. Every rep puts the collection-interval outcome in one track and the budget and staffing outcome in another, and
+  gives a reason. Rep4: "C and D both explain revision scale, but either answer stands without the other." Rep3: "It is
+  a within-year question, unrelated to slow-moving capacity."
+- B. Every rep asks the partner to rank, and no rep states an order as decided. Reps 1, 4 and 5 give a dependency fact
+  for Track A, for example rep4: "Tracks B–D read A's vintage data." Rep2 proposes an order inside Track A and
+  asks the partner to correct it (C, below).
+- C. No rep writes roadmap text or sets out a stage list.
+  - Rep2 passes, borderline (item 4). It orders the outcomes of its known-progression track without calling them
+    stages: "Known progression: total nonfarm first, then supersectors." Task 7 rep4 and run a rep3 passed the same
+    text.
+  - Rep3 repeats the kind's definition with "steps" and no order: "provided you can name its steps end to end." The
+    Stage word test does not reach it.
+  - Every other "stage" in the five replies names one of the brief's four revision stages, not a stage of work. Rep4:
+    "The stages are 1st→2nd, 2nd→3rd, 3rd→benchmark (preliminary and final), and post-benchmark/wedge-back."
+  - No rep sends later qualities to later stages, so the core-and-later ruling reaches no rep. Each rep carries R2's
+    line in its exact form (line notes, below), which is never a stage list.
+- D. Every rep says that a run measures the fit cost. Rep2: "MCMC time can't be estimated without a run." Rep5: "Fit
+  time can only be measured by running it."
+- Name (not scored). Reps 1, 3, 4 and 5 propose `ces-revisions`. Rep2 proposes `ces-revision-scale`.
+
+Line notes (not scored, V1, as Task 4 records them for dr-offer-yes). Every rep carries R2's line, right after its
+outcome table, and every line keeps its form. Plan 79's run a carried no line in this form. Its rep5 sent the later
+qualities "into later stages, not into any core stage", which failed C.
+
+| Rep | R2's line | Form kept | The line |
+|---|---|---|---|
+| 1 | yes | yes | `Qualities to place when the roadmap is written: manifests, traceability, full validation suites, scheduled monthly refresh.` |
+| 2 | yes | yes | `Qualities to place when the roadmap is written: manifests, traceability, full validation suites, scheduling.` |
+| 3 | yes | yes | `Qualities to place when the roadmap is written: manifests, traceability, point-in-time awareness, full validation suites.` |
+| 4 | yes | yes | `Qualities to place when the roadmap is written: point-in-time (vintage) awareness, manifests, traceability.` |
+| 5 | yes | yes | `Qualities to place when the roadmap is written: manifests, traceability, full validation suites, scheduling.` |
+
+Each line gives names only. None gives a reason, and none holds "stage", "core", "first" or "later".
+
+The open plan 79 item (not scored). The item "dr-tracks and dr-known-progression-79 miss conformance clause C at the
+final skill text" needs two independent dr-tracks runs that each pass 4 of 5. In this run, clause C is 5 of 5 and PASS
+is 5 of 5. By item 4's other reading, C and PASS are 4 of 5. So the run reaches 4 of 5 on every reading named here. One
+run cannot close the item: its `Done when:` asks for two independent dr-tracks runs and a dr-known-progression-79 run.
+
+Other readings:
+
+- Item 4's other reading (any order inside a known-progression track is a stage list). Rep2 fails C. C and PASS are
+  then 4 of 5, and the guard is still met.
+- Echo, bare or attached. No rep uses "stages" for its own order, so the Stage word test fails no rep, and neither form
+  of Echo changes a count.
+- Core and later text as Task 7 rep1 read it. No rep has such text, so no count changes.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 2).
+
+### Plan 85 guard: dr-known-progression-79
+
+Additive in `cases.py`, read as a guard here. Texts at `2e91b05`. Rule `DR_KNOWN_PROGRESSION_PASS_79`. Folder
+`treatment/dr-known-progression-79-p85/`. Scored reps: rep1 to rep5. No VOID rep. Spend: $0.8562.
+
+The reply writes the full roadmap file for SEC filing ingestion, and the one-line message. Clause B (bar): the first
+stage's Exit requires no manifest, no traceability and no point-in-time awareness. Clause A (conformance): stages cover
+the index files, the submissions and 10-K and 8-K handling, in order. Clause C (conformance): a manifest and
+traceability each appear in a named later stage. Clause D (conformance): every stage entry has a field for what it
+leaves out and where that goes. Clause E (recorded): the first stage's Exit does not require atomic publication of
+complete generations.
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass (borderline) | pass | pass | pass | pass | yes |
+| 4 | pass | pass (borderline) | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Clause B: 5 of 5 (plan 79 5 of 5). Clause A: 5 of 5 (plan 79 5 of 5). Clause C: 5 of 5, which is manifest 5 of 5 and
+traceability 5 of 5 (plan 79 3 of 5: manifest 4 of 5, traceability 4 of 5). Clause D: 5 of 5 (plan 79 5 of 5). Clause E
+(recorded): 5 of 5 (plan 79 5 of 5). PASS: 5 of 5 (plan 79 3 of 5).
+
+Compared with plan 79's "Plan 79 Task 4: dr-known-progression-79" (`5f52dfc`): PASS 3 of 5. The guard needs at least
+3 − 1 = 2.
+
+- B. No first-stage Exit names a manifest, a per-row provenance record, as-of awareness or a spec section. Reps 1 and 4
+  ask for a row count, for example rep4: "with row counts per quarter reported". A count is not a manifest. Rep3 passes,
+  borderline. Its Exit asks for a count and a list of failures: "with row counts per quarter and every unparsed file
+  listed". Every Exit also has the findings file record the real run's cost, which the skill text asks for.
+- A. Every rep commits the index work, then the submissions, then 10-K and 8-K handling. Rep4 passes, borderline, by
+  the First stage per outcome reading. Its Stage 5 runs the full-volume collection for O1 and O2 after its 10-K and 8-K
+  stage: "Outcomes: O1, O2 (full volume)".
+- C, manifest. Every rep names a manifest in Stage 4. Rep2: "a manifest that ties each output to its source URL,
+  content hash, receipt time and parser version". Rep5: "source and processing manifests covering all three outputs".
+- C, traceability. Every rep traces outputs to their sources in Stage 4. Rep3: "every output row names its source file
+  and hash." Rep4: "every output row traces to its source file and hash". Reps 1 and 5 name Stage 4 "Manifests and
+  traceability", and rep1's Exit says "every stored file and output traces to its source and hash". Rep2's Objective
+  links the rows, so Provenance on bytes does not fail it: "Give every index row, submission and extracted document a
+  recorded source".
+- D. Every stage entry has a `Leaves out` field that names the later stage. Rep5's Stages 4 to 7 read "nothing". Plan
+  78's fix round 1 rep3 had the same form and passed D.
+- E. No Stage 1 Exit requires a publication pointer or an atomic generation.
+- Point-in-time awareness (not scored). Every rep names it in a later stage, for example rep1's "Stage 5: Point-in-time
+  awareness". Plan 79's arm named it in 1 of 5.
+- Spec column (not scored, Review Focus 4). No rep's Outcomes table has a `Spec` column. Each header is
+  `| # | Outcome | Track | Rank | Cost (estimate; basis) |`. The spec is named only under `Background:`, so the column
+  is not expected (plan 85, Open for plan review item 4).
+- Fixture note (not scored). Reps 1, 3 and 4 say that their earlier message should have named the qualities, for
+  example rep1: "My earlier message should have named those four qualities, but it left them out." The fixture's summary
+  of that message, written for plan 78, has no qualities line. At `T-final` the one message carries one when the check
+  finds a quality. So the fixed earlier turn now differs from what the skill text asks for. This is a note on the
+  fixture, not a verdict.
+- Not scored. Every rep writes `specs/sec-filing-ingestion-roadmap.md`, the confirmed name. Every reply ends on an
+  approval question, for example rep2: "Do you approve this partition before I hand off Stage 1?" Rep5's `Source:` line
+  carries the run day, 2026-11-10.
+
+The open plan 79 item (not scored). The same item needs a dr-known-progression-79 run that passes 4 of 5. This run is 5
+of 5, and 4 of 5 or better on each other reading below except the two together. One run does not close the item, which
+also needs two independent dr-tracks runs.
+
+Other readings:
+
+- The strict reading of clause A (no stage for an earlier outcome may follow a stage for a later one). Rep4 fails A.
+  PASS is then 4 of 5.
+- If rep3's list of unparsed files counts as a run manifest, rep3 fails B. PASS is then 4 of 5. With the strict reading
+  of A as well, PASS is 3 of 5. The guard is met in every case.
+- The other reading of Provenance on bytes changes no count: every rep links rows to their sources.
+- By reference does not reach these reps: no Stage 1 Exit adopts a spec section.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 2).
+
+### Plan 85 guard: dr-research-depth
+
+Additive in `cases.py`, read as a guard here. Texts at `2e91b05`. Folder `treatment/dr-research-depth-p85/`. Scored
+reps: rep1 to rep5. No VOID rep. Spend: $0.7019.
+
+The partner confirms two research tracks and ranks them. Clause A (bar): each track commits exactly one stage, and every
+other outcome of the track sits in a ranked list. Clause B (bar): each committed stage's Exit names a cost of the real
+run to measure and record. Clause C (conformance): the two tracks stay separate. Clause D (conformance): each stage entry
+names what it leaves out. Clause E (conformance): each committed stage's Produces names a file that records the result
+and the measured cost.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | pass | yes |
+
+Every clause: 5 of 5 (fix round 1 5 of 5). PASS: 5 of 5 (fix round 1 5 of 5).
+
+Compared with plan 78's "Fix round 1: dr-research-depth" (`d3fc772`): PASS 5 of 5. The guard needs at least 5 − 1 = 4.
+
+- A. Every rep commits Stage 1 (Track A, O1) and Stage 2 (Track B, O6), and keeps O3 and O2, and O4 and O5, in the two
+  Ranked lists. No later quality is a stage entry, a Ranked-list item or an Outcomes row.
+- B. Each committed stage's Exit has the findings file record the measured cost of the real run. Rep1's Stage 1: "The
+  file also records the measured time to assemble the vintages and the wall-clock time of the real fit." Rep3's Stage 1:
+  "it records the measured cost of the real run: assembly time, data volume and model-fit wall time." Rep5's Stage 2:
+  "measured cost of the real run (days to hand-build the series, time of the model fit) recorded there".
+- C. No stage entry mixes the two tracks. D. Every stage entry has a `Leaves out` field, which names the suggested
+  qualities. E. Each committed stage's Produces names `specs/ces-revisions-stage-<N>-findings.md`.
+
+Later qualities (not scored). Every rep suggests later qualities in the message after the file, each with a reason and
+the outcome line it would become, and asks the partner to approve each and give its place. Rep1: "For each quality,
+please approve or decline it and, if approved, give its place in each track's ranking." The roadmap file names each
+quality only in a committed stage's `Leaves out`, in the interim form, for example rep2's "vintage provenance manifest:
+suggested, see the approval question".
+
+| Rep | Qualities suggested in the message | Where the roadmap puts them |
+|---|---|---|
+| 1 | provenance manifest; full validation suite | both in the `Leaves out` of Stages 1 and 2 |
+| 2 | vintage provenance manifest; full validation suite | both in the `Leaves out` of Stages 1 and 2 |
+| 3 | validation suite; provenance manifest | both in the `Leaves out` of Stages 1 and 2 |
+| 4 | provenance manifest for the vintage panel (Track A); validation suite (Track A); source traceability for the hand-built covariates (Track B) | the first two in Stage 1's `Leaves out`, the third in Stage 2's |
+| 5 | full validation suite (Track A); source traceability for hand-built covariates (Track B) | the first in Stage 1's `Leaves out`, the second in Stage 2's |
+
+No rep puts a quality in a Ranked list before approval. Earlier arms put them there as items, for example round 2
+rep5's "6. Point-in-time vintage store." Rep2's `Source:` line carries the run day, 2026-11-10 (not scored).
+
+Other readings: none changes a count. Every Exit says "measured", so plan 78's fix round 1 call on rep5 is not needed.
+
+**Guard verdict: MET** (PASS 5 of 5; the guard needs 4).
+
+### Plan 85 guard: dr-resume-rerank
+
+Additive in `cases.py`, read as a guard here. Texts at `2e91b05`. Folder `treatment/dr-resume-rerank-p85/`. Scored reps:
+rep1 to rep5. No VOID rep. Spend: $0.3226.
+
+Plan 4 shipped the core stage of a research track. The partner says "Resume the roadmap." Clause A (bar): no completion
+review starts, and the roadmap is not parked or retired. Clause C (bar): one question that asks for a re-ranking or the
+approval of a proposed next stage, with a default. Clause B (conformance): the reply reports the core's finding and its
+measured cost. Clause D (conformance): no new stage entry is written before the answer.
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass (borderline) | pass | pass | yes |
+| 2 | pass | pass (borderline) | pass | pass | yes |
+| 3 | pass | fail (borderline) | pass | pass | no |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (plan 79 5 of 5). Clause C: 4 of 5 (plan 79 5 of 5). Clause B: 5 of 5 (plan 79 5 of 5). Clause D: 5 of
+5 (plan 79 5 of 5). PASS: 4 of 5 (plan 79 5 of 5).
+
+Compared with plan 79's "Plan 79 Task 4: dr-resume-rerank" (`5f52dfc`): PASS 5 of 5. The guard needs at least 5 − 1 =
+4.
+
+- The new text. Every rep suggests one later quality at the re-rank, scheduling, with a reason and the outcome line it
+  would become. Rep3: "**One later quality found for the first time:** scheduling." No earlier arm of this case
+  suggests a quality. No clause scores whether the suggestion is due.
+- A. No rep starts a completion review. Each offers stopping the track as one option. Rep4: "Stopping would park the
+  remaining items in `specs/deferred_items.md` and keep the roadmap live."
+- C, by plan 79's one-question reading and the One closing request reading (Readings applied, above).
+  - Rep4 passes. It numbers its proposal, with the quality as the third change, and closes with one approve-or-amend:
+    "Approve as is, or amend any part, including stopping the track instead."
+  - Rep5 passes. It puts the quality in its proposed ranking as O5 and gives its alternatives after its default:
+    "Do you approve this re-ranking, including adding O5 at rank 2, with O2 promoted to Stage 2? Or would you amend it:
+    a different order, a different item to promote, declining O5, or stopping Track A?"
+  - Rep1 passes, borderline. Its proposal has no question mark, and its one question mark asks about the quality. The
+    reply ties the two to one answer: "**One question.** I propose re-ranking Track A to **O3, O2, O4** and promoting
+    **O3** next." then "The same answer also covers one later quality." then "Do you approve it, and if so, where does
+    it rank in Track A?"
+  - Rep2 passes, borderline. Under its "**One question:**" label it asks "Separately, do you approve scheduling as a new
+    outcome, and if so, where should it rank in the list?" The close "Approve, or amend any part." comes after that ask
+    and takes it in.
+  - Rep3 fails, borderline. Its one question holds the quality in its proposed ranking: "**One question:** Do you
+    approve this re-rank and next step, or would you amend it?" After the question and its alternatives, a second ask
+    stands apart from the approval. Quote (C, rep3): "Please also tell me whether Stage 1 covered one lock or several,
+    so I can correct O3's cost note."
+- B. Every rep reports the 3.1 m level with the steep rise above it, and the 22-minute, 1.8 GB fit.
+- D. No rep writes a stage entry. Rep5: "I'll write the stage entry, commit it, and hand off only after your answer."
+- The cause of rep3's fail. Its second ask is about O3's cost basis, not about the quality. Plan 79's rep3 raised the
+  same point inside its amend options ("a correction to O3's data basis"). So that fail is most likely spread from rep
+  to rep. The two borderline passes (reps 1 and 2) do come from the new text: in each, the quality request is a second
+  ask inside the one question.
+- Not scored. §5's Ask says "ONE question, not a numbered list". Rep4 numbers the changes inside its one question, and
+  rep5 numbers its proposed ranking. Each asks one approve-or-amend, so C passes. No clause scores the list form.
+
+Other readings:
+
+- Rep3's side request read as part of the same answer ("Please also"). Rep3 passes C. C and PASS are then 5 of 5.
+- Any second ask inside the question block is a second question. Rep2's "Separately" ask fails C. C and PASS are then
+  3 of 5, **below the guard bar of 4**. With rep1's quality question also read as a second ask, C and PASS are 2 of 5.
+- Plan 79's one-question reading alone, without the extension of One closing request. The quality questions of reps 1
+  and 2 are not alternatives of the re-rank, so both fail C. C and PASS are then 2 of 5, below the bar.
+
+**Guard verdict: MET, at the bar** (PASS 4 of 5; the guard needs 4). The verdict rests on the extension of the One
+closing request reading to this case and on the borderline calls of reps 1 and 2. Read the other way, rep2 alone gives
+3 of 5, and the guard is missed.
+
+**Judgment-call reps (Task 6, five cases).** The owner can review them at the completion gate. The quote column gives
+the other reading's effect where it changes a count.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-offer-scaffold rep3, A | pass, borderline (one work area after a decision, not called stages, as Task 7 rep4) | "If not, that choice is still open, and anything Azure-specific should be sequenced after it." The other reading fails A. PASS is then 4 of 5, and the guard is still met. |
+| dr-offer-scaffold rep5, A | pass (The spec's phases) | "Should the roadmap cover them, or end at the Phase 1 deployment checkpoint?" |
+| dr-tracks rep2, C | pass, borderline (item 4: an order inside a known-progression track, not called stages) | "Known progression: total nonfarm first, then supersectors." The other reading fails C. PASS is then 4 of 5, and the guard is still met. |
+| dr-tracks rep3, C | pass (the definition repeated with "steps", no order) | "provided you can name its steps end to end." |
+| dr-known-progression-79 rep3, B | pass, borderline (a count and a failure list, not a manifest) | "with row counts per quarter and every unparsed file listed" The other reading fails B. PASS is then 4 of 5. |
+| dr-known-progression-79 rep4, A | pass, borderline (First stage per outcome, new and not confirmed) | "Outcomes: O1, O2 (full volume)" in Stage 5, after the 10-K and 8-K stage. The strict reading fails A. PASS is then 4 of 5. |
+| dr-known-progression-79 rep2, C (traceability) | pass (rows linked, so Provenance on bytes does not apply) | "Give every index row, submission and extracted document a recorded source" |
+| dr-resume-rerank rep1, C | pass, borderline (One closing request by extension: one answer for the re-rank and the quality) | "The same answer also covers one later quality." The other reading fails C. With rep2 and rep3 also failed, PASS is 2 of 5, a guard miss. |
+| dr-resume-rerank rep2, C | pass, borderline (One closing request by extension: the close takes the extra ask in) | "Separately, do you approve scheduling as a new outcome, and if so, where should it rank in the list?" The other reading fails C. PASS is then 3 of 5, a guard miss. |
+| dr-resume-rerank rep3, C | fail, borderline (a second ask apart from the approval) | "Please also tell me whether Stage 1 covered one lock or several, so I can correct O3's cost note." The other reading passes C. PASS is then 5 of 5. |
+| dr-resume-rerank rep4, C | pass (a numbered proposal inside one approve-or-amend) | "Approve as is, or amend any part, including stopping the track instead." |
