@@ -6106,3 +6106,51 @@ the summary reports both.
 **Spend.** Task 2's control arms cost $2.4571 (`show_reps.py` prints $2.46), the Task 2 row of the Plan 85 spend
 table. Per case: dr-offer-yes $0.6056, dr-quality-suggest $0.5075 and dr-spec-column $1.3440. Running total: $2.4571
 of $30. The largest pre-call sum (running total plus $5.00) was $6.1131.
+
+## Plan 85: skill text
+
+Task 3 edits the three derive-roadmap skill files and runs no rep. It spends $0.00 and leaves the `Plan 85: spend`
+table to the controller. The treatment, probe and guard arms of Tasks 4 to 6 read the skill text at the commit below.
+
+**`T` = `2e91b05` (`2e91b050430b4d77e5c62cadf3ab22e248df37e3`)**, the commit `feat(derive-roadmap): suggest later
+qualities at approval and keep spec refs`. It holds the three skill files and nothing else: `skills/derive-roadmap/SKILL.md`,
+`skills/derive-roadmap/references/new-project-entry.md` and `skills/derive-roadmap/references/roadmap-format.md`. It sits
+on `9f5091a`, the commit of the control arms. No further skill commit exists at the time of this record. A fix from this
+task's review, if any, becomes a later skill commit, and the record then names that commit as `T`.
+
+**Body size.** The `SKILL.md` body is 17,827 characters (`len(check_conformance.skill_body(text)[0])`), under the
+20,000 limit. It was 16,125 at `91d49c4`. The frontmatter is unchanged, so the description is unchanged.
+
+**Edit-to-requirement map.** The edit numbers are those of the task brief (Task 3 Step 1).
+
+| Requirement | Edits |
+|---|---|
+| R1 | 6, 9 |
+| R2 | 6, 9 |
+| R3 | 7, 10 |
+| R4 | 1 |
+| R5, R6, R8, R9 | 12 |
+| R7 | 4 |
+| R10 | 11 |
+| R11 | 2, 3 |
+| R12 | 5 |
+
+Edit 8 (the last bullet of Common mistakes) has no requirement in the brief's map. It keeps that bullet consistent with
+edits 7 and 10, which say that a research-track quality joins the Ranked list only after approval.
+
+**Checks run before the commit.**
+
+- The 19 phrase counts of Step 2 all gave the expected count (17 phrases at 1, two at 0).
+- Each of the 12 edits' new text, whitespace-normalized, occurs once in its file. `git diff --word-diff=plain` over the
+  three files shows only the edits' words. The words around them are unchanged, including the reflowed `Leaves out`
+  sentence in `new-project-entry.md` and the `Ranked-list items your partner never promoted` sentence in `SKILL.md` §6.
+- The old match keys are gone. The one phrase that still occurs is `On approval, hand off`, which edit 1's new text ends
+  with on purpose, before the existing `hand off`.
+- `uv run python build/check_links.py` printed `224 relative link(s) checked, 0 broken`.
+- `bash build/run_commit_lints.sh` printed `commit lints passed`. The commit's pre-commit hook ran it again with the same result.
+- No added line has trailing whitespace. Prose lines stay within the file's existing width (79 in `SKILL.md`, 78 in
+  `new-project-entry.md`). The one `roadmap-format.md` table row that grew is a table row, which the file does not wrap.
+
+**Layout choices.** The qualities line `Qualities to place when the roadmap is written: <names>.` is whole on one line in
+both `SKILL.md` and `new-project-entry.md`. The `Scope: …` line of edit 3 is about 125 characters long, so its code span
+breaks across lines in `SKILL.md`. A Markdown reader shows it as one span.
