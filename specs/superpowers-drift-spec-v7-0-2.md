@@ -133,7 +133,7 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 18 | v7.0.2 helper hardening: repository, task IDs, fences, invocation | **New.** One local defect by probe (`task-start` in a repo with no commit); two shared gaps by probe (#2604, #2605); invocation wording partly covered. **Adopted** — plan 82 (2026-11-09), except `-C DIR`, which was not taken |
 | 19 | The autonomy dial is set hard | **New**, workflow. Decided by finding 7; we keep a wider human loop; record only |
 | 20 | No durable record of what wasn't built | **New**, workflow. **Already covered** by the plan-completion protocol; the upstreamable core is three rules |
-| 21 | Per-task test evidence is self-reported in SDD | **New**, workflow. Gap on both sides; a local design item that the tester-seat work also needs. Build plan: plan 84, approved 2026-11-10 |
+| 21 | Per-task test evidence is self-reported in SDD | **New**, workflow. Gap on both sides; a local design item that the tester-seat work also needs. Build plan: plan 84, approved 2026-11-10. **Adopted** — plan 84 (2026-11-10) |
 | 22 | Spec drift is unaddressed | **New**, workflow. Partly covered by the `## Decisions` log and amendment tasks; a local design item for mid-run rulings. **Addressed by a different design** — plan 80 (2026-11-08). The final-review gate tags a ruling that contradicts the spec, and `specs/history.md` records it. No spec is edited. See the finding |
 | 23 | "Tasks mostly independent" is stated for both executors | **New**, workflow. **Already covered**: our executing-plans routes coupled plans inline |
 | 24 | Planner-authored tests can share a spec misreading | **New**, workflow. Closed with no build (plan 83, owner decision D8, 2026-11-09). Layer 4 of its backlog item stays open in `specs/deferred_items.md` |
@@ -784,6 +784,12 @@ tester-seat brainstorm took it into the approved spec that finding 24's
 Disposition names. Plan 84, approved 2026-11-10, is its build plan. It adds
 a `test-run` script that the SDD controller runs before each task review.
 
+**Done** (plan 84, 2026-11-10): `skills/subagent-driven-development/scripts/test-run`
+runs a task's tests and keeps each run in its own file in the plan's workspace. The SDD controller
+runs it before every task review, and a failing run is a fix round. The task reviewer and the scoped
+re-review read the run file, and `task-done` runs its command through the script with its ledger
+line unchanged.
+
 ### 22. Spec drift is unaddressed
 
 **Upstream.** The spec is the binding authority and the plan its argument
@@ -882,7 +888,7 @@ had two readers state what the spec asks. Its probe (plan 83, `specs/baseline/re
 missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of
 1.0. The backlog item "Spec-reading test check" is closed. Its layer 4, spec excerpts in the implementer
 brief, stays open as an item in `specs/deferred_items.md` (`83-statement-level-readings — 2026-11-09`).
-Finding 21's part goes to its own build plan from `specs/spec-derived-acceptance-tests.md`.
+Finding 21's part goes to its own build plan from `specs/spec-derived-acceptance-tests.md`. Done: plan 84 (2026-11-10).
 
 ## Findings on the other shared skills (2026-11-07 review)
 
@@ -1163,10 +1169,10 @@ Under this repo's proportional-process rule:
   helper finding 21 asks for. **Update 2026-11-09 (plan 83):** the brainstorm ran as
   `specs/spec-derived-acceptance-tests.md`, then as `specs/completed/statement-level-readings.md`.
   Neither probe's step met its bars against a fresh Self-Review, and the owner chose no build plan for
-  finding 24 (D8), so no seat's plan follows. Finding 21's part keeps its own build plan.
+  finding 24 (D8), so no seat's plan follows. Finding 21's part keeps its own build plan. Done: plan 84 (2026-11-10).
 - **Local design proposals, not yet logged in `specs/deferred_items.md`, no spec yet:**
   finding 21 (the controller runs the task's tests before the review; one
-  design with the tester seat); finding 22 (a ruling that contradicts spec
+  design with the tester seat) (done: plan 84, 2026-11-10); finding 22 (a ruling that contradicts spec
   text becomes an amendment or a deferred item); finding 26's worktree half;
   finding 28's conflict path; finding 27's one sentence on subagent reviewers;
   finding 33's placement line. **Update 2026-11-10:** plan 84 is finding

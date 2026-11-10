@@ -6209,3 +6209,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       budget." Size: design. Done when: Size the Work and the first-message path agree in
       `skills/brainstorming/SKILL.md`, micro-tests on T11, T13 and the approach guards show no regression, and
       `NOTICE` names the divergence.
+
+## 84-spec-derived-acceptance-tests — 2026-11-10
+- [ ] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
+      completion gate). `skills/subagent-driven-development/scripts/test-run` writes the run file only
+      after the command ends, and it removes its temporary file in an EXIT trap. A run that the Bash
+      tool kills (a 2-minute default timeout, or a hung test) therefore leaves no run file. Before plan 84,
+      `task-done` streamed its output to `task-<N>-tests.log`, so a kill left the partial output at that
+      path. `skills/subagent-driven-development/references/test-run.md` now says to re-run a killed run
+      with a longer timeout, so the controller has a recovery. The change: remove the temporary file with
+      an explicit `rm` after the run file is written, not in the trap, so a killed run leaves its partial
+      output in the workspace; name that file in the "No `run:` line" bullet; add a test in
+      `skills/subagent-driven-development/scripts/test_sdd_scripts.py`. Size: quick-fix. Done when: a
+      killed `test-run` leaves its partial output at a path that the controller text names.
