@@ -6558,3 +6558,54 @@ $0.2565. **Rep1 feeds step B.** No other rep ran.
   Stage 1's Exit and its findings file.
 
 The handoff that step B pastes is rep1's whole `result` text, read by `rep_result` from the committed rep file.
+
+### Plan 85 probe step B: case and leak check
+
+`PROBE_A` is the commit `test(specs): run plan 85's probe step A`: **`ede95b8`
+(`ede95b87fdf0c8b29d5e38d8b4381cc2064bbc72`)**. It holds step A's rep1 and the step-A part of this section.
+
+The case `wp-stage-plan` is now the last entry of `CASES`:
+
+```python
+'wp-stage-plan': case('V5 step B, R11', 'additive', WP, WP_STAGE_PLAN_FIXTURE, WP_TASK, WP_STAGE_PLAN_PASS,
+                      WP_STAGE_PLAN_LEAK,
+                      {'spec': SEC_SPEC,
+                       'handoff': {'repo': 'agent-skills', 'commit': 'ede95b87fdf0c8b29d5e38d8b4381cc2064bbc72',
+                                   'path': 'specs/baseline/red-baseline-new-project-entry/treatment/dr-handoff-spec-p85/rep1.json',
+                                   'derive': rep_result}}),
+```
+
+- A one-line import of the kit printed `26` for `len(cases.CASES)`.
+- `git -C ~/Projects/agent-skills show ede95b87…:<path>` reads the committed rep from the main checkout, read only. The
+  main checkout shares its objects with this worktree.
+- A script loaded `cases.py` at `PROBE_A` and at the working tree. The 25 earlier entries are equal and in the same
+  order, and the 122 earlier string, list and dict constants are equal. Function references were compared by name,
+  because a function loaded from two module copies never compares equal.
+- One comment changed. The comment above `WP_STAGE_PLAN_FIXTURE` said "No CASES entry yet." It now says that the
+  `wp-stage-plan` entry reads the message from the commit of step A's rep. No constant, rule or fixture changed.
+
+**Leak view.**
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan85-work/leak-5 wp-stage-plan`
+printed `wrote 1 prompts to /tmp/plan85-work/leak-5`. Its manifest shows the two reads: the sec-edgar spec (sha256
+`c43fa455…`) and step A's rep1 at `ede95b87…`. The handoff text derived from it by `cases.rep_result` has the sha256
+`1928553c…`, the same as the sha256 of rep1's `result`.
+
+The hand-written lines of `WP_STAGE_PLAN_FIXTURE` (markers removed), `WP_TASK` and `SEC_SPEC_ROADMAP` have 0 hits for
+the leak words and the five quarantine words. The leak-view prompt was grepped case-insensitively, and a script traced
+each hit by its line number: the pasted handoff is lines 25 to 39, and the spec is lines 117 to 652.
+
+| Word | Hits | Source |
+|---|---|---|
+| `Scope:` | 1 | line 35, in the pasted handoff: step A's `Scope:` line, a line of rep1's `result` |
+| `scoped to` | 0 | |
+| `minus` | 0 | |
+| `leave out` | 1 | line 35, the same `Scope:` line |
+| `red-baseline` | 0 | |
+| `plan 7[89]` | 0 | |
+| `plan 85` | 0 | |
+| `micro-test` | 0 | |
+| `quarantine` | 7 | the 7 lines of the sec-edgar spec at `22c6767f` that hold the word; the script matched each to a line of the spec |
+
+The two leak-word hits are the output under test, as the brief expects when step A writes a `Scope:` line. They are not
+hand-written. No hit comes from a hand-written line, and no `quarantine` hit comes from the pasted handoff. The 7
+`quarantine` hits are exempt case-repository text, as in Task 1's leak check.

@@ -1069,7 +1069,8 @@ Clause B (recorded): the reply names Stage 1's scope for the receiver: its O-num
 DR_HANDOFF_SPEC_LEAK = r'Scope:|scoped to|minus|leave out'
 
 # The probe's step B (Task 5): the stage plan that writing-plans writes from step A's handoff message. The
-# `{file:handoff}` marker takes that message, and `{file:spec}` the sec-edgar spec. No CASES entry yet.
+# `{file:handoff}` marker takes that message, and `{file:spec}` the sec-edgar spec. Its CASES entry,
+# `wp-stage-plan`, reads the message from the commit of step A's rep (Task 5 Step 2).
 
 WP_STAGE_PLAN_FIXTURE = lines(
     TODAY + ' The repository is `sec-edgar`, on branch `main`. This session is new.\n',
@@ -1151,4 +1152,10 @@ CASES = {
                            DR_SPEC_COLUMN_LEAK, {'spec': SEC_SPEC}),
     'dr-handoff-spec': case('V5 step A, R11', 'additive', DR, DR_HANDOFF_SPEC_FIXTURE, STEP_TASK,
                             DR_HANDOFF_SPEC_PASS, DR_HANDOFF_SPEC_LEAK, {'spec': SEC_SPEC}),
+    'wp-stage-plan': case('V5 step B, R11', 'additive', WP, WP_STAGE_PLAN_FIXTURE, WP_TASK, WP_STAGE_PLAN_PASS,
+                          WP_STAGE_PLAN_LEAK,
+                          {'spec': SEC_SPEC,
+                           'handoff': {'repo': 'agent-skills', 'commit': 'ede95b87fdf0c8b29d5e38d8b4381cc2064bbc72',
+                                       'path': 'specs/baseline/red-baseline-new-project-entry/treatment/dr-handoff-spec-p85/rep1.json',
+                                       'derive': rep_result}}),
 }
