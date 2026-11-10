@@ -119,12 +119,12 @@ anchors this revision cites were re-taken at `5beacf5`.
 |---|---|---|
 | 1 | SDD workspace has no plan identity | **Adopted** — plan 22 |
 | 2 | Implementers can spawn duplicate reviewers | **Adopted** — plan 22 |
-| 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged at v7.0.2. Logged in `specs/deferred_items.md` (2026-11-10) |
+| 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged at v7.0.2. Logged in `specs/deferred_items.md` (2026-11-10). The owner ruled two traps only (2026-11-10); planned in plan 88 |
 | 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`). v7.0.2's retune (#2644) **adopted** — plan 86 (2026-11-10), see the finding |
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | **Adopted** — plan 75, rulings mid-run only (F7); decided 2026-10-21 |
-| 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50, hardened again `98c453e`; the untracked-file guard **adopted** as an idea — plan 60; `start-server.sh --project-dir` **already covered** (`3ad94f8`, 2026-11-01, two days before #2608 shipped); the discard menu and the worktree-guard format stay as they were. Both are logged in `specs/deferred_items.md` (2026-11-10) |
+| 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50, hardened again `98c453e`; the untracked-file guard **adopted** as an idea — plan 60; `start-server.sh --project-dir` **already covered** (`3ad94f8`, 2026-11-01, two days before #2608 shipped); the discard menu and the worktree-guard format stay as they were. Both are logged in `specs/deferred_items.md` (2026-11-10). Both closed by owner ruling (2026-11-10): discard stays in both menus, and the worktree guard keeps its Problem/Fix pairs |
 | 9 | writing-plans asks for code transcripts | **Adopted** — plan 73 |
 | 10 | Reviewers grade the spec's silence | **Adopted** — plan 73 |
 | 11 | executing-plans was rebuilt as a ledgered native mode | **Adopted** — plan 75 (2026-10-31), from v7.0.1. v7.0.2's `task-start` guard and #2607 wording landed under finding 18 in plan 82 (2026-11-09) |
@@ -133,7 +133,7 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted. v7.0.2 did not touch it |
 | 16 | Two v7.0.0 bug fixes apply to our copies as they stand | **Adopted** — plan 50 |
-| 17 | Skill bodies run past the compaction re-attach cut | SDD and writing-skills splits **done** — plans 71, 72; the writing-skills guide rewrite remains open. Sizes re-taken 2026-11-07: three of our files fail upstream's byte bar, all pass ours, writing-plans by 6 characters. The byte bar stays not adopted until the probe. Re-taken 2026-11-10: finishing-a-development-branch is now the tightest, 25 characters inside ours, and writing-plans has 311 |
+| 17 | Skill bodies run past the compaction re-attach cut | SDD and writing-skills splits **done** — plans 71, 72; the writing-skills guide rewrite remains open. Sizes re-taken 2026-11-07: three of our files fail upstream's byte bar, all pass ours, writing-plans by 6 characters. The byte bar stays not adopted until the probe. Re-taken 2026-11-10: finishing-a-development-branch is now the tightest, 25 characters inside ours, and writing-plans has 311. The compaction-cut probe is planned in plan 87 (2026-11-10) |
 | 18 | v7.0.2 helper hardening: repository, task IDs, fences, invocation | **New.** One local defect by probe (`task-start` in a repo with no commit); two shared gaps by probe (#2604, #2605); invocation wording partly covered. **Adopted** — plan 82 (2026-11-09), except `-C DIR`, which was not taken |
 | 19 | The autonomy dial is set hard | **New**, workflow. Decided by finding 7; we keep a wider human loop; record only |
 | 20 | No durable record of what wasn't built | **New**, workflow. **Already covered** by the plan-completion protocol; the upstreamable core is three rules |
@@ -142,14 +142,14 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 23 | "Tasks mostly independent" is stated for both executors | **New**, workflow. **Already covered**: our executing-plans routes coupled plans inline |
 | 24 | Planner-authored tests can share a spec misreading | **New**, workflow. Closed with no build (plan 83, owner decision D8, 2026-11-09). Layer 4 of its backlog item stays open in `specs/deferred_items.md` |
 | 25 | requesting-code-review still leads with `HEAD~1` | **New.** **Already covered**; record |
-| 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low. That half is logged in `specs/deferred_items.md` (2026-11-10) |
-| 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides. The one-sentence fix for the stall is logged in `specs/deferred_items.md` (2026-11-10) |
-| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone. Step 1 wording **adopted** — plan 82 (2026-11-09); the merge-conflict path stays open. It is logged in `specs/deferred_items.md` (2026-11-10) |
+| 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low. That half is logged in `specs/deferred_items.md` (2026-11-10). The worktree half is **fixed** by a /deferred quick fix (2026-11-10) |
+| 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides. The one-sentence fix for the stall is logged in `specs/deferred_items.md` (2026-11-10). Planned in plan 88 (2026-11-10) |
+| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone. Step 1 wording **adopted** — plan 82 (2026-11-09); the merge-conflict path stays open. It is logged in `specs/deferred_items.md` (2026-11-10). The conflict path is planned in plan 88 (2026-11-10) |
 | 29 | using-git-worktrees sets up Python projects wrongly and drops isolation silently | **New.** Setup half **already covered** (`169942a`); the sandbox fallback is a shared design choice |
 | 30 | systematic-debugging's `find-polluter.sh` is still invoked by a relative path upstream | **New.** **Already covered** here (plan 50); upstream's #2607 test does not reach it |
 | 31 | verification-before-completion lacks the documented-test-command pointer | **New.** Claim-specific command selection exists; the more explicit pointer is a wording proposal on both sides, low. **Adopted** — plan 82 (2026-11-09) |
 | 32 | test-driven-development | **New.** Nothing new at v7.0.2; findings 3, 13 and 24 carry it |
-| 33 | writing-skills says nothing about where test scenarios live | **New.** Record; a one-line placement rule on both sides, low. Logged in `specs/deferred_items.md` (2026-11-10) |
+| 33 | writing-skills says nothing about where test scenarios live | **New.** Record; a one-line placement rule on both sides, low. Logged in `specs/deferred_items.md` (2026-11-10). **Fixed** by a /deferred quick fix (2026-11-10) |
 
 ## Dismissed without further review
 
@@ -1163,6 +1163,9 @@ Under this repo's proportional-process rule:
   test follow-ups retain the backlog owners named above. **Update 2026-11-10:**
   finding 3's guidance and finding 8's two considerations had no backlog item.
   They are now three items → item: superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
+  **Update 2026-11-10 (/deferred pass):** the owner closed finding 8's two
+  considerations with no change, ruled two traps for finding 3 (plan 88), and
+  had finding 17's probe planned (plan 87).
 - **Port candidate, a plan with micro-tests and no spec:** finding 4's #2644
   retune, applied as upstream's diff against our v7.0.1-derived copy with plan
   70's divergences held, tested against plan 70's RED baseline with the
@@ -1189,6 +1192,8 @@ Under this repo's proportional-process rule:
   21's build plan. Plan 80 addressed finding 22 by a different design (see
   the finding). The four items for findings 26, 27, 28 and 33 are now in the
   backlog → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
+  **Update 2026-11-10 (/deferred pass):** findings 26 and 33 are fixed.
+  Findings 27 and 28 are planned in plan 88.
 - **Decided, record only:** finding 19 (finding 7's decision); finding 29's
   sandbox fallback; finding 30's figures; finding 32.
 - **Not adopted until the probe has run:** upstream's whole-file byte bar

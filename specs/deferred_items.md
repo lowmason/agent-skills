@@ -5276,6 +5276,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       whole-file byte bar is not adopted. This probe decides the measure: if the cut counts
       the frontmatter, correct the register's window.
       → progress 2026-11-07 (drift-record reconciliation): plan 69 completed on 2026-10-28 (specs/plans/completed/69-agent-payload-probe.md), so its sequencing blocker has elapsed. The compaction-cut probe remains unimplemented; the archived v7.0.1 record supplies its history and the current v7.0.2 finding 17 carries it forward.
+      → planned 2026-11-10: specs/plans/87-compaction-cut-probe.md
 - [x] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
       The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
       first as a plan without a spec. It runs after the subagent-driven-development compaction
@@ -6171,6 +6172,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       forge-specific `gh api` reply line (about line 214). This item does not cover that line. First found in
       specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: the sentence is in the skill,
       its micro-test meets its bar against the control, and a `NOTICE` line names it.
+      → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
 - [ ] **finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the
       conflict half).** Option 1 runs `git checkout <base-branch>`, `git pull` and `git merge <feature-branch>`
       (`skills/finishing-a-development-branch/SKILL.md`, about lines 285-287) and says nothing about a
@@ -6182,6 +6184,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       line to `NOTICE`'s superpowers change list. The finding's Step 1 half is done (plan 82). First found in
       specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: every step that runs
       `git merge` carries the rule, `build/check_conformance.py` passes, and a `NOTICE` line names it.
+      → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
 - [x] **writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The
       skill tells an author to write pressure scenarios and run a baseline (`skills/writing-skills/SKILL.md`,
       "RED: Write Failing Test (Baseline)", about line 301). Its Skill Creation Checklist (about line 372) does
@@ -6246,6 +6249,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       choice is recorded on this item, the skill names both traps, the micro-test meets its bar against the
       control, the Why Order Matters section is whole, and a `NOTICE` line names what was taken.
       → progress 2026-11-10 (owner ruling): Two traps — add both traps to testing-anti-patterns.md, worded so a lint that guards a text contract is not a trap. Goes in the theme plan with a micro-test.
+      → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
 - [x] **finishing-a-development-branch offers "Discard this work" in both completion menus (superpowers
       drift finding 8).** Step 4's 4-option menu and its detached-HEAD menu both list it
       (`skills/finishing-a-development-branch/SKILL.md`, about lines 179 and 191). Upstream superpowers
