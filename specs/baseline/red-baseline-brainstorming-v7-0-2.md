@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, the v7.0.2 retune (plan 86)
 
-**Date:** 2026-11-10 · **Status:** Rules registered. No rep has run yet.
+**Date:** 2026-11-10 · **Status:** RED on today's copy is scored. The fixture check is at an owner gate before Task 2.
 **Governs:** plan 86 (`specs/plans/86-brainstorming-v7-0-2-retune.md`), the port of upstream superpowers v7.0.2's brainstorming retune (#2644, `e8cc5c9`, read at `22f0b46`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-v7-0-2/` beside it, and plan 86's
@@ -52,10 +52,104 @@
 
 **Outcomes.** All bars met and no T7 regression: the port stands. A missed bar, a T7 regression or an unresolved arm is an owner gate. The owner chooses one of three things. (a) One wording round: the new text is written into this record before any rep, the case and the guards whose passage it changes re-run at 5 reps, and the overflow fallback applies if the body passes 20,000. (b) Accept the miss as a known gap, recorded here and in finding 4. (c) Revert the hunk that the miss points to, back to today's text. The reader never changes skill text without the owner's choice.
 
+## Isolation pilot
+
+Two reps of `kit/isolation_probe.txt` ran into `isolation-pilot/` on 2026-11-10 with Claude Code 2.1.316. Both answer NO on all five lines: CLAUDE.md, output style, rules, SessionStart hook text and auto-memory. Both show `turns=1 extra-iters=- models=1`. Cost $0.02.
+
+## RED
+
+Today's copy at BASE (`ac7eb87`, `SKILL.md` sha256 `567d2239…`), 2026-11-10, Claude Code 2.1.316, `claude-opus-5-5`. Prompts are in `prompts/today/` and the control prompts in `prompts/control/`. The control T7 prompt is byte-identical to plan 70's `red/control/prompts/T7.txt`. No control rep ran.
+
+All 45 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID. No reply has an Insight box or quotes a user-level file. No replacement rep ran.
+
+| Case | Today's copy | Role |
+|---|---|---|
+| T7 first question | 21 of 25 (hand score, letter reading) | Compared by the blind panel in Task 3 |
+| T10 why first | 0 of 5 | Fix target |
+| T11 nothing open, a small change | 0 of 5 | Fix target |
+| T12 a named choice, the why known | 0 of 5 | Fix target |
+| T13 nothing open, a project | 0 of 5 | Fix target |
+
+Rep verdicts in rep order (P pass, F fail), in groups of five:
+- T7: `PPPPF PPPPF PPPPP PPPFF PPPPP` (also in `red/today/T7/hand-scores.json`)
+- T10: `FFFFF`
+- T11: `FFFFF`
+- T12: `FFFFF`
+- T13: `FFFFF`
+
+FAIL lines:
+- T7 rep5: candidate meanings as bullets, "- If the seeds really are still out, you may need reminders"
+- T7 rep10: candidate meanings as bullets, "- If they're mostly **seeds people still have**"
+- T7 rep19: three meanings in one sentence, "the seeds are still in the ground, the person forgot to record a return, or nothing was ever expected back"
+- T7 rep20: three meanings in one sentence, "seeds that are overdue, seeds nobody expected back, or returns that happened but never got written down"
+- T10 rep1: no question about the reason, "should sending the statement also take the charge off each person's balance"
+- T10 rep2: no question about the reason, "should sending the statement also take the water charge off each person's balance"
+- T10 rep3: no question about the reason, "should sending the statement also take the water charge off each holder's balance"
+- T10 rep4: no question about the reason, "should the app also take that month's water charge off their balance"
+- T10 rep5: no question about the reason, "should sending the statement also take the charge off each person's balance"
+- T11 rep1: builds at once, "ACTION: Add a failing test to `dashboard/tests.py`"
+- T11 rep2: builds at once, "ACTION: Edit `dashboard/tests.py` to add a test for the new panel's queryset"
+- T11 rep3: builds at once, "ACTION: Edit `dashboard/views.py` to add an overdue queryset"
+- T11 rep4: builds at once, "ACTION: Add a failing test for the overdue queryset"
+- T11 rep5: builds at once, "This is a quick, clear task."
+- T12 rep1: names the clash, one named way and no pick, "do you want to reach them some other way?"
+- T12 rep2: names the clash, two named ways and no pick, "such as email where we have an address, or is leaving them out acceptable?"
+- T12 rep3: names the clash, one named way and no pick, "should they get a reminder some other way, or should they just not get one?"
+- T12 rep4: names the clash, two named ways and no pick, "such as email where we have one, or is it fine that they get no reminder?"
+- T12 rep5: names the clash, one named way and no pick, "do you want them reminded some other way?"
+- T13 rep1: asks about something other than the approach, "should the registrars also be warned when a night's backup simply doesn't happen"
+- T13 rep2: asks about something other than the approach, "What can a registrar do today: log into the server, sign into AWS, or only use the app's website?"
+- T13 rep3: asks about something other than the approach, "do the registrars have a login to the server today, or only to the app's web pages?"
+- T13 rep4: asks about something other than the approach, "do you need someone to find out, and how soon?"
+- T13 rep5: asks about something other than the approach, "what has gone wrong, and what can they log into?"
+
+Borderline T7 passes, listed under the reading rule. Each passes on the letter reading. A stricter reader could fail it.
+- Three tools or fixes named in one sentence, where the closing question asks what is behind the blanks, not which tool: reps 2, 4, 6 and 22. Rep6: "a reminder system, an easier check-in, or something that tracks harvests and seasons rather than loans". These are where each answer would lead, not candidate answers. Plan 70 scored the same form the same way: its A6 rep3 ("One chases borrowers, one makes logging easier, and one tracks stock") was a hand P and a panel P, 2 to 1.
+- Seed-library practice in one sentence with three "sometimes" parts: reps 8, 13, 17 and 25. Rep25: "sometimes a season or more later, sometimes a different amount, sometimes never". Plan 70's A6 rep3 had the same form and passed.
+- If both forms failed, today's T7 would score 13 of 25.
+
+Descriptive counts, no verdict:
+- T7 fails: 2 lists (reps 5 and 10) and 2 with three answers in one sentence (reps 19 and 20).
+- T10: no rep asks about the reason, so no fail is a list and no pass states a guessed reason. All five ask instead whether the statement should take the charge off the balance.
+- T11: all five build, so no rep gives a design or a line on why other ways don't fit.
+- T12: all five state what leaving the "no texts" members out costs (nearly a quarter get no reminder). All five note that email is only a partial fallback (61% have no email). No rep recommends a way.
+- Reps that build at once: T10 0, T11 5, T12 0, T13 0.
+
+### Fixture check
+
+Each question that today's copy asks in T10 to T13, and whether the request or the `[you, tools]` line already answers it:
+
+- T10, all five reps: should the statement take the water charge off the balance, or only report it? Neither answers it. T10's rule passes a reply on its question about the reason, whatever else it asks. So this open question cannot make T10's rule fail a careful reply.
+- T11: no question. All five reps build at once (5 of 5, at or above the registered 2). Rep5 says why: "This is a quick, clear task." The skill's first section tells the agent to do a quick, clear task at once, and Task 2 leaves that line unchanged. So T11's rule would fail a reply that follows the skill.
+- T12, all five reps: should the "no texts" members get a reminder another way, or none? Neither answers it. It is the clash the case is built on, and T12's rule asks for exactly this question, with named ways and a pick.
+- T13, reps 1 and 4: should someone find out when no backup runs at all, for example because the server is down? Neither answers it. The request covers only a backup that runs and fails.
+- T13, reps 2, 3 and 5: what can the registrars log into, for the restore guide (the server, AWS, or only the app)? Neither answers it.
+- T13: the partner gives the why (the laptop died and two weeks of sign-ups were lost). Under the new copy, a careful reply then asks about the open thing that most changes the build. T13's rule fails a reply that asks the partner anything other than the approach. So the two open T13 questions could fail a careful reply.
+
+Under the registered rule, each item above is an owner gate before Task 2.
+
+### Owner rulings on the fixture check (2026-11-10)
+
+The owner chose these options. Each is quoted as written.
+
+- T11: "Enlarge it (Recommended)": "Make it a settled small change of several parts (add a "Phoned" button with a new field), so it is no longer a quick task. Then re-run T11 RED x5 (~$0.20). If 2+ reps still build at once, it comes back to you."
+- T13: "Close both gaps (Recommended)": "Edit one partner sentence and add one tool-line sentence, then re-run T13 RED x5 (~$0.15). Any new open question comes back to you."
+- T10 and T12: "Keep both (Recommended)": "Record T10's open question and T12's clash as checked, and go on."
+
+The fixture edits, made in `kit/cases.py` and committed with this note before any re-run rep:
+
+- T11, at the end of the partner's message: `Put a "Phoned" button on each row. It saves today's date on the loan, and the loan then stays off the panel for seven days, so the other coordinator doesn't ring the same person twice.`
+- T11, at the end of the `[you, tools]` line: `` Nothing on `Loan` records a call yet. The loan pages already have one button, "Mark returned", a small POST form that sets `returned_on` and returns to the page. ``
+- T13, in the partner's message: `Email both registrars when a backup fails.` becomes `Email both registrars when a night's backup fails or doesn't happen.`
+- T13, at the end of the `[you, tools]` line: `Both registrars have their own AWS console logins and can log in to the server over SSH.`
+
+The rules for T11 and T13 do not change. RED re-runs T11 and T13 on today's copy, 5 reps each, from new prompts in `prompts/today-fix1/` into `red/today-fix1/<case>/`. The first T11 and T13 reps in `red/today/` stay as the record of the first fixtures. Their roles are replaced by the re-run. The fixture check runs again on the re-run. Two or more reps that build at once, or a question that the fixture leaves open, go back to the owner.
+
 ## Spend
 
 Running total of `total_cost_usd` across every rep and panel vote of plan 86. The plan stops for the owner before the total passes $10.
 
 | Batch | Reps or votes | Cost | Running total |
 |---|---|---|---|
-| (none yet) | 0 | $0.00 | $0.00 |
+| Isolation pilot | 2 reps | $0.02 | $0.02 |
+| RED, today's copy: T7 ×25, T10 to T13 ×5 | 45 reps | $1.06 | $1.08 |
