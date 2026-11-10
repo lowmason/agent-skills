@@ -1,6 +1,6 @@
 # Independent test evidence: controller test runs and spec-derived acceptance tests — Design Spec
 
-**Status:** APPROVED (2026-11-08). The owner approved this file, its designer's calls included, on 2026-11-08
+**Status: COMPLETE (2026-11-10)** — Design 1 (finding 21) shipped in plan 84 (specs/plans/completed/84-spec-derived-acceptance-tests.md). Designs 2-6 (finding 24) closed with no build plan in plan 83 (D8); see specs/completed/statement-level-readings.md. It was APPROVED on 2026-11-08. The owner approved this file, its designer's calls included, on 2026-11-08
 ("Spec approved"). The design came from a brainstorming session on 2026-11-08, opened on
 `specs/superpowers-drift-spec-v7-0-2.md`. It covers that assessment's finding 21
 ("Per-task test evidence is self-reported in SDD") and finding 24 ("Planner-authored tests can share a spec

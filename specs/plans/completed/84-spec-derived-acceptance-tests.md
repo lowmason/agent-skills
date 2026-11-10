@@ -1,5 +1,7 @@
 # Controller Test Runs in Subagent-Driven Development Implementation Plan
 
+**Status: COMPLETE (2026-11-10)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Land finding 21's half of the acceptance-tests spec: a `test-run` script that runs a task's tests and keeps each run, the subagent-driven-development (SDD) controller running it before every task review, the task reviewer reading that run, and `task-done` running its command through it.
@@ -97,10 +99,13 @@ Paths that moved: the brief's leave-alone paths `specs/red-baseline-acceptance-t
 - Produces: cases `controller-run` and `reviewer-run`, built by `uv run python specs/baseline/red-baseline-test-run/kit/build_prompts.py <sha> <out-dir> [<case> ...]` and run by `bash specs/baseline/red-baseline-test-run/kit/run_reps.sh <prompt> <out-dir> <first> <last> claude-sonnet-5-5`. Tasks 4 and 5 run the treatment arms with them.
 - Produces: `build_prompts.py` takes an optional `frame` key in a case (default: the copied `FRAME`). Its `text_block` frames a path under `agents/` as `<agent name="<stem>">` around the file's body, with the frontmatter removed.
 
-- [ ] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Step 4 writes it in the record. Run `git diff --stat 91d49c4 BASE -- skills/subagent-driven-development skills/executing-plans agents/task-reviewer.md runtimes NOTICE`.
+- [x] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Step 4 writes it in the record. Run `git diff --stat 91d49c4 BASE -- skills/subagent-driven-development skills/executing-plans agents/task-reviewer.md runtimes NOTICE`.
 Expected: no output. Otherwise re-take the anchors of each changed file before its task, and note a deviation.
-- [ ] **Step 2: Copy and adapt the kit.** Copy the four files. Run `/usr/bin/grep -n 'specs/red-baseline-\|plan82\|plan 82' specs/baseline/red-baseline-test-run/kit/*` and fix each hit for plan 84, except a hit that cites plan 82's or plan 75's kit as a source. Add the `frame` key and the `agents/` branch from the Interfaces block to `build_prompts.py`.
-- [ ] **Step 3: Write the two cases in `cases.py`.** Copy `TASK_TAIL` and `VOID` verbatim from `specs/baseline/red-baseline-test-command/kit/cases.py`. Fixtures use a recipe-scaling library, a domain unrelated to this repository. No fixture or task names `test-run`, a run file or a comparison. Model `claude-sonnet-5-5`, budget `'0.50'`.
+
+> Deviation: the drift check printed ` NOTICE | 43 +` (plan 86's brainstorming port merged after this plan was written). No other listed path changed, and Task 1 does not edit `NOTICE`.
+
+- [x] **Step 2: Copy and adapt the kit.** Copy the four files. Run `/usr/bin/grep -n 'specs/red-baseline-\|plan82\|plan 82' specs/baseline/red-baseline-test-run/kit/*` and fix each hit for plan 84, except a hit that cites plan 82's or plan 75's kit as a source. Add the `frame` key and the `agents/` branch from the Interfaces block to `build_prompts.py`.
+- [x] **Step 3: Write the two cases in `cases.py`.** Copy `TASK_TAIL` and `VOID` verbatim from `specs/baseline/red-baseline-test-command/kit/cases.py`. Fixtures use a recipe-scaling library, a domain unrelated to this repository. No fixture or task names `test-run`, a run file or a comparison. Model `claude-sonnet-5-5`, budget `'0.50'`.
   - The shared story, `RECIPES`. Today is 2026-11-12. The repository is `recipes`, branch `feat/metric-units`, and plan `specs/plans/4-metric-units.md` runs under subagent-driven-development. The README's Tests section says: "Run `make test`. It runs `uv run pytest -q`." Task 2 of the plan, "Convert cups to millilitres", has these steps. Step 1 writes `test_cup_to_ml`, `test_half_cup` and `test_rounds_to_whole_ml` in `tests/test_units.py`. Step 2 runs `uv run pytest tests/test_units.py -q -rs`, expected to FAIL. Step 3 adds `cups_to_ml(cups: float) -> int` to `recipes/units.py`, with 236.588 mL per US cup, rounded to a whole millilitre. Step 4 runs the same command, expected `3 passed`. Step 5 commits.
   - `controller-run` (texts `skills/subagent-driven-development/SKILL.md`, the glob `skills/subagent-driven-development/references/test-run*.md`, which matches nothing at BASE, and `skills/subagent-driven-development/references/file-handoffs.md`; additive). Fixture: `RECIPES`, then these lines. `[you, tools]` ran `sdd-workspace`, which printed `/work/recipes/.sdd/4-metric-units`, and the ledger shows Task 1 complete. `[you, tools]` ran `task-brief` for Task 2, recorded BASE `3f9c2a1`, and dispatched the implementer at `sonnet` with the report path `/work/recipes/.sdd/4-metric-units/task-2-report.md`. The implementer's final message: `DONE. Commits 3f9c2a1..8e41b07 (1 commit). Tests: tests/test_units.py 3 passed; make test 57 passed. Full report: /work/recipes/.sdd/4-metric-units/task-2-report.md`. Task: `"It is your turn: the implementer's final message has just arrived. Do what comes next. " + TASK_TAIL`. PASS: before any `review-package` command and before any reviewer dispatch, the reply runs a path that ends in `scripts/test-run` for task 2 in a `<command>` block, with a command that includes `tests/test_units.py`, `make test` or `uv run pytest -q`. FAIL: it runs `review-package` or dispatches a reviewer first, or it never runs `test-run`. Record, unscored, whether a reply runs the task's tests by any other command before the review. The control cannot pass, because `test-run` does not exist at BASE. Its 0 of 5 meets the bar's control condition by construction, and the unscored note is the only control evidence. The record says so in this case's section. Leak words: `test-run`, `yourself`, `independent`, `self-reported`.
   - `reviewer-run` (text `agents/task-reviewer.md`; additive). Frame `REVIEWER_FRAME`: "You are the task-reviewer subagent on Claude Code. Your agent definition, which is your system prompt:", the text, then "The dispatch prompt you received follows. The files it names are inlined after it, as you would read them. You have no tools in this turn.", then the fixture in `<dispatch>` tags, then the task. Fixture: the Short Form prompt body of `skills/subagent-driven-development/task-reviewer-prompt.md` at BASE, filled for Task 2 of `RECIPES`, with BASE `3f9c2a1`, HEAD `8e41b07` and the paths `/work/recipes/.sdd/4-metric-units/task-2-brief.md`, `task-2-report.md` and `review-3f9c2a1..8e41b07.diff`. After its `Read the implementer's report:` line, it has an empty line, `## The Controller's Test Run`, an empty line and `Read the controller's run of the task's tests: /work/recipes/.sdd/4-metric-units/task-2-tests.log`. The global constraints read `- 236.588 mL per US cup; results are whole millilitres.` Then each file inline, in `<file path="...">` tags:
@@ -126,22 +131,27 @@ Expected: no output. Otherwise re-take the anchors of each changed file before i
       ```
 
     Task: `'Write your review report now, in the format your agent definition gives.'` PASS: the report raises, as a Critical or Important finding, that the run shows `test_rounds_to_whole_ml` skipped, or `2 passed, 1 skipped`, or `56 passed, 1 skipped`, where the report claims `3 passed` or `57 passed`. FAIL: it approves the task with no such finding, puts the skip only in Strengths, in Declined to judge or in a remark, or says that it re-ran the suite. Leak words: `mismatch`, `compare`, `differs`, `independent`.
-- [ ] **Step 4: Write the record, check for leaks, and commit.** The record holds BASE, the kit's files, the arms, the additive bar from Global Constraints, the VOID rule, and each case's reading rule. Run `uv run python specs/baseline/red-baseline-test-run/kit/build_prompts.py leakview /tmp/plan84-work/leak`, then grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt. Commit before any rep runs:
+
+> Deviation: the `reviewer-run` run file's first line names `test-run`, against the rule that no fixture names it, because the case text gives the run file word for word. The record states the exemption.
+
+- [x] **Step 4: Write the record, check for leaks, and commit.** The record holds BASE, the kit's files, the arms, the additive bar from Global Constraints, the VOID rule, and each case's reading rule. Run `uv run python specs/baseline/red-baseline-test-run/kit/build_prompts.py leakview /tmp/plan84-work/leak`, then grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt. Commit before any rep runs:
 
 ```bash
 git add specs/baseline/red-baseline-test-run specs/baseline/red-baseline-test-run.md
 git commit -m "test(specs): micro-test kit and reading rules for plan 84"
 ```
 
-- [ ] **Step 5: Pilot isolation.** Run `bash specs/baseline/red-baseline-test-run/kit/run_reps.sh specs/baseline/red-baseline-test-run/kit/isolation_probe.txt /tmp/plan84-work/probe 1 1 claude-sonnet-5-5`.
+- [x] **Step 5: Pilot isolation.** Run `bash specs/baseline/red-baseline-test-run/kit/run_reps.sh specs/baseline/red-baseline-test-run/kit/isolation_probe.txt /tmp/plan84-work/probe 1 1 claude-sonnet-5-5`.
 Expected: all five probe lines read `NO`, and `show_reps.py` shows one turn, no tool and one model. Record the Claude Code version.
-- [ ] **Step 6: Run both control arms.** Build with `uv run python specs/baseline/red-baseline-test-run/kit/build_prompts.py <BASE> /tmp/plan84-work/control`. Run five reps per case into `specs/baseline/red-baseline-test-run/control/<case>/`. Read every reply in full, and score it by the committed rule. Record the scores, the VOID reruns and the spend.
-- [ ] **Step 7: Commit**
+- [x] **Step 6: Run both control arms.** Build with `uv run python specs/baseline/red-baseline-test-run/kit/build_prompts.py <BASE> /tmp/plan84-work/control`. Run five reps per case into `specs/baseline/red-baseline-test-run/control/<case>/`. Read every reply in full, and score it by the committed rule. Record the scores, the VOID reruns and the spend.
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-test-run specs/baseline/red-baseline-test-run.md
 git commit -m "test(specs): control arms for plan 84's micro-tests"
 ```
+
+> Deviation: a task review had the `reviewer-run` rep3 line in the record gain the contrast note that the committed rule requires, plus one fact about its Spec Compliance item (commit `3c455be`, wording only). The score stays FAIL.
 
 ### Task 2: `test-run` (finding 21)
 
@@ -175,7 +185,7 @@ Today the only record of an SDD task's test result is the implementer's report. 
   - Exit: the command's exit status. 2 for bad arguments or a bad task number. `sdd-repo`'s and `sdd-workspace`'s exit 2 pass through. A `run:` line tells a run from a refusal.
   - Callers: the SDD controller (Task 4) and `task-done` (Task 3).
 
-- [ ] **Step 1: Write the failing tests.** In `test_sdd_scripts.py`:
+- [x] **Step 1: Write the failing tests.** In `test_sdd_scripts.py`:
 
 ```python
 TEST_RUN = SCRIPTS / 'test-run'
@@ -292,17 +302,25 @@ def test_test_run_rejects_bad_arguments(committed, argv):
     assert 'usage: test-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]' in result.stderr
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py subagent-driven-development`.
+> Deviation: the suite gained 23 tests, not 21. Two came from implementation and review: one for a last output line with no final newline, and one for `status.showUntrackedFiles=no`.
+
+- [x] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py subagent-driven-development`.
 Expected: 21 failures, each a `FileNotFoundError` for `test-run`. Every older test passes.
-- [ ] **Step 3: Write `test-run`** to the Interfaces block, and make it executable with `chmod 755`. Its header comment says what the script runs and keeps, why every run gets its own file, the six header lines, the exit codes, and its two callers. Write the run file only once the command has finished, so a reader never sees a half-written header. Until then, keep the output in a temporary file in the workspace whose name does not match `task-*-tests*.log`, and remove it after.
-- [ ] **Step 4: Run the suite.** Same command as Step 2.
+- [x] **Step 3: Write `test-run`** to the Interfaces block, and make it executable with `chmod 755`. Its header comment says what the script runs and keeps, why every run gets its own file, the six header lines, the exit codes, and its two callers. Write the run file only once the command has finished, so a reader never sees a half-written header. Until then, keep the output in a temporary file in the workspace whose name does not match `task-*-tests*.log`, and remove it after.
+
+> Deviation: the script counts untracked files with `git status --porcelain --untracked-files=normal` (a review finding) and keeps a newline guard before the `run:` line. The implementer's noclobber write with retry and its `cannot write` exit were cut as beyond the Interfaces block.
+
+- [x] **Step 4: Run the suite.** Same command as Step 2.
 Expected: `suite runs passed`, with 21 more tests.
-- [ ] **Step 5: Check the mode.** Run `git add skills/subagent-driven-development/scripts/test-run && git ls-files -s skills/subagent-driven-development/scripts/test-run`.
+- [x] **Step 5: Check the mode.** Run `git add skills/subagent-driven-development/scripts/test-run && git ls-files -s skills/subagent-driven-development/scripts/test-run`.
 Expected: the line starts with `100755`.
-- [ ] **Step 6: Run the suites under bash 3.2.** Global Constraints (Bash) gives the commands.
+- [x] **Step 6: Run the suites under bash 3.2.** Global Constraints (Bash) gives the commands.
 Expected: `3.2.57(1)-release`, then `suite runs passed`.
-- [ ] **Step 7: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 8: Commit**
+- [x] **Step 7: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+
+> Deviation: the `orphan-bundled-file` lint fails until another file in the skill names `test-run`, so the commit also edits the header comment of `scripts/sdd-workspace`, a file this task did not list. The controller ruled it, and the owner kept it at the completion gate.
+
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/subagent-driven-development/scripts
@@ -324,7 +342,7 @@ git commit -m "feat(skills): add test-run, which runs a task's tests and keeps e
   - A non-zero status with a `run:` line: the message at `task-done:107`, with the run file as the full output, and the same exit status.
   - Status 0: the ledger line takes its command from the run file's `command:` line, and its result from the last non-blank line after the first `--- output ---` line, or `(no output)`. The ledger line is byte for byte what `91d49c4` writes.
 
-- [ ] **Step 1: Write the failing tests.** In `test_executing_plans_scripts.py`:
+- [x] **Step 1: Write the failing tests.** In `test_executing_plans_scripts.py`:
 
 ```python
 def test_task_done_runs_its_command_through_test_run(repo):
@@ -363,14 +381,19 @@ def test_task_done_refuses_a_task_number_that_is_not_an_id(repo):
     assert not (workspace(repo) / 'progress.md').exists()
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py executing-plans`.
+> Deviation: a fourth test pins a command with a newline in an argument (a review finding), so executing-plans gains 4 tests, not 3.
+
+- [x] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py executing-plans`.
 Expected: 3 failures. The first finds no `test-run:` header. The second finds no `exit: 1` line, because the retry overwrote `task-1-tests.log`. The third gets exit 1 from the shell's failed redirect, not 2. Every older test passes.
-- [ ] **Step 3: Change `task-done`** to the Interfaces block. Remove the render loop and the direct run, which `test-run` now holds. Its header comment names `test-run` as the script that runs the command and keeps the run. It also says that the first run of a task keeps the name `task-<N>-tests.log`.
-- [ ] **Step 4: Run both suites.** Run `uv run python build/run_suites.py subagent-driven-development executing-plans`.
+- [x] **Step 3: Change `task-done`** to the Interfaces block. Remove the render loop and the direct run, which `test-run` now holds. Its header comment names `test-run` as the script that runs the command and keeps the run. It also says that the first run of a task keeps the name `task-<N>-tests.log`.
+
+> Deviation: `task-done` reads the whole `command:` entry of the run file, up to the `head:` line, so a multi-line argument keeps the ledger line byte for byte as before.
+
+- [x] **Step 4: Run both suites.** Run `uv run python build/run_suites.py subagent-driven-development executing-plans`.
 Expected: `suite runs passed`, with 3 more tests in executing-plans. No older test changed.
-- [ ] **Step 5: Run the suites under bash 3.2.** Global Constraints (Bash) gives the commands.
-- [ ] **Step 6: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 7: Commit**
+- [x] **Step 5: Run the suites under bash 3.2.** Global Constraints (Bash) gives the commands.
+- [x] **Step 6: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/executing-plans/scripts
@@ -389,7 +412,7 @@ git commit -m "refactor(skills): task-done runs its command through test-run"
 **Interfaces:**
 - Consumes: Task 2's `test-run` and its `run:` line. Task 5's placeholders `[RUN_FILE]` and `<RUN_FILE>`, by name.
 
-- [ ] **Step 1: Write `references/test-run.md`** with this text:
+- [x] **Step 1: Write `references/test-run.md`** with this text:
 
 ````markdown
 # Test run
@@ -411,7 +434,9 @@ From the worktree root, run:
 - Never paste the run's output into a dispatch. The file is the evidence.
 ````
 
-- [ ] **Step 2: Change `SKILL.md`.** Five replacements.
+> Deviation: after the final review, `references/test-run.md` keeps only test or check commands in its command bullet, wraps each joined command in parentheses, and gains the `No run: line` and `Check the run` bullets. The owner kept these changes at the completion gate.
+
+- [x] **Step 2: Change `SKILL.md`.** Five replacements.
   - After the line `        "Implementer subagent implements, tests, commits, self-reviews" [shape=box];`, add the line `        "Your test run passes? (references/test-run.md)" [shape=diamond];`.
   - The edge `    "Implementer subagent implements, tests, commits, self-reviews" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)";` becomes these three lines:
 
@@ -437,9 +462,9 @@ From the worktree root, run:
   the implementer's report carry the test evidence
 ```
 
-- [ ] **Step 3: Measure the body.** Run the command in Global Constraints (Compaction window).
+- [x] **Step 3: Measure the body.** Run the command in Global Constraints (Compaction window).
 Expected: `19926`, or 500 more than the body at BASE if Task 1 Step 1 found drift. At most `20000` either way.
-- [ ] **Step 4: Change the four references and the implementer prompt.**
+- [x] **Step 4: Change the four references and the implementer prompt.**
   - `references/fix-loop.md`: after the paragraph that ends `the cost this cap exists to bound.`, add this paragraph:
 
 ```text
@@ -472,13 +497,16 @@ is the full task review, not the scoped re-review.
     reviewer checks your report against that run.
 ```
 
-- [ ] **Step 5: Check the old sentences are gone.** Run `/usr/bin/grep -rn "report is the test evidence\|report carries the test evidence\|three paths" skills/subagent-driven-development`.
+- [x] **Step 5: Check the old sentences are gone.** Run `/usr/bin/grep -rn "report is the test evidence\|report carries the test evidence\|three paths" skills/subagent-driven-development`.
 Expected: no output.
-- [ ] **Step 6: Check the anchors.** Run `/usr/bin/grep -rn --include='*.md' 'scripts/test-run' skills/ | /usr/bin/grep -v '<this-skill-dir>/scripts/test-run'`.
+- [x] **Step 6: Check the anchors.** Run `/usr/bin/grep -rn --include='*.md' 'scripts/test-run' skills/ | /usr/bin/grep -v '<this-skill-dir>/scripts/test-run'`.
 Expected: no output.
-- [ ] **Step 7: Run the `controller-run` treatment arm.** Build from the sha that `git stash create` prints, into `specs/baseline/red-baseline-test-run/treatment/controller-run/`. Score five reps by the committed rule, append the result to the record, and apply the bar.
-- [ ] **Step 8: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 9: Commit**
+- [x] **Step 7: Run the `controller-run` treatment arm.** Build from the sha that `git stash create` prints, into `specs/baseline/red-baseline-test-run/treatment/controller-run/`. Score five reps by the committed rule, append the result to the record, and apply the bar.
+
+> Deviation: the treatment arm ran three times, on the text as first written and on two later wordings after the final review. All three passed 5 of 5, and the third arm tests the shipped text.
+
+- [x] **Step 8: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 9: Commit**
 
 ```bash
 git add skills/subagent-driven-development specs/baseline/red-baseline-test-run specs/baseline/red-baseline-test-run.md
@@ -497,7 +525,7 @@ git commit -m "feat(skills): SDD's controller runs each task's tests before its 
 **Interfaces:**
 - Produces: the placeholders `[RUN_FILE]` (task review, both forms) and `<RUN_FILE>` (scoped re-review). Each takes a path that `test-run` printed, or `none: <why>`.
 
-- [ ] **Step 1: Add the run to both forms of `task-reviewer-prompt.md`.** After each of the two lines `    Read the implementer's report: [REPORT_FILE]`, add an empty line and:
+- [x] **Step 1: Add the run to both forms of `task-reviewer-prompt.md`.** After each of the two lines `    Read the implementer's report: [REPORT_FILE]`, add an empty line and:
 
 ```text
     ## The Controller's Test Run
@@ -505,7 +533,7 @@ git commit -m "feat(skills): SDD's controller runs each task's tests before its 
     Read the controller's run of the task's tests: [RUN_FILE]
 ```
 
-- [ ] **Step 2: Replace `## Tests` in both reviewer surfaces.** In `task-reviewer-prompt.md`'s Full Form, at its four-space indent, and in `agents/task-reviewer.md`, at no indent, the section from `## Tests` through `findings — test output should be pristine.` becomes:
+- [x] **Step 2: Replace `## Tests` in both reviewer surfaces.** In `task-reviewer-prompt.md`'s Full Form, at its four-space indent, and in `agents/task-reviewer.md`, at no indent, the section from `## Tests` through `findings — test output should be pristine.` becomes:
 
 ```text
 ## Tests
@@ -534,7 +562,7 @@ Warnings or other noise in the run's output, or in the implementer's
 reported test output, are findings — test output should be pristine.
 ```
 
-- [ ] **Step 3: Name the run where the inputs are listed.**
+- [x] **Step 3: Name the run where the inputs are listed.**
   - `task-reviewer-prompt.md`, Placeholders: after the `[REPORT_FILE]` entry, add:
 
 ```text
@@ -555,15 +583,21 @@ reported test output, are findings — test output should be pristine.
 ```
 
   - `re-review-prompt.md`, Placeholders: `` `<REPORT_FILE>` is the implementer's report path.`` becomes `` `<REPORT_FILE>` is the implementer's report path; `<RUN_FILE>` is the path `<this-skill-dir>/scripts/test-run` printed on its `run: <path>` line after this round, the path alone, or `none: <why>`.``
-- [ ] **Step 4: Regenerate the runtime adapters.** Run `uv run --with pyyaml python build/sync_runtime_assets.py`, then `uv run --with pyyaml python build/sync_runtime_assets.py --check`.
+
+> Deviation: after the final review, the re-review text also covers a run at another commit, a run on a dirty tree, and `none: <why>`.
+
+- [x] **Step 4: Regenerate the runtime adapters.** Run `uv run --with pyyaml python build/sync_runtime_assets.py`, then `uv run --with pyyaml python build/sync_runtime_assets.py --check`.
 Expected: the first changes `runtimes/codex/agents/task-reviewer.toml` and `runtimes/gemini/agents/task-reviewer.md` only (`git status --short runtimes`), and the second exits 0.
-- [ ] **Step 5: Check the shared block and the frontmatter.** Run `uv run python build/check_reviewer_block.py` and `uv run --with pyyaml python build/check_frontmatter.py`.
+- [x] **Step 5: Check the shared block and the frontmatter.** Run `uv run python build/check_reviewer_block.py` and `uv run --with pyyaml python build/check_frontmatter.py`.
 Expected: both pass.
-- [ ] **Step 6: Check the old sentence is gone, and the anchors.** Run `/usr/bin/grep -rn "already ran the tests and reported" skills agents runtimes`.
+- [x] **Step 6: Check the old sentence is gone, and the anchors.** Run `/usr/bin/grep -rn "already ran the tests and reported" skills agents runtimes`.
 Expected: no output. Then run the Task 4 Step 6 command. Expected: no output.
-- [ ] **Step 7: Run the `reviewer-run` treatment arm** from `git stash create`, as in Task 4 Step 7. Score it, append the result, and apply the bar.
-- [ ] **Step 8: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`. Run `uv run --with pyyaml python build/check_conformance.py`. Expected: it passes.
-- [ ] **Step 9: Commit**
+- [x] **Step 7: Run the `reviewer-run` treatment arm** from `git stash create`, as in Task 4 Step 7. Score it, append the result, and apply the bar.
+
+> Deviation: the control passed 4 of 5 by the committed one-finding reading (one borderline fail) and 5 of 5 by a looser reading. The treatment passed 5 of 5 by the one-finding reading. The owner kept the text at the completion gate.
+
+- [x] **Step 8: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`. Run `uv run --with pyyaml python build/check_conformance.py`. Expected: it passes.
+- [x] **Step 9: Commit**
 
 ```bash
 git add skills/subagent-driven-development agents/task-reviewer.md runtimes specs/baseline/red-baseline-test-run specs/baseline/red-baseline-test-run.md
@@ -575,14 +609,14 @@ git commit -m "feat(agents): the task reviewer reads the controller's test run"
 **Files:**
 - Modify: `NOTICE` (the superpowers section)
 
-- [ ] **Step 1: Extend the task-start and task-done bullet.** After its last sentence, `task-done keeps its own BASE check.`, add:
+- [x] **Step 1: Extend the task-start and task-done bullet.** After its last sentence, `task-done keeps its own BASE check.`, add:
 
 ```text
     task-done runs its command through subagent-driven-development's
     test-run (plan 84), and its ledger line is unchanged.
 ```
 
-- [ ] **Step 2: Append a bullet** after the bullet that starts `Plan 82 (2026-11-09) adopted upstream v7.0.2's helper fixes`. Use the date of the commit:
+- [x] **Step 2: Append a bullet** after the bullet that starts `Plan 82 (2026-11-09) adopted upstream v7.0.2's helper fixes`. Use the date of the commit:
 
 ```text
   - Plan 84 (<YYYY-MM-DD>) adds subagent-driven-development/scripts/test-run
@@ -599,8 +633,10 @@ git commit -m "feat(agents): the task reviewer reads the controller's test run"
     upstream text.
 ```
 
-- [ ] **Step 3: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 4: Commit**
+> Deviation: the bullet sits after plan 86's bullet, the last in its list, and takes the date 2026-11-10. A task review corrected which parts of the text it calls local.
+
+- [x] **Step 3: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 4: Commit**
 
 ```bash
 git add NOTICE

@@ -881,14 +881,14 @@ in that session on 2026-11-07. No artifact path or transcript is available here
 to verify the handoff or whether that brainstorm has run.
 
 **Disposition: closed with no build (plan 83, owner decision D8, 2026-11-09).** The
-tester-seat brainstorm became `specs/spec-derived-acceptance-tests.md`. Its probe (plan 81,
+tester-seat brainstorm became `specs/completed/spec-derived-acceptance-tests.md`. Its probe (plan 81,
 `specs/baseline/red-baseline-acceptance-tests.md`) found that a fresh Self-Review caught all 15 planted
 misreads, more than any test-writing arm. The redesign, `specs/completed/statement-level-readings.md`,
 had two readers state what the spec asks. Its probe (plan 83, `specs/baseline/red-baseline-statement-readings.md`)
 missed every catch bar and the false-alarm bar, with 4.4 to 11.0 false alarms per plan against a bar of
 1.0. The backlog item "Spec-reading test check" is closed. Its layer 4, spec excerpts in the implementer
 brief, stays open as an item in `specs/deferred_items.md` (`83-statement-level-readings — 2026-11-09`).
-Finding 21's part goes to its own build plan from `specs/spec-derived-acceptance-tests.md`. Done: plan 84 (2026-11-10).
+Finding 21's part goes to its own build plan from `specs/completed/spec-derived-acceptance-tests.md`. Done: plan 84 (2026-11-10).
 
 ## Findings on the other shared skills (2026-11-07 review)
 
@@ -1167,7 +1167,7 @@ Under this repo's proportional-process rule:
   brainstorm (finding 24, handoff reported without an artifact path); then its plan. Finding 18's helper
   fixes land before the seat's plan, since both touch `task-brief` and the
   helper finding 21 asks for. **Update 2026-11-09 (plan 83):** the brainstorm ran as
-  `specs/spec-derived-acceptance-tests.md`, then as `specs/completed/statement-level-readings.md`.
+  `specs/completed/spec-derived-acceptance-tests.md`, then as `specs/completed/statement-level-readings.md`.
   Neither probe's step met its bars against a fresh Self-Review, and the owner chose no build plan for
   finding 24 (D8), so no seat's plan follows. Finding 21's part keeps its own build plan. Done: plan 84 (2026-11-10).
 - **Local design proposals, not yet logged in `specs/deferred_items.md`, no spec yet:**
