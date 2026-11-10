@@ -113,10 +113,11 @@ def parse_scores(result: str) -> dict[str, list[str]]:
 
 
 def majority(votes: list[str]) -> str:
-    passes, fails = votes.count('P'), votes.count('F')
-    if passes == fails:
-        return 'U'
-    return 'P' if passes > fails else 'F'
+    '''P or F when it holds more than half of all configured votes, missing ones included; else U.'''
+    for verdict in ('P', 'F'):
+        if 2 * votes.count(verdict) > len(votes):
+            return verdict
+    return 'U'
 
 
 def run(args: argparse.Namespace) -> None:
@@ -223,6 +224,12 @@ def selftest() -> None:
     assert round(fisher_one_sided(13, 25, 12, 25), 3) == 0.5, fisher_one_sided(13, 25, 12, 25)
     assert round(fisher_one_sided(13, 25, 8, 25), 3) == 0.126, fisher_one_sided(13, 25, 8, 25)
     assert tuple(round(x, 2) for x in wilson(13, 25)) == (0.33, 0.70), wilson(13, 25)
+    # A majority is more than half of the configured votes; a missing vote ('-') counts against both.
+    assert majority(['P', '-', '-']) == 'U', majority(['P', '-', '-'])
+    assert majority(['F', '-', '-']) == 'U', majority(['F', '-', '-'])
+    assert majority(['P', 'F', '-']) == 'U', majority(['P', 'F', '-'])
+    assert majority(['P', 'P', '-']) == 'P', majority(['P', 'P', '-'])
+    assert majority(['F', 'F', 'P']) == 'F', majority(['F', 'F', 'P'])
     print('selftest ok')
 
 
