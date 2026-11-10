@@ -826,6 +826,15 @@ def test_test_run_marks_a_dirty_tree(committed):
     assert lines[3] == 'tree: dirty, changed or untracked paths: 1'
 
 
+def test_test_run_marks_untracked_files_whatever_the_git_config_says(committed):
+    git('config', 'status.showUntrackedFiles', 'no', cwd=committed)
+    (committed / 'scratch.txt').write_text('x\n')
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'true', cwd=committed)
+    assert result.returncode == 0, result.stderr
+    lines = run_file(committed, 'task-1-tests.log').read_text().splitlines()
+    assert lines[3] == 'tree: dirty, changed or untracked paths: 1'
+
+
 def test_test_run_records_a_command_that_cannot_start(committed):
     result = run(TEST_RUN, 'plan.md', 1, '--', 'no-such-command-plan84', cwd=committed)
     assert result.returncode == 127
