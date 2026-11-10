@@ -1,0 +1,13 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: Add a monthly statement to our allotment society's app. On the first of each month, every plot holder gets an email with their plot number, the water they used last month in litres, the charge at 0.4p a litre, and the balance on their account. Use the email settings the app already has.
+
+[you, tools] You read the repository, a Flask app with SQLite. `models.py` has `PlotHolder` (`name`, `email`, `plot_number`, `balance_pence`) and `MeterReading` (`plot_number`, `read_on`, `litres_total`), one reading for each plot each week. `mailer.py` sends the committee's newsletter through the SMTP settings in `config.py`, and a cron job on the same server runs `flask send-newsletter` each Friday. Nothing in the code charges for water or sends statements.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.

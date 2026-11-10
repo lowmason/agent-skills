@@ -48,7 +48,7 @@ from the 2026-11-07 workflow review.
 | | |
 |---|---|
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
-| Adoption baselines | Unchanged from the 2026-10-28 revision: `b36e082` (v6.3.0) for plan 22; `8ca22db` (v6.4.2) for plan 40; per-fix commits for plan 50; `bb92a77` (v7.0.0) for plan 60's idea; `2ce8aa1` (v7.0.1) for plans 70, 71, 72 and 75. Nothing was adopted in this revision. Added by plan 82 (2026-11-09): `22f0b46` (v7.0.2) |
+| Adoption baselines | Unchanged from the 2026-10-28 revision: `b36e082` (v6.3.0) for plan 22; `8ca22db` (v6.4.2) for plan 40; per-fix commits for plan 50; `bb92a77` (v7.0.0) for plan 60's idea; `2ce8aa1` (v7.0.1) for plans 70, 71, 72 and 75. Nothing was adopted in this revision. Added by plan 82 (2026-11-09): `22f0b46` (v7.0.2), also plan 86's base (2026-11-10) |
 | Previous review | `2ce8aa1` (v7.0.1, 2026-10-21), reviewed 2026-10-28, re-anchored 2026-10-31 |
 | Upstream HEAD | `22f0b46` (v7.0.2, 2026-11-03), still `main` on 2026-11-07. Re-checked 2026-11-10 with `git ls-remote`: `main` is still `22f0b46`, `dev` is still `df2e996`, and no tag follows v7.0.2 |
 | Our tree | `5beacf5` (2026-11-07). Its unversioned assessment is byte-identical to the v7.0.1 copy before archival annotations; the v7.0.2 file was added later, in `44554e1` |
@@ -90,7 +90,7 @@ whole `SKILL.md` file in bytes, which is the unit of upstream's size test
 
 | Skill | Upstream v7.0.1 → v7.0.2 | Our commits since 2026-10-31 | `SKILL.md` bytes, upstream / ours | Where it stands |
 |---|---|---|---|---|
-| brainstorming | 2 files, +67 / −38: the #2644 retune and `start-server.sh` | 3: `3ad94f8` (start-server), `caeba8f` (neighbor-skill wiring), `1f64a61` (derive-roadmap route, plan 78) | 15,190 / 18,764 | #2644 open under finding 4; #2608 already covered |
+| brainstorming | 2 files, +67 / −38: the #2644 retune and `start-server.sh` | 3: `3ad94f8` (start-server), `caeba8f` (neighbor-skill wiring), `1f64a61` (derive-roadmap route, plan 78) | 15,190 / 18,764 | #2644 adopted under finding 4 (plan 86); #2608 already covered |
 | dispatching-parallel-agents | unchanged | 1: `226ab9f` | 6,078 / 7,324 | finding 26 |
 | executing-plans | 3 files, +16 / −7: #2607 wording, `task-start` and `task-done` | 8, all plan 75's port (`06e5a96`, `da62ab4`, …) and its loose ends through `686ffd7` | 18,364 / 16,946 | finding 11 adopted; v7.0.2's items under finding 18 |
 | finishing-a-development-branch | unchanged | 2: `e544b1e`, `34cec3e` (Declined lines at Step 4b) | 7,781 / 20,741 | finding 8 unchanged; finding 28 |
@@ -116,7 +116,7 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 1 | SDD workspace has no plan identity | **Adopted** — plan 22 |
 | 2 | Implementers can spawn duplicate reviewers | **Adopted** — plan 22 |
 | 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged at v7.0.2 |
-| 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`). v7.0.2's retune (#2644) is **open**, a port candidate; see the finding |
+| 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`). v7.0.2's retune (#2644) **adopted** — plan 86 (2026-11-10), see the finding |
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | **Adopted** — plan 75, rulings mid-run only (F7); decided 2026-10-21 |
@@ -230,7 +230,7 @@ and 24 do not close this prospective item. The archived finding 3 holds the
 historical evidence; its assurance about the then-existing test suites is not
 a fresh audit of today's suites.
 
-### 4. Brainstorming ceremony does not scale — adopted (plan 70), rebased on v7.0.1; v7.0.2's retune open
+### 4. Brainstorming ceremony does not scale — adopted (plan 70, v7.0.1), and v7.0.2's retune (plan 86)
 
 **Adopted by plan 70 (2026-10-28).** `skills/brainstorming/SKILL.md` follows
 upstream v7.0.1 (`2ce8aa1`). `NOTICE` names what was taken and each deliberate
@@ -309,8 +309,8 @@ branch, the `model: opus` builder check and the token-cost warning. The
 options-with-a-pick change replaces plan 70's narrower sentence and its Red
 Flags row with upstream's wider rule, and the plan-70 pressure row about guess
 lists before the first question (`:106-108`) has to be reconciled with
-upstream's "sketch each concretely": the two agree once the why is known and
-disagree before it, which is exactly the line upstream draws. This is a
+upstream's "sketch each concretely": the two agree before the why is known and
+disagree after it, which is exactly the line upstream draws. This is a
 behavior-shaping change to a discipline skill, so writing-skills' micro-test
 and pressure test apply; plan 70's RED baseline is the control, and its
 question-style cases re-run (T7, the first-question case, decided under a
@@ -323,6 +323,31 @@ letter reading; see `specs/baseline/red-baseline-brainstorming-2026-10-28.md`,
 isolated kit and this result rather than treating the original pass as current.
 The reported nine-default tester-seat handoff has no artifact path here, so
 its claimed question-round-trip saving is a hypothesis, not measured evidence.
+
+**Adopted by plan 86 (2026-11-10).** `skills/brainstorming/SKILL.md` now
+carries #2644 (`e8cc5c9`, read at `22f0b46`). Plan 70's divergences
+hold, and two are new. The first-message design is for a small change
+only. Plan 70's sentence against guess lists applies before the why is
+known. `NOTICE` names what was taken. The behavior record is
+`specs/baseline/red-baseline-brainstorming-v7-0-2.md`. The port as first
+written showed a T7 regression on the blind panel (8 of 25 against 17 of
+25, p 0.011), and the P3 guard fell to 1 of 5. The owner approved one
+local wording round on two sentences, which `NOTICE` names. The figures
+that follow are for the copy after that round. T7 scored
+13 of 25 on the new copy and 17 of 25 on today's copy, in one run
+(one-sided Fisher p 0.926 for a gain, 0.193 for a regression). The new
+cases scored 0, 0, 0 and 0 of 5 on today's copy and 5, 4, 4 and 5 of 5 on
+the new copy (T10 to T13). The P3 guard missed, at 3 of 5 against
+5 of 5 on today's copy, and the owner accepted it as a known gap. Told to
+just write the design up, the skill sometimes writes it with its pick
+inside. The other guards held at 4 of 5 or better. T1, T2, T3, T4, T6v
+and P2b ran only on the copy before the round. T7 stays below plan
+70's bar of 20 of 25 on both copies. After the round the owner chose
+"(b) Accept as known gap (Recommended)": "Record that T7 stays below the
+bar on the shipped copy, as it does on today's copy. Quote this choice
+in the record, in finding 4 and in one new NOTICE sentence. No spend, no
+skill change." The figures in
+"The upstream-reported measured bar" above stay upstream's.
 
 ### 8. Smaller items
 
@@ -484,8 +509,9 @@ so retiring v7.0.1 must not remove this residual design item from the backlog.
 
 ## New finding (v7.0.2)
 
-v7.0.2's main change, the brainstorming retune (#2644), is finding 4's and is
-open there. Its `start-server.sh` and systematic-debugging items are under
+v7.0.2's main change, the brainstorming retune (#2644), is finding 4's,
+adopted there by plan 86 (2026-11-10). Its `start-server.sh` and
+systematic-debugging items are under
 Already covered. One finding is new.
 
 ### 18. v7.0.2 helper hardening: repository, task IDs, fences, invocation
@@ -1130,7 +1156,7 @@ Under this repo's proportional-process rule:
   Plan 70's isolated T7 rerun, rather than its original GREEN claim, is the
   current local baseline evidence. **Update 2026-11-09 (plan 83):** the
   tester-seat brainstorm has run, and finding 24 closed with no build plan
-  (D8). The order question no longer applies.
+  (D8). The order question no longer applies. **Done: plan 86 (2026-11-10).**
 - **Reported order (unverified 2026-11-07 session context):** this drift pass; then the tester-seat
   brainstorm (finding 24, handoff reported without an artifact path); then its plan. Finding 18's helper
   fixes land before the seat's plan, since both touch `task-brief` and the

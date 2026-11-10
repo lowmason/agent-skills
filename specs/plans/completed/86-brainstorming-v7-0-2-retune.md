@@ -1,5 +1,7 @@
 # Brainstorming v7.0.2 Retune Port Implementation Plan
 
+**Status: COMPLETE (2026-11-10)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Take upstream superpowers v7.0.2's brainstorming retune ("questions earn their place", #2644) into `skills/brainstorming/SKILL.md`, with plan 70's divergences held and two new local ones, and measure it against today's copy with isolated decision-only micro-tests.
@@ -107,9 +109,9 @@ The planner set these, and the owner approved them as written at plan review.
   - `uv run python <rec>/kit/panel.py selftest`
   - In `panel.py`: `fisher_one_sided(a_pass: int, a_n: int, b_pass: int, b_n: int) -> float` (the one-sided Fisher exact p that arm A's pass rate is above arm B's), and `wilson(passes: int, n: int) -> tuple[float, float]` (the 95% Wilson interval).
 
-- [ ] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Run `git rev-parse BASE:skills/brainstorming/SKILL.md` and `claude --version`. Expected: `50b5a31c413837021bc26d69d8d1c33c3a196477`, and a version you record. If the blob differs, stop for the owner (owner gate): another change reached the skill, so Task 2's replacements and hashes no longer hold.
+- [x] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Run `git rev-parse BASE:skills/brainstorming/SKILL.md` and `claude --version`. Expected: `50b5a31c413837021bc26d69d8d1c33c3a196477`, and a version you record. If the blob differs, stop for the owner (owner gate): another change reached the skill, so Task 2's replacements and hashes no longer hold.
 
-- [ ] **Step 2: Copy plan 70's kit.** Copy `cases.py`, `build_prompts.py` and `show_reps.py` from plan 70's `kit/`, and `isolation_probe.txt` from `specs/baseline/red-baseline-writing-skills-split/kit/`. Change only the docstrings' "plan 70" to "plan 86" in `build_prompts.py` and `show_reps.py`. In `cases.py`, add to the module docstring's list of excluded domains: "or a spec that gives one keyboard shortcut to two features (v7.0.2's release notes)". Then add these four entries to `CASES`, after `P3`, as exact copy:
+- [x] **Step 2: Copy plan 70's kit.** Copy `cases.py`, `build_prompts.py` and `show_reps.py` from plan 70's `kit/`, and `isolation_probe.txt` from `specs/baseline/red-baseline-writing-skills-split/kit/`. Change only the docstrings' "plan 70" to "plan 86" in `build_prompts.py` and `show_reps.py`. In `cases.py`, add to the module docstring's list of excluded domains: "or a spec that gives one keyboard shortcut to two features (v7.0.2's release notes)". Then add these four entries to `CASES`, after `P3`, as exact copy:
 
 ````python
     'T10': {'how': 'auto', 'conversation': '''
@@ -139,9 +141,13 @@ Partner: I'd like a proper written spec for this before anyone builds it. Last m
 
 Check: `git diff --no-index` of the old and new `cases.py` shows only the docstring line and these four entries. `FRAME`, `SKILL_BLOCK`, `HOW_LOADED` and every existing case are byte-identical, so a T7 prompt built at BASE differs from plan 70's only in the skill body.
 
-- [ ] **Step 3: Write `run_reps.sh`.** Copy plan 72's script and change two things. The `mktemp` prefix becomes `/tmp/plan86-rep-XXXXXX`. The `claude` call runs under `env -i HOME="$HOME" USER="$USER" LOGNAME="$LOGNAME" PATH="$PATH" SHELL="$SHELL" TMPDIR="${TMPDIR:-/tmp}" LANG="${LANG:-en_US.UTF-8}"`, with the two disable variables after it. The reason: a `claude -p` child of a Desktop session inherits that session's environment (its effort, session id and messaging socket), and `--setting-sources ""` does not clear it. Add one comment line that says so. Everything else is unchanged: `--tools ""`, `--strict-mcp-config`, `--setting-sources ""`, `--no-session-persistence`, `--output-format json`, `--max-budget-usd 0.50`, the first rep alone and the rest in parallel.
+> Deviation: the `cases.py` docstring addition wraps over two lines to keep the file's wrap (ledger ruling).
 
-- [ ] **Step 4: Write `panel.py` and run its self-test.** `run` gathers the `result` text of each `rep<N>.json` in each arm's directory. It labels the replies `R01` to `Rnn` in a shuffled order, using one seed for each vote (`--seed` plus the vote number). For each vote it writes `vote<k>-input.txt`, `vote<k>-labels.json` (label to `<arm>-rep<N>`) and `vote<k>-output.json`. The input text takes the header of `specs/baseline/red-baseline-brainstorming-2026-10-28/t7-confirm-panel/vote1-input.txt`, from its first line up to `=== RULE ===`, with the reply count set to the real one. Then come the rule file, the request (the control prompt for the case) and the replies, in that file's layout. Each vote is one `claude -p` call, made with `run_reps.sh`'s `env -i`, flags and model, and `--max-budget-usd 1.00`. `run` then writes `panel-verdicts.json`: for each `<arm>-rep<N>`, the votes and the majority. `tally` prints, for each arm, the passes, n, the rate and the Wilson interval. With `--hand` it lists each rep where the hand score and the majority differ, and it flags an arm that the two scorings put on different sides of a bar. With `--compare A B` it prints `fisher_one_sided` both ways. `selftest` asserts these values and prints `selftest ok`:
+- [x] **Step 3: Write `run_reps.sh`.** Copy plan 72's script and change two things. The `mktemp` prefix becomes `/tmp/plan86-rep-XXXXXX`. The `claude` call runs under `env -i HOME="$HOME" USER="$USER" LOGNAME="$LOGNAME" PATH="$PATH" SHELL="$SHELL" TMPDIR="${TMPDIR:-/tmp}" LANG="${LANG:-en_US.UTF-8}"`, with the two disable variables after it. The reason: a `claude -p` child of a Desktop session inherits that session's environment (its effort, session id and messaging socket), and `--setting-sources ""` does not clear it. Add one comment line that says so. Everything else is unchanged: `--tools ""`, `--strict-mcp-config`, `--setting-sources ""`, `--no-session-persistence`, `--output-format json`, `--max-budget-usd 0.50`, the first rep alone and the rest in parallel.
+
+> Deviation: `run_reps.sh` keeps plan 72's file mode (644) and header, and gains one comment line on `env -i` (ledger ruling).
+
+- [x] **Step 4: Write `panel.py` and run its self-test.** `run` gathers the `result` text of each `rep<N>.json` in each arm's directory. It labels the replies `R01` to `Rnn` in a shuffled order, using one seed for each vote (`--seed` plus the vote number). For each vote it writes `vote<k>-input.txt`, `vote<k>-labels.json` (label to `<arm>-rep<N>`) and `vote<k>-output.json`. The input text takes the header of `specs/baseline/red-baseline-brainstorming-2026-10-28/t7-confirm-panel/vote1-input.txt`, from its first line up to `=== RULE ===`, with the reply count set to the real one. Then come the rule file, the request (the control prompt for the case) and the replies, in that file's layout. Each vote is one `claude -p` call, made with `run_reps.sh`'s `env -i`, flags and model, and `--max-budget-usd 1.00`. `run` then writes `panel-verdicts.json`: for each `<arm>-rep<N>`, the votes and the majority. `tally` prints, for each arm, the passes, n, the rate and the Wilson interval. With `--hand` it lists each rep where the hand score and the majority differ, and it flags an arm that the two scorings put on different sides of a bar. With `--compare A B` it prints `fisher_one_sided` both ways. `selftest` asserts these values and prints `selftest ok`:
   - `round(fisher_one_sided(20, 25, 13, 25), 3) == 0.036`
   - `round(fisher_one_sided(19, 25, 13, 25), 3) == 0.070`
   - `round(fisher_one_sided(13, 25, 12, 25), 3) == 0.5`
@@ -150,7 +156,7 @@ Check: `git diff --no-index` of the old and new `cases.py` shows only the docstr
 
   These are the figures in plan 70's record (lines 1196 to 1302 and 1380). Run `uv run python <rec>/kit/panel.py selftest`. Expected: `selftest ok`.
 
-- [ ] **Step 5: Write the record with the registered rules, and commit it before any rep.** `<rec>.md` opens with a quarantine note like plan 70's record: quarantine this file, its folder and plan 86 during any later micro-test of brainstorming. Then come these sections. **Method** gives BASE, the Claude Code version, the kit, the command, the model, the arms (today's copy at BASE, the new copy at NEW, read with `git show`) and the background: none, by isolation. **Rules** holds the text below, as exact copy. **Spend** holds the running total.
+- [x] **Step 5: Write the record with the registered rules, and commit it before any rep.** `<rec>.md` opens with a quarantine note like plan 70's record: quarantine this file, its folder and plan 86 during any later micro-test of brainstorming. Then come these sections. **Method** gives BASE, the Claude Code version, the kit, the command, the model, the arms (today's copy at BASE, the new copy at NEW, read with `git show`) and the background: none, by isolation. **Rules** holds the text below, as exact copy. **Spend** holds the running total.
 
 ````markdown
 **General rules.** Plan 70's record, section Rules, "General rules (every case, every arm)", applies as written: read each reply whole; the VOID rules, including the D14 rule on `turns`, `extra-iters` and `models`; at most two extra reps (the next free numbers) for each VOID rep; Insight boxes ignored; a case passes on an arm at 4 or more of 5 scored reps. Added here: a reply that carries an Insight box, or quotes a user-level file, is VOID as an isolation leak.
@@ -194,13 +200,15 @@ git add specs/baseline/red-baseline-brainstorming-v7-0-2.md specs/baseline/red-b
 git commit -m "test(brainstorming): register plan 86's micro-test kit and rules"
 ```
 
-- [ ] **Step 6: Isolation pilot.** Run 2 reps of `isolation_probe.txt` into `<rec>/isolation-pilot/`. Expected: each reply answers NO on all five lines (CLAUDE.md, output style, rules, SessionStart hook text, auto-memory), and `show_reps.py` shows `turns=1 extra-iters=- models=1`. Any YES stops the run for the owner.
+- [x] **Step 6: Isolation pilot.** Run 2 reps of `isolation_probe.txt` into `<rec>/isolation-pilot/`. Expected: each reply answers NO on all five lines (CLAUDE.md, output style, rules, SessionStart hook text, auto-memory), and `show_reps.py` shows `turns=1 extra-iters=- models=1`. Any YES stops the run for the owner.
 
-- [ ] **Step 7: RED on today's copy.** Build the prompts with `build_prompts.py skill BASE <rec>/prompts/today`. Also build `build_prompts.py control - <rec>/prompts/control`. No rep runs on the control prompts. Task 3's panel shows its voters the control T7 prompt, as plan 70's panel did, so no voter sees either copy's skill text. Run T7 reps 1 to 25 into `<rec>/red/today/T7/`, and T10, T11, T12 and T13 reps 1 to 5 each into `<rec>/red/today/<case>/`. After the batch, run `show_reps.py` over the five folders and add the spend to the running total.
+- [x] **Step 7: RED on today's copy.** Build the prompts with `build_prompts.py skill BASE <rec>/prompts/today`. Also build `build_prompts.py control - <rec>/prompts/control`. No rep runs on the control prompts. Task 3's panel shows its voters the control T7 prompt, as plan 70's panel did, so no voter sees either copy's skill text. Run T7 reps 1 to 25 into `<rec>/red/today/T7/`, and T10, T11, T12 and T13 reps 1 to 5 each into `<rec>/red/today/<case>/`. After the batch, run `show_reps.py` over the five folders and add the spend to the running total.
 
-- [ ] **Step 8: Score RED and run the fixture check.** Hand-score every rep under the registered rules, before Task 2, and write T7's hand scores to `<rec>/red/today/T7/hand-scores.json` (`{"today-rep<N>": "P" | "F"}`). In `<rec>.md`, under `## RED`: a table of the five cases with the tally and the role of T10 to T13; rep verdicts in rep order; one line for each FAIL and VOID (`<case> rep<N>: <why>, "<short verbatim quote>"`); the descriptive counts; and the fixture check, with each question listed. A fixture found open is an owner gate (Step 5, "Fixture check").
+- [x] **Step 8: Score RED and run the fixture check.** Hand-score every rep under the registered rules, before Task 2, and write T7's hand scores to `<rec>/red/today/T7/hand-scores.json` (`{"today-rep<N>": "P" | "F"}`). In `<rec>.md`, under `## RED`: a table of the five cases with the tally and the role of T10 to T13; rep verdicts in rep order; one line for each FAIL and VOID (`<case> rep<N>: <why>, "<short verbatim quote>"`); the descriptive counts; and the fixture check, with each question listed. A fixture found open is an owner gate (Step 5, "Fixture check").
 
-- [ ] **Step 9: Commit RED.**
+> Deviation: the fixture check fired twice. The owner enlarged T11 and closed T13's two gaps, RED re-ran both into `prompts/today-fix1/` and `red/today-fix1/`, and the owner then kept the fixtures with a registered descriptive count. T7 was hand-scored with the tools-in-one-sentence reading (ledger ruling).
+
+- [x] **Step 9: Commit RED.**
 
 ```bash
 git add specs/baseline/red-baseline-brainstorming-v7-0-2.md specs/baseline/red-baseline-brainstorming-v7-0-2
@@ -488,11 +496,11 @@ with:
 | "I've answered their questions, so I'll write the doc" | Lay out the approaches first, in a message of their own (or, when nothing was open from the start, in your first message). |
 ````
 
-- [ ] **Step 1: Confirm the base.** `git rev-parse HEAD:skills/brainstorming/SKILL.md` prints `50b5a31c413837021bc26d69d8d1c33c3a196477`. If not, stop (owner gate).
+- [x] **Step 1: Confirm the base.** `git rev-parse HEAD:skills/brainstorming/SKILL.md` prints `50b5a31c413837021bc26d69d8d1c33c3a196477`. If not, stop (owner gate).
 
-- [ ] **Step 2: Apply H1 to H14 exactly.** Use exact string replacement, one block at a time. Each "Replace" text must match once.
+- [x] **Step 2: Apply H1 to H14 exactly.** Use exact string replacement, one block at a time. Each "Replace" text must match once.
 
-- [ ] **Step 3: Check the result.** Run:
+- [x] **Step 3: Check the result.** Run:
 
 ```bash
 shasum -a 256 skills/brainstorming/SKILL.md
@@ -501,11 +509,13 @@ uv run --with pyyaml python -c "import sys; sys.path.insert(0, 'build'); from ch
 
 Expected: `9510532845cf24101e91d58cc01f3e282823a1384eac9666c3d9c77c571fd491` and `19480`.
 
-- [ ] **Step 4: Read the result against upstream.** Diff upstream's body at `22f0b46` against the new body (`git -C ~/.cache/agent-skills/superpowers show 22f0b46:skills/brainstorming/SKILL.md`, frontmatter dropped on both sides). Every remaining difference is one of: plan 70's divergences as `NOTICE` lists them; plan 78's derive-roadmap route; `caeba8f`'s creative-thinking sentence; or this plan's D2, D3 and defaults 1 to 3. List any other difference in the task report. Such a difference is an owner gate.
+- [x] **Step 4: Read the result against upstream.** Diff upstream's body at `22f0b46` against the new body (`git -C ~/.cache/agent-skills/superpowers show 22f0b46:skills/brainstorming/SKILL.md`, frontmatter dropped on both sides). Every remaining difference is one of: plan 70's divergences as `NOTICE` lists them; plan 78's derive-roadmap route; `caeba8f`'s creative-thinking sentence; or this plan's D2, D3 and defaults 1 to 3. List any other difference in the task report. Such a difference is an owner gate.
 
-- [ ] **Step 5: Run the commit lints.** Run `bash build/run_commit_lints.sh`. Expected: it exits 0. The compaction-window check passes at 19,480 characters, the dependency-drift test passes, and the snippet and link checks are clean.
+> Deviation: plan 74's `/deferred` "→ planned" sentence fell outside Step 4's four kinds. The owner kept it as a later local addition (owner gate).
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 5: Run the commit lints.** Run `bash build/run_commit_lints.sh`. Expected: it exits 0. The compaction-window check passes at 19,480 characters, the dependency-drift test passes, and the snippet and link checks are clean.
+
+- [x] **Step 6: Commit.**
 
 ```bash
 git add skills/brainstorming/SKILL.md
@@ -522,13 +532,13 @@ git commit -m "feat(brainstorming): take upstream v7.0.2's question retune (#264
 - Consumes: NEW (Task 2), the kit and the RED reps (Task 1).
 - Produces: the results that Task 4 cites. In `<rec>.md`: the T7 tallies of both copies, their Wilson intervals and both Fisher p values; the T10 to T13 tallies with roles; each guard's tally; the Disposition line.
 
-- [ ] **Step 1: Build the prompts at NEW.** Run `build_prompts.py skill NEW <rec>/prompts/new`. Check that each prompt's text differs from the same case's `<rec>/prompts/today/` prompt only inside the `<skill name="brainstorming">` block.
+- [x] **Step 1: Build the prompts at NEW.** Run `build_prompts.py skill NEW <rec>/prompts/new`. Check that each prompt's text differs from the same case's `<rec>/prompts/today/` prompt only inside the `<skill name="brainstorming">` block.
 
-- [ ] **Step 2: Run the new copy.** T7 reps 1 to 25 into `<rec>/green/new/T7/`. T10 to T13 reps 1 to 5. Guards T1, T2, T3, T4, T5, T6v, T8a, T8b, T9, P1, P2b and P3, reps 1 to 5. Run them in batches and update the running total after each. Stop for the owner before the total passes $10.
+- [x] **Step 2: Run the new copy.** T7 reps 1 to 25 into `<rec>/green/new/T7/`. T10 to T13 reps 1 to 5. Guards T1, T2, T3, T4, T5, T6v, T8a, T8b, T9, P1, P2b and P3, reps 1 to 5. Run them in batches and update the running total after each. Stop for the owner before the total passes $10.
 
-- [ ] **Step 3: Hand-score every rep.** Score every rep under the registered rules, and write T7's hand scores to `<rec>/green/new/T7/hand-scores.json` before Step 4. Merge both copies' T7 hand scores into `<rec>/panel/T7/hand-scores.json`.
+- [x] **Step 3: Hand-score every rep.** Score every rep under the registered rules, and write T7's hand scores to `<rec>/green/new/T7/hand-scores.json` before Step 4. Merge both copies' T7 hand scores into `<rec>/panel/T7/hand-scores.json`.
 
-- [ ] **Step 4: The T7 panel.** Write the T7 rule paragraph of the record (Task 1 Step 5) to `<rec>/panel/T7/rule.txt`. Then run:
+- [x] **Step 4: The T7 panel.** Write the T7 rule paragraph of the record (Task 1 Step 5) to `<rec>/panel/T7/rule.txt`. Then run:
 
 ```bash
 REC=specs/baseline/red-baseline-brainstorming-v7-0-2; uv run python "$REC/kit/panel.py" run --rule "$REC/panel/T7/rule.txt" --request "$REC/prompts/control/T7.txt" --out "$REC/panel/T7" --votes 3 --seed 86 today="$REC/red/today/T7" new="$REC/green/new/T7"
@@ -537,15 +547,17 @@ REC=specs/baseline/red-baseline-brainstorming-v7-0-2; uv run python "$REC/kit/pa
 
 The request is the control T7 prompt, with no skill text. Each vote sees 50 replies with arm and rep hidden, and the panel majority is each rep's verdict.
 
-- [ ] **Step 5: Apply the bars.** Score each case against its bar from the record's Bars. For a guard that misses, run 5 reps of that case on today's copy into `<rec>/diag/today/<case>/` with the Task 1 prompts, and report both tallies. Any missed bar, T7 regression or unresolved arm is an owner gate, with the outcomes (a), (b) and (c) of the record. Under (a), the new text and the cases it re-runs are registered in `<rec>.md` and committed before any rep. Then Task 2's Steps 3 and 5 run again with the new figures.
+- [x] **Step 5: Apply the bars.** Score each case against its bar from the record's Bars. For a guard that misses, run 5 reps of that case on today's copy into `<rec>/diag/today/<case>/` with the Task 1 prompts, and report both tallies. Any missed bar, T7 regression or unresolved arm is an owner gate, with the outcomes (a), (b) and (c) of the record. Under (a), the new text and the cases it re-runs are registered in `<rec>.md` and committed before any rep. Then Task 2's Steps 3 and 5 run again with the new figures.
 
-- [ ] **Step 6: Write the results.** Append to `<rec>.md`:
+> Deviation: bars missed on NEW went to the owner, who chose one wording round on H6 and H9 (NEW-R1, `9761c88`, sha256 `3194843f…`) and then accepted P3 and T7 as known gaps. T12 ran on NEW-R1 at the final review, 4 of 5.
+
+- [x] **Step 6: Write the results.** Append to `<rec>.md`:
   - `## New copy`: a table of the four new cases (RED tally, role, new tally, verdict) and the twelve guards (new tally, verdict); rep verdicts in rep order; one line for each FAIL and VOID; the descriptive counts.
   - `## T7 panel`: both tallies with Wilson intervals, both Fisher p values, the 2026-11-05 figure, any disagreement between the hand scores and the panel, and the descriptive count of fail forms for each copy.
   - `## Disposition`: one line for each bar (met, missed, unresolved), and the owner's ruling where a gate ran.
   - The spend total, with a privacy scan over every new rep and panel file: no `/Users/` path, no e-mail address, and no token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 git add specs/baseline/red-baseline-brainstorming-v7-0-2.md specs/baseline/red-baseline-brainstorming-v7-0-2
@@ -561,7 +573,7 @@ git commit -m "test(brainstorming): new copy, guards and T7 panel for plan 86"
 **Interfaces:**
 - Consumes: Task 3's results in `<rec>.md`, and the date of Task 2's commit as `<date>` (`YYYY-MM-DD`).
 
-- [ ] **Step 1: Add the `NOTICE` bullet.** Put it after the last bullet of the superpowers change list, which ends before the directory list that starts `    brainstorming/`. At planning that last bullet is plan 82's. Plans 84 and 85 may add bullets first. Use the list's indentation (two spaces, a dash, four spaces on continuation lines) and wrap at about 72 columns. Exact copy, with `<date>` filled in:
+- [x] **Step 1: Add the `NOTICE` bullet.** Put it after the last bullet of the superpowers change list, which ends before the directory list that starts `    brainstorming/`. At planning that last bullet is plan 82's. Plans 84 and 85 may add bullets first. Use the list's indentation (two spaces, a dash, four spaces on continuation lines) and wrap at about 72 columns. Exact copy, with `<date>` filled in:
 
 ````text
   - Plan 86 (<date>) took upstream v7.0.2's brainstorming retune into
@@ -599,7 +611,9 @@ git commit -m "test(brainstorming): new copy, guards and T7 panel for plan 86"
 
 If Task 3's owner gate chose (b) or (c) for a passage, add one sentence that names it. Example: "The T12 options passage missed its bar and is recorded as a known gap."
 
-- [ ] **Step 2: Update the drift spec's tables.** Find each place by its heading or row, not by its line number:
+> Deviation: the bullet adds sentences naming the wording round, the P3 gap and, after the final gate, the T7 gap (ledger ruling and owner gate).
+
+- [x] **Step 2: Update the drift spec's tables.** Find each place by its heading or row, not by its line number:
   - Status table, row 4. Replace `**Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`). v7.0.2's retune (#2644) is **open**, a port candidate; see the finding` with `**Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`). v7.0.2's retune (#2644) **adopted** — plan 86 (<date>), see the finding`.
   - "Shared skills at v7.0.2" table, brainstorming row. Replace `#2644 open under finding 4` with `#2644 adopted under finding 4 (plan 86)`.
   - Section "New finding (v7.0.2)", first paragraph. Replace `is finding 4's and is
@@ -607,7 +621,7 @@ open there.` (a line break after "is") with `is finding 4's, adopted there by pl
   - Scope table, row "Adoption baselines". Replace `Added by plan 82 (2026-11-09): `22f0b46` (v7.0.2)` with `Added by plan 82 (2026-11-09): `22f0b46` (v7.0.2), also plan 86's base (<date>)`.
   - "Suggested disposition", the bullet that starts `**Port candidate, a plan with micro-tests and no spec:**`. After its last sentence ("The order question no longer applies."), add ` **Done: plan 86 (<date>).**`
 
-- [ ] **Step 3: Update finding 4.** Replace the heading `### 4. Brainstorming ceremony does not scale — adopted (plan 70), rebased on v7.0.1; v7.0.2's retune open` with `### 4. Brainstorming ceremony does not scale — adopted (plan 70, v7.0.1), and v7.0.2's retune (plan 86)`. Under "**How a port lands here.**", replace `the two agree once the why is known and disagree before it, which is exactly the line upstream draws.` with `the two agree before the why is known and disagree after it, which is exactly the line upstream draws.` (default 7). Then add this paragraph after the finding's last paragraph (the one that ends "a hypothesis, not measured evidence."), with the bracketed parts filled from `<rec>.md`:
+- [x] **Step 3: Update finding 4.** Replace the heading `### 4. Brainstorming ceremony does not scale — adopted (plan 70), rebased on v7.0.1; v7.0.2's retune open` with `### 4. Brainstorming ceremony does not scale — adopted (plan 70, v7.0.1), and v7.0.2's retune (plan 86)`. Under "**How a port lands here.**", replace `the two agree once the why is known and disagree before it, which is exactly the line upstream draws.` with `the two agree before the why is known and disagree after it, which is exactly the line upstream draws.` (default 7). Then add this paragraph after the finding's last paragraph (the one that ends "a hypothesis, not measured evidence."), with the bracketed parts filled from `<rec>.md`:
 
 ````text
 **Adopted by plan 86 (<date>).** `skills/brainstorming/SKILL.md` now
@@ -624,9 +638,11 @@ ruling.] The figures in "The upstream-reported measured bar" above stay
 upstream's.
 ````
 
-- [ ] **Step 4: Run the checks.** Run `uv run python build/check_provenance.py`, `uv run python build/check_links.py` and `bash build/run_commit_lints.sh`. Expected: each exits 0. Then run `git grep -n -E "retune open|is \*\*open\*\*, a port candidate|#2644 open|and is$" specs/superpowers-drift-spec-v7-0-2.md`. Expected: no output.
+> Deviation: the reconciliation sentence matched across its line break. The adopted paragraph also gives NEW's regression, the round, T12 on NEW-R1, the guards run only before the round and the owner's T7 choice.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 4: Run the checks.** Run `uv run python build/check_provenance.py`, `uv run python build/check_links.py` and `bash build/run_commit_lints.sh`. Expected: each exits 0. Then run `git grep -n -E "retune open|is \*\*open\*\*, a port candidate|#2644 open|and is$" specs/superpowers-drift-spec-v7-0-2.md`. Expected: no output.
+
+- [x] **Step 5: Commit.**
 
 ```bash
 git add NOTICE specs/superpowers-drift-spec-v7-0-2.md

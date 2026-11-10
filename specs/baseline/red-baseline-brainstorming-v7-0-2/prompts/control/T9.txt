@@ -1,0 +1,25 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: I want to turn our band's setlist spreadsheet into printable stage cards: one card per song, big enough to read from the floor.
+
+[you, tools] The repository `gigtools` holds two Python scripts for the band's mailing list. You are on a new branch, `stage-cards`, made from `main`.
+
+You: What has to be on a card for it to help you in the middle of a gig?
+
+Partner: The song title, huge. The key, the capo fret if there is one, and who starts the song. Nothing else.
+
+You: A quick throwaway spike might show what "big enough" means better than words can. I'd build it outside your branch, in a scratch folder, with no tests, just to look at. Want me to?
+
+Partner: Yes, try it.
+
+[you, tools] You wrote `/tmp/stagecards-spike/cards.py`, which reads `setlist.xlsx` and writes `cards.pdf`, one A5 card per song. You showed the partner the PDF. Nothing was added to `stage-cards`.
+
+Partner: This is great. Let's keep it.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.

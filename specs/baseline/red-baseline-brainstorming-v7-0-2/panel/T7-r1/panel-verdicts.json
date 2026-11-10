@@ -1,0 +1,652 @@
+{
+ "today-rep1": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates spread over separate sentences, no list",
+   "Candidates in separate sentences",
+   "Candidates in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep2": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate tools in one sentence",
+   "Three candidate fixes in one sentence",
+   "Three candidate fixes listed in one sentence"
+  ],
+  "panel": "F"
+ },
+ "today-rep3": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Separate if-sentences, not a list",
+   "Candidates in separate sentences",
+   "Candidates in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep4": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate tools named in one sentence",
+   "Three candidate tools in one sentence",
+   "Three candidate tools in one sentence"
+  ],
+  "panel": "F"
+ },
+ "today-rep5": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Candidate meanings set out as bullets",
+   "Candidate meanings set out as bullets",
+   "Bulleted candidate meanings of empty cells"
+  ],
+  "panel": "F"
+ },
+ "today-rep6": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate tools in one sentence",
+   "Three tools listed after colon in one sentence",
+   "Three candidate tools listed in one sentence"
+  ],
+  "panel": "F"
+ },
+ "today-rep7": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates in separate sentences, not a list",
+   "Candidates in separate sentences",
+   "Candidates in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep8": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Meanings and fixes in separate sentences",
+   "Candidates spread across separate sentences",
+   "Candidates in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep9": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two scenarios in separate sentences only",
+   "Separate sentences, open question",
+   "No list of three candidates"
+  ],
+  "panel": "P"
+ },
+ "today-rep10": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Candidate meanings set out as bullets",
+   "Candidate meanings set out as bullets",
+   "Bulleted candidate meanings"
+  ],
+  "panel": "F"
+ },
+ "today-rep11": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates in separate sentences",
+   "Candidates in separate sentences",
+   "Candidates spread across separate sentences, open question"
+  ],
+  "panel": "P"
+ },
+ "today-rep12": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two cases described",
+   "Separate sentences; open question",
+   "Two scenarios in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep13": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Meanings given in separate sentences",
+   "Meanings spread across separate sentences",
+   "Candidate meanings in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep14": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "No candidate list given",
+   "No candidate list; open question",
+   "No list of three candidates"
+  ],
+  "panel": "P"
+ },
+ "today-rep15": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates in separate sentences",
+   "Candidates in separate sentences",
+   "Candidates in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep16": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates in separate sentences",
+   "Candidates in separate sentences",
+   "Candidates given as separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep17": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two scenarios contrasted, no list",
+   "Two scenarios only",
+   "Only two candidate builds offered"
+  ],
+  "panel": "P"
+ },
+ "today-rep18": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "No three candidates in one sentence",
+   "Two scenarios, separate sentences",
+   "Only two contrasting scenarios"
+  ],
+  "panel": "P"
+ },
+ "today-rep19": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "today-rep20": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings listed in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "today-rep21": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Candidates in separate sentences",
+   "Candidates in separate sentences, not a list",
+   "Candidates in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "today-rep22": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate fixes in one sentence",
+   "Three possible builds named in one sentence",
+   "Three candidate builds listed in one sentence"
+  ],
+  "panel": "F"
+ },
+ "today-rep23": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two contrasting tools named",
+   "No three-item list; open question",
+   "Open question, no list"
+  ],
+  "panel": "P"
+ },
+ "today-rep24": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "No three candidates in one sentence",
+   "Single scenario described; open question, no list",
+   "Open question, no candidate list"
+  ],
+  "panel": "P"
+ },
+ "today-rep25": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two candidate tools named together",
+   "Only two candidate tools in one sentence",
+   "No three candidates in one sentence"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep1": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep2": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two candidate meanings named",
+   "Only two meanings named",
+   "Only two candidate meanings in one sentence"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep3": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus something else only",
+   "Two candidates plus catch-all only",
+   "Two candidates plus 'something else'; not three"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep4": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Separate if-sentences, not a list",
+   "Candidates spread across separate sentences",
+   "Candidates in separate sentences"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep5": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings named in one sentence",
+   "Three candidate blank meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep6": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate problems in one sentence",
+   "Three candidate problems in one sentence",
+   "Three candidate problems named in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep7": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two contrasting examples",
+   "Only two contrasting fixes mentioned",
+   "Open question with only two contrasting examples"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep8": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question, no candidate answers",
+   "Open question, no candidate list",
+   "Open question, no candidate list"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep9": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep10": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate builds in one sentence",
+   "Three candidate builds in one sentence",
+   "Three candidate builds named in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep11": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep12": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question, no candidate list",
+   "Open question, no candidates",
+   "Open question, no candidate list"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep13": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Candidate meanings set out as bullets",
+   "Candidate meanings set out as bullets",
+   "Bulleted list of candidate meanings for empty cells"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep14": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two possibilities named",
+   "Only two possibilities mentioned",
+   "Open question, no candidates"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep15": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Only two concrete candidates in sentence",
+   "Two candidates plus open catch-all; one open question",
+   "Two candidates plus unknown; not three"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep16": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep17": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two options in separate sentences",
+   "Two options, separate sentences",
+   "Only two candidate builds"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep18": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question, no candidate answers",
+   "Open question, no candidates",
+   "Open question, no candidates"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep19": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Two candidates plus something else only",
+   "Two candidates plus catch-all",
+   "Two candidates plus 'something else'"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep20": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "No candidate list; open question only",
+   "Lists tool aspects, not candidate answers",
+   "Aspects of tool, not candidate answers"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep21": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate fixes in one sentence",
+   "Three candidate directions in one sentence",
+   "Three candidate fixes in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep22": {
+  "votes": [
+   "P",
+   "P",
+   "P"
+  ],
+  "reasons": [
+   "Open question, no candidates listed",
+   "Open question, no candidates listed",
+   "Open question, no candidates"
+  ],
+  "panel": "P"
+ },
+ "newr1-rep23": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep24": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three candidate failure points in one sentence",
+   "Three failure points named in one sentence",
+   "Three candidate failure points in one sentence"
+  ],
+  "panel": "F"
+ },
+ "newr1-rep25": {
+  "votes": [
+   "F",
+   "F",
+   "F"
+  ],
+  "reasons": [
+   "Three empty-cell meanings in one sentence",
+   "Three blank meanings in one sentence",
+   "Three candidate meanings in one sentence"
+  ],
+  "panel": "F"
+ }
+}

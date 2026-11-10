@@ -1,0 +1,89 @@
+{
+ "duration_api_ms": 23367,
+ "stop_reason": "end_turn",
+ "session_id": "dca6b86c-5a58-4938-8fe3-6082b31b1983",
+ "total_cost_usd": 0.1669784,
+ "usage": {
+  "input_tokens": 2,
+  "cache_creation_input_tokens": 13814,
+  "cache_read_input_tokens": 1592,
+  "output_tokens": 2807,
+  "output_tokens_details": {
+   "thinking_tokens": 1761
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 13814,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 2,
+   "outputTokens": 2807,
+   "cacheReadInputTokens": 1592,
+   "cacheCreationInputTokens": 13814,
+   "webSearchRequests": 0,
+   "costUSD": 0.1669784,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 1761,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 13814,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 1,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "```json\n{\"R01\":[\"P\",\"No candidate list; open question only\"],\"R02\":[\"F\",\"Three candidate tools named in one sentence\"],\"R03\":[\"P\",\"Candidates spread over separate sentences, no list\"],\"R04\":[\"P\",\"Open question, no candidates listed\"],\"R05\":[\"P\",\"Two scenarios in separate sentences only\"],\"R06\":[\"F\",\"Candidate meanings set out as bullets\"],\"R07\":[\"P\",\"Candidates in separate sentences, not a list\"],\"R08\":[\"P\",\"Open question, no candidate answers\"],\"R09\":[\"P\",\"Open question, no candidate answers\"],\"R10\":[\"P\",\"Meanings and fixes in separate sentences\"],\"R11\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R12\":[\"F\",\"Three candidate failure points in one sentence\"],\"R13\":[\"P\",\"Only two concrete candidates in sentence\"],\"R14\":[\"P\",\"Only two candidate tools named together\"],\"R15\":[\"P\",\"No three candidates in one sentence\"],\"R16\":[\"P\",\"Only two candidate meanings named\"],\"R17\":[\"F\",\"Three candidate tools in one sentence\"],\"R18\":[\"P\",\"No candidate list given\"],\"R19\":[\"P\",\"Meanings given in separate sentences\"],\"R20\":[\"P\",\"Candidates in separate sentences\"],\"R21\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R22\":[\"P\",\"Only two cases described\"],\"R23\":[\"P\",\"Separate if-sentences, not a list\"],\"R24\":[\"F\",\"Three candidate builds in one sentence\"],\"R25\":[\"P\",\"Only two possibilities named\"],\"R26\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R27\":[\"P\",\"Open question, no candidate list\"],\"R28\":[\"P\",\"No three candidates in one sentence\"],\"R29\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R30\":[\"P\",\"Two candidates plus something else only\"],\"R31\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R32\":[\"P\",\"Two scenarios contrasted, no list\"],\"R33\":[\"P\",\"Two options in separate sentences\"],\"R34\":[\"F\",\"Three candidate fixes in one sentence\"],\"R35\":[\"P\",\"Candidates in separate sentences\"],\"R36\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R37\":[\"P\",\"Separate if-sentences, not a list\"],\"R38\":[\"P\",\"Two candidates plus something else only\"],\"R39\":[\"P\",\"Candidates in separate sentences\"],\"R40\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R41\":[\"P\",\"Only two contrasting examples\"],\"R42\":[\"P\",\"Candidates in separate sentences\"],\"R43\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R44\":[\"F\",\"Three candidate fixes in one sentence\"],\"R45\":[\"F\",\"Three candidate tools in one sentence\"],\"R46\":[\"F\",\"Three empty-cell meanings in one sentence\"],\"R47\":[\"F\",\"Candidate meanings set out as bullets\"],\"R48\":[\"F\",\"Candidate meanings set out as bullets\"],\"R49\":[\"F\",\"Three candidate problems in one sentence\"],\"R50\":[\"P\",\"Only two contrasting tools named\"]}\n```",
+ "ttft_ms": 15809,
+ "type": "result",
+ "duration_ms": 23474,
+ "uuid": "3dd7c52a-65b3-4a7a-b469-1e0d555d819f",
+ "ttft_stream_ms": 830,
+ "time_to_request_ms": 103,
+ "first_content_frame_ms": 830,
+ "queued_turn_count": 0,
+ "result_index": 0
+}
