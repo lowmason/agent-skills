@@ -27,6 +27,9 @@ that the fixes introduced nothing new.
 
     The amended diff is at <DIFF_FILE>. The implementer's report, including
     its appended fix report, is at <REPORT_FILE>.
+    The controller's run of the task's tests after the fixes is at
+    <RUN_FILE>. A test result in the fix report that this run does not
+    show is a new Important finding.
 
     For EACH numbered finding, return one verdict:
       ADDRESSED     — the diff resolves it; say which hunk does
@@ -55,7 +58,9 @@ report>` is the previous round's findings, copied over and numbered so each
 can get its own verdict; `<DIFF_FILE>` is the path reported by
 `<this-skill-dir>/scripts/review-package <plan-file> <base> <head>` in its
 `wrote <path>: …` summary line — the path alone, not the whole line;
-`<REPORT_FILE>` is the implementer's report path.
+`<REPORT_FILE>` is the implementer's report path; `<RUN_FILE>` is the path
+`<this-skill-dir>/scripts/test-run` printed on its `run: <path>` line after this
+round, the path alone, or `none: <why>`.
 
 **Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED) plus
 any new findings and their Declined to judge list.

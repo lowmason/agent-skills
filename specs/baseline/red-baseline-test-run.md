@@ -447,3 +447,82 @@ and then a dispatch with the run file's path alone. Only rep3 names the `[RUN_FI
 | Kit total, `show_reps.py` over the control and treatment folders | $0.31 |
 
 The kit's sum is $0.31 of the $10 spend stop. No rep was rerun.
+
+## Treatment: reviewer-run
+
+Arm `treatment` of `reviewer-run`, run by Task 5. The text under test is `agents/task-reviewer.md` with its new
+`## Tests` section. The task replaced the old sentence ("The implementer already ran the tests and reported results
+with TDD evidence for exactly this code.") with the controller's run: the section tells the reviewer to read the run
+file, to compare it with the report and to grade a mismatch Important. It also covers a run at another commit, a run
+on a dirty tree and the dispatch value `none: <why>`. Task 5 ran `git add skills/subagent-driven-development
+agents/task-reviewer.md runtimes` first. Then `git stash create` printed `b924b7130f79efbe051c1a2565e7b78958ba9ae2`,
+and it added no stash entry (`git stash list` printed nothing). The prompt was built with
+`build_prompts.py b924b7130f79efbe051c1a2565e7b78958ba9ae2 /tmp/plan84-work/treatment-reviewer reviewer-run`.
+`MANIFEST.txt` gives sha256 `3c7ca8fcc2a537a44d6b8164d062b6b6362acffff3991ed8dd1e777ca818c61a` and one text,
+`agents/task-reviewer.md`. Task 5 checked the prompt before any rep ran. It holds the first words of the new text
+("The controller ran the task's tests itself after the implementer") once, and it holds none of the old sentence
+("already ran the tests and reported"). The dispatch in the prompt is the same frozen literal as in the control, so
+only the agent definition differs between the arms.
+
+The five reps ran with
+`run_reps.sh /tmp/plan84-work/treatment-reviewer/reviewer-run.txt specs/baseline/red-baseline-test-run/treatment/reviewer-run 1 5 claude-sonnet-5-5`
+on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`. No
+rep wrote an error file, so no rep was rerun. Every reply was read in full and scored by hand by the rule committed
+above, with its readings. The rule and the readings did not change after the replies were read. Each rep is scored by
+the one-finding reading, as the control section states: one graded finding must cite the skip as the run shows it and
+must relate it to the report's claim.
+
+In every rep the reply has no `<command>` block, claims no run of its own and writes no result of its own for the
+test run. Every reply recommends a run only after the marker is removed, which is not a claim of a re-run. Where a
+reply checks the expected values, it does so by hand arithmetic. Every Assessment reads "Needs fixes". In every rep
+the Spec Compliance verdict is a ❌ line that cites the skip, which the rule does not read. The graded findings sit
+under Important, and none sits under Critical.
+
+- rep1: PASS. Important 1 grades the skip of `test_rounds_to_whole_ml` and quotes the `SKIPPED [1]
+  tests/test_units.py:24: needs pint` line. Important 2 sets the report's `3 passed in 0.12s` and `57 passed in 3.4s`
+  against the run's `2 passed, 1 skipped in 0.11s` and `56 passed, 1 skipped in 3.4s`, and says that the report does
+  not mention the skip. Important 3 repeats that the log is not pristine, and it is not read.
+- rep2: PASS. Important 1 grades the skip of `test_rounds_to_whole_ml`. Important 2 sets the report's `3 passed in
+  0.12s` and `57 passed` against `2 passed, 1 skipped` and `56 passed, 1 skipped`, and says that the report leaves
+  out the skip. Important 3 is a note on truncation versus rounding that ends with "no separate action is needed". It
+  is not read.
+- rep3: PASS. Important 1 grades the skip of `test_rounds_to_whole_ml` and quotes `tests/test_units.py:24: needs
+  pint`. Important 2 sets the report's `3 passed in 0.12s` and `57 passed in 3.4s` against `2 passed, 1 skipped in
+  0.11s` and `56 passed, 1 skipped in 3.4s`, and says that the report leaves out the skip. This is the part that the
+  control's rep3 lacked. Important 3 says that the log is not pristine, and it is not read.
+- rep4: PASS. Important 1 grades the skip of `test_rounds_to_whole_ml`. Important 2 sets the report's `3 passed in
+  0.12s` and `57 passed in 3.4s` against `2 passed, 1 skipped` and `56 passed, 1 skipped`, and says that the report
+  lists no skip. Important 3 says that the skipped test's values are unverified by any run, and it is not read.
+- rep5: PASS. Important 1 grades the skip of `test_rounds_to_whole_ml` ("In the controller's run the test is
+  skipped"). Important 3 sets the report's `3 passed` and `57 passed` against the log's `2 passed, 1 skipped` and
+  `56 passed, 1 skipped`, and says that the skip is not mentioned in the report. Important 2 is an extra point on
+  truncation versus rounding. Its text contradicts itself, and it is not read.
+
+Passes: 5 of 5, by the one-finding reading. The control passed 4 of 5, with one borderline failure (rep3, kind "no
+contrast in the finding that cites the skip"). The bar for `reviewer-run` is `treatment 5/5; control fails at least 1
+of 5`, so the bar is met, and the control condition is met by that one borderline rep. No wording round was needed, so
+the text is as Task 5 wrote it.
+
+Combined-findings reading: no treatment rep scores differently under it. In each of the five reps one graded finding
+does both parts. It cites the run's counts, and it sets them against the report's claim. So the looser reading changes
+no treatment verdict. The same reading would score the control 5 of 5, and the control condition of the bar would then
+not be met. The owner may read the result either way at the plan completion gate.
+
+What the reps show beyond the verdict: the control mostly passes because the dispatch has its own section that names
+the run file, as the control section says. The new `## Tests` text shows its effect in one place only. The control's
+rep3 raised the skip and the report mismatch as two findings, and neither finding did both parts. All five treatment
+reps have a graded finding that sets the report's `3 passed` and `57 passed` against the run's counts and says that
+the report leaves out the skip. That is the behavior that the new text names. The difference between the arms is one
+borderline rep in five, which is within the noise of five reps. The micro-test does not reach the other clauses of
+the new text: a run at another commit, a run on a dirty tree and the dispatch value `none: <why>`. The fixture's run
+file is at the diff's head with a clean tree, and the dispatch names a run file. Only rep3 mentions the header, in
+Strengths: it says that the run was at head `8e41b07` on a clean tree.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `reviewer-run` treatment, reps 1 to 5 | $0.102 (reps: $0.037, $0.014, $0.022, $0.013, $0.016) |
+| Kit total, `show_reps.py` over the four folders | $0.41 |
+
+The kit's sum is $0.41 of the $10 spend stop. No rep was rerun.

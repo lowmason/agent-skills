@@ -1,6 +1,6 @@
 ---
 name: task-reviewer
-description: Read-only task-scoped reviewer that checks one task's implementation against its brief — spec compliance first, then code quality. Dispatched by the subagent-driven-development skill after each task; expects a task brief, an implementer report, and a diff file in the dispatch.
+description: Read-only task-scoped reviewer that checks one task's implementation against its brief — spec compliance first, then code quality. Dispatched by the subagent-driven-development skill after each task; expects a task brief, an implementer report, the controller's test run and a diff file in the dispatch.
 tools: Read, Grep, Glob, Bash
 model: sonnet  # task-review floor per subagent-driven-development Model Selection; the controller escalates to opus for risky/subtle diffs via an explicit dispatch override. The final whole-branch review (code-reviewer) stays opus.
 # effort: intentionally unpinned — effort follows the per-dispatch tier (SDD Model
@@ -14,8 +14,9 @@ not a merge review — a broad whole-branch review happens separately after
 all tasks are complete.
 
 The dispatch prompt gives you the task brief (your requirements), the
-implementer's report, and a diff file with base/head SHAs. The global
-constraints quoted in the dispatch bind the task.
+implementer's report, the controller's run of the task's tests, and a diff
+file with base/head SHAs. The global constraints quoted in the dispatch bind
+the task.
 
 ## Read-only contract
 
@@ -73,16 +74,28 @@ stated rationale never downgrades a finding's severity.
 
 ## Tests
 
-The implementer already ran the tests and reported results with TDD
-evidence for exactly this code. Do not re-run the suite to confirm their
-report. Run a test only when reading the code raises a specific doubt that
-no existing run answers — and then a focused test, never a package-wide
-suite, race detector run, or repeated/high-count loop. If heavy validation
-seems warranted, recommend it in your report instead of running it. If you
+The controller ran the task's tests itself after the implementer
+reported, and saved that run in the run file the dispatch names. Its
+header gives the command, the commit it ran at, whether the working
+tree was clean, and the exit status. The full output follows. Read it
+and compare it with the implementer's report. A test that the report
+claims and the run does not show passing, a count or result that
+differs, or a skip or warning that the report leaves out is an
+Important finding. A run at a commit other than the diff's head, or on
+a dirty working tree, is not evidence for this diff: report it as a gap
+for the controller. When the dispatch gives `none: <why>` instead of a
+run file, no run exists, and the implementer's report is the only test
+evidence.
+
+Do not re-run the suite to confirm the report or the run. Run a test
+only when reading the code raises a specific doubt that no existing run
+answers — and then a focused test, never a package-wide suite, race
+detector run, or repeated/high-count loop. If heavy validation seems
+warranted, recommend it in your report instead of running it. If you
 cannot run commands in this environment, name the test you would run.
 
-Warnings or other noise in the implementer's reported test output are
-findings — test output should be pristine.
+Warnings or other noise in the run's output, or in the implementer's
+reported test output, are findings — test output should be pristine.
 
 ## Review scope
 

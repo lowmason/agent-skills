@@ -36,6 +36,10 @@ Subagent (task-reviewer):
 
     Read the implementer's report: [REPORT_FILE]
 
+    ## The Controller's Test Run
+
+    Read the controller's run of the task's tests: [RUN_FILE]
+
     ## Diff Under Review
 
     **Base:** [BASE_SHA]
@@ -90,6 +94,10 @@ Subagent (general-purpose):
     ## What the Implementer Claims They Built
 
     Read the implementer's report: [REPORT_FILE]
+
+    ## The Controller's Test Run
+
+    Read the controller's run of the task's tests: [RUN_FILE]
 
     ## Diff Under Review
 
@@ -149,17 +157,28 @@ Subagent (general-purpose):
 
     ## Tests
 
-    The implementer already ran the tests and reported results with TDD
-    evidence for exactly this code. Do not re-run the suite to confirm their
-    report. Run a test only when reading the code raises a specific doubt
-    that no existing run answers — and then a focused test, never a
-    package-wide suite, race detector run, or repeated/high-count loop. If
-    heavy validation seems warranted, recommend it in your report instead of
-    running it. If you cannot run commands in this environment, name the
-    test you would run.
+    The controller ran the task's tests itself after the implementer
+    reported, and saved that run in the run file the dispatch names. Its
+    header gives the command, the commit it ran at, whether the working
+    tree was clean, and the exit status. The full output follows. Read it
+    and compare it with the implementer's report. A test that the report
+    claims and the run does not show passing, a count or result that
+    differs, or a skip or warning that the report leaves out is an
+    Important finding. A run at a commit other than the diff's head, or on
+    a dirty working tree, is not evidence for this diff: report it as a gap
+    for the controller. When the dispatch gives `none: <why>` instead of a
+    run file, no run exists, and the implementer's report is the only test
+    evidence.
 
-    Warnings or other noise in the implementer's reported test output are
-    findings — test output should be pristine.
+    Do not re-run the suite to confirm the report or the run. Run a test
+    only when reading the code raises a specific doubt that no existing run
+    answers — and then a focused test, never a package-wide suite, race
+    detector run, or repeated/high-count loop. If heavy validation seems
+    warranted, recommend it in your report instead of running it. If you
+    cannot run commands in this environment, name the test you would run.
+
+    Warnings or other noise in the run's output, or in the implementer's
+    reported test output, are findings — test output should be pristine.
 
     ## Review scope
 
@@ -314,6 +333,10 @@ Subagent (general-purpose):
   are already in this template)
 - `[REPORT_FILE]` — REQUIRED: the file the implementer wrote its detailed
   report to
+- `[RUN_FILE]` — REQUIRED: the path that
+  `<this-skill-dir>/scripts/test-run PLAN_FILE N -- <command>` printed on its
+  last line, `run: <path>` (pass the path alone), or `none: <why>` when the
+  task has no command to run ([references/test-run.md](references/test-run.md))
 - `[BASE_SHA]` — commit before this task
 - `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
