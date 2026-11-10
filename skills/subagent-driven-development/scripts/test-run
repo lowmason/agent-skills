@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+# Run one test command and keep the run in its own file in the plan's
+# workspace, so the record of a task's tests never rests on the implementer's
+# report alone. Print the tail of the output and the path of the run file.
+#
+# Every run gets a file of its own: task-<N>-tests.log for a task's first run,
+# task-<N>-tests-<K>.log for run K = 2, 3 and so on (the smallest K whose file
+# does not exist). A fix round after a failing run therefore leaves the
+# failing run on disk beside the run that follows it, and a reader can compare
+# them. An existing file is never written.
+#
+# The run file holds six header lines, then the command's stdout and stderr,
+# combined, in full:
+#   test-run: Task <N>, run <K>
+#   command: <the command, rendered the way a person would type it>
+#   head: <the full sha of HEAD>
+#   tree: clean
+#   exit: <the command's exit status>
+#   --- output ---
+# The tree line reads "tree: dirty, changed or untracked paths: <M>" when
+# `git status --porcelain`, taken before the command runs, lists M > 0 lines.
+# The command runs once, from the current directory. The run file is written
+# only after the command has finished, so a reader never sees a half-written
+# header. Until then the output waits in a temporary file in the workspace.
+#
+# A repository with no commit is refused before anything runs, because the
+# header names HEAD (sdd-repo --with-commit). A refusal writes no file.
+#
+# Usage: test-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]
+#   TASK_NUMBER is a task ID in task-brief's grammar: letters and digits,
+#   optionally dot-separated, with at least one digit (3, 6b, A1, 2.1).
+# stdout: the last 5 lines of the output, then "run: <absolute path of the run
+#   file>" as the last line. The "run:" line tells a run from a refusal.
+# Exit: the test command's exit status; 2 for bad arguments or a bad task
+#   number. sdd-repo's and sdd-workspace's exit 2 pass through.
+#
+# Two callers: the SDD controller, and executing-plans' task-done.
+set -euo pipefail
+
+if [ $# -lt 4 ] || [ "$3" != "--" ]; then
+  echo "usage: test-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]" >&2
+  exit 2
+fi
+
+plan=$1
+n=$2
+shift 3
+sdd="$(cd "$(dirname "$0")" && pwd)"
+
+# The task number becomes part of a file name, so it must be an ID before any
+# path is built. The characters are listed, not ranged, so the locale cannot
+# widen them.
+id_chars='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+case "$n" in
+  '' | .* | *. | *..* | *[!"$id_chars".]*) bad_id=1 ;;
+  *[0-9]*) bad_id=0 ;;
+  *) bad_id=1 ;;
+esac
+if [ "$bad_id" -ne 0 ]; then
+  echo "test-run: bad task number: $n" >&2
+  exit 2
+fi
+
+"$sdd/sdd-repo" --with-commit > /dev/null
+dir=$("$sdd/sdd-workspace" "$plan")
+
+# Render the command the way a person would type it.
+cmd=""
+for a in "$@"; do
+  case "$a" in
+    *[[:space:]\"\;\|\&]*) cmd="$cmd '$a'" ;;
+    *) cmd="$cmd $a" ;;
+  esac
+done
+cmd=${cmd# }
+
+head_sha=$(git rev-parse HEAD)
+changed=$(git status --porcelain | wc -l | tr -d ' ')
+if [ "$changed" -eq 0 ]; then
+  tree="clean"
+else
+  tree="dirty, changed or untracked paths: $changed"
+fi
+
+# The temporary name does not match task-*-tests*.log, so a reader of the
+# workspace never takes it for a run file.
+out=$(mktemp "$dir/test-run.XXXXXX")
+trap 'rm -f "$out"' EXIT
+
+rc=0
+"$@" > "$out" 2>&1 || rc=$?
+
+# The smallest K whose file does not exist.
+k=1
+run_file="$dir/task-${n}-tests.log"
+while [ -e "$run_file" ]; do
+  k=$((k + 1))
+  run_file="$dir/task-${n}-tests-${k}.log"
+done
+
+{
+  printf 'test-run: Task %s, run %s\n' "$n" "$k"
+  printf 'command: %s\n' "$cmd"
+  printf 'head: %s\n' "$head_sha"
+  printf 'tree: %s\n' "$tree"
+  printf 'exit: %s\n' "$rc"
+  printf -- '--- output ---\n'
+  cat "$out"
+} > "$run_file"
+
+tail -n 5 "$out"
+# A last line with no newline must not run into the "run:" line.
+[ -z "$(tail -c 1 "$out")" ] || echo
+echo "run: $run_file"
+exit "$rc"

@@ -14,8 +14,8 @@
 # out of `git status` and out of accidental commits without modifying any
 # tracked file.
 #
-# Single source of truth for the workspace location, so task-brief and
-# review-package cannot drift to different directories.
+# Single source of truth for the workspace location, so task-brief,
+# review-package and test-run cannot drift to different directories.
 #
 # Usage: sdd-workspace PLAN_FILE
 set -euo pipefail
