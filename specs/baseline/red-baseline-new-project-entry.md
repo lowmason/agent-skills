@@ -5818,8 +5818,8 @@ Stop: **$30**. Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.
 | Task 3, the skill text (no rep) | $0.00 |
 | Task 4, treatment arms for V1, V3 and V4 at `T` (3 cases, 5 reps each, no VOID rerun, no wording round; worst case $5.00 per case call) | $2.3350 |
 | Task 5, the stage-plan probe (V5) at `T` (step A 1 rep, worst case $1.00; step B 3 reps, worst case $3.00; no VOID rerun, no $2.00 rerun, no wording round) | $0.8911 |
-| Task 6, the guards at the final text, and the summary | not run |
-| **Running total** | **$5.6832 of $30** |
+| Task 6, the guards at `T-final` (9 cases, 5 reps each, no VOID rerun; worst case $5.00 per case call) | $4.3833 |
+| **Running total** | **$10.0665 of $30** |
 
 Running total after Task 1: $0.00 of $30. Task 1 ran no `claude -p` rep.
 
@@ -5834,6 +5834,10 @@ These figures match the "Plan 85 Task 4 summary and spend" section, below.
 Running total after Task 5: $5.6832 of $30 ($5.68). `show_reps.py` over Task 5's two folders prints $0.89 for its 4
 reps, and the sum of their `total_cost_usd` is $0.8911. No rep file is empty or unreadable, so none counts at its cap.
 These figures match the "Plan 85 probe summary and spend" section, below.
+
+Running total after Task 6's reps: $10.0665 of $30 ($10.07). `show_reps.py` over Task 6's nine folders prints $4.38 for
+its 45 reps, and the sum of their `total_cost_usd` is $4.3833. No rep file is empty or unreadable, so none counts at its
+cap. These figures match the "Plan 85: guards" section, below.
 
 ## Plan 85: control
 
@@ -6740,3 +6744,66 @@ after the last rep. It shows 4 reps, none VOID, and prints `total cost $0.89`. N
 none counts at its cap. There was no VOID rerun and no $2.00 rerun. The sums of each rep's `total_cost_usd` are step A
 $0.2565 and step B $0.6346 (rep1 $0.3313, rep2 $0.1557, rep3 $0.1476). Task 5 cost $0.8911. Running total: $5.6832 of
 $30. The largest pre-call sum (running total plus the call's worst case) was $8.0486, before step B.
+
+## Plan 85: guards
+
+Task 6 runs the nine guard cases at `T-final` = `2e91b05` (`2e91b050430b4d77e5c62cadf3ab22e248df37e3`). No wording
+round ran in Task 4 or Task 5, so `T-final` is `T`, the skill commit of Task 3. A guard is an existing case that the new
+text could regress. Each guard is compared with an earlier arm of the same case, and the guard bar needs at least that
+arm's PASS count minus one (plan 85, Bars). Each case ran 5 reps. A rep is one fresh `claude -p` run with no tools.
+
+This section holds the run. Each case's scores go in its own section after the run, with the case's comparison arm,
+its reading of record and the guard verdict.
+
+**Checks before any rep.**
+
+- `git diff --stat 2e91b05 -- skills/` printed nothing, so no skill file differs from `T-final`.
+- The CLI is Claude Code 2.1.316, the version that the plan names, so no isolation probe was needed.
+- A case-insensitive grep of the nine prompts and the manifest for `red-baseline`, `plan 7[89]`, `plan 85`, `micro-test`
+  and `task-6` found 0 hits (the quarantine). The word `quarantine` has 7 hits in the dr-offer-scaffold and
+  dr-known-progression-79 prompts. They are the sec-edgar spec's own lines, as in the leak check.
+- The case-repository reads (the sec-edgar spec for dr-offer-scaffold and dr-known-progression-79, and the four
+  ces-revisions files for dr-tracks and dr-research-depth) have the same sha256 as the reads in `control/MANIFEST.txt`.
+- The nine prompts were also built at plan 79's `T-final` (`5f52dfc`) into `/tmp/plan85-work/t6-check-5f52dfc/`. A
+  script compared each pair. In each of the nine cases, the diff removes 26 lines and adds 80. Each removed line is a
+  line of the derive-roadmap skill files at `5f52dfc`, and each added line is a line of those files at `2e91b05`. No
+  fixture line, task line or case-repository line changed. That is the same 26 and 80 that Task 4 found against
+  `58337f5`, which has the same derive-roadmap text as `5f52dfc` (Plan 85: base).
+- Each prompt holds the qualities line (`Qualities to place when the roadmap is written`, once in `SKILL.md` and once in
+  `references/new-project-entry.md`), the new Outcomes header (`| # | Outcome | Spec | Track | Rank |`) and the interim
+  Leaves-out form (`suggested, see the approval question`).
+
+**Build.**
+
+```
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 2e91b05 /tmp/plan85-work/t6 dr-offer-scaffold dr-tracks dr-known-progression-79 dr-research-depth dr-resume-rerank dr-rerank-second dr-stop-track dr-park-ranked dr-resume-legacy
+```
+
+It printed `wrote 9 prompts to /tmp/plan85-work/t6`. Its `MANIFEST.txt` is copied to `treatment/p85-t6-MANIFEST.txt`.
+It shows `budget 1.00` for every case.
+
+**Reps.** Each case ran with
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan85-work/t6/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-p85 1 5 claude-opus-5-5 1.00`,
+one case at a time, in the order of the build command. Before each call, the running total plus the call's worst case
+($5.00) stayed under $30. The sums were $10.6832, $11.1406, $11.8374, $12.6936, $13.3955, $13.7181, $14.0860,
+$14.4506 and $14.7896. Every rep printed `exit=0`. No rep was VOID: each has one turn, subtype `success`, one model and
+no extra iteration. So no rerun was needed. No `.err` file was left. Each case's replies were read from `show_reps.py`
+over that case's folder alone.
+
+| Case | Folder | Spent |
+|---|---|---|
+| dr-offer-scaffold | `treatment/dr-offer-scaffold-p85/` | $0.4574 |
+| dr-tracks | `treatment/dr-tracks-p85/` | $0.6968 |
+| dr-known-progression-79 | `treatment/dr-known-progression-79-p85/` | $0.8562 |
+| dr-research-depth | `treatment/dr-research-depth-p85/` | $0.7019 |
+| dr-resume-rerank | `treatment/dr-resume-rerank-p85/` | $0.3226 |
+| dr-rerank-second | `treatment/dr-rerank-second-p85/` | $0.3679 |
+| dr-stop-track | `treatment/dr-stop-track-p85/` | $0.3646 |
+| dr-park-ranked | `treatment/dr-park-ranked-p85/` | $0.3390 |
+| dr-resume-legacy | `treatment/dr-resume-legacy-p85/` | $0.2769 |
+
+**Spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over the nine
+folders after the last rep. It shows 45 reps, none VOID, and prints `total cost $4.38`. No rep file is empty or
+unreadable, so none counts at its cap. There was no VOID rerun. The sum of each rep's `total_cost_usd` is $4.3833, the
+sum of the table above. Running total: $10.0665 of $30. The largest pre-call sum (running total plus $5.00) was $14.7896,
+before the last call.
