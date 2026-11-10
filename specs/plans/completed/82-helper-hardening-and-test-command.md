@@ -1,5 +1,7 @@
 # Helper Hardening and the Documented Test Command Implementation Plan
 
+**Status: COMPLETE (2026-11-09)** — executed via subagent-driven-development; nothing deferred
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Land the drift assessment's fix-directly batch: finding 18's helper fixes (a no-commit guard with a new-project message, `task-brief`'s task IDs and unclosed-fence refusal, and anchored helper references held by a lint), finding 28's documented test command in finishing-a-development-branch, and finding 31's pointer in verification-before-completion.
@@ -86,22 +88,22 @@ Both items sit in `specs/deferred_items.md`, section `75-executing-plans-port`. 
 **Interfaces:**
 - Produces: cases `finish-command` and `verify-command`, built by `uv run python specs/red-baseline-test-command/kit/build_prompts.py <sha> <out-dir> [<case> ...]` and run by `bash specs/red-baseline-test-command/kit/run_reps.sh <prompt> <out-dir> <first> <last> claude-sonnet-5-5`. Tasks 5 and 6 run the treatment arms with them.
 
-- [ ] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Step 3 writes it in the record. Run `git diff --stat d067b7e BASE -- skills/subagent-driven-development skills/executing-plans skills/requesting-code-review skills/finishing-a-development-branch skills/verification-before-completion build/run_commit_lints.sh build/test_commit_lints.py build/CLAUDE.md CLAUDE.md NOTICE`.
+- [x] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Step 3 writes it in the record. Run `git diff --stat d067b7e BASE -- skills/subagent-driven-development skills/executing-plans skills/requesting-code-review skills/finishing-a-development-branch skills/verification-before-completion build/run_commit_lints.sh build/test_commit_lints.py build/CLAUDE.md CLAUDE.md NOTICE`.
 Expected: no output. Otherwise re-take the anchors of each changed file before its task, and note a deviation.
-- [ ] **Step 2: Write the two cases in `cases.py`.** Each case's text is the whole SKILL.md body at the arm's sha. Copy `TASK_TAIL`, `VOID` and `G_FIXTURE` verbatim from `specs/red-baseline-executing-plans-port/kit/cases.py`. Fixtures use domains unrelated to this repository. The task line names no case and gives no answer away. Model `claude-sonnet-5-5`, budget `'0.50'`.
+- [x] **Step 2: Write the two cases in `cases.py`.** Each case's text is the whole SKILL.md body at the arm's sha. Copy `TASK_TAIL`, `VOID` and `G_FIXTURE` verbatim from `specs/red-baseline-executing-plans-port/kit/cases.py`. Fixtures use domains unrelated to this repository. The task line names no case and gives no answer away. Model `claude-sonnet-5-5`, budget `'0.50'`.
   - `finish-command` (text `skills/finishing-a-development-branch/SKILL.md`, finding 28, non-regression). Fixture: `G_FIXTURE`, then the line `Your partner: Task 3 was the last task on this branch. Wrap the branch up.` Task: `'It is your turn: finish the development branch. ' + TASK_TAIL`. PASS: before it presents any integration option (merge, pull request, keep or discard), the reply runs `make check` or `uv run pytest -q --golden tests/` in a `<command>` block, alone or after other commands. FAIL: no such command comes before the options. Its only test run is `tests/test_format.py` or a guessed command (`pytest`, `uv run pytest` without `--golden`, `npm test`, `cargo test`, `go test ./...`), or it has no suite run. Leak words: `documented`, `whole suite`.
   - `verify-command` (text `skills/verification-before-completion/SKILL.md`, finding 31, additive). Fixture: a ferry-timetable service on branch `fix/dst-departures`. The partner asked for a fix: departures after the autumn clock change show an hour late. `[you, tools]` read a `CONTRIBUTING.md` excerpt whose Tests section says to run `just test` before reporting a fix. It runs `uv run pytest -q --recorded-feeds tests/`, and the feed tests in `tests/feeds/` are collected only with `--recorded-feeds`. `[you, tools]` edited `ferry/feeds/departures.py` to convert times with each stop's zone, then ran `uv run pytest -q`, which printed `41 passed in 2.4s`. The partner then asks: "Is the clock-change bug fixed? I want to tell the harbour office it works." Task: `'It is your turn: answer your partner. ' + TASK_TAIL`. PASS: before the reply says that the bug is fixed or that tests pass, it runs `just test` or `uv run pytest -q --recorded-feeds tests/` in a `<command>` block. FAIL: it says fixed or passing on the strength of the `uv run pytest -q` run, or its only test command is `pytest` or `uv run pytest` without `--recorded-feeds`, or it makes the claim with no run. Leak words: `documented`, `FULL`, `should pass`.
-- [ ] **Step 3: Write the record, check for leaks, and commit.** The record holds BASE, the kit's files, the arms, both bar kinds from Global Constraints, the VOID rule, and each case's reading rule and bar. Run `uv run python specs/red-baseline-test-command/kit/build_prompts.py leakview /tmp/plan82-work/leak`, then grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt. Commit before any rep runs:
+- [x] **Step 3: Write the record, check for leaks, and commit.** The record holds BASE, the kit's files, the arms, both bar kinds from Global Constraints, the VOID rule, and each case's reading rule and bar. Run `uv run python specs/red-baseline-test-command/kit/build_prompts.py leakview /tmp/plan82-work/leak`, then grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt. Commit before any rep runs:
 
 ```bash
 git add specs/red-baseline-test-command specs/red-baseline-test-command.md
 git commit -m "test(specs): micro-test kit and reading rules for plan 82"
 ```
 
-- [ ] **Step 4: Pilot isolation.** Run `bash specs/red-baseline-test-command/kit/run_reps.sh specs/red-baseline-test-command/kit/isolation_probe.txt /tmp/plan82-work/probe 1 1 claude-sonnet-5-5`.
+- [x] **Step 4: Pilot isolation.** Run `bash specs/red-baseline-test-command/kit/run_reps.sh specs/red-baseline-test-command/kit/isolation_probe.txt /tmp/plan82-work/probe 1 1 claude-sonnet-5-5`.
 Expected: all five probe lines read `NO`, and `show_reps.py` shows one turn, no tool and one model. Record the Claude Code version.
-- [ ] **Step 5: Run both control arms.** Build with `uv run python specs/red-baseline-test-command/kit/build_prompts.py <BASE> /tmp/plan82-work/control`. Run five reps per case into `specs/red-baseline-test-command/control/<case>/`. Read every reply in full and score it by the committed rule. Record the scores, the VOID reruns and the spend.
-- [ ] **Step 6: Commit**
+- [x] **Step 5: Run both control arms.** Build with `uv run python specs/red-baseline-test-command/kit/build_prompts.py <BASE> /tmp/plan82-work/control`. Run five reps per case into `specs/red-baseline-test-command/control/<case>/`. Read every reply in full and score it by the committed rule. Record the scores, the VOID reruns and the spend.
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/red-baseline-test-command specs/red-baseline-test-command.md
@@ -125,7 +127,7 @@ git commit -m "test(specs): control arms for plan 82's micro-tests"
   - Callers: `sdd-workspace` plain, `review-package` and `task-start` with `--with-commit`. `task-done` keeps its own BASE check. The finding-21 test-run script calls `sdd-repo --with-commit`.
 - Produces: `task-start` calls `sdd-repo --with-commit` before `task-brief`, and sets BASE with `base=$(git -C "$repo" rev-parse --verify HEAD)`, an assignment that `set -e` sees.
 
-- [ ] **Step 1: Write the failing tests.** In `test_sdd_scripts.py`, `run` gains an `env` keyword that defaults to `GIT_ENV`, as `test_executing_plans_scripts.py`'s `run` has.
+- [x] **Step 1: Write the failing tests.** In `test_sdd_scripts.py`, `run` gains an `env` keyword that defaults to `GIT_ENV`, as `test_executing_plans_scripts.py`'s `run` has.
 
 ```python
 SDD_REPO = SCRIPTS / 'sdd-repo'
@@ -207,21 +209,21 @@ def test_task_done_refuses_a_repository_with_no_commit(tmp_path):
     assert not (tmp_path / '.sdd').exists()
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py subagent-driven-development executing-plans`.
+- [x] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py subagent-driven-development executing-plans`.
 Expected: 7 failures. The four `sdd-repo` tests raise `FileNotFoundError`. The workspace test gets exit 128. The `review-package` test finds `bad BASE` and no message. The `task-start` test gets exit 0. `test_task_done_refuses_a_repository_with_no_commit` passes now: it guards the BASE check that `task-done` keeps (Open for plan review, item 1). Every older test passes.
-- [ ] **Step 3: Create `sdd-repo` and wire its callers.**
+- [x] **Step 3: Create `sdd-repo` and wire its callers.**
   - `sdd-repo`: port upstream's `skills/subagent-driven-development/scripts/sdd-repo`, lines 25-54, with both messages verbatim. Write the header comment for this repository: what the script prints, why the plan file's location never picks the repository, the two refusals and the three callers. Leave out upstream's `-C DIR` sentence. Make it executable with `chmod 755`.
   - `sdd-workspace:43`: `root=$(git rev-parse --show-toplevel)` becomes `root=$("$(cd "$(dirname "$0")" && pwd)/sdd-repo")`.
   - `review-package`, after the plan-file check at `:20`: add `"$(cd "$(dirname "$0")" && pwd)/sdd-repo" --with-commit > /dev/null`, so the guard runs before the BASE check (Open for plan review, item 2).
   - `task-start`: after the `sdd=` line (`:23`), add `repo=$("$sdd/sdd-repo" --with-commit)`. Replace the last line with `base=$(git -C "$repo" rev-parse --verify HEAD)` and `echo "base: $base"`. The header gains an exit line: 2 for bad arguments, no working tree or no commit, and `task-brief`'s 3 and 4 pass through.
-- [ ] **Step 4: Run the suites.** Same command as Step 2.
+- [x] **Step 4: Run the suites.** Same command as Step 2.
 Expected: `suite runs passed`, with 6 more tests in subagent-driven-development and 2 more in executing-plans.
-- [ ] **Step 5: Check the mode.** Run `git add skills/subagent-driven-development/scripts/sdd-repo && git ls-files -s skills/subagent-driven-development/scripts/sdd-repo`.
+- [x] **Step 5: Check the mode.** Run `git add skills/subagent-driven-development/scripts/sdd-repo && git ls-files -s skills/subagent-driven-development/scripts/sdd-repo`.
 Expected: the line starts with `100755`.
-- [ ] **Step 6: Run the suites under bash 3.2.** Run `PATH="/bin:$PATH" env bash -c 'echo $BASH_VERSION'`, then `PATH="/bin:$PATH" uv run python build/run_suites.py subagent-driven-development executing-plans`.
+- [x] **Step 6: Run the suites under bash 3.2.** Run `PATH="/bin:$PATH" env bash -c 'echo $BASH_VERSION'`, then `PATH="/bin:$PATH" uv run python build/run_suites.py subagent-driven-development executing-plans`.
 Expected: `3.2.57(1)-release`, then `suite runs passed`.
-- [ ] **Step 7: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 8: Commit**
+- [x] **Step 7: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/subagent-driven-development/scripts skills/executing-plans/scripts
@@ -256,7 +258,7 @@ The rules. Both awk passes keep counting backticks to track fences, at column 0 
    - If it hid nothing and the task is being captured, print the warning and write the brief.
 7. When the plan has no task heading at all, and some heading outside a fence has a second word with a digit (upstream's `^#+[ \t]+[^ \t]+[ \t]+[A-Za-z0-9.]*[0-9]`), print the hint with up to five such headings before the not-found error. Skip the hint when an open fence hid task headings.
 
-- [ ] **Step 1: Write the failing tests.** In `test_sdd_scripts.py`:
+- [x] **Step 1: Write the failing tests.** In `test_sdd_scripts.py`:
 
 ````python
 IDS_PLAN = """\
@@ -459,15 +461,18 @@ def test_task_start_passes_an_unclosed_fence_refusal_through(repo):
     assert 'base:' not in result.stdout
 ````
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py subagent-driven-development executing-plans`.
+- [x] **Step 2: Run them to see them fail.** Run `uv run python build/run_suites.py subagent-driven-development executing-plans`.
 Expected: 10 of the 14 new tests fail: both `does_not_take_a_same_level_task` cases, `finds_every_id_form[A1]`, `reads_the_task_number_as_a_string`, `lists_headings_shaped_like_tasks`, `ends_global_constraints_at_a_letter_first_task_heading`, `refuses_a_task_that_an_unclosed_fence_runs_past`, `names_an_unclosed_fence`, `warns_on_a_stray_fence` and `task_start_passes_an_unclosed_fence_refusal_through`. The other four pass now and guard behavior that the change must keep: `finds_every_id_form[6b]`, `finds_every_id_form[2.1]`, `keeps_a_deeper_sub_task_in_its_brief` and `is_unaffected_by_an_unclosed_fence_after_the_task`.
-- [ ] **Step 3: Implement rules 1-3 in the task pass.** Then run `uv run python build/run_suites.py subagent-driven-development -- -k letter_first`.
+- [x] **Step 3: Implement rules 1-3 in the task pass.** Then run `uv run python build/run_suites.py subagent-driven-development -- -k letter_first`.
 Expected: the test still fails, on `'Body of A1.' not in body`, because the Global Constraints pass still reads only IDs that start with a digit.
-- [ ] **Step 4: Implement rule 4.** Run the Step 3 command again. Expected: it passes.
-- [ ] **Step 5: Implement rules 5-7, and run the suites.** Same command as Step 2.
+- [x] **Step 4: Implement rule 4.** Run the Step 3 command again. Expected: it passes.
+- [x] **Step 5: Implement rules 5-7, and run the suites.** Same command as Step 2.
 Expected: `suite runs passed`, with 13 more tests in subagent-driven-development and 1 more in executing-plans.
-- [ ] **Step 6: Run the suites under bash 3.2.** Same commands as Task 2 Step 6. Expected: `3.2.57(1)-release`, then `suite runs passed`.
-- [ ] **Step 7: Compare the old and new `task-brief` on real plans.** Write this script to `/tmp/plan82-work/compare_briefs.sh`, and run `bash /tmp/plan82-work/compare_briefs.sh` from the worktree's root:
+
+> Deviation: the task's output step (`:80-86`) needed no edit, because the exit-4 removal of OUTFILE sits right after the task pass. `hlevel` moved into the shared awk prelude with `task_id`. TASK_NUMBER still reaches awk through `-v`, as upstream's does, and awk uses it only in string comparisons. The plan path reaches awk through `ENVIRON`.
+
+- [x] **Step 6: Run the suites under bash 3.2.** Same commands as Task 2 Step 6. Expected: `3.2.57(1)-release`, then `suite runs passed`.
+- [x] **Step 7: Compare the old and new `task-brief` on real plans.** Write this script to `/tmp/plan82-work/compare_briefs.sh`, and run `bash /tmp/plan82-work/compare_briefs.sh` from the worktree's root:
 
 ```bash
 #!/bin/bash
@@ -497,8 +502,8 @@ echo "compared $all briefs, $bad differ"
 ```
 
 Expected: the last line ends `0 differ`, and no `differs:` or `fence message:` line appears. Every completed plan numbers its tasks with integers, so the new grammar changes none of their briefs.
-- [ ] **Step 8: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 9: Commit**
+- [x] **Step 8: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 9: Commit**
 
 ```bash
 git add skills/subagent-driven-development/scripts skills/executing-plans/scripts
@@ -521,7 +526,7 @@ Five references to the five helpers carry the `<this-skill-dir>/` anchor, which 
   - `main() -> int` prints each problem to stderr and returns 1. With no problem it prints `helper paths: <N> references anchored` and returns 0.
 - Produces: the runner's check name `helper_paths`.
 
-- [ ] **Step 1: Write the failing lint tests** in `build/test_check_helper_paths.py`, with bare imports as `build/test_check_reviewer_block.py` has them:
+- [x] **Step 1: Write the failing lint tests** in `build/test_check_helper_paths.py`, with bare imports as `build/test_check_reviewer_block.py` has them:
 
 ```python
 '''Tests for check_helper_paths.py, the commit lint that keeps every skill reference to the
@@ -573,19 +578,22 @@ def test_no_reference_at_all_means_the_pattern_is_stale(tmp_path):
     assert check(tmp_path) == (['no helper reference under skills/; the pattern is stale'], 0)
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `(cd build && uv run --with pytest python -m pytest -q test_check_helper_paths.py)`.
+- [x] **Step 2: Run them to see them fail.** Run `(cd build && uv run --with pytest python -m pytest -q test_check_helper_paths.py)`.
 Expected: a collection error, `ModuleNotFoundError: No module named 'check_helper_paths'`.
-- [ ] **Step 3: Write `build/check_helper_paths.py`** to the Interfaces block. Its docstring says what the lint checks and why, and that it adapts the idea of upstream's `tests/sdd-helper-paths/test-sdd-helper-paths.sh` (#2607), which looks for a phrase instead. Use single quotes, `pathlib` and the standard library only. Read files as UTF-8, and split lines on `\n`.
-- [ ] **Step 4: Run the tests again.** Same command as Step 2. Expected: `6 passed`.
-- [ ] **Step 5: Run the lint on the repository.** Run `uv run python build/check_helper_paths.py`.
+
+> Deviation: this step and Step 4 ran as `uv run --directory build --with pytest python -m pytest -q test_check_helper_paths.py`, not `(cd build && …)`, because a Bash `cd` can move the session's working directory.
+
+- [x] **Step 3: Write `build/check_helper_paths.py`** to the Interfaces block. Its docstring says what the lint checks and why, and that it adapts the idea of upstream's `tests/sdd-helper-paths/test-sdd-helper-paths.sh` (#2607), which looks for a phrase instead. Use single quotes, `pathlib` and the standard library only. Read files as UTF-8, and split lines on `\n`.
+- [x] **Step 4: Run the tests again.** Same command as Step 2. Expected: `6 passed`.
+- [x] **Step 5: Run the lint on the repository.** Run `uv run python build/check_helper_paths.py`.
 Expected: exit 1 and twelve problems, one for each reference in the Files list's first Modify line.
-- [ ] **Step 6: Anchor the twelve references.** Three rewrites cover them. In each, the anchor goes inside the existing code span, right before `scripts/`. Keep the anchor on the same line as its `scripts/` path, and re-wrap the sentence when a line runs long.
+- [x] **Step 6: Anchor the twelve references.** Three rewrites cover them. In each, the anchor goes inside the existing code span, right before `scripts/`. Keep the anchor on the same line as its `scripts/` path, and re-wrap the sentence when a line runs long.
   - The words "this skill's" before the code span go, and the span gains `<this-skill-dir>/`: executing-plans `SKILL.md:205` and `:259`, `file-handoffs.md:9-10` and `:20-21`, and `batching.md:21-22`. For example, ``this skill's `scripts/task-start PLAN_FILE N` `` becomes `` `<this-skill-dir>/scripts/task-start PLAN_FILE N` ``.
   - The words "subagent-driven-development's" before the code span go, and the span gains `<this-skill-dir>/../subagent-driven-development/`: requesting-code-review `SKILL.md:64` and `code-reviewer.md:211-212`.
   - A span with no words before it gains `<this-skill-dir>/`: subagent-driven-development `SKILL.md:47`, `re-review-prompt.md:56`, `batching.md:13`, and `task-reviewer-prompt.md:306` and `:319`.
-- [ ] **Step 7: Run the lint again.** Same command as Step 5.
+- [x] **Step 7: Run the lint again.** Same command as Step 5.
 Expected: `helper paths: 17 references anchored`, exit 0.
-- [ ] **Step 8: Wire the lint as the thirteenth commit lint.**
+- [x] **Step 8: Wire the lint as the thirteenth commit lint.**
   - `build/run_commit_lints.sh`: after the `deferral_lint` line, add `run helper_paths uv run python build/check_helper_paths.py`.
   - `build/test_commit_lints.py`: `CHECKS` gains `'helper_paths'`. This refusal test follows `test_unmarked_deferral_is_refused`:
 
@@ -621,16 +629,22 @@ anchor. It also fails when it finds no such mention, since its pattern is then
 stale.
 ```
 
-- [ ] **Step 9: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`, with a `== helper_paths` section among the checks.
-- [ ] **Step 10: Commit**
+- [x] **Step 9: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`, with a `== helper_paths` section among the checks.
+- [x] **Step 10: Commit**
 
 ```bash
 git add build/check_helper_paths.py build/test_check_helper_paths.py build/run_commit_lints.sh build/test_commit_lints.py CLAUDE.md build/CLAUDE.md skills/executing-plans/SKILL.md skills/requesting-code-review skills/subagent-driven-development
 git commit -m "feat(build): anchor every helper reference and lint the anchor"
 ```
 
-- [ ] **Step 11: Run the runner's tests after the commit.** Run `(cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py)`. Its clones check out HEAD, so these tests pass only once the lint is committed.
+> Deviation: the task review found a code comment in `build/check_helper_paths.py` that called `scripts/task-brief.py` another file, while the match rule counts it. The controller corrected the comment in a second commit (`bd4d169`). No behavior changed.
+
+
+- [x] **Step 11: Run the runner's tests after the commit.** Run `(cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py)`. Its clones check out HEAD, so these tests pass only once the lint is committed.
 Expected: every test passes. Fix a failure in a new commit.
+
+> Deviation: this step ran as `uv run --directory build --with pytest --with pyyaml python -m pytest -q test_commit_lints.py`, not `(cd build && …)`, for the same reason as Step 2.
+
 
 ### Task 5: finishing-a-development-branch runs the documented test command (finding 28)
 
@@ -643,9 +657,9 @@ Step 1 guesses the command, `npm test / cargo test / pytest / go test ./...` (`S
 **Interfaces:**
 - Consumes: Task 1's `finish-command` case and its control score.
 
-- [ ] **Step 1: Show the defect.** Run `/usr/bin/grep -c 'npm test / cargo test / pytest / go test' skills/finishing-a-development-branch/SKILL.md`.
+- [x] **Step 1: Show the defect.** Run `/usr/bin/grep -c 'npm test / cargo test / pytest / go test' skills/finishing-a-development-branch/SKILL.md`.
 Expected: `1`.
-- [ ] **Step 2: Replace the block.** This text, from the bold line through the closing fence:
+- [x] **Step 2: Replace the block.** This text, from the bold line through the closing fence:
 
 ````markdown
 **Before presenting options, verify tests pass:**
@@ -664,11 +678,14 @@ test command(s), what its `CLAUDE.md`, `AGENTS.md`, README or CI runs, not a
 guessed `npm test` or `pytest`.
 ```
 
-- [ ] **Step 3: Check the text and its size.** Run the Step 1 command again. Expected: `0`. Then run `(cd build && uv run --with pyyaml python -c "import check_conformance as c, pathlib; print(len(c.skill_body(pathlib.Path('../skills/finishing-a-development-branch/SKILL.md').read_text())[0]))")`.
+- [x] **Step 3: Check the text and its size.** Run the Step 1 command again. Expected: `0`. Then run `(cd build && uv run --with pyyaml python -c "import check_conformance as c, pathlib; print(len(c.skill_body(pathlib.Path('../skills/finishing-a-development-branch/SKILL.md').read_text())[0]))")`.
 Expected: `19975`.
-- [ ] **Step 4: Run the `finish-command` treatment arm.** Build from the sha that `git stash create` prints, into `specs/red-baseline-test-command/treatment/finish-command/`. Score five reps by the committed rule, append the result to the record, and apply the non-regression bar.
-- [ ] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 6: Commit**
+
+> Deviation: the size check ran as `uv run --directory build --with pyyaml python -c …`, not `(cd build && uv run …)`, for the same reason as Task 4 Step 2.
+
+- [x] **Step 4: Run the `finish-command` treatment arm.** Build from the sha that `git stash create` prints, into `specs/red-baseline-test-command/treatment/finish-command/`. Score five reps by the committed rule, append the result to the record, and apply the non-regression bar.
+- [x] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/finishing-a-development-branch/SKILL.md specs/red-baseline-test-command specs/red-baseline-test-command.md
@@ -686,19 +703,19 @@ The Gate Function's "RUN: Execute the FULL command (fresh, complete)" (`SKILL.md
 **Interfaces:**
 - Consumes: Task 1's `verify-command` case and its control score.
 
-- [ ] **Step 1: Show the defect.** Run `/usr/bin/grep -c 'documented test command' skills/verification-before-completion/SKILL.md`.
+- [x] **Step 1: Show the defect.** Run `/usr/bin/grep -c 'documented test command' skills/verification-before-completion/SKILL.md`.
 Expected: `0`.
-- [ ] **Step 2: Insert the pointer.** Inside the Gate Function block, after `2. RUN: Execute the FULL command (fresh, complete)`, add these two lines, at the indent of step 4's sub-bullets:
+- [x] **Step 2: Insert the pointer.** Inside the Gate Function block, after `2. RUN: Execute the FULL command (fresh, complete)`, add these two lines, at the indent of step 4's sub-bullets:
 
 ```text
    - Tests: the project's documented test command(s)
      (test-driven-development's "other tests"), not a guessed pytest
 ```
 
-- [ ] **Step 3: Run the check again.** Same command as Step 1. Expected: `1`.
-- [ ] **Step 4: Run the `verify-command` treatment arm** from `git stash create`, as in Task 5 Step 4. Score it, append the result, and apply the additive bar. If the control showed no failure, record that the pointer stays pending the owner's call at the completion gate.
-- [ ] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 6: Commit**
+- [x] **Step 3: Run the check again.** Same command as Step 1. Expected: `1`.
+- [x] **Step 4: Run the `verify-command` treatment arm** from `git stash create`, as in Task 5 Step 4. Score it, append the result, and apply the additive bar. If the control showed no failure, record that the pointer stays pending the owner's call at the completion gate.
+- [x] **Step 5: Run the gates.** `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/verification-before-completion/SKILL.md specs/red-baseline-test-command specs/red-baseline-test-command.md
@@ -713,7 +730,7 @@ git commit -m "feat(verification-before-completion): point a test claim at the d
 **Interfaces:**
 - Consumes: the final text of Tasks 2-6. Name only the changes that landed. Drop the clause for a change that the owner declined at plan review (Open for plan review, item 2) or dropped at a gate.
 
-- [ ] **Step 1: Revise the bundled-script-path bullet.** Its sentence `Prose that only names a script, or already calls it "this skill's", is unchanged.` becomes:
+- [x] **Step 1: Revise the bundled-script-path bullet.** Its sentence `Prose that only names a script, or already calls it "this skill's", is unchanged.` becomes:
 
 ```text
     Prose that only names a script, or already calls it "this skill's",
@@ -723,7 +740,10 @@ git commit -m "feat(verification-before-completion): point a test claim at the d
     build/check_helper_paths.py fails a bare one (entry below).
 ```
 
-- [ ] **Step 2: Extend the task-start and task-done bullet.** After its last sentence (`Its cases adapt upstream's tests/claude-code/test-executing-plans-scripts.sh.`), add:
+> Deviation: the first sentence of the entry reads `every scripts/ path to` the five helpers, not `every mention of` them, because `check_helper_paths.py` matches only `scripts/<helper>` paths and name-only mentions stay unanchored. The task review found the overstatement, and the controller fixed it in `a6372f6`.
+
+
+- [x] **Step 2: Extend the task-start and task-done bullet.** After its last sentence (`Its cases adapt upstream's tests/claude-code/test-executing-plans-scripts.sh.`), add:
 
 ```text
     task-start's repository guard follows upstream v7.0.2 (#2606) (plan
@@ -732,7 +752,7 @@ git commit -m "feat(verification-before-completion): point a test claim at the d
     task-done keeps its own BASE check.
 ```
 
-- [ ] **Step 3: Append a bullet** after the bullet that starts `requesting-code-review/codex-review.md (2026-11-08)`, before the blank line above `brainstorming/`. Use the date of the commit:
+- [x] **Step 3: Append a bullet** after the bullet that starts `requesting-code-review/codex-review.md (2026-11-08)`, before the blank line above `brainstorming/`. Use the date of the commit:
 
 ```text
   - Plan 82 (<YYYY-MM-DD>) adopted upstream v7.0.2's helper fixes, read
@@ -761,8 +781,11 @@ git commit -m "feat(verification-before-completion): point a test claim at the d
     taken.
 ```
 
-- [ ] **Step 4: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
-- [ ] **Step 5: Commit**
+> Deviation: the sentence `It has no -C DIR option` became `This repository's helpers take no -C DIR option, which upstream's sdd-workspace, review-package and task-brief take, so -C DIR was not adopted`, because upstream's `sdd-repo` has no `-C DIR` option either. The task review found it, and the controller fixed it in `a6372f6`.
+
+
+- [x] **Step 4: Run the gates.** `uv run python build/check_provenance.py` passes, and `bash build/run_commit_lints.sh` prints `commit lints passed`.
+- [x] **Step 5: Commit**
 
 ```bash
 git add NOTICE
