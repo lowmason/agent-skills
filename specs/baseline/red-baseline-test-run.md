@@ -615,3 +615,74 @@ run output, so those bullets are read by what the replies say they will do, not 
 | Kit total, over every `rep<N>.json` in this record's folders | $0.53 |
 
 The kit's sum is $0.53 of the $10 spend stop. No rep was rerun.
+
+## The controller-run treatment, third arm (final text)
+
+The scoped re-review of the second arm's fix found a defect in one bullet. The bullet "No `run:` line" ran two cases
+together: "The script refused ... or the tool killed the run ... Run it again with a longer timeout." A refusal is a
+bad call from the controller (the script refuses only the wrong arguments, a task number that is not an ID, or a
+repository with no commit), and a longer timeout cannot fix it. The second arm's rep2 shows that reading: "If the
+script refused or the tool killed the run, I rerun with a longer timeout." The bullet now separates the two cases. If
+the script refused, the controller reads the message and corrects its call. If the tool killed the run, the
+controller runs it again with a longer timeout, and a run that still does not finish is a failing run. No other line
+of `skills/subagent-driven-development/references/test-run.md` changed. The case, its fixture and its reading rule
+did not change.
+
+The arm: `git add` staged the file, then `git stash create` printed `e005447f26feae3127e854ace99499cebb1a9d87`. It
+added no stash entry (`git stash list` printed nothing). The prompt was built with
+`build_prompts.py e005447f26feae3127e854ace99499cebb1a9d87 /tmp/plan84-work/treatment-final2 controller-run`.
+`MANIFEST.txt` gives sha256 `78526c0b01400875ccdd262151635d9a12068882de269f2aa129f4a61296df30` and the same three
+texts as the earlier arms: `SKILL.md`, the glob `references/test-run*.md` and `references/file-handoffs.md`. Before
+any rep ran, a grep showed that the prompt holds the new opening "Either the script refused or the tool killed the
+run" and the phrase "correct your call" once each, and does not hold the old opening "The script refused, so read its
+message". It still holds `(<cmd1>) && (<cmd2>)` and the bullet "Check the run" once each.
+
+The five reps ran with
+`run_reps.sh /tmp/plan84-work/treatment-final2/controller-run.txt specs/baseline/red-baseline-test-run/treatment/controller-run-3 1 5 claude-sonnet-5-5`
+on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`. No
+rep wrote an error file, so no rep was rerun. Every reply was read in full and scored by hand by the rule committed
+above. The rule and the readings did not change after the replies were read.
+
+In every reply the first `<command>` block calls a path that ends in `scripts/test-run` for task 2. That block comes
+before the first `review-package` command and before any reviewer dispatch. Every call runs the same two commands
+inside one `sh -c`: the brief's passing step (`uv run pytest tests/test_units.py -q -rs`) and the project's
+`make test`. Every reply leaves out the brief's step that is expected to fail. No reply needs a "plain fence" or "bare
+name" note. The `review-package` aid fired on every rep, and it is a later step in each. Unscored note, for every rep:
+no other test command. The only command before the review package is the `test-run` call and, in rep4, a
+`git status --porcelain`, which is not a test command.
+
+Unscored note on the parentheses: all five replies wrap each command in its own parentheses:
+`sh -c '(uv run pytest tests/test_units.py -q -rs) && (make test)'`. Rep1 adds a `cd /work/recipes &&` in front of
+the `test-run` call, outside the `sh -c`.
+
+Unscored note on the "No `run:` line" bullet: only rep5 restates it. Rep5 says: "the script refused or the tool
+killed the run. I correct the call or rerun with a longer timeout." That separates the two cases the way the new text
+does. It does not say what happens to a run that still does not finish. Reps 1 to 4 do not mention the bullet. So the
+micro-test shows the old misreading gone in the one reply that restates the bullet, and it cannot show more than that.
+
+- rep1: PASS. The first `<command>` is the `test-run` call, with `cd /work/recipes &&` in front. A numbered list
+  follows. Its first step is the head and tree check. The `review-package` command is a second `<command>` block,
+  inside step 3 of that list. Parentheses: yes.
+- rep2: PASS. The first `<command>` is the `test-run` call. A numbered list follows, with the head and tree check
+  first. The `review-package` command is a second block, inside step 3 of that list. Parentheses: yes.
+- rep3: PASS. The first `<command>` is the `test-run` call, written inline. A numbered list follows, with the head and
+  tree check first. The `review-package` command is a second inline block, inside step 3. Parentheses: yes.
+- rep4: PASS. The first `<command>` is the `test-run` call. A second `<command>` holds `git status --porcelain`, before
+  the reply knows the run's result. The `review-package` command is a third block, after it. Parentheses: yes.
+- rep5: PASS. The first `<command>` is the `test-run` call. A four-step list follows. Its step 1 is the "No `run:`
+  line" case, and its step 3 is the head and tree check. The `review-package` command is named in step 4, in prose,
+  after the run. Parentheses: yes.
+
+Passes: 5 of 5. The bar for `controller-run` is `treatment 5/5; control fails at least 1 of 5`. The control passed 0
+of 5 (see the Control section), and this third arm passes 5 of 5, so the bar's treatment condition holds on the final
+text. This arm replaces the second arm as the arm of the shipped text. The second arm stays as recorded: it ran on the
+earlier wording of the "No `run:` line" bullet.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `controller-run` treatment, third arm, reps 1 to 5 | $0.115 (reps: $0.057, $0.014, $0.017, $0.015, $0.012) |
+| Kit total, over every `rep<N>.json` in this record's folders | $0.65 |
+
+The kit's sum is $0.65 of the $10 spend stop. No rep was rerun.
