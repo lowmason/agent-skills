@@ -952,6 +952,15 @@ Changes from upstream:
     paragraph, the clause about the controller's test run and the
     rewritten second sentence are local. The rest of that paragraph
     keeps its earlier wording, adapted from upstream.
+  - A /deferred pass (2026-11-10) made two local fixes from
+    specs/findings/superpowers-drift-v7-0-2.md. dispatching-parallel-agents'
+    "Each agent gets" list gains a rule for agents that edit files: each
+    gets a file set that no other agent in the batch edits, or its own git
+    worktree, and the dispatch names which (finding 26). writing-skills'
+    checklist says that test scenarios and baseline records go outside
+    the skill directory (finding 33). Upstream states neither rule in its
+    skill text. Its #2654 enforces the second with a test, which is not
+    adopted. The changes are local, and no upstream text was taken.
 
     brainstorming/
     dispatching-parallel-agents/
