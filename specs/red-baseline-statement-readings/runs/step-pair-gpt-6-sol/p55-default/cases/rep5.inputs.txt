@@ -1,3 +1,0 @@
-standin: specs/red-baseline-statement-readings/runs/standin-opus/p55-default/rep5.json
-claude: specs/red-baseline-statement-readings/runs/reader-opus/p55/rep5.json
-codex: specs/red-baseline-statement-readings/runs/reader-gpt-6-sol/p55/rep5.md

@@ -1,0 +1,2 @@
+standin: specs/baseline/red-baseline-statement-readings/runs/standin-opus/p53-unit/rep3.json
+claude: specs/baseline/red-baseline-statement-readings/runs/reader-opus/p53/rep3.json

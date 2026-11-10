@@ -1,0 +1,2 @@
+standin: specs/baseline/red-baseline-statement-readings/runs/pilot/standin-opus/p66-bound/rep1.json
+claude: specs/baseline/red-baseline-statement-readings/runs/pilot/reader-opus/p66/rep1.json

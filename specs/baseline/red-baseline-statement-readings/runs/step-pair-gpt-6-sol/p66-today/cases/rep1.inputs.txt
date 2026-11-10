@@ -1,0 +1,3 @@
+standin: specs/baseline/red-baseline-statement-readings/runs/standin-opus/p66-today/rep1.json
+claude: specs/baseline/red-baseline-statement-readings/runs/reader-opus/p66-today/rep1.json
+codex: specs/baseline/red-baseline-statement-readings/runs/reader-gpt-6-sol/p66-today/rep1.md
