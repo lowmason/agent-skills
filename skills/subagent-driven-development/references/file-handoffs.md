@@ -34,8 +34,9 @@ and is re-read on every later turn. Hand artifacts over as files:
   (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
   the dispatch prompt. The implementer writes the full report there and
   returns only status, commits, a one-line test summary, and concerns.
-- **Reviewer inputs:** the task reviewer gets three paths — the same brief
-  file, the report file, and the review package — plus the global
-  constraints that bind the task.
+- **Reviewer inputs:** the task reviewer gets four paths — the same brief
+  file, the report file, your test run's file ([test-run.md](test-run.md))
+  and the review package — plus the global constraints that bind the task.
 - Fix dispatches append their fix report (with test results) to the same
-  report file and return a short summary; re-reviews read the updated file.
+  report file and return a short summary; re-reviews read the updated file
+  and your new run file.

@@ -96,6 +96,7 @@ digraph process {
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
         "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
+        "Your test run passes? (references/test-run.md)" [shape=diamond];
         "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [shape=box];
         "Task reviewer reports spec ✅ and quality approved?" [shape=diamond];
         "Dispatch fix subagent for Critical/Important findings" [shape=box];
@@ -115,7 +116,9 @@ digraph process {
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)";
+    "Implementer subagent implements, tests, commits, self-reviews" -> "Your test run passes? (references/test-run.md)";
+    "Your test run passes? (references/test-run.md)" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [label="yes"];
+    "Your test run passes? (references/test-run.md)" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no: fix round"];
     "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" -> "Task reviewer reports spec ✅ and quality approved?";
     "Task reviewer reports spec ✅ and quality approved?" -> "Dispatch fix subagent for Critical/Important findings" [label="no"];
     "Task reviewer reports spec ✅ and quality approved?" -> "Mark task complete in todo list and progress ledger" [label="yes"];
@@ -132,7 +135,8 @@ digraph process {
 ```
 
 Every round loops back into the same fix-dispatch node above — the diagram
-doesn't show the round cap or the resume-vs-fresh mechanic; see Fix Rounds.
+doesn't show the round cap, the resume-vs-fresh mechanic or the test run
+after each fix; see Fix Rounds.
 
 **Batch small same-shape work.** Before you dispatch several small edits of the
 same kind one by one, read [references/batching.md](references/batching.md).
@@ -174,7 +178,7 @@ review is always capable** — dispatch it explicitly, not on the session defaul
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule and for the path the script reports), then dispatch the task reviewer with that path.
+**DONE:** First run the task's tests yourself, as [references/test-run.md](references/test-run.md) says; a failing run is a fix round, with no review. Then generate the review package (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule and for the path the script reports), and dispatch the task reviewer with both paths.
 
 **DONE_WITH_CONCERNS, NEEDS_CONTEXT or BLOCKED:** read
 [references/handling-reports.md](references/handling-reports.md) when one arrives,
@@ -223,8 +227,8 @@ final whole-branch review. When you fill a reviewer template:
 
 - Do not add open-ended directives like "check all uses" or "run race tests
   if useful" without a concrete, task-specific reason
-- Do not ask a reviewer to re-run tests the implementer already ran on the
-  same code — the implementer's report carries the test evidence
+- Do not ask a reviewer to re-run tests — your test run (see **DONE**) and
+  the implementer's report carry the test evidence
 - Do not pre-judge findings for the reviewer — never instruct a reviewer to
   ignore or not flag a specific issue. If you believe a finding would be a
   false positive, let the reviewer raise it and adjudicate it in the review

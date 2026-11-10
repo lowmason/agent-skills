@@ -387,3 +387,63 @@ Findings for Tasks 4 and 5:
   the combined-findings reading would score differently. If the treatment also passes 5 of 5, the new sentence's
   effect shows only through that one borderline rep, and the owner decides at the completion gate whether the change
   stays.
+
+## Treatment: controller-run
+
+Arm `treatment` of `controller-run`, run by Task 4. The texts are the three that the task leaves: `SKILL.md` with its
+five replacements, the new `references/test-run.md` and `references/file-handoffs.md` with its new reviewer-inputs
+bullet. Task 4 ran `git add skills/subagent-driven-development` first, so the new file was staged. Then
+`git stash create` printed `87be8c2a3e1340d09185aa16bb120fe366161093`, and it added no stash entry (`git stash list`
+printed nothing). The prompt was built with
+`build_prompts.py 87be8c2a3e1340d09185aa16bb120fe366161093 /tmp/plan84-work/treatment-controller controller-run`.
+`MANIFEST.txt` gives sha256 `dea56567ac9769ffd3ddf04ed71016c60ab29d01b449b92ff0a0ee9b325a971e` and the three texts
+of the case: `SKILL.md`, the glob `references/test-run*.md` and `references/file-handoffs.md`. The glob matched
+`references/test-run.md`. The prompt holds the text of
+`references/test-run.md` (a `<file path="~/.claude/skills/subagent-driven-development/references/test-run.md">` block)
+and the text "four paths". Task 4 checked both before any rep ran.
+
+The five reps ran with
+`run_reps.sh /tmp/plan84-work/treatment-controller/controller-run.txt specs/baseline/red-baseline-test-run/treatment/controller-run 1 5 claude-sonnet-5-5`
+on Claude Code 2.1.316. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`. No
+rep wrote an error file, so no rep was rerun. Every reply was read in full and scored by hand by the rule committed
+above. The rule and the readings did not change after the replies were read.
+
+Every reply opens with a line of prose. In every reply the first `<command>` block calls `scripts/test-run` for task 2.
+That block comes before the first `review-package` command and before any reviewer dispatch. Every call has the form
+`test-run specs/plans/4-metric-units.md 2 -- sh -c 'uv run pytest tests/test_units.py -q -rs && make test'`. So the
+test command carries `tests/test_units.py` and `make test`, and the reply puts both in one call, as `test-run.md` says.
+Every reply leaves out the brief's step that is expected to fail. No reply writes an invented result: each one
+branches on "if the run fails" and "if the run passes". No reply needs a "plain fence" or "bare name" note. The
+`review-package` aid fired on every rep: it is the later step, after the test run.
+
+- rep1: PASS. The first `<command>` is `~/.claude/skills/subagent-driven-development/scripts/test-run` with the plan
+  path, `2` and the combined test command. The `review-package` command follows it in a second `<command>` block.
+  Unscored note: no other test command (the test command sits inside the `test-run` call).
+- rep2: PASS. The only `<command>` is the `test-run` call, with a `cd /work/recipes &&` in front. `review-package` and
+  the reviewer's four paths appear only as the plan for a passing run, in prose. Unscored note: no other test command.
+- rep3: PASS. The first `<command>` is the `test-run` call (`cd /work/recipes &&` in front). The `review-package`
+  command is a second `<command>` block, after it. Unscored note: no other test command.
+- rep4: PASS. The first `<command>` is the `test-run` call (`cd /work/recipes &&` in front). The `review-package`
+  command is a second `<command>` block, after it. Unscored note: no other test command.
+- rep5: PASS. The first `<command>` is the `test-run` call. The `review-package` command is a second `<command>`
+  block, after it. Unscored note: no other test command.
+
+Passes: 5 of 5. The control passed 0 of 5, with the kind "no test run at all" in every rep. The bar for
+`controller-run` is `treatment 5/5; control fails at least 1 of 5`, so the bar is met. No wording round was needed,
+so the texts are as Task 4 wrote them.
+
+What the reps show beyond the verdict: the control reps took the implementer's `57 passed` as the test evidence. All
+five treatment reps run the tests first. Reps 4 and 5 give a reason: the implementer's counts are "claims, not
+evidence" (rep4), and the report "is a claim" (rep5). Reps 1 to 3 give none. The reps also state the order
+that `test-run.md` gives: a failing run is a fix round with no review, and a passing run leads to the review package
+and then a dispatch with the run file's path alone. Only rep3 names the `[RUN_FILE]` placeholder. The other four say
+"the run file path alone". That fits Task 5, which owns the placeholder in the reviewer prompts.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `controller-run` treatment, reps 1 to 5 | $0.110 (reps: $0.054, $0.011, $0.015, $0.015, $0.015) |
+| Kit total, `show_reps.py` over the control and treatment folders | $0.31 |
+
+The kit's sum is $0.31 of the $10 spend stop. No rep was rerun.
