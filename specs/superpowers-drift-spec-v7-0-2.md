@@ -336,12 +336,12 @@ local wording round on two sentences, which `NOTICE` names. The figures
 that follow are for the copy after that round. T7 scored
 13 of 25 on the new copy and 17 of 25 on today's copy, in one run
 (one-sided Fisher p 0.926 for a gain, 0.193 for a regression). The new
-cases scored 0, 0, 0 and 0 of 5 on today's copy and 5, 4, 5 and 5 of 5 on
-the new copy (T10 to T13). T12's figure is from the copy before the round,
-which did not touch its passage. The P3 guard missed, at 3 of 5 against
+cases scored 0, 0, 0 and 0 of 5 on today's copy and 5, 4, 4 and 5 of 5 on
+the new copy (T10 to T13). The P3 guard missed, at 3 of 5 against
 5 of 5 on today's copy, and the owner accepted it as a known gap. Told to
 just write the design up, the skill sometimes writes it with its pick
-inside. The other guards held at 4 of 5 or better. T7 stays below plan
+inside. The other guards held at 4 of 5 or better. T1, T2, T3, T4, T6v
+and P2b ran only on the copy before the round. T7 stays below plan
 70's bar of 20 of 25, the known gap ruled on 2026-11-06. The figures in
 "The upstream-reported measured bar" above stay upstream's.
 

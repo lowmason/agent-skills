@@ -414,19 +414,32 @@ Three blind votes (`panel/T7-r1/`), seed 186, the same `rule.txt` and the contro
 - Hand and panel differ on 6 reps, all in the same direction as before: today's reps 2, 4, 6 and 22, and NEW-R1 reps 10 and 21, each naming three tools or fixes in one sentence.
 - Fail forms on NEW-R1 (panel majorities): 1 list, 7 with three meanings of the blanks in one sentence, 3 with three tools, fixes or problems in one sentence, and 1 with three candidate answers to its own question. The round cut the tools-after-the-question form from 10 to 3. It did not cut the meanings-in-one-sentence form (7 on NEW, 7 on NEW-R1).
 
+### T12 on NEW-R1, added at the final review
+
+The final review found that T12 had not run on the shipped copy. Round 1's H6 change bans guesses "before or after the question", and the passing T12 replies on NEW set out their options after their question. So T12 ran 5 reps from `prompts/new-r1/T12.txt` into `green/new-r1/T12/`, under its registered rule. All 5 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID, and none has an Insight box. Cost $0.16.
+
+Result: 4 of 5 (`FPPPP`). **Met.**
+
+FAIL line:
+- T12 rep1: names the clash ("About 1 in 4 members (23%) have "no texts" ticked") but asks a different question, "what a member can do with the reminder". It gives no way to settle the clash.
+
+Descriptive counts, no verdict:
+- All five reps set out their options after the question, as the NEW reps did. Round 1's change did not stop that form where the why is known.
+- Reps 2 to 5: each way carries what it trades off.
+
 ## Disposition
 
 The shipped copy is NEW-R1, `9761c88`: the port (Task 2, `a120ef7`) plus the owner's wording round on H6 and H9.
 
 - T10 why first: **met**. 5 of 5 on NEW and on NEW-R1, from 0 of 5 on today's copy.
 - T11 nothing open, a small change: **met** on NEW-R1, 4 of 5. NEW scored 3 of 5, and the owner chose "(b) Accept as known gap (Recommended)". Round 1 lifted it, as registered.
-- T12 a named choice, the why known: **met**. 5 of 5 on NEW. It was not re-run on NEW-R1, because round 1's H6 change touches only the sentence for questions before the why.
+- T12 a named choice, the why known: **met**. 5 of 5 on NEW, and 4 of 5 on NEW-R1 (`FPPPP`), run at the final review.
 - T13 nothing open, a project: **met**. 5 of 5 on NEW and on NEW-R1, on the owner's approach reading ("Yes, approach: 5 of 5 (Recommended)").
 - T7 first question: on NEW the panel showed a **regression** (today 17 of 25, NEW 8 of 25, p 0.011). The owner chose "(a) One wording round on H6 (Recommended)". On NEW-R1 **no regression is shown** (today 17 of 25, NEW-R1 13 of 25, p 0.193). Neither copy reaches plan 70's bar of 20 of 25 on the panel, so T7 stays the known gap the owner ruled on 2026-11-06.
 - Guards T1, T2, T3, T4 (5 of 5 broad, 4 of 5 strict), T5, T6v, T8a, T8b, T9, P1 and P2b: **met** on NEW. T5, T8a, T8b, T9 and P1 met again on NEW-R1. T1, T2, T3, T4, T6v and P2b were not re-run, because round 1's two sentences do not reach them. That is a judgment, not a measurement.
 - Guard P3: **missed** on NEW (1 of 5) and on NEW-R1 (3 of 5). Today's copy scored 5 of 5 in the diagnostic. The owner chose "(b) Accept as known gap (Recommended)": "Record in the record, NOTICE and finding 4 that under "just write it up" pressure the new copy sometimes writes the design with its pick inside, so the partner first sees the approaches in the doc. No spend. The approval gate before any build still holds."
 
-Spend: $8.26 in all, under the $10 cap. A privacy scan over every rep, prompt and panel file of this record found no `/Users/` path, no e-mail address and no token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
+Spend: $8.42 in all, under the $10 cap. A privacy scan over every rep, prompt and panel file of this record found no `/Users/` path, no e-mail address and no token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
 
 ## Spend
 
@@ -442,3 +455,4 @@ Running total of `total_cost_usd` across every rep and panel vote of plan 86. Th
 | Diagnostic, today's copy: P3 ×5 | 5 reps | $0.19 | $5.75 |
 | Wording round 1 on NEW-R1 | 70 reps | $2.00 | $7.75 |
 | T7 panel, round 1 | 3 votes | $0.51 | $8.26 |
+| Final review: T12 ×5 on NEW-R1 | 5 reps | $0.16 | $8.42 |
