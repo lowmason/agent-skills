@@ -69,6 +69,12 @@ Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assert
 ## Decisions
 
 - **D1** (owner, /deferred selection, 2026-11-10): write this plan and plan 88. This plan executes first, after plan 85. Plan 88 frees about 1,000 characters in finishing-a-development-branch, enough to survive any correction this probe makes. Applied in: Global Constraints, O5.
+- **D2** (owner, plan review, 2026-11-10): O1, default kept. The probe backs `skills.progressive-disclosure` and lists no `files`. Applied in: Task 4.
+- **D3** (owner, plan review, 2026-11-10): O2, default kept. PASS means the prose skill keeps at least the register's window of body characters; the digits skill only tells characters from tokens. Applied in: Task 1.
+- **D4** (owner, plan review, 2026-11-10): O3, default kept. The scratch path stands in for a real install path, and the finding prints the header length. Applied in: Task 1.
+- **D5** (owner, plan review, 2026-11-10): O4, default kept. A DIVERGES run corrects the register with `reserve_chars` (and `counts_frontmatter` if the frontmatter is re-attached), at the value O4 states. Applied in: Task 4.
+- **D6** (owner, plan review, 2026-11-10): O5, default kept. Each file the corrected window fails gets a `gap` exception and a backlog item; plan 88 removes finishing-a-development-branch's. Applied in: Task 4, Task 5.
+- **D7** (owner, plan review, 2026-11-10): O6, default kept. The probe is registered and joins the weekly probe set, at about $0.20–0.60 a run. Applied in: Task 4.
 
 ## Related open items (taken into account, not absorbed)
 
