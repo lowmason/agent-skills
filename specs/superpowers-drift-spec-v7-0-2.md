@@ -115,12 +115,12 @@ anchors this revision cites were re-taken at `5beacf5`.
 |---|---|---|
 | 1 | SDD workspace has no plan identity | **Adopted** — plan 22 |
 | 2 | Implementers can spawn duplicate reviewers | **Adopted** — plan 22 |
-| 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged at v7.0.2 |
+| 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged at v7.0.2. Logged in `specs/deferred_items.md` (2026-11-10) |
 | 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`). v7.0.2's retune (#2644) **adopted** — plan 86 (2026-11-10), see the finding |
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | **Adopted** — plan 75, rulings mid-run only (F7); decided 2026-10-21 |
-| 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50, hardened again `98c453e`; the untracked-file guard **adopted** as an idea — plan 60; `start-server.sh --project-dir` **already covered** (`3ad94f8`, 2026-11-01, two days before #2608 shipped); the discard menu and the worktree-guard format stay as they were |
+| 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50, hardened again `98c453e`; the untracked-file guard **adopted** as an idea — plan 60; `start-server.sh --project-dir` **already covered** (`3ad94f8`, 2026-11-01, two days before #2608 shipped); the discard menu and the worktree-guard format stay as they were. Both are logged in `specs/deferred_items.md` (2026-11-10) |
 | 9 | writing-plans asks for code transcripts | **Adopted** — plan 73 |
 | 10 | Reviewers grade the spec's silence | **Adopted** — plan 73 |
 | 11 | executing-plans was rebuilt as a ledgered native mode | **Adopted** — plan 75 (2026-10-31), from v7.0.1. v7.0.2's `task-start` guard and #2607 wording landed under finding 18 in plan 82 (2026-11-09) |
@@ -229,6 +229,8 @@ eventual rewrite retained the rebuttals in rationalization rows. Findings 13
 and 24 do not close this prospective item. The archived finding 3 holds the
 historical evidence; its assurance about the then-existing test suites is not
 a fresh audit of today's suites.
+
+**Logged 2026-11-10:** the falsifiability guidance is a backlog item → item: superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
 
 ### 4. Brainstorming ceremony does not scale — adopted (plan 70, v7.0.1), and v7.0.2's retune (plan 86)
 
@@ -373,6 +375,8 @@ The 2026-10-28 text stands, with these updates and retained considerations:
 
 Those two local considerations remain unresolved; the `gh`-optional PR path
 already covers the earlier forge-agnostic recommendation.
+
+**Logged 2026-11-10:** the discard menu and the worktree-guard format are two backlog items → item: superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
 
 ## Findings 9–15 (v6.4.1 and v6.4.2), re-verified
 
@@ -1152,7 +1156,9 @@ Under this repo's proportional-process rule:
   convergence; finding 17's compaction-cut probe and residual writing-skills
   guide rewrite. The latter two retain their existing backlog items; the
   completed splits do not close them. Findings 9–11's post-adoption review and
-  test follow-ups retain the backlog owners named above.
+  test follow-ups retain the backlog owners named above. **Update 2026-11-10:**
+  finding 3's guidance and finding 8's two considerations had no backlog item.
+  They are now three items → item: superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
 - **Port candidate, a plan with micro-tests and no spec:** finding 4's #2644
   retune, applied as upstream's diff against our v7.0.1-derived copy with plan
   70's divergences held, tested against plan 70's RED baseline with the

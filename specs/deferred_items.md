@@ -6222,3 +6222,53 @@ review and the Plan Completion gate (2026-10-27) add the others.
       output in the workspace; name that file in the "No `run:` line" bullet; add a test in
       `skills/subagent-driven-development/scripts/test_sdd_scripts.py`. Size: quick-fix. Done when: a
       killed `test-run` leaves its partial output at a path that the controller text names.
+
+## superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
+- [ ] **test-driven-development's `testing-anti-patterns.md` does not name the string-presence and
+      change-detector traps (superpowers drift finding 3).** Upstream superpowers replaced that file with
+      `writing-good-tests.md` (read at `22f0b46`). It is a positive catalog built on two rules: name the
+      behavior that would break, and exercise the real thing. It adds gate functions, a mutation check and a
+      list of warning signs. Two of its traps are missing from
+      `skills/test-driven-development/testing-anti-patterns.md`. A string-presence test asserts on the words
+      of a script, skill or prompt instead of on what it does. A change-detector test fails when the
+      implementation changes but protects no useful outcome. The product of this repository is skill text and
+      scripts, so the first trap fits it closely. No defect is known. An earlier drift pass found no test that
+      asserts on skill or script source text, but no one has audited today's suites since. Keep the whole Why
+      Order Matters section (`skills/test-driven-development/SKILL.md`, about line 214). Upstream reported
+      that its first deletion of that section cut test-first behavior under pressure from 8 of 10 runs to 5
+      of 10. The open decision: add only the two traps to `testing-anti-patterns.md`, or adopt upstream's
+      positive catalog. Either way it changes a discipline skill, so it follows the writing-skills skill, with
+      a micro-test against a no-guidance control. The skill is vendored from superpowers, so add a line to
+      `NOTICE`'s superpowers change list. First found in specs/superpowers-drift-2026-09-03.md (now
+      specs/completed/superpowers-drift-spec-v7-0-1.md), 2026-09-03. Size: design. Done when: the owner's
+      choice is recorded on this item, the skill names both traps, the micro-test meets its bar against the
+      control, the Why Order Matters section is whole, and a `NOTICE` line names what was taken.
+- [ ] **finishing-a-development-branch offers "Discard this work" in both completion menus (superpowers
+      drift finding 8).** Step 4's 4-option menu and its detached-HEAD menu both list it
+      (`skills/finishing-a-development-branch/SKILL.md`, about lines 179 and 191). Upstream superpowers
+      offers discard only when the partner asks for it. Its reason: a menu item beside "Merge" offers to
+      destroy finished, passing work. Here a typed confirmation already guards the delete (Option 4, about
+      line 348), so the only open question is whether the menus offer it. The open decision: keep discard in
+      both menus, or reach it only on an explicit request. A change reaches past the menus. Step 4 says
+      "present exactly these 4 options", and the description, Step 1b, Step 4b, Step 6, the Quick Reference
+      table and Red Flags all name Option 4 or Discard. On 2026-11-10 the body has 25 characters of room
+      under the `compaction-window` check in `build/check_conformance.py` (19,975 of 20,000). The skill is
+      vendored from superpowers, so the edit follows the writing-skills skill and adds a line to `NOTICE`'s
+      superpowers change list. First found in specs/superpowers-drift-2026-09-03.md (now
+      specs/completed/superpowers-drift-spec-v7-0-1.md), 2026-09-03. Size: design. Done when: the owner's
+      choice is recorded on this item. If the choice drops the option, neither menu lists discard, an
+      explicit request still reaches the typed confirmation, `build/check_conformance.py` passes, and a
+      `NOTICE` line names the change.
+- [ ] **using-git-worktrees writes its Common Mistakes as Problem/Fix pairs, not as an Excuse/Reality table
+      (superpowers drift finding 8).** The section has six pairs (`skills/using-git-worktrees/SKILL.md`,
+      "Common Mistakes", about lines 185-215). The drift passes suggested the Excuse/Reality table, which six
+      skills here use for their rationalization tables. No behavior gap was found, so this is a change of
+      format only. Two facts weigh against it. finishing-a-development-branch keeps the same Problem/Fix form
+      for its own Common Mistakes (`skills/finishing-a-development-branch/references/common-mistakes.md`, 11
+      pairs). Also, a Problem/Fix pair names a mistake, not an excuse, so each table row needs new excuse
+      wording. A triage may retire this item as a no-change decision. The skill is vendored from
+      superpowers, so an edit follows the writing-skills skill and adds a line to `NOTICE`'s superpowers
+      change list. First found in specs/superpowers-drift-2026-09-03.md (now
+      specs/completed/superpowers-drift-spec-v7-0-1.md), 2026-09-03. Size: quick-fix. Done when: the Common
+      Mistakes section of `skills/using-git-worktrees/SKILL.md` is an Excuse/Reality table and a `NOTICE`
+      line names it.
