@@ -940,15 +940,18 @@ Changes from upstream:
   - Plan 84 (2026-11-10) adds subagent-driven-development/scripts/test-run
     for finding 21 of specs/superpowers-drift-spec-v7-0-2.md. It adapts
     executing-plans' task-done, which adapts upstream's scripts (MIT): it
-    runs one command and keeps its exit status and full output in the
-    plan's workspace, one file for each run. Its header lines, the
-    controller's run before every task review, the failing-run fix round
-    and the task reviewer's reading of the run are local. The task
-    reviewer's Tests section, in agents/task-reviewer.md and
-    task-reviewer-prompt.md, keeps upstream's rule not to re-run the
-    suite. Its new text, and the new sentences in the implementer
-    prompt's After Review Findings paragraph, are local and take no
-    upstream text.
+    runs one command and keeps the full output in the plan's workspace.
+    The exit status in the file, its header lines, its separate file for
+    each run, the controller's run before every task review, the
+    failing-run fix round and the task reviewer's reading of the run are
+    local. The task reviewer's Tests section, in agents/task-reviewer.md
+    and task-reviewer-prompt.md, keeps upstream's rule not to re-run the
+    suite, and the earlier wording of its other two paragraphs where the
+    new text does not change it. Its first paragraph, which reads the
+    run, is local. In the implementer prompt's After Review Findings
+    paragraph, the clause about the controller's test run and the
+    rewritten second sentence are local. The rest of that paragraph
+    keeps its earlier wording, adapted from upstream.
 
     brainstorming/
     dispatching-parallel-agents/
