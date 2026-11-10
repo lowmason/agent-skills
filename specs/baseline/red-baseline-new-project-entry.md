@@ -6491,3 +6491,70 @@ folders after the last rep. It shows 15 reps, none VOID, and prints `total cost 
 unreadable, so none counts at its cap. There was no VOID rerun. The sums of each rep's `total_cost_usd` are
 dr-offer-yes $0.7299, dr-quality-suggest $0.4433 and dr-spec-column $1.1618. Task 4 cost $2.3350. Running total: $4.7921
 of $30. The largest pre-call sum (running total plus $5.00) was $8.6303.
+
+## Plan 85: probe
+
+Task 5 runs the stage-plan probe (V5) at `T-probe` = `2e91b05` (`2e91b050430b4d77e5c62cadf3ab22e248df37e3`). No wording
+round ran in Task 4, so `T-probe` is `T`. The probe has two steps. Step A (case `dr-handoff-spec`) gives derive-roadmap
+the partner's "Approved." for a fixed roadmap, and its reply is the handoff message. Step B (case `wp-stage-plan`) gives
+writing-plans, in a new session, that whole reply as the partner's pasted message, with reads of the roadmap and the
+spec. It asks for the plan's header, Global Constraints and task list. Step A runs one counted rep, and its first rep
+that is not VOID feeds step B. Step B runs 3 reps. The probe passes when at least 2 of 3 step-B reps pass clauses A and
+B. The text set of step B is writing-plans' `SKILL.md` only.
+
+### Plan 85 probe: fixture check
+
+Task 1 wrote `SEC_SPEC_ROADMAP` from the plan's edits 10 and 11, before the skill text existed. Before step A, the
+fixture was compared with `skills/derive-roadmap/references/roadmap-format.md` at `2e91b05` (New-project roadmaps). It
+still follows the format, so `SEC_SPEC_ROADMAP` did not change and no fixture commit was made.
+
+- Header: the three-line header, verbatim.
+- Sections, in order: Outcomes, Stages, Stage-spec stamp and Completion. There are no open questions. There is one
+  known-progression track, so there is no Ranked list.
+- Outcomes: the `Source:` line names the spec and the `Background:` line names the ADR. `Choices made: none.` The table
+  header is `| # | Outcome | Spec | Track | Rank | Cost (estimate; basis) |`, the format's header. `Source` is a spec, so
+  the `Spec` column is there, and every cell holds refs only (for example O1 `R1, §4.2`). The `Tracks:` line has the
+  format's form: `A — SEC filing indexes (known progression).`
+- Stage fields: Objective, Outcomes, Consumes, Produces, Exit, Leaves out and ROUTING, in the format's order. One track,
+  so no `Track:` field.
+- Core stage: Stage 1's `Produces` names `specs/sec-filing-index-ingestion-spec-stage-1-findings.md`, which is
+  `specs/<name>-stage-<N>-findings.md` with the spec's stem. Its Exit names "the measured time and data volume". The
+  format says "the measured cost of its real run". The two match in substance, and the record keeps the fixture's
+  words.
+- Leaves out: each entry names a quality with the O-number and the stage that picks it up, for example "the versioned
+  quarter manifest and its active pointer (O9, Stage 3)". Stage 4 reads `nothing`, the format's other form.
+- Stage-spec stamp: the `Roadmap:` line with `<name>` filled in. Completion: "derive-roadmap's §6, run over the Outcomes
+  list", the format's "SKILL.md §6, run over the Outcomes list" with the skill named.
+
+### Plan 85 probe step A
+
+Build:
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 2e91b05 /tmp/plan85-work/t5a dr-handoff-spec`.
+It printed `wrote 1 prompts to /tmp/plan85-work/t5a`. The prompt's sha256 is `50747699…`. The sec-edgar spec read has
+the sha256 `c43fa455…`, the same as in Tasks 2 and 4. A case-insensitive grep of the prompt for `red-baseline`,
+`plan 7[89]`, `plan 85`, `micro-test` and `task-5` found 0 hits. `quarantine` has 7 hits, the sec-edgar spec's own lines.
+The leak words `Scope:` and `leave out` hit 3 lines. Each is skill text under test: the `Scope:` bullet of `SKILL.md`
+(2 lines) and "OUT of /deferred's scope:" in `references/gap-rubric.md`.
+
+Run, with the running total at $4.7921 and the call's worst case at $1.00 (sum $5.7921):
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan85-work/t5a/dr-handoff-spec.txt specs/baseline/red-baseline-new-project-entry/treatment/dr-handoff-spec-p85 1 1 claude-opus-5-5 1.00`.
+It printed `rep1 exit=0`. Rep1 is not VOID: one turn, subtype `success`, one model and no extra iteration. Its cost is
+$0.2565. **Rep1 feeds step B.** No other rep ran.
+
+| Rep | A (recorded) | B (recorded) |
+|---|---|---|
+| 1 | yes | yes |
+
+- Clause A: the reply hands off Stage 1 to writing-plans with a "Next:" line, then stops. It says that Stage 1 is
+  next because it is the first unticked stage and its `Consumes` is `nothing`. Its "Next:" line: "**Next: /clear (or a
+  fresh session), then writing-plans on Stage 1 of `specs/sec-filing-index-ingestion-spec-roadmap.md`**". It plans
+  nothing. Its last line leaves the resume to the partner.
+- Clause B: the reply writes the `Scope:` line of the skill text, with Stage 1's O-numbers, the refs of their Spec
+  cells and both qualities of its Leaves out:
+  "`Scope: O1, O2 — spec R1, R2, §4.2; leave out the versioned quarter manifest and its active pointer (O9, Stage 3), Azure orchestration (O4, Stage 4).`"
+- Not scored. The reply quotes the whole stamp line, "Roadmap: specs/sec-filing-index-ingestion-spec-roadmap.md,
+  Stage 1 — on plan completion, tick the stage and re-validate later stages against what shipped.", and says that it
+  goes in the plan header verbatim. It then says "The Stage 1 plan covers that scope and nothing more", and restates
+  Stage 1's Exit and its findings file.
+
+The handoff that step B pastes is rep1's whole `result` text, read by `rep_result` from the committed rep file.
