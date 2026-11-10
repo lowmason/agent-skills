@@ -1,0 +1,10 @@
+arm 2e91b05 (2e91b050430b4d77e5c62cadf3ab22e248df37e3)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-handoff-spec.txt sha256 50747699fdb998898921cb7d23be083b9a783c7bf82b34a6ec676c0712227db5 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+arm 2e91b05 (2e91b050430b4d77e5c62cadf3ab22e248df37e3)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+wp-stage-plan.txt sha256 6324f5ed468c80de8b6e0316ea6ba85cd13926c206bbafb56c8cf07786c4bc8e model claude-opus-5-5 budget 1.00 uses skills/writing-plans/SKILL.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+  read https://github.com/lowmason/agent-skills ede95b87fdf0c8b29d5e38d8b4381cc2064bbc72 specs/baseline/red-baseline-new-project-entry/treatment/dr-handoff-spec-p85/rep1.json whole sha256 2afc3157ec67cf473dd4e7cd452f25ff7ffe79e242cc9c7687d0811372e3a0ef
+  handoff: derived from the read above by cases.rep_result, sha256 1928553c935313db146cd1021d49ce8a28a75d4dad8675636b3571dd817c0528

@@ -5817,9 +5817,9 @@ Stop: **$30**. Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.
 | Task 2, control arms (RED), before any skill edit (3 cases, 5 reps each, no VOID rerun; worst case $5.00 per case call) | $2.4571 |
 | Task 3, the skill text (no rep) | $0.00 |
 | Task 4, treatment arms for V1, V3 and V4 at `T` (3 cases, 5 reps each, no VOID rerun, no wording round; worst case $5.00 per case call) | $2.3350 |
-| Task 5, the stage-plan probe (V5) | not run |
+| Task 5, the stage-plan probe (V5) at `T` (step A 1 rep, worst case $1.00; step B 3 reps, worst case $3.00; no VOID rerun, no $2.00 rerun, no wording round) | $0.8911 |
 | Task 6, the guards at the final text, and the summary | not run |
-| **Running total** | **$4.7921 of $30** |
+| **Running total** | **$5.6832 of $30** |
 
 Running total after Task 1: $0.00 of $30. Task 1 ran no `claude -p` rep.
 
@@ -5830,6 +5830,10 @@ and spend" section, below.
 Running total after Task 4: $4.7921 of $30 ($4.79). `show_reps.py` over Task 4's three folders prints $2.34 for its 15
 reps, and the sum of their `total_cost_usd` is $2.3350. No rep file is empty or unreadable, so none counts at its cap.
 These figures match the "Plan 85 Task 4 summary and spend" section, below.
+
+Running total after Task 5: $5.6832 of $30 ($5.68). `show_reps.py` over Task 5's two folders prints $0.89 for its 4
+reps, and the sum of their `total_cost_usd` is $0.8911. No rep file is empty or unreadable, so none counts at its cap.
+These figures match the "Plan 85 probe summary and spend" section, below.
 
 ## Plan 85: control
 
@@ -6609,3 +6613,130 @@ each hit by its line number: the pasted handoff is lines 25 to 39, and the spec 
 The two leak-word hits are the output under test, as the brief expects when step A writes a `Scope:` line. They are not
 hand-written. No hit comes from a hand-written line, and no `quarantine` hit comes from the pasted handoff. The 7
 `quarantine` hits are exempt case-repository text, as in Task 1's leak check.
+
+### Plan 85 probe step B: run
+
+`PROBE_A` (`ede95b8`) and the case commit `57d0aab` (`test(specs): add plan 85's probe step-B case`) came before any
+step-B rep.
+
+Build:
+`CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 2e91b05 /tmp/plan85-work/t5b wp-stage-plan`.
+It printed `wrote 1 prompts to /tmp/plan85-work/t5b`. The prompt's sha256 is `6324f5ed…`. Checks of the prompt:
+
+- Its manifest shows the sec-edgar spec read (sha256 `c43fa455…`) and step A's rep1 read at `ede95b87…`. The handoff
+  derived by `cases.rep_result` has the sha256 `1928553c…`, the sha256 of rep1's `result`.
+- It holds one `<skill>` block, writing-plans, and no `<file>` block. No derive-roadmap body text is in it: a grep for
+  derive-roadmap's §4 sentence "Present the stage partition for approval" found 0 hits. derive-roadmap's listing
+  description is there, as in every prompt.
+- A case-insensitive grep for `red-baseline`, `plan 7[89]`, `plan 85` and `task-5` found 0 hits. `micro-test` has 1
+  hit, in the body of writing-plans' `SKILL.md` (its Proportion rule), which is text under test. The leak view has the
+  placeholder there and 0 hits. `quarantine` has the spec's 7 lines.
+
+`treatment/p85-t5-MANIFEST.txt` joins the two build manifests: `/tmp/plan85-work/t5a/MANIFEST.txt`, then
+`/tmp/plan85-work/t5b/MANIFEST.txt`.
+
+**The writing-plans text.** The blob sha of `skills/writing-plans/SKILL.md` at `T-probe` (`2e91b05`) is
+`41f4e91cc2bba1418cbbf88bdbea865a9cdcee3a`. Task 1 recorded the same blob at `BASE85` (`58337f5`). So step B read the
+writing-plans text of `BASE85`. Plan 84 did not change it after `BASE85`.
+
+Run, with the running total at $5.0486 (after step A) and the call's worst case at $3.00 (sum $8.0486):
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan85-work/t5b/wp-stage-plan.txt specs/baseline/red-baseline-new-project-entry/treatment/wp-stage-plan-p85 1 3 claude-opus-5-5 1.00`.
+It ran in the background and printed `rep1 exit=0`, `rep3 exit=0` and `rep2 exit=0`. No rep is VOID: each has one turn,
+subtype `success`, one model and no extra iteration. No rep stopped on its budget, so no $2.00 rerun was needed. No
+`.err` file was left.
+
+### Plan 85 probe
+
+Each step-B reply was read in full, by hand, against the case's rule and reading notes and against the sec-edgar spec
+at `22c6767f`: §3 (R1, R2, R4 and R9), §4.1, §4.2 and §4.5. R1 is the initial download of archived quarterly indexes,
+R2 the ongoing daily ingestion, and §4.2 the source discovery and pipeline units. R4 is the Azure platform (ADF,
+Container Apps Jobs, ADLS, Table Storage), and §4.1 gives each service's ownership. R9 is the versioned quarter manifest
+read through one active pointer. §4.5 holds the storage paths, the Source manifest records and the publication manifest.
+
+| Rep | A (bar) | B (bar) | C (recorded) | PASS (A and B) |
+|---|---|---|---|---|
+| 1 | pass | pass | yes | yes |
+| 2 | pass | pass (note) | yes | yes |
+| 3 | pass | pass | yes | yes |
+
+Clause A: 3 of 3. Clause B: 3 of 3. Clause C: 3 of 3. **PASS: 3 of 3.**
+
+- Clause A. Every rep cites R1, R2 and §4.2 as its scope on the header's Spec line. Rep1: "**Spec:**
+  specs/sec-filing-index-ingestion-spec.md (scope: R1, R2, §4.2; outcomes O1, O2)". Rep2: "**Spec:**
+  specs/sec-filing-index-ingestion-spec.md (scope R1, R2, §4.2)". Rep3 copies the handoff's form: "Scope: O1, O2 —
+  spec R1, R2, §4.2." Each rep also cites other sections in its Global Constraints (for example §4.3, §4.8, §4.9, §5
+  and §6 in rep1). The rule asks for the three refs only, so the extra refs are notes, not fails.
+- Clause B. No task and no Global Constraint builds the versioned quarter manifest, its active pointer, or any of ADF,
+  Container Apps Jobs, ADLS or Table Storage. Each rep names both qualities as out of scope:
+  - Rep1, a Global Constraint: "Out of scope for this plan: the quarter manifest and active pointer (O9), `curated/…/generation=` paths, the raw-snapshot store (O6), the shared lease (O8), the `discover/collect/transform/publish` commands (O5), canonical normalization and dedup (O3), and Azure (O4)."
+  - Rep2, a Global Constraint: "Out of scope for this stage: the versioned quarter manifest and its active pointer (O9, Stage 3), Azure (O4, Stage 4), the shared lease and request budget (O8), the canonical deduplicated dataset (O3), and replay (O6)."
+  - Rep3, the Architecture line: "Azure, the versioned quarter manifest and its active pointer, the shared request lease, replay storage and the canonical validation pass are out of scope here."
+
+  Each rep writes the table as local Parquet and writes a measurement or run report (rep1 `measurements.json`, rep2 a
+  JSON run report from each command, rep3 `report.json`). Stage 1's Exit asks for the measured time and data volume,
+  and §4.7 calls such a file a run report, apart from the manifest.
+- Rep2's note (B). Rep2 builds more of the spec than Stage 1's refs. Its downloader writes "content-addressed raw
+  files" to the §4.5 raw path, with "SHA-256, byte count and response validators". Its table writer uses the §4.5
+  observation path. Its CLI has two of §4.1's four command names (`collect` and `transform`), over a local `--root`. None
+  of these is the versioned quarter manifest, its pointer, or an Azure service. The local root is a local stand-in for
+  ADLS, which the reading note passes. So B passes by the rule. Rep2's own Global Constraint puts replay (O6) out of
+  scope, but its raw store is the storage that replay reads.
+- Clause C. Every header carries the stamp line in full, as a quote line: "> Roadmap:
+  specs/sec-filing-index-ingestion-spec-roadmap.md, Stage 1 — on plan completion, tick the stage and re-validate later
+  stages against what shipped."
+
+Other readings:
+
+- *Plan 79's "a manifest of any kind".* That reading belongs to dr-known-progression-79's clause B, which reads a core
+  stage's Exit. This case's clause B names the versioned quarter manifest and its pointer. Applied here anyway, no rep
+  builds a file it calls a manifest. Rep2 comes nearest: its raw store keeps the fields of the §4.5 Source manifest's
+  Snapshot record (SHA-256, raw path, byte count, response validators). If that counts as a source manifest, rep2 fails
+  B, and B and PASS are 2 of 3. The probe still passes.
+- *The run report as a run manifest.* If any run or measurement report counted as a run manifest, every rep would fail
+  B, and PASS would be 0 of 3. The record does not apply this reading: Stage 1's own Exit asks for the measured time and
+  data volume, so the stage could not pass its Exit under it.
+- *A CLI with §4.1's command names.* If rep2's `collect` and `transform` commands counted as building toward Container
+  Apps Jobs, rep2 fails B, and B and PASS are 2 of 3. With the Snapshot-record reading as well, it is still only rep2,
+  so PASS stays at 2 of 3. The probe still passes.
+
+**Probe verdict: PASS**, 3 of 3 step-B reps pass clauses A and B (bar: 2 of 3). Each other reading that the record
+applies to one rep gives 2 of 3, and the probe still passes. Only the run-report reading, which the record does not
+apply, gives a fail. No wording round ran. There is no `T-r1` commit and no `-r1` folder. The last skill commit is still
+`T` (`2e91b05`), which Task 6 reads.
+
+**What the probe cannot show.** A pass cannot show that the `Scope:` line caused it. `SEC_SPEC_ROADMAP`, which every
+step-B rep reads in full, already carries Stage 1's Spec refs (O1 `R1, §4.2` and O2 `R2, §4.2`) and its `Leaves out`
+(the manifest and pointer, and Azure orchestration). A writing-plans session could take the same scope from the
+roadmap alone. Rep3's Spec line copies the `Scope:` line's form word for word, and reps 1 and 2 write "scope" beside
+the same refs. That shows that the line reached the plan, not that the plan needed it. The probe has no arm without the
+`Scope:` line. The writing-plans text that step B read is blob `41f4e91cc2bba1418cbbf88bdbea865a9cdcee3a` at `T-probe`,
+the same blob that Task 1 recorded at `58337f5`.
+
+Not scored:
+
+- Reps 1 and 3 each raise a gap in the fixture's roadmap. §4.2's daily-ingestion state rules (catch-up after an
+  outage, revisits of pending and failed sources, `no_new_sources`, never advancing past a failed directory read) are in
+  Stage 1's refs, but Stage 1's Exit asks only for one daily index, and no stage's Exit names them. Rep1: "They need a
+  home, either a Stage 2 Exit line or a deferred item, when the roadmap is resumed." Rep3: "There is no durable
+  checkpoint or pending-source state, even though §4.2's daily catch-up needs one." Rep2 does not raise it.
+- Every rep puts an owner gate on its last task, the real run against the SEC, which needs the partner's User-Agent.
+  Reps 1 and 3 write it in the task. Rep2 writes it in its closing notes ("**Owner gate (Task 7):**").
+- Every rep ends Stage 1 with the findings file `specs/sec-filing-index-ingestion-spec-stage-1-findings.md`, the path in
+  Stage 1's `Produces`, and none writes task steps.
+- Rep2 notes that the spec's status line still reads PROPOSED, and plans against the spec as written.
+
+### Plan 85 probe summary and spend
+
+| Step | Case | Folder | Reps | Result |
+|---|---|---|---|---|
+| A | dr-handoff-spec | `treatment/dr-handoff-spec-p85/` | rep1, not VOID, feeds step B | A (recorded) yes; B (recorded) yes: the reply writes the `Scope:` line |
+| B | wp-stage-plan | `treatment/wp-stage-plan-p85/` | rep1 to rep3, none VOID | A 3 of 3, B 3 of 3, C 3 of 3; PASS 3 of 3 |
+
+**Probe: PASS** (3 of 3; bar 2 of 3). The two `Scope:`-type hits in the step-B leak view are step A's output, not
+hand-written lines.
+
+**Spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over the two folders
+after the last rep. It shows 4 reps, none VOID, and prints `total cost $0.89`. No rep file is empty or unreadable, so
+none counts at its cap. There was no VOID rerun and no $2.00 rerun. The sums of each rep's `total_cost_usd` are step A
+$0.2565 and step B $0.6346 (rep1 $0.3313, rep2 $0.1557, rep3 $0.1476). Task 5 cost $0.8911. Running total: $5.6832 of
+$30. The largest pre-call sum (running total plus the call's worst case) was $8.0486, before step B.
