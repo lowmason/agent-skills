@@ -5814,11 +5814,295 @@ Stop: **$30**. Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.
 | Item | Spent |
 |---|---|
 | Task 1, three cases, the probe's step-B constants and their leak check (no rep) | $0.00 |
-| Task 2, control arms (RED), before any skill edit | not run |
+| Task 2, control arms (RED), before any skill edit (3 cases, 5 reps each, no VOID rerun; worst case $5.00 per case call) | $2.4571 |
 | Task 3, the skill text | not run |
 | Task 4, treatment arms for V1, V3 and V4 | not run |
 | Task 5, the stage-plan probe (V5) | not run |
 | Task 6, the guards at the final text, and the summary | not run |
-| **Running total** | **$0.00 of $30** |
+| **Running total** | **$2.4571 of $30** |
 
 Running total after Task 1: $0.00 of $30. Task 1 ran no `claude -p` rep.
+
+Running total after Task 2: $2.4571 of $30 ($2.46). `show_reps.py` over Task 2's three folders prints $2.46 for its 15
+reps. No rep file is empty or unreadable, so none counts at its cap. These figures match the "Plan 85 control summary
+and spend" section, below.
+
+## Plan 85: control
+
+Task 2 runs the control arms of three cases at `BASE85` (`58337f5`), before any skill file changes. A control arm reads
+the skill text from before the change. Each case ran 5 reps. A rep is one fresh `claude -p` run with no tools. Two
+controls are RED and one is thin, on the readings of record:
+
+- **RED**: a bar clause fails in 2 or more of the 5 reps.
+- **Thin**: a bar clause fails in exactly 1 of the 5 reps. A thin control still meets the additive bar's "at least 1
+  of 5".
+- **Clean**: no bar clause fails in any rep. A clean control reverts nothing. It goes to the owner at the plan
+  completion gate.
+
+A failed conformance clause alone does not make a control RED or thin.
+
+**Checks before any rep.**
+
+- `git diff --stat 58337f5 -- skills/` printed nothing, so no skill file differs from `BASE85`.
+- The CLI is Claude Code 2.1.316, the version that the plan names, so no isolation probe was needed.
+- A case-insensitive grep of the three prompts and the manifest for `red-baseline`, `plan 7[89]`, `plan 85`,
+  `micro-test` and `task-2` found 0 hits (the quarantine).
+- The dr-offer-yes prompt has sha256 `27563992d4f9c7fc0c3dd8f7a2aa0394619a0724909c605c7aef802ebafd6bd0`. That is the
+  sha256 of plan 79 Task 4's dr-offer-yes prompt (`treatment/p79-t4-MANIFEST.txt`). `cmp` against that build's prompt
+  (`/tmp/plan79-work/t4/dr-offer-yes.txt`) found no difference. So this control and plan 79 Task 4's arm differ only in
+  the run.
+- The sec-edgar spec read (for dr-offer-yes and dr-spec-column) has the same sha256 (`c43fa455…`) as the reads in
+  `control/MANIFEST.txt`.
+- At `BASE85`, the new-project Outcomes table in `references/roadmap-format.md` has the columns
+  `| # | Outcome | Track | Rank | Cost (estimate; basis) |`. It has no column of spec refs.
+
+**Build.**
+
+```
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 58337f5 /tmp/plan85-work/control dr-offer-yes dr-quality-suggest dr-spec-column
+```
+
+It printed `wrote 3 prompts to /tmp/plan85-work/control`. Its `MANIFEST.txt` is copied to `control/p85-MANIFEST.txt`.
+It shows `budget 1.00` for every case.
+
+**Reps.** Each case ran with
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan85-work/control/<case>.txt specs/baseline/red-baseline-new-project-entry/control/<folder> 1 5 claude-opus-5-5 1.00`,
+one case at a time, in this order: dr-offer-yes into `dr-offer-yes-p85`, dr-quality-suggest into `dr-quality-suggest`
+and dr-spec-column into `dr-spec-column`. Before each call, the running total plus the call's worst case ($5.00) stayed
+under $30. The sums were $5.00, $5.6056 and $6.1131. Every rep printed `exit=0`. No rep was VOID, so no rerun was
+needed. No `.err` file was left. Each case's replies were read in full from `show_reps.py` over that case's folder
+alone, before the next case ran.
+
+**Scores.** Each rep was scored clause by clause, by hand, from its full reply. The scores use the case's committed rule
+and reading notes, every reading in plan 78's Control section and plan 79's sections, and Open for plan review in plan
+85. A clause cell gives pass or fail. A clause count gives the number of the 5 scored reps that pass it. A failed clause
+gets one verbatim quote.
+
+**Readings applied (plan 85).**
+
+- *dr-offer-yes, reading of record.* Open for plan review item 1. Clause C, and clause B's position reading, use plan
+  78's Stage list reading and its core-and-later-stages reading, with the owner's ruling of 2026-11-07 as plan 79 Task 4
+  applied it. A reply that sends later qualities or hardening to "later stages" inside the one message fails C, also
+  with no core stage named. R2's line in its exact form is never a stage list. A passing mention of one stage is not a
+  list. Plan 78's Labeled list and Dependency fact or proposed order readings also apply.
+- *dr-offer-yes, the spec's order.* Earlier arms of this case read the spec's order in two ways. Cited without the word
+  "stages", it passes B and C (plan 78 round 1 rep5: "The spec's §7 already names the order: baseline, daily, replay,
+  reconciliation, withdrawal gate."). Called stages, it fails C (plan 78 round 2 rep1: "The spec names these stages in
+  order.", and Task 7 rep3: "The spec's §7 order already names the stages from one quarter to reconciliation."). Task 7
+  rep5's "names the progression from first stage to last" passed, borderline. This control follows those calls.
+- *Plan 79's own readings.* Review by table, Another name, Carried citation, Pending bullet, Item by description and
+  Stage 2's live feed belong to plan 79's route and resume cases. They do not apply here. No clause of these three cases
+  scores a date or reads a stage's Exit, so the Date and By reference readings are not reached.
+- *Placed, not suggested* (dr-quality-suggest clause B, new and not confirmed). The clause asks the partner "to approve
+  it and, if approved, to give its place". A reply that has already put traceability in the file, and asks only for its
+  place or for approval of the partition as a whole, does not ask the partner to approve traceability. The reading was
+  set when the close call first appeared (rep1) and then applied to every rep.
+- *One closing request* (dr-quality-suggest clause C, new and not confirmed). C passes when the closing approve-or-amend
+  request takes the traceability point into it, by naming the changes or by asking for "one answer". C fails when the
+  traceability request stands as its own ask apart from the approval, or when the reply numbers the approval as one of
+  two questions. This follows plan 79's one-question practice (dr-rerank-second, dr-resume-blocked rep2).
+- *The suggestion's outcome line* (dr-quality-suggest clause E, new and not confirmed). No control rep makes a
+  suggestion in the clause's sense, so E reads the message's text about traceability as the nearest form. A sentence
+  that gives the board's question states the need. It does not say what the partner gets, so it does not pass E.
+- *No column* (dr-spec-column clauses B and C, new and not confirmed). B and C each read "that column". When the
+  Outcomes table has no column of spec refs, both fail, as plan 79 scored dr-stop-track's clauses C and D when no item
+  existed.
+
+Each new reading touches only one case. Its other reading is reported under "Other readings" and never counts toward a
+bar. No rule, fixture or `cases.py` line changed.
+
+**Judgment-call reps.** The owner can review them at the completion gate. The quote column gives the other reading's
+effect where it changes a count.
+
+| Case, rep, clause | Score | Deciding quote |
+|---|---|---|
+| dr-offer-yes rep2, C | fail, borderline (the spec's order called stages, as plan 78 round 2 rep1 and Task 7 rep3) | "The spec names every stage from parsing to reconciliation." It follows the Track A list "O1, O2, O3, O4, O5, O6, O7, O9." The other reading passes C. The control is then clean (PASS 5 of 5). |
+| dr-offer-yes rep4, B and C | pass, borderline (later qualities named, no "later stages" and no stage) | "Scheduling, deployment, manifests and pointers are later qualities of one progression, not a separate question." The other reading (item 1, bullet 1) fails C. The control is then RED in 2 of 5 with rep2, or thin through rep4 alone. |
+| dr-offer-yes rep4, C | pass, borderline (the progression named, no stage, as Task 7 rep5) | "The spec's §7 already names the progression from first to last, which is why I'm calling it a known progression rather than research." |
+| dr-offer-yes rep5, B and C | pass (the spec's order cited and labeled, no stage word, as plan 78 round 1 rep5) | "The spec's §7 already names the order: baseline, then daily ingestion, then reconciliation and withdrawals." |
+| dr-quality-suggest reps 1 to 5, B | fail (Placed, not suggested) | rep2: "That position is my placement, not yours. Rank it now or at the first resume." The other reading passes B in all 5 reps. A still fails in 5 of 5, so the control stays RED. |
+| dr-quality-suggest rep1, C | pass, borderline (One closing request) | "Please approve the partition, with or without the two changes above." The two changes are traceability's place and the split of O4. |
+| dr-quality-suggest rep4, C | pass, borderline (One closing request) | "**Please approve or amend in one answer:**", then the O4 question and "Where does traceability sit in the Ranked list?" |
+| dr-quality-suggest rep3, C | fail, borderline (One closing request) | "tell me if it should move up" sits in its own numbered point. "Please approve the partition or change it." does not name it. |
+| dr-quality-suggest rep3, E | pass (the outcome line in the message) | "**Traceability** means each estimate names the gauge readings it came from, which the board will ask for." |
+
+### Plan 85 control: dr-offer-yes
+
+Additive. Texts at `58337f5` (`BASE85`). Folder `control/dr-offer-yes-p85/`. Scored reps: rep1 to rep5. No VOID rep.
+Spend: $0.6056.
+
+The partner says "Yes, do that." to the offer of outcome-first staging for the SEC spec. Clause A (bar): a numbered
+list of outcomes in plain words, one line each. Clause B (bar): no ranking of its own, and a request to rank. Clause C
+(bar): no roadmap text and no stage list. Clause D (conformance): a cost note with a basis, or a statement that only a
+run can measure it.
+
+| Rep | A (bar) | B (bar) | C (bar) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | pass | fail (borderline) | pass | no |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass (borderline) | pass (borderline) | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+Clause A: 5 of 5. Clause B: 5 of 5. Clause C: 4 of 5. Clause D: 5 of 5. PASS: 4 of 5. **Thin**: a bar clause fails in
+exactly 1 of 5 reps (rep2, clause C).
+
+Beside plan 79 Task 4's arm, at the same derive-roadmap text and with a byte-identical prompt:
+
+| Arm | A | B | C | D | PASS | Failing rep |
+|---|---|---|---|---|---|---|
+| Plan 79 Task 4 (`5f52dfc`) | 5 of 5 | 5 of 5 | 4 of 5 | 5 of 5 | 4 of 5 | rep4, C (later stages, no core stage named) |
+| This control (`58337f5`) | 5 of 5 | 5 of 5 | 4 of 5 | 5 of 5 | 4 of 5 | rep2, C (the spec's order called stages) |
+
+The counts are the same. The failing rep and its form differ. For reference, plan 78's control at `1844bd8` read no
+New-Project text and was RED in 4 of 5 (PASS 0 of 5).
+
+- A. Every rep gives O-numbered table rows, one plain line each, from the spec's requirements (labeled-list reading).
+  Reps 1, 3, 4 and 5 keep R5 or R11, or both, out of the outcomes as rules on how the system is built.
+- B. Every rep asks the partner to rank, and no rep orders the outcomes. Reps 1, 2, 3 and 5 split the Azure work into
+  Track B and state a dependency fact, for example rep3: "Track B does consume Track A's CLI, so it can't finish first,
+  but its core stage doesn't need all of A." Rep5 cites the spec's order and labels it (Judgment-call reps). Rep4
+  passes, borderline. Its later-qualities sentence places no outcome before another, as plan 79 Task 4 rep4's B was
+  read.
+- C, rep2 fails, borderline. Quote (C, rep2): "The spec names every stage from parsing to reconciliation." It calls
+  Track A's work stages and gives their span in order, as plan 78 round 2 rep1 and Task 7 rep3 did.
+- C, rep4 passes, borderline. Its sentence names later qualities, but not "later stages", and names no stage. It also
+  says "Once you do, I'll write the roadmap and show you the stage partition for approval before any stage starts.",
+  which sets out no stage.
+- C, reps 1, 3 and 5 mention one stage at most, in passing: "The track's core stage measures them." (rep1), "its core
+  stage doesn't need all of A" (rep3) and "Measured by the first stage." (rep5). That is not a list (item 1).
+- D. Every rep gives a cost note with a basis. Rep1: "That is about 135 file requests plus listings, which takes
+  minutes at 3 req/s."
+- Name (not scored). All five give the spec's stem, `specs/sec-filing-index-ingestion-spec-roadmap.md`. No rep asks the
+  partner to confirm or change the name.
+- Later-qualities line (not scored, for Task 4). Only rep4 carries a line that names later qualities: "Scheduling,
+  deployment, manifests and pointers are later qualities of one progression, not a separate question." It is not in
+  R2's form: it gives a reason and the word "later". It names no stage. Reps 1, 2, 3 and 5 carry no such line. Their
+  manifest, pointer and Azure work appear only as outcome rows.
+
+Other readings:
+
+- If rep2's sentence is read as the spec's order cited, as plan 78 round 1 rep5 and plan 79 Task 4 rep3 were, rep2
+  passes C. C is then 5 of 5 and PASS 5 of 5, and the control is **clean**. A clean control cannot meet the additive
+  bar (Open for plan review item 2).
+- If rep4's sentence is read as sending later qualities to later stages (item 1, bullet 1), rep4 fails C. With rep2 as
+  scored, the control is then **RED** in 2 of 5 (PASS 3 of 5). With rep2's other reading as well, it is thin through
+  rep4 alone (PASS 4 of 5).
+
+Running total: $0.6056 of $30.
+
+### Plan 85 control: dr-quality-suggest
+
+Additive. Texts at `58337f5`. Folder `control/dr-quality-suggest/`. Task `ROADMAP_ASK_TASK`. Scored reps: rep1 to rep5.
+No VOID rep. Spend: $0.5075.
+
+The partner confirms one research track, ranks O1 to O4 and says "Go ahead." The summary of the one message ends with
+the line `Qualities to place when the roadmap is written: traceability.` Clause A (bar): the roadmap file holds no
+Ranked-list item, no O-number and no Outcomes row for traceability. Clause B (bar): the message suggests traceability,
+with a reason, and asks the partner to approve it and, if approved, to give its place. Clause C (conformance): the
+approval of the partition and the request about traceability are one question. Clause D (conformance): Stage 1's
+`Leaves out` marks traceability as suggested or as waiting on the partner. Clause E (conformance): the suggestion gives
+the outcome line that traceability would become.
+
+| Rep | A (bar) | B (bar) | C (conformance) | D (conformance) | E (conformance) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | fail | fail | pass (borderline) | fail | fail | no |
+| 2 | fail | fail | fail | fail | fail | no |
+| 3 | fail | fail | fail (borderline) | fail | pass | no |
+| 4 | fail | fail | pass (borderline) | fail | fail | no |
+| 5 | fail | fail | fail | fail | fail | no |
+
+Clause A: 0 of 5. Clause B: 0 of 5. Clause C: 2 of 5. Clause D: 0 of 5. Clause E: 1 of 5. PASS: 0 of 5. **RED**: a bar
+clause fails in 5 of 5.
+
+- A fails in every rep. Each writes traceability into the file as a Ranked-list item: item 4 in reps 1, 2, 4 and 5,
+  and item 5 in rep3, whose list also keeps "1. O1 — committed as Stage 1". Reps 3, 4 and 5 also name it in an Open
+  questions item. Quote (A, rep1): "4. Traceability — each closure estimate names the gauge readings it came from (the
+  board will ask). Not ranked by partner; placed last provisionally, to be ranked at the first re-rank." Rep5 also adds
+  two qualities that the fixture does not name, each as a Ranked-list item: "5. Scheduling — the daily O2 outlook run on
+  its own" and "6. Forecast point-in-time awareness".
+- B fails in every rep (Placed, not suggested). Each message gives the board's question as the reason. None asks
+  whether traceability should join. Each asks only where it sits, or for approval of the partition as a whole. Quote
+  (B, rep2): "That position is my placement, not yours. Rank it now or at the first resume."
+- C. Reps 1 and 4 pass, borderline (Judgment-call reps). Rep2 fails: its traceability request, "Rank it now or at the
+  first resume.", stands apart from "Does this partition look right to approve?". Rep3 fails, borderline. Rep5 fails:
+  "**Please answer two things:**" puts "1. Do you approve the partition?" apart from the request to "change the order
+  of items 4–6 if you'd like".
+- D fails in every rep. Each `Leaves out` sends traceability to a Ranked-list item, with no mark that it waits on the
+  partner. Quote (D, rep2): "Leaves out: traceability (which gauge readings each closure estimate came from) — Ranked
+  list Track A, item 4". Rep4's Ranked-list item says "unranked (Open question 2)", but its `Leaves out` has no such
+  mark.
+- E. Rep3 passes (Judgment-call reps). The other reps give the board's question and not what the partner gets. Quote
+  (E, rep4): "The board's question about which gauge readings each estimate came from is placed as a Ranked-list item."
+- Not scored. Every rep commits only the core stage, Stage 1 for O1, and routes it to brainstorming. Every rep also
+  proposes to split O4, the operators' map, into its own track, after the partner confirmed one research track.
+
+Other readings:
+
+- Placed, not suggested. If a request to approve a partition that holds the traceability item counts as a request to
+  approve traceability, B passes in all 5 reps. A still fails in 5 of 5, so the control stays RED.
+- One closing request. If every ask before the closing approval counts as part of it, reps 2 and 3 pass C, and C is 4
+  of 5. If any numbered list of questions fails C, rep4 fails, and C is 1 of 5. Neither changes the RED.
+- The suggestion's outcome line. If the file's Ranked-list line counts as the outcome line, E is 5 of 5. Each file says
+  that each closure estimate names the gauge readings it came from.
+
+Running total: $1.1131 of $30.
+
+### Plan 85 control: dr-spec-column
+
+Additive. Texts at `58337f5`. Folder `control/dr-spec-column/`. Task `ROADMAP_TASK`. Scored reps: rep1 to rep5. No
+VOID rep. Spend: $1.3440.
+
+The partner ranks O1 to O11 in the order listed, confirms one known-progression track and asks for the roadmap. Clause A
+(bar): the Outcomes table has a column of spec refs, and every outcome row's cell in it holds at least one § or R ref.
+Clause B (bar): every cell of that column holds refs only. Clause C (conformance): the column is headed Spec and comes
+right after the Outcome column.
+
+| Rep | A (bar) | B (bar) | C (conformance) | PASS |
+|---|---|---|---|---|
+| 1 | fail | fail | fail | no |
+| 2 | fail | fail | fail | no |
+| 3 | fail | fail | fail | no |
+| 4 | fail | fail | fail | no |
+| 5 | fail | fail | fail | no |
+
+Clause A: 0 of 5. Clause B: 0 of 5. Clause C: 0 of 5. PASS: 0 of 5. **RED**: a bar clause fails in 5 of 5.
+
+- A fails in every rep. Each Outcomes table has the columns of the format at `BASE85`,
+  `| # | Outcome | Track | Rank | Cost (estimate; basis) |`, and no column of spec refs. Reps 1, 2, 4 and 5 write the
+  R number inside each Outcome cell, which the reading note does not count. Quote (A, rep1): "| O1 | Archived quarterly
+  filing indexes over a chosen range, downloaded and kept as the baseline (R1) | A | 1 |". Rep3 writes no ref in its
+  Outcome cells. Some Cost cells cite a § section, which is not a column of refs.
+- B and C fail in every rep because no such column exists (No column).
+- Not scored. Every rep commits eight or nine stages and orders them by dependency, not by the partner's rank order.
+  Each says so, for example rep1's message: "eight stages, ordered by dependency rather than your ranking". Stage
+  entries cite § refs in their Objective, Produces or Exit fields.
+
+Other reading: No column. If B is met when no column exists, B is 5 of 5. A still fails in 5 of 5, so the control
+stays RED.
+
+Running total: $2.4571 of $30.
+
+### Plan 85 control summary and spend
+
+`uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over the three folders after
+the last rep. It shows 15 reps, none VOID, and prints `total cost $2.46`. No rep file is empty or unreadable, so none
+counts at its cap. There was no VOID rerun. The folder `control/*/` was not used for this figure, because that glob
+also holds the folders of plans 78 and 79.
+
+| Case | Bar clauses | Result on the readings of record | Verdict |
+|---|---|---|---|
+| dr-offer-yes | A, B, C | a bar clause fails in 1 of 5 (rep2, C, borderline), PASS 4 of 5 | **thin** (clean by the other reading of rep2, RED by the other reading of rep4) |
+| dr-quality-suggest | A, B | A and B fail in 5 of 5, PASS 0 of 5 | **RED** |
+| dr-spec-column | A, B | A and B fail in 5 of 5, PASS 0 of 5 | **RED** |
+
+No control is clean on the readings of record, so Task 4 has a failure to beat in each case. dr-quality-suggest and
+dr-spec-column fail on what the text at `BASE85` lacks. It has no suggestion at the approval and no column of spec
+refs, so the reps place the quality in the Ranked list and write refs inside the Outcome cells. dr-offer-yes is thin.
+Its one failure rests on rep2's borderline call, and its counts match plan 79 Task 4's arm at the same text. Open for
+plan review item 2 applies: a treatment at 4 of 5 or better meets the deferred item whatever the control shows, and
+the summary reports both.
+
+**Spend.** Task 2's control arms cost $2.4571 (`show_reps.py` prints $2.46), the Task 2 row of the Plan 85 spend
+table. Per case: dr-offer-yes $0.6056, dr-quality-suggest $0.5075 and dr-spec-column $1.3440. Running total: $2.4571
+of $30. The largest pre-call sum (running total plus $5.00) was $6.1131.
