@@ -5815,7 +5815,7 @@ Stop: **$30**. Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.
 |---|---|
 | Task 1, three cases, the probe's step-B constants and their leak check (no rep) | $0.00 |
 | Task 2, control arms (RED), before any skill edit (3 cases, 5 reps each, no VOID rerun; worst case $5.00 per case call) | $2.4571 |
-| Task 3, the skill text | not run |
+| Task 3, the skill text (no rep) | $0.00 |
 | Task 4, treatment arms for V1, V3 and V4 at `T` (3 cases, 5 reps each, no VOID rerun, no wording round; worst case $5.00 per case call) | $2.3350 |
 | Task 5, the stage-plan probe (V5) | not run |
 | Task 6, the guards at the final text, and the summary | not run |
@@ -6228,7 +6228,7 @@ rule, the skill text, a fixture, plan 79's sections or control rep4, were checke
 - *The spec's phases* (dr-offer-yes clause C). The sec-edgar spec's §7 has the headings "Phase 1" and "Phase 2". A
   reply that cites "the spec's §7 phases" uses the spec's own labels. That is the spec's order cited without the word
   "stages", which passes (plan 78 round 1 rep5). This is the spec's-order reading applied, not a new one.
-- *Separator* (dr-spec-column clause B, new and not confirmed). The reading note says that a cell holds "§ numbers, R
+- *Separator* (dr-spec-column clause B, new; confirmed by the controller after the task review). The reading note says that a cell holds "§ numbers, R
   numbers, ranges, commas and none; any other word fails B". A semicolon between refs is a separator. It is not a word
   and not requirement text, so it passes B. The reading was set when the form first appeared (rep2) and then applied to
   every rep. The other reading takes the note's list as closed: a separator other than a comma fails B.
@@ -6385,17 +6385,21 @@ Clause A: 5 of 5 (control 0 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 
 
 Other readings:
 
-- B with explicit asks. If the place must be asked for in a question or a request, rep3 fails B. If the approval of a
-  partition that holds the suggestion is not an approval of traceability, rep4 fails B. B is then 3 of 5 and PASS 3 of
-  5, a miss.
-- C by question marks. If two question-marked sentences under one label are two questions, reps 2 and 5 fail C. C is
-  then 3 of 5 and PASS 3 of 5, a miss.
-- Both other readings together leave only rep1. PASS is then 1 of 5.
+- B, rep3. If the place must be asked for in a question or a request, rep3 fails B. B and PASS are then 4 of 5, and
+  the bar is met.
+- B, rep4. If the approval of a partition that holds the suggestion is not an approval of traceability, rep4 fails B. B
+  and PASS are then 4 of 5, and the bar is met. With the rep3 reading, B and PASS are 3 of 5, a miss.
+- C by question marks. If two question-marked sentences under one label are two questions, reps 2 and 5 fail C. C and
+  PASS are then 3 of 5, a miss.
+- C, rep3. If the "In the same answer" line is not part of the one question, rep3 fails C. C and PASS are then 4 of 5,
+  and the bar is met. With reps 2 and 5, C and PASS are 2 of 5, a miss.
+- All of these readings together leave only rep1. PASS is then 1 of 5.
 - Placed, not suggested reaches no rep, because no rep placed traceability in the file.
 
 **Bar verdict: MET.** The treatment passes every bar and conformance clause in 5 of 5 reps. The control fails bar
 clauses A and B in 5 of 5 (RED). The verdict rests on the borderline calls in B (reps 3 and 4) and C (reps 2, 3 and 5).
-By the other reading of B or of C, PASS is 3 of 5 and the bar is missed. By both, PASS is 1 of 5.
+Any one of those calls read the other way leaves PASS at 4 of 5, and the bar is met. Both B calls together give 3 of 5,
+the C calls of reps 2 and 5 together give 3 of 5, and all of them together give 1 of 5. Each of those misses the bar.
 
 ### Plan 85 Task 4: dr-spec-column
 
@@ -6423,7 +6427,8 @@ Clause A: 5 of 5 (control 0 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 
   more § numbers. Rep1's O1 row: "| O1 | Archived quarterly filing indexes for a chosen range, downloaded once as the
   baseline | §2.1, §4.2, R1 | A | 1 |".
 - B. Reps 1 and 5 separate their refs with commas and pass. Rep5 writes the R number after its section, as in
-  "§2.1, §3 R1, §4.2". `§3 R1` holds no word, so it passes by either reading. Reps 2, 3 and 4 separate their refs with
+  "§2.1, §3 R1, §4.2". `§3 R1` holds no word, so it passes by the Separator reading. A closed list that allows only a comma between refs fails
+  it, because a space joins the two refs. Reps 2, 3 and 4 separate their refs with
   semicolons and pass, borderline, by the Separator reading. Rep2's O1 row: "| O1 | A filing-index catalog built from
   archived quarterly indexes over a chosen range | §3 R1; §2.1; §4.2 | A | 1 |". No cell in any rep holds a title,
   requirement text or other word. Ranges appear as `§4.4–4.6` (rep3) and `§4.4–§4.6` (rep5).
@@ -6437,32 +6442,35 @@ Clause A: 5 of 5 (control 0 of 5). Clause B: 5 of 5 (control 0 of 5). Clause C: 
 
 Other readings:
 
-- Separator. If the note's list is closed and only a comma may separate refs, reps 2, 3 and 4 fail B. B is then 2 of 5
-  and PASS 2 of 5, a miss. If the owner rules this reading, a fix goes to the `roadmap-format.md` sentence that says
-  what the `Spec` cell holds.
+- Separator. If the note's list is closed and only a comma may separate refs, reps 2, 3 and 4 fail B on their
+  semicolons, and rep5 fails it on the space in `§3 R1`. B is then 1 of 5 (rep1) and PASS 1 of 5, a miss. If the owner
+  rules this reading, a fix goes to the `roadmap-format.md` sentence that says what the `Spec` cell holds, and it must
+  cover the `§3 R1` form too.
 - No column does not apply: every rep has the column.
 
 **Bar verdict: MET**, on the Separator reading. The treatment passes every bar and conformance clause in 5 of 5 reps.
-The control fails bar clauses A and B in 5 of 5 (RED). By the other reading of the Separator, PASS is 2 of 5 and the bar
-is missed.
+The control fails bar clauses A and B in 5 of 5 (RED). By the closed-list reading of the Separator, PASS is 1 of 5 and the
+bar is missed.
 
 ### Plan 85 Task 4 summary and spend
 
 | Case | Bar | Control (`58337f5`) | Treatment (`T`, `2e91b05`) | Result |
 |---|---|---|---|---|
 | dr-offer-yes | additive, with Open for plan review item 2 | thin: C fails in 1 of 5 (rep2, borderline), PASS 4 of 5; clean by the other reading of rep2, RED by the other reading of rep4 | PASS 5 of 5 (4 of 5 if "phases" is a stage word) | **MET**; the deferred item's 4 of 5 is met too |
-| dr-quality-suggest | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 (3 of 5 by the other reading of B or of C, 1 of 5 by both) | **MET** |
-| dr-spec-column | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 (2 of 5 by the other reading of the Separator) | **MET** |
+| dr-quality-suggest | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 (4 of 5 if any one borderline B or C call reads the other way; 3 of 5 if both B calls do, or the C calls of reps 2 and 5; 1 of 5 if all do) | **MET** |
+| dr-spec-column | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 (1 of 5 by the closed-list reading of the Separator) | **MET** |
 
 All three treatments meet the additive bar on the readings of record. No case is below its bar, so no wording round ran.
 There is no `T-r1` commit and no `-r1` folder. The last skill commit is `T` (`2e91b05`). Tasks 5 and 6 read it.
 
 The readings that decide two verdicts:
 
-- dr-quality-suggest rests on two borderline calls: B in reps 3 and 4, and C in reps 2, 3 and 5. By either other
-  reading, it is 3 of 5 and misses. By both, it is 1 of 5.
-- dr-spec-column rests on the Separator reading, which is new and not confirmed. By the closed-list reading, it is 2 of
-  5 and misses. Reps 2, 3 and 4 write semicolons where the note lists commas.
+- dr-quality-suggest rests on borderline calls: B in reps 3 and 4, and C in reps 2, 3 and 5. Any one read the other way
+  leaves it at 4 of 5, and the bar is met. Both B calls, or the C calls of reps 2 and 5, read the other way give 3 of 5
+  and a miss. All of them together give 1 of 5.
+- dr-spec-column rests on the Separator reading, which the controller confirmed after the task review. By the
+  closed-list reading, it is 1 of 5 and misses: reps 2, 3 and 4 write semicolons where the note lists commas, and rep5
+  joins two refs by a space.
 
 **Judgment-call reps.** The owner can review them at the completion gate. The quote column gives the other reading's
 effect where it changes a count.
@@ -6472,11 +6480,11 @@ effect where it changes a count.
 | dr-offer-yes rep2, C | pass, borderline (The spec's phases; §7 is headed "Phase 1" and "Phase 2") | "Known progression, following the spec's §7 phases." The other reading fails C. PASS is then 4 of 5, and the bar is still met. |
 | dr-offer-yes reps 3, 4 and 5, B | pass, borderline (dependency fact) | rep4: "Each outcome extends or protects the same catalog, and none stands without O1." |
 | dr-offer-yes reps 3 and 5, C | pass (the spec's order cited, no stage word, as plan 78 round 1 rep5) | rep5: "The spec's §7 already orders the work from start to finish." |
-| dr-quality-suggest rep3, B | pass, borderline (the place given to the partner in a statement) | "and it joins the Ranked list wherever you rank it among O2–O5." The other reading fails B. |
-| dr-quality-suggest rep4, B | pass, borderline (the quality inside the partition question) | "Do you approve this partition? It includes one suggested later quality:" The other reading fails B. With rep3, B and PASS are 3 of 5. |
-| dr-quality-suggest rep3, C | pass, borderline (One closing request: one answer) | "In the same answer, please say whether you want **traceability** added to the track." |
+| dr-quality-suggest rep3, B | pass, borderline (the place given to the partner in a statement) | "and it joins the Ranked list wherever you rank it among O2–O5." The other reading fails B. Alone, B and PASS are then 4 of 5. |
+| dr-quality-suggest rep4, B | pass, borderline (the quality inside the partition question) | "Do you approve this partition? It includes one suggested later quality:" The other reading fails B. Alone, B and PASS are then 4 of 5. With rep3, B and PASS are 3 of 5. |
+| dr-quality-suggest rep3, C | pass, borderline (One closing request: one answer) | "In the same answer, please say whether you want **traceability** added to the track." The other reading fails C. Alone, C and PASS are then 4 of 5. With reps 2 and 5, C and PASS are 2 of 5. |
 | dr-quality-suggest reps 2 and 5, C | pass, borderline (One closing request: two question marks under one label) | rep5: "**One question:** Do you approve this partition? Do you also want traceability added to the track?" The other reading fails C in both. C and PASS are then 3 of 5. |
-| dr-spec-column reps 2, 3 and 4, B | pass, borderline (Separator) | rep2: "§3 R1; §2.1; §4.2" The other reading fails B in all three. B and PASS are then 2 of 5. |
+| dr-spec-column reps 2, 3 and 4, B | pass, borderline (Separator) | rep2: "§3 R1; §2.1; §4.2" The other reading fails B in all three, and rep5's `§3 R1` fails it too. B and PASS are then 1 of 5. |
 
 **Spend.** `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py` ran once over the three
 folders after the last rep. It shows 15 reps, none VOID, and prints `total cost $2.34`. No rep file is empty or
