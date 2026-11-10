@@ -62,8 +62,11 @@
 
 - **D1** (owner, brief, 2026-11-08): the build plan covers finding 21's half of `specs/spec-derived-acceptance-tests.md` only: the test-run script, the task-reviewer change and the `task-done` change. It also takes the two parts of Design 1 that those three names do not cover, the controller's run before the review package and the failing-run fix round, with the Micro-tests bullet for the controller and the reviewer, and the Script tests. It leaves out what serves finding 24 only: the second reader, the adjudicator, `## Acceptance`, Design 5's acceptance-test runs and their micro-tests, Design 6's model tiers, and Design 1's clause "plus the acceptance tests that the task makes runnable (part 5)". Applied in: Global Constraints (Spec text, Out of scope), Tasks 1-5.
 - **D2** (owner, brief, 2026-11-09): finding 18's batch (plan 82) executes before this plan, and no writing-plans split comes first, because this plan edits no writing-plans text. Plan 82 merged as #156 and retired. The commit guard that Design 1 uses is the one plan 82 Produces: `skills/subagent-driven-development/scripts/sdd-repo --with-commit`. Applied in: Task 2.
+- **D3** (owner, plan review, 2026-11-10): approve plan 84 as written, with all ten Open for plan review items, including DF-A's completion (item 2: no backlog tick, the drift spec records finding 21 alone, and the spec retires with this plan). Applied in: Open for plan review, Global Constraints (Completion).
 
 ## Open for plan review
+
+All ten items were approved as written by D3 (2026-11-10).
 
 Items 1 and 2 come from the handoff brief. Items 3-10 are this plan's own choices.
 
