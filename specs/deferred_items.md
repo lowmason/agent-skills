@@ -4174,7 +4174,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       and update SKILL.md's Directory Structure and File Organization examples to include
       `references/`. The register still names this item. The guide-aware rewrite was beyond
       plan 53's scope; see `specs/plans/completed/53-agent-skills-portability.md` (DF20, Task 14)
-      and `specs/superpowers-drift-spec-v7-0-2.md` finding 17's inherited follow-ups. Size: design.
+      and `specs/findings/superpowers-drift-v7-0-2.md` finding 17's inherited follow-ups. Size: design.
       Done when: the remaining gap and deviation are resolved in the register with
       `build/check_conformance.py` passing, the force-loading claim is verified or removed,
       and the directory examples describe the shipped layout.
@@ -5259,7 +5259,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
 
 ## superpowers-drift-v7.0.1 (no plan; drift review of upstream v7.0.1, branch claude/practical-hugle-86bb56) — 2026-10-28
 - [ ] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
-      17, `specs/superpowers-drift-spec-v7-0-2.md`). The guide says each invoked skill keeps its first
+      17, `specs/findings/superpowers-drift-v7-0-2.md`). The guide says each invoked skill keeps its first
       5,000 tokens (`specs/guides/claude-code-customization-guide.md:128`). Upstream's #2481
       transcript shows a cut at exactly 20,000 characters, with a marker that points at the
       file. The `compaction-window` check in `build/cc_guide/conformance.toml` measures the
@@ -5314,7 +5314,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`skills/subagent-driven-development/references/final-review.md:17-22` and
       `skills/executing-plans/references/final-review.md:18-25`). Review is an existing check;
       independent test generation remains the open design question. See current superpowers
-      drift findings 21 and 24 (`specs/superpowers-drift-spec-v7-0-2.md`). The following five
+      drift findings 21 and 24 (`specs/findings/superpowers-drift-v7-0-2.md`). The following five
       layers were the 2026-10-28 proposal, with completed portions identified below:
       (1) Spec: owner-approved worked examples with exact values (inputs, outputs,
       boundaries). They are the only reference that no model produced. This lands in
@@ -6155,7 +6155,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       already covered by the skill's explicit-model rule and `hooks/dispatch-model-guard.py`. The proposed fix
       is one rule: agents that edit files get disjoint file sets or separate worktrees, and the dispatcher says
       which. The skill is vendored from superpowers, so the edit follows the writing-skills skill and adds a
-      line to `NOTICE`'s superpowers change list. First found in specs/superpowers-drift-spec-v7-0-2.md,
+      line to `NOTICE`'s superpowers change list. First found in specs/findings/superpowers-drift-v7-0-2.md,
       2026-11-07. Size: quick-fix. Done when: the rule is in the skill and a `NOTICE` line names it.
 - [ ] **receiving-code-review does not say which rule wins for a subagent reviewer inside a plan run
       (superpowers drift finding 27).** The skill treats every reviewer as a person. Its stop for a conflict
@@ -6168,7 +6168,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       wording change to a discipline skill, so it needs a micro-test against a no-guidance control (the
       writing-skills skill), and a line in `NOTICE`'s superpowers change list. The finding also records the
       forge-specific `gh api` reply line (about line 214). This item does not cover that line. First found in
-      specs/superpowers-drift-spec-v7-0-2.md, 2026-11-07. Size: plan. Done when: the sentence is in the skill,
+      specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: the sentence is in the skill,
       its micro-test meets its bar against the control, and a `NOTICE` line names it.
 - [ ] **finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the
       conflict half).** Option 1 runs `git checkout <base-branch>`, `git pull` and `git merge <feature-branch>`
@@ -6179,7 +6179,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `build/check_conformance.py` (19,975 of 20,000), so text must move to `references/` before the rule
       fits. The skill is vendored from superpowers, so the edit follows the writing-skills skill and adds a
       line to `NOTICE`'s superpowers change list. The finding's Step 1 half is done (plan 82). First found in
-      specs/superpowers-drift-spec-v7-0-2.md, 2026-11-07. Size: plan. Done when: every step that runs
+      specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: every step that runs
       `git merge` carries the rule, `build/check_conformance.py` passes, and a `NOTICE` line names it.
 - [ ] **writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The
       skill tells an author to write pressure scenarios and run a baseline (`skills/writing-skills/SKILL.md`,
@@ -6190,7 +6190,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       checklist line: scenarios and baseline records go outside the skill directory, and the line names where.
       The finding rules it is not a discipline wording, so it needs no micro-test. The skill is vendored from
       superpowers, so add a line to `NOTICE`'s superpowers change list. First found in
-      specs/superpowers-drift-spec-v7-0-2.md, 2026-11-07. Size: quick-fix. Done when: the checklist line is in
+      specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: quick-fix. Done when: the checklist line is in
       the skill and a `NOTICE` line names it.
 
 ## 86-brainstorming-v7-0-2-retune — 2026-11-10
@@ -6272,3 +6272,17 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/completed/superpowers-drift-spec-v7-0-1.md), 2026-09-03. Size: quick-fix. Done when: the Common
       Mistakes section of `skills/using-git-worktrees/SKILL.md` is an Excuse/Reality table and a `NOTICE`
       line names it.
+
+## superpowers-release-watch (no plan; watch for the next superpowers drift pass, branch claude/superpowers-release-watch) — 2026-11-10
+- [ ] The next superpowers drift pass, against the first release after v7.0.2. The current assessment is
+      `specs/findings/superpowers-drift-v7-0-2.md`. Its "Next review starts from" row names upstream `22f0b46`
+      (v7.0.2), and NOTICE points to that row. On 2026-11-10 upstream `main` was `22f0b46`, `dev` was
+      `df2e996` and v7.0.2 was the latest tag. No other item or tool watches obra/superpowers. The cc_guide
+      drift detector reads the Claude Code docs only. The pass follows the spec's Scope and method: read each
+      release-notes claim against our tree, decide script claims with a probe in a scratch repository, and
+      file each open finding in this backlog. It writes the next versioned assessment as
+      `specs/findings/superpowers-drift-<version>.md`. In the same commit it moves the v7.0.2 file to
+      `specs/completed/`, points NOTICE and the other citations at the archived path, and ticks this item.
+      `01adfd5` did the same for the v7.0.1 record. The pass runs in one session with no spec or plan, as
+      the earlier passes did. Size: quick-fix. Revisit if:
+      `git ls-remote --tags https://github.com/obra/superpowers` lists a tag after `v7.0.2`.

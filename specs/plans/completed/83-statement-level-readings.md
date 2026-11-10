@@ -187,7 +187,7 @@ The brief has no decisions. It flagged two defaults, and this plan settles both 
 | `specs/red-baseline-statement-readings.md` | The results file | 6 |
 | `specs/statement-level-readings.md` | One results line under Verification, "Probe first" | 6 |
 | `specs/deferred_items.md` | A progress note on "Spec-reading test check"; with no build plan, its closing | 6 |
-| `specs/superpowers-drift-spec-v7-0-2.md` | With no build plan only: finding 24 and its disposition bullet | 6 |
+| `specs/findings/superpowers-drift-v7-0-2.md` | With no build plan only: finding 24 and its disposition bullet | 6 |
 
 The copies:
 
@@ -755,7 +755,7 @@ git commit -m "test(specs): run the readers, stand-ins, control and step arms of
 **Files:**
 - Create: `specs/red-baseline-statement-readings.md`
 - Modify: `specs/statement-level-readings.md` (one line), `specs/deferred_items.md` (one note)
-- Modify, with no build plan only: `specs/superpowers-drift-spec-v7-0-2.md`, and the backlog item in `specs/deferred_items.md`
+- Modify, with no build plan only: `specs/findings/superpowers-drift-v7-0-2.md`, and the backlog item in `specs/deferred_items.md`
 
 **Interfaces:**
 - Consumes: `TABLE.txt`, every `CLASSIFY.txt` and `SOURCES.txt`, `RS/runs/BINARY.txt`, `RS/runs/pilot/COST.txt` and `RS/copies/MANIFEST.txt`.
@@ -819,7 +819,7 @@ This step follows the spec's "Closing the backlog and the drift spec":
    - what happened to layers 3 and 5;
    - that layer 1 applies only when a spec has examples (old D4);
    - that layer 4 stays open as a new item, with an `→ item:` marker. The Plan Completion Protocol adds that item to this plan's section.
-2. From `specs/superpowers-drift-spec-v7-0-2.md` as it stands on `main` at that time, update finding 24 (its heading at `:769` at planning) and its bullet in the "Suggested disposition" section (the heading at `:1025` at planning).
+2. From `specs/findings/superpowers-drift-v7-0-2.md` as it stands on `main` at that time, update finding 24 (its heading at `:769` at planning) and its bullet in the "Suggested disposition" section (the heading at `:1025` at planning).
 3. In the Plan Completion Protocol, retire `specs/statement-level-readings.md` with this plan.
 
 Finding 21's closure stays with the old spec's build plan.

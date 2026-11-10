@@ -10,7 +10,7 @@
 
 **Tech Stack:** Markdown skill text; Python 3.13 stdlib (plus PyYAML for the prompt builder) and bash for the kit; `claude` CLI (2.1.316 at planning, `/Users/lowell/.local/bin/claude`); this repo's commit lints (`build/run_commit_lints.sh`).
 
-**Spec:** `none`. Proportional process: the owner chose a plan with micro-tests and no spec (drift spec `specs/superpowers-drift-spec-v7-0-2.md`, finding 4 and its "Suggested disposition" bullet "Port candidate, a plan with micro-tests and no spec"). The requirement is upstream's diff for `skills/brainstorming/SKILL.md` from `2ce8aa1` to `22f0b46`, read against our copy, plus the owner's decisions D1 to D3.
+**Spec:** `none`. Proportional process: the owner chose a plan with micro-tests and no spec (drift spec `specs/findings/superpowers-drift-v7-0-2.md`, finding 4 and its "Suggested disposition" bullet "Port candidate, a plan with micro-tests and no spec"). The requirement is upstream's diff for `skills/brainstorming/SKILL.md` from `2ce8aa1` to `22f0b46`, read against our copy, plus the owner's decisions D1 to D3.
 
 > **Execution base.** This plan is committed on branch `claude/modest-lewin-3a26c0`. An execution worktree, which branches from `origin/main`, must contain this plan: merge that branch first (or execute after it is merged), and confirm `specs/plans/86-brainstorming-v7-0-2-retune.md` exists. Never execute on `main`.
 >
@@ -88,7 +88,7 @@ The planner set these, and the owner approved them as written at plan review.
 - `specs/baseline/red-baseline-brainstorming-v7-0-2/kit/` — `cases.py`, `build_prompts.py`, `show_reps.py`, `run_reps.sh`, `panel.py`, `isolation_probe.txt` (Task 1).
 - `specs/baseline/red-baseline-brainstorming-v7-0-2/{isolation-pilot,prompts,red,green,panel}/` — run outputs (Tasks 1, 3).
 - `NOTICE` — the superpowers change-list entry (Task 4).
-- `specs/superpowers-drift-spec-v7-0-2.md` — finding 4's status in six places (Task 4).
+- `specs/findings/superpowers-drift-v7-0-2.md` — finding 4's status in six places (Task 4).
 
 ---
 
@@ -568,7 +568,7 @@ git commit -m "test(brainstorming): new copy, guards and T7 panel for plan 86"
 
 **Files:**
 - Modify: `NOTICE` (one bullet in the superpowers change list)
-- Modify: `specs/superpowers-drift-spec-v7-0-2.md` (finding 4's heading and body, the status-table row, the shared-skills row, the "New finding (v7.0.2)" opening, the Scope table's adoption row, the Suggested disposition bullet)
+- Modify: `specs/findings/superpowers-drift-v7-0-2.md` (finding 4's heading and body, the status-table row, the shared-skills row, the "New finding (v7.0.2)" opening, the Scope table's adoption row, the Suggested disposition bullet)
 
 **Interfaces:**
 - Consumes: Task 3's results in `<rec>.md`, and the date of Task 2's commit as `<date>` (`YYYY-MM-DD`).
@@ -640,12 +640,12 @@ upstream's.
 
 > Deviation: the reconciliation sentence matched across its line break. The adopted paragraph also gives NEW's regression, the round, T12 on NEW-R1, the guards run only before the round and the owner's T7 choice.
 
-- [x] **Step 4: Run the checks.** Run `uv run python build/check_provenance.py`, `uv run python build/check_links.py` and `bash build/run_commit_lints.sh`. Expected: each exits 0. Then run `git grep -n -E "retune open|is \*\*open\*\*, a port candidate|#2644 open|and is$" specs/superpowers-drift-spec-v7-0-2.md`. Expected: no output.
+- [x] **Step 4: Run the checks.** Run `uv run python build/check_provenance.py`, `uv run python build/check_links.py` and `bash build/run_commit_lints.sh`. Expected: each exits 0. Then run `git grep -n -E "retune open|is \*\*open\*\*, a port candidate|#2644 open|and is$" specs/findings/superpowers-drift-v7-0-2.md`. Expected: no output.
 
 - [x] **Step 5: Commit.**
 
 ```bash
-git add NOTICE specs/superpowers-drift-spec-v7-0-2.md
+git add NOTICE specs/findings/superpowers-drift-v7-0-2.md
 git commit -m "docs(notice,specs): record plan 86's brainstorming port"
 ```
 

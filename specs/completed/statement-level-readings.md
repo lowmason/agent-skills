@@ -9,7 +9,7 @@ the owner reviews its results first (D8). Each session that runs Codex asks for 
 (Constraints, "Codex data").
 
 This spec redesigns the finding 24 half of `specs/completed/spec-derived-acceptance-tests.md`, called "the old spec" below.
-Finding 24 is "Planner-authored tests can share a spec misreading" (`specs/superpowers-drift-spec-v7-0-2.md`). The
+Finding 24 is "Planner-authored tests can share a spec misreading" (`specs/findings/superpowers-drift-v7-0-2.md`). The
 design came from a brainstorming session on 2026-11-09. That session followed the owner's ruling at plan 81's
 review gate on 2026-11-08 (`specs/deferred_items.md:5352`). Decisions D9–D13 are the owner's. They continue the old
 spec's D1–D8, so every id stays unique. Text marked *(designer's call)* is the designer's choice. The list under
@@ -503,7 +503,7 @@ layer 4 stays open. The probe's results file records the results.
   (old D4), and that layer 4 stays open as a new item. Finding 21's own closure stays with the old spec's build
   plan.
 - The same plan updates finding 24, and its bullet under "Suggested disposition", in
-  `specs/superpowers-drift-spec-v7-0-2.md`, from the file as it stands on `main` at that time. It also retires this
+  `specs/findings/superpowers-drift-v7-0-2.md`, from the file as it stands on `main` at that time. It also retires this
   spec.
 
 ## Designer's calls

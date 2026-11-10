@@ -2,7 +2,7 @@
 
 **Status: COMPLETE (2026-11-10)** — Design 1 (finding 21) shipped in plan 84 (specs/plans/completed/84-spec-derived-acceptance-tests.md). Designs 2-6 (finding 24) closed with no build plan in plan 83 (D8); see specs/completed/statement-level-readings.md. It was APPROVED on 2026-11-08. The owner approved this file, its designer's calls included, on 2026-11-08
 ("Spec approved"). The design came from a brainstorming session on 2026-11-08, opened on
-`specs/superpowers-drift-spec-v7-0-2.md`. It covers that assessment's finding 21
+`specs/findings/superpowers-drift-v7-0-2.md`. It covers that assessment's finding 21
 ("Per-task test evidence is self-reported in SDD") and finding 24 ("Planner-authored tests can share a spec
 misreading"). Finding 22 (spec drift) moved to its own session on the same day (D2). Decisions D1–D8 are the
 owner's. Text marked *(designer's call)* is the designer's choice. The list under "Designer's calls" collects them.
@@ -369,7 +369,7 @@ When the build plan completes, the plan-completion protocol does these things:
   - Layer 1 applies only when a spec has examples (D4).
   - Layer 4 stays open as a new item.
 - It updates findings 21 and 24, and their bullets under "Suggested disposition", in
-  `specs/superpowers-drift-spec-v7-0-2.md`, from the file as it stands on `main` at that time.
+  `specs/findings/superpowers-drift-v7-0-2.md`, from the file as it stands on `main` at that time.
 - It retires this spec with the plan.
 
 ## Designer's calls
