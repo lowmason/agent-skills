@@ -459,8 +459,12 @@ Changes from upstream:
     both added after the vendoring (0eca5f1, e135234). In brainstorming's
     visual-companion.md it is the seven start-server.sh and
     stop-server.sh commands, all vendored verbatim at 2f283ae. Prose
-    that only names a script, or already calls it "this skill's", is
-    unchanged. Only the path changed.
+    that only names a script, or already calls it "this skill's",
+    is unchanged, except for the five helpers: plan 82 (2026-11-09) gave
+    every mention of sdd-workspace, task-brief, review-package, task-start
+    and task-done the same anchor, after upstream v7.0.2's #2607, and
+    build/check_helper_paths.py fails a bare one (entry below). Only the
+    path changed.
   - A Codex second-opinion review seat was added: a concurrent Codex CLI
     review (`codex exec review --base`, pinned to a read-only sandbox)
     beside the code-reviewer subagent at subagent-driven-development's
@@ -793,6 +797,10 @@ Changes from upstream:
     Each script's header names the other. The pytest file is this
     repository's own. Its cases adapt upstream's
     tests/claude-code/test-executing-plans-scripts.sh.
+    task-start's repository guard follows upstream v7.0.2 (#2606) (plan
+    82): it calls subagent-driven-development's sdd-repo --with-commit
+    before it writes a brief, and takes BASE with rev-parse --verify.
+    task-done keeps its own BASE check.
   - executing-plans was rebuilt from upstream v7.0.1, read at 2ce8aa1
     (#2318, with #2563's cut) (plan 75). It keeps these local parts. Its
     routing is by tight coupling, not by cost. Its workspace is under
@@ -858,6 +866,30 @@ Changes from upstream:
     model in its launch command, `-m gpt-6-sol`, so the Codex seat no
     longer takes its model from the user's Codex configuration. The
     recipe is an original work, and no upstream text was taken.
+  - Plan 82 (2026-11-09) adopted upstream v7.0.2's helper fixes, read
+    at 22f0b46 (finding 18 of specs/superpowers-drift-spec-v7-0-2.md).
+    subagent-driven-development/scripts/sdd-repo is upstream's script
+    (#2606: 614d80c, de67241, 0d61007, 8b0eefc), with its messages
+    verbatim. It has no -C DIR option, and its callers (sdd-workspace,
+    review-package and executing-plans' task-start) run it directly,
+    where upstream runs it through bash. task-brief takes upstream's
+    task-ID grammar, whole-string match, sub-task rule and hint for
+    headings shaped like tasks (#2604: f75c01f, 750ba92), and its exit-4
+    refusal and warning for a fence that never closes (#2605: 3735a50),
+    with the messages verbatim. It keeps this repository's fence tracking
+    by backtick count, its end at any heading of the same or shallower
+    level, and its Global Constraints prepend, which now ends at a task
+    heading of the same grammar. The tests are this repository's pytest,
+    with the drift assessment's probe cases.
+    build/check_helper_paths.py takes only the idea of upstream's
+    tests/sdd-helper-paths test (#2607: 6ab1c79, 74500c1, 402cfde): it
+    checks for the <this-skill-dir>/ anchor where upstream checks for the
+    phrase "by its absolute path". finishing-a-development-branch's Step 1
+    runs the project's documented test command(s), where upstream guesses
+    npm test, cargo test, pytest or go test, and
+    verification-before-completion's RUN step points a test claim at the
+    same rule. Those two changes are local, and no upstream text was
+    taken.
 
     brainstorming/
     dispatching-parallel-agents/
