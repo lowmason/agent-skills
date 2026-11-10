@@ -1,0 +1,89 @@
+{
+ "duration_api_ms": 28332,
+ "stop_reason": "end_turn",
+ "session_id": "8fdf4e53-08f8-401d-830c-70dd576f3010",
+ "total_cost_usd": 0.1885104,
+ "usage": {
+  "input_tokens": 2,
+  "cache_creation_input_tokens": 14283,
+  "cache_read_input_tokens": 1592,
+  "output_tokens": 3696,
+  "output_tokens_details": {
+   "thinking_tokens": 2541
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 14283,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 2,
+   "outputTokens": 3696,
+   "cacheReadInputTokens": 1592,
+   "cacheCreationInputTokens": 14283,
+   "webSearchRequests": 0,
+   "costUSD": 0.1885104,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 2541,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 14283,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 1,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "```json\n{\n\"R01\": [\"F\", \"Names three tool directions in one sentence\"],\n\"R02\": [\"F\", \"Lists three problem areas in one sentence\"],\n\"R03\": [\"F\", \"Three tool candidates named in one sentence\"],\n\"R04\": [\"F\", \"Three tool types named in one sentence\"],\n\"R05\": [\"P\", \"Candidate meanings given as separate sentences\"],\n\"R06\": [\"P\", \"Open question with no candidate answers\"],\n\"R07\": [\"P\", \"Candidates spread across separate sentences\"],\n\"R08\": [\"P\", \"Only two candidates per sentence\"],\n\"R09\": [\"F\", \"Recording, following up, shelf named together\"],\n\"R10\": [\"F\", \"Three tools named in one sentence\"],\n\"R11\": [\"F\", \"Three blank-cell meanings in one sentence\"],\n\"R12\": [\"P\", \"Open question, no candidates offered\"],\n\"R13\": [\"P\", \"Candidates in separate if-sentences\"],\n\"R14\": [\"F\", \"Three tool types in one sentence\"],\n\"R15\": [\"F\", \"Three focus areas named in one sentence\"],\n\"R16\": [\"P\", \"At most two candidates per sentence\"],\n\"R17\": [\"P\", \"Only two candidate meanings offered\"],\n\"R18\": [\"P\", \"Meanings given as separate sentences\"],\n\"R19\": [\"F\", \"Three blank-cell meanings in one sentence\"],\n\"R20\": [\"P\", \"Candidates in separate sentences\"],\n\"R21\": [\"F\", \"Four blank meanings in one sentence\"],\n\"R22\": [\"P\", \"No set of three candidates\"],\n\"R23\": [\"P\", \"Candidates split across separate sentences\"],\n\"R24\": [\"P\", \"No list of candidate answers\"],\n\"R25\": [\"P\", \"Candidates in separate if-sentences\"],\n\"R26\": [\"P\", \"No three candidates in a sentence\"],\n\"R27\": [\"F\", \"Three fixes named after colon in one sentence\"],\n\"R28\": [\"P\", \"Only two concrete options named\"],\n\"R29\": [\"P\", \"Open question, no candidates\"],\n\"R30\": [\"F\", \"Three meanings of coming back in one sentence\"],\n\"R31\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R32\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R33\": [\"P\", \"Candidates in separate sentences\"],\n\"R34\": [\"P\", \"Candidates in separate sentences\"],\n\"R35\": [\"P\", \"Only two options named\"],\n\"R36\": [\"P\", \"Candidates in separate sentences\"],\n\"R37\": [\"F\", \"Four focus options in one sentence\"],\n\"R38\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R39\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R40\": [\"P\", \"No three candidates in a sentence\"],\n\"R41\": [\"F\", \"Three tool options in one sentence\"],\n\"R42\": [\"F\", \"Three focus areas in one sentence\"],\n\"R43\": [\"F\", \"Candidates set out as bullets\"],\n\"R44\": [\"F\", \"Candidates set out as bullets\"],\n\"R45\": [\"P\", \"No three candidates in a sentence\"],\n\"R46\": [\"P\", \"No three candidates in a sentence\"],\n\"R47\": [\"P\", \"Descriptive detail, not candidate list\"],\n\"R48\": [\"F\", \"Three blank meanings in one sentence\"],\n\"R49\": [\"F\", \"Three build options in one sentence\"],\n\"R50\": [\"F\", \"Three tools named in one sentence\"]\n}\n```",
+ "ttft_ms": 20152,
+ "type": "result",
+ "duration_ms": 28406,
+ "uuid": "8b98e349-3228-4ac8-aad9-fd22c3e00be0",
+ "ttft_stream_ms": 813,
+ "time_to_request_ms": 74,
+ "first_content_frame_ms": 814,
+ "queued_turn_count": 0,
+ "result_index": 0
+}

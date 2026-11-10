@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, the v7.0.2 retune (plan 86)
 
-**Date:** 2026-11-10 · **Status:** RED on today's copy is scored, and the owner ruled on the fixture check twice. T10 to T13 are fix targets. Task 2 (the port) is next.
+**Date:** 2026-11-10 · **Status:** The owner ruled at the Task 3 gate. Wording round 1 (H6 and H9) is registered. Its reps have not run yet.
 **Governs:** plan 86 (`specs/plans/86-brainstorming-v7-0-2-retune.md`), the port of upstream superpowers v7.0.2's brainstorming retune (#2644, `e8cc5c9`, read at `22f0b46`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-v7-0-2/` beside it, and plan 86's
@@ -191,6 +191,172 @@ The owner chose "Keep fixtures, measure (Recommended)": "Keep the today-fix1 fix
 
 Task 3 runs T11 and T13 on the new copy from the `today-fix1` fixtures, which `kit/cases.py` now holds.
 
+## New copy
+
+The new copy at NEW (`a120ef7`, `SKILL.md` sha256 `9510532…`), 2026-11-10, Claude Code 2.1.316, `claude-opus-5-5`. Prompts are in `prompts/new/`. Each differs from the same case's `prompts/today-fix1/` prompt only inside the `<skill name="brainstorming">` block. All 105 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID, and none has an Insight box or quotes a user-level file. No replacement rep ran.
+
+| Case | RED (today's copy) | Role | New copy | Verdict |
+|---|---|---|---|---|
+| T10 why first | 0 of 5 | Fix target | 5 of 5 | Met |
+| T11 nothing open, a small change | 0 of 5 (`today-fix1`) | Fix target | 3 of 5 | **Missed** |
+| T12 a named choice, the why known | 0 of 5 | Fix target | 5 of 5 | Met |
+| T13 nothing open, a project | 0 of 5 (`today-fix1`) | Fix target | 5 of 5 on the approach reading, 0 of 5 on the whole-project reading | **Unresolved** (see the reading below) |
+
+| Guard | New copy | Verdict |
+|---|---|---|
+| T1 | 5 of 5 | Met |
+| T2 | 5 of 5 | Met |
+| T3 | 5 of 5 | Met |
+| T4 | 5 of 5 broad, 4 of 5 strict | Met on both readings |
+| T5 | 5 of 5 | Met |
+| T6v | 5 of 5 | Met |
+| T8a | 5 of 5 | Met |
+| T8b | 5 of 5 | Met |
+| T9 | 5 of 5 | Met |
+| P1 | 5 of 5 | Met |
+| P2b | 5 of 5 | Met |
+| P3 | 1 of 5. Diagnostic on today's copy: 5 of 5 | **Missed** |
+
+Rep verdicts in rep order (P pass, F fail), in groups of five:
+- T7: `PPPPP PPFPP PPFPF FPFPP FFPPP` (hand score; the panel's verdicts are under T7 panel)
+- T10 `PPPPP`, T11 `PPPFF`, T12 `PPPPP`, T13 `PPPPP` (approach reading)
+- T1 `PPPPP`, T2 `PPPPP`, T3 `PPPPP`, T4 broad `PPPPP`, T4 strict `PPPFP`, T5 `PPPPP`, T6v `PPPPP`, T8a `PPPPP`, T8b `PPPPP`, T9 `PPPPP`, P1 `PPPPP`, P2b `PPPPP`, P3 `FPFFF`
+- Diagnostic, today's copy: P3 `PPPPP` (`diag/today/P3/`)
+
+FAIL lines:
+- T7 rep8: three meanings in one sentence, "might mean the same packets, seeds saved from the borrower's own harvest, or nothing at all"
+- T7 rep13: three meanings in one sentence, "packets still out, returns nobody wrote down, or seeds that were planted and never meant to come back"
+- T7 rep15: four meanings in one sentence, "A blank could mean overdue, still growing, forgotten, or never expected back."
+- T7 rep16: three meanings in one sentence, "seeds that are overdue, seeds nobody expected to come back, or returns that never got written down"
+- T7 rep18: three meanings in one sentence, "still out, were returned but never logged, or were never expected back"
+- T7 rep21: three meanings in one sentence, "seed still out, a return nobody wrote down, or a loan that was never expected to come back"
+- T7 rep22: three meanings in one sentence, "The seeds might still be out, or they came back and nobody wrote it down, or the borrower planted them"
+- T11 rep4: asks a choice, not approval, "Which matches how you'd want it?" (whether "Phoned" covers the person or the loan)
+- T11 rep5: asks a choice, not approval, "Which way?" (per loan or per person)
+- T4 rep4 (strict reading only): marks only where uploads go as its call, "Where uploads go."
+- P3 rep1: writes the design before the partner sees the approaches, "ACTION: Create `specs/batch-tracking.md`"
+- P3 rep3: writes the design before the partner sees the approaches, "ACTION: Write `specs/batch-tracking.md`"
+- P3 rep4: writes the design before the partner sees the approaches, "ACTION: Create `specs/batch-tracking.md`"
+- P3 rep5: writes the design before the partner sees the approaches, "ACTION: Create `specs/batch-tracking.md`"
+
+Borderline calls:
+- T7: ten passes name three or more tools or problem areas in one sentence (reps 2, 6, 7, 9, 12, 14, 17, 19, 24 and 25). Rep25: "easier entry at the table, chasing people up, knowing what's on the shelf, or something else". Rep1 names two builds and "something more". The blind panel failed all ten (below).
+- T10 rep1 puts two example reasons in its question: "are you starting to bill for water, or do you want plot holders to see what they're using?" Two is below the letter reading's three, so it passes.
+- T12 rep3's pick is conditional: "I'd pick this one, if "no texts" doesn't also mean "no reminders at all."" It is still a recommendation.
+- T4 rep4 passes the broad reading and fails the strict one. T4 meets the bar on both.
+- T13, all five reps. The reading decides the arm, so T13 is unresolved. Each rep lays out two or three ways to catch a backup that never runs (an email from the server only, a scheduled check inside AWS, an outside check-in service), with what each trades off and a pick, and asks which. These are ways of building one part of the project, the part the partner's why turns on. On the reading that "the approach" covers that, all five pass. On the reading that "the approach" means the whole project's approach, all five ask about something else and fail.
+- P3 rep2 passes on the registered third clause. It names its pick, says why the others don't fit, and ends: "If extending the taproom app is the wrong call, say so now. Otherwise I'll write it up."
+
+Descriptive counts, no verdict:
+- T7 fail forms: see T7 panel.
+- T10 passes: rep1 states two guessed reasons in its question, and rep4 names two possibilities after it. The other three state none.
+- T11: reps 1, 2 and 3 give a line on why another way doesn't fit (a call-history table is more than was asked).
+- T12: every way in every rep carries what it trades off.
+- P3: the four FAIL reps each record the approach as "my call" inside the written design, and three say why ("the partner handed me the how", "Approach 1 was my call; the partner handed over how it's built"). Today's copy, in the diagnostic, lays out the approaches and asks which in all five reps.
+
+The registered call / ask / skip count for the details today's copy asked about in RED:
+
+| T11 detail | rep1 | rep2 | rep3 | rep4 | rep5 |
+|---|---|---|---|---|---|
+| (1) the panel shows earlier calls | call | call | call | skip | skip |
+| (2) both coordinators work at once | skip | skip | skip | skip | skip |
+| (3) one call covers all of a borrower's loans | skip | skip | skip | ask | ask |
+| (4) an unanswered call counts as phoned | skip | skip | skip | skip | skip |
+| (5) "seven days" brings a loan back on the next Saturday | call | call | call | skip | skip |
+
+| T13 detail | rep1 | rep2 | rep3 | rep4 | rep5 |
+|---|---|---|---|---|---|
+| (1) a server down all night still raises an alert, and how soon | ask (as the approach), timing a call | ask (as the approach), "by 03:00" a call | ask (as the approach), "each morning" a call | ask (as the approach), "each morning" a call | ask (as the approach), "each morning" a call |
+| (2) the restore guide covers a dead server or only bad data | skip | skip | skip | skip | skip |
+
+## T7 panel
+
+Three blind votes (`panel/T7/`), each a separate `claude -p` call under `run_reps.sh`'s isolation, on `claude-opus-5-5`. Each vote saw `panel/T7/rule.txt` (the registered T7 paragraph), the control T7 prompt and all 50 replies in its own shuffled order (seeds 87, 88 and 89), with the arm and rep hidden. 49 of the 50 replies got a unanimous vote. New rep1 split 2 to 1 for a pass. Cost $0.56.
+
+| Copy | Panel majority | Wilson 95% | Hand score | Wilson 95% |
+|---|---|---|---|---|
+| Today's copy (BASE) | 17 of 25 (68%) | 0.48 to 0.83 | 21 of 25 (84%) | 0.65 to 0.94 |
+| New copy (NEW) | 8 of 25 (32%) | 0.17 to 0.52 | 18 of 25 (72%) | 0.52 to 0.86 |
+| Plan 70, isolated re-run, 2026-11-05 | 13 of 25 (52%) | 0.33 to 0.70 | | |
+
+- Panel, one-sided Fisher p: new above today 0.998, today above new **0.011**. Under the registered bar, a regression is shown.
+- Hand scores, one-sided Fisher p: new above today 0.915, today above new 0.248. On the hand scores, no regression is shown.
+- The new copy is below plan 70's bar (20 of 25) on both scorings. Today's copy meets that bar on the hand scores and misses it on the panel, so the two scorings put today's arm on different sides of the bar.
+- Panel verdicts in rep order. Today: `PFPFF FPPPF PPPPP PPPFF PFPPP`. New: `PFPPP FFFFP PFFFF FFFFP FFPFF`.
+
+**Where the hand scores and the panel differ.** All 14 differences are reps that the hand score passed and listed as borderline because they name three or more tools or problem areas in one sentence: today's reps 2, 4, 6 and 22, and new reps 2, 6, 7, 9, 12, 14, 17, 19, 24 and 25. The panel failed each one, 3 to 0 ("Three tool options named in one sentence", "Four candidate focuses named in one sentence"). The hand reading followed plan 70's A6 rep3, a hand pass and a 2-to-1 panel pass. This panel reads the form the other way, and the panel majority is the registered verdict.
+
+**Fail forms (panel majorities).**
+
+| Copy | Bullets or numbers | Three or more meanings of the blanks in one sentence | Three or more tools or problem areas in one sentence |
+|---|---|---|---|
+| Today's copy | 2 | 2 | 4 |
+| New copy | 0 | 7 | 10 |
+
+The new copy sets out no list, as plan 70's sentence asks. But it moves the candidates into one sentence, often after the question: "Your answer decides whether this is mostly about making returns easy to record, chasing people…". This is a hypothesis, not a measurement. H5 removes plan 70's "a single sentence with no list of example answers hanging off it", and H6 keeps the ban on guesses "before the question" only.
+
+**A note on the panel rule.** `panel/T7/rule.txt` is plan 86's registered T7 paragraph, as Task 3 Step 4 says. It differs from plan 70's panel rule. It has no PASS sentence and no line telling voters to ignore an Insight box, and it mentions "the new text". That may explain why this panel failed the tools form that plan 70's panel passed 2 to 1. It also makes the 2026-11-05 figure context only. Both arms here were scored under the same text in one panel, so the comparison between them stands.
+
+## Owner rulings at the Task 3 gate (2026-11-10)
+
+The owner chose these options. Each is quoted as written.
+
+- T13 reading: "Yes, approach: 5 of 5 (Recommended)": "It is a choice about how the project gets built, which the PASS clause names. RED's fails were all questions about what the partner wants (alert timing, guide scope, logins). T13 meets its bar."
+- T11: "(b) Accept as known gap (Recommended)": "Record the miss as a fixture gap the new copy correctly asks about, in the record and in finding 4. No spend."
+- P3: "(a) One wording round on H9 (Recommended)": "Add one clause (+44 chars incl. the T7 fix; body 19,524). Register it, re-run P3 and the approach guards T5, T9, P1, T11, T13 at 5 reps each: about 30 reps, ~$1.0, running total ~$6.8."
+- T7: "(a) One wording round on H6 (Recommended)": "Change "before the question either" to "before or after the question". Re-run T7 x25 plus a fresh 50-reply panel (today + new), and T10, T8a, T8b x5: ~$1.9. With the P3 round, the running total is ~$8.7 of the $10 cap."
+
+### Wording round 1, registered before any rep
+
+This is the plan's one wording round (outcome (a)). Both changes go into `skills/brainstorming/SKILL.md` in one commit, NEW-R1. They are local wording, not upstream text, so Task 4's `NOTICE` bullet and finding 4 name them as divergences.
+
+H6, Get them describing. Replace:
+
+```text
+at the answer ("this could mean A, B or C"), or where each would lead,
+before the question either; that's a menu too. Their own words carry
+```
+
+with:
+
+```text
+at the answer ("this could mean A, B or C"), or where each would lead,
+before or after the question; that's a menu too. Their own words carry
+```
+
+H9, Lay out the approaches. Replace:
+
+```text
+why, then ask which way they want to go; if they've handed you the how,
+say you'll go with your pick instead. When there's genuinely one
+sensible way, say so in that message and explain why the others don't
+fit; the design comes in the next one. This is for how it gets built;
+for what they want, get them describing first.
+```
+
+with:
+
+```text
+why, then ask which way they want to go; if they've handed you the how,
+say you'll go with your pick instead, and write the design in the next
+message. When there's genuinely one sensible way, say so in that message
+and explain why the others don't fit; the design comes in the next one.
+This is for how it gets built; for what they want, get them describing
+first.
+```
+
+Expected after the round: `SKILL.md` sha256 `3194843f7a35d36e3de4226790e55f483023f22897d42e5e75078d54a6e9a049`, body 19,524 characters (cap 20,000), file 20,168 bytes. Task 2's Steps 3 and 5 run again on NEW-R1: the hash, the body length and `build/run_commit_lints.sh`.
+
+**What re-runs on NEW-R1**, from new prompts in `prompts/new-r1/` into `green/new-r1/<case>/`:
+- For H9: P3, T5, T9, P1, T11 and T13, 5 reps each.
+- For H6: T7, 25 reps. T10, T8a and T8b, 5 reps each.
+
+**Rules and bars.** The registered rules apply unchanged, with the owner's T13 reading. Each case and guard is held to 4 of 5. T11's miss stands as a known gap unless NEW-R1 reaches 4 of 5. Its tally and the call / ask / skip count are reported either way.
+
+**T7 panel for the round.** Hand scores for the NEW-R1 T7 reps are written first, to `green/new-r1/T7/hand-scores.json`. Then a fresh blind panel runs into `panel/T7-r1/`: today's 25 reps and NEW-R1's 25 reps (arms `today` and `newr1`), 3 votes, seed 186, the same `rule.txt` and the control T7 prompt. Today's copy is scored again inside this panel, so the Fisher test compares two arms of one panel. A regression is shown when `fisher_one_sided(today, newr1)` is below 0.05. A gain is shown when `fisher_one_sided(newr1, today)` is below 0.05. NEW-R1 meets plan 70's bar at 20 or more of 25. The first panel (`panel/T7/`) stays as the record of NEW.
+
+**Outcomes after the round.** The plan allows one wording round. So any bar the round misses, or a T7 regression it still shows, goes to the owner with (b) accept as a known gap or (c) revert the hunk. Spend: the round costs about $3, so the running total reaches about $8.7. The run stops for the owner before the total passes $10.
+
 ## Spend
 
 Running total of `total_cost_usd` across every rep and panel vote of plan 86. The plan stops for the owner before the total passes $10.
@@ -200,3 +366,6 @@ Running total of `total_cost_usd` across every rep and panel vote of plan 86. Th
 | Isolation pilot | 2 reps | $0.02 | $0.02 |
 | RED, today's copy: T7 ×25, T10 to T13 ×5 | 45 reps | $1.06 | $1.08 |
 | RED re-run, today's copy: T11, T13 ×5 (`today-fix1`) | 10 reps | $0.33 | $1.41 |
+| New copy: T7 ×25, T10 to T13 ×5, twelve guards ×5 | 105 reps | $3.59 | $5.00 |
+| T7 panel | 3 votes | $0.56 | $5.56 |
+| Diagnostic, today's copy: P3 ×5 | 5 reps | $0.19 | $5.75 |

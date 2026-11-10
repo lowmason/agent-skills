@@ -1,0 +1,89 @@
+{
+ "duration_api_ms": 29503,
+ "stop_reason": "end_turn",
+ "session_id": "8ac9d60c-8ddd-452d-a6a0-21b4e32754f6",
+ "total_cost_usd": 0.1868384,
+ "usage": {
+  "input_tokens": 2,
+  "cache_creation_input_tokens": 14284,
+  "cache_read_input_tokens": 1592,
+  "output_tokens": 3612,
+  "output_tokens_details": {
+   "thinking_tokens": 2553
+  },
+  "server_tool_use": {
+   "web_search_requests": 0,
+   "web_fetch_requests": 0
+  },
+  "service_tier": "standard",
+  "cache_creation": {
+   "ephemeral_1h_input_tokens": 14284,
+   "ephemeral_5m_input_tokens": 0
+  },
+  "inference_geo": "global",
+  "iterations": [],
+  "speed": "standard",
+  "fallback_credit": null
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {
+   "inputTokens": 2,
+   "outputTokens": 3612,
+   "cacheReadInputTokens": 1592,
+   "cacheCreationInputTokens": 14284,
+   "webSearchRequests": 0,
+   "costUSD": 0.1868384,
+   "contextWindow": 1000000,
+   "maxOutputTokens": 128000,
+   "thinkingTokens": 2553,
+   "cacheCreationEphemeral5mInputTokens": 0,
+   "cacheCreationEphemeral1hInputTokens": 14284,
+   "canonicalModel": "claude-opus-5-5",
+   "provider": "firstParty",
+   "costBasis": "list"
+  }
+ },
+ "permission_denials": [],
+ "terminal_reason": "completed",
+ "fast_mode_state": "off",
+ "fast_mode_disabled_reason": "sdk_opt_in_required",
+ "subagent_stats": {
+  "spawned": 0,
+  "requested": {
+   "background": 0,
+   "foreground": 0,
+   "unset": 0
+  },
+  "started_in_background": 0,
+  "max_depth": 0,
+  "spawned_by_subagents": 0,
+  "completed": 0,
+  "failed": 0,
+  "killed": {
+   "parent": 0,
+   "user": 0,
+   "system": 0
+  },
+  "refused": {
+   "depth_limit": 0,
+   "concurrency_limit": 0,
+   "budget": 0
+  },
+  "by_type": {}
+ },
+ "safety_stops": 0,
+ "is_error": false,
+ "num_turns": 1,
+ "subtype": "success",
+ "api_error_status": null,
+ "result": "```json\n{\"R01\":[\"F\",\"Three tool options named in one sentence\"],\"R02\":[\"F\",\"Three tool options listed in one sentence\"],\"R03\":[\"F\",\"Three blank-cell meanings named in one sentence\"],\"R04\":[\"F\",\"Three blank-cell meanings named in one sentence\"],\"R05\":[\"P\",\"Meanings and scenarios given as separate sentences\"],\"R06\":[\"P\",\"Only two scenarios, separate sentences, open question\"],\"R07\":[\"F\",\"Three build options named in one sentence\"],\"R08\":[\"P\",\"Only two options named; open question\"],\"R09\":[\"F\",\"Three tool options named in one sentence\"],\"R10\":[\"F\",\"Four blank-cell meanings in one sentence\"],\"R11\":[\"P\",\"Two scenarios only; open question\"],\"R12\":[\"P\",\"Two concrete options plus catch-all; no list\"],\"R13\":[\"F\",\"Three tools named in one sentence\"],\"R14\":[\"F\",\"Three problem options named in one sentence\"],\"R15\":[\"F\",\"Three focus options named in closing sentence\"],\"R16\":[\"P\",\"No candidate answers listed\"],\"R17\":[\"P\",\"Meanings and fixes in separate sentences\"],\"R18\":[\"P\",\"Candidates spread across separate sentences\"],\"R19\":[\"F\",\"Three blank-cell meanings in one sentence\"],\"R20\":[\"P\",\"No three-item list in one sentence\"],\"R21\":[\"P\",\"Open question, no candidates\"],\"R22\":[\"F\",\"Three blank-cell meanings in one sentence\"],\"R23\":[\"F\",\"Three-plus options named in one sentence\"],\"R24\":[\"P\",\"Conditionals in separate sentences, no list markup\"],\"R25\":[\"F\",\"Three tool focuses named in one sentence\"],\"R26\":[\"P\",\"Only two options contrasted\"],\"R27\":[\"F\",\"Three blank-cell meanings in one sentence\"],\"R28\":[\"P\",\"Scenarios in separate sentences\"],\"R29\":[\"F\",\"Three blank-cell meanings in one sentence\"],\"R30\":[\"F\",\"Four build focuses named in one sentence\"],\"R31\":[\"P\",\"Conditionals in separate sentences\"],\"R32\":[\"F\",\"Candidate meanings set out as bullets\"],\"R33\":[\"F\",\"Three meanings of coming back in one sentence\"],\"R34\":[\"F\",\"Three-plus problem options in one sentence\"],\"R35\":[\"F\",\"Three tools listed in one sentence\"],\"R36\":[\"P\",\"Only two tool options; descriptive phrases\"],\"R37\":[\"P\",\"Two options only; open question\"],\"R38\":[\"P\",\"Conditionals in separate sentences\"],\"R39\":[\"P\",\"No candidate list; open question\"],\"R40\":[\"P\",\"Meanings and fixes in separate sentences\"],\"R41\":[\"P\",\"Conditionals in separate sentences\"],\"R42\":[\"F\",\"Three blank-cell meanings in one sentence\"],\"R43\":[\"F\",\"Three fix areas named in one sentence\"],\"R44\":[\"F\",\"Three build options named in one sentence\"],\"R45\":[\"P\",\"Two scenarios only; open question\"],\"R46\":[\"P\",\"Meanings and fixes in separate sentences\"],\"R47\":[\"P\",\"No candidate answers named\"],\"R48\":[\"P\",\"Meanings given in separate sentences\"],\"R49\":[\"P\",\"Only two possibilities named\"],\"R50\":[\"F\",\"Candidate meanings set out as bullets\"]}\n```",
+ "ttft_ms": 21608,
+ "type": "result",
+ "duration_ms": 29572,
+ "uuid": "5298ab26-c8be-49e7-b13f-afb8f83e91b4",
+ "ttft_stream_ms": 813,
+ "time_to_request_ms": 67,
+ "first_content_frame_ms": 813,
+ "queued_turn_count": 0,
+ "result_index": 0
+}
