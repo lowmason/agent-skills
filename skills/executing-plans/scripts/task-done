@@ -110,9 +110,11 @@ if [ "$rc" -ne 0 ]; then
   exit "$rc"
 fi
 
-# The run file's second line is the rendered command. Its output follows the
-# first "--- output ---" line.
-cmd=$(sed -n '2s/^command: //p' "$run_file")
+# The rendered command starts on the run file's second line, after "command: ".
+# It runs on until the "head: " line, because an argument may hold a newline.
+# The output follows the first "--- output ---" line.
+cmd=$(awk 'NR == 1 { next } /^head: / { exit } { print }' "$run_file")
+cmd=${cmd#command: }
 last=$(sed '1,/^--- output ---$/d' "$run_file" | grep -v '^[[:space:]]*$' | tail -n 1) || last="(no output)"
 if [ ! -f "$ledger" ]; then
   case "$plan_canon" in

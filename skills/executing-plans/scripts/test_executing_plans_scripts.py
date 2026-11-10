@@ -379,3 +379,12 @@ def test_task_done_refuses_a_task_number_that_is_not_an_id(repo):
     assert 'NOT recorded' not in result.stderr
     assert not (repo / 'ran').exists()
     assert not (workspace(repo) / 'progress.md').exists()
+
+
+def test_task_done_keeps_a_multi_line_command_whole_in_its_ledger_line(repo):
+    base = head(repo)
+    commit_work(repo)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', 'sh', '-c', 'echo a\necho b', cwd=repo)
+    assert result.returncode == 0, result.stderr
+    ledger = (workspace(repo) / 'progress.md').read_text()
+    assert "tests: sh -c 'echo a\necho b' → b)" in ledger
