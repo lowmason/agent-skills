@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, the v7.0.2 retune (plan 86)
 
-**Date:** 2026-11-10 · **Status:** The owner ruled at the Task 3 gate. Wording round 1 (H6 and H9) is registered. Its reps have not run yet.
+**Date:** 2026-11-10 · **Status:** Complete. The shipped copy is NEW-R1 (`9761c88`). Every bar is met except the P3 guard, which the owner accepted as a known gap. T7 shows no regression after wording round 1 and stays the known gap ruled on 2026-11-06. See Disposition.
 **Governs:** plan 86 (`specs/plans/86-brainstorming-v7-0-2-retune.md`), the port of upstream superpowers v7.0.2's brainstorming retune (#2644, `e8cc5c9`, read at `22f0b46`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-v7-0-2/` beside it, and plan 86's
@@ -218,7 +218,7 @@ The new copy at NEW (`a120ef7`, `SKILL.md` sha256 `9510532…`), 2026-11-10, Cla
 | P3 | 1 of 5. Diagnostic on today's copy: 5 of 5 | **Missed** |
 
 Rep verdicts in rep order (P pass, F fail), in groups of five:
-- T7: `PPPPP PPFPP PPFPF FPFPP FFPPP` (hand score; the panel's verdicts are under T7 panel)
+- T7: `PPPPP PPFPP PPFPF FPFPP FFPPP`, the hand scores. The panel's verdicts are under T7 panel.
 - T10 `PPPPP`, T11 `PPPFF`, T12 `PPPPP`, T13 `PPPPP` (approach reading)
 - T1 `PPPPP`, T2 `PPPPP`, T3 `PPPPP`, T4 broad `PPPPP`, T4 strict `PPPFP`, T5 `PPPPP`, T6v `PPPPP`, T8a `PPPPP`, T8b `PPPPP`, T9 `PPPPP`, P1 `PPPPP`, P2b `PPPPP`, P3 `FPFFF`
 - Diagnostic, today's copy: P3 `PPPPP` (`diag/today/P3/`)
@@ -357,6 +357,77 @@ Expected after the round: `SKILL.md` sha256 `3194843f7a35d36e3de4226790e55f48302
 
 **Outcomes after the round.** The plan allows one wording round. So any bar the round misses, or a T7 regression it still shows, goes to the owner with (b) accept as a known gap or (c) revert the hunk. Spend: the round costs about $3, so the running total reaches about $8.7. The run stops for the owner before the total passes $10.
 
+## Wording round 1 results (NEW-R1)
+
+NEW-R1 is `9761c88`, `SKILL.md` sha256 `3194843f…`, body 19,524 characters. Task 2's checks ran again on it: the hash and body length match the registration, and `build/run_commit_lints.sh` passes. Prompts are in `prompts/new-r1/`, and reps in `green/new-r1/`. All 70 reps exited 0 with `turns=1 extra-iters=- models=1`. No rep is VOID, and none has an Insight box. Cost $2.00.
+
+| Case | Hunk | NEW | NEW-R1 | Verdict on NEW-R1 |
+|---|---|---|---|---|
+| P3 | H9 | 1 of 5 | 3 of 5 (`FFPPP`) | **Missed** (today's copy 5 of 5) |
+| T5 | H9 | 5 of 5 | 5 of 5 | Met |
+| T9 | H9 | 5 of 5 | 5 of 5 | Met |
+| P1 | H9 | 5 of 5 | 5 of 5 | Met |
+| T11 | H9 | 3 of 5 | 4 of 5 (`FPPPP`) | Met. The known gap is lifted, as registered |
+| T13 | H9 | 5 of 5 | 5 of 5 (approach reading) | Met |
+| T10 | H6 | 5 of 5 | 5 of 5 | Met |
+| T8a | H6 | 5 of 5 | 5 of 5 | Met |
+| T8b | H6 | 5 of 5 | 5 of 5 | Met |
+| T7 | H6 | panel 8 of 25 | panel 13 of 25 | No regression shown (below) |
+
+FAIL lines:
+- P3 rep1: writes the design at once, "ACTION: Create `specs/batch-tracking.md`"
+- P3 rep2: writes the design at once, "ACTION: Create `specs/batch-tracking.md`"
+- T11 rep1: asks a choice, not approval, "Which do you want?" (per loan or per borrower)
+- T7 (hand score) reps 1, 5, 6, 9, 11, 13, 16, 23, 24 and 25. Seven name three meanings of the blanks in one sentence (rep1: "still out, or they came back and nobody wrote it down, or nobody expected them back"). Rep13 sets them out as bullets. Rep6 names three problems in the partner's voice ("we can't tell who still has what", "people forget to log returns", "we don't know what to restock"). Rep24 names three candidate answers to its own question ("at lending time, when seeds come back, or when someone needs an answer from it").
+
+Descriptive counts, no verdict:
+- P3: reps 3, 4 and 5 lay out the approaches with a pick, say they will go with it unless stopped, and write nothing ("I'll go with my pick unless you stop me"). Reps 1 and 2 write the spec with the approach inside it as their call, as four NEW reps did.
+- T10: four of five reps put two guessed reasons in their question ("Is the society starting to charge for water, or …?"). Two is below the letter reading's three.
+- T8a rep1 sets out three bullets of what the answer decides, after its question. The T8a rule does not count this.
+
+| T11 detail (NEW-R1) | rep1 | rep2 | rep3 | rep4 | rep5 |
+|---|---|---|---|---|---|
+| (1) the panel shows earlier calls | skip | call | call | call | call |
+| (2) both coordinators work at once | skip | skip | skip | skip | skip |
+| (3) one call covers all of a borrower's loans | ask | skip | skip | skip | skip |
+| (4) an unanswered call counts as phoned | skip | skip | skip | skip | skip |
+| (5) "seven days" brings a loan back on the next Saturday | skip | call | call | call | call |
+
+| T13 detail (NEW-R1) | rep1 | rep2 | rep3 | rep4 | rep5 |
+|---|---|---|---|---|---|
+| (1) a server down all night still raises an alert, and how soon | ask (as the approach), "by about 03:00" a call | ask (as the approach), "each morning" a call | ask (as the approach), "by about 03:00" a call | ask (as the approach), "each morning" a call | ask (as the approach), "by about 03:00" a call |
+| (2) the restore guide covers a dead server or only bad data | skip | skip | skip | skip | skip |
+
+### T7 panel, round 1
+
+Three blind votes (`panel/T7-r1/`), seed 186, the same `rule.txt` and the control T7 prompt, over today's 25 reps and NEW-R1's 25 reps. All 50 replies got a unanimous vote. Cost $0.51.
+
+| Copy | Panel majority | Wilson 95% | Hand score | Wilson 95% |
+|---|---|---|---|---|
+| Today's copy (BASE), scored again | 17 of 25 (68%) | 0.48 to 0.83 | 21 of 25 (84%) | 0.65 to 0.94 |
+| NEW-R1 | 13 of 25 (52%) | 0.33 to 0.70 | 15 of 25 (60%) | 0.41 to 0.77 |
+
+- Panel, one-sided Fisher p: NEW-R1 above today 0.926, today above NEW-R1 **0.193**. No regression is shown, and no gain is shown.
+- Hand scores: NEW-R1 above today 0.987, today above NEW-R1 0.057.
+- NEW-R1 is below plan 70's bar (20 of 25), as today's copy is on the panel. Its 13 of 25 equals the 2026-11-05 isolated figure. T7 stays the known gap that the owner ruled on 2026-11-06.
+- The second panel gave today's 25 reps the same verdicts as the first panel: `PFPFF FPPPF PPPPP PPPFF PFPPP`. NEW-R1: `FPPPF FPPFF FPFPP FPPPP FPFFF`.
+- Hand and panel differ on 6 reps, all in the same direction as before: today's reps 2, 4, 6 and 22, and NEW-R1 reps 10 and 21, each naming three tools or fixes in one sentence.
+- Fail forms on NEW-R1 (panel majorities): 1 list, 7 with three meanings of the blanks in one sentence, 3 with three tools, fixes or problems in one sentence, and 1 with three candidate answers to its own question. The round cut the tools-after-the-question form from 10 to 3. It did not cut the meanings-in-one-sentence form (7 on NEW, 7 on NEW-R1).
+
+## Disposition
+
+The shipped copy is NEW-R1, `9761c88`: the port (Task 2, `a120ef7`) plus the owner's wording round on H6 and H9.
+
+- T10 why first: **met**. 5 of 5 on NEW and on NEW-R1, from 0 of 5 on today's copy.
+- T11 nothing open, a small change: **met** on NEW-R1, 4 of 5. NEW scored 3 of 5, and the owner chose "(b) Accept as known gap (Recommended)". Round 1 lifted it, as registered.
+- T12 a named choice, the why known: **met**. 5 of 5 on NEW. It was not re-run on NEW-R1, because round 1's H6 change touches only the sentence for questions before the why.
+- T13 nothing open, a project: **met**. 5 of 5 on NEW and on NEW-R1, on the owner's approach reading ("Yes, approach: 5 of 5 (Recommended)").
+- T7 first question: on NEW the panel showed a **regression** (today 17 of 25, NEW 8 of 25, p 0.011). The owner chose "(a) One wording round on H6 (Recommended)". On NEW-R1 **no regression is shown** (today 17 of 25, NEW-R1 13 of 25, p 0.193). Neither copy reaches plan 70's bar of 20 of 25 on the panel, so T7 stays the known gap the owner ruled on 2026-11-06.
+- Guards T1, T2, T3, T4 (5 of 5 broad, 4 of 5 strict), T5, T6v, T8a, T8b, T9, P1 and P2b: **met** on NEW. T5, T8a, T8b, T9 and P1 met again on NEW-R1. T1, T2, T3, T4, T6v and P2b were not re-run, because round 1's two sentences do not reach them. That is a judgment, not a measurement.
+- Guard P3: **missed** on NEW (1 of 5) and on NEW-R1 (3 of 5). Today's copy scored 5 of 5 in the diagnostic. The owner chose "(b) Accept as known gap (Recommended)": "Record in the record, NOTICE and finding 4 that under "just write it up" pressure the new copy sometimes writes the design with its pick inside, so the partner first sees the approaches in the doc. No spend. The approval gate before any build still holds."
+
+Spend: $8.26 in all, under the $10 cap. A privacy scan over every rep, prompt and panel file of this record found no `/Users/` path, no e-mail address and no token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
+
 ## Spend
 
 Running total of `total_cost_usd` across every rep and panel vote of plan 86. The plan stops for the owner before the total passes $10.
@@ -369,3 +440,5 @@ Running total of `total_cost_usd` across every rep and panel vote of plan 86. Th
 | New copy: T7 ×25, T10 to T13 ×5, twelve guards ×5 | 105 reps | $3.59 | $5.00 |
 | T7 panel | 3 votes | $0.56 | $5.56 |
 | Diagnostic, today's copy: P3 ×5 | 5 reps | $0.19 | $5.75 |
+| Wording round 1 on NEW-R1 | 70 reps | $2.00 | $7.75 |
+| T7 panel, round 1 | 3 votes | $0.51 | $8.26 |
