@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 # Close one task of an inline plan execution in a single call: run the task's
-# test command, keep its full output in the workspace, print the tail, and —
-# only if the command succeeded — append the completion line to the ledger.
+# test command through test-run, which keeps the full output of the run in the
+# workspace, print the tail and the run file's path, and — only if the command
+# succeeded — append the completion line to the ledger.
 # A failing command records nothing: the task is not complete.
+#
+# test-run runs the command and keeps each run in a file of its own. The first
+# run of a task keeps the name task-<N>-tests.log. A later run of the same task
+# gets task-<N>-tests-<K>.log, so a failing run stays on disk beside the run
+# that follows it.
 #
 # task-start opens the task this script closes.
 #
@@ -12,8 +18,8 @@
 #
 # Usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
 #   BASE is the SHA task-start printed; the completion line records BASE..HEAD.
-# Exit: the test command's exit status; 2 for bad arguments or BASE; 3 when
-# the ledger belongs to another plan.
+# Exit: the test command's exit status; 2 for bad arguments, BASE or task
+# number; 3 when the ledger belongs to another plan.
 set -euo pipefail
 
 if [ $# -lt 5 ] || [ "$4" != "--" ]; then
@@ -30,7 +36,6 @@ sdd="$(cd "$(dirname "$0")/../../subagent-driven-development/scripts" && pwd)"
 git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
 
 dir=$("$sdd/sdd-workspace" "$plan")
-log="$dir/task-${n}-tests.log"
 ledger="$dir/progress.md"
 
 # Canonical absolute form of a path whose directory exists; fails otherwise.
@@ -89,26 +94,28 @@ EOF2
   fi
 fi
 
-# Render the command the way a person would type it, for the ledger line.
-cmd=""
-for a in "$@"; do
-  case "$a" in
-    *[[:space:]\"\;\|\&]*) cmd="$cmd '$a'" ;;
-    *) cmd="$cmd $a" ;;
-  esac
-done
-cmd=${cmd# }
-
+# test-run runs the command and keeps the run. Its stdout is the tail of the
+# output, then "run: <run file>" as the last line. A refusal prints no such
+# line and says why on stderr.
 rc=0
-"$@" > "$log" 2>&1 || rc=$?
-
-tail -n 5 "$log"
+out=$("$sdd/test-run" "$plan" "$n" -- "$@") || rc=$?
+[ -z "$out" ] || printf '%s\n' "$out"
+run_line=$(printf '%s\n' "$out" | tail -n 1)
+case "$run_line" in
+  "run: "*) run_file=${run_line#run: } ;;
+  *) exit "$rc" ;;
+esac
 if [ "$rc" -ne 0 ]; then
-  echo "task-done: test command exited $rc; Task $n NOT recorded (full output: $log)" >&2
+  echo "task-done: test command exited $rc; Task $n NOT recorded (full output: $run_file)" >&2
   exit "$rc"
 fi
 
-last=$(grep -v '^[[:space:]]*$' "$log" | tail -n 1) || last="(no output)"
+# The rendered command starts on the run file's second line, after "command: ".
+# It runs on until the "head: " line, because an argument may hold a newline.
+# The output follows the first "--- output ---" line.
+cmd=$(awk 'NR == 1 { next } /^head: / { exit } { print }' "$run_file")
+cmd=${cmd#command: }
+last=$(sed '1,/^--- output ---$/d' "$run_file" | grep -v '^[[:space:]]*$' | tail -n 1) || last="(no output)"
 if [ ! -f "$ledger" ]; then
   case "$plan_canon" in
     "$root"/*) plan_line=${plan_canon#"$root"/} ;;

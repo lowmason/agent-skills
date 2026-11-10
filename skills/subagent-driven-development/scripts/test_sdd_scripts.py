@@ -1,11 +1,11 @@
-"""Tests for the four bundled bash scripts — run from this directory.
+"""Tests for the five bundled bash scripts — run from this directory.
 
 cd skills/subagent-driven-development/scripts && uv run --with pytest \
   python -m pytest -q
 
 These are bash, not Python, so each test drives the script as a subprocess and
 asserts on exit code, stdout, and written files. That keeps this repo on one test
-runner instead of adding bats/shunit2 for four files.
+runner instead of adding bats/shunit2 for five files.
 """
 
 import os
@@ -20,6 +20,7 @@ SDD_REPO = SCRIPTS / 'sdd-repo'
 WORKSPACE = SCRIPTS / 'sdd-workspace'
 TASK_BRIEF = SCRIPTS / 'task-brief'
 REVIEW_PACKAGE = SCRIPTS / 'review-package'
+TEST_RUN = SCRIPTS / 'test-run'
 
 # Sanitised so the suite doesn't inherit the user's global/system git config
 # (commit.gpgsign, core.hooksPath, init.templateDir, ...). Without this, a
@@ -742,3 +743,134 @@ def test_review_package_rejects_a_base_that_is_not_an_ancestor(repo, base, head)
     assert result.returncode == 3
     assert 'not a descendant' in result.stderr
     assert not out.exists()
+
+
+OK_CMD = ['sh', '-c', 'echo "Ran 3 tests"; echo OK']
+
+
+@pytest.fixture
+def committed(repo):
+    '''The demo repo with plan.md committed, so HEAD resolves.'''
+    git('add', 'plan.md', cwd=repo)
+    git('commit', '-qm', 'plan', cwd=repo)
+    return repo
+
+
+def run_file(repo, name):
+    return repo / '.sdd' / 'plan' / name
+
+
+def test_test_run_records_a_passing_run(committed):
+    result = run(TEST_RUN, 'plan.md', 1, '--', *OK_CMD, cwd=committed)
+    assert result.returncode == 0, result.stderr
+    sha = git('rev-parse', 'HEAD', cwd=committed).stdout.strip()
+    path = run_file(committed, 'task-1-tests.log')
+    assert path.read_text().splitlines() == [
+        'test-run: Task 1, run 1',
+        'command: sh -c \'echo "Ran 3 tests"; echo OK\'',
+        f'head: {sha}',
+        'tree: clean',
+        'exit: 0',
+        '--- output ---',
+        'Ran 3 tests',
+        'OK',
+    ]
+    out = result.stdout.splitlines()
+    assert out[:-1] == ['Ran 3 tests', 'OK']
+    assert Path(out[-1].removeprefix('run: ')).resolve() == path.resolve()
+
+
+def test_test_run_keeps_a_failing_run_and_exits_with_its_status(committed):
+    result = run(TEST_RUN, 'plan.md', 2, '--', 'sh', '-c', 'echo "1 failed"; exit 3', cwd=committed)
+    assert result.returncode == 3
+    lines = run_file(committed, 'task-2-tests.log').read_text().splitlines()
+    assert lines[4] == 'exit: 3'
+    assert lines[6:] == ['1 failed']
+    assert result.stdout.splitlines()[-1].startswith('run: ')
+
+
+def test_test_run_writes_a_new_file_for_each_run(committed):
+    run(TEST_RUN, 'plan.md', 1, '--', 'sh', '-c', 'echo first; exit 1', cwd=committed)
+    first = run_file(committed, 'task-1-tests.log').read_bytes()
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'sh', '-c', 'echo second', cwd=committed)
+    assert result.returncode == 0, result.stderr
+    assert run_file(committed, 'task-1-tests.log').read_bytes() == first
+    second = run_file(committed, 'task-1-tests-2.log').read_text().splitlines()
+    assert second[0] == 'test-run: Task 1, run 2'
+    assert second[6:] == ['second']
+
+
+def test_test_run_records_an_empty_output(committed):
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'true', cwd=committed)
+    assert result.returncode == 0, result.stderr
+    lines = run_file(committed, 'task-1-tests.log').read_text().splitlines()
+    assert lines[1] == 'command: true'
+    assert lines[5:] == ['--- output ---']
+    assert len(result.stdout.splitlines()) == 1
+
+
+def test_test_run_ends_stdout_with_the_run_line_when_the_output_has_no_final_newline(committed):
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'sh', '-c', 'printf "no newline"', cwd=committed)
+    assert result.returncode == 0, result.stderr
+    out = result.stdout.splitlines()
+    assert out[:-1] == ['no newline']
+    assert out[-1].startswith('run: ')
+    assert run_file(committed, 'task-1-tests.log').read_text().splitlines()[6:] == ['no newline']
+
+
+def test_test_run_marks_a_dirty_tree(committed):
+    (committed / 'scratch.txt').write_text('x\n')
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'true', cwd=committed)
+    assert result.returncode == 0, result.stderr
+    lines = run_file(committed, 'task-1-tests.log').read_text().splitlines()
+    assert lines[3] == 'tree: dirty, changed or untracked paths: 1'
+
+
+def test_test_run_marks_untracked_files_whatever_the_git_config_says(committed):
+    git('config', 'status.showUntrackedFiles', 'no', cwd=committed)
+    (committed / 'scratch.txt').write_text('x\n')
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'true', cwd=committed)
+    assert result.returncode == 0, result.stderr
+    lines = run_file(committed, 'task-1-tests.log').read_text().splitlines()
+    assert lines[3] == 'tree: dirty, changed or untracked paths: 1'
+
+
+def test_test_run_records_a_command_that_cannot_start(committed):
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'no-such-command-plan84', cwd=committed)
+    assert result.returncode == 127
+    text = run_file(committed, 'task-1-tests.log').read_text()
+    assert 'exit: 127' in text.splitlines()
+    assert 'no-such-command-plan84' in text.split('--- output ---\n', 1)[1]
+
+
+@pytest.mark.parametrize('task', ['6b', '2.1', 'A1'])
+def test_test_run_accepts_letter_and_dotted_task_ids(committed, task):
+    result = run(TEST_RUN, 'plan.md', task, '--', 'true', cwd=committed)
+    assert result.returncode == 0, result.stderr
+    assert run_file(committed, f'task-{task}-tests.log').is_file()
+
+
+@pytest.mark.parametrize('task', ['../x', 'a/b', 'x', '.1', '1.', ''])
+def test_test_run_refuses_a_task_number_that_is_not_an_id(committed, task):
+    result = run(TEST_RUN, 'plan.md', task, '--', 'sh', '-c', 'touch ran', cwd=committed)
+    assert result.returncode == 2
+    assert 'test-run: bad task number' in result.stderr
+    assert not (committed / 'ran').exists()
+    assert not (committed / '.sdd').exists()
+
+
+def test_test_run_refuses_a_repository_with_no_commit(repo):
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'sh', '-c', 'touch ran', cwd=repo)
+    assert result.returncode == 2
+    assert NEW_PROJECT in result.stderr
+    assert not (repo / 'ran').exists()
+    assert not (repo / '.sdd').exists()
+
+
+@pytest.mark.parametrize('argv', [
+    [], ['plan.md'], ['plan.md', 1], ['plan.md', 1, '--'], ['plan.md', 1, 'x', 'true'],
+])
+def test_test_run_rejects_bad_arguments(committed, argv):
+    result = run(TEST_RUN, *argv, cwd=committed)
+    assert result.returncode == 2
+    assert 'usage: test-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]' in result.stderr

@@ -343,3 +343,48 @@ def test_task_done_refuses_a_repository_with_no_commit(tmp_path):
     assert 'bad BASE' in result.stderr
     assert not (tmp_path / 'ran').exists()
     assert not (tmp_path / '.sdd').exists()
+
+
+def test_task_done_runs_its_command_through_test_run(repo):
+    base = head(repo)
+    commit_work(repo)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    log = workspace(repo) / 'task-1-tests.log'
+    lines = log.read_text().splitlines()
+    assert lines[0] == 'test-run: Task 1, run 1'
+    assert lines[4] == 'exit: 0'
+    runs = [line for line in result.stdout.splitlines() if line.startswith('run: ')]
+    assert [Path(r.removeprefix('run: ')).resolve() for r in runs] == [log.resolve()]
+
+
+def test_task_done_keeps_a_failed_run_and_records_the_retry(repo):
+    base = head(repo)
+    fail = run(TASK_DONE, 'plan.md', 1, base, '--', 'sh', '-c', 'echo boom; exit 1', cwd=repo)
+    assert fail.returncode == 1
+    ok = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert ok.returncode == 0, ok.stderr
+    ws = workspace(repo)
+    assert 'exit: 1' in (ws / 'task-1-tests.log').read_text().splitlines()
+    assert 'exit: 0' in (ws / 'task-1-tests-2.log').read_text().splitlines()
+    ledger = (ws / 'progress.md').read_text().splitlines()
+    assert [line for line in ledger if line.startswith('Task 1:')] == [ledger[-1]]
+    assert ledger[-1].endswith('→ OK)')
+
+
+def test_task_done_refuses_a_task_number_that_is_not_an_id(repo):
+    result = run(TASK_DONE, 'plan.md', '../x', head(repo), '--', 'sh', '-c', 'touch ran', cwd=repo)
+    assert result.returncode == 2
+    assert 'test-run: bad task number' in result.stderr
+    assert 'NOT recorded' not in result.stderr
+    assert not (repo / 'ran').exists()
+    assert not (workspace(repo) / 'progress.md').exists()
+
+
+def test_task_done_keeps_a_multi_line_command_whole_in_its_ledger_line(repo):
+    base = head(repo)
+    commit_work(repo)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', 'sh', '-c', 'echo a\necho b', cwd=repo)
+    assert result.returncode == 0, result.stderr
+    ledger = (workspace(repo) / 'progress.md').read_text()
+    assert "tests: sh -c 'echo a\necho b' → b)" in ledger

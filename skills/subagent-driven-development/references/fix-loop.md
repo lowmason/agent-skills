@@ -15,6 +15,11 @@ Re-review each round with the scoped [re-review-prompt.md](../re-review-prompt.m
 not a fresh full review — the task review already happened, and re-reading the
 whole task every round is the cost this cap exists to bound.
 
+A failing test run ([test-run.md](test-run.md)) starts a round too, before any
+review: the run file is the round's finding. After every round, run the task's
+tests again before the next review. When no task review has run yet, that review
+is the full task review, not the scoped re-review.
+
 Going fresh at round 4 is the load-bearing half. A resumed implementer carries
 its own failed attempts as context, which anchors it to the approach that is not
 working; a fresh one does not. Escalate in the order context, then effort, then

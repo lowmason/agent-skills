@@ -119,9 +119,11 @@ Subagent (general-purpose):
 
     ## After Review Findings
 
-    If a reviewer finds issues and you fix them, re-run the tests that cover
-    the amended code and append the results to your report file. Reviewers
-    will not re-run tests for you — your report is the test evidence.
+    If a reviewer finds issues, or the controller's test run fails, and you
+    fix them, re-run the tests that cover the amended code and append the
+    results to your report file. Your report is still your test evidence:
+    the controller runs the task's tests again before each review, and the
+    reviewer checks your report against that run.
 
     ## Report Format
 

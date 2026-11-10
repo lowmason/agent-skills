@@ -26,7 +26,7 @@ Implementer (second run):
   - Self-review: Found I missed --force flag, added it
   - Committed
 
-[Run review-package, dispatch task reviewer with the path it reports]
+[Run test-run with the task's tests: it passes. Run review-package, dispatch task reviewer with both paths]
 Task reviewer: Spec ✅ - all requirements met, nothing extra.
   Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
 
@@ -43,7 +43,7 @@ Implementer:
   - Self-review: All good
   - Committed
 
-[Run review-package, dispatch task reviewer with the path it reports]
+[Run test-run with the task's tests: it passes. Run review-package, dispatch task reviewer with both paths]
 Task reviewer: Spec ❌:
   - Missing: Progress reporting (spec says "report every 100 items")
   - Extra: Added --json flag (not requested)
@@ -52,6 +52,8 @@ Task reviewer: Spec ❌:
 [Fix round 1: resume the same implementer with all findings]
 Implementer (resumed): Removed --json flag, added progress reporting,
   extracted PROGRESS_INTERVAL constant
+
+[Run test-run again: it passes. Run review-package for the amended range]
 
 [Dispatch scoped re-review (re-review-prompt.md) with the numbered findings]
 Re-reviewer:
