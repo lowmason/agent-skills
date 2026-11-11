@@ -823,6 +823,7 @@
       S-109). Size: quick-fix. Blocked until guide note S-109 settles the listing budget's
       unit. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+      → held 2026-11-11: guide note S-109 is still unsettled. `skills.listing-budget` gives the budget as "roughly 1% of the model's context window (a character budget)", with no unit for the window.
 - [x] Add the `substitution-hazard` conformance check (plan 35 audit §6, d6, seat check
       S#6): an unescaped `$ARGUMENTS`, `$<digit>`, `${CLAUDE_...}` or render-time shell
       token in a SKILL.md body. Today 0; it would guard against regressions. Size:
@@ -910,6 +911,7 @@
       quick-fix. Blocked until the guide lists the valid effort levels. Done when: the check
       is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → held 2026-11-11: the guide still does not list the valid effort levels. Its agent `effort` row gives only `low` … `max` and says that the levels vary by model, so no check can judge `xhigh`.
 - [x] Add the `hook-var-quoted` conformance check (plan 35 audit §6, d18, seat check H#1):
       generalise `hook-dir-quoted` to any unquoted `$VAR` at the start of a script path,
       `$HOME` included. It would catch README:121 (H-18). Size: quick-fix. Done when: the
@@ -1117,6 +1119,7 @@
       recorded only in `build/cc_guide/conformance.toml`, not beside the artifacts they
       cover. Size: design. Revisit if: drift's R4.5 load check shows a SKILL.md frontmatter
       comment loads in all three runtimes.
+      → triggered 2026-11-11: the R4.5 load check ran on 2026-10-12 and passed in all three runtimes (`specs/plans/completed/43-claude-code-drift-automation.md`, "R4.5 load check").
 - [x] The conformance rule kind misses nested rules (plan 35, latent): its glob
       `.claude/rules/*.md` (conformance spec R2.3) skips rules in subdirectories, which
       `rules.rules-files` says are discovered recursively, and git lists a symlinked
@@ -2604,6 +2607,7 @@ all 20 named a type.
       that the first shows it and the second shows nothing. Then restore the cache with
       `notice.write_notice(cache, None)`. Size: quick-fix. Done when: the owner has seen
       both sessions and ticks this item with the result.
+      → owner-only 2026-11-11: write a stand-in notice, start two terminal sessions in this repo on one day, record that only the first shows it, then restore the cache.
 - [ ] `notice.sh` and `notice.py` robustness Minors (plan 49 task reviews and final review;
       left at the completion gate because none needed a fix before merge). In
       `build/cc_guide/notice.sh`: `fail_notice` has no cleanup if a write fails, so it can
@@ -3452,6 +3456,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       interactive session on a real bug issue, so it is the owner's. Take the D4 item in this
       section first, so the run tests the final flow. Size: quick-fix. Done when: a real issue
       goes through `/fix-issue` and the resulting PR links it, with the run recorded here.
+      → owner-only 2026-11-11: run `/fix-issue` on a real bug issue in an interactive session, and record the run and its PR here.
 - [x] Build or retire plan 29's floating snippet tier (audit-3-10-26 B11, found 2026-10-03;
       re-verified 2026-10-18). Plan 29 designed an advisory tier that runs the harnessed
       snippets on unpinned latest packages and only warns
@@ -3741,6 +3746,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       reading here. If a description is dropped, use `skillOverrides` or prune plugins; do
       not trim descriptions. The open plan-35 items `listing-aggregate` and guide note S-109
       cover the lint, not this reading. Size: quick-fix. Done when: the reading is recorded.
+      → owner-only 2026-11-11: run `/context` and `/doctor` once in an interactive session on the execution model, and record the reading here.
 - [x] `install.py` never reports a managed link whose source is gone (audit-3-10-26 H2,
       found 2026-10-03). The audit's dangling `recommend-causal-design` links resolved
       themselves when that branch merged (none on 2026-10-18), but `install.py` has no
@@ -3854,6 +3860,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       through `058c1f58`. Size: quick-fix. Revisit if: a compare from `255631a3` (danyuchn) or
       `058c1f58` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
+      → triggered 2026-11-11: a GitHub compare from `255631a3` to HEAD shows 31 danyuchn commits that change `scripts/ste-lint.py` and `README.md`. The prithivrajmu compare from `058c1f58` changes only `.github/workflows/`.
 
 ## 55-test-suite-registry — 2026-10-18
 - [ ] Run the registered suites in CI (the spec's Out of scope).
@@ -4663,6 +4670,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `ruff-check.sh` installed as a `Stop` hook and look for the line. Size: quick-fix. Done
       when: the result is recorded in `hooks/README.md`'s install check (the line shows, or the
       README names the Desktop gap and a different signal).
+      → owner-only 2026-11-11: in a Desktop session, with `uv` off the hook's `PATH`, end a turn with `ruff-check.sh` as a `Stop` hook, and record in `hooks/README.md` whether the stderr line shows.
 
 ## 59-model-skill-comparator-and-cv-fixes — 2026-10-21
 
@@ -4971,6 +4979,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       claim but cannot pass Gate A for that reason. Needs the local PDFs, so it is an owner step.
       Size: plan. Done when: the index covers chapters 1–2 and untitled subsections, or
       `build/CLAUDE.md` records the limit.
+      → owner-only 2026-11-11: rebuild `build/.scratch/book1_sections.tsv` from the local PDFs so that it covers chapters 1–2 and untitled subsections, or record the limit in `build/CLAUDE.md`.
 - [ ] Give rpm and creative-thinking harder routing scenarios. Plan 64's M2 and M3 had zero baseline
       failures, so bar 2 was vacuous and neither test can show that the new class names or the
       causal and neural hand-off sentences drive routing (M3's T1 shifted from creative-thinking
@@ -5700,6 +5709,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/baseline/red-baseline-reviewer-planning-contract/kit/` and `.../f1/`. Size: quick-fix.
       Revisit if: the kit or F1 is reused for another plan, or a rep uses a four-backtick
       fence.
+      → triggered 2026-11-11: plan 81 reused the kit. Lines 2-3 of `specs/baseline/red-baseline-acceptance-tests/kit/run_reps.sh` say that it was adapted from this kit's `run_reps.sh`.
 - [ ] Watch the Proportion check's "cut it before you save it" (plan 73 final review
       recommendation). Every plan measured under the new step recipe exceeds "about five
       times" the spec (F1 arm 2: 7.26 and 7.71; P12 round 2: 9.66 to 12.27), and in P12 the
@@ -5785,6 +5795,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       even one labelled "after approval", and G1 and G1p had control at 5/5. Both shipped on
       a plain reading. Touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size:
       quick-fix. Revisit if: the kit is reused for a later plan.
+      → triggered 2026-11-11: later plans reused the kit. Plan 76 copied its `run_reps.sh`, `isolation_probe.txt` and `show_reps.py`, and plan 82 copied `TASK_TAIL`, `VOID` and `G_FIXTURE` from its `cases.py`.
 - [ ] **`SKILL.md` resume sentence overstates `resuming.md` (plan 75 Task 5).** The sentence
       says `resuming.md` describes `Ruling:` lines but it covers only deviation lines; the
       brief mandated the wording. Touches skills/executing-plans/SKILL.md and
@@ -5888,7 +5899,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       only). Revisit if: a fix round skips the documented suites in a real run.
 
 ## 77-audit-p2-text-fixes — 2026-11-06
-- [ ] **bayesian-workflow's three references say `uv add` with no `uv init` lead-in (plan 77
+- [x] **bayesian-workflow's three references say `uv add` with no `uv init` lead-in (plan 77
       final review, owner ruled defer).** Plan 77 changed `pip install` to `uv add` in
       `skills/bayesian-workflow/references/stack-compatibility.md:7`,
       `references/sensitivity.md:156` and `references/state-space.md:77`. SKILL.md and
@@ -5897,6 +5908,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       found" error. Decision D4 of the plan limited the lead-in to the two install blocks.
       See specs/plans/completed/77-audit-p2-text-fixes.md. Size: quick-fix. Done when: each of
       the three references carries the lead-in or points to SKILL.md's install block.
+      → done 2026-11-11 (/deferred quick fix): `references/stack-compatibility.md`, `references/sensitivity.md` and `references/state-space.md` each carry SKILL.md's lead-in, "run `uv init` first if there is no `pyproject.toml`".
 - [ ] **tech-debt and test-driven-development give two routes for the first test (plan 77
       final review, owner ruled defer).** `skills/tech-debt/SKILL.md:140-141` (HARDEN) says to
       add the one characterization test, then use the develop-testing-strategy skill for "the
@@ -5932,7 +5944,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: the owner rules on that reading, or a re-run of the case passes 4 of 5 under the
       kit in specs/baseline/red-baseline-new-project-entry/kit/.
       → retired 2026-11-07: the owner ruled that the core-and-later-stages text counts as a stage list, so plan 78's committed reading stands and the case stays at 3 of 5. The skill wording that would stop this text is filed → item: deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
-- [ ] **dr-tracks passes unstably (owner ruled accept and file at the completion gate).**
+- [x] **dr-tracks passes unstably (owner ruled accept and file at the completion gate).**
       `skills/derive-roadmap/SKILL.md` §7 step 2 and `references/new-project-entry.md` (Outcomes and
       tracks). Task 3 rounds 1 and 2 scored 2 of 5 each. The Task 7 re-run scored 5 of 5 on the
       readings applied, although no edit touched the track-split text, so most of the change is
@@ -5946,6 +5958,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       each) and both missed on clause C. If an order attached to the phrase "name its stages first to last" counts as
       an echo, both runs are 4 of 5. See specs/baseline/red-baseline-new-project-entry.md (Plan 79: summary, owner-gate items 1
       and 2). Filed → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
+      → retired 2026-11-11: a duplicate. The open item "dr-tracks and dr-known-progression-79 miss conformance clause C" (section `79-derive-roadmap-resume-and-route-tests — 2026-11-07`) carries the same two independent `dr-tracks` runs, and plan 79 is retired.
 - [x] **dr-known-progression fails conformance clause C: point-in-time awareness appears in 0 of 5
       reps (owner ruled accept and file at the completion gate).** The fixture's background spec
       never raises as-of reads, so the skill's Later-qualities example list in
@@ -6093,11 +6106,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (a trap, a deferred item) is never cited, so each resume reads it again. The owner kept the narrow
       marker sentence at plan review. Size: design. Revisit if: a recorded resume reports the same trap or
       deferred-item bullet that an earlier resume of the same roadmap already reported.
-- [ ] **`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5
+- [x] **`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5
       rests on rep2's borderline clause B call. §3 and §7 did not change after `T3`. See
       specs/baseline/red-baseline-new-project-entry.md (Plan 79: Task 3 wording round 1). Size: quick-fix. Done when: a
       five-rep run of `dr-name-collision` at the final skill text is recorded in
       specs/baseline/red-baseline-new-project-entry.md (about $0.35).
+      → done 2026-11-11 (/deferred quick fix): a five-rep run at `e885184` passed 5 of 5, with no borderline call. specs/baseline/red-baseline-new-project-entry.md records it under "/deferred pass (2026-11-11): dr-name-collision at the final text".
 - [ ] **The term "roadmap name" differs between `references/new-project-entry.md` and `SKILL.md` §5 Parking
       (plan 79 Task 3 wording round).** new-project-entry.md item 4 defines the roadmap name as the `<name>` in
       `specs/<name>-roadmap.md`. The deferred-items heading in §5 Parking now uses `<name>-roadmap`. Size:
@@ -6139,14 +6153,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       five-rep `history-filter` run at the new text is recorded in `specs/baseline/red-baseline-development-history.md`.
 
 ## 81-spec-derived-acceptance-tests — 2026-11-09
-- [ ] **`measure.py score` does not VOID a Codex reader rep whose log shows tool activity (plan 81 final review,
+- [x] **`measure.py score` does not VOID a Codex reader rep whose log shows tool activity (plan 81 final review,
       Codex [P2], owner ruled defer).** `score_codex` in `specs/baseline/red-baseline-acceptance-tests/kit/measure.py`
       checks only the model in the log header. Task 4 ran `measure.py residual` on each Codex reader folder by
       hand, under a VOID rule fixed before the first rep, and found no leftover line in the 40 reader logs
       (`specs/baseline/red-baseline-acceptance-tests.md`, Appendix A). The fix, about 20 lines and a selftest case, runs
       the residual check inside `score` for each `codex-` reader rep. Size: quick-fix. Revisit if: a plan runs
       new Codex reader reps with `specs/baseline/red-baseline-acceptance-tests/kit/measure.py`.
-- [ ] **Rerun the 60 adjudicator reps on paired prompts (plan 81 final review, owner ruled defer at D8).** The
+      → retired 2026-11-11: the successor kit already runs the residual check inside scoring (`specs/baseline/red-baseline-statement-readings/kit/measure.py:127`), and `specs/completed/statement-level-readings.md` replaces the acceptance-test design that this kit served.
+- [x] **Rerun the 60 adjudicator reps on paired prompts (plan 81 final review, owner ruled defer at D8).** The
       adjudicator prompts that Tasks 3 and 4 ran did not pair the reader's tests with their tasks, so every
       treatment-arm number in `specs/baseline/red-baseline-acceptance-tests.md` comes from a layout that the plan did not
       specify (the record's section 8, item 1). `2624af0` fixed the split in
@@ -6154,6 +6169,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       paired prompts again. A rerun is 60 `opus` adjudicator reps (about $23, the cost of the first run), a new
       score and classification, and a record update. Size: plan. Revisit if: the spec revision for
       statement-level readings keeps test-writing second readers.
+      → retired 2026-11-11: the revisit condition can no longer fire. `specs/completed/statement-level-readings.md` replaces the test-writing second reader and says "No acceptance tests exist in this design."
 
 ## 83-statement-level-readings — 2026-11-09
 - [ ] **Layer 4 of the spec-reading test check: spec excerpts in the implementer brief (plan 83, Task 6
@@ -6253,7 +6269,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `NOTICE` names the divergence.
 
 ## 84-spec-derived-acceptance-tests — 2026-11-10
-- [ ] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
+- [x] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
       completion gate). `skills/subagent-driven-development/scripts/test-run` writes the run file only
       after the command ends, and it removes its temporary file in an EXIT trap. A run that the Bash
       tool kills (a 2-minute default timeout, or a hung test) therefore leaves no run file. Before plan 84,
@@ -6264,6 +6280,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       output in the workspace; name that file in the "No `run:` line" bullet; add a test in
       `skills/subagent-driven-development/scripts/test_sdd_scripts.py`. Size: quick-fix. Done when: a
       killed `test-run` leaves its partial output at a path that the controller text names.
+      → done 2026-11-11 (/deferred quick fix): `test-run` removes its temporary file only after the run file is written, so a killed run leaves its output so far in `test-run.<random>`, which the "No `run:` line" bullet of `references/test-run.md` names. Two tests in `test_sdd_scripts.py` cover a killed run and a finished one.
 
 ## 85-derive-roadmap-later-qualities-and-spec-refs — 2026-11-10
 - [ ] **A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final
@@ -6286,13 +6303,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       gap is older than plan 85. A reply writes the roadmap file and the answer, and nothing in the skill makes
       the commit a step. Size: quick-fix. Done when: §4 says to commit the roadmap file once the answer is
       recorded, and a micro-test pass on the cases that write a roadmap file shows no regression.
-- [ ] **The probe case `wp-stage-plan` reads step A's rep from commit `ede95b8` (plan 85 final review; owner
+- [x] **The probe case `wp-stage-plan` reads step A's rep from commit `ede95b8` (plan 85 final review; owner
       ruled defer).** `specs/baseline/red-baseline-new-project-entry/kit/cases.py` (the `wp-stage-plan` entry,
       its `handoff` source). After a squash merge and a branch delete, that commit is unreachable and the case
       refuses to rebuild. A true merge keeps it. The rep is also a tracked file at
       `treatment/dr-handoff-spec-p85/rep1.json`. Size: quick-fix. Done when: the case reads step A's rep from a
       source that survives a squash merge, such as the tracked file, and `build_prompts.py` rebuilds
       `wp-stage-plan` on a clone that holds only the merged branch.
+      → retired 2026-11-11: the squash merge did not happen. Plan 85 merged as a true merge (2394a6e), so `git merge-base --is-ancestor ede95b8 main` succeeds and a clone of `main` holds the commit.
 - [ ] **A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final
       review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §6. When `Source` is a spec, the review
       lists each numbered spec requirement that no outcome's `Spec` cell cites as unmet. A requirement the

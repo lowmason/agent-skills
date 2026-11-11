@@ -1,0 +1,4 @@
+arm e885184 (e88518412506794929fda39ff55dc3af117c38bb)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-name-collision.txt sha256 fb2c329513efac2742926a0b5f009af267c37fbb9ae09babc883388b28902278 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6

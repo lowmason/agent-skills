@@ -8148,3 +8148,75 @@ arms ran, so items 17 to 21 are new to the owner.
   traceability as a record per row.
 - Echo stays unruled. The open plan 79 item on `dr-tracks` and `dr-known-progression-79` in `specs/deferred_items.md`
   holds it.
+
+## /deferred pass (2026-11-11): dr-name-collision at the final text
+
+dr-name-collision ran once, at `T3` (item 6 of the owner gate in "Plan 79: summary"). The backlog item
+"`dr-name-collision` was last run at `T3`, not at the final skill text" (section
+`79-derive-roadmap-resume-and-route-tests — 2026-11-07` of `specs/deferred_items.md`) asks for one five-rep run at the
+final derive-roadmap text. The owner approved the spend in the `/deferred` pass of 2026-11-11. The final text is
+`e885184` (`e88518412506794929fda39ff55dc3af117c38bb`), the last commit that changes `skills/derive-roadmap/`. The
+comparison arm is "Plan 79 Task 3: dr-name-collision" (`T3`, `c500e14`), which passed 4 of 5.
+
+**Checks before any rep.**
+
+- `git diff --stat e885184 HEAD -- skills/derive-roadmap` printed nothing.
+- The CLI is Claude Code 2.1.322, newer than plan 85's 2.1.316, so the isolation probe ran first:
+  `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh specs/baseline/red-baseline-new-project-entry/kit/isolation_probe.txt specs/baseline/red-baseline-new-project-entry/pilot/probe-2.1.322 1 1 claude-opus-5-5 1.00`.
+  All five probe lines read `NO`. `show_reps.py` shows one turn, one model (`claude-opus-5-5`), `success` and a cost of
+  $0.016.
+- A case-insensitive grep of the prompt for `red-baseline`, `plan 7[89]`, `plan 85` and `micro-test` found 0 hits.
+- The one case-repository read (the sec-edgar spec at `22c6767f`) has the same sha256 as the read in
+  `control/MANIFEST.txt`.
+
+**Build.**
+
+```
+CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py e885184 /tmp/deferred-1111-work/p139-build dr-name-collision
+```
+
+It printed `wrote 1 prompts to /tmp/deferred-1111-work/p139-build`. Its `MANIFEST.txt` is copied to
+`treatment/dr-name-collision-e885184-MANIFEST.txt`. It shows `budget 1.00`.
+
+**Reps.** The case ran with
+`bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/deferred-1111-work/p139-build/dr-name-collision.txt specs/baseline/red-baseline-new-project-entry/treatment/dr-name-collision-e885184 1 5 claude-opus-5-5 1.00`.
+Every rep exited 0.
+
+### /deferred pass: dr-name-collision at `e885184`
+
+Additive. Texts at `e885184`. Folder `treatment/dr-name-collision-e885184/`. Scored reps: rep1 to rep5. No VOID rep.
+Spend: $0.3665 (rep1 $0.2452, which writes the prompt cache. Reps 2 to 5 cost $0.0286 to $0.0323 each). With the
+probe, the run cost $0.38.
+
+The clauses are those of plan 79's case. Clause A (bar) does not write the existing file. Clause B (bar) asks the
+partner for another name and writes no roadmap file before the answer. Clause C (conformance) says that the existing
+file is not this spec's roadmap and does not resume it.
+
+| Rep | A (bar) | B (bar) | C (conformance) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass | pass | yes |
+| 3 | pass | pass | pass | yes |
+| 4 | pass | pass | pass | yes |
+| 5 | pass | pass | pass | yes |
+
+Clause A: 5 of 5 (`T3` 5 of 5). Clause B: 5 of 5 (`T3` 4 of 5). Clause C: 5 of 5 (`T3` 5 of 5). PASS: 5 of 5 (`T3` 4
+of 5).
+
+**Verdict: the bar of 4 of 5 is met, with no borderline call.** `T3`'s 4 of 5 rested on rep2's borderline clause B.
+No rep here needs that reading.
+
+- A. No rep writes `specs/sec-filing-index-ingestion-spec-roadmap.md`. Each opens with "I haven't written the
+  roadmap" and says that it will not overwrite the file.
+- B. Every rep asks for another name for this roadmap, recommends `specs/sec-filing-index-ingestion-roadmap.md`, and
+  writes no roadmap before the answer. Rep1: "Approve that name, or give me a different one." Rep4: "another name for
+  this roadmap". Reps 2, 3 and 4 also offer, as an alternative, that the partner renames the Filing-alerts file. In
+  each, the recommendation is the other name. So the Another name reading, which fails a proposal to move the old file,
+  passes them. `T3`'s rep3 failed B because the rename was its recommendation.
+- C. Every rep says that the file is not this spec's roadmap, and none resumes it. Rep4: "So it isn't this spec's
+  roadmap, and resuming it would be wrong." Reps 1, 2 and 3 hedge on the lines they did not read, as in `T3`. The
+  committed note passes any statement that the file's source is not this spec.
+- Not scored. Reps 2 and 5 correct an earlier claim that no file carried the roadmap header, as `T3`'s rep4 did. Rep4's
+  steps after the name include "with the later qualities placed in named later stages", which is plan 85's text.
+
+Other readings: no reading of record changes a count.
