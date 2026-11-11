@@ -7508,7 +7508,7 @@ toward a bar.
 | Arm | Case | Bar | Control or comparison arm | Treatment | Result | Deciding calls (count by the other reading) |
 |---|---|---|---|---|---|---|
 | Task 4, V1 | dr-offer-yes | additive, and 4 of 5 for the deferred item (Open for plan review item 2) | control at `58337f5`: thin, PASS 4 of 5 (rep2 fails C, borderline) | PASS 5 of 5 | met, and the deferred item's 4 of 5 is met | Control: clean (PASS 5 of 5) by the other reading of rep2, RED in 2 of 5 by the other reading of rep4. Treatment: 4 of 5 if "phases" is a stage word (rep2). 2 of 5 if a dependency fact counts as a pick of order (reps 3, 4 and 5), a reading that no earlier arm used. |
-| Task 4, V3 | dr-quality-suggest | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 | met | Borderline passes: B in reps 3 and 4, C in reps 2, 3 and 5. Any one read the other way: 4 of 5. Both B calls, or the C calls of reps 2 and 5: 3 of 5, a miss. All of them: 1 of 5. |
+| Task 4, V3 | dr-quality-suggest | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 | met | Borderline passes: B in reps 3 and 4, C in reps 2, 3 and 5. Any one read the other way: 4 of 5. Any two on different reps (9 of the 10 pairs): 3 of 5, a miss. Only rep3's B with rep3's C stays at 4 of 5. All of them: 1 of 5. |
 | Task 4, V4 | dr-spec-column | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 | met, on the Separator reading | Reps 2, 3 and 4 (semicolons) and rep5 (`§3 R1`) pass B by Separator. The closed-list reading: 1 of 5, a miss. |
 | Task 5, V5 step A | dr-handoff-spec | none (both clauses recorded) | no control | rep1: A yes, B yes (it writes the `Scope:` line) | rep1 feeds step B | none |
 | Task 5, V5 step B | wp-stage-plan | at least 2 of 3 pass A and B | no control | PASS 3 of 3 | probe PASS | Rep2's Snapshot-record fields, or its CLI command names, as a fail of B: 2 of 3, still a pass. The run report as a run manifest (not applied): 0 of 3. |
@@ -7522,10 +7522,11 @@ toward a bar.
 | Task 6, guard | dr-park-ranked | guard, at least 3 | plan 79 "Task 3 round 3: dr-park-ranked" (`5f52dfc`): 4 of 5 | PASS 4 of 5 | met | Reps 3 and 4 pass D by the inline-fields reading of record. The other inline-fields reading: 2 of 5, a miss (round 3 is 3 of 5 on that reading). Rep1's first lines as one bundled item (A): 3 of 5, still met. |
 | Task 6, guard | dr-resume-legacy | guard, at least 4 | plan 79 "Task 4: dr-resume-legacy" (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met | none |
 
-All three treatments, the probe and all nine guards meet their bars on the readings of record. Five results miss
-their bar when deciding calls are read the other way: dr-quality-suggest (both B calls, or the C calls of reps 2 and
-5), dr-spec-column (Separator), dr-resume-rerank (rep1 or rep2), dr-rerank-second (question marks) and dr-park-ranked
-(inline fields).
+All three treatments, the probe and all nine guards meet their bars on the readings of record. Six results miss
+their bar when deciding calls are read the other way: dr-offer-yes's additive bar (control rep2's other reading makes
+the control clean, and a clean control cannot meet the additive bar), dr-quality-suggest (any two of the borderline
+calls on different reps), dr-spec-column (Separator), dr-resume-rerank (rep1 or rep2), dr-rerank-second (question
+marks) and dr-park-ranked (inline fields).
 The dr-offer-yes treatment falls below the deferred item's 4 of 5 only on the dependency-fact reading, which no earlier
 arm used. The probe fails only on the run-manifest reading, which the record does not apply.
 
@@ -7721,8 +7722,8 @@ owner has not made it.
    word, and 2 of 5 on the dependency-fact reading that no earlier arm used. By Open for plan review item 2, a
    treatment at 4 of 5 or better meets the deferred item whatever the control shows.
 2. dr-quality-suggest rests on borderline calls that the controller confirmed after review: B in reps 3 and 4, and C in
-   reps 2, 3 and 5. Any one read the other way gives 4 of 5, still met. Both B calls, or the C calls of reps 2 and 5,
-   give 3 of 5, a miss. All of them give 1 of 5.
+   reps 2, 3 and 5. Any one read the other way gives 4 of 5, still met. Any two of them on different reps (9 of the 10
+   pairs) give 3 of 5, a miss. Only rep3's B with rep3's C stays at 4 of 5. All of them give 1 of 5.
 3. dr-spec-column rests on the Separator reading (a semicolon or a space between refs is a separator, not a word),
    which the controller confirmed after review. By the closed-list reading it is 1 of 5, a miss. A fix would then go to
    the `roadmap-format.md` sentence on what the `Spec` cell holds, and it must cover the `§3 R1` form too.
