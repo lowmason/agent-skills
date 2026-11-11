@@ -38,7 +38,7 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-11): "Approve as is", in answer to "Approve plan 90 as written?". The plan stands as written, with the builder's calls in it. Those calls are the README exact copy, the 10 allow cases, the bound test at 16 words with a 3× limit, Task 3's class rule and its split by guarded agent, and README inputs from both versions. Applied in: Tasks 1 to 3, Global Constraints.
 
 ---
 
@@ -341,7 +341,7 @@ Point to `flips.jsonl` for the commands themselves. Some flips may come from thi
 
 - [ ] **Step 6: Log the ruling**
 
-Add the owner's answer to `## Decisions` as `- **D1** (owner, execution, <date>): <answer>. Applied in: <Task 3 | new tasks>.`, in the owner's words. Then:
+Add the owner's answer to `## Decisions` as the next decision, `- **D<n>** (owner, execution, <date>): <answer>. Applied in: <Task 3 | new tasks>.`, in the owner's words. Then:
 
 ```bash
 git add specs/plans/90-readonly-guard-command-starts.md
