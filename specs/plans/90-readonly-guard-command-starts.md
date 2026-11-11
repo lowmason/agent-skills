@@ -361,12 +361,12 @@ git commit -m "docs(specs): record the owner's false-positive ruling in plan 90
 D3 and D4 add this task. The spec amendment is in `specs/readonly-guard-command-starts.md` Design §1, §2, §4 and §5, each part marked "Amendment". Task 1's walk is built and reviewed (`c97eb24`). This task changes its work, not its candidates.
 
 **Files:**
-- Modify: `hooks/readonly-agent-guard.py` (`_command_starts` and `_classify_subcommand`, from `c97eb24`)
+- Modify: `hooks/readonly-agent-guard.py` (`_stop_index`, `_command_starts` and `_classify_subcommand`, from `c97eb24`)
 - Modify: `hooks/test_readonly_agent_guard.py` (one import, and new tests after `test_command_starts_visit_each_stop_word_once`)
 - Modify: `hooks/README.md` (one bullet under "Known false positives, accepted rather than widened")
 
 **Interfaces:**
-- Consumes: Task 1's `_stop_index`, `_command_starts` and `_classify_subcommand`, and the Global Constraints. The Scope fence names `_command_words`. `_command_starts` replaced it in Task 1, so the fence covers `_command_starts` and `_classify_subcommand`. Add no module constant, and change nothing else in the guard.
+- Consumes: Task 1's `_stop_index`, `_command_starts` and `_classify_subcommand`, and the Global Constraints. The Scope fence names `_command_words`. `_stop_index` and `_command_starts` replaced it in Task 1, so the fence covers `_stop_index`, `_command_starts` and `_classify_subcommand`. Add no module constant, and change nothing else in the guard.
 - Produces: `_command_starts(words)` yields the same set of candidates as at `c97eb24`, and its first yield is unchanged. `_classify_subcommand(tokens)` keeps its signature and adds one return value, the cap's reason.
 
 - [ ] **Step 1: Write the failing tests**

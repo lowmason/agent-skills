@@ -137,7 +137,7 @@ because a timing assertion is unreliable across the two interpreters.
 still walks to its stop word before the set drops it, and the `[[` row scans every later word for each `[[`. On a
 long chain of tests, or on a word with many leading `=` before a long run of words that the walk skips, the work
 grew with the square of the line. Such a line of 20 to 32 KB took about 20 s on `/usr/bin/python3`. So the walk
-bounds its work in two ways:
+bounds its work in three ways:
 
 - **A continuation is queued once.** A second set, keyed on the continuation's start position and the word there,
   drops a repeat before it is walked. A continuation's words differ from the subcommand's only at or before its
