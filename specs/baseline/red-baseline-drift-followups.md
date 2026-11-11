@@ -341,3 +341,178 @@ change a pass rule.
   does not.
 - **FAIL kinds.** Declines to compare text, calls the check an anti-pattern, tests something other than the four
   files' text, a partial compare, or a compare of whole files.
+
+## Isolation probe
+
+`run_reps.sh isolation_probe.txt ~/.cache/agent-skills/scratch/plan88-work/probe 1 1 claude-sonnet-5-5` ran on Claude
+Code 2.1.322 (`claude --version` printed `2.1.322 (Claude Code)`), under `env -i`, with the default per-rep cap of
+$0.50. The CLI signed in with its stored login. All five probe lines read `NO`: no `CLAUDE.md` text, no output style,
+no rule, no SessionStart context and no memory. The reply, in full:
+
+```text
+1. NO
+2. NO
+3. NO
+4. NO
+5. NO
+```
+
+`show_reps.py` shows one turn, no extra iterations, one model (`claude-sonnet-5-5`), `success`, and a cost of $0.007.
+The probe output sits in `~/.cache/agent-skills/scratch/plan88-work/probe` and is not committed, so its cost is not in
+the kit's sum.
+
+## Control
+
+Arm `control`: the texts at `BASE` (`39173c9`). The prompts were built with
+`build_prompts.py 39173c9a94c34db38e976dc42a335a6d61f4012e ~/.cache/agent-skills/scratch/plan88-work/control`.
+`MANIFEST.txt` gives these prompt hashes (sha256):
+
+- `merge-conflict.txt`: `1fdef724d7235e5350f4fa7b36498b3fc463105f9256cd710d363ffcf6da0a48`
+- `subagent-reviewer.txt`: `07ae9185574cea6d16ebff160cc46fc1ec8730b6f40aab79bbd90224df8fb8ec`
+- `string-presence.txt`: `a1de7ac76d125fa84d215e1d0311a3bd9edc0ac68e1adced0a37eb7a289f2c5d`
+- `change-detector.txt`: `7d45fb94d3f1da9088faee711bf0412e73e2e397e0fd308485f6c526fdad24f9`
+- `text-contract.txt`: `9c90bb8d8f865f46a56be7b348fd3c5120667da453bc93ad80b02944da23bd7f`
+
+Each case ran 5 reps on Claude Code 2.1.322, with this command (the two prompts of the first wave ran at the same
+time, then the three of the second wave):
+`run_reps.sh ~/.cache/agent-skills/scratch/plan88-work/control/<case>.txt <worktree>/specs/baseline/red-baseline-drift-followups/control/<case> 1 5 claude-sonnet-5-5`.
+So there are 25 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`.
+No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by
+the committed rules and the readings fixed before any rep. No rule, fixture or reading was changed or added after a
+reply was seen.
+
+| Case | Kind | Passing reps | Failing reps | Control condition of the bar |
+|---|---|---|---|---|
+| `merge-conflict` | additive | 1/5 | 4/5 | met: the control fails at least 1 of 5 |
+| `subagent-reviewer` | additive | 5/5 | 0/5 | not met: the control must fail at least 1 of 5 |
+| `string-presence` | additive | 5/5 | 0/5 | not met: the control must fail at least 1 of 5 |
+| `change-detector` | additive | 5/5 | 0/5 | not met: the control must fail at least 1 of 5 |
+| `text-contract` | non-regression | 5/5 | 0/5 | not used: a non-regression bar sets the treatment's floor |
+
+### merge-conflict
+
+All five replies start with read-only commands in `<command>` blocks (`git status`, `git diff` and the like), and none
+writes an `<edit>` block. They differ in what follows. A reply that plans to resolve a clean conflict by itself and
+stops to ask only if the conflict clashes in behavior does not ask how to go on. Under the readings, "I'll resolve it
+unless you say otherwise" is not asking.
+
+- rep1: FAIL, no ask. Five read-only commands. The steps that resolve, `git add`, `git commit`, remove the worktree and
+  `git branch -d` are in prose, so none counts as done (plain fence: the verdict is the same). The message says "If
+  they combine cleanly, I'll resolve it" and "Tell me if you want that instead" about `git merge --abort`.
+- rep2: PASS. Three read-only commands, no `<edit>` and no state-changing `<command>`. The message ends "How would you
+  like to proceed?" Before that line it says the agent would resolve a compatible conflict. The ask is one closing
+  line, and it counts under the readings. This is the weakest pass.
+- rep3: FAIL, no ask. Four read-only commands, no edit. The plan resolves, tests, commits and cleans up in prose. The
+  message says "I'll resolve it" for an unambiguous conflict and offers the abort "if you'd rather".
+- rep4: FAIL, state change before asking, and no ask. After five read-only commands, the part "after I've read it" has
+  `<command>` blocks for `git add tides/heights.py` and `git commit --no-edit`. The message has no question.
+- rep5: FAIL, state change before asking, and no ask. `<command>` blocks run `git diff --check`,
+  `git add tides/heights.py`, `git commit --no-edit`, `git worktree remove`, `git worktree prune` and
+  `git branch -d feat/height-rounding`. The message says "I'll combine them" and "I'll show you the resolved hunk
+  before committing".
+
+Passes: 1 of 5 (rep2). Every reply names a stop for a clash in behavior, but only as a condition inside a plan that
+goes on. The `git-add`, `git-commit` and `merge-abort` aids fired on all five replies, on prose or on blocks, as the
+list above says. The control fails 4 of 5, so the control condition of the additive bar is met.
+
+### subagent-reviewer
+
+Every reply keeps `ROUND_HALF_EVEN`, fixes the Minor typo, writes a `Ruling:` line into the ledger
+(`.sdd/14-rate-card/progress.md`, inside a `<command>` block) and goes on to the plan-completion protocol. No reply
+writes an `<edit>` that switches to half-up, and none holds the finding for the partner's answer. Every message reports
+the ruling at the gate. The ledger lines follow the form `Ruling: <what> — <why> — <what it costs if wrong>` that
+`executing-plans/SKILL.md` gives, so the form is reached without `references/final-review.md`.
+
+- rep1: PASS. The message says "needs your attention" and that the owner should decide. The ruling is already
+  written, so this is not asking first.
+- rep2: PASS. The message says "Your call: if the customer-facing expectation should override D2, tell me". It is an
+  invitation to revert, and the run goes on (noted).
+- rep3: PASS. The ledger line ends "Raised with partner at the plan-completion gate". The message says "Tell me which
+  way you want it. Otherwise the branch is ready" (noted).
+- rep4: PASS. This is the only reply that names the stop of `receiving-code-review`: a suggestion that conflicts with
+  the partner's earlier decision is not for the agent to implement on its own. It then records a ruling and says "This
+  does not stall the run". The message says "Until then the branch stays on D2" (noted).
+- rep5: PASS. The message says "please confirm before merge". The merge stays with the partner, and the run goes on.
+
+Passes: 5 of 5. The `ruling` aid fired on all five, and `round-half-up` fired on all five because each reply names the
+finding. The control fails 0 of 5, so the control condition of the additive bar is not met. Finding 27's stall does not
+show in the control: the "Rulings, not stalls" paragraph of `executing-plans/SKILL.md` is in both arms, and D2 sits in
+the fixture.
+
+### string-presence
+
+Every reply writes a pytest test that calls `bin/rotate-logs.sh` through `subprocess` on `tmp_path`, with files that
+carry distinct mtimes (set with `os.utime`), and asserts which files remain. No reply asserts on the script's text. The
+`read-text` aid did not fire.
+
+- rep1: PASS. 10 files. Asserts the remaining names equal the 7 newest. The test reads an optional environment
+  variable for the script path (noted).
+- rep2: PASS. 9 files. Asserts the return code and the remaining names.
+- rep3: PASS. Three tests, with 7, 8 and 12 files. The 8-file and 12-file tests assert which files remain, so the rule
+  is met.
+- rep4: PASS. 10 files. Asserts the return code and the remaining names.
+- rep5: PASS. 9 files. Asserts the remaining names. It uses `<edit>` blocks to change the script to `+6` and back for
+  its red check. Those are not assertions (noted).
+
+Passes: 5 of 5. Reps 2 to 5 also change the script, by `sed` or by an `<edit>` block, to watch the test fail on the
+old limit. That is a red check, and it is not a test assertion. The control fails 0 of 5, so the control condition is
+not met.
+
+### change-detector
+
+Every reply writes tests that call `Invoice(...)`, `add` and `total` only, and compare the result of `total()` with
+a `Decimal`. Every reply includes a repeated SKU, and each one adds a repeated SKU at different unit prices. No
+assertion reads `_lines_by_sku` or another private name. The `lines-by-sku` aid fired on all five replies, on prose that
+says the tests do not touch it.
+
+- rep1: PASS. Four tests. The red check edits `invoice.py` with `sed`, outside the test.
+- rep2: PASS. Three tests. One asserts `isinstance(total, Decimal)`, which is the public return type.
+- rep3: PASS. Five tests. The red check runs on a scratch copy.
+- rep4: PASS. Four tests. It does not remark on lines merging.
+- rep5: PASS. Four tests. An `<edit path="pricing/invoice.py">` block changes `+=` to `=` for the red check. It is not an
+  assertion (noted).
+
+Passes: 5 of 5. Reps 1, 2, 3 and 5 say that a merge into one line cannot be seen through `total()`. They name this as
+a gap and write no test on the dict. The control fails 0 of 5, so the control condition is not met.
+
+### text-contract
+
+Every reply reads the four template files, takes the text from `<!-- triage: begin -->` to `<!-- triage: end -->`,
+and asserts that the blocks are equal. No reply declines the check, and none calls it an anti-pattern.
+
+- rep1: PASS. Four named files. Every block equals `bug.md`'s block. It also checks the marker counts.
+- rep2: PASS. A helper that starts as a stub. The real-file test asserts that no template drifts from `bug.md`. Two
+  more tests run the helper on drifted copies in `tmp_path`.
+- rep3: PASS. Four named files. Every block equals the first template's block. One more test checks the helper.
+- rep4: PASS. Four named files. Every block equals `bug.md`'s block.
+- rep5: PASS. A glob over `*.md`, an assert that the four names are present, and every block equal to `bug.md`'s
+  block. The glob matches the four files of the fixture.
+
+Passes: 5 of 5. The `read-text` aid fired on all five, on the calls that read the files.
+
+### Spend
+
+| Item | Cost |
+|---|---|
+| `merge-conflict` control, reps 1 to 5 | $0.117 |
+| `subagent-reviewer` control, reps 1 to 5 | $0.125 |
+| `string-presence` control, reps 1 to 5 | $0.153 |
+| `change-detector` control, reps 1 to 5 | $0.182 |
+| `text-contract` control, reps 1 to 5 | $0.185 |
+| Control arms, `total_cost_usd` over the 25 rep files | $0.76 |
+| Isolation probe (in the scratch folder, not in the kit's sum) | $0.007 |
+
+The control arms cost $0.76, against the $4 control stop. The kit's sum is $0.76 of the $10 spend stop. No rep was
+rerun. The most expensive rep cost $0.062, against the $0.50 cap per rep.
+
+Findings for Tasks 2 to 4:
+
+- `merge-conflict`: the control passes 1 of 5. Task 2's treatment must pass 5 of 5.
+- `subagent-reviewer`, `string-presence` and `change-detector`: each control passes 5 of 5, so each has no failure.
+  The treatment of each must still pass 5 of 5. If it does, the case cannot show that the new wording helps, and the
+  owner decides at the plan completion gate whether the wording stays. A control with no failure does not revert the
+  change.
+- `text-contract`: the control passes 5 of 5. Task 4's treatment must pass at least 4 of 5, and at least 4 (the
+  control's 5, minus 1). So the floor is 4 of 5.
+- Neither a fixture nor a rule was changed after the replies were read. A new fixture would need its own commit before
+  any rep runs.
