@@ -84,6 +84,7 @@ Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assert
 - **D12** (owner, execution session, 2026-11-10): the review of Task 3 found that `save_fixtures` drops `system/compact_boundary` through `_trim_event`, so a recorded run replays as ERROR. The owner lifted the leave-alone fence for one change: `_trim_event` keeps a `system/compact_boundary` event as `{'type', 'subtype'}` and nothing else, with its own test in `test_probe_checks.py`. The fix round of Task 3 makes it. Applied in: Global Constraints, Task 3.
 - **D13** (owner, execution session, 2026-11-10): Task 4's live run uses Claude Code 2.1.317, once, at about $0.30. The first call was refused because the changelog cache then listed release 2.1.322, so the owner also approved `--allow-old`. Applied in: Task 4.
 - **D14** (owner decisions D5, D6 and D11, applied by the controller): Task 4 Step 4's question, the value and O5, is settled, because the owner saw both failing files in D11's question. The live run read header 159, kept 19,741, and `can lose its last 259`. With `reserve_chars = 300` (window 19,700), finishing-a-development-branch is 275 over, subagent-driven-development is 226 over, and writing-plans passes with 11 to spare. Each of the two files gets a `gap` exception and a backlog item (D6). Plan 88 removes finishing-a-development-branch's exception. Nothing in this plan frees room in subagent-driven-development, so its backlog item says so. Applied in: Task 4, Task 5.
+- **D15** (controller ruling, 2026-11-10): the exceptions of D14 broke `build/test_commit_lints.py::test_late_critical_section_is_refused`, which clones HEAD and assumes subagent-driven-development has no `compaction-window` waiver. A one-line change points that test at `brainstorming` (a skill with no waiver, a `## Red Flags` section and a later section). No fence names the file, and the change only follows D14. The file joins the File map. Applied in: Task 4 (fix round), File map.
 
 ## Spike findings
 
@@ -123,7 +124,7 @@ Claude Code 2.1.317, run on 2026-11-10. Each probe skill was the Task 1 text, `c
 - Create `build/cc_guide/probe_streams/compaction-cut.stream.jsonl` and `build/cc_guide/probe_streams/compaction-cut.cut.json`, written only by `save_fixtures` (Task 4).
 - Modify `build/cc_guide/test_probe_replay.py`: the replay cases (Task 4).
 - Modify `build/cc_guide/PROBES.md`: the live run's row, appended by `cli.py probes` (Task 4).
-- Only if the live run diverges (Task 4, Step 5): `build/check_conformance.py`, `build/test_check_conformance.py`, `build/cc_guide/conformance.toml`.
+- Only if the live run diverges (Task 4, Step 5): `build/check_conformance.py`, `build/test_check_conformance.py`, `build/cc_guide/conformance.toml`, and `build/test_commit_lints.py` (D15).
 - This plan file: the `## Spike findings` section (Task 2).
 
 ---
