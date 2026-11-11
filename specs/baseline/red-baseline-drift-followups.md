@@ -734,6 +734,8 @@ tests do not touch it.
 - rep3: PASS. Four tests. The red check is a `sed` mutation with a backup and a `diff`. The reply says the merge into one
   line is not visible without a public accessor, and it writes no test on the dict.
 - rep4: PASS. Four tests. The red check is a `sed` mutation with a backup. The reply says the same about the merge.
+  The message to the partner words the red check as done ("The two repeated-SKU tests went red"), though no command
+  ran. It then adds "none of this is verified". That is invented output, read by order only (noted).
 - rep5: PASS. Five tests. The red check is a `sed` mutation with a backup. The reply says the merged quantity does not
   feed `total()`, and that it adds no accessor just for tests.
 
