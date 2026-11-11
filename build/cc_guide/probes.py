@@ -535,6 +535,7 @@ PROBE_RUNS = {
                               {'pins.jsonl': 'agent-model-pins.jsonl',
                                'transcripts.json': 'agent-model-pins.transcripts.json'}),
     'agent-payload': PAYLOAD_PROBE,
+    'compaction-cut': CUT_PROBE,
 }
 
 

@@ -609,7 +609,9 @@ def description_text(fm: dict) -> str:
 
 def check_compaction_window(root: Path, files: list[str], params: dict) -> list[Finding]:
     tokens, per_token = params['tokens'], params['chars_per_token']
-    window = tokens * per_token
+    # reserve_chars is the part of the window the re-attached copy spends on its own header and
+    # truncation marker (plan 87); the register may omit it.
+    window = tokens * per_token - params.get('reserve_chars', 0)
     heading = re.compile(r'\b(?:' + '|'.join(re.escape(w) for w in params['headings']) + r')\b', re.I)
     out: list[Finding] = []
     for f, text in read_artifacts(root, files, out):
@@ -1378,7 +1380,8 @@ def check_hook_var_quoted(root: Path, files: list[str], params: dict) -> list[Fi
 
 
 # Each check_conformance check: its function and the parameters the register
-# must give it ('integer', or 'strings' for a list of strings).
+# must give it ('integer', or 'strings' for a list of strings; 'optional integer'
+# may be absent).
 CHECKS = {
     'claude-md-size': (check_claude_md_size, {'limit': 'integer'}),
     'rule-paths': (check_rule_paths, {'always_on': 'strings'}),
@@ -1388,7 +1391,8 @@ CHECKS = {
     'readonly-agent-tools': (check_readonly_agent_tools, {'forbidden_tools': 'strings'}),
     'bash-search-tools': (check_bash_search_tools, {}),
     'compaction-window': (check_compaction_window, {
-        'tokens': 'integer', 'chars_per_token': 'integer', 'headings': 'strings'}),
+        'tokens': 'integer', 'chars_per_token': 'integer', 'headings': 'strings',
+        'reserve_chars': 'optional integer'}),
     'description-person': (check_description_person, {'pronouns': 'strings'}),
     'trigger-phrase-presence': (check_trigger_phrase_presence, {'markers': 'strings'}),
     'substitution-hazard': (check_substitution_hazard, {}),
@@ -1416,6 +1420,8 @@ CHECKS = {
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),
+    'optional integer': (lambda v: v is None or (isinstance(v, int) and not isinstance(v, bool)),
+                         'an integer when given'),
     'strings': (lambda v: _str_list(v, nonempty=False), 'a list of strings'),
 }
 

@@ -1123,6 +1123,27 @@ def test_compaction_window_flags_a_critical_heading_past_the_window(tmp_path):
     ]
 
 
+def test_compaction_window_subtracts_reserve_chars(tmp_path):
+    '''reserve_chars shrinks the window for the size check and for the late-heading scan (plan 87).'''
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': skill_md(body='x' * 18),
+        'skills/b/SKILL.md': skill_md(body='x' * 10 + '\n# STOP'),
+    })
+    a, b = 'skills/a/SKILL.md', 'skills/b/SKILL.md'
+
+    def messages(path, **extra):
+        return [f.message for f in cc.check_compaction_window(tmp_path, [path], {**WINDOW_PARAMS, **extra})]
+
+    # 18 characters fit the 20-character window, and do not fit the 15 left after a reserve of 5.
+    assert messages(a) == []
+    assert messages(a, reserve_chars=5) == ['body is about 18 tokens; compaction re-attaches only the first 20']
+    # The heading starts at character 11: inside a window of 15, past a window of 10.
+    assert messages(b, reserve_chars=5) == ['body is about 17 tokens; compaction re-attaches only the first 20']
+    assert messages(b, reserve_chars=10) == [
+        'body is about 17 tokens; compaction re-attaches only the first 20',
+        "line 6: heading '# STOP' starts past the first 20 tokens, so compaction drops it"]
+
+
 def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
     write_tree(tmp_path, {'skills/a/SKILL.md': skill_md(body='## STOP\nAll early.\n')})
     assert cc.check_compaction_window(tmp_path, ['skills/a/SKILL.md'], WINDOW_PARAMS) == []

@@ -597,14 +597,16 @@ def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, side, outcome
 
 
 def test_register_window_reads_the_compaction_window_check(tmp_path, monkeypatch):
-    assert probes.register_window() == 20000
+    '''tokens times chars_per_token, less reserve_chars, which a register may leave out (plan 87).'''
+    assert probes.register_window() == 19700
     text = probes.CONFORMANCE.read_text(encoding='utf-8')
-    reserved = text.replace("id = 'compaction-window'\n", "id = 'compaction-window'\nreserve_chars = 150\n", 1)
-    assert reserved != text
     copy = tmp_path / 'conformance.toml'
-    copy.write_text(reserved, encoding='utf-8')
     monkeypatch.setattr(probes, 'CONFORMANCE', copy)
-    assert probes.register_window() == 19850
+    for edited, window in (('reserve_chars = 150\n', 19850), ('', 20000)):
+        changed = text.replace('reserve_chars = 300\n', edited, 1)
+        assert changed != text
+        copy.write_text(changed, encoding='utf-8')
+        assert probes.register_window() == window
 
 
 def test_the_cut_probe_prepares_one_invocation_that_drives_the_session(tmp_path):
@@ -743,9 +745,8 @@ def leave_cut_transcript(home):
     return side
 
 
-def test_the_cut_probe_reads_its_run_like_a_live_one(tmp_path, isolated_home, monkeypatch):
+def test_the_cut_probe_reads_its_run_like_a_live_one(tmp_path, isolated_home):
     '''From prepare to the verdict through run_probe. A transcript that is absent leaves cut.json empty: ERROR.'''
-    monkeypatch.setitem(probes.PROBE_RUNS, 'compaction-cut', probes.CUT_PROBE)
     events = probe_checks.parse_stream(cut_stream())
     assert probe_checks.broken(events) is None
     measures = {kind: probe_checks.measure_cut(cut_copy(kind), probe_checks.cut_body(kind))
@@ -754,9 +755,9 @@ def test_the_cut_probe_reads_its_run_like_a_live_one(tmp_path, isolated_home, mo
     fake = FakeRuns({'cut': cut_stream()}, side={'cut': leave_cut_transcript(isolated_home)})
     verdict = probes.run_probe('compaction-cut', 'claude', REPO, run_dir, fake)
     assert verdict == probe_checks.assess_compaction_cut(events, measures, probes.register_window())
-    assert verdict == (DIVERGES, f'compaction keeps {CUT_KEPT} body characters of the prose probe skill (by '
-                                 'characters; 51 characters before the body), fewer than the register window 20000, '
-                                 'so a body that passes compaction-window can lose its last 225')
+    assert verdict == (PASS, f'compaction kept {CUT_KEPT} body characters of the prose probe skill (by '
+                             'characters; 51 characters before the body), at least the register window '
+                             f'{probes.register_window()}')
     assert sorted(p.name for p in run_dir.iterdir()) == ['cut.argv.json', 'cut.err', 'cut.json', 'cut.jsonl',
                                                          'transcript.raw.jsonl']
     assert json.loads((run_dir / 'cut.json').read_text(encoding='utf-8')) == measures

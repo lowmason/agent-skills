@@ -95,6 +95,28 @@ def served_by(agent: str, model: str) -> dict[str, str]:
     return edited('agent-payload', 'dispatch.jsonl', model_of(ids))
 
 
+def cut_measures(edit) -> dict[str, str]:
+    '''The recorded compaction-cut measures with `edit` applied to them.'''
+    probe = probes.PROBE_RUNS['compaction-cut']
+    saved = json.loads((FIXTURES / probe.fixtures['cut.json']).read_text(encoding='utf-8'))
+    return {'cut.json': json.dumps(edit(saved))}
+
+
+def keeping(chars: int):
+    def edit(measures):
+        measures['prose']['body_chars_kept'] = chars
+        return measures
+    return edit
+
+
+def without_digit(measures):
+    return {kind: measure for kind, measure in measures.items() if kind != 'digit'}
+
+
+# The register's window, which compaction-cut reads; the first case keeps one character fewer.
+CUT_WINDOW = probes.register_window()
+
+
 # Each ERROR case names its finding, so a missing fixture, which is ERROR for
 # another reason, cannot pass it.
 @pytest.mark.parametrize('pid, changes, outcome, finding', [
@@ -125,6 +147,15 @@ def served_by(agent: str, model: str) -> dict[str, str]:
      'the general-purpose control with model haiku was served the session model claude-sonnet-5-5, so a pin '
      'cannot be told from it'),
     ('agent-payload', lambda: {'payloads.json': '[]'}, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
+    # compaction-cut's cases pin their findings too. The recorded run, a header of 159 characters, kept more than the window.
+    ('compaction-cut', lambda: cut_measures(keeping(CUT_WINDOW - 1)), DIVERGES,
+     f'compaction keeps {CUT_WINDOW - 1} body characters of the prose probe skill (by characters; 159 characters '
+     f'before the body), fewer than the register window {CUT_WINDOW}, so a body that passes compaction-window '
+     'can lose its last 1'),
+    ('compaction-cut', lambda: cut_measures(without_digit), ERROR,
+     'no re-attached copy of cut-probe-digit after the compact boundary'),
+    ('compaction-cut', lambda: edited('compaction-cut', 'cut.jsonl', drop('compact_boundary')), ERROR,
+     'the /compact run emitted no compact_boundary event'),
 ])
 def test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error(pid, changes, outcome, finding):
     verdict = replay(pid, changes())
