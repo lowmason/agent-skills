@@ -6834,12 +6834,17 @@ and never count toward a bar.
   without the word "measured" (its rep5); no rep here needs that call.
 - *dr-resume-rerank.* Plan 79's one-question reading: one question that gives its default and then its alternatives
   is one question (plan 79 Task 4 rep2, plan 78 fix round 1 rep4). The One closing request reading of plan 85's
-  control section also applies, by extension and not confirmed for this case. That section says that "Each new
-  reading touches only one case". The text at `T-final` brings this case into it: §5's Ask now says that a later
+  control section also applies, by extension, and the controller confirmed it for this case. That section says that
+  "Each new reading touches only one case". The text at `T-final` brings this case into it: §5's Ask now says that a later
   quality that this resume finds for the first time, bound for a research track's Ranked list, "joins the same
   question in §4's form". So a re-rank reply can carry a quality request into its one question, as dr-quality-suggest's
   approval does. The test: clause C passes when the closing approve-or-amend request comes after any extra ask and
   takes it in, by naming it or by asking for one answer. It fails when an extra ask stands apart from the approval.
+  The reviewer of this part read the test without the position condition: rep2's "Separately" ask is then a separate
+  ask, and the guard is missed at 3 of 5 (see Other readings in the dr-resume-rerank section). The controller ruled that
+  rep2 passes: its quality request sits inside the one "One question" block, and its close, "Approve, or amend any
+  part.", takes the ask in. That is the form that §4 and §5's Ask prescribe, and Plan 85 Task 4 passed the same
+  structure in dr-quality-suggest reps 2 and 5.
 - *Date.* No clause of these five cases scores a date. Two reps date a `Source:` line with the run day, 2026-11-10.
 - *Plan 79's own readings* (Review by table, Another name, Carried citation, Pending bullet, Item by description and
   Stage 2's live feed) belong to plan 79's route and resume cases. They do not apply to these five.
@@ -6858,16 +6863,16 @@ readings" and never count toward a bar.
   Plan 85 Task 4 applied the reading to dr-quality-suggest: two question-marked sentences under one "One question"
   label, with the quality question right after the approval question, passed (reps 2 and 5).
 - *The correction for dr-resume-rerank.* The controller's confirmation covers dr-resume-rerank too. The readings list
-  above says that One closing request applies to it "by extension and not confirmed for this case". That wording is out
-  of date: the extension is confirmed. No score in the dr-resume-rerank section changes.
+  above said that One closing request applies to it "by extension and not confirmed for this case". That wording was out
+  of date, and the readings list now says the controller confirmed it. No score in the dr-resume-rerank section changes.
 - *dr-stop-track.* Plan 79's readings: Date (a heading dated 2026-11-06 or with the run day passes clause C, and a
   `<date>` placeholder heading fails), Item by description, Stage 2's live feed, and the inline-fields practice for
   clause D. Name and Conditional handoff are other readings.
 - *dr-park-ranked.* The inline-fields reading of record: a `Size:` and a `Done when:` written inline count as the two
   lines of clause D (plan 79 round 3 rep2, confirmed by the controller). Table items (a table row with no `Size:` or
   `Done when:` label fails D), Item by description, Date (clause B passes any date, a `<date>` placeholder included, and
-  clause C is read as for dr-stop-track) and Stage 2's live feed also apply. Clause A counts the items, as plan 79
-  round 2 counted them.
+  clause C is read as for dr-stop-track) and Stage 2's live feed also apply. Clause A counts the items, as plan 79's
+  control counted the Stage 2 item that its rep1 described and did not write.
 - *dr-resume-legacy.* The committed guard rule and its notes. A go-ahead question on the audit, or a later question on
   the exits of an unmet requirement, is not a re-ranking question (plan 78 Task 4 rep3 and every later arm).
 - *The new text.* Where a reply shows behavior that no clause scores, such as a suggested later quality, the case
@@ -7179,14 +7184,23 @@ Compared with plan 79's "Plan 79 Task 4: dr-resume-rerank" (`5f52dfc`): PASS 5 o
 Other readings:
 
 - Rep3's side request read as part of the same answer ("Please also"). Rep3 passes C. C and PASS are then 5 of 5.
-- Any second ask inside the question block is a second question. Rep2's "Separately" ask fails C. C and PASS are then
-  3 of 5, **below the guard bar of 4**. With rep1's quality question also read as a second ask, C and PASS are 2 of 5.
+- Rep2's quality ask read as a separate ask (the test without a position condition: the close "Approve, or amend any
+  part." names nothing and asks for no one answer, and the reply itself says "Separately"). Rep2 fails C. C and PASS are
+  then 3 of 5, **below the guard bar of 4**. This is the reading of the reviewer of this part. The controller ruled that
+  rep2 passes.
+- Any second ask inside the question block is a second question. Rep2's "Separately" ask fails C, and so does rep4's
+  item 3, which carries its own ask ("If you approve it, tell me its place in the ranking"). C and PASS are then 2 of 5
+  (reps 1 and 5), **below the guard bar of 4**. With rep1's quality question also read as a second ask, C and PASS are
+  1 of 5.
 - Plan 79's one-question reading alone, without the extension of One closing request. The quality questions of reps 1
   and 2 are not alternatives of the re-rank, so both fail C. C and PASS are then 2 of 5, below the bar.
 
-**Guard verdict: MET, at the bar** (PASS 4 of 5; the guard needs 4). The verdict rests on the extension of the One
-closing request reading to this case and on the borderline calls of reps 1 and 2. Read the other way, rep2 alone gives
-3 of 5, and the guard is missed.
+**Guard verdict: MET, at the bar** (PASS 4 of 5; the guard needs 4). The verdict rests on the One closing request
+reading, which the controller confirmed for this case, on the borderline passes of reps 1 and 2, and on rep3's fail
+(most likely variation, not the new text). Rep2's pass is the call that decides the guard. Read the other way (Other
+readings), rep2 alone gives 3 of 5, and the guard is missed. The plan's Bars would then call for one wording round on
+§5's Ask and an owner ruling. The controller ruled that rep2 passes, for the reasons in the readings list above. The
+owner can rule on this call at the completion gate.
 
 **Judgment-call reps (Task 6, five cases).** The owner can review them at the completion gate. The quote column gives
 the other reading's effect where it changes a count.
@@ -7200,8 +7214,8 @@ the other reading's effect where it changes a count.
 | dr-known-progression-79 rep3, B | pass, borderline (a count and a failure list, not a manifest) | "with row counts per quarter and every unparsed file listed" The other reading fails B. PASS is then 4 of 5. |
 | dr-known-progression-79 rep4, A | pass, borderline (First stage per outcome, new and not confirmed) | "Outcomes: O1, O2 (full volume)" in Stage 5, after the 10-K and 8-K stage. The strict reading fails A. PASS is then 4 of 5. |
 | dr-known-progression-79 rep2, C (traceability) | pass (rows linked, so Provenance on bytes does not apply) | "Give every index row, submission and extracted document a recorded source" |
-| dr-resume-rerank rep1, C | pass, borderline (One closing request by extension: one answer for the re-rank and the quality) | "The same answer also covers one later quality." The other reading fails C. With rep2 and rep3 also failed, PASS is 2 of 5, a guard miss. |
-| dr-resume-rerank rep2, C | pass, borderline (One closing request by extension: the close takes the extra ask in) | "Separately, do you approve scheduling as a new outcome, and if so, where should it rank in the list?" The other reading fails C. PASS is then 3 of 5, a guard miss. |
+| dr-resume-rerank rep1, C | pass, borderline (One closing request, confirmed for this case: one answer for the re-rank and the quality) | "The same answer also covers one later quality." The other reading fails C. With rep2 and rep3 also failed, PASS is 2 of 5, a guard miss. |
+| dr-resume-rerank rep2, C | pass, borderline, ruled by the controller (One closing request, confirmed for this case: the close "Approve, or amend any part." takes the ask in; the reviewer scored it a fail) | "Separately, do you approve scheduling as a new outcome, and if so, where should it rank in the list?" The other reading fails C. PASS is then 3 of 5, a guard miss. |
 | dr-resume-rerank rep3, C | fail, borderline (a second ask apart from the approval) | "Please also tell me whether Stage 1 covered one lock or several, so I can correct O3's cost note." The other reading passes C. PASS is then 5 of 5. |
 | dr-resume-rerank rep4, C | pass (a numbered proposal inside one approve-or-amend) | "Approve as is, or amend any part, including stopping the track instead." |
 
@@ -7369,8 +7383,10 @@ Compared with plan 79's "Plan 79 Task 3 round 3: dr-park-ranked" (`5f52dfc`): PA
   - Rep1 passes. Its first lines group the work in two: "Its two unfinished pieces are Track B's Stage 2 (closure
     notices, O5) and Track A's Ranked list (O2, O3, O4). Each becomes one deferred item." Its file content writes four
     items, one each, and it closes with "The four items will age in the deferred backlog". The file content counts.
-  - Rep2 says what its four items will hold and writes none in full. Clause A counts the items, as plan 79 round 2
-    counted them.
+  - Rep2 says what its four items will hold and writes none in full. Its `Edit` step is a comment: "append the dated
+    section and the 4 items". Clause A counts the items, as plan 79's control counted the Stage 2 item that its rep1
+    described and did not write. On a strict reading, where only an item written in a tool call or as file content
+    counts, rep2 fails A. A is then 4 of 5, and PASS stays 4 of 5.
 - B. Every rep moves the roadmap with `git mv` to `specs/completed/` and adds a PARKED line with "1 of 2 stages
   complete". Reps 1, 3, 4 and 5 date it 2026-11-06. Rep2 writes `PARKED (<date>) — 1 of 2 stages complete` and runs
   `date +%F` first. Clause B passes any date, so rep2 passes.
@@ -7402,7 +7418,8 @@ Other readings:
 - Rep1's first lines read as one item that bundles the Ranked list. Rep1 fails A. PASS is then 3 of 5, and the guard is
   still met.
 - Item by description's other reading (a reply that says what an item will hold passes D). Rep2 passes D but still
-  fails C. With the other Date reading as well (a placeholder heading passes C), rep2 passes, and PASS is 5 of 5.
+  fails C. With the other Date reading as well (a placeholder heading passes C), rep2 passes C and D. PASS is then 5 of
+  5 if clause A counts its described items, and 4 of 5 if only written items count.
 - Table items: no rep writes a table, so no effect.
 
 **Guard verdict: MET** (PASS 4 of 5; the guard needs 3). The verdict rests on the inline-fields reading of record in reps
@@ -7455,8 +7472,9 @@ the other reading's effect where it changes a count.
 | dr-rerank-second rep2, C | pass, borderline (one question that closes with its alternatives, as round 3 reps 3 and 4) | "Or would you change the order, choose a different item to promote, decline the scheduling outcome, or stop the track" Read by question marks, rep2 and rep3 fail C. PASS is then 3 of 5, a guard miss. |
 | dr-rerank-second rep3, C | pass, borderline (One closing request, as plan 85 Task 4 dr-quality-suggest rep2) | "And do you approve scheduling and deployment as O5, and if so, where does it go in the ranking?" The five-case wording of the test, or plan 79's reading alone, fails C. PASS is then 4 of 5, and the guard is still met. |
 | dr-park-ranked rep1, A | pass (the file content writes four items) | "Its two unfinished pieces are Track B's Stage 2 (closure notices, O5) and Track A's Ranked list (O2, O3, O4). Each becomes one deferred item." The other reading fails A. PASS is then 3 of 5, and the guard is still met. |
+| dr-park-ranked rep2, A | pass, borderline (items described, not written, as plan 79's control rep1) | "**What parks.** Four items go to `specs/deferred_items.md`, one item each". The strict reading (only an item written in a tool call or as file content counts) fails A. A is then 4 of 5, and PASS stays 4 of 5, because rep2 already fails C and D. |
 | dr-park-ranked rep2, C | fail (Date: a placeholder heading) | "under a new section `## lock-closures-roadmap — <date>`" Rep2 also fails D, so the other Date reading alone changes no count. |
-| dr-park-ranked rep2, D | fail (Item by description) | "Each item is self-contained, with `Size:` and `Done when:`, so it ages normally in the backlog." With the other readings of Item by description and Date together, rep2 passes, and PASS is 5 of 5. |
+| dr-park-ranked rep2, D | fail (Item by description) | "Each item is self-contained, with `Size:` and `Done when:`, so it ages normally in the backlog." With the other readings of Item by description and Date together, rep2 passes C and D. PASS is then 5 of 5 if its described items count for A, and 4 of 5 if only written items count. |
 | dr-park-ranked reps 3 and 4, D | pass (inline fields, the reading of record; drafts written in full) | rep3: "Size: small (one closure-log poll every 10 minutes). Done when: in a test, an email reaches every address on the operator mailing list within an hour of a new closure entry." The other inline-fields reading fails D in both. PASS is then 2 of 5, a guard miss. |
 | dr-resume-legacy rep4, guard | pass (a go-ahead question, not a re-ranking) | "Shall I go ahead with the reads?" |
 | dr-resume-legacy reps 1 and 3, guard | pass (a later question on the audit's exits, as plan 78 Task 4 rep3) | rep3: "I'll put each one to you as one question with two options" |
