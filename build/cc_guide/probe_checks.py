@@ -514,6 +514,9 @@ def _trim_event(event: dict) -> dict | None:
             # A hook's name carries what it matched, so a hook matched on an MCP tool names an installed server.
             kept['hook_name'] = MCP_TOKEN_RE.sub(MCP_MARK, kept['hook_name'])
         return kept
+    if is_compact_boundary(event):
+        # compaction-cut reads only that the boundary is there; its metadata holds ids and token counts (plan 87, D12).
+        return {'type': kind, 'subtype': sub}
     if kind == 'result':
         return {k: event.get(k) for k in ('type', 'subtype', 'is_error', 'num_turns')}
     if kind in ('assistant', 'user'):

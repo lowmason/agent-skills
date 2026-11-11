@@ -427,6 +427,24 @@ def test_scrub_masks_an_mcp_tool_name_in_a_hook_name():
     assert pc.parse_stream(text)[1]['hook_name'] == f'PreToolUse:{pc.MCP_MARK}'
 
 
+def test_scrub_keeps_the_compact_boundary_and_nothing_of_its_metadata():
+    '''A recorded compaction-cut run replays only if its scrubbed stream keeps the boundary event (owner ruling,
+    plan 87 D12). The event's metadata carries ids and token counts, which no assertion reads.'''
+    ids = [f'00000000-0000-4000-8000-00000000000{n}' for n in range(1, 6)]
+    boundary = {'type': 'system', 'subtype': 'compact_boundary', 'session_id': ids[0], 'uuid': ids[1],
+                'compact_metadata': {'trigger': 'manual', 'pre_tokens': 41234},
+                'preserved_segment': {'head_uuid': ids[2], 'anchor_uuid': ids[3]}, 'logical_parent_uuid': ids[4]}
+    events = [init(), assistant(), result(), {'type': 'system', 'subtype': 'status', 'status': 'compacting'},
+              init(), boundary, result()]
+    kept = pc.parse_stream(pc.scrub_events(events, []))
+    assert [e for e in kept if e.get('subtype') == 'compact_boundary'] == [
+        {'type': 'system', 'subtype': 'compact_boundary'}]
+    measure = cut_measure(19775)
+    verdict = pc.assess_compaction_cut(kept, {'prose': measure, 'digit': measure}, 20000)
+    assert verdict.outcome == DIVERGES
+    assert verdict == pc.assess_compaction_cut(events, {'prose': measure, 'digit': measure}, 20000)
+
+
 def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():
     home, scratch = '/Users/someone', '/private/var/folders/xy/T/cc-guide-probe-pins-abc'
     events = [

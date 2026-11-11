@@ -630,9 +630,10 @@ def test_the_cut_probe_prepares_one_invocation_that_drives_the_session(tmp_path)
 
 
 # A stand-in for claude -p --input-format stream-json. It reads stdin a byte at a time, so a line the driver sent
-# early stays in the pipe, where select sees it. Its mode: pace waits 0.3 s before each result and reports a line
-# that came early, error answers every line with an error result, exit leaves with code 3 after its first line. At
-# the end of its stdin it reports how many lines it read.
+# early stays in the pipe, where select sees it. Its mode: pace prints an init event as soon as it reads a line,
+# then waits 0.3 s, reports a line that came early and prints the result, so a driver that sends on any stdout line,
+# not only on a result, is caught; error answers every line with an error result; exit leaves with code 3 after its
+# first line. At the end of its stdin it reports how many lines it read.
 FAKE_STREAM_CLAUDE = r'''import json, os, select, sys, time
 
 
@@ -652,6 +653,7 @@ while (got := line()) is not None:
     if mode == 'exit':
         sys.exit(3)
     if mode == 'pace':
+        print(json.dumps({'type': 'system', 'subtype': 'init'}), flush=True)
         time.sleep(0.3)
         if select.select([0], [], [], 0)[0]:
             print(json.dumps({'type': 'early'}), flush=True)
@@ -689,7 +691,9 @@ def test_drive_cut_sends_each_message_after_the_previous_result(tmp_path):
     proc = drive(fake, 'pace')
     assert (proc.returncode, proc.stderr) == (0, '')
     assert events_of(proc.stdout) == [
-        *({'type': 'result', 'is_error': False, 'echo': user_line(m)} for m in probes.CUT_MESSAGES),
+        *(event for m in probes.CUT_MESSAGES
+          for event in ({'type': 'system', 'subtype': 'init'}, {'type': 'result', 'is_error': False,
+                                                                 'echo': user_line(m)})),
         {'type': 'closed', 'lines': 3}]
 
 
