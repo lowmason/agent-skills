@@ -165,9 +165,9 @@ def test_misplaced_drift_citation_is_refused(clone):
 
 
 def test_late_critical_section_is_refused(clone):
-    '''With no compaction-window waiver for subagent-driven-development, the conformance
+    '''With no compaction-window waiver for brainstorming, the conformance
     check itself refuses a Red Flags section moved past the compaction window.'''
-    skill = clone / 'skills' / 'subagent-driven-development' / 'SKILL.md'
+    skill = clone / 'skills' / 'brainstorming' / 'SKILL.md'
     text = skill.read_text()
     start = text.index('\n## Red Flags\n') + 1
     end = text.index('\n## ', start) + 1
