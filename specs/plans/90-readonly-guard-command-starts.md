@@ -420,8 +420,9 @@ The three shapes are read-only lines, like the bound test's. The `skipped-run` c
 - [ ] **Step 2: Run the new tests to verify they fail**
 
 Run: `uv run python build/run_suites.py hooks -- -k "work_grows_linearly or more_than_64" --tb=no -rf`
-Expected in each of the two runs: `3 failed`. The controller reconciles this from its own run:
-- `test_command_starts_work_grows_linearly[test-chain]` and `[leading-equals]` fail. A planning prototype measured a ratio of about 3.9 and 3.7 at `c97eb24`, against about 2.0 once the work is bounded.
+Expected in each of the two runs: `4 failed`. The controller reconciles this from its own run:
+- `test_command_starts_work_grows_linearly[test-chain]`, `[leading-equals]` and `[skipped-run]` fail. A planning prototype measured a ratio of about 3.9 and 3.7 for the first two at `c97eb24`, against about 2.0 once the work is bounded.
+- The first implementation (`a672942`) ran this step with only the first two cases, and got `3 failed`. Fix round 1 added `skipped-run` and ran it alone, and got `1 failed, 2 passed`.
 - `test_more_than_64_command_starts_fail_closed` fails with `AssertionError: None`.
 
 - [ ] **Step 3: Implement the work bound and the cap**
@@ -446,8 +447,8 @@ Expected: `26 passed` in each run (Task 1's 22, and this task's 4).
 - [ ] **Step 5: Check that each part bites**
 
 Make each change below on its own, run the command, then restore the code before the next change:
-1. Queue every continuation, without the `queued` check. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 1 passed`, and the failing id is `leading-equals`.
-2. Remove the stop from the `[[` scan. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 1 passed`, and the failing id is `test-chain`.
+1. Queue every continuation, without the `queued` check, and call `_stop_index` without `known` in `_command_starts`. Run `-k work_grows_linearly`. Expected in each run: `2 failed, 1 passed`, and the failing ids are `leading-equals` and `skipped-run`. The memo of item 4 also bounds the leading-`=` class, so removing `queued` alone fails nothing. The two parts bound that class independently, and only the joint mutation shows that the test guards it.
+2. Remove the stop from the `[[` scan. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 2 passed`, and the failing id is `test-chain`.
 3. Make the cap never fire. Run `-k more_than_64`. Expected in each run: `1 failed`.
 4. Call `_stop_index` without `known` in `_command_starts`. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 2 passed`, and the failing id is `skipped-run`.
 
