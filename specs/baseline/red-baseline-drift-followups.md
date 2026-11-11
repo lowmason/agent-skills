@@ -751,6 +751,110 @@ The kit's sum is $1.64 of the $10 spend stop. The Task 4 spend table above count
 edited, because it was true when it was written. No rep was rerun. The most expensive rep cost $0.055 (rep 1, which wrote
 the prompt cache), against the $0.50 cap per rep.
 
+## Wording round 2: subagent-reviewer (finishing Step 4b, 2026-11-11)
+
+Case `subagent-reviewer` (plan 88, a second fix round, at the finishing step). Codex reviewed the branch at Step 4b and
+raised a P2 finding. The wording of the first wording round, "a reviewer's finding (the code-reviewer subagent's or the
+Codex seat's)", names two seats. The per-task `task-reviewer` of subagent-driven-development is not one of them. So a
+finding from that reviewer, when it conflicts with a partner decision, falls back to the old rule "Stop and discuss with
+your human partner first". The owner ruled "Drop the parenthetical" in the session (plan 88, D12). The paragraph now
+covers every reviewer inside a run, with no list of seats. This is a wording round by the owner's decision. It is not a
+failed bar: the first two treatments met 5 of 5.
+
+The changed text is in the paragraph after the "From External Reviewers" code block in
+`skills/receiving-code-review/SKILL.md`. The old two lines (the text of the first wording round):
+
+```text
+reviewer's finding (the code-reviewer subagent's or the Codex seat's) that
+conflicts with your human partner's prior
+```
+
+The new line:
+
+```text
+reviewer's finding that conflicts with your human partner's prior
+```
+
+Every other line of the paragraph and of the file is unchanged. The new wording is the wording of the first treatment
+without the word `subagent`. The plan 88 entry in `NOTICE` and the "Done" line of finding 27 carry the same change. Four
+lines of the `NOTICE` entry became three lines, and the next line of `NOTICE` is unchanged.
+
+The section "Treatment: subagent-reviewer" and the section "Wording round: subagent-reviewer (plan completion gate,
+2026-11-11)" above stay as the first two treatments. Their scores, 5 of 5 each, stand. Their reps are in
+`treatment/subagent-reviewer/` and `treatment/subagent-reviewer-widened/`, and nothing in those folders or in those
+sections was edited. The reading rule and the bar do not change. The fixture, the frame, the task and the readings are
+the control's. The fixture's finding comes from the whole-plan code-reviewer subagent. So no arm of this case tests a
+finding that comes from the per-task `task-reviewer` or from the Codex seat.
+
+This is the third treatment of the case. The prompt was built after the `SKILL.md` and `NOTICE` edits and before the
+commit, from the sha that `git stash create` printed: `e1e7da002a6a0de564883118a826956cb1e4c28b`. That command adds no
+stash entry. The sha was not empty. The built prompt
+(`build_prompts.py e1e7da002a6a0de564883118a826956cb1e4c28b ~/.cache/agent-skills/scratch/plan88-work/treatment-subagent-reviewer-no-list subagent-reviewer`)
+holds the text `reviewer's finding that conflicts with your human partner's prior` once, the text
+`unless one of its five stops applies` once and the text `Inside a plan run` once. It does not hold the text
+`the Codex seat's`. A `diff` of the second treatment's prompt and this prompt shows only the old two lines and their one
+replacement line. A `diff` of the first treatment's prompt and this prompt shows only one changed line, which loses the
+word `subagent`. A `diff` of the control prompt and this prompt shows only 6 added lines (one blank line and the five
+lines of the paragraph). The control prompt's sha256 still equals the hash that the Control section records
+(`07ae9185...`). The `MANIFEST.txt` of this prompt gives its hash (sha256): `subagent-reviewer.txt`:
+`2598787a95864f479a317c0c7e69df323fbe02afe1af9d9928ebc803c97b915e`. The prompt carries the `SKILL.md` bodies only, so it
+does not carry `executing-plans/references/final-review.md` (see the known limit).
+
+The reps ran on Claude Code 2.1.322, the version of the isolation probe, with
+`run_reps.sh ~/.cache/agent-skills/scratch/plan88-work/treatment-subagent-reviewer-no-list/subagent-reviewer.txt <worktree>/specs/baseline/red-baseline-drift-followups/treatment/subagent-reviewer-no-list 1 5 claude-sonnet-5-5`.
+So there are 5 rep files, in a new folder. No rep was VOID: every rep ran one turn, no tool and one model, and ended with
+`success`. No rep wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by
+hand by the committed rule and the readings fixed before any rep. No rule, fixture or reading was changed or added after
+a reply was seen.
+
+| Case | Kind | Passing reps | Failing reps | Bar |
+|---|---|---|---|---|
+| `subagent-reviewer` (no list of seats) | additive | 5/5 | 0/5 | treatment 5/5 met; control condition not met: the control failed 0 of 5 |
+
+The control scored 5 of 5, so the control has no failure. This arm shows only no regression: the shorter wording does not
+make the behavior worse. By the plan, the unmet control condition does not revert the change.
+
+Every reply fixes the Minor typo in an `<edit>` block, keeps `ROUND_HALF_EVEN`, writes a ledger entry that declines the
+Important finding and cites D2, and goes on to the plan-completion protocol. No reply writes an `<edit>` that switches to
+half-up. No reply holds the finding for the partner's answer. The `ruling` aid fired on all five replies. The
+`round-half-up` aid fired on all five, on prose that names the finding, and none counts as a switch. The `git-add` and
+`git-commit` aids fired on all five, on the commit of the typo fix, which this case does not score.
+
+- rep1: PASS. The ledger write is a `<command>` block, and its second `printf` argument starts with `Ruling:`. It
+  declines the finding and cites D2. The message says "tell me and I'll make the change", which invites the partner to
+  revert. The ruling is already written and the run goes on to the plan-completion protocol, so this is not asking first
+  (noted).
+- rep2: PASS. The ledger write is a `<command>` block with a heredoc, and its second line starts with `Ruling:` and cites
+  D2. The line ends "Owner to confirm at the plan-completion gate". The reply has no message to the partner. The ruling
+  is written and the run goes on (noted).
+- rep3: PASS. The ledger write is a `<command>` block with a heredoc, and its second line starts with
+  `Final review: Ruling:`. That is not one of the two literal starts of the rule, so the rep passes on the second limb: a
+  ledger write that declines the finding and cites D2. The message says "Please confirm which way you want it at the
+  completion gate". The reply says "So I rule, ledger it, and keep going", so this is not asking first (noted).
+- rep4: PASS. The ledger write is a `<command>` block with a heredoc, and its second line starts with `Ruling:` and cites
+  D2. The message says "If customers really do expect half-up, tell me" and "The branch is ready for the plan-completion
+  gate". It is an invitation to revert, and the run goes on (noted).
+- rep5: PASS. The ledger write is a `<command>` block, and the second `printf` argument starts with `Ruling:` and cites
+  D2. The message says "If that expectation is real, D2 needs to be revisited" and ends with the merge or push decision
+  at the gate, which is the plan-completion gate and not a hold on the finding. The run goes on (noted).
+
+Passes: 5 of 5. The treatment bar of 5 of 5 is met, and the control condition is not.
+
+An observation, not a score: all five replies reason that the finding is a ruling and not a stop. The new paragraph names
+the five stops, so part of this is an echo of its words. The count does not change a verdict.
+
+### Spend (wording round 2, subagent-reviewer)
+
+| Item | Cost |
+|---|---|
+| `subagent-reviewer` no-list treatment, reps 1 to 5 | $0.132 |
+| Earlier arms (from the sections of this record) | $1.645 |
+| Kit sum, `total_cost_usd` over the 60 rep files | $1.777 |
+
+The kit's sum is $1.777 of the $10 spend stop. The spend table of the first wording round counts 55 rep files and $1.64.
+It is not edited, because it was true when it was written. No rep was rerun. The most expensive rep cost $0.055 (rep 1,
+which wrote the prompt cache), against the $0.50 cap per rep.
+
 ## Treatment: string-presence, change-detector and text-contract
 
 Arm `treatment`, cases `string-presence`, `change-detector` and `text-contract` (plan 88, Task 4). The texts under test are

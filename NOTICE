@@ -967,9 +967,8 @@ Changes from upstream:
     (finding 28), and Step 4b's carry-findings block moved to
     references/carry-review-findings.md, verbatim except one link.
     receiving-code-review says that, inside a plan run, a reviewer's finding
-    (the code-reviewer subagent's or the Codex seat's) that conflicts with
-    the partner's prior decisions is ruled on as the executor says (finding
-    27). test-driven-development's
+    that conflicts with the partner's prior decisions is ruled on as the
+    executor says (finding 27). test-driven-development's
     testing-anti-patterns.md names two traps that upstream's
     writing-good-tests.md (read at 22f0b46) names: string-presence tests
     and change-detector tests (finding 3). Its pointer now fires when

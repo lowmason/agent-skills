@@ -93,8 +93,7 @@ IF conflicts with your human partner's prior decisions:
 ```
 
 **Inside a plan run** (executing-plans or subagent-driven-development), a
-reviewer's finding (the code-reviewer subagent's or the Codex seat's) that
-conflicts with your human partner's prior
+reviewer's finding that conflicts with your human partner's prior
 decisions is not a stop: rule on it as that executor says, with a ledgered
 `Ruling:` line, unless one of its five stops applies. Outside a run, stop and
 discuss as above.

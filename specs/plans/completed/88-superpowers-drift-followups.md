@@ -71,6 +71,7 @@ From `specs/deferred_items.md`, trimmed to what decides the work (`[…]` marks 
 - **D9** (owner, plan completion gate, 2026-11-11): "Keep all three" — the three micro-test controls that scored 5/5 (subagent-reviewer, string-presence, change-detector) keep their changes. Applied in: Task 3, Task 4.
 - **D10** (owner, plan completion gate, 2026-11-11): "Widen now" — receiving-code-review's paragraph and the NOTICE entry name "a reviewer's finding (the code-reviewer subagent's or the Codex seat's)", and the subagent-reviewer arm reran on the widened text. Applied in: Task 3, Task 5 (commit eee4ca1).
 - **D11** (owner, plan completion gate, 2026-11-11): "Leave as is" — receiving-code-review's "Handling Unclear Feedback" stop and its "involve your partner if architectural" line stay as they are, with no item. Applied in: none.
+- **D12** (owner, finishing-a-development-branch Step 4b, 2026-11-11): "Drop the parenthetical" — after Codex found that D10's seat list left out the per-task task-reviewer, receiving-code-review's paragraph and the NOTICE entry read "a reviewer's finding that conflicts with your human partner's prior decisions", with no list of seats. It replaces D10's wording. Applied in: Task 3, Task 5 (the fix commit after aafcb70).
 
 ## Related open items (taken into account, not absorbed)
 

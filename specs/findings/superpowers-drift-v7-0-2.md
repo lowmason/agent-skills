@@ -988,7 +988,7 @@ to a discipline skill, so a micro-test if it is made.
 
 **Logged 2026-11-10:** the one sentence is a backlog item → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 
-**Done** (plan 88, 2026-11-11): receiving-code-review says that, inside a plan run, a reviewer's finding (the code-reviewer subagent's or the Codex seat's) that conflicts with the partner's prior decisions is ruled on under the executor's rules, and its stop applies outside a run. The treatment passed 5 of 5 against a control that also passed 5 of 5, which the owner kept. The `gh api` line stays.
+**Done** (plan 88, 2026-11-11): receiving-code-review says that, inside a plan run, a reviewer's finding that conflicts with the partner's prior decisions is ruled on under the executor's rules, and its stop applies outside a run. The treatment passed 5 of 5 against a control that also passed 5 of 5, which the owner kept. The `gh api` line stays.
 
 ### 28. finishing-a-development-branch guesses the test command and has no conflict path
 
