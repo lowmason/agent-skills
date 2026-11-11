@@ -813,21 +813,10 @@ reason = 'CLAUDE.md is the one file Codex and Gemini read, so its Python-style l
 evidence = 'Audit rows C-33, C-34; owner gate 2026-10-04.'
 revisit = 'When Codex and Gemini can load that content from a rule or a skill.'
 
-# Two skills run past the compaction-window check once it counts reserve_chars (plan 87,
-# owner decisions D5, D6, D11, D14, 2026-11-10). The waiver is per check and file, so each
-# also hides a new late heading in its file; no heading starts past the window today. The
-# compaction_waiver_guard commit lint is the guard for these waivers.
-[[exception]]
-id = 'finishing-a-development-branch-compaction-window'
-type = 'gap'
-check = 'compaction-window'
-sections = ['skills.progressive-disclosure']
-artifacts = ['skills/finishing-a-development-branch/SKILL.md']
-guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'The body is 19,975 characters, 275 over the register window of 19,700. The probe run kept 19,741 body characters at a 159-character header. The waiver is per check and file, so it also hides a new late heading.'
-evidence = 'plan 87 live run, build/cc_guide/PROBES.md row of 2026-11-10'
-tracked_in = 'plan 88 (frees room in this file and removes this exception)'
-
+# One skill, subagent-driven-development, runs past the compaction-window check once it counts
+# reserve_chars (plan 87, owner decisions D5, D6, D11, D14, 2026-11-10). The waiver is per
+# check and file, so it also hides a new late heading in that file; no heading starts past
+# the window today. The compaction_waiver_guard commit lint is the guard for the waiver.
 [[exception]]
 id = 'subagent-driven-development-compaction-window'
 type = 'gap'

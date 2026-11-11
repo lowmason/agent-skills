@@ -236,6 +236,78 @@ TDD cycle:
 4. THEN claim complete
 ```
 
+## Anti-Pattern 6: String-Presence Tests
+
+**The violation:**
+```python
+# ❌ BAD: the test reads the script's words, not what the script does
+def test_backup_retries():
+    text = Path("scripts/backup.sh").read_text()
+    assert "for attempt in 1 2 3" in text
+```
+
+**Why this is wrong:**
+- It passes while the loop is broken, and fails when a correct rewrite changes the words
+- A script, a skill or a prompt is tested by running it, not by reading it
+
+**The fix:**
+```python
+# ✅ GOOD: run it against a stub that fails twice, then assert the outcome
+def test_backup_retries(tmp_path):
+    stub_upload(tmp_path, fail_times=2)   # a fake upload command first on PATH
+    result = run_backup(path_prefix=tmp_path)
+    assert result.returncode == 0
+    assert upload_calls(tmp_path) == 3
+```
+
+**Not this anti-pattern:** a check whose subject is the text itself: copies that must stay identical, a required license header, a link that must resolve. There the text is the contract, and asserting on it tests the real behavior.
+
+### Gate Function
+
+```
+BEFORE asserting that words appear in a file:
+  Ask: "Is the text the contract, or only how the code works?"
+
+  IF it is how the code works:
+    Run the code and assert on what it produces
+
+  IF the text is the contract:
+    Assert on the text
+```
+
+## Anti-Pattern 7: Change-Detector Tests
+
+**The violation:**
+```python
+# ❌ BAD: pins how the parser works, not what it returns
+def test_parse_list():
+    parser = Parser()
+    parser.parse("- a\n- b\n")
+    assert parser._state_stack == ["root", "list"]
+```
+
+**Why this is wrong:**
+- It fails on every refactor that keeps the result right
+- It still passes when the result is wrong
+- A test that fails without a broken outcome teaches people to update tests without reading them
+
+**The fix:**
+```python
+# ✅ GOOD: assert on what a caller gets back
+def test_parse_list():
+    assert Parser().parse("- a\n- b\n") == List(items=["a", "b"])
+```
+
+### Gate Function
+
+```
+BEFORE asserting on a private name, an internal structure or a call order:
+  Ask: "Which outcome breaks if this assertion fails?"
+
+  IF none:
+    Delete it and assert on the output instead
+```
+
 ## When Mocks Become Too Complex
 
 **Warning signs:**
@@ -268,6 +340,8 @@ TDD cycle:
 | Incomplete mocks | Mirror real API completely |
 | Tests as afterthought | TDD - tests first |
 | Over-complex mocks | Consider integration tests |
+| Assert on a file's words | Run it and assert on its output; assert on text only when the text is the contract |
+| Pin internals no outcome needs | Assert on the output |
 
 ## Red Flags
 
@@ -277,6 +351,8 @@ TDD cycle:
 - Test fails when you remove mock
 - Can't explain why mock is needed
 - Mocking "just to be safe"
+- Test reads a script, skill or prompt and checks that words are in it
+- Test breaks on a refactor that keeps the output right
 
 ## The Bottom Line
 
