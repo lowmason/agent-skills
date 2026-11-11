@@ -1388,7 +1388,7 @@
       → done in plan 39 (2026-10-08, chore/cc-guide-hardening).
 
 ## cc-guide-hashed-keys (no plan; branch feat/cc-guide-hashed-keys) — 2026-10-05
-- [ ] Mark baseline.json's format so older code refuses it (the branch's review,
+- [x] Mark baseline.json's format so older code refuses it (the branch's review,
       Minor 1). The pre-hash `parse_baseline` validates only block hashes, so pre-hash
       code accepts the hashed file: run against it, it reported 0 changed, 3,263
       missing and 3,275 new blocks and exited 1, not 2. Exposed: only a checkout whose
@@ -1399,6 +1399,7 @@
       tests, R2.3. Size: quick-fix. Revisit if: an open branch predates the merge, or
       baseline.json's format changes again.
       → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
+      → done 2026-11-11 (plan 89): baseline.json carries `"format": 3`. The loader refuses any other value, and code older than plan 89 refuses the file by its key set (`state.py`, `baseline.py`, spec R2.3).
 - [x] Carry each missing block's key hash into Stage 3's packets (the branch's review,
       recommendation 3). A missing block's finding holds its readable name, or its key
       hash when check could not read one, and `packets` (R6.11) will need that block's
@@ -2123,7 +2124,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       backslash-newline continuation passes. Red first: the new parametrize case and
       `test_allow_rule_compound_operators_flag_an_unquoted_newline` failed before the fix, and
       the docstring's caveat is gone.
-- [ ] Stop-hook guard design (`build/cc_guide/conformance.toml:165`, check `stop-hook-guard`;
+- [x] Stop-hook guard design (`build/cc_guide/conformance.toml:165`, check `stop-hook-guard`;
       `build/check_conformance.py:534`). The rule and the check flag a Stop hook script that
       never reads `stop_hook_active`. The guide accepts checking the transcript instead
       (`hooks.exit-codes`), and its Pattern 3 recommends capping retries in the hook itself,
@@ -2134,6 +2135,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       accepted form, and both files' contradictions are cleared.
       → progress 2026-10-31 (owner ruling): a loop guard is the flag (a read of `stop_hook_active`) or a waiver per hook, recorded in `build/cc_guide/conformance.toml`, that names the guard the hook uses instead.
       → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
+      → done 2026-11-11 (plan 89): a loop guard is a read of `stop_hook_active` or a `stop-hook-guard` waiver on the file that wires the Stop command. The rule, both findings and the `stop-hook-guard-literal` deviation say so, and tests cover the finding, the waiver and the stale waiver (`check_conformance.py`, `conformance.toml`).
 - [x] Three subagent-driven-development decisions, outside the register
       (`skills/subagent-driven-development/SKILL.md`). (1) Line 239 (line numbers refreshed after plan 46's reorder): an implementer already
       at `capable` has only fresh context and higher effort left, with no model step; the guide
@@ -2531,7 +2533,7 @@ all 20 named a type.
       `test_check.py`, and the residual is a triage's `rebaseline` while another run writes pages,
       or after a check that died mid-write and before the next check. Its fix is logged under
       `51-claude-code-drift-automation`.
-- [ ] A Desktop-visible channel for the drift notice (plan 49, Task 10 and the final
+- [x] A Desktop-visible channel for the drift notice (plan 49, Task 10 and the final
       review; owner decision D4, option B). In the Desktop app (Claude Code 2.1.299,
       2026-10-18) the SessionStart hook runs and its `systemMessage` is recorded in the
       transcript (a `hook_success` attachment, exit 0, 55 ms), but the default
@@ -2550,6 +2552,7 @@ all 20 named a type.
       accepted scope.
       → progress 2026-10-31 (owner ruling): a Desktop channel via SessionStart's plain stdout, which reaches Claude as context in both the CLI and Desktop, so the first reply can name the notice.
       → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
+      → done 2026-11-11 (plan 89): notice.json carries the line as `systemMessage` and as `hookSpecificOutput.additionalContext` with a note asking the first reply to quote it. Live check on Claude Code 2.1.322, 2026-11-11: a new Desktop session's first reply quoted a stand-in notice, and the terminal printed the `SessionStart:startup says:` line and its first reply quoted it too. `show` still records `notice-shown` at print time (F1). The once-a-day half was not observed.
 - [x] Does `startup` fire under `claude -p`? (plan 49 Task 1 Step 5, skipped by the owner;
       a Stage 5 probe candidate.) If it does, every `claude -p` run with this repo or one of
       its worktrees as the working directory runs `show` and `refresh`: a live docs
@@ -4559,7 +4562,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
 
 ## cc-guide-files-2026-10-21 (no plan; /cc-guide files, lowmason/agent-skills#94 and branch claude/cc-guide-hooks-files-2.1.306) — 2026-10-21
 
-- [ ] Two branches can give a section's `changed` and a citing file's stamp the same release,
+- [x] Two branches can give a section's `changed` and a citing file's stamp the same release,
       and `cli.py lint` then calls the file fresh though no verifier read the newer text. On
       2026-10-21, #93 ran `baseline accept --substantive` for `hooks.configuration` on its branch.
       No citer there carried a 2.1.306 stamp, so `next_changed` set `changed` to 2.1.306. On
@@ -4576,6 +4579,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       merged in either order, leave the file STALE, or the owner records the gap as accepted.
       → progress 2026-10-31 (owner ruling): `text_hash` at cite time. Record each cited section's text hash when the file is cited, in the citation or beside it, and let the lint compare hashes.
       → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
+      → done 2026-11-11 (plan 89): `baseline cite` records each cited section's `text_hash` under `cited` in `baseline.json`, and lint calls a file STALE when it differs from the section's now. An editorial accept carries matching records forward. A test rebuilds the #93 and #94 collision and shows the file STALE in either merge order. The 50 citing files that were not STALE carry records, and `skills/writing-skills/SKILL.md` has none (stamp rule only).
 - [x] Each probe run inherits the caller's whole environment (`probes.execute` passes
       `env={**os.environ, **inv.env}`). The guide says `CLAUDE_CODE_EFFORT_LEVEL` outranks an
       agent's `effort` field and a per-spawn effort (subagents.frontmatter, guide line 184). So
@@ -6407,3 +6411,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the lint line, the test and the two `CLAUDE.md` lines (`CLAUDE.md`, `build/CLAUDE.md`) in the same change as the
       last exception. Size: plan. Done when: the body is at most 19,700 characters and the exception is removed, and, once
       neither waiver is left, the guard lint is retired.
+
+## 89-cc-guide-owner-rulings — 2026-11-11
+- [ ] `packets --files` marks a packet's sections by stamp alone (`build/cc_guide/packets.py:379-381`). A file that is stale only by hash, the #93 and #94 collision case, gets "Unchanged since @X" and an empty `changed` list for a section whose text changed, so the verifier's packet says the section did not change. The verifier contract (`.claude/agents/cc-guide-verifier.md:61-66`) still requires a quoted row for each statement that rests on any cited section, so the marks inform and do not narrow the review. Found by plan 89's Task 4 review, outside Task 4's file list (owner ruled defer at the gate). Fix: count a section as changed when `state['cited']` holds a hash for that file and section that differs from the section's `text_hash`, and pin it in `build/cc_guide/test_packets.py`. Size: quick-fix. Done when: the packet of a file that is stale only by hash marks the changed section as changed, and a test covers it.
+- [ ] Bring older checkouts and worktrees up to date after plan 89 merges. A checkout whose cc_guide code predates plan 89 refuses the new `baseline.json` (format 3). Its session start's `refresh` then runs a `check --hook` that exits 2 and writes a "check failed" notice into the shared `~/.cache/agent-skills/cc-guide/notice.json`, which every session shows until a checkout with plan 89's code runs a good check. Owner-only: it spans the owner's open branches and worktrees. Size: quick-fix. Done when: each open branch or worktree that predates plan 89 has merged `main` or been removed, and a session start shows no "check failed" notice.
+- [ ] Two branches that each add a `cited` record in the same place of the sorted map conflict in `baseline.json`: both rewrite the closing brace line of the neighbouring entry. The conflict is loud, and taking one side drops the other file's record, so that file falls back to the stamp rule until its next `baseline cite`. Plan 89 accepted the limit: its Review Focus 3 holds only for records in different places, since D5 fixes one sorted JSON map (`build/cc_guide/baseline.py`, `state.py` `dump_baseline`). Size: plan. Revisit if: a real merge conflicts in the `cited` map of `build/cc_guide/baseline.json`.

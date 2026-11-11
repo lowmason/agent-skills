@@ -1,5 +1,7 @@
 # cc_guide Owner Rulings Implementation Plan
 
+**Status: COMPLETE (2026-11-11)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Apply the owner's 2026-10-31 rulings on three cc_guide backlog items. A Stop-hook loop guard is the flag or a waiver per wiring file. The drift notice reaches Claude as SessionStart context in the CLI and the Desktop app. Each citation records the hash of the section text its file was reviewed against.
@@ -68,6 +70,8 @@ From `specs/deferred_items.md`, trimmed to what decides the work (`[…]` marks 
 4. The terminal line must read as today, with no note in it: `test_refresh_error_notice_has_the_python_payload` compares the whole object, and the existing `shown()` helper keeps reading `systemMessage` as the bare line (Task 2).
 5. A `baseline.json` from a later layout must be refused with a message that names both formats, never misread: `test_baseline_must_carry_this_codes_format`, its `4` case (Task 3).
 
+> Deviation: item 3 holds only when the new records land in different places of the sorted map. Two branches that add records in the same place conflict in `baseline.json`, loudly. The test covers the case of records in different places.
+
 ## Decisions
 
 - **D1** (owner, brief, 2026-11-11): one plan for the three owner-ruled items, with no spec ("Yes, split it"). Applied in: the header's **Spec:** line.
@@ -76,6 +80,10 @@ From `specs/deferred_items.md`, trimmed to what decides the work (`[…]` marks 
 - **D4** (owner, brief, 2026-11-11): a waiver per wiring file is the ruling's "waiver per hook": an `[[exception]]` with `check = 'stop-hook-guard'` and `artifacts` naming the file that wires the Stop command. Its `reason` names the hook script and the guard it uses instead. It waives every Stop command in that file. No schema change. Applied in: Task 1.
 - **D5** (owner, brief, 2026-11-11): `baseline cite` records each cited section's `text_hash` beside the citation, in `build/cc_guide/baseline.json`, keyed by citing file and section ID, and `cli.py lint` compares it with the section's current `text_hash`. The citation form (R4.1) and the citing files stay as they are. Applied in: Task 3, Task 4.
 - **D6** (owner, plan review, 2026-11-11): "Approve as is", in answer to "Approve plan 89 with F1 to F9 as recommended?" F1 to F9 keep their defaults, F4's note wording included. Applied in: Tasks 1 to 6, Global Constraints.
+- **D7** (owner, relayed from the planning session, 2026-11-11): "Ready now (Recommended)", in answer to the Task 6 sitting question. Applied in: Task 6.
+- **D8** (owner, relayed, 2026-11-11): "Guide: docs half only (Recommended)" for `notice.sh`'s not-covered row 1. It adds one clause through `/cc-guide`: a SessionStart hook's `additionalContext` reaches Claude before the first prompt. The Desktop display fact stays in `build/CLAUDE.md`. Applied in: Task 5 (commit 3874ea1).
+- **D9** (owner, relayed, 2026-11-11): "No action (Recommended)" for `notice.sh`'s not-covered row 2, the trap comment "a signalled refresh takes its check with it", which an open probe item already tracks. Applied in: Task 5.
+- **D10** (owner, completion gate, 2026-11-11): "Approve defaults": defer the `packets.py` stamp-only marking as an item, keep the editorial accept of the guide clause, and accept the false STALE after an old-code branch merges. Applied in: the deferred items, Task 4.
 
 ## Related open items (taken into account, not absorbed)
 
@@ -95,7 +103,9 @@ From `specs/deferred_items.md`, trimmed to what decides the work (`[…]` marks 
 **Interfaces:**
 - Produces: `check_conformance.STOP_GUARD_WAIVER: str`, equal to `' (or waive this file under stop-hook-guard, naming the guard the hook uses)'`, appended to both `stop-hook-guard` finding messages.
 
-- [ ] **Step 1: Write the tests**
+- [x] **Step 1: Write the tests**
+
+> Deviation: the `chmod 0o755` on `hooks/gate.sh` was not added. In the fixture register `hook-scripts-executable` is bound to the `parked` kind, so it never runs on these fixtures.
 
 In `build/test_check_conformance.py`, add a test-side copy of the suffix and two pins beside `test_hook_var_quoted_can_be_waived`:
 
@@ -134,21 +144,21 @@ Then append `+ WAIVER_ROUTE` to the expected message of every `stop-hook-guard` 
 
 Place the new tests after `stop_tree` (about line 2705), which `GATE` calls. `fixture_repo` leaves its files untracked, so `hook-scripts-executable` judges `hooks/gate.sh` by its execute bit: after each `fixture_repo` call, run `(root / 'hooks/gate.sh').chmod(0o755)`. If `cc.run` reports another check's finding on the fixture, change the fixture until only the line under test stands. Never loosen the assertion.
 
-- [ ] **Step 2: Run the tests to see the RED**
+- [x] **Step 2: Run the tests to see the RED**
 
 Run: `uv run python build/run_suites.py build -- test_check_conformance.py -k "stop_hook or waiver_route"`
 Expected: the new route test and the four edited tests FAIL, each on a message that lacks the suffix. The two waiver tests PASS at BASE. They pin D4's form, which `apply_waivers` already accepts, so a pass here is not a failed RED.
 
-- [ ] **Step 3: Implement the suffix**
+- [x] **Step 3: Implement the suffix**
 
 In `build/check_conformance.py`, define `STOP_GUARD_WAIVER` above `check_stop_hook_guard`, and append it to both `Finding` messages in that function. No other check changes.
 
-- [ ] **Step 4: Run the tests to see them pass**
+- [x] **Step 4: Run the tests to see them pass**
 
 Run: `uv run python build/run_suites.py build -- test_check_conformance.py`
 Expected: all pass.
 
-- [ ] **Step 5: Reword the rule**
+- [x] **Step 5: Reword the rule**
 
 In `build/cc_guide/conformance.toml`, in the `stop-hook-guard` `[[check]]`, replace:
 
@@ -169,7 +179,7 @@ Above that `[[check]]`, after the comment line `# them, so every fix attempt tha
 # wiring file (owner ruling 2026-10-31, plan 89).
 ```
 
-- [ ] **Step 6: Reword the deviation (F2)**
+- [x] **Step 6: Reword the deviation (F2)**
 
 In the `stop-hook-guard-literal` `[[exception]]`, replace the `reason`, `evidence` and `revisit` lines with:
 
@@ -185,14 +195,14 @@ Change the comment above it, `# The repo's Stop guard reads stop_hook_active, th
 # The lint verifies only the stop_hook_active read; other guards need a waiver.
 ```
 
-- [ ] **Step 7: Verify the register and the lints**
+- [x] **Step 7: Verify the register and the lints**
 
 Run: `uv run --with pyyaml python build/check_conformance.py`
 Expected: exit 0, no violations.
 Run: `uv run python build/cc_guide/cli.py lint`
 Expected: exit 0, with the one STALE line for `skills/writing-skills/SKILL.md`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add build/check_conformance.py build/test_check_conformance.py build/cc_guide/conformance.toml
@@ -218,7 +228,7 @@ stop-hook-guard-literal deviation names both forms.
 **Interfaces:**
 - Produces: `notice.EVENT = 'SessionStart'`; `notice.CONTEXT_NOTE: str` (F4's exact copy); `notice.payload(message: str) -> dict`, which returns `{'systemMessage': message, 'hookSpecificOutput': {'hookEventName': EVENT, 'additionalContext': f'{message}\n{CONTEXT_NOTE}'}}`. `write_notice` writes `json.dumps(payload(message))`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `build/cc_guide/test_notice.py`, change the assertion in `test_the_notice_is_one_ascii_json_line_written_before_its_digest` to:
 
@@ -253,12 +263,12 @@ def test_refresh_error_notice_has_the_python_payload(fake_uv):
     assert json.loads(proc.stdout) == notice.payload(f'cc-guide · {NO_UV} · last good check 2 d ago → install uv')
 ```
 
-- [ ] **Step 2: Run the tests to see the RED**
+- [x] **Step 2: Run the tests to see the RED**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_notice.py test_notice_sh.py`
 Expected: the three tests above FAIL with `AttributeError: module 'notice' has no attribute 'payload'`. The rest pass.
 
-- [ ] **Step 3: Implement the Python writer**
+- [x] **Step 3: Implement the Python writer**
 
 In `build/cc_guide/notice.py`, add `EVENT`, `CONTEXT_NOTE` and `payload` per the Interfaces block, and make `write_notice` use `payload`. In the docstring, replace the whole notice.json bullet (its three lines, through `show prints it as it stands.`) with:
 
@@ -272,16 +282,16 @@ In `build/cc_guide/notice.py`, add `EVENT`, `CONTEXT_NOTE` and `payload` per the
 
 and change `write_notice`'s docstring to `notice.json, then its digest: one ASCII JSON line holding payload(message), or an empty file when nothing is due.`
 
-- [ ] **Step 4: Implement the shell writer**
+- [x] **Step 4: Implement the shell writer**
 
 In `build/cc_guide/notice.sh`, give `fail_notice` the same object. Add `NOTE='<F4's exact copy>'` beside the other constants at the top, with the comment `# notice.py's CONTEXT_NOTE, word for word; test_notice_sh.py compares the two`. The `printf` format writes `{"systemMessage": "%s", "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "%s\\n%s"}}` from `"$message" "$message" "$NOTE"`. Inside single quotes, `\\n` makes `printf` print the two characters `\n`, which JSON reads as a newline. Leave `show` as it is.
 
-- [ ] **Step 5: Run the suite to see it pass**
+- [x] **Step 5: Run the suite to see it pass**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: all pass. `test_cli.py`'s and `test_notice_sh.py`'s `shown()` helpers still read `systemMessage` as the bare line.
 
-- [ ] **Step 6: Update the docs**
+- [x] **Step 6: Update the docs**
 
 In `build/CLAUDE.md`, replace:
 
@@ -305,7 +315,9 @@ marks a notice shown when it prints. The async `refresh` runs `check --hook` onc
 
 In `CLAUDE.md`, replace `its notice shows in terminal sessions only` (line 97) with `the terminal shows its notice, and Claude gets it as context in the CLI and Desktop`.
 
-- [ ] **Step 7: Amend the drift spec**
+- [x] **Step 7: Amend the drift spec**
+
+> Deviation: the old text of the R9.2 block ends mid-line, so the executor matched through the next word. The new block is exact, and `notice-shown` now starts the next line. The rendered text is the same.
 
 In `specs/completed/claude-code-drift-automation-spec.md`, Decision 8 (about line 154), replace:
 
@@ -373,7 +385,7 @@ with:
      plan 89, 2026-11-11).
 ```
 
-- [ ] **Step 8: Verify and commit**
+- [x] **Step 8: Verify and commit**
 
 Run: `uv run python build/cc_guide/cli.py lint` (exit 0, the one STALE line) and `bash build/run_commit_lints.sh` (`commit lints passed`).
 
@@ -401,7 +413,9 @@ app (owner rulings 2026-10-31 and 2026-11-11).
 **Interfaces:**
 - Produces: `state.FORMAT = 3`. `parse_baseline` returns a dict with exactly `format`, `sections`, `groups`, `llms` and `cited`, where `cited` maps a repo-relative path to a dict of section ID to a `text_hash` string (`TEXT_HASH_RE`). `baseline.init` returns that shape with `cited` empty, keys in the order `format`, `sections`, `groups`, `llms`, `cited`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: fix round 1 added `test_a_later_layout_gets_the_format_message_not_the_key_set_one` (fa0c5fc), so the tests pin the format check before the key-set check for a layout whose key set also differs.
 
 In `build/cc_guide/test_state.py`, give the two fixture dicts (lines 22 and 175) `'format': 3` first and `'cited': {}` last, and add:
 
@@ -442,16 +456,16 @@ def test_init_writes_the_format_first_and_an_empty_cited_map_last(docs_dir):
     assert (s['format'], s['cited']) == (3, {})
 ```
 
-- [ ] **Step 2: Run the tests to see the RED**
+- [x] **Step 2: Run the tests to see the RED**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_state.py test_baseline.py`
 Expected: the new tests FAIL, and so does every test whose fixture dict now holds the two new keys, on `holds exactly sections, groups and llms`.
 
-- [ ] **Step 3: Implement the loader and init**
+- [x] **Step 3: Implement the loader and init**
 
 In `parse_baseline`, check the format first, so a later layout gets the format message rather than the key-set one: when `raw` is a dict whose `format` is not the int `FORMAT` (a `bool` or a `str` fails), raise `SetupError(f'{BASELINE}: format {raw.get("format")!r} is not {FORMAT}, the format this code reads')`. Then the key-set check raises `f'{BASELINE}: holds exactly format, sections, groups, llms and cited'`. A malformed `cited` adds the problem `cited must map each file to section ID -> text_hash` to the existing list. In `baseline.init`, build the dict in the order the Interfaces block gives.
 
-- [ ] **Step 4: Migrate the committed file**
+- [x] **Step 4: Migrate the committed file**
 
 Run from the repo root:
 
@@ -461,14 +475,14 @@ uv run --directory build/cc_guide python -c "import json, state; from pathlib im
 
 Expected: `git diff --stat build/cc_guide/baseline.json` shows 3 insertions and 1 deletion: `"format": 3,`, the comma after `llms`'s closing bracket, and `"cited": {}`.
 
-- [ ] **Step 5: Run the suite and the lint**
+- [x] **Step 5: Run the suite and the lint**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: all pass.
 Run: `uv run python build/cc_guide/cli.py lint`
 Expected: exit 0, with the one STALE line. From here to the merge the Loader window applies.
 
-- [ ] **Step 6: Amend R2.3**
+- [x] **Step 6: Amend R2.3**
 
 In the drift spec's R2.3 (about line 385), replace:
 
@@ -489,7 +503,7 @@ with:
   section IDs sorted (owner, plan 89, 2026-11-11).
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 The loader, the file and the tests go in one commit, since the commit hook runs `cli.py lint` on the working tree (T5).
 
@@ -521,7 +535,7 @@ file by its key set, so no checkout misreads a layout it predates.
   - `baseline.accept`: same signature. An editorial accept also moves each `cited` record equal to the old `text_hash` to the new one (F6).
   - `lint.stale_citations`: same signature. A cited section is behind when the stamp is below its `changed`, or when `state['cited']` holds a hash for that file and section that differs from the section's `text_hash`. With no record, only the stamp rule applies (F5).
 
-- [ ] **Step 1: Write the failing unit tests**
+- [x] **Step 1: Write the failing unit tests**
 
 In `build/cc_guide/test_baseline.py`:
 
@@ -568,7 +582,7 @@ def test_a_recorded_hash_that_differs_is_stale_even_at_an_equal_stamp(docs_dir):
 
 Use the import names `test_lint.py` already has for `Citation` and `stale_citations`. `test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control` (`test_baseline.py:98`) hands `stale_citations` a partial state: give it `'cited': {}` beside `'sections'`. `stale_citations` reads `state['cited']`, which the loader guarantees.
 
-- [ ] **Step 2: Write the failing CLI tests**
+- [x] **Step 2: Write the failing CLI tests**
 
 In `build/cc_guide/test_cli.py`, in `test_cite_stamps_each_file_at_its_sections_highest_changed_and_writes_only_those_files`, change the `dirty` assertion to `[state.BASELINE, 'hooks/gate.sh', 'rules/style.md']`, and add:
 
@@ -593,23 +607,23 @@ Then add three tests. They use `world`, `main`, `cited`, `git`, `load` and `GUID
 
 3. `test_two_branches_that_cite_different_files_merge_cleanly(world, capsys)`: on `main`, cite and commit `hooks/gate.sh`. Branch one adds and cites `hooks/a.sh`. Branch two adds and cites `rules/z.md` (frontmatter citation, as in the existing cite test). Merge both into `main`. Assert both merges leave `git status --porcelain` empty, `list(load(repo)['cited']) == ['hooks/a.sh', 'hooks/gate.sh', 'rules/z.md']`, and `main(cache, 'lint') == 0` with empty stderr.
 
-- [ ] **Step 3: Run the tests to see the RED**
+- [x] **Step 3: Run the tests to see the RED**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_baseline.py test_lint.py test_cli.py`
 Expected FAIL: `record_cites` (no attribute), the editorial carry-forward, the lint hash rule, the edited cite test (`baseline.json` not dirty), the collision test in both orders (no `STALE` line), and the different-files test (an empty `cited`). Expected PASS at BASE: `test_an_editorial_accept_leaves_its_citers_fresh`. It pins F6: it must still pass after Step 4, and fails if the hash rule lands without the carry-forward.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 - `baseline.record_cites` and the editorial carry-forward in `baseline.accept`, per Interfaces.
 - `cli.py`'s `cite` action: after it stamps the files, write `dump_baseline(baseline.record_cites(state, ids_by_path, set(readable)))` to `baseline.json`, where `ids_by_path` maps each stamped path to its citation's IDs. Take the IDs from `guide.file_citation(path, text)[0].ids` on the text before stamping. All checks still run before any write.
 - `lint.stale_citations`: add the hash half of the rule, per Interfaces, and update its docstring to `R5: each citing file with a cited section whose changed is above the file's stamp, or whose text_hash differs from the one baseline cite recorded for the file (R7), with those sections. A section baseline.json lacks is a lint violation, never stale.`
 
-- [ ] **Step 5: Run the tests to see them pass**
+- [x] **Step 5: Run the tests to see them pass**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: all pass, the existing `test_cite_refuses_with_one_error_line_and_writes_nothing` included (Review Focus 2).
 
-- [ ] **Step 6: Migrate the committed file**
+- [x] **Step 6: Migrate the committed file**
 
 Record hashes for every citing file that `cli.py lint` does not list as STALE (T5). Run from the repo root:
 
@@ -636,7 +650,9 @@ EOF
 
 Expected: the unrecorded list equals the STALE files the first command printed (on 2026-11-11, `skills/writing-skills/SKILL.md` alone). With `cited` still empty, `stale_citations` applies the stamp rule only. Then `uv run python build/cc_guide/cli.py lint` prints the same STALE line and exits 0.
 
-- [ ] **Step 7: Update the docs**
+- [x] **Step 7: Update the docs**
+
+> Deviation: the R5 block's old text also ended mid-line, with the same handling. The `cli.py` module docstring, which is the `--help` text, also gained the hash rule and `cite`'s record, as a hand fix after the task review (a4b485a).
 
 In `build/CLAUDE.md`, replace:
 
@@ -705,7 +721,7 @@ with:
   citation scan no longer finds (owner, plan 89, 2026-11-11).
 ```
 
-- [ ] **Step 8: Verify and commit**
+- [x] **Step 8: Verify and commit**
 
 Run: `uv run python build/run_suites.py cc_guide` (all pass), `uv run python build/cc_guide/cli.py lint` (exit 0, the one STALE line) and `bash build/run_commit_lints.sh` (`commit lints passed`).
 
@@ -729,16 +745,18 @@ records hashes for every citing file the lint did not list as stale
 **Files:**
 - Modify: only what `/cc-guide files` settles for the files below, and `build/cc_guide/baseline.json` through its `baseline cite`.
 
-- [ ] **Step 1: List the files**
+- [x] **Step 1: List the files**
 
 Run: `uv run python build/cc_guide/cli.py lint`
 The paths are `build/cc_guide/notice.sh`, plus any file this plan edited that the output lists as STALE.
 
-- [ ] **Step 2: Run the files mode**
+- [x] **Step 2: Run the files mode**
 
 Invoke `/cc-guide files <paths>` and follow the skill. The Loader window applies: its `check` runs with `--worktree`. A contradiction it lists is fixed in that file only. A not-covered row about SessionStart `additionalContext` (T7) goes to the owner, and the file is held until the owner rules on it.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
+
+> Deviation: settle held `build/cc_guide/notice.sh` with two not-covered rows, and nothing was committed at that point. After the owner's rulings (D8, D9) one clause was added to the guide's `hooks.exit-codes` section, recorded as an editorial accept, and `notice.sh` was re-cited, in commit 3874ea1 (the guide and `baseline.json`).
 
 Run: `uv run python build/cc_guide/cli.py lint`, `uv run --with pyyaml python build/check_conformance.py` and `bash build/run_commit_lints.sh`. Commit as the skill directs. If the owner holds the file, record the open row for the completion gate.
 
@@ -746,7 +764,9 @@ Run: `uv run python build/cc_guide/cli.py lint`, `uv run --with pyyaml python bu
 
 The owner runs the two sessions. The executor prepares the cache and restores it afterwards.
 
-- [ ] **Step 1: Back up the cache and write a stand-in notice**
+- [x] **Step 1: Back up the cache and write a stand-in notice**
+
+> Deviation: the backup went to the subfolder `~/.cache/agent-skills/scratch/plan89-work/cache-backup/`, so the restore could not mix with the executor's own notes.
 
 ```bash
 mkdir -p ~/.cache/agent-skills/scratch/plan89-work && cp -p ~/.cache/agent-skills/cc-guide/notice.json ~/.cache/agent-skills/cc-guide/notice.digest ~/.cache/agent-skills/cc-guide/notice-shown ~/.cache/agent-skills/scratch/plan89-work/ 2>/dev/null; ls ~/.cache/agent-skills/scratch/plan89-work/
@@ -755,19 +775,19 @@ uv run --directory build/cc_guide python -c "import notice, state; notice.write_
 
 The `ls` shows which files existed. A missing file is removed again at restore time.
 
-- [ ] **Step 2: Desktop check (owner)**
+- [x] **Step 2: Desktop check (owner)**
 
 The owner opens a new Code session in the Desktop app on the main checkout (`/Users/lowell/Projects/agent-skills`), not the execution worktree. Its `show` is the same script, and its `refresh` runs code that reads `main`'s file (Loader window). Pass: the first reply quotes the stand-in line. Record pass or fail.
 
-- [ ] **Step 3: Terminal check (owner)**
+- [x] **Step 3: Terminal check (owner)**
 
 Run `rm -f ~/.cache/agent-skills/cc-guide/notice-shown`, because the Desktop session's `show` recorded the day. The owner runs `claude` in a terminal in the main checkout. Pass: the terminal shows `SessionStart:startup says: cc-guide · stand-in notice …`, which proves the CLI line survives D2. Record what the first reply does too.
 
-- [ ] **Step 4: Restore the cache**
+- [x] **Step 4: Restore the cache**
 
 Copy each backed-up file back to `~/.cache/agent-skills/cc-guide/`. Remove any of the three that had no backup.
 
-- [ ] **Step 5: Act on the result**
+- [x] **Step 5: Act on the result**
 
 - Both pass: item 2's `→ done` note at completion records the result, the date and `claude --version`.
 - The Desktop reply does not quote the line: one wording round on `CONTEXT_NOTE` and `notice.sh`'s `NOTE` (Task 2's tests, then a `fix(cc-guide)` commit), then Steps 1 to 4 again. A second miss goes to the owner.
