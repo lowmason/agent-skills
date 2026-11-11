@@ -409,20 +409,41 @@ def measure_cut(text: str, body: str) -> dict | None:
     body's start, so a copy cut inside that line is not found: None. The
     header is what comes before the body, `body_chars_kept` how much of the
     body follows it unchanged, and `tail` what follows that: the cut's own
-    marker, which the probe keeps to see how the cut is worded.'''
+    marker, which the probe keeps to see how the cut is worded. The marker
+    opens with a newline, which a body line's own newline at the cut can
+    match, so a cut copy whose kept text ends with a newline leaves that
+    newline to the tail: the count can be one low, never one high.'''
     start = text.find(body.split('\n', 1)[0])
     if start < 0:
         return None
     kept = len(os.path.commonprefix([text[start:start + len(body)], body]))
+    cut = kept < len(body)
+    if cut and body[kept - 1] == '\n':
+        kept -= 1
     after = start + kept
     return {'header_chars': start, 'body_chars_kept': kept, 'total_chars': start + kept,
-            'cut': kept < len(body), 'frontmatter_seen': CUT_SENTINEL in text,
+            'cut': cut, 'frontmatter_seen': CUT_SENTINEL in text,
             'tail': text[after:after + CUT_TAIL_CHARS]}
 
 
 def reattached_after_boundary(entries: list[dict], kinds) -> dict[str, str]:
-    '''The text of each kind's re-attached copy after the last compact boundary. Task 3 finishes it.'''
-    return {}
+    '''The text of each kind's re-attached copy: the content of the
+    cut-probe-<kind> item in an invoked_skills attachment after the last
+    compact boundary. Nothing else counts. The Skill call's own copy comes
+    before the boundary, and the skill listing after it, in an
+    api-request-blob entry and in skill_listing attachments, names each
+    skill and holds CUT_SENTINEL. A kind with no such item is absent, and
+    so is every kind when the entries hold no boundary.'''
+    bounds = [n for n, entry in enumerate(entries) if is_compact_boundary(entry)]
+    copies: dict[str, str] = {}
+    for entry in entries[bounds[-1] + 1:] if bounds else []:
+        attachment = entry.get('attachment') if entry.get('type') == 'attachment' else None
+        if not isinstance(attachment, dict) or attachment.get('type') != 'invoked_skills':
+            continue
+        for skill in attachment.get('skills') or []:
+            if isinstance(skill, dict) and isinstance(skill.get('content'), str):
+                copies.setdefault(skill.get('name'), skill['content'])
+    return {kind: copies[f'cut-probe-{kind}'] for kind in kinds if f'cut-probe-{kind}' in copies}
 
 
 def is_compact_boundary(event: dict) -> bool:

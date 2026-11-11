@@ -327,6 +327,51 @@ def test_measure_cut_returns_none_when_the_body_is_absent():
     assert pc.measure_cut('Base directory for this skill: /x\n\n' + body[:30], body) is None
 
 
+# The marker Claude Code 2.1.317 put after a re-attached skill's kept text (plan 87's spike, S2).
+CUT_MARKER = '\n\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]'
+
+
+def test_measure_cut_leaves_a_trailing_newline_to_the_marker():
+    '''The real cut kept 19,775 body characters, the last of them just before a line's newline. The marker opens with
+    a newline, which matches the body's own, so a plain common prefix counts one more than was kept.'''
+    assert len(CUT_MARKER) == 101
+    body = pc.cut_body('prose')
+    measure = pc.measure_cut('Base directory for this skill: /x\n\n' + body[:19775] + CUT_MARKER, body)
+    assert measure['body_chars_kept'] == 19775
+    assert measure['cut'] is True
+    assert measure['tail'] == CUT_MARKER
+    whole = pc.measure_cut(pc.cut_frontmatter('prose') + body, body)
+    assert (whole['body_chars_kept'], whole['cut']) == (32000, False)
+
+
+def invoked_skills(*copies):
+    '''A transcript's invoked_skills attachment, shaped as plan 87's spike saw it (S1, S2).'''
+    return {'type': 'attachment', 'attachment': {'type': 'invoked_skills', 'skills': [
+        {'name': f'cut-probe-{kind}', 'path': f'projectSettings:cut-probe-{kind}', 'content': text}
+        for kind, text in copies]}}
+
+
+def test_reattached_after_boundary_reads_the_invoked_skills_after_the_last_boundary():
+    '''Only the invoked_skills attachment after the last boundary holds the re-attached copies. The Skill call's own
+    copy comes before every boundary, an earlier compaction's copy before the last one, and the skill listing, in an
+    api-request-blob entry and a skill_listing attachment, names the skills and carries the frontmatter sentinel.'''
+    whole = {kind: f'Base directory for this skill: /x/cut-probe-{kind}\n\n{pc.cut_body(kind)}'
+             for kind in pc.CUT_KINDS}
+    cut = {kind: text[:20000 - len(CUT_MARKER)] + CUT_MARKER for kind, text in whole.items()}
+    boundary = {'type': 'system', 'subtype': 'compact_boundary'}
+    listing = '\n'.join(f'- cut-probe-{kind}: Use when ... {pc.CUT_SENTINEL}' for kind in pc.CUT_KINDS)
+    entries = [
+        {'type': 'user', 'message': {'role': 'user', 'content': [{'type': 'text', 'text': whole['prose']}]}},
+        boundary, invoked_skills(('prose', whole['prose'])),
+        boundary, invoked_skills(('prose', cut['prose']), ('digit', cut['digit'])),
+        {'type': 'attachment', 'attachment': {'type': 'skill_listing', 'content': listing}},
+        {'type': 'api-request-blob', 'blob': {'system': listing, 'skills': [
+            {'name': f'cut-probe-{kind}', 'content': whole[kind]} for kind in pc.CUT_KINDS]}},
+    ]
+    assert pc.reattached_after_boundary(entries, pc.CUT_KINDS) == cut
+    assert pc.reattached_after_boundary(entries[:1], pc.CUT_KINDS) == {}
+
+
 def cut_measure(kept, cut=True, frontmatter=False):
     '''A measure_cut result for a copy that keeps `kept` body characters after a 60-character header.'''
     return {'header_chars': 60, 'body_chars_kept': kept, 'total_chars': 60 + kept, 'cut': cut,
