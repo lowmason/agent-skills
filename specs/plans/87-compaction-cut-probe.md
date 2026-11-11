@@ -4,9 +4,9 @@
 
 **Goal:** Add a live drift probe, `compaction-cut`, that records where Claude Code cuts a skill it re-attaches after compaction, and fails when a body that passes the `compaction-window` check would lose text.
 
-**Architecture:** The probe follows the five probes in `build/cc_guide/`. `probes.py` writes two synthetic project skills of the same size into a scratch directory, one of prose and one of digits, so a cut by characters and a cut by tokens fall at different places. It runs three `claude -p` invocations on one session id: invoke both skills, `/compact`, and a one-line nudge. `collect` reads the persisted transcript after the compact boundary and measures each re-attached copy into `cut.json`. A pure assertion in `probe_checks.py` compares the prose skill's kept body with the register's window. Task 2 is a gated spike that settles what the transcript holds before the runner is written. Task 4 registers the probe, records one live run, and settles the register if the run diverges.
+**Architecture:** The probe follows the five probes in `build/cc_guide/`. `probes.py` writes two synthetic project skills of the same size into a scratch directory, one of prose and one of digits, so a cut by characters and a cut by tokens fall at different places. It runs one `claude -p` process, driven by a small entry point in `probes.py` that sends three messages over stream-json: invoke both skills, `/compact`, and a one-line nudge (a resumed process re-attaches nothing, Spike findings; D10). `collect` reads the persisted transcript after the compact boundary and measures each re-attached copy into `cut.json`. A pure assertion in `probe_checks.py` compares the prose skill's kept body with the register's window. Task 2 is a gated spike that settles what the transcript holds before the runner is written. Task 4 registers the probe, records one live run, and settles the register if the run diverges.
 
-**Tech Stack:** Python 3.13 (dev Python in `build/versions.toml`), stdlib only (`tomllib` for the register), pytest; Claude Code `claude -p` with stream-json, `--session-id` and `--resume`.
+**Tech Stack:** Python 3.13 (dev Python in `build/versions.toml`), stdlib only (`tomllib` for the register), pytest; Claude Code `claude -p` with stream-json on stdin and stdout, and `--session-id`.
 
 **Spec:** none. This is `/deferred` step 5's **Plan** disposition (2026-11-10): the deferred item below is the requirements. Background: `specs/findings/superpowers-drift-v7-0-2.md` finding 17, `specs/completed/claude-code-drift-automation-spec.md` R10 and R12.6 (probes and fixtures), and `specs/plans/completed/69-agent-payload-probe.md` (the latest probe, whose shape this plan copies).
 
@@ -37,9 +37,9 @@ Two facts were measured on 2026-11-10 while this plan was written:
 - **O1. The probe's guide section and files.** Default: `sections = ['skills.progressive-disclosure']`, the section the `compaction-window` check cites, and no `files` list. A DIVERGES row sends the section to `/cc-guide verify`.
 - **O2. What the probe asserts.** Default: PASS when the prose skill keeps at least the register's window of body characters, the window the check uses. The check is then safe: every body it passes survives compaction whole. The digits skill only tells a cut by characters from a cut by tokens, and the finding reports which. Real skill bodies are prose, so the digits skill never decides the verdict.
 - **O3. The scratch path stands in for a real install path.** The probe's skills live under a temporary directory, so its header is longer than `/Users/<name>/.claude/skills/<skill>` for most skills. A PASS therefore covers any install path no longer than the probe's. The finding prints the header length so the margin is visible.
-- **O4. How the register is corrected if the live run diverges (Task 4).** Default: a new `reserve_chars` parameter on the `compaction-window` check. The check's window becomes `tokens × chars_per_token − reserve_chars`. Its value is the smallest multiple of 50 that is at least the measured header's fixed part (the header less its path) plus 120 characters of path. If the run shows the frontmatter is re-attached, a second parameter, `counts_frontmatter = true`, also subtracts each file's own frontmatter length.
+- **O4. How the register is corrected if the live run diverges (Task 4).** Default: a new `reserve_chars` parameter on the `compaction-window` check. The check's window becomes `tokens × chars_per_token − reserve_chars`. Its value is the smallest multiple of 50 that is at least the measured header's fixed part (the header less its path) plus 120 characters of path plus the truncation marker's length (101 characters, Spike findings; amended by D11, which gives 300). If the run shows the frontmatter is re-attached, a second parameter, `counts_frontmatter = true`, also subtracts each file's own frontmatter length. The spike found no frontmatter in the copy, so this parameter is expected to be unneeded.
 - **O5. Files the corrected window fails (Task 4).** Default: one `[[exception]]` of type `gap` per file, in the form of the retired `writing-skills-late-critical-headings` exception, and one backlog item per file at completion. Plan 88 frees room in finishing-a-development-branch and removes that file's exception. Alternative: split each failing file in this plan.
-- **O6. The probe's running cost.** Registering the probe puts it in the weekly probe set (`probe_days = 7` in `manifest.toml`). Each weekly run is three invocations with a 32,000-character skill and a compaction, about $0.20–0.60. Default: register it, as the item asks ("a live probe beside the others"). Alternative: keep it out of the registry and run it by hand after a Claude Code release that mentions compaction.
+- **O6. The probe's running cost.** Registering the probe puts it in the weekly probe set (`probe_days = 7` in `manifest.toml`). Each weekly run is one process of three messages with a 32,000-character skill and a compaction, about $0.30 (the spike's setup B cost $0.31; the cap is $0.75, D10). Default: register it, as the item asks ("a live probe beside the others"). Alternative: keep it out of the registry and run it by hand after a Claude Code release that mentions compaction.
 
 ## Global Constraints
 
@@ -49,7 +49,7 @@ Two facts were measured on 2026-11-10 while this plan was written:
 - Do not edit `specs/deferred_items.md` before the Plan Completion Protocol. Re-read it just before the ticking pass, since another session may edit it.
 - Leave these alone: `SCRUBBED_ENV`, `execute`, `claude_args`, `scrub_events`, `_trim_event`, `_trim_block`, `save_fixtures`, `run_probe`, the five existing probes with their tests and fixtures, `.claude/skills/cc-guide/SKILL.md` and the guide. The guide changes only through `/cc-guide` (Task 5).
 - Never commit raw probe output or a raw transcript. Only files that `probes.save_fixtures` wrote go into `build/cc_guide/probe_streams/`, and `test_probe_replay.py` fails on a path or an id in them. The repo is public.
-- Every live run (Task 2 and Task 4) waits for the owner to name the binary and approve the spend. One probe run is three invocations, each capped by `--max-budget-usd 0.50`; expect about $0.20–0.60 a run. A rerun needs the owner's word.
+- Every live run (Task 2 and Task 4) waits for the owner to name the binary and approve the spend. One probe run is one process of three messages, capped by `--max-budget-usd 0.75` (D10); expect about $0.30 a run. A rerun needs the owner's word.
 - The spike's scratch files live outside every repository, under `~/.cache/agent-skills/scratch/plan87-spike/`. Never under `/tmp` directly: a stray `/tmp/struct.py` breaks `import numpy` there.
 - This plan does not execute while plan 85 executes: one execution at a time.
 - Prose in commit messages and in the plan's notes follows `rules/write-with-asd-ste100.md`.
@@ -63,8 +63,10 @@ Two facts were measured on 2026-11-10 while this plan was written:
 3. A cut that falls inside the body's first line: `measure_cut` must still find the body's start, or report the copy as not found, not crash.
 4. Path text in `cut.json`'s tail: the fixture must hold no path once `save_fixtures` redacts it.
 5. A register with no `reserve_chars`: the window is `tokens × chars_per_token`, today's value, so nothing changes until Task 4 adds it.
+6. The driver (D10): no message goes out before the previous one's result, none after an error result, and no hang when `claude`'s stdout ends.
+7. `measure_cut`'s newline back-off: a mid-line cut is unchanged, a whole body stays 32,000, and a copy cut just before a body line's newline reads one low, never one high.
 
-Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assertion cases, 1 in Task 3 (the `reattached_after_boundary` case), 5 in Task 3's `register_window` test, 4 in Task 4's fixture check.
+Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assertion cases, 1 in Task 3 (the `reattached_after_boundary` case), 5 in Task 3's `register_window` test, 4 in Task 4's fixture check, 6 in Task 3's two `drive_cut` tests, 7 in Task 3's `measure_cut` case.
 
 ## Decisions
 
@@ -72,11 +74,13 @@ Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assert
 - **D2** (owner, plan review, 2026-11-10): O1, default kept. The probe backs `skills.progressive-disclosure` and lists no `files`. Applied in: Task 4.
 - **D3** (owner, plan review, 2026-11-10): O2, default kept. PASS means the prose skill keeps at least the register's window of body characters; the digits skill only tells characters from tokens. Applied in: Task 1.
 - **D4** (owner, plan review, 2026-11-10): O3, default kept. The scratch path stands in for a real install path, and the finding prints the header length. Applied in: Task 1.
-- **D5** (owner, plan review, 2026-11-10): O4, default kept. A DIVERGES run corrects the register with `reserve_chars` (and `counts_frontmatter` if the frontmatter is re-attached), at the value O4 states. Applied in: Task 4.
+- **D5** (owner, plan review, 2026-11-10): O4, default kept. A DIVERGES run corrects the register with `reserve_chars` (and `counts_frontmatter` if the frontmatter is re-attached), at the value O4 states, as D11 amends its formula. Applied in: Task 4.
 - **D6** (owner, plan review, 2026-11-10): O5, default kept. Each file the corrected window fails gets a `gap` exception and a backlog item; plan 88 removes finishing-a-development-branch's. Applied in: Task 4, Task 5.
 - **D7** (owner, plan review, 2026-11-10): O6, default kept. The probe is registered and joins the weekly probe set, at about $0.20–0.60 a run. Applied in: Task 4.
 - **D8** (owner, execution session, 2026-11-10): Task 2's spike runs Claude Code 2.1.317 (the Desktop app bundle), with up to three runs of about $0.20–0.60 each. Applied in: Task 2.
 - **D9** (owner, execution session, 2026-11-10): the stop rule of Task 2 fired on setup A below. The owner approved one more spike run, with the three messages in a single `claude -p` process over stream-json on stdin (setup B). Applied in: Task 2, Spike findings.
+- **D10** (owner, execution session, 2026-11-10): the runner is one `claude -p` process, not three invocations. It is one `Invocation` whose argv runs a stdlib `drive-cut` entry point inside `probes.py`, the way the guard-liveness probe runs its script. `execute` and `claude_args` stay as they are. The one stream replaces `compact.jsonl` (its fixture is `compaction-cut.stream.jsonl`). The budget cap is `--max-budget-usd 0.75` for all three messages. Task 3 also reads the copy from the `invoked_skills` attachment and fixes `measure_cut`'s trailing newline. Applied in: Architecture, Global Constraints, File map, Task 3, Task 4, Task 5.
+- **D11** (owner, execution session, 2026-11-10): `reserve_chars` counts the truncation marker. Its value is the smallest multiple of 50 at least 33 (the header less its path) plus 120 (path) plus 101 (marker), which is 300, and the register's window becomes 19,700. This replaces O4's value of 200, which would leave the probe's own run (19,775 kept) failing its reassessment. Applied in: O4, Task 4.
 
 ## Spike findings
 
@@ -108,12 +112,12 @@ Claude Code 2.1.317, run on 2026-11-10. Each probe skill was the Task 1 text, `c
 
 ## File map
 
-- Modify `build/cc_guide/probe_checks.py`: `CUT_KINDS`, `cut_frontmatter`, `cut_body`, `measure_cut`, `reattached_after_boundary`, `assess_compaction_cut` (Task 1; `reattached_after_boundary` is finished in Task 3).
+- Modify `build/cc_guide/probe_checks.py`: `CUT_KINDS`, `cut_frontmatter`, `cut_body`, `measure_cut`, `reattached_after_boundary`, `assess_compaction_cut` (Task 1; Task 3 finishes `reattached_after_boundary` and changes how `measure_cut` counts a trailing newline).
 - Modify `build/cc_guide/test_probe_checks.py`: their cases (Tasks 1 and 3).
-- Modify `build/cc_guide/probes.py`: `register_window`, `prepare_cut`, `collect_cut`, `assess_cut`, `CUT_PROBE` (Task 3), then its `PROBE_RUNS` entry (Task 4).
+- Modify `build/cc_guide/probes.py`: `register_window`, `drive_cut` with its `drive-cut` entry point, `prepare_cut`, `collect_cut`, `assess_cut`, `CUT_MESSAGES`, `CUT_PROBE` (Task 3), then its `PROBE_RUNS` entry (Task 4).
 - Modify `build/cc_guide/test_probes.py`: the runner's tests (Task 3).
 - Modify `build/cc_guide/manifest.toml`: the `[[probe]]` entry (Task 4).
-- Create `build/cc_guide/probe_streams/compaction-cut.compact.jsonl` and `build/cc_guide/probe_streams/compaction-cut.cut.json`, written only by `save_fixtures` (Task 4).
+- Create `build/cc_guide/probe_streams/compaction-cut.stream.jsonl` and `build/cc_guide/probe_streams/compaction-cut.cut.json`, written only by `save_fixtures` (Task 4).
 - Modify `build/cc_guide/test_probe_replay.py`: the replay cases (Task 4).
 - Modify `build/cc_guide/PROBES.md`: the live run's row, appended by `cli.py probes` (Task 4).
 - Only if the live run diverges (Task 4, Step 5): `build/check_conformance.py`, `build/test_check_conformance.py`, `build/cc_guide/conformance.toml`.
@@ -224,34 +228,41 @@ EOF
 
 ### Task 3: The compaction-cut runner, not yet registered
 
+**Amended after the spike (D10, D11).** A resumed process re-attaches nothing, so the runner is one `claude -p` process that a stdlib entry point in `probes.py` drives (Spike findings, setup B). This task also finishes `reattached_after_boundary` and corrects `measure_cut`'s count at a trailing newline.
+
 **Files:**
-- Modify: `build/cc_guide/probe_checks.py` (`reattached_after_boundary`)
+- Modify: `build/cc_guide/probe_checks.py` (`reattached_after_boundary`, `measure_cut`)
 - Modify: `build/cc_guide/probes.py`
 - Test: `build/cc_guide/test_probe_checks.py`, `build/cc_guide/test_probes.py`
 
 **Interfaces:**
-- Consumes: Task 1's names; the spike findings S1 and S2.
+- Consumes: Task 1's names; the spike findings S1–S3.
 - Produces:
-  - `reattached_after_boundary(entries, kinds) -> dict[str, str]`: for each kind, the text of the copy of `cut-probe-<kind>` in the entries after the last boundary entry (S1), read at the JSON path S2 names. A kind with no copy there is absent from the result.
-  - `CUT_TURNS = 4`, `CUT_PROMPT` (the Step 2 prompt of Task 2), and `CONFORMANCE = Path(__file__).resolve().with_name('conformance.toml')` in `probes.py`.
-  - `register_window() -> int`: from the `[[check]]` whose `id` is `compaction-window`, `tokens * chars_per_token - reserve_chars`, with `reserve_chars` 0 when absent.
-  - `prepare_cut(scratch, claude, repo) -> list[Invocation]`: writes both skills and a `session-id` file holding a new UUID, and returns the three invocations of Task 2 as `invoke`, `compact` and `nudge`, each from `claude_args(..., sources='project', mode='default', persist=True, extra=...)`, with `allow=('Skill',)` on `invoke` only.
-  - `collect_cut(scratch, run_dir) -> None`: reads the session's transcript under `Path.home() / '.claude' / 'projects'`, copies it to `transcript.raw.jsonl` for reading by hand, and writes `cut.json` as `{kind: measure_cut(text, cut_body(kind))}` for each kind that `reattached_after_boundary` found.
-  - `assess_cut(read) -> Verdict`: `assess_compaction_cut(stream_of(read('compact.jsonl')), json.loads(read('cut.json') or '{}'), register_window())`.
-  - `CUT_PROBE = Probe(prepare_cut, collect_cut, assess_cut, {'compact.jsonl': 'compaction-cut.compact.jsonl', 'cut.json': 'compaction-cut.cut.json'})`.
+  - `measure_cut` change. When `cut` is true and the kept text ends with a newline, `body_chars_kept` leaves that newline out and `tail` starts with it. The real marker starts with a newline, which the body's own newline at the cut can absorb, so the count was one high. After the change it is at most one low and never one high. Task 1's cases keep their results: their kept text does not end in a newline, and a whole body is not cut.
+  - `reattached_after_boundary(entries, kinds) -> dict[str, str]`: take the entries after the last entry with `type: system` and `subtype: compact_boundary`. In them, read only entries with `type: attachment` and `attachment.type: invoked_skills`. For each kind, the result holds the `content` of the item in `attachment.skills` whose `name` is `cut-probe-<kind>`. A kind with no such item is absent. The function reads no `api-request-blob` entry, because that entry also carries the skill listing, whose description holds `CUT_SENTINEL`.
+  - In `probes.py`: `CUT_PROMPT = 'Invoke the skill cut-probe-prose with the Skill tool, then the skill cut-probe-digit. Then reply DONE.'`, `CUT_MESSAGES = (CUT_PROMPT, '/compact', 'Reply OK.')`, `CUT_TURNS = 8`, `CUT_BUDGET_USD = '0.75'`, and `CONFORMANCE = Path(__file__).resolve().with_name('conformance.toml')`.
+  - `drive_cut(argv: list[str]) -> int`: runs `argv`, a `claude -p` command line that has `--input-format stream-json` and no prompt. It writes each message of `CUT_MESSAGES` to the process's stdin as one JSON line, `{'type': 'user', 'message': {'role': 'user', 'content': <text>}}`. It sends the next message only after it has read the previous message's `result` event. It copies every stdout line to its own stdout. It sends nothing after a `result` event whose `is_error` is true, or after the process's stdout ends. It closes stdin after the last result and returns the process's exit code. It starts no session of its own, so `execute`'s stop signal also reaches `claude`. `probes.py` gains an `if __name__ == '__main__':` entry point that calls `sys.exit(drive_cut(json.loads(sys.argv[2])))` when `sys.argv[1] == 'drive-cut'`.
+  - `register_window() -> int`: from the `[[check]]` of `conformance.toml` whose `id` is `compaction-window`, `tokens * chars_per_token - reserve_chars`, with `reserve_chars` 0 when absent.
+  - `prepare_cut(scratch, claude, repo) -> list[Invocation]`: writes both skills (`cut_frontmatter(kind) + cut_body(kind)` at `.claude/skills/cut-probe-<kind>/SKILL.md`) and a `session-id` file that holds a new UUID. It returns one `Invocation` named `cut`. Its argv is `[sys.executable, str(Path(__file__).resolve()), 'drive-cut', json.dumps(claude_argv)]`. `claude_argv` is `claude_args(claude, CUT_PROMPT, turns=CUT_TURNS, sources='project', mode='default', allow=('Skill',), budget=CUT_BUDGET_USD, persist=True, extra=('--input-format', 'stream-json', '--session-id', <the UUID>))` with the prompt (its second item) removed. Its `env` is `{}` and its timeout is `PROBE_TIMEOUT`.
+  - `collect_cut(scratch, run_dir) -> None`: reads the session's transcript, found by the UUID in `scratch / 'session-id'` under `Path.home() / '.claude' / 'projects'`. It copies the transcript to `transcript.raw.jsonl` in `run_dir` for reading by hand. It writes `cut.json` as `{kind: measure_cut(text, cut_body(kind))}` for each kind that `reattached_after_boundary` found.
+  - `assess_cut(read) -> Verdict`: `assess_compaction_cut(stream_of(read('cut.jsonl')), json.loads(read('cut.json') or '{}'), register_window())`.
+  - `CUT_PROBE = Probe(prepare_cut, collect_cut, assess_cut, {'cut.jsonl': 'compaction-cut.stream.jsonl', 'cut.json': 'compaction-cut.cut.json'})`.
 
 - [ ] **Step 1: Write the failing tests**
 
-- `test_reattached_after_boundary_reads_only_the_last_boundary`, in `test_probe_checks.py`: a synthetic transcript in S1/S2's shape, with a whole prose copy before a first boundary, a second boundary, and a cut prose copy and a cut digit copy after it, returns the two cut copies. (Review Focus 1.)
+- `test_measure_cut_leaves_a_trailing_newline_to_the_marker`, in `test_probe_checks.py`: with `body = cut_body('prose')`, the marker `'\n\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]'` (101 characters) and `text = 'Base directory for this skill: /x\n\n' + body[:19775] + marker`, the result has `body_chars_kept == 19775`, `cut is True` and a `tail` that equals the marker. A text with a whole body (the Task 1 case) still reads 32,000. (Review Focus 7.)
+- `test_reattached_after_boundary_reads_the_invoked_skills_after_the_last_boundary`, in `test_probe_checks.py`: a synthetic transcript in the shape of Spike findings S1 and S2. It holds a `user` entry with a whole prose copy, a first boundary, an `invoked_skills` attachment with a whole prose copy, a second boundary, an `invoked_skills` attachment with a cut prose copy and a cut digit copy, and an `api-request-blob` entry whose text holds `CUT_SENTINEL`. The result is the two cut `content` strings, and nothing else. (Review Focus 1.)
 - In `test_probes.py`, following plan 69's runner tests (`monkeypatch.setitem(probes.PROBE_RUNS, 'compaction-cut', probes.CUT_PROBE)` until Task 4):
   - `test_register_window_reads_the_compaction_window_check`: `register_window() == 20000` on today's register. On a copy with `reserve_chars = 150` added, at a monkeypatched `CONFORMANCE`, it is 19850. (Review Focus 5.)
-  - `test_the_cut_probe_prepares_three_invocations_on_one_session`: the three argv lists name the same UUID, `--session-id` in the first and `--resume` in the other two; both SKILL.md files exist with the Task 1 text.
-  - `test_the_cut_probe_reads_its_run_like_a_live_one`: with a fake `execute` that writes S1-shaped streams and a fake transcript in a monkeypatched home, `run_probe` returns the verdict that `assess_compaction_cut` gives for those measures.
+  - `test_the_cut_probe_prepares_one_invocation_that_drives_the_session`: `prepare_cut` returns one invocation whose argv starts `[sys.executable, <the path of probes.py>, 'drive-cut']`. The JSON argument is a list that starts `[<claude>, '-p']`, holds `--input-format` followed by `stream-json`, `--session-id` followed by the UUID in the `session-id` file, and `--max-budget-usd` followed by `0.75`, and holds neither `--resume` nor `--no-session-persistence`. Both SKILL.md files exist with the Task 1 text.
+  - `test_drive_cut_sends_each_message_after_the_previous_result`: run the `drive-cut` entry point in a subprocess (`[sys.executable, <probes.py>, 'drive-cut', json.dumps([sys.executable, <a fake claude script>])]`). The fake reads one line at a time, and for each line it waits 0.3 s, checks with `select` whether another line has already arrived (and prints an `{'type': 'early'}` event if so), then prints a `result` event that echoes the message. The test asserts the stdout holds three `result` events in `CUT_MESSAGES` order and no `early` event. (Review Focus 6.)
+  - `test_drive_cut_stops_on_an_error_result_and_on_a_closed_stdout`: with a fake whose first result has `is_error` true, the driver sends one message and returns; with a fake that exits after reading its first line and writes no result, the driver returns without hanging (give the subprocess a timeout of 20 s). (Review Focus 6.)
+  - `test_the_cut_probe_reads_its_run_like_a_live_one`: with a fake `execute` that writes `cut.jsonl` in the real stream's event order (an init, assistant, `rate_limit_event`, user, user, assistant, user, user, assistant, `post_turn_summary`, result; then `status` events, an init, a `compact_boundary`, two user events, a result; then an init, an assistant, a `post_turn_summary`, a result) and a fake transcript in a monkeypatched home that holds a `compact_boundary` entry and an `invoked_skills` attachment with two cut copies, `run_probe` returns the verdict that `assess_compaction_cut` gives for those measures.
 
 - [ ] **Step 2: Run them to see them fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py test_probes.py`
-Expected: the new tests fail on the missing names. Every other test passes.
+Expected: the new tests fail on the missing names or, for the `measure_cut` case, on the assertion. Every other test passes.
 
 - [ ] **Step 3: Implement the names**
 
@@ -260,7 +271,7 @@ Expected: the new tests fail on the missing names. Every other test passes.
 - [ ] **Step 4: Run them to see them pass**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py test_probes.py`
-Expected: PASS, +4.
+Expected: PASS, +7.
 
 - [ ] **Step 5: Commit**
 
@@ -318,7 +329,7 @@ Expected: a `compaction-cut: PASS: …` or `compaction-cut: DIVERGES: …` line,
 
 - [ ] **Step 4: On DIVERGES, report and ask**
 
-Show the owner the finding and `cut.json`'s numbers, and propose the O4 value of `reserve_chars` (and `counts_frontmatter` if `frontmatter_seen`). Run the check with that value in a scratch copy of the register and list the skill files it would fail. Ask, as one question: the value, and O5 (exceptions or splits) for those files. Log the answer as the next `D<n>`.
+Show the owner the finding and `cut.json`'s numbers, and propose `reserve_chars` by O4 as D11 amends it (300 from the spike's header and marker; recompute it from this run's) and `counts_frontmatter` only if `frontmatter_seen`. Run the check with that value in a scratch copy of the register and list the skill files it would fail. Ask, as one question: the value, and O5 (exceptions or splits) for those files. Log the answer as the next `D<n>`.
 
 - [ ] **Step 5: On DIVERGES, correct the register**
 
@@ -339,7 +350,7 @@ Expected: two paths. Run `grep -c '<private>' build/cc_guide/probe_streams/compa
 Append to the parametrize list of `test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error`:
 - the recorded `cut.json` with the prose `body_chars_kept` set to `register_window() - 1` → DIVERGES, its finding ending `can lose its last 1`;
 - `cut.json` without `'digit'` → ERROR `no re-attached copy of cut-probe-digit after the compact boundary`;
-- the compact stream without its boundary event → ERROR `the /compact run emitted no compact_boundary event`.
+- the stream without its boundary event → ERROR `the /compact run emitted no compact_boundary event`.
 
 Check that each case can fail: change one expected finding, see it fail, revert.
 
@@ -353,7 +364,7 @@ Expected: PASS. Read the row: `tail -n 1 build/cc_guide/PROBES.md`. Its outcome 
 
 ```bash
 git add build/cc_guide/probes.py build/cc_guide/manifest.toml build/cc_guide/test_probes.py \
-        build/cc_guide/test_probe_replay.py build/cc_guide/probe_streams/compaction-cut.compact.jsonl \
+        build/cc_guide/test_probe_replay.py build/cc_guide/probe_streams/compaction-cut.stream.jsonl \
         build/cc_guide/probe_streams/compaction-cut.cut.json build/cc_guide/PROBES.md
 # on DIVERGES, also: build/check_conformance.py build/test_check_conformance.py build/cc_guide/conformance.toml
 # (probes.py and test_probes.py are already listed; they carry the counts_frontmatter change if any)
@@ -374,7 +385,7 @@ The commit message body says where the cut fell, and, on DIVERGES, the register'
 - [ ] **Step 1: Run the suites and the lints**
 
 Run: `uv run python build/run_suites.py cc_guide build`, `build/run_commit_lints.sh`, `uv run python build/cc_guide/cli.py lint`, `uv run --with pyyaml python build/check_conformance.py` and `uv run python build/run_suites.py --check`.
-Expected: all pass. Against the plan's base: `cc_guide` +20 (12 + 4 + 4), or +21 with `counts_frontmatter`; `build` the same plus Task 4's one or two.
+Expected: all pass. Against the plan's base: `cc_guide` +23 (12 + 7 + 4), or +24 with `counts_frontmatter`; `build` the same plus Task 4's one or two.
 
 - [ ] **Step 2: Check the scope fence**
 
