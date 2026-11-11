@@ -303,6 +303,7 @@
       `git log --format='%(refname)'`, `*(.)`, `(#i)readme*` and the read-only fd and
       process-substitution forms still pass. Revisit if: a hunter finds a mixed-reading
       line that mutates, or the guard is promoted from guardrail toward sandbox.
+      → planned 2026-11-11: specs/readonly-guard-command-starts.md
 
 ## 31-skill-model-pin-removal — 2026-09-28
 - [x] Watch the two `effort: xhigh` skill pins (`skills/bayesian-workflow/SKILL.md`,
