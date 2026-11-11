@@ -830,8 +830,9 @@ def _command_starts(words):
     syntax only where a command could start; past a word with an `=`, which zsh
     may take for an assignment that ASSIGNMENT does not match, or env for one
     of its operands; and, for a word that starts with `=`, from the same word
-    without it, since zsh expands `=name` to the path of the command `name`.
-    Each matches the word's text, quoted or not.
+    with every leading `=` removed, unless nothing is left, since zsh expands
+    `=name` to the path of the command `name`. Each matches the word's text,
+    quoted or not.
 
     Each continuation starts at a later word or shortens the word it starts
     at, so the words after the stop word never differ, and the stop word and
@@ -885,9 +886,11 @@ def _command_starts(words):
         if '=' in stop:
             queue(k + 1, seq)
         if stop.startswith('='):
-            word = _Token(stop[1:], quoted=stop.quoted, spaced=stop.spaced,
-                          expands=stop.expands)
-            queue(k, seq[:k] + [word] + seq[k + 1:])
+            rest = stop.lstrip('=')
+            if rest:
+                word = _Token(rest, quoted=stop.quoted, spaced=stop.spaced,
+                              expands=stop.expands)
+                queue(k, seq[:k] + [word] + seq[k + 1:])
 
 
 def _classify_subcommand(tokens):

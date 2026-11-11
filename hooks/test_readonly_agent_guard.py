@@ -732,6 +732,30 @@ def test_more_than_64_command_starts_fail_closed():
     assert reason is not None and 'more than 64' in reason, reason
 
 
+# A text line of `=` words in a heredoc, such as a Markdown or AsciiDoc rule or
+# a reStructuredText table border, is read as a command. A word that begins
+# with `=` adds one candidate, the word without its leading `=`, so a long rule
+# stays far below the cap of 64 candidates.
+EQUALS_TEXT_ALLOWED = [
+    pytest.param('cat > /tmp/notes.md <<EOF\nTitle\n' + '=' * 80 + '\nEOF',
+                 id='heredoc-long-underline'),
+    pytest.param('cat > /tmp/notes.rst <<EOF\n' + ' '.join(['=' * 25] * 3) + '\nEOF',
+                 id='heredoc-table-border'),
+    pytest.param('cat > /tmp/notes.md <<EOF\n' + '=' * 70 + 'x\nEOF',
+                 id='heredoc-long-prefix'),
+]
+
+
+@pytest.mark.parametrize('command', EQUALS_TEXT_ALLOWED)
+def test_equals_text_lines_stay_allowed(command):
+    assert guard.classify(command) is None
+
+
+def test_leading_equals_strip_in_one_step():
+    starts = _starts('=' * 80 + 'git log')
+    assert ['git', 'log'] in starts and len(starts) <= 3, len(starts)
+
+
 # Found 2026-09-28 by the second review, and the probes that followed. Main
 # denies each, and the first fix allowed it by dropping a word zsh passes to the
 # command: taken for a file descriptor, for a redirection or its target, or
