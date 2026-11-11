@@ -37,7 +37,7 @@
 5. A heredoc line made only of `=` (a Markdown underline), or one that starts with `=` words before read-only words (AsciiDoc headings), stays allowed: the `heredoc-underline` and `heredoc-asciidoc-headings` allow cases (Task 1).
 6. The work bound changes no candidate. Each dropped continuation is equivalent to one already queued. Task 5 Step 1 checks this on real commands (Task 4).
 7. The cap denies only when none of the first 64 candidates denies, and it names its own reason: `test_more_than_64_command_starts_fail_closed` (Task 4).
-8. The work test fails when either part of the work bound is undone: Task 4 Step 5 (Task 4). After D6, removing `queued` fails no test, because D6 removed the class it bounded. The scan stop and the memo still each have a case that bites (Task 7 Step 2).
+8. The work test fails when either part of the work bound is undone: Task 4 Step 5 (Task 4). After D6, removing `queued` fails no test, because D6 removed the class it bounded. The scan stop and the memo still each have a case that bites (Task 7 Step 2a).
 9. A long `=` rule, a table border of `=` words, or a long `=` prefix on a word in a heredoc stays allowed, because a word that begins with `=` adds one candidate, not one per `=`: `test_equals_text_lines_stay_allowed` and `test_leading_equals_strip_in_one_step` (Task 6).
 
 ## Decisions
