@@ -75,6 +75,31 @@ Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assert
 - **D5** (owner, plan review, 2026-11-10): O4, default kept. A DIVERGES run corrects the register with `reserve_chars` (and `counts_frontmatter` if the frontmatter is re-attached), at the value O4 states. Applied in: Task 4.
 - **D6** (owner, plan review, 2026-11-10): O5, default kept. Each file the corrected window fails gets a `gap` exception and a backlog item; plan 88 removes finishing-a-development-branch's. Applied in: Task 4, Task 5.
 - **D7** (owner, plan review, 2026-11-10): O6, default kept. The probe is registered and joins the weekly probe set, at about $0.20–0.60 a run. Applied in: Task 4.
+- **D8** (owner, execution session, 2026-11-10): Task 2's spike runs Claude Code 2.1.317 (the Desktop app bundle), with up to three runs of about $0.20–0.60 each. Applied in: Task 2.
+- **D9** (owner, execution session, 2026-11-10): the stop rule of Task 2 fired on setup A below. The owner approved one more spike run, with the three messages in a single `claude -p` process over stream-json on stdin (setup B). Applied in: Task 2, Spike findings.
+
+## Spike findings
+
+Claude Code 2.1.317, run on 2026-11-10. Each probe skill was the Task 1 text, `cut_frontmatter(kind) + cut_body(kind)`, 32,124 characters. Paths in this section are written `<path>`.
+
+**Setup A: three invocations on one session id (`--session-id`, then `--resume` twice).**
+
+- S1: invocation 2's stream held a `compact_boundary` event (`trigger` `manual`, `pre_tokens` 61,085, `post_tokens` 3,902). The transcript marks the boundary as an entry with `type: system` and `subtype: compact_boundary`.
+- S2: no entry after the boundary held the text of either skill. The skill names appeared only in the summary text and in the `skill_listing` attachment, which holds the one-line description. Both whole copies sat before the boundary, in the two Skill tool results.
+- S3: the copies before the boundary measure as whole: `header_chars` 123, `body_chars_kept` 32,000, `cut` false, `frontmatter_seen` false.
+- Reading: a `--resume` process re-attached nothing. The run does not say why.
+
+**Setup B: one process, three messages (invoke, `/compact`, `Reply OK.`) sent one by one over stream-json on stdin.**
+
+- S1: the stream held a `compact_boundary` event (`trigger` `manual`, `pre_tokens` 61,112, `post_tokens` 15,741). The transcript entry is as in setup A, with its metadata in `compactMetadata`.
+- S2: the first entry after the boundary that holds a skill is an entry with `type: attachment`. Its `attachment.type` is `invoked_skills`. `attachment.skills` is a list of `{name, path, content}` objects, one for each skill. `name` is the skill name, `path` is `projectSettings:<name>` and not a file path, and `content` holds the copy. The process wrote it in the same invocation as `/compact`. The nudge's request, an `api-request-blob` entry, carries the same text, preceded by `### Skill: <name>` and `Path: projectSettings:<name>`.
+- S3: both copies measure the same. The header is `Base directory for this skill: <path>` and a blank line. `header_chars` 124 (the path is 91 characters), `body_chars_kept` 19,776, `total_chars` 19,900, `cut` true, `frontmatter_seen` false. The `tail` is a marker of 100 characters, shown below with its first newline counted into the body.
+- The marker is `\n\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]`, 101 characters. It starts with a newline, so `body_chars_kept` is one more than the body that survived (19,775). Each `content` string is exactly 20,000 characters: header 124, body 19,775, marker 101.
+- Reading:
+  - The cut counts characters, not tokens. The prose copy and the digit copy are cut at the same place.
+  - The 20,000 characters include the header and the marker. The frontmatter is not in the copy, so it counts for nothing.
+  - The room for a body is `20000 - header - marker`, here 19,775. That is 225 characters less than the register's window of 20,000.
+- Limits: the run has one header length, so a cut at 20,000 characters in all and a cut at a line boundary both fit it. The Task 4 run uses another scratch path and may tell them apart.
 
 ## Related open items (taken into account, not absorbed)
 
