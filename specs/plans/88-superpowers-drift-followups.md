@@ -64,6 +64,8 @@ From `specs/deferred_items.md`, trimmed to what decides the work (`[…]` marks 
 - **D4** (owner, plan review, 2026-11-10): O2, default kept. The conflict rule covers `git pull` and `git merge`, with an additive micro-test case. Applied in: Task 1, Task 2.
 - **D5** (owner, plan review, 2026-11-10): O3, default kept. The TDD pointer fires "When writing or changing tests" and lists the two traps. Applied in: Task 4.
 - **D6** (owner, plan review, 2026-11-10): O4, default kept. Each prompt carries its texts whole, and the record names the untested pointer pull as a known limit. Applied in: Task 1.
+- **D7** (owner, execution handoff, 2026-11-11): "Yes, execute it" — the go-ahead to execute this plan now. Applied in: the start.
+- **D8** (owner, execution handoff, 2026-11-11): "Yes, reword it" — Task 2 also rewrites the comment above the removed exception in build/cc_guide/conformance.toml for the one waiver left. Applied in: Task 2.
 
 ## Related open items (taken into account, not absorbed)
 
