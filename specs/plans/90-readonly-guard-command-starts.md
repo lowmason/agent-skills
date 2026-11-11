@@ -38,6 +38,7 @@
 6. The work bound changes no candidate. Each dropped continuation is equivalent to one already queued. Task 5 Step 1 checks this on real commands (Task 4).
 7. The cap denies only when none of the first 64 candidates denies, and it names its own reason: `test_more_than_64_command_starts_fail_closed` (Task 4).
 8. The work test fails when either part of the work bound is undone: Task 4 Step 5 (Task 4).
+9. A long `=` rule, a table border of `=` words, or a long `=` prefix on a word in a heredoc stays allowed, because a word that begins with `=` adds one candidate, not one per `=`: `test_equals_text_lines_stay_allowed` and `test_leading_equals_strip_in_one_step` (Task 6).
 
 ## Decisions
 
@@ -46,6 +47,7 @@
 - **D3** (owner, execution, 2026-11-11): "Fix it now", in answer to "How should the guard's quadratic slowdown on long crafted lines be handled?". The offered fix was a spec amendment and a code task that drop a queued continuation whose start position and word were seen before, then a rerun of Task 3's Steps 3 to 5. Applied in: new tasks.
 - **D4** (owner, execution, 2026-11-11): "Dedupe + cap", in answer to "Should the fix also deny a subcommand with more than 64 candidate starts?". The dedupe needs a second part, which applies the same idea to the `[[` row's scan. Without it, a long chain of tests stays quadratic. The cap makes the worst case linear. It adds a false positive, so Task 5 stops at the false-positive gate again. Applied in: spec §1, §2, §4 and §5 (amendment), Tasks 4 and 5.
 - **D5** (owner, execution, 2026-11-11): "Accept as is", in answer to "Do you accept the cap's false-positive class as the README records it?". The rerun sweep found 0 false positives in 150,024 unique commands. No subcommand had more than 13 candidates, so the cap never fired. Applied in: Task 5.
+- **D6** (owner, execution, 2026-11-11): "Strip all = at once", in answer to "Which rule should the guard use for a word that starts with `=`?". The final review found that the cap denied a heredoc line made of a long run of `=`. That class was wider than the README described when D5 was asked. The owner picked this rule over skipping only the words made of `=`, and over keeping the code and correcting the text. Applied in: spec §1 table and §5 (amendment), Tasks 6 and 7.
 
 ---
 
@@ -517,3 +519,96 @@ Report as in Task 3 Step 5: the corpus size, denied→allowed (0), and allowed�
 - [ ] **Step 5: Log the ruling**
 
 Add the owner's answer to `## Decisions` as the next decision, in the owner's words, as Task 3 Step 6 does. Commit it with the message `docs(specs): record the owner's false-positive ruling on the cap in plan 90`, ending with `<the session's trailer>`.
+
+### Task 6: A word that begins with `=` loses every leading `=` in one step
+
+D6 adds this task. It answers the final review's one finding. The spec amendment is the "Amendment D6" paragraph in Design §1 and the table's last row.
+
+**Files:**
+- Modify: `hooks/readonly-agent-guard.py` (`_command_starts`: the strip row and its docstring)
+- Modify: `hooks/test_readonly_agent_guard.py` (new tests after `test_more_than_64_command_starts_fail_closed`)
+
+**Interfaces:**
+- Consumes: Task 4's `_command_starts`, `_classify_subcommand` and the cap. The scope fence is as in Task 4.
+- Produces: `_command_starts(words)` yields today's candidate first, as before. A stop word that begins with `=` adds at most one continuation from the strip row.
+
+- [ ] **Step 1: Write the failing tests**
+
+Add this after `test_more_than_64_command_starts_fail_closed`:
+
+```python
+# A text line of `=` words in a heredoc, such as a Markdown or AsciiDoc rule or
+# a reStructuredText table border, is read as a command. A word that begins
+# with `=` adds one candidate, the word without its leading `=`, so a long rule
+# stays far below the cap of 64 candidates.
+EQUALS_TEXT_ALLOWED = [
+    pytest.param('cat > /tmp/notes.md <<EOF\nTitle\n' + '=' * 80 + '\nEOF',
+                 id='heredoc-long-underline'),
+    pytest.param('cat > /tmp/notes.rst <<EOF\n' + ' '.join(['=' * 25] * 3) + '\nEOF',
+                 id='heredoc-table-border'),
+    pytest.param('cat > /tmp/notes.md <<EOF\n' + '=' * 70 + 'x\nEOF',
+                 id='heredoc-long-prefix'),
+]
+
+
+@pytest.mark.parametrize('command', EQUALS_TEXT_ALLOWED)
+def test_equals_text_lines_stay_allowed(command):
+    assert guard.classify(command) is None
+
+
+def test_leading_equals_strip_in_one_step():
+    starts = _starts('=' * 80 + 'git log')
+    assert ['git', 'log'] in starts and len(starts) <= 3, len(starts)
+```
+
+- [ ] **Step 2: Run the new tests to verify they fail**
+
+Run: `uv run python build/run_suites.py hooks -- -k "equals_text or strip_in_one_step" --tb=no -rf`
+Expected in each run: `4 failed`. The three allow cases fail because the cap denies them, and the strip test fails on the count of starts.
+
+- [ ] **Step 3: Change the strip row**
+
+In `_command_starts`, the row for a stop word that begins with `=` continues from the same position with the word whose every leading `=` is removed: `_Token(stop.lstrip('='), quoted=stop.quoted, spaced=stop.spaced, expands=stop.expands)`. It adds no continuation when nothing is left, that is, when the word is made only of `=`. The row for a word that contains `=` does not change. Update the docstring's sentence on this row to match.
+
+- [ ] **Step 4: Run the new tests to verify they pass**
+
+Run: `uv run python build/run_suites.py hooks -- -k "command_start or more_than_64 or equals_text or strip_in_one_step" --tb=no -rf`
+Expected: `30 passed` in each run.
+
+- [ ] **Step 5: Run the whole suite**
+
+Run: `uv run python build/run_suites.py hooks`
+Expected: `461 passed` and `0 failed` in each run, which is 4 more than after Task 4. No existing test was edited.
+
+- [ ] **Step 6: Commit**
+
+Run `bash build/run_commit_lints.sh` (it prints `commit lints passed`), then:
+
+```bash
+git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py
+git commit -m "fix(hooks): strip every leading = of a word in one step
+
+The strip row removed one = at a time, so a word of n = gave n
+candidates, and a long = rule in a heredoc reached the cap and was
+denied. The row now removes every leading = at once, and a word made
+only of = has no such continuation.
+
+<the session's trailer>"
+```
+
+### Task 7 (controller): No denial changed, and the sweep again
+
+The Global Constraints require this after any change to the walk. The scripts stay in `~/.cache/agent-skills/scratch/plan90-work/`, and only counts go to chat.
+
+- [ ] **Step 1: Check that Task 6 changed no denial except the new allow cases**
+
+Compare `classify` from the guard at `01a19f7` (Task 4's code) with the branch's guard over Task 3 Step 3's three sources. Expected: `0` flips in the corpus and the README. In the test file, the only flips are denied→allowed on Task 6's three allow cases.
+
+- [ ] **Step 2: Rerun Task 5 Steps 2 and 3**
+
+Expected: the same counts as Task 5 Step 2 (corpus 0, test file 9, README 9, denied→allowed 0), and each crafted line under 5 s.
+
+- [ ] **Step 3: Rule on the gate**
+
+D6 narrows the false positives that D5 accepted. If every count matches Task 5, write a `Ruling:` line in the progress ledger that D5 still covers them. If any count moves, STOP for the owner, as Task 5 Step 4 does.
+

@@ -6,7 +6,8 @@ next step is a plan from the writing-plans skill.
 
 **Amended 2026-11-11** by the owner's rulings D3 and D4 in `specs/plans/90-readonly-guard-command-starts.md`,
 made during execution: the walk bounds its work as well as its candidates, and a subcommand with more than 64
-candidates fails closed (Design §1, §2, §4 and §5, each marked "Amendment").
+candidates fails closed (Design §1, §2, §4 and §5, each marked "Amendment"). The owner's ruling D6 then changed the
+last row of Design §1's table: a word that begins with `=` loses every leading `=` in one step.
 
 This spec answers the backlog item that begins "Each of the eight readings holds for a whole line"
 (`specs/deferred_items.md`, section `readonly-guard-leading-token-bypasses`, its third item, called "the item"
@@ -103,7 +104,9 @@ the command, or it might be the command. The walk always guesses "the command". 
 - **Amendment (execution).** Task 3 of plan 90 measured the built walk on long crafted lines. The question was
   "How should the guard's quadratic slowdown on long crafted lines be handled?", and the owner answered "Fix it
   now" (plan 90 D3). The question "Should the fix also deny a subcommand with more than 64 candidate starts?"
-  followed, and the owner answered "Dedupe + cap" (plan 90 D4).
+  followed, and the owner answered "Dedupe + cap" (plan 90 D4). The final review found that the cap denied a
+  heredoc line made of a long run of `=`. The question "Which rule should the guard use for a word that starts
+  with `=`?" followed, and the owner answered "Strip all = at once" (plan 90 D6).
 
 ## Design
 
@@ -118,7 +121,7 @@ continues the walk from each extra place in this table:
 | is `{` | the word after it |
 | is `[[` | the word after each later `]]` in the subcommand, quoted or not |
 | contains `=` | the word after it (a possible assignment, to the shell or to env) |
-| begins with `=` | the same position, with one leading `=` removed from the stop word |
+| begins with `=` | the same position, with every leading `=` removed from the stop word, unless nothing is left *(amended, D6)* |
 
 A continued walk is the whole walk. It skips keywords, assignments and prefix utilities again, and its own stop
 word can add more places. Each extra place either starts at a later word or shortens the stop word, so the walk
@@ -132,6 +135,13 @@ each state once: a visited set keyed on the word position and the stop word's te
 nothing that is denied *(designer's call)*. A test pins the bound with a long command full of these words. It
 counts the states or candidates the walk visits and asserts a small multiple of the word count, not a time limit,
 because a timing assertion is unreliable across the two interpreters.
+
+**Amendment D6: every leading `=` goes in one step.** The table's last row first removed one `=`, and the shorter
+word went through the table again. So a word of n `=` gave about n candidates, and one rule line of 63 or more `=`
+in a heredoc reached the cap in Design §2 and was denied. zsh's `=cmd` reads one `=`, and a word that still begins
+with `=` never names a command that the guard denies, so the words in between add no denial. The row now removes
+every leading `=` at once, and a word made only of `=` has no such continuation. Its `=` row still continues past
+it. In the false-positive sweep's corpus, this changes no denial.
 
 **Amendment: the walk also bounds its work.** The visited set bounds the candidates, not the work. A continuation
 still walks to its stop word before the set drops it, and the `[[` row scans every later word for each `[[`. On a
@@ -216,6 +226,8 @@ In `hooks/test_readonly_agent_guard.py`:
 - The work test from Design §1 (amendment). It must fail when either part of the work bound is undone.
 - A test that a subcommand with 64 candidates is allowed, and that one with 65 is denied with the cap's reason
   (amendment).
+- Allow cases for text lines of `=` words in a heredoc (a long rule, a table border, a long `=` prefix on a word),
+  and a test that a word with many leading `=` adds one candidate (amendment, D6).
 - Every existing test passes unchanged. If one asserts a denial text that Design §2 changes, report it as a
   deviation rather than editing the test silently.
 
