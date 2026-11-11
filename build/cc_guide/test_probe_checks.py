@@ -293,6 +293,79 @@ def test_guard_liveness(streams, verdict):
     assert pc.assess_guard_liveness(streams) == verdict
 
 
+def test_cut_body_lines_carry_their_offsets():
+    for kind, filler in pc.CUT_KINDS.items():
+        body = pc.cut_body(kind)
+        lines = body.splitlines(keepends=True)
+        assert len(body) == 32000
+        assert all(len(line) == 64 and line.endswith('\n') for line in lines)
+        assert lines[300].startswith('@0019200 ')
+        assert lines[1] == f'@0000064 {(filler * 6)[:54]}\n'
+
+
+def test_measure_cut_reads_header_kept_body_and_tail():
+    body = pc.cut_body('prose')
+    text = 'Base directory for this skill: /x/cut-probe-prose\n\n' + body[:19950] + '\n[truncated: see /x/SKILL.md]'
+    measure = pc.measure_cut(text, body)
+    assert measure['header_chars'] == 51
+    assert measure['body_chars_kept'] == 19950
+    assert measure['total_chars'] == 20001
+    assert measure['cut'] is True
+    assert measure['frontmatter_seen'] is False
+    assert measure['tail'].startswith('\n[truncated')
+
+
+def test_measure_cut_sees_frontmatter_and_whole_bodies():
+    measure = pc.measure_cut(pc.cut_frontmatter('digit') + pc.cut_body('digit'), pc.cut_body('digit'))
+    assert measure['frontmatter_seen'] is True
+    assert measure['cut'] is False
+
+
+def test_measure_cut_returns_none_when_the_body_is_absent():
+    '''A cut inside the body's first line leaves nothing to anchor on: not found, not a crash.'''
+    body = pc.cut_body('prose')
+    assert pc.measure_cut('Base directory for this skill: /x\n\n' + body[:30], body) is None
+
+
+def cut_measure(kept, cut=True, frontmatter=False):
+    '''A measure_cut result for a copy that keeps `kept` body characters after a 60-character header.'''
+    return {'header_chars': 60, 'body_chars_kept': kept, 'total_chars': 60 + kept, 'cut': cut,
+            'frontmatter_seen': frontmatter, 'tail': ''}
+
+
+COMPACT_OK = [init(), {'type': 'system', 'subtype': 'compact_boundary'}, result()]
+
+
+@pytest.mark.parametrize('compact, cut, verdict', [
+    (COMPACT_OK, {'prose': cut_measure(20000), 'digit': cut_measure(20000)},
+     (PASS, 'compaction kept 20000 body characters of the prose probe skill '
+            '(by characters; 60 characters before the body), at least the register window 20000')),
+    (COMPACT_OK, {'prose': cut_measure(19940), 'digit': cut_measure(19940)},
+     (DIVERGES, 'compaction keeps 19940 body characters of the prose probe skill '
+                '(by characters; 60 characters before the body), fewer than the register window 20000, '
+                'so a body that passes compaction-window can lose its last 60')),
+    # The digit skill tells characters from tokens: kept totals more than 5 apart mean the cut counts tokens.
+    (COMPACT_OK, {'prose': cut_measure(21000), 'digit': cut_measure(14000)},
+     (PASS, 'compaction kept 21000 body characters of the prose probe skill '
+            '(by tokens; 60 characters before the body), at least the register window 20000')),
+    (COMPACT_OK, {'prose': cut_measure(32000, cut=False), 'digit': cut_measure(32000, cut=False)},
+     (PASS, 'compaction kept the whole 32000-character prose body; the register window 20000 is safe')),
+    (COMPACT_OK, {'prose': cut_measure(20000, frontmatter=True), 'digit': cut_measure(20000)},
+     (PASS, 'compaction kept 20000 body characters of the prose probe skill '
+            '(by characters; 60 characters before the body, frontmatter included), at least the register window '
+            '20000')),
+    # The model invoked one skill, not both: ERROR naming the missing skill, never a PASS on the other.
+    (COMPACT_OK, {'prose': cut_measure(20000)},
+     (ERROR, 'no re-attached copy of cut-probe-digit after the compact boundary')),
+    ([init(), result()], {'prose': cut_measure(20000), 'digit': cut_measure(20000)},
+     (ERROR, 'the /compact run emitted no compact_boundary event')),
+    (None, {'prose': cut_measure(20000), 'digit': cut_measure(20000)},
+     (ERROR, 'the /compact run broke: no stream-json events')),
+])
+def test_assess_compaction_cut(compact, cut, verdict):
+    assert pc.assess_compaction_cut(compact, cut, 20000) == verdict
+
+
 def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
     # Shortest first would leave '<private>/work' for the first path.
     assert pc.redact('/home/me/work and /home/me', ['/home/me', '/home/me/work', '']) == '<private> and <private>'
