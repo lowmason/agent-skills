@@ -7186,8 +7186,12 @@ Other readings:
 - Rep3's side request read as part of the same answer ("Please also"). Rep3 passes C. C and PASS are then 5 of 5.
 - Rep2's quality ask read as a separate ask (the test without a position condition: the close "Approve, or amend any
   part." names nothing and asks for no one answer, and the reply itself says "Separately"). Rep2 fails C. C and PASS are
-  then 3 of 5, **below the guard bar of 4**. This is the reading of the reviewer of this part. The controller ruled that
-  rep2 passes.
+  then 3 of 5, **below the guard bar of 4**. This is the reading of the reviewer of this part. It follows dr-quality-suggest
+  control rep3, which failed because its close did not name its point. The counter-precedent is Plan 85 Task 4's
+  dr-quality-suggest reps 2 and 5, which passed with two question marks under one label. The controller ruled that rep2
+  passes.
+- Rep1's one-answer sentence read as a second ask ("The same answer also covers one later quality."). Rep1 fails C. C
+  and PASS are then 3 of 5, **below the guard bar of 4**.
 - Any second ask inside the question block is a second question. Rep2's "Separately" ask fails C, and so does rep4's
   item 3, which carries its own ask ("If you approve it, tell me its place in the ranking"). C and PASS are then 2 of 5
   (reps 1 and 5), **below the guard bar of 4**. With rep1's quality question also read as a second ask, C and PASS are
@@ -7197,10 +7201,10 @@ Other readings:
 
 **Guard verdict: MET, at the bar** (PASS 4 of 5; the guard needs 4). The verdict rests on the One closing request
 reading, which the controller confirmed for this case, on the borderline passes of reps 1 and 2, and on rep3's fail
-(most likely variation, not the new text). Rep2's pass is the call that decides the guard. Read the other way (Other
-readings), rep2 alone gives 3 of 5, and the guard is missed. The plan's Bars would then call for one wording round on
-§5's Ask and an owner ruling. The controller ruled that rep2 passes, for the reasons in the readings list above. The
-owner can rule on this call at the completion gate.
+(most likely variation, not the new text). The passes of rep1 and rep2 each decide the guard: read the other way (Other
+readings), either one alone gives 3 of 5, and the guard is missed. The plan's Bars would then call for one wording round
+on §5's Ask and an owner ruling. The controller ruled that both pass, for the reasons in the readings list above. The
+owner can rule on these calls at the completion gate.
 
 **Judgment-call reps (Task 6, five cases).** The owner can review them at the completion gate. The quote column gives
 the other reading's effect where it changes a count.
@@ -7214,7 +7218,7 @@ the other reading's effect where it changes a count.
 | dr-known-progression-79 rep3, B | pass, borderline (a count and a failure list, not a manifest) | "with row counts per quarter and every unparsed file listed" The other reading fails B. PASS is then 4 of 5. |
 | dr-known-progression-79 rep4, A | pass, borderline (First stage per outcome, new and not confirmed) | "Outcomes: O1, O2 (full volume)" in Stage 5, after the 10-K and 8-K stage. The strict reading fails A. PASS is then 4 of 5. |
 | dr-known-progression-79 rep2, C (traceability) | pass (rows linked, so Provenance on bytes does not apply) | "Give every index row, submission and extracted document a recorded source" |
-| dr-resume-rerank rep1, C | pass, borderline (One closing request, confirmed for this case: one answer for the re-rank and the quality) | "The same answer also covers one later quality." The other reading fails C. With rep2 and rep3 also failed, PASS is 2 of 5, a guard miss. |
+| dr-resume-rerank rep1, C | pass, borderline (One closing request, confirmed for this case: one answer for the re-rank and the quality) | "The same answer also covers one later quality." The other reading fails C. Alone, PASS is then 3 of 5, a guard miss. With rep2 and rep3 also failed, PASS is 2 of 5. |
 | dr-resume-rerank rep2, C | pass, borderline, ruled by the controller (One closing request, confirmed for this case: the close "Approve, or amend any part." takes the ask in; the reviewer scored it a fail) | "Separately, do you approve scheduling as a new outcome, and if so, where should it rank in the list?" The other reading fails C. PASS is then 3 of 5, a guard miss. |
 | dr-resume-rerank rep3, C | fail, borderline (a second ask apart from the approval) | "Please also tell me whether Stage 1 covered one lock or several, so I can correct O3's cost note." The other reading passes C. PASS is then 5 of 5. |
 | dr-resume-rerank rep4, C | pass (a numbered proposal inside one approve-or-amend) | "Approve as is, or amend any part, including stopping the track instead." |
