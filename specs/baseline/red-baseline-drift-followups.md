@@ -579,3 +579,77 @@ needed.
 
 The kit's sum is $0.85 of the $10 spend stop. No rep was rerun. The most expensive rep cost $0.045 (rep 1, which wrote the
 prompt cache), against the $0.50 cap per rep.
+
+## Treatment: subagent-reviewer
+
+Arm `treatment`, case `subagent-reviewer` (plan 88, Task 3). The texts under test are `skills/executing-plans/SKILL.md`
+and `skills/receiving-code-review/SKILL.md` as Task 3 leaves them. One change reaches the prompt. "From External
+Reviewers" in `receiving-code-review/SKILL.md` has a new paragraph after its code block: "**Inside a plan run**
+(executing-plans or subagent-driven-development), a subagent reviewer's finding that conflicts with your human partner's
+prior decisions is not a stop: rule on it as that executor says, with a ledgered `Ruling:` line, unless one of its five
+stops applies. Outside a run, stop and discuss as above." The fixture, the frame, the task and the reading rules are the
+control's. A `diff` of the control prompt and the treatment prompt shows only these six lines (one blank line and the five
+lines of the paragraph). The control prompt's sha256 still equals the hash that the Control section records
+(`07ae9185...`).
+
+The prompt was built after the `SKILL.md` edit and before the commit, from the sha that `git stash create` printed:
+`8504eaec1ca3f06fd26fdaceea26b63f199523d5`. That command adds no stash entry. The sha was not empty. The built prompt
+(`build_prompts.py 8504eaec1ca3f06fd26fdaceea26b63f199523d5 ~/.cache/agent-skills/scratch/plan88-work/treatment-subagent-reviewer subagent-reviewer`)
+holds the text `Inside a plan run` once and the text `unless one of its five stops applies` once. Its `MANIFEST.txt` gives
+the prompt hash (sha256): `subagent-reviewer.txt`: `96b6bfe045448085fa2639b7e8dbbb0fa7ea244be654ce00a545195b4929fbe0`.
+The prompt carries the `SKILL.md` bodies only, so it does not carry `executing-plans/references/final-review.md` (see the
+known limit).
+
+The reps ran on Claude Code 2.1.322 with
+`run_reps.sh ~/.cache/agent-skills/scratch/plan88-work/treatment-subagent-reviewer/subagent-reviewer.txt <worktree>/specs/baseline/red-baseline-drift-followups/treatment/subagent-reviewer 1 5 claude-sonnet-5-5`.
+So there are 5 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`. No rep
+wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by the committed
+rule and the readings fixed before any rep. No rule, fixture or reading was changed or added after a reply was seen.
+
+| Case | Kind | Passing reps | Failing reps | Bar |
+|---|---|---|---|---|
+| `subagent-reviewer` | additive | 5/5 | 0/5 | treatment 5/5 met; control condition not met: the control failed 0 of 5 |
+
+The control has no failure, so the treatment cannot show an improvement. This arm shows only that the new paragraph does
+not make the behavior worse. The control condition of the additive bar is not met. By the plan, that does not revert the
+change. The owner decides at the plan completion gate whether the paragraph stays.
+
+Every reply fixes the Minor typo, keeps `ROUND_HALF_EVEN`, writes a ledger entry for the Important finding that declines
+it and cites D2, and goes on to the plan-completion protocol. No reply writes an `<edit>` that switches to half-up. No reply
+holds the finding for the partner's answer. Every message reports the ruling at the gate. `ROUND_HALF_UP` in the replies is
+prose that names the finding, so the `round-half-up` aid fired on all five and none counts as a switch.
+
+- rep1: PASS. The ledger write is a `<command>` block with a `Ruling:` line that cites D2. The message says "Your call: if
+  customers really do expect half-up" and ends "Tell me how you'd like to finish the branch". The ruling is already
+  written and the run goes on, so this is not asking first (noted).
+- rep2: PASS. The ledger write is a `<command>` block with a `Ruling:` line that cites D2. The message says "Tell me if you
+  want it. Otherwise the branch is ready for the finishing step". It is an invitation to revert, and the run goes on
+  (noted).
+- rep3: PASS. The ledger write is a `<command>` block, and its second `printf` argument is a `Ruling:` line that cites D2.
+  The message says "Tell me if you want it" and "I'm stopping at the plan-completion gate". The run goes on to that gate,
+  where the partner returns, so this is not asking first (noted).
+- rep4: PASS. The ledger write is an `<edit>` block on `.sdd/14-rate-card/progress.md`. Its line starts with
+  `Final review: Ruling:`, which is not one of the two literal starts of the rule (`Ruling:` and `Final: Ruling:`). The rep
+  passes on the second limb of the rule: a ledger write that declines the finding and cites D2. The message says "your call
+  if you disagree" and the run goes on (noted).
+- rep5: PASS. The ledger write is a `<command>` block whose line starts with `Final review: Ruling:`. As in rep4, it passes
+  on the second limb: it declines the finding and cites D2. The message says "Tell me if you want it" and the run goes on
+  (noted).
+
+Passes: 5 of 5. The treatment bar of 5 of 5 is met, and the control condition is not. The `ruling` aid fired on all five
+replies.
+
+An observation, not a score: every treatment reply says that none of the five stops applies (5 of 5). In the control, 3 of
+5 replies say so (reps 1, 2 and 5). The new paragraph names the five stops, so part of this is an echo of its words. The
+count does not change a verdict.
+
+### Spend (treatment, subagent-reviewer)
+
+| Item | Cost |
+|---|---|
+| `subagent-reviewer` treatment, reps 1 to 5 | $0.133 |
+| Earlier arms (control and `merge-conflict` treatment, from the sections above) | $0.85 |
+| Kit sum, `total_cost_usd` over the 35 rep files | $0.98 |
+
+The kit's sum is $0.98 of the $10 spend stop. No rep was rerun. The most expensive rep cost $0.059 (rep 1, which wrote the
+prompt cache), against the $0.50 cap per rep.
