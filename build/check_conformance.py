@@ -610,8 +610,12 @@ def description_text(fm: dict) -> str:
 def check_compaction_window(root: Path, files: list[str], params: dict) -> list[Finding]:
     tokens, per_token = params['tokens'], params['chars_per_token']
     # reserve_chars is the part of the window the re-attached copy spends on its own header and
-    # truncation marker (plan 87); the register may omit it.
-    window = tokens * per_token - params.get('reserve_chars', 0)
+    # truncation marker (plan 87); the register may omit it. With one, the tokens no longer say
+    # what the window is, so the messages name it in characters.
+    reserve = params.get('reserve_chars', 0)
+    window = tokens * per_token - reserve
+    size_limit = f'{window} characters' if reserve > 0 else f'{tokens}'
+    late_limit = f'{window} characters' if reserve > 0 else f'{tokens} tokens'
     heading = re.compile(r'\b(?:' + '|'.join(re.escape(w) for w in params['headings']) + r')\b', re.I)
     out: list[Finding] = []
     for f, text in read_artifacts(root, files, out):
@@ -619,13 +623,13 @@ def check_compaction_window(root: Path, files: list[str], params: dict) -> list[
         if len(body) <= window:
             continue
         out.append(Finding(f, f'body is about {len(body) // per_token} tokens; '
-                              f'compaction re-attaches only the first {tokens}'))
+                              f'compaction re-attaches only the first {size_limit}'))
         fenced = fenced_lines(body)
         offset = 0
         for n, line in enumerate(body.split('\n'), start=1):
             if offset >= window and n not in fenced and ANY_HEADING_RE.match(line) and heading.search(line):
                 out.append(Finding(f, f'line {first + n}: heading {line.strip()!r} starts past the '
-                                      f'first {tokens} tokens, so compaction drops it'))
+                                      f'first {late_limit}, so compaction drops it'))
             offset += len(line) + 1
     return out
 
