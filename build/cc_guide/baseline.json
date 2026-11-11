@@ -299,7 +299,7 @@
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd"
+   "text_hash": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca"
   },
   "hooks.handlers": {
    "checked": {
@@ -4427,7 +4427,7 @@
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
    "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
    "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
    "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
@@ -4468,7 +4468,7 @@
    "context.overview": "sha256:3b3b680a2c035bd898829535e2cd554bd616d6819fd0c0082540be3eaf1d66f2",
    "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.handlers": "sha256:2177b8ef72de4e8f67e443b6d20855c4367a74aded6e0da334f678ebc280995d",
    "hooks.overview": "sha256:750473ea3b7b99f983fa7c1ebc6fee5715750f9ebd5f1eac4e896bf3db355a61",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
@@ -4506,7 +4506,7 @@
   "build/cc_guide/notice.sh": {
    "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
    "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
    "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
@@ -4514,7 +4514,7 @@
   },
   "build/cc_guide/probe_checks.py": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
    "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
    "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
@@ -4528,7 +4528,7 @@
   "build/check_conformance.py": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
    "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
    "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
    "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
@@ -4562,7 +4562,7 @@
   "hooks/README.md": {
    "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
    "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
    "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793",
@@ -4570,21 +4570,21 @@
   },
   "hooks/dispatch-model-guard.py": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
   },
   "hooks/probe-readonly-guard.sh": {
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
   },
   "hooks/readonly-agent-guard.py": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
   },
   "hooks/ruff-check.sh": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
    "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
   },
@@ -4594,22 +4594,22 @@
   },
   "hooks/test_dispatch_model_guard.py": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
   },
   "hooks/test_project_hooks.py": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
   },
   "hooks/test_readonly_agent_guard.py": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
   },
   "hooks/uv-guard.sh": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
    "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
   },
   "install.py": {
