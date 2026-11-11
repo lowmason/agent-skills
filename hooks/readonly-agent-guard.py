@@ -778,7 +778,7 @@ def _skip_prefix_utility(words, i):
     return i
 
 
-def _stop_index(words, i):
+def _stop_index(words, i, known=None):
     """Return where the command starts when the walk begins at words[i]: an
     index in [i, len(words)], len(words) if there is no command, or None where
     env's -S hides it.
@@ -786,8 +786,21 @@ def _stop_index(words, i):
     The walk skips LEADING_KEYWORDS, assignments (`X=1 rm x`), and
     PREFIX_UTILITIES with their options, in any order and number: `time env
     GIT_PAGER=cat git stash` runs `git stash`.
+
+    `known`, if given, maps each loop head the walk has passed, the position
+    where it reads a word and that word, to the result, None included. A head
+    already in it ends the walk with that result. The walk from a head depends
+    only on that word and the words after it, and in one walk of
+    _command_starts the words after it never differ, so the key settles it.
     """
+    heads = []
     while i < len(words):
+        if known is not None:
+            head = (i, str(words[i]))
+            if head in known:
+                i = known[head]
+                break
+            heads.append(head)
         word = words[i]
         if word in LEADING_KEYWORDS or ASSIGNMENT.match(word):
             i += 1
@@ -796,11 +809,14 @@ def _stop_index(words, i):
         elif _command_name(word) in PREFIX_UTILITIES:
             i = _skip_prefix_utility(words, i)
             if i is None:
-                return None
+                break
         else:
             break
     # `repeat`, or a prefix option missing its value, can step past the end.
-    return min(i, len(words))
+    stop = None if i is None else min(i, len(words))
+    if known is not None:
+        known.update(dict.fromkeys(heads, stop))
+    return stop
 
 
 def _command_starts(words):
@@ -842,9 +858,10 @@ def _command_starts(words):
     queue(0, list(words))
     visited = set()
     continued_past = set()  # each `]]` a `[[` row has continued past
+    known = {}  # where the walk from each loop head stops (_stop_index)
     while continuations:
         start, seq = continuations.pop()
-        k = _stop_index(seq, start)
+        k = _stop_index(seq, start, known)
         if k is None:
             yield None
             continue

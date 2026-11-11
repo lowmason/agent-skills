@@ -719,6 +719,7 @@ def _walk_work(line):
 @pytest.mark.parametrize('shape', [
     pytest.param(lambda n: '[[ a ]] ' * n + 'git log', id='test-chain'),
     pytest.param(lambda n: '=' * n + 'a=1 ' + 'b=1 ' * n + 'git log', id='leading-equals'),
+    pytest.param(lambda n: '[[ ' + 'env -u ]] ' * n + 'git log', id='skipped-run'),
 ])
 def test_command_starts_work_grows_linearly(shape):
     small, large = _walk_work(shape(64)), _walk_work(shape(128))
