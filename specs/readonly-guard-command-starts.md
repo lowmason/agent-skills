@@ -4,6 +4,10 @@
 The question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it". The
 next step is a plan from the writing-plans skill.
 
+**Amended 2026-11-11** by the owner's rulings D3 and D4 in `specs/plans/90-readonly-guard-command-starts.md`,
+made during execution: the walk bounds its work as well as its candidates, and a subcommand with more than 64
+candidates fails closed (Design §1, §2, §4 and §5, each marked "Amendment").
+
 This spec answers the backlog item that begins "Each of the eight readings holds for a whole line"
 (`specs/deferred_items.md`, section `readonly-guard-leading-token-bypasses`, its third item, called "the item"
 below). The design came from a brainstorming session on 2026-11-11. Text marked *(designer's call)* is the
@@ -96,6 +100,10 @@ the command, or it might be the command. The walk always guesses "the command". 
 - **D1 — Approach 1.** The question was "Which approach should the design use?", and the owner answered
   "Approach 1".
 - **Why now.** The owner said a `/deferred` pass suggested the item for its age. This sets the scope (Intent).
+- **Amendment (execution).** Task 3 of plan 90 measured the built walk on long crafted lines. The question was
+  "How should the guard's quadratic slowdown on long crafted lines be handled?", and the owner answered "Fix it
+  now" (plan 90 D3). The question "Should the fix also deny a subcommand with more than 64 candidate starts?"
+  followed, and the owner answered "Dedupe + cap" (plan 90 D4).
 
 ## Design
 
@@ -125,6 +133,21 @@ nothing that is denied *(designer's call)*. A test pins the bound with a long co
 counts the states or candidates the walk visits and asserts a small multiple of the word count, not a time limit,
 because a timing assertion is unreliable across the two interpreters.
 
+**Amendment: the walk also bounds its work.** The visited set bounds the candidates, not the work. A continuation
+still walks to its stop word before the set drops it, and the `[[` row scans every later word for each `[[`. On a
+long chain of tests, or on a word with many leading `=` before a long run of words that the walk skips, the work
+grew with the square of the line. Such a line of 20 to 32 KB took about 20 s on `/usr/bin/python3`. So the walk
+bounds its work in two ways:
+
+- **A continuation is queued once.** A second set, keyed on the continuation's start position and the word there,
+  drops a repeat before it is walked. A continuation's words differ from the subcommand's only at or before its
+  start, so that key settles the rest of its walk, and the set changes no candidate.
+- **The `[[` row stops its scan at the first `]]` that an earlier scan continued past.** That scan already queued
+  every later `]]`.
+
+A second test counts the walk's work as line events in the guard's code. It asserts that the work doubles, not
+quadruples, when the line doubles. The cap in Design §2 then makes the worst case linear.
+
 The `=` rows cover env as well. env takes every operand that contains `=` as an assignment, up to its command.
 The rule "continue past any stop word that contains `=`" needs no claim about env's grammar, and it covers the
 operands after `--` too *(designer's call)*. A branch that reaches env's `-S` denies with `ENV_SPLIT_STRING`, as
@@ -145,11 +168,17 @@ reading can deny before today's denial is reached. The line is still denied, and
 mutator. Keeping the old text would need a second pass in `classify`, outside the walk, for no change in what is
 denied.
 
+**Amendment: the cap.** `_classify_subcommand` denies a subcommand whose walk yields more than 64 candidates when
+none of the first 64 denies. The guard then fails closed, as it does for env's `-S`, and the reason asks for
+shorter commands. In the false-positive sweep's corpus of 150,024 commands, the most candidates in one subcommand
+was 13. With the cap, a crafted line of 512 KB is classified in under 1 s. The limit stays inside
+`_classify_subcommand`, not in a new module constant.
+
 ### 3. Why this cannot allow what `d79b1fb` denies
 
 The walk always yields today's candidate unchanged. The readings, the split and the classifiers do not change.
 `classify` (`:817-841`) denies when any candidate in any reading denies. So the set of denied commands can only
-grow. The argument holds only if the walk really does yield today's candidate unchanged, so Verification checks it
+grow. The amendment keeps this: the work bound changes no candidate, and the cap only adds denials. The argument holds only if the walk really does yield today's candidate unchanged, so Verification checks it
 on real commands as well.
 
 ### 4. `hooks/README.md`
@@ -164,6 +193,8 @@ on real commands as well.
 - **Known false positives.** Add one: a word at the start of a command that contains `=`, begins with `=`, or is
   `{` or `[[`, is read both as a prefix and as the command. So the word after it is classified too, even where zsh
   runs the first word as the command.
+- **Known false positives (amendment).** Add one more: a subcommand with more than 64 places where its command
+  may start is denied, because the walk would be slow and a slow hook fails open.
 
 The exact wording is the builder's.
 
@@ -176,6 +207,9 @@ In `hooks/test_readonly_agent_guard.py`:
 - For each row of the table in Design §1, one allow case with a read-only command in the same position: for
   example, a subscripted assignment before `git log`. Each rule is then pinned both ways.
 - The bound test from Design §1.
+- The work test from Design §1 (amendment). It must fail when either part of the work bound is undone.
+- A test that a subcommand with 64 candidates is allowed, and that one with 65 is denied with the cap's reason
+  (amendment).
 - Every existing test passes unchanged. If one asserts a denial text that Design §2 changes, report it as a
   deviation rather than editing the test silently.
 

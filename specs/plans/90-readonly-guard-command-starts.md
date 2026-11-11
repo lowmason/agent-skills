@@ -35,12 +35,16 @@
 3. A continued branch that reaches `command -v` or `-V` runs nothing, so a brace group that only describes a command stays allowed: the `branch-reaches-command-v` allow case (Task 1).
 4. A subcommand that its redirections leave empty yields one empty candidate and raises nothing. A raise would deny it, because `main()` fails closed: the `only-redirections` allow case (Task 1).
 5. A heredoc line made only of `=` (a Markdown underline), or one that starts with `=` words before read-only words (AsciiDoc headings), stays allowed: the `heredoc-underline` and `heredoc-asciidoc-headings` allow cases (Task 1).
+6. The work bound changes no candidate. Each dropped continuation is equivalent to one already queued. Task 5 Step 1 checks this on real commands (Task 4).
+7. The cap denies only when none of the first 64 candidates denies, and it names its own reason: `test_more_than_64_command_starts_fail_closed` (Task 4).
+8. The work test fails when either part of the work bound is undone: Task 4 Step 5 (Task 4).
 
 ## Decisions
 
 - **D1** (owner, plan review, 2026-11-11): "Approve as is", in answer to "Approve plan 90 as written?". The plan stands as written, with the builder's calls in it. Those calls are the README exact copy, the 10 allow cases, the bound test at 16 words with a 3× limit, Task 3's class rule and its split by guarded agent, and README inputs from both versions. Applied in: Tasks 1 to 3, Global Constraints.
 - **D2** (owner, execution, 2026-11-11): "Accept as is", in answer to "Do you accept the walk's false-positive class as the README records it?". The corpus sweep found 0 false positives in 150,024 unique commands, so the accepted class is the one that the README records. Applied in: Task 3.
 - **D3** (owner, execution, 2026-11-11): "Fix it now", in answer to "How should the guard's quadratic slowdown on long crafted lines be handled?". The offered fix was a spec amendment and a code task that drop a queued continuation whose start position and word were seen before, then a rerun of Task 3's Steps 3 to 5. Applied in: new tasks.
+- **D4** (owner, execution, 2026-11-11): "Dedupe + cap", in answer to "Should the fix also deny a subcommand with more than 64 candidate starts?". The dedupe needs a second part, which applies the same idea to the `[[` row's scan. Without it, a long chain of tests stays quadratic. The cap makes the worst case linear. It adds a false positive, so Task 5 stops at the false-positive gate again. Applied in: spec §1, §2, §4 and §5 (amendment), Tasks 4 and 5.
 
 ---
 
@@ -351,3 +355,160 @@ git commit -m "docs(specs): record the owner's false-positive ruling in plan 90
 
 <the session's trailer>"
 ```
+
+### Task 4: The walk bounds its work, and a subcommand past 64 candidates fails closed
+
+D3 and D4 add this task. The spec amendment is in `specs/readonly-guard-command-starts.md` Design §1, §2, §4 and §5, each part marked "Amendment". Task 1's walk is built and reviewed (`c97eb24`). This task changes its work, not its candidates.
+
+**Files:**
+- Modify: `hooks/readonly-agent-guard.py` (`_command_starts` and `_classify_subcommand`, from `c97eb24`)
+- Modify: `hooks/test_readonly_agent_guard.py` (one import, and new tests after `test_command_starts_visit_each_stop_word_once`)
+- Modify: `hooks/README.md` (one bullet under "Known false positives, accepted rather than widened")
+
+**Interfaces:**
+- Consumes: Task 1's `_stop_index`, `_command_starts` and `_classify_subcommand`, and the Global Constraints. The Scope fence names `_command_words`. `_command_starts` replaced it in Task 1, so the fence covers `_command_starts` and `_classify_subcommand`. Add no module constant, and change nothing else in the guard.
+- Produces: `_command_starts(words)` yields the same set of candidates as at `c97eb24`, and its first yield is unchanged. `_classify_subcommand(tokens)` keeps its signature and adds one return value, the cap's reason.
+
+- [ ] **Step 1: Write the failing tests**
+
+In `hooks/test_readonly_agent_guard.py`, add `import sys` after `import subprocess`. Then add this after `test_command_starts_visit_each_stop_word_once`:
+
+```python
+def _walk_work(line):
+    """Count the line events the walk runs in the guard's own code."""
+    words = guard.split_subcommands(line, braces=False)[0]
+    events = [0]
+
+    def count(frame, event, arg):
+        if event == 'line':
+            events[0] += 1
+        return count
+
+    def trace(frame, event, arg):
+        return count if frame.f_globals is vars(guard) else None
+
+    previous = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        list(guard._command_starts(words))
+    finally:
+        sys.settrace(previous)
+    return events[0]
+
+
+# A walk can yield each candidate once and still do quadratic work to reach
+# them, and a hook that times out lets the call go on. Linear work doubles
+# when the line doubles; quadratic work quadruples.
+@pytest.mark.parametrize('shape', [
+    pytest.param(lambda n: '[[ a ]] ' * n + 'git log', id='test-chain'),
+    pytest.param(lambda n: '=' * n + 'a=1 ' + 'b=1 ' * n + 'git log', id='leading-equals'),
+])
+def test_command_starts_work_grows_linearly(shape):
+    small, large = _walk_work(shape(64)), _walk_work(shape(128))
+    assert large < 3 * small, (small, large)
+
+
+def test_more_than_64_command_starts_fail_closed():
+    assert guard.classify('{ ' * 63 + 'git log') is None
+    reason = guard.classify('{ ' * 64 + 'git log')
+    assert reason is not None and 'more than 64' in reason, reason
+```
+
+Both shapes are read-only lines, like the bound test's. The test file gains no bypass construction (Global Constraints, Bypass lines).
+
+- [ ] **Step 2: Run the new tests to verify they fail**
+
+Run: `uv run python build/run_suites.py hooks -- -k "work_grows_linearly or more_than_64" --tb=no -rf`
+Expected in each of the two runs: `3 failed`. The controller reconciles this from its own run:
+- `test_command_starts_work_grows_linearly[test-chain]` and `[leading-equals]` fail. A planning prototype measured a ratio of about 3.9 and 3.7 at `c97eb24`, against about 2.0 once the work is bounded.
+- `test_more_than_64_command_starts_fail_closed` fails with `AssertionError: None`.
+
+- [ ] **Step 3: Implement the work bound and the cap**
+
+In `_command_starts`:
+1. **Queue each continuation once.** Keep a set `queued`, keyed like the visited set but on the continuation's start position: `(start, str(seq[start]))`, or `(start, None)` when `start == len(seq)`. Queue a continuation only if its key is not in the set, and add the key when you queue it. Queue the first continuation, `(0, list(words))`, the same way. Keep the visited set as it is, and walk the first continuation first, so that the first yield is still today's candidate.
+2. **Stop the `[[` row's scan at a `]]` already continued past.** Keep a set of the positions `j` whose `]]` a `[[` row has continued past, one set for the whole walk. The row at `k` scans `j = k + 1, k + 2, …`. At each `j` where `seq[j] == ']]'`, it stops the scan if `j` is in the set. Otherwise it adds `j` and queues `(j + 1, seq)`.
+3. **Say why the walk is sound** in the docstring, in the builder's words. A continuation's words differ from the subcommand's only at or before its start, so its start position and the word there settle the rest of its walk. A scan that continued past a `]]` at `j` also queued every later `]]`, or stopped at one that an earlier scan covered.
+
+In `_classify_subcommand`, count the candidates as they come. When a 65th candidate arrives and none of the first 64 denied, return this reason, word for word:
+
+`'A subcommand here has more than 64 places where its command may start, more than this guard reads, so it fails closed. Split the command into shorter ones.'`
+
+Keep 64 inside `_classify_subcommand`, not in a module constant.
+
+- [ ] **Step 4: Run the new tests to verify they pass**
+
+Run: `uv run python build/run_suites.py hooks -- -k "command_start or more_than_64" --tb=no -rf`
+Expected: `25 passed` in each run (Task 1's 22, and this task's 3).
+
+- [ ] **Step 5: Check that each part bites**
+
+Make each change below on its own, run the command, then restore the code before the next change:
+1. Queue every continuation, without the `queued` check. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 1 passed`, and the failing id is `leading-equals`.
+2. Remove the stop from the `[[` scan. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 1 passed`, and the failing id is `test-chain`.
+3. Make the cap never fire. Run `-k more_than_64`. Expected in each run: `1 failed`.
+
+The runs use `uv run python build/run_suites.py hooks -- -k <expr> --tb=no -rf`. After the last restore, `git diff --stat` shows only this task's three files.
+
+- [ ] **Step 6: Add the false positive to the README**
+
+Under "Known false positives, accepted rather than widened", after the bullet that begins `- **A word at the start of a command that contains `=``, insert:
+
+```markdown
+- **A subcommand with more than 64 places where its command may start is denied.** Each
+  such place is a word that the guard reads both ways (see above). A long run of them
+  would make the walk slow, and a hook that times out lets the call go on. No subcommand
+  in the 150,024 commands that this was checked against had more than 13.
+```
+
+Run: `uv run python -c "import re; t = re.sub(r'\s+', ' ', open('hooks/README.md').read()); print(['more than 64 places where its command may start is denied' in t, 'had more than 13' in t])"`
+Expected: `[True, True]`.
+
+- [ ] **Step 7: Run the whole suite**
+
+Run: `uv run python build/run_suites.py hooks`
+Expected: `456 passed` and `0 failed` in each run, which is 3 more than after Task 1. No existing test was edited. If an existing test fails, stop and report it (Global Constraints, Existing tests).
+
+- [ ] **Step 8: Commit**
+
+Run `bash build/run_commit_lints.sh` (it prints `commit lints passed`), then:
+
+```bash
+git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py hooks/README.md
+git commit -m "fix(hooks): bound the command-start walk's work and cap its candidates
+
+The walk queued a continuation once for each path that reached it, and
+the [[ row scanned every later word for each [[, so a long crafted line
+took work that grew with its square. A slow hook fails open. The walk now
+queues each continuation once and stops a scan at a ]] that an earlier
+scan covered. A subcommand with more than 64 candidates fails closed.
+
+<the session's trailer>"
+```
+
+### Task 5 (controller): No candidate changed, and the false-positive sweep again
+
+The Global Constraints require this after any change to the walk: rerun Task 3's Steps 3 to 5. The scripts stay in `~/.cache/agent-skills/scratch/plan90-work/`, and only counts go to chat.
+
+**Files:**
+- Modify: `specs/plans/90-readonly-guard-command-starts.md` (`## Decisions`, Step 5)
+
+- [ ] **Step 1: Check that the work bound changed no candidate**
+
+For every input of Task 3 Step 3's three sources, take each line (as `classify` builds them), each of `READINGS` and each subcommand from `_split_tokens`. Compare the set of candidates from `c97eb24`'s `_command_starts` with the branch's, taking each candidate as a tuple of `str`, or `None`. Expected: `0` subcommands differ, and `0` subcommands have more than 64 candidates. Any difference stops the task: report the count only, and send Task 4 a fix round.
+
+- [ ] **Step 2: Rerun Task 3 Steps 3 and 4 at the branch's HEAD**
+
+Expected: `denied→allowed: 0` for every source. The cap's test builds its lines at run time, so the test file's constants add no flip. Note any count that differs from Task 3's (corpus 0, test file 9, README 9).
+
+- [ ] **Step 3: Time the worst case**
+
+On `/usr/bin/python3`, time `classify` on a 512 KB line of each shape in Task 4's work test. Time the corpus too. Expected: each crafted line takes under 5 s, and no corpus command takes more than 1 s.
+
+- [ ] **Step 4: STOP, owner — the false positives**
+
+Report as in Task 3 Step 5: the corpus size, denied→allowed (0), and allowed→denied by class and population group. Add the cap as a false-positive class, with the corpus maximum of candidates in one subcommand. Ask the owner to accept each false positive, or to ask for a narrower rule.
+
+- [ ] **Step 5: Log the ruling**
+
+Add the owner's answer to `## Decisions` as the next decision, in the owner's words, as Task 3 Step 6 does. Commit it with the message `docs(specs): record the owner's false-positive ruling on the cap in plan 90`, ending with `<the session's trailer>`.
