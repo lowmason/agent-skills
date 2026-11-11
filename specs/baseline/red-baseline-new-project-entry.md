@@ -7521,8 +7521,10 @@ are unchanged. The last skill commit is `T8` = `e885184`, and it is the final te
 
 Texts and rules: every arm below runs the kit and the rules of `cases.py` unchanged. Models, flags and the $1.00 cap per
 rep are as in the earlier sections. Manifests: `treatment/p85-t7-MANIFEST.txt` and `treatment/p85-t7b-MANIFEST.txt` (the
-two `T7` builds) and `treatment/p85-r1-MANIFEST.txt` (the `T8` build). The diagnostic arm reads the `T` prompt of
-`treatment/p85-t4-MANIFEST.txt`, the same file (sha256 `a56ecba4...54e`). Scored reps: all 30 `T7` reps, the 5
+two `T7` builds) and `treatment/p85-r1-MANIFEST.txt` (the `T8` build). The diagnostic arm has no manifest of its own. It
+ran the prompt file `/tmp/plan85-work/t4/dr-spec-column.txt` that Task 4 built at `T`, and `sha256sum` of that file
+(`a56ecba46c0ae8bbaf366d4b8a447bcf46777159e0986294b179b5596b6c154e`) matched the `dr-spec-column.txt` line of
+`treatment/p85-t4-MANIFEST.txt` before the run. Scored reps: all 30 `T7` reps, the 5
 diagnostic reps and the 5 `T8` reps. No VOID rep, no `.err` file and no rerun.
 
 ### Which cases ran again at T7, and which did not
@@ -7625,14 +7627,18 @@ plan 79 Task 4 (5 of 5), the guard needs 5 − 1 = 4. **Met, at the bar.**
   scheduling outcome and its place, and O2 as the next stage?" Rep4 carries its own ask for the quality's place ("If you
   approve it, where should it rank among O3 and O4?") and closes with "please approve or amend: (a) ... (b) ... (c)", so
   the close names the points and it passes, as `T` rep4 did.
-- Rep2 fails C, borderline, by the same call as `T` rep3 (a side request about O3's cost basis stands apart from the
-  approval): "I'd also update O3's cost note once you confirm whether Stage 1's 1.8 GB covered one lock or several." The
-  quality ask in rep2 ("If you approve it, tell me where it ranks among O3, O4 and O5.") comes before the close "Your
-  other options are a different item to promote or stopping Track A", and the One closing request reading takes it in.
+- Rep2 fails C, borderline. Two asks stand apart from its approval. The first is a side request about O3's cost basis,
+  the call that failed `T` rep3: "I'd also update O3's cost note once you confirm whether Stage 1's 1.8 GB covered one
+  lock or several." The second is the quality ask: "If you approve it, tell me where it ranks among O3, O4 and O5." It
+  comes after the question, and no close takes it in. The text after it ("Your other options are a different item to
+  promote or stopping Track A") lists alternatives and asks for no one answer. So the One closing request test of the
+  `T` arm (the closing approve-or-amend request comes after any extra ask and takes it in) is not met. At `T`, rep2's
+  own close ("Approve, or amend any part.") did take its ask in, and it passed.
 
-Other readings. Rep2's side request as part of the same answer: it passes C, and PASS is 5 of 5. Any second ask inside the
-question block (rep2's side request and its ask for the quality's place, and rep4's ask for the place): reps 2 and 4
-fail, and PASS is 3 of 5, **below the guard bar of 4**. Plan 79's one-question reading alone, where a quality ask that is
+Other readings. Both of rep2's stand-apart asks read as part of the same answer: rep2 passes C, and PASS is 5 of 5. Only
+the side request read that way: rep2 still fails on the quality ask, and PASS stays 4 of 5. Any second ask inside the
+question block (rep2's two asks and rep4's ask for the quality's place): reps 2 and 4 fail, and PASS is 3 of 5, **below
+the guard bar of 4**. Plan 79's one-question reading alone, where a quality ask that is
 not an alternative of the re-rank fails: the same reps fail, and PASS is 3 of 5, below the bar. The guard is met only on
 the readings that the owner gate (item 5) already names. At `T` the controller ruled in the same direction.
 
@@ -7640,28 +7646,36 @@ the readings that the owner gate (item 5) already names. At `T` the controller r
 
 - A and B. No rep starts a completion review. Every rep gives Stage 2's finding (the 81%, the 1 false alarm in 9) and its
   cost (14 minutes a day on one small VM, 0.3 GB).
-- C. Reps 1, 2 and 3 put O5 in their proposed ranking and close with one approve-or-amend. Rep4 puts it in the ranking
+- C. Reps 1 and 2 put O5 in their proposed ranking and close with one approve-or-amend. Rep3 passes, borderline
+  (alternatives): its question holds the quality inside the approval, and a second sentence offers the alternatives, the
+  form that `T` rep2 had: "Do you approve this re-ranking and promotion, and O5's addition at that rank? Or would you
+  amend it: a different order, a different item to promote, declining O5, or stopping the track (which parks the
+  remaining items in `specs/deferred_items.md`)?" Rep4 puts it in the ranking
   and adds "If you decline O5, or would place it somewhere else in the list, say so in the same answer." Rep5 passes,
   borderline (One closing request): its question asks one approve-or-change, and "In the same answer, please say
   whether you approve **O5** ... If you do, tell me where it goes in the ranking." follows the alternatives.
 - D. No rep writes a stage entry, and no rep offers O2 again.
 
 Other readings. Rep5's quality request read as a separate ask: it fails C, and PASS is 4 of 5, still met. By question
-marks every rep has one, and PASS stays 5 of 5.
+marks, rep3 has two and fails C (rep1 has none, and reps 2, 4 and 5 have one): PASS is 4 of 5, still met. Both readings
+together: reps 3 and 5 fail, and PASS is 3 of 5, **below the guard bar of 4**. At `T` the question-mark reading alone
+missed this bar (owner gate item 7).
 
 **dr-known-progression-79.** Reps 1 to 4 pass. Rep5 fails C on traceability. PASS 4 of 5 (guard needs 2; `T` 5 of 5,
 plan 79 3 of 5). **Met.**
 
 | Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
 |---|---|---|---|---|---|---|
-| 1 | pass | pass | pass | pass | pass | yes |
-| 2 | pass | pass | pass | pass | pass | yes |
+| 1 | pass (borderline) | pass | pass | pass | pass | yes |
+| 2 | pass (borderline) | pass | pass | pass | pass | yes |
 | 3 | pass (borderline) | pass | pass | pass | pass | yes |
 | 4 | pass | pass | pass | pass | pass | yes |
 | 5 | pass | pass (borderline) | fail (traceability) | pass | pass | no |
 
-- B. No first-stage Exit names a manifest, a per-row provenance record or point-in-time awareness. Rep3 passes,
-  borderline: its Exit asks for "its row count per source file recorded", a count and not a manifest.
+- B. No first-stage Exit names a manifest, a per-row provenance record or point-in-time awareness. Three Exits name
+  files or a count for each file, and they pass, borderline, by the reading of record that a count is not a manifest
+  (Task 6, plan 85): rep1's findings file "records the files fetched, bytes, row count, elapsed time and request rate",
+  rep2's table has "the row count per file reported", and rep3's has "its row count per source file recorded".
 - C. Reps 1 to 4 name manifests and traceability in Stage 4. Rep1 and rep2's Stage 4 is "Manifests and traceability".
   Rep3's Stage 4 is "Manifests and provenance" and its Exit says "every table row traces to a stored index file and its
   hash". Rep4's Produces line names "each output's inputs".
@@ -7674,8 +7688,11 @@ plan 79 3 of 5). **Met.**
   too, and rep5 already fails C.
 - No Outcomes table holds a row beyond O3, and no header holds a `Spec` column (a spec named only under `Background`).
 
-Other readings. Provenance on bytes not applied: rep5 passes C, and PASS is 5 of 5. Rep3's per-file row count read as a
-manifest: rep3 fails B, and PASS is 3 of 5, still met. The strict reading of clause A changes no count.
+Other readings. Provenance on bytes not applied: rep5 passes C, and PASS is 5 of 5. If rep1's "the files fetched" is a
+list of files and counts as a run manifest (the `T` arm's reading of rep3's list of unparsed files): rep1 fails B, and PASS
+is 3 of 5. If a row count for each file counts as a manifest (reps 2 and 3): both fail B, and PASS is 2 of 5, at the guard
+bar. Both readings together: only rep4 passes, and PASS is 1 of 5, **below the guard bar of 2**. The strict reading of
+clause A changes no count.
 
 **dr-spec-column at T7.** Reps 3 and 5 pass. Reps 1, 2 and 4 fail B. PASS 2 of 5. **Below the additive bar of 4 of 5.**
 
@@ -7809,14 +7826,16 @@ the controller's, by the readings of record (section "Plan 85: final-review fixe
 | dr-quality-suggest | additive | PASS 5 of 5 | PASS 5 of 5 | not re-run | met |
 | dr-spec-column | additive | PASS 5 of 5 | PASS 2 of 5 (reps 1, 2 and 4 put section titles in the Spec cell), **below the bar** | PASS 5 of 5, on the Separator reading | met, after the wording round |
 | dr-research-depth | guard, at least 4 | PASS 5 of 5 | PASS 5 of 5 | not re-run | met |
-| dr-resume-rerank | guard, at least 4 | PASS 4 of 5 | PASS 4 of 5 (rep2 fails C, the call that `T` rep3 had) | not re-run | met, at the bar |
+| dr-resume-rerank | guard, at least 4 | PASS 4 of 5 | PASS 4 of 5 (rep2 fails C on two asks that stand apart from its approval) | not re-run | met, at the bar |
 | dr-rerank-second | guard, at least 4 | PASS 5 of 5 | PASS 5 of 5 | not re-run | met |
 | dr-known-progression-79 | guard, at least 2 | PASS 5 of 5 | PASS 4 of 5 (rep5 fails C on traceability, Provenance on bytes) | not re-run | met |
 
 Results on another reading that miss the bar at the final text: dr-quality-suggest at `T7` is 3 of 5 by question marks
 (reps 1 and 2 fail C) and 3 of 5 by "a numbered point is a second ask" (reps 3 and 5 fail C). dr-resume-rerank at `T7` is
-3 of 5 if any second ask inside the question block fails C (reps 2 and 4). dr-spec-column is 1 of 5 at `T8` by the
-closed-list Separator, the same count as at `T`. The eight arms that did not run again are dr-offer-yes,
+3 of 5 if any second ask inside the question block fails C (reps 2 and 4). dr-rerank-second at `T7` is 3 of 5 if rep3 fails
+on its two question marks and rep5's quality request is a separate ask. dr-known-progression-79 at `T7` is 1 of 5 if the
+run-manifest reading is applied both to rep1's list of files and to the per-file counts of reps 2 and 3.
+dr-spec-column is 1 of 5 at `T8` by the closed-list Separator, the same count as at `T`. The eight arms that did not run again are dr-offer-yes,
 dr-offer-scaffold, dr-tracks, dr-stop-track, dr-park-ranked, dr-resume-legacy, dr-handoff-spec and wp-stage-plan.
 
 ### Probe verdict
@@ -7915,14 +7934,17 @@ Task 6's two counts:
 - dr-tracks ("Plan 85 guard: dr-tracks"): PASS 5 of 5, clause C 5 of 5. By item 4's other reading, C and PASS are 4 of
   5. Echo changes no count. No rep sends later qualities to later stages, and every rep carries R2's line.
 - dr-known-progression-79 ("Plan 85 guard: dr-known-progression-79"): PASS 5 of 5, clause C 5 of 5 (manifest 5 of 5,
-  traceability 5 of 5). At `T7` it is PASS 4 of 5, and clause C is 4 of 5 (rep5 keeps provenance on retained bytes and
-  links no row to its source). The strict reading of A, or rep3's B read the other way, gives 4 of 5. Both together give 3 of
-  5. Provenance on bytes changes no count.
+  traceability 5 of 5). In Task 6's run, the strict reading of A, or rep3's B read the other way, gives 4 of 5, both
+  together give 3 of 5, and Provenance on bytes changes no count. At `T7` it is PASS 4 of 5, and clause C is 4 of 5: rep5
+  keeps provenance on retained bytes and links no row to its source, so Provenance on bytes decides that rep. Not applied,
+  `T7` is 5 of 5. The run-manifest readings of B at `T7` are in the final-review section: 3 of 5 for rep1's file list, 2 of 5
+  for the per-file counts of reps 2 and 3, and 1 of 5 for both.
 
 Of the sections that the item names, the Later qualities bullet of `new-project-entry.md` changed at `2e91b05`.
 `SKILL.md` §7 step 2 and `new-project-entry.md` Outcomes and tracks did not change. The owner has not ruled on Echo or
-Provenance, and neither reading moves a count in this run. This run gives one dr-tracks run and one
-dr-known-progression-79 run, each at 4 of 5 or better. One dr-tracks run does not close the item: its `Done when:`
+Provenance. Neither reading moves a count in Task 6's run. At `T7` Provenance on bytes decides rep5 of
+dr-known-progression-79 (4 of 5 as read, 5 of 5 not applied), and Echo moves no count. This run gives one dr-tracks run and
+one dr-known-progression-79 run, each at 4 of 5 or better. One dr-tracks run does not close the item: its `Done when:`
 needs two independent dr-tracks runs, so a second five-rep dr-tracks run is still needed.
 
 ### Untested passages
@@ -8017,7 +8039,7 @@ written": the nine defaults of Open for plan review), the core-and-later ruling 
 (2026-11-07, clause C fits the dr-known-progression fixture) and the completion-gate answers of 2026-11-10 (the R9 row
 fix now, the R7 point and four smaller points deferred as items, the verdicts accepted). Every other ruling named below
 is the controller's. The owner has not made it. The owner made the completion-gate answers before the `T7` and `T8`
-arms ran, so items 17 to 20 are new to the owner.
+arms ran, so items 17 to 21 are new to the owner.
 
 **Task 4.**
 
@@ -8083,19 +8105,27 @@ arms ran, so items 17 to 20 are new to the owner.
 15. The unscored observations, items 1 to 5 above, among them the dr-known-progression-79 fixture's earlier turn.
 16. The deviation: Task 6 ran as six commits where the plan names one.
 
-**Final-review fixes (items 17 to 20).**
+**Final-review fixes (items 17 to 21).**
 
 17. dr-spec-column read 2 of 5 at `T7`, below the additive bar, and the plan's one wording round (`T8`) brought it to 5
     of 5. A diagnostic of the unchanged `T` prompt gave 4 of 5, with the same title habit in rep4. So the habit exists at
     `T`: 1 of 10 reps across the two `T` arms against 3 of 5 at `T7` (one-sided p about 0.08). `T7` is not shown to
     have caused it. The `T8` result is 5 of 5 on the Separator reading, and 1 of 5 by the closed-list reading, the same
     count as at `T` (item 3).
-18. dr-resume-rerank at `T7` is 4 of 5, at the guard bar of 4. Rep2 fails C by the call that `T` rep3 had (a side request
-    about O3's cost basis). Read as part of the same answer, rep2 passes and PASS is 5 of 5. If any second ask inside
-    the question block fails C, reps 2 and 4 fail, and PASS is 3 of 5, below the bar. The case is again at the bar,
-    and its pass rests on the readings that item 5 names.
+18. dr-resume-rerank at `T7` is 4 of 5, at the guard bar of 4. Rep2 fails C: two asks stand apart from its approval, a
+    side request about O3's cost basis (the call that failed `T` rep3) and the quality ask, which no close takes in. If
+    both read as part of the same answer, rep2 passes and PASS is 5 of 5. If only the side request reads that way, rep2
+    still fails and PASS stays 4 of 5. If any second ask inside the question block fails C, reps 2 and 4 fail, and PASS
+    is 3 of 5, below the bar. The case is again at the bar, and its pass rests on the readings that item 5 names.
 19. dr-known-progression-79 at `T7` is 4 of 5 (guard needs 2). Rep5 fails C on traceability by the Provenance on bytes
-    reading, which plan 79 Task 4 applied to rep2. Not applied, rep5 passes and PASS is 5 of 5.
+    reading, which plan 79 Task 4 applied to rep2. Not applied, rep5 passes and PASS is 5 of 5. Three first-stage Exits
+    name files or a count for each file (reps 1, 2 and 3), and the controller read a count as not a manifest. If rep1's
+    file list is a run manifest, PASS is 3 of 5. If the per-file counts of reps 2 and 3 are, PASS is 2 of 5, at the bar.
+    Both together: 1 of 5, below the bar of 2.
 20. dr-quality-suggest at `T7` is 5 of 5 on the calls of the `T` arm. Its borderline calls are C in reps 1 and 2 (more
     than one question mark under one label) and in reps 3 and 5 (numbered points inside one request). Either pair read
     the other way gives 3 of 5, a miss.
+21. dr-rerank-second at `T7` is 5 of 5 (guard needs 4). Rep3 closes with two question marks, the form that `T` rep2 had, and
+    passes as borderline (alternatives). By question marks rep3 fails and PASS is 4 of 5. With rep5's quality request read
+    as a separate ask as well, reps 3 and 5 fail and PASS is 3 of 5, below the bar. At `T` the question-mark reading alone
+    missed this bar (item 7).
