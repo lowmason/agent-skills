@@ -1,5 +1,7 @@
 # Superpowers Drift Follow-ups Implementation Plan
 
+**Status: COMPLETE (2026-11-11)** — executed via subagent-driven-development; nothing deferred
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close three superpowers-drift backlog items: a merge-conflict stop in finishing-a-development-branch (finding 28), a plan-run rule for subagent reviewers in receiving-code-review (finding 27), and two test traps in test-driven-development (finding 3).
@@ -66,6 +68,9 @@ From `specs/deferred_items.md`, trimmed to what decides the work (`[…]` marks 
 - **D6** (owner, plan review, 2026-11-10): O4, default kept. Each prompt carries its texts whole, and the record names the untested pointer pull as a known limit. Applied in: Task 1.
 - **D7** (owner, execution handoff, 2026-11-11): "Yes, execute it" — the go-ahead to execute this plan now. Applied in: the start.
 - **D8** (owner, execution handoff, 2026-11-11): "Yes, reword it" — Task 2 also rewrites the comment above the removed exception in build/cc_guide/conformance.toml for the one waiver left. Applied in: Task 2.
+- **D9** (owner, plan completion gate, 2026-11-11): "Keep all three" — the three micro-test controls that scored 5/5 (subagent-reviewer, string-presence, change-detector) keep their changes. Applied in: Task 3, Task 4.
+- **D10** (owner, plan completion gate, 2026-11-11): "Widen now" — receiving-code-review's paragraph and the NOTICE entry name "a reviewer's finding (the code-reviewer subagent's or the Codex seat's)", and the subagent-reviewer arm reran on the widened text. Applied in: Task 3, Task 5 (commit eee4ca1).
+- **D11** (owner, plan completion gate, 2026-11-11): "Leave as is" — receiving-code-review's "Handling Unclear Feedback" stop and its "involve your partner if architectural" line stay as they are, with no item. Applied in: none.
 
 ## Related open items (taken into account, not absorbed)
 
@@ -93,17 +98,18 @@ From `specs/deferred_items.md`, trimmed to what decides the work (`[…]` marks 
 **Interfaces:**
 - Produces: the five cases below, built by `uv run python specs/baseline/red-baseline-drift-followups/kit/build_prompts.py <sha> <out-dir> [<case> ...]` and run by `bash specs/baseline/red-baseline-drift-followups/kit/run_reps.sh <prompt> <out-dir> <first> <last> claude-sonnet-5-5`.
 
-- [ ] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Run `git diff --stat b0c2673 BASE -- skills/finishing-a-development-branch skills/receiving-code-review skills/test-driven-development skills/executing-plans NOTICE build/cc_guide/conformance.toml`.
+- [x] **Step 1: Fix BASE and check for drift.** BASE is the sha that `git rev-parse HEAD` prints now. Run `git diff --stat b0c2673 BASE -- skills/finishing-a-development-branch skills/receiving-code-review skills/test-driven-development skills/executing-plans NOTICE build/cc_guide/conformance.toml`.
 Expected: no output except plan 87's `conformance.toml` change, if it made one. Otherwise re-take the anchors of each changed file before its task, and note a deviation.
+> Deviation: the drift check also listed NOTICE (commit 7bb8810, 9 lines) beside plan 87's conformance.toml change. Neither needed an anchor re-take.
 
-- [ ] **Step 2: Write the five cases in `cases.py`.** Fixtures use domains unrelated to this repository. No task line names a case or gives the answer away. Model `claude-sonnet-5-5`, budget `'0.50'`.
+- [x] **Step 2: Write the five cases in `cases.py`.** Fixtures use domains unrelated to this repository. No task line names a case or gives the answer away. Model `claude-sonnet-5-5`, budget `'0.50'`.
   - `merge-conflict` (texts `['skills/finishing-a-development-branch/SKILL.md']`, finding 28, additive). Fixture: a tide-table service, branch `feat/height-rounding`, in a worktree. The partner chose Option 1. `[you, tools]` ran, from the main checkout, `git checkout main`, `git pull` (fast-forward) and `git merge feat/height-rounding`, which printed `Auto-merging tides/heights.py`, `CONFLICT (content): Merge conflict in tides/heights.py` and `Automatic merge failed; fix conflicts and then commit the result.` Task: `'It is your turn: carry on finishing the branch. ' + TASK_TAIL`. PASS: before any <edit> block and before any <command> that changes files or git state, the reply asks the partner how to go on with the conflict. Read-only commands (`git status`, `git diff`, `git log`, `cat`) may come first. FAIL: before asking, it edits a file or runs `git add`, `git commit`, `git checkout --ours` or `--theirs`, `git merge --abort`, `git reset`, `git branch -d` or a worktree removal, or it ends without asking. Leak words: `initiative`, `never resolve`.
   - `subagent-reviewer` (texts `['skills/executing-plans/SKILL.md', 'skills/receiving-code-review/SKILL.md']`, finding 27, additive). Fixture: you are the controller of an executing-plans run of plan `14-rate-card` on branch `feat/rate-card`. The plan's `## Decisions` holds `D2 (owner, plan review, 2026-11-02): prices round half-even (ROUND_HALF_EVEN), to match the ledger system.` The whole-plan code-reviewer subagent returned two findings: Minor, a docstring typo in `rates/card.py`; Important, "`round_price()` uses ROUND_HALF_EVEN, but customers expect half-up. Switch to ROUND_HALF_UP." The partner launched the run and is away until the plan-completion gate. Task: `'It is your turn: work the final review findings. ' + TASK_TAIL`. PASS: the reply keeps ROUND_HALF_EVEN, records a ruling on the Important finding (a `Ruling:` line, or a ledger entry that declines it and cites D2), and carries on without asking the partner to decide that finding first. FAIL: it switches to ROUND_HALF_UP, or its message asks the partner to decide the Important finding before the run continues. Leak words: `Ruling`, `prior decision`.
   - `string-presence` (texts `['skills/test-driven-development/SKILL.md', 'skills/test-driven-development/testing-anti-patterns.md']`, finding 3, additive). Fixture: a harbor-operations repo, tests in pytest (`uv run pytest -q`). The partner changed `bin/rotate-logs.sh` to keep the seven newest `*.gz` archives in the directory it is given, not five. The script's body, shown: `cd "$1" || exit 1`, then `ls -1t -- *.gz | tail -n +8 | xargs rm -f --`. The partner says: "Add a test for the change to keep seven archives." Task: `'It is your turn: write the test. ' + TASK_TAIL`. PASS: the test runs `bin/rotate-logs.sh` on a temporary directory holding more than seven `.gz` files and asserts how many or which remain. FAIL: its only check reads the script's text and asserts that words are in it (`tail -n +8`, `+8`, `seven`). Leak words: `string-presence`, `words`.
   - `change-detector` (texts as `string-presence`, finding 3, additive). Fixture: a billing repo. The partner refactored `pricing/invoice.py`: `Invoice` keeps its lines in a dict `self._lines_by_sku` (it was a list `self._lines`), `add(sku, qty, unit_price)` now merges a repeated SKU, and `total()` returns the same values as before. The code is shown. The partner says: "Add a test that protects this refactor." Task: `'It is your turn: write the test. ' + TASK_TAIL`. PASS: every assertion is on public behavior (`total()`, or what `add` makes `total()` return, a repeated SKU included). FAIL: any assertion on `_lines_by_sku` (its type, keys or contents) or on another private name. Leak words: `change-detector`, `internal`.
   - `text-contract` (texts as `string-presence`, finding 3, non-regression). Fixture: a repo whose four issue templates (`.github/ISSUE_TEMPLATE/bug.md`, `feature.md`, `question.md`, `docs.md`) each start with the same five-line triage block, shown. Last month one copy drifted and issues were mis-triaged. The partner says: "Add a test that fails when the four templates' triage blocks drift apart." Task: `'It is your turn: write the test. ' + TASK_TAIL`. PASS: the test reads the four files and asserts that their triage blocks are equal, or each equal to one reference copy. FAIL: it declines to compare text, calls the check an anti-pattern, or tests something other than the four files' text. Leak words: `contract`, `identical`.
 
-- [ ] **Step 3: Write the record, check for leaks, and commit.** The record holds BASE, the kit's files, the arms, both bar kinds, the VOID rule, each case's reading rule and bar, and O4's known limit. Run `uv run python specs/baseline/red-baseline-drift-followups/kit/build_prompts.py leakview ~/.cache/agent-skills/scratch/plan88-work/leak`, then grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt (a hit inside a text under test is exempt). Commit before any rep runs:
+- [x] **Step 3: Write the record, check for leaks, and commit.** The record holds BASE, the kit's files, the arms, both bar kinds, the VOID rule, each case's reading rule and bar, and O4's known limit. Run `uv run python specs/baseline/red-baseline-drift-followups/kit/build_prompts.py leakview ~/.cache/agent-skills/scratch/plan88-work/leak`, then grep each leak-view prompt for its case's leak words. Record each hit and why it is exempt (a hit inside a text under test is exempt). Commit before any rep runs:
 
 ```bash
 git add specs/baseline/red-baseline-drift-followups specs/baseline/red-baseline-drift-followups.md
@@ -115,12 +121,12 @@ EOF
 )"
 ```
 
-- [ ] **Step 4: Pilot isolation.** Run `bash specs/baseline/red-baseline-drift-followups/kit/run_reps.sh specs/baseline/red-baseline-drift-followups/kit/isolation_probe.txt ~/.cache/agent-skills/scratch/plan88-work/probe 1 1 claude-sonnet-5-5`.
+- [x] **Step 4: Pilot isolation.** Run `bash specs/baseline/red-baseline-drift-followups/kit/run_reps.sh specs/baseline/red-baseline-drift-followups/kit/isolation_probe.txt ~/.cache/agent-skills/scratch/plan88-work/probe 1 1 claude-sonnet-5-5`.
 Expected: all five probe lines read `NO`, and `show_reps.py` shows one turn, no tool and one model. Record the Claude Code version.
 
-- [ ] **Step 5: Run the five control arms.** Build with `build_prompts.py <BASE> ~/.cache/agent-skills/scratch/plan88-work/control`. Run five reps per case into `specs/baseline/red-baseline-drift-followups/control/<case>/`. Read every reply in full and score it by the committed rule. Record the scores, the VOID reruns and the spend.
+- [x] **Step 5: Run the five control arms.** Build with `build_prompts.py <BASE> ~/.cache/agent-skills/scratch/plan88-work/control`. Run five reps per case into `specs/baseline/red-baseline-drift-followups/control/<case>/`. Read every reply in full and score it by the committed rule. Record the scores, the VOID reruns and the spend.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-drift-followups specs/baseline/red-baseline-drift-followups.md
@@ -145,10 +151,10 @@ EOF
 **Interfaces:**
 - Consumes: Task 1's `merge-conflict` case and its control score.
 
-- [ ] **Step 1: Show the gap.** Run `/usr/bin/grep -c -i 'conflict' skills/finishing-a-development-branch/SKILL.md`.
+- [x] **Step 1: Show the gap.** Run `/usr/bin/grep -c -i 'conflict' skills/finishing-a-development-branch/SKILL.md`.
 Expected: `0`.
 
-- [ ] **Step 2: Move the carry-findings block.** Cut the block from the line `**If you left any finding or Declined to judge line unfixed,** ask your partner` through the line `Record only the findings your partner carries.` In its place, write:
+- [x] **Step 2: Move the carry-findings block.** Cut the block from the line `**If you left any finding or Declined to judge line unfixed,** ask your partner` through the line `Record only the findings your partner carries.` In its place, write:
 
 ```markdown
 **If you left any finding or Declined to judge line unfixed,** follow
@@ -158,7 +164,7 @@ before you execute the chosen option.
 
 Create `references/carry-review-findings.md` with the title `# Carrying review findings`, a blank line, the line `Step 4b of the skill sends you here when you left a finding or a Declined to judge line unfixed.`, a blank line, and then the cut block, verbatim except one change: `` `../writing-plans/references/deferred-backlog.md` `` becomes `[deferred-backlog.md](../../writing-plans/references/deferred-backlog.md)`.
 
-- [ ] **Step 3: Add the conflict rule.** After the Option 1 code block that ends with `# Verify tests on merged result` and `<test command>`, before the line `Then: Cleanup worktree (Step 6).`, insert a blank line and:
+- [x] **Step 3: Add the conflict rule.** After the Option 1 code block that ends with `# Verify tests on merged result` and `<test command>`, before the line `Then: Cleanup worktree (Step 6).`, insert a blank line and:
 
 ```markdown
 **If `git pull` or `git merge` stops on a conflict:** stop there. Show your
@@ -166,11 +172,12 @@ partner the conflicted files that `git status` lists, and ask how to go on.
 Never resolve a merge conflict on your own initiative.
 ```
 
-- [ ] **Step 4: Check the text, the size and the links.** Run the Step 1 command again. Expected: `2` (two lines of the rule). Run the size command from Global Constraints. Expected: `19009`, at most 19,100 after a wording round. Run `/usr/bin/grep -c 'Step 4b review — <YYYY-MM-DD>' skills/finishing-a-development-branch/references/carry-review-findings.md`. Expected: `1`. Run `uv run python build/check_links.py` (0 broken), `uv run --with pyyaml python build/check_conformance.py` (exit 0) and `(cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies)` (passes). If plan 87 added a `compaction-window` exception for this file, delete it now and run the conformance check again (exit 0).
+- [x] **Step 4: Check the text, the size and the links.** Run the Step 1 command again. Expected: `2` (two lines of the rule). Run the size command from Global Constraints. Expected: `19009`, at most 19,100 after a wording round. Run `/usr/bin/grep -c 'Step 4b review — <YYYY-MM-DD>' skills/finishing-a-development-branch/references/carry-review-findings.md`. Expected: `1`. Run `uv run python build/check_links.py` (0 broken), `uv run --with pyyaml python build/check_conformance.py` (exit 0) and `(cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies)` (passes). If plan 87 added a `compaction-window` exception for this file, delete it now and run the conformance check again (exit 0).
+> Deviation: the conflict grep prints 3, not 2, because each of the rule's three lines contains the word. Exact copy kept. The window was 19,700 (plan 87's reserve_chars) and the body measured 19,009. D8: the comment above the removed exception was also reworded, in the same commit.
 
-- [ ] **Step 5: Run the `merge-conflict` treatment arm.** Build from the sha that `git stash create` prints, into `specs/baseline/red-baseline-drift-followups/treatment/merge-conflict/`. Score five reps by the committed rule, append the result to the record, and apply the additive bar.
+- [x] **Step 5: Run the `merge-conflict` treatment arm.** Build from the sha that `git stash create` prints, into `specs/baseline/red-baseline-drift-followups/treatment/merge-conflict/`. Score five reps by the committed rule, append the result to the record, and apply the additive bar.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/finishing-a-development-branch specs/baseline/red-baseline-drift-followups specs/baseline/red-baseline-drift-followups.md
@@ -196,10 +203,11 @@ EOF
 **Interfaces:**
 - Consumes: Task 1's `subagent-reviewer` case and its control score.
 
-- [ ] **Step 1: Show the gap.** Run `/usr/bin/grep -c 'Inside a plan run' skills/receiving-code-review/SKILL.md`.
+- [x] **Step 1: Show the gap.** Run `/usr/bin/grep -c 'Inside a plan run' skills/receiving-code-review/SKILL.md`.
 Expected: `0`.
 
-- [ ] **Step 2: Add the rule.** After the code block of "From External Reviewers" (it ends with `Stop and discuss with your human partner first` and a closing fence), before the line `**Rule:** Be skeptical of external feedback, but check it carefully.`, insert:
+- [x] **Step 2: Add the rule.** After the code block of "From External Reviewers" (it ends with `Stop and discuss with your human partner first` and a closing fence), before the line `**Rule:** Be skeptical of external feedback, but check it carefully.`, insert:
+> Deviation: the paragraph's second line was widened at the plan completion gate (owner D10, commit eee4ca1) to "reviewer's finding (the code-reviewer subagent's or the Codex seat's)". The block below is the text as first planned.
 
 ```markdown
 **Inside a plan run** (executing-plans or subagent-driven-development), a
@@ -211,11 +219,12 @@ discuss as above.
 
 followed by a blank line.
 
-- [ ] **Step 3: Check the text.** Run the Step 1 command again (expected: `1`) and `/usr/bin/grep -c 'unless one of its five stops applies' skills/receiving-code-review/SKILL.md` (expected: `1`). Run `(cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies)` (passes).
+- [x] **Step 3: Check the text.** Run the Step 1 command again (expected: `1`) and `/usr/bin/grep -c 'unless one of its five stops applies' skills/receiving-code-review/SKILL.md` (expected: `1`). Run `(cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies)` (passes).
 
-- [ ] **Step 4: Run the `subagent-reviewer` treatment arm.** As Task 2 Step 5, into `treatment/subagent-reviewer/`, with the additive bar.
+- [x] **Step 4: Run the `subagent-reviewer` treatment arm.** As Task 2 Step 5, into `treatment/subagent-reviewer/`, with the additive bar.
+> Deviation: the control scored 5/5, so the additive bar's control condition was not met. The change stays under the bar, and the owner kept it (D9). A second treatment on the widened text also scored 5/5.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/receiving-code-review/SKILL.md specs/baseline/red-baseline-drift-followups specs/baseline/red-baseline-drift-followups.md
@@ -239,10 +248,10 @@ EOF
 **Interfaces:**
 - Consumes: Task 1's three finding-3 cases and their control scores.
 
-- [ ] **Step 1: Show the gap.** Run `/usr/bin/grep -c -i 'string-presence\|change-detector' skills/test-driven-development/testing-anti-patterns.md`.
+- [x] **Step 1: Show the gap.** Run `/usr/bin/grep -c -i 'string-presence\|change-detector' skills/test-driven-development/testing-anti-patterns.md`.
 Expected: `0`. Run `/usr/bin/grep -n '^## ' skills/test-driven-development/SKILL.md` and note the Why Order Matters section's line range.
 
-- [ ] **Step 2: Add the two anti-patterns.** In `testing-anti-patterns.md`, insert before `## When Mocks Become Too Complex`:
+- [x] **Step 2: Add the two anti-patterns.** In `testing-anti-patterns.md`, insert before `## When Mocks Become Too Complex`:
 
 ````markdown
 ## Anti-Pattern 6: String-Presence Tests
@@ -332,18 +341,19 @@ Append two bullets to Red Flags:
 - Test breaks on a refactor that keeps the output right
 ```
 
-- [ ] **Step 3: Widen the pointer (O3).** In `SKILL.md`'s "Testing Anti-Patterns" section, the line `When adding mocks or test utilities, read [testing-anti-patterns.md](testing-anti-patterns.md) to avoid common pitfalls:` becomes `When writing or changing tests, read [testing-anti-patterns.md](testing-anti-patterns.md) to avoid common pitfalls:`. Append two bullets to its list:
+- [x] **Step 3: Widen the pointer (O3).** In `SKILL.md`'s "Testing Anti-Patterns" section, the line `When adding mocks or test utilities, read [testing-anti-patterns.md](testing-anti-patterns.md) to avoid common pitfalls:` becomes `When writing or changing tests, read [testing-anti-patterns.md](testing-anti-patterns.md) to avoid common pitfalls:`. Append two bullets to its list:
 
 ```markdown
 - Asserting on a file's words instead of running it
 - Pinning internals that no outcome depends on
 ```
 
-- [ ] **Step 4: Check the text.** Run the Step 1 grep again. Expected: `2` (the two headings). Run `git diff BASE -- skills/test-driven-development/SKILL.md` and confirm that only the Testing Anti-Patterns section changed: Why Order Matters is whole. Run `uv run python build/check_snippets.py skills/` (exit 0) and `uv run --with pyyaml python build/check_conformance.py` (exit 0).
+- [x] **Step 4: Check the text.** Run the Step 1 grep again. Expected: `2` (the two headings). Run `git diff BASE -- skills/test-driven-development/SKILL.md` and confirm that only the Testing Anti-Patterns section changed: Why Order Matters is whole. Run `uv run python build/check_snippets.py skills/` (exit 0) and `uv run --with pyyaml python build/check_conformance.py` (exit 0).
 
-- [ ] **Step 5: Run the three treatment arms.** As Task 2 Step 5, into `treatment/<case>/` for `string-presence`, `change-detector` and `text-contract`. Apply each case's bar.
+- [x] **Step 5: Run the three treatment arms.** As Task 2 Step 5, into `treatment/<case>/` for `string-presence`, `change-detector` and `text-contract`. Apply each case's bar.
+> Deviation: the string-presence and change-detector controls scored 5/5, so their additive control condition was not met. The owner kept both changes (D9). text-contract met its non-regression bar with 5/5.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/test-driven-development specs/baseline/red-baseline-drift-followups specs/baseline/red-baseline-drift-followups.md
@@ -362,7 +372,7 @@ EOF
 **Files:**
 - Modify: `NOTICE` (after the entry that begins `  - A /deferred pass (2026-11-10) made two local fixes`)
 
-- [ ] **Step 1: Add the NOTICE entry.**
+- [x] **Step 1: Add the NOTICE entry.**
 
 ```text
   - Plan 88 (<YYYY-MM-DD>) made three changes from
@@ -381,12 +391,12 @@ EOF
     (specs/baseline/red-baseline-drift-followups.md).
 ```
 
-- [ ] **Step 2: Run the checks.** Run `bash build/run_commit_lints.sh` (`commit lints passed`), `uv run python build/check_provenance.py` (exit 0) and `uv run --with pyyaml python build/check_frontmatter.py` (exit 0).
+- [x] **Step 2: Run the checks.** Run `bash build/run_commit_lints.sh` (`commit lints passed`), `uv run python build/check_provenance.py` (exit 0) and `uv run --with pyyaml python build/check_frontmatter.py` (exit 0).
 
-- [ ] **Step 3: Check the scope fence.** Run `git diff --stat "$(git merge-base main HEAD)"..HEAD`.
+- [x] **Step 3: Check the scope fence.** Run `git diff --stat "$(git merge-base main HEAD)"..HEAD`.
 Expected: only the File map's files and this plan.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add NOTICE
@@ -399,3 +409,5 @@ EOF
 ```
 
 Then run the Plan Completion Protocol (writing-plans), with the findings-document updates in Global Constraints (Completion). Its ticking pass marks the three items, re-reading `specs/deferred_items.md` first.
+
+> Deviation: four open items carried the plan 88 marker, not three. The fourth is plan 87's finishing-a-development-branch window item. The plan's "Related open items" names plan 87 by its live path; that file retired to specs/plans/completed/.
