@@ -961,6 +961,20 @@ Changes from upstream:
     the skill directory (finding 33). Upstream states neither rule in its
     skill text. Its #2654 enforces the second with a test, which is not
     adopted. The changes are local, and no upstream text was taken.
+  - Plan 88 (2026-11-11) made three changes from
+    specs/findings/superpowers-drift-v7-0-2.md. finishing-a-development-branch
+    stops and asks when `git pull` or `git merge` stops on a conflict
+    (finding 28), and Step 4b's carry-findings block moved to
+    references/carry-review-findings.md, verbatim except one link.
+    receiving-code-review says that, inside a plan run, a reviewer's finding
+    that conflicts with the partner's prior decisions is ruled on as the
+    executor says (finding 27). test-driven-development's
+    testing-anti-patterns.md names two traps that upstream's
+    writing-good-tests.md (read at 22f0b46) names: string-presence tests
+    and change-detector tests (finding 3). Its pointer now fires when
+    writing or changing tests. The ideas are upstream's, and the wording
+    is local. The micro-test scenarios are this repository's own
+    (specs/baseline/red-baseline-drift-followups.md).
 
     brainstorming/
     dispatching-parallel-agents/

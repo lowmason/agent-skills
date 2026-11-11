@@ -204,3 +204,20 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding" (deferred by superpowers-drift-v7.0.1): the owner ruled that the guide stays equal to the docs; the register and the weekly probe hold the measured cut.
+
+## 88-superpowers-drift-followups — 2026-11-11
+Plan: specs/plans/completed/88-superpowers-drift-followups.md · Spec: none
+
+Differences from the design:
+- Deviation (Task 1): the drift check also listed NOTICE (commit 7bb8810) besides plan 87's conformance.toml change; no anchor re-take was needed. Source: plan, Task 1.
+- Deviation (Task 2): the conflict grep prints 3, not 2, so exact copy won; D8 also reworded the register comment above the removed exception. Source: plan, Task 2.
+- Deviation (Task 3): the owner widened the paragraph at the gate (D10, commit eee4ca1) to cover the Codex seat's findings, and the second treatment scored 5/5. Source: plan, Task 3.
+- Deviation (Task 3): the control scored 5/5, so the additive bar's control condition was unmet; the owner kept the change (D9). Source: plan, Task 3.
+- Deviation (Task 4): the string-presence and change-detector controls scored 5/5, so their control condition was unmet; the owner kept both changes (D9). Source: plan, Task 4.
+- Deviation (Task 5): four open items carried the plan marker, not three. Source: plan, Task 5.
+
+Closed earlier deferred items:
+- "**receiving-code-review does not say which rule wins for a subagent reviewer inside a plan run" (deferred by superpowers-drift-v7.0.2).
+- "**finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the" (deferred by superpowers-drift-v7.0.2).
+- "**test-driven-development's `testing-anti-patterns.md` does not name the string-presence and" (deferred by superpowers-drift-v7.0.2 earlier findings).
+- "`skills/finishing-a-development-branch/SKILL.md` is 275 characters over the corrected compaction window (body 19,975," (deferred by 87-compaction-cut-probe).

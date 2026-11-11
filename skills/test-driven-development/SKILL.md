@@ -361,10 +361,12 @@ Never fix bugs without a test.
 
 ## Testing Anti-Patterns
 
-When adding mocks or test utilities, read [testing-anti-patterns.md](testing-anti-patterns.md) to avoid common pitfalls:
+When writing or changing tests, read [testing-anti-patterns.md](testing-anti-patterns.md) to avoid common pitfalls:
 - Testing mock behavior instead of real behavior
 - Adding test-only methods to production classes
 - Mocking without understanding dependencies
+- Asserting on a file's words instead of running it
+- Pinning internals that no outcome depends on
 
 ## Final Rule
 

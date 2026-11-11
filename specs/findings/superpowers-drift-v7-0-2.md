@@ -119,7 +119,7 @@ anchors this revision cites were re-taken at `5beacf5`.
 |---|---|---|
 | 1 | SDD workspace has no plan identity | **Adopted** — plan 22 |
 | 2 | Implementers can spawn duplicate reviewers | **Adopted** — plan 22 |
-| 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged at v7.0.2. Logged in `specs/deferred_items.md` (2026-11-10). The owner ruled two traps only (2026-11-10); planned in plan 88 |
+| 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged at v7.0.2. Logged in `specs/deferred_items.md` (2026-11-10). The owner ruled two traps only (2026-11-10). **Adopted** — plan 88 (2026-11-11): two traps named, and the skill's pointer fires when writing or changing tests |
 | 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`). v7.0.2's retune (#2644) **adopted** — plan 86 (2026-11-10), see the finding |
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
@@ -143,8 +143,8 @@ anchors this revision cites were re-taken at `5beacf5`.
 | 24 | Planner-authored tests can share a spec misreading | **New**, workflow. Closed with no build (plan 83, owner decision D8, 2026-11-09). Layer 4 of its backlog item stays open in `specs/deferred_items.md` |
 | 25 | requesting-code-review still leads with `HEAD~1` | **New.** **Already covered**; record |
 | 26 | dispatching-parallel-agents dispatches without a model or a worktree | **New.** Model half **already covered** (skill text and `hooks/dispatch-model-guard.py`); the shared-working-tree half is a gap on both sides, low. That half is logged in `specs/deferred_items.md` (2026-11-10). The worktree half is **fixed** by a /deferred quick fix (2026-11-10) |
-| 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides. The one-sentence fix for the stall is logged in `specs/deferred_items.md` (2026-11-10). Planned in plan 88 (2026-11-10) |
-| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone. Step 1 wording **adopted** — plan 82 (2026-11-09); the merge-conflict path stays open. It is logged in `specs/deferred_items.md` (2026-11-10). The conflict path is planned in plan 88 (2026-11-10) |
+| 27 | receiving-code-review treats every reviewer as a person | **New.** Partly covered (`9c630f9`); the stall on a partner-decision conflict and the `gh api` line stand on both sides. The one-sentence fix for the stall is logged in `specs/deferred_items.md` (2026-11-10). The stall fix **adopted** — plan 88 (2026-11-11): inside a plan run, a reviewer's finding that conflicts with a partner decision is ruled on under the executor's rules; the `gh api` line stays |
+| 28 | finishing-a-development-branch guesses the test command and has no conflict path | **New.** Step 1 wording open on both sides; the backlog gate is ours alone. Step 1 wording **adopted** — plan 82 (2026-11-09); the merge-conflict path stays open. It is logged in `specs/deferred_items.md` (2026-11-10). The conflict path **adopted** — plan 88 (2026-11-11): the skill stops and asks when `git pull` or `git merge` stops on a conflict |
 | 29 | using-git-worktrees sets up Python projects wrongly and drops isolation silently | **New.** Setup half **already covered** (`169942a`); the sandbox fallback is a shared design choice |
 | 30 | systematic-debugging's `find-polluter.sh` is still invoked by a relative path upstream | **New.** **Already covered** here (plan 50); upstream's #2607 test does not reach it |
 | 31 | verification-before-completion lacks the documented-test-command pointer | **New.** Claim-specific command selection exists; the more explicit pointer is a wording proposal on both sides, low. **Adopted** — plan 82 (2026-11-09) |
@@ -235,6 +235,8 @@ historical evidence; its assurance about the then-existing test suites is not
 a fresh audit of today's suites.
 
 **Logged 2026-11-10:** the falsifiability guidance is a backlog item → item: superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
+
+**Done** (plan 88, 2026-11-11): `testing-anti-patterns.md` names string-presence tests and change-detector tests, with a carve-out for a check whose subject is the text itself, and the skill's pointer fires when writing or changing tests. The two additive treatments passed 5 of 5 against controls that also passed 5 of 5, which the owner kept.
 
 ### 4. Brainstorming ceremony does not scale — adopted (plan 70, v7.0.1), and v7.0.2's retune (plan 86)
 
@@ -986,6 +988,8 @@ to a discipline skill, so a micro-test if it is made.
 
 **Logged 2026-11-10:** the one sentence is a backlog item → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 
+**Done** (plan 88, 2026-11-11): receiving-code-review says that, inside a plan run, a reviewer's finding that conflicts with the partner's prior decisions is ruled on under the executor's rules, and its stop applies outside a run. The treatment passed 5 of 5 against a control that also passed 5 of 5, which the owner kept. The `gh api` line stays.
+
 ### 28. finishing-a-development-branch guesses the test command and has no conflict path
 
 **Upstream.** Step 1 runs "the project's full test suite (`npm test` / `cargo
@@ -1017,6 +1021,8 @@ command(s), not a guessed one. The micro-test held: the treatment passed 5 of 5 
 5 of 5. The conflict path stays open.
 
 **Logged 2026-11-10:** the conflict path is a backlog item → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
+
+**Done** (plan 88, 2026-11-11): finishing-a-development-branch stops, shows the conflicted files and asks when `git pull` or `git merge` stops on a conflict. Step 4b's carry-findings block moved to `references/carry-review-findings.md` to make room. The treatment passed 5 of 5 against a control at 1 of 5.
 
 ### 29. using-git-worktrees sets up Python projects wrongly and drops isolation silently
 
@@ -1166,6 +1172,7 @@ Under this repo's proportional-process rule:
   **Update 2026-11-10 (/deferred pass):** the owner closed finding 8's two
   considerations with no change, ruled two traps for finding 3 (plan 88), and
   had finding 17's probe planned (plan 87).
+  **Update 2026-11-11:** finding 3's two traps: Done: plan 88 (2026-11-11).
 - **Port candidate, a plan with micro-tests and no spec:** finding 4's #2644
   retune, applied as upstream's diff against our v7.0.1-derived copy with plan
   70's divergences held, tested against plan 70's RED baseline with the
@@ -1194,6 +1201,7 @@ Under this repo's proportional-process rule:
   backlog → item: superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
   **Update 2026-11-10 (/deferred pass):** findings 26 and 33 are fixed.
   Findings 27 and 28 are planned in plan 88.
+  **Update 2026-11-11:** findings 27 and 28: Done: plan 88 (2026-11-11).
 - **Decided, record only:** finding 19 (finding 7's decision); finding 29's
   sandbox fallback; finding 30's figures; finding 32.
 - **Not adopted until the probe has run:** upstream's whole-file byte bar
