@@ -182,6 +182,18 @@ def test_baseline_must_carry_this_codes_format(value):
     assert str(err.value) == f'{state.BASELINE}: format {value!r} is not 3, the format this code reads'
 
 
+@pytest.mark.parametrize('drop', [None, 'cited'])
+def test_a_later_layout_gets_the_format_message_not_the_key_set_one(drop):
+    '''A file of a later format may also carry other keys. The format check
+    runs first, so the reader is told both formats and not the key set.'''
+    raw = {**json.loads(baseline_text()), 'format': 4, 'extra': 1}
+    if drop:
+        del raw[drop]
+    with pytest.raises(state.SetupError) as err:
+        state.parse_baseline(json.dumps(raw))
+    assert str(err.value) == f'{state.BASELINE}: format 4 is not 3, the format this code reads'
+
+
 def test_baseline_holds_exactly_its_five_keys():
     raw = {**json.loads(baseline_text()), 'extra': 1}
     with pytest.raises(state.SetupError) as err:
