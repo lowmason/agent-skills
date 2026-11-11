@@ -1,6 +1,6 @@
 # derive-roadmap: later qualities and spec references — Design Spec
 
-**Status:** APPROVED (2026-11-07). The design came from a brainstorming session on 2026-11-07, opened by a
+**Status:** COMPLETE (2026-11-10), implemented by plan 85 (`specs/plans/completed/85-derive-roadmap-later-qualities-and-spec-refs.md`). It was APPROVED on 2026-11-07. The design came from a brainstorming session on 2026-11-07, opened by a
 `/deferred` Design pick. Decisions D1–D8 are the owner's, from that session. Text marked *(designer's call)* was the
 designer's choice. The owner approved this file, its designer's calls included, on 2026-11-07 ("Spec approved").
 

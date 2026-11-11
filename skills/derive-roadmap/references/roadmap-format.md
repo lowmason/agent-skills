@@ -97,12 +97,18 @@ The Outcomes section keeps one line per outcome:
 Source: <your partner's words, YYYY-MM-DD> | <spec path>. Background: <paths> | none.
 Choices made: <one line each> | none.
 
-| # | Outcome | Track | Rank | Cost (estimate; basis) |
-|---|---|---|---|---|
-| O1 | <what your partner gets> | A | 1 | <estimate; basis> or "measured by Stage 1" |
+| # | Outcome | Spec | Track | Rank | Cost (estimate; basis) |
+|---|---|---|---|---|---|
+| O1 | <what your partner gets> | <§ and R refs> | A | 1 | <estimate; basis> or "measured by Stage 1" |
 
 Tracks: A — <name> (known progression | research). <Split from B because …>
 ```
+
+When `Source` is a spec, the `Spec` cell holds the § and R refs that the
+outcome came from: refs only, never a section title, a requirement title or
+requirement text, and `none` for an outcome that no spec section asks for.
+When `Source` is not a spec, leave the column out. A spec named only under
+`Background` gives no column.
 
 Stage entries carry these fields and nothing else. `Outcomes` takes the place
 of `Spec` and `Gap closed`:
@@ -126,6 +132,20 @@ Each research track's Ranked list keeps your partner's order:
 1. O4 — <cost note>
 2. O6 — <cost note>
 ```
+
+A later quality joins a Ranked list only as an outcome your partner approved
+and ranked (SKILL.md §4). Until the answer, the stage's `Leaves out` names it
+as `<quality>: suggested, see the approval question`, and it has no list item,
+no O-number and no Outcomes row. On approval it takes the next free O-number,
+an Outcomes row (its outcome line, its `Spec` refs or `none` when `Source` is
+a spec, the track, your partner's rank and a cost note) and its ranked place
+in the list, and the `Leaves out` entry points at it by O-number. On a
+decline, the entry reads `<quality>: declined, <YYYY-MM-DD>`, and no item is
+made. From approval on it is an ordinary outcome, with no special case at a
+resume, at parking or in the completion review. When the session cannot ask,
+the provisional file lists each suggested quality at the end of the Ranked
+list, with its next free O-number and the label `suggested, not approved`.
+Each also gets an Outcomes row, marked `suggested, not approved`.
 
 An item leaves the list when your partner promotes it to a stage at a resume,
 or parks when the track stops or the whole roadmap parks (SKILL.md §5).

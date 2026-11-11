@@ -17,7 +17,12 @@ Nothing from them is written here except the hand-written state lines below. Con
 use their own domains: a museum's visitor-count forecaster, canal lock closures and river-gauge
 levels, a parking-sensor occupancy pipeline, a tide-gauge archive, building permits, timesheets
 and GPX tracks.
+
+Plan 85 adds three cases at the end of CASES: dr-quality-suggest, dr-spec-column and dr-handoff-spec. It also
+adds the constants of its stage-plan probe (WP_STAGE_PLAN_*, whose CASES entry comes with Task 5) and
+rep_result(). No plan 78 or plan 79 case, rule or fixture changed.
 '''
+import json
 import re
 
 OPUS = 'claude-opus-5-5'
@@ -900,6 +905,193 @@ Clause D (conformance): every stage entry has a field that names what it leaves 
 Clause E (recorded, no bar): the first stage's Exit does not require complete dataset generations to publish atomically. The background spec's §1 asks for that, and the skill text does not name it, so E checks transfer.
 Reading notes. Clause B reads the first stage's Exit field, or the criteria that the reply gives for finishing the first stage when it has no field of that name. A manifest of any kind (source, run, ingestion or publication) fails B. Per-row provenance columns, such as a source id or a source hash, are traceability and fail B. A quality that the first stage names as not required, or as left out, passes. Clause A: committed stages are the stage entries of the roadmap file. Clause C: a named later stage is a stage entry after the first whose fields name the quality. Clause D: the field may have any name.'''
 
+# Plan 85 cases ---------------------------------------------------------------------------------
+# Three cases for the later-qualities text and the spec-ref column, plus the constants of the stage-plan
+# probe's step B (Task 5 adds its CASES entry, `wp-stage-plan`, once it has a sha). Every fixture reuses a
+# kit domain: canal locks and river gauges, SEC filings. No fixture holds an example of the new skill text.
+
+ROADMAP_ASK_TASK = 'It is your turn. You have no tools in this turn. Write the full roadmap file you will commit now, as Markdown, then the message you send with it.'
+WP_TASK = 'It is your turn. You have no tools in this turn. Write the start of the plan file you will save: its header, its Global Constraints and its task list, with each task\'s title, its Files block and one line on what the task delivers. Do not write the task steps.'
+
+WP = ['skills/writing-plans/SKILL.md']
+
+
+def rep_result(text: str) -> str:
+    '''The `result` field of one rep's JSON text. Refuses (SystemExit) when the JSON is unreadable or is not an
+    object, or when `result` is missing, is not a string or is blank.'''
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        raise SystemExit('refusing: the rep file is not readable JSON') from None
+    result = data.get('result') if isinstance(data, dict) else None
+    if not isinstance(result, str) or not result.strip():
+        raise SystemExit('refusing: the rep JSON has no result text')
+    return result
+
+
+# dr-quality-suggest (V3, R4, R5) ---------------------------------------------------------------
+
+DR_QUALITY_SUGGEST_FIXTURE = lines(
+    TODAY + ' The repository is `lock-closures`, on branch `main`.\n',
+    '[earlier] Your partner: I want a roadmap for a study of canal lock closures. Nothing is built yet. I want four things. First, to know how the chance that a lock closes moves with the upstream river-gauge level. Second, a 7-day closure-risk outlook for each lock from the river-level forecast. Third, separate closure curves for all 14 locks, pooled across locks. Fourth, a closure-history map for the canal\'s boat operators. The canal trust\'s board funds the study. It will ask which gauge readings each closure estimate came from.',
+    '[you, tools] Listed the repository with `git ls-files`: README.md, pyproject.toml, src/lock_closures/__init__.py and tests/test_smoke.py. The package is empty: its `__init__.py` has no code. The one smoke test checks that the package imports. No file is under specs/.',
+    '[earlier] You (your last message, in summary): You gave the outcome list, unranked, each outcome with a cost note:',
+    '    O1. How the chance that a lock closes moves with the upstream river-gauge level. Cost: measured by the first run on real data.',
+    '    O2. A 7-day closure-risk outlook for each lock from the river-level forecast. Cost: one model run a day, small once O1\'s model exists; basis: the first fit\'s time.',
+    '    O3. Separate closure curves for all 14 locks, pooled across locks. Cost: about 14 times the first run\'s data.',
+    '    O4. A closure-history map for the canal\'s boat operators. Cost: about a day of work; basis: one static map page.',
+    'Qualities to place when the roadmap is written: traceability.',
+    'You proposed one research track, Track A, and the name `lock-closures`, and asked your partner to rank the outcomes and confirm the track.',
+    '[now] Your partner: One research track is right. Rank them O1, O2, O3, O4. The name is fine. Go ahead.',
+)
+
+DR_QUALITY_SUGGEST_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the roadmap file holds no Ranked-list item, no O-number and no Outcomes row for traceability.
+Clause B (bar): the message after the file suggests traceability, with a reason that this project will need it, and asks the partner to approve it and, if approved, to give its place in Track A's ranking.
+Clause C (conformance): the approval of the partition and the request about traceability are one question.
+Clause D (conformance): the first stage's Leaves out names traceability as suggested or as waiting on the partner's answer.
+Clause E (conformance): the suggestion gives, in plain words, the outcome line that traceability would become.
+Reading notes. Clause A: a list line that names traceability fails A, numbered or not, labeled suggested or not; traceability named only in Leaves out or in the message passes. Clause B: a reason is any statement of why this project needs it, such as the board's question; a rank request that proposes a default place passes. Clause C: one question may offer options and close with them; two or more separate questions fail C. Clause D: any wording that marks traceability as not yet approved passes; a Ranked list named as its destination with no such mark fails D. Clause E: the outcome line says what the partner gets.'''
+
+DR_QUALITY_SUGGEST_LEAK = r'suggest|approv|Leaves out|O5|not yet'
+
+# dr-spec-column (V4, R10) ----------------------------------------------------------------------
+
+DR_SPEC_COLUMN_NOW = '[now] Your partner: Rank them in the order you listed. One track, a known progression. Go ahead and write the roadmap.'
+
+DR_SPEC_COLUMN_FIXTURE = lines(
+    edit(DR_OFFER_YES_FIXTURE, ('[now] Your partner: Yes, do that.', '[earlier] Your partner: Yes, do that.')),
+    '[earlier] You (your last message, in summary): You sent the one message: eleven outcomes, O1 to O11, one plain line each, drawn in order from R1 to R11; one track, a known progression; cost notes with their bases; and the roadmap takes the spec\'s stem as its name. You asked your partner to rank the outcomes.',
+    DR_SPEC_COLUMN_NOW,
+)
+
+DR_SPEC_COLUMN_PASS = '''PASS needs every bar and conformance clause.
+Clause A (bar): the Outcomes table has a column of spec refs, and every outcome row's cell in it holds at least one § or R ref of the spec.
+Clause B (bar): every cell of that column holds refs only.
+Clause C (conformance): the column is headed Spec and comes right after the Outcome column.
+Reading notes. Clause A: a ref is a § number (§4.2) or an R number (R1), alone, in a range (R1–R3) or in a list; refs written only inside an Outcome cell or a stage entry do not pass A. Clause B: a cell holds only § numbers, R numbers, ranges, commas and none; any other word fails B, such as a requirement's title ("R1 Baseline") or its text.'''
+
+DR_SPEC_COLUMN_LEAK = r'Spec column|refs only|requirement text|restate'
+
+# The roadmap that the probe's step A starts from and its step B reads: a new-project roadmap for the sec-edgar
+# spec in plan 85's format (the Outcomes table has a Spec column). Every row is in Track A, one track, so no
+# stage entry has a `Track:` field and the roadmap has no Ranked list.
+
+SEC_SPEC_ROADMAP = '''# SEC filing-index ingestion — roadmap
+
+> For agentic workers: REQUIRED SKILL: derive-roadmap — resume via its
+> reconcile step; route each unticked stage per its ROUTING line; never plan
+> this document wholesale.
+
+## Outcomes
+
+Source: specs/sec-filing-index-ingestion-spec.md. Background: specs/sec-filing-index-ingestion-adr.md.
+Choices made: none.
+
+| # | Outcome | Spec | Track | Rank | Cost (estimate; basis) |
+|---|---|---|---|---|---|
+| O1 | The archived quarterly filing indexes, downloaded and parsed into one filing-index table | R1, §4.2 | A | 1 | measured by Stage 1 |
+| O2 | The daily filing indexes, ingested every day after the baseline | R2, §4.2 | A | 2 | measured by Stage 1 |
+| O3 | Ingested indexes validated and normalized into one canonical filing-index dataset | R3, §4.6 | A | 3 | small once O1 and O2 parse; basis: Stage 1's parse time and data volume |
+| O4 | The whole pipeline running on Azure: ADF orchestrates, Container Apps Jobs run the Python, ADLS and Table Storage hold files and state | R4, §4.1 | A | 4 | about 10 working days; basis: the spec's five Azure services and its four job commands |
+| O5 | One downloader, parser and publisher for backfill, daily ingestion and reconciliation | R5, §4.1 | A | 5 | small; basis: one code path with three ways to pick sources |
+| O6 | Original bytes kept, so a parser change reprocesses stored inputs with no new download | R6, §4.5 | A | 6 | small; basis: the raw files at about the size of Stage 1's data volume |
+| O7 | The quarterly indexes re-read on a schedule, with additions and changed fields recorded | R7, §4.4 | A | 7 | one weekly run over every quarterly file; basis: about 130 quarterly files since 1993 |
+| O8 | Every request to the SEC going through one downloader under one request budget | R8, §4.3 | A | 8 | small; basis: one lease and one rate target of 3 requests per second |
+| O9 | Readers finding the current data through one versioned quarter manifest and its active pointer | R9, §4.5 | A | 9 | small; basis: one manifest per quarter and one pointer row per quarter |
+| O10 | Records leaving the active catalog only after an approval tied to the source hash | R10, §4.4 | A | 10 | small; basis: one approval record for each closed-quarter replacement that removes keys |
+| O11 | Schedules, retry limits and the request rate set as starting values, changed only by review | R11, §4.8 | A | 11 | small; basis: the stated values in one configuration file |
+
+Tracks: A — SEC filing indexes (known progression).
+
+## Stages
+
+- [ ] Stage 1: Index files on a local disk
+      Objective: One real quarterly index and one real daily index from the SEC are parsed into one filing-index table on a local disk.
+      Outcomes: O1, O2
+      Consumes: nothing
+      Produces: specs/sec-filing-index-ingestion-spec-stage-1-findings.md, with the result and the measured cost of the real run
+      Exit: one real quarterly index (O1) and one real daily index (O2) parsed into the filing-index table on a local disk, with the measured time and data volume
+      Leaves out: the versioned quarter manifest and its active pointer (O9, Stage 3); Azure orchestration (O4, Stage 4)
+      ROUTING: writing-plans
+
+- [ ] Stage 2: Shared processing, replay and one request budget
+      Objective: The index files are collected by one downloader under one request budget, validated and normalized by one parser, with the original bytes kept for replay.
+      Outcomes: O3, O5, O6, O8
+      Consumes: Stage 1's filing-index table and parser, as its findings file records them
+      Produces: the shared commands that collect and transform index files, the stored raw snapshots and the canonical filing-index dataset
+      Exit: malformed rows are refused and the rest are written to one canonical dataset (O3); backfill and daily ingestion run the same commands (O5); a parser change reprocesses the stored snapshots with no new request to the SEC (O6); in a test, two collectors together stay under 3 requests per second (O8)
+      Leaves out: corrections, the versioned quarter manifest and its active pointer (O7, O9, O10, Stage 3); Azure orchestration (O4, Stage 4)
+      ROUTING: writing-plans
+
+- [ ] Stage 3: Versioned publication and corrections
+      Objective: Readers find each quarter's current data through one versioned manifest and one active pointer, and changes to the quarterly indexes are reconciled, with an approval before any record is withdrawn.
+      Outcomes: O7, O9, O10
+      Consumes: Stage 2's canonical filing-index dataset and stored raw snapshots
+      Produces: the versioned quarter manifest, its active pointer, the reconciliation command and the withdrawal approval record
+      Exit: a reader resolves one quarter through its active pointer, and a failed publication leaves the previous generation readable (O9); a changed quarterly file is reconciled and its added and updated keys are recorded (O7); in a test, a closed-quarter replacement that removes keys waits for an approval tied to its source hash (O10)
+      Leaves out: Azure orchestration (O4, Stage 4); the stated schedules, retry limits and rate target as one configuration (O11, Stage 4)
+      ROUTING: writing-plans
+
+- [ ] Stage 4: Azure orchestration and stated defaults
+      Objective: ADF runs the shared commands as Container Apps Jobs on the stated schedules, with files in ADLS and control state in Table Storage.
+      Outcomes: O4, O11
+      Consumes: Stage 3's published quarter generations and the shared commands of Stages 1 to 3
+      Produces: the ADF pipelines, the Container Apps Jobs, the ADLS and Table Storage resources and the configuration file with the stated defaults
+      Exit: in an isolated Azure environment, a daily run and a reconciliation run each reach a terminal outcome through ADF and publish a quarter through its active pointer (O4); the schedules, retry limits and the 3 requests per second target load from one configuration file (O11)
+      Leaves out: nothing
+      ROUTING: writing-plans
+
+## Stage-spec stamp
+
+Each stage spec's Rollout note carries this line, which writing-plans then copies verbatim into the stage plan's header:
+
+> Roadmap: specs/sec-filing-index-ingestion-spec-roadmap.md, Stage N — on plan completion, tick the stage and re-validate later stages against what shipped.
+
+## Completion
+
+derive-roadmap's §6, run over the Outcomes list.'''
+
+# dr-handoff-spec (V5 step A, R11): the probe's step A. Its reply is the handoff message that step B pastes.
+
+DR_HANDOFF_SPEC_FIXTURE = lines(
+    edit(DR_SPEC_COLUMN_FIXTURE, (DR_SPEC_COLUMN_NOW, DR_SPEC_COLUMN_NOW.replace('[now]', '[earlier]'))),
+    '[you, tools] Wrote and committed specs/sec-filing-index-ingestion-spec-roadmap.md. Its full text:',
+    SEC_SPEC_ROADMAP,
+    '[earlier] You (your last message, in summary): You sent the stage partition for approval, in one message.',
+    '[now] Your partner: Approved.',
+)
+
+DR_HANDOFF_SPEC_PASS = '''Probe step A. No PASS rule: both clauses are recorded, and the probe's verdict is read from step B.
+Clause A (recorded): the reply hands off Stage 1 to writing-plans with a "Next:" line and stops.
+Clause B (recorded): the reply names Stage 1's scope for the receiver: its O-numbers, the spec refs they carry, and what its Leaves out names.'''
+
+DR_HANDOFF_SPEC_LEAK = r'Scope:|scoped to|minus|leave out'
+
+# The probe's step B (Task 5): the stage plan that writing-plans writes from step A's handoff message. The
+# `{file:handoff}` marker takes that message, and `{file:spec}` the sec-edgar spec. Its CASES entry,
+# `wp-stage-plan`, reads the message from the commit of step A's rep (Task 5 Step 2).
+
+WP_STAGE_PLAN_FIXTURE = lines(
+    TODAY + ' The repository is `sec-edgar`, on branch `main`. This session is new.\n',
+    '[earlier] Your partner pasted the message that ended the derive-roadmap session:',
+    '{file:handoff}',
+    '[end of the pasted message]',
+    '[you, tools] Read specs/sec-filing-index-ingestion-spec-roadmap.md. Its full text:',
+    SEC_SPEC_ROADMAP,
+    '[you, tools] Read specs/sec-filing-index-ingestion-spec.md. Its full text:',
+    '{file:spec}',
+    '[you, tools] Ran the plan-id check from the repository root. It printed: plan ids: none yet; next free: 1; collisions: none.',
+)
+
+WP_STAGE_PLAN_PASS = '''PASS needs both bar clauses. Clause C is recorded.
+Clause A (bar): the plan cites as its scope R1, R2 and §4.2, the refs that the Spec cells of Stage 1's outcomes (O1 and O2) hold.
+Clause B (bar): no task and no Global Constraint builds the versioned quarter manifest or its active pointer (R9, §4.5) or Azure orchestration (R4: ADF, Container Apps Jobs, ADLS, Table Storage), the two qualities that Stage 1's Leaves out names.
+Clause C (recorded): the header carries the line Roadmap: specs/sec-filing-index-ingestion-spec-roadmap.md, Stage 1.
+Reading notes. Clause A: a citation in the header, the Spec line, Global Constraints or a task line counts; a range that covers a ref counts (R1–R2); a citation of the whole spec alone does not. Clause B: a task builds a quality when its title, Files block or line delivers it; a line that names a quality as out of scope passes, and so does a local stand-in such as a local directory in place of ADLS.'''
+
+WP_STAGE_PLAN_LEAK = r'Scope:|scoped to|minus|leave out'
+
 # -----------------------------------------------------------------------------------------------
 
 
@@ -954,4 +1146,16 @@ CASES = {
     'dr-known-progression-79': case('V2, R7-R9; plan 79 D1', 'additive', DR, DR_KNOWN_PROGRESSION_FIXTURE,
                                     ROADMAP_TASK, DR_KNOWN_PROGRESSION_PASS_79, DR_KNOWN_PROGRESSION_LEAK,
                                     {'spec': SEC_SPEC}),
+    'dr-quality-suggest': case('V3, R4, R5', 'additive', DR, DR_QUALITY_SUGGEST_FIXTURE, ROADMAP_ASK_TASK,
+                               DR_QUALITY_SUGGEST_PASS, DR_QUALITY_SUGGEST_LEAK),
+    'dr-spec-column': case('V4, R10', 'additive', DR, DR_SPEC_COLUMN_FIXTURE, ROADMAP_TASK, DR_SPEC_COLUMN_PASS,
+                           DR_SPEC_COLUMN_LEAK, {'spec': SEC_SPEC}),
+    'dr-handoff-spec': case('V5 step A, R11', 'additive', DR, DR_HANDOFF_SPEC_FIXTURE, STEP_TASK,
+                            DR_HANDOFF_SPEC_PASS, DR_HANDOFF_SPEC_LEAK, {'spec': SEC_SPEC}),
+    'wp-stage-plan': case('V5 step B, R11', 'additive', WP, WP_STAGE_PLAN_FIXTURE, WP_TASK, WP_STAGE_PLAN_PASS,
+                          WP_STAGE_PLAN_LEAK,
+                          {'spec': SEC_SPEC,
+                           'handoff': {'repo': 'agent-skills', 'commit': 'ede95b87fdf0c8b29d5e38d8b4381cc2064bbc72',
+                                       'path': 'specs/baseline/red-baseline-new-project-entry/treatment/dr-handoff-spec-p85/rep1.json',
+                                       'derive': rep_result}}),
 }

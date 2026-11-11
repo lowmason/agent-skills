@@ -130,7 +130,13 @@ and a roadmap that restates them is a second source of truth that will drift.
 
 ## 4. Human checkpoint, then stop
 
-Present the stage partition for approval before stage 1. On approval, hand
+Present the stage partition for approval before stage 1. In a new-project
+roadmap, ask for the approval as ONE question. A later quality that a
+research-track stage's `Leaves out` sends to the Ranked list is suggested
+inside it: its name, one line on why this project will need it, and the
+outcome line it would become. The same question asks your partner to approve
+the quality and, if they do, to give its place in the track's ranking. Record
+the answer per `references/roadmap-format.md` (Ranked list). On approval, hand
 off the first stage per its ROUTING line, by bare skill name, in a fresh
 session — then STOP.
 
@@ -147,8 +153,14 @@ volunteer a stage outside a resume.
   - ROUTING brainstorming: the new stage spec's Rollout note carries the
     `Roadmap:` line.
   - ROUTING writing-plans: the plan header carries it, and the plan is scoped
-    to the stage entry's `Spec` refs, or its `Outcomes` refs in a new-project
-    roadmap. This covers a stage with no stage spec.
+    to the stage entry's `Spec` refs, or, in a new-project roadmap, to its
+    `Outcomes` (with a spec, to the Scope line below). This covers a stage
+    with no stage spec.
+- In a new-project roadmap with a spec, put one more line under the "Next:"
+  line, for the receiver to carry with it: `Scope: <the stage's O-numbers> —
+  spec <the refs their Spec cells hold>; leave out <each quality the stage's
+  Leaves out names>.` The stage plan, or the stage spec's inputs under
+  brainstorming, cover that scope and no more.
 - Then stop. Launching that session is your human partner's go/no-go. A
   go-ahead, or a request to keep going, approves that fresh session and
   nothing more: never plan, spec or brainstorm the stage in a resume session.
@@ -184,7 +196,9 @@ shipped:
   routing in it; route only after the answer. A `Consumes` is unmet when a
   Handoff or stamp shows its input missing or not built, or when the stage
   that is to produce it is unticked. Otherwise it counts as met, and the
-  receiving session checks it.
+  receiving session checks it. A later quality that this resume finds for the
+  first time, bound for a research track's Ranked list, joins the same
+  question in §4's form.
 - **Commit** the amendments, and whatever your partner approved at the Ask,
   on the current branch before the handoff, so the
   fresh session reads them. Context for a later stage that cannot be
@@ -225,7 +239,9 @@ Retirement is gated behind a conformance audit of the ACCUMULATED system:
 re-run the gap rubric over every numbered requirement, with evidence per
 verdict (implementing stage/plan, Deviation notes, deferred_items entries).
 In a new-project roadmap, run it over the Outcomes list in place of spec
-requirements. Ranked-list items your partner never promoted have parked (§5).
+requirements. When its `Source` is a spec, also list each numbered spec
+requirement that no outcome's `Spec` cell cites, as unmet. Ranked-list items
+your partner never promoted have parked (§5).
 
 Unmet requirements exit exactly two ways: a new stage (roadmap stays live),
 or conscious deferral with a written why.
@@ -260,19 +276,27 @@ inputs, the checks you may run, and each rule below in full.
    research (the method or the answer is open).
 3. **Cost.** Each outcome whose cost is material gets a rough estimate and its
    basis. When only running the work can tell, say so.
-4. **One message.** Before any roadmap text, send one message: the outcome
-   list, unranked, with the cost notes, the tracks and their kinds, and, with
-   no spec, a proposed roadmap name. It makes one request: rank the outcomes
-   within each track and the tracks among themselves, and confirm the tracks.
+4. **One message.** Before any roadmap text, check the project against the
+   later qualities (`references/new-project-entry.md`, Later qualities). Then
+   send one message: the outcome list, unranked, with the cost notes, the
+   tracks and their kinds, and, with no spec, a proposed roadmap name. When
+   the check finds a quality the project will need, one line follows the
+   outcome list, in exactly this form, names only:
+   `Qualities to place when the roadmap is written: <names>.` The message
+   names no stage, core or later: stages come only after your partner ranks.
+   It makes one request: rank the outcomes within each track and the tracks
+   among themselves, and confirm the tracks.
    Do not rank for your partner unless they ask.
 5. **Stages.** Each track's first stage is its core stage: it works on real
    data at the smallest standard that gives a usable result, and its Exit
    names the measured cost of the real run. A known-progression track commits
    every stage, first to last, its later hardening stages included. A research
    track commits its core stage only, and its other outcomes wait in its
-   Ranked list until the core has run on real data. A quality the project
-   needs eventually but not to work goes to a named later stage or a
-   Ranked-list item, never into a core stage's Exit.
+   Ranked list until the core has run on real data. Now check the project
+   against the later qualities, and place every one it will need. In a known
+   progression it goes to a named later stage. In a research track it is
+   suggested at the approval (§4), and it joins the Ranked list only once your
+   partner approves and ranks it. None goes into a core stage's Exit.
 6. **Write, then §4.** Write the roadmap per `references/roadmap-format.md`
    (New-project roadmaps), then present the partition for approval (§4).
 
@@ -309,5 +333,5 @@ inputs, the checks you may run, and each rule below in full.
 - **Ranking outcomes for your partner** — show the list unranked; the ranking
   is their judgment of value.
 - **A final-standard quality in a core stage's Exit** — manifests,
-  traceability and the like go to a named later stage or a Ranked-list item,
-  recorded in `Leaves out`.
+  traceability and the like go to a named later stage, or to a Ranked-list
+  item once your partner approves it, recorded in `Leaves out`.
