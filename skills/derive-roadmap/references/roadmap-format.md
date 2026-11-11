@@ -105,9 +105,10 @@ Tracks: A — <name> (known progression | research). <Split from B because …>
 ```
 
 When `Source` is a spec, the `Spec` cell holds the § and R refs that the
-outcome came from: refs only, never requirement text, and `none` for an
-outcome that no spec section asks for. When `Source` is not a spec, leave the
-column out. A spec named only under `Background` gives no column.
+outcome came from: refs only, never a section title, a requirement title or
+requirement text, and `none` for an outcome that no spec section asks for.
+When `Source` is not a spec, leave the column out. A spec named only under
+`Background` gives no column.
 
 Stage entries carry these fields and nothing else. `Outcomes` takes the place
 of `Spec` and `Gap closed`:
