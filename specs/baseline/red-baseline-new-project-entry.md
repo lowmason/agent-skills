@@ -5820,7 +5820,10 @@ Stop: **$30**. Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.
 | Task 5, the stage-plan probe (V5) at `T` (step A 1 rep, worst case $1.00; step B 3 reps, worst case $3.00; no VOID rerun, no $2.00 rerun, no wording round) | $0.8911 |
 | Task 6, the guards at `T-final` (9 cases, 5 reps each, no VOID rerun; worst case $5.00 per case call) | $4.3833 |
 | Task 6, the scores of the nine guards and the summary (no rep) | $0.00 |
-| **Running total** | **$10.0665 of $30** |
+| Task 7, the R9 fix and its re-run at `T7` (6 cases, 5 reps each, no VOID rerun; worst case $5.00 per case call) | $4.0142 |
+| Task 7, the diagnostic arm of dr-spec-column at `T` (5 reps, worst case $5.00; no bar) | $1.3561 |
+| Task 8, the wording round for dr-spec-column at `T8` (5 reps, worst case $5.00; no VOID rerun) | $1.3087 |
+| **Running total** | **$16.7455 of $30** |
 
 Running total after Task 1: $0.00 of $30. Task 1 ran no `claude -p` rep.
 
@@ -5840,8 +5843,19 @@ Running total after Task 6's reps: $10.0665 of $30 ($10.07). `show_reps.py` over
 its 45 reps, and the sum of their `total_cost_usd` is $4.3833. No rep file is empty or unreadable, so none counts at its
 cap. These figures match the "Plan 85: guards" section, below.
 
-Running total after Task 6's summary: $10.0665 of $30 ($10.07). This is the final total. The scores and the summary
-ran no rep. Per task: Task 1 $0.00, Task 2 $2.4571, Task 3 $0.00, Task 4 $2.3350, Task 5 $0.8911 and Task 6 $4.3833.
+Running total after Task 6's summary: $10.0665 of $30 ($10.07). The scores and the summary ran no rep. Per task: Task 1
+$0.00, Task 2 $2.4571, Task 3 $0.00, Task 4 $2.3350, Task 5 $0.8911 and Task 6 $4.3833.
+
+Running total after Task 7: $15.4368 of $30 ($15.44). The check before each call was the total plus that call's worst
+case ($5.00), and none passed $30. The six `T7` cases ran as two chains at the same time (four cases, then two), and the
+check did not add the other chain's in-flight worst case. The real total never passed $15.44. `show_reps.py` over the six
+`T7` folders prints $4.01 for 30 reps, and the sum of their `total_cost_usd` is $4.0142. The diagnostic folder prints $1.36
+for 5 reps ($1.3561). No rep file is empty or unreadable, so none counts at its cap. These figures match the "Plan 85:
+final-review fixes" section, below.
+
+Running total after Task 8: $16.7455 of $30 ($16.75). This is the final total. The `T8` folder prints $1.31 for 5 reps
+($1.3087). Per task: Task 1 $0.00, Task 2 $2.4571, Task 3 $0.00, Task 4 $2.3350, Task 5 $0.8911, Task 6 $4.3833, Task 7
+$5.3703 (the re-run and the diagnostic) and Task 8 $1.3087.
 
 ## Plan 85: control
 
@@ -7487,6 +7501,258 @@ the other reading's effect where it changes a count.
 | dr-resume-legacy rep4, guard | pass (a go-ahead question, not a re-ranking) | "Shall I go ahead with the reads?" |
 | dr-resume-legacy reps 1 and 3, guard | pass (a later question on the audit's exits, as plan 78 Task 4 rep3) | rep3: "I'll put each one to you as one question with two options" |
 
+## Plan 85: final-review fixes
+
+Two skill commits followed the final review. Each has its arms here, and the summary below counts them.
+
+- `T7` = `59df779` (`59df77910747b4437ac16d424ea525f649ccdea0`), a final-review fix. The final review found that the
+  provisional-file sentence of `references/roadmap-format.md` (R9) gave a suggested quality an O-number and no Outcomes
+  row. At the completion gate the owner chose "Fix now: add the row (Recommended)" (2026-11-10, in the question
+  dialog). The commit adds one sentence after R9's: "Each also gets an Outcomes row, marked `suggested, not
+  approved`." The task reviewer approved it with no finding. The commit lints passed.
+- `T8` = `e885184` (`e88518412506794929fda39ff55dc3af117c38bb`), the plan's one wording round (Bars). One re-run case,
+  `dr-spec-column`, fell below its additive bar at `T7` (below). The commit changes one clause of the `Spec` cell
+  paragraph: "refs only, never requirement text" became "refs only, never a section title, a requirement title or
+  requirement text". It adds no example. The task reviewer approved it with no finding. The commit lints passed.
+
+`T` (`2e91b05`) is no longer the last skill commit. `git diff --stat 2e91b05 e885184 -- skills/` lists
+`references/roadmap-format.md` only (5 insertions, 3 deletions, the two edits above). `SKILL.md` and every description
+are unchanged. The last skill commit is `T8` = `e885184`, and it is the final text.
+
+Texts and rules: every arm below runs the kit and the rules of `cases.py` unchanged. Models, flags and the $1.00 cap per
+rep are as in the earlier sections. Manifests: `treatment/p85-t7-MANIFEST.txt` and `treatment/p85-t7b-MANIFEST.txt` (the
+two `T7` builds) and `treatment/p85-r1-MANIFEST.txt` (the `T8` build). The diagnostic arm reads the `T` prompt of
+`treatment/p85-t4-MANIFEST.txt`, the same file (sha256 `a56ecba4...54e`). Scored reps: all 30 `T7` reps, the 5
+diagnostic reps and the 5 `T8` reps. No VOID rep, no `.err` file and no rerun.
+
+### Which cases ran again at T7, and which did not
+
+The plan's rule: a later skill commit re-runs, at the new commit, every case whose decision the changed passage can
+reach. The record says why each other case did not re-run. R9's sentence applies only "When the session cannot ask". No
+case sets up that condition, so no arm reads the sentence the way it was written to be read. A reply could still copy
+its words, because every `DR` case holds `roadmap-format.md` whole in its prompt. The controller therefore chose the
+cases in which a reply writes an Outcomes table or a Ranked list, or suggests a quality (ledger rulings of Task 7):
+
+| Case | Why the sentence can reach its decision |
+|---|---|
+| dr-quality-suggest (V3) | A reply suggests a quality, and clause A fails any Outcomes row or Ranked-list item for it. |
+| dr-research-depth | Replies suggest qualities in two research tracks and write both Ranked lists. |
+| dr-resume-rerank, dr-rerank-second | A quality joins the re-rank question, and the reply holds a Ranked list. |
+| dr-known-progression-79, dr-spec-column | Both use `ROADMAP_TASK` ("Write the full roadmap file you will commit now"), the kit's nearest turn to "cannot ask", and both write an Outcomes table. |
+
+Not re-run at `T7`, with the reason:
+
+- dr-offer-yes, dr-offer-scaffold, dr-tracks: each stops at the one message, before any roadmap file or Ranked list
+  exists.
+- dr-stop-track, dr-park-ranked, dr-resume-legacy: each acts on an existing roadmap (a track stop, a whole-roadmap park,
+  an old-format resume) and suggests no quality, so no provisional file is written.
+- dr-handoff-spec, wp-stage-plan (the probe): a handoff and a stage plan from a finished roadmap. No quality is
+  suggested and no Outcomes row is written.
+
+The unchanged-text arms keep their `T` results.
+
+### T7 results
+
+Every re-run case ran five reps at `T7`, into `treatment/<case>-p85-t7/`, with the controller's readings of record (the
+sections "Plan 85 Task 4: ..." and "Plan 85 guard: ..." above). Costs: dr-quality-suggest $0.4892, dr-research-depth
+$0.7295, dr-resume-rerank $0.3184, dr-rerank-second $0.3577, dr-known-progression-79 $0.8614, dr-spec-column $1.2579.
+Total $4.0142.
+
+Leak check, all 30 `T7` reps, the 5 diagnostic reps and the 5 `T8` reps: no rep contains `suggested, not approved`. The
+words "Outcomes row" occur once, in dr-resume-rerank rep3's promise to update the rows after the answer ("update the
+Ranked list and the Outcomes rows"). No rep of dr-quality-suggest or dr-research-depth puts a suggested quality in a
+Ranked list or an Outcomes row. So the new sentence did not leak into any interactive reply.
+
+| Case | Bar | At `T` (`2e91b05`) | At `T7` | Result |
+|---|---|---|---|---|
+| dr-quality-suggest | additive, 4 of 5 (control RED, 0 of 5) | PASS 5 of 5 | PASS 5 of 5 | met |
+| dr-research-depth | guard, at least 4 | PASS 5 of 5 | PASS 5 of 5 | met |
+| dr-resume-rerank | guard, at least 4 | PASS 4 of 5 | PASS 4 of 5 | met, at the bar |
+| dr-rerank-second | guard, at least 4 | PASS 5 of 5 | PASS 5 of 5 | met |
+| dr-known-progression-79 | guard, at least 2 | PASS 5 of 5 | PASS 4 of 5 | met |
+| dr-spec-column | additive, 4 of 5 (control RED, 0 of 5) | PASS 5 of 5 | PASS 2 of 5 | **below the bar** |
+
+**dr-quality-suggest.** All five reps pass A, B, C, D and E. PASS 5 of 5 (control 0 of 5, `T` 5 of 5).
+
+- A. Each roadmap names traceability only in the first stage's `Leaves out` (`traceability: suggested, see the approval
+  question`). No Ranked-list item, no O-number and no Outcomes row holds it. Rep5 adds an "Open questions" list for O4's
+  track, and that list does not name traceability.
+- B. Each message gives the board's question as the reason and asks the partner to approve it and give its place in
+  Track A. Rep3: "If you approve it, tell me where it goes in the Ranked list." Rep4: "approve traceability (and if so,
+  where O5 ranks among O2, O3 and O4)".
+- C. Each message holds one approval request. Reps 1 and 2 carry more than one question mark under one "One question"
+  label, the form that Task 4 reps 2 and 5 had and that passed. Reps 3 and 5 number two points inside one approval
+  request. Rep4 joins three asks in one sentence.
+- D. Every roadmap's `Leaves out` reads `traceability: suggested, see the approval question`. E. Each message gives the
+  outcome line in plain words, for example rep1: "O5. For each closure estimate, the gauge readings it came from, listed
+  for the board."
+
+Other readings. By question marks, reps 1 and 2 fail C, and PASS is 3 of 5. By "a numbered point is a second ask", reps
+3 and 5 fail C, and PASS is 3 of 5. Both together: 1 of 5 (rep4). Either one rep alone: 4 of 5. The calls are the
+`T` arm's (Task 4, owner gate item 2).
+
+**dr-research-depth.** All five reps pass A, B, C, D and E. PASS 5 of 5 (guard needs 4; `T` 5 of 5).
+
+- A. Every rep commits Stage 1 (Track A, O1) and Stage 2 (Track B, O6), and keeps O3 and O2, and O4 and O5, in the two
+  Ranked lists. The Outcomes table of every rep holds O1 to O6 only.
+- B. Each Exit names the cost of the real run. Rep4's Exit says that the findings file "records the result, the time to
+  assemble the calendar and vintages, and the wall-clock time of the real fit". Its words are "records", not "measured",
+  and the clause asks for a cost that is measured and recorded, so it passes.
+- C, D, E pass in every rep. Each Stage 2 consumes Stage 1's panel, and no entry mixes the two tracks' outcomes. Each
+  entry has a `Leaves out` field, and each `Produces` names `specs/ces-revisions-stage-<N>-findings.md`.
+- Later qualities (not scored). Every rep suggests two or three qualities in the message, with a reason and the outcome
+  line it would become: rep1 a validation suite (A) and source traceability (B); rep2 manifests, source traceability and
+  a full validation suite; rep3 a validation suite (A) and source traceability (B); rep4 a validation suite for each
+  track and source traceability (B); rep5 a full validation suite and source traceability (B). Each roadmap names them in
+  `Leaves out` in the interim form only.
+
+**dr-resume-rerank.** Reps 1, 3, 4 and 5 pass. Rep2 fails C (borderline). PASS 4 of 5. Compared with `T` (4 of 5) and
+plan 79 Task 4 (5 of 5), the guard needs 5 − 1 = 4. **Met, at the bar.**
+
+| Rep | A (bar) | C (bar) | B (conformance) | D (conformance) | PASS |
+|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | yes |
+| 2 | pass | fail (borderline) | pass | pass | no |
+| 3 | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | yes |
+| 5 | pass | pass | pass | pass | yes |
+
+- Every rep suggests scheduling at the re-rank, with a reason and the outcome line it would become. Every rep reports the
+  3.1 m level, the steep rise above it and the 22-minute, 1.8 GB fit. No rep starts a completion review or writes a stage
+  entry. Each offers a stop of the track as one option.
+- C. Reps 1, 3 and 5 put the quality inside their proposed ranking and close with one approve-or-amend request. Rep1: "I
+  propose this order: O2, then O3, then O4, with scheduling placed directly after O2. ... Do you approve that order, the
+  scheduling outcome and its place, and O2 as the next stage?" Rep4 carries its own ask for the quality's place ("If you
+  approve it, where should it rank among O3 and O4?") and closes with "please approve or amend: (a) ... (b) ... (c)", so
+  the close names the points and it passes, as `T` rep4 did.
+- Rep2 fails C, borderline, by the same call as `T` rep3 (a side request about O3's cost basis stands apart from the
+  approval): "I'd also update O3's cost note once you confirm whether Stage 1's 1.8 GB covered one lock or several." The
+  quality ask in rep2 ("If you approve it, tell me where it ranks among O3, O4 and O5.") comes before the close "Your
+  other options are a different item to promote or stopping Track A", and the One closing request reading takes it in.
+
+Other readings. Rep2's side request as part of the same answer: it passes C, and PASS is 5 of 5. Any second ask inside the
+question block (rep2's side request and its ask for the quality's place, and rep4's ask for the place): reps 2 and 4
+fail, and PASS is 3 of 5, **below the guard bar of 4**. Plan 79's one-question reading alone, where a quality ask that is
+not an alternative of the re-rank fails: the same reps fail, and PASS is 3 of 5, below the bar. The guard is met only on
+the readings that the owner gate (item 5) already names. At `T` the controller ruled in the same direction.
+
+**dr-rerank-second.** All five reps pass. PASS 5 of 5 (guard needs 4; `T` 5 of 5). **Met.**
+
+- A and B. No rep starts a completion review. Every rep gives Stage 2's finding (the 81%, the 1 false alarm in 9) and its
+  cost (14 minutes a day on one small VM, 0.3 GB).
+- C. Reps 1, 2 and 3 put O5 in their proposed ranking and close with one approve-or-amend. Rep4 puts it in the ranking
+  and adds "If you decline O5, or would place it somewhere else in the list, say so in the same answer." Rep5 passes,
+  borderline (One closing request): its question asks one approve-or-change, and "In the same answer, please say
+  whether you approve **O5** ... If you do, tell me where it goes in the ranking." follows the alternatives.
+- D. No rep writes a stage entry, and no rep offers O2 again.
+
+Other readings. Rep5's quality request read as a separate ask: it fails C, and PASS is 4 of 5, still met. By question
+marks every rep has one, and PASS stays 5 of 5.
+
+**dr-known-progression-79.** Reps 1 to 4 pass. Rep5 fails C on traceability. PASS 4 of 5 (guard needs 2; `T` 5 of 5,
+plan 79 3 of 5). **Met.**
+
+| Rep | B (bar) | A (conformance) | C (conformance) | D (conformance) | E (recorded) | PASS |
+|---|---|---|---|---|---|---|
+| 1 | pass | pass | pass | pass | pass | yes |
+| 2 | pass | pass | pass | pass | pass | yes |
+| 3 | pass (borderline) | pass | pass | pass | pass | yes |
+| 4 | pass | pass | pass | pass | pass | yes |
+| 5 | pass | pass (borderline) | fail (traceability) | pass | pass | no |
+
+- B. No first-stage Exit names a manifest, a per-row provenance record or point-in-time awareness. Rep3 passes,
+  borderline: its Exit asks for "its row count per source file recorded", a count and not a manifest.
+- C. Reps 1 to 4 name manifests and traceability in Stage 4. Rep1 and rep2's Stage 4 is "Manifests and traceability".
+  Rep3's Stage 4 is "Manifests and provenance" and its Exit says "every table row traces to a stored index file and its
+  hash". Rep4's Produces line names "each output's inputs".
+- Rep5 fails C (the Provenance on bytes reading, as plan 79 Task 4 applied it to rep2). Its Stage 4 is "Provenance and
+  replay". It "retain[s] original source bytes by content hash and record[s] source, snapshot and processing state", and
+  its Exit asks for "a manifest record naming its URL, hash and receipt time" for every downloaded file. It links no
+  row to its source.
+- A, rep5, borderline (First stage per outcome). Rep5's first stage per outcome is in order (Stages 1 to 3), and its
+  Stage 6 runs the full history for O2 and O3 after its provenance and corrections stages. The strict reading fails it
+  too, and rep5 already fails C.
+- No Outcomes table holds a row beyond O3, and no header holds a `Spec` column (a spec named only under `Background`).
+
+Other readings. Provenance on bytes not applied: rep5 passes C, and PASS is 5 of 5. Rep3's per-file row count read as a
+manifest: rep3 fails B, and PASS is 3 of 5, still met. The strict reading of clause A changes no count.
+
+**dr-spec-column at T7.** Reps 3 and 5 pass. Reps 1, 2 and 4 fail B. PASS 2 of 5. **Below the additive bar of 4 of 5.**
+
+| Rep | A (bar) | B (bar) | C (conformance) | PASS |
+|---|---|---|---|---|
+| 1 | pass | fail (section titles) | pass | no |
+| 2 | pass | fail (section titles) | pass | no |
+| 3 | pass | pass (borderline, Separator) | pass | yes |
+| 4 | pass | fail (section titles) | pass | no |
+| 5 | pass | pass (borderline, Separator) | pass | yes |
+
+- A and C pass in every rep. Each table has the header `| # | Outcome | Spec | Track | Rank | Cost ... |` and 11 rows, O1 to
+  O11, and each Spec cell holds at least one § or R number.
+- B. The case's reading note fails any word besides § numbers, R numbers, ranges, commas and `none`. Reps 1, 2 and 4 put
+  a section title in the cell. Rep1 O1: "§3 R1; §2.1 Backfill; §4.2 Backfill". Rep2 O1: "R1; §2.1 Backfill; §4.2
+  Backfill" and O3: "R3; §4.5 row contract; §4.6". Rep4 O1: "R1; §2.1, §4.2 Backfill" and O11: "R11; §4.8, §5
+  Configuration". Reps 3 and 5 hold numbers only, with a semicolon after the R number (rep5 O1: "R1; §2.1, §4.2, §4.3").
+- At `T` no cell of any rep held a word. So the drop from 5 of 5 to 2 of 5 is the first sign that the `Spec` sentence is
+  weak against a section title.
+
+Other readings. The closed-list Separator (only a comma between refs): reps 3 and 5 also fail on their semicolons, and PASS
+is 0 of 5.
+
+**Diagnostic arm: the `T` prompt run again.** The R9 sentence has no way to put a title in a Spec cell, so the controller
+ran five more reps of the unchanged `T` prompt (`treatment/dr-spec-column-p85-diag/`, $1.3561) before the wording round.
+It is not a bar arm. Rep4 puts section titles in its cells: O1 "R1; §2.1, §4.2 Backfill, §4.3" and O3 "R3; §4.4 Identity,
+§4.5 row contract, §4.6 Parse/Transform". Reps 1, 2, 3 and 5 hold numbers only (reps 1 and 5 with a semicolon between the
+R number and the § numbers, rep3 with the ranges `§4.4–§4.6` and `§4.1–§4.2`). So the habit exists at `T`: 1 of 10 reps
+across the two `T` arms, against 3 of 5 at `T7`. A one-sided Fisher exact test of that table gives p of about 0.08, so
+`T7` is not shown to have caused the drop. The diagnostic does show that the `Spec` sentence of `T` also lets a title
+through.
+
+### T8: the wording round for dr-spec-column
+
+By the plan's Bars, a treatment below its bar gets one wording round with the case's rule unchanged, then an owner
+ruling. `T8` is that round. The edit and its reviewer are described at the top of this section.
+
+**dr-spec-column at T8** (`treatment/dr-spec-column-p85-r1/`, $1.3087). Additive in `cases.py`. Rule `DR_SPEC_COLUMN_PASS`
+unchanged. Every rep passes A, B and C. PASS 5 of 5 (control 0 of 5, `T` 5 of 5, `T7` 2 of 5). **Met**, on the Separator
+reading.
+
+| Rep | A (bar) | B (bar) | C (conformance) | PASS |
+|---|---|---|---|---|
+| 1 | pass | pass | pass | yes |
+| 2 | pass | pass (borderline, Separator) | pass | yes |
+| 3 | pass | pass (borderline, Separator) | pass | yes |
+| 4 | pass | pass (borderline, Separator) | pass | yes |
+| 5 | pass | pass (borderline, Separator) | pass | yes |
+
+- Every table has the header `| # | Outcome | Spec | Track | Rank | Cost ... |` and 11 rows, O1 to O11. Every Spec cell
+  holds § and R numbers only. Rep1 O1: "§2.1, §4.2, R1", with commas throughout. Rep2 O1: "§3 R1; §2.1, §4.2". Rep3 O1:
+  "R1; §2.1, §4.2". Rep4 O1: "§3 R1; §2.1; §4.2". Rep5 O1: "§3 R1; §2.1, §4.2, §4.3". No cell holds a section title, a
+  requirement title or requirement text.
+
+Other readings. The closed-list Separator (only commas): reps 2 to 5 fail B on a semicolon or on the space in `§3 R1`,
+and only rep1 passes. PASS is 1 of 5, the same count as at `T`. This is the reading that owner gate item 3 already holds.
+No change is made for it.
+
+**Not re-run at T8.** The `T8` clause governs what a `Spec` cell holds when `Source` is a spec. No other case writes such
+a table, so no other case's decision turns on it. dr-handoff-spec and wp-stage-plan (the probe) read a finished
+roadmap, and the changed clause is not a rule for reading a cell. dr-known-progression-79 writes no `Spec` column, and
+the sentence that says so ("A spec named only under `Background` gives no column") is unchanged. The six `T7` arms
+keep their results, and no wording of `T8` can reach their decisions, so they were not run again at `T8`. The probe
+read `T`, and neither `T7` nor `T8` changed a passage that a handoff or a stage plan applies.
+
+### Spend (Tasks 7 and 8)
+
+| Item | Spent |
+|---|---|
+| T7 re-run (30 reps) | $4.0142 |
+| Diagnostic arm (5 reps) | $1.3561 |
+| T8 wording round (5 reps) | $1.3087 |
+| **Tasks 7 and 8** | **$6.6790** |
+
+With the $10.0665 of the earlier table, the total is **$16.7455 of $30**. The plan's estimate was about $16 (Open for plan
+review item 8) before these two tasks. Neither task had a VOID rep, a $2.00 rerun or an empty or unreadable rep file.
+
 ## Plan 85: summary
 
 Plan 85 changes three derive-roadmap skill files (Task 3) and tests the change with micro-test reps. This summary lists
@@ -7494,10 +7760,14 @@ every plan 85 arm, the probe verdict, the spend, the `Done when:` verdict of eac
 section and of the open plan 79 item, the untested passages and the owner gate. It edits no item in
 `specs/deferred_items.md`. The plan completion protocol does that later.
 
-The controls read the skill text at `BASE85` (`58337f5`). Every treatment, probe and guard arm read it at `T` =
-`T-final` = `2e91b05` (`2e91b050430b4d77e5c62cadf3ab22e248df37e3`). No arm missed its bar, so no wording round ran.
-There is no `T-r1` commit and no `-r1` folder. `git diff --stat 2e91b05 HEAD -- skills/` prints nothing, so no skill
-file changed after the arms ran.
+The controls read the skill text at `BASE85` (`58337f5`). Every treatment, probe and guard arm of Tasks 4 to 6 read it at
+`T` = `2e91b05` (`2e91b050430b4d77e5c62cadf3ab22e248df37e3`). Two skill commits followed the final review (section "Plan
+85: final-review fixes"): `T7` = `59df779`, R9's Outcomes row, which the owner chose at the completion gate, and `T8` =
+`e885184`, the plan's one wording round, which ran after `dr-spec-column` read 2 of 5 at `T7`. `T8` is the final text.
+Six cases ran again at `T7`, and `dr-spec-column` ran again at `T8`. The other eight arms keep their `T` results, and the
+final-review section says why. The `T7` folders end `-p85-t7`, the wording round's folder is `dr-spec-column-p85-r1`, and
+the diagnostic folder ends `-p85-diag`. `git diff --stat 2e91b05 e885184 -- skills/` lists
+`references/roadmap-format.md` only.
 
 ### Every arm
 
@@ -7522,13 +7792,32 @@ toward a bar.
 | Task 6, guard | dr-park-ranked | guard, at least 3 | plan 79 "Task 3 round 3: dr-park-ranked" (`5f52dfc`): 4 of 5 | PASS 4 of 5 | met | Reps 3 and 4 pass D by the inline-fields reading of record. The other inline-fields reading: 2 of 5, a miss (round 3 is 3 of 5 on that reading). Rep1's first lines as one bundled item (A): 3 of 5, still met. |
 | Task 6, guard | dr-resume-legacy | guard, at least 4 | plan 79 "Task 4: dr-resume-legacy" (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met | none |
 
-All three treatments, the probe and all nine guards meet their bars on the readings of record. Six results miss
-their bar when deciding calls are read the other way: dr-offer-yes's additive bar (control rep2's other reading makes
+The table gives every arm's result at `T`. All three treatments, the probe and all nine guards meet their bars on the
+readings of record at `T`. At the final text, one case needed the plan's wording round, and all of them meet their bars
+again after it (below). Six results at `T` miss their bar when deciding calls are read the other way: dr-offer-yes's additive bar (control rep2's other reading makes
 the control clean, and a clean control cannot meet the additive bar), dr-quality-suggest (any two of the borderline
 calls on different reps), dr-spec-column (Separator), dr-resume-rerank (rep1 or rep2), dr-rerank-second (question
 marks) and dr-park-ranked (inline fields).
 The dr-offer-yes treatment falls below the deferred item's 4 of 5 only on the dependency-fact reading, which no earlier
 arm used. The probe fails only on the run-manifest reading, which the record does not apply.
+
+**Arms that ran again after `T`.** Six cases ran again at `T7`, and one of them ran a third time at `T8`. Each result is
+the controller's, by the readings of record (section "Plan 85: final-review fixes").
+
+| Case | Bar | At `T` | At `T7` (`59df779`) | At `T8` (`e885184`) | Result at the final text |
+|---|---|---|---|---|---|
+| dr-quality-suggest | additive | PASS 5 of 5 | PASS 5 of 5 | not re-run | met |
+| dr-spec-column | additive | PASS 5 of 5 | PASS 2 of 5 (reps 1, 2 and 4 put section titles in the Spec cell), **below the bar** | PASS 5 of 5, on the Separator reading | met, after the wording round |
+| dr-research-depth | guard, at least 4 | PASS 5 of 5 | PASS 5 of 5 | not re-run | met |
+| dr-resume-rerank | guard, at least 4 | PASS 4 of 5 | PASS 4 of 5 (rep2 fails C, the call that `T` rep3 had) | not re-run | met, at the bar |
+| dr-rerank-second | guard, at least 4 | PASS 5 of 5 | PASS 5 of 5 | not re-run | met |
+| dr-known-progression-79 | guard, at least 2 | PASS 5 of 5 | PASS 4 of 5 (rep5 fails C on traceability, Provenance on bytes) | not re-run | met |
+
+Results on another reading that miss the bar at the final text: dr-quality-suggest at `T7` is 3 of 5 by question marks
+(reps 1 and 2 fail C) and 3 of 5 by "a numbered point is a second ask" (reps 3 and 5 fail C). dr-resume-rerank at `T7` is
+3 of 5 if any second ask inside the question block fails C (reps 2 and 4). dr-spec-column is 1 of 5 at `T8` by the
+closed-list Separator, the same count as at `T`. The eight arms that did not run again are dr-offer-yes,
+dr-offer-scaffold, dr-tracks, dr-stop-track, dr-park-ranked, dr-resume-legacy, dr-handoff-spec and wp-stage-plan.
 
 ### Probe verdict
 
@@ -7556,10 +7845,14 @@ writing-plans text of `BASE85` (blob `41f4e91cc2bba1418cbbf88bdbea865a9cdcee3a`)
 | Task 4 (treatment arms, 15 reps) | $2.3350 |
 | Task 5 (probe, 4 reps) | $0.8911 |
 | Task 6 (guards, 45 reps, and the scores and this summary ran no rep) | $4.3833 |
-| **Total** | **$10.0665 of $30** |
+| Task 7 (re-run at `T7`, 30 reps) | $4.0142 |
+| Task 7 (diagnostic arm, 5 reps) | $1.3561 |
+| Task 8 (wording round at `T8`, 5 reps) | $1.3087 |
+| **Total** | **$16.7455 of $30** |
 
-The total is under the $30 stop and under the plan's estimate of about $16 (Open for plan review item 8). The 79 reps
-include no VOID rep, no $2.00 rerun and no empty or unreadable rep file. No wording round ran.
+The total is under the $30 stop. It is a little above the plan's estimate of about $16 (Open for plan review item 8),
+which did not count the final-review fixes. The 119 reps include no VOID rep, no $2.00 rerun and no empty or unreadable
+rep file. One wording round ran (Task 8).
 
 ### Plan completion items
 
@@ -7588,9 +7881,10 @@ quality joins a Ranked list only as an outcome that the partner approved and ran
 item, no O-number and no Outcomes row, and `Leaves out` names it as `<quality>: suggested, see the approval question`.
 On approval it takes the next free O-number, an Outcomes row and its ranked place. On a decline, `Leaves out` records
 the decline and no item is made. A session that cannot ask lists it at the end of the Ranked list, labeled
-`suggested, not approved`.
+`suggested, not approved`. Since `T7` it also gives that quality an Outcomes row, marked the same way.
 
-Supporting evidence: "Plan 85 Task 4: dr-quality-suggest" is PASS 5 of 5 against a RED control (PASS 0 of 5). In the
+Supporting evidence: "Plan 85 Task 4: dr-quality-suggest" is PASS 5 of 5 against a RED control (PASS 0 of 5), and PASS 5
+of 5 again at `T7`. In the
 dr-research-depth guard, every rep suggests its qualities in the message and puts none in a Ranked list. The V3 bar
 rests on borderline B and C calls (owner gate, item 2). This item's verdict does not. The approval path, the decline
 path and the provisional label are untested (Untested passages).
@@ -7604,7 +7898,8 @@ Constraints and a task list, as the plan's probe design sets. Each was read agai
 (§3, §4.1, §4.2 and §4.5), and all three pass ("Plan 85 probe"). At `2e91b05` the new-project Outcomes table carries a
 `Spec` column of § and R refs when `Source` is a spec. It also says that a spec named only under `Background` gives no
 column. "Plan 85 Task 4: dr-spec-column" is PASS 5 of 5 against a RED control, on the Separator reading (1 of 5 by the
-closed-list reading, owner gate item 3).
+closed-list reading, owner gate item 3). At `T7` it read 2 of 5, because three replies wrote a section title in the cell.
+After the wording round (`T8`) it is PASS 5 of 5 again, with the same Separator caveat.
 
 Caveats: the roadmap that step B read is the hand-written fixture `SEC_SPEC_ROADMAP`, which Task 5 checked against the
 format at `2e91b05`. It is not a roadmap that derive-roadmap wrote. The probe also cannot show that the `Scope:` line
@@ -7620,7 +7915,8 @@ Task 6's two counts:
 - dr-tracks ("Plan 85 guard: dr-tracks"): PASS 5 of 5, clause C 5 of 5. By item 4's other reading, C and PASS are 4 of
   5. Echo changes no count. No rep sends later qualities to later stages, and every rep carries R2's line.
 - dr-known-progression-79 ("Plan 85 guard: dr-known-progression-79"): PASS 5 of 5, clause C 5 of 5 (manifest 5 of 5,
-  traceability 5 of 5). The strict reading of A, or rep3's B read the other way, gives 4 of 5. Both together give 3 of
+  traceability 5 of 5). At `T7` it is PASS 4 of 5, and clause C is 4 of 5 (rep5 keeps provenance on retained bytes and
+  links no row to its source). The strict reading of A, or rep3's B read the other way, gives 4 of 5. Both together give 3 of
   5. Provenance on bytes changes no count.
 
 Of the sections that the item names, the Later qualities bullet of `new-project-entry.md` changed at `2e91b05`.
@@ -7631,8 +7927,9 @@ needs two independent dr-tracks runs, so a second five-rep dr-tracks run is stil
 
 ### Untested passages
 
-Every arm read `2e91b05`, the final skill text. No passage changed after the arm that reads it, because no wording
-round and no later skill commit happened. The passages below are untested: no clause of any arm scores them. Open for
+The arms of Tasks 4 to 6 read `2e91b05`. Two later skill commits changed one passage each: R9's provisional-file
+sentence (`T7`) and the `Spec` cell sentence (`T8`). The `dr-spec-column` arm at `T8` reads the `T8` sentence. No arm
+reads R9's sentence in the way it was written (below). The passages below are untested: no clause of any arm scores them. Open for
 plan review item 7 names the first five. Review Focus 2, 3 and 5 name three of them again, and Review Focus 1 and 4 add
 two more paths. The last bullet is one more sentence of edit 12 that no fixture reaches. The owner approved item 7's
 default, which adds no case for R6's answer (about $1.50), with the rest of Open for plan review (D4, 2026-11-10).
@@ -7648,9 +7945,11 @@ default, which adds no case for R6's answer (about $1.50), with the rest of Open
   dr-resume-rerank and dr-rerank-second guard rep (10 of 10) suggests scheduling at the re-rank, with a reason and
   the outcome line it would become, inside the one question. Clause C of those reps was scored with that form in place,
   by One closing request (owner gate, items 5 and 7).
-- **R9, the provisional label (Review Focus 3).** A session that cannot ask lists each suggested quality at the end of
-  the Ranked list, with its next free O-number and the label `suggested, not approved`. No fixture is a sub-agent or
-  non-interactive run, and no rep shows the label.
+- **R9, the provisional label and its Outcomes row (Review Focus 3).** A session that cannot ask lists each suggested
+  quality at the end of the Ranked list, with its next free O-number and the label `suggested, not approved`, and since
+  `T7` an Outcomes row marked the same way. No fixture is a sub-agent or non-interactive run, and no rep shows the label
+  or the row. The six `T7` arms show only that the sentence leaks into no interactive reply. A resume's handling of a
+  `suggested, not approved` item has no rule and no arm (filed as an item).
 - **R12, §6's unmet-requirement sentence (Review Focus 5).** When `Source` is a spec, the completion review lists each
   numbered spec requirement that no `Spec` cell cites as unmet. No arm runs a completion review of a spec-sourced
   new-project roadmap. Only an unscored observation touches it: every dr-spec-column treatment rep's Completion section
@@ -7702,6 +8001,10 @@ These change no score. The owner may want them at the completion gate.
 
 ### Deviation
 
+The plan has six tasks and the branch has two more. Task 7 (`59df779`) is the R9 Outcomes-row fix that the owner chose
+at the completion gate, with its re-run of six cases. Task 8 (`e885184`) is the plan's one wording round for
+`dr-spec-column`. Each task has its own reviewer verdict in the ledger.
+
 The plan names one Task 6 commit, but Task 6 ran as six: the reps (`85156d1`), the scores of the first five cases
 (`c1acd56`) and of the last four (`0beb489`), two record fixes after review (`f043608` and `eaedf74`), and this summary
 under the plan's commit message.
@@ -7710,9 +8013,11 @@ under the plan's commit message.
 
 The plan completion gate needs the owner's review of these calls. Each item gives its counts on every reading that the
 record names, the reading applied first. The owner decisions that this plan applied are D4 (2026-11-10, "Approve as
-written": the nine defaults of Open for plan review), the core-and-later ruling (2026-11-07) and plan 79's D1
-(2026-11-07, clause C fits the dr-known-progression fixture). Every other ruling named below is the controller's. The
-owner has not made it.
+written": the nine defaults of Open for plan review), the core-and-later ruling (2026-11-07), plan 79's D1
+(2026-11-07, clause C fits the dr-known-progression fixture) and the completion-gate answers of 2026-11-10 (the R9 row
+fix now, the R7 point and four smaller points deferred as items, the verdicts accepted). Every other ruling named below
+is the controller's. The owner has not made it. The owner made the completion-gate answers before the `T7` and `T8`
+arms ran, so items 17 to 20 are new to the owner.
 
 **Task 4.**
 
@@ -7777,3 +8082,20 @@ owner has not made it.
     cannot ask", and no arm tests it.
 15. The unscored observations, items 1 to 5 above, among them the dr-known-progression-79 fixture's earlier turn.
 16. The deviation: Task 6 ran as six commits where the plan names one.
+
+**Final-review fixes (items 17 to 20).**
+
+17. dr-spec-column read 2 of 5 at `T7`, below the additive bar, and the plan's one wording round (`T8`) brought it to 5
+    of 5. A diagnostic of the unchanged `T` prompt gave 4 of 5, with the same title habit in rep4. So the habit exists at
+    `T`: 1 of 10 reps across the two `T` arms against 3 of 5 at `T7` (one-sided p about 0.08). `T7` is not shown to
+    have caused it. The `T8` result is 5 of 5 on the Separator reading, and 1 of 5 by the closed-list reading, the same
+    count as at `T` (item 3).
+18. dr-resume-rerank at `T7` is 4 of 5, at the guard bar of 4. Rep2 fails C by the call that `T` rep3 had (a side request
+    about O3's cost basis). Read as part of the same answer, rep2 passes and PASS is 5 of 5. If any second ask inside
+    the question block fails C, reps 2 and 4 fail, and PASS is 3 of 5, below the bar. The case is again at the bar,
+    and its pass rests on the readings that item 5 names.
+19. dr-known-progression-79 at `T7` is 4 of 5 (guard needs 2). Rep5 fails C on traceability by the Provenance on bytes
+    reading, which plan 79 Task 4 applied to rep2. Not applied, rep5 passes and PASS is 5 of 5.
+20. dr-quality-suggest at `T7` is 5 of 5 on the calls of the `T` arm. Its borderline calls are C in reps 1 and 2 (more
+    than one question mark under one label) and in reps 3 and 5 (numbered points inside one request). Either pair read
+    the other way gives 3 of 5, a miss.
