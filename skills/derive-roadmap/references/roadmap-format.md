@@ -144,6 +144,7 @@ made. From approval on it is an ordinary outcome, with no special case at a
 resume, at parking or in the completion review. When the session cannot ask,
 the provisional file lists each suggested quality at the end of the Ranked
 list, with its next free O-number and the label `suggested, not approved`.
+Each also gets an Outcomes row, marked `suggested, not approved`.
 
 An item leaves the list when your partner promotes it to a stage at a resume,
 or parks when the track stops or the whole roadmap parks (SKILL.md §5).
