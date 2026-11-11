@@ -45,6 +45,7 @@
 - **D2** (owner, execution, 2026-11-11): "Accept as is", in answer to "Do you accept the walk's false-positive class as the README records it?". The corpus sweep found 0 false positives in 150,024 unique commands, so the accepted class is the one that the README records. Applied in: Task 3.
 - **D3** (owner, execution, 2026-11-11): "Fix it now", in answer to "How should the guard's quadratic slowdown on long crafted lines be handled?". The offered fix was a spec amendment and a code task that drop a queued continuation whose start position and word were seen before, then a rerun of Task 3's Steps 3 to 5. Applied in: new tasks.
 - **D4** (owner, execution, 2026-11-11): "Dedupe + cap", in answer to "Should the fix also deny a subcommand with more than 64 candidate starts?". The dedupe needs a second part, which applies the same idea to the `[[` row's scan. Without it, a long chain of tests stays quadratic. The cap makes the worst case linear. It adds a false positive, so Task 5 stops at the false-positive gate again. Applied in: spec §1, §2, §4 and §5 (amendment), Tasks 4 and 5.
+- **D5** (owner, execution, 2026-11-11): "Accept as is", in answer to "Do you accept the cap's false-positive class as the README records it?". The rerun sweep found 0 false positives in 150,024 unique commands. No subcommand had more than 13 candidates, so the cap never fired. Applied in: Task 5.
 
 ---
 
