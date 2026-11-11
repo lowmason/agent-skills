@@ -153,7 +153,8 @@ params = list(idata.posterior.data_vars)  # the posterior's sites: mu and sigma 
 plot_psense_dist(idata, var_names=params)
 ```
 
-Requires `arviz-plots` (`uv add arviz-plots`).
+Requires `arviz-plots` (`uv add arviz-plots`, in a uv project: run `uv init` first if there is no
+`pyproject.toml`).
 
 ### `plot_psense_quantities` — Sensitivity of derived quantities
 

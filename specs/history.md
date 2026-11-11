@@ -221,3 +221,10 @@ Closed earlier deferred items:
 - "**finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the" (deferred by superpowers-drift-v7.0.2).
 - "**test-driven-development's `testing-anti-patterns.md` does not name the string-presence and" (deferred by superpowers-drift-v7.0.2 earlier findings).
 - "`skills/finishing-a-development-branch/SKILL.md` is 275 characters over the corrected compaction window (body 19,975," (deferred by 87-compaction-cut-probe).
+
+## /deferred — 2026-11-11
+
+Closed deferred items:
+- "**bayesian-workflow's three references say `uv add` with no `uv init` lead-in (plan 77" (deferred by 77-audit-p2-text-fixes): the three references now carry SKILL.md's "run `uv init` first" lead-in.
+- "**`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5" (deferred by 79-derive-roadmap-resume-and-route-tests): a five-rep run at `e885184` passed 5 of 5 with no borderline call.
+- "Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the" (deferred by 84-spec-derived-acceptance-tests): a killed run now leaves its output so far in `test-run.<random>`, and two tests cover it.

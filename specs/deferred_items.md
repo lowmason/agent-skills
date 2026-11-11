@@ -5895,7 +5895,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       only). Revisit if: a fix round skips the documented suites in a real run.
 
 ## 77-audit-p2-text-fixes — 2026-11-06
-- [ ] **bayesian-workflow's three references say `uv add` with no `uv init` lead-in (plan 77
+- [x] **bayesian-workflow's three references say `uv add` with no `uv init` lead-in (plan 77
       final review, owner ruled defer).** Plan 77 changed `pip install` to `uv add` in
       `skills/bayesian-workflow/references/stack-compatibility.md:7`,
       `references/sensitivity.md:156` and `references/state-space.md:77`. SKILL.md and
@@ -5904,6 +5904,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       found" error. Decision D4 of the plan limited the lead-in to the two install blocks.
       See specs/plans/completed/77-audit-p2-text-fixes.md. Size: quick-fix. Done when: each of
       the three references carries the lead-in or points to SKILL.md's install block.
+      → done 2026-11-11 (/deferred quick fix): `references/stack-compatibility.md`, `references/sensitivity.md` and `references/state-space.md` each carry SKILL.md's lead-in, "run `uv init` first if there is no `pyproject.toml`".
 - [ ] **tech-debt and test-driven-development give two routes for the first test (plan 77
       final review, owner ruled defer).** `skills/tech-debt/SKILL.md:140-141` (HARDEN) says to
       add the one characterization test, then use the develop-testing-strategy skill for "the
@@ -6101,11 +6102,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (a trap, a deferred item) is never cited, so each resume reads it again. The owner kept the narrow
       marker sentence at plan review. Size: design. Revisit if: a recorded resume reports the same trap or
       deferred-item bullet that an earlier resume of the same roadmap already reported.
-- [ ] **`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5
+- [x] **`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5
       rests on rep2's borderline clause B call. §3 and §7 did not change after `T3`. See
       specs/baseline/red-baseline-new-project-entry.md (Plan 79: Task 3 wording round 1). Size: quick-fix. Done when: a
       five-rep run of `dr-name-collision` at the final skill text is recorded in
       specs/baseline/red-baseline-new-project-entry.md (about $0.35).
+      → done 2026-11-11 (/deferred quick fix): a five-rep run at `e885184` passed 5 of 5, with no borderline call. specs/baseline/red-baseline-new-project-entry.md records it under "/deferred pass (2026-11-11): dr-name-collision at the final text".
 - [ ] **The term "roadmap name" differs between `references/new-project-entry.md` and `SKILL.md` §5 Parking
       (plan 79 Task 3 wording round).** new-project-entry.md item 4 defines the roadmap name as the `<name>` in
       `specs/<name>-roadmap.md`. The deferred-items heading in §5 Parking now uses `<name>-roadmap`. Size:
@@ -6147,13 +6149,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       five-rep `history-filter` run at the new text is recorded in `specs/baseline/red-baseline-development-history.md`.
 
 ## 81-spec-derived-acceptance-tests — 2026-11-09
-- [ ] **`measure.py score` does not VOID a Codex reader rep whose log shows tool activity (plan 81 final review,
+- [x] **`measure.py score` does not VOID a Codex reader rep whose log shows tool activity (plan 81 final review,
       Codex [P2], owner ruled defer).** `score_codex` in `specs/baseline/red-baseline-acceptance-tests/kit/measure.py`
       checks only the model in the log header. Task 4 ran `measure.py residual` on each Codex reader folder by
       hand, under a VOID rule fixed before the first rep, and found no leftover line in the 40 reader logs
       (`specs/baseline/red-baseline-acceptance-tests.md`, Appendix A). The fix, about 20 lines and a selftest case, runs
       the residual check inside `score` for each `codex-` reader rep. Size: quick-fix. Revisit if: a plan runs
       new Codex reader reps with `specs/baseline/red-baseline-acceptance-tests/kit/measure.py`.
+      → retired 2026-11-11: the successor kit already runs the residual check inside scoring (`specs/baseline/red-baseline-statement-readings/kit/measure.py:127`), and `specs/completed/statement-level-readings.md` replaces the acceptance-test design that this kit served.
 - [x] **Rerun the 60 adjudicator reps on paired prompts (plan 81 final review, owner ruled defer at D8).** The
       adjudicator prompts that Tasks 3 and 4 ran did not pair the reader's tests with their tasks, so every
       treatment-arm number in `specs/baseline/red-baseline-acceptance-tests.md` comes from a layout that the plan did not
@@ -6262,7 +6265,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `NOTICE` names the divergence.
 
 ## 84-spec-derived-acceptance-tests — 2026-11-10
-- [ ] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
+- [x] Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the
       completion gate). `skills/subagent-driven-development/scripts/test-run` writes the run file only
       after the command ends, and it removes its temporary file in an EXIT trap. A run that the Bash
       tool kills (a 2-minute default timeout, or a hung test) therefore leaves no run file. Before plan 84,
@@ -6273,6 +6276,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       output in the workspace; name that file in the "No `run:` line" bullet; add a test in
       `skills/subagent-driven-development/scripts/test_sdd_scripts.py`. Size: quick-fix. Done when: a
       killed `test-run` leaves its partial output at a path that the controller text names.
+      → done 2026-11-11 (/deferred quick fix): `test-run` removes its temporary file only after the run file is written, so a killed run leaves its output so far in `test-run.<random>`, which the "No `run:` line" bullet of `references/test-run.md` names. Two tests in `test_sdd_scripts.py` cover a killed run and a finished one.
 
 ## 85-derive-roadmap-later-qualities-and-spec-refs — 2026-11-10
 - [ ] **A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final

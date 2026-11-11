@@ -23,7 +23,9 @@
 # files. The command runs once, from the current directory. The run file is
 # written only after the command has finished, so a reader never sees a
 # half-written header. Until then the output waits in a temporary file in the
-# workspace.
+# workspace, test-run.<random>, which is removed once the run file is written.
+# A run that is killed first (a tool timeout, a hung test) leaves that file
+# behind, holding the output so far.
 #
 # A repository with no commit is refused before anything runs, because the
 # header names HEAD (sdd-repo --with-commit). A refusal writes no file.
@@ -85,9 +87,9 @@ else
 fi
 
 # The temporary name does not match task-*-tests*.log, so a reader of the
-# workspace never takes it for a run file.
+# workspace never takes it for a run file. No EXIT trap removes it: a killed
+# run must leave its partial output behind.
 out=$(mktemp "$dir/test-run.XXXXXX")
-trap 'rm -f "$out"' EXIT
 
 rc=0
 "$@" > "$out" 2>&1 || rc=$?
@@ -113,5 +115,6 @@ done
 tail -n 5 "$out"
 # A last line with no newline must not run into the "run:" line.
 [ -z "$(tail -c 1 "$out")" ] || echo
+rm -f "$out"
 echo "run: $run_file"
 exit "$rc"
