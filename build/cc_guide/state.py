@@ -17,6 +17,8 @@ from guide import ID_RE, TEXT_HASH_RE, section_terms, sections
 MANIFEST = 'build/cc_guide/manifest.toml'
 BASELINE = 'build/cc_guide/baseline.json'
 PROBES = 'build/cc_guide/PROBES.md'
+# baseline.json's layout number (R2.3): 1 was text block keys, 2 hashed keys.
+FORMAT = 3
 # R4.2's excluded trees, which the citation scan never reads.
 UNCITED = ('specs', 'runtimes', 'review')
 # guide.CITE_SHAPED_RE, spelled for `git grep -E`.
@@ -321,9 +323,11 @@ def parse_baseline(text: str) -> dict:
     except json.JSONDecodeError as exc:
         raise SetupError(f'{BASELINE}: not valid JSON ({exc})') from None
     problems: list[str] = []
-    if (not isinstance(raw, dict) or set(raw) != {'sections', 'groups', 'llms'}
+    if isinstance(raw, dict) and (type(raw.get('format')) is not int or raw['format'] != FORMAT):
+        raise SetupError(f'{BASELINE}: format {raw.get("format")!r} is not {FORMAT}, the format this code reads')
+    if (not isinstance(raw, dict) or set(raw) != {'format', 'sections', 'groups', 'llms', 'cited'}
             or not isinstance(raw['sections'], dict) or not isinstance(raw['groups'], dict)):
-        raise SetupError(f'{BASELINE}: holds exactly sections, groups and llms')
+        raise SetupError(f'{BASELINE}: holds exactly format, sections, groups, llms and cited')
     if not raw['sections']:
         problems.append('sections must hold at least one section')
     for sid, s in raw['sections'].items():
@@ -345,6 +349,13 @@ def parse_baseline(text: str) -> dict:
                             ' and snapshot (page -> release)')
     if not _strings(raw['llms']):
         problems.append('llms must be a list of slugs')
+    cited = raw['cited']
+    if not (isinstance(cited, dict)
+            and all(isinstance(path, str) and isinstance(by_id, dict)
+                    and all(ID_RE.fullmatch(sid) and isinstance(h, str) and TEXT_HASH_RE.fullmatch(h)
+                            for sid, h in by_id.items())
+                    for path, by_id in cited.items())):
+        problems.append('cited must map each file to section ID -> text_hash')
     if problems:
         raise SetupError('\n'.join(f'{BASELINE}: {p}' for p in problems))
     return raw

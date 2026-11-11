@@ -39,6 +39,12 @@ def test_a_new_changed_exceeds_every_citer_stamp(newest, citers, expected):
     assert baseline.next_changed(newest, citers) == expected
 
 
+def test_init_writes_the_format_first_and_an_empty_cited_map_last(docs_dir):
+    s = fixture_state(docs_dir)
+    assert list(s) == ['format', 'sections', 'groups', 'llms', 'cited']
+    assert (s['format'], s['cited']) == (3, {})
+
+
 def test_derive_changed_aligns_by_parent_and_heading():
     refresh = unanchored(guide_text())
     july = refresh.replace('Set `ALPHA_ENV`;', 'Set `OLD_ENV`;')

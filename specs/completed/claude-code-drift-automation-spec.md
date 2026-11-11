@@ -384,7 +384,14 @@ R2.3 **`baseline.json` holds:**
   page's snapshot when they must name a block that has left the page (owner,
   plan 38 decision 9, 2026-10-05). A block shared by two groups is stored
   under each, so resolving it in one never hides it from the other;
-- the `llms.txt` slug list from the last baseline.
+- the `llms.txt` slug list from the last baseline;
+- `format`, the layout's number: 3 since plan 89, after text block keys (1)
+  and hashed keys (2). The loader refuses any other value, and code older
+  than plan 89 refuses the file by its key set, so no checkout misreads a
+  layout it predates (owner, plan 89, 2026-11-11);
+- `cited`: per citing file, per section its citation names, the section's
+  `text_hash` when `baseline cite` last stamped the file (R7), paths and
+  section IDs sorted (owner, plan 89, 2026-11-11).
 
 R2.4 **Stamp rules.**
 - Versions compare as integer tuples: `2.1.288.1` sorts after `2.1.288` and

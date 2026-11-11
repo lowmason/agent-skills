@@ -9,7 +9,7 @@ from blocks import SEP, block_hash, cut_page, key_hash, key_names, page_blocks, 
 from docs import is_platform, page_file, parse_llms, version_key
 from guide import (NO_STAMP, anchor_problems, file_citation, render_stamp, sections, stamp_bounds, text_hash,
                    with_stamp)
-from state import Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot, read_utf8
+from state import FORMAT, Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot, read_utf8
 
 # R11.1: the July guide (verified at 2.1.219) and the refresh (at 2.1.288),
 # both read at the guide's path before 79ad04f moved it.
@@ -75,8 +75,8 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
     check_ids(manifest, guide_text)
     terms = group_terms(manifest, guide_text)
     llms = docs / 'llms.txt'
-    state: dict = {'sections': {}, 'groups': {},
-                   'llms': sorted(parse_llms(read_utf8(llms))) if llms.is_file() else []}
+    state: dict = {'format': FORMAT, 'sections': {}, 'groups': {},
+                   'llms': sorted(parse_llms(read_utf8(llms))) if llms.is_file() else [], 'cited': {}}
     for s in sections(guide_text):
         state['sections'][s.id] = {'checked': {'release': release, 'date': day},
                                    'changed': changed[s.id],

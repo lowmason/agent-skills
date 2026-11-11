@@ -1,4 +1,5 @@
 {
+ "format": 3,
  "sections": {
   "context.overview": {
    "checked": {
@@ -4407,5 +4408,6 @@
   "workflows",
   "worktrees",
   "zero-data-retention"
- ]
+ ],
+ "cited": {}
 }
