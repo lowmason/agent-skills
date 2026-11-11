@@ -39,6 +39,7 @@
 ## Decisions
 
 - **D1** (owner, plan review, 2026-11-11): "Approve as is", in answer to "Approve plan 90 as written?". The plan stands as written, with the builder's calls in it. Those calls are the README exact copy, the 10 allow cases, the bound test at 16 words with a 3× limit, Task 3's class rule and its split by guarded agent, and README inputs from both versions. Applied in: Tasks 1 to 3, Global Constraints.
+- **D2** (owner, execution, 2026-11-11): "Accept as is", in answer to "Do you accept the walk's false-positive class as the README records it?". The corpus sweep found 0 false positives in 150,024 unique commands, so the accepted class is the one that the README records. Applied in: Task 3.
 
 ---
 
