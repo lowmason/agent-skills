@@ -104,7 +104,7 @@ def test_the_notice_is_one_ascii_json_line_written_before_its_digest(tmp_path, m
     notice.write_notice(tmp_path, 'cc-guide · x → /cc-guide')
     text = (tmp_path / notice.NOTICE).read_text(encoding='utf-8')
     assert text.isascii() and text.count('\n') == 1
-    assert json.loads(text) == {'systemMessage': 'cc-guide · x → /cc-guide'}
+    assert json.loads(text) == notice.payload('cc-guide · x → /cc-guide')
     assert (tmp_path / notice.DIGEST).read_text() == hashlib.sha256(text.encode()).hexdigest() + '\n'
     assert order == [notice.NOTICE, notice.DIGEST]
     assert sorted(p.name for p in tmp_path.iterdir()) == [notice.DIGEST, notice.NOTICE]
@@ -161,3 +161,15 @@ def test_after_failure_writes_the_error_line_and_records_an_exit_two(tmp_path):
         ' → uv run python build/cc_guide/cli.py check')
     record = notice.read_last_check(tmp_path)
     assert (record['run'], record['exit']) == ('r9', 2)
+
+
+NOTE = ('The line above is the Claude Code drift notice for this repository. The repository owner wants the first '
+        'reply of this session to quote it, because the Desktop app does not display hook messages.')
+
+
+def test_the_payload_shows_the_line_and_gives_claude_the_line_and_the_note():
+    assert notice.payload('cc-guide · x → /cc-guide') == {
+        'systemMessage': 'cc-guide · x → /cc-guide',
+        'hookSpecificOutput': {'hookEventName': 'SessionStart',
+                               'additionalContext': 'cc-guide · x → /cc-guide\n' + NOTE}}
+    assert NOTE.isascii() and '"' not in NOTE and '\\' not in NOTE

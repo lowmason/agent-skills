@@ -152,12 +152,14 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
    terms flag most releases, and identifiers miss prose-only notes. One cheap
    Sonnet pass reads every bullet of the untriaged releases, batched weekly.
 8. **Trigger: a SessionStart hook pair in this repo.** A synchronous `show`
-   prints a precomputed `systemMessage`, the only hook channel shown to the
-   user in the terminal, at most once a day. The Desktop app runs the hook and
-   records the message but does not display it, and `show` marks a notice
-   shown when it prints, so a Desktop session that starts first on a day also
-   uses that day's showing up for the terminal (owner, plan 49, 2026-10-18,
-   from Task 10's live run); a Desktop-visible channel is a deferred item. An
+   prints a precomputed notice object at most once a day. Its `systemMessage`
+   is the only hook channel shown to the user in the terminal. The Desktop app
+   runs the hook and records the message but does not display it (owner,
+   plan 49, 2026-10-18, from Task 10's live run). So the object also carries
+   the line, with a note asking that the first reply quote it, as
+   `hookSpecificOutput.additionalContext`, which reaches Claude in the CLI and
+   the Desktop app. Both surfaces receive the notice, so `show` marks it shown
+   when it prints (owner, plan 89, 2026-11-11). An
    async `refresh` recomputes it without delaying the session. Rejected:
    - one synchronous hook that runs the check inline (the guide-upkeep draft):
      Claude's first response waits for SessionStart hooks, so a fetch would
@@ -1032,9 +1034,14 @@ holding two command hooks:
 The quoting follows the guide's own pattern; the unquoted form is drift #3.
 
 R9.2 **`show`**, synchronous, in POSIX `sh` with no Python, network or git. It
-prints `~/.cache/agent-skills/cc-guide/notice.json`, a JSON object holding one
-`systemMessage` that Python escaped when writing it, unless the same notice
-was already shown today. `notice-shown` holds the date and the notice's
+prints `~/.cache/agent-skills/cc-guide/notice.json`, a JSON object holding the
+notice line as `systemMessage` and, under `hookSpecificOutput` with
+`hookEventName` `SessionStart`, the line and a note asking that the first reply
+quote it as `additionalContext`, unless the same notice was already shown
+today. Python escapes both strings when it writes them; `refresh`'s own error
+notices carry no character that needs escaping (owner, plan 89, 2026-11-11;
+`hooks.md:1149, 1184, 1205, 1331-1337` at 2.1.322).
+`notice-shown` holds the date and the notice's
 digest, which Python writes beside the notice, so a changed notice shows again
 the same day. It always exits 0 and needs only `HOME` and a minimal `PATH`: a
 session started from the Dock keeps `HOME` but gets launchd's `PATH`.
@@ -1379,9 +1386,11 @@ Constraints:
    - The resulting diff separates fact corrections from owner's-call items,
      and nothing is committed.
 4. **Stage 4.**
-   - `show` prints nothing on exit 0 and a single `systemMessage` on exit 1 or
+   - `show` prints nothing on exit 0 and a single notice object on exit 1 or
      2, and passes R12.5 in its launchd-like environment.
    - The owner sees the notice at a live session start, at most once a day.
+     In the Desktop app, the first reply of a new session quotes it (owner,
+     plan 89, 2026-11-11).
 5. **Stage 5.**
    - Each probe yields PASS or DIVERGES with recorded evidence on an
      owner-chosen binary, logged in `PROBES.md`.
