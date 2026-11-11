@@ -8139,3 +8139,12 @@ arms ran, so items 17 to 21 are new to the owner.
     passes as borderline (alternatives). By question marks rep3 fails and PASS is 4 of 5. With rep5's quality request read
     as a separate ask as well, reps 3 and 5 fail and PASS is 3 of 5, below the bar. At `T` the question-mark reading alone
     missed this bar (item 7).
+
+**Owner ruling (2026-11-11).** The owner answered "Yes, record them" to three recommendations for items 17 to 21:
+
+- Items 17 to 21 are accepted as recorded. The `T8` wording of the `Spec` cell stays.
+- Provenance on bytes is confirmed as the reading of record for dr-known-progression-79 clause C. A stage that keeps
+  provenance on retained bytes and links no row to its source does not name traceability, because the rule defines
+  traceability as a record per row.
+- Echo stays unruled. The open plan 79 item on `dr-tracks` and `dr-known-progression-79` in `specs/deferred_items.md`
+  holds it.
