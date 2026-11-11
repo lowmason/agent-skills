@@ -5819,6 +5819,7 @@ Stop: **$30**. Per-rep cap: **$1.00**. It is in every case's `budget` in `cases.
 | Task 4, treatment arms for V1, V3 and V4 at `T` (3 cases, 5 reps each, no VOID rerun, no wording round; worst case $5.00 per case call) | $2.3350 |
 | Task 5, the stage-plan probe (V5) at `T` (step A 1 rep, worst case $1.00; step B 3 reps, worst case $3.00; no VOID rerun, no $2.00 rerun, no wording round) | $0.8911 |
 | Task 6, the guards at `T-final` (9 cases, 5 reps each, no VOID rerun; worst case $5.00 per case call) | $4.3833 |
+| Task 6, the scores of the nine guards and the summary (no rep) | $0.00 |
 | **Running total** | **$10.0665 of $30** |
 
 Running total after Task 1: $0.00 of $30. Task 1 ran no `claude -p` rep.
@@ -5838,6 +5839,9 @@ These figures match the "Plan 85 probe summary and spend" section, below.
 Running total after Task 6's reps: $10.0665 of $30 ($10.07). `show_reps.py` over Task 6's nine folders prints $4.38 for
 its 45 reps, and the sum of their `total_cost_usd` is $4.3833. No rep file is empty or unreadable, so none counts at its
 cap. These figures match the "Plan 85: guards" section, below.
+
+Running total after Task 6's summary: $10.0665 of $30 ($10.07). This is the final total. The scores and the summary
+ran no rep. Per task: Task 1 $0.00, Task 2 $2.4571, Task 3 $0.00, Task 4 $2.3350, Task 5 $0.8911 and Task 6 $4.3833.
 
 ## Plan 85: control
 
@@ -7482,3 +7486,293 @@ the other reading's effect where it changes a count.
 | dr-park-ranked reps 3 and 4, D | pass (inline fields, the reading of record; drafts written in full) | rep3: "Size: small (one closure-log poll every 10 minutes). Done when: in a test, an email reaches every address on the operator mailing list within an hour of a new closure entry." The other inline-fields reading fails D in both. PASS is then 2 of 5, a guard miss. |
 | dr-resume-legacy rep4, guard | pass (a go-ahead question, not a re-ranking) | "Shall I go ahead with the reads?" |
 | dr-resume-legacy reps 1 and 3, guard | pass (a later question on the audit's exits, as plan 78 Task 4 rep3) | rep3: "I'll put each one to you as one question with two options" |
+
+## Plan 85: summary
+
+Plan 85 changes three derive-roadmap skill files (Task 3) and tests the change with micro-test reps. This summary lists
+every plan 85 arm, the probe verdict, the spend, the `Done when:` verdict of each item in the plan's Plan completion
+section and of the open plan 79 item, the untested passages and the owner gate. It edits no item in
+`specs/deferred_items.md`. The plan completion protocol does that later.
+
+The controls read the skill text at `BASE85` (`58337f5`). Every treatment, probe and guard arm read it at `T` =
+`T-final` = `2e91b05` (`2e91b050430b4d77e5c62cadf3ab22e248df37e3`). No arm missed its bar, so no wording round ran.
+There is no `T-r1` commit and no `-r1` folder. `git diff --stat 2e91b05 HEAD -- skills/` prints nothing, so no skill
+file changed after the arms ran.
+
+### Every arm
+
+"Met" means the additive bar or the guard bar (plan 85, Bars) on the readings of record. The last column names the
+borderline calls that decide the result and gives the count by each other reading. An other reading never counts
+toward a bar.
+
+| Arm | Case | Bar | Control or comparison arm | Treatment | Result | Deciding calls (count by the other reading) |
+|---|---|---|---|---|---|---|
+| Task 4, V1 | dr-offer-yes | additive, and 4 of 5 for the deferred item (Open for plan review item 2) | control at `58337f5`: thin, PASS 4 of 5 (rep2 fails C, borderline) | PASS 5 of 5 | met, and the deferred item's 4 of 5 is met | Control: clean (PASS 5 of 5) by the other reading of rep2, RED in 2 of 5 by the other reading of rep4. Treatment: 4 of 5 if "phases" is a stage word (rep2). 2 of 5 if a dependency fact counts as a pick of order (reps 3, 4 and 5), a reading that no earlier arm used. |
+| Task 4, V3 | dr-quality-suggest | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 | met | Borderline passes: B in reps 3 and 4, C in reps 2, 3 and 5. Any one read the other way: 4 of 5. Both B calls, or the C calls of reps 2 and 5: 3 of 5, a miss. All of them: 1 of 5. |
+| Task 4, V4 | dr-spec-column | additive | RED: A and B fail in 5 of 5, PASS 0 of 5 | PASS 5 of 5 | met, on the Separator reading | Reps 2, 3 and 4 (semicolons) and rep5 (`§3 R1`) pass B by Separator. The closed-list reading: 1 of 5, a miss. |
+| Task 5, V5 step A | dr-handoff-spec | none (both clauses recorded) | no control | rep1: A yes, B yes (it writes the `Scope:` line) | rep1 feeds step B | none |
+| Task 5, V5 step B | wp-stage-plan | at least 2 of 3 pass A and B | no control | PASS 3 of 3 | probe PASS | Rep2's Snapshot-record fields, or its CLI command names, as a fail of B: 2 of 3, still a pass. The run report as a run manifest (not applied): 0 of 3. |
+| Task 6, guard | dr-offer-scaffold | guard, at least 4 | plan 78 "Task 7: dr-offer-scaffold" (`f824492`): 5 of 5 | PASS 5 of 5 | met | Rep3's A (one work area after a decision) as a stage list: 4 of 5, still met. |
+| Task 6, guard | dr-tracks | guard, at least 2 | plan 79 "Task 4: dr-tracks, run a" (`5f52dfc`): 3 of 5 | PASS 5 of 5 | met | Item 4's other reading (rep2's order): 4 of 5. Echo changes no count. |
+| Task 6, guard | dr-known-progression-79 | guard, at least 2 | plan 79 "Task 4: dr-known-progression-79" (`5f52dfc`): 3 of 5 | PASS 5 of 5 | met | The strict reading of A (rep4), or rep3's failure list as a run manifest (B): 4 of 5 each, 3 of 5 together. |
+| Task 6, guard | dr-research-depth | guard, at least 4 | plan 78 "Fix round 1: dr-research-depth" (`d3fc772`): 5 of 5 | PASS 5 of 5 | met | none |
+| Task 6, guard | dr-resume-rerank | guard, at least 4 | plan 79 "Task 4: dr-resume-rerank" (`5f52dfc`): 5 of 5 | PASS 4 of 5 | met, at the bar | Reps 1 and 2 pass C by One closing request, as the controller ruled. Either one read the other way: 3 of 5, a miss. Any second ask in the question block: 2 of 5. Plan 79's one-question reading alone: 2 of 5. Rep3's side request as part of the same answer: 5 of 5. |
+| Task 6, guard | dr-rerank-second | guard, at least 4 | plan 79 "Task 3 round 3: dr-rerank-second" (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met | Rep2 (alternatives) and rep3 (One closing request) are borderline. Rep3 alone read the other way: 4 of 5. By question marks, reps 2 and 3 fail: 3 of 5, a miss (round 3 is also 3 of 5 on that reading). |
+| Task 6, guard | dr-stop-track | guard, at least 4 | plan 79 "Task 3 round 3: dr-stop-track" (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met | none |
+| Task 6, guard | dr-park-ranked | guard, at least 3 | plan 79 "Task 3 round 3: dr-park-ranked" (`5f52dfc`): 4 of 5 | PASS 4 of 5 | met | Reps 3 and 4 pass D by the inline-fields reading of record. The other inline-fields reading: 2 of 5, a miss (round 3 is 3 of 5 on that reading). Rep1's first lines as one bundled item (A): 3 of 5, still met. |
+| Task 6, guard | dr-resume-legacy | guard, at least 4 | plan 79 "Task 4: dr-resume-legacy" (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met | none |
+
+All three treatments, the probe and all nine guards meet their bars on the readings of record. Five results miss
+their bar when deciding calls are read the other way: dr-quality-suggest (both B calls, or the C calls of reps 2 and
+5), dr-spec-column (Separator), dr-resume-rerank (rep1 or rep2), dr-rerank-second (question marks) and dr-park-ranked
+(inline fields).
+The dr-offer-yes treatment falls below the deferred item's 4 of 5 only on the dependency-fact reading, which no earlier
+arm used. The probe fails only on the run-manifest reading, which the record does not apply.
+
+### Probe verdict
+
+**PASS**: 3 of 3 step-B reps pass clauses A and B, and the bar is 2 of 3. Step A's rep1 hands off Stage 1 with a
+"Next:" line and writes the `Scope:` line with Stage 1's O-numbers, the refs of their Spec cells and both qualities of
+its `Leaves out`. Each step-B plan cites R1, R2 and §4.2 as its scope. No step-B plan builds the versioned quarter
+manifest, its active pointer or an Azure service. Clause C (recorded) is 3 of 3: every header carries the stamp line.
+
+The run-manifest reading is a judgment call. If every run or measurement report counted as a run manifest, every
+step-B rep would fail B, and the probe would be 0 of 3. The record does not apply that reading. Stage 1's own Exit asks
+for the measured time and data volume, and plan 78's Control section reads a cost measurement as not a run manifest.
+The controller made this call by the record's readings, so it is not an owner gate.
+
+The probe cannot show that the `Scope:` line caused the pass. `SEC_SPEC_ROADMAP`, which every step-B rep reads in full,
+already holds Stage 1's Spec refs and its `Leaves out`, and the probe has no arm without the line. Step B read the
+writing-plans text of `BASE85` (blob `41f4e91cc2bba1418cbbf88bdbea865a9cdcee3a`).
+
+### Spend
+
+| Task | Spent |
+|---|---|
+| Task 1 (cases and leak check, no rep) | $0.0000 |
+| Task 2 (control arms, 15 reps) | $2.4571 |
+| Task 3 (skill text, no rep) | $0.0000 |
+| Task 4 (treatment arms, 15 reps) | $2.3350 |
+| Task 5 (probe, 4 reps) | $0.8911 |
+| Task 6 (guards, 45 reps, and the scores and this summary ran no rep) | $4.3833 |
+| **Total** | **$10.0665 of $30** |
+
+The total is under the $30 stop and under the plan's estimate of about $16 (Open for plan review item 8). The 79 reps
+include no VOID rep, no $2.00 rerun and no empty or unreadable rep file. No wording round ran.
+
+### Plan completion items
+
+**"The derive-roadmap new-project offer still draws core-and-later-stages text before the partner ranks"
+(`deferred-2026-11-07`). Done when: the skill wording that stops this text lands, and a re-run of `dr-offer-yes` under
+the kit passes 4 of 5 by plan 78's core-and-later-stages reading. Met.**
+
+The wording landed in `2e91b05` (Task 3 edits 6 and 9, `SKILL.md` §7 step 4 and `new-project-entry.md`, The one
+message). The one message names no stage, core or later, and names later qualities only in the qualities line. "Plan
+85 Task 4: dr-offer-yes" is PASS 5 of 5 by Open for plan review item 1, which applies the core-and-later-stages reading
+with the owner's ruling of 2026-11-07. No rep sends later qualities to later stages, and every rep carries R2's line in
+its exact form. If "phases" is a stage word, PASS is 4 of 5, and the item is still met. Only the dependency-fact
+reading, which no earlier arm used, gives 2 of 5. The item also asks for re-runs of dr-offer-scaffold and dr-tracks.
+Both ran at `T-final` as guards, and each is PASS 5 of 5 ("Plan 85: guards").
+
+Caveat: the control is thin, and its one failure (rep2) calls the spec's order stages. It is not core-and-later text,
+so this control does not show the text that the item names. Plan 79 Task 4's arm, at the same derive-roadmap text,
+failed once on that text (its rep4, later stages).
+
+**"A later quality in a research track's Ranked list has no O-number and no partner rank"
+(`78-derive-roadmap-new-project-entry`). Done when: the format states how a later quality is listed in a Ranked list
+(for example an O-number and a rank request, or a named unranked class). Met.**
+
+This `Done when:` asks for text only. At `2e91b05`, `references/roadmap-format.md` (Ranked list) says that a later
+quality joins a Ranked list only as an outcome that the partner approved and ranked. Until the answer, it has no list
+item, no O-number and no Outcomes row, and `Leaves out` names it as `<quality>: suggested, see the approval question`.
+On approval it takes the next free O-number, an Outcomes row and its ranked place. On a decline, `Leaves out` records
+the decline and no item is made. A session that cannot ask lists it at the end of the Ranked list, labeled
+`suggested, not approved`.
+
+Supporting evidence: "Plan 85 Task 4: dr-quality-suggest" is PASS 5 of 5 against a RED control (PASS 0 of 5). In the
+dr-research-depth guard, every rep suggests its qualities in the message and puts none in a Ranked list. The V3 bar
+rests on borderline B and C calls (owner gate, item 2). This item's verdict does not. The approval path, the decline
+path and the provisional label are untested (Untested passages).
+
+**"A new-project roadmap built from a spec maps each outcome to no spec section reference"
+(`78-derive-roadmap-new-project-entry`). Done when: one stage plan built from a new-project roadmap with a spec has been
+checked against that spec, and the format either carries the spec section or states why it does not. Met.**
+
+Probe step B built three stage plans from `SEC_SPEC_ROADMAP` and step A's handoff. Each is a header, Global
+Constraints and a task list, as the plan's probe design sets. Each was read against the sec-edgar spec at `22c6767f`
+(§3, §4.1, §4.2 and §4.5), and all three pass ("Plan 85 probe"). At `2e91b05` the new-project Outcomes table carries a
+`Spec` column of § and R refs when `Source` is a spec. It also says that a spec named only under `Background` gives no
+column. "Plan 85 Task 4: dr-spec-column" is PASS 5 of 5 against a RED control, on the Separator reading (1 of 5 by the
+closed-list reading, owner gate item 3).
+
+Caveats: the roadmap that step B read is the hand-written fixture `SEC_SPEC_ROADMAP`, which Task 5 checked against the
+format at `2e91b05`. It is not a roadmap that derive-roadmap wrote. The probe also cannot show that the `Scope:` line
+caused the pass (Probe verdict).
+
+**The open plan 79 item "dr-tracks and dr-known-progression-79 miss conformance clause C at the final skill text"
+(`79-derive-roadmap-resume-and-route-tests`). Done when: the owner rules on the Echo and Provenance readings, or the
+wording of the two sections changes, and two independent five-rep `dr-tracks` runs and a `dr-known-progression-79` run
+each pass 4 of 5 under the kit in specs/baseline/red-baseline-new-project-entry/kit/. Not met. Progress note only.**
+
+Task 6's two counts:
+
+- dr-tracks ("Plan 85 guard: dr-tracks"): PASS 5 of 5, clause C 5 of 5. By item 4's other reading, C and PASS are 4 of
+  5. Echo changes no count. No rep sends later qualities to later stages, and every rep carries R2's line.
+- dr-known-progression-79 ("Plan 85 guard: dr-known-progression-79"): PASS 5 of 5, clause C 5 of 5 (manifest 5 of 5,
+  traceability 5 of 5). The strict reading of A, or rep3's B read the other way, gives 4 of 5. Both together give 3 of
+  5. Provenance on bytes changes no count.
+
+Of the sections that the item names, the Later qualities bullet of `new-project-entry.md` changed at `2e91b05`.
+`SKILL.md` §7 step 2 and `new-project-entry.md` Outcomes and tracks did not change. The owner has not ruled on Echo or
+Provenance, and neither reading moves a count in this run. This run gives one dr-tracks run and one
+dr-known-progression-79 run, each at 4 of 5 or better. One dr-tracks run does not close the item: its `Done when:`
+needs two independent dr-tracks runs, so a second five-rep dr-tracks run is still needed.
+
+### Untested passages
+
+Every arm read `2e91b05`, the final skill text. No passage changed after the arm that reads it, because no wording
+round and no later skill commit happened. The passages below are untested: no clause of any arm scores them. Open for
+plan review item 7 names the first five. Review Focus 2, 3 and 5 name three of them again, and Review Focus 1 and 4 add
+two more paths. The last bullet is one more sentence of edit 12 that no fixture reaches. The owner approved item 7's
+default, which adds no case for R6's answer (about $1.50), with the rest of Open for plan review (D4, 2026-11-10).
+
+- **R6's answer path, approval and decline (Review Focus 2).** On approval, the quality takes the next free O-number,
+  an Outcomes row and its ranked place, and `Leaves out` points at it by O-number. On a decline, `Leaves out` reads
+  `<quality>: declined, <YYYY-MM-DD>`, and no item is made. No arm gives the partner's answer: dr-quality-suggest stops
+  at the question. Only unscored text touches it. dr-quality-suggest treatment rep3 says "If you decline, Stage 1's
+  `Leaves out` will record that.", and dr-research-depth guard rep1 asks the partner to "approve or decline" each
+  quality.
+- **R7, a quality found at a resume.** §5's Ask says that such a quality "joins the same question in §4's form". No
+  clause scores whether a suggestion is due or what form it takes. Only an unscored observation shows the form: every
+  dr-resume-rerank and dr-rerank-second guard rep (10 of 10) suggests scheduling at the re-rank, with a reason and
+  the outcome line it would become, inside the one question. Clause C of those reps was scored with that form in place,
+  by One closing request (owner gate, items 5 and 7).
+- **R9, the provisional label (Review Focus 3).** A session that cannot ask lists each suggested quality at the end of
+  the Ranked list, with its next free O-number and the label `suggested, not approved`. No fixture is a sub-agent or
+  non-interactive run, and no rep shows the label.
+- **R12, §6's unmet-requirement sentence (Review Focus 5).** When `Source` is a spec, the completion review lists each
+  numbered spec requirement that no `Spec` cell cites as unmet. No arm runs a completion review of a spec-sourced
+  new-project roadmap. Only an unscored observation touches it: every dr-spec-column treatment rep's Completion section
+  carries the check (reps 2, 3 and 5 say to list such a requirement as unmet, and reps 1 and 4 say that none is).
+  dr-resume-legacy runs §6 over an older-format roadmap with no Outcomes list, so the sentence does not apply there.
+- **R11's brainstorming half.** The `Scope:` line also bounds "the stage spec's inputs under brainstorming". The probe
+  covers writing-plans only, and every stage of `SEC_SPEC_ROADMAP` routes to writing-plans. dr-quality-suggest routes
+  Stage 1 to brainstorming, but its `Source` is the partner's words, so no `Scope:` line is due. No arm tests it.
+- **Review Focus 1, a one message with no later quality.** The rule "With no quality to name, leave it out." has no
+  fixture. Every dr-offer-yes treatment rep and every dr-tracks guard rep carries the qualities line, so no rep shows
+  the path.
+- **Review Focus 4, a spec that is only background.** A spec named only under `Background` gives no `Spec` column. No
+  clause scores it. Only an unscored observation shows it: no dr-known-progression-79 guard rep writes a `Spec` column,
+  and each header is `| # | Outcome | Track | Rank | Cost (estimate; basis) |`, as Review Focus 4 expects.
+- **An approved quality after the approval (edit 12).** "From approval on it is an ordinary outcome, with no special
+  case at a resume, at parking or in the completion review." No fixture holds a quality that the partner approved, so
+  no arm reaches this sentence.
+
+### Unscored observations
+
+These change no score. The owner may want them at the completion gate.
+
+1. **The dr-known-progression-79 fixture's earlier turn.** Reps 1, 3 and 4 say that their earlier message should have
+   named the qualities. Rep1: "My earlier message should have named those four qualities, but it left them out." The
+   fixture's summary of that message, written for plan 78, has no qualities line. At `2e91b05` the one message carries
+   one when the check finds a quality. The fixture is on the plan's Leave-alone list, so it did not change.
+2. **Probe step-B plans that go past Stage 1's refs.**
+   - Reps 2 and 3 each deliver a reader that reads the per-source Parquet files back as one table. Rep2's
+     `read_filing_index(root)` "returns every observation as one table". Rep3's `read_table(table_dir)` reads back the
+     table that it writes as one file per source. The spec's R9 says that readers never discover the current dataset
+     by globbing all Parquet files. R9 is outside Stage 1's scope, and no manifest exists yet, so a later stage must
+     replace such a reader. It is not a fail of clause B.
+   - Reps 1 and 3 raise §4.2's daily-ingestion state rules (catch-up, pending sources, `no_new_sources`). They are in
+     Stage 1's refs, but no stage's Exit holds them. That gap is in the hand-written fixture roadmap, not in a reply
+     under test.
+   - Rep2 also builds a content-addressed raw store in the §4.5 layout, the storage that replay reads (the record's
+     note on clause B).
+3. **A column of refs in the dr-offer-yes message.** The control replies' one-message tables already carry a column of
+   R refs: four have a `From` column, and control rep2 has a `Spec source` column (Task 4, clause C). V4 scores the
+   roadmap file's Outcomes table, and every dr-spec-column control file lacks the column. So a column of refs in the
+   message is not R10's behavior.
+4. **Asks added to the one request.** The skill's one message "makes one request". Some dr-offer-yes treatment replies
+   add asks to it. Rep1 asks the partner to correct the choices and "say whether to run the probe". Rep3 asks about the
+   package scaffolds and the Azure platform. Rep5's "One request" numbers three asks, the third about Azure. Every rep
+   offers the probe. No clause scores it.
+5. **Numbered lists in the one re-rank question.** §5's Ask says "ONE question, not a numbered list". dr-resume-rerank
+   reps 4 and 5, and dr-rerank-second reps 3, 4 and 5, number their proposals inside one approve-or-amend request. No
+   clause scores the list form.
+
+### Deviation
+
+The plan names one Task 6 commit, but Task 6 ran as six: the reps (`85156d1`), the scores of the first five cases
+(`c1acd56`) and of the last four (`0beb489`), two record fixes after review (`f043608` and `eaedf74`), and this summary
+under the plan's commit message.
+
+### Owner gate
+
+The plan completion gate needs the owner's review of these calls. Each item gives its counts on every reading that the
+record names, the reading applied first. The owner decisions that this plan applied are D4 (2026-11-10, "Approve as
+written": the nine defaults of Open for plan review), the core-and-later ruling (2026-11-07) and plan 79's D1
+(2026-11-07, clause C fits the dr-known-progression fixture). Every other ruling named below is the controller's. The
+owner has not made it.
+
+**Task 4.**
+
+1. dr-offer-yes's control is thin by one borderline call: rep2 fails C because it calls the spec's order stages. By the
+   other reading of rep2, the control is clean (PASS 5 of 5), and a clean control never reverts a change (plan 85,
+   Bars). By the other reading of rep4, it is RED in 2 of 5. The treatment is 5 of 5, 4 of 5 if "phases" is a stage
+   word, and 2 of 5 on the dependency-fact reading that no earlier arm used. By Open for plan review item 2, a
+   treatment at 4 of 5 or better meets the deferred item whatever the control shows.
+2. dr-quality-suggest rests on borderline calls that the controller confirmed after review: B in reps 3 and 4, and C in
+   reps 2, 3 and 5. Any one read the other way gives 4 of 5, still met. Both B calls, or the C calls of reps 2 and 5,
+   give 3 of 5, a miss. All of them give 1 of 5.
+3. dr-spec-column rests on the Separator reading (a semicolon or a space between refs is a separator, not a word),
+   which the controller confirmed after review. By the closed-list reading it is 1 of 5, a miss. A fix would then go to
+   the `roadmap-format.md` sentence on what the `Spec` cell holds, and it must cover the `§3 R1` form too.
+
+**Task 5.**
+
+4. The probe's run-manifest reading is a judgment call, not an owner gate. The controller read the step-B run and
+   measurement reports as not a run manifest, by plan 78's Control section and by Stage 1's own Exit. Read the other
+   way, the probe is 0 of 3.
+
+**Task 6.**
+
+5. dr-resume-rerank is 4 of 5, and its bar is 4. The controller ruled that reps 1 and 2 pass C by One closing request:
+   each puts its quality request inside the one question block, and the close takes it in. The reviewer of that part
+   scored rep2 a fail. Either rep read the other way gives 3 of 5, a miss. The plan's Bars would then call for one
+   wording round on §5's Ask and an owner ruling. Rep3 fails on a side request about O3's cost basis. Read as part of
+   the same answer, it passes, and PASS is 5 of 5.
+6. dr-park-ranked is 4 of 5, and its bar is 3. Reps 3 and 4 pass D by the inline-fields reading of record, which the
+   controller confirmed at plan 79 round 3. By the other inline-fields reading, PASS is 2 of 5, a miss. In clause A,
+   rep1 passes on its file content. If its first lines count as one bundled item, PASS is 3 of 5, still met. Rep2
+   passes A on its described items. By the strict reading, A is 4 of 5 and PASS stays 4 of 5.
+7. dr-rerank-second is 5 of 5, and its bar is 4. Rep2 passes C by plan 79's one-question reading. Rep3 passes by One
+   closing request, which the controller confirmed for every resume guard where a later quality joins the re-rank
+   question. Read by question marks, both fail, and PASS is 3 of 5, a miss.
+8. The question-mark reading (item 7) and the other inline-fields reading (item 6) also lower the comparison arm. On
+   each, plan 79's round 3 is 3 of 5. The plan's guard table fixed each bar from the comparison arm's recorded count,
+   and the controller kept those bars. If the owner applies a reading to both arms, the Bars rule gives that case a bar
+   of 2.
+
+**The deferred items.**
+
+9. The open plan 79 item stays open. dr-tracks is 5 of 5 (4 of 5 by item 4's other reading). dr-known-progression-79 is
+   5 of 5 (4 of 5 on either other reading, 3 of 5 on both). Its `Done when:` needs a second independent dr-tracks run.
+   The owner has not ruled on Echo or Provenance.
+10. The offer item is met. Its control does not show the core-and-later text that the item names: the failing control
+    rep calls the spec's order stages.
+11. The Ranked-list item is met by its text. Its behavior arm, V3, rests on the calls in item 2.
+12. The spec-ref item is met by the probe and the format's text. The probe cannot show that the `Scope:` line caused
+    the pass, and V4's 5 of 5 rests on the Separator reading (item 3).
+
+**Leftovers.**
+
+13. The untested passages: R6's answer path, R7, R9, R12, R11's brainstorming half, Review Focus 1 and 4, and edit
+    12's sentence on an approved quality (Untested passages). The plan's alternative for R6 is one more case with its
+    control (about $1.50).
+14. Two controller rulings at Task 3. First, the unchanged words "the stage or Ranked-list item that picks it up"
+    (`roadmap-format.md`, the `Leaves out` field) and "which later stage or item picks it up" (`new-project-entry.md`,
+    Later qualities) stay beside edit 12's interim form. A reader sees two descriptions of a `Leaves out` entry. Every
+    dr-quality-suggest treatment rep uses the interim form (clause D 5 of 5). Second, R9's provisional-file sentence
+    stays beside the rule that a suggested quality has no O-number until the answer. It applies only "When the session
+    cannot ask", and no arm tests it.
+15. The unscored observations, items 1 to 5 above, among them the dr-known-progression-79 fixture's earlier turn.
+16. The deviation: Task 6 ran as six commits where the plan names one.
