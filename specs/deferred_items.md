@@ -6187,7 +6187,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       line to `NOTICE`'s superpowers change list. First found in specs/findings/superpowers-drift-v7-0-2.md,
       2026-11-07. Size: quick-fix. Done when: the rule is in the skill and a `NOTICE` line names it.
       → done 2026-11-10 (/deferred quick fix): the "Each agent gets" list in `skills/dispatching-parallel-agents/SKILL.md` gives an agent that edits files its own file set or its own git worktree, named in the dispatch, and `NOTICE` names the rule. The owner waived the micro-test ("F26, waive test").
-- [ ] **receiving-code-review does not say which rule wins for a subagent reviewer inside a plan run
+- [x] **receiving-code-review does not say which rule wins for a subagent reviewer inside a plan run
       (superpowers drift finding 27).** The skill treats every reviewer as a person. Its stop for a conflict
       with the partner's prior decisions ("Stop and discuss with your human partner first",
       `skills/receiving-code-review/SKILL.md`, about lines 91-92) is a stall inside a run whose fix loop rules
@@ -6201,7 +6201,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: the sentence is in the skill,
       its micro-test meets its bar against the control, and a `NOTICE` line names it.
       → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
-- [ ] **finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the
+      → done 2026-11-11 (plan 88): the sentence is in receiving-code-review, widened to the Codex seat at the gate (owner D10). Its treatment passed 5/5 against a control with no failure, which the owner kept (D9).
+- [x] **finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the
       conflict half).** Option 1 runs `git checkout <base-branch>`, `git pull` and `git merge <feature-branch>`
       (`skills/finishing-a-development-branch/SKILL.md`, about lines 285-287) and says nothing about a
       conflict. The step after it handles a test failure on the merged result. Upstream has the same gap. The
@@ -6213,6 +6214,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: every step that runs
       `git merge` carries the rule, `build/check_conformance.py` passes, and a `NOTICE` line names it.
       → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
+      → done 2026-11-11 (plan 88): the conflict rule is in Option 1, the carry-findings block moved to references/, conformance passes, and NOTICE names it.
 - [x] **writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The
       skill tells an author to write pressure scenarios and run a baseline (`skills/writing-skills/SKILL.md`,
       "RED: Write Failing Test (Baseline)", about line 301). Its Skill Creation Checklist (about line 372) does
@@ -6293,7 +6295,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       behavior with a control run.
 
 ## superpowers-drift-v7.0.2 earlier findings (no plan; findings 3 and 8 filed from the drift spec, branch claude/superpowers-drift-spec-impl-5923ed) — 2026-11-10
-- [ ] **test-driven-development's `testing-anti-patterns.md` does not name the string-presence and
+- [x] **test-driven-development's `testing-anti-patterns.md` does not name the string-presence and
       change-detector traps (superpowers drift finding 3).** Upstream superpowers replaced that file with
       `writing-good-tests.md` (read at `22f0b46`). It is a positive catalog built on two rules: name the
       behavior that would break, and exercise the real thing. It adds gate functions, a mutation check and a
@@ -6314,6 +6316,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       control, the Why Order Matters section is whole, and a `NOTICE` line names what was taken.
       → progress 2026-11-10 (owner ruling): Two traps — add both traps to testing-anti-patterns.md, worded so a lint that guards a text contract is not a trap. Goes in the theme plan with a micro-test.
       → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
+      → done 2026-11-11 (plan 88): testing-anti-patterns.md names both traps, Why Order Matters is whole, and NOTICE names what was taken. The two additive treatments passed 5/5 against controls with no failure, which the owner kept (D9).
 - [x] **finishing-a-development-branch offers "Discard this work" in both completion menus (superpowers
       drift finding 8).** Step 4's 4-option menu and its detached-HEAD menu both list it
       (`skills/finishing-a-development-branch/SKILL.md`, about lines 179 and 191). Upstream superpowers
@@ -6361,7 +6364,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `git ls-remote --tags https://github.com/obra/superpowers` lists a tag after `v7.0.2`.
 
 ## 87-compaction-cut-probe — 2026-11-11
-- [ ] `skills/finishing-a-development-branch/SKILL.md` is 275 characters over the corrected compaction window (body 19,975,
+- [x] `skills/finishing-a-development-branch/SKILL.md` is 275 characters over the corrected compaction window (body 19,975,
       window 19,700, `reserve_chars = 300` in `build/cc_guide/conformance.toml`), and carries a `gap` exception
       `finishing-a-development-branch-compaction-window`. Compaction already drops the end of its `## Red Flags` list
       (the Codex-review and typed-confirmation lines, the worktree-cleanup lines). While the exception stands the body
@@ -6369,6 +6372,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `compaction_waiver_guard` commit lint does. Plan 88 frees about 1,000 characters here and removes the exception.
       Size: plan. Done when: the body is at most 19,700 characters and the exception is removed.
       → planned 2026-11-11: specs/plans/88-superpowers-drift-followups.md
+      → done 2026-11-11 (plan 88): the body is 19,009 characters and the exception is removed.
 - [ ] `skills/subagent-driven-development/SKILL.md` is 226 characters over the corrected compaction window (body 19,926,
       window 19,700), and carries a `gap` exception `subagent-driven-development-compaction-window`. Nothing in a live
       plan frees room here. Free at least 226 characters (or move text into `references/`), then remove the exception. While
