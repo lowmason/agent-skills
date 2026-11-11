@@ -10,7 +10,9 @@ runner instead of adding bats/shunit2 for five files.
 
 import os
 import re
+import signal
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -841,6 +843,39 @@ def test_test_run_records_a_command_that_cannot_start(committed):
     text = run_file(committed, 'task-1-tests.log').read_text()
     assert 'exit: 127' in text.splitlines()
     assert 'no-such-command-plan84' in text.split('--- output ---\n', 1)[1]
+
+
+def test_test_run_leaves_no_temporary_file_after_a_finished_run(committed):
+    result = run(TEST_RUN, 'plan.md', 1, '--', 'sh', '-c', 'echo done; exit 1', cwd=committed)
+    assert result.returncode == 1
+    assert sorted(p.name for p in run_file(committed, '').iterdir()) == ['task-1-tests.log']
+
+
+KILL_WAIT_SECONDS = 10
+
+
+def test_test_run_keeps_a_killed_runs_partial_output_in_the_workspace(committed):
+    # A tool timeout kills the whole process group, test-run included. No run
+    # file is written then, so the output so far must stay in the temporary file.
+    proc = subprocess.Popen(
+        [str(TEST_RUN), 'plan.md', '1', '--', 'sh', '-c', 'echo partial-line; sleep 30'],
+        cwd=committed, env=GIT_ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    workspace = run_file(committed, '')
+    deadline = time.monotonic() + KILL_WAIT_SECONDS
+    while time.monotonic() < deadline:
+        if any('partial-line' in p.read_text() for p in workspace.glob('test-run.*')):
+            break
+        time.sleep(0.05)
+    else:
+        os.killpg(proc.pid, signal.SIGKILL)
+        pytest.fail('the command never wrote its first line')
+    os.killpg(proc.pid, signal.SIGTERM)
+    proc.wait(timeout=KILL_WAIT_SECONDS)
+    assert not list(workspace.glob('task-1-tests*.log'))
+    left = list(workspace.glob('test-run.*'))
+    assert [p.read_text() for p in left] == ['partial-line\n']
 
 
 @pytest.mark.parametrize('task', ['6b', '2.1', 'A1'])

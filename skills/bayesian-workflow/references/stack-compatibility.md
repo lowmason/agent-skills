@@ -4,9 +4,10 @@ Read this before you port code to ArviZ 0.23 or when an ArviZ call raises.
 
 The inline examples here target the **modern ArviZ ≥ 1.0 stack**: the `arviz` 1.x umbrella plus
 the split packages `arviz-base` (data), `arviz-stats` (statistics), and `arviz-plots` (plotting).
-Install them in one line — `uv add "arviz>=1.0" arviz-base arviz-stats arviz-plots` — and they
-coexist with a classic `arviz` 0.23 install (they even read 0.23-written netCDF), so you do not
-have to uninstall an existing 0.23 environment to use this skill.
+Install them in one line in a uv project (run `uv init` first if there is no `pyproject.toml`):
+`uv add "arviz>=1.0" arviz-base arviz-stats arviz-plots`. They coexist with a classic `arviz` 0.23
+install (they even read 0.23-written netCDF), so you do not have to uninstall an existing 0.23
+environment to use this skill.
 
 The **NumPyro modeling code is version-independent** — only the ArviZ analysis/plotting layer
 differs. The right column below is a **porting reference**, not a promise that the inline code runs
