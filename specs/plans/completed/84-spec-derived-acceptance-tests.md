@@ -10,7 +10,7 @@
 
 **Tech Stack:** bash 3.2-safe scripts with POSIX tools, pytest through `build/run_suites.py`, Markdown skill and agent text, `build/sync_runtime_assets.py`, the isolated `claude -p` micro-test kit.
 
-**Spec:** `specs/spec-derived-acceptance-tests.md`, Design section "1. The test-run script (finding 21)", and the parts of Verification's "Micro-tests" and "Script tests" that apply to it (D1). Finding 21 of `specs/superpowers-drift-spec-v7-0-2.md` ("Per-task test evidence is self-reported in SDD") is the defect it fixes.
+**Spec:** `specs/spec-derived-acceptance-tests.md`, Design section "1. The test-run script (finding 21)", and the parts of Verification's "Micro-tests" and "Script tests" that apply to it (D1). Finding 21 of `specs/findings/superpowers-drift-v7-0-2.md` ("Per-task test evidence is self-reported in SDD") is the defect it fixes.
 
 ## Global Constraints
 
@@ -41,14 +41,14 @@
 - **One execution at a time.** Execution starts only after the owner approves this plan, and only when no other plan executes in this repository.
 - **Completion (DF-A).** This plan implements Design 1, and nothing else in the spec remains to build: plan 83 closed finding 24's parts with no build plan (owner decision D8 there, `specs/completed/statement-level-readings.md`). The spec's section "Closing the backlog and the drift spec" assumes the whole design shipped, so it does not apply as written. The plan-completion protocol does these things, from the files as they stand on `main` then:
   - **Backlog.** Nothing to tick. The item "Spec-reading test check" already reads `→ done 2026-11-09 (plan 83)`, and on 2026-11-10 no open line in `specs/deferred_items.md` names finding 21 or this plan. The protocol re-runs that check with `/usr/bin/grep -n -i 'finding 21' specs/deferred_items.md`.
-  - **Drift spec.** Record what landed in `specs/superpowers-drift-spec-v7-0-2.md`. Find each place by its heading or its row, not by a line number:
+  - **Drift spec.** Record what landed in `specs/findings/superpowers-drift-v7-0-2.md`. Find each place by its heading or its row, not by a line number:
     - "Status of earlier findings", row 21: append `**Adopted** — plan 84 (<YYYY-MM-DD>)`.
     - Finding 21: after its Disposition paragraph, a closing line `**Done** (plan 84, <YYYY-MM-DD>): <what landed>.`
     - Finding 24's Disposition paragraph: after its last sentence, "Finding 21's part goes to its own build plan from `specs/spec-derived-acceptance-tests.md`.", append `Done: plan 84 (<YYYY-MM-DD>).`
     - "Suggested disposition", the bullet that starts "Reported order": after "Finding 21's part keeps its own build plan.", append `Done: plan 84 (<YYYY-MM-DD>).` Nothing else in that bullet changes.
     - "Suggested disposition", the bullet that starts "Local design proposals": after the finding 21 clause's closing parenthesis, insert ` (done: plan 84, <YYYY-MM-DD>)`.
   - **The spec.** Protocol step 5 retires `specs/spec-derived-acceptance-tests.md` with this plan, since this plan's filename matches it and no other live plan does (Open for plan review, item 2). Its only edit is the status line at its top: `**Status: COMPLETE (<YYYY-MM-DD>)** — Design 1 (finding 21) shipped in plan 84 (specs/plans/completed/84-spec-derived-acceptance-tests.md). Designs 2-6 (finding 24) closed with no build plan in plan 83 (D8); see specs/completed/statement-level-readings.md.` The spec holds no relative Markdown link.
-  - **Paths into the spec.** No lint checks a `specs/` path, so the retire commit re-points by hand each live file that cites `specs/spec-derived-acceptance-tests.md` to `specs/completed/spec-derived-acceptance-tests.md`. At `91d49c4` they are `specs/superpowers-drift-spec-v7-0-2.md` (three citations: under finding 24's Disposition twice, and in the bullet "Reported order") and `specs/completed/statement-level-readings.md` (its section that names "the old spec"). Dated records keep the path they had: `specs/history.md`, the notes in `specs/deferred_items.md`, every plan under `specs/plans/completed/`, and plan 81's record (Leave alone). Before the commit, `git grep -n 'specs/spec-derived-acceptance-tests.md'` lists only those dated records and this plan.
+  - **Paths into the spec.** No lint checks a `specs/` path, so the retire commit re-points by hand each live file that cites `specs/spec-derived-acceptance-tests.md` to `specs/completed/spec-derived-acceptance-tests.md`. At `91d49c4` they are `specs/findings/superpowers-drift-v7-0-2.md` (three citations: under finding 24's Disposition twice, and in the bullet "Reported order") and `specs/completed/statement-level-readings.md` (its section that names "the old spec"). Dated records keep the path they had: `specs/history.md`, the notes in `specs/deferred_items.md`, every plan under `specs/plans/completed/`, and plan 81's record (Leave alone). Before the commit, `git grep -n 'specs/spec-derived-acceptance-tests.md'` lists only those dated records and this plan.
   - If the owner declines the retirement at the gate, the spec stays live with that same status line, no path is re-pointed, and the drift spec's records do not change.
   - The drift spec stays live, because it still holds open findings.
 
@@ -620,7 +620,7 @@ git commit -m "feat(agents): the task reviewer reads the controller's test run"
 
 ```text
   - Plan 84 (<YYYY-MM-DD>) adds subagent-driven-development/scripts/test-run
-    for finding 21 of specs/superpowers-drift-spec-v7-0-2.md. It adapts
+    for finding 21 of specs/findings/superpowers-drift-v7-0-2.md. It adapts
     executing-plans' task-done, which adapts upstream's scripts (MIT): it
     runs one command and keeps its exit status and full output in the
     plan's workspace, one file for each run. Its header lines, the

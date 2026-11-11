@@ -296,7 +296,7 @@ skills/ at 896224c. They include brainstorming/SKILL.md and the three
 subagent-driven-development scripts. The other six were adapted on the
 way in. Upstream has continued to move since. 896224c is the vendored
 baseline. The "Next review starts from" row of
-`specs/superpowers-drift-spec-v7-0-2.md` names where the next drift review starts.
+`specs/findings/superpowers-drift-v7-0-2.md` names where the next drift review starts.
 
 Changes from upstream:
   - Cross-skill references rewritten from the `superpowers:` plugin
@@ -869,7 +869,7 @@ Changes from upstream:
     longer takes its model from the user's Codex configuration. The
     recipe is an original work, and no upstream text was taken.
   - Plan 82 (2026-11-09) adopted upstream v7.0.2's helper fixes, read
-    at 22f0b46 (finding 18 of specs/superpowers-drift-spec-v7-0-2.md).
+    at 22f0b46 (finding 18 of specs/findings/superpowers-drift-v7-0-2.md).
     subagent-driven-development/scripts/sdd-repo is upstream's script
     (#2606: 614d80c, de67241, 0d61007, 8b0eefc), with its messages
     verbatim. Its callers (sdd-workspace, review-package and
@@ -938,7 +938,7 @@ Changes from upstream:
     round, as it does on the copy before the port, and is recorded as a
     known gap.
   - Plan 84 (2026-11-10) adds subagent-driven-development/scripts/test-run
-    for finding 21 of specs/superpowers-drift-spec-v7-0-2.md. It adapts
+    for finding 21 of specs/findings/superpowers-drift-v7-0-2.md. It adapts
     executing-plans' task-done, which adapts upstream's scripts (MIT): it
     runs one command and keeps the full output in the plan's workspace.
     The exit status in the file, its header lines, its separate file for
@@ -952,6 +952,15 @@ Changes from upstream:
     paragraph, the clause about the controller's test run and the
     rewritten second sentence are local. The rest of that paragraph
     keeps its earlier wording, adapted from upstream.
+  - A /deferred pass (2026-11-10) made two local fixes from
+    specs/findings/superpowers-drift-v7-0-2.md. dispatching-parallel-agents'
+    "Each agent gets" list gains a rule for agents that edit files: each
+    gets a file set that no other agent in the batch edits, or its own git
+    worktree, and the dispatch names which (finding 26). writing-skills'
+    checklist says that test scenarios and baseline records go outside
+    the skill directory (finding 33). Upstream states neither rule in its
+    skill text. Its #2654 enforces the second with a test, which is not
+    adopted. The changes are local, and no upstream text was taken.
 
     brainstorming/
     dispatching-parallel-agents/

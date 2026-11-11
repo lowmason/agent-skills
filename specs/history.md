@@ -180,3 +180,9 @@ Closed earlier deferred items:
 - "**A new-project roadmap built from a spec maps each outcome to no spec section reference" (deferred by 78-derive-roadmap-new-project-entry).
 - "**A later quality in a research track's Ranked list has no O-number and no partner rank" (deferred by 78-derive-roadmap-new-project-entry).
 - "**The derive-roadmap new-project offer still draws core-and-later-stages text before the" (deferred by deferred-2026-11-07).
+
+## /deferred — 2026-11-10
+
+Closed deferred items:
+- "**dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift" (deferred by superpowers-drift-v7.0.2): an agent that edits files gets its own file set or git worktree, named in the dispatch; the owner waived the micro-test.
+- "**writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The" (deferred by superpowers-drift-v7.0.2): the RED Phase checklist keeps scenarios and baseline records outside the skill directory.

@@ -376,6 +376,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 **RED Phase - Write Failing Test:**
 - [ ] Create pressure scenarios (3+ combined pressures for discipline skills)
 - [ ] Run scenarios WITHOUT skill - document baseline behavior verbatim
+- [ ] Keep scenarios, transcripts and baseline records outside the skill directory — everything in it ships with the skill. Use the project's place for them (in agent-skills: `specs/baseline/red-baseline-<topic>.md`, with the kit in `specs/baseline/red-baseline-<topic>/`)
 - [ ] Identify patterns in rationalizations/failures
 
 **GREEN Phase - Write Minimal Skill:**

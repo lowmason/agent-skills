@@ -72,6 +72,9 @@ Each agent gets:
 - **Specific scope:** One test file or subsystem
 - **Clear goal:** Make these tests pass
 - **Constraints:** Don't change other code
+- **Its own files, if it edits:** a file set that no other agent in the batch
+  edits, or its own git worktree when the sets overlap. Name the file set or
+  the worktree in the dispatch.
 - **Expected output:** Summary of what you found and fixed
 - **An explicit model:** set it per subagent-driven-development's Model Selection,
   scaled to that domain's difficulty, passed as the tier's dispatch alias

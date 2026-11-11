@@ -1,7 +1,7 @@
 # Superpowers drift assessment
 
 **Status: RETIRED (2026-11-07)** — historical v7.0.1 assessment; current review:
-[v7.0.2](../superpowers-drift-spec-v7-0-2.md). Retained findings are sources, not completed work.
+[v7.0.2](../findings/superpowers-drift-v7-0-2.md). Retained findings are sources, not completed work.
 
 This is the archived full record; v7.0.2 carries its open findings forward.
 This revision (2026-10-28) brings it to upstream v7.0.1 for every
