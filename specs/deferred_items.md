@@ -1395,6 +1395,7 @@
       any later format change. Files: `build/cc_guide/state.py`, `baseline.py`, their
       tests, R2.3. Size: quick-fix. Revisit if: an open branch predates the merge, or
       baseline.json's format changes again.
+      → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
 - [x] Carry each missing block's key hash into Stage 3's packets (the branch's review,
       recommendation 3). A missing block's finding holds its readable name, or its key
       hash when check could not read one, and `packets` (R6.11) will need that block's
@@ -2129,6 +2130,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       counter, or a waiver per hook), the rule and the check agree on it, a test covers each
       accepted form, and both files' contradictions are cleared.
       → progress 2026-10-31 (owner ruling): a loop guard is the flag (a read of `stop_hook_active`) or a waiver per hook, recorded in `build/cc_guide/conformance.toml`, that names the guard the hook uses instead.
+      → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
 - [x] Three subagent-driven-development decisions, outside the register
       (`skills/subagent-driven-development/SKILL.md`). (1) Line 239 (line numbers refreshed after plan 46's reorder): an implementer already
       at `capable` has only fresh context and higher effort left, with no model step; the guide
@@ -2544,6 +2546,7 @@ all 20 named a type.
       Desktop session shows the notice at its start, or terminal-only is recorded as the
       accepted scope.
       → progress 2026-10-31 (owner ruling): a Desktop channel via SessionStart's plain stdout, which reaches Claude as context in both the CLI and Desktop, so the first reply can name the notice.
+      → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
 - [x] Does `startup` fire under `claude -p`? (plan 49 Task 1 Step 5, skipped by the owner;
       a Stage 5 probe candidate.) If it does, every `claude -p` run with this repo or one of
       its worktrees as the working directory runs `show` and `refresh`: a live docs
@@ -4565,6 +4568,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       design. Done when: the owner picks a remedy and a test shows that two such branches,
       merged in either order, leave the file STALE, or the owner records the gap as accepted.
       → progress 2026-10-31 (owner ruling): `text_hash` at cite time. Record each cited section's text hash when the file is cited, in the citation or beside it, and let the lint compare hashes.
+      → planned 2026-11-11: specs/plans/89-cc-guide-owner-rulings.md
 - [x] Each probe run inherits the caller's whole environment (`probes.execute` passes
       `env={**os.environ, **inv.env}`). The guide says `CLAUDE_CODE_EFFORT_LEVEL` outranks an
       agent's `effort` field and a per-spawn effort (subagents.frontmatter, guide line 184). So
