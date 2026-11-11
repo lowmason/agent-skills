@@ -6052,6 +6052,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `dr-known-progression-79` read 4 of 5, because rep5's traceability fails by Provenance on bytes. The owner has not
       ruled on Echo or Provenance. The item stays open: its `Done when:` needs two independent five-rep `dr-tracks`
       runs, and plan 85 ran one. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary).
+      → progress 2026-11-11 (owner ruling): Provenance on bytes is confirmed as the reading of record. Echo stays
+      unruled. The item stays open: its `Done when:` still needs the Echo ruling or a wording change, and the
+      independent runs. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary, Owner ruling).
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
