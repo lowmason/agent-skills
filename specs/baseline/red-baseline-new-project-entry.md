@@ -7692,7 +7692,9 @@ Other readings. Provenance on bytes not applied: rep5 passes C, and PASS is 5 of
 list of files and counts as a run manifest (the `T` arm's reading of rep3's list of unparsed files): rep1 fails B, and PASS
 is 3 of 5. If a row count for each file counts as a manifest (reps 2 and 3): both fail B, and PASS is 2 of 5, at the guard
 bar. Both readings together: only rep4 passes, and PASS is 1 of 5, **below the guard bar of 2**. With Provenance on bytes not
-applied as well, reps 4 and 5 pass, and PASS is 2 of 5, at the bar. The strict reading of clause A changes no count.
+applied as well, reps 4 and 5 pass, and PASS is 2 of 5, at the bar. The strict reading of clause A changes no count as
+read, but it fails rep5 once Provenance on bytes is not applied: PASS is then 4 of 5 for Provenance not applied alone, and
+1 of 5, below the bar, for the combined count above.
 The same file-list reading reaches `T` rep2 (see the summary's plan 79 bullet); the `T` section does not apply it.
 
 **dr-spec-column at T7.** Reps 3 and 5 pass. Reps 1, 2 and 4 fail B. PASS 2 of 5. **Below the additive bar of 4 of 5.**
@@ -7802,7 +7804,7 @@ toward a bar.
 | Task 5, V5 step B | wp-stage-plan | at least 2 of 3 pass A and B | no control | PASS 3 of 3 | probe PASS | Rep2's Snapshot-record fields, or its CLI command names, as a fail of B: 2 of 3, still a pass. The run report as a run manifest (not applied): 0 of 3. |
 | Task 6, guard | dr-offer-scaffold | guard, at least 4 | plan 78 "Task 7: dr-offer-scaffold" (`f824492`): 5 of 5 | PASS 5 of 5 | met | Rep3's A (one work area after a decision) as a stage list: 4 of 5, still met. |
 | Task 6, guard | dr-tracks | guard, at least 2 | plan 79 "Task 4: dr-tracks, run a" (`5f52dfc`): 3 of 5 | PASS 5 of 5 | met | Item 4's other reading (rep2's order): 4 of 5. Echo changes no count. |
-| Task 6, guard | dr-known-progression-79 | guard, at least 2 | plan 79 "Task 4: dr-known-progression-79" (`5f52dfc`): 3 of 5 | PASS 5 of 5 | met | The strict reading of A (rep4), or rep3's failure list as a run manifest (B): 4 of 5 each, 3 of 5 together. |
+| Task 6, guard | dr-known-progression-79 | guard, at least 2 | plan 79 "Task 4: dr-known-progression-79" (`5f52dfc`): 3 of 5 | PASS 5 of 5 | met | The strict reading of A (rep4), or rep3's failure list as a run manifest (B): 4 of 5 each, 3 of 5 together. The file-list reading of B (rep2's "files fetched"): 4 of 5 alone, 3 of 5 with rep3's list, 2 of 5 with the strict reading of A as well (plan 79 bullet below). |
 | Task 6, guard | dr-research-depth | guard, at least 4 | plan 78 "Fix round 1: dr-research-depth" (`d3fc772`): 5 of 5 | PASS 5 of 5 | met | none |
 | Task 6, guard | dr-resume-rerank | guard, at least 4 | plan 79 "Task 4: dr-resume-rerank" (`5f52dfc`): 5 of 5 | PASS 4 of 5 | met, at the bar | Reps 1 and 2 pass C by One closing request, as the controller ruled. Either one read the other way: 3 of 5, a miss. Any second ask in the question block: 2 of 5. Plan 79's one-question reading alone: 2 of 5. Rep3's side request as part of the same answer: 5 of 5. |
 | Task 6, guard | dr-rerank-second | guard, at least 4 | plan 79 "Task 3 round 3: dr-rerank-second" (`5f52dfc`): 5 of 5 | PASS 5 of 5 | met | Rep2 (alternatives) and rep3 (One closing request) are borderline. Rep3 alone read the other way: 4 of 5. By question marks, reps 2 and 3 fail: 3 of 5, a miss (round 3 is also 3 of 5 on that reading). |
@@ -7939,8 +7941,8 @@ Task 6's two counts:
   together give 3 of 5, and Provenance on bytes changes no count. The file-list reading of B that the `T7` arm names (a
   list of files fetched counts as a run manifest) also reaches Task 6's rep2, whose Exit records "files fetched, bytes,
   rows, wall time and the observed request rate". On that reading rep2 fails B: PASS is 4 of 5 alone, 3 of 5 with rep3's
-  list as well, and 2 of 5 with the strict reading of A as well. The guard bar of 2 is met, and the item's 4 of 5 is not,
-  on those readings. At `T7` it is PASS 4 of 5, and clause C is 4 of 5: rep5
+  list as well, and 2 of 5 with the strict reading of A as well. The guard bar of 2 is met on all three readings. The item's 4 of 5
+  is met on the first and not on the other two. At `T7` it is PASS 4 of 5, and clause C is 4 of 5: rep5
   keeps provenance on retained bytes and links no row to its source, so Provenance on bytes decides that rep. Not applied,
   `T7` is 5 of 5. The run-manifest readings of B at `T7` are in the final-review section: 3 of 5 for rep1's file list, 2 of 5
   for the per-file counts of reps 2 and 3, and 1 of 5 for both.
@@ -8088,7 +8090,8 @@ arms ran, so items 17 to 21 are new to the owner.
 **The deferred items.**
 
 9. The open plan 79 item stays open. dr-tracks is 5 of 5 (4 of 5 by item 4's other reading). dr-known-progression-79 is
-   5 of 5 (4 of 5 on either other reading, 3 of 5 on both). Its `Done when:` needs a second independent dr-tracks run.
+   5 of 5 (4 of 5 on either other reading, 3 of 5 on both, and 2 of 5 with the file-list reading of rep2's "files
+   fetched" as well). Its `Done when:` needs a second independent dr-tracks run.
    The owner has not ruled on Echo or Provenance.
 10. The offer item is met. Its control does not show the core-and-later text that the item names: the failing control
     rep calls the spec's order stages.
@@ -8126,7 +8129,8 @@ arms ran, so items 17 to 21 are new to the owner.
     reading, which plan 79 Task 4 applied to rep2. Not applied, rep5 passes and PASS is 5 of 5. Three first-stage Exits
     name files or a count for each file (reps 1, 2 and 3), and the controller read a count as not a manifest. If rep1's
     file list is a run manifest, PASS is 3 of 5. If the per-file counts of reps 2 and 3 are, PASS is 2 of 5, at the bar.
-    Both together: 1 of 5, below the bar of 2, or 2 of 5, at the bar, with Provenance on bytes not applied as well. The
+    Both together: 1 of 5, below the bar of 2, or 2 of 5, at the bar, with Provenance on bytes not applied as well (1 of 5, below the bar, if the strict reading of A
+    fails rep5 then). The
     file-list reading also reaches `T` rep2 (the summary's plan 79 bullet gives the counts).
 20. dr-quality-suggest at `T7` is 5 of 5 on the calls of the `T` arm. Its borderline calls are C in reps 1 and 2 (more
     than one question mark under one label) and in reps 3 and 5 (numbered points inside one request). Either pair read
