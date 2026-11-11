@@ -5259,7 +5259,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       these in the same change).
 
 ## superpowers-drift-v7.0.1 (no plan; drift review of upstream v7.0.1, branch claude/practical-hugle-86bb56) — 2026-10-28
-- [ ] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
+- [x] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
       17, `specs/findings/superpowers-drift-v7-0-2.md`). The guide says each invoked skill keeps its first
       5,000 tokens (`specs/guides/claude-code-customization-guide.md:128`). Upstream's #2481
       transcript shows a cut at exactly 20,000 characters, with a marker that points at the
@@ -5279,7 +5279,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → progress 2026-11-07 (drift-record reconciliation): plan 69 completed on 2026-10-28 (specs/plans/completed/69-agent-payload-probe.md), so its sequencing blocker has elapsed. The compaction-cut probe remains unimplemented; the archived v7.0.1 record supplies its history and the current v7.0.2 finding 17 carries it forward.
       → planned 2026-11-10: specs/plans/87-compaction-cut-probe.md
       → progress 2026-11-11 (plan 87): the `compaction-cut` probe is built and registered, and its run of 2026-11-11 on 2.1.317 reads PASS. The cut is at 20,000 characters in all, counting a header (`Base directory for this skill: <path>` and a blank line) and a 100-character marker. It does not count the frontmatter, and it counts characters, not tokens. The register's `compaction-window` check now has `reserve_chars = 300`, so its window is 19,700. The guide's sentence (`specs/guides/claude-code-customization-guide.md:128`, "first 5,000 tokens") does not match. Step left: the guide, through `/cc-guide`. Tick this item once the guide matches or that verify has run.
-      → owner-only 2026-11-11: run `/cc-guide verify skills.progressive-disclosure` and let it correct the guide's sentence to the measured cut.
+      → progress 2026-11-11 (owner ruling): the guide stays equal to the docs, which also say "first 5,000 tokens". The measured cut is held in `build/cc_guide/conformance.toml` (`reserve_chars`) and in the `compaction-cut` rows of `build/cc_guide/PROBES.md`, and the weekly probe watches it.
+      → done 2026-11-11 (plan 87)
 - [x] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
       The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
       first as a plan without a spec. It runs after the subagent-driven-development compaction

@@ -201,3 +201,6 @@ Differences from the design:
 - Deviation (Task 4): the waiver guard became the `compaction_waiver_guard` commit lint after the final review. Source: plan, Task 4.
 - Deviation (Task 5): `build/test_commit_lints.py`, `build/run_commit_lints.sh`, `CLAUDE.md` and `build/CLAUDE.md` joined the File map. Source: plan, Task 5.
 - Deferred: 2 items. Source: specs/deferred_items.md, § 87-compaction-cut-probe.
+
+Closed earlier deferred items:
+- "Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding" (deferred by superpowers-drift-v7.0.1): the owner ruled that the guide stays equal to the docs; the register and the weekly probe hold the measured cut.
