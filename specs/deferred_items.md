@@ -5276,6 +5276,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       whole-file byte bar is not adopted. This probe decides the measure: if the cut counts
       the frontmatter, correct the register's window.
       → progress 2026-11-07 (drift-record reconciliation): plan 69 completed on 2026-10-28 (specs/plans/completed/69-agent-payload-probe.md), so its sequencing blocker has elapsed. The compaction-cut probe remains unimplemented; the archived v7.0.1 record supplies its history and the current v7.0.2 finding 17 carries it forward.
+      → planned 2026-11-10: specs/plans/87-compaction-cut-probe.md
 - [x] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
       The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
       first as a plan without a spec. It runs after the subagent-driven-development compaction
@@ -6146,7 +6147,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       as plan 83 copied plan 81's kit.
 
 ## superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
-- [ ] **dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift
+- [x] **dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift
       finding 26, the worktree half).** The skill's own example sends three agents to fix three test files at
       once, in one working tree (`skills/dispatching-parallel-agents/SKILL.md`, the dispatch example near line
       84). Its only guards are the constraint "Don't change other code" (about line 74) and a full-suite run
@@ -6157,6 +6158,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       which. The skill is vendored from superpowers, so the edit follows the writing-skills skill and adds a
       line to `NOTICE`'s superpowers change list. First found in specs/findings/superpowers-drift-v7-0-2.md,
       2026-11-07. Size: quick-fix. Done when: the rule is in the skill and a `NOTICE` line names it.
+      → done 2026-11-10 (/deferred quick fix): the "Each agent gets" list in `skills/dispatching-parallel-agents/SKILL.md` gives an agent that edits files its own file set or its own git worktree, named in the dispatch, and `NOTICE` names the rule. The owner waived the micro-test ("F26, waive test").
 - [ ] **receiving-code-review does not say which rule wins for a subagent reviewer inside a plan run
       (superpowers drift finding 27).** The skill treats every reviewer as a person. Its stop for a conflict
       with the partner's prior decisions ("Stop and discuss with your human partner first",
@@ -6170,6 +6172,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       forge-specific `gh api` reply line (about line 214). This item does not cover that line. First found in
       specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: the sentence is in the skill,
       its micro-test meets its bar against the control, and a `NOTICE` line names it.
+      → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
 - [ ] **finishing-a-development-branch has no path for a merge conflict (superpowers drift finding 28, the
       conflict half).** Option 1 runs `git checkout <base-branch>`, `git pull` and `git merge <feature-branch>`
       (`skills/finishing-a-development-branch/SKILL.md`, about lines 285-287) and says nothing about a
@@ -6181,7 +6184,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       line to `NOTICE`'s superpowers change list. The finding's Step 1 half is done (plan 82). First found in
       specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: plan. Done when: every step that runs
       `git merge` carries the rule, `build/check_conformance.py` passes, and a `NOTICE` line names it.
-- [ ] **writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The
+      → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
+- [x] **writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The
       skill tells an author to write pressure scenarios and run a baseline (`skills/writing-skills/SKILL.md`,
       "RED: Write Failing Test (Baseline)", about line 301). Its Skill Creation Checklist (about line 372) does
       not say where they go. This repository keeps them as `specs/baseline/red-baseline-<topic>.md`, with kits
@@ -6192,6 +6196,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       superpowers, so add a line to `NOTICE`'s superpowers change list. First found in
       specs/findings/superpowers-drift-v7-0-2.md, 2026-11-07. Size: quick-fix. Done when: the checklist line is in
       the skill and a `NOTICE` line names it.
+      → done 2026-11-10 (/deferred quick fix): the RED Phase list of the Skill Creation Checklist in `skills/writing-skills/SKILL.md` says to keep scenarios, transcripts and baseline records outside the skill directory, and `NOTICE` names the line.
 
 ## 86-brainstorming-v7-0-2-retune — 2026-11-10
 - [ ] **The scope of brainstorming's first-message design (plan 86, final review: Codex's finding and the
@@ -6243,7 +6248,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/completed/superpowers-drift-spec-v7-0-1.md), 2026-09-03. Size: design. Done when: the owner's
       choice is recorded on this item, the skill names both traps, the micro-test meets its bar against the
       control, the Why Order Matters section is whole, and a `NOTICE` line names what was taken.
-- [ ] **finishing-a-development-branch offers "Discard this work" in both completion menus (superpowers
+      → progress 2026-11-10 (owner ruling): Two traps — add both traps to testing-anti-patterns.md, worded so a lint that guards a text contract is not a trap. Goes in the theme plan with a micro-test.
+      → planned 2026-11-10: specs/plans/88-superpowers-drift-followups.md
+- [x] **finishing-a-development-branch offers "Discard this work" in both completion menus (superpowers
       drift finding 8).** Step 4's 4-option menu and its detached-HEAD menu both list it
       (`skills/finishing-a-development-branch/SKILL.md`, about lines 179 and 191). Upstream superpowers
       offers discard only when the partner asks for it. Its reason: a menu item beside "Merge" offers to
@@ -6259,7 +6266,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       choice is recorded on this item. If the choice drops the option, neither menu lists discard, an
       explicit request still reaches the typed confirmation, `build/check_conformance.py` passes, and a
       `NOTICE` line names the change.
-- [ ] **using-git-worktrees writes its Common Mistakes as Problem/Fix pairs, not as an Excuse/Reality table
+      → retired 2026-11-10: the owner ruled "Keep both" (keep discard in both menus); the typed 'discard' confirmation is the guard, so recording the choice meets Done when, with no skill edit.
+- [x] **using-git-worktrees writes its Common Mistakes as Problem/Fix pairs, not as an Excuse/Reality table
       (superpowers drift finding 8).** The section has six pairs (`skills/using-git-worktrees/SKILL.md`,
       "Common Mistakes", about lines 185-215). The drift passes suggested the Excuse/Reality table, which six
       skills here use for their rationalization tables. No behavior gap was found, so this is a change of
@@ -6272,6 +6280,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/completed/superpowers-drift-spec-v7-0-1.md), 2026-09-03. Size: quick-fix. Done when: the Common
       Mistakes section of `skills/using-git-worktrees/SKILL.md` is an Excuse/Reality table and a `NOTICE`
       line names it.
+      → retired 2026-11-10: the owner ruled no change; using-git-worktrees keeps its six Problem/Fix pairs, the same form that finishing-a-development-branch uses, and these pairs name mistakes, not excuses.
 
 ## superpowers-release-watch (no plan; watch for the next superpowers drift pass, branch claude/superpowers-release-watch) — 2026-11-10
 - [ ] The next superpowers drift pass, against the first release after v7.0.2. The current assessment is

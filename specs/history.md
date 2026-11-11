@@ -155,3 +155,9 @@ Differences from the design:
 - Deviation (Task 5): the control passed 4 of 5 (strict reading) or 5 of 5 (looser), and the treatment passed 5 of 5. The owner kept the text. Source: plan, Task 5.
 - Deviation (Task 6): the bullet follows plan 86's bullet, and a review corrected what it calls local. Source: plan, Task 6.
 - Deferred: 1 item. Source: specs/deferred_items.md, § 84-spec-derived-acceptance-tests.
+
+## /deferred — 2026-11-10
+
+Closed deferred items:
+- "**dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift" (deferred by superpowers-drift-v7.0.2): an agent that edits files gets its own file set or git worktree, named in the dispatch; the owner waived the micro-test.
+- "**writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The" (deferred by superpowers-drift-v7.0.2): the RED Phase checklist keeps scenarios and baseline records outside the skill directory.
