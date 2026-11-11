@@ -5950,7 +5950,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-07 (plan 79): the case was re-run under the new clause C as `dr-known-progression-79`. It scored
       3 of 5 at `5f52dfc` (bar 4 of 5) and missed on traceability (4 of 5 on one other reading). The miss is filed
       → item: 79-derive-roadmap-resume-and-route-tests — 2026-11-07
-- [ ] **A new-project roadmap built from a spec maps each outcome to no spec section reference
+- [x] **A new-project roadmap built from a spec maps each outcome to no spec section reference
       (plan 78 final review, owner ruled file).** Spec R10 sets this substitution (`Outcomes` in
       place of `Spec` and `Gap closed`). A stage plan from `writing-plans` is then scoped to
       one-line outcomes, and the effect on a stage plan is untested. See
@@ -5959,7 +5959,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       a new-project roadmap with a spec has been checked against that spec, and the format either
       carries the spec section or states why it does not.
       → planned 2026-11-10: specs/plans/85-derive-roadmap-later-qualities-and-spec-refs.md
-- [ ] **A later quality in a research track's Ranked list has no O-number and no partner rank
+      → done 2026-11-10 (plan 85): the new-project Outcomes table carries a `Spec` column of § and R refs when `Source`
+      is a spec (`2e91b05`, edits 2, 3, 5 and 11), and the `Scope:` line of the handoff names those refs. The last
+      wording round (`e885184`) rules out a section title in the cell. The stage-plan probe built three stage plans from
+      such a roadmap, and each passed against the sec-edgar spec (3 of 3). `dr-spec-column` is PASS 5 of 5 against a RED
+      control at `2e91b05`, 2 of 5 at `59df779` and 5 of 5 at `e885184`, on the Separator reading (1 of 5 by the
+      closed-list reading). The probe cannot show that the `Scope:` line caused its pass. See
+      specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary).
+- [x] **A later quality in a research track's Ranked list has no O-number and no partner rank
       (plan 78 final review, owner ruled file).** `skills/derive-roadmap/references/roadmap-format.md`
       (Ranked list) gives a list item an O-number and the partner's order. A quality that
       `Leaves out` hands to the list has neither, so replies add it as an unranked item. See
@@ -5967,6 +5974,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       later quality is listed in a Ranked list (for example an O-number and a rank request, or a
       named unranked class).
       → planned 2026-11-10: specs/plans/85-derive-roadmap-later-qualities-and-spec-refs.md
+      → done 2026-11-10 (plan 85): the format states how a later quality is listed. It joins a Ranked list only as an
+      outcome that the partner approved and ranked. Until the answer, `Leaves out` names it as `<quality>: suggested,
+      see the approval question`. On approval it takes the next free O-number, an Outcomes row and its ranked place. A
+      session that cannot ask lists it at the end, labeled `suggested, not approved`, with an Outcomes row (`59df779`).
+      `dr-quality-suggest` is PASS 5 of 5 against a RED control (0 of 5) at `2e91b05` and at `59df779`. The approval
+      path, the decline path and the provisional label have no arm, and the resume rule for a provisional item is filed
+      → item: 85-derive-roadmap-later-qualities-and-spec-refs — 2026-11-10
 - [x] **Four routes that plan 78 added have no micro-test (plan 78 Task 7 and final review).** A
       "stop the track" answer and a whole-roadmap park with Ranked lists (`skills/derive-roadmap/SKILL.md`
       §5 and its Parking paragraph), a name collision when a spec exists (`references/roadmap-format.md`,
@@ -5993,7 +6007,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       says "with no spec" (edit 3), both in `c500e14`. `dr-offer-yes` (4 of 5) was re-run at the final text as a guard.
 
 ## deferred-2026-11-07 (no plan; /deferred pass, branch claude/deferred-items-last-plan-784993) — 2026-11-07
-- [ ] **The derive-roadmap new-project offer still draws core-and-later-stages text before the
+- [x] **The derive-roadmap new-project offer still draws core-and-later-stages text before the
       partner ranks (owner ruling, 2026-11-07).** `skills/derive-roadmap/SKILL.md` §1 NOTHING BUILT
       and `references/new-project-entry.md` (Later qualities, The one message). Some replies name a
       core stage and later stages for the hardening, inside the offer or the one message, for
@@ -6009,6 +6023,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       re-run of `dr-offer-yes` under the kit passes 4 of 5 by plan 78's core-and-later-stages
       reading.
       → planned 2026-11-10: specs/plans/85-derive-roadmap-later-qualities-and-spec-refs.md
+      → done 2026-11-10 (plan 85): the one message names no stage, core or later, and names later qualities only in the
+      qualities line (`2e91b05`, edits 6 and 9). `dr-offer-yes` is PASS 5 of 5 by plan 78's core-and-later-stages
+      reading (4 of 5 if "phases" is a stage word), and `dr-offer-scaffold` and `dr-tracks` are PASS 5 of 5 as guards.
+      The control is thin (4 of 5), so it does not show the text that the item names. See
+      specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary).
 
 ## 79-derive-roadmap-resume-and-route-tests — 2026-11-07
 - [ ] **dr-tracks and dr-known-progression-79 miss conformance clause C at the final skill text (plan 79
@@ -6023,6 +6042,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: design. Done when: the owner rules on the Echo and Provenance readings, or the wording of the two
       sections changes, and two independent five-rep `dr-tracks` runs and a `dr-known-progression-79` run
       each pass 4 of 5 under the kit in specs/baseline/red-baseline-new-project-entry/kit/.
+      → progress 2026-11-10 (plan 85): at `2e91b05` the guards read `dr-tracks` PASS 5 of 5 with clause C 5 of 5 (4 of 5 by
+      the Echo reading of rep2's order), and `dr-known-progression-79` PASS 5 of 5 with clause C 5 of 5. At `59df779`
+      `dr-known-progression-79` read 4 of 5, because rep5's traceability fails by Provenance on bytes. The owner has not
+      ruled on Echo or Provenance. The item stays open: its `Done when:` needs two independent five-rep `dr-tracks`
+      runs, and plan 85 ran one. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary).
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -6222,3 +6246,39 @@ review and the Plan Completion gate (2026-10-27) add the others.
       output in the workspace; name that file in the "No `run:` line" bullet; add a test in
       `skills/subagent-driven-development/scripts/test_sdd_scripts.py`. Size: quick-fix. Done when: a
       killed `test-run` leaves its partial output at a path that the controller text names.
+
+## 85-derive-roadmap-later-qualities-and-spec-refs — 2026-11-10
+- [ ] **A resume that finds a later quality and asks nothing else has no question for it to join (plan 85 final
+      review, Codex P2 and the code-reviewer's Declined line; owner ruled defer at the completion gate).**
+      `skills/derive-roadmap/SKILL.md` §5 says a quality found at a resume "joins the same question in §4's
+      form". A resume that adds, splits, drops or reorders no stage asks no such question, and the spec's R7
+      makes the same assumption (specs/completed/derive-roadmap-later-qualities-and-spec-refs.md). A second
+      gap sits beside it: commit `59df779` gives a provisional quality (session could not ask) an Outcomes row
+      marked `suggested, not approved`, but no resume rule asks the partner for approval and a rank before that
+      item counts as an ordinary outcome. Size: design. Done when: §5 says what a resume does with a later
+      quality when no other question is open, and what it does with a `suggested, not approved` item, and a
+      case covers each path with a control run.
+- [ ] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
+      `skills/derive-roadmap/SKILL.md` §5. R7 says a quality found at a resume joins the question. No step of
+      §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
+      wrote it. Size: design. Done when: §5 names the step that runs the check at a resume and a clause scores
+      it, or the owner drops the resume half of R7 from the spec.
+- [ ] **§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is
+      recorded (plan 85 final review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §3 and §4. The
+      gap is older than plan 85. A reply writes the roadmap file and the answer, and nothing in the skill makes
+      the commit a step. Size: quick-fix. Done when: §4 says to commit the roadmap file once the answer is
+      recorded, and a micro-test pass on the cases that write a roadmap file shows no regression.
+- [ ] **The probe case `wp-stage-plan` reads step A's rep from commit `ede95b8` (plan 85 final review; owner
+      ruled defer).** `specs/baseline/red-baseline-new-project-entry/kit/cases.py` (the `wp-stage-plan` entry,
+      its `handoff` source). After a squash merge and a branch delete, that commit is unreachable and the case
+      refuses to rebuild. A true merge keeps it. The rep is also a tracked file at
+      `treatment/dr-handoff-spec-p85/rep1.json`. Size: quick-fix. Done when: the case reads step A's rep from a
+      source that survives a squash merge, such as the tracked file, and `build_prompts.py` rebuilds
+      `wp-stage-plan` on a clone that holds only the merged branch.
+- [ ] **A spec requirement that the partner folds into constraints is listed as unmet at §6 (plan 85 final
+      review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §6. When `Source` is a spec, the review
+      lists each numbered spec requirement that no outcome's `Spec` cell cites as unmet. A requirement the
+      partner folded into a stage's constraints, with no outcome of its own, therefore reads as unmet. This is
+      R12 as the spec wrote it, and it exits by a new stage or a written deferral. Size: design. Done when: §6
+      says how the review treats a folded requirement, and a case on a spec-sourced roadmap shows the
+      behavior with a control run.

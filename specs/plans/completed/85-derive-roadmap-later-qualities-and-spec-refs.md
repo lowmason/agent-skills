@@ -1,5 +1,7 @@
 # derive-roadmap: later qualities and spec references Implementation Plan
 
+**Status: COMPLETE (2026-11-10)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Quarantine.** This plan, the spec, the record `specs/baseline/red-baseline-new-project-entry.md` and its folder
@@ -18,7 +20,7 @@ two-step probe. Every result goes into plan 78's record, in new sections headed 
 **Tech Stack:** Markdown skill text; the stdlib Python kit in `specs/baseline/red-baseline-new-project-entry/kit/`;
 `claude -p` reps on Opus 5.5.
 
-**Spec:** `specs/derive-roadmap-later-qualities-and-spec-refs.md` (APPROVED 2026-11-07, owner decisions D1–D8).
+**Spec:** `specs/completed/derive-roadmap-later-qualities-and-spec-refs.md` (APPROVED 2026-11-07, owner decisions D1–D8).
 Requirements R1–R12 and verification items V1–V5 below are the spec's.
 
 ## Global Constraints
@@ -185,7 +187,7 @@ Defaults this plan settles. The owner approves or amends them as one batch. Each
   `rep_result(text: str) -> str`, which returns the `result` field of a rep's JSON and refuses (`SystemExit`) when it
   is missing or empty. Task 5 uses the last five.
 
-- [ ] **Step 1: Record the base**
+- [x] **Step 1: Record the base**
 
 Append `## Plan 85: base, cases and leak check` to the record. Give `BASE85` (short and full sha, and branch). Run
 `git diff --stat 91d49c4 <BASE85> -- skills/derive-roadmap specs/baseline/red-baseline-new-project-entry` and
@@ -195,7 +197,7 @@ probe as the record's "Isolation probe (Task 1 Step 5)" does, into `pilot/probe-
 read `NO`. Record the blob sha of `skills/writing-plans/SKILL.md` at `BASE85` (`git rev-parse <BASE85>:skills/writing-plans/SKILL.md`):
 plan 84 may change that file before Task 5 reads it.
 
-- [ ] **Step 2: Write the constants and cases in `cases.py`**
+- [x] **Step 2: Write the constants and cases in `cases.py`**
 
 Each fixture is a `lines(...)` call that starts with `TODAY` and a repository line. The state each one must hold is
 below. The implementer writes the fixture text. Pass rules and task lines are exact copy.
@@ -293,7 +295,7 @@ WP_TASK = 'It is your turn. You have no tools in this turn. Write the start of t
    Reading notes. Clause A: a citation in the header, the Spec line, Global Constraints or a task line counts; a range that covers a ref counts (R1–R2); a citation of the whole spec alone does not. Clause B: a task builds a quality when its title, Files block or line delivers it; a line that names a quality as out of scope passes, and so does a local stand-in such as a local directory in place of ADLS.
    ```
 
-- [ ] **Step 3: Check the cases load and build**
+- [x] **Step 3: Check the cases load and build**
 
 Run
 `uv run python -c "import sys; sys.path.insert(0, 'specs/baseline/red-baseline-new-project-entry/kit'); import cases; print(len(cases.CASES))"`.
@@ -301,7 +303,7 @@ Expected: `25`. Then
 `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py leakview /tmp/plan85-work/leak dr-quality-suggest dr-spec-column dr-handoff-spec`.
 Expected: `wrote 3 prompts to /tmp/plan85-work/leak`.
 
-- [ ] **Step 4: Run the leak check**
+- [x] **Step 4: Run the leak check**
 
 As the record's `## Leak check` does: grep each new case's hand-written fixture lines and task line, then its
 leak-view prompt, case-insensitively, for its leak words. Do the same for the hand-written lines of
@@ -310,7 +312,7 @@ every leak-view hit to its source (a case-repository file read verbatim is exemp
 Reword a hand-written line that hits, then rebuild into `/tmp/plan85-work/leak-2`. Also grep the three leak-view
 prompts for `red-baseline`, `plan 7[89]`, `plan 85`, `micro-test` and `quarantine`. Expected: 0 hits.
 
-- [ ] **Step 5: Start the spend table and commit**
+- [x] **Step 5: Start the spend table and commit**
 
 Append `## Plan 85: spend` with the stop ($30), the per-rep cap ($1.00) and a row per task. Then:
 
@@ -330,18 +332,18 @@ git commit -m "test(specs): add plan 85's derive-roadmap quality and spec-ref ca
 - Consumes: `CASES` keys `dr-offer-yes`, `dr-quality-suggest`, `dr-spec-column` (Task 1).
 - Produces: one control verdict per case (RED, thin or clean), which Task 4 reads.
 
-- [ ] **Step 1: Build the controls**
+- [x] **Step 1: Build the controls**
 
 `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py <BASE85> /tmp/plan85-work/control dr-offer-yes dr-quality-suggest dr-spec-column`.
 Expected: `wrote 3 prompts to /tmp/plan85-work/control`. Copy its `MANIFEST.txt` to `control/p85-MANIFEST.txt`.
 
-- [ ] **Step 2: Run five reps per case**
+- [x] **Step 2: Run five reps per case**
 
 `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan85-work/control/<case>.txt specs/baseline/red-baseline-new-project-entry/control/<folder> 1 5 claude-opus-5-5 1.00`,
 with `<folder>` `dr-offer-yes-p85`, `dr-quality-suggest` and `dr-spec-column`. Check the spend headroom before each
 call. Rerun a VOID rep with the next free rep number.
 
-- [ ] **Step 3: Score and record**
+- [x] **Step 3: Score and record**
 
 Run `uv run python specs/baseline/red-baseline-new-project-entry/kit/show_reps.py <folder>` for each folder. Score each
 rep by hand, clause by clause, dr-offer-yes by Open for plan review item 1. Write one `### Plan 85 control: <case>`
@@ -350,7 +352,7 @@ other readings). Name each case RED, thin (a bar clause fails in exactly 1 of 5)
 control beside plan 79 Task 4's arm at the same derive-roadmap text, and record for each rep, unscored, whether the
 reply carries a line that names later qualities. Add the spend row.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
@@ -374,7 +376,7 @@ git commit -m "test(specs): run plan 85's control arms"
   `<quality>: suggested, see the approval question`; the decline entry `<quality>: declined, <YYYY-MM-DD>`; the label
   `suggested, not approved`; the `Spec` column after `Outcome`.
 
-- [ ] **Step 1: Edit the skill text**
+- [x] **Step 1: Edit the skill text**
 
 Exact copy. Rewrap to the file's width. Change nothing else. "Old" is the match key at `BASE85`.
 
@@ -425,7 +427,7 @@ Exact copy. Rewrap to the file's width. Change nothing else. "Old" is the match 
 12. Ranked list, R5, R6, R8 and R9. Insert this paragraph before `An item leaves the list when your partner promotes it`:
     `A later quality joins a Ranked list only as an outcome your partner approved and ranked (SKILL.md §4). Until the answer, the stage's `Leaves out` names it as `<quality>: suggested, see the approval question`, and it has no list item, no O-number and no Outcomes row. On approval it takes the next free O-number, an Outcomes row (its outcome line, its `Spec` refs or `none` when `Source` is a spec, the track, your partner's rank and a cost note) and its ranked place in the list, and the `Leaves out` entry points at it by O-number. On a decline, the entry reads `<quality>: declined, <YYYY-MM-DD>`, and no item is made. From approval on it is an ordinary outcome, with no special case at a resume, at parking or in the completion review. When the session cannot ask, the provisional file lists each suggested quality at the end of the Ranked list, with its next free O-number and the label `suggested, not approved`.`
 
-- [ ] **Step 2: Check the edits**
+- [x] **Step 2: Check the edits**
 
 For each row, run `tr '\n' ' ' < <file> | tr -s ' ' | /usr/bin/grep -o -F '<phrase>' | wc -l` and expect the count.
 
@@ -455,7 +457,7 @@ Then
 `uv run --with pyyaml python -c "import sys; sys.path.insert(0, 'build'); import check_conformance as c; print(len(c.skill_body(open('skills/derive-roadmap/SKILL.md').read())[0]))"`.
 Expected: a number at most 20,000 (about 17,500). Run `uv run python build/check_links.py` and the commit gate.
 
-- [ ] **Step 3: Commit, then record `T`**
+- [x] **Step 3: Commit, then record `T`**
 
 ```bash
 git add skills/derive-roadmap/SKILL.md skills/derive-roadmap/references/new-project-entry.md skills/derive-roadmap/references/roadmap-format.md
@@ -479,13 +481,13 @@ record as Task 2 Step 4 does, with the message `test(specs): record plan 85's sk
 - Produces: the verdicts for V1, V3 and V4, and the last skill commit after any wording round here (`T-r1` or `T`),
   which Tasks 5 and 6 read.
 
-- [ ] **Step 1: Build and run**
+- [x] **Step 1: Build and run**
 
 `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py <T> /tmp/plan85-work/t4 dr-offer-yes dr-quality-suggest dr-spec-column`.
 Expected: `wrote 3 prompts to /tmp/plan85-work/t4`. Copy its `MANIFEST.txt` to `treatment/p85-t4-MANIFEST.txt`. Run
 five reps per case into the folders above, as Task 2 Step 2 does.
 
-- [ ] **Step 2: Score, apply the bars, record**
+- [x] **Step 2: Score, apply the bars, record**
 
 Score as Task 2 Step 3, in `### Plan 85 Task 4: <case>` sections, each ending with its bar verdict against its
 control. dr-offer-yes uses Open for plan review items 1 and 2. For each dr-offer-yes rep, also record, unscored (V1's
@@ -493,12 +495,15 @@ line note): whether the reply carries R2's line, and whether the line keeps its 
 word). For a miss, follow the Bars' wording round: the new text, its commit as `T-r1`, the re-run cases with `-r1`, and
 why each other case was not re-run. A second miss is an owner gate. Add the spend row.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
 git commit -m "test(specs): run plan 85's treatment arms"
 ```
+
+> Deviation: commit `003423a` corrected the record's counts for the other readings after the task review (a controller
+> hand fix, one file, wording only). The rest followed the plan.
 
 ### Task 5: the stage-plan probe (V5)
 
@@ -513,7 +518,7 @@ git commit -m "test(specs): run plan 85's treatment arms"
   `WP_STAGE_PLAN_FIXTURE`, `WP_STAGE_PLAN_PASS`, `WP_STAGE_PLAN_LEAK` and `rep_result` (Task 1).
 - Produces: the probe verdict, and the last skill commit after any wording round here, which Task 6 reads.
 
-- [ ] **Step 1: Run step A and commit its rep**
+- [x] **Step 1: Run step A and commit its rep**
 
 `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py <T-probe> /tmp/plan85-work/t5a dr-handoff-spec`.
 Expected: `wrote 1 prompts to /tmp/plan85-work/t5a`. Run
@@ -522,7 +527,7 @@ A VOID rep is rerun with the next free number. The first rep that is not VOID fe
 Record its two recorded clauses and quote its handoff. Commit the rep folder and the record as Task 2 Step 4 does,
 with the message `test(specs): run plan 85's probe step A`. Call this commit `PROBE_A`.
 
-- [ ] **Step 2: Add the step-B case and check it**
+- [x] **Step 2: Add the step-B case and check it**
 
 Add to `CASES`:
 
@@ -547,7 +552,7 @@ git add specs/baseline/red-baseline-new-project-entry/kit/cases.py specs/baselin
 git commit -m "test(specs): add plan 85's probe step-B case"
 ```
 
-- [ ] **Step 3: Run step B**
+- [x] **Step 3: Run step B**
 
 `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py <T-probe> /tmp/plan85-work/t5b wp-stage-plan`.
 Expected: `wrote 1 prompts to /tmp/plan85-work/t5b`. Join the two `MANIFEST.txt` files into
@@ -555,7 +560,7 @@ Expected: `wrote 1 prompts to /tmp/plan85-work/t5b`. Join the two `MANIFEST.txt`
 `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/plan85-work/t5b/wp-stage-plan.txt specs/baseline/red-baseline-new-project-entry/treatment/wp-stage-plan-p85 1 3 claude-opus-5-5 1.00`.
 A rep that stops on its budget is rerun at a $2.00 cap with the next free number, and the record says so.
 
-- [ ] **Step 4: Read each plan against the spec**
+- [x] **Step 4: Read each plan against the spec**
 
 For each step-B rep, read the reply against `specs/sec-filing-index-ingestion-spec.md` §3 (R1, R2, R4, R9), §4.1,
 §4.2 and §4.5 at `22c6767f`, clause by clause, in a `### Plan 85 probe` section. The probe passes when at least 2 of 3
@@ -565,7 +570,7 @@ reps pass clauses A and B. The section says that a pass cannot show that the `Sc
 this spec can change for it), commit it, re-run Step 1 and Steps 2 and 3 with `-r1` folders and the entry pointed at
 the new step-A commit (record both shas), then put the result to the owner. Add the spend row.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
@@ -582,13 +587,13 @@ git commit -m "test(specs): run plan 85's stage-plan probe"
 - Consumes: the last skill commit, `T-final` (after any Task 4 or Task 5 wording round).
 - Produces: the verdicts that the plan completion protocol reads to tick the three items.
 
-- [ ] **Step 1: Build and run**
+- [x] **Step 1: Build and run**
 
 `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py <T-final> /tmp/plan85-work/t6 dr-offer-scaffold dr-tracks dr-known-progression-79 dr-research-depth dr-resume-rerank dr-rerank-second dr-stop-track dr-park-ranked dr-resume-legacy`.
 Expected: `wrote 9 prompts to /tmp/plan85-work/t6`. Copy its `MANIFEST.txt` to `treatment/p85-t6-MANIFEST.txt`. Run
 five reps per case into `treatment/<case>-p85/`.
 
-- [ ] **Step 2: Score and apply the guard bar**
+- [x] **Step 2: Score and apply the guard bar**
 
 Each case is read as a guard (plan 79's "additive in `cases.py`, read as a guard here"), by its rule and its reading of
 record (Open for plan review item 3). Other readings go under "Other readings" and never count.
@@ -610,19 +615,30 @@ of 5 for the plan 79 item that this case keeps open; for each dr-known-progressi
 `Spec` column (Review Focus 4); for each dr-research-depth rep, whether the reply suggests a later quality and where its
 roadmap puts it. A guard below its bar gets the Bars' wording round, then an owner ruling.
 
-- [ ] **Step 3: Write the summary**
+- [x] **Step 3: Write the summary**
 
 `## Plan 85: summary`: one table of every plan 85 arm (case, bar, control, treatment, result); the probe verdict; the
 spend total; for each of the three items in the Plan completion section, whether its `Done when:` is met; the
 untested passages (Open for plan review item 7, and any passage that changed after the arm that reads it); and the
 owner-gate list. Add the spend row.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-new-project-entry specs/baseline/red-baseline-new-project-entry.md
 git commit -m "test(specs): run plan 85's guards and summary"
 ```
+
+> Deviation: Task 6 ran as six commits where the plan names one: the reps (`85156d1`), the scores of the first five
+> cases (`c1acd56`) and of the last four (`0beb489`), two record fixes after review (`f043608`, `eaedf74`), and the
+> summary under the plan's message (`145b72c`). The final review added a seventh (`c278ea1`), which lists every reading
+> pair that misses dr-quality-suggest's bar.
+>
+> Deviation: two tasks followed the final review. Task 7 (`59df779`) is the owner's choice at the completion gate (R9's
+> provisional quality also gets an Outcomes row), and six cases ran again at that commit. Task 8 (`e885184`) is the
+> plan's one wording round, because dr-spec-column read 2 of 5 at Task 7 (reps put section titles in the Spec cell) and
+> reads 5 of 5 at Task 8. The record commit is `f275de1`. A later quality's resume rule and four smaller points went
+> to `specs/deferred_items.md`.
 
 ## Plan completion
 
