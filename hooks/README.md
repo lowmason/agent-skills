@@ -239,15 +239,19 @@ options, read as getopt reads them: short options clustered or apart, a value at
 or in the next word, and GNU long options by any unambiguous prefix (`--ch /tmp` is
 `--chdir /tmp`). env's `-S`/`--split-string` fails closed in every spelling: env
 re-splits its value into its own arguments in a syntax of its own, which the guard does
-not read. Subshells, brace groups, `$(…)` and `<(…)` are classified as commands of their
-own. A quoted or escaped word is a word, never syntax: `git branch ')' -D feature`
+not read. Some words may lead the command or be the command, and the guard reads each
+such word both ways. A denial either way stands. These words are a leading `{`, a
+leading `[[ … ]]` test, a word that contains `=` (an assignment that the guard does not
+recognise, or an operand of `env`), and a word that begins with `=` (zsh's `=cmd` path
+expansion). Subshells, brace groups, `$(…)` and `<(…)` are classified as commands of
+their own. A quoted or escaped word is a word, never syntax: `git branch ')' -D feature`
 deletes a branch. A redirection leaves with its target and with the file descriptor zsh
-reads for it: one unquoted digit touching the operator (`2>&1`), or a `{name}` before
-it (`exec {fd}>f`). Any other word before a redirection is an argument: `git branch 5
->f` creates branch `5`. A `{name}` descriptor is an ASCII identifier only, as zsh reads
-it in the C locale the Bash tool runs under. A process substitution `<(…)` / `>(…)` is
-one word, a path, never a redirection, so a digit or `{name}` touching it is part of
-that word (`2<(true)` is one argument). A numeric glob `<1-5>` is one word too, and an
+reads for it: one unquoted digit touching the operator (`2>&1`), or a `{name}` before it
+(`exec {fd}>f`). Any other word before a redirection is an argument: `git branch 5 >f`
+creates branch `5`. A `{name}` descriptor is an ASCII identifier only, as zsh reads it
+in the C locale the Bash tool runs under. A process substitution `<(…)` / `>(…)` is one
+word, a path, never a redirection, so a digit or `{name}` touching it is part of that
+word (`2<(true)` is one argument). A numeric glob `<1-5>` is one word too, and an
 operator glued to one ends before it, since zsh has no `><` or `<<<<`: in `git ><1-1>
 stash` the glob is the target of `>`, and `stash` is the verb. zsh takes `<<<` and `<<`
 from a run of `<` first, so only a `<` left alone opens a glob (`<<<1-1>` is a
@@ -267,17 +271,12 @@ fails closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Oth
 - Command substitution in backticks. The tokenizer, like `shlex`, takes a backtick for
   an ordinary character, so `` echo `rm x` `` reads as the words `echo`, `` `rm `` and
   `` x` ``, and none of them is a denied command. `$(…)` is read as a command.
-- A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`), by
-  zsh's `=cmd` path expansion (`=rm x`), or by gluing to a brace (zsh runs `{rm x;}`).
-- A word the guard does not recognise as an assignment, so the word becomes the command
-  and the real command after it is never read: `arr[1]=x rm t`, `ä=x rm t`. `env` takes
-  any `name=value` operand the same way, including after `--`: `env a-b=x rm t`,
-  `env -- a-b=x rm t`.
+- A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`) or by
+  gluing to a brace (zsh runs `{rm x;}`).
 - A line that needs the flat reading for one construct and the nested reading for
   another. Each of the eight readings below applies to the whole line, so no single
-  reading catches both, and a reserved word or brace group before a git verb hides it:
-  `{ git branch ]] HEAD; }`, `true && { git branch ]] HEAD; }`,
-  `if [[ -n a ]] git branch ]] HEAD`.
+  reading catches both. A brace group or a `[[ … ]]` test that leads a subcommand does
+  not hide the command after it, because the guard also reads past it (see above).
 - A glob qualifier glued to the command word, `git(.) stash`, which zsh expands to `git`
   only with `BARE_GLOB_QUAL` on and a file named `git` present. The Bash tool turns the
   option off, and there the word is an unmatched glob.
@@ -340,6 +339,10 @@ Known false positives, accepted rather than widened:
   options: it runs a command named `-p` and never reaches `rm`. Options after `time` are
   skipped as they are after `env` and `nice`, since `/usr/bin/time -p` and bash's
   `time -p` do run the command.
+- **A word at the start of a command that contains `=`, begins with `=`, or is `{` or
+  `[[` is read both as a prefix and as the command.** So the word after it is classified
+  too, even where zsh runs the first word as the command, or where the line is heredoc
+  text: an AsciiDoc heading `== rm and mv ==` in a heredoc is denied.
 - **`env -S` is denied in every spelling**, even when the command it runs is read-only.
   env re-splits that value in a syntax of its own (quotes, `#` comments, `\c`,
   `${VAR}`), so its value can be the command, part of it, or nothing at all; reading it
