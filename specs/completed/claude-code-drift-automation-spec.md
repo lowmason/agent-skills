@@ -403,7 +403,9 @@ R2.4 **Stamp rules.**
 - When a section's text no longer matches `text_hash`, the editor records one
   of two outcomes with `baseline accept`. **Substantive:** a new `changed`
   and `text_hash`, which flags every citer. **Editorial:** a new `text_hash`
-  only.
+  only. Each citer's `cited` hash that matched the old `text_hash` moves to
+  the new one, so an editorial accept flags no citer (owner, plan 89,
+  2026-11-11).
 
 R2.5 **Seed groups.** These are the refresh's six verifier scopes, recovered
 from its verifier prompts. All 39 pages are in the 2.1.288 snapshot. The
@@ -606,8 +608,12 @@ instead). Exit 0 when clean; exit 1 with one line per violation.
   as `2.1.902.1` included, since that is the shape `baseline` writes into
   stamps and never a release (owner, plan 43, 2026-10-12).
 
-Stale citations, whose stamp is below a cited section's `changed`, print as
-`STALE <file> <ids>` on stderr and do not change the exit code. A test in the
+Stale citations, whose stamp is below a cited section's `changed`, or whose
+`cited` hash for a section differs from that section's `text_hash` (R2.3),
+print as `STALE <file> <ids>` on stderr and do not change the exit code. The
+hash half catches two branches that give a section's `changed` and a file's
+stamp the same release; a citation with no `cited` hash has the stamp half
+only (owner, plan 89, 2026-11-11). A test in the
 suite runs `lint` against the repo, so the suite enforces it. CLAUDE.md's
 Commands section gains the invocation, to run before committing a change to
 the guide or to any file carrying a citation. `build/run_commit_lints.sh`
@@ -770,7 +776,9 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
   `--substantive`, also set `changed` per R2.4.
 - `stamp`: regenerate the stamp region.
 - `cite <file>`: after a review, set the file's citation stamp to the highest
-  `changed` among its cited sections.
+  `changed` among its cited sections, and record each cited section's
+  `text_hash` under the file in `cited`, dropping the entries of files the
+  citation scan no longer finds (owner, plan 89, 2026-11-11).
 - `rehash`: re-derive every group's baselined blocks from each page's own
   snapshot under R3.2's MDX rewrite, so that a `baseline.json` written by the
   parser before the rewrite compares with rewritten pages. The pages, their

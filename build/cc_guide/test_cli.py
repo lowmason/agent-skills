@@ -628,11 +628,89 @@ def test_cite_stamps_each_file_at_its_sections_highest_changed_and_writes_only_t
     git(repo, 'commit', '-qm', 'link the rule')
     assert main(cache, 'baseline', 'cite', 'hooks/gate.sh', str(repo / '.claude' / 'style.md')) == 0
     assert capsys.readouterr().out == 'stamped hooks/gate.sh @2.1.900\nstamped rules/style.md @2.1.899\n'
-    assert dirty(repo) == ['hooks/gate.sh', 'rules/style.md']
+    assert dirty(repo) == [state.BASELINE, 'hooks/gate.sh', 'rules/style.md']
     assert (repo / 'hooks/gate.sh').read_text() == (
         '#!/bin/sh\n# cc-guide: alpha.overview alpha.reference @2.1.900\nexit 0\n')
+    h = {sid: v['text_hash'] for sid, v in load(repo)['sections'].items()}
+    assert load(repo)['cited'] == {'hooks/gate.sh': {'alpha.overview': h['alpha.overview'],
+                                                     'alpha.reference': h['alpha.reference']},
+                                   'rules/style.md': {'alpha.reference': h['alpha.reference']}}
     assert main(cache, 'lint') == 0
     assert capsys.readouterr() == ('', '')
+
+
+def test_an_editorial_accept_leaves_its_citers_fresh(world, capsys):
+    '''F6: an editorial accept moves each citer's recorded hash that matched
+    the old text_hash to the new one, so it flags no citer.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.219\nexit 0\n'})
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh') == 0
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    assert main(cache, 'baseline', 'accept', 'alpha.overview', '--editorial') == 0
+    capsys.readouterr()
+    assert main(cache, 'lint') == 0
+    assert capsys.readouterr().err == ''
+
+
+def merged(repo, *branches):
+    '''Merge each branch into main in turn. A conflict fails git, and so the
+    test; a merge must also leave the tree clean.'''
+    git(repo, 'checkout', '-q', 'main')
+    for branch in branches:
+        git(repo, 'merge', '-q', '--no-edit', branch)
+        assert git(repo, 'status', '--porcelain') == ''
+
+
+@pytest.mark.parametrize('order', ['accept-first', 'cite-first'])
+def test_two_branches_that_collide_on_a_stamp_leave_the_file_stale_in_either_merge_order(world, capsys, order):
+    '''#93 and #94 on the fixture, whose newest release is 2.1.902: one branch
+    cites a file at 2.1.902 while another accepts a substantive change to a
+    section it cites, whose `changed` also becomes 2.1.902. The stamp rule
+    alone calls the merged file fresh; the recorded hash does not.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('| `BETA_ENV` | on |', '| `BETA_ENV` | off |'))
+    assert main(cache, 'baseline', 'accept', 'beta.overview', '--substantive') == 0
+    assert main(cache, 'baseline', 'stamp') == 0
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.overview beta.overview @2.1.900\nexit 0\n'})
+    git(repo, 'checkout', '-qb', 'cite')
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh') == 0
+    git(repo, 'commit', '-qam', 'cite the gate')
+    git(repo, 'checkout', '-q', 'main')
+    git(repo, 'checkout', '-qb', 'accept')
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    assert main(cache, 'baseline', 'accept', 'alpha.overview', '--substantive') == 0
+    assert main(cache, 'baseline', 'stamp') == 0
+    git(repo, 'commit', '-qam', 'accept alpha')
+    merged(repo, *(['accept', 'cite'] if order == 'accept-first' else ['cite', 'accept']))
+    assert (repo / 'hooks/gate.sh').read_text() == (
+        '#!/bin/sh\n# cc-guide: alpha.overview beta.overview @2.1.902\nexit 0\n')
+    assert load(repo)['sections']['alpha.overview']['changed'] == '2.1.902'
+    capsys.readouterr()
+    assert main(cache, 'lint') == 0
+    assert 'STALE hooks/gate.sh alpha.overview' in capsys.readouterr().err.splitlines()
+
+
+def test_two_branches_that_cite_different_files_merge_cleanly(world, capsys):
+    '''`cited` is sorted by path, one key per line, so two branches that cite
+    different files edit different lines of baseline.json.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.219\nexit 0\n'})
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh') == 0
+    git(repo, 'commit', '-qam', 'cite the gate')
+    for branch, path, text in (('one', 'hooks/a.sh', '#!/bin/sh\n# cc-guide: alpha.reference @2.1.219\nexit 0\n'),
+                               ('two', 'rules/z.md', '---\npaths: x\n# cc-guide: beta.overview @2.1.219\n---\n')):
+        git(repo, 'checkout', '-q', 'main')
+        git(repo, 'checkout', '-qb', branch)
+        cited(repo, {path: text})
+        assert main(cache, 'baseline', 'cite', path) == 0
+        git(repo, 'commit', '-qam', f'cite {path}')
+    merged(repo, 'one', 'two')
+    assert list(load(repo)['cited']) == ['hooks/a.sh', 'hooks/gate.sh', 'rules/z.md']
+    capsys.readouterr()
+    assert main(cache, 'lint') == 0
+    assert capsys.readouterr().err == ''
 
 
 def test_cite_refuses_a_file_the_lint_never_reads_and_stamps_a_symlink_and_its_target_once(world, capsys):

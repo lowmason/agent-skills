@@ -97,8 +97,9 @@ narrows its `artifacts`, in the same change. Files whose correctness rests
 on a Claude Code fact carry a citation comment naming the guide sections
 they rely on (the spec's R4.1 gives its form and place); `cli.py lint` checks
 each one and prints `STALE` for a file reviewed before a cited section last
-changed. After reviewing such a file, `cli.py baseline cite <file>` restamps
-it. The `/cc-guide` skill in `../.claude/skills/` acts on what `check`
+changed, or reviewed against text whose hash differs from the section's now.
+After reviewing such a file, `cli.py baseline cite <file>` restamps it and
+records each cited section's `text_hash` in `baseline.json`. The `/cc-guide` skill in `../.claude/skills/` acts on what `check`
 reports: `cli.py packets` writes the packets its verifier agent reads, under
 the cache, and `cli.py settle` re-greps the verifier's quotes (`cli.py quotes`
 checks single rows), applies the spec's fail-safe and discard rules, and

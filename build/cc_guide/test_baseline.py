@@ -101,7 +101,7 @@ def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
     changed = baseline.derive_changed(
         history(baseline.JULY[0]), history(baseline.REFRESH[0]),
         (REPO / 'specs/guides/claude-code-customization-guide.md').read_text(encoding='utf-8'))
-    s = {'sections': {sid: {'changed': release} for sid, release in changed.items()}}
+    s = {'sections': {sid: {'changed': release} for sid, release in changed.items()}, 'cited': {}}
     citations, problems = guide.read_citations({
         'agents/replay.md': '---\nname: replay\n# cc-guide: subagents.tools @2.1.219\n---\n',
         'hooks/replay.sh': '#!/bin/sh\n# cc-guide: hooks.patterns @2.1.219\n',
@@ -157,6 +157,31 @@ def test_accept_records_the_hash_and_substantive_also_sets_changed(docs_dir):
     bumped = baseline.accept(s, edited, ['alpha.overview'], True, '2.1.902', {'alpha.overview': ['2.1.902']})
     assert bumped['sections']['alpha.overview']['changed'] == '2.1.902.1'
     assert s == fixture_state(docs_dir)
+
+
+def test_record_cites_keeps_each_cited_sections_hash_sorted_and_drops_absent_files(docs_dir):
+    s = fixture_state(docs_dir)
+    s['cited'] = {'gone.sh': {'alpha.overview': 'sha256:' + '0' * 64}}
+    new = baseline.record_cites(s, {'z.sh': ('beta.overview', 'alpha.overview'), 'a.sh': ('alpha.overview',)},
+                                {'a.sh', 'z.sh'})
+    h = {sid: s['sections'][sid]['text_hash'] for sid in s['sections']}
+    assert new['cited'] == {'a.sh': {'alpha.overview': h['alpha.overview']},
+                            'z.sh': {'alpha.overview': h['alpha.overview'], 'beta.overview': h['beta.overview']}}
+    assert list(new['cited']) == ['a.sh', 'z.sh'] and list(new['cited']['z.sh']) == ['alpha.overview', 'beta.overview']
+    assert s['cited'] == {'gone.sh': {'alpha.overview': 'sha256:' + '0' * 64}}
+
+
+def test_an_editorial_accept_carries_matching_records_and_a_substantive_one_does_not(docs_dir):
+    s = fixture_state(docs_dir)
+    old = s['sections']['alpha.overview']['text_hash']
+    s['cited'] = {'a.sh': {'alpha.overview': old}, 'b.sh': {'alpha.overview': 'sha256:' + '0' * 64}}
+    text = guide_text().replace('Alpha uses', 'Alpha now uses')
+    editorial = baseline.accept(s, text, ['alpha.overview'], False, None)
+    new = editorial['sections']['alpha.overview']['text_hash']
+    assert new != old
+    assert editorial['cited'] == {'a.sh': {'alpha.overview': new}, 'b.sh': {'alpha.overview': 'sha256:' + '0' * 64}}
+    substantive = baseline.accept(s, text, ['alpha.overview'], True, '2.1.902', {})
+    assert substantive['cited'] == s['cited']
 
 
 def test_known_names_a_repeated_unknown_id_once(docs_dir):

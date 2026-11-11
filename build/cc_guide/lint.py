@@ -158,13 +158,16 @@ def citation_problems(guide_text: str, files: dict[str, str]) -> list[str]:
 
 
 def stale_citations(citations: list[Citation], state: dict) -> list[tuple[str, list[str]]]:
-    '''R5: each citing file whose stamp is below a cited section's
-    `changed`, with those sections. A section baseline.json lacks is a lint
-    violation, never stale.'''
+    '''R5: each citing file with a cited section whose changed is above the
+    file's stamp, or whose text_hash differs from the one baseline cite
+    recorded for the file (R7), with those sections. A section baseline.json
+    lacks is a lint violation, never stale.'''
     out = []
     for c in citations:
+        recorded = state['cited'].get(c.path, {})
         behind = [sid for sid in c.ids if sid in state['sections']
-                  and version_key(c.stamp) < version_key(state['sections'][sid]['changed'])]
+                  and (version_key(c.stamp) < version_key(state['sections'][sid]['changed'])
+                       or sid in recorded and recorded[sid] != state['sections'][sid]['text_hash'])]
         if behind:
             out.append((c.path, behind))
     return out

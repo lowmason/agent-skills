@@ -4409,5 +4409,291 @@
   "worktrees",
   "zero-data-retention"
  ],
- "cited": {}
+ "cited": {
+  ".claude/agents/cc-guide-verifier.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  ".claude/skills/cc-guide/SKILL.md": {
+   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+  },
+  "CLAUDE.md": {
+   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a"
+  },
+  "README.md": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
+   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b"
+  },
+  "agents/code-reviewer.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "agents/debugger.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "agents/docs-writer.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "agents/explore.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "agents/security-auditor.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "agents/task-reviewer.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "agents/test-runner.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "build/cc_guide/conformance.toml": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "context.overview": "sha256:3b3b680a2c035bd898829535e2cd554bd616d6819fd0c0082540be3eaf1d66f2",
+   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.handlers": "sha256:2177b8ef72de4e8f67e443b6d20855c4367a74aded6e0da334f678ebc280995d",
+   "hooks.overview": "sha256:750473ea3b7b99f983fa7c1ebc6fee5715750f9ebd5f1eac4e896bf3db355a61",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
+   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
+   "lean.caching": "sha256:d3afd1c862f9f2a08f52b8ac386fd6b15f1a7a7c756e092886712fb93eab3154",
+   "lean.ceremony": "sha256:c099e23c969f692833401aa0ad8411105a4bbdb30735978dc8a5d48fe10cdde0",
+   "lean.expensive-ops": "sha256:f081d0c7522f8b4ef218595771d305ca1809fd29d95d88614a8807b93efc817c",
+   "lean.mcp": "sha256:74437a2a8ceec85df9bc1707c8a7dbe441f2cd5ad42781ef2eae3c94f65bdb97",
+   "lean.measure": "sha256:e10b6279bc6c85eed92914df738eef85a4fdb07cfcab4610037a12aaa2d258de",
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "lean.overview": "sha256:ca84398448099bfcde90c56be163307b1cd3c4415128f708e9c36c614f1cb4ad",
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a",
+   "mechanisms.overview": "sha256:bc9805fd6b2e46244b724e59ebb362f281907c46494a70d8a2fb4e6f56b2f6fb",
+   "reading.overview": "sha256:0f646e8db934e0365ad79a3467453e3c8c57efc5c49000b3ba548817cebf41ef",
+   "rules.auto-memory": "sha256:7de1de635261f0a97e2573c45ffb0fde09021c654f02b0fe65eb34cfdf9966b4",
+   "rules.claude-md": "sha256:14008711fdf08ca17061aec4726024ab04c9a9652a325ca1acec21f05f9ebdb6",
+   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
+   "rules.overview": "sha256:33510b87c525c77405a9eb53631f037d5d9ee0f2afac6246aa2babf53a695894",
+   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
+   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793",
+   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
+   "skills.description": "sha256:723688aa209b021f58aa2b6b631f3f029de943326e17bb663a1b0cb32eb9fbcd",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
+   "skills.iterating": "sha256:a8615b31eb4c2c2e26084a8fe4e4759403d81c25d636dcb2a9b17c6f8853826f",
+   "skills.listing-budget": "sha256:c5d2d7fa1ed84bbe689e0c801bae70f69150fbc179d91a1097952ab98e1bf937",
+   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
+   "skills.overview": "sha256:a1622beb47ba1d2dded79cb9586072738b8eeaead71fa6403fd69adecf9bf685",
+   "skills.progressive-disclosure": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "build/cc_guide/notice.sh": {
+   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
+   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793"
+  },
+  "build/cc_guide/probe_checks.py": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "build/cc_guide/probes.py": {
+   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+  },
+  "build/check_conformance.py": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
+   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
+   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
+   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793",
+   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "build/check_frontmatter.py": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+  },
+  "commands/deferred.md": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+  },
+  "commands/fix-issue.md": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+  },
+  "commands/license-audit.md": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+  },
+  "hooks/README.md": {
+   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
+   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
+   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc"
+  },
+  "hooks/dispatch-model-guard.py": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+  },
+  "hooks/probe-readonly-guard.sh": {
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
+  },
+  "hooks/readonly-agent-guard.py": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+  },
+  "hooks/ruff-check.sh": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
+   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
+  },
+  "hooks/ruff-fix.sh": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+  },
+  "hooks/test_dispatch_model_guard.py": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+  },
+  "hooks/test_project_hooks.py": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
+  },
+  "hooks/test_readonly_agent_guard.py": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+  },
+  "hooks/uv-guard.sh": {
+   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
+   "hooks.exit-codes": "sha256:8e00878fe98340156537d0674b8d59a1116a92cdc20dc188afa019a18e719cdd",
+   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+  },
+  "install.py": {
+   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
+   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
+   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
+   "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b"
+  },
+  "rules/clean-code-python.md": {
+   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d"
+  },
+  "rules/write-with-asd-ste100.md": {
+   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
+   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d"
+  },
+  "skills/bayesian-workflow/README.md": {
+   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a"
+  },
+  "skills/bayesian-workflow/SKILL.md": {
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+  },
+  "skills/brainstorming/SKILL.md": {
+   "lean.ceremony": "sha256:c099e23c969f692833401aa0ad8411105a4bbdb30735978dc8a5d48fe10cdde0",
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+  },
+  "skills/derive-roadmap/SKILL.md": {
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+  },
+  "skills/develop-testing-strategy/SKILL.md": {
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+  },
+  "skills/dispatching-parallel-agents/SKILL.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
+  },
+  "skills/executing-plans/SKILL.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc"
+  },
+  "skills/llm-wiki/INSTALL.md": {
+   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a"
+  },
+  "skills/prepare-handoff/SKILL.md": {
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a",
+   "rules.auto-memory": "sha256:7de1de635261f0a97e2573c45ffb0fde09021c654f02b0fe65eb34cfdf9966b4",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+  },
+  "skills/recommend-probabilistic-model/SKILL.md": {
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+  },
+  "skills/requesting-code-review/SKILL.md": {
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
+  },
+  "skills/subagent-driven-development/SKILL.md": {
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
+  },
+  "skills/tech-debt/SKILL.md": {
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+  },
+  "skills/track-model-experiments/SKILL.md": {
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+  },
+  "skills/tune-hyperparameters/SKILL.md": {
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+  },
+  "skills/write-with-asd-ste100/SKILL.md": {
+   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
+   "skills.description": "sha256:723688aa209b021f58aa2b6b631f3f029de943326e17bb663a1b0cb32eb9fbcd",
+   "skills.progressive-disclosure": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc"
+  },
+  "skills/writing-plans/SKILL.md": {
+   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+  }
+ }
 }

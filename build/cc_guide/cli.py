@@ -117,7 +117,7 @@ import packets
 import probes
 from check import check, due_audit, http_get, releases_of, summary
 from docs import page_file
-from guide import CITE_SHAPED_RE, by_section, read_citations, render_stamp
+from guide import CITE_SHAPED_RE, by_section, file_citation, read_citations, render_stamp
 from lint import lint, stale_lines
 from quotes import check_rows
 from settle import settle
@@ -311,16 +311,19 @@ def run_baseline(args, cache: Path, today: date) -> int:
         return 0
     if args.action == 'cite':
         readable = citing_files(tree, manifest.guide)
-        stamped = []
+        stamped, ids_by_path = [], {}
         for path in dict.fromkeys(map(repo_path, args.files)):  # a symlink and its target are one file
             text = tree.require(path)
             if path not in readable and any(CITE_SHAPED_RE.match(line) for line in text.split('\n')):
                 raise SetupError(f'{path}: the lint never reads it (untracked, or under specs/, runtimes/ or '
                                  'review/), so its stamp would never be checked')
             stamped.append((path, *baseline.cite(path, text, state)))
+            ids_by_path[path] = file_citation(path, text)[0].ids
+        recorded = baseline.record_cites(state, ids_by_path, set(readable))
         for path, text, stamp in stamped:  # all checked before any write
             (REPO / path).write_text(text, encoding='utf-8')
             print(f'stamped {path} @{stamp}')
+        baseline_path.write_text(dump_baseline(recorded), encoding='utf-8')
         return 0
     if args.action == 'accept':
         # Only --substantive sets `changed`, from the newest release and above every citer's stamp (R2.4);
