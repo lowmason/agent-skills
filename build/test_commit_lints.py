@@ -29,7 +29,7 @@ UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
           'check_links', 'suite_registry', 'versions_check', 'reviewer_block', 'deferral_lint',
-          'helper_paths'}
+          'helper_paths', 'compaction_waiver_guard'}
 # The text of skills/writing-plans/scripts/test_deferral_scan.py's PLAN_4 fixture: a
 # deferral sentence with no marker, which the deferral lint flags on line 1.
 PLAN_4 = '''**Out of scope (deferred to a future plan):** audit §9 P2 — cross-skill wiring (§6), token-economy trims, personalization passes (§7), and the critic items (§8). The audit doc stays in `specs/` until those land.'''
