@@ -119,7 +119,9 @@ exponentially. A stop word made only of `=` reaches the next word through two ro
 the work at each word. A chain of `[[ … ]]` tests in one subcommand grows the same way. A hook that times out lets
 the call go on (`specs/guides/claude-code-customization-guide.md:381`), so a slow walk fails open. The walk visits
 each state once: a visited set keyed on the word position and the stop word's text does it, and it changes
-nothing that is denied *(designer's call)*. A test pins the bound with a long command full of these words.
+nothing that is denied *(designer's call)*. A test pins the bound with a long command full of these words. It
+counts the states or candidates the walk visits and asserts a small multiple of the word count, not a time limit,
+because a timing assertion is unreliable across the two interpreters.
 
 The `=` rows cover env as well. env takes every operand that contains `=` as an assignment, up to its command.
 The rule "continue past any stop word that contains `=`" needs no claim about env's grammar, and it covers the
@@ -157,7 +159,7 @@ on real commands as well.
   bullet on assignments the guard does not recognize. In the mixed-reading bullet, remove the three examples and
   keep the structural point: the readings still apply to the whole line, and the walk now covers a brace group or
   test that leads a subcommand. Keep the glued-qualifier bullet.
-- **Known false positives.** Add one: a word at the start of a command that contains `=`, or that begins with `=`,
+- **Known false positives.** Add one: a word at the start of a command that contains `=`, begins with `=`, or is
   `{` or `[[`, is read both as a prefix and as the command. So the word after it is classified too, even where zsh
   runs the first word as the command.
 
