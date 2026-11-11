@@ -30,6 +30,7 @@ run versions_check uv run python build/versions.py check
 run reviewer_block uv run python build/check_reviewer_block.py
 run deferral_lint uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt
 run helper_paths uv run python build/check_helper_paths.py
+run compaction_waiver_guard bash -c 'cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py::test_waived_compaction_window_files_hide_no_late_heading'
 if [ "${#failed[@]}" -gt 0 ]; then
   echo "commit lints failed: ${failed[*]}" >&2
   exit 1

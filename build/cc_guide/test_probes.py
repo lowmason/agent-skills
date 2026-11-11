@@ -17,12 +17,14 @@ from pathlib import Path
 
 import pytest
 
+import probe_checks
 import probes
 import state
 from cc_fixtures import MANIFEST_TOML, isolated_home, write_tree  # noqa: F401
 from state import DIVERGES, ERROR, PASS
 
 REPO = Path(__file__).resolve().parents[2]
+PROBES_PY = Path(probes.__file__).resolve()
 NOW = datetime(2026, 10, 20, 14, 0, tzinfo=timezone.utc)
 TODAY = NOW.date()
 REGISTRY = '\n'.join(['', '[[probe]]', "id = 'agent-tools'", "sections = ['beta.reference']", '',
@@ -592,6 +594,176 @@ def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, side, outcome
     fake = FakeRuns({'dispatch': payload_stream()}, side={'dispatch': side})
     verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
     assert verdict.outcome == outcome and verdict.finding.startswith(finding)
+
+
+def test_register_window_reads_the_compaction_window_check(tmp_path, monkeypatch):
+    '''tokens times chars_per_token, less reserve_chars, which a register may leave out (plan 87).'''
+    assert probes.register_window() == 19700
+    text = probes.CONFORMANCE.read_text(encoding='utf-8')
+    copy = tmp_path / 'conformance.toml'
+    monkeypatch.setattr(probes, 'CONFORMANCE', copy)
+    for edited, window in (('reserve_chars = 150\n', 19850), ('', 20000)):
+        changed = text.replace('reserve_chars = 300\n', edited, 1)
+        assert changed != text
+        copy.write_text(changed, encoding='utf-8')
+        assert probes.register_window() == window
+
+
+def test_the_cut_probe_prepares_one_invocation_that_drives_the_session(tmp_path):
+    '''One claude process takes the three messages on stdin, since a /compact in a resumed process re-attaches
+    nothing (plan 87's spike). The session is persisted under an id chosen here, since collect reads its
+    transcript.'''
+    (inv,) = probes.prepare_cut(tmp_path, '/bin/claude', REPO)
+    assert (inv.name, inv.env, inv.timeout) == ('cut', {}, probes.PROBE_TIMEOUT)
+    assert inv.argv[:3] == [sys.executable, str(PROBES_PY), 'drive-cut'] and len(inv.argv) == 4
+    argv = json.loads(inv.argv[3])
+    assert argv[:2] == ['/bin/claude', '-p'] and probes.CUT_PROMPT not in argv
+    session = (tmp_path / 'session-id').read_text(encoding='utf-8').strip()
+    assert probe_checks.UUID_RE.fullmatch(session)
+    after = {flag: argv[argv.index(flag) + 1] for flag in ('--input-format', '--session-id', '--max-budget-usd',
+                                                           '--setting-sources', '--settings')}
+    assert after['--input-format'] == 'stream-json' and after['--session-id'] == session
+    assert after['--max-budget-usd'] == '0.75' and after['--setting-sources'] == 'project'
+    assert json.loads(after['--settings']) == {'permissions': {'defaultMode': 'default', 'allow': ['Skill']}}
+    assert '--resume' not in argv and '--no-session-persistence' not in argv
+    for kind in probe_checks.CUT_KINDS:
+        skill = tmp_path / '.claude' / 'skills' / f'cut-probe-{kind}' / 'SKILL.md'
+        assert skill.read_text(encoding='utf-8') == probe_checks.cut_frontmatter(kind) + probe_checks.cut_body(kind)
+
+
+# A stand-in for claude -p --input-format stream-json. It reads stdin a byte at a time, so a line the driver sent
+# early stays in the pipe, where select sees it. Its mode: pace prints an init event as soon as it reads a line,
+# then waits 0.3 s, reports a line that came early and prints the result, so a driver that sends on any stdout line,
+# not only on a result, is caught; error answers every line with an error result; exit leaves with code 3 after its
+# first line. At the end of its stdin it reports how many lines it read.
+FAKE_STREAM_CLAUDE = r'''import json, os, select, sys, time
+
+
+def line():
+    data = b''
+    while not data.endswith(b'\n'):
+        byte = os.read(0, 1)
+        if not byte:
+            return None
+        data += byte
+    return data
+
+
+mode, count = sys.argv[1], 0
+while (got := line()) is not None:
+    count += 1
+    if mode == 'exit':
+        sys.exit(3)
+    if mode == 'pace':
+        print(json.dumps({'type': 'system', 'subtype': 'init'}), flush=True)
+        time.sleep(0.3)
+        if select.select([0], [], [], 0)[0]:
+            print(json.dumps({'type': 'early'}), flush=True)
+    print(json.dumps({'type': 'result', 'is_error': mode == 'error', 'echo': json.loads(got)}), flush=True)
+print(json.dumps({'type': 'closed', 'lines': count}), flush=True)
+'''
+
+
+def fake_stream_claude(tmp_path) -> Path:
+    path = tmp_path / 'fake_claude.py'
+    path.write_text(FAKE_STREAM_CLAUDE, encoding='utf-8')
+    return path
+
+
+def drive(fake: Path, mode: str) -> subprocess.CompletedProcess:
+    '''The drive-cut entry point, run as prepare_cut's invocation runs it, on the fake in the given mode.'''
+    return subprocess.run([sys.executable, str(PROBES_PY), 'drive-cut', json.dumps([sys.executable, str(fake), mode])],
+                          stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=20)
+
+
+def events_of(text: str) -> list[dict]:
+    return [json.loads(line) for line in text.splitlines()]
+
+
+def user_line(text: str) -> dict:
+    return {'type': 'user', 'message': {'role': 'user', 'content': text}}
+
+
+def test_drive_cut_sends_each_message_after_the_previous_result(tmp_path):
+    fake = fake_stream_claude(tmp_path)
+    # The control: the fake reports a line that arrives before its result.
+    control = subprocess.run([sys.executable, str(fake), 'pace'], input=''.join(
+        json.dumps(user_line(m)) + '\n' for m in probes.CUT_MESSAGES), capture_output=True, text=True, timeout=20)
+    assert {'type': 'early'} in events_of(control.stdout)
+    proc = drive(fake, 'pace')
+    assert (proc.returncode, proc.stderr) == (0, '')
+    assert events_of(proc.stdout) == [
+        *(event for m in probes.CUT_MESSAGES
+          for event in ({'type': 'system', 'subtype': 'init'}, {'type': 'result', 'is_error': False,
+                                                                 'echo': user_line(m)})),
+        {'type': 'closed', 'lines': 3}]
+
+
+def test_drive_cut_stops_on_an_error_result_and_on_a_closed_stdout(tmp_path):
+    fake = fake_stream_claude(tmp_path)
+    proc = drive(fake, 'error')
+    assert (proc.returncode, proc.stderr) == (0, '')
+    assert events_of(proc.stdout) == [{'type': 'result', 'is_error': True, 'echo': user_line(probes.CUT_PROMPT)},
+                                      {'type': 'closed', 'lines': 1}]
+    proc = drive(fake, 'exit')
+    assert (proc.returncode, proc.stdout, proc.stderr) == (3, '', '')
+
+
+# The real marker after a re-attached copy's kept text (plan 87's spike, S2).
+CUT_MARKER = '\n\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]'
+CUT_KEPT = 19775
+
+
+def cut_copy(kind: str) -> str:
+    header = f'Base directory for this skill: /x/cut-probe-{kind}\n\n'
+    return header + probe_checks.cut_body(kind)[:CUT_KEPT] + CUT_MARKER
+
+
+def cut_stream() -> str:
+    '''The three turns of a live compaction-cut run, in the event order Claude Code 2.1.317 wrote (plan 87's spike).'''
+    said = {'type': 'assistant', 'parent_tool_use_id': None, 'message': {'model': 'claude-sonnet-5-5', 'content': []}}
+    heard = {'type': 'user', 'parent_tool_use_id': None, 'message': {'content': []}}
+    summary = {'type': 'system', 'subtype': 'post_turn_summary'}
+    status = [{'type': 'system', 'subtype': 'status', 'status': 'compacting'}, {'type': 'system', 'subtype': 'status'}]
+    return stream(init(), said, {'type': 'rate_limit_event'}, heard, heard, said, heard, heard, said, summary, RESULT,
+                  *status, init(), {'type': 'system', 'subtype': 'compact_boundary'}, heard, heard, RESULT,
+                  init(), said, summary, RESULT)
+
+
+def leave_cut_transcript(home):
+    '''A side effect that writes the session's transcript: a boundary, then the invoked_skills attachment with
+    both cut copies.'''
+    def side(cwd):
+        session = (cwd / 'session-id').read_text(encoding='utf-8').strip()
+        folder = home / '.claude' / 'projects' / '-x'
+        folder.mkdir(parents=True, exist_ok=True)
+        attachment = {'type': 'invoked_skills', 'skills': [
+            {'name': f'cut-probe-{kind}', 'path': f'projectSettings:cut-probe-{kind}', 'content': cut_copy(kind)}
+            for kind in probe_checks.CUT_KINDS]}
+        entries = [{'type': 'system', 'subtype': 'compact_boundary'}, {'type': 'attachment', 'attachment': attachment}]
+        (folder / f'{session}.jsonl').write_text(''.join(json.dumps(e) + '\n' for e in entries), encoding='utf-8')
+    return side
+
+
+def test_the_cut_probe_reads_its_run_like_a_live_one(tmp_path, isolated_home):
+    '''From prepare to the verdict through run_probe. A transcript that is absent leaves cut.json empty: ERROR.'''
+    events = probe_checks.parse_stream(cut_stream())
+    assert probe_checks.broken(events) is None
+    measures = {kind: probe_checks.measure_cut(cut_copy(kind), probe_checks.cut_body(kind))
+                for kind in probe_checks.CUT_KINDS}
+    run_dir = tmp_path / 'run'
+    fake = FakeRuns({'cut': cut_stream()}, side={'cut': leave_cut_transcript(isolated_home)})
+    verdict = probes.run_probe('compaction-cut', 'claude', REPO, run_dir, fake)
+    assert verdict == probe_checks.assess_compaction_cut(events, measures, probes.register_window())
+    assert verdict == (PASS, f'compaction kept {CUT_KEPT} body characters of the prose probe skill (by '
+                             'characters; 51 characters before the body), at least the register window '
+                             f'{probes.register_window()}')
+    assert sorted(p.name for p in run_dir.iterdir()) == ['cut.argv.json', 'cut.err', 'cut.json', 'cut.jsonl',
+                                                         'transcript.raw.jsonl']
+    assert json.loads((run_dir / 'cut.json').read_text(encoding='utf-8')) == measures
+    absent = probes.run_probe('compaction-cut', 'claude', REPO, tmp_path / 'absent', FakeRuns({'cut': cut_stream()}))
+    assert absent == (ERROR, 'no re-attached copy of cut-probe-prose after the compact boundary')
+    assert json.loads((tmp_path / 'absent' / 'cut.json').read_text(encoding='utf-8')) == {}
 
 
 # Prints the effort override, or "unset", then the variable its invocation adds.

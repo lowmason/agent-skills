@@ -9,6 +9,7 @@ PASS means the behaviour matches the guide. DIVERGES means it does not.
 ERROR means the probe's mechanism never fired or the run broke, and it is
 never a pass.'''
 import json
+import os.path
 import re
 from typing import NamedTuple
 
@@ -46,6 +47,15 @@ MCP_MARK = '<mcp-tool>'
 # A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
 MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
 PRIVATE_MARK = '<private>'
+# compaction-cut: two probe skills whose bodies differ only in their filler. Text and digits split into tokens at
+# different rates, so the two cuts tell a limit in characters from one in tokens. The names have the same
+# length, so the two headers do too.
+CUT_KINDS = {'prose': 'the cat sat on the mat while the dog ran past the gate ', 'digit': '0123456789'}
+CUT_LINE_CHARS = 64  # a line's length with its newline
+CUT_BODY_LINES = 500  # a 32,000-character body
+CUT_SENTINEL = 'FRONTMATTER-SENTINEL'
+CUT_TAIL_CHARS = 200
+CUT_UNIT_SLACK = 5  # the most that two kinds' kept totals may differ by and still count in characters
 
 
 class Verdict(NamedTuple):
@@ -375,6 +385,105 @@ def assess_guard_liveness(streams: list[list[dict] | None]) -> Verdict:
     return Verdict(PASS, 'git status passed; git fetch and git config --global were denied')
 
 
+def cut_frontmatter(kind: str) -> str:
+    return (f'---\nname: cut-probe-{kind}\n'
+            f'description: Use when the compaction-cut probe asks for cut-probe-{kind}. {CUT_SENTINEL}\n---\n')
+
+
+def cut_body(kind: str) -> str:
+    '''CUT_BODY_LINES lines of CUT_LINE_CHARS characters each, newline
+    included. A line is `@`, its offset in the body as seven digits and a
+    space, then the kind's filler repeated and cut to fill the line, so a
+    cut leaves a line that says where it fell.'''
+    filler = CUT_KINDS[kind]
+    lines = []
+    for n in range(CUT_BODY_LINES):
+        head = f'@{n * CUT_LINE_CHARS:07d} '
+        room = CUT_LINE_CHARS - len(head) - 1
+        lines.append(f'{head}{(filler * room)[:room]}\n')
+    return ''.join(lines)
+
+
+def measure_cut(text: str, body: str) -> dict | None:
+    '''Where a re-attached skill text stops. `body`'s first line anchors the
+    body's start, so a copy cut inside that line is not found: None. The
+    header is what comes before the body, `body_chars_kept` how much of the
+    body follows it unchanged, and `tail` what follows that: the cut's own
+    marker, which the probe keeps to see how the cut is worded. The marker
+    opens with a newline, which a body line's own newline at the cut can
+    match, so a cut copy whose kept text ends with a newline leaves that
+    newline to the tail: the count can be one low, never one high.'''
+    start = text.find(body.split('\n', 1)[0])
+    if start < 0:
+        return None
+    kept = len(os.path.commonprefix([text[start:start + len(body)], body]))
+    cut = kept < len(body)
+    if cut and body[kept - 1] == '\n':
+        kept -= 1
+    after = start + kept
+    return {'header_chars': start, 'body_chars_kept': kept, 'total_chars': start + kept,
+            'cut': cut, 'frontmatter_seen': CUT_SENTINEL in text,
+            'tail': text[after:after + CUT_TAIL_CHARS]}
+
+
+def reattached_after_boundary(entries: list[dict], kinds) -> dict[str, str]:
+    '''The text of each kind's re-attached copy: the content of the
+    cut-probe-<kind> item in an invoked_skills attachment after the last
+    compact boundary. Nothing else counts. The Skill call's own copy comes
+    before the boundary, and the skill listing after it, in an
+    api-request-blob entry and in skill_listing attachments, names each
+    skill and holds CUT_SENTINEL. A kind with no such item is absent, and
+    so is every kind when the entries hold no boundary.'''
+    bounds = [n for n, entry in enumerate(entries) if is_compact_boundary(entry)]
+    copies: dict[str, str] = {}
+    for entry in entries[bounds[-1] + 1:] if bounds else []:
+        attachment = entry.get('attachment') if entry.get('type') == 'attachment' else None
+        if not isinstance(attachment, dict) or attachment.get('type') != 'invoked_skills':
+            continue
+        for skill in attachment.get('skills') or []:
+            if isinstance(skill, dict) and isinstance(skill.get('content'), str):
+                copies.setdefault(skill.get('name'), skill['content'])
+    return {kind: copies[f'cut-probe-{kind}'] for kind in kinds if f'cut-probe-{kind}' in copies}
+
+
+def is_compact_boundary(event: dict) -> bool:
+    return event.get('type') == 'system' and event.get('subtype') == 'compact_boundary'
+
+
+def assess_compaction_cut(compact: list[dict] | None, cut: dict[str, dict] | None, window: int) -> Verdict:
+    '''compaction-cut: where compaction cuts a re-attached skill, against
+    the register's window (the compaction-window check's, in characters).
+    The prose copy decides: it must keep at least `window` body characters,
+    or a body that passes the register can lose its last ones. The digit
+    copy only names the unit: kept totals (header and body) within
+    CUT_UNIT_SLACK of each other mean the cut counts characters, else
+    tokens. A /compact run with no boundary event, or a kind with no
+    measured copy, is ERROR: the model invoked one skill, not both, or the
+    copy is gone, and the other skill alone shows nothing.'''
+    why = broken(compact)
+    if why:
+        return Verdict(ERROR, f'the /compact run broke: {why}')
+    if not any(map(is_compact_boundary, compact)):
+        return Verdict(ERROR, 'the /compact run emitted no compact_boundary event')
+    measures = {kind: (cut or {}).get(kind) for kind in CUT_KINDS}
+    for kind, measure in measures.items():
+        if not measure:
+            return Verdict(ERROR, f'no re-attached copy of cut-probe-{kind} after the compact boundary')
+    prose, digit = measures['prose'], measures['digit']
+    kept = prose['body_chars_kept']
+    if not prose['cut']:
+        return Verdict(PASS, f'compaction kept the whole {kept}-character prose body; '
+                             f'the register window {window} is safe')
+    unit = 'characters' if abs(prose['total_chars'] - digit['total_chars']) <= CUT_UNIT_SLACK else 'tokens'
+    frontmatter = ', frontmatter included' if prose['frontmatter_seen'] else ''
+    where = f"by {unit}; {prose['header_chars']} characters before the body{frontmatter}"
+    seen = f'{kept} body characters of the prose probe skill ({where})'
+    if kept < window:
+        return Verdict(DIVERGES, f'compaction keeps {seen}, fewer than the register window {window}, so a body '
+                                 f'that passes compaction-window can lose its last {window - kept}')
+    return Verdict(PASS, f'compaction kept {seen}, at least the register window {window}')
+
+
 def _trim_block(block: dict) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':
@@ -405,6 +514,9 @@ def _trim_event(event: dict) -> dict | None:
             # A hook's name carries what it matched, so a hook matched on an MCP tool names an installed server.
             kept['hook_name'] = MCP_TOKEN_RE.sub(MCP_MARK, kept['hook_name'])
         return kept
+    if is_compact_boundary(event):
+        # compaction-cut reads only that the boundary is there; its metadata holds ids and token counts (plan 87, D12).
+        return {'type': kind, 'subtype': sub}
     if kind == 'result':
         return {k: event.get(k) for k in ('type', 'subtype', 'is_error', 'num_turns')}
     if kind in ('assistant', 'user'):

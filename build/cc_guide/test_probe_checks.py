@@ -293,6 +293,124 @@ def test_guard_liveness(streams, verdict):
     assert pc.assess_guard_liveness(streams) == verdict
 
 
+def test_cut_body_lines_carry_their_offsets():
+    for kind, filler in pc.CUT_KINDS.items():
+        body = pc.cut_body(kind)
+        lines = body.splitlines(keepends=True)
+        assert len(body) == 32000
+        assert all(len(line) == 64 and line.endswith('\n') for line in lines)
+        assert lines[300].startswith('@0019200 ')
+        assert lines[1] == f'@0000064 {(filler * 6)[:54]}\n'
+
+
+def test_measure_cut_reads_header_kept_body_and_tail():
+    body = pc.cut_body('prose')
+    text = 'Base directory for this skill: /x/cut-probe-prose\n\n' + body[:19950] + '\n[truncated: see /x/SKILL.md]'
+    measure = pc.measure_cut(text, body)
+    assert measure['header_chars'] == 51
+    assert measure['body_chars_kept'] == 19950
+    assert measure['total_chars'] == 20001
+    assert measure['cut'] is True
+    assert measure['frontmatter_seen'] is False
+    assert measure['tail'].startswith('\n[truncated')
+
+
+def test_measure_cut_sees_frontmatter_and_whole_bodies():
+    measure = pc.measure_cut(pc.cut_frontmatter('digit') + pc.cut_body('digit'), pc.cut_body('digit'))
+    assert measure['frontmatter_seen'] is True
+    assert measure['cut'] is False
+
+
+def test_measure_cut_returns_none_when_the_body_is_absent():
+    '''A cut inside the body's first line leaves nothing to anchor on: not found, not a crash.'''
+    body = pc.cut_body('prose')
+    assert pc.measure_cut('Base directory for this skill: /x\n\n' + body[:30], body) is None
+
+
+# The marker Claude Code 2.1.317 put after a re-attached skill's kept text (plan 87's spike, S2).
+CUT_MARKER = '\n\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]'
+
+
+def test_measure_cut_leaves_a_trailing_newline_to_the_marker():
+    '''The real cut kept 19,775 body characters, the last of them just before a line's newline. The marker opens with
+    a newline, which matches the body's own, so a plain common prefix counts one more than was kept.'''
+    assert len(CUT_MARKER) == 101
+    body = pc.cut_body('prose')
+    measure = pc.measure_cut('Base directory for this skill: /x\n\n' + body[:19775] + CUT_MARKER, body)
+    assert measure['body_chars_kept'] == 19775
+    assert measure['cut'] is True
+    assert measure['tail'] == CUT_MARKER
+    whole = pc.measure_cut(pc.cut_frontmatter('prose') + body, body)
+    assert (whole['body_chars_kept'], whole['cut']) == (32000, False)
+
+
+def invoked_skills(*copies):
+    '''A transcript's invoked_skills attachment, shaped as plan 87's spike saw it (S1, S2).'''
+    return {'type': 'attachment', 'attachment': {'type': 'invoked_skills', 'skills': [
+        {'name': f'cut-probe-{kind}', 'path': f'projectSettings:cut-probe-{kind}', 'content': text}
+        for kind, text in copies]}}
+
+
+def test_reattached_after_boundary_reads_the_invoked_skills_after_the_last_boundary():
+    '''Only the invoked_skills attachment after the last boundary holds the re-attached copies. The Skill call's own
+    copy comes before every boundary, an earlier compaction's copy before the last one, and the skill listing, in an
+    api-request-blob entry and a skill_listing attachment, names the skills and carries the frontmatter sentinel.'''
+    whole = {kind: f'Base directory for this skill: /x/cut-probe-{kind}\n\n{pc.cut_body(kind)}'
+             for kind in pc.CUT_KINDS}
+    cut = {kind: text[:20000 - len(CUT_MARKER)] + CUT_MARKER for kind, text in whole.items()}
+    boundary = {'type': 'system', 'subtype': 'compact_boundary'}
+    listing = '\n'.join(f'- cut-probe-{kind}: Use when ... {pc.CUT_SENTINEL}' for kind in pc.CUT_KINDS)
+    entries = [
+        {'type': 'user', 'message': {'role': 'user', 'content': [{'type': 'text', 'text': whole['prose']}]}},
+        boundary, invoked_skills(('prose', whole['prose'])),
+        boundary, invoked_skills(('prose', cut['prose']), ('digit', cut['digit'])),
+        {'type': 'attachment', 'attachment': {'type': 'skill_listing', 'content': listing}},
+        {'type': 'api-request-blob', 'blob': {'system': listing, 'skills': [
+            {'name': f'cut-probe-{kind}', 'content': whole[kind]} for kind in pc.CUT_KINDS]}},
+    ]
+    assert pc.reattached_after_boundary(entries, pc.CUT_KINDS) == cut
+    assert pc.reattached_after_boundary(entries[:1], pc.CUT_KINDS) == {}
+
+
+def cut_measure(kept, cut=True, frontmatter=False):
+    '''A measure_cut result for a copy that keeps `kept` body characters after a 60-character header.'''
+    return {'header_chars': 60, 'body_chars_kept': kept, 'total_chars': 60 + kept, 'cut': cut,
+            'frontmatter_seen': frontmatter, 'tail': ''}
+
+
+COMPACT_OK = [init(), {'type': 'system', 'subtype': 'compact_boundary'}, result()]
+
+
+@pytest.mark.parametrize('compact, cut, verdict', [
+    (COMPACT_OK, {'prose': cut_measure(20000), 'digit': cut_measure(20000)},
+     (PASS, 'compaction kept 20000 body characters of the prose probe skill '
+            '(by characters; 60 characters before the body), at least the register window 20000')),
+    (COMPACT_OK, {'prose': cut_measure(19940), 'digit': cut_measure(19940)},
+     (DIVERGES, 'compaction keeps 19940 body characters of the prose probe skill '
+                '(by characters; 60 characters before the body), fewer than the register window 20000, '
+                'so a body that passes compaction-window can lose its last 60')),
+    # The digit skill tells characters from tokens: kept totals more than 5 apart mean the cut counts tokens.
+    (COMPACT_OK, {'prose': cut_measure(21000), 'digit': cut_measure(14000)},
+     (PASS, 'compaction kept 21000 body characters of the prose probe skill '
+            '(by tokens; 60 characters before the body), at least the register window 20000')),
+    (COMPACT_OK, {'prose': cut_measure(32000, cut=False), 'digit': cut_measure(32000, cut=False)},
+     (PASS, 'compaction kept the whole 32000-character prose body; the register window 20000 is safe')),
+    (COMPACT_OK, {'prose': cut_measure(20000, frontmatter=True), 'digit': cut_measure(20000)},
+     (PASS, 'compaction kept 20000 body characters of the prose probe skill '
+            '(by characters; 60 characters before the body, frontmatter included), at least the register window '
+            '20000')),
+    # The model invoked one skill, not both: ERROR naming the missing skill, never a PASS on the other.
+    (COMPACT_OK, {'prose': cut_measure(20000)},
+     (ERROR, 'no re-attached copy of cut-probe-digit after the compact boundary')),
+    ([init(), result()], {'prose': cut_measure(20000), 'digit': cut_measure(20000)},
+     (ERROR, 'the /compact run emitted no compact_boundary event')),
+    (None, {'prose': cut_measure(20000), 'digit': cut_measure(20000)},
+     (ERROR, 'the /compact run broke: no stream-json events')),
+])
+def test_assess_compaction_cut(compact, cut, verdict):
+    assert pc.assess_compaction_cut(compact, cut, 20000) == verdict
+
+
 def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
     # Shortest first would leave '<private>/work' for the first path.
     assert pc.redact('/home/me/work and /home/me', ['/home/me', '/home/me/work', '']) == '<private> and <private>'
@@ -307,6 +425,24 @@ def test_scrub_masks_an_mcp_tool_name_in_a_hook_name():
     text = pc.scrub_events([init(), hook, result()], [])
     assert 'mcp__' not in text and 'mine' not in text
     assert pc.parse_stream(text)[1]['hook_name'] == f'PreToolUse:{pc.MCP_MARK}'
+
+
+def test_scrub_keeps_the_compact_boundary_and_nothing_of_its_metadata():
+    '''A recorded compaction-cut run replays only if its scrubbed stream keeps the boundary event (owner ruling,
+    plan 87 D12). The event's metadata carries ids and token counts, which no assertion reads.'''
+    ids = [f'00000000-0000-4000-8000-00000000000{n}' for n in range(1, 6)]
+    boundary = {'type': 'system', 'subtype': 'compact_boundary', 'session_id': ids[0], 'uuid': ids[1],
+                'compact_metadata': {'trigger': 'manual', 'pre_tokens': 41234},
+                'preserved_segment': {'head_uuid': ids[2], 'anchor_uuid': ids[3]}, 'logical_parent_uuid': ids[4]}
+    events = [init(), assistant(), result(), {'type': 'system', 'subtype': 'status', 'status': 'compacting'},
+              init(), boundary, result()]
+    kept = pc.parse_stream(pc.scrub_events(events, []))
+    assert [e for e in kept if e.get('subtype') == 'compact_boundary'] == [
+        {'type': 'system', 'subtype': 'compact_boundary'}]
+    measure = cut_measure(19775)
+    verdict = pc.assess_compaction_cut(kept, {'prose': measure, 'digit': measure}, 20000)
+    assert verdict.outcome == DIVERGES
+    assert verdict == pc.assess_compaction_cut(events, {'prose': measure, 'digit': measure}, 20000)
 
 
 def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():

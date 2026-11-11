@@ -186,3 +186,21 @@ Closed earlier deferred items:
 Closed deferred items:
 - "**dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift" (deferred by superpowers-drift-v7.0.2): an agent that edits files gets its own file set or git worktree, named in the dispatch; the owner waived the micro-test.
 - "**writing-skills does not say where a skill's test scenarios go (superpowers drift finding 33).** The" (deferred by superpowers-drift-v7.0.2): the RED Phase checklist keeps scenarios and baseline records outside the skill directory.
+
+## 87-compaction-cut-probe — 2026-11-11
+Plan: specs/plans/completed/87-compaction-cut-probe.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 4): finding texts name the window in characters when reserve_chars is above 0, and stay byte for byte as before when it is 0 — the plan's Step 5 string said the first 20 tokens for a window the check no longer applied — a body of 19,701 to 20,000 characters would read as under the limit.
+- Ruling (Task 4): a guard test pairs the two new waivers, as the register's rule says — a waiver hides its file's late-heading scan — a late critical heading in a waived file would commit silently (the final review then moved the guard onto the commit-lint path, D17).
+- Ruling (Task 4): build/test_commit_lints.py retargeted from subagent-driven-development to brainstorming — the new waiver made the old target pass the lint — the late-section test would stop testing refusal.
+- Ruling (final review): the third declined line (test_late_critical_section_is_refused passes without the late scan) is not a defect — the test asserts the heading finding's text, which only the late scan emits — a real weakness would go unfixed.
+- Deviation (Task 2): setup A, three invocations on one session id, re-attached no skill; the owner approved one process over stream-json (setup B). Source: plan, Task 2.
+- Deviation (Task 3): one driver process (`drive_cut`) replaced the three invocations; `measure_cut` backs off a trailing newline; `_trim_event` keeps `compact_boundary`. Source: plan, Task 3.
+- Deviation (Task 4): `reserve_chars` is 300, since the cut counts a header and a 100-character marker; no `counts_frontmatter`. Source: plan, Task 4.
+- Deviation (Task 4): the waiver guard became the `compaction_waiver_guard` commit lint after the final review. Source: plan, Task 4.
+- Deviation (Task 5): `build/test_commit_lints.py`, `build/run_commit_lints.sh`, `CLAUDE.md` and `build/CLAUDE.md` joined the File map. Source: plan, Task 5.
+- Deferred: 2 items. Source: specs/deferred_items.md, § 87-compaction-cut-probe.
+
+Closed earlier deferred items:
+- "Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding" (deferred by superpowers-drift-v7.0.1): the owner ruled that the guide stays equal to the docs; the register and the weekly probe hold the measured cut.

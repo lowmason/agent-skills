@@ -51,6 +51,14 @@ and executing-plans helpers (`sdd-workspace`, `task-brief`, `review-package`,
 anchor. It also fails when it finds no such mention, since its pattern is then
 stale.
 
+The fourteenth commit lint is `compaction_waiver_guard`. It runs
+`test_check_conformance.py::test_waived_compaction_window_files_hide_no_late_heading`.
+Each `compaction-window` waiver in `cc_guide/conformance.toml` hides that file's
+late-heading scan from `check_conformance.py`. The test reads the register, checks
+every waived file with the check itself and fails on any late-heading finding. It
+fails by design once the last waiver goes. Then the lint line and the test retire
+together.
+
 `versions.toml` is the one file where a person sets the dev Python, the freeze date, each pinned
 package version and each cited-only version (design: `specs/completed/package-versions.md`). `versions.py` reads
 it: `sync` writes `.python-version`, `uv.toml` and `skills/uv.toml`, `run` and `verify` install a

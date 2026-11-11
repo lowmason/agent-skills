@@ -1,0 +1,18 @@
+{
+ "prose": {
+  "header_chars": 159,
+  "body_chars_kept": 19741,
+  "total_chars": 19900,
+  "cut": true,
+  "frontmatter_seen": false,
+  "tail": "\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]"
+ },
+ "digit": {
+  "header_chars": 159,
+  "body_chars_kept": 19741,
+  "total_chars": 19900,
+  "cut": true,
+  "frontmatter_seen": false,
+  "tail": "\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]"
+ }
+}

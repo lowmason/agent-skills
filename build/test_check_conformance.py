@@ -1123,6 +1123,51 @@ def test_compaction_window_flags_a_critical_heading_past_the_window(tmp_path):
     ]
 
 
+def test_compaction_window_subtracts_reserve_chars(tmp_path):
+    '''reserve_chars shrinks the window for the size check and for the late-heading scan (plan 87).'''
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': skill_md(body='x' * 18),
+        'skills/b/SKILL.md': skill_md(body='x' * 10 + '\n# STOP'),
+    })
+    a, b = 'skills/a/SKILL.md', 'skills/b/SKILL.md'
+
+    def messages(path, **extra):
+        return [f.message for f in cc.check_compaction_window(tmp_path, [path], {**WINDOW_PARAMS, **extra})]
+
+    # 18 characters fit the 20-character window, and do not fit the 15 left after a reserve of 5.
+    # With a reserve the messages name the window in characters, since the tokens no longer say what it is.
+    assert messages(a) == []
+    assert messages(a, reserve_chars=5) == ['body is about 18 tokens; compaction re-attaches only the first 15 characters']
+    # The heading starts at character 11: inside a window of 15, past a window of 10.
+    assert messages(b, reserve_chars=5) == ['body is about 17 tokens; compaction re-attaches only the first 15 characters']
+    assert messages(b, reserve_chars=10) == [
+        'body is about 17 tokens; compaction re-attaches only the first 10 characters',
+        "line 6: heading '# STOP' starts past the first 10 characters, so compaction drops it"]
+    # A reserve of 0 leaves the messages as they were.
+    assert messages(a, reserve_chars=0) == []
+    assert messages(b, reserve_chars=0) == []
+
+
+def late_heading_findings(root, files, params):
+    '''The compaction-window findings other than the body-size one: each says a heading starts past the window.'''
+    return [f'{f.file}: {f.message}' for f in cc.check_compaction_window(root, files, params)
+            if not f.message.startswith('body is about')]
+
+
+def test_waived_compaction_window_files_hide_no_late_heading():
+    '''A compaction-window waiver switches off the check's late-heading scan for its files, and the register
+    asks each new exception for a guard (conformance.toml, compaction-window). This test is that guard for the
+    plan 87 waivers: it runs the check on each waived file with the real register's parameters, reserve_chars
+    included, and only the body-size finding may remain.'''
+    raw = cc.load_register(cc.REPO)
+    reg, _ = cc.parse_register(raw)
+    params = next(c.params for c in reg.checks if c.id == 'compaction-window')
+    waived = sorted({path for e in raw.get('exception', []) if e.get('check') == 'compaction-window'
+                     for path in e.get('artifacts', [])})
+    assert waived, 'no compaction-window waiver is left: retire this guard with the last one'
+    assert late_heading_findings(cc.REPO, waived, params) == []
+
+
 def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
     write_tree(tmp_path, {'skills/a/SKILL.md': skill_md(body='## STOP\nAll early.\n')})
     assert cc.check_compaction_window(tmp_path, ['skills/a/SKILL.md'], WINDOW_PARAMS) == []

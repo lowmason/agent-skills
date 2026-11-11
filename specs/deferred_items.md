@@ -4522,6 +4522,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `specs/plans/completed/58-claude-code-drift-automation.md` and its Deviation notes. Size: plan. Revisit if: a later edit to `build/cc_guide/probes.py`, `probe_checks.py`,
       `state.py` or one of the test modules above touches one of them. Done when: each is fixed, or
       the owner rules here that it stays.
+      → progress 2026-11-11 (plan 87): the trigger of (l) fired. `build/cc_guide/probes.py` grew from 660 to 785 lines (`drive_cut` with its `drive-cut` entry point, and the compaction-cut probe). Plan 87 did not split it, as it said. Process control is still the part to move out.
 - [ ] The Stop-hook block cap probe (drift spec, Out of scope; logged at plan completion, as the
       spec's heading says). Size: plan. Revisit if: drift #2 (the Stop-hook continuation reading) is
       resolved toward re-checking.
@@ -5258,7 +5259,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       these in the same change).
 
 ## superpowers-drift-v7.0.1 (no plan; drift review of upstream v7.0.1, branch claude/practical-hugle-86bb56) — 2026-10-28
-- [ ] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
+- [x] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
       17, `specs/findings/superpowers-drift-v7-0-2.md`). The guide says each invoked skill keeps its first
       5,000 tokens (`specs/guides/claude-code-customization-guide.md:128`). Upstream's #2481
       transcript shows a cut at exactly 20,000 characters, with a marker that points at the
@@ -5277,6 +5278,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       the frontmatter, correct the register's window.
       → progress 2026-11-07 (drift-record reconciliation): plan 69 completed on 2026-10-28 (specs/plans/completed/69-agent-payload-probe.md), so its sequencing blocker has elapsed. The compaction-cut probe remains unimplemented; the archived v7.0.1 record supplies its history and the current v7.0.2 finding 17 carries it forward.
       → planned 2026-11-10: specs/plans/87-compaction-cut-probe.md
+      → progress 2026-11-11 (plan 87): the `compaction-cut` probe is built and registered, and its run of 2026-11-11 on 2.1.317 reads PASS. The cut is at 20,000 characters in all, counting a header (`Base directory for this skill: <path>` and a blank line) and a 100-character marker. It does not count the frontmatter, and it counts characters, not tokens. The register's `compaction-window` check now has `reserve_chars = 300`, so its window is 19,700. The guide's sentence (`specs/guides/claude-code-customization-guide.md:128`, "first 5,000 tokens") does not match. Step left: the guide, through `/cc-guide`. Tick this item once the guide matches or that verify has run.
+      → progress 2026-11-11 (owner ruling): the guide stays equal to the docs, which also say "first 5,000 tokens". The measured cut is held in `build/cc_guide/conformance.toml` (`reserve_chars`) and in the `compaction-cut` rows of `build/cc_guide/PROBES.md`, and the weekly probe watches it.
+      → done 2026-11-11 (plan 87)
 - [x] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
       The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
       first as a plan without a spec. It runs after the subagent-driven-development compaction
@@ -6355,3 +6359,22 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `01adfd5` did the same for the v7.0.1 record. The pass runs in one session with no spec or plan, as
       the earlier passes did. Size: quick-fix. Revisit if:
       `git ls-remote --tags https://github.com/obra/superpowers` lists a tag after `v7.0.2`.
+
+## 87-compaction-cut-probe — 2026-11-11
+- [ ] `skills/finishing-a-development-branch/SKILL.md` is 275 characters over the corrected compaction window (body 19,975,
+      window 19,700, `reserve_chars = 300` in `build/cc_guide/conformance.toml`), and carries a `gap` exception
+      `finishing-a-development-branch-compaction-window`. Compaction already drops the end of its `## Red Flags` list
+      (the Codex-review and typed-confirmation lines, the worktree-cleanup lines). While the exception stands the body
+      can also grow without a limit, and `check_conformance.py` does not scan the file for a late heading; the
+      `compaction_waiver_guard` commit lint does. Plan 88 frees about 1,000 characters here and removes the exception.
+      Size: plan. Done when: the body is at most 19,700 characters and the exception is removed.
+      → planned 2026-11-11: specs/plans/88-superpowers-drift-followups.md
+- [ ] `skills/subagent-driven-development/SKILL.md` is 226 characters over the corrected compaction window (body 19,926,
+      window 19,700), and carries a `gap` exception `subagent-driven-development-compaction-window`. Nothing in a live
+      plan frees room here. Free at least 226 characters (or move text into `references/`), then remove the exception. While
+      it stands the body can grow without a limit. A `ceiling` waiver, as `claude-md-size` uses, would bound it at today's
+      length. The guard of the waivers is the `compaction_waiver_guard` commit lint (`build/run_commit_lints.sh`, the test
+      `test_waived_compaction_window_files_hide_no_late_heading`). It fails by design once the last waiver goes. Retire
+      the lint line, the test and the two `CLAUDE.md` lines (`CLAUDE.md`, `build/CLAUDE.md`) in the same change as the
+      last exception. Size: plan. Done when: the body is at most 19,700 characters and the exception is removed, and, once
+      neither waiver is left, the guard lint is retired.

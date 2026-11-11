@@ -269,6 +269,14 @@ enforced_by = 'check_frontmatter'
 # An exception waives this whole check for its files, late headings included.
 # Pair any new exception with a guard. Plan 47 added the lint critical_placement
 # for that, and plan 72 retired it because no exception was left.
+# reserve_chars (plan 87) is the part of the window that the re-attached copy spends on
+# its own text. The cut counts a header (`Base directory for this skill: <path>` and a
+# blank line) and a 100-character truncation marker. The 300 is 33 header characters
+# (the path not counted) + 120 for the path + 100 for the marker = 253, rounded up to the
+# next 50 (owner decisions D5, D6, D11, D14).
+# The live run of 2026-11-10 had a 159-character header and lost 259 characters in all.
+# The window the check applies is tokens * chars_per_token - reserve_chars = 19,700.
+# The copy leaves out the frontmatter, so the check does not count it.
 [[check]]
 id = 'compaction-window'
 kind = 'skill'
@@ -279,6 +287,7 @@ enforced_by = 'check_conformance'
 tokens = 5000
 chars_per_token = 4
 headings = ['STOP', 'Red Flags', 'Critical', 'Gotchas', 'Iron Law', 'Hard Gate', 'Warning']
+reserve_chars = 300
 
 # Pronouns are matched whole and in any case, outside quoted phrases and code
 # spans. `us` is left out: it reads as the country in `US data`.
@@ -803,6 +812,32 @@ guide = 'Guidance for certain files belongs in a path-scoped rule, and sometimes
 reason = 'CLAUDE.md is the one file Codex and Gemini read, so its Python-style line and Commands block stay (conformance spec Decision 1, R4.3).'
 evidence = 'Audit rows C-33, C-34; owner gate 2026-10-04.'
 revisit = 'When Codex and Gemini can load that content from a rule or a skill.'
+
+# Two skills run past the compaction-window check once it counts reserve_chars (plan 87,
+# owner decisions D5, D6, D11, D14, 2026-11-10). The waiver is per check and file, so each
+# also hides a new late heading in its file; no heading starts past the window today. The
+# compaction_waiver_guard commit lint is the guard for these waivers.
+[[exception]]
+id = 'finishing-a-development-branch-compaction-window'
+type = 'gap'
+check = 'compaction-window'
+sections = ['skills.progressive-disclosure']
+artifacts = ['skills/finishing-a-development-branch/SKILL.md']
+guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
+reason = 'The body is 19,975 characters, 275 over the register window of 19,700. The probe run kept 19,741 body characters at a 159-character header. The waiver is per check and file, so it also hides a new late heading.'
+evidence = 'plan 87 live run, build/cc_guide/PROBES.md row of 2026-11-10'
+tracked_in = 'plan 88 (frees room in this file and removes this exception)'
+
+[[exception]]
+id = 'subagent-driven-development-compaction-window'
+type = 'gap'
+check = 'compaction-window'
+sections = ['skills.progressive-disclosure']
+artifacts = ['skills/subagent-driven-development/SKILL.md']
+guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
+reason = 'The body is 19,926 characters, 226 over the register window of 19,700. The probe run kept 19,741 body characters at a 159-character header. The waiver is per check and file, so it also hides a new late heading.'
+evidence = 'plan 87 live run, build/cc_guide/PROBES.md row of 2026-11-10'
+tracked_in = 'backlog item written at plan 87 completion; nothing frees room in this file yet'
 
 # The findings the new skill checks reported on their first run, decided by the
 # owner at the /deferred pass (2026-10-05).

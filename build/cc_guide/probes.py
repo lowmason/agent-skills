@@ -19,6 +19,8 @@ import signal
 import subprocess
 import sys
 import tempfile
+import tomllib
+import uuid
 from datetime import date, datetime
 from pathlib import Path
 from typing import Callable, NamedTuple, Sequence
@@ -405,6 +407,122 @@ PAYLOAD_PROBE = Probe(prepare_payload, collect_payload, assess_payload,
                       {'dispatch.jsonl': 'agent-payload.jsonl', 'payloads.json': 'agent-payload.payloads.json'})
 
 
+# compaction-cut: one claude process takes three messages on stdin, since a /compact in a resumed process
+# re-attaches nothing (plan 87's spike, setup B). The first invokes both probe skills, the second compacts, and the
+# third is one more turn after it.
+CUT_PROMPT = 'Invoke the skill cut-probe-prose with the Skill tool, then the skill cut-probe-digit. Then reply DONE.'
+CUT_MESSAGES = (CUT_PROMPT, '/compact', 'Reply OK.')
+CUT_TURNS = 8
+CUT_BUDGET_USD = '0.75'
+CONFORMANCE = Path(__file__).resolve().with_name('conformance.toml')
+WINDOW_CHECK = 'compaction-window'
+
+
+def register_window() -> int:
+    '''The register's compaction window in characters, from its
+    compaction-window check: tokens times chars_per_token, less
+    reserve_chars when the check sets it. A register without the check
+    raises KeyError, which run_probe reports as ERROR.'''
+    register = tomllib.loads(CONFORMANCE.read_text(encoding='utf-8'))
+    check = {c.get('id'): c for c in register.get('check') or []}[WINDOW_CHECK]
+    return check['tokens'] * check['chars_per_token'] - check.get('reserve_chars', 0)
+
+
+def relay_to_result(stdout, out) -> dict | None:
+    '''Copy the process's stdout to ours a line at a time, up to a result
+    event, which it returns, or to the end of the stream: None.'''
+    for line in stdout:
+        out.write(line)
+        out.flush()
+        events = probe_checks.parse_stream(line.decode('utf-8', errors='replace')) or []
+        result = next((e for e in events if e.get('type') == 'result'), None)
+        if result is not None:
+            return result
+    return None
+
+
+def drive_cut(argv: list[str]) -> int:
+    '''Run `argv`, a claude -p command line with --input-format stream-json
+    and no prompt, and feed it CUT_MESSAGES on its stdin, one JSON line
+    each, each only once the previous one's result event is read. Every
+    stdout line is copied to ours as it comes. Nothing more is sent after
+    an error result, a closed stdin or the end of its stdout. Then its
+    stdin is closed, its stdout copied to the end and its exit code
+    returned, on a failure too, so it is never left running. stderr is
+    inherited and not piped, so it cannot fill a pipe nobody reads. It
+    starts no session of its own, so the stop signal that execute sends to
+    this process's group reaches claude too.'''
+    proc = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    out = sys.stdout.buffer
+    try:
+        for message in CUT_MESSAGES:
+            line = json.dumps({'type': 'user', 'message': {'role': 'user', 'content': message}}) + '\n'
+            try:
+                proc.stdin.write(line.encode('utf-8'))
+                proc.stdin.flush()
+            except BrokenPipeError:
+                break
+            result = relay_to_result(proc.stdout, out)
+            if result is None or result.get('is_error'):
+                break
+    finally:
+        with contextlib.suppress(OSError):
+            proc.stdin.close()
+        for line in proc.stdout:
+            out.write(line)
+        out.flush()
+        code = proc.wait()
+    return code
+
+
+def prepare_cut(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
+    '''compaction-cut writes both probe skills to the scratch directory's
+    project skills and names the session ahead in a session-id file, so
+    collect can find its transcript. The invocation is this file's
+    drive-cut entry point, which runs claude and feeds it CUT_MESSAGES;
+    claude's command line goes without the prompt, which drive_cut sends
+    first, and keeps its session, since collect reads the transcript.'''
+    for kind in probe_checks.CUT_KINDS:
+        skill = scratch / '.claude' / 'skills' / f'cut-probe-{kind}'
+        skill.mkdir(parents=True)
+        (skill / 'SKILL.md').write_text(probe_checks.cut_frontmatter(kind) + probe_checks.cut_body(kind),
+                                        encoding='utf-8')
+    session = str(uuid.uuid4())
+    (scratch / 'session-id').write_text(f'{session}\n', encoding='utf-8')
+    argv = claude_args(claude, CUT_PROMPT, turns=CUT_TURNS, sources='project', mode='default', allow=('Skill',),
+                       budget=CUT_BUDGET_USD, persist=True,
+                       extra=('--input-format', 'stream-json', '--session-id', session))
+    driver = [sys.executable, str(Path(__file__).resolve()), 'drive-cut', json.dumps([argv[0], *argv[2:]])]
+    return [Invocation('cut', driver, {}, PROBE_TIMEOUT)]
+
+
+def collect_cut(scratch: Path, run_dir: Path) -> None:
+    '''The session's transcript, found by the id in the session-id file,
+    copied raw as transcript.raw.jsonl, to read by hand, and each kind's
+    re-attached copy measured into cut.json, the one file the assessment
+    and its fixture read. No transcript leaves cut.json empty, which the
+    assessment reports as ERROR.'''
+    session = (scratch / 'session-id').read_text(encoding='utf-8').strip()
+    found = sorted((Path.home() / '.claude' / 'projects').glob(f'*/{session}.jsonl'))
+    cut = {}
+    if found:
+        shutil.copy(found[0], run_dir / 'transcript.raw.jsonl')
+        text = found[0].read_text(encoding='utf-8')
+        entries = [json.loads(line) for line in filter(str.strip, text.split('\n'))]
+        copies = probe_checks.reattached_after_boundary(entries, probe_checks.CUT_KINDS)
+        cut = {kind: probe_checks.measure_cut(copy, probe_checks.cut_body(kind)) for kind, copy in copies.items()}
+    (run_dir / 'cut.json').write_text(json.dumps(cut, indent=1) + '\n', encoding='utf-8')
+
+
+def assess_cut(read: Read) -> Verdict:
+    return probe_checks.assess_compaction_cut(stream_of(read('cut.jsonl')), json.loads(read('cut.json') or '{}'),
+                                              register_window())
+
+
+CUT_PROBE = Probe(prepare_cut, collect_cut, assess_cut,
+                  {'cut.jsonl': 'compaction-cut.stream.jsonl', 'cut.json': 'compaction-cut.cut.json'})
+
+
 PROBE_RUNS = {
     'guard-liveness': Probe(prepare_guard, collect_guard, assess_guard,
                             {f'guard-{n}.jsonl': f'guard-liveness.{n}.jsonl' for n in range(1, GUARD_STREAMS + 1)}),
@@ -417,6 +535,7 @@ PROBE_RUNS = {
                               {'pins.jsonl': 'agent-model-pins.jsonl',
                                'transcripts.json': 'agent-model-pins.transcripts.json'}),
     'agent-payload': PAYLOAD_PROBE,
+    'compaction-cut': CUT_PROBE,
 }
 
 
@@ -658,3 +777,9 @@ def binaries(path_env: str, home: Path, version_of: Callable[[Path], str] = bina
 def describe(c: Candidate) -> str:
     target = '' if c.target == c.path else f' -> {shown_path(c.target)}'
     return f"{c.version or 'version unknown'}  {shown_path(c.path)}{target}  ({c.where})"
+
+
+if __name__ == '__main__':
+    if sys.argv[1:2] != ['drive-cut'] or len(sys.argv) != 3:
+        sys.exit('usage: probes.py drive-cut <claude command line as a JSON list>')
+    sys.exit(drive_cut(json.loads(sys.argv[2])))

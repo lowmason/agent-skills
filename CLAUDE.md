@@ -77,7 +77,8 @@ uv run python build/run_suites.py --check
 # Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test, snippet
 # Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the link check (check_links.py, below),
 # the versions check (versions.py check, below), the reviewer-block check (check_reviewer_block.py, below), the
-# deferral lint (deferral_scan.py lint, below) and the helper-path check (check_helper_paths.py, below).
+# deferral lint (deferral_scan.py lint, below), the helper-path check (check_helper_paths.py, below) and the
+# compaction-waiver guard (a test, below).
 # build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
@@ -121,6 +122,9 @@ uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/defer
 # Helper paths: every mention under skills/ of the five SDD and executing-plans helpers (sdd-workspace,
 # task-brief, review-package, task-start, task-done) carries the <this-skill-dir>/ anchor
 uv run python build/check_helper_paths.py
+
+# Compaction-waiver guard: a compaction-window waiver hides that file's late-heading scan, so this test reruns it on each waived file
+cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py::test_waived_compaction_window_files_hide_no_late_heading
 
 # Snippet gate: three tiers, cheapest first, run as three separate commands. Every command runs the parse check, but
 # --run does not run the --api checks, so a full check runs all three. Tier 1 covers all of skills/; Tiers 2 and 3

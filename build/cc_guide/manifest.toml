@@ -142,3 +142,9 @@ id = 'agent-payload'
 # (coverage gaps, plan 69).
 sections = ['hooks.events', 'hooks.configuration', 'hooks.patterns', 'subagents.models']
 files = ['hooks/dispatch-model-guard.py', 'hooks/README.md']
+
+[[probe]]
+id = 'compaction-cut'
+# Where Claude Code cuts a skill it re-attaches after compaction: the window the compaction-window check
+# assumes (plan 87, drift finding 17).
+sections = ['skills.progressive-disclosure']
