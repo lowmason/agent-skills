@@ -788,8 +788,8 @@ def test_stop_hook_guard_flags_an_unguarded_or_unresolvable_script(tmp_path):
         'hooks/gate.sh': '#!/usr/bin/env bash\nexit 2\n',
     })
     assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/gate.sh'], {}) == [
-        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command runs hooks/gate.sh, which never reads stop_hook_active'),
-        cc.Finding('hooks/README.md', "JSON block at line 1: Stop command 'uv run ruff check .' names no hook script in the repo"),
+        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command runs hooks/gate.sh, which never reads stop_hook_active' + WAIVER_ROUTE),
+        cc.Finding('hooks/README.md', "JSON block at line 1: Stop command 'uv run ruff check .' names no hook script in the repo" + WAIVER_ROUTE),
     ]
 
 
@@ -2429,7 +2429,8 @@ def test_stop_hook_guard_survives_a_command_shlex_rejects(tmp_path):
     })
     assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/ruff-check.sh'], {}) == [
         cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command '
-                   "'\"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-check.sh' names no hook script in the repo")]
+                   "'\"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-check.sh' names no hook script in the repo"
+                   + WAIVER_ROUTE)]
 
 
 def test_stop_hook_guard_leaves_parse_failures_to_hook_dir_quoted(tmp_path):
@@ -2706,6 +2707,36 @@ def stop_tree(command, script_name, source):
     return {'hooks/README.md': json_block(hooks_tree('Stop', command)), script_name: source}
 
 
+WAIVER_ROUTE = ' (or waive this file under stop-hook-guard, naming the guard the hook uses)'
+GATE = stop_tree('"$CLAUDE_PROJECT_DIR"/.claude/hooks/gate.sh', 'hooks/gate.sh', '#!/usr/bin/env bash\nexit 2\n')
+STOP_WAIVER = {'id': 'gate-caps-retries', 'type': 'deviation', 'check': 'stop-hook-guard',
+               'sections': ['a.one'], 'artifacts': ['hooks/README.md'],
+               'guide': 'A Stop hook guards against a loop.',
+               'reason': 'hooks/gate.sh caps its retries with a per-session counter.',
+               'evidence': 'Fixture.', 'revisit': 'If the check can verify a retry cap.'}
+
+
+def test_an_unguarded_stop_hook_names_the_waiver_route(tmp_path):
+    root = fixture_repo(tmp_path, GATE)
+    assert cc.run(root) == [
+        'hooks/README.md: stop-hook-guard (a.one): JSON block at line 1: Stop command runs hooks/gate.sh, '
+        'which never reads stop_hook_active' + WAIVER_ROUTE]
+
+
+def test_a_stop_hook_guard_waiver_covers_a_hook_that_guards_another_way(tmp_path):
+    root = fixture_repo(tmp_path, GATE, register=FIXTURE_REGISTER + exception_toml(STOP_WAIVER))
+    assert cc.run(root) == []
+
+
+def test_a_stop_hook_guard_waiver_goes_stale_once_the_hook_reads_the_flag(tmp_path):
+    files = {**GATE, 'hooks/gate.sh': '#!/usr/bin/env bash\n# reads stop_hook_active\n'}
+    root = fixture_repo(tmp_path, files, register=FIXTURE_REGISTER + exception_toml(STOP_WAIVER))
+    assert cc.run(root) == [
+        'hooks/README.md: stale-waiver (a.one): exception gate-caps-retries (hooks/gate.sh caps its retries '
+        'with a per-session counter.) waives stop-hook-guard here, but the file no longer violates it: '
+        'remove the entry, or this file from it']
+
+
 @pytest.mark.parametrize('command, script', [
     ('uv run "$CLAUDE_PROJECT_DIR"/.claude/hooks/ruff-check.py', 'hooks/ruff-check.py'),
     ('uv run --with pyyaml hooks/ruff-check.py', 'hooks/ruff-check.py'),
@@ -2720,7 +2751,7 @@ def test_stop_hook_guard_flags_an_unguarded_script_behind_a_runner(tmp_path):
     write_tree(tmp_path, stop_tree('uv run hooks/gate.py', 'hooks/gate.py', 'import sys\n'))
     assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/gate.py'], {}) == [
         cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command runs hooks/gate.py, '
-                                      'which never reads stop_hook_active')]
+                                      'which never reads stop_hook_active' + WAIVER_ROUTE)]
 
 
 @pytest.mark.parametrize('command', ['uv run ruff check .', 'uv run', 'python3 -m pytest', 'python3'])
@@ -2728,7 +2759,7 @@ def test_stop_hook_guard_still_flags_a_runner_with_no_repo_script(tmp_path, comm
     write_tree(tmp_path, stop_tree(command, 'hooks/ruff-check.py', '# stop_hook_active\n'))
     assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/ruff-check.py'], {}) == [
         cc.Finding('hooks/README.md', f'JSON block at line 1: Stop command {command!r} '
-                                      'names no hook script in the repo')]
+                                      'names no hook script in the repo' + WAIVER_ROUTE)]
 
 
 # ---- #37: a waiver path must be one of its check's files --------------------

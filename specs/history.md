@@ -228,3 +228,23 @@ Closed deferred items:
 - "**bayesian-workflow's three references say `uv add` with no `uv init` lead-in (plan 77" (deferred by 77-audit-p2-text-fixes): the three references now carry SKILL.md's "run `uv init` first" lead-in.
 - "**`dr-name-collision` was last run at `T3`, not at the final skill text (plan 79 Task 3).** Its 4 of 5" (deferred by 79-derive-roadmap-resume-and-route-tests): a five-rep run at `e885184` passed 5 of 5 with no borderline call.
 - "Keep a killed run's partial output in `test-run` (plan 84 final review, owner ruled defer at the" (deferred by 84-spec-derived-acceptance-tests): a killed run now leaves its output so far in `test-run.<random>`, and two tests cover it.
+
+## 89-cc-guide-owner-rulings — 2026-11-11
+Plan: specs/plans/completed/89-cc-guide-owner-rulings.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 3): fix it — the plan's Step 3 says "check the format first, so a later layout gets the format message rather than the key-set one" and Review Focus 5 names the 4 case, so a test that pins the order agrees with the plan — a regression that swaps the two checks would pass every test and misreport a later-layout file. Fix round 1 resumes the Task 3 implementer; test file only.
+- Deviation: Review Focus item 3 holds only for new records in different places of the sorted map, since same-place records conflict in `baseline.json`. Source: plan, Review Focus.
+- Deviation (Task 1): the `chmod 0o755` on `hooks/gate.sh` was not added, since `hook-scripts-executable` never runs on the fixtures. Source: plan, Task 1.
+- Deviation (Task 2): the R9.2 old-text block ended mid-line, so the next word moved to the next line. Source: plan, Task 2.
+- Deviation (Task 3): fix round 1 added a test that pins the format check before the key-set check (fa0c5fc). Source: plan, Task 3.
+- Deviation (Task 4): the R5 block ended mid-line too, and the `cli.py` help text gained the hash rule by a hand fix after review (a4b485a). Source: plan, Task 4.
+- Deviation (Task 5): after the owner's rulings, one clause went into the guide's `hooks.exit-codes` section and `notice.sh` was re-cited (3874ea1; its body says fifteen records moved, fourteen did). Source: plan, Task 5.
+- Deviation (Task 6): the cache backup went to a subfolder of the scratch directory. Source: plan, Task 6.
+- Deferred: 3 items. Source: specs/deferred_items.md, § 89-cc-guide-owner-rulings.
+
+Closed earlier deferred items:
+- "Mark baseline.json's format so older code refuses it (the branch's review," (deferred by cc-guide-hashed-keys).
+- "Stop-hook guard design (`build/cc_guide/conformance.toml:165`, check `stop-hook-guard`;" (deferred by cc-guide-files-backlog).
+- "A Desktop-visible channel for the drift notice (plan 49, Task 10 and the final" (deferred by 49-claude-code-drift-automation).
+- "Two branches can give a section's `changed` and a citing file's stamp the same release," (deferred by cc-guide-files-2026-10-21).

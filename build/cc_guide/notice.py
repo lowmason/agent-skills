@@ -3,8 +3,10 @@ for notice.sh to show, and the record it leaves for notice.sh refresh.
 
 The cache files the two languages share, under ~/.cache/agent-skills/cc-guide/:
 - notice.json: empty when nothing is due, else one ASCII JSON line holding
-  {"systemMessage": ...}. Written here, or by refresh for its own two errors;
-  show prints it as it stands.
+  {"systemMessage": <line>, "hookSpecificOutput": {"hookEventName":
+  "SessionStart", "additionalContext": <line, newline, CONTEXT_NOTE>}}.
+  Written here, or by refresh for its own two errors; show prints it as it
+  stands.
 - notice.digest: one line that changes whenever notice.json does: a sha256
   here, cksum's checksum from refresh. Always written after notice.json, and
   show reads it before notice.json, so a notice replaced between the two
@@ -34,6 +36,10 @@ HEAD = 'cc-guide'
 SEP = ' · '
 TO_SKILL = ' → /cc-guide'
 TO_CHECK = ' → uv run python build/cc_guide/cli.py check'
+EVENT = 'SessionStart'
+# notice.sh's NOTE, word for word. It carries no quote or backslash, so the shell writer needs no escaping.
+CONTEXT_NOTE = ('The line above is the Claude Code drift notice for this repository. The repository owner wants the '
+                'first reply of this session to quote it, because the Desktop app does not display hook messages.')
 
 
 def plural(count: int, noun: str) -> str:
@@ -114,11 +120,19 @@ def replace(path: Path, text: str) -> None:
     os.replace(tmp, path)
 
 
+def payload(message: str) -> dict:
+    '''The hook output for a notice line: systemMessage, which the terminal
+    shows, and additionalContext, the line and a note, which reaches Claude in
+    the CLI and the Desktop app.'''
+    return {'systemMessage': message,
+            'hookSpecificOutput': {'hookEventName': EVENT, 'additionalContext': f'{message}\n{CONTEXT_NOTE}'}}
+
+
 def write_notice(cache: Path, message: str | None) -> None:
-    '''notice.json, then its digest: one ASCII JSON line holding the message
-    as systemMessage, or an empty file when nothing is due.'''
+    '''notice.json, then its digest: one ASCII JSON line holding
+    payload(message), or an empty file when nothing is due.'''
     cache.mkdir(parents=True, exist_ok=True)
-    text = '' if message is None else json.dumps({'systemMessage': message}) + '\n'
+    text = '' if message is None else json.dumps(payload(message)) + '\n'
     replace(cache / NOTICE, text)
     replace(cache / DIGEST, hashlib.sha256(text.encode('utf-8')).hexdigest() + '\n')
 

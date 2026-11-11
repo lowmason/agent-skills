@@ -152,12 +152,14 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
    terms flag most releases, and identifiers miss prose-only notes. One cheap
    Sonnet pass reads every bullet of the untriaged releases, batched weekly.
 8. **Trigger: a SessionStart hook pair in this repo.** A synchronous `show`
-   prints a precomputed `systemMessage`, the only hook channel shown to the
-   user in the terminal, at most once a day. The Desktop app runs the hook and
-   records the message but does not display it, and `show` marks a notice
-   shown when it prints, so a Desktop session that starts first on a day also
-   uses that day's showing up for the terminal (owner, plan 49, 2026-10-18,
-   from Task 10's live run); a Desktop-visible channel is a deferred item. An
+   prints a precomputed notice object at most once a day. Its `systemMessage`
+   is the only hook channel shown to the user in the terminal. The Desktop app
+   runs the hook and records the message but does not display it (owner,
+   plan 49, 2026-10-18, from Task 10's live run). So the object also carries
+   the line, with a note asking that the first reply quote it, as
+   `hookSpecificOutput.additionalContext`, which reaches Claude in the CLI and
+   the Desktop app. Both surfaces receive the notice, so `show` marks it shown
+   when it prints (owner, plan 89, 2026-11-11). An
    async `refresh` recomputes it without delaying the session. Rejected:
    - one synchronous hook that runs the check inline (the guide-upkeep draft):
      Claude's first response waits for SessionStart hooks, so a fetch would
@@ -382,7 +384,14 @@ R2.3 **`baseline.json` holds:**
   page's snapshot when they must name a block that has left the page (owner,
   plan 38 decision 9, 2026-10-05). A block shared by two groups is stored
   under each, so resolving it in one never hides it from the other;
-- the `llms.txt` slug list from the last baseline.
+- the `llms.txt` slug list from the last baseline;
+- `format`, the layout's number: 3 since plan 89, after text block keys (1)
+  and hashed keys (2). The loader refuses any other value, and code older
+  than plan 89 refuses the file by its key set, so no checkout misreads a
+  layout it predates (owner, plan 89, 2026-11-11);
+- `cited`: per citing file, per section its citation names, the section's
+  `text_hash` when `baseline cite` last stamped the file (R7), paths and
+  section IDs sorted (owner, plan 89, 2026-11-11).
 
 R2.4 **Stamp rules.**
 - Versions compare as integer tuples: `2.1.288.1` sorts after `2.1.288` and
@@ -394,7 +403,9 @@ R2.4 **Stamp rules.**
 - When a section's text no longer matches `text_hash`, the editor records one
   of two outcomes with `baseline accept`. **Substantive:** a new `changed`
   and `text_hash`, which flags every citer. **Editorial:** a new `text_hash`
-  only.
+  only. Each citer's `cited` hash that matched the old `text_hash` moves to
+  the new one, so an editorial accept flags no citer (owner, plan 89,
+  2026-11-11).
 
 R2.5 **Seed groups.** These are the refresh's six verifier scopes, recovered
 from its verifier prompts. All 39 pages are in the 2.1.288 snapshot. The
@@ -597,8 +608,12 @@ instead). Exit 0 when clean; exit 1 with one line per violation.
   as `2.1.902.1` included, since that is the shape `baseline` writes into
   stamps and never a release (owner, plan 43, 2026-10-12).
 
-Stale citations, whose stamp is below a cited section's `changed`, print as
-`STALE <file> <ids>` on stderr and do not change the exit code. A test in the
+Stale citations, whose stamp is below a cited section's `changed`, or whose
+`cited` hash for a section differs from that section's `text_hash` (R2.3),
+print as `STALE <file> <ids>` on stderr and do not change the exit code. The
+hash half catches two branches that give a section's `changed` and a file's
+stamp the same release; a citation with no `cited` hash has the stamp half
+only (owner, plan 89, 2026-11-11). A test in the
 suite runs `lint` against the repo, so the suite enforces it. CLAUDE.md's
 Commands section gains the invocation, to run before committing a change to
 the guide or to any file carrying a citation. `build/run_commit_lints.sh`
@@ -761,7 +776,9 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
   `--substantive`, also set `changed` per R2.4.
 - `stamp`: regenerate the stamp region.
 - `cite <file>`: after a review, set the file's citation stamp to the highest
-  `changed` among its cited sections.
+  `changed` among its cited sections, and record each cited section's
+  `text_hash` under the file in `cited`, dropping the entries of files the
+  citation scan no longer finds (owner, plan 89, 2026-11-11).
 - `rehash`: re-derive every group's baselined blocks from each page's own
   snapshot under R3.2's MDX rewrite, so that a `baseline.json` written by the
   parser before the rewrite compares with rewritten pages. The pages, their
@@ -1032,9 +1049,14 @@ holding two command hooks:
 The quoting follows the guide's own pattern; the unquoted form is drift #3.
 
 R9.2 **`show`**, synchronous, in POSIX `sh` with no Python, network or git. It
-prints `~/.cache/agent-skills/cc-guide/notice.json`, a JSON object holding one
-`systemMessage` that Python escaped when writing it, unless the same notice
-was already shown today. `notice-shown` holds the date and the notice's
+prints `~/.cache/agent-skills/cc-guide/notice.json`, a JSON object holding the
+notice line as `systemMessage` and, under `hookSpecificOutput` with
+`hookEventName` `SessionStart`, the line and a note asking that the first reply
+quote it as `additionalContext`, unless the same notice was already shown
+today. Python escapes both strings when it writes them; `refresh`'s own error
+notices carry no character that needs escaping (owner, plan 89, 2026-11-11;
+`hooks.md:1149, 1184, 1205, 1331-1337` at 2.1.322).
+`notice-shown` holds the date and the notice's
 digest, which Python writes beside the notice, so a changed notice shows again
 the same day. It always exits 0 and needs only `HOME` and a minimal `PATH`: a
 session started from the Dock keeps `HOME` but gets launchd's `PATH`.
@@ -1379,9 +1401,11 @@ Constraints:
    - The resulting diff separates fact corrections from owner's-call items,
      and nothing is committed.
 4. **Stage 4.**
-   - `show` prints nothing on exit 0 and a single `systemMessage` on exit 1 or
+   - `show` prints nothing on exit 0 and a single notice object on exit 1 or
      2, and passes R12.5 in its launchd-like environment.
    - The owner sees the notice at a live session start, at most once a day.
+     In the Desktop app, the first reply of a new session quotes it (owner,
+     plan 89, 2026-11-11).
 5. **Stage 5.**
    - Each probe yields PASS or DIVERGES with recorded evidence on an
      owner-chosen binary, logged in `PROBES.md`.

@@ -186,3 +186,15 @@ def test_a_citation_of_a_section_the_baseline_lacks_is_never_stale(docs_dir):
     del s['sections']['beta.reference']
     citations, _ = guide.read_citations({'hooks/a.sh': '# cc-guide: beta.reference @2.1.800\n'})
     assert lint.stale_citations(citations, s) == []
+
+
+def test_a_recorded_hash_that_differs_is_stale_even_at_an_equal_stamp(docs_dir):
+    s = fixture_state(docs_dir)
+    current = s['sections']['alpha.overview']['text_hash']
+    cite = guide.Citation('hooks/gate.sh', 2, ('alpha.overview',), s['sections']['alpha.overview']['changed'])
+    s['cited'] = {'hooks/gate.sh': {'alpha.overview': 'sha256:' + '0' * 64}}
+    assert lint.stale_citations([cite], s) == [('hooks/gate.sh', ['alpha.overview'])]
+    s['cited'] = {'hooks/gate.sh': {'alpha.overview': current}}
+    assert lint.stale_citations([cite], s) == []
+    s['cited'] = {}
+    assert lint.stale_citations([cite], s) == []

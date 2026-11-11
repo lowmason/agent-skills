@@ -160,12 +160,14 @@ enforced_by = 'check_conformance'
 # A Stop hook that ignores stop_hook_active can block on a condition that
 # never resolves. The 8-block cap counts only blocks with no tool call between
 # them, so every fix attempt that edits a file starts the count over.
+# A hook that guards another way (a transcript read, a retry cap) is waived per
+# wiring file (owner ruling 2026-10-31, plan 89).
 [[check]]
 id = 'stop-hook-guard'
 kind = ['hook', 'settings']
 sections = ['hooks.exit-codes', 'hooks.patterns']
 type = 'advice'
-rule = 'A command wired to Stop runs a repo hook script that reads stop_hook_active, directly or through uv run or python.'
+rule = 'A command wired to Stop runs a repo hook script that reads stop_hook_active, directly or through uv run or python, or the file that wires it holds a stop-hook-guard waiver whose reason names the hook script and the guard it uses instead.'
 enforced_by = 'check_conformance'
 
 # Both lists come from the guide's subagent frontmatter table.
@@ -705,16 +707,16 @@ reason = 'The read-only agents need Bash for git and test commands; the PreToolU
 evidence = 'Audit rows A-12 to A-15, H-34; specs/completed/readonly-agent-guard.md; owner gate 2026-10-04; owner ruling D1.13 on the /cc-guide files not-covered rows, 2026-10-20; agents/test-runner.md added by owner ruling P10 (round 3), 2026-10-20.'
 revisit = "When permission rules can be scoped to an agent type, or when moving the guard into each agent's frontmatter hooks is weighed."
 
-# The repo's Stop guard reads stop_hook_active, the one guard the lint can verify.
+# The lint verifies only the stop_hook_active read; other guards need a waiver.
 [[exception]]
 id = 'stop-hook-guard-literal'
 type = 'deviation'
 sections = ['hooks.exit-codes', 'hooks.patterns']
 artifacts = ['hooks/ruff-check.sh', 'hooks/README.md']
 guide = 'A Stop hook checks stop_hook_active or the transcript, or caps its own retries, so it never blocks on a condition that cannot resolve.'
-reason = "The stop-hook-guard check in build/check_conformance.py accepts only a Stop script that reads stop_hook_active, narrower than the guide's transcript check or retry cap; the repo's one Stop hook reads it."
-evidence = '/cc-guide files settle, packet 20261020T143604-files (check_conformance.py:532); owner ruling E1, 2026-10-20.'
-revisit = 'If a repo Stop hook needs a transcript check or a retry counter instead.'
+reason = "The stop-hook-guard check in build/check_conformance.py verifies only a Stop script that reads stop_hook_active. A hook that guards by a transcript read or a retry cap needs a stop-hook-guard waiver on its wiring file that names that guard, because the check cannot verify one. The repo's one Stop hook reads the flag."
+evidence = '/cc-guide files settle, packet 20261020T143604-files (check_conformance.py:532); owner ruling E1, 2026-10-20; owner ruling 2026-10-31 (a loop guard is the flag or a waiver per hook), plan 89.'
+revisit = 'If the check gains a way to verify a transcript read or a retry cap.'
 
 [[exception]]
 id = 'docs-writer-holds-bash'

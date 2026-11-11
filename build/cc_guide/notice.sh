@@ -15,6 +15,8 @@ DAY=86400             # seconds; notice.py measures a day the same way
 LOCK_MINUTES=60       # R9.3: a lock older than an hour is broken
 BUDGET=300            # seconds check --hook may run, since async hooks have no timeout
 UNFINISHED_LIMIT=3    # R9.4: three unfinished runs in a row are an error
+# notice.py's CONTEXT_NOTE, word for word; test_notice_sh.py compares the two
+NOTE='The line above is the Claude Code drift notice for this repository. The repository owner wants the first reply of this session to quote it, because the Desktop app does not display hook messages.'
 
 unset CDPATH
 here=$(cd "$(dirname "$0")" && pwd -P)
@@ -56,12 +58,14 @@ fresh() {
 }
 
 # Write one of refresh's two error notices: notice.json, then its digest, each renamed into
-# place. $1 says what failed and $2 what to do. Neither holds a quote or a backslash, so the
-# JSON needs no escaping beyond the two \u escapes written here.
+# place. $1 says what failed and $2 what to do. Neither holds a quote or a backslash, and nor
+# does NOTE, so the JSON needs no escaping beyond the two \u escapes written here and the \n
+# that joins the line to NOTE in additionalContext (notice.py's payload writes the same object).
 fail_notice() {
     message="cc-guide \\u00b7 $1 \\u00b7 $(age_words) \\u2192 $2"
     tmp="$cache/.notice.$$.tmp"
-    { printf '{"systemMessage": "%s"}\n' "$message" > "$tmp" && mv -f "$tmp" "$cache/notice.json"; } 2>/dev/null \
+    { printf '{"systemMessage": "%s", "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "%s\\n%s"}}\n' \
+        "$message" "$message" "$NOTE" > "$tmp" && mv -f "$tmp" "$cache/notice.json"; } 2>/dev/null \
         || return 0
     sum=$(cksum < "$cache/notice.json")
     { printf '%s\n' "${sum%% *}" > "$tmp" && mv -f "$tmp" "$cache/notice.digest"; } 2>/dev/null

@@ -17,9 +17,9 @@ SECTION = {'checked': STAMP, 'changed': '2.1.900', 'audited': STAMP, 'text_hash'
 
 
 def baseline_text(**changes):
-    raw = {'sections': {'alpha.overview': dict(SECTION)},
+    raw = {'format': 3, 'sections': {'alpha.overview': dict(SECTION)},
            'groups': {'alpha': {'blocks': {'tools': {'1' * 16: '0' * 16}}, 'snapshot': {'tools': '2.1.900'}}},
-           'llms': ['tools']}
+           'llms': ['tools'], 'cited': {}}
     raw.update(changes)
     return json.dumps(raw)
 
@@ -170,9 +170,48 @@ def test_a_hash_must_be_the_whole_string(changes, problem):
     assert str(err.value) == f'{state.BASELINE}: {problem}'
 
 
+@pytest.mark.parametrize('value', [None, 2, 4, '3'])
+def test_baseline_must_carry_this_codes_format(value):
+    raw = json.loads(baseline_text())
+    if value is None:
+        del raw['format']
+    else:
+        raw['format'] = value
+    with pytest.raises(state.SetupError) as err:
+        state.parse_baseline(json.dumps(raw))
+    assert str(err.value) == f'{state.BASELINE}: format {value!r} is not 3, the format this code reads'
+
+
+@pytest.mark.parametrize('drop', [None, 'cited'])
+def test_a_later_layout_gets_the_format_message_not_the_key_set_one(drop):
+    '''A file of a later format may also carry other keys. The format check
+    runs first, so the reader is told both formats and not the key set.'''
+    raw = {**json.loads(baseline_text()), 'format': 4, 'extra': 1}
+    if drop:
+        del raw[drop]
+    with pytest.raises(state.SetupError) as err:
+        state.parse_baseline(json.dumps(raw))
+    assert str(err.value) == f'{state.BASELINE}: format 4 is not 3, the format this code reads'
+
+
+def test_baseline_holds_exactly_its_five_keys():
+    raw = {**json.loads(baseline_text()), 'extra': 1}
+    with pytest.raises(state.SetupError) as err:
+        state.parse_baseline(json.dumps(raw))
+    assert str(err.value) == f'{state.BASELINE}: holds exactly format, sections, groups, llms and cited'
+
+
+@pytest.mark.parametrize('cited', [[], {'a.md': []}, {'a.md': {'x.one': 'abc'}}])
+def test_cited_maps_each_file_to_section_hashes(cited):
+    raw = {**json.loads(baseline_text()), 'cited': cited}
+    with pytest.raises(state.SetupError) as err:
+        state.parse_baseline(json.dumps(raw))
+    assert str(err.value) == f'{state.BASELINE}: cited must map each file to section ID -> text_hash'
+
+
 def test_dump_baseline_keeps_insertion_order_and_utf8():
-    raw = {'sections': {}, 'groups': {'g': {'blocks': {'p': {'T › b': '1' * 16, 'T › a': '2' * 16}},
-                                            'snapshot': {}}}, 'llms': []}
+    raw = {'format': 3, 'sections': {}, 'groups': {'g': {'blocks': {'p': {'T › b': '1' * 16, 'T › a': '2' * 16}},
+                                                         'snapshot': {}}}, 'llms': [], 'cited': {}}
     text = state.dump_baseline(raw)
     assert text.index('T › b') < text.index('T › a')
     assert text.endswith('}\n')

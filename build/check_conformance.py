@@ -514,6 +514,9 @@ def script_word(words: list[str]) -> str | None:
     return None
 
 
+STOP_GUARD_WAIVER = ' (or waive this file under stop-hook-guard, naming the guard the hook uses)'
+
+
 def check_stop_hook_guard(root: Path, files: list[str], params: dict) -> list[Finding]:
     found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
     scripts = {PurePosixPath(f).name: f for f in files if f.endswith(('.sh', '.py'))}
@@ -529,12 +532,12 @@ def check_stop_hook_guard(root: Path, files: list[str], params: dict) -> list[Fi
         script = scripts.get(PurePosixPath(word).name) if word else None
         if script is None:
             out.append(Finding(hook.file, f'{hook.where}Stop command {hook.command!r} names '
-                                          'no hook script in the repo'))
+                                          f'no hook script in the repo{STOP_GUARD_WAIVER}'))
             continue
         for _, source in read_artifacts(root, [script], out):
             if 'stop_hook_active' not in source:
                 out.append(Finding(hook.file, f'{hook.where}Stop command runs {script}, which '
-                                              'never reads stop_hook_active'))
+                                              f'never reads stop_hook_active{STOP_GUARD_WAIVER}'))
     return out
 
 

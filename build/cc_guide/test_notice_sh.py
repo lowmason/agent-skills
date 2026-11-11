@@ -239,6 +239,15 @@ def test_refresh_without_uv_leaves_the_fixed_error_notice(fake_uv):
     assert shown(sh(home, 'show')) == f'cc-guide · {NO_UV} · last good check 2 d ago → install uv'
 
 
+def test_refresh_error_notice_has_the_python_payload(fake_uv):
+    '''fail_notice writes the object notice.py writes, field for field.'''
+    home, _ = fake_uv
+    notice.record_check(cache_of(home), 1, datetime.now().astimezone() - timedelta(days=2, hours=1), 'old')
+    quiet(sh(home, 'refresh', env={'CC_GUIDE_UV_FALLBACK': str(home / 'nowhere')}))
+    proc = sh(home, 'show')
+    assert json.loads(proc.stdout) == notice.payload(f'cc-guide · {NO_UV} · last good check 2 d ago → install uv')
+
+
 def test_refresh_stops_a_check_past_its_budget_and_counts_the_run_unfinished(fake_uv):
     home, env = fake_uv
     started = time.monotonic()

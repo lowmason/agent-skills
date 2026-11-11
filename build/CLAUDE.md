@@ -97,19 +97,20 @@ narrows its `artifacts`, in the same change. Files whose correctness rests
 on a Claude Code fact carry a citation comment naming the guide sections
 they rely on (the spec's R4.1 gives its form and place); `cli.py lint` checks
 each one and prints `STALE` for a file reviewed before a cited section last
-changed. After reviewing such a file, `cli.py baseline cite <file>` restamps
-it. The `/cc-guide` skill in `../.claude/skills/` acts on what `check`
+changed, or reviewed against text whose hash differs from the section's now.
+After reviewing such a file, `cli.py baseline cite <file>` restamps it and
+records each cited section's `text_hash` in `baseline.json`. The `/cc-guide` skill in `../.claude/skills/` acts on what `check`
 reports: `cli.py packets` writes the packets its verifier agent reads, under
 the cache, and `cli.py settle` re-greps the verifier's quotes (`cli.py quotes`
 checks single rows), applies the spec's fail-safe and discard rules, and
 prints the corrections and the `baseline` commands that follow.
 `notice.sh` is the session-start pair that `../.claude/settings.json` wires on
 the `startup` matcher. `show` prints the notice `check --hook` last wrote, or
-one of `refresh`'s own two error notices, once a day per notice. It prints in
-the terminal; the Desktop app runs the hook and records its output but
-displays nothing, and since `show` marks a notice shown when it prints, a
-Desktop session that starts first on a day uses that day's showing up for the
-terminal too. The async `refresh` runs `check --hook` once the last good check
+one of `refresh`'s own two error notices, once a day per notice. The terminal
+shows the notice line, its `systemMessage`. The Desktop app displays nothing,
+but the same object's `hookSpecificOutput.additionalContext`, the line and a
+note asking the first reply to quote it, reaches Claude in both, and `show`
+marks a notice shown when it prints. The async `refresh` runs `check --hook` once the last good check
 is a day old, so while checks keep failing it retries at every session start.
 It leaves an error notice when the check exits 2, crashes, cannot find `uv`,
 or fails to finish three runs in a row; the first two unfinished runs, and a
