@@ -1,6 +1,8 @@
 # Read-only guard: every place a command can start — Design Spec
 
-**Status:** DRAFT (2026-11-11), for the owner's review.
+**Status:** APPROVED (2026-11-11). The owner approved this file, its designer's calls included, on 2026-11-11.
+The question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it". The
+next step is a plan from the writing-plans skill.
 
 This spec answers the backlog item that begins "Each of the eight readings holds for a whole line"
 (`specs/deferred_items.md`, section `readonly-guard-leading-token-bypasses`, its third item, called "the item"
