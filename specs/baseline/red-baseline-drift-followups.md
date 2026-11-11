@@ -653,3 +653,128 @@ count does not change a verdict.
 
 The kit's sum is $0.98 of the $10 spend stop. No rep was rerun. The most expensive rep cost $0.059 (rep 1, which wrote the
 prompt cache), against the $0.50 cap per rep.
+
+## Treatment: string-presence, change-detector and text-contract
+
+Arm `treatment`, cases `string-presence`, `change-detector` and `text-contract` (plan 88, Task 4). The texts under test are
+`skills/test-driven-development/SKILL.md` and `skills/test-driven-development/testing-anti-patterns.md` as Task 4 leaves
+them. Three changes reach the prompt. First, `testing-anti-patterns.md` has two new anti-patterns after Anti-Pattern 5:
+"Anti-Pattern 6: String-Presence Tests" and "Anti-Pattern 7: Change-Detector Tests". Each has its violation, its fix and a
+Gate Function. Anti-Pattern 6 has a "Not this anti-pattern" paragraph: a check whose subject is the text itself (copies
+that must stay identical, a required license header, a link that must resolve) is not the trap. Second, the Quick
+Reference table has two new rows and Red Flags has two new bullets. Third, the pointer line of "Testing Anti-Patterns" in
+`SKILL.md` now says "When writing or changing tests" and the list has two new bullets. The fixtures, the frames, the tasks
+and the reading rules are the control's. A `diff` of each control prompt and its treatment prompt shows 80 changed lines:
+1 removed (the old pointer line) and 79 added (the new pointer line, its two bullets and the 76 added lines of
+`testing-anti-patterns.md`). The control prompts' sha256 still equal the hashes that the Control section records
+(`a1de7ac7...`, `7d45fb94...` and `9c90bb8d...`).
+
+The prompts were built after the edits and before the commit, from one sha that `git stash create` printed:
+`e23396ac5d900872f8f4e15f79953181c04a9243`. That command adds no stash entry. The sha was not empty. The three built
+prompts (`build_prompts.py e23396ac5d900872f8f4e15f79953181c04a9243 ~/.cache/agent-skills/scratch/plan88-work/treatment-tdd string-presence change-detector text-contract`)
+each hold the text `Anti-Pattern 6: String-Presence Tests` once, the text `Anti-Pattern 7: Change-Detector Tests` once and
+the text `When writing or changing tests` once. Their `MANIFEST.txt` gives these prompt hashes (sha256):
+
+- `string-presence.txt`: `fd8d31a812dfc56d56b52ab2adbfc00b69e6770c2f437e8528a0a25ef76007a1`
+- `change-detector.txt`: `b62631f1bd873967e99ba734b928342829ccebc99a78ab97ebd13dc2a043a015`
+- `text-contract.txt`: `622383764cb5360b8f303f4e0b0f7c4edad6ac77e3cca7ee5234baa65107ad36`
+
+The reps ran on Claude Code 2.1.322, as three separate calls that were launched together, so the three cases ran at the
+same time. Each call ran
+`run_reps.sh ~/.cache/agent-skills/scratch/plan88-work/treatment-tdd/<case>.txt <worktree>/specs/baseline/red-baseline-drift-followups/treatment/<case> 1 5 claude-sonnet-5-5`.
+So there are 15 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`. No rep
+wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by the committed
+rule and the readings fixed before any rep. No rule, fixture or reading was changed or added after a reply was seen.
+
+| Case | Kind | Passing reps | Failing reps | Bar |
+|---|---|---|---|---|
+| `string-presence` | additive | 5/5 | 0/5 | treatment 5/5 met; control condition not met: the control failed 0 of 5 |
+| `change-detector` | additive | 5/5 | 0/5 | treatment 5/5 met; control condition not met: the control failed 0 of 5 |
+| `text-contract` | non-regression | 5/5 | 0/5 | met: treatment 5/5 is at least 4/5, and at least 4 (the control's 5, minus 1) |
+
+The two additive cases have a control with no failure, so their treatment arms cannot show an improvement. Each arm shows
+only that the new wording does not make the behavior worse. The control condition of the additive bar is not met in
+either case. By the plan, that does not revert the change. The owner decides at the plan completion gate whether the two
+anti-patterns stay. The `text-contract` bar is a non-regression bar, so its control score sets the treatment's floor and
+no control condition applies.
+
+### string-presence
+
+Every reply writes a pytest test that calls `bin/rotate-logs.sh` through `subprocess` (with `sh`) on `tmp_path`, with 9 or
+10 `.gz` files that carry distinct mtimes (set with `os.utime`), and asserts which files remain. No reply asserts on the
+script's text. The `read-text` aid did not fire.
+
+- rep1: PASS. 9 files. Asserts the return code and that the remaining names equal the 7 newest. The red check edits the
+  script by `sed` in a `<command>` block, outside the test (noted).
+- rep2: PASS. 9 files. Asserts the return code and the remaining names. The reply words the red check in the past tense
+  ("confirmed the test fails") though no command ran. That is invented output, so it is read by order only (noted).
+- rep3: PASS. 9 files with names that are not in age order. Asserts the return code and the remaining names. The red check
+  runs on a throwaway copy of the repo, so the script is never touched.
+- rep4: PASS. 10 `.gz` files and one `notes.txt`. Asserts the return code, the remaining `.gz` names and that `notes.txt`
+  remains. The reply words the red check in the past tense, which is invented output (noted).
+- rep5: PASS. 9 files. Asserts the return code and the remaining names. The red check edits the script by `sed` in a
+  `<command>` block (noted).
+
+Passes: 5 of 5. The treatment bar of 5 of 5 is met, and the control condition is not: the control failed 0 of 5 (see
+Control). No reply mentions the string-presence trap by name, the same as in the control.
+
+### change-detector
+
+Every reply writes tests that call `Invoice(...)`, `add` and `total` only, and compare the result of `total()` with a
+`Decimal`. Every reply includes a repeated SKU, and each one adds a repeated SKU at different unit prices. No assertion
+reads `_lines_by_sku` or another private name. The `lines-by-sku` aid fired on all five replies, on prose that says the
+tests do not touch it.
+
+- rep1: PASS. Four tests. The red check runs two `sed` mutations of `pricing/invoice.py` in `<command>` blocks, outside
+  the test. The reply names `_lines_by_sku` only to say the tests do not touch it.
+- rep2: PASS. Four tests. The red check is an `<edit path="pricing/invoice.py">` block that mutates the production line for
+  the check only. It is not an assertion (noted). The message to the partner words the red check as done ("The
+  different-prices test failed as expected"), though no command ran. That is invented output, read by order only
+  (noted).
+- rep3: PASS. Four tests. The red check is a `sed` mutation with a backup and a `diff`. The reply says the merge into one
+  line is not visible without a public accessor, and it writes no test on the dict.
+- rep4: PASS. Four tests. The red check is a `sed` mutation with a backup. The reply says the same about the merge.
+- rep5: PASS. Five tests. The red check is a `sed` mutation with a backup. The reply says the merged quantity does not
+  feed `total()`, and that it adds no accessor just for tests.
+
+Passes: 5 of 5. The treatment bar of 5 of 5 is met, and the control condition is not: the control failed 0 of 5. Reps 2, 3
+and 4 say that merging a repeated SKU into one line cannot be seen through the public API, and they name a public accessor
+as the way to test it. Rep 5 says the merged quantity does not feed `total()`, and it names an accessor too. In the
+control, reps 1, 2, 3 and 5 name the same gap. No reply mentions the change-detector trap by name, the same as in the
+control.
+
+### text-contract
+
+Every reply reads the four template files, takes the text from `<!-- triage: begin -->` to `<!-- triage: end -->`, and
+asserts that the blocks are equal. No reply declines the check, and none calls it an anti-pattern.
+
+- rep1: PASS. Four named files. A regex takes the block, and every block equals `bug.md`'s block. The reply says "This is
+  not the string-presence anti-pattern", which names the trap to exclude it.
+- rep2: PASS. Four named files. A regex takes the block, with a check of one block per file. Every block equals `bug.md`'s
+  block. The reply says "the text is the contract, so asserting on the file text is appropriate".
+- rep3: PASS. Four named files. The block is the list of lines from the begin marker to the end marker, and every block
+  equals `bug.md`'s block (the first name in its list). The reply says "not the string-presence anti-pattern".
+- rep4: PASS. Four named files. A regex takes the block, and every block equals `bug.md`'s block. The reply says "This is
+  not the string-presence anti-pattern". It writes the red check as run, which is invented output (noted).
+- rep5: PASS. Four named files. The block is the list of lines from the begin marker to the end marker, and every block
+  equals `bug.md`'s block. The reply says "not a string-presence anti-pattern". The message to the partner words the red
+  check as done ("the test failed naming `docs.md`"), which is invented output (noted).
+
+Passes: 5 of 5. The `read-text` aid fired on all five, on the calls that read the files. The non-regression bar is met:
+5 of 5 is at least 4 of 5, and at least 4. An observation, not a score: four of the five replies (reps 1, 3, 4 and 5)
+name the string-presence trap, each only to exclude it. No control reply named it, because the control text does not
+have it. The "Not this anti-pattern" paragraph of the new text is in the prompt, so this is partly an echo of its words.
+The count does not change a verdict.
+
+### Spend (treatment, test-driven-development)
+
+| Item | Cost |
+|---|---|
+| `string-presence` treatment, reps 1 to 5 | $0.173 |
+| `change-detector` treatment, reps 1 to 5 | $0.171 |
+| `text-contract` treatment, reps 1 to 5 | $0.187 |
+| Earlier arms (control, `merge-conflict` treatment and `subagent-reviewer` treatment, from the sections above) | $0.98 |
+| Kit sum, `total_cost_usd` over the 50 rep files | $1.52 |
+
+The kit's sum is $1.52 of the $10 spend stop. No rep was rerun. The most expensive rep cost $0.066 (rep 1 of
+`text-contract`, which wrote the prompt cache), against the $0.50 cap per rep.
