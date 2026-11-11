@@ -343,6 +343,10 @@ Known false positives, accepted rather than widened:
   `[[` is read both as a prefix and as the command.** So the word after it is classified
   too, even where zsh runs the first word as the command, or where the line is heredoc
   text: an AsciiDoc heading `== rm and mv ==` in a heredoc is denied.
+- **A subcommand with more than 64 places where its command may start is denied.** Each
+  such place is a word that the guard reads both ways (see above). A long run of them
+  would make the walk slow, and a hook that times out lets the call go on. No subcommand
+  in the 150,024 commands that this was checked against had more than 13.
 - **`env -S` is denied in every spelling**, even when the command it runs is read-only.
   env re-splits that value in a syntax of its own (quotes, `#` comments, `\c`,
   `${VAR}`), so its value can be the command, part of it, or nothing at all; reading it

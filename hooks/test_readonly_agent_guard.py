@@ -20,6 +20,7 @@ import os
 import random
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -688,6 +689,46 @@ def test_command_starts_visit_each_stop_word_once():
         starts = list(guard._command_starts(words))
         assert len(starts) <= 3 * len(words), (line, len(starts))
         assert ['git', 'log'] in starts, line
+
+
+def _walk_work(line):
+    """Count the line events the walk runs in the guard's own code."""
+    words = guard.split_subcommands(line, braces=False)[0]
+    events = [0]
+
+    def count(frame, event, arg):
+        if event == 'line':
+            events[0] += 1
+        return count
+
+    def trace(frame, event, arg):
+        return count if frame.f_globals is vars(guard) else None
+
+    previous = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        list(guard._command_starts(words))
+    finally:
+        sys.settrace(previous)
+    return events[0]
+
+
+# A walk can yield each candidate once and still do quadratic work to reach
+# them, and a hook that times out lets the call go on. Linear work doubles
+# when the line doubles; quadratic work quadruples.
+@pytest.mark.parametrize('shape', [
+    pytest.param(lambda n: '[[ a ]] ' * n + 'git log', id='test-chain'),
+    pytest.param(lambda n: '=' * n + 'a=1 ' + 'b=1 ' * n + 'git log', id='leading-equals'),
+])
+def test_command_starts_work_grows_linearly(shape):
+    small, large = _walk_work(shape(64)), _walk_work(shape(128))
+    assert large < 3 * small, (small, large)
+
+
+def test_more_than_64_command_starts_fail_closed():
+    assert guard.classify('{ ' * 63 + 'git log') is None
+    reason = guard.classify('{ ' * 64 + 'git log')
+    assert reason is not None and 'more than 64' in reason, reason
 
 
 # Found 2026-09-28 by the second review, and the probes that followed. Main

@@ -822,9 +822,26 @@ def _command_starts(words):
     its position settle the rest of the walk. So each stop word is visited
     once at its position: unbounded, a run of such words doubles the walk at
     each word.
+
+    That bounds the candidates, not the work, so the walk also bounds its
+    work. A continuation's words differ from the subcommand's only at or before
+    its start, so its start position and the word there settle the rest of its
+    walk, and each continuation is queued once. A `[[` row stops its scan at a
+    `]]` that an earlier scan continued past: that scan also queued every later
+    `]]`, or stopped at one that an earlier scan covered.
     """
-    continuations = [(0, list(words))]
+    continuations = []
+    queued = set()
+
+    def queue(start, seq):
+        key = (start, str(seq[start]) if start < len(seq) else None)
+        if key not in queued:
+            queued.add(key)
+            continuations.append((start, seq))
+
+    queue(0, list(words))
     visited = set()
+    continued_past = set()  # each `]]` a `[[` row has continued past
     while continuations:
         start, seq = continuations.pop()
         k = _stop_index(seq, start)
@@ -840,22 +857,33 @@ def _command_starts(words):
             continue
         stop = seq[k]
         if stop == '{':
-            continuations.append((k + 1, seq))
+            queue(k + 1, seq)
         if stop == '[[':
-            continuations.extend((j + 1, seq) for j in range(k + 1, len(seq))
-                                 if seq[j] == ']]')
+            for j in range(k + 1, len(seq)):
+                if seq[j] == ']]':
+                    if j in continued_past:
+                        break
+                    continued_past.add(j)
+                    queue(j + 1, seq)
         if '=' in stop:
-            continuations.append((k + 1, seq))
+            queue(k + 1, seq)
         if stop.startswith('='):
             word = _Token(stop[1:], quoted=stop.quoted, spaced=stop.spaced,
                           expands=stop.expands)
-            continuations.append((k, seq[:k] + [word] + seq[k + 1:]))
+            queue(k, seq[:k] + [word] + seq[k + 1:])
 
 
 def _classify_subcommand(tokens):
     """Classify the command at each place it may start (_command_starts); the
-    first denial stands."""
-    for words in _command_starts(_without_redirections(tokens)):
+    first denial stands. Past 64 such places it fails closed, since a long run
+    of them would make the walk slow, and a hook that times out lets the call
+    go on."""
+    starts = _command_starts(_without_redirections(tokens))
+    for count, words in enumerate(starts, 1):
+        if count > 64:
+            return ('A subcommand here has more than 64 places where its command '
+                    'may start, more than this guard reads, so it fails closed. '
+                    'Split the command into shorter ones.')
         if words is None:
             return ENV_SPLIT_STRING
         if not words:
