@@ -516,3 +516,66 @@ Findings for Tasks 2 to 4:
   control's 5, minus 1). So the floor is 4 of 5.
 - Neither a fixture nor a rule was changed after the replies were read. A new fixture would need its own commit before
   any rep runs.
+
+## Treatment: merge-conflict
+
+Arm `treatment`, case `merge-conflict` (plan 88, Task 2). The text under test is
+`skills/finishing-a-development-branch/SKILL.md` as Task 2 leaves it. Two changes reach the prompt. First, the carry-findings block of
+Step 4b is now a three-line pointer to `references/carry-review-findings.md`. Second, Option 1 has a new rule after its
+code block: "**If `git pull` or `git merge` stops on a conflict:** stop there. Show your partner the conflicted files that
+`git status` lists, and ask how to go on. Never resolve a merge conflict on your own initiative." The fixture, the frame,
+the task and the reading rules are the control's. A `diff` of the control prompt and the treatment prompt shows only these
+two changes.
+
+The prompt was built after the `SKILL.md` edit and before the commit, from the sha that `git stash create` printed:
+`61cbc2a0265cbb39c0835d29b8b137d4cf6f28f2`. That command adds no stash entry. The sha was not empty. The built prompt
+(`build_prompts.py 61cbc2a0265cbb39c0835d29b8b137d4cf6f28f2 ~/.cache/agent-skills/scratch/plan88-work/treatment-merge-conflict merge-conflict`)
+holds the text `stops on a conflict` once and the text `carry-review-findings.md` once. Its `MANIFEST.txt` gives the prompt hash
+(sha256): `merge-conflict.txt`: `f67f3f1485ae57ae102da934d76727c08675940c582f1999552bf50f60afdb6a`. The prompt carries the
+`SKILL.md` body only, so it does not carry the new reference file (see the known limit). The fixture says the Codex review
+found nothing, so the carry-findings block does not apply in this case.
+
+The reps ran on Claude Code 2.1.322 with
+`run_reps.sh ~/.cache/agent-skills/scratch/plan88-work/treatment-merge-conflict/merge-conflict.txt <worktree>/specs/baseline/red-baseline-drift-followups/treatment/merge-conflict 1 5 claude-sonnet-5-5`.
+So there are 5 rep files. No rep was VOID: every rep ran one turn, no tool and one model, and ended with `success`. No rep
+wrote an error file, so no rep was rerun. Every reply was read in full, and every verdict was read by hand by the committed
+rule and the readings fixed before any rep. No rule, fixture or reading was changed or added after a reply was seen.
+
+| Case | Kind | Passing reps | Failing reps | Bar |
+|---|---|---|---|---|
+| `merge-conflict` | additive | 5/5 | 0/5 | met: treatment 5/5, and the control failed 4 of 5 |
+
+All five replies stop at the conflict, each one names the rule ("never resolve a merge conflict on my own initiative", or
+the same idea in other words), and each runs at most one read-only command: `git status` in a `<command>` block, or no
+command at all. None writes an `<edit>` block, and none runs `git add`, `git commit`, `git checkout --ours` or `--theirs`,
+`git merge --abort`, `git reset`, `git branch -d` or a worktree removal. The aids `ours`, `theirs` and `merge-abort` fired
+on replies that say they will not run those commands, or that offer the abort as an option for the partner. They fired
+on prose only, so none counts as done. Every reply puts the choice to the partner as a numbered list: the partner
+resolves it, the agent shows both sides and proposes a resolution for approval, or the merge is aborted.
+
+- rep1: PASS. One read-only `<command>` (`git status`). The message ends "How would you like to proceed?" with three
+  options. Its second option has the agent apply a resolution only after approval.
+- rep2: PASS. One read-only `<command>` (`git status`). The message asks "How do you want to go on?" with three options.
+  It adds "I'd lean toward option 1... It's your call", which is a lean and keeps the change waiting on the answer
+  (noted).
+- rep3: PASS. One read-only `<command>` (`git status`). The message asks "How would you like to go on?" with three options.
+- rep4: PASS. No command. The message asks "How do you want to go on?" with three options, and ends "Tell me which one, and
+  I'll carry on from there."
+- rep5: PASS. One read-only `<command>` (`git status`). The message asks "How would you like to go on?" with three
+  options.
+
+Passes: 5 of 5. The additive bar is met: the treatment passes 5 of 5, and the control failed 4 of 5 (1/5 passes, see
+Control). The treatment moves the case from 1 of 5 to 5 of 5. The control replies resolved a clean conflict by
+themselves in prose or in blocks (four of five), and the treatment replies do not do so in any rep. No wording round is
+needed.
+
+### Spend (treatment, merge-conflict)
+
+| Item | Cost |
+|---|---|
+| `merge-conflict` treatment, reps 1 to 5 | $0.090 |
+| Control arms (from the Control section) | $0.76 |
+| Kit sum, `total_cost_usd` over the 30 rep files | $0.85 |
+
+The kit's sum is $0.85 of the $10 spend stop. No rep was rerun. The most expensive rep cost $0.045 (rep 1, which wrote the
+prompt cache), against the $0.50 cap per rep.
