@@ -144,6 +144,12 @@ bounds its work in two ways:
   start, so that key settles the rest of its walk, and the set changes no candidate.
 - **The `[[` row stops its scan at the first `]]` that an earlier scan continued past.** That scan already queued
   every later `]]`.
+- **The walk remembers where each loop head stops.** A `]]` that `repeat` or a prefix utility's option consumes
+  lies inside a run of words that the walk skips, and each continuation after one walked the rest of the run
+  again. Such a read-only line of 80 KB took 159 s and yielded only 2 candidates, so the cap did not reach it. The
+  result of a walk from a word depends only on that word and the words after it, so a table keyed on the position
+  and the word settles each head once. This part was added during execution, after the first implementation's
+  report found the class.
 
 A second test counts the walk's work as line events in the guard's code. It asserts that the work doubles, not
 quadruples, when the line doubles. The cap in Design §2 then makes the worst case linear.

@@ -402,6 +402,7 @@ def _walk_work(line):
 @pytest.mark.parametrize('shape', [
     pytest.param(lambda n: '[[ a ]] ' * n + 'git log', id='test-chain'),
     pytest.param(lambda n: '=' * n + 'a=1 ' + 'b=1 ' * n + 'git log', id='leading-equals'),
+    pytest.param(lambda n: '[[ ' + 'env -u ]] ' * n + 'git log', id='skipped-run'),
 ])
 def test_command_starts_work_grows_linearly(shape):
     small, large = _walk_work(shape(64)), _walk_work(shape(128))
@@ -414,7 +415,7 @@ def test_more_than_64_command_starts_fail_closed():
     assert reason is not None and 'more than 64' in reason, reason
 ```
 
-Both shapes are read-only lines, like the bound test's. The test file gains no bypass construction (Global Constraints, Bypass lines).
+The three shapes are read-only lines, like the bound test's. The `skipped-run` case and Step 3's item 4 were added after the first implementation (`a672942`). That implementation's report found that this class of line still took quadratic work, which the cap does not reach. The test file gains no bypass construction (Global Constraints, Bypass lines).
 
 - [ ] **Step 2: Run the new tests to verify they fail**
 
@@ -429,6 +430,7 @@ In `_command_starts`:
 1. **Queue each continuation once.** Keep a set `queued`, keyed like the visited set but on the continuation's start position: `(start, str(seq[start]))`, or `(start, None)` when `start == len(seq)`. Queue a continuation only if its key is not in the set, and add the key when you queue it. Queue the first continuation, `(0, list(words))`, the same way. Keep the visited set as it is, and walk the first continuation first, so that the first yield is still today's candidate.
 2. **Stop the `[[` row's scan at a `]]` already continued past.** Keep a set of the positions `j` whose `]]` a `[[` row has continued past, one set for the whole walk. The row at `k` scans `j = k + 1, k + 2, …`. At each `j` where `seq[j] == ']]'`, it stops the scan if `j` is in the set. Otherwise it adds `j` and queues `(j + 1, seq)`.
 3. **Say why the walk is sound** in the docstring, in the builder's words. A continuation's words differ from the subcommand's only at or before its start, so its start position and the word there settle the rest of its walk. A scan that continued past a `]]` at `j` also queued every later `]]`, or stopped at one that an earlier scan covered.
+4. **Remember where each loop head stops.** A `]]` that `repeat` or a prefix utility's option consumes lies inside a run of words that the walk skips, so each continuation after one walks the rest of that run again. Give `_stop_index` an optional third argument, `known`, a dict that one walk of `_command_starts` shares across its continuations. Key each loop head, the position where the loop reads a word, as `(i, str(words[i]))`. When a head is already in `known`, return its value. When the walk ends, store its result under every head it passed, `None` included. Called without `known`, `_stop_index` behaves as before. Say in its docstring why the key is sound: the walk from a head depends only on that word and the words after it, and those never differ (item 3).
 
 In `_classify_subcommand`, count the candidates as they come. When a 65th candidate arrives and none of the first 64 denied, return this reason, word for word:
 
@@ -439,7 +441,7 @@ Keep 64 inside `_classify_subcommand`, not in a module constant.
 - [ ] **Step 4: Run the new tests to verify they pass**
 
 Run: `uv run python build/run_suites.py hooks -- -k "command_start or more_than_64" --tb=no -rf`
-Expected: `25 passed` in each run (Task 1's 22, and this task's 3).
+Expected: `26 passed` in each run (Task 1's 22, and this task's 4).
 
 - [ ] **Step 5: Check that each part bites**
 
@@ -447,6 +449,7 @@ Make each change below on its own, run the command, then restore the code before
 1. Queue every continuation, without the `queued` check. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 1 passed`, and the failing id is `leading-equals`.
 2. Remove the stop from the `[[` scan. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 1 passed`, and the failing id is `test-chain`.
 3. Make the cap never fire. Run `-k more_than_64`. Expected in each run: `1 failed`.
+4. Call `_stop_index` without `known` in `_command_starts`. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 2 passed`, and the failing id is `skipped-run`.
 
 The runs use `uv run python build/run_suites.py hooks -- -k <expr> --tb=no -rf`. After the last restore, `git diff --stat` shows only this task's three files.
 
@@ -467,7 +470,7 @@ Expected: `[True, True]`.
 - [ ] **Step 7: Run the whole suite**
 
 Run: `uv run python build/run_suites.py hooks`
-Expected: `456 passed` and `0 failed` in each run, which is 3 more than after Task 1. No existing test was edited. If an existing test fails, stop and report it (Global Constraints, Existing tests).
+Expected: `457 passed` and `0 failed` in each run, which is 4 more than after Task 1. No existing test was edited. If an existing test fails, stop and report it (Global Constraints, Existing tests).
 
 - [ ] **Step 8: Commit**
 
