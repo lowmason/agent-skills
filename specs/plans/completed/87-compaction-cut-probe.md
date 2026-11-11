@@ -1,5 +1,7 @@
 # Compaction-Cut Probe Implementation Plan
 
+**Status: COMPLETE (2026-11-11)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a live drift probe, `compaction-cut`, that records where Claude Code cuts a skill it re-attaches after compaction, and fails when a body that passes the `compaction-window` check would lose text.
@@ -87,6 +89,7 @@ Each line has its test: 3 in Task 1 (a `measure_cut` case), 2 in Task 1's assert
 - **D15** (controller ruling, 2026-11-10): the exceptions of D14 broke `build/test_commit_lints.py::test_late_critical_section_is_refused`, which clones HEAD and assumes subagent-driven-development has no `compaction-window` waiver. A one-line change points that test at `brainstorming` (a skill with no waiver, a `## Red Flags` section and a later section). No fence names the file, and the change only follows D14. The file joins the File map. Applied in: Task 4 (fix round), File map.
 - **D16** (controller rulings on the Task 4 review, 2026-11-10): (1) The register says to pair each new exception with a guard, and a waiver switches off late-heading detection for its file, so Task 4 adds one test in `build/test_check_conformance.py` that runs the real `compaction-window` check on the two waived files and asserts that every finding is the body-size line. D6 names an exception and a backlog item and does not forbid a guard. (2) With `reserve_chars` set, the check's two messages name the window in characters (`the first 19700 characters`) in place of the 5,000 tokens it no longer applies, so a body between 19,701 and 20,000 characters does not read as under the limit. Messages without `reserve_chars` stay byte for byte as they were. Step 5's expected string for the reserve test, `...only the first 20`, changes with this. Test delta for the build suite becomes +6. Applied in: Task 4 (fix round 2), Task 5.
 - **D17** (owner, execution session, 2026-11-11): the final review's two seats raised one finding: D16's guard test runs only in the `build` suite, so the commit gate and CI never run it. The owner chose a commit lint. `build/run_commit_lints.sh` runs the guard test as a new lint named `compaction_waiver_guard` (the form of the `declared_dependencies` line), `build/test_commit_lints.py` pins the name, and the root `CLAUDE.md` and `build/CLAUDE.md` list it. These files join the File map. Applied in: Task 4 (final-review fix), File map.
+- **D18** (owner, execution session, 2026-11-11): the plan-completion gate. Two unsettled review lines (the unbounded growth of the waived bodies, and finishing-a-development-branch's text past the window) are filed as backlog items → item: 87-compaction-cut-probe — 2026-11-11. The third line, that `test_late_critical_section_is_refused` passes without the late scan, is not a defect: the test asserts the heading finding's text, which only the late scan emits. The controller made no item for it. The owner also approved one more run of the probe on 2.1.317 with `--allow-old`, about $0.30. It read PASS against the corrected register: 19,741 body characters kept at a 159-character header, window 19,700. Applied in: Task 4, Task 5.
 
 ## Spike findings
 
@@ -147,7 +150,7 @@ Claude Code 2.1.317, run on 2026-11-10. Each probe skill was the Task 1 text, `c
   - `reattached_after_boundary(entries: list[dict], kinds) -> dict[str, str]`: a stub that returns `{}` until Task 3.
   - `assess_compaction_cut(compact: list[dict] | None, cut: dict[str, dict] | None, window: int) -> Verdict`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `test_probe_checks.py`, add:
 - `test_cut_body_lines_carry_their_offsets`: for each kind, `len(cut_body(kind)) == 32000`, every line is 64 characters with its newline, and the line at index 300 (counting from 0) starts with `@0019200 `.
@@ -164,21 +167,21 @@ In `test_probe_checks.py`, add:
   - the compact stream without the boundary event → ERROR `the /compact run emitted no compact_boundary event`.
   - `compact=None` → ERROR `the /compact run broke: no stream-json events`.
 
-- [ ] **Step 2: Run them to see them fail**
+- [x] **Step 2: Run them to see them fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py`
 Expected: the new tests fail with `AttributeError` on the missing names. Every other test passes.
 
-- [ ] **Step 3: Implement the names in `probe_checks.py`**
+- [x] **Step 3: Implement the names in `probe_checks.py`**
 
 Check order in `assess_compaction_cut`: `broken(compact)`, then the boundary event, then each kind in `CUT_KINDS` order, then the prose verdict. The unit is `by characters` when the two `total_chars` are at most 5 apart, else `by tokens`.
 
-- [ ] **Step 4: Run them to see them pass**
+- [x] **Step 4: Run them to see them pass**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py`
 Expected: PASS, +12.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/probe_checks.py build/cc_guide/test_probe_checks.py
@@ -196,18 +199,20 @@ EOF
 
 The controller runs this task itself, not a subagent: it needs the owner's answer and spends tokens. It commits only this plan file.
 
-- [ ] **Step 1: Owner gate**
+- [x] **Step 1: Owner gate**
 
 Run `uv run python build/cc_guide/cli.py binaries`. Ask the owner, as one question: which binary, and whether to spend up to three spike runs of about $0.20–0.60 each. Log the answer as the next `D<n>` in `## Decisions`.
 
-- [ ] **Step 2: Run the three invocations by hand**
+- [x] **Step 2: Run the three invocations by hand**
+  > Deviation: Setup A, three invocations on one session id, re-attached nothing and fired the stop rule. The owner approved one process with stream-json on stdin (setup B, D9).
 
 In a new folder under `~/.cache/agent-skills/scratch/plan87-spike/`, write `.claude/skills/cut-probe-<kind>/SKILL.md` for each kind as `cut_frontmatter(kind) + cut_body(kind)`, with the Task 1 functions. Pick one UUID. From that folder, run the binary three times with `claude_args`' flags (`--setting-sources project`, Sonnet at low effort, `--max-budget-usd 0.50`, persisted):
 1. `--session-id <uuid>`, prompt: `Invoke the skill cut-probe-prose with the Skill tool, then the skill cut-probe-digit. Then reply DONE.`, Skill pre-allowed, 4 turns.
 2. `--resume <uuid>`, prompt `/compact`, 1 turn.
 3. `--resume <uuid>`, prompt `Reply OK.`, 1 turn.
 
-- [ ] **Step 3: Read what happened**
+- [x] **Step 3: Read what happened**
+  > Deviation: S1 to S3 were read from setup B, and setup A gave the negative result (Spike findings).
 
 From the stream of invocation 2 and the transcript `~/.claude/projects/*/<uuid>.jsonl`, record:
 - S1: whether invocation 2's stream has a `compact_boundary` event, and how the transcript marks the boundary (entry type and fields);
@@ -216,7 +221,7 @@ From the stream of invocation 2 and the transcript `~/.claude/projects/*/<uuid>.
 
 **Stop rules.** If S1 shows no boundary, or S2 finds no copy of either skill after the boundary, stop and report to the owner. Do not try another way to force compaction or to read the copy without the owner's word.
 
-- [ ] **Step 4: Record the findings and commit**
+- [x] **Step 4: Record the findings and commit**
 
 Write S1–S3 into a new `## Spike findings` section of this plan, after `## Decisions`, with the Claude Code version. Write no path, session id or login name. Copy no raw transcript into the repo.
 
@@ -254,7 +259,8 @@ EOF
   - `assess_cut(read) -> Verdict`: `assess_compaction_cut(stream_of(read('cut.jsonl')), json.loads(read('cut.json') or '{}'), register_window())`.
   - `CUT_PROBE = Probe(prepare_cut, collect_cut, assess_cut, {'cut.jsonl': 'compaction-cut.stream.jsonl', 'cut.json': 'compaction-cut.cut.json'})`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+  > Deviation: Amended after the spike (D10 to D12): one driver process, the `drive_cut` tests, the `measure_cut` newline back-off, and one branch in `_trim_event`.
 
 - `test_measure_cut_leaves_a_trailing_newline_to_the_marker`, in `test_probe_checks.py`: with `body = cut_body('prose')`, the marker `'\n\n\n[... skill content truncated for compaction; use Read on the skill path if you need the full text]'` (101 characters) and `text = 'Base directory for this skill: /x\n\n' + body[:19775] + marker`, the result has `body_chars_kept == 19775`, `cut is True` and a `tail` that equals the marker. A text with a whole body (the Task 1 case) still reads 32,000. (Review Focus 7.)
 - `test_reattached_after_boundary_reads_the_invoked_skills_after_the_last_boundary`, in `test_probe_checks.py`: a synthetic transcript in the shape of Spike findings S1 and S2. It holds a `user` entry with a whole prose copy, a first boundary, an `invoked_skills` attachment with a whole prose copy, a second boundary, an `invoked_skills` attachment with a cut prose copy and a cut digit copy, and an `api-request-blob` entry whose text holds `CUT_SENTINEL`. The result is the two cut `content` strings, and nothing else. (Review Focus 1.)
@@ -265,21 +271,23 @@ EOF
   - `test_drive_cut_stops_on_an_error_result_and_on_a_closed_stdout`: with a fake whose first result has `is_error` true, the driver sends one message and returns; with a fake that exits after reading its first line and writes no result, the driver returns without hanging (give the subprocess a timeout of 20 s). (Review Focus 6.)
   - `test_the_cut_probe_reads_its_run_like_a_live_one`: with a fake `execute` that writes `cut.jsonl` in the real stream's event order (an init, assistant, `rate_limit_event`, user, user, assistant, user, user, assistant, `post_turn_summary`, result; then `status` events, an init, a `compact_boundary`, two user events, a result; then an init, an assistant, a `post_turn_summary`, a result) and a fake transcript in a monkeypatched home that holds a `compact_boundary` entry and an `invoked_skills` attachment with two cut copies, `run_probe` returns the verdict that `assess_compaction_cut` gives for those measures.
 
-- [ ] **Step 2: Run them to see them fail**
+- [x] **Step 2: Run them to see them fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py test_probes.py`
 Expected: the new tests fail on the missing names or, for the `measure_cut` case, on the assertion. Every other test passes.
 
-- [ ] **Step 3: Implement the names**
+- [x] **Step 3: Implement the names**
+  > Deviation: `drive_cut` and its `drive-cut` entry point replace the three-invocation `prepare_cut` (D10).
 
 `collect_cut` finds the transcript by the UUID in `scratch / 'session-id'`. A transcript that is absent leaves `cut.json` as `{}`, which the assertion reports as ERROR.
 
-- [ ] **Step 4: Run them to see them pass**
+- [x] **Step 4: Run them to see them pass**
+  > Deviation: The delta is +8 in cc_guide, not +7: fix round 1 added the `_trim_event` test (D12).
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py test_probes.py`
 Expected: PASS, +7.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/probe_checks.py build/cc_guide/test_probe_checks.py build/cc_guide/probes.py build/cc_guide/test_probes.py
@@ -306,11 +314,12 @@ The controller runs this task itself: it needs the owner's answers and spends to
 - Consumes: `CUT_PROBE` (Task 3).
 - Produces: the registered probe `compaction-cut`; on DIVERGES, the `reserve_chars` parameter.
 
-- [ ] **Step 1: Owner gate**
+- [x] **Step 1: Owner gate**
+  > Deviation: Asked twice. The first run was refused because the changelog cache then listed 2.1.322, so the owner also approved `--allow-old` (D13).
 
 As in Task 2, Step 1: the binary, one run's spend, and `--allow-old` if the binary is older than the newest cached changelog release. Log the answer as the next `D<n>`.
 
-- [ ] **Step 2: Register the probe**
+- [x] **Step 2: Register the probe**
 
 Add `'compaction-cut': CUT_PROBE,` as the last `PROBE_RUNS` entry, and append to `manifest.toml`:
 
@@ -328,16 +337,19 @@ Drop Task 3's `monkeypatch.setitem` lines.
 Run: `uv run python build/run_suites.py cc_guide -- test_cli.py test_probes.py test_probe_replay.py`
 Expected: exactly two failures, both in `test_probe_replay.py`: `test_every_registered_probe_has_its_fixtures` and `test_the_recorded_run_passes[compaction-cut]`. Any other failure is a stop.
 
-- [ ] **Step 3: Run the live probe**
+- [x] **Step 3: Run the live probe**
+  > Deviation: DIVERGES: 19,741 characters kept at a 159-character header, window 20,000. After Step 5 the owner approved a second run, which read PASS (D18).
 
 Run: `uv run python build/cc_guide/cli.py probes --claude '<path>' --only compaction-cut`
 Expected: a `compaction-cut: PASS: …` or `compaction-cut: DIVERGES: …` line, the raw output folder, and one appended row. On PASS, go to Step 6. On DIVERGES, go to Step 4. On ERROR, stop: list the raw folder's files and report to the owner. Do not rerun without the owner's word.
 
-- [ ] **Step 4: On DIVERGES, report and ask**
+- [x] **Step 4: On DIVERGES, report and ask**
+  > Deviation: Settled by D5, D6 and D11 without a new question, because the owner had seen the two failing files (D14).
 
 Show the owner the finding and `cut.json`'s numbers, and propose `reserve_chars` by O4 as D11 amends it (300 from the spike's header and marker; recompute it from this run's) and `counts_frontmatter` only if `frontmatter_seen`. Run the check with that value in a scratch copy of the register and list the skill files it would fail. Ask, as one question: the value, and O5 (exceptions or splits) for those files. Log the answer as the next `D<n>`.
 
-- [ ] **Step 5: On DIVERGES, correct the register**
+- [x] **Step 5: On DIVERGES, correct the register**
+  > Deviation: `reserve_chars` is 300 and counts the 100-character marker (D11). There is no `counts_frontmatter`. The messages name the window in characters, and a guard test (D16) became the `compaction_waiver_guard` commit lint after the final review (D17). `build/test_commit_lints.py` was retargeted (D15).
 
 Write `test_compaction_window_subtracts_reserve_chars` in `build/test_check_conformance.py`, after `test_compaction_window_flags_a_critical_heading_past_the_window`: with `WINDOW_PARAMS` plus `'reserve_chars': 5`, a body of 18 tokens' characters that passes today is flagged as `body is about 18 tokens; compaction re-attaches only the first 20`. If the owner took `counts_frontmatter`, add a second test in which a body that fits passes without its frontmatter and fails with it. Run `uv run python build/run_suites.py build -- test_check_conformance.py` and see them fail.
 
@@ -348,7 +360,8 @@ Then reassess the recorded run against the corrected register:
 Run: `uv run --directory build/cc_guide --python 3.13 python -c "import probes; from pathlib import Path; print(probes.CUT_PROBE.assess(probes.reader(Path('<raw output folder>'))))"`
 Expected: a PASS verdict. If it is not PASS, stop and report.
 
-- [ ] **Step 6: Save the fixtures and write the replay cases**
+- [x] **Step 6: Save the fixtures and write the replay cases**
+  > Deviation: The fixtures are `compaction-cut.stream.jsonl` and `compaction-cut.cut.json` (D10).
 
 Run: `uv run --directory build/cc_guide --python 3.13 python -c "import probes; from pathlib import Path; print(probes.save_fixtures(Path('<raw output folder>'), 'compaction-cut', Path('probe_streams')))"`
 Expected: two paths. Run `grep -c '<private>' build/cc_guide/probe_streams/compaction-cut.cut.json` and read the file: numbers and redacted tails only. (Review Focus 4.)
@@ -363,7 +376,8 @@ Check that each case can fail: change one expected finding, see it fail, revert.
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_replay.py`
 Expected: PASS, +4 (the recorded run and three cases).
 
-- [ ] **Step 7: Run the suites and commit**
+- [x] **Step 7: Run the suites and commit**
+  > Deviation: The build delta at the commit was +5, and +6 with the guard test of D16.
 
 Run: `uv run python build/run_suites.py cc_guide build`
 Expected: PASS. Read the row: `tail -n 1 build/cc_guide/PROBES.md`. Its outcome is the live run's, DIVERGES included. Run `uv run python build/cc_guide/cli.py lint` and `build/run_commit_lints.sh` (both exit 0).
@@ -388,17 +402,19 @@ The commit message body says where the cut fell, and, on DIVERGES, the register'
 
 ### Task 5: Whole-plan checks
 
-- [ ] **Step 1: Run the suites and the lints**
+- [x] **Step 1: Run the suites and the lints**
+  > Deviation: Deltas against the plan's base: cc_guide +24 (12 + 8 + 4), build +26 (the cc_guide tests, the Task 4 `check_conformance` test and the D16 guard).
 
 Run: `uv run python build/run_suites.py cc_guide build`, `build/run_commit_lints.sh`, `uv run python build/cc_guide/cli.py lint`, `uv run --with pyyaml python build/check_conformance.py` and `uv run python build/run_suites.py --check`.
 Expected: all pass. Against the plan's base: `cc_guide` +23 (12 + 7 + 4), or +24 with `counts_frontmatter`; `build` the same plus Task 4's one or two.
 
-- [ ] **Step 2: Check the scope fence**
+- [x] **Step 2: Check the scope fence**
+  > Deviation: Four files joined the File map: `build/test_commit_lints.py` (D15), `build/run_commit_lints.sh`, `CLAUDE.md` and `build/CLAUDE.md` (D17).
 
 Run: `git diff --stat "$(git merge-base main HEAD)"..HEAD`
 Expected: only the File map's files and this plan. No guide, no `specs/deferred_items.md` (until the completion protocol), no skill file.
 
-- [ ] **Step 3: Completion**
+- [x] **Step 3: Completion**
 
 Run the Plan Completion Protocol (writing-plans). Name these in the completion report:
 - where the cut fell, by characters or tokens, and whether the header or the frontmatter counts;
