@@ -37,7 +37,7 @@
 5. A heredoc line made only of `=` (a Markdown underline), or one that starts with `=` words before read-only words (AsciiDoc headings), stays allowed: the `heredoc-underline` and `heredoc-asciidoc-headings` allow cases (Task 1).
 6. The work bound changes no candidate. Each dropped continuation is equivalent to one already queued. Task 5 Step 1 checks this on real commands (Task 4).
 7. The cap denies only when none of the first 64 candidates denies, and it names its own reason: `test_more_than_64_command_starts_fail_closed` (Task 4).
-8. The work test fails when either part of the work bound is undone: Task 4 Step 5 (Task 4).
+8. The work test fails when either part of the work bound is undone: Task 4 Step 5 (Task 4). After D6, removing `queued` fails no test, because D6 removed the class it bounded. The scan stop and the memo still each have a case that bites (Task 7 Step 2).
 9. A long `=` rule, a table border of `=` words, or a long `=` prefix on a word in a heredoc stays allowed, because a word that begins with `=` adds one candidate, not one per `=`: `test_equals_text_lines_stay_allowed` and `test_leading_equals_strip_in_one_step` (Task 6).
 
 ## Decisions
@@ -602,11 +602,15 @@ The Global Constraints require this after any change to the walk. The scripts st
 
 - [ ] **Step 1: Check that Task 6 changed no denial except the new allow cases**
 
-Compare `classify` from the guard at `01a19f7` (Task 4's code) with the branch's guard over Task 3 Step 3's three sources. Expected: `0` flips in the corpus and the README. In the test file, the only flips are denied→allowed on Task 6's three allow cases.
+Compare `classify` from the guard at `01a19f7` (Task 4's code) with the branch's guard over Task 3 Step 3's three sources. Expected: `0` flips in each source. Task 6's three allow cases build their lines at run time, so the test file's constants do not hold them, and the suite covers them instead.
 
 - [ ] **Step 2: Rerun Task 5 Steps 2 and 3**
 
 Expected: the same counts as Task 5 Step 2 (corpus 0, test file 9, README 9, denied→allowed 0), and each crafted line under 5 s.
+
+- [ ] **Step 2a: Record the work test's bites after D6**
+
+Rerun Task 4 Step 5's mutations at the branch's HEAD. Expected in each run: removing the scan stop fails `test-chain`; calling `_stop_index` without `known` fails `skipped-run`, alone or with `queued` removed; removing `queued` alone fails nothing. A word now adds at most one strip continuation, so the `leading-equals` case stays linear without either bound. It stays as a check that this shape's work is linear.
 
 - [ ] **Step 3: Rule on the gate**
 
