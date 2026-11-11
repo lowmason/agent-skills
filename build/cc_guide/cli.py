@@ -9,8 +9,10 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
       Offline gate over the guide, manifest.toml, baseline.json and every
       citation (R5). Reads the working tree unless --ref names a commit. Exit
       0 clean, 1 with one line per violation, 2 on a setup error. A citation
-      stamped below a cited section's `changed` prints STALE <file> <ids> on
-      stderr, which never changes the exit. A three-part guide release label
+      stamped below a cited section's `changed`, or reviewed against text whose
+      hash differs from the `text_hash` that cite recorded for that section
+      (R7), prints STALE <file> <ids> on stderr, which never changes the exit.
+      A three-part guide release label
       newer than the cached changelog's newest release, which the cache cannot
       judge, prints a `note:` line there, also without changing the exit; any
       other label the changelog does not list is a violation.
@@ -33,7 +35,8 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
   baseline rehash
       The only writer of baseline.json, the guide's stamp region and citation
       stamps (R7). cite stamps each file's citation at the highest `changed`
-      among its cited sections, after a review; FILE is repo-relative, as
+      among its cited sections, after a review, and records each cited
+      section's `text_hash` in baseline.json; FILE is repo-relative, as
       lint and check print it. accept --substantive keeps a new `changed`
       above every citer's stamp (R2.4). audited records the newest cached
       release, or the release --to names, which settle sets to the audit
