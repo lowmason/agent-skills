@@ -250,11 +250,121 @@ trial.txt sha256 de72d2b1d919751fac184b2a2a3a9d62bea4c5ce023f1d2f73086d10bb7c966
 
 ## Isolation probe
 
-(Task 2.)
+Run 2026-11-12 on Claude Code `2.1.322`, before any scored rep, with `run_reps.sh` and its default $0.50 cap:
+
+```text
+1. NO
+2. NO
+3. NO
+4. NO
+5. NO
+```
+
+`show_reps.py` showed one turn, no extra iterations, one model and `success`, at a cost of $0.006. No `CLAUDE.md`,
+output style, rule, SessionStart hook or auto-memory reached the rep.
+
+## Cost pilot
+
+One unscored treatment `tax` rep under a $3.00 cap cost $0.434, with 13,767 output tokens. The pilot cost is $0.75 or
+less, so the per-rep cap stays at **$1.50** for every scored rep. The reply was not read. The output is about three
+times the plan's estimate of 3,000 to 5,000 tokens. The projected total for the kit is still about $9, under the $15
+stop.
 
 ## Control
 
-(Task 2.)
+Both control arms ran on 2026-11-12 under the $1.50 cap, `trial` and `tax` in parallel. All 10 reps are scored: no rep
+is VOID. Each header reads `success`, one turn, no extra iterations and one model. Every reply was read in full.
+
+| Case | G | S | J |
+|---|---|---|---|
+| `trial` | 0/5 | 0/5 | 5/5 |
+| `tax` | 0/5 | 0/5 | 5/5 |
+
+No control reading is a judgment call. No control reply holds a graph, and no control reply uses one of the three
+exact status labels for the requested estimand. All ten replies meet every part of J.
+
+Common shape: every control reply is a design memo with a defined estimand, assumptions, evidence, alternatives and
+a handoff. Every reply also rejects the partner's naive comparison. The `show_reps.py` aids flagged `arrows` in
+`trial` reps 1 and 5 and `tax` rep 4. Each flagged arrow sits inside a prose sentence, not an edge list. The `cutoff`
+flag in `trial` reps 2 and 3 and `tax` rep 2 marks a trimming cutoff or a pre-period cutoff date, not a threshold
+design. The `not-identified` flag in `trial` rep 2 marks the effect of reading a report, not the requested estimand.
+
+### trial
+
+- **rep1.** G FAIL: no graph. Its only arrows are in prose: "random draw of 12 of 24 towns → report and control towns
+  are comparable in expectation". S FAIL on (b): it calls the ITT "the natural and fully identified estimand", which
+  is not one of the exact labels. Its own verdict on the requested effect is "fully identified". Parts (a) and (c)
+  are met: "The average effect of *assigning a town to receive mailed reports* on household water use ... among
+  households in the 24 trial towns". J PASS: (a) "comparing the 12 report towns with the 12 control towns"; (b)
+  "Controlling for rebate sign-up would bias the estimate. Sign-up happened after randomization ... It is a mediator";
+  (c) "Inference should come from **randomization inference over the actual 12-of-24 draw**"; (d) its minimum
+  detectable effect is a hypothetical, and nothing is reported as computed.
+- **rep2.** G FAIL: no graph, only a file tree. S FAIL on (b): the requested ITT has no exact label. The phrase "not
+  identified" appears only for "the effect of reading". Its own verdict: "Randomization therefore still gives an
+  unbiased ITT for the period." J PASS: (a) "Primary approach: town-level randomization analysis with baseline
+  adjustment"; (b) "Rebate sign-up is a post-treatment variable (a 'bad control'). The reports raised sign-ups ... Do
+  not adjust for it"; (c) "with town as the unit of inference"; (d) nothing computed.
+- **rep3.** G FAIL: no graph. S FAIL on (b): no exact label. Part (a) is met: the "average difference in household
+  water use ... between the outcome under 'town receives reports' and under 'town receives nothing new'" over the 24
+  trial towns. J PASS: (a) "Compare report towns with control towns over Mar 2025 – Feb 2026"; (b) "Rebate sign-up
+  must not be a control ... It is a mediator"; (c) "randomization inference at the town level" and "The design has 24
+  independent units (12 vs 12), not 2.1M"; (d) nothing computed.
+- **rep4.** G FAIL: no graph. S FAIL on (b): no exact label. Its own verdict: "its validity rests on the random draw
+  alone". Part (a) is also not met: the estimand is "for households in the 12 report towns", not the 24 trial towns.
+  J PASS: (a) "Primary analysis: town-level ANCOVA with randomization inference"; (b) "Rebate sign-up is an outcome of
+  the reports, not a control"; (c) "The real information is closer to **24 independent units** than 2.1 million";
+  (d) nothing computed.
+- **rep5.** G FAIL: no graph. S FAIL on (b): its own verdict is "the effect of mailing is identified cleanly", which
+  is not an exact label. Part (a) is met: "the average effect, per household, of *mailing* monthly reports for 12
+  months in the 24 smart-meter towns". J PASS: (a) "Town-level comparison adjusted for baseline, with randomization
+  inference"; (b) "Rebate sign-up must not be a control variable ... they are likely an *effect* of the reports"; (c)
+  "base inference on the **24 towns**, not the 2.1 million reads"; (d) it cites effects from comparable programs and
+  computes nothing.
+
+### tax
+
+- **rep1.** G FAIL: no graph, only a file tree. S FAIL on (b): no exact label. Part (a) is met: "The average
+  percentage difference in weekly **volume (ounces)** of taxed sweetened drinks sold per resident in Larkford stores,
+  July 2025–June 2026". Its primary treated unit leaves out the 6 downtown stores, and it says "the estimand covers
+  non-downtown stores only". J PASS: (a) the downtown stores are left out of the primary unit, and the first evidence
+  item is "Where the 3,000 workers lived"; (b) "**Exclude the two border cities.**"; (c) "The 30% figure should be
+  described as a raw change, not as the effect of the tax"; (d) nothing computed.
+- **rep2.** G FAIL: no graph. S FAIL on (b): no exact label. Part (a) is met: "The average percent difference, over
+  the 52 post-tax weeks ..., between observed taxed-drink **volume** sold in Larkford stores, and the volume those same
+  stores would have sold without the tax". J PASS: (a) "Primary sample excludes the 6 downtown stores", "'All other
+  grocery' serves as a negative-control outcome" and "Find out where the workers lived and shopped"; (b) "Exclude both
+  from the donor pool"; (c) "The 30% should be treated as an upper-bound sanity check, not as an estimate"; (d)
+  nothing computed.
+- **rep3.** G FAIL: no graph. S FAIL on (b): no exact label. Part (a) is met: "For Larkford stores, this is the
+  average percentage difference, across the 52 post-tax weeks, between observed taxed-drink **volume** ... and the
+  volume that would have occurred with no tax". J PASS: (a) the downtown stores are left out, with "R1.
+  Category-differenced SCM (the main check on the employer confound)" and "Where the 3,000 workers lived"; (b)
+  "Exclude the 2 border cities from the donor pool"; (c) "It may be too large or too small. We should not cite it as
+  an effect size"; (d) nothing computed.
+- **rep4.** G FAIL: no graph. Its one arrow is in prose: "Negative control: other grocery → apply the decision rule".
+  S FAIL on (b): no exact label. Part (a) is met: "the percent change in taxed sweetened-drink **volume (ounces)**
+  sold in Larkford stores over the 52 post-tax weeks, compared with what those stores would have sold without the
+  tax". J PASS: (a) "The **job move is the main threat**", handled with an other-grocery negative control, a split of
+  downtown and non-downtown stores, and a question on where the workers lived; (b) "The 2 border cities are
+  **excluded**"; (c) "The 30% may be close to right, too high, or too low. We cannot tell without a counterfactual";
+  (d) nothing computed.
+- **rep5.** G FAIL: no graph. S FAIL on (b): no exact label. Part (a) is met: "Percent difference between Larkford's
+  actual taxed-drink VOLUME per capita ... and the volume it would have had without the tax. Averaged over the 52 post
+  weeks". J PASS: (a) "The employer move (main threat)", with a traffic test on other grocery, a pre-set decision rule
+  and a downtown exclusion; (b) "Exclude the 2 border cities from the donor pool"; (c) "Why the consultant's 30% is
+  not an estimate of the tax effect"; (d) nothing computed.
+
+### Spend (control)
+
+| Item | Cost |
+|---|---|
+| Isolation probe | $0.006 |
+| Cost pilot (unscored) | $0.434 |
+| Control `trial`, reps 1–5 | $0.609 |
+| Control `tax`, reps 1–5 | $0.670 |
+| Total so far | $1.719 |
+
+The control arms cost $1.279, under the $5 stop. No rep stopped on its budget.
 
 ## Treatment
 
