@@ -4995,13 +4995,14 @@ defer. Anchors are at the end of plan 59's fix wave.
       file now says about 1,000 to 2,000 points, as bayesian-workflow does. A script re-took
       the snippet-preamble def-only count: it is 4 of 41, not 3 (state-space.md's `local_level`
       was missing), and the docstring now says so.
-- [ ] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
+- [x] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
       (from `build/extract_structure.py`) has no chapters 1–2, and many PML1 subsections have no
       title, so title-only searches miss them. PML1 §2.6.3 supports the distributional-regression
       claim but cannot pass Gate A for that reason. Needs the local PDFs, so it is an owner step.
       Size: plan. Done when: the index covers chapters 1–2 and untitled subsections, or
       `build/CLAUDE.md` records the limit.
       → owner-only 2026-11-11: rebuild `build/.scratch/book1_sections.tsv` from the local PDFs so that it covers chapters 1–2 and untitled subsections, or record the limit in `build/CLAUDE.md`.
+      → done 2026-11-12 (/deferred quick fix): `build/extract_structure.py` reads the contents of the moved PDFs with `pdftotext -layout` (pages 9–25 and 9–29) and stops when a chapter or a title is missing (`e76e7ee`). The owner gave the PDFs' new folder. The rebuilt index covers Book 1's chapters 1–2 (71 new entries, PML1 §2.6.3 among them) and gives every entry its title (211 Book 1 and 312 Book 2 entries had none). Gate A exits 0 with no warnings.
 - [ ] Give rpm and creative-thinking harder routing scenarios. Plan 64's M2 and M3 had zero baseline
       failures, so bar 2 was vacuous and neither test can show that the new class names or the
       causal and neural hand-off sentences drive routing (M3's T1 shifted from creative-thinking
