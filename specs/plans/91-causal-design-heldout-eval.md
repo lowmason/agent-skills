@@ -75,6 +75,7 @@ A treatment prompt is about 56 KB (about 14,000 tokens). A control prompt is und
 - **D4** (owner, plan review, 2026-11-12): O3, default kept. Every rep runs on `claude-opus-5-5`. Applied in: Global Constraints (Isolation), Task 1.
 - **D5** (owner, plan review, 2026-11-12): O4, default kept. The treatment arm carries the `SKILL.md` body and all five references whole, and the record names the untested pointer pull and trigger as known limits. Applied in: Task 1.
 - **D6** (owner, plan review, 2026-11-12): O5, default kept. No word target; every reply is read by hand, and contested readings go to the owner at the completion gate, with no blind panel. Applied in: Tasks 2–4.
+- **D7** (owner, execution handoff, 2026-11-12): "Implement plan 91 in a new session" — the go-ahead to execute this plan now, inline on Opus as the planning session recommended. Applied in: the start.
 
 ## File map
 
