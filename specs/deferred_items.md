@@ -1165,7 +1165,7 @@
       → planned 2026-11-12: specs/writing-skills-guide-rewrite.md
 
 ## 37-recommend-causal-design (merge review) — 2026-10-04
-- [ ] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
+- [x] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
       The worked example is the evaluation's focal scenario, and the guided outputs track
       its edge list and exclusion wording; the three application cases ran inside one
       agent, with no control arm. The example was also rewritten at the merge, after the
@@ -1175,6 +1175,7 @@
       shipped skill, and the record says whether uptake of the causal graph and the status
       contract generalizes.
       → planned 2026-11-12: specs/plans/91-causal-design-heldout-eval.md
+      → done 2026-11-12 (plan 91): does not generalize under the owner's strict readings of the contested rules (plan D8). `trial` misses its G and L bars, and `tax` misses G, S and L. All 10 treatment replies gave the correct status label (`plausibly identified`, `conditional`) and drew a graph, against 0 of 10 controls. Record: specs/baseline/red-baseline-causal-design-heldout.md. The C3 follow-up → item: 91-causal-design-heldout-eval — 2026-11-12
 - [x] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
       identification questions (code-reviewer, merge review). Its decision map's
       route-only row and `references/drill-down.md` send causal questions to the PML
@@ -6479,3 +6480,18 @@ review and the Plan Completion gate (2026-10-27) add the others.
       path. Then re-vendor, move the pin and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a
       compare from `a4905d92` to danyuchn's HEAD changes how `_front_matter` or `_scalar_pieces` reads a quoted
       value, or the quoted-description case is reported as fixed upstream.
+
+## 91-causal-design-heldout-eval — 2026-11-12
+- [ ] **recommend-causal-design asks for an outcome-observation node that plan 91's reading rules count as an import
+      from the worked example (C3, filed at plan 91's completion gate on the owner's word).** The skill's quick
+      reference row for random assignment (`skills/recommend-causal-design/SKILL.md:120`) lists "Randomization,
+      outcome observation, interference", and the template graph in
+      `skills/recommend-causal-design/references/identification.md:46` has `T --> S[Outcome observed? S]`. Plan 91's
+      `trial` rules count such a node or gate as an import (G (e)) and as an echo of the worked example (L). The owner
+      took that strict reading (plan 91 D8), so all five `trial` treatment replies fail G and L, and `tax` fails L in
+      one rep. See specs/baseline/red-baseline-causal-design-heldout.md (Contested readings, C3; Owner rulings) and
+      specs/plans/completed/91-causal-design-heldout-eval.md. Two fixes are possible. One makes the skill draw an
+      outcome-observation node only when the scenario gives a reason for missing outcomes, which changes a discipline
+      skill and needs a micro-test against a no-guidance control (the writing-skills skill). The other writes future
+      reading rules that accept an observation node the scenario supports. Size: design. Done when: the owner picks
+      one fix, and the skill text or the evaluation-rule template changes to match, with the choice recorded.

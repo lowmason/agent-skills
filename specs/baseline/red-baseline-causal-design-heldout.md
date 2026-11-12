@@ -1,6 +1,6 @@
 # Plan 91 held-out evaluation: recommend-causal-design
 
-This record holds the held-out evaluation for plan 91 (`specs/plans/91-causal-design-heldout-eval.md`). The
+This record holds the held-out evaluation for plan 91 (`specs/plans/completed/91-causal-design-heldout-eval.md`). The
 evaluation tests whether the skill's two measured gains carry over to scenarios its worked example does not cover. The
 two gains are an actual causal graph and the requested-estimand status contract. A rep is one fresh `claude -p` run
 with no tools. Each reply is read by hand, by rules fixed in this record before any rep ran.
@@ -14,6 +14,9 @@ Two cases, each with two arms:
 
 The control arm gets no skill text. The treatment arm gets the shipped `SKILL.md` body and all five references whole,
 the worked example included.
+
+**Result:** at the completion gate (2026-11-12), the owner took the strict reading of every contested rule. Under
+those rulings, neither case generalizes. See Owner rulings under Verdict.
 
 ## Item this answers
 
@@ -754,3 +757,30 @@ What the result does not show:
 7. **The cohort ruling** (from the final review's Codex seat): this record does not score the fixed store or
    household cohort under S (d) (see Store and household cohorts). Overrule it, and S fails in every treatment reply
    of both cases.
+
+### Owner rulings (completion gate, 2026-11-12)
+
+The owner ruled on the seven questions above:
+
+1. **C1 to C4:** "Rule all as A". Every contested reading takes reading A.
+2. **Cohort ruling:** "Keep the ruling". The fixed store or household cohort is not scored under S (d).
+3. **Missed bars:** "Open a backlog item" for the C3 conflict between this plan's rules and the skill's own text.
+   The item is in `specs/deferred_items.md`, section `91-causal-design-heldout-eval — 2026-11-12`.
+4. **Controls at 5/5 on J:** recorded above. The bar is met, so no ruling was needed.
+
+The bars under these rulings:
+
+| Case | G | S | J | L |
+|---|---|---|---|---|
+| `trial` | 0/5, missed | 5/5, met | 5/5, met | 0/5, missed |
+| `tax` | 1/5, missed | 2/5, missed | 5/5, met | 4/5, missed |
+
+**Final verdict: neither case generalizes, so the overall verdict is "does not generalize".** In `trial`, the
+status contract generalizes, and G and L miss their bars. In `tax`, G, S and L miss their bars. Judgment is kept in
+both cases.
+
+The pre-registered labels need the reading in Step 2. Under C3-A, the `trial` G and L misses come from an added
+outcome-observation node and, in reps 1 and 3, an undated mailing node. They do not come from an absent graph or a
+borrowed design. The skill's
+own quick reference and template graph ask for that node. The status labels were correct in all 10 treatment replies,
+and the graph appeared in all 10, against 0 of 10 controls.

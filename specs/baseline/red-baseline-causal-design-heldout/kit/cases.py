@@ -1,6 +1,6 @@
 '''Frozen inputs for plan 91's held-out evaluation of recommend-causal-design.
 
-Two cases, as specs/plans/91-causal-design-heldout-eval.md Task 1 defines them. Each case names the
+Two cases, as specs/plans/completed/91-causal-design-heldout-eval.md Task 1 defines them. Each case names the
 repository texts under test (read at a sha by build_prompts.py; the control arm reads none), its
 model and per-rep budget, its fixture (the session so far), its task, its reading rules G, S, J and
 L, the VOID rule, a leak pattern and its bars. The `rules`, `void`, `leak` and `bars` strings are
