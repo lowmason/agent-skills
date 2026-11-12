@@ -1,0 +1,2 @@
+arm 73f7dae82a6d67ba44f7727bdc88653d7549c6ef
+harden-first-test.txt sha256 6e81473c0c64fd48ca5b3a60bca7ea8af8194916a67abe866e53f70cb95e7a56 model claude-sonnet-5-5 budget 0.50 uses skills/tech-debt/SKILL.md,skills/test-driven-development/SKILL.md

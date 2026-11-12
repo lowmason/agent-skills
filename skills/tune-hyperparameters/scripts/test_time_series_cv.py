@@ -136,7 +136,7 @@ def test_panel_folds_split_whole_periods(embargo, entity_major):
     assert len(folds) == 5
     for tr, va in folds:
         assert not set(period[tr]) & set(period[va])                # no period on both sides
-        assert period[va].min() - period[tr].max() - 1 >= embargo   # the gap counts whole periods
+        assert period[va].min() - period[tr].max() - 1 == embargo   # the gap counts whole periods
         assert len(va) == 3 * len(set(period[va]))                  # val holds every row of its periods
 
 
@@ -155,18 +155,45 @@ def test_panel_sizes_count_periods():
 def test_one_row_per_period_matches_row_mode():
     X = np.arange(100).reshape(-1, 1)
     cv = PurgedTimeSeriesSplit(n_splits=5, embargo=2, label_horizon=3, min_train_size=10)
-    rows = list(cv.split(X))
-    periods = list(cv.split(X, groups=np.arange(100)))
-    assert len(rows) == len(periods)
-    for (tr_r, va_r), (tr_p, va_p) in zip(rows, periods):
-        np.testing.assert_array_equal(tr_r, tr_p)
-        np.testing.assert_array_equal(va_r, va_p)
+    # Both paths run through _period_index, so compare each to folds worked out
+    # from the docstring: test_size = 100 // 6 = 16, guard = max(2, 3) = 3,
+    # s_k = 100 - (5 - k) * 16, train = [0, s_k - 3), val = [s_k, s_k + 16).
+    expected = [(np.arange(s - 3), np.arange(s, s + 16)) for s in (20, 36, 52, 68, 84)]
+    for groups in (None, np.arange(100)):
+        folds = list(cv.split(X, groups=groups))
+        assert len(folds) == len(expected)
+        for (tr, va), (tr_e, va_e) in zip(folds, expected):
+            np.testing.assert_array_equal(tr, tr_e)
+            np.testing.assert_array_equal(va, va_e)
 
 
 def test_groups_length_must_match_rows():
     X = np.zeros((10, 1))
     with pytest.raises(ValueError, match='groups'):
         list(PurgedTimeSeriesSplit(n_splits=2).split(X, groups=np.arange(9)))
+
+
+@pytest.mark.parametrize('groups', [
+    np.array(3),                       # 0-d: no row axis to count
+    np.arange(20).reshape(10, 2),      # two labels per row: np.unique flattens them to 20
+    np.arange(10).reshape(5, 2),       # 10 labels in all, still not one per row
+], ids=['scalar', 'two-columns', 'half-rows-two-columns'])
+def test_groups_must_hold_one_label_per_row(groups):
+    X = np.zeros((10, 1))
+    with pytest.raises(ValueError, match='groups'):
+        list(PurgedTimeSeriesSplit(n_splits=2).split(X, groups=groups))
+
+
+def test_column_groups_match_1d_groups():
+    period = _panel_periods()
+    X = np.zeros((period.size, 1))
+    cv = PurgedTimeSeriesSplit(n_splits=5, embargo=1)
+    flat = list(cv.split(X, groups=period))
+    column = list(cv.split(X, groups=period.reshape(-1, 1)))   # a one-column frame
+    assert len(flat) == len(column) == 5
+    for (tr_f, va_f), (tr_c, va_c) in zip(flat, column):
+        np.testing.assert_array_equal(tr_f, tr_c)
+        np.testing.assert_array_equal(va_f, va_c)
 
 
 def test_sklearn_search_with_panel_groups():

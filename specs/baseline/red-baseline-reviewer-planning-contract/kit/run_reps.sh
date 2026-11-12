@@ -13,7 +13,7 @@ PROMPT="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")" || exit 2
 OUT="$(mkdir -p "$2" && cd "$2" && pwd)" || exit 2
 FIRST="$3"
 LAST="$4"
-MODEL="${5:?usage: run_reps.sh <prompt-file> <out-dir> <first-rep> <last-rep> <model>}"
+MODEL="${5:?usage: run_reps.sh <prompt-file> <out-dir> <first-rep> <last-rep> <model> [<budget>]}"
 BUDGET="${6:-0.50}"
 i="$FIRST"
 while [ "$i" -le "$LAST" ]; do

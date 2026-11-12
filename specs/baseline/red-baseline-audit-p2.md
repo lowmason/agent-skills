@@ -498,3 +498,87 @@ fixes in its text, so a rep can reach the architecture question without any poin
 against regression only.
 
 **Status.** DONE. The treatment passes the non-regression bar, so the one-line edit is committed.
+
+## /deferred pass (2026-11-12): harden-first-test
+
+The backlog item "tech-debt and test-driven-development give two routes for the first test" (section
+`77-audit-p2-text-fixes — 2026-11-06` of `specs/deferred_items.md`) records a conflict. tech-debt's HARDEN step writes
+the one test that pins current behavior, then uses develop-testing-strategy for the tests after it.
+test-driven-development sends the first tests of a scraper, pipeline or model to develop-testing-strategy first. The
+owner chose to edit tech-debt only, so that it says why its test comes first, and approved a micro-test of the change.
+
+### Registration
+
+This section, the case and its bar are committed before any rep and before the wording commit.
+
+- **Case.** `harden-first-test` in `kit/cases.py`. Texts: `skills/tech-debt/SKILL.md` and
+  `skills/test-driven-development/SKILL.md`, both loaded, with a listing of tech-debt, test-driven-development and
+  develop-testing-strategy. The fixture is a bus agency's ridership pipeline. The tech-debt triage has called
+  `ridership/build_panel.py` load-bearing, it has no tests, and the partner says to harden it now. Task: `STEP_TASK`.
+  Model `claude-sonnet-5-5`, budget $0.50 per rep, 5 scored reps per arm.
+- **Pass rule.** As `HARDEN_PASS` in `kit/cases.py`, word for word. Clause A (bar): one test that pins
+  `build_panel`'s current output comes before the reply loads develop-testing-strategy or says it will use that skill
+  to plan the tests. Clause B (bar): the reply says it will use develop-testing-strategy for the tests after that one.
+  Clause C (recorded): the test comes before any production edit.
+- **Bar.** Additive, as plan 77's `ADDITIVE`: the treatment passes 5 of 5, and the control fails at least 1 of 5. A
+  control with no failure is recorded and put to the owner. A treatment below 5 of 5 gets one wording round with the
+  rule unchanged, then an owner ruling.
+- **VOID.** Plan 77's `VOID` rule, unchanged.
+- **Arms.** `control`: both texts at `73f7dae`, the parent of this registration commit, where tech-debt carries no
+  route sentence. `treatment`: both texts at the wording commit. test-driven-development is the same in both arms.
+- **Leak check.** `build_prompts.py leakview /tmp/q1-work/leak harden-first-test`, then a case-insensitive grep for
+  `HARDEN_LEAK`. One hit, line 23: "test plan" in develop-testing-strategy's own description in the listing, copied
+  verbatim from its frontmatter, as plan 77's listing is. It stands. No hit comes from the frame, the fixture's prose
+  or the task.
+- **Isolation probe.** Claude Code 2.1.322 was probed on 2026-11-12 with
+  `specs/baseline/red-baseline-development-history/kit/isolation_probe.txt` (an unchanged copy of this kit's file):
+  all five lines `NO`.
+
+### harden-first-test: control at `73f7dae`
+
+Build: `build_prompts.py 73f7dae82a6d67ba44f7727bdc88653d7549c6ef /tmp/q1-work/control harden-first-test`, manifest
+copied to `control/harden-first-test-MANIFEST.txt` (prompt sha256 `6e81473c…`). Reps:
+`run_reps.sh /tmp/q1-work/control/harden-first-test.txt specs/baseline/red-baseline-audit-p2/control/harden-first-test 1 5 claude-sonnet-5-5 0.50`.
+Every rep exited 0. No rep is VOID. Spend: $0.1061.
+
+| Rep | A (bar) | B (bar) | C (recorded) | PASS | Deciding line |
+|---|---|---|---|---|---|
+| 1 | fail | fail | pass | no | "First I'll load the testing-strategy skill, as the TDD skill requires before choosing tests" |
+| 2 | fail | fail | pass | no | "**Strategy:** load `develop-testing-strategy` before writing any tests." |
+| 3 | fail | fail | pass | no | "The test strategy skill says to consult it before writing tests, so I'm loading it first." |
+| 4 | fail | fail | pass | no | "First I'm loading the testing-strategy skill so the first test is chosen deliberately" |
+| 5 | fail | fail | pass | no | "First I'm loading the testing-strategy skill, as the TDD skill says to consult it before writing tests" |
+
+Every rep plans the one test that pins today's output, and every rep loads develop-testing-strategy with a written Skill
+call before it writes that test. Clause A: 0 of 5. No rep says it will use the skill after that test, so clause B is
+0 of 5. Every rep puts the test before the path edit: clause C 5 of 5. PASS: 0 of 5. The control fails, so the
+additive bar can be met.
+
+### harden-first-test: treatment at `b62f15d`
+
+Build: `build_prompts.py b62f15def489ac35d3f903c1891b4ef6a7c3fb95 /tmp/q1-work/treatment harden-first-test`, manifest
+copied to `treatment/harden-first-test-MANIFEST.txt` (prompt sha256 `0fd848ba…`). The two prompts differ only in the
+new sentence. Reps: `run_reps.sh /tmp/q1-work/treatment/harden-first-test.txt specs/baseline/red-baseline-audit-p2/treatment/harden-first-test 1 5 claude-sonnet-5-5 0.50`.
+Every rep exited 0. No rep is VOID. Spend: $0.1224.
+
+| Rep | A (bar) | B (bar) | C (recorded) | PASS | Deciding line |
+|---|---|---|---|---|---|
+| 1 | pass | fail | pass | no | "It pins behavior the code already has, so it should pass immediately. That's expected here, and I won't build a test plan for it." |
+| 2 | pass | fail | pass | no | "I'm not adding a wider test plan or type work, because nothing here calls for it." |
+| 3 | pass | fail | pass | no | "I'm not writing a broader test plan." |
+| 4 | pass | fail | pass | no | "I'm not adding types, extra tests, or a README here. The audit only called for the one test and the path fix." |
+| 5 | pass | fail | pass | no | "it needs no test plan because it only pins behavior the code already has" |
+
+No rep loads develop-testing-strategy, and every rep writes the pinning test first: clause A 5 of 5. No rep names
+develop-testing-strategy at all, so clause B is 0 of 5. Each rep's later test is a failing test for the new CLI path,
+written under test-driven-development, and each rep declines further tests. Clause C: 5 of 5. PASS: 0 of 5.
+
+**Bar: missed.** The treatment passes 0 of 5, below 5 of 5. Clause A, the order that the backlog item names, moves
+from 0 of 5 to 5 of 5. Clause B is 0 of 5 in both arms. The registered rule allows one wording round with the rule
+unchanged, then an owner ruling.
+
+**Owner ruling (2026-11-12): Accept the wording.** `b62f15d` stays. The one wording round that the registration
+allows did not run: the owner ruled on the treatment result. Clause A shows the change: every control rep loads
+develop-testing-strategy before the pinning test, three of them because of test-driven-development, and no treatment
+rep does. Clause B is 0 of 5 in both arms, because the fixture asks for the audit's hardening only and puts no later
+tests in scope. So clause B does not separate the arms on this fixture.

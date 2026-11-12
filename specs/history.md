@@ -273,3 +273,28 @@ Closed earlier deferred items:
 
 Closed deferred items:
 - "`packets --files` marks a packet's sections by stamp alone (`build/cc_guide/packets.py:379-381`). A file that is stale only by hash, the #93 and #94 collision case, gets "Unchanged since @X" and an empty `changed` list for a section whose text changed, so the verifier's packet says the section did not change. The verifier contract (`.claude/agents/cc-guide-verifier.md:61-66`) still requires a quoted row for each statement that rests on any cited section, so the marks inform and do not narrow the review. Found by plan 89's Task 4 review, outside Task 4's file list (owner ruled defer at the gate). Fix: count a section as changed when `state['cited']` holds a hash for that file and section that differs from the section's `text_hash`, and pin it in `build/cc_guide/test_packets.py`. Size: quick-fix. Done when: the packet of a file that is stale only by hash marks the changed section as changed, and a test covers it." (deferred by 89-cc-guide-owner-rulings): the packet takes its changed sections from the lint's stale rule, so a hash-only change is marked changed, and a test covers it.
+
+## /deferred — 2026-11-12
+
+Closed deferred items:
+- "The next drift review of both upstreams. Compare from the pins in NOTICE. The review of" (deferred by 52-write-with-asd-ste100): b9fe65a re-vendors `scripts/ste-lint.py` at danyuchn `a4905d92`, on the owner's word. The linter now lints a front-matter description and protects more modal hedges. No rule-set file or LICENSE changed.
+- "Micro-test kit odds and ends (plan 73 Minors M1-M3 and M25, and the final review's" (deferred by 73-reviewer-and-planning-contract): 79db8ba fixes the fence reader, the duplicated VOID rule, the usage text, the `page < 1` reading class and the F1 audit's missed spellings, with selftests. Recorded output is unchanged.
+- "**tech-debt and test-driven-development give two routes for the first test (plan 77" (deferred by 77-audit-p2-text-fixes): b62f15d says in tech-debt why its one pinning test comes before develop-testing-strategy. A new micro-test case moved that order from 0 of 5 to 5 of 5, and the owner accepted the wording.
+- "**Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In" (deferred by 80-development-history-record): bb0f7cf gives Finish step 2 a fallback: read the spec when the gate message is gone. `history-filter` passes 5 of 5.
+- "**§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is" (deferred by 85-derive-roadmap-later-qualities-and-spec-refs): 73f7dae makes the roadmap commit a §4 step. Six micro-test cases show no regression.
+
+## 91-causal-design-heldout-eval — 2026-11-12
+Plan: specs/plans/completed/91-causal-design-heldout-eval.md · Spec: none
+
+Differences from the design:
+- Ruling (Task 1): the treatment MANIFEST names the two path patterns (copied code), not six expanded files; the six texts were counted as blocks in each prompt (1 skill + 5 file) — the plan limits build_prompts changes to the control mode — cost if wrong: none, the prompt is what reaches the model.
+- Ruling (Task 1): the control MANIFEST lines say `uses no texts` (not the patterns) — makes "MANIFEST names the arm" true per line — cost if wrong: none.
+- Ruling (final review): Codex [P2] balanced-panel primary not scored as an S(d) fail — S(d) concerns "every other estimand it raises" and the cohort is the estimation sample every reply in both cases and arms uses (tax fixed/balanced store cohort; trial time-zero household cohort), reported beside an all-unit version — cost if wrong: S fails in every treatment reply of both cases (tax S 0/5, trial S 0/5), so neither case generalizes.
+- Deviation (Task 1): the MANIFEST files name the path patterns or `uses no texts`, not six expanded files. Source: plan, Task 1.
+- Deviation (Task 2): the two control arms ran in parallel. Source: plan, Task 2.
+- Deviation (Task 3): the two treatment arms ran in parallel. Source: plan, Task 3.
+- Deviation (Task 3): contested readings C1 to C4 came up in reading, and the owner ruled on them at the gate (D8, D10). Source: plan, Task 3.
+- Deferred: 1 item. Source: specs/deferred_items.md, § 91-causal-design-heldout-eval.
+
+Closed earlier deferred items:
+- "Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review)." (deferred by 37-recommend-causal-design).

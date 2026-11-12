@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 LINTER = Path(__file__).resolve().parent / 'ste-lint.py'
-PINNED_SHA256 = '90a1d6b84c7708b56a8e6ad139e303c8e668af122a5140fe57614444eeff1ff7'
+PINNED_SHA256 = 'e0235f25fdb4d085b6384f3dfc41fb649dc7020d80127095c905bc2c12c60481'
 SYSTEM_PYTHON = Path('/usr/bin/python3')
 FENCE = '`' * 3
 
@@ -60,8 +60,22 @@ def test_a_hedge_with_an_adverb_before_have_is_never_flagged():
     assert json.loads(result.stdout)['violations'] == []
 
 
-def test_skill_front_matter_is_not_read_as_prose():
+def test_a_contracted_or_negated_modal_hedge_is_never_flagged():
+    text = 'The job cannot have run. It won\'t have stopped. It can\'t very well have failed.\n'
+    result = lint('--json', stdin=text)
+    assert json.loads(result.stdout)['violations'] == []
+
+
+def test_skill_front_matter_keys_other_than_the_description_are_not_read_as_prose():
+    value = ' '.join(['word'] * 30)
+    text = f'---\nname: {value}.\nlicense: x; y\ndescription: Use it.\n---\nThe job runs.\n'
+    result = lint('--json', stdin=text)
+    assert json.loads(result.stdout)['violations'] == []
+
+
+def test_skill_front_matter_description_is_read_as_prose():
     description = ' '.join(['word'] * 30)
     text = f'---\nname: x\ndescription: {description}.\n---\nThe job runs.\n'
     result = lint('--json', stdin=text)
-    assert json.loads(result.stdout)['violations'] == []
+    violations = json.loads(result.stdout)['violations']
+    assert [(v['rule'], v['line']) for v in violations] == [('long-sentence', 3)]

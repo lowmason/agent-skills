@@ -1162,9 +1162,10 @@
       body lines and added `references/{discovery,flowcharts,bulletproofing}.md`. This item is
       still open: it asks for a distilled file of Claude Code text, which plan 72 did not write.
       → triggered 2026-10-31: plan 72 split writing-skills to 434 body lines, under 500 (its own 2026-10-29 note).
+      → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
 
 ## 37-recommend-causal-design (merge review) — 2026-10-04
-- [ ] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
+- [x] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
       The worked example is the evaluation's focal scenario, and the guided outputs track
       its edge list and exclusion wording; the three application cases ran inside one
       agent, with no control arm. The example was also rewritten at the merge, after the
@@ -1173,6 +1174,8 @@
       example does not cover runs in fresh contexts with no-guidance controls against the
       shipped skill, and the record says whether uptake of the causal graph and the status
       contract generalizes.
+      → planned 2026-11-12: specs/plans/91-causal-design-heldout-eval.md
+      → done 2026-11-12 (plan 91): does not generalize under the owner's strict readings of the contested rules (plan D8). `trial` misses its G and L bars, and `tax` misses G, S and L. All 10 treatment replies gave the correct status label (`plausibly identified`, `conditional`) and drew a graph, against 0 of 10 controls. Record: specs/baseline/red-baseline-causal-design-heldout.md. The C3 follow-up → item: 91-causal-design-heldout-eval — 2026-11-12
 - [x] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
       identification questions (code-reviewer, merge review). Its decision map's
       route-only row and `references/drill-down.md` send causal questions to the PML
@@ -1752,6 +1755,7 @@
       no contradiction and 10 new not-covered rows: run environment, stream format and
       the pin overrides the probes test. The owner ruled all ten none, and both files are
       cited. `cli.py lint` prints the same five STALE files as before.
+      → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
 - [ ] Newline handling in the citation reader (plan 43's final review, issue 4, folding in the
       CRLF note from Task 5's review). `build/cc_guide/guide.py` (`file_citation`, near line
       306) strips both ends, so a trailing space or `\r` is reported as "an indented citation;
@@ -3863,12 +3867,18 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       take a document case in the kit's `cases.py` that names a tracked symbolic link, and a
       run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
       reason, and add the case then.
-- [ ] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
+- [x] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
       2026-10-31 read danyuchn/asd-ste100-skill through `255631a3` and prithivrajmu/asd-ste100
       through `058c1f58`. Size: quick-fix. Revisit if: a compare from `255631a3` (danyuchn) or
       `058c1f58` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
       → triggered 2026-11-11: a GitHub compare from `255631a3` to HEAD shows 31 danyuchn commits that change `scripts/ste-lint.py` and `README.md`. The prithivrajmu compare from `058c1f58` changes only `.github/workflows/`.
+      → done 2026-11-12 (/deferred quick fix): danyuchn's 31 commits through `a4905d92` change only `scripts/ste-lint.py` and `README.md`. No rule-set file or LICENSE changed since `3944283c`, and the linter's `RULES` table is byte-identical. prithivrajmu's 4 commits through `cf9787b6` are Dependabot bumps in `.github/workflows/`. The linter now lints a front-matter `description` as prose, protects more modal hedges (`cannot`, `can't`, `won't`, `shan't`, `very`, `well`) and reads Markdown as GitHub does. The owner chose to re-vendor under that contract: b9fe65a makes `scripts/ste-lint.py` byte-identical to `a4905d92` (mode kept 100644). `test_ste_lint.py` pins the new bytes, tests that only the description is linted, and tests the wider hedge guard. The self-test passes under 3.13 and `/usr/bin/python3` 3.9.6. `NOTICE` and both sources files credit pull requests #43, #47 to #51, #53, #54, #56 and #61 to #63, and the list-marker and heading fixes committed upstream under the name "t", with no linked GitHub account. The next review is a watch item. → item: 52-write-with-asd-ste100 — 2026-10-18
+- [ ] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
+      2026-11-12 read danyuchn/asd-ste100-skill through `a4905d92` and prithivrajmu/asd-ste100
+      through `cf9787b6`. Size: quick-fix. Revisit if: a compare from `a4905d92` (danyuchn) or
+      `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
+      references/) or a LICENSE.
 
 ## 55-test-suite-registry — 2026-10-18
 - [ ] Run the registered suites in CI (the spec's Out of scope).
@@ -4221,6 +4231,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       (listing budget, critical-rules-first, `@` loading), the `writing-skills-tdd-for-docs`
       deviation and the "Why no @ links" claim. The rewrite should also fix SKILL.md's "Directory
       Structure" and "File Organization" sections, which still show no `references/` folder.
+      → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
 - [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
@@ -4708,7 +4719,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       escaped-pipe asserts use double-quoted f-strings, where the file uses single quotes, and the
       helper `_unescaped_cells` copies `_cells`' regex. Size: plan. Done when: (a) to (e) are fixed
       or dropped on purpose, each with a test, and the (f) gaps are filled. → done in plan 65
-- [ ] Three nits in the splitter's tests (plan 59 final review).
+- [x] Three nits in the splitter's tests (plan 59 final review).
       `skills/tune-hyperparameters/scripts/test_time_series_cv.py`:
       `test_panel_folds_split_whole_periods` asserts a gap `>= embargo`, where `== embargo` pins the
       gap (the acceptance run showed exact gaps); `test_one_row_per_period_matches_row_mode` sends
@@ -4716,6 +4727,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       `groups` raises `IndexError` at `labels.shape[0]`, not the `ValueError` that the length check
       gives. Size: quick-fix. Revisit if: someone edits `time_series_cv.py` again, or a panel run
       shows a leak.
+      → done 2026-11-12 (/fix-issue #180): `_period_index` raises a `ValueError` when `groups` does not hold one label per row, and an (n, 1) column still works. This covers a 0-d array (the issue) and a two-column array, which gave row indices past the end of `X`. `test_panel_folds_split_whole_periods` asserts `== embargo`. `test_one_row_per_period_matches_row_mode` compares both paths to folds worked out from the docstring. It catches a guard of `embargo + label_horizon`, which the old suite passed.
 - [x] Two doc nits left by plan 59's final review. (a) The root `README.md` row for
       track-model-experiments lists the inputs the comparator refuses but omits several
       log-likelihood variables. (b) tune's Graduation (`skills/tune-hyperparameters/SKILL.md`) and
@@ -5708,7 +5720,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       branch, the missing-reference case compares the remaining copies, and the diff splits
       on `\n` only.
       → done 2026-10-31 (/deferred quick fix): a3ee531 adds the tests, compares the remaining copies when the reference fails, and diffs on `\n` only.
-- [ ] Micro-test kit odds and ends (plan 73 Minors M1-M3 and M25, and the final review's
+- [x] Micro-test kit odds and ends (plan 73 Minors M1-M3 and M25, and the final review's
       minor on `FENCE_RE`): the registered R2 reading rule has no class for a remark on
       `page < 1` in `page_of`; `run_reps.sh`'s usage-error text omits `[<budget>]`; the VOID
       criteria exist twice (`kit/measure.py` `rep_reply` and `kit/show_reps.py`) with no
@@ -5720,6 +5732,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Revisit if: the kit or F1 is reused for another plan, or a rep uses a four-backtick
       fence.
       → triggered 2026-11-11: plan 81 reused the kit. Lines 2-3 of `specs/baseline/red-baseline-acceptance-tests/kit/run_reps.sh` say that it was adapted from this kit's `run_reps.sh`.
+      → done 2026-11-12 (/deferred quick fix): 79db8ba fixes all five, test first where a script can hold a test. `FENCE_RE` reads fences of three or more backticks or tildes and closes one only on a run of its own character at least as long, with no info string. The VOID rule is one function, `void_reasons` in `kit/measure.py`, which `kit/show_reps.py` imports, and `measure.py selftest` checks each branch and that both scripts VOID the same reps. `run_reps.sh`'s usage error names `[<budget>]`. `kit/cases.py` gives a reuse the reading class for a `page < 1` remark. `f1/score_f1.py` finds the three missed spellings and has a `selftest`. Kit output over the 220 committed reps is byte-identical, and the new F1 matcher finds no hit in the four F1 reps. Plan 81's copied kit carries none of the five defects: its `run_reps.sh` usage names the budget, its `extract.py` fence reader is the CommonMark one, it has no `show_reps.py` and no F1 audit.
 - [ ] Watch the Proportion check's "cut it before you save it" (plan 73 final review
       recommendation). Every plan measured under the new step recipe exceeds "about five
       times" the spec (F1 arm 2: 7.26 and 7.71; P12 round 2: 9.66 to 12.27), and in P12 the
@@ -5919,7 +5932,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       See specs/plans/completed/77-audit-p2-text-fixes.md. Size: quick-fix. Done when: each of
       the three references carries the lead-in or points to SKILL.md's install block.
       → done 2026-11-11 (/deferred quick fix): `references/stack-compatibility.md`, `references/sensitivity.md` and `references/state-space.md` each carry SKILL.md's lead-in, "run `uv init` first if there is no `pyproject.toml`".
-- [ ] **tech-debt and test-driven-development give two routes for the first test (plan 77
+- [x] **tech-debt and test-driven-development give two routes for the first test (plan 77
       final review, owner ruled defer).** `skills/tech-debt/SKILL.md:140-141` (HARDEN) says to
       add the one characterization test, then use the develop-testing-strategy skill for "the
       tests past that first one". `skills/test-driven-development/SKILL.md:36` sends "adding
@@ -5929,6 +5942,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       work). See specs/plans/completed/77-audit-p2-text-fixes.md. Size: quick-fix. Done when:
       the two texts agree on which skill plans the first test, or one says why the other
       applies.
+      → done 2026-11-12 (/deferred quick fix): b62f15d makes tech-debt's HARDEN bullet say why its route applies: the one test pins behavior the code already has, so it comes before any test plan and needs no strategy, even though test-driven-development sends a pipeline's first tests to develop-testing-strategy. test-driven-development is unchanged. A new `harden-first-test` case in plan 77's kit, registered before any rep, loads both skills: the pinning test comes before develop-testing-strategy in 0 of 5 control reps and 5 of 5 treatment reps. Its registered clause B is 0 of 5 in both arms, so the additive bar is missed, and the owner ruled "Accept the wording" (`specs/baseline/red-baseline-audit-p2.md`, "/deferred pass (2026-11-12)").
 - [ ] **Re-test the test-driven-development pointer on a fixture without the partner's
       override line (plan 77 Task 3 and final review).** The `tdd-strategy` micro-test missed
       its 5-of-5 bar: the control, the plan's wording and one reworded arm all scored 0 of 5,
@@ -6153,7 +6167,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       found no source for "as today". The owner kept the spec's wording for plan 80. Size: design. Done when:
       protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate, and the
       `gate-tag` case still meets its bar under `specs/baseline/red-baseline-development-history/kit/`.
-- [ ] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
+- [x] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
       `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
       "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and
       protocol step 5, the gate message is gone and no file holds the tags. Plan 80's run wrote them into its SDD
@@ -6161,6 +6175,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       view, judge each kept ruling against the spec. The owner kept the micro-tested text unchanged for plan 80.
       Size: quick-fix. Done when: Finish step 2 names a source for the tags that survives a `/clear`, and a
       five-rep `history-filter` run at the new text is recorded in `specs/baseline/red-baseline-development-history.md`.
+      → done 2026-11-12 (/deferred quick fix): bb0f7cf adds the source to Finish step 2: when the gate message is no longer in context, read the spec and relabel each kept ruling that contradicts spec text, the gate's own test. Five `history-filter` reps at `bb0f7cf` pass 5 of 5, after an isolation probe on 2.1.322 (`specs/baseline/red-baseline-development-history.md`, "/deferred pass (2026-11-12)"). The fixture keeps the gate message in view, so the run checks for regression only, and no case reaches the fallback. → item: 80-development-history-record — 2026-11-08
+- [ ] **No case tests the history Finish step 2 fallback after a `/clear` (2026-11-12 `/deferred` pass).** The
+      fallback sentence that bb0f7cf adds to `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the
+      draft step 2, applies only when the gate message is gone. The `history-filter` case keeps that message in view,
+      so its five reps at `bb0f7cf` never reached the sentence. It would take a case in
+      `specs/baseline/red-baseline-development-history/kit/cases.py` whose fixture shows the draft and the spec but no
+      gate message, with a control at `bb0f7cf`'s parent (`b9fe65a`) and five reps per arm. Size: quick-fix. Revisit if: a
+      plan's `specs/history.md` entry, written after a `/clear` at the plan-completion protocol, labels a ruling
+      `Ruling` that the gate tagged `contradicts spec`, or the reverse.
 
 ## 81-spec-derived-acceptance-tests — 2026-11-09
 - [x] **`measure.py score` does not VOID a Codex reader rep whose log shows tool activity (plan 81 final review,
@@ -6308,11 +6331,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
       wrote it. Size: design. Done when: §5 names the step that runs the check at a resume and a clause scores
       it, or the owner drops the resume half of R7 from the spec.
-- [ ] **§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is
+- [x] **§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is
       recorded (plan 85 final review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §3 and §4. The
       gap is older than plan 85. A reply writes the roadmap file and the answer, and nothing in the skill makes
       the commit a step. Size: quick-fix. Done when: §4 says to commit the roadmap file once the answer is
       recorded, and a micro-test pass on the cases that write a roadmap file shows no regression.
+      → done 2026-11-12 (/deferred quick fix): 73f7dae makes the commit a §4 step, in §5's words: on approval, commit the roadmap file with the recorded answer on the current branch before the handoff. Five reps each of the five roadmap-writing cases and of dr-handoff-spec ran at `73f7dae` ($4.79). All six show no regression on the readings of record, by a comparison rule committed before any rep was read: dr-known-progression PASS 1 of 5 (its arm 0 of 5), dr-known-progression-79, dr-research-depth, dr-quality-suggest and dr-spec-column 5 of 5 each, and dr-handoff-spec A and B 5 of 5. In 21 of the 25 roadmap-writing reps the reply holds the commit until the partner approves (`specs/baseline/red-baseline-new-project-entry.md`, "/deferred pass (2026-11-12)").
 - [x] **The probe case `wp-stage-plan` reads step A's rep from commit `ede95b8` (plan 85 final review; owner
       ruled defer).** `specs/baseline/red-baseline-new-project-entry/kit/cases.py` (the `wp-stage-plan` entry,
       its `handoff` source). After a squash merge and a branch delete, that commit is unreachable and the case
@@ -6438,3 +6462,42 @@ review and the Plan Completion gate (2026-10-27) add the others.
       that tells the two apart. Filed at plan 90's completion gate, on the owner's word. Size: design. Done when: the
       guard denies the README's glued-qualifier example, while `print(git(x))` in a heredoc, `*(.)` and
       `(#i)readme*` still pass, and the README's "Not caught" bullet for it is removed.
+
+## claude/peaceful-gauss-1ce419 Step 4b review — 2026-11-12
+- [ ] **The re-vendored ste-lint.py rejects front matter that opens with an indented comment (Codex [P2], carried
+      by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:1392-1394` (`_front_matter`, upstream
+      danyuchn `a4905d92`) finds the first content line by `not line.startswith("#")`, so an indented comment such as
+      `  # metadata; note` before `name:` counts as content, fails the key test, and the whole block is read as
+      Markdown. The comment's semicolon then becomes a hard finding and the linter exits 1. Reproduced on 2026-11-12.
+      The copy at `255631a3` blanked all front matter, so the defect came with the 2026-11-12 re-vendor. No `SKILL.md`
+      in this repo starts its front matter with a comment. The vendored copy must stay byte-identical to upstream
+      (root `CLAUDE.md`, "Provenance is load-bearing"), so the fix is upstream's: skip comments after leading
+      whitespace when finding the first key. Then re-vendor, move the pin in `NOTICE` and both sources files, and add
+      a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `a4905d92` to danyuchn's HEAD
+      changes `_front_matter`, or the linter's indented-comment case is reported as fixed upstream.
+- [ ] **The re-vendored ste-lint.py lints a quoted front-matter description without decoding it (Codex [P2],
+      carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:1355-1360` (upstream danyuchn
+      `a4905d92`) lints the scalar's source text, not its value. `description: 'It can''t have failed.'` gives a
+      present-perfect finding that the same sentence as prose does not (reproduced on 2026-11-12), and a
+      double-quoted `;` hides a semicolon from the hard count. `skills/write-with-asd-ste100/SKILL.md:102` says
+      the linter never flags a hedge. The copy at `255631a3` never read front matter, so the defect came with the
+      2026-11-12 re-vendor. No `SKILL.md`, agent or command file in this repo has a single-quoted description. The
+      fix is upstream's: decode scalar escapes while keeping source positions, or leave quoted values out of the prose
+      path. Then re-vendor, move the pin and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a
+      compare from `a4905d92` to danyuchn's HEAD changes how `_front_matter` or `_scalar_pieces` reads a quoted
+      value, or the quoted-description case is reported as fixed upstream.
+
+## 91-causal-design-heldout-eval — 2026-11-12
+- [ ] **recommend-causal-design asks for an outcome-observation node that plan 91's reading rules count as an import
+      from the worked example (C3, filed at plan 91's completion gate on the owner's word).** The skill's quick
+      reference row for random assignment (`skills/recommend-causal-design/SKILL.md:120`) lists "Randomization,
+      outcome observation, interference", and the template graph in
+      `skills/recommend-causal-design/references/identification.md:46` has `T --> S[Outcome observed? S]`. Plan 91's
+      `trial` rules count such a node or gate as an import (G (e)) and as an echo of the worked example (L). The owner
+      took that strict reading (plan 91 D8), so all five `trial` treatment replies fail G and L, and `tax` fails L in
+      one rep. See specs/baseline/red-baseline-causal-design-heldout.md (Contested readings, C3; Owner rulings) and
+      specs/plans/completed/91-causal-design-heldout-eval.md. Two fixes are possible. One makes the skill draw an
+      outcome-observation node only when the scenario gives a reason for missing outcomes, which changes a discipline
+      skill and needs a micro-test against a no-guidance control (the writing-skills skill). The other writes future
+      reading rules that accept an observation node the scenario supports. Size: design. Done when: the owner picks
+      one fix, and the skill text or the evaluation-rule template changes to match, with the choice recorded.
