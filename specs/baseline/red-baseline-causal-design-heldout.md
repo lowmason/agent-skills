@@ -608,8 +608,113 @@ No rep stopped on its budget. The kit total is under the $15 stop.
 
 ## Cost
 
-(Task 4.)
+| Item | Reps | Cost | Mean per rep |
+|---|---|---|---|
+| Isolation probe | 1 | $0.006 | — |
+| Cost pilot (treatment `tax`, unscored) | 1 | $0.434 | — |
+| Control `trial` | 5 | $0.609 | $0.122 |
+| Control `tax` | 5 | $0.670 | $0.134 |
+| Treatment `trial` | 5 | $1.454 | $0.291 |
+| Treatment `tax` | 5 | $1.166 | $0.233 |
+| **Total for the kit** | 22 | **$4.339** | — |
+
+The kit cost $4.34 against the $15 stop, close to the plan's estimate of about $4. The control arms cost $1.28
+against their $5 stop. No rep stopped on its budget, and no rep was VOID, so no rep was rerun. Treatment replies ran
+to about 10,000 to 14,000 output tokens, and control replies to about 4,800 to 7,000.
 
 ## Verdict
 
-(Task 4.)
+### Step 1: the bars, case by case
+
+Contested cells give reading A, then reading B (see Contested readings under Treatment). The bars are
+`ADDITIVE_BAR` for G and S (treatment 5/5, and control fails at least 1 of 5), `NON_REGRESSION_BAR` for J (treatment
+at least 4/5, and at least control − 1) and treatment 5/5 for L.
+
+**`trial`**
+
+| Rule | Control | Treatment | Bar | Met or missed | Verdict for the element |
+|---|---|---|---|---|---|
+| G | 0/5 | 0/5 (C3-A); 3/5 (C3-B, C4-A); 5/5 (C3-B, C4-B) | `ADDITIVE_BAR` | Missed, missed, met | Uptake does not generalize, unless C3-B and C4-B, when uptake generalizes |
+| S | 0/5 | 5/5 | `ADDITIVE_BAR` | Met | Uptake generalizes |
+| J | 5/5 | 5/5 | `NON_REGRESSION_BAR` | Met | Causal judgment kept |
+| L | — | 0/5 (C3-A); 5/5 (C3-B) | treatment 5/5 | Missed, met | The treatment echoes the worked example (C3-A); no echo (C3-B) |
+
+**`tax`**
+
+| Rule | Control | Treatment | Bar | Met or missed | Verdict for the element |
+|---|---|---|---|---|---|
+| G | 0/5 | 2/5 (C1-A); 5/5 (C1-B) | `ADDITIVE_BAR` | Missed, met | Uptake does not generalize (C1-A); generalizes (C1-B) |
+| S | 0/5 | 2/5 (C2-A); 5/5 (C2-B) | `ADDITIVE_BAR` | Missed, met | Uptake does not generalize (C2-A); generalizes (C2-B) |
+| J | 5/5 | 5/5 | `NON_REGRESSION_BAR` | Met | Causal judgment kept |
+| L | — | 4/5 (C3-A); 5/5 (C3-B) | treatment 5/5 | Missed, met | The treatment echoes the worked example (C3-A); no echo (C3-B) |
+
+Applying the pre-registered verdict table:
+
+- `trial` generalizes only if the owner takes reading B on C3, for both G (e) and L, and on C4.
+- `tax` generalizes only if the owner takes reading B on C1, C2 and C3 (its L part).
+- The overall verdict is "generalizes" only if every contested reading takes reading B.
+
+**Overall verdict:** under the rules' words (every reading A), neither case generalizes. Under every alternative
+reading (every reading B), both cases generalize. So the verdict rests on four owner rulings, C1 to C4.
+
+### Step 2: interpretation
+
+What the result shows, under either reading:
+
+- **The status label followed the scenario.** All 10 treatment replies labeled the requested estimand with an exact
+  contract phrase, and each label was the correct one: `plausibly identified` for all five `trial` replies and
+  `conditional` for all five `tax` replies. No treatment reply labeled its requested estimand `not identified`, the
+  worked example's answer. No control reply used an exact label. Some controls gave a verdict in their own words instead, such as
+  "fully identified" and "identified cleanly" (control `trial` reps 1 and 5). S (b), the label part, generalizes in 10 of 10 treatment replies against 0 of
+  10 controls.
+- **The graph appeared, and it carried each scenario's own threats.** All 10 treatment replies drew an actual graph,
+  against 0 of 10 controls. Every `trial` graph has the random draw with no arrow into it, an unobserved node for
+  reading the report, and rebate sign-up downstream of the reports. Every `tax` graph has an unobserved node, the
+  tax's path to cross-border shopping or border-city sales, and the employer's move. The contested points are about
+  how a graph is drawn or what it adds: a direct arrow (C1), a date on the mailing node (C4) and an extra observation
+  node (C3). None is about whether a graph exists.
+- **Reading A's label for `trial` G describes an imported node, not missing uptake.** Under C3-A, every `trial`
+  graph fails G on part (e) alone. Under C3-A, the pre-registered label "uptake does not generalize" therefore
+  describes the added observation node, not an absent graph.
+- **No reply echoed the worked example's design.** No treatment reply gave either scenario a score, a cutoff, a
+  running variable, an eligibility rule, an earnings outcome or training, and none recommended a regression
+  discontinuity design. Every echo flag is explained above. The only candidate echo is the outcome-observation item
+  (C3). The skill's generic text asks for it in every experiment: the `SKILL.md` quick reference and the template
+  graph in `references/identification.md`.
+- **The narrower primary analysis in `tax` (C2) is not caused by the skill.** Three of five treatment replies made
+  the non-downtown stores the primary analysis. Three of five control replies did too (control `tax` reps 1, 2 and 3
+  make the 35 non-downtown stores the primary treated unit). The treatment replies label the narrower estimand as
+  separate. The controls do not label it.
+- **Judgment held in both arms.** J is 5/5 in every arm. With no skill text, `claude-opus-5-5` already rejects the
+  analyst's before-and-after design, refuses to adjust for rebate sign-up, plans town-level inference, keeps the
+  employer's move as a threat, drops the border cities and rejects the consultant's 30%. The skill did not lower
+  this judgment. These two cases cannot show whether the skill raises it.
+
+What the result does not show:
+
+- Whether an agent opens each reference from its pointer: the treatment arm carried every reference whole (O4).
+- Whether the description triggers the skill: the treatment arm stated that the skill is loaded (O4).
+- Anything about other models: every rep ran on `claude-opus-5-5`.
+- A precise rate: 5 reps per arm make a 5/5 against 4/5 split weak evidence.
+- A blinded reading: the executor knew each rep's arm. The contested readings and the quoted evidence let the owner
+  check each verdict.
+- A like-for-like comparison with October: the October controls ran on a Codex-family agent.
+- The effect of length: treatment replies ran about twice as long as control replies, and the treatment prompt
+  carried about 55 KB of skill text.
+
+### Owner questions for the completion gate
+
+1. **C1** (`tax` G (c)): does a path from the employer's move through a traffic node to Larkford's sales meet "an
+   arrow into Larkford's sales"? Reading A gives `tax` G 2/5, reading B gives 5/5.
+2. **C2** (`tax` S (d)): does making the labeled non-downtown estimand the primary analysis put it in the requested
+   estimand's place? Reading A gives `tax` S 2/5, reading B gives 5/5.
+3. **C3** (outcome-observation node or gate): (a) for G (e), is household turnover part of the `trial` scenario, so
+   that an observation node is not an import? (b) For L, is an item that the skill's generic text asks for an echo of
+   the worked example? Reading A gives `trial` G 0/5, `trial` L 0/5 and `tax` L 4/5. Reading B gives 5/5 for each.
+4. **C4** (`trial` G (a)): do outcome nodes split at a time zero of March 2025 say when the mailing happens, for reps
+   1 and 3? Under C3-B, reading A gives `trial` G 3/5 and reading B gives 5/5.
+5. **Controls at 5/5 on J:** both control arms pass J 5/5. The bar is non-regression, and it is met. The result
+   cannot show that the skill improves causal judgment on this model.
+6. **Missed bars:** every reading A misses at least one bar. Should a missed bar lead to a new backlog item? If C3-A
+   stands, the conflict lies between this plan's rules and the skill's own quick reference and template graph, so
+   the follow-up could be a change to the skill text or to future reading rules. This plan changes neither.
