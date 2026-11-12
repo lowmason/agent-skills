@@ -778,16 +778,29 @@ def _skip_prefix_utility(words, i):
     return i
 
 
-def _command_words(words):
-    """Drop the words before a command; [] if there is none, None if env's -S
-    hides it.
+def _stop_index(words, i, known=None):
+    """Return where the command starts when the walk begins at words[i]: an
+    index in [i, len(words)], len(words) if there is no command, or None where
+    env's -S hides it.
 
-    Those are LEADING_KEYWORDS, assignments (`X=1 rm x`), and PREFIX_UTILITIES
-    with their options, in any order and number: `time env GIT_PAGER=cat git
-    stash` runs `git stash`.
+    The walk skips LEADING_KEYWORDS, assignments (`X=1 rm x`), and
+    PREFIX_UTILITIES with their options, in any order and number: `time env
+    GIT_PAGER=cat git stash` runs `git stash`.
+
+    `known`, if given, maps each loop head the walk has passed, the position
+    where it reads a word and that word, to the result, None included. A head
+    already in it ends the walk with that result. The walk from a head depends
+    only on that word and the words after it, and in one walk of
+    _command_starts the words after it never differ, so the key settles it.
     """
-    i = 0
+    heads = []
     while i < len(words):
+        if known is not None:
+            head = (i, str(words[i]))
+            if head in known:
+                i = known[head]
+                break
+            heads.append(head)
         word = words[i]
         if word in LEADING_KEYWORDS or ASSIGNMENT.match(word):
             i += 1
@@ -796,22 +809,113 @@ def _command_words(words):
         elif _command_name(word) in PREFIX_UTILITIES:
             i = _skip_prefix_utility(words, i)
             if i is None:
-                return None
+                break
         else:
             break
-    return words[i:]
+    # `repeat`, or a prefix option missing its value, can step past the end.
+    stop = None if i is None else min(i, len(words))
+    if known is not None:
+        known.update(dict.fromkeys(heads, stop))
+    return stop
+
+
+def _command_starts(words):
+    """Yield the words from each place the command may start: [] where there is
+    no command, None where env's -S hides it. The first is where _stop_index
+    stops.
+
+    A word the walk stops at may still only lead the command, so it is read
+    both ways: as the command, and as a word the walk goes on past. The walk
+    goes on past a `{`, or past each later `]]` after a `[[`, since either is
+    syntax only where a command could start; past a word with an `=`, which zsh
+    may take for an assignment that ASSIGNMENT does not match, or env for one
+    of its operands; and, for a word that starts with `=`, from the same word
+    with every leading `=` removed, unless nothing is left, since zsh expands
+    `=name` to the path of the command `name`. Each matches the word's text,
+    quoted or not.
+
+    Each continuation starts at a later word or shortens the word it starts
+    at, so the words after the stop word never differ, and the stop word and
+    its position settle the rest of the walk. So each stop word is visited
+    once at its position: unbounded, a run of such words doubles the walk at
+    each word.
+
+    That bounds the candidates, not the work, so the walk also bounds its
+    work. A continuation's words differ from the subcommand's only at or before
+    its start, so its start position and the word there settle the rest of its
+    walk, and each continuation is queued once. A `[[` row stops its scan at a
+    `]]` that an earlier scan continued past: that scan also queued every later
+    `]]`, or stopped at one that an earlier scan covered.
+    """
+    continuations = []
+    queued = set()
+
+    def queue(start, seq):
+        key = (start, str(seq[start]) if start < len(seq) else None)
+        if key not in queued:
+            queued.add(key)
+            continuations.append((start, seq))
+
+    queue(0, list(words))
+    visited = set()
+    continued_past = set()  # each `]]` a `[[` row has continued past
+    known = {}  # where the walk from each loop head stops (_stop_index)
+    while continuations:
+        start, seq = continuations.pop()
+        k = _stop_index(seq, start, known)
+        if k is None:
+            yield None
+            continue
+        key = (k, str(seq[k]) if k < len(seq) else None)
+        if key in visited:
+            continue
+        visited.add(key)
+        yield seq[k:]
+        if k == len(seq):
+            continue
+        stop = seq[k]
+        if stop == '{':
+            queue(k + 1, seq)
+        if stop == '[[':
+            for j in range(k + 1, len(seq)):
+                if seq[j] == ']]':
+                    if j in continued_past:
+                        break
+                    continued_past.add(j)
+                    queue(j + 1, seq)
+        if '=' in stop:
+            queue(k + 1, seq)
+        if stop.startswith('='):
+            rest = stop.lstrip('=')
+            if rest:
+                word = _Token(rest, quoted=stop.quoted, spaced=stop.spaced,
+                              expands=stop.expands)
+                queue(k, seq[:k] + [word] + seq[k + 1:])
 
 
 def _classify_subcommand(tokens):
-    words = _command_words(_without_redirections(tokens))
-    if words is None:
-        return ENV_SPLIT_STRING
-    if not words:
-        return None
-    name = _command_name(words[0])
-    if name == 'git':
-        return _classify_git(words[1:])
-    return _classify_non_git(name, words[1:])
+    """Classify the command at each place it may start (_command_starts); the
+    first denial stands. Past 64 such places it fails closed, since a long run
+    of them would make the walk slow, and a hook that times out lets the call
+    go on."""
+    starts = _command_starts(_without_redirections(tokens))
+    for count, words in enumerate(starts, 1):
+        if count > 64:
+            return ('A subcommand here has more than 64 places where its command '
+                    'may start, more than this guard reads, so it fails closed. '
+                    'Split the command into shorter ones.')
+        if words is None:
+            return ENV_SPLIT_STRING
+        if not words:
+            continue
+        name = _command_name(words[0])
+        if name == 'git':
+            reason = _classify_git(words[1:])
+        else:
+            reason = _classify_non_git(name, words[1:])
+        if reason is not None:
+            return reason
+    return None
 
 
 def classify(command):

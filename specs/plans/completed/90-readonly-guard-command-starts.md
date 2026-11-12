@@ -1,0 +1,636 @@
+# Read-only Guard Command Starts Implementation Plan
+
+**Status: COMPLETE (2026-11-12)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
+> **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** The read-only guard looks for a subcommand's command at every plausible start. It then denies the 8 recorded lines in the spec's first three classes, and nothing that `d79b1fb` denies becomes allowed.
+
+**Architecture:** Only the walk that finds the command word changes. `_command_words`, which returns one start, becomes `_stop_index` (today's skip loop, from any position) and a generator `_command_starts`. The generator yields today's candidate first. Then it continues past each stop word that matches a row of the spec's table (§1), and a visited set keyed on the stop word bounds it. `_classify_subcommand` classifies every candidate and returns the first denial. The tokenizer, `_split_tokens`, `READINGS` and the classifiers do not change.
+
+**Tech Stack:** Python, stdlib only, 3.9-compatible (the guard); pytest (the tests); zsh (the Bash tool's shell).
+
+**Spec:** `specs/completed/readonly-guard-command-starts.md` (APPROVED 2026-11-11).
+
+## Global Constraints
+
+- **Anchors.** Line numbers are as of `d79b1fb`. `hooks/` has not changed from `d79b1fb` to this plan's commit. The old text in each step is the match key, not the line number.
+- **The 3.9 floor.** The guard stays stdlib only and 3.9-compatible: no `match`, annotations deferred (module docstring, `hooks/readonly-agent-guard.py:15-17`). Its functions carry no annotations, so the new ones carry none. The test file stays 3.9-compatible too.
+- **Scope fence.** In `hooks/readonly-agent-guard.py`, only `_command_words` and `_classify_subcommand` change (`:781-814`). The tokenizer, `_split_tokens`, `READINGS`, `_skip_prefix_utility`, `_without_redirections`, the git and non-git classifiers and every module constant stay byte-identical. Do not add `{` or `[[` to `LEADING_KEYWORDS`: a word that may lead the command is read both ways, never skipped.
+- **Existing tests.** Every existing test in `hooks/test_readonly_agent_guard.py` passes unedited. If one fails, stop and report it as a deviation (spec §5), and never edit it to pass. A planning prototype of Task 1 passed all of them on both interpreters, the text-asserting tests included.
+- **Bypass lines.** The test file gains the 8 recorded lines of Task 1 and no other bypass construction (spec §5).
+- **Chat hygiene.** Report bypass findings by class and count only. The constructions stay in files: the test file, `/tmp/codex-review/`, and the scratch outputs. Never restate one in chat, a report, a progress ledger or a commit message.
+- **Public repository.** The transcript corpus and the sweep outputs hold other repositories' commands. They stay in `~/.cache/agent-skills/scratch/plan90-work/` and are never committed.
+- **Reviewers.** code-reviewer and task-reviewer are guarded agents. Brief each one for plan conformance and code quality only. Never ask either to hunt bypasses or to run a candidate bypass line. Codex is the only seat that hunts bypasses (Final review, below).
+- **Live on merge.** `~/.claude/hooks/readonly-agent-guard.py` is a symlink into the main checkout, `/Users/lowell/Projects/agent-skills`. The change goes live in every repository when it merges there.
+- **Suites and gates.** Run the tests with `uv run python build/run_suites.py hooks` from the repo root. It runs the hooks suite under the dev Python and under `/usr/bin/python3` (the 3.9 floor), and passes arguments after `--` to pytest in both runs. Before each commit, `bash build/run_commit_lints.sh` prints `commit lints passed`. Commit messages follow Conventional Commits, use plain technical English, and end with the executing session's attribution trailer, written below as `<the session's trailer>`.
+- **Shell.** The Bash tool runs zsh. Use `/usr/bin/grep` for sweeps. Never `cd` in a step. Use absolute paths, or `uv run --directory <dir>`.
+- **Who runs a task.** Tasks 1 and 2 go to implementer subagents. Task 3 is **(controller)**: it reads local transcripts and ends at an owner gate.
+- **Order.** Run one plan execution at a time. `entry_check.py` found no file that this plan shares with plan 89.
+- **Final review (spec Verification 7).** subagent-driven-development's final review runs code-reviewer, briefed as above. The controller runs the Codex seat once, with requesting-code-review's `codex-review.md` recipe, after Task 3. If Codex finds mutating lines outside the recorded set, report them by class and severity only, with a pointer to `/tmp/codex-review/<short-HEAD>.md`. Then **STOP, owner**: the owner picks fix, record or stop. Do not start a second Codex round by default. Log the pick as a decision in `## Decisions`. After any later change to the walk, rerun Task 3's Steps 3 to 5 and report the new counts.
+- **Completion.** The plan-completion protocol ticks the item that begins "Each of the eight readings holds for a whole line" (`specs/deferred_items.md`, section `readonly-guard-leading-token-bypasses`) with `→ done <date>`. The note records the 8 lines closed, by class and count. It also records the 2 that `d67f856` closed earlier, the glued qualifier left under "Not caught" by the spec's approval, and Task 3's false-positive count with the owner's ruling. The spec retires with the plan. After finishing-a-development-branch merges the branch into `main` in the main checkout, run Gate B there (spec Verification 6): `./hooks/probe-readonly-guard.sh` exits 0 and prints three `ok:` lines. It spawns `claude -p` runs.
+
+## Review Focus
+
+1. Each new denial names the mutator that the walk found, so the controller of a denied agent reads a real reason. `test_command_start_bypasses_are_denied` asserts `` `rm` `` or `` `git branch `` in each reason (Task 1).
+2. A continued branch that reaches env's `-S` denies with `ENV_SPLIT_STRING`, as today's candidate does (spec §1): `test_command_starts_reaching_env_s_fail_closed` (Task 1).
+3. A continued branch that reaches `command -v` or `-V` runs nothing, so a brace group that only describes a command stays allowed: the `branch-reaches-command-v` allow case (Task 1).
+4. A subcommand that its redirections leave empty yields one empty candidate and raises nothing. A raise would deny it, because `main()` fails closed: the `only-redirections` allow case (Task 1).
+5. A heredoc line made only of `=` (a Markdown underline), or one that starts with `=` words before read-only words (AsciiDoc headings), stays allowed: the `heredoc-underline` and `heredoc-asciidoc-headings` allow cases (Task 1).
+6. The work bound changes no candidate. Each dropped continuation is equivalent to one already queued. Task 5 Step 1 checks this on real commands (Task 4).
+7. The cap denies only when none of the first 64 candidates denies, and it names its own reason: `test_more_than_64_command_starts_fail_closed` (Task 4).
+8. The work test fails when either part of the work bound is undone: Task 4 Step 5 (Task 4). After D6, removing `queued` fails no test, because D6 removed the class it bounded. The scan stop and the memo still each have a case that bites (Task 7 Step 2a).
+9. A long `=` rule, a table border of `=` words, or a long `=` prefix on a word in a heredoc stays allowed, because a word that begins with `=` adds one candidate, not one per `=`: `test_equals_text_lines_stay_allowed` and `test_leading_equals_strip_in_one_step` (Task 6).
+
+## Decisions
+
+- **D1** (owner, plan review, 2026-11-11): "Approve as is", in answer to "Approve plan 90 as written?". The plan stands as written, with the builder's calls in it. Those calls are the README exact copy, the 10 allow cases, the bound test at 16 words with a 3× limit, Task 3's class rule and its split by guarded agent, and README inputs from both versions. Applied in: Tasks 1 to 3, Global Constraints.
+- **D2** (owner, execution, 2026-11-11): "Accept as is", in answer to "Do you accept the walk's false-positive class as the README records it?". The corpus sweep found 0 false positives in 150,024 unique commands, so the accepted class is the one that the README records. Applied in: Task 3.
+- **D3** (owner, execution, 2026-11-11): "Fix it now", in answer to "How should the guard's quadratic slowdown on long crafted lines be handled?". The offered fix was a spec amendment and a code task that drop a queued continuation whose start position and word were seen before, then a rerun of Task 3's Steps 3 to 5. Applied in: new tasks.
+- **D4** (owner, execution, 2026-11-11): "Dedupe + cap", in answer to "Should the fix also deny a subcommand with more than 64 candidate starts?". The dedupe needs a second part, which applies the same idea to the `[[` row's scan. Without it, a long chain of tests stays quadratic. The cap makes the worst case linear. It adds a false positive, so Task 5 stops at the false-positive gate again. Applied in: spec §1, §2, §4 and §5 (amendment), Tasks 4 and 5.
+- **D5** (owner, execution, 2026-11-11): "Accept as is", in answer to "Do you accept the cap's false-positive class as the README records it?". The rerun sweep found 0 false positives in 150,024 unique commands. No subcommand had more than 13 candidates, so the cap never fired. Applied in: Task 5.
+- **D6** (owner, execution, 2026-11-11): "Strip all = at once", in answer to "Which rule should the guard use for a word that starts with `=`?". The final review found that the cap denied a heredoc line made of a long run of `=`. That class was wider than the README described when D5 was asked. The owner picked this rule over skipping only the words made of `=`, and over keeping the code and correcting the text. Applied in: spec §1 table and §5 (amendment), Tasks 6 and 7.
+
+---
+
+### Task 1: The walk yields every candidate start
+
+**Files:**
+- Modify: `hooks/readonly-agent-guard.py:781-814` (`_command_words`, `_classify_subcommand`)
+- Test: `hooks/test_readonly_agent_guard.py` (new lists and tests after `test_the_dash_modifier_leads_a_command_like_a_keyword`, `:606-608`)
+
+**Interfaces:**
+- Consumes: `_skip_prefix_utility(words, i)`, `_without_redirections(tokens)`, `_command_name(word)`, `_classify_git(args)`, `_classify_non_git(name, args)`, `_Token`, `ENV_SPLIT_STRING`, all unchanged.
+- Produces:
+  - `_stop_index(words, i)` returns the index where the command starts when the walk begins at `words[i]`: an `int` in `[i, len(words)]`, or `None` where env's `-S` hides the command.
+  - `_command_starts(words)` is a generator. It yields one candidate for each stop word visited: a `list` of `_Token` (`[]` when there is no command), or `None` where env's `-S` hides the command. The first yield is today's candidate, unchanged.
+  - `_classify_subcommand(tokens)` keeps its signature and return values.
+  - `_command_words` is deleted. Its only caller is `_classify_subcommand`.
+
+- [x] **Step 1: Write the failing tests**
+
+Add to `hooks/test_readonly_agent_guard.py`, after `test_the_dash_modifier_leads_a_command_like_a_keyword`:
+
+```python
+# The spec's first three classes (specs/completed/readonly-guard-command-starts.md): the
+# walk stopped at a word that may lead the command and took that word for the
+# command. Seven come from the backlog item, the test line from the README's
+# mixed-reading bullet. d79b1fb allowed each.
+COMMAND_START_BYPASSES = [
+    pytest.param('{ git branch ]] HEAD; }', id='brace-group-before-git'),
+    pytest.param('true && { git branch ]] HEAD; }', id='brace-group-after-a-separator'),
+    pytest.param('if [[ -n a ]] git branch ]] HEAD', id='test-before-git'),
+    pytest.param('=rm x', id='path-expansion'),
+    pytest.param('arr[1]=x rm t', id='subscripted-assignment'),
+    pytest.param('ä=x rm t', id='non-ascii-assignment'),
+    pytest.param('env a-b=x rm t', id='env-operand'),
+    pytest.param('env -- a-b=x rm t', id='env-operand-after-dashes'),
+]
+
+# The same places with a read-only command, so each row of the walk's table is
+# pinned both ways; the edges a branch can reach; and the one must-pass form of
+# the backlog item that no other test classifies.
+COMMAND_START_ALLOWED = [
+    pytest.param('{ git branch --list HEAD; }', id='brace-group'),
+    pytest.param('if [[ -n a ]] git branch --list HEAD', id='test'),
+    pytest.param('arr[1]=x git log', id='subscripted-assignment'),
+    pytest.param('env -- a-b=x git log', id='env-operand'),
+    pytest.param('=git log', id='path-expansion'),
+    pytest.param('{ command -v rm; }', id='branch-reaches-command-v'),
+    pytest.param('2>/dev/null', id='only-redirections'),
+    pytest.param('cat <<EOF\nTitle\n=====\nEOF', id='heredoc-underline'),
+    pytest.param('cat > /tmp/notes.adoc <<EOF\n= Title\n== Section one\nEOF',
+                 id='heredoc-asciidoc-headings'),
+    pytest.param('diff <(git show HEAD:f) f', id='read-only-process-substitution'),
+]
+
+
+@pytest.mark.parametrize('command', COMMAND_START_BYPASSES)
+def test_command_start_bypasses_are_denied(command):
+    reason = guard.classify(command)
+    assert reason is not None and ('`rm`' in reason or '`git branch' in reason), reason
+
+
+@pytest.mark.parametrize('command', COMMAND_START_ALLOWED)
+def test_command_start_allow_cases_stay_allowed(command):
+    assert guard.classify(command) is None
+
+
+def _starts(line):
+    words = guard.split_subcommands(line, braces=False)[0]
+    return [None if s is None else [str(w) for w in s] for s in guard._command_starts(words)]
+
+
+def test_command_starts_yield_todays_candidate_first():
+    assert _starts('X=1 time env -i FOO=1 git log')[0] == ['git', 'log']
+    assert _starts('{ git log')[0] == ['{', 'git', 'log']
+    assert _starts('if [[ -n a ]] git log')[0] == ['[[', '-n', 'a', ']]', 'git', 'log']
+    assert _starts('arr[1]=x git log')[0] == ['arr[1]=x', 'git', 'log']
+    assert _starts('=git log')[0] == ['=git', 'log']
+    assert _starts('command -v rm')[0] == []
+    assert _starts('env -S git log')[0] is None
+
+
+def test_command_starts_continue_past_each_row():
+    for line in ('{ git log', 'if [[ -n a ]] git log', 'arr[1]=x git log',
+                 'env -- a-b=x git log', '=git log'):
+        assert ['git', 'log'] in _starts(line), line
+    # Each later `]]`, quoted or not.
+    assert [']]', 'git', 'log'] in _starts("[[ a == ']]' ]] git log")
+
+
+def test_command_starts_reaching_env_s_fail_closed():
+    reason = guard.classify('a-b=x env -S git log')
+    assert reason is not None and 'env -S' in reason, reason
+
+
+def test_command_starts_visit_each_stop_word_once():
+    # Unbounded, a run of `==` words or a chain of `[[ … ]]` tests doubles the
+    # walk at each word, and a hook that times out lets the call go on.
+    for line in ('== ' * 16 + 'git log', '[[ a ]] ' * 16 + 'git log'):
+        words = guard.split_subcommands(line, braces=False)[0]
+        starts = list(guard._command_starts(words))
+        assert len(starts) <= 3 * len(words), (line, len(starts))
+        assert ['git', 'log'] in starts, line
+```
+
+- [x] **Step 2: Run the new tests against `d79b1fb`'s guard to verify they fail (spec Verification 1)**
+
+Run: `git diff --quiet d79b1fb -- hooks/readonly-agent-guard.py && echo same` (it prints `same`), then `uv run python build/run_suites.py hooks -- -k command_start`.
+Expected in each of the two runs: `12 failed, 10 passed`. The controller reconciles these counts from its own run, not from a report:
+- `test_command_start_bypasses_are_denied`: all 8 fail with `AssertionError: None`.
+- `test_command_starts_reaching_env_s_fail_closed`: fails with `AssertionError: None`.
+- The other three `test_command_starts_*` tests fail with `AttributeError` (there is no `_command_starts`).
+- The 10 allow cases pass.
+
+- [x] **Step 3: Implement `_stop_index(words, i)`, `_command_starts(words)` and the new `_classify_subcommand(tokens)` in `hooks/readonly-agent-guard.py`**
+
+- `_stop_index(words, i)` is today's loop in `_command_words`, started at `i`. Its docstring takes over the list of what the loop skips. It returns `min(i, len(words))`, because `repeat` or a prefix option with no value can step past the end. It returns `None` where `_skip_prefix_utility` does.
+- `_command_starts(words)` follows these rules. The generator's shape is the builder's choice, within them.
+  1. A *continuation* is a pair `(start, seq)`: a position and the word list to walk from it. The first is `(0, list(words))`. Walk it first, so that the first yield is today's candidate.
+  2. Walk a continuation with `k = _stop_index(seq, start)`. If `k` is `None`, yield `None` and take the next continuation.
+  3. The visited set is keyed on the stop word's position and text: `(k, str(seq[k]))`, or `(k, None)` when `k == len(seq)` (spec §1). If the key is already in the set, drop the continuation. Otherwise add the key and yield `seq[k:]`. Then, for `stop = seq[k]`, add a continuation for each row that matches. Each row matches on the word's text, quoted or not:
+
+     | `stop` | Continuation |
+     |---|---|
+     | `== '{'` | `(k + 1, seq)` |
+     | `== '[['` | `(j + 1, seq)` for each `j > k` where `seq[j] == ']]'` |
+     | contains `=` | `(k + 1, seq)` |
+     | `.startswith('=')` | `(k, seq')`: `seq'` is a copy of `seq` whose word `k` is `_Token(stop[1:], quoted=stop.quoted, spaced=stop.spaced, expands=stop.expands)` |
+
+     Only the last row copies the list. The others share `seq`. Every continuation starts at a later word or shortens the word at `k`, so the words after the key's position never differ, and the key determines the rest of the walk. The order of the continuations after the first is free.
+- `_classify_subcommand(tokens)` takes each candidate of `_command_starts(_without_redirections(tokens))` in turn. For `None`, it returns `ENV_SPLIT_STRING`. It skips `[]`. It classifies any other candidate as today: `git` goes to `_classify_git(words[1:])`, and any other name to `_classify_non_git(name, words[1:])`. It returns the first denial, or `None` when no candidate denies.
+
+- [x] **Step 4: Run the new tests to verify they pass**
+
+Run: `uv run python build/run_suites.py hooks -- -k command_start`
+Expected: `22 passed` in each run.
+
+- [x] **Step 5: Check that the bound test bites**
+
+Make the visited-set membership check always false, so that no continuation is dropped. Then run `uv run python build/run_suites.py hooks -- -k visit_each_stop_word_once`.
+Expected: `1 failed` in each run, with a count of more than 60,000 starts against a bound of 54 or 150. It finishes in seconds. Restore the check. `git diff --stat` then shows only the two files of this task.
+
+- [x] **Step 6: Run the whole suite**
+
+Run: `uv run python build/run_suites.py hooks`
+Expected: each run shows 22 more passed than before this task, and `0 failed`. No existing test was edited. If an existing test fails, stop and report it (Global Constraints, Existing tests).
+
+- [x] **Step 7: Commit**
+
+Run `bash build/run_commit_lints.sh` (it prints `commit lints passed`), then:
+
+```bash
+git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py
+git commit -m "fix(hooks): find the guarded command at every place it can start
+
+The read-only guard's walk took the first word it could not skip as the
+command. A word that may lead the command (a leading brace or test, a word
+with an equals sign, a leading equals sign) is now read both ways, and a
+denial either way stands. A visited set bounds the walk.
+
+<the session's trailer>"
+```
+
+### Task 2: The README describes the new walk
+
+**Files:**
+- Modify: `hooks/README.md:230-342` (sections "Limitations (by design)", its "Not caught" list and "Known false positives")
+
+**Interfaces:**
+- Consumes: Task 1's walk, as built.
+- Produces: nothing that code reads.
+
+The spec leaves the wording to the builder. The text below is exact copy. Find each place by its old text, not by line number. Keep the file's line wrapping near 88 columns.
+
+- [x] **Step 1: Add the walk's new point to the "Limitations (by design)" paragraph**
+
+Insert this text between the sentence on env's `-S` (it ends `which the guard does not read.`) and the sentence that begins `Subshells, brace groups,`. Then rewrap the paragraph:
+
+```markdown
+Some words may lead the command or be the command, and the guard reads each such word
+both ways. A denial either way stands. These words are a leading `{`, a leading
+`[[ … ]]` test, a word that contains `=` (an assignment that the guard does not
+recognise, or an operand of `env`), and a word that begins with `=` (zsh's `=cmd` path
+expansion).
+```
+
+- [x] **Step 2: Edit the "Not caught" list**
+
+1. Replace this bullet:
+
+   ```markdown
+   - A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`), by
+     zsh's `=cmd` path expansion (`=rm x`), or by gluing to a brace (zsh runs `{rm x;}`).
+   ```
+
+   with:
+
+   ```markdown
+   - A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`) or by
+     gluing to a brace (zsh runs `{rm x;}`).
+   ```
+2. Delete the whole bullet that begins `- A word the guard does not recognise as an assignment` (four lines).
+3. Replace the whole bullet that begins `- A line that needs the flat reading for one construct` (five lines) with:
+
+   ```markdown
+   - A line that needs the flat reading for one construct and the nested reading for
+     another. Each of the eight readings below applies to the whole line, so no single
+     reading catches both. A brace group or a `[[ … ]]` test that leads a subcommand does
+     not hide the command after it, because the guard also reads past it (see above).
+   ```
+4. Keep the bullet on the glob qualifier glued to the command word as it is.
+
+- [x] **Step 3: Add the false positive**
+
+Under "Known false positives, accepted rather than widened", after the bullet that begins `- **`time -p rm x` is denied**`, insert:
+
+```markdown
+- **A word at the start of a command that contains `=`, begins with `=`, or is `{` or
+  `[[` is read both as a prefix and as the command.** So the word after it is classified
+  too, even where zsh runs the first word as the command, or where the line is heredoc
+  text: an AsciiDoc heading `== rm and mv ==` in a heredoc is denied.
+```
+
+- [x] **Step 4: Verify the edits**
+
+The check collapses whitespace first, so a rewrapped line still matches.
+
+Run: `uv run python -c "import re; t = re.sub(r'\s+', ' ', open('hooks/README.md').read()); print([s in t for s in ('reads each such word both ways', 'read both as a prefix and as the command', 'git(.) stash', 'arr[1]', 'a-b=x', '=rm x', ']] HEAD', 'recognise as an assignment')])"`
+Expected: `[True, True, True, False, False, False, False, False]`. The new text and the glued-qualifier bullet are present. The recorded lines and the deleted bullet are gone.
+
+- [x] **Step 5: Commit**
+
+Run `bash build/run_commit_lints.sh`. It prints `commit lints passed`, its `cc_guide_lint` and `check_conformance` steps included. Then:
+
+```bash
+git add hooks/README.md
+git commit -m "docs(hooks): describe the guard's command-start walk
+
+The README now says that a word that may lead the command is read both
+ways, drops the two 'Not caught' gaps that the walk closes, and records
+the false positive that the walk adds.
+
+<the session's trailer>"
+```
+
+### Task 3 (controller): No denial lost, and the false-positive sweep
+
+Spec Verification 3 and 4. The scripts are one-off, are written by the controller, and are never committed. Their detail goes to files in `~/.cache/agent-skills/scratch/plan90-work/`, and only counts go to chat.
+
+**Files:**
+- Create (scratch, uncommitted): `~/.cache/agent-skills/scratch/plan90-work/{old_guard.py,corpus.py,corpus.jsonl,compare.py,flips.jsonl}`
+- Modify: `specs/plans/90-readonly-guard-command-starts.md` (`## Decisions`, Step 6)
+
+**Interfaces:**
+- Consumes: the branch's `hooks/readonly-agent-guard.py` (Task 1) and `hooks/README.md` (Task 2). From `d79b1fb`'s guard: `classify`, `_logical_lines`, `_tokenize`, `_physical_line_tokens`, `READINGS`, `_split_tokens`, `_classify_subcommand`, `_without_redirections` and `_command_words`.
+- Produces: the owner's ruling on each false positive, logged as a decision.
+
+- [x] **Step 1: Fetch `d79b1fb`'s guard**
+
+Run: `mkdir -p ~/.cache/agent-skills/scratch/plan90-work && git show d79b1fb:hooks/readonly-agent-guard.py > ~/.cache/agent-skills/scratch/plan90-work/old_guard.py`
+
+- [x] **Step 2: Build the transcript corpus**
+
+`corpus.py` reads every `tool_use` block named `Bash` from these transcripts:
+- `~/.claude/projects/*/*.jsonl`, with population `main`.
+- `~/.claude/projects/*/*/subagents/agent-*.jsonl`, with population set to the `agentType` in the sibling `agent-*.meta.json`, or `unknown` where there is none.
+
+It takes each block's `input.command` string and skips lines that are not JSON. It writes one JSON line per unique command text to `corpus.jsonl`, with the populations and project directories that ran it. It prints the number of files, of commands, of unique commands, and of unique commands that a guarded agent ran (a population in `READONLY_AGENTS`).
+
+- [x] **Step 3: Compare the two guards**
+
+`compare.py` loads `old_guard.py` and the branch's guard with `importlib`. Its inputs come from three sources:
+- the corpus;
+- every `str` constant in `hooks/test_readonly_agent_guard.py`, found with `ast`;
+- every backtick span and every line of every fenced block in `hooks/README.md`, both the branch's file and `d79b1fb`'s (`git show d79b1fb:hooks/README.md`), which still holds the examples that Task 2 removed.
+
+A guard denies an input when `classify` returns a reason or raises, because `main()` fails closed for a guarded agent. The script writes each input whose result differs to `flips.jsonl`, with its source and its corpus metadata. It prints the denied-to-allowed and allowed-to-denied counts for each source. For the corpus, it splits the counts into commands that a guarded agent ran and the others.
+
+Expected:
+- `denied→allowed: 0` for every source. Any other count means that the walk dropped today's candidate (spec §3). Stop, report the count only, and fix Task 1 before going on.
+- In the test file, allowed→denied is expected for the 8 recorded lines and for the `env -S` branch pin. In the README, it is expected for those recorded lines and for the false-positive example of Task 2. Note any other test-file or README flip for the owner (Step 5).
+
+- [x] **Step 4: Classify each corpus flip**
+
+Add a `class` to each corpus row of `flips.jsonl`. Use `d79b1fb`'s functions on each of the command's logical lines and physical lines (as `classify` builds them), in each of `READINGS`. Find the first subcommand from `_split_tokens` where the old guard's `_classify_subcommand` returns `None` and the new guard's does not. Its stop word today is `old._command_words(old._without_redirections(subcommand))[0]`. The class is the row of that word, checked in this order:
+1. `{` gives `brace`.
+2. `[[` gives `test`.
+3. A word that begins with `=` gives `leading =`.
+4. A word that contains `=` gives `contains =`.
+
+If no subcommand differs, the new guard raised where the old one did not, and the class is `raise`. Print the corpus flip counts by class and population group.
+
+- [x] **Step 5: STOP, owner — the false positives**
+
+> Deviation: the gate also asked the owner about the walk's super-linear runtime on long crafted lines, which a Task 1 ruling had kept for this gate. The answers D3 and D4 added Tasks 4 and 5.
+
+Report in chat, as counts only:
+- the corpus size;
+- denied→allowed (0);
+- allowed→denied, split by class and by population group (a guarded agent, or other).
+
+Point to `flips.jsonl` for the commands themselves. Some flips may come from this repository's earlier sessions that hunted guard bypasses. Those can be true positives, so name their project directory in the count. Ask the owner to accept each false positive or to ask for a narrower rule. A narrower rule changes the spec's table, so it needs a spec amendment task and a new code task. Plan both from the owner's answer before any code changes.
+
+- [x] **Step 6: Log the ruling**
+
+Add the owner's answer to `## Decisions` as the next decision, `- **D<n>** (owner, execution, <date>): <answer>. Applied in: <Task 3 | new tasks>.`, in the owner's words. Then:
+
+```bash
+git add specs/plans/90-readonly-guard-command-starts.md
+git commit -m "docs(specs): record the owner's false-positive ruling in plan 90
+
+<the session's trailer>"
+```
+
+### Task 4: The walk bounds its work, and a subcommand past 64 candidates fails closed
+
+D3 and D4 add this task. The spec amendment is in `specs/completed/readonly-guard-command-starts.md` Design §1, §2, §4 and §5, each part marked "Amendment". Task 1's walk is built and reviewed (`c97eb24`). This task changes its work, not its candidates.
+
+**Files:**
+- Modify: `hooks/readonly-agent-guard.py` (`_stop_index`, `_command_starts` and `_classify_subcommand`, from `c97eb24`)
+- Modify: `hooks/test_readonly_agent_guard.py` (one import, and new tests after `test_command_starts_visit_each_stop_word_once`)
+- Modify: `hooks/README.md` (one bullet under "Known false positives, accepted rather than widened")
+
+**Interfaces:**
+- Consumes: Task 1's `_stop_index`, `_command_starts` and `_classify_subcommand`, and the Global Constraints. The Scope fence names `_command_words`. `_stop_index` and `_command_starts` replaced it in Task 1, so the fence covers `_stop_index`, `_command_starts` and `_classify_subcommand`. Add no module constant, and change nothing else in the guard.
+- Produces: `_command_starts(words)` yields the same set of candidates as at `c97eb24`, and its first yield is unchanged. `_classify_subcommand(tokens)` keeps its signature and adds one return value, the cap's reason.
+
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: fix round 1 (`1607648`) added the `skipped-run` case, after the first implementation (`a672942`) found that this class still took quadratic work.
+
+In `hooks/test_readonly_agent_guard.py`, add `import sys` after `import subprocess`. Then add this after `test_command_starts_visit_each_stop_word_once`:
+
+```python
+def _walk_work(line):
+    """Count the line events the walk runs in the guard's own code."""
+    words = guard.split_subcommands(line, braces=False)[0]
+    events = [0]
+
+    def count(frame, event, arg):
+        if event == 'line':
+            events[0] += 1
+        return count
+
+    def trace(frame, event, arg):
+        return count if frame.f_globals is vars(guard) else None
+
+    previous = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        list(guard._command_starts(words))
+    finally:
+        sys.settrace(previous)
+    return events[0]
+
+
+# A walk can yield each candidate once and still do quadratic work to reach
+# them, and a hook that times out lets the call go on. Linear work doubles
+# when the line doubles; quadratic work quadruples.
+@pytest.mark.parametrize('shape', [
+    pytest.param(lambda n: '[[ a ]] ' * n + 'git log', id='test-chain'),
+    pytest.param(lambda n: '=' * n + 'a=1 ' + 'b=1 ' * n + 'git log', id='leading-equals'),
+    pytest.param(lambda n: '[[ ' + 'env -u ]] ' * n + 'git log', id='skipped-run'),
+])
+def test_command_starts_work_grows_linearly(shape):
+    small, large = _walk_work(shape(64)), _walk_work(shape(128))
+    assert large < 3 * small, (small, large)
+
+
+def test_more_than_64_command_starts_fail_closed():
+    assert guard.classify('{ ' * 63 + 'git log') is None
+    reason = guard.classify('{ ' * 64 + 'git log')
+    assert reason is not None and 'more than 64' in reason, reason
+```
+
+The three shapes are read-only lines, like the bound test's. The `skipped-run` case and Step 3's item 4 were added after the first implementation (`a672942`). That implementation's report found that this class of line still took quadratic work, which the cap does not reach. The test file gains no bypass construction (Global Constraints, Bypass lines).
+
+- [x] **Step 2: Run the new tests to verify they fail**
+
+Run: `uv run python build/run_suites.py hooks -- -k "work_grows_linearly or more_than_64" --tb=no -rf`
+Expected in each of the two runs: `4 failed`. The controller reconciles this from its own run:
+- `test_command_starts_work_grows_linearly[test-chain]`, `[leading-equals]` and `[skipped-run]` fail. A planning prototype measured a ratio of about 3.9 and 3.7 for the first two at `c97eb24`, against about 2.0 once the work is bounded.
+- The first implementation (`a672942`) ran this step with only the first two cases, and got `3 failed`. Fix round 1 added `skipped-run` and ran it alone, and got `1 failed, 2 passed`.
+- `test_more_than_64_command_starts_fail_closed` fails with `AssertionError: None`.
+
+- [x] **Step 3: Implement the work bound and the cap**
+
+> Deviation: item 4, the memo, came in fix round 1 (`1607648`) under a controller ruling. The first implementation (`a672942`) built items 1 to 3.
+
+In `_command_starts`:
+1. **Queue each continuation once.** Keep a set `queued`, keyed like the visited set but on the continuation's start position: `(start, str(seq[start]))`, or `(start, None)` when `start == len(seq)`. Queue a continuation only if its key is not in the set, and add the key when you queue it. Queue the first continuation, `(0, list(words))`, the same way. Keep the visited set as it is, and walk the first continuation first, so that the first yield is still today's candidate.
+2. **Stop the `[[` row's scan at a `]]` already continued past.** Keep a set of the positions `j` whose `]]` a `[[` row has continued past, one set for the whole walk. The row at `k` scans `j = k + 1, k + 2, …`. At each `j` where `seq[j] == ']]'`, it stops the scan if `j` is in the set. Otherwise it adds `j` and queues `(j + 1, seq)`.
+3. **Say why the walk is sound** in the docstring, in the builder's words. A continuation's words differ from the subcommand's only at or before its start, so its start position and the word there settle the rest of its walk. A scan that continued past a `]]` at `j` also queued every later `]]`, or stopped at one that an earlier scan covered.
+4. **Remember where each loop head stops.** A `]]` that `repeat` or a prefix utility's option consumes lies inside a run of words that the walk skips, so each continuation after one walks the rest of that run again. Give `_stop_index` an optional third argument, `known`, a dict that one walk of `_command_starts` shares across its continuations. Key each loop head, the position where the loop reads a word, as `(i, str(words[i]))`. When a head is already in `known`, return its value. When the walk ends, store its result under every head it passed, `None` included. Called without `known`, `_stop_index` behaves as before. Say in its docstring why the key is sound: the walk from a head depends only on that word and the words after it, and those never differ (item 3).
+
+In `_classify_subcommand`, count the candidates as they come. When a 65th candidate arrives and none of the first 64 denied, return this reason, word for word:
+
+`'A subcommand here has more than 64 places where its command may start, more than this guard reads, so it fails closed. Split the command into shorter ones.'`
+
+Keep 64 inside `_classify_subcommand`, not in a module constant.
+
+- [x] **Step 4: Run the new tests to verify they pass**
+
+Run: `uv run python build/run_suites.py hooks -- -k "command_start or more_than_64" --tb=no -rf`
+Expected: `26 passed` in each run (Task 1's 22, and this task's 4).
+
+- [x] **Step 5: Check that each part bites**
+
+> Deviation: item 1 first removed `queued` alone. With the memo in place that mutation failed nothing, so `a4db3d2` made it the joint mutation. After D6 the joint mutation fails only `skipped-run` (Task 7 Step 2a).
+
+Make each change below on its own, run the command, then restore the code before the next change:
+1. Queue every continuation, without the `queued` check, and call `_stop_index` without `known` in `_command_starts`. Run `-k work_grows_linearly`. Expected in each run: `2 failed, 1 passed`, and the failing ids are `leading-equals` and `skipped-run`. The memo of item 4 also bounds the leading-`=` class, so removing `queued` alone fails nothing. The two parts bound that class independently, and only the joint mutation shows that the test guards it.
+2. Remove the stop from the `[[` scan. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 2 passed`, and the failing id is `test-chain`.
+3. Make the cap never fire. Run `-k more_than_64`. Expected in each run: `1 failed`.
+4. Call `_stop_index` without `known` in `_command_starts`. Run `-k work_grows_linearly`. Expected in each run: `1 failed, 2 passed`, and the failing id is `skipped-run`.
+
+The runs use `uv run python build/run_suites.py hooks -- -k <expr> --tb=no -rf`. After the last restore, `git diff --stat` shows only this task's three files.
+
+- [x] **Step 6: Add the false positive to the README**
+
+Under "Known false positives, accepted rather than widened", after the bullet that begins `- **A word at the start of a command that contains `=``, insert:
+
+```markdown
+- **A subcommand with more than 64 places where its command may start is denied.** Each
+  such place is a word that the guard reads both ways (see above). A long run of them
+  would make the walk slow, and a hook that times out lets the call go on. No subcommand
+  in the 150,024 commands that this was checked against had more than 13.
+```
+
+Run: `uv run python -c "import re; t = re.sub(r'\s+', ' ', open('hooks/README.md').read()); print(['more than 64 places where its command may start is denied' in t, 'had more than 13' in t])"`
+Expected: `[True, True]`.
+
+- [x] **Step 7: Run the whole suite**
+
+Run: `uv run python build/run_suites.py hooks`
+Expected: `457 passed` and `0 failed` in each run, which is 4 more than after Task 1. No existing test was edited. If an existing test fails, stop and report it (Global Constraints, Existing tests).
+
+- [x] **Step 8: Commit**
+
+> Deviation: the task landed in two code commits, `a672942` and fix round 1's `1607648`. Its plan text changed in `16ca333`, `a4db3d2` and `01a19f7`.
+
+Run `bash build/run_commit_lints.sh` (it prints `commit lints passed`), then:
+
+```bash
+git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py hooks/README.md
+git commit -m "fix(hooks): bound the command-start walk's work and cap its candidates
+
+The walk queued a continuation once for each path that reached it, and
+the [[ row scanned every later word for each [[, so a long crafted line
+took work that grew with its square. A slow hook fails open. The walk now
+queues each continuation once and stops a scan at a ]] that an earlier
+scan covered. A subcommand with more than 64 candidates fails closed.
+
+<the session's trailer>"
+```
+
+### Task 5 (controller): No candidate changed, and the false-positive sweep again
+
+The Global Constraints require this after any change to the walk: rerun Task 3's Steps 3 to 5. The scripts stay in `~/.cache/agent-skills/scratch/plan90-work/`, and only counts go to chat.
+
+**Files:**
+- Modify: `specs/plans/90-readonly-guard-command-starts.md` (`## Decisions`, Step 5)
+
+- [x] **Step 1: Check that the work bound changed no candidate**
+
+For every input of Task 3 Step 3's three sources, take each line (as `classify` builds them), each of `READINGS` and each subcommand from `_split_tokens`. Compare the set of candidates from `c97eb24`'s `_command_starts` with the branch's, taking each candidate as a tuple of `str`, or `None`. Expected: `0` subcommands differ, and `0` subcommands have more than 64 candidates. Any difference stops the task: report the count only, and send Task 4 a fix round.
+
+- [x] **Step 2: Rerun Task 3 Steps 3 and 4 at the branch's HEAD**
+
+Expected: `denied→allowed: 0` for every source. The cap's test builds its lines at run time, so the test file's constants add no flip. Note any count that differs from Task 3's (corpus 0, test file 9, README 9).
+
+- [x] **Step 3: Time the worst case**
+
+> Deviation: the controller timed 11 shape classes, `test-chain` and `leading-equals` among them, at two sizes each, the largest 480 KB rather than 512 KB. The slowest took 1.97 s, and each grew linearly. The slowest corpus command took 16 ms for a guarded agent and 32 ms for the others.
+
+On `/usr/bin/python3`, time `classify` on a 512 KB line of each shape in Task 4's work test. Time the corpus too. Expected: each crafted line takes under 5 s, and no corpus command takes more than 1 s.
+
+- [x] **Step 4: STOP, owner — the false positives**
+
+Report as in Task 3 Step 5: the corpus size, denied→allowed (0), and allowed→denied by class and population group. Add the cap as a false-positive class, with the corpus maximum of candidates in one subcommand. Ask the owner to accept each false positive, or to ask for a narrower rule.
+
+- [x] **Step 5: Log the ruling**
+
+Add the owner's answer to `## Decisions` as the next decision, in the owner's words, as Task 3 Step 6 does. Commit it with the message `docs(specs): record the owner's false-positive ruling on the cap in plan 90`, ending with `<the session's trailer>`.
+
+### Task 6: A word that begins with `=` loses every leading `=` in one step
+
+D6 adds this task. It answers the final review's one finding. The spec amendment is the "Amendment D6" paragraph in Design §1 and the table's last row.
+
+**Files:**
+- Modify: `hooks/readonly-agent-guard.py` (`_command_starts`: the strip row and its docstring)
+- Modify: `hooks/test_readonly_agent_guard.py` (new tests after `test_more_than_64_command_starts_fail_closed`)
+
+**Interfaces:**
+- Consumes: Task 4's `_command_starts`, `_classify_subcommand` and the cap. The scope fence is as in Task 4.
+- Produces: `_command_starts(words)` yields today's candidate first, as before. A stop word that begins with `=` adds at most one continuation from the strip row.
+
+- [x] **Step 1: Write the failing tests**
+
+Add this after `test_more_than_64_command_starts_fail_closed`:
+
+```python
+# A text line of `=` words in a heredoc, such as a Markdown or AsciiDoc rule or
+# a reStructuredText table border, is read as a command. A word that begins
+# with `=` adds one candidate, the word without its leading `=`, so a long rule
+# stays far below the cap of 64 candidates.
+EQUALS_TEXT_ALLOWED = [
+    pytest.param('cat > /tmp/notes.md <<EOF\nTitle\n' + '=' * 80 + '\nEOF',
+                 id='heredoc-long-underline'),
+    pytest.param('cat > /tmp/notes.rst <<EOF\n' + ' '.join(['=' * 25] * 3) + '\nEOF',
+                 id='heredoc-table-border'),
+    pytest.param('cat > /tmp/notes.md <<EOF\n' + '=' * 70 + 'x\nEOF',
+                 id='heredoc-long-prefix'),
+]
+
+
+@pytest.mark.parametrize('command', EQUALS_TEXT_ALLOWED)
+def test_equals_text_lines_stay_allowed(command):
+    assert guard.classify(command) is None
+
+
+def test_leading_equals_strip_in_one_step():
+    starts = _starts('=' * 80 + 'git log')
+    assert ['git', 'log'] in starts and len(starts) <= 3, len(starts)
+```
+
+- [x] **Step 2: Run the new tests to verify they fail**
+
+Run: `uv run python build/run_suites.py hooks -- -k "equals_text or strip_in_one_step" --tb=no -rf`
+Expected in each run: `4 failed`. The three allow cases fail because the cap denies them, and the strip test fails on the count of starts.
+
+- [x] **Step 3: Change the strip row**
+
+In `_command_starts`, the row for a stop word that begins with `=` continues from the same position with the word whose every leading `=` is removed: `_Token(stop.lstrip('='), quoted=stop.quoted, spaced=stop.spaced, expands=stop.expands)`. It adds no continuation when nothing is left, that is, when the word is made only of `=`. The row for a word that contains `=` does not change. Update the docstring's sentence on this row to match.
+
+- [x] **Step 4: Run the new tests to verify they pass**
+
+Run: `uv run python build/run_suites.py hooks -- -k "command_start or more_than_64 or equals_text or strip_in_one_step" --tb=no -rf`
+Expected: `30 passed` in each run.
+
+- [x] **Step 5: Run the whole suite**
+
+Run: `uv run python build/run_suites.py hooks`
+Expected: `461 passed` and `0 failed` in each run, which is 4 more than after Task 4. No existing test was edited.
+
+- [x] **Step 6: Commit**
+
+Run `bash build/run_commit_lints.sh` (it prints `commit lints passed`), then:
+
+```bash
+git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py
+git commit -m "fix(hooks): strip every leading = of a word in one step
+
+The strip row removed one = at a time, so a word of n = gave n
+candidates, and a long = rule in a heredoc reached the cap and was
+denied. The row now removes every leading = at once, and a word made
+only of = has no such continuation.
+
+<the session's trailer>"
+```
+
+### Task 7 (controller): No denial changed, and the sweep again
+
+The Global Constraints require this after any change to the walk. The scripts stay in `~/.cache/agent-skills/scratch/plan90-work/`, and only counts go to chat.
+
+- [x] **Step 1: Check that Task 6 changed no denial except the new allow cases**
+
+> Deviation: the step first expected Task 6's three allow cases among the test file's flips. The constant sweep cannot see them, so `e523e03` corrected the expectation after the run. The run found 0 flips over 152,235 inputs.
+
+Compare `classify` from the guard at `01a19f7` (Task 4's code) with the branch's guard over Task 3 Step 3's three sources. Expected: `0` flips in each source. Task 6's three allow cases build their lines at run time, so the test file's constants do not hold them, and the suite covers them instead.
+
+- [x] **Step 2: Rerun Task 5 Steps 2 and 3**
+
+Expected: the same counts as Task 5 Step 2 (corpus 0, test file 9, README 9, denied→allowed 0), and each crafted line under 5 s.
+
+- [x] **Step 2a: Record the work test's bites after D6**
+
+> Deviation: `e523e03` added this step after the scoped re-review of the final-review fix. The controller ran it at `a9773f2`, and the results match its text.
+
+Rerun Task 4 Step 5's mutations at the branch's HEAD. Expected in each run: removing the scan stop fails `test-chain`; calling `_stop_index` without `known` fails `skipped-run`, alone or with `queued` removed; removing `queued` alone fails nothing. A word now adds at most one strip continuation, so the `leading-equals` case stays linear without either bound. It stays as a check that this shape's work is linear.
+
+- [x] **Step 3: Rule on the gate**
+
+D6 narrows the false positives that D5 accepted. If every count matches Task 5, write a `Ruling:` line in the progress ledger that D5 still covers them. If any count moves, STOP for the owner, as Task 5 Step 4 does.
+

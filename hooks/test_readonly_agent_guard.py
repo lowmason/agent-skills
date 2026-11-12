@@ -20,6 +20,7 @@ import os
 import random
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -606,6 +607,153 @@ def test_only_a_file_descriptor_leaves_with_its_redirection(command):
 @pytest.mark.parametrize('command', DASH_MODIFIER_BYPASSES)
 def test_the_dash_modifier_leads_a_command_like_a_keyword(command):
     assert guard.classify(command) is not None
+
+
+# The spec's first three classes (specs/completed/readonly-guard-command-starts.md):
+# the walk stopped at a word that may lead the command and took that word for
+# the command. Seven come from the backlog item, the test line from the README's
+# mixed-reading bullet. d79b1fb allowed each.
+COMMAND_START_BYPASSES = [
+    pytest.param('{ git branch ]] HEAD; }', id='brace-group-before-git'),
+    pytest.param('true && { git branch ]] HEAD; }', id='brace-group-after-a-separator'),
+    pytest.param('if [[ -n a ]] git branch ]] HEAD', id='test-before-git'),
+    pytest.param('=rm x', id='path-expansion'),
+    pytest.param('arr[1]=x rm t', id='subscripted-assignment'),
+    pytest.param('ä=x rm t', id='non-ascii-assignment'),
+    pytest.param('env a-b=x rm t', id='env-operand'),
+    pytest.param('env -- a-b=x rm t', id='env-operand-after-dashes'),
+]
+
+# The same places with a read-only command, so each row of the walk's table is
+# pinned both ways; the edges a branch can reach; and the one must-pass form of
+# the backlog item that no other test classifies.
+COMMAND_START_ALLOWED = [
+    pytest.param('{ git branch --list HEAD; }', id='brace-group'),
+    pytest.param('if [[ -n a ]] git branch --list HEAD', id='test'),
+    pytest.param('arr[1]=x git log', id='subscripted-assignment'),
+    pytest.param('env -- a-b=x git log', id='env-operand'),
+    pytest.param('=git log', id='path-expansion'),
+    pytest.param('{ command -v rm; }', id='branch-reaches-command-v'),
+    pytest.param('2>/dev/null', id='only-redirections'),
+    pytest.param('cat <<EOF\nTitle\n=====\nEOF', id='heredoc-underline'),
+    pytest.param('cat > /tmp/notes.adoc <<EOF\n= Title\n== Section one\nEOF',
+                 id='heredoc-asciidoc-headings'),
+    pytest.param('diff <(git show HEAD:f) f', id='read-only-process-substitution'),
+]
+
+
+@pytest.mark.parametrize('command', COMMAND_START_BYPASSES)
+def test_command_start_bypasses_are_denied(command):
+    reason = guard.classify(command)
+    assert reason is not None and ('`rm`' in reason or '`git branch' in reason), reason
+
+
+@pytest.mark.parametrize('command', COMMAND_START_ALLOWED)
+def test_command_start_allow_cases_stay_allowed(command):
+    assert guard.classify(command) is None
+
+
+def _starts(line):
+    words = guard.split_subcommands(line, braces=False)[0]
+    return [None if s is None else [str(w) for w in s] for s in guard._command_starts(words)]
+
+
+def test_command_starts_yield_todays_candidate_first():
+    assert _starts('X=1 time env -i FOO=1 git log')[0] == ['git', 'log']
+    assert _starts('{ git log')[0] == ['{', 'git', 'log']
+    assert _starts('if [[ -n a ]] git log')[0] == ['[[', '-n', 'a', ']]', 'git', 'log']
+    assert _starts('arr[1]=x git log')[0] == ['arr[1]=x', 'git', 'log']
+    assert _starts('=git log')[0] == ['=git', 'log']
+    assert _starts('command -v rm')[0] == []
+    assert _starts('env -S git log')[0] is None
+
+
+def test_command_starts_continue_past_each_row():
+    for line in ('{ git log', 'if [[ -n a ]] git log', 'arr[1]=x git log',
+                 'env -- a-b=x git log', '=git log'):
+        assert ['git', 'log'] in _starts(line), line
+    # Each later `]]`, quoted or not.
+    assert [']]', 'git', 'log'] in _starts("[[ a == ']]' ]] git log")
+
+
+def test_command_starts_reaching_env_s_fail_closed():
+    reason = guard.classify('a-b=x env -S git log')
+    assert reason is not None and 'env -S' in reason, reason
+
+
+def test_command_starts_visit_each_stop_word_once():
+    # Unbounded, a run of `==` words or a chain of `[[ … ]]` tests doubles the
+    # walk at each word, and a hook that times out lets the call go on.
+    for line in ('== ' * 16 + 'git log', '[[ a ]] ' * 16 + 'git log'):
+        words = guard.split_subcommands(line, braces=False)[0]
+        starts = list(guard._command_starts(words))
+        assert len(starts) <= 3 * len(words), (line, len(starts))
+        assert ['git', 'log'] in starts, line
+
+
+def _walk_work(line):
+    """Count the line events the walk runs in the guard's own code."""
+    words = guard.split_subcommands(line, braces=False)[0]
+    events = [0]
+
+    def count(frame, event, arg):
+        if event == 'line':
+            events[0] += 1
+        return count
+
+    def trace(frame, event, arg):
+        return count if frame.f_globals is vars(guard) else None
+
+    previous = sys.gettrace()
+    sys.settrace(trace)
+    try:
+        list(guard._command_starts(words))
+    finally:
+        sys.settrace(previous)
+    return events[0]
+
+
+# A walk can yield each candidate once and still do quadratic work to reach
+# them, and a hook that times out lets the call go on. Linear work doubles
+# when the line doubles; quadratic work quadruples.
+@pytest.mark.parametrize('shape', [
+    pytest.param(lambda n: '[[ a ]] ' * n + 'git log', id='test-chain'),
+    pytest.param(lambda n: '=' * n + 'a=1 ' + 'b=1 ' * n + 'git log', id='leading-equals'),
+    pytest.param(lambda n: '[[ ' + 'env -u ]] ' * n + 'git log', id='skipped-run'),
+])
+def test_command_starts_work_grows_linearly(shape):
+    small, large = _walk_work(shape(64)), _walk_work(shape(128))
+    assert large < 3 * small, (small, large)
+
+
+def test_more_than_64_command_starts_fail_closed():
+    assert guard.classify('{ ' * 63 + 'git log') is None
+    reason = guard.classify('{ ' * 64 + 'git log')
+    assert reason is not None and 'more than 64' in reason, reason
+
+
+# A text line of `=` words in a heredoc, such as a Markdown or AsciiDoc rule or
+# a reStructuredText table border, is read as a command. A word that begins
+# with `=` adds one candidate, the word without its leading `=`, so a long rule
+# stays far below the cap of 64 candidates.
+EQUALS_TEXT_ALLOWED = [
+    pytest.param('cat > /tmp/notes.md <<EOF\nTitle\n' + '=' * 80 + '\nEOF',
+                 id='heredoc-long-underline'),
+    pytest.param('cat > /tmp/notes.rst <<EOF\n' + ' '.join(['=' * 25] * 3) + '\nEOF',
+                 id='heredoc-table-border'),
+    pytest.param('cat > /tmp/notes.md <<EOF\n' + '=' * 70 + 'x\nEOF',
+                 id='heredoc-long-prefix'),
+]
+
+
+@pytest.mark.parametrize('command', EQUALS_TEXT_ALLOWED)
+def test_equals_text_lines_stay_allowed(command):
+    assert guard.classify(command) is None
+
+
+def test_leading_equals_strip_in_one_step():
+    starts = _starts('=' * 80 + 'git log')
+    assert ['git', 'log'] in starts and len(starts) <= 3, len(starts)
 
 
 # Found 2026-09-28 by the second review, and the probes that followed. Main
