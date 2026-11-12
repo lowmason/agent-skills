@@ -256,8 +256,8 @@ In `hooks/test_readonly_agent_guard.py`:
 
 ## Constraints
 
-- **The 3.9 floor.** The guard stays stdlib only and 3.9-compatible: no `match`, and annotations stay deferred
-  (module docstring, `:15-17`).
+- **The 3.9 floor.** The guard stays stdlib only and 3.9-compatible: no `match`, and it keeps
+  `from __future__ import annotations` (module docstring, `:15-17`).
 - **Live on merge.** `~/.claude/hooks/readonly-agent-guard.py` is a symlink into the main checkout. The change
   goes live in every repository once it merges there.
 - **Chat hygiene.** Report bypass findings by class and count. Keep the constructions in files: the Codex review
