@@ -4694,6 +4694,16 @@
   "skills/writing-plans/SKILL.md": {
    "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
    "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+  },
+  "skills/writing-skills/SKILL.md": {
+   "skills.description": "sha256:723688aa209b021f58aa2b6b631f3f029de943326e17bb663a1b0cb32eb9fbcd",
+   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
+   "skills.listing-budget": "sha256:c5d2d7fa1ed84bbe689e0c801bae70f69150fbc179d91a1097952ab98e1bf937",
+   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
+   "skills.progressive-disclosure": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc",
+   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
+   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
+   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
   }
  }
 }

@@ -106,6 +106,115 @@ Base prompts: built at `3684b96` with `kit/build_prompts.py`. `base/MANIFEST.txt
 `body chars 18285` and `file references/discovery.md ... chars 9534`. A sweep of `base/` for home
 paths found none.
 
+## Review against the guide
+
+This review covers `SKILL.md` and the seven Markdown files that it loads on demand (drift rule
+R4.1). It reads them against eight sections of `specs/guides/claude-code-customization-guide.md`:
+`skills.locations`, `skills.frontmatter`, `skills.description`, `skills.listing-budget`,
+`skills.progressive-disclosure`, `subagents.frontmatter`, `subagents.models` and
+`subagents.isolation`. The guide on this branch is the guide on `origin/main` (see below).
+
+- Paths are relative to `skills/writing-skills/`. Line numbers are those of the commit that adds
+  this section.
+- A row records a statement only when its truth depends on Claude Code. Statements about the Agent
+  Skills spec, this repo's lints, other runtimes or claude.ai are not rows.
+- Task 3 Step 1's fact-to-section table seeded the `claude-code.md` rows.
+- A file with no Claude Code statement has one row that says so, with `—` as its verdict.
+- A fixed row gives the statement as it was before the fix. Its note gives the fix.
+
+| # | File:line | Statement, in the repo's words | Guide section | Verdict | Note |
+|---|---|---|---|---|---|
+| 1 | `SKILL.md:23` | Claude Code keeps personal skills in `~/.claude/skills/`. | `skills.locations` | covered | The personal row puts each skill at `~/.claude/skills/<name>/`, for every project on the machine. |
+| 2 | `SKILL.md:89-91`, `:178-179`, `:185-189` | A skill folder holds `SKILL.md`, depth in `references/` that loads on demand, and tools in `scripts/`. | `skills.progressive-disclosure` | covered | The third tier is the bundled files, which load only when the body names them. The section also puts deterministic logic in `scripts/`. |
+| 3 | `SKILL.md:94` | All skills sit in one flat namespace: each skill is a folder directly under the skills folder. | `skills.locations` | covered | The location rows put each skill at `<root>/<name>/`. Plugin skills (`plugin:skill`) and skills in nested project folders (`dir:name` on a clash) get a prefix. The line describes one skills folder and says nothing about those two cases. |
+| 4 | `SKILL.md:111-114` | Claude Code's listing can drop descriptions, and only part of a body survives compaction. | `skills.listing-budget`, `skills.progressive-disclosure` | covered | On overflow, the listing drops whole descriptions. After compaction, each re-attached body keeps only its first 5,000 tokens. |
+| 5 | `SKILL.md:122-124` | A description states only when to use the skill, not what the skill does. | `skills.description` | contradicted | The guide asks for both what the skill does and when to use it. The register holds this as deviation `description-when-only`, the owner's standing decision. Not fixed: plan 92 changes no description rule. |
+| 6 | `SKILL.md:330` | A single-shot subagent gives a fresh-context sample. | `subagents.isolation` | covered | A subagent starts from its own prompt, not from the parent's conversation. A fork is the exception: it starts with the whole conversation. Most agents also start with the CLAUDE.md files and a snapshot of git status. The line names neither case. |
+| 7 | `SKILL.md:392` | The description is in the third person. | `skills.description` | covered | |
+| 8 | `SKILL.md:425` | Skill names and descriptions load before any skill triggers, and an overfull listing can lose descriptions. | `skills.listing-budget` | covered | |
+| 9 | `SKILL.md:426` | An agent finds a skill when its description matches the task. | `skills.description` | covered | Claude picks a skill from its name and description only. |
+| 10 | `SKILL.md:429` | An agent loads a skill's example only when it implements. | `skills.progressive-disclosure` | covered | Bundled files load only when the body sends Claude to them. |
+| 11 | `references/claude-code.md:10` | Claude Code reads the listed keys beyond the Agent Skills spec's own keys. | `skills.frontmatter` | covered | Each listed key has a row in the table. The guide lists more keys, but the sentence does not say that its list is complete. |
+| 12 | `references/claude-code.md:12-13` | `when_to_use` adds trigger text to the description, and the two share one listing entry and its length cap. | `skills.frontmatter`, `skills.listing-budget` | covered | The `when_to_use` row, and the bullet on the per-entry cap. |
+| 13 | `references/claude-code.md:14-15` | `model` sets the model for the rest of the turn, and `effort` sets the effort while the skill is active. | `skills.frontmatter` | covered | The `model` / `effort` row. |
+| 14 | `references/claude-code.md:15-16` | With `context: fork`, `model` sets the model of the forked subagent instead. | `skills.frontmatter` | covered | The `model` / `effort` row. |
+| 15 | `references/claude-code.md:17-18` | `context: fork` runs the body in an isolated subagent that does not see the conversation, so the body must stand alone. | `skills.frontmatter` | covered | The `context: fork` row. |
+| 16 | `references/claude-code.md:18` | Only the subagent's final text comes back. | `subagents.isolation` | covered | What a subagent reads stays in its own context. The parent gets back only the final text. |
+| 17 | `references/claude-code.md:19` | `agent` names the agent type that runs a forked skill, `general-purpose` by default. | `skills.frontmatter` | covered | The `agent` row. |
+| 18 | `references/claude-code.md:20-21` | With `disable-model-invocation: true`, Claude never starts the skill on its own and the skill leaves the listing. `/name` at the start of a message runs it. | `skills.frontmatter` | covered | The `disable-model-invocation` row. |
+| 19 | `references/claude-code.md:21-22` | A subagent cannot preload that skill through its `skills` field. | `skills.frontmatter`, `subagents.frontmatter` | covered | The `disable-model-invocation` row and the subagent `skills` row both say so. |
+| 20 | `references/claude-code.md:24` | Claude Code ignores an unknown or misspelled key and gives no error. | `skills.frontmatter` | covered | The row on the spec fields. |
+| 21 | `references/claude-code.md:28-29` | In auto mode, Claude Code ignores a skill `model` that auto mode does not support, Haiku 4.5 and earlier among them, and the session model runs. | `skills.frontmatter` | covered | The `model` / `effort` row. The guide also names plan mode when the auto-mode classifier checks commands. The file leaves that case out, which does not make the sentence wrong. |
+| 22 | `references/claude-code.md:29-31` | `haiku` means Haiku 5.5 on the Anthropic API, and Haiku 4.5 on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry and Claude Platform on AWS. | `subagents.models` | covered | The section's opening paragraph and its first caveat name the same providers. The `skills.frontmatter` `model` row also gives Haiku 5.5 on the Anthropic API. |
+| 23 | `references/claude-code.md:31-32` | So `model: haiku` applies on one provider and is ignored on another. | `skills.frontmatter`, `subagents.models` | covered | It follows from rows 21 and 22. It holds in auto mode, which the paragraph's first words set. Outside auto mode, the guide gives no rule that ignores the key. |
+| 24 | `references/claude-code.md:36` | Fork a skill whose value is a verdict or an artifact. Do not fork a skill whose value is guidance, because guidance must stay in the main conversation. | `skills.frontmatter`, `subagents.isolation` | covered | A forked body runs in a subagent that does not see the conversation, and only its final text comes back. So the body's guidance never reaches the main thread. |
+| 25 | `references/claude-code.md:36` | `context` applies to the whole skill, so do not fork a skill that mixes artifact and question operations. | `skills.frontmatter` | covered | `context` is one frontmatter key for each skill, with the one value `fork`. |
+| 26 | `references/claude-code.md:38-40` | With fork mode off, the subagents that a subagent starts in `claude -p` and the Agent SDK start in the background. So a forked skill can return before its own subagents report. | `subagents.frontmatter` | covered | The `background` row: with fork mode off in those two, the subagents that a subagent starts run in the background. The row also cites a changelog that adds the desktop app and VS Code. |
+| 27 | `references/claude-code.md:41` | Fork mode is on by default. | `subagents.frontmatter`, `subagents.isolation` | covered | The terminal has it on by default. Since 2.1.302, so do `claude -p`, the Agent SDK, the desktop app and VS Code. |
+| 28 | `references/claude-code.md:45-48` | Before any skill triggers, Claude Code loads skill names and descriptions within a budget. Every name stays. On overflow, it drops whole descriptions, starting with the skills invoked least. A skill without its description still runs by name but rarely triggers on its own. | `skills.listing-budget`, `skills.progressive-disclosure` | covered | |
+| 29 | `references/claude-code.md:50-51` | `/doctor`, `/skill-doctor` and the Skills row of `/context` show what the listing costs. | `skills.listing-budget` | covered | |
+| 30 | `references/claude-code.md:52` | `disable-model-invocation: true` takes a skill out of the listing. | `skills.listing-budget` | covered | |
+| 31 | `references/claude-code.md:53-54` | `skillOverrides` lists a skill by name only, hides it from Claude or turns it off, and does not reach plugin skills. | `skills.listing-budget` | covered | |
+| 32 | `references/claude-code.md:55-56` | `skillListingBudgetFraction` and `SLASH_COMMAND_TOOL_CHAR_BUDGET` change the budget, and `skillListingMaxDescChars` changes the cap on each entry. | `skills.listing-budget` | covered | |
+| 33 | `references/claude-code.md:57` | A plugin's whole skill set joins the listing. | `skills.listing-budget` | covered | |
+| 34 | `references/claude-code.md:61-64` | An invoked body stays for the rest of the session. After compaction, Claude Code re-attaches the latest invocation of each skill and keeps its first 5,000 tokens. The re-attached bodies share 25,000 tokens, and the newest goes in first. | `skills.progressive-disclosure` | covered | |
+| 35 | `references/discovery.md:11` | `when_to_use`, `model`, `effort`, `context`, `agent` and `disable-model-invocation` are Claude Code extensions beyond the spec's keys. | `skills.frontmatter` | covered | Each key has a row in the table. The guide calls `license`, `compatibility` and `metadata` spec fields. The clause that a claude.ai upload rejects the extensions is a claude.ai claim, outside this review. |
+| 36 | `references/discovery.md:11` | A Haiku `model` is not portable, and cheap work belongs on a subagent with a pinned model. | `subagents.models`, `skills.frontmatter`, `subagents.frontmatter` | covered | Rows 21 to 23 give the reason. The subagent `model` row lets an agent pin its own model. |
+| 37 | `references/discovery.md:13`, `:79` | Write the description in the third person. | `skills.description` | covered | |
+| 38 | `references/discovery.md:13`, `:16`, `:80` | A description says only when to use the skill and never summarizes its workflow. | `skills.description` | contradicted | As row 5: deviation `description-when-only`, not fixed. The deviation's `artifacts` glob is `skills/*/SKILL.md`, which does not name this file. |
+| 39 | `references/discovery.md:58` | An agent reads the description to choose which skills to load. | `skills.description` | covered | |
+| 40 | `references/discovery.md:75` | A description uses concrete triggers, symptoms and situations. | `skills.description` | covered | |
+| 41 | `references/discovery.md:79` | The description goes into the system prompt. | `skills.listing-budget` | not covered | The cited sections say only that the listing is always loaded. None of them says where in the context the listing sits. |
+| 42 | `references/discovery.md:115` | The description is the only text of a skill that loads before the skill triggers. | `skills.listing-budget`, `skills.progressive-disclosure` | contradicted | The first tier is the name and the description, and every name stays listed. Fixed in this commit: the line now starts "apart from its name". The pointer clause after it is unchanged. |
+| 43 | `references/discovery.md:116-117` | A runtime may drop or shorten the description when its listing overflows. Claude Code's rule is in `claude-code.md`. | `skills.listing-budget` | covered | Claude Code drops whole descriptions. |
+| 44 | `references/discovery.md:117`, `:128` | The body costs context only when the skill triggers. | `skills.progressive-disclosure` | covered | |
+| 45 | `references/discovery.md:118`, `:132` | `references/` files load only when the body sends the agent there. | `skills.progressive-disclosure` | covered | |
+| 46 | `references/discovery.md:121` | The description loads before the skill triggers. | `skills.listing-budget` | covered | |
+| 47 | `references/discovery.md:122-123` | The description is the only text that takes context in conversations where the skill never runs. | `skills.listing-budget`, `skills.progressive-disclosure` | contradicted | As row 42: the name is in the listing too. Fixed in this commit: the clause now starts "apart from the name". |
+| 48 | `references/discovery.md:153` | A good example of a cross-reference says that subagents save 50 to 100 times the context. | `subagents.isolation` | not covered | The section says that what a subagent reads stays in its own context and that only the final text comes back. It gives no factor for the saving. The line sits in a ✅ GOOD example. |
+| 49 | `references/discovery.md:202` | A bare skill name lets each runtime load the skill through its own mechanism. | `skills.frontmatter` | covered | In Claude Code, the `name` and the folder name both invoke the skill. |
+| 50 | `references/flowcharts.md` | No statement depends on Claude Code. | — | — | Graphviz style and the render script only. |
+| 51 | `references/bulletproofing.md` | No statement depends on Claude Code. | — | — | Its advice on descriptions holds on every runtime. |
+| 52 | `testing-skills-with-subagents.md` | No statement depends on Claude Code. | — | — | It gives a test method. It makes no claim about how Claude Code runs subagents. |
+| 53 | `persuasion-principles.md` | No statement depends on Claude Code. | — | — | |
+| 54 | `examples/CLAUDE_MD_TESTING.md:16`, `:46`, `:60` | A scenario offers to check `~/.claude/skills/`, or one skill folder in it, before work starts. | `skills.locations` | covered | `debugging/` and `coding/` read as skill folders, at `<name>/` under the personal root. |
+| 55 | `examples/CLAUDE_MD_TESTING.md:73`, `:81`, `:84-85`, `:92`, `:95`, `:122-123` | A variant puts the personal skills library at `~/.claude/skills/`, and browses or searches it there. | `skills.locations` | covered | |
+| 56 | `examples/CLAUDE_MD_TESTING.md:34`, `:94`, `:107` | Skills sit in category folders under `~/.claude/skills/`, one level above each skill. | `skills.locations` | not covered | `:34` reads as a `testing/` folder that holds an async-testing skill. The guide puts each personal skill at `~/.claude/skills/<name>/`. It does not say whether a skill one folder deeper loads. |
+
+Counts: 45 covered, 4 contradicted, 3 not covered, and 4 files with no Claude Code statement.
+
+### Contradicted rows
+
+- **Rows 5 and 38** contradict `skills.description`. The register records the contradiction as
+  deviation `description-when-only`, so it stays as it is (the `/cc-guide` rule for a registered
+  deviation). The plan changes no description rule.
+- **Rows 42 and 47** are fixed in this commit, in `references/discovery.md`. Each fix adds the name
+  to what loads before a skill triggers. It is a factual edit under spec D4, and it adds no
+  instruction. The pointer clause at `:116-117`, which Task 4 tested, keeps its words.
+
+### Not covered rows, for the owner
+
+The owner rules on each row at the plan's completion gate.
+
+- **Row 41:** `discovery.md:79` gives "injected into system prompt" as the reason for the third
+  person. No cited section says where the listing sits.
+- **Row 48:** `discovery.md:153`, inside a ✅ GOOD example, says that subagents save 50 to 100
+  times the context. The guide gives no factor for the saving.
+- **Row 56:** `CLAUDE_MD_TESTING.md:34`, `:94` and `:107` put skills in category folders under
+  `~/.claude/skills/`. The guide gives only the `<name>/` level.
+
+### The guide on `origin/main`
+
+`git fetch origin` ran on 2026-11-12. The merge base of this branch and `origin/main` is `9a164c9`,
+which is also `origin/main`. `git diff` of the guide from the merge base to `origin/main` printed
+nothing. No cited section changed, so there was no merge and no second review.
+
+### Citation
+
+Each of the eight sections has at least one covered row. So the `SKILL.md` citation names all
+eight, in the plan's order. `cli.py baseline cite` restamped it at `@2.1.306` and recorded each
+section's `text_hash` in `build/cc_guide/baseline.json`.
+
 ## Results
 
 All 25 reps ran from `base/`, at commit `3684b96`. Every header in `show_reps.py` shows `turns=1`,
