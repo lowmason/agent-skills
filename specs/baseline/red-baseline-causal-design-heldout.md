@@ -386,13 +386,13 @@ below.
 | Case | G | S | J | L |
 |---|---|---|---|---|
 | `trial` | 0/5 (C3-A); 3/5 or 5/5 under C3-B (C4) | 5/5 | 5/5 | 0/5 or 5/5 (C3) |
-| `tax` | 2/5 or 5/5 (C1) | 2/5 or 5/5 (C2) | 5/5 | 4/5 or 5/5 (C3) |
+| `tax` | 1/5, 2/5, 3/5 or 5/5 (C1, C4) | 2/5 or 5/5 (C2) | 5/5 | 4/5 or 5/5 (C3) |
+
+`tax` G is 1/5 under C1-A and C4-A, 2/5 under C1-A and C4-B, 3/5 under C1-B and C4-A, and 5/5 under C1-B and C4-B.
 
 The parts of each rule that are not contested pass in every rep. Every `trial` graph meets G (b), (c) and (d), and
-reps 2, 4 and 5 also meet G (a). Every `tax` graph meets G (a), (b), (d) and (e). For `tax` rep 3, G (a) rests on
-time-indexed nodes: "T, J: week of 1 July 2025" and "Y: weekly outcomes" put the tax, the move and the outcome on one
-weekly index. Reps 4 and 5 do the same with `Y_S,L(t)` by week and "time indexing by month t", and the rule accepts
-"time-indexed nodes". Every reply meets S (a), (b), (c) and (e), with the correct label: `plausibly identified` for
+reps 2, 4 and 5 also meet G (a). Every `tax` graph meets G (b), (d) and (e), and reps 1, 2 and 4 also meet G (a).
+Every reply meets S (a), (b), (c) and (e), with the correct label: `plausibly identified` for
 all five `trial` replies and `conditional` for all five `tax` replies. No treatment reply labels its requested
 estimand `not identified`.
 
@@ -457,22 +457,53 @@ record expected before any rep ran occurred: no `tax` treatment reply labels its
       similar across arms" (rep 5), "Report attrition (account closures, ownership changes) by arm" (rep 4) and
       "Cohort definition is not affected by treatment (moving, account closure)" (rep 3). Under B, every `trial` rep
       PASSES G (e).
-- **C4. `trial` G (a): an undated mailing node.** Rule G (a) asks that the graph or its node definitions "say when
-  the report mailing and the outcome happen". Reps 2, 4 and 5 date the mailing node: "Mail_T [Mar 2025 onward]", "M:
-  reports mailed (post)" with "post = Mar 2025–Feb 2026", and `Mail[Reports mailed monthly from Mar 2025]`. Reps 1
-  and 3 date the outcome nodes and time zero in the graph section, but not the mailing node itself.
-  - Rep 1: "Edge list (time-indexed; Z = town assignment, randomized pre-March 2025)", `Ypre[Y pre-period]`,
+- **C4. G (a): a node with no date of its own.** Rule G (a) asks that the graph or its node definitions say when the
+  named events happen: for `trial`, "the report mailing and the outcome"; for `tax`, "the tax, the outcome and the
+  employer's move". In four replies, a named node carries no date, dated period or index of its own, and only timing
+  stated elsewhere in the graph section places it. The final whole-branch review found that this record first
+  applied the test to `trial` only, and the fix pass widened it to `tax`.
+  - `trial` rep 1: "Edge list (time-indexed; Z = town assignment, randomized pre-March 2025)", `Ypre[Y pre-period]`,
     `Ypost[Y post-period]` and "Exclude any measured after time zero" beside "Post-March 2025 household
     attributes". Its pathway "Z → Mailing → Reading (unobserved) → Behavior → Y_post" gives the mailing no date.
-  - Rep 3: "Edge list (time-indexed; t0 = March 2025)" and `Y[Use Mar25-Feb26]`. Its pathway "`A -> Mail -> Read(U)
-    -> Behavior -> Y_post`" and its node `Mail[Monthly report mailed]` give the mailing no date. Only §1 says "Time
-    zero is the first mailing in March 2025".
-  - Reading A (the mailing node or its definition must carry a date, a period or a time index): reps 1 and 3 FAIL G
-    (a).
-  - Reading B (outcome nodes split at a time zero of March 2025 in the graph section place the mailing at that
-    time): reps 1 and 3 PASS G (a).
-  - C4 matters only under C3-B. Under C3-A, every `trial` rep already fails G on (e). Under C3-B, `trial` G is 3/5
-    under C4-A and 5/5 under C4-B.
+  - `trial` rep 3: "Edge list (time-indexed; t0 = March 2025)" and `Y[Use Mar25-Feb26]`. Its pathway "`A -> Mail ->
+    Read(U) -> Behavior -> Y_post`" and its node `Mail[Monthly report mailed]` give the mailing no date. Only §1 says
+    "Time zero is the first mailing in March 2025".
+  - `tax` rep 5: the edge table's header "Edge list, with time indexing by month t" and its row "Tax (Larkford, from
+    Jul 2025)" date the index and the tax. The outcome node `Y[Taxed-drink sales, Larkford stores]` and the row "...
+    → taxed-drink sales in Larkford stores" carry no date, period or index.
+  - `tax` rep 3, the closest call: "T, J: week of 1 July 2025" and the definition line "Y: weekly outcomes" give the
+    outcome a frequency, not a window. The graph node `YS[Larkford sweetened volume]` carries no index. Only
+    `YSpre[Late pre-period sweetened sales]` implies that `YS` is the post-period.
+  - The other six replies carry the timing on the node or in a definition line that dates it: `trial` rep 2 "Mail_T
+    [Mar 2025 onward]"; `trial` rep 4 "M: reports mailed (post)" with "post = Mar 2025–Feb 2026"; `trial` rep 5
+    `Mail[Reports mailed monthly from Mar 2025]`; `tax` rep 1 "Nodes are time-indexed as pre-period (Jan 2021–Jun
+    2025) and post-period (Jul 2025–Jun 2026)"; `tax` rep 2 "Edge list, time-indexed (pre = before 1 Jul 2025, post
+    = Jul 2025–Jun 2026)" with `Taxed_vol_post`; `tax` rep 4 `Y_S,L(t)` on the index of `Tax_L(t≥July 2025)`.
+  - Reading A (each named node must carry its own date, dated period or index, on the node or in a definition line
+    that dates it; a time-indexed header or a time zero stated elsewhere does not date a node that carries none):
+    `trial` reps 1 and 3 and `tax` reps 3 and 5 FAIL G (a).
+  - Reading B (timing stated elsewhere in the graph section, such as a time-indexed header, a time zero or a pre/post
+    split, places a node with no date of its own): all four PASS G (a).
+  - Effects. For `trial`, C4 matters only under C3-B, since under C3-A every `trial` rep already fails G on (e).
+    Under C3-B, `trial` G is 3/5 under C4-A and 5/5 under C4-B. For `tax`, see the counts under Scores. Rep 3 alone
+    changes no verdict: with rep 5 failing under C4-A, `tax` G misses the bar under C4-A either way.
+
+### Store and household cohorts (not scored)
+
+The final review's Codex seat raised one more point. `tax` rep 5's primary analysis uses "stores open throughout",
+with "all stores" only as a sensitivity check. That may narrow "Larkford's stores" if stores opened or closed, and a
+tax-caused closure would then drop out. The fact holds, and it holds for every reply. Every `tax` treatment reply makes
+a fixed store cohort its primary sample: rep 1 "the fixed pre-tax store cohort" (with "Closures after July 2025 may
+themselves be outcomes"), rep 2 "Use a balanced panel for the primary estimate", rep 3 "as a balanced store panel",
+rep 4 "Restrict to stores open throughout" and rep 5 "Primary: stores open throughout". All five `tax` controls do
+the same. Every `trial` reply in both arms makes a cohort of households active at time zero its primary sample.
+
+This record does not score the cohort under S (d). S (d) asks about "every other estimand it raises", and the
+replies raise no separate estimand for the cohort. They treat it as the sample that handles store or household
+turnover, and they report an all-unit version or a cohort comparison beside it. A reading that counts the cohort as
+a narrower estimand would fail S in every treatment reply of both cases. It would not separate the arms, since the
+controls fail S on (b) already. This is a ruling of the executor's, and it goes to the owner at the completion gate
+with the other rulings.
 
 ### Echo flags
 
@@ -571,7 +602,7 @@ and 4. No rep was flagged for `cutoff`, `score`, `sixty`, `earnings`, `national`
   should wait for the gate audit in §9"; (d) contested (C2). J PASS: (a) a worker audit and a non-downtown
   other-grocery placebo; (b) "**exclude them as donors**"; (c) "The consultant's 30% figure is not a causal
   estimate"; (d) "Every check below is **planned**". L: contested (C3).
-- **rep3.** G: Mermaid; (a) "T, J: week of 1 July 2025", "Y: weekly outcomes" (time-indexed nodes; see Scores); (b) `U[Unobserved city-specific
+- **rep3.** G: Mermaid; (a) contested (C4): "T, J: week of 1 July 2025", "Y: weekly outcomes", with no index on `YS`; (b) `U[Unobserved city-specific
   trends]`; (c) contested (C1): `J --> FD --> YS`; (d) `P --> B[Cross-border shopping]`; (e) no imported node. S: (a)
   "over the 52 post-tax weeks, between Larkford's actual taxed-drink volume and the volume its stores would have sold
   without the tax"; (b) "**Design status:** `conditional`"; (c) "the all-store SC identifies only the tax and the
@@ -587,8 +618,8 @@ and 4. No rep was flagged for `cutoff`, `score`, `sixty`, `earnings`, `national`
   same start month and the same treated city"; (e) "**Estimation should wait** for the job-move evidence"; (d)
   contested (C2). J PASS: (a) a job-move audit and a category contrast; (b) "exclude them as donors (36 remain)"; (c)
   "a raw before/after change, not a causal effect"; (d) "every diagnostic below is PLANNED". L PASS.
-- **rep5.** G PASS: an edge table and Mermaid; (a) `TAX[Tax Jul 2025]`, `REL[Job relocation Jul 2025]`, "time indexing
-  by month t"; (b) "Labels starting with "U" are unobserved"; (c) `REL -.disputed.-> Y`; (d) `P --> B[Border-city
+- **rep5.** G: an edge table and Mermaid; (a) contested (C4): `TAX[Tax Jul 2025]`, `REL[Job relocation Jul 2025]` and
+  "time indexing by month t", with no date on `Y[Taxed-drink sales, Larkford stores]`; (b) "Labels starting with "U" are unobserved"; (c) `REL -.disputed.-> Y`; (d) `P --> B[Border-city
   sales]`; (e) no imported node. S PASS: (a) "Larkford's observed 12-month taxed-drink volume minus the volume
   Larkford's stores would have sold with no tax"; (b) "**Design status:** `conditional`"; (c) "no donor reproduces
   it"; (d) "(separate targets)", with the all-store effect kept primary; (e) "Do not estimate until the gates in §9
@@ -643,7 +674,7 @@ at least 4/5, and at least control − 1) and treatment 5/5 for L.
 
 | Rule | Control | Treatment | Bar | Met or missed | Verdict for the element |
 |---|---|---|---|---|---|
-| G | 0/5 | 2/5 (C1-A); 5/5 (C1-B) | `ADDITIVE_BAR` | Missed, met | Uptake does not generalize (C1-A); generalizes (C1-B) |
+| G | 0/5 | 1/5 (C1-A, C4-A); 2/5 (C1-A, C4-B); 3/5 (C1-B, C4-A); 5/5 (C1-B, C4-B) | `ADDITIVE_BAR` | Missed, missed, missed, met | Uptake generalizes only under C1-B and C4-B; otherwise it does not |
 | S | 0/5 | 2/5 (C2-A); 5/5 (C2-B) | `ADDITIVE_BAR` | Missed, met | Uptake does not generalize (C2-A); generalizes (C2-B) |
 | J | 5/5 | 5/5 | `NON_REGRESSION_BAR` | Met | Causal judgment kept |
 | L | — | 4/5 (C3-A); 5/5 (C3-B) | treatment 5/5 | Missed, met | The treatment echoes the worked example (C3-A); no echo (C3-B) |
@@ -651,7 +682,7 @@ at least 4/5, and at least control − 1) and treatment 5/5 for L.
 Applying the pre-registered verdict table:
 
 - `trial` generalizes only if the owner takes reading B on C3, for both G (e) and L, and on C4.
-- `tax` generalizes only if the owner takes reading B on C1, C2 and C3 (its L part).
+- `tax` generalizes only if the owner takes reading B on C1, C2, C3 (its L part) and C4.
 - The overall verdict is "generalizes" only if every contested reading takes reading B.
 
 **Overall verdict:** under the rules' words (every reading A), neither case generalizes. Under every alternative
@@ -671,11 +702,12 @@ What the result shows, under either reading:
   against 0 of 10 controls. Every `trial` graph has the random draw with no arrow into it, an unobserved node for
   reading the report, and rebate sign-up downstream of the reports. Every `tax` graph has an unobserved node, the
   tax's path to cross-border shopping or border-city sales, and the employer's move. The contested points are about
-  how a graph is drawn or what it adds: a direct arrow (C1), a date on the mailing node (C4) and an extra observation
-  node (C3). None is about whether a graph exists.
+  how a graph is drawn or what it adds: a direct arrow (C1), a date on a node (C4) and an extra observation node
+  (C3). None is about whether a graph exists.
 - **Reading A's label for `trial` G describes an imported node, not missing uptake.** Under C3-A, every `trial`
-  graph fails G on part (e) alone. Under C3-A, the pre-registered label "uptake does not generalize" therefore
-  describes the added observation node, not an absent graph.
+  graph fails G on part (e). Reps 2, 4 and 5 fail on (e) alone, and reps 1 and 3 also fail (a) under C4-A. Under
+  C3-A, the pre-registered label "uptake does not generalize" therefore describes the added observation node and two
+  undated mailing nodes, not an absent graph.
 - **No reply echoed the worked example's design.** No treatment reply gave either scenario a score, a cutoff, a
   running variable, an eligibility rule, an earnings outcome or training, and none recommended a regression
   discontinuity design. Every echo flag is explained above. The only candidate echo is the outcome-observation item
@@ -705,16 +737,20 @@ What the result does not show:
 ### Owner questions for the completion gate
 
 1. **C1** (`tax` G (c)): does a path from the employer's move through a traffic node to Larkford's sales meet "an
-   arrow into Larkford's sales"? Reading A gives `tax` G 2/5, reading B gives 5/5.
+   arrow into Larkford's sales"? With C4-B, reading A gives `tax` G 2/5 and reading B gives 5/5.
 2. **C2** (`tax` S (d)): does making the labeled non-downtown estimand the primary analysis put it in the requested
    estimand's place? Reading A gives `tax` S 2/5, reading B gives 5/5.
 3. **C3** (outcome-observation node or gate): (a) for G (e), is household turnover part of the `trial` scenario, so
    that an observation node is not an import? (b) For L, is an item that the skill's generic text asks for an echo of
    the worked example? Reading A gives `trial` G 0/5, `trial` L 0/5 and `tax` L 4/5. Reading B gives 5/5 for each.
-4. **C4** (`trial` G (a)): do outcome nodes split at a time zero of March 2025 say when the mailing happens, for reps
-   1 and 3? Under C3-B, reading A gives `trial` G 3/5 and reading B gives 5/5.
+4. **C4** (G (a), both cases): does timing stated elsewhere in the graph section date a node that carries none of its
+   own? It covers the mailing in `trial` reps 1 and 3 and the outcome in `tax` reps 3 and 5. Under C3-B, reading A
+   gives `trial` G 3/5 and reading B gives 5/5. With C1-B, reading A gives `tax` G 3/5 and reading B gives 5/5.
 5. **Controls at 5/5 on J:** both control arms pass J 5/5. The bar is non-regression, and it is met. The result
    cannot show that the skill improves causal judgment on this model.
 6. **Missed bars:** every reading A misses at least one bar. Should a missed bar lead to a new backlog item? If C3-A
    stands, the conflict lies between this plan's rules and the skill's own quick reference and template graph, so
    the follow-up could be a change to the skill text or to future reading rules. This plan changes neither.
+7. **The cohort ruling** (from the final review's Codex seat): this record does not score the fixed store or
+   household cohort under S (d) (see Store and household cohorts). Overrule it, and S fails in every treatment reply
+   of both cases.
