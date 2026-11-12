@@ -4714,7 +4714,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       escaped-pipe asserts use double-quoted f-strings, where the file uses single quotes, and the
       helper `_unescaped_cells` copies `_cells`' regex. Size: plan. Done when: (a) to (e) are fixed
       or dropped on purpose, each with a test, and the (f) gaps are filled. → done in plan 65
-- [ ] Three nits in the splitter's tests (plan 59 final review).
+- [x] Three nits in the splitter's tests (plan 59 final review).
       `skills/tune-hyperparameters/scripts/test_time_series_cv.py`:
       `test_panel_folds_split_whole_periods` asserts a gap `>= embargo`, where `== embargo` pins the
       gap (the acceptance run showed exact gaps); `test_one_row_per_period_matches_row_mode` sends
@@ -4722,6 +4722,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       `groups` raises `IndexError` at `labels.shape[0]`, not the `ValueError` that the length check
       gives. Size: quick-fix. Revisit if: someone edits `time_series_cv.py` again, or a panel run
       shows a leak.
+      → done 2026-11-12 (/fix-issue #180): `_period_index` raises a `ValueError` when `groups` does not hold one label per row, and an (n, 1) column still works. This covers a 0-d array (the issue) and a two-column array, which gave row indices past the end of `X`. `test_panel_folds_split_whole_periods` asserts `== embargo`. `test_one_row_per_period_matches_row_mode` compares both paths to folds worked out from the docstring. It catches a guard of `embargo + label_horizon`, which the old suite passed.
 - [x] Two doc nits left by plan 59's final review. (a) The root `README.md` row for
       track-model-experiments lists the inputs the comparator refuses but omits several
       log-likelihood variables. (b) tune's Graduation (`skills/tune-hyperparameters/SKILL.md`) and
