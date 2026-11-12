@@ -576,3 +576,9 @@ written under test-driven-development, and each rep declines further tests. Clau
 **Bar: missed.** The treatment passes 0 of 5, below 5 of 5. Clause A, the order that the backlog item names, moves
 from 0 of 5 to 5 of 5. Clause B is 0 of 5 in both arms. The registered rule allows one wording round with the rule
 unchanged, then an owner ruling.
+
+**Owner ruling (2026-11-12): Accept the wording.** `b62f15d` stays. The one wording round that the registration
+allows did not run: the owner ruled on the treatment result. Clause A shows the change: every control rep loads
+develop-testing-strategy before the pinning test, three of them because of test-driven-development, and no treatment
+rep does. Clause B is 0 of 5 in both arms, because the fixture asks for the audit's hardening only and puts no later
+tests in scope. So clause B does not separate the arms on this fixture.
