@@ -8,8 +8,7 @@ description. The description rule itself stays in SKILL.md § Skill Discovery Op
 **Frontmatter (YAML):**
 - Three required fields: `name` and `description`, the Agent Skills spec's two (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields), and `license`, this repo's rule, enforced by `build/check_frontmatter.py`
 - `description`: max 1024 characters — the Agent Skills spec cap, enforced by `build/check_frontmatter.py`. It applies to the description field, **not** to the whole frontmatter block; several shipped skills exceed 1024 chars of total frontmatter and pass the lint correctly.
-- Optional keys the lint accepts: `compatibility`, `metadata`, `allowed-tools`, `when_to_use`, the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at; a Haiku `model` is not portable, since auto mode drops Haiku 4.5 and the `haiku` alias means Haiku 5.5 on the Anthropic API but 4.5 on other providers, so the lint fails it, and cheap work belongs on a model-pinned subagent), `context` (sole value `fork`: runs the skill in an isolated subagent, so the main session sees only what the skill returns), `agent` (the agent type a `context: fork` skill runs on), and `disable-model-invocation` (a YAML boolean; `true` makes the skill manual-only). Any other key fails `build/check_frontmatter.py`. The spec's own keys are `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`; the rest are Claude Code extensions, which a claude.ai upload or a spec-only validator rejects.
-- Fork a skill whose value is a **verdict or artifact** you act on (`tech-debt` returns a prioritized backlog). Do **not** fork a skill whose value is **guidance** — it has to stay resident to shape what the main thread writes next — nor one that dispatches subagents itself, nor one with a mix of artifact and question-answering operations, since `context` is all-or-nothing per skill.
+- Optional keys the lint accepts: `compatibility`, `metadata`, `allowed-tools`, `when_to_use`, `model`, `effort`, `context` (sole value `fork`), `agent` and `disable-model-invocation` (a YAML boolean). Any other key fails `build/check_frontmatter.py`. So does a Haiku `model` (`haiku` or a `claude-haiku-*` ID), because it is not portable; cheap work belongs on a model-pinned subagent. The spec's own keys are `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`; the rest are Claude Code extensions, which a claude.ai upload or a spec-only validator rejects. Before you set an extension, read [claude-code.md](claude-code.md): what each one does in Claude Code, why a Haiku `model` is not portable, and when to fork a skill.
 - `name`: Use lowercase letters, digits, and hyphens only, and equal the skill's directory name (no parentheses, special chars)
 - `description`: Third-person, describes ONLY when to use (NOT what it does)
   - Start with "Use when..." to focus on triggering conditions
@@ -113,12 +112,13 @@ Use words an agent would search for:
 
 ### 4. Token Efficiency (Critical)
 
-**Problem:** every installed skill's `description` is resident in EVERY conversation — that is the
-cost you always pay. The SKILL.md body is paid only when the skill triggers, and `references/`
-only when the body sends you there. Budget against the tier, not a single number.
+**Problem:** a skill's `description` is the only text of it that loads before the skill triggers,
+and a runtime may drop or shorten it when its listing overflows (Claude Code's rule:
+[claude-code.md](claude-code.md)). The SKILL.md body is paid only when the skill triggers, and
+`references/` only when the body sends you there. Budget against the tier, not a single number.
 
 **Targets by tier:**
-- `description` (always resident): the hard cap is 1024 chars, enforced by
+- `description` (loaded before the skill triggers): the hard cap is 1024 chars, enforced by
   `build/check_frontmatter.py`. Spend it on triggers, not prose — it is the only text that
   competes for context in conversations where the skill is never used. Codex also shortens
   descriptions once its skills listing passes its budget: with 105 skills listed, Codex 0.163 cut
@@ -197,6 +197,6 @@ Use skill name only, with explicit requirement markers:
 - ✅ Good: `**REQUIRED SUB-SKILL:** Use subagent-driven-development`
 - ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand writing-plans`
 - ❌ Bad: `See skills/planning/writing-plans` (unclear if required)
-- ❌ Bad: `@skills/planning/writing-plans/SKILL.md` (force-loads, burns context)
+- ❌ Bad: `@skills/planning/writing-plans/SKILL.md` (a file path, not a skill name)
 
-**Why no @ links:** `@` syntax force-loads files immediately, consuming 200k+ context before you need them.
+**Why bare names:** a bare skill name lets each runtime load the skill through its own skill mechanism.

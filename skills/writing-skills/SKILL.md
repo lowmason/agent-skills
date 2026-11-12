@@ -87,7 +87,8 @@ API docs, syntax guides, tool documentation (office docs)
 skills/
   skill-name/
     SKILL.md              # Main reference (required)
-    supporting-file.*     # Only if needed
+    references/           # Depth, loaded on demand (only if needed)
+    scripts/              # Executable tools (only if needed)
 ```
 
 **Flat namespace** - all skills in one searchable namespace
@@ -106,6 +107,11 @@ skills/
 Before you write a SKILL.md's frontmatter or lay out its body, read
 [references/discovery.md](references/discovery.md). It holds the frontmatter
 rules and the body template.
+
+Before you set a frontmatter key only Claude Code reads, or when the skill
+will run in Claude Code, also read
+[references/claude-code.md](references/claude-code.md): what those keys do,
+when to fork, how its listing drops descriptions and what survives compaction.
 
 ## Skill Discovery Optimization (SDO)
 
@@ -169,18 +175,18 @@ When: All content fits, no heavy reference needed
 ### Skill with Reusable Tool
 ```
 condition-based-waiting/
-  SKILL.md    # Overview + patterns
-  example.ts  # Working helpers to adapt
+  SKILL.md            # Overview + patterns
+  scripts/example.ts  # Working helpers to adapt
 ```
 When: Tool is reusable code, not just narrative
 
 ### Skill with Heavy Reference
 ```
 pptx/
-  SKILL.md       # Overview + workflows
-  pptxgenjs.md   # 600 lines API reference
-  ooxml.md       # 500 lines XML structure
-  scripts/       # Executable tools
+  SKILL.md                  # Overview + workflows
+  references/pptxgenjs.md   # 600 lines API reference
+  references/ooxml.md       # 500 lines XML structure
+  scripts/                  # Executable tools
 ```
 When: Reference material too large for inline
 
@@ -416,7 +422,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 How future agents find your skill:
 
 1. **Encounters problem** ("tests are flaky")
-2. **Scans the skill listing** (the always-loaded list of skill names and descriptions)
+2. **Scans the skill listing** (the skill names and descriptions loaded before any skill triggers; an overfull listing can lose descriptions)
 3. **Finds SKILL** (description matches)
 4. **Scans overview** (is this relevant?)
 5. **Reads patterns** (quick reference table)

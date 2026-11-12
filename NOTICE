@@ -980,6 +980,20 @@ Changes from upstream:
     writing or changing tests. The ideas are upstream's, and the wording
     is local. The micro-test scenarios are this repository's own
     (specs/baseline/red-baseline-drift-followups.md).
+  - Plan 92 (2026-11-12) checked writing-skills against this repository's
+    Claude Code guide. A new file, references/claude-code.md, holds the
+    skill's Claude Code facts in this repository's own words: what the
+    frontmatter keys that only Claude Code reads do, why a Haiku `model`
+    is not portable, when to fork a skill, how Claude Code's listing drops
+    descriptions, and what of a body survives compaction. The fork advice
+    moved there from references/discovery.md with a reason that the guide
+    supports. discovery.md and SKILL.md keep the advice that holds on
+    every runtime and point to the new file. Also corrected: a description
+    is no longer said to load in every conversation, the reason given
+    against `@` links is now a portability reason, and the directory
+    examples show references/ and scripts/. The new file departs from
+    upstream v7.0.1's references/ map, which plan 72 followed. No
+    upstream text was taken.
 
     brainstorming/
     dispatching-parallel-agents/
