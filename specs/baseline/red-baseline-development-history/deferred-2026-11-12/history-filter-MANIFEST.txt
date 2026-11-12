@@ -1,0 +1,2 @@
+arm bb0f7cf1d5413acc58938979a3746c886a499902
+history-filter.txt sha256 18ab0d72c85444e2eb1bd8e544e5d01e92d5fa89ae3b0d744b75bbedb90d5c1a model claude-opus-5-5 budget 1.00 uses skills/writing-plans/SKILL.md,skills/writing-plans/references/histor*.md
