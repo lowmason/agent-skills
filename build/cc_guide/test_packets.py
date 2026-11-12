@@ -360,6 +360,20 @@ def test_files_takes_named_citing_files_and_refuses_any_the_lint_never_reads(wor
     assert str(err.value) == 'not a citing file the lint reads: specs/x.md'
 
 
+def test_a_files_packet_marks_a_section_whose_text_changed_since_the_file_was_cited(world, docs_dir, tmp_path):
+    # fresh.md's stamp is not behind beta.overview's changed release, so only
+    # the hash that `baseline cite` recorded shows that the text moved under it.
+    s = fixture_state(docs_dir)
+    s['cited'] = {'notes/fresh.md': {'beta.overview': 'sha256:' + '0' * 64}}
+    write_tree(world[0], {state.BASELINE: state.dump_baseline(s)})
+    made = packets.files(load(world), tmp_path / 'f', [])
+    fresh = tmp_path / 'f' / 'notes__fresh.md'
+    assert fresh in made
+    assert index(fresh)['changed'] == ['beta.overview']
+    assert (fresh / 'sections.md').read_text().split('\n')[4] == (
+        'Changed after @2.1.900: its text differs from the text the file was cited against.')
+
+
 def test_files_with_no_stale_citation_and_no_paths_is_an_error(world, tmp_path):
     repo, _ = world
     write_tree(repo, {'hooks/gate.sh': CITERS['hooks/gate.sh'].replace('@2.1.899', '@2.1.900')})

@@ -352,15 +352,27 @@ def audit(world: World, out: Path, group: str) -> Path:
                                             RELEASES: rel_lines, CHANGELOG: world.docs.changelog})
 
 
+def change_mark(stamp: str, changed_release: str, changed: bool) -> str:
+    '''The line a files packet puts above a cited section: unchanged, changed
+    in a later release, or changed only by its text_hash.'''
+    if not changed:
+        return f'Unchanged since @{stamp}.'
+    if version_key(changed_release) > version_key(stamp):
+        return f'Changed after @{stamp}: now @{changed_release}.'
+    return f'Changed after @{stamp}: its text differs from the text the file was cited against.'
+
+
 def files(world: World, out: Path, paths: list[str]) -> list[Path]:
     '''R8.7's packets, one per file: a copy of the file, the guide, and its
     cited sections' lines and text, each marked when it changed after the
-    file's stamp. No paths: the stale backlog. A path must be a citing file
-    the lint reads, citing only sections both the baseline and the guide
-    hold.'''
+    file's stamp, by its changed release or by a text_hash that differs from
+    the one `baseline cite` recorded (the lint's stale rule). No paths: the
+    stale backlog. A path must be a citing file the lint reads, citing only
+    sections both the baseline and the guide hold.'''
     citations, _ = read_citations(citing_files(world.source, world.manifest.guide))
     by_path = {c.path: c for c in citations}
-    targets = list(dict.fromkeys(paths)) or [path for path, _ in stale_citations(citations, world.state)]
+    stale = dict(stale_citations(citations, world.state))
+    targets = list(dict.fromkeys(paths)) or list(stale)
     unread = [path for path in targets if path not in by_path]
     if unread:
         raise SetupError(f"not a citing file the lint reads: {', '.join(unread)}")
@@ -376,9 +388,9 @@ def files(world: World, out: Path, paths: list[str]) -> list[Path]:
     made = []
     for path in targets:
         c = by_path[path]
-        changed = [sid for sid in c.ids if version_key(world.state['sections'][sid]['changed']) > version_key(c.stamp)]
-        marks = {sid: [f"Changed after @{c.stamp}: now @{world.state['sections'][sid]['changed']}." if sid in changed
-                       else f'Unchanged since @{c.stamp}.', '', *fenced(texts[sid])] for sid in c.ids}
+        changed = stale.get(path, [])
+        marks = {sid: [change_mark(c.stamp, world.state['sections'][sid]['changed'], sid in changed), '',
+                       *fenced(texts[sid])] for sid in c.ids}
         lines, section_md = section_list(world, list(c.ids), marks)
         copy = 'cited_' + path.rsplit('/', 1)[-1]
         index = header(world, 'files') | {
