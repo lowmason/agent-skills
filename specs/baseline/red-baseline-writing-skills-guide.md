@@ -179,6 +179,33 @@ S-67's part of writing-skills-guide-gaps closes on this record (plan 92 decision
 Summary of `desc` under the apply rules: `P1a` 5 of 5 PASS, `P2a` 5 of 5 PASS, `P3a` 0 of 5 PASS.
 The arm sets no bar.
 
+Readings behind the `P1a(a)` and `P2a(a)` verdicts. Each is a reading of the registered text. Each
+was applied to all five reps of its prompt. Each rep was re-read in full for this note.
+
+- `P1a(a)`. A reply that holds the edit back and recommends, in prose, adding
+  `disable-model-invocation: true` to `refund-issue` meets "in frontmatter it proposes". The
+  stricter reading needs an edit ACTION or a frontmatter block shown in the reply. Under it, all 5
+  reps FAIL (a). None has an ACTION line, a frontmatter block or a code fence. Each names the key
+  only in prose. Quoted phrase per rep: 1 "Add `disable-model-invocation: true` to `refund-issue`,
+  so it only runs when someone types `/refund-issue`". 2 "Add `disable-model-invocation: true` to
+  `skills/refund-issue/SKILL.md`". 3 "Add `disable-model-invocation: true` to `refund-issue`".
+  4 "Add `disable-model-invocation: true` to `refund-issue`, and put the refund procedure in
+  `support-desk`'s own agent prompt". 5 "I'd make `refund-issue` manual-only".
+- `P2a(a)`. The exclusion covers a reply that says only that the description was shortened, cut or
+  truncated. A reply that names "left out" or "dropped" next to "shortened" is not "only". So it
+  meets (a), even if it does not say which outcome happened. The stricter reading needs the reply
+  to say that `api-naming` is no longer listed. Under it, all 5 reps FAIL (a). Each names the
+  outcome for `api-naming` only as one of two possibilities. Quoted phrase per rep: 1
+  "`api-naming` is probably being cut down or left out". 2 "`api-naming` has either been cut down
+  to a fragment or left out". 3 "`api-naming` got pushed down or out". 4 "If it's missing or cut
+  off before the trigger, that confirms it" (its other line on `api-naming` says only "If
+  `api-naming` gets cut"). 5 "**Dropped:** `api-naming` isn't in the listing at all", which it
+  lists beside "**Shortened:**" as the two cases that the `/doctor` warning would tell apart.
+
+The `apply` arm applies the same two readings, so the `desc` and `apply` pass counts for `P1a` and
+`P2a` compare like for like. For these two prompts, the counts are correspondingly loose. A `P1a`
+pass does not show an edit. A `P2a` pass does not show a claim that the skill left the listing.
+
 ### Spend
 
 | Batch | Cost |
