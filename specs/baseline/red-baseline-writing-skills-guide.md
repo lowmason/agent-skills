@@ -114,8 +114,8 @@ R4.1). It reads them against eight sections of `specs/guides/claude-code-customi
 `skills.progressive-disclosure`, `subagents.frontmatter`, `subagents.models` and
 `subagents.isolation`. The guide on this branch is the guide on `origin/main` (see below).
 
-- Paths are relative to `skills/writing-skills/`. Line numbers are those of the commit that adds
-  this section.
+- Paths are relative to `skills/writing-skills/`. Line numbers are those of the files after
+  Task 5's commits. The fixes changed no line numbers.
 - A row records a statement only when its truth depends on Claude Code. Statements about the Agent
   Skills spec, this repo's lints, other runtimes or claude.ai are not rows.
 - Task 3 Step 1's fact-to-section table seeded the `claude-code.md` rows.
@@ -161,16 +161,16 @@ R4.1). It reads them against eight sections of `specs/guides/claude-code-customi
 | 35 | `references/discovery.md:11` | `when_to_use`, `model`, `effort`, `context`, `agent` and `disable-model-invocation` are Claude Code extensions beyond the spec's keys. | `skills.frontmatter` | covered | Each key has a row in the table. The guide calls `license`, `compatibility` and `metadata` spec fields. The clause that a claude.ai upload rejects the extensions is a claude.ai claim, outside this review. |
 | 36 | `references/discovery.md:11` | A Haiku `model` is not portable, and cheap work belongs on a subagent with a pinned model. | `subagents.models`, `skills.frontmatter`, `subagents.frontmatter` | covered | Rows 21 to 23 give the reason. The subagent `model` row lets an agent pin its own model. |
 | 37 | `references/discovery.md:13`, `:79` | Write the description in the third person. | `skills.description` | covered | |
-| 38 | `references/discovery.md:13`, `:16`, `:80` | A description says only when to use the skill and never summarizes its workflow. | `skills.description` | contradicted | As row 5: deviation `description-when-only`, not fixed. The deviation's `artifacts` glob is `skills/*/SKILL.md`, which does not name this file. |
+| 38 | `references/discovery.md:13`, `:16`, `:61-71`, `:80`, `:92` | A description says only when to use the skill and never summarizes its workflow. The example labels at `:61-71` and `:92` say the same. | `skills.description` | contradicted | The same rule as row 5. Deviation `description-when-only` names only `skills/*/SKILL.md` in its `artifacts`, so it does not cover this file. Under the `/cc-guide` rule, a deviation covers only the files it names, so this row is an unregistered contradiction. Not fixed: plan 92 changes no description rule. It goes to the owner (see below). |
 | 39 | `references/discovery.md:58` | An agent reads the description to choose which skills to load. | `skills.description` | covered | |
 | 40 | `references/discovery.md:75` | A description uses concrete triggers, symptoms and situations. | `skills.description` | covered | |
 | 41 | `references/discovery.md:79` | The description goes into the system prompt. | `skills.listing-budget` | not covered | The cited sections say only that the listing is always loaded. None of them says where in the context the listing sits. |
-| 42 | `references/discovery.md:115` | The description is the only text of a skill that loads before the skill triggers. | `skills.listing-budget`, `skills.progressive-disclosure` | contradicted | The first tier is the name and the description, and every name stays listed. Fixed in this commit: the line now starts "apart from its name". The pointer clause after it is unchanged. |
+| 42 | `references/discovery.md:115` | The description is the only text of a skill that loads before the skill triggers. | `skills.listing-budget`, `skills.progressive-disclosure` | contradicted | The first tier is the name and the description, and every name stays listed. In Claude Code, `when_to_use` text joins the description in its listing entry and shares its cap. Fixed in Task 5: the line now starts "apart from its name and any `when_to_use` text that a runtime appends to the description". The qualifier holds on every runtime. The pointer clause after it is unchanged. |
 | 43 | `references/discovery.md:116-117` | A runtime may drop or shorten the description when its listing overflows. Claude Code's rule is in `claude-code.md`. | `skills.listing-budget` | covered | Claude Code drops whole descriptions. |
 | 44 | `references/discovery.md:117`, `:128` | The body costs context only when the skill triggers. | `skills.progressive-disclosure` | covered | |
 | 45 | `references/discovery.md:118`, `:132` | `references/` files load only when the body sends the agent there. | `skills.progressive-disclosure` | covered | |
 | 46 | `references/discovery.md:121` | The description loads before the skill triggers. | `skills.listing-budget` | covered | |
-| 47 | `references/discovery.md:122-123` | The description is the only text that takes context in conversations where the skill never runs. | `skills.listing-budget`, `skills.progressive-disclosure` | contradicted | As row 42: the name is in the listing too. Fixed in this commit: the clause now starts "apart from the name". |
+| 47 | `references/discovery.md:122-123` | The description is the only text that takes context in conversations where the skill never runs. | `skills.listing-budget`, `skills.progressive-disclosure` | contradicted | As row 42: the name is in the listing too, and in Claude Code so is any `when_to_use` text. Fixed in Task 5: the clause now starts "apart from the name and any `when_to_use` text that a runtime appends to the description". |
 | 48 | `references/discovery.md:153` | A good example of a cross-reference says that subagents save 50 to 100 times the context. | `subagents.isolation` | not covered | The section says that what a subagent reads stays in its own context and that only the final text comes back. It gives no factor for the saving. The line sits in a ✅ GOOD example. |
 | 49 | `references/discovery.md:202` | A bare skill name lets each runtime load the skill through its own mechanism. | `skills.frontmatter` | covered | In Claude Code, the `name` and the folder name both invoke the skill. |
 | 50 | `references/flowcharts.md` | No statement depends on Claude Code. | — | — | Graphviz style and the render script only. |
@@ -185,17 +185,26 @@ Counts: 45 covered, 4 contradicted, 3 not covered, and 4 files with no Claude Co
 
 ### Contradicted rows
 
-- **Rows 5 and 38** contradict `skills.description`. The register records the contradiction as
-  deviation `description-when-only`, so it stays as it is (the `/cc-guide` rule for a registered
-  deviation). The plan changes no description rule.
-- **Rows 42 and 47** are fixed in this commit, in `references/discovery.md`. Each fix adds the name
-  to what loads before a skill triggers. It is a factual edit under spec D4, and it adds no
-  instruction. The pointer clause at `:116-117`, which Task 4 tested, keeps its words.
+- **Row 5** contradicts `skills.description`. The register records the contradiction for
+  `SKILL.md` as deviation `description-when-only`, so it stays as it is (the `/cc-guide` rule for
+  a registered deviation). The plan changes no description rule.
+- **Row 38** restates the same rule in `references/discovery.md`. The deviation does not name that
+  file, so the row is an unregistered contradiction. It is not fixed, and it goes to the owner.
+- **Rows 42 and 47** are fixed in `references/discovery.md`. Each fix adds the name, and any
+  `when_to_use` text that a runtime appends to the description, to what loads before a skill
+  triggers. The qualifier names no Claude Code detail beyond the `when_to_use` key that
+  `discovery.md:11` already lists. It is a factual edit under spec D4, and it adds no instruction.
+  The pointer clause at `:116-117`, which Task 4 tested, keeps its words.
 
-### Not covered rows, for the owner
+### Rows for the owner
 
-The owner rules on each row at the plan's completion gate.
+The owner rules on each item at the plan's completion gate.
 
+- **Row 38 (contradicted, not registered):** `discovery.md:13`, `:16`, `:61-71`, `:80` and `:92`
+  restate the trigger-only description rule. Deviation `description-when-only` names only
+  `skills/*/SKILL.md` in its `artifacts`. The smallest remedy is an owner decision to add
+  `skills/writing-skills/references/discovery.md` to that entry's `artifacts`. This plan does not
+  edit the register.
 - **Row 41:** `discovery.md:79` gives "injected into system prompt" as the reason for the third
   person. No cited section says where the listing sits.
 - **Row 48:** `discovery.md:153`, inside a ✅ GOOD example, says that subagents save 50 to 100

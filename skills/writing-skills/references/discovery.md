@@ -112,14 +112,14 @@ Use words an agent would search for:
 
 ### 4. Token Efficiency (Critical)
 
-**Problem:** apart from its name, a skill's `description` is the only text of it that loads before the skill triggers,
+**Problem:** apart from its name and any `when_to_use` text that a runtime appends to the description, a skill's `description` is the only text of it that loads before the skill triggers,
 and a runtime may drop or shorten it when its listing overflows (Claude Code's rule:
 [claude-code.md](claude-code.md)). The SKILL.md body is paid only when the skill triggers, and
 `references/` only when the body sends you there. Budget against the tier, not a single number.
 
 **Targets by tier:**
 - `description` (loaded before the skill triggers): the hard cap is 1024 chars, enforced by
-  `build/check_frontmatter.py`. Spend it on triggers, not prose — apart from the name, it is the only text that
+  `build/check_frontmatter.py`. Spend it on triggers, not prose — apart from the name and any `when_to_use` text that a runtime appends to the description, it is the only text that
   competes for context in conversations where the skill is never used. Codex also shortens
   descriptions once its skills listing passes its budget: with 105 skills listed, Codex 0.163 cut
   this repo's longer descriptions to 316–320 characters (2026-10-19; Codex 0.154 cut to 156–164
