@@ -98,6 +98,34 @@ DEBUG_LEAK = r'Phase 4|architecture|3\+ fixes'
 # -----------------------------------------------------------------------------------------------
 
 
+# harden-first-test (added 2026-11-12 by a /deferred pass, after plan 77) ------------------------
+# The backlog item "tech-debt and test-driven-development give two routes for the first test"
+# (section 77-audit-p2-text-fixes of specs/deferred_items.md). Both skills are loaded, as they are
+# when an agent hardens a pipeline. tech-debt's HARDEN step writes the one characterization test
+# first; test-driven-development sends a pipeline's first tests to develop-testing-strategy first.
+
+HARDEN_TEXTS = ['skills/tech-debt/SKILL.md', 'skills/test-driven-development/SKILL.md']
+
+# tech-debt's name and description, read from its frontmatter at 73f7dae (the folded scalar joined
+# on spaces), then the first two lines of TDD_LISTING, unchanged since 1fbb203.
+HARDEN_LISTING = '''- tech-debt: Use when auditing a research or data codebase for technical debt — periodic code-health triage, cleaning up before handing a project off, deciding what to refactor or delete next, building a maintenance backlog, or estimating refactor effort. Trigger on: abandoned approaches in archive/ or old/ dirs, scratch notebooks beside production modules, duplicated v1/v2/v3 scripts or sibling repos (alt_nfp vs alt-nfp), hardcoded /Users/ or absolute paths, 'type: ignore' and sprawling Any, complex modules with no tests, empty or 'Add your description here' READMEs and pyprojects, committed .env files or API keys, raise NotImplementedError / TODO / FIXME stubs, and reproducibility hazards (datetime.now() in a pipeline, magic seeds, as-of/vintage joins without guards). Also when deciding whether code is dead exploratory work or load-bearing-but-fragile. Tuned for a Polars / NumPyro / PyMC / BLS-ETL stack.
+''' + '\n'.join(TDD_LISTING.split('\n')[:2])
+
+HARDEN_FIXTURE = f'''Today is 2026-11-12. The repo is a weekly ridership pipeline for a regional bus agency; the branch is `chore/harden-ridership`.
+
+[session start] Skills you can load with the Skill tool, by name and description:
+{HARDEN_LISTING}
+
+[earlier] Your partner asked for a code-health pass before the analyst who wrote the pipeline leaves. You ran the tech-debt triage. One finding: `ridership/build_panel.py` turns the fare-card export into `out/ridership_panel.parquet`, and the agency's weekly board report reads that file. Your verdict was load-bearing, so HARDEN.
+[you, tools] Read `ridership/build_panel.py`. It holds one function, `build_panel(src: Path) -> pl.DataFrame`, which reads the export, drops transfer taps, and sums boardings by route and week, and a `__main__` block that reads `/Users/kim/Downloads/fares.csv` and writes the parquet. `tests/` is empty. `pyproject.toml` lists pytest as a dev dependency. A small export sits in `data/sample_fares.csv`.
+[now] Your partner: Go ahead and harden `build_panel.py` as your audit says. Start now.'''
+
+HARDEN_PASS = '''PASS needs both clauses. Clause A (bar): the reply writes one test that pins `build_panel`'s current output (for example, it runs on `data/sample_fares.csv` and asserts the output's columns, dtypes, row count or a stored copy of today's output) before it loads develop-testing-strategy or says it will use that skill to plan the tests. Clause B (bar): the reply says it will use develop-testing-strategy for the tests after that one. FAIL = either clause fails. Each clause's pass count is recorded on its own. Clause C (recorded): the test comes before any production edit to `ridership/build_panel.py` (the path change, say).
+Reading notes. Clause A: "loads" is a written Skill call or a sentence that the reply uses the skill now. A reply that loads develop-testing-strategy, or says it will first use it to decide the tests, and only then writes the test, fails A. A reply that writes no test in this turn fails A, as does one whose first test asserts behavior the code does not have yet (a config-driven path, say). Clause B: a written Skill call after the test, or a sentence that the reply will use the skill for the later tests, counts. A mention that does not say the reply will use it, or a use left optional ("could", "may"), does not count. More than one assert in that first test is still one test.'''
+
+HARDEN_LEAK = r'characteri[sz]|test plan|first one|before any test'
+
+
 def case(texts, fixture, task, pass_rule, leak, bar):
     return {'texts': texts, 'model': SONNET, 'budget': BUDGET, 'fixture': fixture, 'task': task,
             'pass': pass_rule, 'void': VOID, 'leak': leak, 'bar': bar}
@@ -107,4 +135,5 @@ CASES = {
     'rcr-feedback': case(RCR_TEXTS, RCR_FIXTURE, RCR_TASK, RCR_PASS, RCR_LEAK, NON_REGRESSION),
     'tdd-strategy': case(TDD_TEXTS, TDD_FIXTURE, STEP_TASK, TDD_PASS, TDD_LEAK, ADDITIVE),
     'debug-architecture': case(DEBUG_TEXTS, DEBUG_FIXTURE, STEP_TASK, DEBUG_PASS, DEBUG_LEAK, NON_REGRESSION),
+    'harden-first-test': case(HARDEN_TEXTS, HARDEN_FIXTURE, STEP_TASK, HARDEN_PASS, HARDEN_LEAK, ADDITIVE),
 }

@@ -78,7 +78,8 @@ Closed earlier deferred items:
 1. Delete each ruling that did not change what got built against the spec or the plan: one that declined a finding
    and kept the plan as written, or one that parked a finding with no change to the build.
 2. Relabel each ruling that the gate listed with `contradicts spec: <spec section>` as `Ruling, contradicts spec`,
-   keeping its bracketed task.
+   keeping its bracketed task. When the gate message is no longer in your context, for example after a `/clear`,
+   read the spec instead: relabel each kept ruling that contradicts spec text.
 3. Keep each remaining ruling's text whole.
 4. Shorten each `Deviation` and `Decision` line to one short line, and keep its `Source:` pointer.
 5. Never edit a quoted title or its `(deferred by …)` part.

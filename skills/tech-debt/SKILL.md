@@ -137,8 +137,10 @@ If **yes** → **HARDEN**, proportionally to how load-bearing it is:
 - Add a derived, descriptive seed (see `bayesian-workflow`).
 - Add the *one* test that pins the behavior you actually depend on — characterization
   first, exhaustive coverage never. A model module needs a test that the pipeline runs
-  end-to-end and the output schema is stable, not 100% line coverage. To plan the tests past
-  that first one, use the develop-testing-strategy skill.
+  end-to-end and the output schema is stable, not 100% line coverage. Write that test before
+  any test plan, even though test-driven-development sends a pipeline's first tests to
+  develop-testing-strategy: it pins behavior the code already has, so it needs no strategy.
+  To plan the tests past that first one, use the develop-testing-strategy skill.
 - Tighten the types only where a wrong type would cause a wrong number.
 
 A few rules of thumb for the ambiguous middle:

@@ -4,12 +4,16 @@ Usage, from the repository root: uv run python <kit>/show_reps.py <dir> [<dir> .
 Each <dir> holds rep<N>.json files from run_reps.sh. The aids flag replies for the reader;
 they are not verdicts. Every verdict is read by hand. A rep is VOID when a tool or the advisor
 ran (turns, extra-iters, models), or when it errored or stopped on its budget cap (is_error,
-subtype); a VOID rep is rerun and never scored.
+subtype); a VOID rep is rerun and never scored. The rule is measure.py's `void_reasons`, so
+both scripts VOID the same reps; `measure.py selftest` checks that they do.
 '''
 import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from measure import void_reasons  # noqa: E402
 
 AIDS = {
     'minor': re.compile(r'\bminor\b', re.I),
@@ -43,10 +47,7 @@ def main() -> None:
             kinds = {str(i.get('type')) for i in iterations if isinstance(i, dict)} if isinstance(iterations, list) else set()
             extra = sorted(kinds - {'message'})
             models = len(data.get('modelUsage') or {})
-            ran_tool = bool(data) and (data.get('num_turns') != 1 or bool(extra) or models > 1)
-            failed = not data or bool(data.get('is_error')) or data.get('subtype', 'success') != 'success'
-            void = ' VOID(tool or advisor ran)' if ran_tool else ''
-            void += ' VOID(error or budget stop)' if failed else ''
+            void = ''.join(f' VOID({reason})' for reason in void_reasons(data))
             print(f'== {d.name}/{path.stem}: is_error={data.get("is_error")} subtype={data.get("subtype")} '
                   f'cost=${cost:.3f} turns={data.get("num_turns")} extra-iters={",".join(extra) or "-"} '
                   f'models={models}{void} first={first_line(reply)!r} aids={",".join(aids) or "-"}')

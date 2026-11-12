@@ -533,3 +533,53 @@ Step 5 meets every expected value. The output has 50 lines: the heading, one bla
 `specs/completed/deferred_items.md`, which the script does not read.
 
 The real-data check is met: Steps 3, 4 and 5 each print what the plan expects.
+
+## /deferred pass (2026-11-12): history-filter at `bb0f7cf`
+
+The backlog item "Finish step 2 has no source for the gate's tags after a `/clear`" (section
+`80-development-history-record — 2026-11-08` of `specs/deferred_items.md`) asks for a fallback source for the tags
+and a five-rep `history-filter` run at the new text. The owner approved the spend in the `/deferred` pass of
+2026-11-12. Commit `bb0f7cf` (`bb0f7cf1d5413acc58938979a3746c886a499902`) adds one sentence to Finish the draft,
+step 2, in `skills/writing-plans/references/history.md`: when the gate message is no longer in context, read the spec
+and relabel each kept ruling that contradicts spec text.
+
+**Checks before any rep.**
+
+- `git diff --stat 6df0a2c bb0f7cf -- skills/writing-plans/SKILL.md skills/writing-plans/references/history.md`
+  lists `references/history.md` only: the `--date` edit of `00b3c45` (see Arms) and this sentence.
+- The CLI is Claude Code 2.1.322, newer than plan 80's 2.1.316, so the isolation probe ran first:
+  `run_reps.sh isolation_probe.txt /tmp/q2-work/probe 1 1 claude-opus-5-5`. All five lines read `NO`. `show_reps.py`
+  shows one turn, one model (`claude-opus-5-5`), `success` and a cost of $0.017. The probe output is not committed.
+- `build_prompts.py leakview /tmp/q2-work/leak history-filter`, then `/usr/bin/grep -nE` and `-niE` for the case's
+  leak pattern: no hits.
+
+**Build.** `uv run python specs/baseline/red-baseline-development-history/kit/build_prompts.py bb0f7cf1d5413acc58938979a3746c886a499902 /tmp/q2-work/prompts history-filter`.
+Its `MANIFEST.txt` is copied to `deferred-2026-11-12/history-filter-MANIFEST.txt`. The prompt's sha256 is
+`18ab0d72c85444e2eb1bd8e544e5d01e92d5fa89ae3b0d744b75bbedb90d5c1a`, with budget 1.00.
+
+**Reps.** `bash specs/baseline/red-baseline-development-history/kit/run_reps.sh /tmp/q2-work/prompts/history-filter.txt specs/baseline/red-baseline-development-history/deferred-2026-11-12/history-filter 1 5 claude-opus-5-5 1.00`.
+Every rep exited 0. No rep is VOID.
+
+### history-filter at `bb0f7cf`
+
+The six clauses are as in the control section. Every rep meets all six.
+
+| Rep | Verdict | Deviation line as written |
+|---|---|---|
+| 1 | PASS | "v2 endpoint; v1 was retired." |
+| 2 | PASS | "v2 endpoint; v1 was retired in October." |
+| 3 | PASS | "v2 endpoint, since v1 was retired." |
+| 4 | PASS | "v2 endpoint, since v1 was retired." |
+| 5 | PASS | "v2 endpoint; v1 was retired." |
+
+In every rep the Task 2 ruling is labelled `Ruling, contradicts spec (Task 2)` and the module-name ruling
+`Ruling (Task 3)`, each copied whole with its what, why and cost parts. The batch-email and retry-jitter rulings are
+gone. Each Deviation line keeps `Source: plan, Task 1.` The closed-item line, the heading and the Plan line are as the
+draft printed them. No rep adds a title line or a line that the rule does not name.
+
+Passes: 5 of 5, the bar (`treatment 5/5`). Spend: $0.1674 (rep1 $0.1108, which writes the prompt cache. Reps 2 to 5
+cost $0.0136 to $0.0148 each). With the probe, the run cost $0.18.
+
+**What this run shows, and what it does not.** It is a non-regression check. The fixture keeps the gate message in
+view, with the tag on the Task 2 ruling, so the new fallback sentence never applies. No case puts a draft in front of
+an agent after a `/clear`, so the fallback itself is untested.

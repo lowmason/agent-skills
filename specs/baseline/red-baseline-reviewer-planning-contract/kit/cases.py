@@ -180,6 +180,11 @@ Note for the reviewer: neither the brief nor the spec says anything about unread
 '''
 
 # R2: one real bug among polish points -----------------------------------------------------
+# A reuse registers a third reading class before any rep: a remark on `page < 1` or
+# `per_page <= 0` in `page_of` (wrong data or an `IndexError`) is correctness. It is neither the
+# planted bug nor polish, and it changes no verdict. Plan 73's registered rules had no such class;
+# every R2 rep made the remark, and the record classed it only after the GREEN reps
+# (specs/baseline/red-baseline-reviewer-planning-contract.md, "Contested remarks and the gating reading").
 
 PAGE_SPEC = '''# Paging helper
 
