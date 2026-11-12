@@ -2602,7 +2602,7 @@ all 20 named a type.
       cc-drift-upkeep-2026-10-20). G5 is left uncovered: launchd's `PATH` is a macOS fact,
       not a Claude Code one. The first execution gap stays the probe item above. The
       2026-10-20 verify confirmed each added statement.
-- [ ] Observe the once-a-day half of the notice in real sessions (plan 49 Task 10 Step 4,
+- [x] Observe the once-a-day half of the notice in real sessions (plan 49 Task 10 Step 4,
       skipped: never observed live, and the owner chose to finish as built). Nothing is
       due on `main`, so the real `refresh` leaves an empty notice, and the plan's
       second-session check had nothing to show. The half rests on the offline tests
@@ -2613,6 +2613,7 @@ all 20 named a type.
       `notice.write_notice(cache, None)`. Size: quick-fix. Done when: the owner has seen
       both sessions and ticks this item with the result.
       → owner-only 2026-11-11: write a stand-in notice, start two terminal sessions in this repo on one day, record that only the first shows it, then restore the cache.
+      → done 2026-11-12 (owner): a real notice was due, so no stand-in was written. With `notice-shown` removed, the first terminal session showed the cc-guide notice and the second showed nothing. `notice-shown` then held `2026-11-12` and the digest in `notice.digest` (`04b13cd1…`).
 - [ ] `notice.sh` and `notice.py` robustness Minors (plan 49 task reviews and final review;
       left at the completion gate because none needed a fix before merge). In
       `build/cc_guide/notice.sh`: `fail_notice` has no cleanup if a write fails, so it can
