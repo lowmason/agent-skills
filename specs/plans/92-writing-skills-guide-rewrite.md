@@ -53,6 +53,7 @@
 - **D10** (planner default; owner approved it as written at plan review, 2026-11-12): C3 also replaces the ❌ `@` example's parenthetical "(force-loads, burns context)", which repeats the unsupported claim, with "(a file path, not a skill name)". Applied in: Task 3.
 - **D11** (planner default; owner approved it as written at plan review, 2026-11-12): the Task 5 review rows go in the record file, under `## Review against the guide`. Applied in: Task 5.
 - **D12** (planner default; owner approved it as written at plan review, 2026-11-12): the kit adds `--disable-slash-commands`, which in Claude Code 2.1.322 turns off every skill and command, so no installed skill reaches a rep. Applied in: Task 1.
+- **D13** (owner, execution handoff, 2026-11-12): "You can execute now." — the go-ahead to execute this plan now, in a fresh session in its own worktree, under subagent-driven-development. It answered the planning session's note that the plan waits until plan 91's execution ends, and plan 91's PR #183 had merged. The $30 spend cap and the commits on this branch are part of the plan the owner approved at plan review. Applied in: the start.
 
 ---
 
