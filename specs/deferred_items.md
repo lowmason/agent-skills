@@ -3742,7 +3742,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       759 manifest hashes. Size: design. Done when: the owner decides, and the decision is
       applied or recorded here.
       → retired 2026-10-31: owner chose "Keep them tracked": `specs/verification/32-jax-trials/` stays tracked as it is. Untracking would make clones no smaller and would not hide the `/Users/lowell` paths, which are in pushed history.
-- [ ] Check the skill listing after the four 2026-10-04 skill merges (audit-3-10-26 I7, found
+- [x] Check the skill listing after the four 2026-10-04 skill merges (audit-3-10-26 I7, found
       2026-10-03). No `/context` or `/doctor` reading has been recorded since the JAX and
       causal-design merges; the last is 2026-07-30 (30 skills, in section
       `19-methodology-pipeline-skills`). Descriptions now total 21,505 characters over 37
@@ -3753,6 +3753,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       not trim descriptions. The open plan-35 items `listing-aggregate` and guide note S-109
       cover the lint, not this reading. Size: quick-fix. Done when: the reading is recorded.
       → owner-only 2026-11-11: run `/context` and `/doctor` once in an interactive session on the execution model, and record the reading here.
+      → done 2026-11-12 (owner): on Claude Code 2.1.322 in the CLI with Sonnet 5.5 (the session log shows both), `/context` listed 103 skills at 19.6k tokens, and `/doctor` reported every personal skill's description in the listing. The one personal skill absent from it is dispatching-parallel-agents, by design (`disable-model-invocation: true`).
 - [x] `install.py` never reports a managed link whose source is gone (audit-3-10-26 H2,
       found 2026-10-03). The audit's dangling `recommend-causal-design` links resolved
       themselves when that branch merged (none on 2026-10-18), but `install.py` has no
