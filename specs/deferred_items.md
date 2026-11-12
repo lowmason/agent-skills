@@ -1174,6 +1174,7 @@
       example does not cover runs in fresh contexts with no-guidance controls against the
       shipped skill, and the record says whether uptake of the causal graph and the status
       contract generalizes.
+      → planned 2026-11-12: specs/plans/91-causal-design-heldout-eval.md
 - [x] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
       identification questions (code-reviewer, merge review). Its decision map's
       route-only row and `references/drill-down.md` send causal questions to the PML
