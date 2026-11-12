@@ -8220,3 +8220,42 @@ No rep here needs that reading.
   steps after the name include "with the later qualities placed in named later stages", which is plan 85's text.
 
 Other readings: no reading of record changes a count.
+
+## /deferred pass (2026-11-12): §4 commit line at `73f7dae`
+
+The backlog item "§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is
+recorded" (section `85-derive-roadmap-later-qualities-and-spec-refs — 2026-11-10` of `specs/deferred_items.md`) asks for
+the commit step in §4 and a micro-test pass on the cases that write a roadmap file. The owner approved the spend in the
+`/deferred` pass of 2026-11-12. Commit `73f7dae` (`73f7dae82a6d67ba44f7727bdc88653d7549c6ef`) changes one sentence of
+§4: on approval, commit the roadmap file with the recorded answer on the current branch before the handoff, so the
+fresh session reads it. The wording follows §5's commit bullet.
+
+**Cases.** The five cases whose task writes a roadmap file (`ROADMAP_TASK` or `ROADMAP_ASK_TASK`):
+dr-known-progression, dr-known-progression-79, dr-research-depth, dr-quality-suggest and dr-spec-column. The owner also
+approved dr-handoff-spec, whose fixture sits on the §4 path from approval to handoff. 5 reps each, `claude-opus-5-5`,
+budget 1.00.
+
+**Comparison rule, written after the reps ran and before any rep was read.** Each case is read by its own clauses and
+readings of record. A case shows no regression when:
+
+| Case | Comparison arm | No regression when |
+|---|---|---|
+| dr-known-progression | plan 78 "Fix round 1: dr-known-progression" (`d3fc772`): B 5, A 5, C 0, D 5, E 5; PASS 0 of 5 (conformance clause C, a miss the owner accepted) | each clause count is at least the arm's count minus one |
+| dr-known-progression-79 | plan 85 at `T7`: PASS 4 of 5 | the guard bar holds: at least 2 of 5 |
+| dr-research-depth | plan 85 at `T7`: PASS 5 of 5 | the guard bar holds: at least 4 of 5 |
+| dr-quality-suggest | plan 85 at `T7`: PASS 5 of 5 | plan 77's non-regression rule: at least the arm's count minus one, so at least 4 of 5 |
+| dr-spec-column | plan 85 at `T8`: PASS 5 of 5, on the Separator reading | at least 4 of 5, on the Separator reading of record |
+| dr-handoff-spec | plan 85 step A rep1: A yes, B yes | recorded only. A reply that commits the roadmap file again before a "Next:" line, and then stops, still meets clause A |
+
+Recorded for every case: whether the reply commits, or says it will commit, the roadmap file before a handoff. A
+borderline call is shown beside its count, as plan 85's table does. Any case that misses goes to the owner.
+
+**Checks before any rep.** `CASE_REPOS="$HOME/Projects" uv run python specs/baseline/red-baseline-new-project-entry/kit/build_prompts.py 73f7dae82a6d67ba44f7727bdc88653d7549c6ef /tmp/q3-work/build <the six cases>`
+wrote six prompts. Its `MANIFEST.txt` is copied to `treatment/deferred-73f7dae-MANIFEST.txt`. Each prompt carries the new
+sentence once. A case-insensitive grep of each prompt for `red-baseline`, `plan 7[89]`, `plan 85` and `micro-test`
+found 0 hits. Every case-repository read has the same sha256 as reads in earlier manifests. dr-known-progression and
+dr-known-progression-79 share one prompt (sha256 `68b6d8eb…`) and differ only in their pass rules, so each has its
+own five reps, as in earlier arms. The CLI is Claude Code 2.1.322, the version of the 2026-11-11 probe; it was probed
+again on 2026-11-12 (all five lines `NO`).
+
+**Reps.** For each case: `bash specs/baseline/red-baseline-new-project-entry/kit/run_reps.sh /tmp/q3-work/build/<case>.txt specs/baseline/red-baseline-new-project-entry/treatment/<case>-73f7dae 1 5 claude-opus-5-5 1.00`.
