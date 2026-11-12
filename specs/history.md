@@ -268,3 +268,8 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "Each of the eight readings holds for a whole line, so a line that needs the flat" (deferred by readonly-guard-leading-token-bypasses).
+
+## /deferred — 2026-11-12
+
+Closed deferred items:
+- "`packets --files` marks a packet's sections by stamp alone (`build/cc_guide/packets.py:379-381`). A file that is stale only by hash, the #93 and #94 collision case, gets "Unchanged since @X" and an empty `changed` list for a section whose text changed, so the verifier's packet says the section did not change. The verifier contract (`.claude/agents/cc-guide-verifier.md:61-66`) still requires a quoted row for each statement that rests on any cited section, so the marks inform and do not narrow the review. Found by plan 89's Task 4 review, outside Task 4's file list (owner ruled defer at the gate). Fix: count a section as changed when `state['cited']` holds a hash for that file and section that differs from the section's `text_hash`, and pin it in `build/cc_guide/test_packets.py`. Size: quick-fix. Done when: the packet of a file that is stale only by hash marks the changed section as changed, and a test covers it." (deferred by 89-cc-guide-owner-rulings): the packet takes its changed sections from the lint's stale rule, so a hash-only change is marked changed, and a test covers it.
