@@ -533,3 +533,46 @@ This section, the case and its bar are committed before any rep and before the w
 - **Isolation probe.** Claude Code 2.1.322 was probed on 2026-11-12 with
   `specs/baseline/red-baseline-development-history/kit/isolation_probe.txt` (an unchanged copy of this kit's file):
   all five lines `NO`.
+
+### harden-first-test: control at `73f7dae`
+
+Build: `build_prompts.py 73f7dae82a6d67ba44f7727bdc88653d7549c6ef /tmp/q1-work/control harden-first-test`, manifest
+copied to `control/harden-first-test-MANIFEST.txt` (prompt sha256 `6e81473c…`). Reps:
+`run_reps.sh /tmp/q1-work/control/harden-first-test.txt specs/baseline/red-baseline-audit-p2/control/harden-first-test 1 5 claude-sonnet-5-5 0.50`.
+Every rep exited 0. No rep is VOID. Spend: $0.1061.
+
+| Rep | A (bar) | B (bar) | C (recorded) | PASS | Deciding line |
+|---|---|---|---|---|---|
+| 1 | fail | fail | pass | no | "First I'll load the testing-strategy skill, as the TDD skill requires before choosing tests" |
+| 2 | fail | fail | pass | no | "**Strategy:** load `develop-testing-strategy` before writing any tests." |
+| 3 | fail | fail | pass | no | "The test strategy skill says to consult it before writing tests, so I'm loading it first." |
+| 4 | fail | fail | pass | no | "First I'm loading the testing-strategy skill so the first test is chosen deliberately" |
+| 5 | fail | fail | pass | no | "First I'm loading the testing-strategy skill, as the TDD skill says to consult it before writing tests" |
+
+Every rep plans the one test that pins today's output, and every rep loads develop-testing-strategy with a written Skill
+call before it writes that test. Clause A: 0 of 5. No rep says it will use the skill after that test, so clause B is
+0 of 5. Every rep puts the test before the path edit: clause C 5 of 5. PASS: 0 of 5. The control fails, so the
+additive bar can be met.
+
+### harden-first-test: treatment at `b62f15d`
+
+Build: `build_prompts.py b62f15def489ac35d3f903c1891b4ef6a7c3fb95 /tmp/q1-work/treatment harden-first-test`, manifest
+copied to `treatment/harden-first-test-MANIFEST.txt` (prompt sha256 `0fd848ba…`). The two prompts differ only in the
+new sentence. Reps: `run_reps.sh /tmp/q1-work/treatment/harden-first-test.txt specs/baseline/red-baseline-audit-p2/treatment/harden-first-test 1 5 claude-sonnet-5-5 0.50`.
+Every rep exited 0. No rep is VOID. Spend: $0.1224.
+
+| Rep | A (bar) | B (bar) | C (recorded) | PASS | Deciding line |
+|---|---|---|---|---|---|
+| 1 | pass | fail | pass | no | "It pins behavior the code already has, so it should pass immediately. That's expected here, and I won't build a test plan for it." |
+| 2 | pass | fail | pass | no | "I'm not adding a wider test plan or type work, because nothing here calls for it." |
+| 3 | pass | fail | pass | no | "I'm not writing a broader test plan." |
+| 4 | pass | fail | pass | no | "I'm not adding types, extra tests, or a README here. The audit only called for the one test and the path fix." |
+| 5 | pass | fail | pass | no | "it needs no test plan because it only pins behavior the code already has" |
+
+No rep loads develop-testing-strategy, and every rep writes the pinning test first: clause A 5 of 5. No rep names
+develop-testing-strategy at all, so clause B is 0 of 5. Each rep's later test is a failing test for the new CLI path,
+written under test-driven-development, and each rep declines further tests. Clause C: 5 of 5. PASS: 0 of 5.
+
+**Bar: missed.** The treatment passes 0 of 5, below 5 of 5. Clause A, the order that the backlog item names, moves
+from 0 of 5 to 5 of 5. Clause B is 0 of 5 in both arms. The registered rule allows one wording round with the rule
+unchanged, then an owner ruling.
