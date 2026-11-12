@@ -1162,7 +1162,7 @@
       body lines and added `references/{discovery,flowcharts,bulletproofing}.md`. This item is
       still open: it asks for a distilled file of Claude Code text, which plan 72 did not write.
       → triggered 2026-10-31: plan 72 split writing-skills to 434 body lines, under 500 (its own 2026-10-29 note).
-      → planned 2026-11-12: specs/writing-skills-guide-rewrite.md
+      → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
 
 ## 37-recommend-causal-design (merge review) — 2026-10-04
 - [ ] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
@@ -1754,7 +1754,7 @@
       no contradiction and 10 new not-covered rows: run environment, stream format and
       the pin overrides the probes test. The owner ruled all ten none, and both files are
       cited. `cli.py lint` prints the same five STALE files as before.
-      → planned 2026-11-12: specs/writing-skills-guide-rewrite.md
+      → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
 - [ ] Newline handling in the citation reader (plan 43's final review, issue 4, folding in the
       CRLF note from Task 5's review). `build/cc_guide/guide.py` (`file_citation`, near line
       306) strips both ends, so a trailing space or `\r` is reported as "an indented citation;
@@ -4221,7 +4221,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       (listing budget, critical-rules-first, `@` loading), the `writing-skills-tdd-for-docs`
       deviation and the "Why no @ links" claim. The rewrite should also fix SKILL.md's "Directory
       Structure" and "File Organization" sections, which still show no `references/` folder.
-      → planned 2026-11-12: specs/writing-skills-guide-rewrite.md
+      → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
 - [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
