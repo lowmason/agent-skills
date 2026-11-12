@@ -12,7 +12,8 @@ Claude Code reads these keys beyond the Agent Skills spec's own:
 - `when_to_use`: more trigger text. Claude Code appends it to the description, and the two share
   one entry in the skill listing and that entry's length cap.
 - `model` and `effort`: the model for the rest of the turn in which the skill runs, and the
-  reasoning effort while the skill is active.
+  reasoning effort while the skill is active. With `context: fork`, `model` sets the forked
+  subagent's model instead.
 - `context: fork`: Claude Code runs the body in an isolated subagent that does not see the
   conversation, so the body must stand alone. Only the subagent's final text comes back.
 - `agent`: the agent type that runs a forked skill. The default is `general-purpose`.
