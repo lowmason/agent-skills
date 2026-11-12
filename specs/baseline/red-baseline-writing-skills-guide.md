@@ -84,4 +84,110 @@ sets no bar.
 
 ## Checks before any rep
 
+Isolation pilot, run once with `claude-sonnet-5-5` through `kit/probe.sh`. The Claude Code version
+is 2.1.323. The stream sits at `/tmp/plan92-pilot/probe-sonnet.jsonl` and is not committed.
+
+- The init record names the output style `default`.
+- The init record lists no skill and no slash command. The text `writing-skills` is not in it.
+- The pilot reply answered NO on all six lines. They ask about CLAUDE.md text, an output style, a
+  rule heading, SessionStart context, auto-memory content, and a skill or command list.
+- The pilot cost $0.0087549. It counts in `SPEND`.
+- The grep for `least-invoked|VAULTCTL|CLAUDE_CODE_FORK_SUBAGENT|preload` over the stream printed
+  `0` and exited 1. No answer phrase reached the pilot.
+
+Fixture checks:
+
+- The answer-phrase scan over the four conversations in `kit/cases.py` printed `[]` and exited 0.
+  No fixture gives away an answer.
+- `git grep` for the six fixture names in `skills/writing-skills` at `3684b96` printed nothing and
+  exited 1. The text under test holds no worked example equal to a fixture.
+
+Base prompts: built at `3684b96` with `kit/build_prompts.py`. `base/MANIFEST.txt` shows
+`body chars 18285` and `file references/discovery.md ... chars 9534`. A sweep of `base/` for home
+paths found none.
+
 ## Results
+
+All 25 reps ran from `base/`, at commit `3684b96`. Every header in `show_reps.py` shows `turns=1`,
+one model and no extra iterations, so no rep is VOID. No rep is UNSCORABLE and no rerun was needed.
+The `base/*/rep<N>.json` files are the raw outputs.
+
+### `red`: `R1` on both models
+
+In every rep, the table line is the last line of the body.
+
+`red`, `claude-opus-5-5` (`base/R1-opus/`):
+
+| Rep | Verdict | First statement of the rule (body line) | Table line (body line) |
+|---|---|---|---|
+| 1 | PASS | line 8: "Hard rule: every `vaultctl export` command includes `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 32 |
+| 2 | PASS | line 12: "Every `vaultctl export` command you run includes `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 53 |
+| 3 | PASS | line 8: "Core rule: every `vaultctl export` command includes `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 57 |
+| 4 | PASS | line 8: "Core rule: every `vaultctl export` command carries `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 69 |
+| 5 | PASS | line 20 (no later than): "Every `vaultctl export` command includes `--tenant <tenant-id>`, with the tenant ID copied from the ticket" | `[VAULTCTL ERROR TABLE]`, line 61 |
+
+`red`, `claude-sonnet-5-5` (`base/R1-sonnet/`):
+
+| Rep | Verdict | First statement of the rule (body line) | Table line (body line) |
+|---|---|---|---|
+| 1 | PASS | line 8: "Hard rule: never run `vaultctl export` without `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 33 |
+| 2 | PASS | line 10: "Never run `vaultctl export` without `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 30 |
+| 3 | PASS | line 10: "Never run `vaultctl export` without `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 39 |
+| 4 | PASS | line 10: "Never run `vaultctl export` without `--tenant <tenant-id>`" | `[VAULTCTL ERROR TABLE]`, line 30 |
+| 5 | PASS | line 10: "Never run `vaultctl export` without `--tenant`" | `[VAULTCTL ERROR TABLE]`, line 36 |
+
+Sonnet rep 2 prints its file text twice, once after its ACTION line and once in its message. The
+two copies match. The rep is scored once.
+
+RED outcome: null
+
+FAIL count: `claude-opus-5-5` 0 of 5, `claude-sonnet-5-5` 0 of 5. RED shows the failure when 2 or
+more scored reps FAIL on either model.
+
+S-67's part of writing-skills-guide-gaps closes on this record (plan 92 decision D5).
+
+### `desc`: `P1a`, `claude-opus-5-5` (`base/P1a-opus/`)
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | (a) no edit ACTION, but the reply proposes the key: "Add `disable-model-invocation: true` to `refund-issue`, so it only runs when someone types `/refund-issue`". (b) "also stops the skill from being preloaded into subagents". |
+| 2 | PASS | (a) no edit ACTION, but the reply proposes the key: "Add `disable-model-invocation: true` to `skills/refund-issue/SKILL.md`". (b) "a skill with that flag also can't be preloaded through a subagent's `skills:` list". |
+| 3 | PASS | (a) no edit ACTION, but the reply proposes the key: "Add `disable-model-invocation: true` to `refund-issue`". (b) "that same key also stops the skill from being preloaded through a subagent's `skills:` list". |
+| 4 | PASS | (a) no edit ACTION, but the reply proposes the key: "Add `disable-model-invocation: true` to `refund-issue`, and put the refund procedure in `support-desk`'s own agent prompt". (b) "`support-desk` can no longer load `refund-issue` through its `skills:` list". |
+| 5 | PASS | (a) no edit ACTION, but the reply proposes the key: "the key that makes a skill manual-only is `disable-model-invocation: true`" and "I'd make `refund-issue` manual-only". (b) "the same flag also stops the skill from being preloaded into subagents". |
+
+### `desc`: `P2a`, `claude-opus-5-5` (`base/P2a-opus/`)
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | (a) "Claude Code shortens descriptions or leaves skills out"; for `api-naming`: "`api-naming` is probably being cut down or left out". (b) "set `disable-model-invocation: true` in its frontmatter". |
+| 2 | PASS | (a) "it shortens descriptions or drops some skills from the listing entirely"; for `api-naming`: "`api-naming` has either been cut down to a fragment or left out". (b) "set `disable-model-invocation: true`". |
+| 3 | PASS | (a) "some skills get shortened or left out"; for `api-naming`: "`api-naming` got pushed down or out". (b) "Set `disable-model-invocation: true` on those". |
+| 4 | PASS | (a) "Claude Code shortens descriptions or leaves skills out"; for `api-naming`: "If it's missing or cut off before the trigger, that confirms it". (b) "Set `disable-model-invocation: true`". |
+| 5 | PASS | (a) "descriptions get cut short or some skills drop out"; for `api-naming`: "**Dropped:** `api-naming` isn't in the listing at all". (b) "Set `disable-model-invocation: true` on skills you only ever run by hand". |
+
+### `desc`: `P3a`, `claude-opus-5-5` (`base/P3a-opus/`)
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | FAIL | Reason given is that the forked skill cannot dispatch: "subagents can't start further subagents", "would probably never run". No line says the fork can finish before its reviewers report. |
+| 2 | FAIL | Reason given is that the forked skill cannot dispatch: "those three dispatches would happen one level down", "They would probably fail there or quietly not happen". No line says the fork can finish before its reviewers report. |
+| 3 | FAIL | Reason given is that the forked skill cannot dispatch: "that subagent can't fan out to more subagents", "quietly do all three reviews itself in one context". No line says the fork can finish before its reviewers report. |
+| 4 | FAIL | Reason given is that the forked skill cannot dispatch: "That dispatch may not work at all", "the reviewers never run and the audit comes back with nothing in it". No line says the fork can finish before its reviewers report. This is the closest wording to a pass, and its stated cause is the failed dispatch, not an early return. |
+| 5 | FAIL | Reason given is that the forked skill cannot dispatch: "the fork can't fan out to the three reviewers", "It would either fail or have one agent do all three reviews". No line says the fork can finish before its reviewers report. |
+
+Summary of `desc` under the apply rules: `P1a` 5 of 5 PASS, `P2a` 5 of 5 PASS, `P3a` 0 of 5 PASS.
+The arm sets no bar.
+
+### Spend
+
+| Batch | Cost |
+|---|---|
+| Pilot (`claude-sonnet-5-5`) | $0.0088 |
+| `R1-opus` | $0.3777 |
+| `R1-sonnet` | $0.1849 |
+| `P1a-opus` | $0.2703 |
+| `P2a-opus` | $0.3084 |
+| `P3a-opus` | $0.2131 |
+
+SPEND: $1.3632 of the $30 cap (25 reps $1.3545, pilot $0.0088).
