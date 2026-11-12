@@ -136,9 +136,11 @@ research-track stage's `Leaves out` sends to the Ranked list is suggested
 inside it: its name, one line on why this project will need it, and the
 outcome line it would become. The same question asks your partner to approve
 the quality and, if they do, to give its place in the track's ranking. Record
-the answer per `references/roadmap-format.md` (Ranked list). On approval, hand
-off the first stage per its ROUTING line, by bare skill name, in a fresh
-session — then STOP.
+the answer per `references/roadmap-format.md` (Ranked list). On approval,
+**commit** the roadmap file, with the recorded answer, on the current branch
+before the handoff, so the fresh session reads it. Then hand off the first
+stage per its ROUTING line, by bare skill name, in a fresh session — then
+STOP.
 
 Between stages, the completed stage's execution session recommends resuming
 the roadmap, and your human partner decides by launching the resume. Never
