@@ -248,3 +248,23 @@ Closed earlier deferred items:
 - "Stop-hook guard design (`build/cc_guide/conformance.toml:165`, check `stop-hook-guard`;" (deferred by cc-guide-files-backlog).
 - "A Desktop-visible channel for the drift notice (plan 49, Task 10 and the final" (deferred by 49-claude-code-drift-automation).
 - "Two branches can give a section's `changed` and a citing file's stamp the same release," (deferred by cc-guide-files-2026-10-21).
+
+## 90-readonly-guard-command-starts — 2026-11-12
+Plan: specs/plans/completed/90-readonly-guard-command-starts.md · Spec: specs/completed/readonly-guard-command-starts.md (retired)
+
+Differences from the design:
+- Ruling (Task 4): fix the skipped-run class in Task 4 as fix round 1 (memo of each loop head's stop in _stop_index, shared per walk) — it is the class D3 ruled to fix, the spec amendment claims a linear worst case, and the memo adds no denial, changes no candidate (scratch check: 0 of all subcommands differ, max 13) and stays inside the fence (_stop_index succeeds _command_words) — if wrong, a perf-only change alters candidates; Task 5 Step 1 rechecks on the committed code.
+- Ruling, contradicts spec (Task 4): keep queued — D3 named it and the spec requires it; with the memo it bounds the leading-= class independently, and the joint mutation (no queued, no known) fails leading-equals and skipped-run on both interpreters (controller ran it) — if wrong, a little redundant code stays in the guard. Plan bite checks corrected a4db3d2.
+- Ruling, contradicts spec (final review): keep `queued` with no test that bites it after D6 — the spec (D3, §1 amendment) requires it, it stays sound (Task 7 Step 1: 0 denial flips), and it is cheap; D6 removed the class it bounded, and the memo and scan stop keep the walk linear with their own biting cases — if wrong, a little untested code stays in the guard; the owner can ask to drop it as a follow-up.
+- Deviation (Task 3): the gate also asked about the walk's super-linear runtime; D3 and D4 added Tasks 4 and 5. Source: plan, Task 3.
+- Deviation (Task 4): fix round 1 (`1607648`) added the memo and the `skipped-run` case. Source: plan, Task 4.
+- Deviation (Task 4): the bite check removes `queued` and `known` together (`a4db3d2`); after D6 it fails only `skipped-run`. Source: plan, Task 4.
+- Deviation (Task 5): 11 shape classes timed at up to 480 KB, not 512 KB; the slowest took 1.97 s, all linear. Source: plan, Task 5.
+- Deviation (Task 7): Step 1's expectation was corrected and Step 2a added after the run (`e523e03`). Source: plan, Task 7.
+- Decision D3 (spec amendment): fix the walk's quadratic work on long crafted lines now. Source: plan, `## Decisions`.
+- Decision D4 (spec amendment): dedupe plus a fail-closed cap at 64 candidates (spec §1, §2, §4, §5). Source: plan, `## Decisions`.
+- Decision D6 (spec amendment): a word that begins with `=` loses every leading `=` in one step (spec §1, §5). Source: plan, `## Decisions`.
+- Deferred: 1 item. Source: specs/deferred_items.md, § 90-readonly-guard-command-starts.
+
+Closed earlier deferred items:
+- "Each of the eight readings holds for a whole line, so a line that needs the flat" (deferred by readonly-guard-leading-token-bypasses).

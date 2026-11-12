@@ -609,9 +609,9 @@ def test_the_dash_modifier_leads_a_command_like_a_keyword(command):
     assert guard.classify(command) is not None
 
 
-# The spec's first three classes (specs/readonly-guard-command-starts.md): the
-# walk stopped at a word that may lead the command and took that word for the
-# command. Seven come from the backlog item, the test line from the README's
+# The spec's first three classes (specs/completed/readonly-guard-command-starts.md):
+# the walk stopped at a word that may lead the command and took that word for
+# the command. Seven come from the backlog item, the test line from the README's
 # mixed-reading bullet. d79b1fb allowed each.
 COMMAND_START_BYPASSES = [
     pytest.param('{ git branch ]] HEAD; }', id='brace-group-before-git'),

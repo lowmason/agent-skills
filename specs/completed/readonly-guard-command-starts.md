@@ -1,10 +1,10 @@
 # Read-only guard: every place a command can start — Design Spec
 
-**Status:** APPROVED (2026-11-11). The owner approved this file, its designer's calls included, on 2026-11-11.
-The question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it". The
-next step is a plan from the writing-plans skill.
+**Status:** COMPLETE (2026-11-12), implemented by plan 90 (`specs/plans/completed/90-readonly-guard-command-starts.md`).
+It was APPROVED on 2026-11-11. The owner approved this file, its designer's calls included, on 2026-11-11. The
+question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it".
 
-**Amended 2026-11-11** by the owner's rulings D3 and D4 in `specs/plans/90-readonly-guard-command-starts.md`,
+**Amended 2026-11-11** by the owner's rulings D3 and D4 in `specs/plans/completed/90-readonly-guard-command-starts.md`,
 made during execution: the walk bounds its work as well as its candidates, and a subcommand with more than 64
 candidates fails closed (Design §1, §2, §4 and §5, each marked "Amendment"). The owner's ruling D6 then changed the
 last row of Design §1's table: a word that begins with `=` loses every leading `=` in one step.
@@ -267,7 +267,7 @@ In `hooks/test_readonly_agent_guard.py`:
 
 ## Closing the backlog
 
-- This spec's commit writes `→ planned 2026-11-11: specs/readonly-guard-command-starts.md` on the item.
+- This spec's commit writes `→ planned 2026-11-11: specs/completed/readonly-guard-command-starts.md` on the item.
 - At plan completion, the plan-completion protocol (writing-plans § Plan Completion Protocol) ticks the item. The
   tick note records the 8 lines closed, the 2 that `d67f856` closed earlier, and the glued qualifier left under
   "Not caught" by this spec's approval.

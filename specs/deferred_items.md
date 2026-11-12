@@ -272,7 +272,7 @@
       core.pager=cat log`; `GIT_*` assignments pose the same choice. Revisit if: an
       agent is seen setting such a key, or the guard is asked to stop arbitrary
       programs rather than drift off the read-only contract.
-- [ ] Each of the eight readings holds for a whole line, so a line that needs the flat
+- [x] Each of the eight readings holds for a whole line, so a line that needs the flat
       reading for one construct and the nested reading for another is misread by all of
       them (the round-2 review of 854947c: its R1-R4 and Codex P2a/P2b). This is the
       class the branch narrowed but did not close. The round-3 fix (0c1f5c3), answering
@@ -304,6 +304,7 @@
       process-substitution forms still pass. Revisit if: a hunter finds a mixed-reading
       line that mutates, or the guard is promoted from guardrail toward sandbox.
       → planned 2026-11-11: specs/plans/90-readonly-guard-command-starts.md
+      → done 2026-11-12 (plan 90): the guard now reads a word that may lead the command both ways, as a prefix and as the command, and a denial either way stands (c97eb24; the work bound and the 64-candidate cap, a672942 and 1607648; the one-step `=` strip, a9773f2). That closes the 8 recorded lines, by class: a leading brace group 2, a leading `[[ … ]]` test 1, a leading `=` 1, and a word that contains `=` 4. Seven come from this item and one from the README's mixed-reading bullet. `d67f856` closed the 2 clustered-option examples earlier (the item above). The read-only forms this item lists still pass (existing tests, unedited). The transcript sweep found 0 false positives in 150,024 unique commands, and the owner accepted the walk's false-positive class (D2) and the cap's (D5). The glued glob qualifier stays under "Not caught" in `hooks/README.md`, out of scope by the spec's approval (`specs/completed/readonly-guard-command-starts.md`, Non-goals) → item: 90-readonly-guard-command-starts — 2026-11-12
 
 ## 31-skill-model-pin-removal — 2026-09-28
 - [x] Watch the two `effort: xhigh` skill pins (`skills/bayesian-workflow/SKILL.md`,
@@ -6417,3 +6418,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [ ] `packets --files` marks a packet's sections by stamp alone (`build/cc_guide/packets.py:379-381`). A file that is stale only by hash, the #93 and #94 collision case, gets "Unchanged since @X" and an empty `changed` list for a section whose text changed, so the verifier's packet says the section did not change. The verifier contract (`.claude/agents/cc-guide-verifier.md:61-66`) still requires a quoted row for each statement that rests on any cited section, so the marks inform and do not narrow the review. Found by plan 89's Task 4 review, outside Task 4's file list (owner ruled defer at the gate). Fix: count a section as changed when `state['cited']` holds a hash for that file and section that differs from the section's `text_hash`, and pin it in `build/cc_guide/test_packets.py`. Size: quick-fix. Done when: the packet of a file that is stale only by hash marks the changed section as changed, and a test covers it.
 - [ ] Bring older checkouts and worktrees up to date after plan 89 merges. A checkout whose cc_guide code predates plan 89 refuses the new `baseline.json` (format 3). Its session start's `refresh` then runs a `check --hook` that exits 2 and writes a "check failed" notice into the shared `~/.cache/agent-skills/cc-guide/notice.json`, which every session shows until a checkout with plan 89's code runs a good check. Owner-only: it spans the owner's open branches and worktrees. Size: quick-fix. Done when: each open branch or worktree that predates plan 89 has merged `main` or been removed, and a session start shows no "check failed" notice.
 - [ ] Two branches that each add a `cited` record in the same place of the sorted map conflict in `baseline.json`: both rewrite the closing brace line of the neighbouring entry. The conflict is loud, and taking one side drops the other file's record, so that file falls back to the stamp rule until its next `baseline cite`. Plan 89 accepted the limit: its Review Focus 3 holds only for records in different places, since D5 fixes one sorted JSON map (`build/cc_guide/baseline.py`, `state.py` `dump_baseline`). Size: plan. Revisit if: a real merge conflicts in the `cited` map of `build/cc_guide/baseline.json`.
+
+## 90-readonly-guard-command-starts — 2026-11-12
+- [ ] A glob qualifier glued to the command word still hides the command from the read-only guard
+      (`hooks/readonly-agent-guard.py`). It is the one example of the eight-readings item (section
+      `readonly-guard-leading-token-bypasses`) that plan 90 left open, first found in the round-2 review of 854947c,
+      2026-09-28. The approved spec put it out of scope (`specs/completed/readonly-guard-command-starts.md`,
+      Non-goals), and `hooks/README.md` keeps it under "Not caught". zsh runs such a line only with
+      `BARE_GLOB_QUAL`, which the Bash tool turns off. The item's sketched fix, to keep the command word when a group
+      touches it, would also deny lines that the README promises to pass, such as a heredoc line `print(git(x))`:
+      `_group_word` passes it because it puts one `()` in place of the word glued to the group. So a fix needs a rule
+      that tells the two apart. Filed at plan 90's completion gate, on the owner's word. Size: design. Done when: the
+      guard denies the README's glued-qualifier example, while `print(git(x))` in a heredoc, `*(.)` and
+      `(#i)readme*` still pass, and the README's "Not caught" bullet for it is removed.
