@@ -498,3 +498,38 @@ fixes in its text, so a rep can reach the architecture question without any poin
 against regression only.
 
 **Status.** DONE. The treatment passes the non-regression bar, so the one-line edit is committed.
+
+## /deferred pass (2026-11-12): harden-first-test
+
+The backlog item "tech-debt and test-driven-development give two routes for the first test" (section
+`77-audit-p2-text-fixes — 2026-11-06` of `specs/deferred_items.md`) records a conflict. tech-debt's HARDEN step writes
+the one test that pins current behavior, then uses develop-testing-strategy for the tests after it.
+test-driven-development sends the first tests of a scraper, pipeline or model to develop-testing-strategy first. The
+owner chose to edit tech-debt only, so that it says why its test comes first, and approved a micro-test of the change.
+
+### Registration
+
+This section, the case and its bar are committed before any rep and before the wording commit.
+
+- **Case.** `harden-first-test` in `kit/cases.py`. Texts: `skills/tech-debt/SKILL.md` and
+  `skills/test-driven-development/SKILL.md`, both loaded, with a listing of tech-debt, test-driven-development and
+  develop-testing-strategy. The fixture is a bus agency's ridership pipeline. The tech-debt triage has called
+  `ridership/build_panel.py` load-bearing, it has no tests, and the partner says to harden it now. Task: `STEP_TASK`.
+  Model `claude-sonnet-5-5`, budget $0.50 per rep, 5 scored reps per arm.
+- **Pass rule.** As `HARDEN_PASS` in `kit/cases.py`, word for word. Clause A (bar): one test that pins
+  `build_panel`'s current output comes before the reply loads develop-testing-strategy or says it will use that skill
+  to plan the tests. Clause B (bar): the reply says it will use develop-testing-strategy for the tests after that one.
+  Clause C (recorded): the test comes before any production edit.
+- **Bar.** Additive, as plan 77's `ADDITIVE`: the treatment passes 5 of 5, and the control fails at least 1 of 5. A
+  control with no failure is recorded and put to the owner. A treatment below 5 of 5 gets one wording round with the
+  rule unchanged, then an owner ruling.
+- **VOID.** Plan 77's `VOID` rule, unchanged.
+- **Arms.** `control`: both texts at `73f7dae`, the parent of this registration commit, where tech-debt carries no
+  route sentence. `treatment`: both texts at the wording commit. test-driven-development is the same in both arms.
+- **Leak check.** `build_prompts.py leakview /tmp/q1-work/leak harden-first-test`, then a case-insensitive grep for
+  `HARDEN_LEAK`. One hit, line 23: "test plan" in develop-testing-strategy's own description in the listing, copied
+  verbatim from its frontmatter, as plan 77's listing is. It stands. No hit comes from the frame, the fixture's prose
+  or the task.
+- **Isolation probe.** Claude Code 2.1.322 was probed on 2026-11-12 with
+  `specs/baseline/red-baseline-development-history/kit/isolation_probe.txt` (an unchanged copy of this kit's file):
+  all five lines `NO`.
