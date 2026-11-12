@@ -3454,7 +3454,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → done 2026-10-19 (/deferred quick fix): fix-issue offers a worktree before the branch and
       hands its last step to finishing-a-development-branch, Option 2. The Gemini adapter is
       regenerated, the README row matches, and the dependency-drift test passes.
-- [ ] Run `/fix-issue` live once, end to end (audit-3-10-26 B12, found 2026-10-03). The
+- [x] Run `/fix-issue` live once, end to end (audit-3-10-26 B12, found 2026-10-03). The
       agents-and-commands spec deferred its live check "to first real use"
       (`specs/completed/agents-and-commands-expansion.md:233-234`), and plan 17 recorded it in
       its header only (`specs/plans/completed/17-agents-and-commands-expansion.md:13-16`),
@@ -3463,6 +3463,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       section first, so the run tests the final flow. Size: quick-fix. Done when: a real issue
       goes through `/fix-issue` and the resulting PR links it, with the run recorded here.
       → owner-only 2026-11-11: run `/fix-issue` on a real bug issue in an interactive session, and record the run and its PR here.
+      → done 2026-11-12 (owner): `/fix-issue 180` ran in an interactive CLI session (Claude Code 2.1.322) on lowmason/agent-skills#180, a 0-d `groups` that raised the wrong error in `skills/tune-hyperparameters/scripts/time_series_cv.py`. The run took the worktree, test-driven-development and verification-before-completion steps, then finished through finishing-a-development-branch. Its PR, lowmason/agent-skills#182 (`Fixes #180`), merged as `8427b72` and closed the issue.
 - [x] Build or retire plan 29's floating snippet tier (audit-3-10-26 B11, found 2026-10-03;
       re-verified 2026-10-18). Plan 29 designed an advisory tier that runs the harnessed
       snippets on unpinned latest packages and only warns
