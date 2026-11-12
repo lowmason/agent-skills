@@ -206,6 +206,201 @@ The `apply` arm applies the same two readings, so the `desc` and `apply` pass co
 `P2a` compare like for like. For these two prompts, the counts are correspondingly loose. A `P1a`
 pass does not show an edit. A `P2a` pass does not show a claim that the skill left the listing.
 
+### New layout at `942fee0`: the `read` and `apply` arms
+
+`T3_SHA` is `942fee0`. `new/MANIFEST.txt` shows `body chars 18753`, `file references/discovery.md`
+at 9,052 characters and `file references/claude-code.md` at 3,929 characters. The `git grep` for the
+six fixture names in `skills/writing-skills` at `942fee0` printed nothing and exited 1. `RED outcome:
+null`, so `new/R1.txt` is built and not run, and there is no `green` arm. The `new/*/rep<N>.json` files
+are the raw outputs. A rep is VOID if its `show_reps.py` header shows a tool or the advisor ran.
+
+#### `read`: `P1r`
+
+Each rep has one ACTION line, a read, and no create or edit ACTION. So every pass in this section
+comes from the no-edit clause of the read rule ("a rep with no create or edit ACTION passes when it
+reads the file"). The reply of each rep holds the edit back until it has read the file.
+
+`read`, `P1r`, `claude-opus-5-5` (`new/P1r-opus/`): 5 of 5 PASS, 5 from the no-edit clause.
+
+| Rep | Verdict | Deciding ACTION line |
+|---|---|---|
+| 1 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 2 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 3 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 4 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 5 | PASS (no-edit clause) | `ACTION: Read` the same path, in backticks |
+
+`read`, `P1r`, `claude-sonnet-5-5` (`new/P1r-sonnet/`): 5 of 5 PASS, 5 from the no-edit clause.
+
+| Rep | Verdict | Deciding ACTION line |
+|---|---|---|
+| 1 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 2 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 3 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md`, then a sentence of reason on the same line |
+| 4 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 5 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+
+#### `read`: `P2r`
+
+Each rep has a read as its first ACTION line and no create or edit ACTION. Two reps add a second
+ACTION that only runs a listing command (Opus rep 3, Sonnet rep 2). It is not a create or an edit,
+and it comes after the read. So every pass in this section comes from the no-edit clause.
+
+`read`, `P2r`, `claude-opus-5-5` (`new/P2r-opus/`): 5 of 5 PASS, 5 from the no-edit clause.
+
+| Rep | Verdict | Deciding ACTION line |
+|---|---|---|
+| 1 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md (discovery.md defers to it ...)` |
+| 2 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 3 | PASS (no-edit clause) | `ACTION: Read` the same path, in backticks. The next ACTION runs `ls` on the skills and plugins directories, a listing and not an edit |
+| 4 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 5 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md (discovery.md defers to it ...)` |
+
+`read`, `P2r`, `claude-sonnet-5-5` (`new/P2r-sonnet/`): 5 of 5 PASS, 5 from the no-edit clause.
+
+| Rep | Verdict | Deciding ACTION line |
+|---|---|---|
+| 1 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md. discovery.md defers to it ...` |
+| 2 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md for how Claude Code's skill listing drops descriptions ...`. The next ACTION lists and measures installed skills, which is not an edit |
+| 3 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md. discovery.md defers to it ...` |
+| 4 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md for Claude Code's exact listing rule ...` |
+| 5 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md, the file discovery.md points to ...` |
+
+#### `read`: `P3r`
+
+Each rep has one ACTION line, a read, and no create or edit ACTION. So every pass in this section
+comes from the no-edit clause.
+
+`read`, `P3r`, `claude-opus-5-5` (`new/P3r-opus/`): 5 of 5 PASS, 5 from the no-edit clause.
+
+| Rep | Verdict | Deciding ACTION line |
+|---|---|---|
+| 1 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 2 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 3 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 4 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 5 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+
+`read`, `P3r`, `claude-sonnet-5-5` (`new/P3r-sonnet/`): 5 of 5 PASS, 5 from the no-edit clause.
+
+| Rep | Verdict | Deciding ACTION line |
+|---|---|---|
+| 1 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md.` then a sentence of reason on the same line |
+| 2 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 3 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 4 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+| 5 | PASS (no-edit clause) | `ACTION: Read ~/.claude/skills/writing-skills/references/claude-code.md` |
+
+#### `apply`: `P1a`
+
+The `apply` arm uses the `P1a(a)` and `P2a(a)` readings of the `desc` note above, unchanged. No rep
+has an edit ACTION or a frontmatter block. Every rep holds the edit back and names the key in prose
+as the change it recommends, which meets (a) under that reading. Sonnet rep 5 has one ACTION, a
+`Glob` for the agent file, which is a read.
+
+`apply`, `P1a`, `claude-opus-5-5` (`new/P1a-opus/`): 5 of 5 PASS.
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | (a) "`skills/refund-issue/SKILL.md`: add `disable-model-invocation: true`". (b) "`support-desk` loses the skill and can no longer issue refunds", quoting that "a subagent cannot preload the skill through its `skills` field". |
+| 2 | PASS | (a) "Set `disable-model-invocation: true` on `refund-issue` so it only runs when one of you types it". (b) "If I add it, `/refund-issue` works for you, but `support-desk` loses the skill", quoting "A subagent cannot preload the skill through its `skills` field." |
+| 3 | PASS | (a) "Add `disable-model-invocation: true` to `skills/refund-issue/SKILL.md`". (b) "that setting also means 'a subagent cannot preload the skill through its `skills` field.'" |
+| 4 | PASS | (a) "Add `disable-model-invocation: true` to `refund-issue`" (option 1). (b) "that same key also stops a subagent from preloading the skill through its `skills` field". |
+| 5 | PASS | (a) "Add `disable-model-invocation: true` to `refund-issue`". (b) "`support-desk` can no longer preload `refund-issue`". |
+
+`apply`, `P1a`, `claude-sonnet-5-5` (`new/P1a-sonnet/`): 5 of 5 PASS.
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | (a) "set `disable-model-invocation: true`, so only a typed `/refund-issue` runs it". (b) "a subagent cannot preload it through its `skills:` list. With that key, `support-desk` loses `refund-issue`". |
+| 2 | PASS | (a) "set `disable-model-invocation: true` on `refund-issue`". (b) "a subagent can't preload the skill through its `skills:` list. Setting it would silently break `support-desk`". |
+| 3 | PASS | (a) "Add `disable-model-invocation: true` to `skills/refund-issue/SKILL.md`". (b) "it also stops a subagent from preloading the skill through its `skills:` list, so `support-desk` would lose it". |
+| 4 | PASS | (a) "add `disable-model-invocation: true` to `refund-issue`". (b) "It also blocks a subagent from preloading the skill through `skills:`". |
+| 5 | PASS | (a) "Add `disable-model-invocation: true` to `skills/refund-issue/SKILL.md`". (b) "a subagent can't preload it through `skills:`. So `support-desk` would lose the skill." |
+
+#### `apply`: `P2a`
+
+The `apply` arm uses the `P2a(a)` reading of the `desc` note above, unchanged. In all 10 reps the
+reply says the description is dropped from the listing, and none says only "shortened" or "cut". No
+rep has an ACTION line that edits.
+
+`apply`, `P2a`, `claude-opus-5-5` (`new/P2a-opus/`): 5 of 5 PASS.
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | (a) "`api-naming` skill is very likely losing its description to the skill-listing budget" and "Whole descriptions are dropped, starting with the skills invoked least". (b) "add `disable-model-invocation: true` to the frontmatter", `skillOverrides`, `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`. |
+| 2 | PASS | (a) "drops **whole descriptions**" and "`api-naming` probably fell into that group", with "the description gone". (b) "Set `disable-model-invocation: true` on your own skills that you always run by hand", `skillOverrides`, `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`. |
+| 3 | PASS | (a) "`api-naming`'s description was one of the ones it dropped". (b) "`disable-model-invocation: true`", `skillOverrides`, `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `skillListingMaxDescChars`. |
+| 4 | PASS | (a) "Claude Code is dropping that skill's description from it". (b) "`disable-model-invocation: true`", `skillOverrides`, `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `skillListingMaxDescChars`. |
+| 5 | PASS | (a) "`api-naming` lost its description from the skill listing" and "Its description gets dropped". (b) "add `disable-model-invocation: true` to the frontmatter", `skillOverrides`, `skillListingBudgetFraction`. |
+
+`apply`, `P2a`, `claude-sonnet-5-5` (`new/P2a-sonnet/`): 5 of 5 PASS.
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | (a) "Auto-triggering stopped because the description is no longer in the listing." (b) "Set `disable-model-invocation: true` on your own skills that you only ever run by typing `/name`", `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `skillListingMaxDescChars`. |
+| 2 | PASS | (a) "the skill listing is over its budget and `api-naming`'s description was dropped". (b) "Set `disable-model-invocation: true` on skills you only ever run by typing `/name`", `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`. |
+| 3 | PASS | (a) "the skill listing is over budget, and `api-naming`'s description was dropped from it". (b) "Set `disable-model-invocation: true` on skills you only ever run by hand", `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `skillListingMaxDescChars`. |
+| 4 | PASS | (a) "Most likely `api-naming`'s description was dropped from the skill listing". (b) "Add `disable-model-invocation: true` to your own skills that you only ever run by hand", `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `skillListingMaxDescChars`. |
+| 5 | PASS | (a) "Most likely `api-naming`'s description was dropped from the skill listing". (b) "Set `disable-model-invocation: true` on skills you only ever run by typing `/name`", `skillListingBudgetFraction`, `SLASH_COMMAND_TOOL_CHAR_BUDGET`, `skillListingMaxDescChars`. |
+
+#### `apply`: `P3a`
+
+In all 10 reps, the reply says that the forked skill can return before the reviewers report, tied to
+`CLAUDE_CODE_FORK_SUBAGENT=0` in `claude -p`. No ACTION line edits in the Opus reps. Each Sonnet rep
+has an edit ACTION that adds `context: fork`, and warns of the early return in the same reply.
+
+`apply`, `P3a`, `claude-opus-5-5` (`new/P3a-opus/`): 5 of 5 PASS.
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | "Under `claude -p` with fork mode off (`CLAUDE_CODE_FORK_SUBAGENT=0`), those nested subagents start in the background. The forked skill can then return its "merged" report before the license, CVE or pin reviewers have reported." |
+| 2 | PASS | "subagents started by a subagent run in the background. The forked skill could then return its "merged" report before the reviewers have reported." |
+| 3 | PASS | "subagents started by a forked skill under `claude -p` run in the background. The forked skill can then return before the license, CVE and pin reviewers report." |
+| 4 | PASS | "A forked `dependency-audit` could then return its merged report before the license, CVE or pin reviewers have reported." |
+| 5 | PASS | "The forked skill can then return its "merged" report before the license, CVE and pin reviewers have reported." |
+
+`apply`, `P3a`, `claude-sonnet-5-5` (`new/P3a-sonnet/`): 5 of 5 PASS.
+
+| Rep | Verdict | Deciding words |
+|---|---|---|
+| 1 | PASS | "the nested subagents start in the background. The forked skill could then return before the licenses, CVE and version-pin reviewers report". Its ACTIONs set `context: fork`. |
+| 2 | PASS | "The forked skill could then return before the reviewers report, and the nightly report would be missing findings." Its ACTIONs set `context: fork`. |
+| 3 | PASS | "the reviewers start in the background. The forked skill can then return before they report". Its ACTION sets `context: fork`. |
+| 4 | PASS | "the nested subagents in `claude -p` run in the background, and the forked skill can return before they report". Its ACTIONs set `context: fork`. |
+| 5 | PASS | "subagents started inside `claude -p` run in the background. The forked skill can then return before the license, CVE and version-pin reviewers report". Its ACTIONs set `context: fork`. |
+
+### Summary of every bar in the new layout (`942fee0`)
+
+No rep is VOID or UNSCORABLE, and no rerun was needed. Every bar is met on the first 5 reps, so no
+tightening round ran and `942fee0` is the only text under test.
+
+| Arm | Prompt | Model | Score | Bar | Verdict |
+|---|---|---|---|---|---|
+| `read` | `P1r` | `claude-opus-5-5` | 5 of 5 | 4 of 5 | met |
+| `read` | `P1r` | `claude-sonnet-5-5` | 5 of 5 | 4 of 5 | met |
+| `read` | `P2r` | `claude-opus-5-5` | 5 of 5 | 4 of 5 | met |
+| `read` | `P2r` | `claude-sonnet-5-5` | 5 of 5 | 4 of 5 | met |
+| `read` | `P3r` | `claude-opus-5-5` | 5 of 5 | 4 of 5 | met |
+| `read` | `P3r` | `claude-sonnet-5-5` | 5 of 5 | 4 of 5 | met |
+| `apply` | `P1a` | `claude-opus-5-5` | 5 of 5 | 4 of 5 | met |
+| `apply` | `P1a` | `claude-sonnet-5-5` | 5 of 5 | 4 of 5 | met |
+| `apply` | `P2a` | `claude-opus-5-5` | 5 of 5 | 4 of 5 | met |
+| `apply` | `P2a` | `claude-sonnet-5-5` | 5 of 5 | 4 of 5 | met |
+| `apply` | `P3a` | `claude-opus-5-5` | 5 of 5 | 4 of 5 | met |
+| `apply` | `P3a` | `claude-sonnet-5-5` | 5 of 5 | 4 of 5 | met |
+
+No-edit clause in the `read` arm: 30 of the 30 passes come from it. No `read` rep has a create or
+edit ACTION, so no rep ever reached the point where the order of the read and the first edit could
+matter. The `read` arm therefore shows that, on its first ACTION line, every rep sends itself to read
+`references/claude-code.md` after it has seen the pointer in `discovery.md`. It does not show that a
+rep reads the file before an edit it goes on to make.
+
+Compared with `desc` on Opus, `apply` on Opus scores `P1a` 5 of 5 against 5 of 5, `P2a` 5 of 5 against
+5 of 5, and `P3a` 5 of 5 against 0 of 5. The two arms differ in layout (the `apply` prompt holds
+`references/claude-code.md`, the `desc` prompt does not), and each arm has 5 reps on one model, so the
+comparison is descriptive and no bar applies to it.
+
 ### Spend
 
 | Batch | Cost |
@@ -216,5 +411,18 @@ pass does not show an edit. A `P2a` pass does not show a claim that the skill le
 | `P1a-opus` | $0.2703 |
 | `P2a-opus` | $0.3084 |
 | `P3a-opus` | $0.2131 |
+| `P1r-opus` | $0.1965 |
+| `P1r-sonnet` | $0.0972 |
+| `P2r-opus` | $0.2168 |
+| `P2r-sonnet` | $0.1188 |
+| `P3r-opus` | $0.1831 |
+| `P3r-sonnet` | $0.0930 |
+| `P1a-opus` (new) | $0.2544 |
+| `P1a-sonnet` (new) | $0.1404 |
+| `P2a-opus` (new) | $0.2504 |
+| `P2a-sonnet` (new) | $0.1303 |
+| `P3a-opus` (new) | $0.2428 |
+| `P3a-sonnet` (new) | $0.1452 |
 
-SPEND: $1.3632 of the $30 cap (25 reps $1.3545, pilot $0.0088).
+SPEND: $3.4320 of the $30 cap. The 25 `base/` reps cost $1.3545, the 60 `new/` reps $2.0688 and the
+pilot $0.0088. The `green` arm did not run.
