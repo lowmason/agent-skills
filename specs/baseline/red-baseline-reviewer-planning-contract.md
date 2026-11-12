@@ -1089,3 +1089,15 @@ Four commits changed skill, agent or lint text after the last micro-test SHA (`f
 - `7364b19`: `NOTICE` credits the executor handoff and the Review Focus wording to upstream PR #2319 and to this repo more exactly.
 
 The owner chose all four fixes at the final-review gate on 2026-10-30.
+
+### Kit changes after the tests (2026-11-12)
+
+A `/deferred` quick fix changed the kit and the F1 scorer after every run in this record. No recorded number changes.
+
+- `kit/measure.py`: `FENCE_RE` reads a fence of three or more backticks or tildes. A fence closes only on a run of its own character at least as long as the opener, with no info string. Before, a four-backtick fence closed at its first inner fence. No P12 rep uses a four-backtick fence. Only `control/P3/rep3` does, and `verbatim` does not read fences.
+- `kit/measure.py` and `kit/show_reps.py`: the VOID rule is one function, `void_reasons`, in `measure.py`. `show_reps.py` imports it. `measure.py selftest` checks each VOID branch and checks that both scripts VOID the same reps.
+- `kit/run_reps.sh`: the usage error names the optional `[<budget>]` argument.
+- `kit/cases.py`: a comment beside the R2 case gives a reuse the reading class for a `page < 1` or `per_page <= 0` remark (correctness, which changes no verdict). The registered rules above stay as registered.
+- `f1/score_f1.py`: the audit also finds a quoted `"$HOME"/Projects`, `~<user>/Projects`, and a path relative to the home directory after a `cd` there on the same line. A new `selftest` covers each spelling, raw and inside a JSON string.
+
+Checks: `show_reps.py` and `measure.py ratio` and `verbatim` print the same bytes before and after the change over all 220 committed reps. The new F1 matcher finds no hit in the four reps' streams or in their persisted session transcripts. The record's by-hand search above found none either.

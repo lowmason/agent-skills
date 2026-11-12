@@ -2,11 +2,13 @@
 
 Usage, from the repository root:
   uv run --with pytest python <f1>/score_f1.py <scratch> <out-dir> <hidden-test-file>
+  uv run python <f1>/score_f1.py selftest      checks the audit's path matcher on fixed lines
 Prints one JSON object and writes it to <out-dir>/score.json. `handled` maps each hidden test to
 true when it passed. `cost` sums both sessions' total_cost_usd, and `execute_models` lists the
 models the execution session's result record names. `audit_hits` lists every transcript line
 that names a path outside the scratch repository that a run must not touch, written as an
-absolute path or under `~/`, `$HOME/` or `${HOME}/`, or that names the hidden test file
+absolute path or under `~/`, `~<user>/`, `$HOME/` or `${HOME}/` (quoted or not), or relative to
+the home directory after a `cd` there on the same line, or that names the hidden test file
 (`test_hidden`, `F1_REPO`); read each one by hand under the VOID rule. `audit_error` is set when
 the transcripts the audit needs are missing, so an empty `audit_hits` never passes for want of
 files. The plan-to-spec ratio uses the committed fixture spec, since the plan-completion protocol
@@ -23,8 +25,12 @@ from pathlib import Path
 
 HOME = Path.home()
 FORBIDDEN_UNDER_HOME = ('Projects', '.cache/agent-skills', '.claude/skills', '.claude/agents')
-FORBIDDEN = [form for rel in FORBIDDEN_UNDER_HOME
-             for form in (str(HOME / rel), f'~/{rel}', f'$HOME/{rel}', f'${{HOME}}/{rel}')]
+HOME_FORMS = '(?:' + '|'.join((re.escape(str(HOME)), '~' + re.escape(HOME.name), '~', r'\$HOME', r'\$\{HOME\}')) + ')'
+QUOTE = r'(?:\\?["\'])?'  # an optional quote, escaped when the line is a JSON string
+UNDER_HOME = '(?:' + '|'.join(map(re.escape, FORBIDDEN_UNDER_HOME)) + ')'
+FORBIDDEN_RE = re.compile(rf'{HOME_FORMS}{QUOTE}/{QUOTE}{UNDER_HOME}')
+CD_HOME_RE = re.compile(rf'\bcd(?:\s+{QUOTE}{HOME_FORMS}{QUOTE}/?{QUOTE})?\s*(?:&&|;|\|\||\\n).*?{UNDER_HOME}')
+HIT_CHARS = 120
 HIDDEN_MARKERS = ('test_hidden', 'F1_REPO')
 TESTS = ('test_refund_in_parentheses_counts_negative', 'test_export_with_byte_order_mark_is_read',
          'test_missing_file_is_a_clean_error')
@@ -83,13 +89,41 @@ def audit(scratch: Path, out: Path) -> tuple[list[str], str | None]:
         if not path.is_file():
             continue
         for n, line in enumerate(path.read_text().splitlines(), 1):
-            for marker in [*FORBIDDEN, *HIDDEN_MARKERS]:
-                if marker in line:
-                    hits.append(f'{path}:{n}: {marker}')
+            hits += [f'{path}:{n}: {marker}' for marker in forbidden_hits(line)]
     return hits, error
 
 
+def forbidden_hits(line: str) -> list[str]:
+    '''Each forbidden path, path after a `cd` to the home directory, and hidden-test marker in a line, once.'''
+    found = [m.group(0) for m in FORBIDDEN_RE.finditer(line)]
+    found += [m.group(0)[:HIT_CHARS] for m in CD_HOME_RE.finditer(line)]
+    found += [marker for marker in HIDDEN_MARKERS if marker in line]
+    return list(dict.fromkeys(found))
+
+
+def selftest() -> None:
+    '''The audit names every spelling of a forbidden path, in a raw line and inside a JSON string.'''
+    user = HOME.name
+    flagged = [f'cat {HOME}/Projects/x', 'ls ~/Projects', 'cat $HOME/.cache/agent-skills/n',
+               'ls ${HOME}/.claude/agents', 'cat "$HOME"/Projects/x', 'ls "${HOME}"/.claude/skills',
+               f'ls ~{user}/Projects', 'cd ~ && cat Projects/agent-skills/x', 'cd $HOME; ls .claude/skills',
+               'cd ~/ && ls .cache/agent-skills', 'cd "$HOME" && ls Projects', 'cd && ls Projects',
+               'pytest test_hidden.py', 'echo $F1_REPO']
+    clean = ['ls ~/notes', 'cd /tmp/f1-scratch && ls Projects', 'cd ~/.local && ls bin', 'abcd; ls Projects',
+             f'ls {HOME}/.local/share/uv']
+    for line in flagged:
+        assert forbidden_hits(line), line
+        assert forbidden_hits(json.dumps({'command': line})), ('in JSON', line)
+    for line in clean:
+        assert not forbidden_hits(line), (line, forbidden_hits(line))
+        assert not forbidden_hits(json.dumps({'command': line})), ('in JSON', line, forbidden_hits(line))
+    print('score_f1 selftest ok')
+
+
 def main() -> None:
+    if sys.argv[1:] == ['selftest']:
+        selftest()
+        return
     scratch, out, hidden = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve()
     spec = (Path(__file__).resolve().parent / 'fixture' / 'expense-tally.md').read_text()
     plan = (out / 'plan.md').read_text()
