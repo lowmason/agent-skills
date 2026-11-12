@@ -368,7 +368,243 @@ The control arms cost $1.279, under the $5 stop. No rep stopped on its budget.
 
 ## Treatment
 
-(Task 3.)
+Both treatment arms ran on 2026-11-12 under the $1.50 cap, `trial` and `tax` in parallel. Before the run, the sha256
+of each treatment prompt matched the MANIFEST lines above. `claude --version` was still `2.1.322`, so the isolation
+probe did not run again. All 10 reps are scored: no rep is VOID. Each header reads `success`, one turn, no extra
+iterations and one model. Every reply was read in full.
+
+Every treatment reply is a memo in the skill's contract shape. Each has a requested causal question, a requested
+estimand, a design status, alternative estimands, recommendation-changing conditions, a graph, an assumptions table, a
+candidate table, a diagnostic plan, a handoff and open questions.
+
+### Scores
+
+A cell such as `2/5 or 5/5` gives the count under reading A, then under reading B. In every contested reading, A is
+the stricter reading that follows the rule's words, and B is the alternative. The contested readings are defined
+below.
+
+| Case | G | S | J | L |
+|---|---|---|---|---|
+| `trial` | 0/5 (C3-A); 3/5 or 5/5 under C3-B (C4) | 5/5 | 5/5 | 0/5 or 5/5 (C3) |
+| `tax` | 2/5 or 5/5 (C1) | 2/5 or 5/5 (C2) | 5/5 | 4/5 or 5/5 (C3) |
+
+The parts of each rule that are not contested pass in every rep. Every `trial` graph meets G (b), (c) and (d), and
+reps 2, 4 and 5 also meet G (a). Every `tax` graph meets G (a), (b), (d) and (e). For `tax` rep 3, G (a) rests on
+time-indexed nodes: "T, J: week of 1 July 2025" and "Y: weekly outcomes" put the tax, the move and the outcome on one
+weekly index. Reps 4 and 5 do the same with `Y_S,L(t)` by week and "time indexing by month t", and the rule accepts
+"time-indexed nodes". Every reply meets S (a), (b), (c) and (e), with the correct label: `plausibly identified` for
+all five `trial` replies and `conditional` for all five `tax` replies. No treatment reply labels its requested
+estimand `not identified`.
+
+### Contested readings
+
+Each contested reading is a judgment call for the owner at the completion gate. This record does not resolve them.
+C1 to C4 came up while the replies were read. They were not pre-registered. Neither of the two readings that the
+record expected before any rep ran occurred: no `tax` treatment reply labels its estimand `not identified`, and no
+`trial` treatment reply labels its estimand `conditional`.
+
+- **C1. `tax` G (c): a direct arrow, or a path through a mediator?** Rule G (c) asks for "the employer's move as a
+  node with an arrow into Larkford's sales". Reps 1, 2 and 3 draw the move only through a traffic node: `E -->
+  F[Downtown foot traffic] --> Y` (rep 1), `JM --> FD[Downtown footfall] --> TV` (rep 2) and `J --> FD[Downtown store
+  traffic] --> YS` (rep 3). Reps 4 and 5 also have a direct arrow: "JobMove → non-downtown Larkford sales" (rep 4)
+  and `REL -.disputed.-> Y` (rep 5).
+  - Reading A (the rule's words: "an arrow into" means a direct edge): reps 1–3 FAIL G (c). G is 2/5.
+  - Reading B (a directed path through a named traffic node shows the move as a cause of Larkford's sales, and it
+    says more than a bare arrow, since it names the mechanism): reps 1–3 PASS. G is 5/5.
+  - A point for reading A: the same plan wrote "a directed path into it" for the `trial` rebate node (`TRIAL_G`
+    (d)) but "an arrow into" for the `tax` employer node. The different wording suggests that a direct arrow was
+    meant here.
+- **C2. `tax` S (d): a labeled, narrower estimand as the primary analysis.** Rule S (d) asks that every other
+  estimand stay "defined apart from the requested one" and that the reply "does not put one in its place". Reps 2, 3
+  and 4 define the non-downtown-store effect apart and say it is not the requested target. But they make it the
+  primary analysis.
+  - Rep 2: "none of them alone is the requested target", but "**Primary choice: A, run on the non-downtown series**",
+    "E1 (non-downtown, primary)" and "E1 is the requested target if (a) holds".
+  - Rep 3: "(each separate; neither silently replaces τ)", but "**Primary design:** candidate (b) SC" and "(b)
+    primary".
+  - Rep 4: "It answers the original question only for those stores", but "Analysis primary: A1".
+  - Reps 1 and 5 keep the all-store requested estimand as the primary analysis. Rep 1 reports "the city total and A1
+    side by side". Rep 5 reports the effect "for all 41 stores and for the 35 non-downtown stores".
+  - Reading A (making a narrower estimand the primary analysis puts it in the requested one's place): reps 2–4 FAIL
+    S (d). S is 2/5.
+  - Reading B (the alternative stays labeled, and the reply names the condition under which it answers the
+    question): reps 2–4 PASS. S is 5/5.
+- **C3. An outcome-observation node or gate.** Rule `TRIAL_G` (e) bans "a node for whether the outcome was observed,
+  since every meter read exists". Rule `TRIAL_L` bans "an outcome-observation gate or response node". Rule `TAX_L`
+  bans "an outcome-observation gate or response node for the sales data". All five `trial` treatment replies add such
+  a node, drawn dashed, marked disputed or "assumed negligible". Reps 1, 3, 4 and 5 also add a gate on missing reads
+  or household turnover by arm, and rep 2 adds a check with bounds. One `tax` reply (rep 2) adds an outcome-observation gate on store reporting, with no node.
+  - `trial` nodes: `S[Post read observed]` (rep 1), `S[Has reads / in cohort]` (rep 2), `R[Read/account observed]`
+    (rep 3), `S[Observed in post?]` (rep 4) and `O[Read observed / account active]` (rep 5). Each reply ties the node
+    to household turnover, account closures or estimated reads.
+  - `tax` rep 2: "Outcome observation: store data complete, no reporting changes at the tax ... Gate if Larkford's
+    reporting changed in July 2025", and in §9 "Outcome observation gate".
+  - The source is not only the worked example. In the skill's `SKILL.md` quick reference, the row for random
+    assignment names its key gate as "Randomization, outcome observation, interference". The generic template graph
+    in `references/identification.md` has `T --> S[Outcome observed? S]` and `Y --> S`. `references/reporting.md`
+    lists outcome observation among the threats to review. The worked example also uses the phrase
+    "outcome-observation gate" (`references/worked-example.md`, lines 30 and 163 at BASE).
+  - Reading A (the rules' words): every `trial` rep FAILS G (e) and L, so `trial` G is 0/5 and L is 0/5. `tax` rep 2
+    FAILS L, so `tax` L is 4/5.
+  - Reading B differs for the two rules, and the owner may rule on them apart.
+    - For L, whose header limits it to what the reply "applies ... from the worked example": the item comes from the
+      skill's generic contract for experiments and its template graph, not from the worked example's missing
+      earnings. Under B, every rep PASSES L: `trial` L is 5/5 and `tax` L is 5/5.
+    - For G (e), the source does not matter ("import no node the trial lacks"). Only the scenario argument applies:
+      a 12-month household cohort has account turnover, so whether a household's reads are observed is part of the
+      trial. The control replies support this. They raise turnover by arm with no skill text: "Attrition/turnover
+      unrelated to assignment" (control `trial` rep 2), "**Attrition is balanced.** Account closures and moves are
+      similar across arms" (rep 5), "Report attrition (account closures, ownership changes) by arm" (rep 4) and
+      "Cohort definition is not affected by treatment (moving, account closure)" (rep 3). Under B, every `trial` rep
+      PASSES G (e).
+- **C4. `trial` G (a): an undated mailing node.** Rule G (a) asks that the graph or its node definitions "say when
+  the report mailing and the outcome happen". Reps 2, 4 and 5 date the mailing node: "Mail_T [Mar 2025 onward]", "M:
+  reports mailed (post)" with "post = Mar 2025–Feb 2026", and `Mail[Reports mailed monthly from Mar 2025]`. Reps 1
+  and 3 date the outcome nodes and time zero in the graph section, but not the mailing node itself.
+  - Rep 1: "Edge list (time-indexed; Z = town assignment, randomized pre-March 2025)", `Ypre[Y pre-period]`,
+    `Ypost[Y post-period]` and "Exclude any measured after time zero" beside "Post-March 2025 household
+    attributes". Its pathway "Z → Mailing → Reading (unobserved) → Behavior → Y_post" gives the mailing no date.
+  - Rep 3: "Edge list (time-indexed; t0 = March 2025)" and `Y[Use Mar25-Feb26]`. Its pathway "`A -> Mail -> Read(U)
+    -> Behavior -> Y_post`" and its node `Mail[Monthly report mailed]` give the mailing no date. Only §1 says "Time
+    zero is the first mailing in March 2025".
+  - Reading A (the mailing node or its definition must carry a date, a period or a time index): reps 1 and 3 FAIL G
+    (a).
+  - Reading B (outcome nodes split at a time zero of March 2025 in the graph section place the mailing at that
+    time): reps 1 and 3 PASS G (a).
+  - C4 matters only under C3-B. Under C3-A, every `trial` rep already fails G on (e). Under C3-B, `trial` G is 3/5
+    under C4-A and 5/5 under C4-B.
+
+### Echo flags
+
+`show_reps.py` flagged `eligib` in every `trial` rep and in `tax` reps 1, 2, 4 and 5, and `rd` in `trial` reps 2
+and 4. No rep was flagged for `cutoff`, `score`, `sixty`, `earnings`, `national` or `response-node`.
+
+- `eligib`, `trial`: "24 of 58 towns eligible: those with smart meters" (reps 1, 4, 5) restates the fixture's own
+  selection of the 24 smart-meter towns. "Covariate eligibility" (reps 1, 3, 5) asks whether a covariate was measured
+  before March 2025. Rep 2's "eligibility/advertising" is the rebate program's. None gives the trial an eligibility
+  rule, and no graph has an eligibility node. Rep 5's `Sel[Smart-meter selection of 24 towns]` node is the fixture's
+  own selection. These flags pass L and G (e).
+- `eligib`, `tax`: every hit is donor eligibility for synthetic control ("36 eligible donors", "Donor eligibility: no
+  spillover into donors", and Abadie (2021) cited for "donor eligibility"). None is an eligibility rule from the
+  worked example. These flags pass L.
+- `rd`, `trial` reps 2 and 4: the node `Rd[Read_i unobserved]` or `Rd[Read report - unobserved]` stands for reading
+  the report. No reply recommends or mentions a regression discontinuity design. These flags pass L.
+- The `not-identified` flag in every treatment rep marks estimands other than the requested one, such as the effect
+  of reading a report, the effect in all 58 towns, or a fallback if a gate fails. It does not mark the requested
+  estimand.
+- No treatment reply gives either scenario a score, a cutoff, a running variable, an earnings outcome or training.
+
+### trial
+
+- **rep1.** G: (a) contested (C4): "Edge list (time-indexed; Z = town assignment, randomized pre-March 2025)", with
+  `Ypre[Y pre-period]`, `Ypost[Y post-period]` and `D[Drought order Jul 2025, all towns]`, but no date on the
+  mailing; (b) `U[U_town unobserved]` and
+  `Read[Read report, unobserved]`; (c) no arrow into Z, with "no arrow from U_town, X_hh or Y_pre into Z"; (d) `Z -->
+  Read`, `Read --> R[Rebate sign-up]`; (e) contested (C3): `Z --> S[Post read observed]`, `Ypost -.-> S`. S PASS: (a)
+  "ITT of report mailing ... averaged over households in the 24 trial towns"; (b) "**Design status:** `plausibly
+  identified`"; (c) "Towns were assigned by a random draw, every household in report towns was mailed, and nobody
+  could opt out"; (d) the effect of reading is "a separate target. It is not identified", and "Separate, not
+  substitutes"; (e) "Estimation should wait for the randomization record and the missing-read audit". J PASS: (a)
+  "analyze the trial as a **cluster-randomized experiment**"; (b) rebate sign-up "is post-treatment ... Adjusting for
+  it removes part of the effect"; (c) "2.1M reads are repeated measures within those towns and do not add assignment
+  units"; (d) "no diagnostics or effects have been computed". L: contested (C3): "Outcome observation ... **Gate** if
+  missingness differs by arm".
+- **rep2.** G: (a) "Z_T [assigned before Mar 2025] -> Mail_T [Mar 2025 onward]", `Y_i,post` and "D_t [Jul 2025, all
+  towns]"; (b) `Rd[Read_i unobserved]`, `U[U_i motivation unobserved]`; (c) "**Absent edge by design: V_T -/->
+  Z_T**"; (d) `M --> R[Rebate sign-up R_i]`; (e) contested (C3): `Z --> S[Has reads / in cohort]`. S PASS: (a) "the
+  ITT effect of *mailing* the reports ... all trial towns are mailed reports, versus none are", for "households in the
+  24 smart-meter trial towns"; (b) "**Design status:** `plausibly identified`"; (c) "Random assignment of towns gives
+  the comparison as-if-random exchangeability"; (d) "(separate; none replaces the primary)"; (e) "Estimation should
+  wait for the confirmations in §9 Q1–Q3". J PASS: (a) "comparing report towns with control towns"; (b) rebate sign-up
+  is "a mediator ... It also opens Z -> R <- U -> Y, a collider path"; (c) "The precision limit is about 12 towns
+  against 12"; (d) "nothing has been fitted". L: contested (C3): the node S and "Outcome observation and cohort not
+  affected by assignment".
+- **rep3.** G: (a) contested (C4): "Edge list (time-indexed; t0 = March 2025)", `Y[Use Mar25-Feb26]`, `Ypre[Use
+  Mar23-Feb25]`, but no date on `Mail[Monthly report mailed]`; (b)
+  `Read[Read / engaged - unobserved]`, `U[Conservation-mindedness - unobserved]`; (c) "`Rand -> A` ... No other node
+  causes A"; (d) `Mail --> Rebate[Rebate sign-up]`; (e) contested (C3): `Y -.-> R[Read/account observed]`, `A -.->
+  R`. S PASS: (a) "the ITT of town assignment to mailed reports ... over Mar 2025–Feb 2026"; (b) "**Design status for
+  that estimand:** `plausibly identified`"; (c) "Assignment was a random draw of 12 of 24 towns"; (d) "(separate; none
+  replaces the target)"; (e) "Estimation should wait only for the randomization record and the data definitions in
+  §9". J PASS: (a) "a cluster-randomized intention-to-treat (ITT) comparison of the 12 report towns with the 12
+  control towns"; (b) "*Rebate sign-up* is a post-treatment mediator"; (c) "the effective sample is 12 towns against
+  12"; (d) "I have fit nothing". L: contested (C3): "Outcome observation: account turnover unrelated to arm ... Gate if
+  turnover differs by arm".
+- **rep4.** G: (a) "Nodes (t = month; pre = Mar 2023–Feb 2025, post = Mar 2025–Feb 2026)", "M: reports mailed
+  (post)"; (b) "Read: household reads report (post, unobserved)"; (c) "U → R: **absent by randomization**" (R is the
+  random assignment here, not a response node); (d) `Rd --> Rb[Rebate sign-up - post]`; (e) contested (C3): `M
+  -.disputed.-> S[Observed in post?]`. S PASS: (a) average monthly use "had the trial towns' households been mailed
+  reports" against "had they not been", "averaged over households in the 24 randomized towns"; (b) "**Design
+  status:** `plausibly identified`"; (c) "town-level random assignment by draw; a no-opt-out offer"; (d) the report-town
+  ATT is "labeled", and reading is `not identified`; (e) "Recommendation-changing conditions" and "Gates (stop or
+  revise before estimating)". It has no sentence that says "estimation should wait", but its gates and next action
+  put the record checks first. J PASS: (a) "Compare the 12 randomly assigned report towns with the 12 control towns";
+  (b) "Rebate sign-up (Rb): a post-treatment mediator"; (c) "Run inference at the town level by randomization
+  inference"; (d) "no models fitted, no diagnostics run". L: contested (C3): "add an outcome-observation analysis
+  before estimation".
+- **rep5.** G: (a) `Draw[Random draw, before Mar 2025]`, `Mail[Reports mailed monthly from Mar 2025]`, `Y[Monthly
+  use, Mar 2025 - Feb 2026]`; (b) `Read[Household reads report: unobserved]`; (c) "*T → Z and X → Z:* none, because of
+  the random draw"; (d) `Read --> Reb[Rebate sign-up]`; (e) contested (C3): `Y -.-> O[Read observed / account
+  active]`. S PASS: (a) "ITT of town assignment to reports ... among baseline-cohort households in the 24 trial
+  towns"; (b) "**Design status for that estimand:** `plausibly identified`"; (c) "Assignment was randomized at the
+  town level"; (d) "(separate; not the board's question)"; (e) "Estimation should wait only for the
+  randomization-record and cohort definition checks in §7". J PASS: (a) "a town-level randomized comparison"; (b)
+  "Rebate sign-up must stay out of the adjustment set"; (c) "Precision comes from the 24 towns"; (d) "no diagnostic is
+  reported as passed". L: contested (C3): "Gate: if differential, status → `conditional`".
+
+### tax
+
+- **rep1.** G: Mermaid; (a) `T[Tax in Larkford T, Jul 2025]`, `E[Employer relocation E, Jul 2025]`, "Nodes are
+  time-indexed as pre-period (Jan 2021–Jun 2025) and post-period (Jul 2025–Jun 2026)"; (b) "Unobserved: U, R, B";
+  (c) contested (C1): `E --> F --> Y`; (d) `P --> B[Cross-border shopping B]`, `B --> YB[Sales in 2 border cities]`;
+  (e) no imported node. S PASS: (a) "Larkford's actual 12-month taxed-drink volume minus what Larkford's stores would
+  have sold without the tax"; (b) "Status is `conditional`"; (c) "City-level synthetic control cannot separate it
+  from the tax unless"; (d) "(separate; none replaces the requested one)", with the city total kept primary; (e)
+  "estimation should wait for the relocation evidence in §9". J PASS: (a) a relocation audit, a downtown against
+  non-downtown comparison and an other-grocery check; (b) "Border cities are excluded as donors"; (c) "it should not
+  be cited as the tax's effect"; (d) "No model has been fitted and no diagnostic has been run". L PASS.
+- **rep2.** G: edge list and Mermaid; (a) "Edge list, time-indexed (pre = before 1 Jul 2025, post = Jul 2025–Jun
+  2026)"; (b) `U[Unobserved city traits]`; (c) contested (C1): `JM --> FD --> TV`; (d) `Tax --> CB[Cross-border
+  shopping]`, `CB --> BV[Taxed volume in border cities]`; (e) no imported node. S: (a) "(observed 12-month taxed-drink
+  volume in Larkford stores − counterfactual volume without the tax) ÷ counterfactual volume"; (b) "**Design status
+  for that estimand: `conditional`.**"; (c) the two conditions, "Neither condition has been checked"; (e) "Estimation
+  should wait for the gate audit in §9"; (d) contested (C2). J PASS: (a) a worker audit and a non-downtown
+  other-grocery placebo; (b) "**exclude them as donors**"; (c) "The consultant's 30% figure is not a causal
+  estimate"; (d) "Every check below is **planned**". L: contested (C3).
+- **rep3.** G: Mermaid; (a) "T, J: week of 1 July 2025", "Y: weekly outcomes" (time-indexed nodes; see Scores); (b) `U[Unobserved city-specific
+  trends]`; (c) contested (C1): `J --> FD --> YS`; (d) `P --> B[Cross-border shopping]`; (e) no imported node. S: (a)
+  "over the 52 post-tax weeks, between Larkford's actual taxed-drink volume and the volume its stores would have sold
+  without the tax"; (b) "**Design status:** `conditional`"; (c) "the all-store SC identifies only the tax and the
+  relocation **together**"; (e) "Estimation should wait for the evidence gates in §9"; (d) contested (C2). J PASS:
+  (a) an other-grocery SC for the non-downtown stores, a downtown-only SC and the worker gate; (b) "exclude the two border cities ... from
+  the donor pool"; (c) "The consultant's 30% fall is a before/after change, not a causal estimate"; (d) "Every
+  diagnostic below is **planned**". L PASS. Its "Stop if store coverage changed materially" is the sampling and
+  coverage threat, which `reporting.md` lists apart from outcome observation.
+- **rep4.** G PASS: an edge list; (a) "time-indexed by week", "`JobMove(July 2025)`"; (b) "`U_c(t)`: unobserved
+  city-specific demand shocks"; (c) "JobMove → non-downtown Larkford sales" (disputed, direct); (d) "`Tax_L` →
+  `CrossBorder(t)` → `Y_S,L(t)` (lower) and `Y_S,B(t)` (higher)"; (e) no imported node. S: (a) "the ATT for the single
+  treated city ... across the 52 post weeks"; (b) "**Design status for that estimand:** `conditional`"; (c) "share the
+  same start month and the same treated city"; (e) "**Estimation should wait** for the job-move evidence"; (d)
+  contested (C2). J PASS: (a) a job-move audit and a category contrast; (b) "exclude them as donors (36 remain)"; (c)
+  "a raw before/after change, not a causal effect"; (d) "every diagnostic below is PLANNED". L PASS.
+- **rep5.** G PASS: an edge table and Mermaid; (a) `TAX[Tax Jul 2025]`, `REL[Job relocation Jul 2025]`, "time indexing
+  by month t"; (b) "Labels starting with "U" are unobserved"; (c) `REL -.disputed.-> Y`; (d) `P --> B[Border-city
+  sales]`; (e) no imported node. S PASS: (a) "Larkford's observed 12-month taxed-drink volume minus the volume
+  Larkford's stores would have sold with no tax"; (b) "**Design status:** `conditional`"; (c) "no donor reproduces
+  it"; (d) "(separate targets)", with the all-store effect kept primary; (e) "Do not estimate until the gates in §9
+  are answered". J PASS: (a) gate G1, an all-store against non-downtown comparison and a downtown other-grocery check;
+  (b) "Leave the two bordering cities out of the donor pool"; (c) "It is not an estimate of the tax effect"; (d) "No
+  model has been fitted and no diagnostic has been run". L PASS.
+
+### Spend (treatment)
+
+| Item | Cost |
+|---|---|
+| Treatment `trial`, reps 1–5 | $1.454 |
+| Treatment `tax`, reps 1–5 | $1.166 |
+| Total for the kit | $4.339 |
+
+No rep stopped on its budget. The kit total is under the $15 stop.
 
 ## Cost
 
