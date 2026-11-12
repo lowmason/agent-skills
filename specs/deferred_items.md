@@ -6451,3 +6451,27 @@ review and the Plan Completion gate (2026-10-27) add the others.
       that tells the two apart. Filed at plan 90's completion gate, on the owner's word. Size: design. Done when: the
       guard denies the README's glued-qualifier example, while `print(git(x))` in a heredoc, `*(.)` and
       `(#i)readme*` still pass, and the README's "Not caught" bullet for it is removed.
+
+## claude/peaceful-gauss-1ce419 Step 4b review — 2026-11-12
+- [ ] **The re-vendored ste-lint.py rejects front matter that opens with an indented comment (Codex [P2], carried
+      by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:1392-1394` (`_front_matter`, upstream
+      danyuchn `a4905d92`) finds the first content line by `not line.startswith("#")`, so an indented comment such as
+      `  # metadata; note` before `name:` counts as content, fails the key test, and the whole block is read as
+      Markdown. The comment's semicolon then becomes a hard finding and the linter exits 1. Reproduced on 2026-11-12.
+      The copy at `255631a3` blanked all front matter, so the defect came with the 2026-11-12 re-vendor. No `SKILL.md`
+      in this repo starts its front matter with a comment. The vendored copy must stay byte-identical to upstream
+      (root `CLAUDE.md`, "Provenance is load-bearing"), so the fix is upstream's: skip comments after leading
+      whitespace when finding the first key. Then re-vendor, move the pin in `NOTICE` and both sources files, and add
+      a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `a4905d92` to danyuchn's HEAD
+      changes `_front_matter`, or the linter's indented-comment case is reported as fixed upstream.
+- [ ] **The re-vendored ste-lint.py lints a quoted front-matter description without decoding it (Codex [P2],
+      carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:1355-1360` (upstream danyuchn
+      `a4905d92`) lints the scalar's source text, not its value. `description: 'It can''t have failed.'` gives a
+      present-perfect finding that the same sentence as prose does not (reproduced on 2026-11-12), and a
+      double-quoted `;` hides a semicolon from the hard count. `skills/write-with-asd-ste100/SKILL.md:102` says
+      the linter never flags a hedge. The copy at `255631a3` never read front matter, so the defect came with the
+      2026-11-12 re-vendor. No `SKILL.md`, agent or command file in this repo has a single-quoted description. The
+      fix is upstream's: decode scalar escapes while keeping source positions, or leave quoted values out of the prose
+      path. Then re-vendor, move the pin and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a
+      compare from `a4905d92` to danyuchn's HEAD changes how `_front_matter` or `_scalar_pieces` reads a quoted
+      value, or the quoted-description case is reported as fixed upstream.
