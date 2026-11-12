@@ -4667,7 +4667,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       and its stamp stayed at 2.1.306; (d) `child_env` drops the names in `SCRUBBED_ENV`
       (`BASH_ENV`, `SHELLOPTS`). `test_the_caller_environment_cannot_change_the_hook_bash`
       failed 4 of 4 runs before the fix. The hooks suite passes 400 on both interpreters.
-- [ ] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
+- [x] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
       that exits 1 (plan 61's default P1, not verified). `hooks/ruff-check.sh` exits 1 with
       "ruff-check: ruff unavailable (exit N), so lint was not checked." when ruff cannot run, and
       the install check in `hooks/README.md` tells the reader to look for that line in the
@@ -4678,6 +4678,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       when: the result is recorded in `hooks/README.md`'s install check (the line shows, or the
       README names the Desktop gap and a different signal).
       → owner-only 2026-11-11: in a Desktop session, with `uv` off the hook's `PATH`, end a turn with `ruff-check.sh` as a `Stop` hook, and record in `hooks/README.md` whether the stderr line shows.
+      → done 2026-11-12 (owner): in a Desktop session (log `entrypoint` `claude-desktop`, Claude Code 2.1.321) with the Stop hook run as `env PATH=/usr/bin:/bin …/ruff-check.sh`, the log holds a `hook_non_blocking_error` (exit 1) whose stderr starts "ruff-check: ruff unavailable (exit 127)", and the owner saw nothing in the transcript. `hooks/README.md`'s install check now says to run the check from the `claude` CLI and, in a Desktop session, to grep the session logs for the line.
 
 ## 59-model-skill-comparator-and-cv-fixes — 2026-10-21
 
