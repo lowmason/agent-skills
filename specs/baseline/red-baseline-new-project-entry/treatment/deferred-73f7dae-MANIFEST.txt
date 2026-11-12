@@ -1,0 +1,16 @@
+arm 73f7dae82a6d67ba44f7727bdc88653d7549c6ef (73f7dae82a6d67ba44f7727bdc88653d7549c6ef)
+listing brainstorming, creative-thinking, derive-roadmap, describe-critique-methodology, design-architecture, executing-plans, subagent-driven-development, writing-plans, read at the arm's sha
+dr-known-progression.txt sha256 68b6d8eb7a58abee700e24e058b58272075ffc6381d48f91788467e8cb232394 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-known-progression-79.txt sha256 68b6d8eb7a58abee700e24e058b58272075ffc6381d48f91788467e8cb232394 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-research-depth.txt sha256 d08332a3f688f7d26dd149cb5c64046e79134692b978226a13bba54e25e877c3 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-prompt.md whole sha256 ff6ec94342e11045e0c0353b46801cb87b7e63b4ba845289b189728ec5f39b73
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-chatgpt.md excerpt 3000 sha256 399f007ce3ae3816d55fb942feaf0f8c1579e0c47f49f8d6e4839173509f5ee7
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-claude.md excerpt 3000 sha256 150383c5bc32bd8247641b954f7ee5b9f94c31170209679c244de12372e8f5a0
+  read https://github.com/lowmason/ces-revisions 0e24ecc866e1d507373b01ef6c1a9d7962ae9b61 specs/ces-revisions-research-gemini.md excerpt 3000 sha256 0f4ec5d09858cc5e3fa86e5a23e8d4297a8ffc248907246c6159763b2d7c6a1c
+dr-quality-suggest.txt sha256 4efa2441409251c7613f32a12abca5fc13d3ce3b162086e3b53d767385a33886 model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+dr-spec-column.txt sha256 3700233627a740cc79a1bf74358350370184b1b479b98931ad28c037e97f630a model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
+dr-handoff-spec.txt sha256 a3c67ea29233fa718dd3c5c03494873266fb06df5a68069dc82248079ce5dbcf model claude-opus-5-5 budget 1.00 uses skills/derive-roadmap/SKILL.md,skills/derive-roadmap/references/*.md
+  read https://github.com/lowmason/sec-edgar 22c6767fb31de72eff8efbce4e2c20fa6c31508e specs/sec-filing-index-ingestion-spec.md whole sha256 c43fa45500db57e048eeea10befdcb7d48ce361068073c6e6211ef65c14576f6
