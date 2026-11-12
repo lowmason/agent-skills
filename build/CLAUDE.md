@@ -11,7 +11,7 @@ notebook links honest, through two gates:
 - **Gate A (mechanical)** — `verify_citations.py` checks that every `PML1 §10.4` section number and `notebooks/book1/*.ipynb` path actually resolves against ground truth in `build/.scratch/`.
 - **Gate B (adversarial)** — a human/agent reads the cited section to confirm it supports the claim; not automated.
 
-`extract_structure.py` regenerates the ground truth in `build/.scratch/` from **local PDFs** (`~/Documents/Bayesian/Probabilistic Machine Learning/`) via `pdftotext`, plus the pyprobml file tree via `gh`. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
+`extract_structure.py` regenerates the ground truth in `build/.scratch/` from **local PDFs** (`~/Library/Mobile Documents/com~apple~CloudDocs/PDFs/Books/Machine Learning/`) via `pdftotext -layout`, plus the pyprobml file tree via `gh`. Its contents page ranges fit one build of each book; it stops with an error when a chapter or a title is missing, which is how a new build that moved the pages shows up. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
 
 `sync_runtime_assets.py` and `test_runtime_support.py` generate and verify
 Codex/Gemini adapters and the cross-runtime installer. Their canonical inputs
