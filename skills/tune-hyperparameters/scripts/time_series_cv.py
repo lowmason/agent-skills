@@ -33,15 +33,20 @@ def _n_samples(X):
 def _period_index(n, groups):
     '''Each row's position among the sorted unique periods, and the period count.
 
-    Without groups each row is its own period, in row order.
+    Without groups each row is its own period, in row order. groups must hold
+    one label per row: a 1-d array, or an (n, 1) column such as a one-column
+    frame.
     '''
     if groups is None:
         return np.arange(n), n
     labels = np.asarray(groups)
-    if labels.shape[0] != n:
-        raise ValueError(f'groups has {labels.shape[0]} labels for {n} rows')
+    shape = labels.shape
+    if labels.ndim == 2 and shape[1] == 1:
+        labels = labels[:, 0]
+    if labels.ndim != 1 or labels.shape[0] != n:
+        raise ValueError(f'groups must hold one label per row: got shape {shape} for {n} rows')
     periods, index = np.unique(labels, return_inverse=True)
-    return index.ravel(), len(periods)
+    return index, len(periods)
 
 
 class PurgedTimeSeriesSplit:
