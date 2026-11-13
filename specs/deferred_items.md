@@ -6235,6 +6235,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`specs/baseline/red-baseline-acceptance-tests.md`, `specs/baseline/red-baseline-statement-readings.md`). It was first
       found in specs/deferred_items.md (spec-reading-test-check), 2026-10-28. Size: design. Done when: a spec
       decides layer 4 for subagent-driven-development and executing-plans, and its plan lands.
+      → planned 2026-11-12: specs/plans/93-mutant-checked-tests.md
 - [ ] **The statement-readings kit's scorer accepts adjudicator rulings that quote no words (plan 83, final
       review, Codex's finding).** Spec Design 7 in `specs/completed/statement-level-readings.md` has the
       adjudicator quote the words that decide each case, or rule `unclear`. The kit's scorer
