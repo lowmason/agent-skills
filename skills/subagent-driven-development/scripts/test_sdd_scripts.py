@@ -1883,14 +1883,14 @@ def test_mutant_run_keeps_each_project_config_name_at_head_and_reverts_look_alik
 def test_mutant_run_applies_the_revert_to_a_binary_file_and_unusual_names(calc):
     # Without --binary, git writes no binary patch that git apply takes.
     # Without :(literal), the pathspec a*.py also takes the test file
-    # abc_test.py into the revert.
+    # abc_test.py into the revert. Without -z, git quotes q"t.py.
     blob = bytes(range(256))
     base = commit_files(calc, {
-        'blob.bin': blob, 'my mod.py': 'X = 1\n', 'a*.py': 'Y = 1\n',
+        'blob.bin': blob, 'my mod.py': 'X = 1\n', 'a*.py': 'Y = 1\n', 'q"t.py': 'Z = 1\n',
         'abc_test.py': 'def test_y():\n    assert True\n',
     }, 'base')
     commit_files(calc, {
-        'blob.bin': blob[::-1], 'my mod.py': 'X = 2\n', 'a*.py': 'Y = 2\n',
+        'blob.bin': blob[::-1], 'my mod.py': 'X = 2\n', 'a*.py': 'Y = 2\n', 'q"t.py': 'Z = 2\n',
         'abc_test.py': 'def test_y():\n    assert 1\n',
     }, 'task')
     make_mutant(calc, 1, *A)
@@ -1899,7 +1899,7 @@ def test_mutant_run_applies_the_revert_to_a_binary_file_and_unusual_names(calc):
     assert result.returncode == 0, result.stdout + result.stderr
     lines = mutant_lines(calc)
     assert 'revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 3' in lines
-    assert path_lines(lines) == ['path: a*.py', 'path: blob.bin', 'path: my mod.py']
+    assert path_lines(lines) == ['path: a*.py', 'path: blob.bin', 'path: my mod.py', 'path: q"t.py']
     output = run_section(lines, 'output: revert')
     assert 'X = 1' in output
     assert 'Y = 1' in output
@@ -2038,6 +2038,39 @@ def test_mutant_run_writes_the_revert_line_after_the_note(calc):
         'note: reversed task-1-mutant-1.patch, left applied by a killed run',
         'revert: none: no file outside the tests and the project config changed',
     ]
+
+
+def test_mutant_run_overwrites_the_revert_patch_on_its_next_run(calc):
+    # The second run's HEAD has moved, so only a fresh patch applies to it.
+    base = head_sha(calc)
+    double = '\n\ndef double(a):\n    return 2 * a\n'
+    commit_files(calc, {'calc.py': CALC + double}, 'task')
+    make_mutant(calc, 1, *A)
+    first = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert first.returncode == 0, first.stdout + first.stderr
+    commit_files(calc, {'calc.py': CALC + double + '\n\ndef triple(a):\n    return 3 * a\n'}, 'fix')
+    second = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert second.returncode == 0, second.stdout + second.stderr
+    lines = mutant_lines(calc, 'task-1-mutants-2.log')
+    assert 'revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 3' in lines
+    patch = run_file(calc, 'task-1-revert.patch')
+    assert run_section(lines, 'revert')[:2] == ['path: calc.py', f'sha256: {patch_sha(patch)}']
+    assert b'triple' in patch.read_bytes()
+
+
+def test_mutant_run_stops_when_the_revert_run_changes_a_tracked_file(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    cmd = [
+        'sh', '-c', 'grep -q "a / 2" half.py && echo "# touched" >> calc.py; "$0" -m pytest -q -p no:cacheprovider',
+        sys.executable,
+    ]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=repo, env=PY_ENV)
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert 'tracked files differ from HEAD after reversing task-1-revert.patch' in result.stderr
+    assert 'calc.py' in result.stderr.splitlines()
+    assert no_mutant_run_file(repo)
+    assert not run_file(repo, 'mutant-active').exists()
 
 
 def test_mutant_run_keeps_its_exit_status_when_the_revert_times_out(changed):
