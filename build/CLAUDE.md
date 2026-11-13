@@ -24,7 +24,8 @@ skill edit can fail it.
 lists and fails closed. `githooks/pre-commit` runs it as a git hook, failing
 open only when uv cannot run, and `../.github/workflows/lints.yml` runs it in
 CI. `test_commit_lints.py` drives the runner and hook through throwaway
-clones and checks the workflow's triggers and pins.
+clones and checks the triggers and pins of that workflow and of the two
+weekly drift workflows.
 
 `check_links.py` is a commit lint: it fails on a relative Markdown link under
 `../skills/` whose target is missing, resolving each link from its own file's
@@ -121,6 +122,12 @@ committed on `main` and the next daily check runs. The `startup` matcher also
 fires under `claude -p` (checked on 2.1.304, 2026-10-20, with a stand-in hook
 from `--settings`), so a `claude -p` run that loads this repo's project
 settings should run `show` and `refresh` too.
+`../.github/workflows/cc-guide-drift.yml` runs `check --worktree` weekly on
+GitHub as an advisory job, so the owner hears of drift on any OS and in any
+client: the job fails when anything is due, and GitHub sends its failed-run
+notice. A runner's detached checkout has no local `main`, hence `--worktree`.
+The step summary holds the report's unindented lines, and the job log the
+whole report.
 `cli_versions.py` compares the Codex and agy guides with the CLIs installed
 here (owner design, 2026-11-12). Each guide has a
 `<!-- cli-stamp: <cli> <X.Y.Z> -->` line above its header. The line names
