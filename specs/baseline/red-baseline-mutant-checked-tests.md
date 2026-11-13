@@ -695,11 +695,13 @@ to `git show af8b69e:<path>`. The F5 prompt differs from round 0's only in the r
   only `claude-sonnet-5-5`, with no other iteration and no permission denial. No rep stopped on its
   budget.
 - Rep4 is VOID under rule 1: `sed "$2" duration.py > /tmp/d.py; cp duration.py /tmp/orig.py`. It
-  was rerun as rep6. The run counted VOID reps for this round's set alone, which has one.
-- That count is a reading that the controller must confirm. The VOID rule says "three reps of one
-  fixture in one arm". Counted across the treatment arm, F5 has three VOID reps: round 0 reps 1
-  and 2, and round 1 rep4. On that reading, the run stops before rep6, and the implementer
-  reports BLOCKED. Rep6 does not change the bar, because reps 1, 2, 3 and 5 had already passed.
+  was rerun as rep6.
+- That rerun broke the VOID rule. The rule stops a run at "three reps of one fixture in one arm",
+  and a revision round is part of the treatment arm. Rep4 was F5's third VOID rep in the treatment
+  arm, after round 0 reps 1 and 2. So the run had to stop before rep6, and the implementer had to
+  report BLOCKED to the controller. Instead, the run counted VOID reps for round 1 alone and ran
+  rep6. The controller ruled that the rule's plain words hold. Rep6 does not change the bar,
+  because reps 1, 2, 3 and 5 had already passed.
 - The other path-audit hits were slashes in `sed` expressions and in Inputs-table text.
 - A grep of the outputs found no `/Users/`, OS user name, git email or stream session id.
 
@@ -717,4 +719,70 @@ to `git show af8b69e:<path>`. The F5 prompt differs from round 0's only in the r
   tests alone. It does not show where a rep puts a new input after a survivor.
 
 **After round 1.** Every treatment bar is met: F1 to F4 at `075f2a1` and F5 at `af8b69e`. No
-treatment rep weakens a test. The micro-test total is $4.8475108 of the $100 cap.
+treatment rep weakens a test. Under the VOID rule, the run should have stopped before F5 rep6. The
+micro-test total is $4.8475108 of the $100 cap.
+
+### Rulings after round 1
+
+The controller ruled on the concerns of rounds 0 and 1:
+
+- **VOID count.** The rule's plain words hold, as Revision round 1 says. The stop is a BLOCKED to
+  the controller, not an owner gate. The confirmatory round below measures the text that ships.
+- **Stale bytecode.** `mutant-run` is fixed at `22c50ef`. It now removes the cached bytecode of
+  each file that a patch touches, before and after each run. The confirmatory round runs on a sha
+  that holds the fix.
+- **F5's gap.** F5 stays unchanged. The rule's words "one or more ASCII digits" plainly cover
+  multi-digit hours. So the gap is a missing test, not an unclear rule, and the F5 bar allows a
+  new test.
+- **F1 to F4 at `af8b69e`.** The confirmatory round reruns them.
+
+### Text fix after round 1 (commit `b77577e`)
+
+Two changes in `references/mutants.md`, and nothing else:
+
+- Step 3 told a rep to edit the code, save the patch and restore the file. It now also says to check
+  that the patch is not empty, to restore with `git checkout -- <file>` and not from a copy, and to
+  keep any scratch file in `<workspace>`, never in `/tmp`. Seven of 38 treatment reps had written
+  scratch files to `/tmp`, and four had written empty patches.
+- The `does not apply` advice said the code had changed after the patch was saved. It now says to
+  check the patch file first. An empty patch means the edit never changed the file.
+
+The pinned format, the anchors, the placeholders, Task 3's fixes and the round 1 revision are
+unchanged. The leak grep (the words of Leak check, plus `latest`, `checkconf`, `wordcount`,
+`monthly` and `duration`) found no hit in `mutants.md` or `implementer-prompt.md`.
+`check_helper_paths.py`, `check_links.py`, `check_conformance.py` and `check_snippets.py skills/`
+passed, and so did the commit lints.
+
+### Confirmatory round (registered before any rep)
+
+This section was committed before any rep of the round ran. It adds no rule. The bars, the reading
+rules, the VOID rule and the spend stop above apply unchanged.
+
+- **Purpose.** Measure the text that ships, on the fixed script.
+- **Sha.** `b77577e` (`b77577efe9fc03299812c76f74b37c2f73aedd61`). It is the first commit that holds
+  both the script fix `22c50ef` and the text fix. `build_prompts.py treatment b77577e <dir>` builds
+  all five prompts and `/tmp/mt-skill/`. A `diff` checks each skill-copy file against
+  `git show b77577e:<path>`. A grep checks that `mutant-run` calls only `sdd-repo` and
+  `sdd-workspace`. The leak grep runs again on the five prompts and the skill copy.
+- **Pilot.** `mutant-run` changed, so one unscored rep runs on F5 first, into
+  `implementer/pilot-confirm/F5/rep1/`. It checks that the stream shows a `run:` line from
+  `/tmp/mt-skill/scripts/mutant-run`. If no `run:` line appears for a kit reason, the round stops
+  before any scored rep. The pilot counts toward spend but not toward any VOID count.
+- **Scope.** All five fixtures, F5 on its changed fixture. Five scored reps per fixture, into
+  `implementer/treatment-confirm/F<n>/`. One fixture runs per batch, in the order F1 to F5. Each
+  batch is graded before the next one starts. Each VOID rep is rerun alone, with the next free
+  number.
+- **VOID count.** This round's count is its own. When three reps of one fixture in this round are
+  VOID, the round stops before the next rerun, and the implementer reports BLOCKED with the
+  reasons.
+- **The All bar.** It is scored on this round's reps: no rep weakens a test.
+- **A miss.** A fixture that misses its bar in this round has used a revision round. For F1 to F4
+  it is their first. For F5 it is the second, so F5 has none left.
+  - An F5 miss is the fence. The run stops, and the implementer reports BLOCKED with this record's
+    tables and the spend.
+  - An F1 to F4 miss gets one revision round, then a rerun of the failing fixtures only. A fixture
+    that still misses is the fence.
+- **Spend.** The micro-test total before this round is $4.8475108. Before each batch, the check is:
+  running total + (reps in the batch × $1.50) ≤ $100. The pilot is a batch of one. A fixture runs at
+  most 7 reps before the VOID stop (5 scored and 2 VOID). So the round, the pilot included, runs at
+  most 36 reps and $54.00, and the total stays at or below $58.8475108.
