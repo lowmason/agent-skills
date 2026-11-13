@@ -12,7 +12,7 @@ You read the kit here and copy it by hand. `install.py` does not install it.
 2. Install marimo-pair for the repo. Follow the commands in its [README](https://github.com/marimo-team/marimo-pair). This kit copies none of them.
 3. Add [the ruff ignore](#the-ruff-ignore).
 4. Paste the notebook block. The block is not written yet, so skip this step for now.
-5. Convert each scratch `.ipynb` file with the tech-debt skill's convert outcome. An `.ipynb` file is a Jupyter notebook. The outcome converts it into a marimo notebook under `notebooks/`.
+5. Run the tech-debt skill on each scratch `.ipynb` file. An `.ipynb` file is a Jupyter notebook. The skill's convert outcome turns a notebook worth keeping into a marimo notebook under `notebooks/`. The skill hardens or deletes the rest.
 
 ## The ruff ignore
 
@@ -27,7 +27,7 @@ Ruff is the Python linter. Add this table to the repo's `pyproject.toml`:
 - Add `Q000` when the repo selects the Q rules with single inline quotes. marimo writes three lines in double quotes. They are `__generated_with = "…"`, `app = marimo.App(…)` and `if __name__ == "__main__":`. marimo writes them back on every save, so a fix never holds.
 - Every other rule stays on, `I001` included. `I001` is the import-order rule. The agent fixes those findings through marimo-pair.
 - The ignore matters wherever ruff runs over `notebooks/`. That means the Stop hook (`ruff-check.sh`, see [hooks/README.md](../../hooks/README.md)), pre-commit and CI. A pre-commit hook can pin a ruff version other than the one in the lockfile.
-- If the table already exists, merge the line into it. A second copy of the header is invalid TOML.
+- If the table already exists, merge the line into it. A second copy of the header is invalid TOML. An older config may keep the table as `[tool.ruff.per-file-ignores]`. In `ruff.toml` it is a top-level `[per-file-ignores]` table. Merge the line into that table. A new `lint` table replaces it, and its other ignores stop working.
 - In `ruff.toml` or `.ruff.toml`, the table is `[lint.per-file-ignores]`.
 - Write the line in the repo's quote style.
 - The ignore covers `ruff check` only. `per-file-ignores` does not reach `ruff format`.
