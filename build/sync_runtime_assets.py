@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 '''Generate Codex and Gemini adapters from the canonical Claude definitions.
 
+The gemini runtime targets Antigravity CLI (agy), Gemini CLI's successor: its
+agents use agy's tool names, and each command becomes a skill, since a skill is
+agy's slash command.
+
 The Markdown bodies in agents/ and commands/ remain the source of truth. This
 script translates only the runtime manifest layer: file format, tool names,
 argument injection, and read-only sandbox declarations.
@@ -27,19 +31,26 @@ CANONICAL_AGENTS = REPO / 'agents'
 CANONICAL_COMMANDS = REPO / 'commands'
 CODEX_AGENTS = REPO / 'runtimes' / 'codex' / 'agents'
 GEMINI_AGENTS = REPO / 'runtimes' / 'gemini' / 'agents'
-GEMINI_COMMANDS = REPO / 'runtimes' / 'gemini' / 'commands'
-GENERATED_DIRS = (CODEX_AGENTS, GEMINI_AGENTS, GEMINI_COMMANDS)
+GEMINI_SKILLS = REPO / 'runtimes' / 'gemini' / 'skills'
+GENERATED_DIRS = (CODEX_AGENTS, GEMINI_AGENTS, GEMINI_SKILLS)
 
-TOOL_MAP = {
-  'Read': 'read_file',
-  'Write': 'write_file',
-  'Edit': 'replace',
-  'Grep': 'grep_search',
-  'Glob': 'glob',
-  'Bash': 'run_shell_command',
-  'WebFetch': 'web_fetch',
-  'WebSearch': 'google_web_search',
+# agy's tool names, from its built-in migrate-agent-settings converter; each name
+# was probed with agy 1.2.17 on 2026-11-12. agy has no search tool, so Grep and
+# Glob fold into read_file, and Bash brings manage_task beside run_command.
+TOOL_MAP: dict[str, tuple[str, ...]] = {
+  'Read': ('read_file',),
+  'Write': ('write_file',),
+  'Edit': ('edit_file',),
+  'Grep': ('read_file',),
+  'Glob': ('read_file',),
+  'Bash': ('run_command', 'manage_task'),
+  'WebFetch': ('search_web',),
+  'WebSearch': ('search_web',),
 }
+COMMAND_ARGUMENTS = (
+  "Take the argument from the user's message: the text after `/{name}`, or the "
+  'target the user named when this skill loaded on its own.'
+)
 READONLY_HEADING = '## Read-only contract'
 # Agents whose commands write caches (uv writes ~/.cache/uv), so a read-only
 # sandbox blocks every documented suite. Probed with `codex sandbox`: workspace-write
@@ -108,14 +119,16 @@ def render_gemini_agent(path: Path) -> str:
       dropped.append(tool)
       continue
     try:
-      tools.append(TOOL_MAP[tool])
+      tools.extend(TOOL_MAP[tool])
     except KeyError as exc:
       raise ValueError(f'{path}: no Gemini mapping for tool {tool!r}') from exc
+  # No subagent or mainAgent key: either one hides the agent in ~/.gemini/agents
+  # (probed 2026-11-12), so these stay session agents (agy --agent <name>).
   adapted = {
     'name': portable_name(str(frontmatter['name'])),
     'description': portable_description(str(frontmatter['description'])),
     'kind': 'local',
-    'tools': tools,
+    'tools': list(dict.fromkeys(tools)),
   }
   yaml_text = yaml.safe_dump(
     adapted,
@@ -128,14 +141,18 @@ def render_gemini_agent(path: Path) -> str:
   return f'---\n{yaml_text}\n---\n\n{body}'
 
 
-def render_gemini_command(path: Path) -> str:
+def render_gemini_command_skill(path: Path) -> str:
+  '''A command as an agy skill: the folder name is the slash command.'''
   frontmatter, body = read_frontmatter(path)
-  prompt = body.rstrip() + '\n\nUser-supplied command arguments:\n{{args}}\n'
-  return (
-    GENERATED_COMMENT
-    + f'description = {json.dumps(str(frontmatter["description"]), ensure_ascii=False)}\n'
-    + f'prompt = {json.dumps(prompt, ensure_ascii=False)}\n'
-  )
+  adapted = {'name': path.stem, 'description': str(frontmatter['description'])}
+  yaml_text = yaml.safe_dump(
+    adapted,
+    sort_keys=False,
+    allow_unicode=True,
+    width=1000,
+  ).rstrip()
+  arguments = COMMAND_ARGUMENTS.format(name=path.stem)
+  return f'---\n{GENERATED_COMMENT}{yaml_text}\n---\n\n{body.rstrip()}\n\n{arguments}\n'
 
 
 def expected_assets() -> dict[Path, str]:
@@ -144,7 +161,7 @@ def expected_assets() -> dict[Path, str]:
     expected[CODEX_AGENTS / f'{source.stem}.toml'] = render_codex_agent(source)
     expected[GEMINI_AGENTS / source.name] = render_gemini_agent(source)
   for source in sorted(CANONICAL_COMMANDS.glob('*.md')):
-    expected[GEMINI_COMMANDS / f'{source.stem}.toml'] = render_gemini_command(source)
+    expected[GEMINI_SKILLS / source.stem / 'SKILL.md'] = render_gemini_command_skill(source)
   return expected
 
 
@@ -153,10 +170,18 @@ def stale_generated_files(expected: dict[Path, str]) -> set[Path]:
     path
     for directory in GENERATED_DIRS
     if directory.exists()
-    for path in directory.iterdir()
+    for path in directory.rglob('*')
     if path.is_file()
   }
   return actual - set(expected)
+
+
+def remove_empty_folders(directory: Path) -> None:
+  '''Remove a stale skill's emptied folder, up to its generated directory.'''
+  while directory not in GENERATED_DIRS and not any(directory.iterdir()):
+    directory.rmdir()
+    print(f'removed stale {directory.relative_to(REPO)}')
+    directory = directory.parent
 
 
 def check(expected: dict[Path, str]) -> int:
@@ -183,6 +208,7 @@ def write(expected: dict[Path, str]) -> int:
   for path in sorted(stale_generated_files(expected)):
     path.unlink()
     print(f'removed stale {path.relative_to(REPO)}')
+    remove_empty_folders(path.parent)
   return 0
 
 

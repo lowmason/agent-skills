@@ -85,7 +85,7 @@ USER_RULES: dict[str, tuple[str, ...]] = {
 RUNTIME_DIRECTORIES: dict[str, tuple[str, ...]] = {
   'claude': ('.claude/skills', '.claude/agents', '.claude/commands', '.claude/rules'),
   'codex': ('.agents/skills', '.codex/agents'),
-  'gemini': ('.agents/skills', '.gemini/agents', '.gemini/commands'),
+  'gemini': ('.gemini/config/skills', '.gemini/agents'),
 }
 
 # .gitignore's generic entries, fixed here, for --copy where git keeps none of
@@ -170,6 +170,14 @@ def file_items(source_dir: Path, suffix: str, destination_dir: Path) -> list[Ins
   ]
 
 
+def folder_items(source_dir: Path, destination_dir: Path) -> list[InstallItem]:
+  return [
+    InstallItem(source, destination_dir / source.name)
+    for source in sorted(source_dir.iterdir())
+    if source.is_dir()
+  ]
+
+
 def runtime_items(
   runtime: str,
   home: Path,
@@ -196,13 +204,14 @@ def runtime_items(
     )
     command_items = []
   elif runtime == 'gemini':
-    skill_root = home / '.agents' / 'skills'
+    # Antigravity CLI (agy), Gemini CLI's successor, reads global skills from
+    # ~/.gemini/config/skills, and a skill is its slash command, so the command
+    # adapters are skills there too. It reads ~/.gemini/agents as session agents.
+    skill_root = home / '.gemini' / 'config' / 'skills'
     agent_items = file_items(
       runtimes / 'gemini' / 'agents', '.md', home / '.gemini' / 'agents'
     )
-    command_items = file_items(
-      runtimes / 'gemini' / 'commands', '.toml', home / '.gemini' / 'commands'
-    )
+    command_items = folder_items(runtimes / 'gemini' / 'skills', skill_root)
   else:
     raise InstallError(f'unsupported runtime: {runtime}')
   skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]

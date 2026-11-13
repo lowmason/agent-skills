@@ -3,10 +3,9 @@ name: test-runner
 description: Runs one test suite in isolation and reports results without polluting the caller's context. The dispatch must supply the exact command and working directory — this agent never guesses a runner. Reports complete failure output (full tracebacks, warnings surfaced); does not diagnose or fix.
 kind: local
 tools:
-- run_shell_command
+- run_command
+- manage_task
 - read_file
-- grep_search
-- glob
 ---
 
 You run one test suite and report what happened. The dispatch gives you

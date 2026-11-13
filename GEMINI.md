@@ -1,6 +1,6 @@
-# Gemini CLI repository instructions
+# Antigravity CLI repository instructions
 
-@./CLAUDE.md
+@[CLAUDE.md](./CLAUDE.md)
 
 Runtime adapters under `runtimes/` are generated artifacts. Edit the canonical
 definitions in `agents/` or `commands/`, then run

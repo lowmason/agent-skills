@@ -8,7 +8,7 @@
 # version-sensitive, so re-probe after binary updates (see the README row).
 name: Explore
 description: Read-only search agent for broad fan-out searches — locates code across many files, directories, and naming conventions, and reports path:line references with one-line relevance notes rather than file dumps. It locates code; it does not review or audit it. The caller specifies search breadth ("medium" for moderate exploration, "very thorough" for multiple locations and naming conventions). Haiku-pinned override of the built-in Explore agent.
-tools: Read, Grep, Glob, Bash
+tools: Read, Bash
 model: haiku
 # cc-guide: subagents.frontmatter subagents.tools subagents.models @2.1.306
 ---

@@ -45,15 +45,16 @@ def test_codex_test_runner_is_not_read_only():
   assert data.get('sandbox_mode') != 'read-only'
 
 
-def test_gemini_agent_adapter_maps_tools_and_inherits_model():
+def test_gemini_agent_adapter_maps_tools_to_antigravity_and_inherits_model():
   sync = load_sync_module()
   frontmatter, body = sync.read_frontmatter(
     REPO / 'runtimes/gemini/agents/debugger.md'
   )
   assert frontmatter['name'] == 'debugger'
   assert frontmatter['kind'] == 'local'
+  # Canonical: Read, Write, Edit, Bash. Bash brings manage_task beside run_command.
   assert frontmatter['tools'] == [
-    'read_file', 'write_file', 'replace', 'run_shell_command', 'grep_search', 'glob'
+    'read_file', 'write_file', 'edit_file', 'run_command', 'manage_task'
   ]
   assert 'model' not in frontmatter
   assert 'Reproduce first' in body
@@ -92,11 +93,40 @@ def test_gemini_agent_adapter_refuses_an_unknown_tool(tmp_path):
     sync.render_gemini_agent(source)
 
 
-def test_gemini_command_adapter_passes_arguments():
-  data = tomllib.loads((REPO / 'runtimes/gemini/commands/fix-issue.toml').read_text())
-  assert data['description'].startswith('Fix a GitHub issue')
-  assert '{{args}}' in data['prompt']
-  assert 'gh issue view' in data['prompt']
+def test_gemini_command_becomes_a_skill_that_takes_its_arguments():
+  # agy has no command files: a skill is its slash command (/fix-issue).
+  sync = load_sync_module()
+  frontmatter, body = sync.read_frontmatter(REPO / 'runtimes/gemini/skills/fix-issue/SKILL.md')
+  assert list(frontmatter) == ['name', 'description']
+  assert frontmatter['name'] == 'fix-issue'
+  assert frontmatter['description'].startswith('Fix a GitHub issue')
+  assert 'gh issue view' in body
+  assert '`/fix-issue`' in body
+  assert '{{args}}' not in body
+
+
+def test_a_removed_command_leaves_its_generated_skill_stale(tmp_path, monkeypatch):
+  sync = load_sync_module()
+  skills = tmp_path / 'skills'
+  for name in ('kept', 'old'):
+    (skills / name).mkdir(parents=True)
+    (skills / name / 'SKILL.md').write_text('x\n')
+  monkeypatch.setattr(sync, 'GENERATED_DIRS', (skills,))
+  assert sync.stale_generated_files({skills / 'kept' / 'SKILL.md': 'x\n'}) == {
+    skills / 'old' / 'SKILL.md'
+  }
+
+
+def test_write_removes_a_stale_generated_skill_folder(tmp_path, monkeypatch):
+  sync = load_sync_module()
+  skills = tmp_path / 'skills'
+  (skills / 'old').mkdir(parents=True)
+  (skills / 'old' / 'SKILL.md').write_text('x\n')
+  monkeypatch.setattr(sync, 'REPO', tmp_path)
+  monkeypatch.setattr(sync, 'GENERATED_DIRS', (skills,))
+  sync.write({skills / 'kept' / 'SKILL.md': 'y\n'})
+  assert not (skills / 'old').exists()
+  assert (skills / 'kept' / 'SKILL.md').read_text() == 'y\n'
 
 
 def test_every_codex_adapter_parses_with_required_fields():
@@ -107,6 +137,9 @@ def test_every_codex_adapter_parses_with_required_fields():
     assert data['developer_instructions']
 
 
+AGY_TOOLS = {'read_file', 'write_file', 'edit_file', 'run_command', 'manage_task', 'search_web'}
+
+
 def test_every_gemini_adapter_parses_without_claude_model_names():
   sync = load_sync_module()
   for path in sorted((REPO / 'runtimes/gemini/agents').glob('*.md')):
@@ -115,16 +148,32 @@ def test_every_gemini_adapter_parses_without_claude_model_names():
     assert frontmatter['description']
     assert frontmatter['kind'] == 'local'
     assert 'model' not in frontmatter
+    # agy (1.2.17, probed 2026-11-12) hides an agent in ~/.gemini/agents that sets
+    # either key, so these stay session agents: agy --agent <name>.
+    assert not {'subagent', 'mainAgent'} & set(frontmatter)
+    tools = frontmatter['tools']
+    assert set(tools) <= AGY_TOOLS and len(tools) == len(set(tools)), path
     assert body
-  for path in sorted((REPO / 'runtimes/gemini/commands').glob('*.toml')):
-    data = tomllib.loads(path.read_text())
-    assert data['description']
-    assert '{{args}}' in data['prompt']
+  skill_files = sorted((REPO / 'runtimes/gemini/skills').glob('*/SKILL.md'))
+  assert [path.parent.name for path in skill_files] == sorted(
+    path.stem for path in (REPO / 'commands').glob('*.md')
+  )
+  for path in skill_files:
+    frontmatter, body = sync.read_frontmatter(path)
+    assert frontmatter['name'] == path.parent.name
+    assert frontmatter['description']
+    assert '{{args}}' not in body and '$ARGUMENTS' not in body
+  assert not (REPO / 'runtimes/gemini/commands').exists()
 
 
 def test_runtime_instruction_entrypoints_exist():
   assert 'CLAUDE.md' in (REPO / 'AGENTS.md').read_text()
-  assert '@./CLAUDE.md' in (REPO / 'GEMINI.md').read_text()
+  # agy expands only @[label](path) includes; it left Gemini CLI's @./CLAUDE.md
+  # unexpanded (probed 2026-11-12). CLAUDE.md must stay under agy's 24,000-byte
+  # cap on one rule file after expansion, or agy truncates it.
+  gemini = (REPO / 'GEMINI.md').read_text()
+  assert '@[CLAUDE.md](./CLAUDE.md)' in gemini
+  assert len(gemini.encode()) + len((REPO / 'CLAUDE.md').read_bytes()) < 24_000
 
 
 def load_install(monkeypatch):
@@ -152,10 +201,17 @@ def tree(root: Path) -> list[Path]:
   return sorted(path.relative_to(root) for path in root.rglob('*'))
 
 
-COMPANION_DIRS = {
+SKILL_ROOTS = {
+  'claude': '.claude/skills',
+  'codex': '.agents/skills',
+  # The gemini runtime targets Antigravity CLI (agy), which reads global skills here.
+  'gemini': '.gemini/config/skills',
+}
+
+COMPANION_PATHS = {
   'claude': ('.claude/agents', '.claude/commands'),
   'codex': ('.codex/agents',),
-  'gemini': ('.gemini/agents', '.gemini/commands'),
+  'gemini': ('.gemini/agents', '.gemini/config/skills/deferred'),
 }
 
 
@@ -167,33 +223,36 @@ def test_codex_install_links_shared_skill_and_native_agents(tmp_path):
   assert not (tmp_path / '.codex/commands').exists()
 
 
-def test_gemini_install_links_skill_agents_and_commands(tmp_path):
+def test_gemini_install_links_agy_skills_agents_and_command_skills(tmp_path):
   result = run_install(tmp_path, 'gemini', '--companions')
   assert result.returncode == 0, result.stdout + result.stderr
-  assert (tmp_path / '.agents/skills/brainstorming').is_symlink()
+  assert (tmp_path / '.gemini/config/skills/brainstorming').is_symlink()
   assert (tmp_path / '.gemini/agents/debugger.md').is_symlink()
-  assert (tmp_path / '.gemini/commands/deferred.toml').is_symlink()
+  command = tmp_path / '.gemini/config/skills/deferred'
+  assert command.is_symlink() and (command / 'SKILL.md').is_file()
+  assert not (tmp_path / '.agents').exists()
+  assert not (tmp_path / '.gemini/commands').exists()
 
 
-def test_all_install_is_idempotent_across_shared_skill_root(tmp_path):
+def test_all_install_is_idempotent(tmp_path):
   first = run_install(tmp_path, 'all', '--companions')
   second = run_install(tmp_path, 'all', '--companions')
   assert first.returncode == 0, first.stdout + first.stderr
   assert second.returncode == 0, second.stdout + second.stderr
-  assert (tmp_path / '.claude/skills/brainstorming').is_symlink()
-  assert (tmp_path / '.agents/skills/brainstorming').is_symlink()
+  for root in SKILL_ROOTS.values():
+    assert (tmp_path / root / 'brainstorming').is_symlink()
   assert (tmp_path / '.claude/agents/code-reviewer.md').is_symlink()
   assert (tmp_path / '.claude/commands/deferred.md').is_symlink()
+  assert (tmp_path / '.gemini/config/skills/deferred').is_symlink()
 
 
-@pytest.mark.parametrize('runtime', sorted(COMPANION_DIRS))
+@pytest.mark.parametrize('runtime', sorted(COMPANION_PATHS))
 def test_skill_selection_skips_companions_by_default(tmp_path, runtime):
   result = run_install(tmp_path, runtime)
   assert result.returncode == 0, result.stdout + result.stderr
-  skill_root = '.claude/skills' if runtime == 'claude' else '.agents/skills'
-  assert (tmp_path / skill_root / 'brainstorming').is_symlink()
-  for companion_dir in COMPANION_DIRS[runtime]:
-    assert not (tmp_path / companion_dir).exists()
+  assert (tmp_path / SKILL_ROOTS[runtime] / 'brainstorming').is_symlink()
+  for companion in COMPANION_PATHS[runtime]:
+    assert not (tmp_path / companion).exists()
 
 
 @pytest.mark.parametrize(
@@ -254,6 +313,8 @@ def test_aliased_skill_roots_install_each_skill_once(tmp_path):
   (tmp_path / '.agents/skills').mkdir(parents=True)
   (tmp_path / '.claude').mkdir()
   (tmp_path / '.claude/skills').symlink_to('../.agents/skills', target_is_directory=True)
+  (tmp_path / '.gemini/config').mkdir(parents=True)
+  (tmp_path / '.gemini/config/skills').symlink_to('../../.agents/skills', target_is_directory=True)
   result = run_install(tmp_path, 'all', '--copy')
   assert result.returncode == 0, result.stdout + result.stderr
   assert len(result.stdout.splitlines()) == 1
@@ -295,9 +356,9 @@ def installed_links(root: Path) -> set[str]:
       '.claude/skills/writing-plans',
     }),
     ('gemini', 'derive-roadmap', (), {
-      '.agents/skills/derive-roadmap',
-      '.agents/skills/writing-plans',
-      '.gemini/commands/deferred.toml',
+      '.gemini/config/skills/derive-roadmap',
+      '.gemini/config/skills/writing-plans',
+      '.gemini/config/skills/deferred',
     }),
     # Codex has no command adapters, but /deferred's own skill dependency holds.
     ('codex', 'derive-roadmap', (), {
@@ -387,7 +448,7 @@ def test_rule_flag_installs_the_rule_and_the_skills_it_names(tmp_path):
 def test_other_runtimes_place_no_rule(tmp_path, runtime):
   result = run_install(tmp_path, runtime, '--rule', USER_RULE, skills=())
   assert result.returncode == 0, result.stdout + result.stderr
-  assert installed_links(tmp_path) == {f'.agents/skills/{USER_RULE}'}
+  assert installed_links(tmp_path) == {f'{SKILL_ROOTS[runtime]}/{USER_RULE}'}
 
 
 def test_all_places_the_rule_for_claude_only(tmp_path):
@@ -397,6 +458,7 @@ def test_all_places_the_rule_for_claude_only(tmp_path):
     f'.claude/rules/{USER_RULE}.md',
     f'.claude/skills/{USER_RULE}',
     f'.agents/skills/{USER_RULE}',
+    f'.gemini/config/skills/{USER_RULE}',
   }
 
 
@@ -426,7 +488,7 @@ def test_rule_on_a_runtime_without_rules_prints_a_one_line_notice(tmp_path, runt
   assert len(notice) == 1, result.stderr
   assert runtime in notice[0] and 'rule' in notice[0] and 'Claude' in notice[0]
   # The notice changes nothing: the skill the rule names still installs.
-  assert installed_links(tmp_path) == {f'.agents/skills/{USER_RULE}'}
+  assert installed_links(tmp_path) == {f'{SKILL_ROOTS[runtime]}/{USER_RULE}'}
 
 
 @pytest.mark.parametrize('runtime', ['claude', 'all'])
@@ -871,12 +933,11 @@ def test_check_reports_a_relative_link_into_this_repo(tmp_path):
     ('claude', '.claude/rules/old.md'),
     ('codex', '.agents/skills/old'),
     ('codex', '.codex/agents/old.toml'),
-    ('gemini', '.agents/skills/old'),
+    ('gemini', '.gemini/config/skills/old'),
     ('gemini', '.gemini/agents/old.md'),
-    ('gemini', '.gemini/commands/old.toml'),
     ('all', '.claude/skills/old'),
     ('all', '.codex/agents/old.toml'),
-    ('all', '.gemini/commands/old.toml'),
+    ('all', '.gemini/config/skills/old'),
   ],
 )
 def test_check_scans_every_directory_the_runtime_installs_into(tmp_path, runtime, relative):

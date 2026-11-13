@@ -2,7 +2,7 @@
 # agent-skills
 
 This repo is my personal collection of [Agent Skills](https://agentskills.io/specification) for
-**Claude Code, Codex, and Gemini CLI**.
+**Claude Code, Codex, and Antigravity CLI** (`agy`, Google's successor to Gemini CLI).
 
 Each skill is a self-contained directory under [`skills/`](skills/). It holds a `SKILL.md`, plus
 any `references/` or `scripts/` that it needs. All three runtimes find the
@@ -34,7 +34,7 @@ agent-skills/
 ├── archive/     # retired skills, kept whole for a later restore (archive/README.md); never installed
 ├── agents/      # subagent definitions (reviewers + security/search/test/debug/docs — see Agents below)
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
-├── runtimes/    # generated Codex/Gemini agent and command adapters
+├── runtimes/    # generated Codex and Antigravity (gemini runtime) adapters
 ├── hooks/       # Claude Code hooks: gates for Python/uv work repos + the read-only agent guard and the dispatch model guard (see Hooks below)
 ├── rules/       # rule files: path-scoped via .claude/rules/, one user-level (see Rules below)
 ├── build/       # lints and commit gates, the adapter generator, the Claude Code guide's drift detector, citation checks
@@ -43,8 +43,9 @@ agent-skills/
 ```
 
 The canonical skill bodies are portable. The runtimes use different file formats and tool names,
-so `build/sync_runtime_assets.py` generates the Codex and Gemini agent files from
-[`agents/`](agents/). It also generates Gemini's TOML commands from [`commands/`](commands/). The
+so `build/sync_runtime_assets.py` generates the Codex and Antigravity agent files from
+[`agents/`](agents/). It also turns each command in [`commands/`](commands/) into an Antigravity
+skill, because a skill is `agy`'s slash command. The
 hooks and rules stay specific to Claude Code. See [Installation](#installation) and the
 compatibility notes below.
 
@@ -117,10 +118,11 @@ Beyond that cleanup, I rewired the planning and execution skills around the spec
 ## Agents
 
 The canonical subagent definitions live in [`agents/`](agents/). Claude Code loads these files
-directly. The generated Codex TOML and Gemini Markdown adapters live under
-[`runtimes/`](runtimes/). The adapters keep the same system-prompt body and map Gemini's tool
-identifiers. They declare read-only sandboxes in Codex where required. They inherit the active
-runtime model instead of carrying Claude model names.
+directly. The generated Codex TOML and Antigravity Markdown adapters live under
+[`runtimes/`](runtimes/). The adapters keep the same system-prompt body and map `agy`'s tool
+names. They declare read-only sandboxes in Codex where required. They inherit the active
+runtime model instead of carrying Claude model names. In `agy` they are session agents: you
+start one with `agy --agent <name>`, and `agy`'s main agent cannot dispatch them.
 
 Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`, `Explore`, and
 `test-runner`. They keep a shell, and each runtime handles that shell differently:
@@ -129,7 +131,8 @@ Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`,
   you install it (see [Hooks](#hooks)), denies Bash commands that change files or git state. The
   guard is a guardrail against drift from the contract, not a sandbox.
 - **Codex:** every adapter sets `sandbox_mode = "read-only"` except `test-runner`. Its test commands write caches (uv writes `~/.cache/uv`), and a read-only sandbox blocks that. It sets no sandbox mode and inherits the session's mode. Its contract alone keeps it from editing. A probe with `codex sandbox` on 2026-11-01 showed that both the read-only and the workspace-write modes block `~/.cache/uv`. In those modes `test-runner` can run only commands that write no cache, unless you start Codex with a wider mode.
-- **Gemini CLI:** each adapter lists `run_shell_command` with no restriction.
+- **Antigravity CLI:** each adapter lists `run_command` with no restriction. `agy`'s permission
+  rules apply to it as to any other command.
 
 | Agent | Description |
 |-------|-------------|
@@ -143,9 +146,11 @@ Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`,
 
 ## Commands
 
-The slash commands for Claude Code live in [`commands/`](commands/). The generated Gemini TOML
-commands live in [`runtimes/gemini/commands/`](runtimes/gemini/commands/), and they pass user
-arguments through `{{args}}`. This repo has no command adapter for Codex. In Codex, you invoke the
+The slash commands for Claude Code live in [`commands/`](commands/). Antigravity has no command
+files, because a skill is its slash command. So the generator writes each command as a skill in
+[`runtimes/gemini/skills/`](runtimes/gemini/skills/), and the `gemini` install links it beside the
+other skills. Like any skill, `agy` can also load one by itself when a request matches its
+description. This repo has no command adapter for Codex. In Codex, you invoke the
 reusable workflows as skills.
 
 | Command | Description |
@@ -228,7 +233,7 @@ runtime's supported agents and commands:
 ```bash
 cd ~/agent-skills
 python3 install.py codex
-python3 install.py gemini
+python3 install.py gemini   # Antigravity CLI (agy)
 python3 install.py claude
 # or: python3 install.py all
 ```
@@ -258,7 +263,7 @@ link, so you delete the stale ones yourself.
 
 `--skill` also installs what the named skills cannot work without, and what those need in turn.
 That means the sibling skills whose scripts or files they use, and the `/deferred` command where
-the runtime has commands (Claude Code, Gemini CLI). For example,
+the runtime has commands (Claude Code, and Antigravity as a skill). For example,
 `--skill finishing-a-development-branch` brings `writing-plans`, `requesting-code-review`, and
 `/deferred`. `--skill derive-roadmap` brings `writing-plans`, which `/deferred` needs, even where
 the command itself is not installed (Codex, or `--no-companions`). `--skill` skips the runtime's other agents
@@ -289,23 +294,26 @@ so remove old copies before you run it again.
 |---------|--------|--------|----------|-------|
 | Claude Code | `~/.claude/skills/` | `~/.claude/agents/*.md` | `~/.claude/commands/*.md` | `~/.claude/rules/*.md` (user-level rules only) |
 | Codex | `~/.agents/skills/` | `~/.codex/agents/*.toml` | — | — |
-| Gemini CLI | `~/.agents/skills/` | `~/.gemini/agents/*.md` | `~/.gemini/commands/*.toml` | — |
+| Antigravity CLI (`gemini`) | `~/.gemini/config/skills/` | `~/.gemini/agents/*.md` (session agents) | `~/.gemini/config/skills/` (as skills) | — |
 
-Codex and Gemini deliberately share the cross-runtime `~/.agents/skills/`
-installation. This matches [Codex's local skill discovery](https://developers.openai.com/codex/skills)
-and [Gemini CLI's discovery tiers](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/using-agent-skills.md).
+Codex reads `~/.agents/skills/`, as [Codex's local skill discovery](https://developers.openai.com/codex/skills)
+describes. Antigravity CLI does not read that folder. Its global skills live in
+`~/.gemini/config/skills/` ([Antigravity's skills docs](https://antigravity.google/docs/skills)).
+The runtime keeps the name `gemini` because `agy` replaced Gemini CLI and keeps its files under
+`~/.gemini/`. Gemini CLI itself is no longer a target: it uses other tool names and TOML commands.
 
 ### Manual skill install
 
-To link one skill manually for Codex and Gemini:
+To link one skill manually for Codex or Antigravity:
 
 ```bash
-mkdir -p ~/.agents/skills
-ln -s ~/agent-skills/skills/bayesian-workflow ~/.agents/skills/bayesian-workflow
+mkdir -p ~/.agents/skills ~/.gemini/config/skills
+ln -s ~/agent-skills/skills/bayesian-workflow ~/.agents/skills/bayesian-workflow          # Codex
+ln -s ~/agent-skills/skills/bayesian-workflow ~/.gemini/config/skills/bayesian-workflow   # Antigravity
 ```
 
 For Claude Code, use `~/.claude/skills/` instead. To scope a skill to one project, use
-`.agents/skills/` for Codex and Gemini, or `.claude/skills/` for Claude Code:
+`.agents/skills/` for Codex and Antigravity, or `.claude/skills/` for Claude Code:
 
 ```bash
 mkdir -p .agents/skills
@@ -314,12 +322,13 @@ ln -s ~/agent-skills/skills/bayesian-workflow .agents/skills/bayesian-workflow
 
 ### Verify
 
-Use `/skills` in Claude Code or Codex, and `/skills list` in Gemini. In Gemini, check agents with
-`/agents list` and commands with `/commands list`. After you change generated files, use the
-matching `reload` command. Codex reads its TOML agents when a new session starts.
+Use `/skills` in Claude Code or Codex. In Antigravity, `agy agents` lists the agents, and each
+skill, the command skills included, runs as `/<name>`. Codex reads its TOML agents when a new
+session starts.
 
 The repo also includes project instruction entrypoints. Codex reads [`AGENTS.md`](AGENTS.md).
-Gemini reads [`GEMINI.md`](GEMINI.md), which imports the canonical maintainer guide.
+Antigravity reads both files. [`GEMINI.md`](GEMINI.md) includes the canonical maintainer guide
+with `agy`'s `@[label](path)` form, since `agy` does not expand Gemini CLI's `@./path` imports.
 
 ### Claude Code hooks
 
