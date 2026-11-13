@@ -1471,9 +1471,9 @@ def test_mutant_run_refuses_a_task_number_that_is_not_an_id(committed, task):
 
 # ── mutant-run: BASE ─────────────────────────────────────────────────────
 
-def side_commit(repo):
-    '''Commit a file on a side branch, switch back, and return the commit's sha: not an ancestor of HEAD.'''
-    git('checkout', '-q', '-b', 'side', cwd=repo)
+def side_commit(repo, start='HEAD'):
+    '''Commit a file on a side branch cut from start, switch back, and return the commit's sha: not an ancestor of HEAD.'''
+    git('checkout', '-q', '-b', 'side', start, cwd=repo)
     (repo / 'side.txt').write_text('side\n')
     git('add', 'side.txt', cwd=repo)
     git('commit', '-qm', 'side', cwd=repo)
@@ -1576,3 +1576,23 @@ def test_mutant_run_checks_base_before_it_refuses_a_dirty_tree(calc, kind):
     assert want in result.stderr.splitlines()
     assert 'scratch.txt' not in result.stderr
     assert not (calc / 'ran').exists()
+
+
+@pytest.mark.parametrize('base', ['', '--', '-n'])
+def test_mutant_run_refuses_a_base_that_is_empty_or_looks_like_an_option(calc, base):
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert f'mutant-run: bad BASE: {base}' in result.stderr.splitlines()
+    assert no_mutant_run_file(calc)
+
+
+def test_mutant_run_refuses_a_base_on_a_diverged_branch(calc):
+    sibling = side_commit(calc, start='HEAD~1')
+    fork = git('rev-parse', 'HEAD~1', cwd=calc).stdout.strip()
+    assert git('merge-base', sibling, 'HEAD', cwd=calc).stdout.strip() == fork
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, sibling, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert f'mutant-run: HEAD is not a descendant of BASE {sibling}' in result.stderr.splitlines()
+    assert no_mutant_run_file(calc)
