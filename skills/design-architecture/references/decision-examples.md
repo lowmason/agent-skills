@@ -5,14 +5,14 @@ real alternatives. Each group is dated to the project state it describes. Use th
 a Decision or Alternatives section, and tune the pattern to the repo you are in. Do not copy a
 decision you have not weighed.
 
-## NFP nowcasting (the `alt-nfp` family, late 2025)
+## NFP nowcasting (the `payroll-nowcast` family, late 2025)
 
-These five come from the `alt-nfp` project as it stood in late 2025, before a 2026-09 split
-turned it into `alt-nfp-stats` and `alt-nfp-model`. They describe that state, not the current
+These five come from the `payroll-nowcast` project as it stood in late 2025, before a 2026-09 split
+turned it into `payroll-stats` and `payroll-model`. They describe that state, not the current
 repos.
 
 **1. Inference engine: NumPyro/JAX over PyMC (the flagship).** The same nowcast ran three ways
-across repos (NumPyro/JAX in `alt-nfp`; PyMC in `alt_nfp` and `oi-indices`). `alt-nfp` chose JAX
+across repos (NumPyro/JAX in `payroll-nowcast`; PyMC in `payroll_nowcast` and `sector-indices`). `payroll-nowcast` chose JAX
 for `vmap`-batched fitting over the as-of grid, GPU as the speed lever, and float64 parity gates
 against the frozen PyMC reference. Cost: a full rewrite, an ongoing parity-gate maintenance
 burden, and a familiarity split across the three repos. Alternatives: stay on PyMC (ergonomics,
@@ -54,7 +54,7 @@ sees a `vintage_date`" a *structural* guarantee (test-enforced), lets the model 
 against fixtures, and runs identically on CPU/GPU. Alternative: one package with module discipline
 (rejected — discipline isn't enforceable; imports drift).
 
-## LLM evidence extraction (`earnings-themes`, 2026-10)
+## LLM evidence extraction (`call-themes`, 2026-10)
 
 **6. Live-test model: a local open-weight model.** Decision: run the extractor's live test on
 Gemma 4 31B-it (QAT Q4_0 weights), served on the developer's machine by llama.cpp's
@@ -68,9 +68,9 @@ weaker); Qwen3.8-27B (the newest, but its thinking is on by default and its card
 against repetition, and either could leave a reply unfinished within the 2048-token limit);
 Gemma 4 12B-it (a fallback for memory and speed that this machine does not need). Reversible:
 another model is a new configuration and a new ADR, and no committed file stores a reply.
-(`earnings-themes`, ADR 0004.)
+(`call-themes`, ADR 0004.)
 
-## Revision research (`ces-revisions`, 2026-09)
+## Revision research (`jobs-revisions`, 2026-09)
 
 **7. Causal design: decline the causal claim the data cannot identify.** Decision: fold the
 Bureau's operational capacity (real enacted budget authority, appropriation-funded FTE and, where
@@ -83,7 +83,7 @@ recoverable from about 40 annual points, and reporting them as primary invites m
 horseshoe over the separate slow covariates as the primary model (rejected for the same reason);
 pooling government shutdowns with annual funding (rejected — shutdowns are case studies or timing
 interventions). When the question is whether the data can identify an effect at all, the
-recommend-causal-design skill goes deeper. (`ces-revisions` design spec, Req 13, Req 15 and
+recommend-causal-design skill goes deeper. (`jobs-revisions` design spec, Req 13, Req 15 and
 Req 19.)
 
 ## Repo tooling (`agent-skills`, 2026-10)

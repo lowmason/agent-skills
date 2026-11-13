@@ -23,7 +23,7 @@ this skill stays generic — a second wiki can reuse it unchanged.
 
 ## Resolve the root, then read the schema
 
-1. Root is `$LLM_WIKI_ROOT`, default `~/research-wiki`. All paths below are
+1. Root is `$LLM_WIKI_ROOT`, default `~/llm-wiki`. All paths below are
    relative to it. Personal and work wikis are separate roots; their content
    never crosses.
 2. **Root missing, or no `SCHEMA.md` in it?** The wiki is not installed — do

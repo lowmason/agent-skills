@@ -104,7 +104,7 @@ bootstrapped wiki is clean from the first run. The skill is now operational:
 `ingest`, `query`, `lint`, `verify`, and `harvest` all work against this root.
 
 > **Export `LLM_WIKI_ROOT` in every session.** Without it the skill falls back
-> to `~/research-wiki`; on a machine that has no such directory the skill will
+> to `~/llm-wiki`; on a machine that has no such directory the skill will
 > (correctly) offer to bootstrap one. Putting the `export` in your shell
 > profile avoids the fallback.
 

@@ -6715,3 +6715,31 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`payroll-stats`, `payroll-model`, `industry-embedder`, `payroll_model`). The `scan.sh` comment, which had
       moved to line 105, says "one work repo", because the 54-join count is a real measurement. A search of the
       three files for the work-repo names and their family names finds nothing.
+
+## work-repo-name-sweep — 2026-11-13
+- [x] **Older text in 17 more public files named work repos, or their family names (a side session of plan 96's
+      "older text" item, 2026-11-13).** The earlier sweep covered `hooks/README.md`, `skills/tech-debt/SKILL.md` and
+      `skills/tech-debt/scripts/scan.sh`. A search of every tracked file outside `specs/` and `archive/` found
+      the same kind of mention in 17 more files: three in the design-architecture skill, three in the
+      develop-testing-strategy skill, nine in the llm-wiki skill, `build/suites.toml` and
+      `skills/describe-critique-methodology/scripts/test_check_decoupling.py`. The search used the names of
+      every sibling git repo, the archived repos and the package names that the text itself cites. The owner
+      chose each group on 2026-11-13. The design-architecture and develop-testing-strategy examples, the
+      llm-wiki default root, the session and lint fixtures, the decoupling fixture and two schema examples now
+      use made-up names. The made-up names are the earlier sweep's `payroll-stats` and `payroll-model`, plus
+      `payroll-nowcast` (the original family), `payroll_nowcast` (its archived underscore twin),
+      `payroll_model` (the model package), `sector-indices` (a PyMC sibling repo that matches no folder
+      under `~/Projects`, so unverified), `call-themes`, `jobs-revisions`, `release-stats` (the stats package)
+      and `llm-wiki`. The wiki default root is code that behaves on the name. It moved from the old folder name
+      to `~/llm-wiki` in `lint_wiki.py`, `bootstrap_wiki.py` and the llm-wiki tests. An owner shell that exports
+      `LLM_WIKI_ROOT` is unaffected. **The owner kept one block.** The pilot fixture in
+      `skills/llm-wiki/scripts/test_distill_specs.py` (lines 1242 to 1445) still names the old stats package.
+      Its three `@needs_pilot` tests compare that fixture with a digest in the private wiki, so a rename needs a
+      matching edit in that wiki first. **Not edited:** `archive/skills/classification-codes/SKILL.md:265` and
+      `archive/skills/classification-codes/scripts/build.py:35,66` (a retired snapshot that names the stats
+      package), and the `specs/` history. The item above covers the three earlier-sweep files.
+      Size: quick-fix. Done when: each mention in those 17 files is reworded or recorded as kept by the owner,
+      a search of those 17 files finds only the pilot block, the llm-wiki, describe-critique-methodology and
+      design-architecture suites pass, and the commit lints pass.
+      → done 2026-11-13 (owner-chosen sweep, no plan): llm-wiki 313 passed (unchanged from before the edit),
+      describe-critique-methodology 25, design-architecture 9, commit lints passed.

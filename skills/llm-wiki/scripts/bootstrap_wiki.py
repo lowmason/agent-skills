@@ -3,7 +3,7 @@
 # requires-python = '>=3.11'
 # dependencies = []
 # ///
-'''Scaffold or refresh a research-wiki root and install its runtime scripts.
+'''Scaffold or refresh a llm-wiki root and install its runtime scripts.
 
 Creates the wiki skeleton (the directories and structural files lint_wiki.py
 requires), seeds SCHEMA.md from this skill's template, and installs the three
@@ -22,7 +22,7 @@ Usage:
   python3 bootstrap_wiki.py <root> --topic samplers # also create raw/ + wiki/ topic dirs
 
 Examples:
-  python3 <this-skill-dir>/scripts/bootstrap_wiki.py ~/research-wiki
+  python3 <this-skill-dir>/scripts/bootstrap_wiki.py ~/llm-wiki
   python3 <this-skill-dir>/scripts/bootstrap_wiki.py /work/wiki --topic nowcasting
 
 Exit codes: 0 = scaffolded and verified (or dry-run / check-current);
@@ -91,13 +91,13 @@ SEED_FILES = {
     '# Open questions\n\nContradictions and gaps awaiting resolution. '
     'See SCHEMA.md §contradictions.\n',
   'README.md':
-    '# research-wiki\n\n'
+    '# llm-wiki\n\n'
     'Research wiki (Karpathy LLM-wiki pattern). `raw/` is immutable source\n'
     'material (human-curated); `wiki/` is agent-compiled knowledge; '
     '`SCHEMA.md` is\n'
     'the normative contract the `llm-wiki` skill and `scripts/lint_wiki.py` '
     'enforce.\n'
-    'Resolve the root via `$LLM_WIKI_ROOT` (default `~/research-wiki`).\n',
+    'Resolve the root via `$LLM_WIKI_ROOT` (default `~/llm-wiki`).\n',
   '.gitignore':
     '__pycache__/\n*.pyc\n.DS_Store\n.pytest_cache/\n',
 }
@@ -315,7 +315,7 @@ def _env_note(root):
   env = os.environ.get('LLM_WIKI_ROOT')
   if env is None:
     print('note: $LLM_WIKI_ROOT is unset; lint_wiki.py falls back to '
-          '~/research-wiki when it is unset -- set it to this root (below).')
+          '~/llm-wiki when it is unset -- set it to this root (below).')
   elif Path(env).expanduser().resolve() != root:
     print(f'WARN: $LLM_WIKI_ROOT ({Path(env).expanduser().resolve()}) differs '
           f'from the target root; make sure you mean to bootstrap {root}.')
@@ -338,7 +338,7 @@ def _footer(root):
 
 def _parse_args(argv):
   ap = argparse.ArgumentParser(
-    description='Scaffold or refresh a research-wiki root.')
+    description='Scaffold or refresh a llm-wiki root.')
   ap.add_argument('root',
                   help='wiki root (required; no default -- name it explicitly)')
   ap.add_argument('--force', action='store_true',

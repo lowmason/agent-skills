@@ -44,8 +44,8 @@ def test_ignores_backticked_single_word_and_greek():
 
 
 def test_flags_identifier_path():
-    fs = harvest('lives in packages/nfp-model')
-    assert 'packages/nfp-model' in toks(fs)
+    fs = harvest('lives in packages/payroll-model')
+    assert 'packages/payroll-model' in toks(fs)
     assert 'path' in cats(fs)
 
 

@@ -160,7 +160,7 @@ def test_leading_undated_turn_stays_first():
 
 def _session():
   return {
-    'session_id': 'a3f2c9d1e5b6', 'source': 'claude-code', 'project': 'alt-nfp',
+    'session_id': 'a3f2c9d1e5b6', 'source': 'claude-code', 'project': 'payroll-nowcast',
     'turns': [
       {'n': 1, 'role': 'user', 'text': 'Use key sk-' + 'A' * 24,
        'tools': '', 'compaction': False, 'ts': '2026-05-14T10:00:00Z'},
@@ -180,7 +180,7 @@ def test_write_digest_filename_and_header(tmp_path):
   text = p.read_text()
   assert 'session: a3f2c9d1e5b6' in text
   assert 'source: claude-code' in text
-  assert 'project: alt-nfp' in text
+  assert 'project: payroll-nowcast' in text
   assert 'dates: 2026-05-14/2026-05-15' in text
   assert 'turns: 2' in text
   assert 'redactions: 1' in text                   # the sk- key was redacted
@@ -264,10 +264,10 @@ def _write_jsonl(path, records):
 
 
 def test_claude_code_end_to_end(tmp_path):
-  proj = tmp_path / 'projects' / '-Users-lowell-Projects-alt-nfp'
+  proj = tmp_path / 'projects' / '-Users-lowell-Projects-payroll-nowcast'
   _write_jsonl(proj / '11111111-2222-3333-4444-555555555555.jsonl', [
     {'type': 'user', 'uuid': 'a', 'parentUuid': None, 'sessionId': 'S',
-     'timestamp': '2026-05-14T10:00:00Z', 'cwd': '/Users/lowell/Projects/alt-nfp',
+     'timestamp': '2026-05-14T10:00:00Z', 'cwd': '/Users/lowell/Projects/payroll-nowcast',
      'message': {'role': 'user', 'content': 'What sampler?'}},
     {'type': 'assistant', 'uuid': 'b', 'parentUuid': 'a', 'sessionId': 'S',
      'timestamp': '2026-05-14T10:00:01Z',
@@ -281,7 +281,7 @@ def test_claude_code_end_to_end(tmp_path):
   assert len(digests) == 1
   body = digests[0].read_text()
   assert '**[01] user:** What sampler?' in body
-  assert 'project: alt-nfp' in body
+  assert 'project: payroll-nowcast' in body
 
 
 def test_claude_code_since_keeps_session_with_undated_first_turn(tmp_path):
@@ -334,19 +334,19 @@ def test_claude_code_project_filter(tmp_path):
   # cwd is the real thing a session records — the encoded dir name under a stub
   # prefix would make _project_name's cwd branch return the encoded name itself.
   for name, sid, cwd in [
-      ('-Users-lowell-Projects-alt-nfp', 'aaaa1111-0000-0000-0000-000000000000',
-       '/Users/lowell/Projects/alt-nfp'),
-      ('-Users-lowell-Projects-bls-stats', 'bbbb2222-0000-0000-0000-000000000000',
-       '/Users/lowell/Projects/bls-stats')]:
+      ('-Users-lowell-Projects-payroll-nowcast', 'aaaa1111-0000-0000-0000-000000000000',
+       '/Users/lowell/Projects/payroll-nowcast'),
+      ('-Users-lowell-Projects-release-stats', 'bbbb2222-0000-0000-0000-000000000000',
+       '/Users/lowell/Projects/release-stats')]:
     _write_jsonl(base / name / f'{sid}.jsonl', [
       {'type': 'user', 'uuid': 'a', 'parentUuid': None, 'timestamp': '2026-05-14T10:00:00Z',
        'cwd': cwd, 'message': {'role': 'user', 'content': 'hi'}}])
   out = tmp_path / 'out'
-  ds.main(['--source', 'claude-code', '--project', 'alt-nfp', str(base), str(out)])
+  ds.main(['--source', 'claude-code', '--project', 'payroll-nowcast', str(base), str(out)])
   digests = list(out.glob('*.md'))
   assert len(digests) == 1                             # only one session survived
   # ... and it is the right one: a count alone passes under an inverted filter.
-  assert 'project: alt-nfp' in digests[0].read_text()
+  assert 'project: payroll-nowcast' in digests[0].read_text()
 
 
 def test_claude_code_bad_file_is_reported_not_fatal(tmp_path, capsys):
@@ -580,14 +580,14 @@ def test_claude_ai_null_created_at_does_not_crash(tmp_path):
 _PARENT_SID = '95178f12-c89a-42ef-9d03-14dc9bc7f78e'
 
 
-def _sidechain_fixture(tmp_path, agents, proj_name='-Users-lowell-Projects-bls-stats'):
+def _sidechain_fixture(tmp_path, agents, proj_name='-Users-lowell-Projects-release-stats'):
   '''Real layout (verified against ~/.claude/projects): a main session file
   beside a <stem>/subagents/agent-*.jsonl directory of subagent transcripts.'''
   proj = tmp_path / 'projects' / proj_name
   _write_jsonl(proj / f'{_PARENT_SID}.jsonl', [
     {'type': 'user', 'uuid': 'a', 'parentUuid': None,
      'timestamp': '2026-05-14T10:00:00Z',
-     'cwd': '/Users/lowell/Projects/bls-stats',
+     'cwd': '/Users/lowell/Projects/release-stats',
      'message': {'role': 'user', 'content': 'main question'}},
     {'type': 'assistant', 'uuid': 'b', 'parentUuid': 'a',
      'timestamp': '2026-05-14T10:00:05Z',
@@ -664,7 +664,7 @@ def test_project_filter_still_matches_with_sidechains(tmp_path):
     ('agent-ae022938c3ffa8c41', 'subagent findings one', '2026-05-14T10:00:01Z')])
   out = tmp_path / 'out'
   rc = ds.main(['--source', 'claude-code', '--include-sidechains',
-                '--project', 'bls-stats', str(src), str(out)])
+                '--project', 'release-stats', str(src), str(out)])
   assert rc == 0
   digests = list(out.glob('*.md'))
   assert len(digests) == 1
@@ -676,7 +676,7 @@ def test_unparseable_sidechain_is_reported_but_parent_still_written(tmp_path):
   recorded, reported, run continues.'''
   src = _sidechain_fixture(tmp_path, [
     ('agent-ae022938c3ffa8c41', 'subagent findings one', '2026-05-14T10:00:01Z')])
-  bad = src / '-Users-lowell-Projects-bls-stats' / _PARENT_SID / 'subagents' / 'agent-abad.jsonl'
+  bad = src / '-Users-lowell-Projects-release-stats' / _PARENT_SID / 'subagents' / 'agent-abad.jsonl'
   bad.write_text('{not json\n')
   out = tmp_path / 'out'
   rc = ds.main(['--source', 'claude-code', '--include-sidechains',
@@ -1101,7 +1101,7 @@ def test_sidechains_recurse_into_nested_workflow_subagents(tmp_path):
   session, without creating any digest of their own.'''
   src = _sidechain_fixture(tmp_path, [
     ('agent-ae022938c3ffa8c41', 'subagent findings one', '2026-05-14T10:00:01Z')])
-  nested_dir = (src / '-Users-lowell-Projects-bls-stats' / _PARENT_SID
+  nested_dir = (src / '-Users-lowell-Projects-release-stats' / _PARENT_SID
                 / 'subagents' / 'workflows' / 'wf_test')
   _write_jsonl(nested_dir / 'agent-nested1.jsonl', [
     {'type': 'assistant', 'uuid': 'n1', 'parentUuid': None, 'isSidechain': True,
@@ -1182,7 +1182,7 @@ def test_claude_code_src_as_projects_root_still_works(tmp_path):
   a nested subagents/ subtree -- the depth-independent rule must not regress
   the original, already-tested depth.'''
   base = tmp_path / 'projects'
-  proj_name = '-Users-lowell-Projects-alt-nfp'
+  proj_name = '-Users-lowell-Projects-payroll-nowcast'
   sid = 'cccc3333-0000-0000-0000-000000000000'
   _write_jsonl(base / proj_name / f'{sid}.jsonl', [
     {'type': 'user', 'uuid': 'a', 'parentUuid': None,
@@ -1337,18 +1337,18 @@ def test_project_name_falls_back_to_the_encoded_dir_name():
   '''The no-cwd branch. With no record carrying cwd, the project name comes
   from the encoded directory's last segment. This branch runs on real-corpus
   sessions but had no unit test, and it is lossy by design -- the encoded name
-  splits a hyphenated project, so alt-nfp arrives as "nfp". Pinned so the loss
+  splits a hyphenated project, so payroll-nowcast arrives as "nowcast". Pinned so the loss
   is a recorded fact rather than a surprise, and so an inverted precedence
   (dir name winning over cwd) cannot land unnoticed.'''
-  assert ds._project_name([], '-Users-lowell-Projects-alt-nfp') == 'nfp'
+  assert ds._project_name([], '-Users-lowell-Projects-payroll-nowcast') == 'nowcast'
   assert ds._project_name([{'type': 'user'}],
-                          '-Users-lowell-Projects-bls-stats') == 'stats'
+                          '-Users-lowell-Projects-release-stats') == 'stats'
   assert ds._project_name([], 'trailing-') == 'trailing'
   assert ds._project_name([], '') is None
   assert ds._project_name([], None) is None
   # cwd, when present, still wins over the encoded name
-  assert ds._project_name([{'cwd': '/Users/lowell/Projects/alt-nfp'}],
-                          '-Users-lowell-Projects-alt-nfp') == 'alt-nfp'
+  assert ds._project_name([{'cwd': '/Users/lowell/Projects/payroll-nowcast'}],
+                          '-Users-lowell-Projects-payroll-nowcast') == 'payroll-nowcast'
 
 
 def test_slugify_rules():

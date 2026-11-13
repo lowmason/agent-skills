@@ -1379,10 +1379,10 @@ PILOT_BRIEF = PILOT_HEADER + PILOT_ENTRIES
 
 
 # The pilot is a real wiki root, so find it the way the skill documents its
-# root (INSTALL.md): $LLM_WIKI_ROOT, else the ~/research-wiki default.
+# root (INSTALL.md): $LLM_WIKI_ROOT, else the ~/llm-wiki default.
 PILOT_NAME = '2026-07-24-bls-stats-specs-harvest.md'
 PILOT_ROOT = Path(os.environ.get('LLM_WIKI_ROOT',
-                                 str(Path.home() / 'research-wiki')))
+                                 str(Path.home() / 'llm-wiki')))
 PILOT_DIGEST = PILOT_ROOT / 'raw/specs' / PILOT_NAME
 PILOT_SOURCE = PILOT_ROOT / 'wiki/sources' / PILOT_NAME
 
