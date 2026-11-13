@@ -68,8 +68,9 @@ Subagent (general-purpose):
 
     Do this even when the spec's reading looks plainly right. Never edit a
     plan test to fit your own reading. Strengthening a plan test (a new
-    assertion, or a new input) is allowed. Weakening one (removing or
-    loosening an assertion, or moving an expected value) is never allowed
+    assertion, or a new input) is allowed: write it as a new test, and leave
+    every line of the plan test as the plan wrote it. Weakening one (removing
+    or loosening an assertion, or moving an expected value) is never allowed
     without the controller's ruling.
 
     ## Code Organization

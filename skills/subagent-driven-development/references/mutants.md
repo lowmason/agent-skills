@@ -32,7 +32,7 @@ Cite an excerpt by its `path:line`, and a rule from the brief as `brief: <requir
 3. **Write mutants:** at least one aimed at each stated rule, and enough that each test the task adds or changes, plan tests included, is aimed at by one. One mutant may serve several targets. For each test, ask what wrong version of the code it would let through, and write that version. Each mutant is a plausible mistake, not a syntax break. To make one, edit the code, save `git diff -- <file> > <workspace>/task-<N>-mutant-<K>.patch`, and restore the file with `git checkout -- <file>`.
 4. **Write the mutants file,** `<workspace>/task-<N>-mutants.md`, in the form below.
 5. **Run the script** from the repository root, on the brief's focused test command (its `Run:` steps that run tests and expect a pass): `<this-skill-dir>/scripts/mutant-run PLAN_FILE N -- <the brief's focused test command>`. When your dispatch gives the script's absolute path, use that path. Read the result as "Reading the run" says.
-6. **Answer each survivor and each invalid mutant.** For a survivor, strengthen the test it is aimed at (a new assertion, or a new input that the rule covers) or add a test, commit, and run the script again. For an invalid mutant, act on its reason ("Reading the run") and run again. Repeat until the run shows no survivor and no invalid mutant. When every mutant is caught, change no test.
+6. **Answer each survivor and each invalid mutant.** For a survivor, strengthen the test it is aimed at (a new assertion, or a new input that the rule covers) or add a test, commit, and run the script again. When that test is a plan test, add a new test, as "Plan tests" says. For an invalid mutant, act on its reason ("Reading the run") and run again. Repeat until the run shows no survivor and no invalid mutant. When every mutant is caught, change no test.
 7. **Report** the last run's path and its counts.
 
 ## The mutants file
@@ -90,7 +90,7 @@ Give the call a time limit long enough for the baseline and one run for each mut
 
 ## Plan tests
 
-- **Strengthening a plan test is allowed:** a new assertion, or a new input that the rule covers. Do it for a survivor (step 6) or a shape with no test (step 2).
+- **Strengthening a plan test is allowed, in a new test.** For a survivor (step 6) or a shape with no test (step 2), write the new assertion or the new input that the rule covers as a new test. Leave every line of the plan test as the plan wrote it, decorators included, so a reviewer can see at once that no plan test changed.
 - **Weakening a plan test is never allowed without a `Ruling:` line in the ledger.** Weakening is removing or loosening an assertion, or moving an expected value. Changing an expected value is moving it, even when the new value matches the spec.
 - **A plan test that conflicts with the spec is never a target to strengthen.** If a controller dispatched you, leave the test as the plan wrote it and report the conflict as your dispatch says. If you keep the ledger yourself, the conflict is a ruling that the plan is wrong, never a silent edit. Ledger it before you change the test, and quote the spec sentence that decides it. If no sentence decides it, keep the plan's test.
 
