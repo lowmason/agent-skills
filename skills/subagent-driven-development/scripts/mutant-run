@@ -40,7 +40,10 @@
 # as a catch. Any other result is INVALID, exit 1 with no report or no failed
 # test in it included, so a runner other than pytest can never produce a
 # false catch. Every run, the baseline included, gets a JUnit report at a
-# fresh path through PYTEST_ADDOPTS, added to any value already set. pytest's
+# fresh path through PYTEST_ADDOPTS, added to any value already set. A command
+# that starts pytest more than once and keeps going after a failing run
+# leaves only the last run's report, so a catch by an earlier run reads
+# INVALID; a command joined with && stops at the failing run. pytest's
 # FAILED summary lines are not read: its -r flag is last-wins, so a command
 # with -rs prints none. Every run also gets PYTHONDONTWRITEBYTECODE=1, and the
 # cached bytecode of each .py file a patch touches is removed before and after

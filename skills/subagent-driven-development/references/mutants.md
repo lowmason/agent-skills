@@ -73,7 +73,7 @@ Each mutant line reads CAUGHT, SURVIVED or INVALID:
 - **INVALID:** its `reason:` field says why.
   - `touches a test file: <path>`: a mutant changes code only. Make it again from the code.
   - `does not apply`: check the patch file first. If it is empty, the edit never changed the file: make the edit again, and check the patch before you restore the file. Otherwise the code changed after you saved the patch: make the patch again against HEAD.
-  - `exit status <n>`, or `no failed test in the JUnit report`: the run failed with no failed test, for example on an import or syntax error. Write a plausible mistake instead.
+  - `exit status <n>`, or `no failed test in the JUnit report`: the run failed with no failed test, for example on an import or syntax error. Write a plausible mistake instead. A second cause: the command starts pytest more than once and keeps going after a failure (two suites, or a suite with two interpreters, through one runner), so a later report replaced the one with the failure. Then run the script on a command that starts pytest once, or that joins its pytest runs with `&&`.
   - `timeout after <n>s`: the run passed its time limit. If the mutant makes the code hang, write a different one. If the tests are only slow, set `MUTANT_RUN_TIMEOUT` to a larger whole number of seconds.
 
 Leave `--junitxml` out of the command. The script asks pytest for its own report, and a `--junitxml` in your command replaces it, so every catch reads INVALID.
