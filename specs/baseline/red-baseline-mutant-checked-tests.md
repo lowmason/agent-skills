@@ -2361,6 +2361,8 @@ at the completion gate. It is not a stop during execution ("Bars" and "Reviewer 
 The text that ships is `implementer-prompt.md` and `references/mutants.md` at `b77577e`. The
 confirmatory round measured that text, on `mutant-run` with the fix `22c50ef`. Rounds 0 and 1
 measured earlier texts. Source: "Confirmatory round (registered before any rep)", Purpose and Sha.
+Later commits edited both texts and `mutant-run`, and no rep measured those edits ("Changes after
+measurement").
 
 Each fixture's bar asks for at least 4 of 5 scored reps, and the All bar asks that no rep weakens a
 test ("Bars"). Each count below is out of 5 scored reps. The table is the one in "Confirmatory
@@ -2474,3 +2476,28 @@ The controller lists the record's `(unclear)` rulings at the completion gate. Tw
 them: "Implementer treatment", Weakenings (the All bar is scored on the treatment arm), and
 "Confirmatory round: results", VOID reps (the VOID count per round). This summary adds no reading
 of them.
+
+## Changes after measurement
+
+Dated 2026-11-13. Fix round 1 of the final whole-branch review edited the implementer texts and
+`mutant-run` after their micro-tests. The confirmatory round measured `implementer-prompt.md` and
+`references/mutants.md` at `b77577e`, on `mutant-run` with the fix `22c50ef`. No fixture reaches
+any of these edits, so none was re-measured.
+
+- **The fix-round sentence, commit `351ff03`.** In `implementer-prompt.md`, "After Review
+  Findings", the sentence that asks for a mutant after a fix now starts "In a mutant task". No rep
+  ran a fix round. `impl-kit/run_reps.sh` runs each rep as one `claude -p` dispatch, with no
+  resume.
+- **The signal fix, commit `1acd8ef`.** `mutant-run` now starts the test command through perl,
+  which sets SIGINT and SIGQUIT to their defaults. Before, the command ran with both signals
+  ignored. No fixture's tests send or need either signal. A `git grep -i` for `signal`,
+  `KeyboardInterrupt` and `os.kill` matched no file in `impl-kit/` or in `implementer/`.
+  `impl-kit/` holds each fixture's plan tests in its `plan.md` and `brief.md`. `implementer/`
+  holds the tests that each rep wrote, in the rep's `final.diff`.
+- **The runner guidance, commit `81ee9ec`.** `references/mutants.md` now gives a second cause for
+  `no failed test in the JUnit report`: a command that starts pytest more than once and keeps going
+  after a failure. The same commit states the limit in `mutant-run`'s header and in
+  `references/test-run.md`, which no micro-test here measured. Every fixture's command starts
+  pytest once. Each brief's `Run:` steps are one call of this form:
+  `/tmp/mt-venv/bin/python -m pytest -q tests/test_<name>.py`. All 89 `command:` lines in the
+  mutant run files under `implementer/` have that form, and 3 of them add `-p no:cacheprovider`.
