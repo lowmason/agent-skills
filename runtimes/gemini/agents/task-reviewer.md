@@ -164,8 +164,9 @@ Check the mutant step in this order:
    holds. The line holds when no code in this task's diff decides the
    rule. When a plan test and an excerpt cannot both hold, the mutant
    aims at the rule as the plan test pins it, and that mutant counts.
-   The conflict is the implementer's reported concern, for the
-   controller to rule on. It is not a missing mutant.
+   It is not a missing mutant. The report raises the conflict as a
+   concern, for the controller to rule on. A conflict that the report
+   does not raise is a finding.
 4. **A catch for each test the task adds or changes,** plan tests that
    the task writes included: a `test <id>:` line in the run, or an
    `Unproven:` line that holds. The line holds only when you cannot
