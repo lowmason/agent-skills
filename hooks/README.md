@@ -15,8 +15,8 @@ and `fork` pass. Install it globally, like the read-only guard.
 
 # Project tooling hooks
 
-Reusable Claude Code hook scripts for **your real Python/uv work repos** — `alt-nfp-stats`,
-`alt-nfp-model`, `naics-embedder` (each has a `pyproject.toml` + ruff dev-dep). They
+Reusable Claude Code hook scripts for **your real Python/uv work repos** — `payroll-stats`,
+`payroll-model`, `industry-embedder` (each has a `pyproject.toml` + ruff dev-dep). They
 convert advisory CLAUDE.md prose ("always run ruff", "use uv, not
 pip") into deterministic gates that fire every time for ~0 tokens.
 
@@ -45,7 +45,7 @@ All three parse the hook JSON payload from stdin with `jq` (already on your mach
 
 A repo with marimo notebooks needs one step first. marimo is a Python notebook tool. Add the ruff ignore from [the marimo-repo kit](../templates/marimo-repo/README.md#the-ruff-ignore) before you install `ruff-check.sh`. Without it, the Stop hook blocks every turn while a notebook has a display line. A display line is the last expression of a cell, and ruff reports it as B018 (a useless expression). Under single-quote rules, the same happens with marimo's own double-quoted lines, which ruff reports as Q000 (a quote-style error).
 
-From the target repo (e.g. `~/Projects/alt-nfp-stats`):
+From the target repo (e.g. `~/Projects/payroll-stats`):
 
 ```bash
 mkdir -p .claude/hooks

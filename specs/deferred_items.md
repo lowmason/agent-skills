@@ -6251,6 +6251,30 @@ review and the Plan Completion gate (2026-10-27) add the others.
       that fails first. Size: quick-fix. Revisit if: a plan copies `specs/baseline/red-baseline-statement-readings/kit/`,
       as plan 83 copied plan 81's kit.
 
+## mutant-checked-tests follow-up (no plan; owner request, branch claude/backlog-base-revert-mutant) — 2026-11-12
+- [ ] **A "change reverted" mutant, so that a task's new tests must fail on the pre-change code (owner, 2026-11-12,
+      filed for after plan 93, which merged on 2026-11-13 as #198).** The controller runs a task's tests at HEAD
+      (`test-run`), but RED is only a claim in the implementer's "TDD Evidence", and nothing reruns the new tests on
+      the pre-change code. Plan 93 (`specs/plans/completed/93-mutant-checked-tests.md`, spec
+      `specs/completed/mutant-checked-tests.md`) added
+      `skills/subagent-driven-development/scripts/mutant-run`. It applies the implementer's mutant patches in place
+      and proves that a test catches each one, but it has no run at BASE. The proposal: `mutant-run` adds one mutant
+      that no agent picks, the reverse of the task's non-test diff from BASE, applied in place with the test files at
+      HEAD. A new or changed test that passes on it does not test the change. Source: the heuristic "demand a test
+      that fails on the pre-change behavior"
+      (https://ericmjl.github.io/blog/2026/7/24/understanding-zeitgeist-ai-code-review/). Plan 93 already settles the
+      mechanism (in place, never a scratch worktree), the collection-error case (a pytest collection failure or
+      internal error is INVALID, even behind a command that turns every failure into exit 1), the executing-plans
+      gate (`task-done` reads the mutant run) and the reviewer (its `## Mutants` section). Four questions stay open.
+      (1) An import inside a test body raises a test `<failure>`, which `mutant-run` reads as caught. (2) Is the
+      mutant required only for bugfix and behavior-change tasks? A revert of new code fails every test on import.
+      (3) How does the brief's BASE reach `mutant-run`? (4) What does the reviewer do with a SURVIVED revert? Not in
+      scope: spec-derived acceptance tests and a second test-writing agent (plans 81 and 83). Superpowers drift
+      finding 21's helper is `test-run`, and `mutant-run` sits beside it. A change to `mutant-run`'s run-file format
+      must keep `task-done`'s gate and the reviewer's `## Mutants` section reading it. Size: design. Done when: a
+      spec decides the change-reverted mutant and its plan lands.
+      → planned 2026-11-13: specs/plans/97-change-reverted-mutant.md, from the spec specs/change-reverted-mutant.md (owner-approved 2026-11-13, decisions D1 to D4). No execution starts before plan 96's execution ends.
+
 ## superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 - [x] **dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift
       finding 26, the worktree half).** The skill's own example sends three agents to fix three test files at
@@ -6657,7 +6681,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       history_entry tests pass.
 
 ## 96-marimo-notebook-seam — 2026-11-13
-- [ ] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
+- [x] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
       and the code-reviewer; the gate deferred it, 2026-11-13).** In `skills/tech-debt/scripts/scan.sh`, the
       rg arm skips an in-repo `.venv`, because uv writes a `.gitignore` inside it. The fallback arm does not.
       `FILES()` uses `find "$ROOT" -name .git -prune -o -type f -print` and `GREP()` uses
@@ -6671,7 +6695,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       directory names; a `test_scan.py` case, run in the grep arm, puts a marimo tutorial under
       `.venv/lib/python3.13/site-packages/marimo/_tutorials/` and sees it in no section of the report; and the
       existing scan tests pass in both arms.
-- [ ] **Older text in public files names work repos, or their family names (plan 96 final review, the
+      → done 2026-11-13 (/deferred quick fix): `FILES()` and `GREP()` in the fallback arm now prune `.venv`,
+      `venv`, `site-packages` and `node_modules`. `test_grep_arm_skips_installed_packages` runs in the grep arm
+      once for each of the four names, with a tutorial that has a hit for most sections, and it failed RED
+      before the fix. The tech-debt suite passes (28 tests), and a direct run under bash 3.2.57 with BSD grep
+      lists only the project's own files. The rg arm is unchanged.
+- [x] **Older text in public files names work repos, or their family names (plan 96 final review, the
       code-reviewer; the gate deferred it, 2026-11-13).** The mentions predate plan 96, and the plan changed
       none of them. At `d926122` they sit in `hooks/README.md` (lines 18, 19 and 48), in
       `skills/tech-debt/scripts/scan.sh` (a comment in the "Polars joins with no cardinality contract" section,
@@ -6681,6 +6710,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: quick-fix. Done when: the owner has either reworded each mention to a made-up name, or recorded in
       this item that it stays, and a search of those three files for the work-repo names finds only the
       mentions that stay.
+      → done 2026-11-13 (/deferred quick fix): the owner chose to reword all seven mentions. `hooks/README.md`
+      (lines 18, 19 and 48) and `skills/tech-debt/SKILL.md` (lines 8, 78, 151 and 218) now use made-up names
+      (`payroll-stats`, `payroll-model`, `industry-embedder`, `payroll_model`). The `scan.sh` comment, which had
+      moved to line 105, says "one work repo", because the 54-join count is a real measurement. A search of the
+      three files for the work-repo names and their family names finds nothing.
 
 ## work-repo-name-sweep — 2026-11-13
 - [x] **Older text in 17 more public files named work repos, or their family names (a side session of plan 96's
@@ -6703,7 +6737,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Its three `@needs_pilot` tests compare that fixture with a digest in the private wiki, so a rename needs a
       matching edit in that wiki first. **Not edited:** `archive/skills/classification-codes/SKILL.md:265` and
       `archive/skills/classification-codes/scripts/build.py:35,66` (a retired snapshot that names the stats
-      package), and the `specs/` history. The open item above still holds the three earlier-sweep files.
+      package), and the `specs/` history. The item above covers the three earlier-sweep files.
       Size: quick-fix. Done when: each mention in those 17 files is reworded or recorded as kept by the owner,
       a search of those 17 files finds only the pilot block, the llm-wiki, describe-critique-methodology and
       design-architecture suites pass, and the commit lints pass.

@@ -50,6 +50,31 @@ def build():
     return app
 '''
 
+# What an installed marimo tutorial looks like to the scan: a top-level app line, plus a line for
+# each of the grep sections. No `__main__` guard, for the same reason as above.
+VENDORED_TUTORIAL = (
+    MARIMO_NOTEBOOK
+    + '''
+import pandas as pd
+
+np.random.seed(7)
+stamp = datetime.now()
+path = "/Users/someone/data.csv"
+merged = left.join(right, on="key")
+token = "abc123"
+value = compute()  # type: ignore
+# TODO tidy this up
+'''
+)
+
+# Each prefix puts the same installed package under one of the four directory names the grep arm prunes.
+VENDORED_PREFIXES = [
+    '.venv/lib/python3.13/site-packages',
+    'venv/lib/python3.13/site-packages',
+    'vendor/site-packages',
+    'web/node_modules',
+]
+
 SIGNAL_SOURCE = """\
 import jax
 import numpy as np
@@ -291,3 +316,32 @@ def test_untested_modules_unchanged_without_notebooks(project, tmp_path, arm):
     """With no notebook in the repo, an empty notebook list must not filter out every module."""
     hits = section(scan(project, arm, tmp_path), UNTESTED)
     assert 'src/signals.py' in hits and 'src/frames.py' in hits, hits
+
+
+@pytest.mark.parametrize('prefix', VENDORED_PREFIXES)
+def test_grep_arm_skips_installed_packages(tmp_path, prefix):
+    """rg skips an in-repo .venv because uv writes a .gitignore inside it. The grep arm has no such
+    help, so it must prune .venv, venv, site-packages and node_modules itself: an installed marimo
+    tutorial is a notebook with a hit for most scans, and it listed in every section."""
+    root = tmp_path / 'vendored'
+    (root / 'src').mkdir(parents=True)
+    (root / 'src' / 'signals.py').write_text(SIGNAL_SOURCE)
+    (root / 'explore_root.py').write_text(MARIMO_NOTEBOOK)
+    git(root.parent, 'init', '-q', str(root))
+    git(root, 'add', '-A')
+    # The installed package stays untracked, as a real environment does.
+    tutorials = root / prefix / 'marimo' / '_tutorials'
+    tutorials.mkdir(parents=True)
+    (tutorials / 'intro.py').write_text(VENDORED_TUTORIAL)
+    (tutorials / 'intro_v2.py').write_text('def share(x):\n    return x\n')
+    (tutorials / 'README.md').write_text('')
+    (tutorials / 'pyproject.toml').write_text('description = ""\n')
+
+    sections = scan(root, 'grep', tmp_path)
+
+    for title, lines in sections.items():
+        for line in lines:
+            assert 'marimo/_tutorials' not in line, f'{prefix} listed in {title!r}:\n{line}'
+    # Controls: pruning must not blank the scan of the project itself.
+    assert 'explore_root.py' in section(sections, SCRATCH)
+    assert 'src/signals.py' in section(sections, SEEDS)
