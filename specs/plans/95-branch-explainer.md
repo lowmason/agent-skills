@@ -12,7 +12,7 @@
 
 ## Owner review (answer at plan review)
 
-F1 and F2 are defaults from the handoff brief. C2 and C3 (under Calls) depart from the spec's text, so each needs the owner's approval and a spec amendment (Task 1 Step 1). The owner's answers become D1 to D4 under Decisions.
+F1 and F2 are defaults from the handoff brief. C2 and C3 (under Calls) depart from the spec's text, so each needed the owner's approval and a spec amendment (Task 1 Step 1). The owner answered all four at plan review: D1 to D4 under Decisions.
 
 - **F1. Wait for plan 94: default yes.** The spec requires the two plans to run one at a time but fixes no order (`specs/branch-explainer.md:303-305`). Plan 94 (`specs/plans/94-copilot-pr-review-loop.md` on `refs/heads/claude/kind-kapitsa-bfb904`, approved) waits for plan 93 itself. Its body counts and its diff-stat check (its lines 19 and 40) assume a base at `af378ac`. Yes adds Base and order below, the refused-removal move (Task 4), and the body counts that start at 19,555. If "yes" is wrong, this plan waits behind plans 93 and 94 for nothing. If the answer is no, drop the wait and Task 4. The body then starts at 19,009, and plan 94's executor must stop and ledger at its own base.
 - **F2. Live run after retirement: default yes.** Task 7 runs the new Step 3b on this plan's own branch, in the shape of plan 94's Task 8. It has no checkboxes and runs after the Plan Completion Protocol's retire commit. Only then does `BASE..HEAD` add a plan under `specs/plans/completed/`, so only then does the plan-branch rule fire (`specs/branch-explainer.md:138-141`). It is a check beside the probe, not a pass bar. If "yes" is wrong, it costs one extra Opus subagent run. If "no" is wrong, no real branch checks the step.
@@ -102,8 +102,8 @@ Expected: about **$59** with no wording round, and about **$99** with both. **St
 The spec leaves these to the builder (Left to the builder) or does not settle them. The owner may overturn any of them at plan review.
 
 - **C1. Held-out fixture: plan 84.** It must have a spec, a plan and a history entry, and be of a kind other than the three tuning fixtures: a script plus skill text (80), hook code plus tests (90), mostly skill text (92). Plans 82, 86, 87, 88, 89 and 91 have `Spec: none`. Plans 81 and 83 are probe-only branches whose diffs are 297,000 and 2,230,000 inserted lines of probe records. Plan 85 changes only derive-roadmap's skill text, which is fixture 92's kind. Plan 84 alone changes one contract across surfaces: an agent definition (`agents/task-reviewer.md`), its generated Codex and Gemini adapters, SDD prompt templates and references, and a new bash helper with tests.
-- **C2. Isolated fixture repositories, not worktrees (a spec departure: amended in Task 1 Step 1 on approval).** The spec says "a detached worktree". A worktree shares every ref of this repository, so `git branch -a` or `git log --all` from a rep would show this plan's branches (isolation Channel 1). The kit runs `git init`, fetches only the head's full sha, sets `main` to `BASE`, detaches `HEAD` at the head and deletes `.git/FETCH_HEAD`, which names this repository's path. A planning test of this recipe on `p92` found only `refs/heads/main`, 15 commits in `main..HEAD`, and no commit subject that holds "explainer".
-- **C3. Two references, not one (a spec departure: amended in Task 1 Step 1 on approval).** `references/branch-explainer-prompt.md` holds only the writer brief, and the subagent reads only that file. `references/branch-explainer.md` holds Step 3b's procedure for the finishing session. The spec says the procedure lives in the prompt file (Constraints, Compaction window). The split keeps finishing-session text out of the writer's context. The probe's treatment arm then reads exactly the bytes that ship.
+- **C2. Isolated fixture repositories, not worktrees (a spec departure, approved as D3 and amended in Task 1 Step 1).** The spec says "a detached worktree". A worktree shares every ref of this repository, so `git branch -a` or `git log --all` from a rep would show this plan's branches (isolation Channel 1). The kit runs `git init`, fetches only the head's full sha, sets `main` to `BASE`, detaches `HEAD` at the head and deletes `.git/FETCH_HEAD`, which names this repository's path. A planning test of this recipe on `p92` found only `refs/heads/main`, 15 commits in `main..HEAD`, and no commit subject that holds "explainer".
+- **C3. Two references, not one (a spec departure, approved as D4 and amended in Task 1 Step 1).** `references/branch-explainer-prompt.md` holds only the writer brief, and the subagent reads only that file. `references/branch-explainer.md` holds Step 3b's procedure for the finishing session. The spec says the procedure lives in the prompt file (Constraints, Compaction window). The split keeps finishing-session text out of the writer's context. The probe's treatment arm then reads exactly the bytes that ship.
 - **C4. The treatment dispatch is by path.** The real dispatch tells the subagent to read the brief at its absolute path. The probe copies the round's brief to `<rep>/brief/branch-explainer-prompt.md` and sends the same dispatch text (`DISPATCH`, Task 1). No path into this repository reaches a rep.
 - **C5. The adjudicator is tool-less, with its inputs inline**, as the spec lists them: spec, plan, history entry, diff, explainer and synopsis. Its diff leaves out `specs/baseline/**`, `specs/red-baseline-*/**`, and the plan and spec files (given apart), at both their `specs/` and `completed/` paths. The full `git diff --stat=200` lists every file. Without these cuts, `p92`'s diff alone is 953 KB.
 - **C6. Models.** The reader and the adjudicator run on `claude-opus-5-5`, like the writer. The micro-test runs on `claude-sonnet-5-5`, the house micro-test model and the usual model of the execution sessions that run finishing.
@@ -128,7 +128,10 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-11-13): F1, "Yes, wait". Execution starts only once `origin/main` holds plan 94's retired plan, then merges `origin/main`, and this plan moves Step 6's refused-removal detail to make room. Applied in: Global Constraints (Base and order, Text, size and gates), Task 4.
+- **D2** (owner, plan review, 2026-11-13): F2, "Yes, one live run". A fresh session runs Step 3b on this plan's own branch after retirement, report-only. Applied in: Task 7.
+- **D3** (owner, plan review, 2026-11-13): C2, "Approve". The probe fixtures are isolated repositories, not worktrees, and the spec's Baseline probe sentence is amended. Applied in: Global Constraints (The probe), Task 1 (spec amendment).
+- **D4** (owner, plan review, 2026-11-13): C3, "Approve". Step 3b's procedure lives in `references/branch-explainer.md`, the writer brief alone in `references/branch-explainer-prompt.md`, and the spec's Compaction window sentence is amended. Applied in: Tasks 3 and 5, Task 1 (spec amendment).
 
 ---
 
@@ -269,7 +272,7 @@ Contradicted: none, or one line per claim: "<quoted claim>" against <file>: <wha
 Write the single word ok to the file {path}. Then reply DONE, or reply REFUSED with the reason if the write was refused.
 ```
 
-- [ ] **Step 1: Apply the spec amendments approved at plan review (C2, C3)**
+- [ ] **Step 1: Apply the spec amendments approved at plan review (D3, D4)**
 
 Each old text must match exactly once in `specs/branch-explainer.md`. Leave its Status line as it is. In the Baseline probe section, replace:
 
