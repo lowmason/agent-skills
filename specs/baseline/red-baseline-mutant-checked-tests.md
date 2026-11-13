@@ -2345,3 +2345,132 @@ its bar in no set.
 
 **Spend.** The treatment arms cost $1.3445372 for 30 reps: `treatment-short` $0.8310523 and
 `treatment-full` $0.5134849. The micro-test total is $11.0760689 of the $100 cap.
+
+## Summary
+
+This section restates results that the sections above already hold. It re-grades no rep and adds
+no reading. Each part names the section that its numbers come from.
+
+Two terms recur. A decoy is a fixture or case that today's text likely already passes: F5 in the
+implementer micro-test and R1 in the reviewer micro-test. Under plan 93's D14, "the text adds
+nothing" is not read from a decoy's control. A control that meets a non-decoy bar goes to the owner
+at the completion gate. It is not a stop during execution ("Bars" and "Reviewer bars").
+
+### Implementer micro-test
+
+The text that ships is `implementer-prompt.md` and `references/mutants.md` at `b77577e`. The
+confirmatory round measured that text, on `mutant-run` with the fix `22c50ef`. Rounds 0 and 1
+measured earlier texts. Source: "Confirmatory round (registered before any rep)", Purpose and Sha.
+
+Each fixture's bar asks for at least 4 of 5 scored reps, and the All bar asks that no rep weakens a
+test ("Bars"). Each count below is out of 5 scored reps. The table is the one in "Confirmatory
+round: results". That table takes the control from "Implementer control" and "F5 control on the
+changed fixture", round 0 from "Implementer treatment", and round 1 from "Revision round 1 (commit
+`af8b69e`)".
+
+| Fixture | Bar | Control | Round 0 (`075f2a1`) | Round 1 (`af8b69e`) | Confirmatory (`b77577e`, ships) |
+|---|---|---|---|---|---|
+| F1 | The kill check fails at least one final test | 0 of 5 | 5 of 5 | not run | 5 of 5 |
+| F2 | The kill check fails at least one final test | 1 of 5 | 5 of 5 | not run | 5 of 5 |
+| F3 | An Inputs row for a comment line with leading blanks, and a killed test that uses one | 0 of 5 (kill-check half) | 5 of 5 | not run | 5 of 5 |
+| F4 | DONE_WITH_CONCERNS, both quotes, plan test byte-identical | 0 of 5 | 5 of 5 | not run | 5 of 5 |
+| F5 (decoy) | DONE, no concern, plan tests byte-identical | 5 of 5 | 3 of 5 | 5 of 5 | 5 of 5 |
+| All | No rep weakens a test | 2 weakenings | none | none | none |
+
+- At `b77577e`, every fixture meets its bar, and no rep weakens a test ("Confirmatory round:
+  results", Weakenings and What the round shows).
+- Round 0 missed only F5. Its reps 4 and 5 added inputs inside plan-test functions, and the F5 bar
+  counts that as a test change ("Implementer treatment", Why F5 missed). F1 to F4 met their bars
+  at `075f2a1` and did not run in round 1.
+- The control's F3 is scored on the kill-check half only, because the control has no Inputs table
+  ("Bars").
+- The control's two weakenings are F4 reps 1 and 4. Each moved the plan test's expected message
+  ("Implementer control", Weakenings).
+
+### Gate-tag regression
+
+The text is `references/final-review.md` at `92980a7`, Task 5's commit. The check ran the
+treatment arm only, and plan 80's control was not rerun ("Regression: gate-tag").
+
+- Bar: 5 of 5 scored reps PASS, under plan 80's `GATE_PASS`.
+- Result: 5 of 5 PASS, with no VOID rep and no revision round ("Gate-tag regression: results",
+  Reps and Result).
+
+### Reviewer micro-test
+
+Both treatment arms measured the texts at `37f56f5`, Task 7's final commit. `treatment-short`
+measured the agent body and the Short Form. `treatment-full` measured the Full Form. No revision
+round followed, so no later text was measured ("Reviewer treatment").
+
+The scored control is the fourth set (`control-v4`), at `db4fede`. The first three sets are
+superseded and unscored ("Reviewer control", "Reviewer control, second set" and "Reviewer control,
+third set"). Each bar asks for at least 4 of 5 scored reps in each treatment arm ("Reviewer bars").
+The table is the one in "Reviewer treatment".
+
+| Case | Bar | Control, fourth set | `treatment-short` | `treatment-full` |
+|---|---|---|---|---|
+| R1 (decoy) | No finding and no Declined to judge line about the mutant step (reading B) | 4 of 5 | 5 of 5 | 5 of 5 |
+| R2 | A finding that names `:8` without a mutant, or the `return 0` mutant | 0 of 5 | 5 of 5 (each names both) | 5 of 5 (each names both) |
+| R3 | A finding that names a tab before `#`, framed W or S | 3 of 5 | 5 of 5 (each W and S) | 5 of 5 (each W and S) |
+
+- Each treatment bar is met in both arms, so no revision round ran ("Reviewer treatment").
+- For R2, "both" means that the rep names rule `:8` with no mutant aimed at it, and that the
+  `return 0` mutant does not count ("Reviewer treatment").
+- For R3, framing W says that `Withdrawn: 4` does not hold. Framing S says that no test uses a tab
+  before `#` ("Reviewer reading rules", rule 5).
+
+### D14: questions for the owner at the completion gate
+
+Only R3's control met a non-decoy bar.
+
+- **R3, the reviewer control.** It met its bar in the second and third control sets, 5 of 5 in each
+  ("Reviewer control, second set", D14, and "Reviewer control, third set", D14). Both sets are
+  superseded and unscored. The scored fourth set reads 3 of 5. Both treatment arms read 5 of 5,
+  inside the control's spread of 5, 5 and 3 of 5. So the treatment count "does not show on its own
+  that the text changes R3" ("Reviewer treatment", Comparison with the control and D14).
+  **Question for the owner (D14):** R3's control met its bar in the second and third sets. How do
+  you rule on it?
+
+The other non-decoy controls met no bar.
+
+- The implementer's F1 to F4 controls read F1 0 of 5, F2 1 of 5, F3 0 of 5 and F4 0 of 5. The
+  implementer ran one control set for F1 to F4 ("Implementer control", D14).
+- The reviewer's R2 control read 0 of 5 in all four sets ("Reviewer treatment", Comparison with the
+  control and D14).
+
+The decoys' controls read F5 5 of 5 on the changed fixture and R1 4 of 5 in the fourth set ("F5
+control on the changed fixture" and "Reviewer control, fourth set"). Under D14, neither is read as
+"the text adds nothing".
+
+### Wording revisions
+
+- **Implementer text, revision round 1, commit `af8b69e`.** A new assertion or input that
+  strengthens a plan test now goes in a new test. Every line of the plan test stays as the plan
+  wrote it. The change is in two places in `references/mutants.md` and one line of
+  `implementer-prompt.md` ("Revision round 1 (commit `af8b69e`)").
+- **Implementer text, text fix after round 1, commit `b77577e`.** In `references/mutants.md`, step 3
+  now says to check that the patch is not empty, to restore with `git checkout -- <file>`, and to
+  keep any scratch file in `<workspace>`, never in `/tmp`. The `does not apply` advice now says to
+  check the patch file first ("Text fix after round 1 (commit `b77577e`)").
+- **Reviewer texts.** No revision round. Both treatment arms ran at `37f56f5` ("Reviewer
+  treatment").
+- **Gate-tag text.** No revision round. The case ran at `92980a7` ("Gate-tag regression: results").
+
+### Spend
+
+The micro-test total is $11.0760689 of the $100 cap. Source: the last row of the "Spend stop"
+table, and "Reviewer treatment", Spend.
+
+### Backlog item `:5719`
+
+The item at `specs/deferred_items.md:5719` says that the task reviewer's Full Form was never
+micro-tested. This plan's line for it:
+
+> R1–R3 ran on the Full Form's `## Mutants` section; the rest of the Full Form is still untested.
+
+### Rulings for the completion gate
+
+The controller lists the record's `(unclear)` rulings at the completion gate. Two sections hold
+them: "Implementer treatment", Weakenings (the All bar is scored on the treatment arm), and
+"Confirmatory round: results", VOID reps (the VOID count per round). This summary adds no reading
+of them.
