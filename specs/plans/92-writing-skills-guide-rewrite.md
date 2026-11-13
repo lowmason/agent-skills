@@ -1,5 +1,7 @@
 # writing-skills against the Claude Code guide Implementation Plan
 
+**Status: COMPLETE (2026-11-12)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Move writing-skills' Claude Code facts into a new `skills/writing-skills/references/claude-code.md`, correct the six claims the spec lists, settle the two register entries, and restamp `skills/writing-skills/SKILL.md` so that `cli.py lint` prints no `STALE` line.
@@ -84,7 +86,7 @@
 - Consumes: plan 72's kit at `specs/baseline/red-baseline-writing-skills-split/kit/` (read only; do not edit it).
 - Produces: `build_prompts.py <sha> <layout> <out-dir> [<prompt> ...]` with `<layout>` `base` or `new`; `run_reps.sh <prompt-file> <out-dir> <first> <last> <model>`; `probe.sh <out-file> <model>`; `show_reps.py <dir> ...`; prompt keys `R1`, `P1r`, `P2r`, `P3r`, `P1a`, `P2a`, `P3a`; `cases.CONVERSATIONS: dict[str, str]` and `cases.PROMPTS: dict[str, tuple[str, dict[str, list[str]]]]`; the record file with every rule and bar, committed before any rep.
 
-- [ ] **Step 1: Copy and adapt three kit files**
+- [x] **Step 1: Copy and adapt three kit files**
 
 ```bash
 mkdir -p specs/baseline/red-baseline-writing-skills-guide/kit
@@ -119,11 +121,11 @@ In the copied `isolation_probe.txt`, change `Answer the five numbered lines` to 
 6. A list of available skills or slash commands, or a skill named writing-skills (quote one name).
 ```
 
-- [ ] **Step 2: Write `probe.sh`**
+- [x] **Step 2: Write `probe.sh`**
 
 Create `kit/probe.sh`, usage `probe.sh <out-file> <model>`. It runs `isolation_probe.txt` once, with exactly `run_reps.sh`'s environment and flags, except `--output-format stream-json --verbose` in place of `--output-format json`. It runs from a new directory made with `mktemp -d /tmp/plan92-probe-XXXXXX`, inside a subshell that `cd`s there and refuses when that directory is inside a git repository, as `run_reps.sh`'s `rep()` does. It refuses when `<out-file>` exists, writes the stream to `<out-file>`, and exits with `claude`'s status. The stream holds home paths and a session id, so `<out-file>` stays under `/tmp` and is never committed.
 
-- [ ] **Step 3: Write `cases.py`**
+- [x] **Step 3: Write `cases.py`**
 
 Create `kit/cases.py`. Its docstring says: the four frozen conversations of plan 92's micro-tests; `R1` asks for a new skill with a long inline table and one hard rule (RED and GREEN for "critical rules first"); `P1` sets a key only Claude Code reads, `P2` asks why a skill stopped triggering, `P3` asks to fork a skill that dispatches subagents; each case states that its RED baseline ran, so the Iron Law does not hold the agent before the step; no case reuses a domain from writing-skills' own examples or from plan 72's cases.
 
@@ -199,7 +201,7 @@ PROMPTS = {
 }
 ```
 
-- [ ] **Step 4: Write `build_prompts.py`**
+- [x] **Step 4: Write `build_prompts.py`**
 
 Create `kit/build_prompts.py`, usage, from the repository root, `python3 <kit>/build_prompts.py <sha> <layout> <out-dir> [<prompt> ...]`. With no prompt named, it builds every key in `PROMPTS` that has a file list for `<layout>`. It keeps plan 72's `sha256(text: str) -> str` and `body_at(sha: str) -> str` unchanged, and adds `file_at(sha: str, path: str) -> str`, which returns `git show <sha>:skills/writing-skills/<path>` and exits with the git error when the file is missing at `<sha>`. Each prompt is:
 
@@ -214,7 +216,7 @@ It refuses when `<out-dir>` exists, when `<layout>` is not `base` or `new`, and 
 Run: `python3 specs/baseline/red-baseline-writing-skills-guide/kit/build_prompts.py 3684b96 base /tmp/plan92-dry`
 Expected: `wrote 4 prompts to /tmp/plan92-dry` (`R1`, `P1a`, `P2a`, `P3a`). Read `/tmp/plan92-dry/P1a.txt` once end to end. The body is whole (it ends with `It's the same discipline applied to documentation.`), the conversation sits inside `<session>`, and after it one `[you, tools] You read ~/.claude/skills/writing-skills/references/discovery.md` block holds the whole file, which ends with the `**Why no @ links:**` line. Then run `python3 specs/baseline/red-baseline-writing-skills-guide/kit/build_prompts.py 3684b96 base /tmp/plan92-dry2 P1r`. Expected: a refusal that names `P1r` and `base`. Then `rm -r /tmp/plan92-dry`.
 
-- [ ] **Step 5: Register the rules**
+- [x] **Step 5: Register the rules**
 
 Create `specs/baseline/red-baseline-writing-skills-guide.md` with this text:
 
@@ -310,7 +312,7 @@ sets no bar.
 
 Replace `<date>` with today's date and `<commit>` with `git rev-parse --short HEAD`.
 
-- [ ] **Step 6: Check the kit**
+- [x] **Step 6: Check the kit**
 
 ```bash
 bash -n specs/baseline/red-baseline-writing-skills-guide/kit/run_reps.sh
@@ -322,7 +324,7 @@ uv run python build/run_suites.py --check
 
 Expected: no output from either `bash -n`; `ok`; at least one `--disable-slash-commands` hit in each script; the suite check passes (the kit holds no test files).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-writing-skills-guide.md specs/baseline/red-baseline-writing-skills-guide/kit
@@ -341,7 +343,7 @@ git commit -m "test(writing-skills): register plan 92 micro-test rules and kit"
 - Consumes: the kit and the registered rules (Task 1).
 - Produces: the RED outcome, written in the record as the line `RED outcome: failure` or `RED outcome: null`. Task 3 reads that line. Also the `desc` verdicts and the running spend in the ledger as `SPEND`.
 
-- [ ] **Step 1: Run the isolation pilot**
+- [x] **Step 1: Run the isolation pilot**
 
 ```bash
 claude --version
@@ -353,7 +355,7 @@ python3 -c "import json, sys; recs = [json.loads(l) for l in open(sys.argv[1]) i
 
 Expected: `output_style` is `default`; `skills` and `slash_commands` hold no user or plugin skill; `writing-skills in init False`; the reply answers NO on all six lines; the grep prints `0` and exits 1, which is how `grep -c` reports no match, so no answer phrase reached the pilot. If any of these fails, stop and ask the owner with the printed lines. Under `## Checks before any rep`, record the Claude Code version, the four printed fields in your own words, the six answers and the cost. Add the cost to `SPEND`.
 
-- [ ] **Step 2: Check the fixtures against the answers and the text against the fixtures**
+- [x] **Step 2: Check the fixtures against the answers and the text against the fixtures**
 
 ```bash
 python3 -c "import re, sys; sys.path.insert(0, 'specs/baseline/red-baseline-writing-skills-guide/kit'); import cases; rx = re.compile(r'least[- ]invoked|cannot be preloaded|can.t be preloaded|leaves? the listing|in the background|fork mode|CLAUDE_CODE_FORK_SUBAGENT|nested|near the top|first 5,000|compaction|skillOverrides|skillListing|SLASH_COMMAND|budget', re.I); hits = [(k, m.group(0)) for k, v in cases.CONVERSATIONS.items() for m in rx.finditer(v)]; print(hits); sys.exit(bool(hits))"
@@ -362,7 +364,7 @@ git grep -n -i -E 'tenant-export|vaultctl|refund-issue|support-desk|api-naming|d
 
 Expected: `[]` and exit 0; then no output from `git grep`. A hit in either means a fixture gives away an answer, or the text under test holds a worked example equal to a fixture: stop and ask the owner. Record both results under `## Checks before any rep`.
 
-- [ ] **Step 3: Build the base prompts**
+- [x] **Step 3: Build the base prompts**
 
 ```bash
 python3 specs/baseline/red-baseline-writing-skills-guide/kit/build_prompts.py 3684b96 base specs/baseline/red-baseline-writing-skills-guide/base
@@ -370,7 +372,7 @@ python3 specs/baseline/red-baseline-writing-skills-guide/kit/build_prompts.py 36
 
 Expected: `wrote 4 prompts to specs/baseline/red-baseline-writing-skills-guide/base`. `base/MANIFEST.txt` shows `body chars 18285` and `file references/discovery.md … chars 9534`.
 
-- [ ] **Step 4: Run the reps (25 reps, worst case $12.50)**
+- [x] **Step 4: Run the reps (25 reps, worst case $12.50)**
 
 Check the spend rule before each line. Run each line with `timeout: 600000` or in the background:
 
@@ -384,7 +386,7 @@ bash specs/baseline/red-baseline-writing-skills-guide/kit/run_reps.sh specs/base
 
 Expected per call: five `repN exit=0` lines. On a nonzero exit, read `repN.err` and rerun with the next free rep numbers. Rerun an UNSCORABLE `R1` rep as the R1 rule says.
 
-- [ ] **Step 5: Read every rep and record the verdicts**
+- [x] **Step 5: Read every rep and record the verdicts**
 
 Run `uv run python specs/baseline/red-baseline-writing-skills-guide/kit/show_reps.py specs/baseline/red-baseline-writing-skills-guide/base/*/` and read each full reply. Under `## Results`, add:
 - A `red` table per model: rep, verdict (PASS, FAIL or UNSCORABLE under the R1 rule), the quoted line of the rule's first statement and the quoted table line, in body order.
@@ -394,7 +396,9 @@ Run `uv run python specs/baseline/red-baseline-writing-skills-guide/kit/show_rep
 
 If the outcome is null, add: `S-67's part of writing-skills-guide-gaps closes on this record (plan 92 decision D5).`
 
-- [ ] **Step 6: Commit**
+> Deviation: the reviewer found that the `P1a(a)` and `P2a(a)` readings were not in the record. A note under `## Results` now names both readings and the reps that fail under the stricter ones (commit c0756d0).
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-writing-skills-guide.md specs/baseline/red-baseline-writing-skills-guide/base
@@ -415,7 +419,7 @@ git commit -m "test(writing-skills): plan 92 RED control and descriptive arm"
 
 This task's edits are factual under spec D4, except the pointers, the fork advice's move and the template slot, which Task 4 tests. Do not run reps in this task.
 
-- [ ] **Step 1: Create `references/claude-code.md`**
+- [x] **Step 1: Create `references/claude-code.md`**
 
 Create the file with exactly this text:
 
@@ -426,6 +430,8 @@ Read this before you set a frontmatter key that only Claude Code reads, or when 
 run in Claude Code. Each fact here holds for Claude Code and can change between its versions.
 Advice that holds on every runtime stays in [SKILL.md](../SKILL.md) and
 [discovery.md](discovery.md).
+
+> Deviation: the `model` and `effort` bullet gained one sentence, "With `context: fork`, `model` sets the forked subagent's model instead.", because the guide row says so (commit 942fee0).
 
 ## Frontmatter keys
 
@@ -507,7 +513,7 @@ Each fact and the guide section it rests on (for Task 5's review, not for the fi
 | The five listing bullets | `skills.listing-budget` |
 | An invoked SKILL.md body stays … drop out entirely | `skills.progressive-disclosure` |
 
-- [ ] **Step 2: Edit `references/discovery.md`**
+- [x] **Step 2: Edit `references/discovery.md`**
 
 Replace line 11 (the bullet that starts `- Optional keys the lint accepts:`) with:
 
@@ -552,7 +558,7 @@ Each never/always rule in one line, before any table, long example or reference
 
 ```
 
-- [ ] **Step 3: Edit `SKILL.md`**
+- [x] **Step 3: Edit `SKILL.md`**
 
 After line 108 (`rules and the body template.`), add a blank line and:
 
@@ -591,7 +597,7 @@ In line 419, `(the always-loaded list of skill names and descriptions)` → `(th
 
 Leave the `# cc-guide:` line (`:14`) and line 23 unchanged. Task 5 sets the citation.
 
-- [ ] **Step 4: Update the register and `NOTICE`**
+- [x] **Step 4: Update the register and `NOTICE`**
 
 In `build/cc_guide/conformance.toml`:
 
@@ -634,7 +640,9 @@ In `NOTICE`, add this entry as the last entry of the superpowers changes list, d
 
 **Only if `RED outcome: failure`:** after `examples show references/ and scripts/.`, add the sentence `discovery.md's body template also gained a Hard Rules slot after Overview, from this repository's own micro-test (specs/baseline/red-baseline-writing-skills-guide.md).` and re-wrap the entry at 74 columns with the same 4-space indent.
 
-- [ ] **Step 5: Run the focused checks**
+> Deviation: the final review removed "for such edits" from the `writing-skills-tdd-for-docs` reason (commit 40f5bf3). Commit `7bb8810` waived a micro-test for an edit that adds an instruction, and the spec says only "case by case".
+
+- [x] **Step 5: Run the focused checks**
 
 ```bash
 uv run --with pyyaml python -c "import sys; sys.path.insert(0, 'build'); import check_conformance as c; b, _ = c.skill_body(open('skills/writing-skills/SKILL.md').read()); print('body chars', len(b))"
@@ -653,7 +661,9 @@ Expected:
 - No output from the fixture-and-old-claim sweep.
 - The `^#` sweep lists only the file's Markdown headings (`# Claude Code facts …`, `## …`, `### …`) and no `# cc-guide:` or `<!--` line.
 
-- [ ] **Step 6: Run the lints**
+> Deviation: checks 4 and 6 use `git grep`, which skips untracked files, so they ran after `git add`.
+
+- [x] **Step 6: Run the lints**
 
 ```bash
 uv run python build/check_links.py
@@ -668,7 +678,7 @@ bash build/run_commit_lints.sh
 
 Expected: `231 relative link(s) checked, 0 broken` (226 at `3684b96`, plus one link in `SKILL.md`, two in `discovery.md` and two in `claude-code.md`; a different base count means `skills/` changed since `3684b96`, so report it); the frontmatter, provenance, conformance and Tier 1 snippet checks pass; the dependency test passes; `cli.py lint` passes and still prints the one `STALE skills/writing-skills/SKILL.md …` line, which Task 5 clears; the runner ends `commit lints passed`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/writing-skills build/cc_guide/conformance.toml NOTICE
@@ -676,6 +686,8 @@ git commit -m "refactor(writing-skills): distill Claude Code facts into referenc
 ```
 
 Record this commit's short SHA in the ledger as `T3_SHA`.
+
+> Deviation: the Task 3 fix round (commit 942fee0) made `T3_SHA` that commit, so Task 4 built its prompts from it.
 
 ---
 
@@ -691,7 +703,7 @@ Record this commit's short SHA in the ledger as `T3_SHA`.
 - Consumes: `T3_SHA` (Task 3); `SPEND`; the kit and rules (Task 1); the `RED outcome:` line (Task 2).
 - Produces: verdict tables for `read`, `apply` and (if run) `green`; the final state of `writing-skills-guide-gaps`.
 
-- [ ] **Step 1: Check the new text against the fixtures, then build the prompts**
+- [x] **Step 1: Check the new text against the fixtures, then build the prompts**
 
 ```bash
 git grep -n -i -E 'tenant-export|vaultctl|refund-issue|support-desk|api-naming|dependency-audit' <T3_SHA> -- skills/writing-skills
@@ -700,7 +712,7 @@ python3 specs/baseline/red-baseline-writing-skills-guide/kit/build_prompts.py <T
 
 Expected: no output from `git grep`; then `wrote 7 prompts to …/new`. `new/MANIFEST.txt` shows `body chars` near 18,753 and a `file references/claude-code.md` line. If `RED outcome: null`, `new/R1.txt` is built but not run.
 
-- [ ] **Step 2: Run the `read` and `apply` arms (60 reps; each batch of 5 needs $2.50 of headroom under the cap)**
+- [x] **Step 2: Run the `read` and `apply` arms (60 reps; each batch of 5 needs $2.50 of headroom under the cap)**
 
 Check the spend rule before each line. Run each line with `timeout: 600000` or in the background:
 
@@ -713,14 +725,16 @@ done
 
 Run the loop one prompt at a time if the spend rule needs a check between batches.
 
-- [ ] **Step 3: Run the `green` arm, only if `RED outcome: failure` (10 reps)**
+- [x] **Step 3: Run the `green` arm, only if `RED outcome: failure` (10 reps)**
 
 ```bash
 bash specs/baseline/red-baseline-writing-skills-guide/kit/run_reps.sh specs/baseline/red-baseline-writing-skills-guide/new/R1.txt specs/baseline/red-baseline-writing-skills-guide/new/R1-opus 1 5 claude-opus-5-5
 bash specs/baseline/red-baseline-writing-skills-guide/kit/run_reps.sh specs/baseline/red-baseline-writing-skills-guide/new/R1.txt specs/baseline/red-baseline-writing-skills-guide/new/R1-sonnet 1 5 claude-sonnet-5-5
 ```
 
-- [ ] **Step 4: Read every rep and record the verdicts**
+> Skipped: `RED outcome` was null, so the `green` arm did not run.
+
+- [x] **Step 4: Read every rep and record the verdicts**
 
 Run `uv run python specs/baseline/red-baseline-writing-skills-guide/kit/show_reps.py specs/baseline/red-baseline-writing-skills-guide/new/*/` and read each full reply. Under `## Results`, add:
 - One table per prompt and model for `read`: rep, verdict under the read rule, and the ACTION line that decides it. Say how many passes come from the no-edit clause.
@@ -729,7 +743,7 @@ Run `uv run python specs/baseline/red-baseline-writing-skills-guide/kit/show_rep
 - A summary table of every bar: prompt, model, score, bar, met or missed. Then two sentences that compare `apply` on Opus with `desc`, and say that the comparison is descriptive.
 - The running spend.
 
-- [ ] **Step 5: Tighten on a missed bar (at most two rounds per prompt)**
+- [x] **Step 5: Tighten on a missed bar (at most two rounds per prompt)**
 
 For each prompt and model that misses its bar:
 - `read` miss: tighten the pointer that sends the agent on. That is the `SKILL.md` paragraph added in Task 3 Step 3, or the `discovery.md` sentence that starts `Before you set an extension, read`, or the `(Claude Code's rule: …)` pointer in Token Efficiency. Change only pointer text.
@@ -744,13 +758,17 @@ After each tightening, re-run the body measurement of Task 3 Step 5 (it must sta
 
 Commit each round with `git commit -m "fix(writing-skills): tighten <what> for plan 92 <prompt>"`. Rebuild only the missed prompt, with `build_prompts.py <new-sha> new specs/baseline/red-baseline-writing-skills-guide/new-r<N> <prompt>`. Rerun 5 reps on each model that missed, and record them as in Step 4. Prompts that passed keep their verdicts on the earlier text; say so in the record. After two rounds with a bar still missed, stop and ask the owner with the reps' quoted lines and the running spend.
 
-- [ ] **Step 6: Settle `writing-skills-guide-gaps`**
+> Skipped: no bar was missed, so no tightening round ran.
+
+- [x] **Step 6: Settle `writing-skills-guide-gaps`**
 
 - **`RED outcome: null`:** Task 3 removed the entry. Nothing to do.
 - **GREEN met its bar on both models:** replace the comment line `# writing-skills' departures from the guide go to its rewrite.` with `# writing-skills tests skill text first, even an edit the guide's TDD row lets skip (plan 92).`, and delete the narrowed `writing-skills-guide-gaps` block, from `[[exception]]` through its `tracked_in` line, and the blank line after it. This commit closes S-67's part.
 - **GREEN still misses after two rounds:** stop and ask the owner whether the slot stays. Then point the entry's `tracked_in` at a new backlog item that Task 5's completion notes name. The part stays open, and the entry says so.
 
-- [ ] **Step 7: Run the checks and commit**
+> Skipped: `RED outcome` was null, and Task 3 had already removed the entry. Nothing to do.
+
+- [x] **Step 7: Run the checks and commit**
 
 ```bash
 uv run --with pyyaml python build/check_conformance.py
@@ -774,7 +792,7 @@ Expected: the conformance check passes; the runner ends `commit lints passed`.
 - Consumes: the final skill text (Tasks 3–4); Task 3 Step 1's fact-to-section table.
 - Produces: the review table; the restamped citation; `cli.py lint` with no `STALE` line.
 
-- [ ] **Step 1: Review every file the skill loads on demand**
+- [x] **Step 1: Review every file the skill loads on demand**
 
 The review covers `SKILL.md` and every Markdown file it loads on demand (drift rule R4.1): `references/claude-code.md`, `references/discovery.md`, `references/flowcharts.md`, `references/bulletproofing.md`, `testing-skills-with-subagents.md`, `persuasion-principles.md` and `examples/CLAUDE_MD_TESTING.md`. Read each against the guide sections `skills.locations`, `skills.frontmatter`, `skills.description`, `skills.listing-budget`, `skills.progressive-disclosure`, `subagents.frontmatter`, `subagents.models` and `subagents.isolation` in `specs/guides/claude-code-customization-guide.md`.
 
@@ -787,11 +805,13 @@ Add `## Review against the guide` to the record, before `## Results`, with one r
 
 The verdict is `covered`, `contradicted` or `not covered`. Start from Task 3 Step 1's table. Write each statement and note in your own words; quote no docs text. A file with no Claude Code statement gets one row that says so. `examples/CLAUDE_MD_TESTING.md`'s `~/.claude/skills/` lines are statements under `skills.locations`.
 
-- [ ] **Step 2: Fix every contradicted row**
+- [x] **Step 2: Fix every contradicted row**
 
 Fix each `contradicted` row in the skill text, as a factual edit under D4. Add no instruction; if a fix needs one, stop and ask the owner. Re-run Task 3 Step 5's body measurement and Step 6's lints. List each `not covered` row for the owner. The owner rules on each at the plan's completion gate.
 
-- [ ] **Step 3: Set the citation**
+> Deviation: two fixes in `references/discovery.md` (the description is the only text that loads before the skill triggers, "apart from its name and any `when_to_use` text that a runtime appends to the description"; commits 3d0d226 and b76c2a3). Row 38, the description rule that `discovery.md` repeats, was an unregistered contradiction. At the completion gate the owner added `discovery.md` to the `artifacts` of `description-when-only` (commit d7811de).
+
+- [x] **Step 3: Set the citation**
 
 In `SKILL.md`, replace line 14 with the sections that at least one `covered` row relies on, in this order, dropping any that no row uses:
 
@@ -801,7 +821,7 @@ In `SKILL.md`, replace line 14 with the sections that at least one `covered` row
 
 Leave the `@2.1.219` stamp as it is. Step 5 restamps it.
 
-- [ ] **Step 4: Check the guide on `origin/main`**
+- [x] **Step 4: Check the guide on `origin/main`**
 
 ```bash
 git fetch origin
@@ -810,7 +830,7 @@ git diff "$(git merge-base HEAD origin/main)" origin/main -- specs/guides/claude
 
 Expected: no output. If the diff touches a section the citation names, merge `origin/main` into this branch with a true merge, re-review that section's rows, and fix any new contradiction before Step 5. Record what changed under the review table.
 
-- [ ] **Step 5: Restamp and run every check**
+- [x] **Step 5: Restamp and run every check**
 
 ```bash
 uv run python build/cc_guide/cli.py baseline cite skills/writing-skills/SKILL.md
@@ -821,7 +841,7 @@ bash build/run_commit_lints.sh
 
 Expected: `baseline cite` restamps the citation and records each section's `text_hash`; `cli.py lint` passes and prints no `STALE` line; the conformance check passes; the runner ends `commit lints passed`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/writing-skills/SKILL.md build/cc_guide/baseline.json specs/baseline/red-baseline-writing-skills-guide.md
