@@ -18,6 +18,8 @@ You read the kit here and copy it by hand. `install.py` does not install it.
    - A notebook that other code imports from, or that a result needs, gets a row to move its logic into a module.
    - A throwaway notebook gets a delete row.
 
+   The scan finds a `.ipynb` file only when its name looks like scratch, such as `scratchpad` or `Untitled`. Name any other `.ipynb` file that you want triaged when you run the skill.
+
    Carry out those rows.
 
 ## The ruff ignore
