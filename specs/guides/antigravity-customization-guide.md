@@ -2,7 +2,7 @@
 
 **Rules · skills · slash commands · agents · hooks · MCP · plugins · permissions — built and run on a token budget**
 
-> Checked on **November 12, 2026** against the [Antigravity documentation](https://antigravity.google/docs) and against local tests with **agy 1.5.7** (`agy --version`). A claim marked *(probed)* comes from those tests. The CLI updated itself from 1.2.17 (released October 5, 2026) to 1.5.7 on the day of this check. A claim marked *(1.2.17 only)* comes from tests on the older release only. The docs track the newest release. Some pages disagree with each other, and some disagree with the probes. ⚠ marks a claim that is version-sensitive, documented but not tested, or in conflict between sources. Run `agy --version` and `agy --help` before you rely on an exact field. The Antigravity App and IDE read most of the same folders, but this guide covers the CLI only.
+> Checked on **November 12, 2026** against the [Antigravity documentation](https://antigravity.google/docs) and against local tests with **agy 1.5.7** (`agy --version`). A claim marked *(probed)* comes from those tests. The CLI updated itself from 1.2.17 (released October 5, 2026) to 1.5.7 before the probes started, so every probe ran on 1.5.7. The docs track the newest release. Some pages disagree with each other, and some disagree with the probes. ⚠ marks a claim that is version-sensitive, documented but not tested, or in conflict between sources. Run `agy --version` and `agy --help` before you rely on an exact field. The Antigravity App and IDE read most of the same folders, but this guide covers the CLI only.
 
 This is the counterpart of the [Claude Code Customization Guide](claude-code-customization-guide.md) and the [Codex Customization Guide](codex-customization-guide.md) for the Antigravity CLI (`agy`), Google's successor to Gemini CLI. It keeps their organizing principle: a customization must make the agent more reliable without making every task pay for every workflow. Product behavior comes from the docs or from probes. Budget and workflow advice is practical guidance.
 
@@ -251,13 +251,13 @@ A custom agent is a Markdown file with YAML frontmatter. Its body is the system 
 | `.agents/agents/<name>.md` or `.agents/agents/<name>/agent.md` | Workspace |
 | `~/.gemini/config/agents/<name>.md` or `~/.gemini/config/agents/<name>/agent.md` | Personal |
 | `<plugin>/agents/<name>.md` | An enabled plugin |
-| `~/.gemini/agents/<name>.md` | Personal. Loads *(probed)*, but the docs do not mention it ⚠ |
+| `~/.gemini/agents/<name>.md` | Session agents only. `agy agents` lists them and `agy --agent` starts them, but `invoke_subagent` rejects them *(probed)*. The docs do not mention this folder ⚠ |
 
-`agy agents` listed personal agents but not workspace agents *(probed)*. Inside a session, `/agents` lists workspace and plugin agents too. A plugin agent keeps its bare name, with no plugin prefix *(probed)*. `mainAgent: false` hides an agent from `/agents` *(probed)*. The main agent can still start that agent as a subagent *(probed)*.
+`agy agents` listed personal agents but not workspace agents *(probed)*. Inside a session, `/agents` lists workspace and plugin agents too. A plugin agent keeps its bare name, with no plugin prefix *(probed)*. `mainAgent: false` hides an agent from `/agents` *(probed)*. The main agent can still start that agent as a subagent *(probed)*. Put personal agents in `~/.gemini/config/agents/`, the only personal folder whose agents work in both roles.
 
-### Dispatch works on 1.5.7
+### Dispatch depends on the folder
 
-On agy 1.5.7, the main agent started workspace agents and a plugin agent with `invoke_subagent`. It named each one in the `TypeName` argument *(probed)*. A test on 1.2.17 found that the main agent could not dispatch custom agents *(1.2.17 only)*. Test again after an update if a workflow depends on dispatch.
+The main agent started workspace agents, a plugin agent and an agent in `~/.gemini/config/agents/` with `invoke_subagent`. It named each one in the `TypeName` argument *(probed)*. An identical agent in `~/.gemini/agents/` failed with `subagent "<name>" not found or not allowed to be invoked` *(probed)*. Test again after an update if a workflow depends on dispatch.
 
 A subagent does not inherit the parent's conversation history. Write a complete brief: the objective, the paths, the inputs, the limits and the result you expect. The subagent sends its result with `send_message`. A headless `-p` run can end before every subagent reports *(probed)*, so ask for results in files when you script delegation. The App section of the subagents page adds three points, not tested in the CLI ⚠. Subagents inherit the parent's command allow rules, file scopes and sandbox setting. Their permission prompts come back to your session. Nesting stops at 10 levels. [Custom subagents](https://antigravity.google/docs/subagents)
 
@@ -297,7 +297,7 @@ The `tools` list does not use the tool names from the hooks page or from the doc
 - `tools: [read_file]` gave the subagent `read_file`, `send_message` and `manage_task`.
 - `tools: [grep_search]` gave it only `send_message` and `manage_task`. agy dropped `grep_search` without a warning. A plugin agent behaved the same way.
 
-The docs' examples list `view_file`, `grep_search` and `find_by_name`. The subagents page also warns that an unknown name can make a subagent hang. The CLI's built-in migration skill uses `read_file`, `edit_file`, `write_file`, `run_command`, `manage_task` and `search_web`. Of these, the probes checked only `read_file` on 1.5.7. The others worked on 1.2.17 *(1.2.17 only)*. The default for an omitted `tools` key is also unclear. One page says an empty list, another says all tools, and the migration skill says a small read-only set. Always write `tools`. Before you rely on a new agent, ask it to list its tools.
+The docs' examples list `view_file`, `grep_search` and `find_by_name`. The subagents page also warns that an unknown name can make a subagent hang. The CLI's built-in migration skill uses `read_file`, `edit_file`, `write_file`, `run_command`, `manage_task` and `search_web`. A subagent kept `read_file`, `write_file`, `edit_file`, `run_command` and `manage_task` *(probed)*. `search_web` was not checked. The default for an omitted `tools` key is also unclear. One page says an empty list, another says all tools, and the migration skill says a small read-only set. Always write `tools`. Before you rely on a new agent, ask it to list its tools.
 
 A role instruction is not a sandbox. A reviewer told "do not edit" still has every write tool that its allowlist grants. Leave write and shell tools out of `tools` for a read-only role, and put hard limits in permission rules.
 
@@ -644,7 +644,7 @@ For simulations, training runs, large data pulls or long suites:
 | Extensions in `~/.gemini/extensions/` | Plugins, through `agy plugin import gemini` |
 | `mcpServers` in `settings.json` | `mcp_config.json`, with `serverUrl` instead of `httpUrl` |
 | `@./file.md` in `GEMINI.md` | `@[file](file.md)` to inline. `@./file.md` becomes a pointer *(probed)* |
-| Subagents in `~/.gemini/agents/` | Still discovered *(probed)*. Rewrite `tools` with agy names, because agy drops Gemini CLI names such as `grep_search` *(probed)* |
+| Subagents in `~/.gemini/agents/` | Move them to `~/.gemini/config/agents/`. Agents left in `~/.gemini/agents/` run only as session agents *(probed)*. Rewrite `tools` with agy names, because agy drops Gemini CLI names such as `grep_search` *(probed)* |
 
 For a bulk move, the built-in `migrate-agent-settings` skill collects MCP servers, skills, commands, agents and instruction files from Claude Code, Codex, Cursor and Gemini CLI. It writes them into one plugin under `~/.gemini/config/plugins/`. It asks before it writes and leaves the sources unchanged. Hooks and permission rules from Claude Code's `settings.json` do not convert. Review the output, especially each agent's `tools` list. [Plugins](https://antigravity.google/docs/plugins)
 
