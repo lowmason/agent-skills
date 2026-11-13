@@ -121,8 +121,9 @@ The canonical subagent definitions live in [`agents/`](agents/). Claude Code loa
 directly. The generated Codex TOML and Antigravity Markdown adapters live under
 [`runtimes/`](runtimes/). The adapters keep the same system-prompt body and map `agy`'s tool
 names. They inherit the active runtime model instead of carrying Claude model names. In `agy`
-they are session agents: you start one with `agy --agent <name>`, and `agy`'s main agent cannot
-dispatch them.
+they install to `~/.gemini/config/agents/`. There the main agent can dispatch them, and
+`agy --agent <name>` starts a session with one. `agy` 1.5.7 does not dispatch an agent from
+`~/.gemini/agents/`, the folder Gemini CLI used.
 
 Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`, `Explore`, and
 `test-runner`. They keep a shell, and each runtime handles that shell differently:
@@ -149,8 +150,10 @@ Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`,
 The slash commands for Claude Code live in [`commands/`](commands/). Antigravity has no command
 files, because a skill is its slash command. So the generator writes each command as a skill in
 [`runtimes/gemini/skills/`](runtimes/gemini/skills/), and the `gemini` install links it beside the
-other skills. Like any skill, `agy` can also load one by itself when a request matches its
-description. This repo has no command adapter for Codex. In Codex, you invoke the
+other skills. `agy` documents no setting that keeps the model from choosing a skill. So a
+command that is user-only in Claude Code (`disable-model-invocation: true`) gets an instruction
+instead: when the skill loads without `/<name>`, it tells you how to run it and stops. That is an
+instruction to the model, not a hard block. This repo has no command adapter for Codex. In Codex, you invoke the
 reusable workflows as skills.
 
 | Command | Description |
@@ -258,8 +261,11 @@ python3 install.py all --check                                    # list links i
 
 `--check` installs nothing. A renamed, archived or removed skill leaves its link behind, and a
 normal install never looks at it. `--check` lists each link in the runtime's directories that points
-into this repository at a source that is gone. It exits 1 when it finds one. It never removes a
-link, so you delete the stale ones yourself.
+into this repository at a source that is gone. It also lists, as `retired`, every link into this
+repository left in a folder the runtime no longer installs into. For `gemini` those folders are
+Gemini CLI's `~/.gemini/commands/` and `~/.gemini/agents/`, so after you move to Antigravity it
+names the old links to delete. It exits 1 when it finds one. It never removes a link, so you
+delete the stale ones yourself.
 
 `--skill` also installs what the named skills cannot work without, and what those need in turn.
 That means the sibling skills whose scripts or files they use, and the `/deferred` command where
@@ -294,7 +300,7 @@ so remove old copies before you run it again.
 |---------|--------|--------|----------|-------|
 | Claude Code | `~/.claude/skills/` | `~/.claude/agents/*.md` | `~/.claude/commands/*.md` | `~/.claude/rules/*.md` (user-level rules only) |
 | Codex | `~/.agents/skills/` | `~/.codex/agents/*.toml` | — | — |
-| Antigravity CLI (`gemini`) | `~/.gemini/config/skills/` | `~/.gemini/agents/*.md` (session agents) | `~/.gemini/config/skills/` (as skills) | — |
+| Antigravity CLI (`gemini`) | `~/.gemini/config/skills/` | `~/.gemini/config/agents/*.md` | `~/.gemini/config/skills/` (as skills) | — |
 
 Codex reads `~/.agents/skills/`, as [Codex's local skill discovery](https://developers.openai.com/codex/skills)
 describes. Antigravity CLI does not read that folder. Its global skills live in

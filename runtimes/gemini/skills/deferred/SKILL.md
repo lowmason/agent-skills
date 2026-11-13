@@ -73,4 +73,4 @@ backlog (derive-roadmap's gap rubric records the same boundary).
    and `specs/history.md` when the pass wrote an entry, with the pass's other
    edits.
 
-Take the argument from the user's message: the text after `/deferred`, or the target the user named when this skill loaded on its own.
+Run this only when the user's message invokes `/deferred`, and take the argument from the text after it. If this skill loaded without that command, do not run it: tell the user it runs on `/deferred`, and stop.

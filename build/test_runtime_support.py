@@ -110,6 +110,22 @@ def test_gemini_command_becomes_a_skill_that_takes_its_arguments():
   assert 'gh issue view' in body
   assert '`/fix-issue`' in body
   assert '{{args}}' not in body
+  # commands/fix-issue.md sets disable-model-invocation, so the skill carries the gate.
+  assert 'Run this only when the user' in body
+
+
+@pytest.mark.parametrize('gated', [True, False])
+def test_a_user_only_command_skill_stops_when_it_loads_on_its_own(tmp_path, gated):
+  # agy has no documented key that keeps the model from choosing a skill, so a
+  # command whose canonical file sets disable-model-invocation gets a stop instruction.
+  sync = load_sync_module()
+  source = tmp_path / 'ship.md'
+  key = 'disable-model-invocation: true\n' if gated else ''
+  source.write_text(f'---\ndescription: Ships it.\n{key}---\nShip the argument.\n')
+  rendered = sync.render_gemini_command_skill(source)
+  assert ('Run this only when the user' in rendered) == gated
+  assert ('the target the user named when this skill loaded on its own' in rendered) == (not gated)
+  assert '`/ship`' in rendered
 
 
 def test_a_removed_command_leaves_its_generated_skill_stale(tmp_path, monkeypatch):
@@ -155,8 +171,8 @@ def test_every_gemini_adapter_parses_without_claude_model_names():
     assert frontmatter['description']
     assert frontmatter['kind'] == 'local'
     assert 'model' not in frontmatter
-    # agy (1.2.17, probed 2026-11-12) hides an agent in ~/.gemini/agents that sets
-    # either key, so these stay session agents: agy --agent <name>.
+    # Neither key is set, so the agy defaults hold: each agent is both a session
+    # agent (agy --agent <name>) and a subagent the main agent can dispatch.
     assert not {'subagent', 'mainAgent'} & set(frontmatter)
     tools = frontmatter['tools']
     assert set(tools) <= AGY_TOOLS and len(tools) == len(set(tools)), path
@@ -218,7 +234,7 @@ SKILL_ROOTS = {
 COMPANION_PATHS = {
   'claude': ('.claude/agents', '.claude/commands'),
   'codex': ('.codex/agents',),
-  'gemini': ('.gemini/agents', '.gemini/config/skills/deferred'),
+  'gemini': ('.gemini/config/agents', '.gemini/config/skills/deferred'),
 }
 
 
@@ -234,11 +250,14 @@ def test_gemini_install_links_agy_skills_agents_and_command_skills(tmp_path):
   result = run_install(tmp_path, 'gemini', '--companions')
   assert result.returncode == 0, result.stdout + result.stderr
   assert (tmp_path / '.gemini/config/skills/brainstorming').is_symlink()
-  assert (tmp_path / '.gemini/agents/debugger.md').is_symlink()
+  # agy 1.5.7 dispatches an agent from ~/.gemini/config/agents but not from
+  # ~/.gemini/agents ("not found or not allowed"; probed 2026-11-12).
+  assert (tmp_path / '.gemini/config/agents/debugger.md').is_symlink()
   command = tmp_path / '.gemini/config/skills/deferred'
   assert command.is_symlink() and (command / 'SKILL.md').is_file()
   assert not (tmp_path / '.agents').exists()
   assert not (tmp_path / '.gemini/commands').exists()
+  assert not (tmp_path / '.gemini/agents').exists()
 
 
 def test_all_install_is_idempotent(tmp_path):
@@ -333,14 +352,14 @@ def test_aliased_destinations_with_different_sources_write_nothing(tmp_path, ext
   # Claude and Gemini ship different agent files under the same names, so one
   # directory cannot hold both; plan() must see through the alias.
   (tmp_path / '.claude/agents').mkdir(parents=True)
-  (tmp_path / '.gemini').mkdir()
-  (tmp_path / '.gemini/agents').symlink_to('../.claude/agents', target_is_directory=True)
+  (tmp_path / '.gemini/config').mkdir(parents=True)
+  (tmp_path / '.gemini/config/agents').symlink_to('../../.claude/agents', target_is_directory=True)
   before = tree(tmp_path)
   result = run_install(tmp_path, 'all', '--companions', *extra)
   assert result.returncode == 1
   assert 'conflicting sources' in result.stderr
   assert str(tmp_path / '.claude/agents') in result.stderr
-  assert str(tmp_path / '.gemini/agents') in result.stderr
+  assert str(tmp_path / '.gemini/config/agents') in result.stderr
   assert tree(tmp_path) == before
 
 
@@ -941,7 +960,7 @@ def test_check_reports_a_relative_link_into_this_repo(tmp_path):
     ('codex', '.agents/skills/old'),
     ('codex', '.codex/agents/old.toml'),
     ('gemini', '.gemini/config/skills/old'),
-    ('gemini', '.gemini/agents/old.md'),
+    ('gemini', '.gemini/config/agents/old.md'),
     ('all', '.claude/skills/old'),
     ('all', '.codex/agents/old.toml'),
     ('all', '.gemini/config/skills/old'),
@@ -957,6 +976,37 @@ def test_check_scans_every_directory_the_runtime_installs_into(tmp_path, runtime
 def test_check_leaves_the_other_runtimes_directories_alone(tmp_path):
   make_link(tmp_path, '.codex/agents/old.toml', REPO / 'skills' / 'retired')
   result = run_install(tmp_path, 'claude', '--check', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+
+
+@pytest.mark.parametrize('runtime', ['gemini', 'all'])
+@pytest.mark.parametrize(
+  ('relative', 'source'),
+  [
+    # Gemini CLI's TOML command adapters, deleted when the runtime moved to agy.
+    ('.gemini/commands/deferred.toml', 'runtimes/gemini/commands/deferred.toml'),
+    # A live agent link the old install left; it would shadow the new location.
+    ('.gemini/agents/debugger.md', 'runtimes/gemini/agents/debugger.md'),
+  ],
+)
+def test_check_reports_links_left_in_a_retired_directory(tmp_path, runtime, relative, source):
+  link = make_link(tmp_path, relative, REPO / source)
+  result = run_install(tmp_path, runtime, '--check', skills=())
+  assert result.returncode == 1, result.stdout + result.stderr
+  assert f'retired {link} -> ' in result.stdout
+  assert f'dangling {link}' not in result.stdout
+
+
+@pytest.mark.parametrize('runtime', ['claude', 'codex'])
+def test_check_leaves_retired_gemini_directories_to_the_gemini_runtime(tmp_path, runtime):
+  make_link(tmp_path, '.gemini/agents/debugger.md', REPO / 'runtimes/gemini/agents/debugger.md')
+  result = run_install(tmp_path, runtime, '--check', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_check_ignores_a_foreign_link_in_a_retired_directory(tmp_path):
+  make_link(tmp_path, '.gemini/commands/mine.toml', tmp_path / 'elsewhere.toml')
+  result = run_install(tmp_path, 'gemini', '--check', skills=())
   assert result.returncode == 0, result.stdout + result.stderr
 
 

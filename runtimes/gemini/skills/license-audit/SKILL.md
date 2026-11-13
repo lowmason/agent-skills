@@ -34,4 +34,4 @@ license.
 Report findings grouped by layer, each with file references and a
 proposed resolution; end with an overall verdict.
 
-Take the argument from the user's message: the text after `/license-audit`, or the target the user named when this skill loaded on its own.
+Run this only when the user's message invokes `/license-audit`, and take the argument from the text after it. If this skill loaded without that command, do not run it: tell the user it runs on `/license-audit`, and stop.

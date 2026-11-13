@@ -18,7 +18,7 @@ uv run --with pyyaml python build/sync_runtime_assets.py
 uv run --with pyyaml python build/sync_runtime_assets.py --check
 ```
 
-The generator translates manifest syntax and `agy` tool names only. Codex and Gemini agents inherit the active runtime model; Claude-specific model pins do not cross runtimes. In `agy` a skill is the slash command, so each command becomes a generated skill under `runtimes/gemini/skills/`. The Gemini agents load as session agents (`agy --agent <name>`), which `agy`'s main agent cannot dispatch. Codex has no command adapter here; reusable Codex workflows are skills.
+The generator translates manifest syntax and `agy` tool names only. Codex and Gemini agents inherit the active runtime model; Claude-specific model pins do not cross runtimes. In `agy` a skill is the slash command, so each command becomes a generated skill under `runtimes/gemini/skills/`. The Gemini agents install to `~/.gemini/config/agents/`, where `agy`'s main agent can dispatch them and `agy --agent <name>` can start a session with one. Codex has no command adapter here; reusable Codex workflows are skills.
 
 ## Provenance is load-bearing — preserve it
 

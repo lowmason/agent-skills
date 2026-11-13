@@ -31,4 +31,4 @@ is the bugfix lane only — it never implements features.
    push; do not push or open the PR yourself. Link the issue in the PR
    body (`Fixes #<n>`).
 
-Take the argument from the user's message: the text after `/fix-issue`, or the target the user named when this skill loaded on its own.
+Run this only when the user's message invokes `/fix-issue`, and take the argument from the text after it. If this skill loaded without that command, do not run it: tell the user it runs on `/fix-issue`, and stop.
