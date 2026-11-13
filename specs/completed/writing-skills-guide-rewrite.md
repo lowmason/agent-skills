@@ -1,8 +1,9 @@
 # writing-skills against the Claude Code guide — Design Spec
 
-**Status: APPROVED (2026-11-12)** — from the Design pick of the 2026-11-12 `/deferred` pass. The owner
-approved this spec on 2026-11-12, after brainstorming and a builder check. Next step: writing-plans, in
-a fresh session, against this file.
+**Status: COMPLETE (2026-11-12)** — implemented by plan 92
+(`specs/plans/completed/92-writing-skills-guide-rewrite.md`) and retired here. It came from the Design pick
+of the 2026-11-12 `/deferred` pass. The owner approved it on 2026-11-12, after brainstorming and a builder
+check.
 
 ## What this builds
 
