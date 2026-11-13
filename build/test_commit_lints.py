@@ -1,4 +1,5 @@
-'''Tests for the commit-lint runner, its pre-commit hook and its CI workflow.
+'''Tests for the commit-lint runner, its pre-commit hook, its CI workflow and
+the two weekly drift workflows.
 
 Each hook test clones this repository's HEAD into a temporary directory,
 copies in the working-tree runner and hook (so the tests exercise the files
@@ -6,7 +7,8 @@ under edit), points core.hooksPath at the hook, and commits. Only the clean
 commit and the refusal tests run the full lint set in their clone; the two
 no-uv tests and the broken-uv test stop before any lint runs. The mode and
 workflow tests read the repository's files without cloning, and the workflow
-tests parse .github/workflows/lints.yml statically. With a warm uv cache the
+tests parse lints.yml, versions-drift.yml and cc-guide-drift.yml under
+.github/workflows/ statically. With a warm uv cache the
 file takes about 15 seconds.
 '''
 import os
@@ -313,10 +315,12 @@ def test_workflow_bounds_the_job_and_drops_checkout_credentials():
 
 
 DRIFT_WORKFLOW = REPO / '.github' / 'workflows' / 'versions-drift.yml'
+GUIDE_WORKFLOW = REPO / '.github' / 'workflows' / 'cc-guide-drift.yml'
+SCHEDULED_WORKFLOWS = pytest.mark.parametrize('path', [DRIFT_WORKFLOW, GUIDE_WORKFLOW], ids=lambda path: path.name)
 
 
-def drift_workflow():
-    return yaml.safe_load(DRIFT_WORKFLOW.read_text())
+def drift_workflow(path=DRIFT_WORKFLOW):
+    return yaml.safe_load(path.read_text())
 
 
 def test_lints_workflow_takes_the_interpreter_from_python_version():
@@ -324,16 +328,18 @@ def test_lints_workflow_takes_the_interpreter_from_python_version():
     assert 'python-version' not in text and 'UV_PYTHON' not in text
 
 
-def test_drift_workflow_triggers_and_permissions():
-    wf = drift_workflow()
+@SCHEDULED_WORKFLOWS
+def test_drift_workflow_triggers_and_permissions(path):
+    wf = drift_workflow(path)
     on = wf.get('on', wf.get(True))
     assert set(on) == {'schedule', 'workflow_dispatch'}
     assert len(on['schedule']) == 1 and on['schedule'][0]['cron']
     assert wf['permissions'] == {'contents': 'read'}
 
 
-def test_drift_workflow_pins_actions_bounds_the_job_and_matches_lints():
-    jobs = drift_workflow()['jobs'].values()
+@SCHEDULED_WORKFLOWS
+def test_drift_workflow_pins_actions_bounds_the_job_and_matches_lints(path):
+    jobs = drift_workflow(path)['jobs'].values()
     steps = [step for job in jobs for step in job['steps']]
     uses = [step['uses'] for step in steps if 'uses' in step]
     assert uses and all(PINNED.match(u) for u in uses), uses
@@ -349,4 +355,18 @@ def test_drift_workflow_reports_to_the_summary_and_changes_nothing():
     runs = [step['run'] for job in drift_workflow()['jobs'].values() for step in job['steps'] if 'run' in step]
     assert any('build/versions.py drift' in run and 'GITHUB_STEP_SUMMARY' in run and 'pipefail' in run
                for run in runs), runs
+    assert not re.search(r'git (commit|push)|gh (issue|pr)|issues:|pull-requests:', text)
+
+
+def test_guide_drift_workflow_checks_the_checkout_and_changes_nothing():
+    '''The weekly guide check reads the checked-out tree, so it needs no local
+    main branch, and it fails the job when check reports something due. Only
+    check's unindented summary lines go to the step summary: the per-block
+    lines run to hundreds and stay in the job log.'''
+    text = GUIDE_WORKFLOW.read_text()
+    runs = [step['run'] for job in drift_workflow(GUIDE_WORKFLOW)['jobs'].values() for step in job['steps']
+            if 'run' in step]
+    assert any('build/cc_guide/cli.py check --worktree' in run and 'pipefail' in run for run in runs), runs
+    assert any('GITHUB_STEP_SUMMARY' in run and "grep -v '^  '" in run for run in runs), runs
+    assert '--hook' not in text, 'check --hook prints nothing, which would leave the log and the summary empty'
     assert not re.search(r'git (commit|push)|gh (issue|pr)|issues:|pull-requests:', text)
