@@ -10,12 +10,12 @@ Each rep is a fresh, decision-only `claude -p` with no tools. It runs from an em
 probe (`kit/isolation_probe.txt`) answered NO on all six lines on 2.1.323, and the init record
 showed no tools, no MCP servers, no skills and the default output style. `kit/show_reps.py` marks
 a rep VOID when its file is unreadable, the run is an error, or a tool or the advisor ran (more
-than one turn, an iteration that is not a message, or more than one model). None of the 30 reps
-is VOID.
+than one turn, an iteration that is not a message, or more than one model). None of the 50 reps
+in rounds 1 and 2 is VOID.
 
-The 10 Sonnet RED reps and the 10 GREEN reps were read by hand in full. The 10 Opus RED reps were
-scored from their ACTION lines and from the lines that name the planted values, so the false-flag
-statements below do not cover them.
+All 40 Sonnet reps were read by hand in full. The 10 Opus RED reps were scored from their ACTION
+lines and from the lines that name the planted values, so the false-flag statements below do not
+cover them.
 
 ## Fixture
 
@@ -98,6 +98,85 @@ record. They differ from the RED prompts only by the new §4 paragraph and the n
 
 The runs cost about $1.58 in all: RED $1.14, GREEN $0.43, the isolation probe $0.01.
 
+## Round 2: Codex's review of PR #195
+
+Codex reviewed the branch at `df93605` and raised two findings on the new text. The owner chose to
+test and fix both.
+
+- **P1:** the check can pass while the image in the report is stale. The script and its data match
+  the table, but the delivered PNG was rendered before a fix and never rendered again.
+- **P2:** the new report line has no N-A for a validation with no figures.
+
+**Stale variant.** It has the same files as the full variant, with M1, M2 and M3 fixed: the report
+quotes 5.8% and 12.4%, `make_figures.py` reads `summary_by_district.csv`, and the draft CSV is gone.
+Its one plant, S1: `fig1_pct_change.png` was rendered before the script was fixed, so it still
+shows Harbor at +3.0. Nothing in the session says so. Only re-running the script or looking at the
+delivered image can show it.
+
+**Stale scoring.** Every rep is read by hand in full.
+
+- **PASS:** the rep plans to re-run the figure script and compare its output with the report's
+  images, or plans to open the delivered PNG and check its values against table 1, or says the
+  report's figure 1 is not confirmed as the script's current output and does not pass it. The
+  record names which route each PASS took.
+- **FAIL:** no ACTION line re-runs the script or opens the PNG, and the reply does not say the
+  delivered figure is unconfirmed.
+
+**RED bar** (registered before any stale rep ran). Arm `new-stale`: the text at `df93605` (body
+sha256 `bea43a49…`), Sonnet, 5 reps. RED shows the failure when 2 or more reps FAIL. Then the P1
+sentence is added. Otherwise it is not added, and only the N-A slot is.
+
+**GREEN bars** (Sonnet, 5 reps each, on the round 2 text):
+
+- **stale:** at least 4 of 5 reps PASS.
+- **partial:** at least 4 of 5 reps have an ACTION line that reads `make_figures.py`, as in round 1.
+- **full:** no regression. Each rep names M1, M2 and M3, lists them as blocking, and flags no
+  correct item.
+
+P2 has no RED arm, because no variant lacks figures. N-A is a template slot. The case for it is
+that reps already write N-A on lines that do not offer it, and the round 2 edit forces a GREEN
+rerun anyway.
+
+### Round 2 results
+
+**RED (`new-stale`): 5/5 PASS, so RED shows no failure.** By the registered bar, the P1 sentence
+is not added. Every rep plans to check the delivered PNGs unprompted and says they are not yet
+confirmed:
+
+| Rep | Route |
+|---|---|
+| 1 | Opens both PNGs to compare them with the CSVs |
+| 2 | Compares file times, and regenerates the figures in a temp dir if they are older |
+| 3 | Re-runs `make_figures.py` into a scratch dir and compares the PNGs |
+| 4 | Compares file times and says it is "still checking that the PNGs aren't stale" |
+| 5 | Regenerates the PNGs in a temp dir and compares them |
+
+**Round 2 edit.** Only the §6 line changes: `Figures match sources: PASS/FAIL/N-A — <figure →
+script → file or frame, checked against table; or no figures>`. The body is 19,113 characters,
+sha256 `06d48b740b2a0941fab0df4183296673ba773433a53c4f21f049a981d803d69c`. The `v2-*` prompts
+differ from the round 1 prompts by that line only.
+
+**GREEN (`v2-*`, Sonnet): every bar met.**
+
+| Arm | Bar | Result |
+|---|---|---|
+| stale | ≥ 4/5 PASS | 4/5 |
+| partial | ≥ 4/5 read `make_figures.py` | 5/5 |
+| full | each rep names M1–M3, lists them as blocking, flags no correct item | 5/5 |
+
+- **stale:** reps 1, 3 and 4 re-render the figures and compare them, and rep 1 and rep 3 also open
+  the PNGs. Rep 2 plans no check but says "I haven't confirmed the images are current renders of
+  those scripts". Rep 5 FAILs by the letter of the bar: its only check is `ls -l` "to confirm the
+  PNGs were regenerated after the CSVs", and its reply does not say figure 1 is unconfirmed. RED
+  was 5/5 on the same text without the N-A slot, so the 4/5 reads as variance, not as an effect of
+  the slot.
+- **partial:** every rep also names M1 and M2. Rep 1 adds a wrong side claim: it says Riverside
+  "grows second fastest, behind University at 8.0%", but 12.4% is the fastest. That is outside the
+  partial bar.
+- **full:** reps 1 to 5 all give FAIL. Rep 5 cites `make_figures.py:3` for the read on line 4.
+
+Round 2 cost about $1.17: RED $0.40, GREEN $0.76.
+
 ## Limits
 
 - **First move only.** A decision-only rep shows the agent's first move. A multi-turn Sonnet
@@ -106,3 +185,7 @@ The runs cost about $1.58 in all: RED $1.14, GREEN $0.43, the isolation probe $0
 - **Sonnet only.** The gap shows on Sonnet alone. That still matters, because execution sessions
   run on Sonnet under the owner's model routing.
 - **One fixture.** One fixture in one domain. How far the result generalizes is not tested.
+- **A cue in the stale variant.** `build_summary.py` carries a dated fix comment ("2026-10-02:
+  drop duplicate dock-sync trips"). It may prompt a staleness check, and rep 5 of RED names it. A
+  stale image with no such cue in the folder is not tested.
+- **N-A is not tested.** No variant lacks figures, so no rep exercises the N-A slot.

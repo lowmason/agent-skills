@@ -13,6 +13,12 @@ several correct numbers:
 Correct items: table 1 (every row), "about 317,000", "Harbor ... (-1.3%)", "Downtown ... 5.0%",
 "Every district except Harbor grew", and "week 31 at 26,900 rides" (figure 2, weekly.csv).
 The domain is not one of validate-data's own examples.
+
+The stale variant (added for Codex's P1 on PR #195) fixes M1, M2 and M3 in the files: the report
+quotes 5.8% and 12.4%, make_figures.py reads summary_by_district.csv, and the draft CSV is gone.
+Its one plant, S1: fig1_pct_change.png was rendered before make_figures.py was fixed and was not
+re-rendered, so it still shows Harbor at +3.0. Nothing in the session says so. Only re-running
+the script or looking at the delivered image can show it.
 '''
 
 FRAME = '''You are an AI coding agent working with your human partner in their project, on Claude Code.
@@ -168,8 +174,19 @@ VARIANTS = {
     'full': ['report.md', 'build_summary.py', 'make_figures.py', 'summary_by_district.csv',
              'summary_by_district_draft.csv', 'weekly.csv'],
     'partial': ['report.md', 'build_summary.py'],
+    'stale': ['report.md', 'build_summary.py', 'make_figures.py', 'summary_by_district.csv',
+              'weekly.csv'],
 }
+
+# The stale variant's files and listing: the three plants fixed, the draft CSV gone.
+STALE_FILES = {
+    'report.md': FILES['report.md'].replace('rose 6.4%', 'rose 5.8%').replace('at 14.2%', 'at 12.4%'),
+    'make_figures.py': FILES['make_figures.py'].replace("'summary_by_district_draft.csv'",
+                                                        "'summary_by_district.csv'"),
+}
+STALE_OPENING = OPENING.replace(' summary_by_district_draft.csv,', '')
 
 
 def conversation(variant: str) -> str:
-    return OPENING + ''.join('\n\n' + READ.format(path=p, text=FILES[p]) for p in VARIANTS[variant])
+    files, opening = ({**FILES, **STALE_FILES}, STALE_OPENING) if variant == 'stale' else (FILES, OPENING)
+    return opening + ''.join('\n\n' + READ.format(path=p, text=files[p]) for p in VARIANTS[variant])

@@ -61,6 +61,10 @@ def check_fixture() -> None:
     for r in final:
         cell = f"| {r['district']} | {int(r['rides_2025q3']):,} | {int(r['rides_2026q3']):,} | {r['pct_change']} |"
         assert cell in cases.FILES['report.md'], cell
+    stale_report = cases.STALE_FILES['report.md']
+    assert 'rose 5.8%' in stale_report and 'at 12.4%' in stale_report, 'stale report keeps M1 or M2'
+    assert 'draft' not in cases.STALE_FILES['make_figures.py'], 'stale make_figures.py keeps M3'
+    assert 'draft' not in cases.STALE_OPENING, 'stale listing names the draft CSV'
 
 
 def main() -> None:

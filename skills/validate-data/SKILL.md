@@ -304,7 +304,7 @@ runs; expand the prose with problem-specific context. Write it to `<slug>/valida
 
 ## 4. Methodology & bias
 - Conclusions supported: PASS/WARN/FAIL — <claim → evidence map>
-- Figures match sources: PASS/FAIL — <figure → script → file or frame, checked against table>
+- Figures match sources: PASS/FAIL/N-A — <figure → script → file or frame, checked against table; or no figures>
 - Within vs composition: PASS/WARN/FAIL — <both terms computed? simplifications named>
 - Coverage / selection / survivorship / revision: PASS/WARN — <biases assessed>
 
