@@ -68,8 +68,8 @@ def fitted(names: list[str], room: int) -> str:
     return f'+{len(names)} more'
 
 
-def due_message(report: dict, today: date) -> str | None:
-    '''R9.4: one line under LIMIT characters naming every due item, or None
+def due_message(report: dict, today: date, limit: int = LIMIT) -> str | None:
+    '''R9.4: one line under limit characters naming every due item, or None
     when nothing is due. The block item names its candidate sections as far
     as the line has room.'''
     due = report['due']
@@ -91,7 +91,7 @@ def due_message(report: dict, today: date) -> str | None:
     if blocks:
         words = f"{plural(blocks, 'docs block')} changed"
         frame = SEP.join([HEAD, *before, f'{words} ()', *after]) + TO_SKILL
-        before.append(f'{words} ({fitted(named_sections(report), LIMIT - 1 - len(frame))})')
+        before.append(f'{words} ({fitted(named_sections(report), limit - 1 - len(frame))})')
     return SEP.join([HEAD, *before, *after]) + TO_SKILL
 
 
@@ -102,12 +102,12 @@ def age_words(ok_epoch: int | None, now_epoch: int) -> str:
     return f'last good check {(now_epoch - ok_epoch) // DAY} d ago'
 
 
-def error_message(reason: str, ok_epoch: int | None, now_epoch: int) -> str:
+def error_message(reason: str, ok_epoch: int | None, now_epoch: int, limit: int = LIMIT) -> str:
     '''R9.4: an error line with the age of the last good check, the reason
-    flattened to one line and cut to keep the line under LIMIT characters.'''
+    flattened to one line and cut to keep the line under limit characters.'''
     reason = ' '.join(reason.split())
     age = age_words(ok_epoch, now_epoch)
-    room = LIMIT - 1 - len(f'{HEAD}{SEP}check failed: {SEP}{age}{TO_CHECK}')
+    room = limit - 1 - len(f'{HEAD}{SEP}check failed: {SEP}{age}{TO_CHECK}')
     if len(reason) > room:
         reason = reason[:room - 1] + '…'
     return f'{HEAD}{SEP}check failed: {reason}{SEP}{age}{TO_CHECK}'
@@ -167,14 +167,21 @@ def record_check(cache: Path, code: int, now: datetime, run: str | None) -> dict
     return record
 
 
-def after_check(cache: Path, code: int, report: dict, now: datetime, today: date, run: str | None) -> None:
+def after_check(cache: Path, code: int, report: dict, now: datetime, today: date, run: str | None,
+                parts: list[str] = ()) -> None:
     '''check --hook once check() returned: the notice for its exit, then the
-    record (R9.3, R9.4).'''
+    record (R9.3, R9.4). parts, one per guide behind its CLI (cli_versions),
+    follow the drift items on any exit, with their room kept under LIMIT, and
+    make a notice of their own when nothing else is due.'''
+    tail = ''.join(f'{SEP}{part}' for part in parts)
+    limit = LIMIT - len(tail)
     if code == 2:
         reason = report['errors'][0] if report.get('errors') else 'check exited 2'
-        message = error_message(reason, last_ok(cache), int(now.timestamp()))
+        message = error_message(reason, last_ok(cache), int(now.timestamp()), limit)
     else:
-        message = due_message(report, today) if code == 1 else None
+        message = due_message(report, today, limit) if code == 1 else None
+    if tail:
+        message = (message or HEAD) + tail
     write_notice(cache, message)
     record_check(cache, code, now, run)
 

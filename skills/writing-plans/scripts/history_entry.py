@@ -120,17 +120,20 @@ def _quoted_fence_run(line: str) -> str:
 def _quoted_fence_end(lines: list[str], start: int, run: str) -> int:
     '''The index of the last line of the blockquoted fence that opens at `start`.
 
-    The fence ends at the next blockquoted line that closes it: the same character,
-    at least as long, and nothing else after the `>` marks. A fence never closed ends
-    with its blockquote, at the last line that starts with `>`.
+    The fence ends at the next blockquoted line that closes it: as many `>` marks as
+    the opener, then the same character, at least as long, and nothing else. A fence
+    never closed ends with its blockquote, at the last line that starts with `>`.
     '''
+    depth = QUOTE_MARKS_RE.match(lines[start]).group(0).count('>')
     end = start
     for index in range(start + 1, len(lines)):
         if not BLOCKQUOTE_RE.match(lines[index]):
             break
         end = index
-        closer = QUOTE_MARKS_RE.sub('', lines[index]).strip()
-        if len(closer) >= len(run) and closer == run[0] * len(closer):
+        marks = QUOTE_MARKS_RE.match(lines[index])
+        closer = lines[index][marks.end():].strip()
+        closes = len(closer) >= len(run) and closer == run[0] * len(closer)
+        if closes and marks.group(0).count('>') == depth:
             break
     return end
 
