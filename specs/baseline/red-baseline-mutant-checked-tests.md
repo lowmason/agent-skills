@@ -695,7 +695,11 @@ to `git show af8b69e:<path>`. The F5 prompt differs from round 0's only in the r
   only `claude-sonnet-5-5`, with no other iteration and no permission denial. No rep stopped on its
   budget.
 - Rep4 is VOID under rule 1: `sed "$2" duration.py > /tmp/d.py; cp duration.py /tmp/orig.py`. It
-  was rerun as rep6. This round's set has one VOID rep. VOID reps are counted for this set alone.
+  was rerun as rep6. The run counted VOID reps for this round's set alone, which has one.
+- That count is a reading that the controller must confirm. The VOID rule says "three reps of one
+  fixture in one arm". Counted across the treatment arm, F5 has three VOID reps: round 0 reps 1
+  and 2, and round 1 rep4. On that reading, the run stops before rep6, and the implementer
+  reports BLOCKED. Rep6 does not change the bar, because reps 1, 2, 3 and 5 had already passed.
 - The other path-audit hits were slashes in `sed` expressions and in Inputs-table text.
 - A grep of the outputs found no `/Users/`, OS user name, git email or stream session id.
 
