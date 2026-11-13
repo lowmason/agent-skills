@@ -147,6 +147,12 @@ QUOTED_FENCES = '''
 > Deviation: a real note after the fences.
 '''
 
+NESTED_CLOSER = '''> {mark}markdown
+> > {mark}
+> Deviation: inner
+> {mark}
+> Deviation: real'''
+
 
 QUICK = '''# Deferred items
 
@@ -486,6 +492,23 @@ def test_unclosed_quoted_fence_ends_with_its_blockquote():
 def test_backtick_fence_with_backticks_in_its_info_is_not_an_opener():
     text = '> ```x``` is not a fence\n> Deviation: real.'
     assert read_plan_text(text).masked[1] == '> Deviation: real.'
+
+
+@pytest.mark.parametrize('mark', ['~~~', '```'])
+def test_quoted_fence_closes_only_at_its_openers_quote_depth(mark):
+    text = NESTED_CLOSER.format(mark=mark)
+    masked = read_plan_text(text).masked
+    assert [line.strip() for line in masked] == ['', '', '', '', '> Deviation: real']
+
+
+@pytest.mark.parametrize('mark', ['~~~', '```'])
+def test_deeper_closer_inside_a_quoted_fence_hides_no_note(tmp_path, capsys, mark):
+    plan_text = PLAN + '\n### Task 3: Nested\n\n' + NESTED_CLOSER.format(mark=mark) + '\n'
+    plan, ledger = write_repo(tmp_path, '7-rate-limiter', plan_text, BACKLOG, LEDGER)
+    code, out, _ = run_draft(capsys, plan, *golden_args(ledger))
+    assert code == 0
+    deviations = [line for line in out.splitlines() if line.startswith('- Deviation (Task 3)')]
+    assert deviations == ['- Deviation (Task 3): real. Source: plan, Task 3.']
 
 
 @pytest.mark.parametrize('mark', ['~~~', '```'])
