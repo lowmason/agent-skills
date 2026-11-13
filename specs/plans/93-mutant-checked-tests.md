@@ -15,6 +15,7 @@
 ### Base and execution
 
 - **Base commit.** Every line number in this plan is a line of the file at `db4fede`. The spec's own line numbers are as of `8960159`. Two of its cites moved: the waiver `subagent-driven-development-compaction-window` is at `build/cc_guide/conformance.toml:796`, and `'skill:executing-plans'` in `install.py`'s `DEPENDENCIES` is at line 57. Before Task 1, run `git diff --stat db4fede HEAD -- skills/subagent-driven-development skills/executing-plans agents/task-reviewer.md build/check_helper_paths.py build/test_check_helper_paths.py build/CLAUDE.md CLAUDE.md NOTICE runtimes`. Any output means a file this plan edits changed after the plan was written. Re-read each cited line before a task quotes it, and ledger a `Ruling:` for any task text that no longer fits.
+- **Base branch.** The spec and this plan exist only on the branch that holds this plan's commit (`claude/cool-brahmagupta-88fa30` at planning time). Until that branch merges, cut the execution worktree from it, not from `main`.
 - **Self-modifying plan.** This plan edits the skills, scripts and agent that execute it. `~/.claude/skills/` and `~/.claude/agents/` are symlinks into the main checkout. Execute in a worktree. Call the controller tooling by absolute path through those symlinks, with the worktree as the working directory: `~/.claude/skills/subagent-driven-development/scripts/<name>` under subagent-driven-development, and `~/.claude/skills/executing-plans/scripts/task-start` and `task-done` under executing-plans. Do not merge this branch into the main checkout before the plan completes. Implementers and reviewers use the installed copies, which are main's.
 - **No mutant step for this plan's own tasks.** The executor follows main's copies of the skills, which have no mutant step. This plan's tasks write no excerpts file, no mutants file and no mutant run. A reviewer does not flag their absence.
 - **Scope fence.** These are out of bounds for this run. When the only fix crosses one, stop and ask the owner.
@@ -243,6 +244,7 @@ The mutants are: **A** `return a + b` → `return a - b` (both add tests fail); 
 | `test_mutant_run_reads_a_catch_when_the_caller_sets_r_flags` | mutant 1 = A; `env={**PY_ENV, 'PYTEST_ADDOPTS': '-rs'}`; command `PYTEST + ['-rs']` | `rc == 0`; `mutant_line(lines, 1)` starts `'mutant 1: CAUGHT exit 1 '` |
 | `test_mutant_run_marks_a_collection_error_invalid` | mutant 1 = X; `PYTEST` | `rc == 1`; `mutant_line(lines, 1) == f'mutant 1: INVALID exit 2 sha256 {patch_sha(p1)} reason: exit status 2'` |
 | `test_mutant_run_needs_a_failed_test_in_the_report_to_catch` | mutant 1 = A; command `['sh', '-c', 'grep -q "a - b" calc.py && exit 1; exit 0']` | `rc == 1`; `mutant_line(lines, 1)` ends `'reason: no failed test in the JUnit report'` and starts `'mutant 1: INVALID exit 1 '` |
+| `test_mutant_run_never_reads_an_earlier_mutants_report` | mutants 1 = A, 2 = M; command `['sh', '-c', 'grep -q "a \\* b" calc.py && exit 1; "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]` | `rc == 1`; `mutant_line(lines, 1)` starts `'mutant 1: CAUGHT exit 1 '`; `mutant_line(lines, 2)` starts `'mutant 2: INVALID exit 1 '` and ends `'reason: no failed test in the JUnit report'` |
 | `test_mutant_run_never_applies_a_patch_that_touches_a_test_file` | parametrized `path` over `test_calc.py`, `calc_test.py`, `conftest.py`, `web/app.test.js`, `web/app.spec.ts`, `tests/helper.py`, `test/helper.py`, `data/fixtures/rows.csv`; commit `x = 1\n` at `path` (except `test_calc.py`, whose `== 3` becomes `== 4`); mutant 1 edits `path`; `PYTEST` | `rc == 1`; `mutant_line(lines, 1) == f'mutant 1: INVALID exit - sha256 {patch_sha(p1)} reason: touches a test file: {path}'`; `'--- output: mutant 1 ---'` not in lines |
 | `test_mutant_run_marks_a_patch_that_does_not_apply_invalid` | mutant 1 = A; then commit `calc.py` with `return b + a` | `rc == 1`; `mutant_line(lines, 1)` ends `'exit - sha256 ' + patch_sha(p1) + ' reason: does not apply'` |
 | `test_mutant_run_refuses_a_dirty_tree` | mutant 1 = A; untracked `scratch.txt`; command `['sh', '-c', 'touch ran']` | `rc == 2`; `'scratch.txt'` in stderr; no `ran`; no `task-1-mutants*.log` |
@@ -274,7 +276,7 @@ Follow the spec's Design 3 steps 1–7 in order, with these decisions:
 - `top=$("$sdd/sdd-repo" --with-commit)` and `dir=$("$sdd/sdd-workspace" "$plan")`. Every git call runs as `git -C "$top"`. The test command runs from the caller's current directory.
 - Recovery (step 1), then the dirty-tree refusal (step 2), which lists `git status --porcelain --untracked-files=normal`'s lines on stderr.
 - Patches (step 3): only names that match `task-<N>-mutant-<K>.patch`. A `<K>` that is not all digits is exit 2 naming the file. Order by `sort -n`. The already-in-HEAD check runs before the baseline.
-- Each command run gets `PYTEST_ADDOPTS="${PYTEST_ADDOPTS:+$PYTEST_ADDOPTS }--junitxml=<absolute temp file in $dir>"`. The baseline gets it too.
+- Each command run gets `PYTEST_ADDOPTS="${PYTEST_ADDOPTS:+$PYTEST_ADDOPTS }--junitxml=<absolute temp file in $dir>"`, the baseline included. Each run gets a fresh path that does not exist before the run, and the file is removed after it is read. A report left by an earlier mutant must never count for a later one.
 - Patch paths come from `git -C "$top" apply --numstat`. The test-file rule is spec Design 3 step 5's list, matched on the base name and on each directory part.
 - Read failed test IDs from the JUnit file with `tr '<' '\n'` and an `awk` state machine: a `testcase` line opens a case, a `failure` or `error` line marks it, and `/testcase>` or a self-closing `testcase .../>` closes it. Never assume one `<testcase>` per line.
 - The time limit (D3) kills the command's whole process tree, for example with a background watchdog that walks `pgrep -P`. No leftover process may hold the script's stdout or stderr open.
@@ -340,7 +342,7 @@ The domains are kept apart from each other, from the examples in `references/mut
 - [ ] **Step 2: Write the kit**
 
 The kit is new. It takes the comment block and the refusal checks of plan 92's `run_reps.sh` (`specs/baseline/red-baseline-writing-skills-guide/kit/`) and copies no other code.
-- `build_prompts.py` takes the dispatch body, the `prompt: |` block of `implementer-prompt.md` at `<sha>` read with `git show`. It fills `[BRIEF_FILE]`, `[REPORT_FILE]`, `[directory]`, the task name, and a one-line scene for each fixture. The control body gets one added line after the brief line: `The spec excerpts your task rests on: <path of task-1-spec.md>`. The treatment body fills its own placeholders, and `[MUTANTS_GUIDE]` and `[MUTANT_RUN]` point into a skill copy under `/tmp/mt-skill/`. `build_prompts.py` writes that copy (`scripts/mutant-run`, `scripts/sdd-repo`, `scripts/sdd-workspace` and `references/mutants.md`, all from `<sha>`) and a `MANIFEST.txt` with each prompt's sha256.
+- `build_prompts.py` takes the dispatch body, the `prompt: |` block of `implementer-prompt.md` at `<sha>` read with `git show`. It fills `[BRIEF_FILE]`, `[REPORT_FILE]`, `[directory]`, the task name, and a one-line scene for each fixture. The control body gets one added line after the brief line: `The spec excerpts your task rests on: <path of task-1-spec.md>`. The treatment body fills its own placeholders, and `[MUTANTS_GUIDE]` and `[MUTANT_RUN]` point into a skill copy under `/tmp/mt-skill/`. `build_prompts.py` writes that copy (`scripts/mutant-run`, `scripts/sdd-repo`, `scripts/sdd-workspace` and `references/mutants.md`, all from `<sha>`) and a `MANIFEST.txt` with each prompt's sha256. `git show` keeps no file mode, so it runs `chmod +x` on `/tmp/mt-skill/scripts/*`.
 - `run_reps.sh` copies `repo/` into a new `/tmp/mt-rep-XXXXXX/repo`, runs `git init` there with a local user, commits, and puts `brief.md` and `spec.md` into `.sdd/plan/` as `task-1-brief.md` and `task-1-spec.md`. It then runs `claude -p --model sonnet` from that repo with the flags of Global Constraints, Isolation, and with the tools limited to Bash, Read, Edit and Write. It allows those tools, sets `--max-budget-usd 1.50`, and writes `--output-format stream-json --verbose`. A `--settings` value denies Read, Edit and Write under `~/`. The stream goes to `~/.cache/agent-skills/scratch/plan93/`. Into `<out-dir>/rep<N>/`, it writes `summary.json` (cost, model usage, each tool call's name and input with `$HOME` written as `~`, and the final message), `final.diff` (the base commit against HEAD and the working tree), and copies of the report, the mutants file and every mutant run file. It refuses an existing `rep<N>/`. It runs the first rep alone, to warm the cache, then the others together.
 - `/tmp/mt-venv` is made once with `uv venv` and `uv pip install pytest`, at the pytest pin of `build/versions.toml`.
 - `grade.py` prints reading aids for each rep. It shows the `**Status:**` value and the plan-test functions that differ from `brief.md`. For F1–F3, it runs a kill check: in a scratch copy of the rep's final repository, it puts `wrong.py` in place of the module and runs the rep's final test files with the focused command. The check prints the failing test IDs.
@@ -370,8 +372,10 @@ The reading rules:
 The VOID rule: a rep is VOID, rerun with the next free number and not scored, when any of these hold:
 - A tool input names a path outside its rep directory, `/tmp/mt-skill/` and `/tmp/mt-venv/`.
 - The advisor or a second model appears in its usage.
-- The run errors, stops on its budget, or ends with no `**Status:**` line.
+- The run errors, or ends with no `**Status:**` line for a reason other than its budget.
 - The rep refuses the task.
+
+A rep that stops on its budget is not VOID, in either arm. It is reported and scored as a miss on its fixture's bar, because a VOID rule would throw out exactly the longest treatment reps.
 
 Spend stop: Global Constraints, Spend.
 
@@ -479,7 +483,7 @@ git commit -m "feat(sdd): give implementers the mutant step and the test-versus-
 
 - [ ] **Step 1: Build the treatment and pilot it**
 
-`build_prompts.py treatment <Task 3's sha> <tmp-dir>` writes the prompts and `/tmp/mt-skill/`. Run one pilot rep on F5. Audit its stream for any path outside the allowed roots, and check that it ran `/tmp/mt-skill/scripts/mutant-run`. Not scored.
+`build_prompts.py treatment <Task 3's sha> <tmp-dir>` writes the prompts and `/tmp/mt-skill/`. Run one pilot rep on F5. Audit its stream for any path outside the allowed roots, and check that `/tmp/mt-skill/scripts/mutant-run` printed a `run:` line in it. Not scored. If the pilot and the first treatment batch together show more than one budget stop, stop and ask the owner before more spend.
 
 - [ ] **Step 2: Run the treatment arm**
 
@@ -605,7 +609,7 @@ Under `## Reviewer micro-test`, write the rules. The cases are R1–R3, and the 
 Every arm gets the same seven files, inlined as already read. `[TEST_RULINGS]` is `none`. The bars, from spec Verification item 4, apply in each treatment arm, in at least 4 of 5 reps:
 - R1 draws no finding and no Declined to judge line about the mutants, the Inputs table or the mutant run.
 - R2 draws a Critical or Important finding that names the whitespace rule left without a mutant, or the `return 0` mutant.
-- R3 draws a Critical or Important finding that says the `Withdrawn:` line does not hold.
+- R3 draws a Critical or Important finding that names the tab-indented `#` line's behavior, framed either as a `Withdrawn:` line that does not hold or as a shape with no test. A surviving visible change always means both, so either framing has found the planted defect. The record notes which framing each rep used.
 
 R1 is a decoy (D14). Copy the VOID rule from plan 84's kit word for word. Leak check: grep the leak views for `trivial`, `equivalent`, `withdraw` and `uncovered` outside the packages, and record each hit.
 
@@ -761,6 +765,7 @@ Expected: 18,500 or fewer (it is 16,392 at `db4fede`).
 - [ ] **Step 6: Change `references/final-review.md`**
 
 - Item 1 (code-reviewer) gains the mutant check. When the workspace holds mutant files, add to `[PLAN_OR_REQUIREMENTS]` the path of each task's `task-N-mutants.md` and newest `task-N-mutants*.log`, with a check list in your own words of the six checks of spec Design 6. A gap is Important. The code-reviewer files themselves do not change (scope fence).
+- Item 1 also gains the ledger's `mutants: none: <why>` completion lines, with the Terms test the task reviewer uses: a task with a focused pytest command over code it changes is a mutant task, so its `none:` reason does not hold. Such a task is an Important finding.
 - The gate paragraph gets the same `(unclear)` exception as Task 5 Step 4, in the same place: right after "Your partner may still ask to revert it, which makes it a deferred item." Each existing sentence stays word for word.
 
 - [ ] **Step 7: Add the NOTICE entry**
