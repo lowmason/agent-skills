@@ -128,6 +128,18 @@ client: the job fails when anything is due, and GitHub sends its failed-run
 notice. A runner's detached checkout has no local `main`, hence `--worktree`.
 The step summary holds the report's unindented lines, and the job log the
 whole report.
+`cli_versions.py` compares the Codex and agy guides with the CLIs installed
+here (owner design, 2026-11-12). Each guide has a
+`<!-- cli-stamp: <cli> <X.Y.Z> -->` line above its header. The line names
+the newest release the guide covers. After the drift check, `check` prints
+one line per guide, and `check --hook` adds a part to the notice for each
+guide whose installed CLI has a newer major.minor. Neither changes the exit.
+The stamp is read from `main` like the rest of `check`. A CLI runs only when
+its guide has a stamp. A missing stamp, a CLI not on PATH and a failed
+`--version` call are skips. The notice leaves them out, and the manual
+report names them. A session started with launchd's bare PATH skips both
+CLIs. A refresh of either guide updates its stamp line with its header, and
+`test_cli_versions.py` checks that the two agree.
 `cli.py probes --claude <path>` runs the live probes that `manifest.toml`
 registers (spec R10): short `claude -p` runs that check behaviour the guide
 states, each from its own scratch directory under the system temp directory.

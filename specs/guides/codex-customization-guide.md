@@ -2,6 +2,7 @@
 
 **Skills · slash commands · subagents · AGENTS.md · permissions · hooks — built and run on a token budget**
 
+<!-- cli-stamp: codex 0.167.2 -->
 > Verified against the [official Codex manual](https://learn.chatgpt.com/docs/codex-manual.md) and its source documentation on **November 12, 2026**. Local CLI command and flag checks used **codex-cli 0.163.0**. Features added in releases 0.164.0 to 0.167.2 were checked against the documentation only. Items marked ⚠ are especially version-sensitive. Check `codex --version`, `codex --help`, and the linked reference before adopting exact fields. CLI, IDE, desktop, and cloud experiences share concepts but have different controls and execution environments; a local configuration example does not establish cloud support.
 
 This is the Codex counterpart of the [Claude Code Customization Guide](claude-code-customization-guide.md). It preserves that guide's organizing principle: customization should improve reliability without making every task pay for every workflow. Product behavior is sourced; budgeting and workflow recommendations are practical guidance.

@@ -2,6 +2,7 @@
 
 **Rules · skills · slash commands · agents · hooks · MCP · plugins · permissions — built and run on a token budget**
 
+<!-- cli-stamp: agy 1.5.7 -->
 > Checked on **November 12, 2026** against the [Antigravity documentation](https://antigravity.google/docs) and against local tests with **agy 1.5.7** (`agy --version`). A claim marked *(probed)* comes from those tests. The CLI updated itself from 1.2.17 (released October 5, 2026) to 1.5.7 before the probes started, so every probe ran on 1.5.7. The docs track the newest release. Some pages disagree with each other, and some disagree with the probes. ⚠ marks a claim that is version-sensitive, documented but not tested, or in conflict between sources. Run `agy --version` and `agy --help` before you rely on an exact field. The Antigravity App and IDE read most of the same folders, but this guide covers the CLI only.
 
 This is the counterpart of the [Claude Code Customization Guide](claude-code-customization-guide.md) and the [Codex Customization Guide](codex-customization-guide.md) for the Antigravity CLI (`agy`), Google's successor to Gemini CLI. It keeps their organizing principle: a customization must make the agent more reliable without making every task pay for every workflow. Product behavior comes from the docs or from probes. Budget and workflow advice is practical guidance.

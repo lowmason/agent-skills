@@ -21,10 +21,14 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
       is due (R6). Reads main's commit unless --ref or --worktree says
       otherwise; --docs DIR runs offline against a local copy. Writes only
       under the cache. Exit 0 nothing due, 1 something due, 2 an error.
+      Then each Codex and agy guide's cli-stamp line is compared with the
+      installed CLI's --version (cli_versions.py): one line per guide, which
+      never changes the exit.
       --hook prints nothing, even on an error (a bad command line still gets
       argparse's usage on stderr), and leaves the session-start notice and
-      last-check.json in the cache instead (R9). notice.sh refresh passes
-      --run, the ID it then looks for in last-check.json.
+      last-check.json in the cache instead (R9); the notice also names each
+      guide behind its CLI. notice.sh refresh passes --run, the ID it then
+      looks for in last-check.json.
   baseline init [--docs DIR] [--release LABEL] [--date YYYY-MM-DD] [--force]
   baseline rebaseline GROUP [PAGE | 'PAGE › KEY' ...] [--head RELEASE]
   baseline advance ID [ID ...] --to RELEASE
@@ -115,6 +119,7 @@ from functools import partial
 from pathlib import Path
 
 import baseline
+import cli_versions
 import notice
 import packets
 import probes
@@ -256,15 +261,20 @@ def run_lint(args, cache: Path) -> int:
     return 1 if violations else 0
 
 
-def run_check(args, cache: Path, today: date, now: datetime, fetch) -> int:
+def run_check(args, cache: Path, today: date, now: datetime, fetch, version_text) -> int:
+    '''check, then the Codex and agy guides' stamps against their CLIs, which
+    the report lists and the notice names when behind, without changing the
+    exit.'''
     if args.run is not None and not args.hook:
         raise SetupError('--run goes with --hook')
     source = Source(REPO, None if args.worktree else args.ref)
     code, report, path = check(source, cache, docs_dir=args.docs, today=today, now=now, fetch=fetch)
+    guides = cli_versions.statuses(source, version_text)
     if args.hook:
-        notice.after_check(cache, code, report, now, today, args.run)
+        notice.after_check(cache, code, report, now, today, args.run, [g.part() for g in guides if g.behind])
     else:
-        print('\n'.join(summary(report, path)))
+        lines = summary(report, path)
+        print('\n'.join([*lines[:-1], *(g.line() for g in guides), lines[-1]]))
     return code
 
 
@@ -435,7 +445,8 @@ def run_binaries() -> int:
     return 0
 
 
-def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None) -> int:
+def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None,
+         version_text=None) -> int:
     args = parser().parse_args(argv)
     hook = args.command == 'check' and args.hook
     cache = None
@@ -446,7 +457,7 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
         if args.command == 'lint':
             return run_lint(args, cache)
         if args.command == 'check':
-            return run_check(args, cache, today, now, fetch or http_get)
+            return run_check(args, cache, today, now, fetch or http_get, version_text or cli_versions.run_version)
         if args.command == 'packets':
             return run_packets(args, cache, today, now)
         if args.command == 'quotes':
