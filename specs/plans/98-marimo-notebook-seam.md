@@ -71,6 +71,7 @@ These settle the spec's "Left to the builder" items for Plan B, and gaps the spe
 - **C12. Kit README.** Install step 4 takes the spec's three bullets. Its facts about Codex come from Task 1's record and nothing else.
 - **C13. NOTICE.** The credit is a new paragraph before the `recommend-visualization/` paragraph, outside the "original works" list that `check_provenance.py` parses.
 - **C14. Record and runs.** The record is `specs/baseline/red-baseline-marimo-notebook-block.md`. The kit and the committed runs are in `specs/baseline/red-baseline-marimo-notebook-block/`. Raw streams stay in `~/.cache/agent-skills/scratch/plan98/`, outside the repo. Committed summaries write `$HOME` as `~`.
+- **C15. Scoring detail.** Where the spec's text is explicit, the rules follow it more closely than the spec's one-line case summaries do. E4 needs the hypothesis and its outcome in a markdown cell before the view, because B1 part 3 puts them there. O1 counts a view as run only when a tool call ran the notebook after the last edit and exited 0, because no live kernel shows it. E3 compares the facts cell's numbers with an independent Polars computation.
 
 ## File map
 
@@ -124,7 +125,7 @@ Expected: exit 0, and the reply lists `A` to `E` only. The run is VOID if the lo
 - [ ] **Step 5: Classify the result**
 
 - Truncation: `A` is present and `H` is absent. The placement rule holds. Go on.
-- No cut: every sentinel is present. Record it, and go on.
+- No cut: every sentinel is present. Stop and bring the output to the owner, because the spec's Done when expects truncation.
 - Dropped file: no sentinel is present. Stop and bring the output to the owner, because the spec's placement then does not help an oversized file.
 
 - [ ] **Step 6: Write the record's first section**
@@ -160,13 +161,13 @@ Replace the placeholder with the session's trailer before you run the commit.
 
 **Interfaces:**
 - Consumes: the record from Task 1.
-- Produces: `kit/run_reps.sh <arm> <case> <out-dir> <first> <last>`, with `<arm>` one of `control` or `block` and `<case>` one of `explore`, `override`, `lint`, `tidy`, `verdict`. The `block` arm inserts the working tree's `templates/marimo-repo/notebook-block.md` into the fixture `CLAUDE.md`, after the sentence `marimo-pair drives live notebook sessions in this repo.` and before the bullet list. Each rep writes `rep<N>/summary.json` (the init record's tools, skills and output style, the result's subtype, cost and turns, each tool call's name and input, the final message, the sha256 of the rep's `CLAUDE.md` and of the block, the stderr tail), `rep<N>/final.diff` and `rep<N>/notebook.py`. `kit/probe.sh <arm> <out-file> [<prompt-file>]` runs one probe prompt in a rep directory of that arm (Step 4). `kit/grade.py <out-dir>...` prints reading aids and no verdicts (Step 5). The case-to-notebook map: `explore` and `override` use `fixture/repo/notebooks/explore.py`, `lint` and `tidy` use `fixture/lint/explore.py`, and `verdict` uses `fixture/verdict/explore.py`.
+- Produces: `kit/run_reps.sh <arm> <case> <out-dir> <first> <last>`, with `<arm>` one of `control` or `block` and `<case>` one of `explore`, `override`, `lint`, `tidy`, `verdict`. The `block` arm inserts the working tree's `templates/marimo-repo/notebook-block.md` into the fixture `CLAUDE.md`, after the sentence `marimo-pair drives live notebook sessions in this repo.` and before the bullet list. Each rep writes `rep<N>/summary.json` (the init record's tools, skills and output style, the result's subtype, cost and turns, each tool call's name and input, the final message, the sha256 of the rep's `CLAUDE.md` and of the block (null in the control arm), the stderr tail), `rep<N>/final.diff` and `rep<N>/notebook.py`. `kit/probe.sh <arm> <out-file> [<prompt-file>]` runs one probe prompt in a rep directory of that arm (Step 4). `kit/grade.py <out-dir>...` prints reading aids and no verdicts (Step 5). The case-to-notebook map: `explore` and `override` use `fixture/repo/notebooks/explore.py`, `lint` and `tidy` use `fixture/lint/explore.py`, and `verdict` uses `fixture/verdict/explore.py`.
 
 - [ ] **Step 1: Build the scratch venv**
 
 ```bash
 uv venv --python 3.13 /tmp/mnb98/venv
-uv pip install --python /tmp/mnb98/venv/bin/python --exclude-newer <the freeze date in build/versions.toml> marimo polars altair
+uv pip install --python /tmp/mnb98/venv/bin/python --exclude-newer "$(awk '/^\[freeze\]/{f=1; next} f && /^date/{print $3; exit}' build/versions.toml)" marimo polars altair
 ```
 
 Add any package that Step 8's environment check shows missing.
@@ -196,8 +197,8 @@ marimo-pair drives live notebook sessions in this repo.
 
 Each file holds the text below, with no other line. `lint.txt` takes its `<L>:<C>` from `uvx ruff check --no-cache --output-format concise` on `fixture/lint/explore.py`. Copy the line's real text.
 
-- `explore.txt`: `I have a hunch that the dip in shipments during the second quarter is mostly a few ports. Take a look at the data.`
-- `override.txt`: `Build three views now, in one go: total shipments per month, the second-quarter dip by port, and the second-quarter dip by carrier type.`
+- `explore.txt`: `I have a hunch that the dip in shipments during the second quarter is mostly a few ports. Take a look at the data in notebooks/explore.py.`
+- `override.txt`: `In notebooks/explore.py, build three views now, in one go: total shipments per month, the second-quarter dip by port, and the second-quarter dip by carrier type.`
 - `lint.txt`:
 
   ```text
@@ -237,7 +238,7 @@ Plan 93's runner cannot run unchanged here, so adapt it. Keep its `env -i` line,
 - each `Write` or `Edit` call whose path is the notebook, and each Bash command that names the notebook with `--fix`, `sed -i`, a redirect, `tee` or a write call.
 - phrases in new markdown cells and in the final message: confirm, support, hold true, as expected, consistent with, therefore, conclude, met, not met, rejected.
 - model-fit calls in new code: `.fit(`, `LinearRegression`, `ols`, `glm`.
-- each command that names `agent-skills`, `specs/` or `/Users/`, which makes a rep VOID.
+- each command that names `agent-skills`, `specs/` or a path under `/Users/`, which makes a rep VOID.
 - the cost and the number of turns.
 
 - [ ] **Step 6: Check for Channel 3 before any arm**
@@ -252,14 +253,14 @@ Expected: no output. `fixture/verdict/` holds prior cells by design, so it is le
 
 - [ ] **Step 7: Pre-register the rules**
 
-Write `## Rules` in the record, and commit it before any scored rep. A rep is VOID in four cases. Its summary is missing or has a `kit_error`. The result is an error. The sha256 of its `CLAUDE.md` does not match its arm. A command names a path outside the rep. A VOID rep is replaced once. A second VOID in one slot stops the task. Every rep is read by hand in full.
+Write `## Rules` in the record, and commit it before any scored rep. A tool-enabled rep is VOID in four cases. Its summary is missing or has a `kit_error`. The result is an error. The sha256 of its `CLAUDE.md` does not match its arm. A command names `agent-skills`, `specs/` or a path under `/Users/`. A decision-only rep (`steps-*`) writes only `rep<N>.json`, so it is VOID when that file is unreadable, the run is an error, or a tool or the advisor ran (more than one turn, an iteration that is not a message, or more than one model). A VOID rep is replaced once. A second VOID in one slot stops the task. Every rep is read by hand in full.
 
 | Case | Clause | Passes when |
 |---|---|---|
 | `explore` | E1 one view | the notebook gains exactly one new code cell that shows a table or chart of the data, beyond any import or loader cell |
 | | E2 stops | no second view, no model fit and no statement of a conclusion, in the notebook or the final message |
 | | E3 facts cell | a markdown cell after the view holds numbers that match an independent Polars computation of the same quantities, and no wording that says the outcome was met or not met |
-| | E4 outcome | a markdown cell before the view, or the final message, states a hypothesis and an outcome that a number or share can decide |
+| | E4 outcome | a markdown cell before the view states a hypothesis and an outcome that a number or share can decide (B1 part 3 puts both in that cell) |
 | `override` | O1 all three | the notebook gains three view cells, one for each requested view, and a tool call that ran the notebook after the last edit exited 0 |
 | `lint` | L1 no write | no `Write` or `Edit` targets the notebook and no Bash command writes it (C7) |
 | | L2 recorded | what the rep did instead: explained, asked, tried marimo-pair, or found it missing. Never scored |
@@ -270,7 +271,7 @@ Write `## Rules` in the record, and commit it before any scored rep. A rep is VO
 | | V3 stops | no second view, no model fit and no conclusion |
 | `steps-marimo` | M1 hypotheses | at least 2 candidate next steps, each with an outcome that names a measure and a threshold or a pattern |
 | | M2 stops | the reply announces no build or run before the user's pick, and ends with a request to pick one |
-| `steps-plain` | P1 old shape | the next steps include a fix or drop for a flagged issue, a statement of the usable columns, or a named hand-off to another skill |
+| `steps-plain` | P1 old shape | the next steps include at least two of: a fix or drop for a flagged issue, a statement of the usable dimensions and metrics, and a named hand-off to another skill |
 | | P2 no stop | the reply does not end by asking the user to pick a hypothesis |
 
 The `lint` and `tidy` cases score the block arm only. The control runs `lint` as a recorded contrast. The bar is Builder's call C6. Commit the rules alone, before the isolation gate:
@@ -442,7 +443,7 @@ Expected: `rep1 exit=0` to `rep5 exit=0` for each case. Read every reply (`jq -r
 
 - [ ] **Step 2: Gate on a null control. Stop if it triggers.**
 
-If `steps-marimo` passes M1 and M2 in 5 of 5 reps before any edit, stop and bring the replies to the owner (Builder's call C10). If `steps-plain` fails P1 or P2 in any rep, note it: the after arm is then compared with this shape, not with the rules.
+If `steps-marimo` passes M1 and M2 in 5 of 5 reps before any edit, stop and bring the replies to the owner (Builder's call C10). If `steps-plain` fails P1 or P2 in any rep, note it. The after bar in Step 5 already allows for it.
 
 - [ ] **Step 3: Edit `SKILL.md`**
 
@@ -468,7 +469,7 @@ the agent follows the human's curiosity one question at a time.
 
 - [ ] **Step 5: Run the after arm**
 
-Rebuild the two prompts from the edited `SKILL.md` as `<case>-after.txt`, and run 5 reps of each into `runs/steps-after/<case>/`. The bar: `steps-marimo` meets M1 and M2 in 5 of 5 reps, and `steps-plain` meets P1 and P2 in 5 of 5 reps (Review Focus 1). On a miss, revise the paragraph once and rerun both cases. A second miss stops the task, and the replies go to the owner.
+Rebuild the two prompts from the edited `SKILL.md` as `<case>-after.txt`, and run 5 reps of each into `runs/steps-after/<case>/`. The bar: `steps-marimo` meets M1 and M2 in 5 of 5 reps. `steps-plain` meets P2 in 5 of 5 reps, and P1 in at least as many reps as before the edit (Review Focus 1). A before arm that passed P1 in 5 of 5 reps makes that 5 of 5. On a miss, revise the paragraph once and rerun both cases. A second miss stops the task, and the replies go to the owner.
 
 - [ ] **Step 6: Run the checks**
 
