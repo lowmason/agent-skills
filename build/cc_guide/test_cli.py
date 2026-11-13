@@ -9,6 +9,7 @@ import pytest
 
 import baseline
 import cli
+import cli_versions
 import notice
 import probes
 import state
@@ -135,6 +136,31 @@ def test_check_hook_prints_nothing_and_leaves_the_notice_then_the_record(world, 
     assert capsys.readouterr() == ('', '')
     assert (cache / notice.NOTICE).read_text() == ''
     assert git(repo, 'status', '--porcelain') == ''
+
+
+def test_check_reports_each_stamped_guide_and_the_hook_names_one_behind_its_cli(world, capsys):
+    '''The guide versions are informational in the report and never change the
+    exit; the notice names a guide behind its CLI even when nothing else is due.'''
+    repo, cache, docs = world
+    write_tree(repo, {cli_versions.GUIDES[1][1]: '<!-- cli-stamp: agy 1.5.7 -->\n> Checked with agy 1.5.7.\n'})
+    git(repo, 'add', '-A')
+    git(repo, 'commit', '-qm', 'stamp the agy guide')
+    installed = {'agy': '1.6.0\n'}.get  # codex has no stamp here, so it never runs
+    assert cli.main(['--cache', str(cache), 'check', '--docs', str(docs)], today=date(2026, 9, 27),
+                    now=HOOK_NOW, version_text=installed) == 1
+    out = capsys.readouterr().out.splitlines()
+    assert out[-3:-1] == [
+        f'codex guide: skipped: no cli-stamp line for codex in {cli_versions.GUIDES[0][1]}',
+        'agy guide: stamped 1.5.7, installed 1.6.0, behind']
+    assert out[-1].startswith('something is due; report ')
+    assert cli.main(['--cache', str(cache), 'check', '--hook', '--run', 'r1', '--docs', str(docs)],
+                    today=date(2026, 9, 27), now=HOOK_NOW, version_text=installed) == 1
+    assert shown(cache) == ('cc-guide · 2 releases untriaged (last triage 25 d ago) → /cc-guide'
+                            ' · agy guide 1.5.7, installed 1.6.0')
+    assert cli.main(['--cache', str(cache), 'check', '--hook', '--run', 'r2', '--docs', str(docs)],
+                    today=date(2026, 9, 5), now=HOOK_NOW, version_text=installed) == 0
+    assert shown(cache) == 'cc-guide · agy guide 1.5.7, installed 1.6.0'
+    assert capsys.readouterr() == ('', '')
 
 
 def test_check_hook_turns_a_setup_error_into_the_error_line(tmp_path, docs_dir, monkeypatch, capsys):
