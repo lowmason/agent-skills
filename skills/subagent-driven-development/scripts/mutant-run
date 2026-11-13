@@ -35,6 +35,22 @@
 #      one that `git apply --check` refuses. Otherwise the script writes the
 #      marker, applies the patch, runs the command, reverses the patch and
 #      removes the marker.
+#   7. The revert: the task's code put back as it was at BASE, so the run file
+#      shows which tests need the task's change. Its paths are those that
+#      changed from BASE to HEAD (`git diff --no-renames`, so a rename is a
+#      deletion and an addition), less the test and fixture files and the
+#      project config files, which stay at HEAD: pyproject.toml, uv.lock,
+#      uv.toml, .python-version, requirements*.txt, setup.cfg, pytest.ini and
+#      tox.ini, matched by base name at any depth. The paths are listed before
+#      the baseline, so the bytecode purge covers them from the first run.
+#      With no path left, nothing runs. Otherwise `git diff --no-renames
+#      --binary HEAD BASE` over those paths goes to
+#      <workspace>/task-<N>-revert.patch, which each run overwrites and keeps.
+#      It runs as a patch does in step 6, with the marker and the mutants' time
+#      limit, and with --continue-on-collection-errors added for it alone, so
+#      a test file that cannot load hides no other file's tests. It gets no
+#      verdict, and it never changes the result line, a mutant line, the tests
+#      section or the exit status.
 # After the baseline and after each reverse, tracked files must equal HEAD
 # (`git diff --quiet HEAD`). Untracked files are not compared, because tests
 # leave caches.
@@ -52,9 +68,14 @@
 # INVALID; a command joined with && stops at the failing run. pytest's
 # FAILED summary lines are not read: its -r flag is last-wins, so a command
 # with -rs prints none. Every run also gets PYTHONDONTWRITEBYTECODE=1, and the
-# cached bytecode of each .py file a patch touches is removed before and after
-# every run, so no run loads bytecode older than its source and no mutant's
-# bytecode outlives its reverse.
+# cached bytecode of each .py file a patch or the revert touches is removed
+# before and after every run, so no run loads bytecode older than its source
+# and no mutant's bytecode outlives its reverse.
+#
+# The revert's JUnit report is read one test case at a time, in report order:
+# a collection failure is "not loaded", a <failure> or any other test's
+# <error> is "failed", a <skipped> is "skipped", and any other test case is
+# "passed". pytest's internal error is no test case, so it gets no line.
 #
 # Each mutant's run has a time limit: ten times the baseline's whole seconds,
 # plus 60, or MUTANT_RUN_TIMEOUT (whole seconds) when it is set. A run past its
@@ -96,25 +117,50 @@
 #   tree: clean
 #   result: caught <c>, survived <s>, invalid <i>
 #   note: reversed <patch file name>, left applied by a killed run
+#   revert: <one of the forms below>
 #   --- mutants ---
 #   mutant <K>: <CAUGHT|SURVIVED|INVALID> exit <status, or - when nothing ran> sha256 <hex>[ tests: <id> ...][ reason: <why>]
 #   --- tests ---
 #   test <id>: caught <K>[ <K> ...]
+#   --- revert ---
+#   path: <each reverted path, in git diff order>
+#   sha256: <hex of the revert patch file>
+#   failed <id>: <the first line of the failure's message>
+#   not loaded <name>: <the cause line>
+#   skipped <id>: <the skip reason>
+#   passed <id>
 #   --- output: baseline ---
 #   <the baseline's output>
 #   --- output: mutant <K> ---
 #   <that mutant's output, for each mutant whose command ran>
+#   --- output: revert ---
+#   <the revert's output, when its command ran>
 # The note line appears only after a recovery. <id> is <classname>::<name>. A
 # failing baseline writes the header through the note, with "result: baseline
 # failed, exit <n>", then "--- output: baseline ---" and its output only.
+#
+# The revert line is one of:
+#   revert: ran, exit <n>, failed <f>, not loaded <u>, skipped <s>, passed <p>
+#   revert: ran, exit <n>, no report
+#   revert: timeout after <n>s
+#   revert: not applied: <reason>
+#   revert: none: no file outside the tests and the project config changed
+# The revert section exists when a revert patch was built, and its test case
+# lines only for a revert that ran and wrote a report. <name> on a "not
+# loaded" line is the collection failure's name: its module's dotted path.
+# The cause line is the last line of the error text that starts with "E ",
+# less that prefix and the spaces after it, or else the error's message. The
+# first line of a rewritten assert's message gets back the "AssertionError: "
+# that pytest takes off it. A skip reason is the <skipped> message.
 #
 # Usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
 #   TASK_NUMBER is a task ID in task-brief's grammar, as test-run takes it.
 #   BASE is the task's base commit, as task-done takes it: any name git
 #   resolves to a commit, a short sha included.
-# stdout: the result line, each mutant line, then "run: <absolute path of the
-#   run file>" last. A failing baseline prints the last 5 lines of its output,
-#   then the result line, then the run line. A refusal prints no run line.
+# stdout: the result line, each mutant line, the revert line, then "run:
+#   <absolute path of the run file>" last. A failing baseline prints the last 5
+#   lines of its output, then the result line, then the run line. A refusal
+#   prints no run line.
 # Exit: 0 when every mutant is CAUGHT; 1 when any is SURVIVED or INVALID; 2 for
 #   bad arguments, a bad task or mutant number, a BASE that is not a commit or
 #   not an ancestor of HEAD, a dirty tree, no mutants, a mutant already in
@@ -338,15 +384,15 @@ exec { $ARGV[0] } @ARGV;
 print STDERR "mutant-run: $ARGV[0]: $!\n";
 exit($!{ENOENT} ? 127 : 126);'
 
-# Run the test command with its output in file $1 and a time limit of $2
-# seconds (0: none). The JUnit report goes to $1.xml, a path that does not
-# exist before the run. Set run_rc to the command's exit status and timed_out
-# to true or false.
+# Run the test command with its output in file $1, a time limit of $2 seconds
+# (0: none), and pytest options $3, when given, after the JUnit option. The
+# JUnit report goes to $1.xml, a path that does not exist before the run. Set
+# run_rc to the command's exit status and timed_out to true or false.
 run_command() {
-  local out=$1 limit=$2 addopts
+  local out=$1 limit=$2 extra=${3:-} addopts
   rm -f "$out.xml" "$out.timeout"
   purge_bytecode
-  addopts="${PYTEST_ADDOPTS:+$PYTEST_ADDOPTS }--junitxml=$(sh_quote "$out.xml")"
+  addopts="${PYTEST_ADDOPTS:+$PYTEST_ADDOPTS }--junitxml=$(sh_quote "$out.xml")${extra:+ $extra}"
   run_rc=0
   timed_out=false
   # PYTHONDONTWRITEBYTECODE: a timestamp .pyc is checked only by its source's
@@ -420,6 +466,87 @@ failed_tests() {
   '
 }
 
+# Print one line for each test case in the revert's JUnit file $1, in report
+# order, as the header's revert section shows them. Each '<' starts a line, as
+# in failed_tests, but a newline becomes \001, a byte that XML never holds, so
+# the text of an <error> keeps its lines for the cause line.
+revert_outcomes() {
+  tr '\n<' '\001\n' < "$1" | awk '
+    function raw(s, key,    i, v) {
+      i = index(s, " " key "=\"")
+      if (i == 0) return ""
+      v = substr(s, i + length(key) + 3)
+      return substr(v, 1, index(v, "\"") - 1)
+    }
+    function unescape(v) {
+      gsub(/&lt;/, "<", v); gsub(/&gt;/, ">", v); gsub(/&quot;/, "\"", v); gsub(/&amp;/, "\\&", v)
+      return v
+    }
+    # The first line of a failure message. pytest takes "AssertionError: "
+    # off the message of an assert it rewrote, so it is put back.
+    function first_line(m,    i) {
+      i = index(m, "&#10;")
+      if (i) m = substr(m, 1, i - 1)
+      m = unescape(m)
+      if (m ~ /^assert /) m = "AssertionError: " m
+      return m
+    }
+    # The last line of the error text that starts with "E ", less that prefix
+    # and the spaces after it, or else the message.
+    function cause(s,    n, lines, i, c) {
+      n = split(substr(s, index(s, ">") + 1), lines, "\001")
+      c = ""
+      for (i = 1; i <= n; i++) if (lines[i] ~ /^E /) c = lines[i]
+      if (c == "") return unescape(raw(s, "message"))
+      sub(/^E +/, "", c)
+      return unescape(c)
+    }
+    /^testcase[ \t\/>]/ {
+      name = unescape(raw($0, "name"))
+      id = unescape(raw($0, "classname")) "::" name
+      outcome = "passed"
+      detail = ""
+      # The first ">" ends the tag; "/>" there closes the case at once.
+      open = substr($0, 1, index($0, ">")) !~ /\/>$/
+      if (!open) print "passed " id
+      next
+    }
+    open && /^error[ \t\/>]/ {
+      m = raw($0, "message")
+      if (m == "internal error") outcome = "none"
+      else if (m == "collection failure") { outcome = "not loaded"; detail = cause($0) }
+      else if (outcome != "failed") { outcome = "failed"; detail = first_line(m) }
+      next
+    }
+    open && /^failure[ \t\/>]/ {
+      if (outcome != "failed") { outcome = "failed"; detail = first_line(raw($0, "message")) }
+      next
+    }
+    open && /^skipped[ \t\/>]/ {
+      if (outcome == "passed") { outcome = "skipped"; detail = unescape(raw($0, "message")) }
+      next
+    }
+    /^\/testcase>/ {
+      if (open && outcome == "not loaded") print "not loaded " name ": " detail
+      else if (open && outcome == "passed") print "passed " id
+      else if (open && outcome != "none") print outcome " " id ": " detail
+      open = 0
+    }
+  '
+}
+
+# Print the counts of revert_outcomes lines on stdin, as the revert line
+# shows them.
+count_outcomes() {
+  awk '
+    /^failed / { f++ }
+    /^not loaded / { u++ }
+    /^skipped / { s++ }
+    /^passed / { p++ }
+    END { printf "failed %d, not loaded %d, skipped %d, passed %d\n", f, u, s, p }
+  '
+}
+
 # Print the paths patch $1 touches, one to a line. -z keeps git from quoting
 # a path; a rename's two paths each get a line of their own.
 patch_paths() {
@@ -443,6 +570,16 @@ is_test_path() {
   return 1
 }
 
+# Whether path $1 is a project config file, by its base name at any depth.
+# These rebuild or re-sync the environment, or hold the pytest settings that
+# the tests at HEAD rely on, so the revert leaves them at HEAD.
+is_config_path() {
+  case "${1##*/}" in
+    pyproject.toml | uv.lock | uv.toml | .python-version | requirements*.txt | setup.cfg | pytest.ini | tox.ini) return 0 ;;
+  esac
+  return 1
+}
+
 # The .py files that any patch touches, one to a line.
 py_files=''
 for k in $ks; do
@@ -455,6 +592,20 @@ for k in $ks; do
 $paths
 EOF
 done
+
+# The revert's paths: each path that changed from BASE to HEAD, less the test
+# and fixture files and the project config files, in git diff order. -z keeps
+# git from quoting a path. Its .py files join the purge before the baseline.
+revert_paths=()
+while IFS= read -r -d '' p; do
+  if is_test_path "$p" || is_config_path "$p"; then
+    continue
+  fi
+  revert_paths+=("$p")
+  case "$p" in
+    *.py) py_files="$py_files$p"$'\n' ;;
+  esac
+done < <(git -C "$top" diff --no-renames --name-only -z "$base_sha" HEAD)
 
 # Remove the cached bytecode of each of those files, before and after every
 # run: from its __pycache__ (every optimization level), and from the mirror
@@ -620,11 +771,57 @@ EOF
   mutant_lines+=("mutant $k: $verdict exit $status sha256 $sha$detail")
 done
 
-# 7. Write the run file.
+# 7. The revert, on the machinery of step 6. The "already in HEAD" check never
+# sees it: it is built from HEAD, and its name is not a mutant's.
+revert_name="task-$n-revert.patch"
+revert_patch="$dir/$revert_name"
+revert_sha=
+revert_out=
+outcomes=
+if [ "${#revert_paths[@]}" -eq 0 ]; then
+  revert='revert: none: no file outside the tests and the project config changed'
+else
+  # :(literal) keeps git from reading a glob character in a path as a pattern.
+  pathspecs=()
+  for p in "${revert_paths[@]}"; do
+    pathspecs+=(":(literal)$p")
+  done
+  git -C "$top" diff --no-renames --binary HEAD "$base_sha" -- "${pathspecs[@]}" > "$revert_patch"
+  revert_sha=$(file_sha256 "$revert_patch")
+  revert='revert: not applied: does not apply'
+  if git -C "$top" apply --check --whitespace=nowarn "$revert_patch" > /dev/null 2>&1; then
+    write_marker "$revert_name" "$revert_patch"
+    if ! git -C "$top" apply --whitespace=nowarn "$revert_patch"; then
+      # A refused patch writes nothing, so there is nothing to reverse.
+      rm -f "$marker"
+      check_tree "after $revert_name did not apply"
+    else
+      revert_out=$(mktemp "$dir/mutant-run.XXXXXX")
+      run_command "$revert_out" "$limit" --continue-on-collection-errors
+      if ! restore_marked; then
+        echo "mutant-run: could not reverse $revert_name after its run ($marker); restore the tree by hand, then remove the marker" >&2
+        exit 2
+      fi
+      check_tree "after reversing $revert_name"
+      if [ "$timed_out" = true ]; then
+        revert="revert: timeout after ${limit}s"
+      elif [ -f "$revert_out.xml" ]; then
+        outcomes=$(revert_outcomes "$revert_out.xml")
+        revert="revert: ran, exit $run_rc, $(printf '%s\n' "$outcomes" | count_outcomes)"
+      else
+        revert="revert: ran, exit $run_rc, no report"
+      fi
+      rm -f "$revert_out.xml"
+    fi
+  fi
+fi
+
+# 8. Write the run file.
 result="result: caught $caught, survived $survived, invalid $invalid"
 next_run_file
 {
   write_header
+  printf '%s\n' "$revert"
   printf -- '--- mutants ---\n'
   printf '%s\n' "${mutant_lines[@]}"
   printf -- '--- tests ---\n'
@@ -633,6 +830,12 @@ next_run_file
     { ks[$1] = ks[$1] " " $2 }
     END { for (i = 1; i <= count; i++) print "test " order[i] ": caught " ks[order[i]] }
   '
+  if [ -n "$revert_sha" ]; then
+    printf -- '--- revert ---\n'
+    printf 'path: %s\n' "${revert_paths[@]}"
+    printf 'sha256: %s\n' "$revert_sha"
+    [ -z "$outcomes" ] || printf '%s\n' "$outcomes"
+  fi
   printf -- '--- output: baseline ---\n'
   cat_lines "$base_out"
   i=0
@@ -641,13 +844,17 @@ next_run_file
     cat_lines "${ran_outs[$i]}"
     i=$((i + 1))
   done
+  if [ -n "$revert_out" ]; then
+    printf -- '--- output: revert ---\n'
+    cat_lines "$revert_out"
+  fi
 } > "$run_file"
-rm -f "$base_out" ${ran_outs[@]+"${ran_outs[@]}"}
+rm -f "$base_out" ${ran_outs[@]+"${ran_outs[@]}"} ${revert_out:+"$revert_out"}
 
-printf '%s\n' "$result" "${mutant_lines[@]}"
+printf '%s\n' "$result" "${mutant_lines[@]}" "$revert"
 echo "run: $run_file"
 
-# 8. Exit.
+# 9. Exit.
 if [ "$survived" -eq 0 ] && [ "$invalid" -eq 0 ]; then
   exit 0
 fi

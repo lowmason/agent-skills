@@ -1022,6 +1022,7 @@ def test_mutant_run_catches_a_mutant_and_names_its_failing_tests(calc):
     assert line.startswith(head)
     assert set(line.removeprefix(head).split()) == {'test_calc::test_add_small', 'test_calc::test_add_large'}
     assert 'test test_calc::test_add_small: caught 1 2' in lines
+    assert lines[6] == 'revert: none: no file outside the tests and the project config changed'
     assert result.stdout.splitlines()[-1] == 'run: ' + str(path)
     assert (calc / 'calc.py').read_text() == CALC
     assert not run_file(calc, 'mutant-active').exists()
@@ -1596,3 +1597,440 @@ def test_mutant_run_refuses_a_base_on_a_diverged_branch(calc):
     assert result.returncode == 2
     assert f'mutant-run: HEAD is not a descendant of BASE {sibling}' in result.stderr.splitlines()
     assert no_mutant_run_file(calc)
+
+
+# ── mutant-run: the revert ───────────────────────────────────────────────
+
+# Every test file, so a file that cannot load on the revert shows beside the others.
+PYTEST_ALL = [sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider']
+
+HALF = 'def half(a):\n    return a / 2\n'
+HALF_HEAD = 'def half(a):\n    return a // 2\n'
+TEST_HALF_BASE = '''from half import half
+
+
+def test_half_even():
+    assert half(4) == 2
+'''
+TEST_HALF = TEST_HALF_BASE + (
+    '\n\ndef test_half_floors():\n    assert half(3) == 1\n'
+    '\n\ndef test_half_zero():\n    assert half(0) == 0\n'
+)
+TEST_PARAM = '''import pytest
+
+
+@pytest.mark.parametrize('x', [1], ids=['a&b'])
+def test_p(x):
+    assert True
+'''
+NEWMOD = 'def g():\n    return 1\n'
+TEST_NEWMOD = '''from newmod import g
+
+
+def test_g():
+    assert g() == 1
+'''
+TEST_SKIP = '''import pytest
+
+
+def test_g_skip():
+    pytest.importorskip('newmod')
+'''
+H = ('return a // 2', 'return a // 3')  # test_half_even fails
+# Hangs only on the revert, where half.py divides again.
+SLOW_REVERT = ['sh', '-c', 'grep -q "a / 2" half.py && sleep 30; "$0" -m pytest -q -p no:cacheprovider', sys.executable]
+# The baseline and a mutant run before the revert, so allow them time too.
+REVERT_WAIT_SECONDS = 30
+
+
+@pytest.fixture
+def changed(calc):
+    '''calc with a BASE commit and a task commit on it; returns (repo, base).
+
+    The task floors half(), adds two tests for it (test_half_zero passes on the
+    old code too), adds newmod.py with a test file that imports it at its top,
+    and adds a test that importorskips it. BASE's test_param.py has a case whose
+    ID XML escapes.'''
+    (calc / 'half.py').write_text(HALF)
+    (calc / 'test_half.py').write_text(TEST_HALF_BASE)
+    (calc / 'test_param.py').write_text(TEST_PARAM)
+    git('add', 'half.py', 'test_half.py', 'test_param.py', cwd=calc)
+    git('commit', '-qm', 'base', cwd=calc)
+    base = head_sha(calc)
+    (calc / 'half.py').write_text(HALF_HEAD)
+    (calc / 'test_half.py').write_text(TEST_HALF)
+    (calc / 'newmod.py').write_text(NEWMOD)
+    (calc / 'test_newmod.py').write_text(TEST_NEWMOD)
+    (calc / 'test_skip.py').write_text(TEST_SKIP)
+    git('add', 'half.py', 'test_half.py', 'newmod.py', 'test_newmod.py', 'test_skip.py', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    return calc, base
+
+
+def commit_files(repo, files, message):
+    '''Write each file (text or bytes), creating its directory, commit them all, and return the new HEAD.'''
+    for path, content in files.items():
+        (repo / path).parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(content, bytes):
+            (repo / path).write_bytes(content)
+        else:
+            (repo / path).write_text(content)
+    git('add', '--', *[f':(literal){p}' for p in files], cwd=repo)
+    git('commit', '-qm', message, cwd=repo)
+    return head_sha(repo)
+
+
+def stamp(path, word):
+    '''A config file's text that differs by word. A pytest.ini keeps its section, so pytest still reads it.'''
+    section = '[pytest]\n' if path.endswith('pytest.ini') else ''
+    return f'{section}# {word}\n'
+
+
+def run_section(lines, name):
+    '''The lines of the run file's "--- <name> ---" section, up to the next section.'''
+    start = lines.index(f'--- {name} ---') + 1
+    end = next((i for i in range(start, len(lines)) if lines[i].startswith('--- ')), len(lines))
+    return lines[start:end]
+
+
+def path_lines(lines):
+    return [x for x in lines if x.startswith('path: ')]
+
+
+def tree_is_head(repo):
+    return run('git', 'diff', '--quiet', 'HEAD', cwd=repo).returncode == 0
+
+
+def test_mutant_run_lists_each_test_on_the_revert(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    result_line = 'result: caught 1, survived 0, invalid 0'
+    revert_line = 'revert: ran, exit 1, failed 1, not loaded 1, skipped 1, passed 6'
+    assert result_line in lines
+    assert revert_line in lines
+    assert lines.index(revert_line) > lines.index(result_line)
+    revert = run_section(lines, 'revert')
+    patch = run_file(repo, 'task-1-revert.patch')
+    assert 'path: half.py' in revert
+    assert 'path: newmod.py' in revert
+    assert f'sha256: {patch_sha(patch)}' in revert
+    assert any(x.startswith('failed test_half::test_half_floors: AssertionError') for x in revert)
+    [not_loaded] = [x for x in revert if x.startswith('not loaded test_newmod: ')]
+    assert 'newmod' in not_loaded.removeprefix('not loaded test_newmod: ')
+    assert any(x.startswith('skipped test_skip::test_g_skip: ') for x in revert)
+    assert 'passed test_half::test_half_even' in revert
+    assert 'passed test_half::test_half_zero' in revert
+    assert run_section(lines, 'tests') == ['test test_half::test_half_even: caught 1']
+    assert '--- output: revert ---' in lines
+    out = result.stdout.splitlines()
+    assert out[-1].startswith('run: ')
+    assert out[-2] == revert_line
+    assert tree_is_head(repo)
+    assert (repo / 'newmod.py').exists()
+    assert not run_file(repo, 'mutant-active').exists()
+
+
+def test_mutant_run_keeps_test_and_config_files_at_head(calc):
+    kept = [
+        'pyproject.toml', 'pkg/pyproject.toml', 'uv.lock', '.python-version', 'requirements-dev.txt',
+        'pytest.ini', 'tests/helper.py',
+    ]
+    base = commit_files(calc, {p: stamp(p, 'base') for p in kept}, 'base')
+    double = '\n\ndef double(a):\n    return 2 * a\n'
+    commit_files(calc, {**{p: stamp(p, 'task') for p in kept}, 'calc.py': CALC + double}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert path_lines(mutant_lines(calc)) == ['path: calc.py'], result.stdout + result.stderr
+
+
+def test_mutant_run_writes_revert_none_when_only_tests_and_config_changed(calc):
+    base = head_sha(calc)
+    test_calc = TEST_CALC + '\n\ndef test_add_zero():\n    assert add(0, 0) == 0\n'
+    commit_files(calc, {'test_calc.py': test_calc, 'pyproject.toml': '[project]\nname = "demo"\n'}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    lines = mutant_lines(calc)
+    assert 'revert: none: no file outside the tests and the project config changed' in lines, result.stdout + result.stderr
+    assert '--- revert ---' not in lines
+    assert '--- output: revert ---' not in lines
+    assert not run_file(calc, 'task-1-revert.patch').exists()
+
+
+def test_mutant_run_round_trips_a_deleted_file_and_a_new_script(calc):
+    base = commit_files(calc, {'old.py': 'OLD = 1\n'}, 'base')
+    git('rm', '-q', 'old.py', cwd=calc)
+    (calc / 'tool.sh').write_text('#!/bin/sh\necho tool\n')
+    (calc / 'tool.sh').chmod(0o755)
+    git('add', 'tool.sh', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    lines = mutant_lines(calc)
+    assert 'path: old.py' in lines, result.stdout + result.stderr
+    assert 'path: tool.sh' in lines
+    assert not (calc / 'old.py').exists()
+    assert os.access(calc / 'tool.sh', os.X_OK)
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_reverts_a_renamed_file(changed):
+    repo, base = changed
+    git('mv', 'half.py', 'halve.py', cwd=repo)
+    (repo / 'test_half.py').write_text(TEST_HALF.replace('from half import', 'from halve import'))
+    git('add', 'test_half.py', cwd=repo)
+    git('commit', '-qm', 'rename', cwd=repo)
+    make_mutant(repo, 1, *H, path='halve.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    lines = mutant_lines(repo)
+    assert 'path: half.py' in lines, result.stdout + result.stderr
+    assert 'path: halve.py' in lines
+    assert not (repo / 'half.py').exists()
+    assert tree_is_head(repo)
+
+
+def test_mutant_run_reverts_a_path_with_a_space(calc):
+    base = commit_files(calc, {'my mod.py': 'X = 1\n'}, 'base')
+    commit_files(calc, {'my mod.py': 'X = 2\n'}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert 'path: my mod.py' in mutant_lines(calc), result.stdout + result.stderr
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_lists_revert_ids_unescaped(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert 'passed test_param::test_p[a&b]' in mutant_lines(repo), result.stdout + result.stderr
+
+
+def test_mutant_run_records_a_revert_with_no_report(changed):
+    repo, base = changed
+    commit_files(repo, {'conftest.py': 'import newmod\n'}, 'conftest')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 4, no report' in lines
+    assert 'newmod' in '\n'.join(run_section(lines, 'output: revert'))
+
+
+def test_mutant_run_records_a_revert_that_times_out(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    env = {**PY_ENV, 'MUTANT_RUN_TIMEOUT': '2'}
+    start = time.monotonic()
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *SLOW_REVERT, cwd=repo, env=env)
+    elapsed = time.monotonic() - start
+    assert 'revert: timeout after 2s' in mutant_lines(repo), result.stdout + result.stderr
+    assert elapsed < 15
+    assert (repo / 'half.py').read_text() == HALF_HEAD
+
+
+def wait_for_the_applied_revert(repo, proc):
+    # The marker is written before the revert is applied, so the marker alone
+    # does not show that half.py divides again yet.
+    marker = run_file(repo, 'mutant-active')
+    deadline = time.monotonic() + REVERT_WAIT_SECONDS
+    while time.monotonic() < deadline:
+        try:
+            if (marker.read_text().split('\n', 1)[0] == 'task-1-revert.patch'
+                    and 'a / 2' in (repo / 'half.py').read_text()):
+                return
+        except FileNotFoundError:
+            pass
+        if proc.poll() is not None:
+            pytest.fail('mutant-run ended before it applied the revert')
+        time.sleep(0.05)
+    os.killpg(proc.pid, signal.SIGKILL)
+    pytest.fail('the revert was never applied')
+
+
+def test_mutant_run_recovers_a_revert_a_killed_run_left_applied(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    proc = subprocess.Popen(
+        [str(MUTANT_RUN), 'plan.md', '1', base, '--', *SLOW_REVERT],
+        cwd=repo, env=PY_ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    wait_for_the_applied_revert(repo, proc)
+    os.killpg(proc.pid, signal.SIGKILL)
+    proc.wait(timeout=KILL_WAIT_SECONDS)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', 'true', cwd=repo, env=PY_ENV)
+    note = 'note: reversed task-1-revert.patch, left applied by a killed run'
+    assert note in mutant_lines(repo), result.stdout + result.stderr
+    assert (repo / 'half.py').read_text() == HALF_HEAD
+    assert not run_file(repo, 'mutant-active').exists()
+
+
+# ── mutant-run: the revert, further shapes ───────────────────────────────
+
+def test_mutant_run_keeps_each_project_config_name_at_head_and_reverts_look_alikes(calc):
+    kept = ['uv.toml', 'setup.cfg', 'tox.ini', 'requirements.txt', 'docs/requirements.txt']
+    look_alikes = ['app.cfg', 'local.ini', 'notes.txt', 'requirements.in', 'settings.toml']
+    base = commit_files(calc, {p: stamp(p, 'base') for p in kept + look_alikes}, 'base')
+    commit_files(calc, {p: stamp(p, 'task') for p in kept + look_alikes}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert path_lines(mutant_lines(calc)) == [f'path: {p}' for p in look_alikes]
+
+
+def test_mutant_run_applies_the_revert_to_a_binary_file_and_unusual_names(calc):
+    # Without --binary, git writes no binary patch that git apply takes.
+    # Without :(literal), the pathspec a*.py also takes the test file
+    # abc_test.py into the revert.
+    blob = bytes(range(256))
+    base = commit_files(calc, {
+        'blob.bin': blob, 'my mod.py': 'X = 1\n', 'a*.py': 'Y = 1\n',
+        'abc_test.py': 'def test_y():\n    assert True\n',
+    }, 'base')
+    commit_files(calc, {
+        'blob.bin': blob[::-1], 'my mod.py': 'X = 2\n', 'a*.py': 'Y = 2\n',
+        'abc_test.py': 'def test_y():\n    assert 1\n',
+    }, 'task')
+    make_mutant(calc, 1, *A)
+    cmd = ['sh', '-c', 'cat "my mod.py" "a*.py"; "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert 'revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 3' in lines
+    assert path_lines(lines) == ['path: a*.py', 'path: blob.bin', 'path: my mod.py']
+    output = run_section(lines, 'output: revert')
+    assert 'X = 1' in output
+    assert 'Y = 1' in output
+    assert b'abc_test.py' not in run_file(calc, 'task-1-revert.patch').read_bytes()
+    assert (calc / 'blob.bin').read_bytes() == blob[::-1]
+    assert tree_is_head(calc)
+
+
+TEST_FIX = '''import pytest
+
+from half import half
+
+
+@pytest.fixture
+def floored():
+    assert half(3) == 1
+    return 1
+
+
+def test_floored(floored):
+    assert floored == 1
+'''
+TEST_CHAIN = '''try:
+    import newmod
+except ImportError:
+    raise RuntimeError('newmod is <missing> & gone')
+
+
+def test_chained():
+    assert newmod.g() == 1
+'''
+TEST_PLAIN = '''import pytest
+
+try:
+    import newmod
+except ImportError:
+    pytest.fail('newmod is gone', pytrace=False)
+
+
+def test_plain():
+    assert newmod.g() == 1
+'''
+
+
+def test_mutant_run_lists_each_outcome_with_its_message(changed):
+    # A rewritten assert's message has no type, so the line restores it.
+    # test_chain's error text has two E lines: the cause is the last one,
+    # unescaped. test_plain's has none: the cause is the message attribute.
+    repo, base = changed
+    commit_files(repo, {'test_fix.py': TEST_FIX, 'test_chain.py': TEST_CHAIN, 'test_plain.py': TEST_PLAIN}, 'more')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 2, not loaded 3, skipped 1, passed 6' in lines
+    assert run_section(lines, 'revert')[3:] == [
+        'not loaded test_chain: RuntimeError: newmod is <missing> & gone',
+        "not loaded test_newmod: ModuleNotFoundError: No module named 'newmod'",
+        'not loaded test_plain: collection failure',
+        'passed test_calc::test_add_small',
+        'passed test_calc::test_add_large',
+        'passed test_calc::test_neg',
+        'failed test_fix::test_floored: failed on setup with "assert 1.5 == 1',
+        'passed test_half::test_half_even',
+        'failed test_half::test_half_floors: AssertionError: assert 1.5 == 1',
+        'passed test_half::test_half_zero',
+        'passed test_param::test_p[a&b]',
+        "skipped test_skip::test_g_skip: could not import 'newmod': No module named 'newmod'",
+    ]
+
+
+def test_mutant_run_never_loads_revert_bytecode_cached_before_its_baseline(changed):
+    # A .pyc of BASE's half.py, left by someone who ran the old code by hand,
+    # would make the baseline run the old code and fail. Mutant 1 edits calc.py,
+    # so only the revert's path list names half.py for the purge.
+    repo, base = changed
+    ignore_pycache(repo)
+    make_mutant(repo, 1, *A)
+    (repo / 'half.py').write_text(HALF)
+    made = run(
+        sys.executable, '-m', 'compileall', '-q', '--invalidation-mode', 'unchecked-hash', 'half.py',
+        cwd=repo, env=PYCACHE_ENV,
+    )
+    assert made.returncode == 0, made.stdout + made.stderr
+    git('checkout', '--', 'half.py', cwd=repo)
+    assert list(repo.glob('__pycache__/half*.pyc'))
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PYCACHE_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert 'failed test_half::test_half_floors: AssertionError: assert 1.5 == 1' in mutant_lines(repo)
+
+
+def test_mutant_run_records_a_revert_that_does_not_apply(calc):
+    base = commit_files(calc, {'old.py': 'OLD = 1\n'}, 'base')
+    git('rm', '-q', 'old.py', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    make_mutant(calc, 1, *A)
+    # The command leaves an untracked old.py where the revert must put BASE's.
+    cmd = ['sh', '-c', 'echo stray > old.py; "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    line = 'revert: not applied: does not apply'
+    assert line in lines
+    patch = run_file(calc, 'task-1-revert.patch')
+    assert run_section(lines, 'revert') == ['path: old.py', f'sha256: {patch_sha(patch)}']
+    assert '--- output: revert ---' not in lines
+    assert result.stdout.splitlines()[-2] == line
+
+
+def test_mutant_run_writes_the_revert_line_after_the_note(calc):
+    p1 = make_mutant(calc, 1, *A)
+    # What a run killed with mutant 1 applied leaves behind.
+    git('apply', p1, cwd=calc)
+    run_file(calc, 'mutant-active').write_text('task-1-mutant-1.patch\n' + p1.read_text())
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_lines(calc)[5:8] == [
+        'result: caught 1, survived 0, invalid 0',
+        'note: reversed task-1-mutant-1.patch, left applied by a killed run',
+        'revert: none: no file outside the tests and the project config changed',
+    ]
+
+
+def test_mutant_run_keeps_its_exit_status_when_the_revert_times_out(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    env = {**PY_ENV, 'MUTANT_RUN_TIMEOUT': '2'}
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *SLOW_REVERT, cwd=repo, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'result: caught 1, survived 0, invalid 0' in lines
+    patch = run_file(repo, 'task-1-revert.patch')
+    assert run_section(lines, 'revert') == ['path: half.py', 'path: newmod.py', f'sha256: {patch_sha(patch)}']
+    assert '--- output: revert ---' in lines
