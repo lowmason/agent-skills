@@ -129,9 +129,10 @@ don't even document it. The single most common mistake in research-code cleanup 
 *hardening a throwaway*: someone adds type hints and a test suite to an `archive/` script
 that should have been a `git rm`. The whole point of an exploratory branch is that you're
 allowed to throw it away. Deleting dead code is the highest-leverage, lowest-risk action
-available — git remembers it if you ever need it back. There is one exception. A scratch notebook
-that is not load-bearing but holds an analysis record worth keeping goes to CONVERT. See
-the scratch-notebook rule below.
+available — git remembers it if you ever need it back. There is one exception. A scratch `.ipynb`
+that is not load-bearing but holds an analysis record worth keeping goes to CONVERT. A
+marimo `.py` notebook of that kind moves into `notebooks/`. See the scratch-notebook rule
+below.
 
 If **yes** → **HARDEN**, proportionally to how load-bearing it is:
 - Pull the logic out of a notebook into an importable, runnable module.
@@ -171,7 +172,8 @@ A few rules of thumb for the ambiguous middle:
 
   A marimo `.py` notebook outside `notebooks/` needs no convert. Move it into
   `notebooks/` when it is worth keeping (`git mv` when git tracks it, else `mv`).
-  Otherwise DELETE it.
+  Otherwise DELETE it. Before the move, if `notebooks/<name>.py` exists, pick another
+  name, as in step 1.
 - **`Optional`/`Any`:** these are not automatically debt. `Optional[SecretStr]` for an
   API key that legitimately may be absent is correct. Flag a region only when the looseness
   hides a real shape you depend on.
@@ -213,7 +215,7 @@ The deliverable is a single prioritized table. Keep it scannable; one row per fi
 | `src/pkg/archive/` (3 files) | Maintainability | Low | S | DELETE — dead exploratory branch; git retains history |
 | `alt_nfp` / `alt-nfp` / `alt_nfp_bsts` | Correctness | High | M | Confirm canonical repo; archive or delete the other two |
 | `scratchpad.ipynb` beside `src/` | Reproducibility | High | M | Extract load-bearing transforms into a runnable module; then DELETE notebook |
-| `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `marimo convert` into `notebooks/`, `marimo check`, run it and compare its outputs, then delete the `.ipynb` |
+| `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `marimo convert` into `notebooks/`, `marimo check`, run it and compare its outputs, then delete the `.ipynb` if they match |
 | `import_csv.py:160` hardcoded `/Users/...` | Reproducibility | High | S | Replace with config/CLI path relative to repo root |
 | `model.py` (no test) | Correctness | Med | M | HARDEN: add one end-to-end + output-schema characterization test |
 | `pyproject.toml` `Add your description here` | Onboarding | Low | S | Write a one-line description |
