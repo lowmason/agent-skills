@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cc-guide: skills.locations commands.overview subagents.overview rules.rules-files rules.hierarchy @2.1.306
+# cc-guide: skills.locations commands.overview subagents.overview rules.rules-files rules.hierarchy @2.1.323
 '''Install this repository's skills, runtime-native companion assets and user-level rules.
 
 Examples:

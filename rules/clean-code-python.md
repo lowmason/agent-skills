@@ -1,7 +1,7 @@
 ---
 paths:
   - '**/*.py'
-# cc-guide: rules.rules-files @2.1.296
+# cc-guide: rules.rules-files @2.1.323
 ---
 
 # Python conventions (loaded on .py reads, writes and edits)

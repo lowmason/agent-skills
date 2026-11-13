@@ -1,4 +1,4 @@
-# cc-guide: hooks.events hooks.exit-codes hooks.pitfalls @2.1.306
+# cc-guide: hooks.events hooks.exit-codes hooks.pitfalls @2.1.323
 """Contract tests for the project tooling hook templates — run from this directory, both ways.
 
 cd hooks

@@ -347,7 +347,7 @@
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:ddfef27157841daa81dcbf8be2ec242165695a8306d9872582d98614fd8aa593"
+   "text_hash": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970"
   },
   "lean.overview": {
    "checked": {
@@ -4550,176 +4550,176 @@
  ],
  "cited": {
   ".claude/agents/cc-guide-verifier.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   ".claude/skills/cc-guide/SKILL.md": {
-   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+   "skills.arguments": "sha256:94ed1b02d365a81ac95295dbdf2c269273828bde73d0907b11b1f819760866a3",
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d",
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44"
   },
   "CLAUDE.md": {
-   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a"
+   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703"
   },
   "README.md": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
-   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66",
+   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
    "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b"
   },
   "agents/code-reviewer.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "agents/debugger.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "agents/docs-writer.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "agents/explore.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "agents/security-auditor.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "agents/task-reviewer.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "agents/test-runner.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "build/cc_guide/conformance.toml": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "context.overview": "sha256:3b3b680a2c035bd898829535e2cd554bd616d6819fd0c0082540be3eaf1d66f2",
-   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
+   "context.overview": "sha256:e1d08ffe500c3d775c3e13cd399d57d71827130d4a920f9f7fc55e86763ef4c6",
+   "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
    "hooks.handlers": "sha256:2177b8ef72de4e8f67e443b6d20855c4367a74aded6e0da334f678ebc280995d",
    "hooks.overview": "sha256:750473ea3b7b99f983fa7c1ebc6fee5715750f9ebd5f1eac4e896bf3db355a61",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
-   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
-   "lean.caching": "sha256:d3afd1c862f9f2a08f52b8ac386fd6b15f1a7a7c756e092886712fb93eab3154",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
+   "hooks.pitfalls": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970",
+   "lean.caching": "sha256:42e9ec86495e2cbe631686f862c4ab6016725c3ee1864442e5e7b48052445d1e",
    "lean.ceremony": "sha256:c099e23c969f692833401aa0ad8411105a4bbdb30735978dc8a5d48fe10cdde0",
-   "lean.expensive-ops": "sha256:f081d0c7522f8b4ef218595771d305ca1809fd29d95d88614a8807b93efc817c",
-   "lean.mcp": "sha256:74437a2a8ceec85df9bc1707c8a7dbe441f2cd5ad42781ef2eae3c94f65bdb97",
-   "lean.measure": "sha256:e10b6279bc6c85eed92914df738eef85a4fdb07cfcab4610037a12aaa2d258de",
-   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
+   "lean.expensive-ops": "sha256:dcf27f36383e56226efce7f4277b51269f56e9b33192549f2d7d72daf4996635",
+   "lean.mcp": "sha256:da93a735a7187b37344fdce0a562dd4a6338f8b55a0a3074523cfdfb4045226b",
+   "lean.measure": "sha256:a4fa212755a11f365939c2981f4145bea1eb02f24806a7284d10fe5831413788",
+   "lean.model-routing": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710",
    "lean.overview": "sha256:ca84398448099bfcde90c56be163307b1cd3c4415128f708e9c36c614f1cb4ad",
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a",
-   "mechanisms.overview": "sha256:bc9805fd6b2e46244b724e59ebb362f281907c46494a70d8a2fb4e6f56b2f6fb",
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51",
+   "mechanisms.overview": "sha256:8dd8337fa0ab2222363a5ec4a84a73d8358c238339a5edb1ae6729f140f49467",
    "reading.overview": "sha256:0f646e8db934e0365ad79a3467453e3c8c57efc5c49000b3ba548817cebf41ef",
    "rules.auto-memory": "sha256:7de1de635261f0a97e2573c45ffb0fde09021c654f02b0fe65eb34cfdf9966b4",
    "rules.claude-md": "sha256:14008711fdf08ca17061aec4726024ab04c9a9652a325ca1acec21f05f9ebdb6",
-   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
+   "rules.hierarchy": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099",
    "rules.overview": "sha256:33510b87c525c77405a9eb53631f037d5d9ee0f2afac6246aa2babf53a695894",
-   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
-   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793",
-   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
-   "skills.description": "sha256:723688aa209b021f58aa2b6b631f3f029de943326e17bb663a1b0cb32eb9fbcd",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
-   "skills.iterating": "sha256:a8615b31eb4c2c2e26084a8fe4e4759403d81c25d636dcb2a9b17c6f8853826f",
+   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66",
+   "rules.settings": "sha256:11739bd03c9d79adbf566cfaa8fd8f7bca970d3f181e5579ff1d801bcd45fa0d",
+   "skills.arguments": "sha256:94ed1b02d365a81ac95295dbdf2c269273828bde73d0907b11b1f819760866a3",
+   "skills.description": "sha256:132d431c37bb5ee5a14c088018ae5ae91c212d53cae0f0f5365dddc4dc65b99c",
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d",
+   "skills.iterating": "sha256:9b4d78a3ef465865b60d25f164e591e6be6ea293bb195b1497a65c55231e83a4",
    "skills.listing-budget": "sha256:c5d2d7fa1ed84bbe689e0c801bae70f69150fbc179d91a1097952ab98e1bf937",
-   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
+   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703",
    "skills.overview": "sha256:a1622beb47ba1d2dded79cb9586072738b8eeaead71fa6403fd69adecf9bf685",
    "skills.progressive-disclosure": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc",
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
    "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "build/cc_guide/notice.sh": {
-   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
-   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
-   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
-   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793"
+   "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
+   "hooks.pitfalls": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970",
+   "lean.model-routing": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710",
+   "rules.settings": "sha256:11739bd03c9d79adbf566cfaa8fd8f7bca970d3f181e5579ff1d801bcd45fa0d"
   },
   "build/cc_guide/probe_checks.py": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "build/cc_guide/probes.py": {
-   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+   "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44"
   },
   "build/check_conformance.py": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
-   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
-   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
-   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
-   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
-   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793",
-   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
+   "hooks.pitfalls": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970",
+   "lean.model-routing": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710",
+   "rules.hierarchy": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099",
+   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66",
+   "rules.settings": "sha256:11739bd03c9d79adbf566cfaa8fd8f7bca970d3f181e5579ff1d801bcd45fa0d",
+   "skills.arguments": "sha256:94ed1b02d365a81ac95295dbdf2c269273828bde73d0907b11b1f819760866a3",
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d",
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "build/check_frontmatter.py": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233",
-   "subagents.tools": "sha256:12470b5185dee79388098f4f7a40e223987cf656122421d12170d289d83a7112"
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d",
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
+   "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "commands/deferred.md": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d"
   },
   "commands/fix-issue.md": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d"
   },
   "commands/license-audit.md": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d"
   },
   "hooks/README.md": {
-   "hooks.configuration": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463",
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
-   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c",
-   "rules.settings": "sha256:f703ea7da11b06179aaaa447c06200f9232af95cbe38b0601cb4c78b18151793",
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc"
+   "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
+   "hooks.pitfalls": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970",
+   "rules.settings": "sha256:11739bd03c9d79adbf566cfaa8fd8f7bca970d3f181e5579ff1d801bcd45fa0d",
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82"
   },
   "hooks/dispatch-model-guard.py": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "hooks/probe-readonly-guard.sh": {
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.pitfalls": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970"
   },
   "hooks/readonly-agent-guard.py": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "hooks/ruff-check.sh": {
    "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
@@ -4728,85 +4728,85 @@
    "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
   },
   "hooks/ruff-fix.sh": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "hooks/test_dispatch_model_guard.py": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "hooks/test_project_hooks.py": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.pitfalls": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970"
   },
   "hooks/test_readonly_agent_guard.py": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "hooks/uv-guard.sh": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "install.py": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
-   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d",
-   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
+   "rules.hierarchy": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099",
+   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66",
+   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703",
    "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b"
   },
   "rules/clean-code-python.md": {
-   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d"
+   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66"
   },
   "rules/write-with-asd-ste100.md": {
-   "rules.hierarchy": "sha256:a8c082de084034616c13893649e0319c5657a10729c772266708c0fea0d2cd1d",
-   "rules.rules-files": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d"
+   "rules.hierarchy": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099",
+   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66"
   },
   "skills/bayesian-workflow/README.md": {
-   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a"
+   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703"
   },
   "skills/bayesian-workflow/SKILL.md": {
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d"
   },
   "skills/brainstorming/SKILL.md": {
    "lean.ceremony": "sha256:c099e23c969f692833401aa0ad8411105a4bbdb30735978dc8a5d48fe10cdde0",
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51"
   },
   "skills/derive-roadmap/SKILL.md": {
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51"
   },
   "skills/develop-testing-strategy/SKILL.md": {
-   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+   "lean.model-routing": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710",
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51"
   },
   "skills/dispatching-parallel-agents/SKILL.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954"
   },
   "skills/executing-plans/SKILL.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82"
   },
   "skills/llm-wiki/INSTALL.md": {
-   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a"
+   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703"
   },
   "skills/prepare-handoff/SKILL.md": {
-   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a",
+   "lean.model-routing": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710",
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51",
    "rules.auto-memory": "sha256:7de1de635261f0a97e2573c45ffb0fde09021c654f02b0fe65eb34cfdf9966b4",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44"
   },
   "skills/recommend-probabilistic-model/SKILL.md": {
-   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+   "lean.model-routing": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710",
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51"
   },
   "skills/requesting-code-review/SKILL.md": {
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954"
   },
   "skills/subagent-driven-development/SKILL.md": {
    "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
@@ -4816,33 +4816,33 @@
    "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
   },
   "skills/tech-debt/SKILL.md": {
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564"
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d",
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44"
   },
   "skills/track-model-experiments/SKILL.md": {
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51"
   },
   "skills/tune-hyperparameters/SKILL.md": {
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8"
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d"
   },
   "skills/write-with-asd-ste100/SKILL.md": {
-   "skills.arguments": "sha256:6dccc4be12122531bc56aafc81aad40e8ed7dbb0f043c7088d871b58a1a95225",
-   "skills.description": "sha256:723688aa209b021f58aa2b6b631f3f029de943326e17bb663a1b0cb32eb9fbcd",
+   "skills.arguments": "sha256:94ed1b02d365a81ac95295dbdf2c269273828bde73d0907b11b1f819760866a3",
+   "skills.description": "sha256:132d431c37bb5ee5a14c088018ae5ae91c212d53cae0f0f5365dddc4dc65b99c",
    "skills.progressive-disclosure": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc"
   },
   "skills/writing-plans/SKILL.md": {
-   "lean.model-routing": "sha256:6367845631a9b13a9e462e099f8159e4cded00d5afa1ff9cd3cb4fda3613d5b4",
-   "lean.session-hygiene": "sha256:9d43923b99c47bd8e92471a83abf19dbae5205d0816bf20cc590b22db8a87a0a"
+   "lean.model-routing": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710",
+   "lean.session-hygiene": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51"
   },
   "skills/writing-skills/SKILL.md": {
-   "skills.description": "sha256:723688aa209b021f58aa2b6b631f3f029de943326e17bb663a1b0cb32eb9fbcd",
-   "skills.frontmatter": "sha256:bcdbc087f6d86c236f59f838e78b78cd574ad7748de3842d1502e3afddd6faa8",
+   "skills.description": "sha256:132d431c37bb5ee5a14c088018ae5ae91c212d53cae0f0f5365dddc4dc65b99c",
+   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d",
    "skills.listing-budget": "sha256:c5d2d7fa1ed84bbe689e0c801bae70f69150fbc179d91a1097952ab98e1bf937",
-   "skills.locations": "sha256:c33d8168c20762263c8f7b07178897da1f4f88e95f1c78562c3bcbfe5564021a",
+   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703",
    "skills.progressive-disclosure": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc",
-   "subagents.frontmatter": "sha256:9145b98af415c239243faed5a47bd4e2edf61d6399198669acc985463b3c12dc",
-   "subagents.isolation": "sha256:898d64b293b75bfeb96edf5af970777f81edb18f379982e56ec8560a8cd29564",
-   "subagents.models": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
+   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82",
+   "subagents.isolation": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44",
+   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954"
   }
  }
 }

@@ -18,7 +18,7 @@ metadata:
   author: "Alexandre Andorra (https://alexandorra.github.io/)"
   adapted_by: Lowell Mason
   version: "2.1"
-# cc-guide: skills.frontmatter @2.1.306
+# cc-guide: skills.frontmatter @2.1.323
 ---
 
 # Bayesian Workflow
