@@ -1155,7 +1155,7 @@
       in with the superpowers vendoring (2f283ae) and reproduced Anthropic's "Skill
       authoring best practices" page; it is removed, writing-skills line 25 links to the
       live page, and NOTICE's superpowers changes list records the removal.
-- [ ] A distilled `references/` file for writing-skills (conformance spec Decision 10).
+- [x] A distilled `references/` file for writing-skills (conformance spec Decision 10).
       Size: plan. Revisit if: writing-skills is split below 500 body lines (a portability
       Out-of-scope item; R1.7's body-length warning).
       → progress 2026-10-29 (plan 72): the trigger fired. Plan 72 split writing-skills to 434
@@ -1163,6 +1163,8 @@
       still open: it asks for a distilled file of Claude Code text, which plan 72 did not write.
       → triggered 2026-10-31: plan 72 split writing-skills to 434 body lines, under 500 (its own 2026-10-29 note).
       → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
+      → done 2026-11-12 (plan 92): `skills/writing-skills/references/claude-code.md` holds the skill's Claude
+      Code facts, and `SKILL.md` and `references/discovery.md` point to it.
 
 ## 37-recommend-causal-design (merge review) — 2026-10-04
 - [x] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
@@ -1681,7 +1683,7 @@
       `grade.py` a sibling-directory VOID check.
 
 ## 43-claude-code-drift-automation — 2026-10-12
-- [ ] Review the 41 files the drift sweep stamped stale (drift R11.6; plan 43). `cli.py lint`
+- [x] Review the 41 files the drift sweep stamped stale (drift R11.6; plan 43). `cli.py lint`
       prints one `STALE` line per file (41 files under 21 sections) and `cli.py check` lists
       them: no file cites only sections whose `changed` is 2.1.219, so every citer starts in the
       backlog, which is the review the refresh skipped. It tracks itself through `lint` and the
@@ -1756,6 +1758,10 @@
       the pin overrides the probes test. The owner ruled all ten none, and both files are
       cited. `cli.py lint` prints the same five STALE files as before.
       → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
+      → done 2026-11-12 (plan 92): plan 92 reviewed `skills/writing-skills/SKILL.md` and its seven on-demand
+      files against the guide (56 rows) and restamped the citation. That was the last file that `cli.py lint`
+      listed as STALE, and the lint now prints no `STALE` line. The review table is in
+      specs/baseline/red-baseline-writing-skills-guide.md.
 - [ ] Newline handling in the citation reader (plan 43's final review, issue 4, folding in the
       CRLF note from Task 5's review). `build/cc_guide/guide.py` (`file_citation`, near line
       306) strips both ends, so a trailing space or `\r` is reported as "an indented citation;
@@ -4192,7 +4198,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       skills. See `specs/completed/agent-skills-portability-spec.md`, "Out of scope", and
       `NOTICE`. Size: design. Done when: each installed superpowers-derived agent carries or
       points to the superpowers notice, and `install.py` installs that notice with it.
-- [ ] Split and rewrite writing-skills against the guide (residual rewrite from plan 53's
+- [x] Split and rewrite writing-skills against the guide (residual rewrite from plan 53's
       "Splitting writing-skills", Out of scope). Plan 72 completed the body split, removed
       `writing-skills-late-critical-headings` and updated the body-warning test and
       late-heading machinery; those parts are closed. The remaining work is to close
@@ -4232,6 +4238,10 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       deviation and the "Why no @ links" claim. The rewrite should also fix SKILL.md's "Directory
       Structure" and "File Organization" sections, which still show no `references/` folder.
       → planned 2026-11-12: specs/plans/92-writing-skills-guide-rewrite.md
+      → done 2026-11-12 (plan 92): the register entry `writing-skills-guide-gaps` is gone,
+      `writing-skills-tdd-for-docs` carries a refreshed reason, the "Why no @ links" claim is replaced by a
+      portability reason, and the directory examples in `SKILL.md` show `references/` and `scripts/`. The
+      critical-rules-first part closed on a null RED run (specs/baseline/red-baseline-writing-skills-guide.md).
 - [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
@@ -5598,6 +5608,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/baseline/red-baseline-writing-skills-split.md`. Size: design. Revisit if: an agent is seen
       skipping a writing-skills reference in real use, or a later pointer change needs evidence
       beyond "reads first".
+      → progress 2026-11-12 (plan 92): plan 92 repeated the limit on its `read` arm. All 30 passes came
+      from the no-edit clause, so no rep reached an edit and read-before-edit stayed untested. Its `apply`
+      arm gave the reference text as already read, so it tests whether an agent uses a fact, not the
+      read-then-use chain. `P1a` and `P2a` also passed on the base layout, under loose readings that the
+      record names. `P3a` is the one prompt the new layout separated (0 of 5 on base, 5 of 5 on new, Opus).
+      The item stays open. See specs/baseline/red-baseline-writing-skills-guide.md.
 
 ## micro-test-kit-isolation (no plan; kit fix, branch claude/what-is-next-2ccb0d) — 2026-10-29
 - [x] Earlier micro-test kits leaked user-level context too (found while fixing plan 72's kit).
@@ -6502,3 +6518,39 @@ review and the Plan Completion gate (2026-10-27) add the others.
       skill and needs a micro-test against a no-guidance control (the writing-skills skill). The other writes future
       reading rules that accept an observation node the scenario supports. Size: design. Done when: the owner picks
       one fix, and the skill text or the evaluation-rule template changes to match, with the choice recorded.
+
+## 92-writing-skills-guide-rewrite — 2026-11-12
+- [ ] The guide omits a docs fact about `@` paths in skill bodies (plan 92 completion notes). Claude Code
+      attaches the files that `@` paths name in the body of a local skill, but not in a skill synced from
+      claude.ai. `skills.progressive-disclosure` in `specs/guides/claude-code-customization-guide.md` does not
+      say so. Until it does, `skills/writing-skills/references/discovery.md` gives only a portability reason for
+      bare skill names. Size: quick-fix. Done when: a `/cc-guide` pass adds the fact, with its docs source, to
+      `skills.progressive-disclosure`.
+- [ ] `build/cc_guide/packets.py` `files()` copies only the citing file into a `/cc-guide files` packet (plan 92
+      completion notes). Drift rule R4.1 says a SKILL.md citation also covers the Markdown files that the skill
+      loads on demand. So the packet for `skills/writing-skills/SKILL.md` leaves out its seven on-demand files.
+      Size: plan. Done when: a files packet for a SKILL.md citation holds each Markdown file that the skill loads
+      on demand, and a test in `build/` checks it.
+- [ ] The micro-test kit's isolation pilot never asks about user identity (plan 92, Task 4 review).
+      `specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json` addresses the owner by
+      surname. The pilot's six answers were all NO, because `kit/isolation_probe.txt` has no identity question.
+      So account identity reaches `claude -p --tools "" --setting-sources ""` runs. The cause is unknown, and no
+      plan 92 verdict depended on it. Plan 72's kit has the same gap. Size: quick-fix. Done when:
+      `isolation_probe.txt` asks whether the agent knows the user's name or email, and a pilot run records the
+      answer.
+- [ ] `skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by
+      default in interactive sessions (plan 92 final review, Declined to judge). The `background` row of
+      `skills.frontmatter` in the guide says a forked skill runs in the background by default, with the narrower
+      tool set of background subagents, and that Claude Code waits for the result in `claude -p` and Agent SDK
+      runs. The repo lint rejects a `background` key, so an author cannot change the default. Size: quick-fix.
+      Done when: the fork paragraph of `claude-code.md` states the default.
+
+## 92-writing-skills-guide-rewrite Step 4b review — 2026-11-12
+- [ ] `build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex
+      review, P2; the code came from PR #184). `TOC_LINE_RE` needs a title between the section number and the
+      page, so a line such as `1.1 2` does not match and `parse_toc` leaves that section out. `check_complete`
+      checks chapter gaps, chapter presence and the titles of parsed entries only, so it passes while a section is
+      missing. A sample of `1 Intro 5`, `1.1 2`, `1.2 Next 7` and `2 Part two 20` parses to three rows and passes.
+      That defeats the fail-on-missing-title behavior that `build/CLAUDE.md` describes. Size: quick-fix.
+      Done when: a numbered contents line with a page and no title is kept or rejected so that `check_complete`
+      raises on it, and a test in `build/test_extract_structure.py` covers it.

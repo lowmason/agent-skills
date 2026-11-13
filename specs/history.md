@@ -303,3 +303,23 @@ Closed earlier deferred items:
 
 Closed deferred items:
 - "Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`" (deferred by 64-bayesian-rpm-routing): e76e7ee reads the moved PDFs' contents with `pdftotext -layout` and stops on a missing chapter or title. The rebuilt index covers Book 1's chapters 1–2 and titles every entry, and Gate A passes.
+
+## 92-writing-skills-guide-rewrite — 2026-11-12
+Plan: specs/plans/completed/92-writing-skills-guide-rewrite.md · Spec: specs/completed/writing-skills-guide-rewrite.md (retired)
+
+Differences from the design:
+- Ruling (Task 3): fix the `model` bullet now with one clause ("With `context: fork`, `model` sets the forked subagent's model instead.") — the guide row states it, the brief's own text dropped it, and the old discovery.md wording was correct for both cases — a deviation from the brief's verbatim Step 1 text, listed in the completion notes; if wrong, a forked skill's author could misread `model`
+- Ruling (Task 5): Important 1 (rows 42/47: the "apart from its name" fix leaves `when_to_use` text, which Claude Code appends to the listing entry) — fix now with a runtime-neutral qualifier in both places (discovery.md :115 and :122), pointer text unchanged — the guide supports it, and a half-fixed contradicted row is not fixed — if wrong, an author could think a long `when_to_use` costs nothing before the skill triggers
+- Ruling (final review): delete "for such edits" from the reason — the approved spec says only "waives the micro-test case by case (commit 7bb8810)" and the plan's Step 4 text added the phrase, so the spec governs — a wording edit to one register string, made by the controller under the one-file wording exception (the plan-approved text changed to the spec's); if wrong, the register claims a narrower waiver practice than its cited commit shows
+- Ruling (completion gate): widen `description-when-only` `artifacts` to add discovery.md (owner, completion gate 2026-11-12) — it registers the description-rule repeats in discovery.md :13/:16/:80 and the example labels as the deviation they already are — the next /cc-guide files pass would otherwise report them as unregistered
+- Deviation (Task 2): the `P1a(a)` and `P2a(a)` readings are named in the record, with the reps that fail under the stricter ones (commit c0756d0). Source: plan, Task 2.
+- Deviation (Task 3): the final review removed "for such edits" from the `writing-skills-tdd-for-docs` reason (commit 40f5bf3). Source: plan, Task 3.
+- Deviation (Task 3): checks 4 and 6 ran after `git add`, because `git grep` skips untracked files. Source: plan, Task 3.
+- Deviation (Task 3): the Task 3 fix round (commit 942fee0) became `T3_SHA`. Source: plan, Task 3.
+- Deviation (Task 5): two `discovery.md` fixes add the name and any `when_to_use` text that a runtime appends to the description (commits 3d0d226 and b76c2a3), and the owner added `discovery.md` to the `artifacts` of `description-when-only` (commit d7811de). Source: plan, Task 5.
+- Deferred: 4 items. Source: specs/deferred_items.md, § 92-writing-skills-guide-rewrite.
+
+Closed earlier deferred items:
+- "A distilled `references/` file for writing-skills (conformance spec Decision 10)." (deferred by 35-claude-code-guide-conformance).
+- "Review the 41 files the drift sweep stamped stale (drift R11.6; plan 43). `cli.py lint`" (deferred by 43-claude-code-drift-automation).
+- "Split and rewrite writing-skills against the guide (residual rewrite from plan 53's" (deferred by 53-agent-skills-portability).
