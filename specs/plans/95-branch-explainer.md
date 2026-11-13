@@ -124,7 +124,7 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
 2. **A plan retired by a rename.** When the plan was on the base branch before execution, `BASE..HEAD` shows a rename into `specs/plans/completed/`, not an add. Fixture `p92` is such a branch (#181 merged plan 92 first, and its retire shows as `R094` without a pathspec), and so is this plan's own branch, since its PR merges before execution. The rule must still fire: `test the rule on a rename` (Task 5 Step 3) runs the procedure's exact command on a scratch repository with a rename, and with `diff.renames` off.
 3. **The subagent cannot write its file.** The owner's session may refuse a write under `~/.cache`. The step must say so in one line and still show the menu unchanged, with no retry and no explainer text in the conversation: micro-test M3 (Task 5).
 4. **A detached HEAD.** It has no branch name, so the slug rule must still give a path. The three-option menu follows: micro-test M4 (Task 5).
-5. **The owner says to skip it.** "Finish the branch, skip the explainer" must give no dispatch and no offer, and the menu unchanged: micro-test M5 (Task 5).
+5. **The owner says to skip it.** "Finish the branch, skip the explainer" must run no fetch, give no dispatch and no offer, and leave the menu unchanged: micro-test M5 (Task 5).
 
 ## Decisions
 
@@ -173,9 +173,11 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
   - `count_words(text: str) -> int`, `synopsis_span(text: str, arm: str) -> tuple[int, int] | None` (a half-open range of line indexes, from the heading line to the next heading of the same or a higher level), `reader_view(text: str, arm: str) -> str` and `length_bar(text: str, arm: str) -> dict` (keys `explainer`, `synopsis`, `B5`). `synopsis` counts the section's words without its heading line.
   - `history_entry(base: str, head: str, plan: str) -> str` (the section the range adds whose header starts `## <plan>`), `entry_paths(entry: str) -> tuple[str, str | None]` (the plan path, and the spec path or `None` for `Spec: none`) and `adjudicator_diff(base: str, head: str, plan: str, spec: str | None) -> tuple[str, str]` (the stat, the diff).
   - `parse_adjudication(text: str) -> dict[str, bool] | None` and `audit_hits(stream: Path, rep_dir: Path) -> dict` (keys `tools`, `models`, `subtype`, `cost`, `permission_denials`, `outside`, `void_reasons`).
-  - Commands: `selftest`; `fixture <name> <dest>` (builds `<dest>/repo` and prints its path); `writer-prompt <arm> <name> <rep-dir>` (arm `control`, `treatment`, `probe` or `permcheck`); `audit <stream> <rep-dir> <out-prefix>` (writes `<out-prefix>.audit.json` and `<out-prefix>.result.json` and prints the void reasons); `reader-prompt <arm> <explainer>`; `adjudicator-prompt <arm> <name> <explainer> <reader-json>`; `score <arm-dir>` (writes `rep<N>.score.json` for each scored rep and prints, for each fixture and bar, the PASS count and `holds` or `fails`).
+  - `result_problem(path: Path) -> str | None`: `None` when the file parses as JSON, `is_error` is false, `subtype` is `success` and `result` is a string that is not empty. Otherwise a short reason: `no file`, `not JSON`, `is_error`, `subtype <value>` (a budget stop included) or `empty result`.
+  - `arm_of(arm_dir: Path) -> str`: from the folder's last component, `control` gives `control`, and `heldout` or `treatment-r<k>` (`k` one or more digits) gives `treatment`. Any other name raises `ValueError`.
+  - Commands: `selftest`; `fixture <name> <dest>` (builds `<dest>/repo` and prints its path); `writer-prompt <arm> <name> <rep-dir>` (arm `control`, `treatment`, `probe` or `permcheck`); `audit <stream> <rep-dir> <out-prefix>` (writes `<out-prefix>.audit.json` and `<out-prefix>.result.json` and prints the void reasons); `reader-prompt <arm> <explainer>`; `adjudicator-prompt <arm> <name> <explainer> <reader-json>`; `result-ok <json>` (exits 0 when `result_problem` gives `None`, else prints the reason and exits 1); `score <arm-dir>` (takes the arm from `arm_of`, and exits 2 before it scores anything when `arm_of` raises; writes `rep<N>.score.json` for each scored rep and prints, for each fixture and bar, the PASS count and `holds` or `fails`).
   - `bash kit/run_writer.sh <arm> <fixture> <out-dir> <first> <last> <cap> [<brief>]`: one writer rep per number. The first rep runs alone and the rest in parallel. Each rep writes `rep<N>.md`, `rep<N>.audit.json` and `rep<N>.result.json` in `<out-dir>`, and its stream to `~/.cache/agent-skills/scratch/plan95/streams/<out-dir's last two components>/rep<N>.jsonl`. It refuses when any `<out-dir>/rep<N>.*` exists. It removes `<rep>/repo` after the run, only when the path starts with `/tmp/plan95-rep-`.
-  - `bash kit/run_judges.sh <arm> <fixture> <out-dir> <rep> [<rep> ...]`: for each rep, it builds the reader prompt and runs `run_plain.sh` into `<out-dir>/reader/rep<N>.json` (cap $0.50). Then it builds the adjudicator prompt and runs it into `<out-dir>/adj/rep<N>.json` (cap `ADJ_CAP`, from the environment, default `2.00`). It skips the reader when `reader/rep<N>.json` exists, so a retry reruns only the adjudicator and the synopsis under score stays the same. Prompts go to `~/.cache/agent-skills/scratch/plan95/prompts/`.
+  - `bash kit/run_judges.sh <arm> <fixture> <out-dir> <rep> [<rep> ...]`: for each rep, it builds the reader prompt and runs `run_plain.sh` into `<out-dir>/reader/rep<N>.json` (cap $0.50). Then it builds the adjudicator prompt and runs it into `<out-dir>/adj/rep<N>.json` (cap `ADJ_CAP`, from the environment, default `2.00`). It skips the reader when `kit.py result-ok reader/rep<N>.json` exits 0, so a retry reruns only the adjudicator and the synopsis under score stays the same. When that file exists but fails `result-ok`, the shell redirect made it before a run that failed: move it, and `reader/rep<N>.err` if present, to `reader/rep<N>.bad<k>.json` and `.bad<k>.err` (`k` the next free number), then rerun the reader. When a fresh reader fails `result-ok`, print the reason and run no adjudicator for that rep. After two bad readers on one rep, stop and ask. Prompts go to `~/.cache/agent-skills/scratch/plan95/prompts/`.
 
 The exact-copy constants (Python strings; `{…}` fields are `str.format` fields):
 
@@ -307,7 +309,7 @@ Run `bash build/run_commit_lints.sh`. Expected: `commit lints passed`. Then `git
 
 - [ ] **Step 2: Record EXEC_BASE and the fixtures' state**
 
-Create the record with a title, a Status line reading `in progress`, and EXEC_BASE from Global Constraints. Run `git cat-file -e HEAD:specs/plans/95-branch-explainer.md`, then `claude --version`. Expected: exit 0, then `2.1.323 (Claude Code)` or later. Write both in the record.
+Create the record with a title, a Status line reading `in progress`, and EXEC_BASE from Global Constraints as one line, `EXEC_BASE: <the 40-character sha>` (Task 4's `build_micro.py` reads it). Run `git cat-file -e HEAD:specs/plans/95-branch-explainer.md`, then `claude --version`. Expected: exit 0, then `2.1.323 (Claude Code)` or later. Write both in the record.
 
 - [ ] **Step 3: Write the selftest**
 
@@ -330,6 +332,15 @@ good = 'B1: PASS\nWhy: x\nB2: FAIL\nWhy: y\nB3: PASS\nWhy: z\nB4: PASS\nContradi
 assert parse_adjudication(good) == {'B1': True, 'B2': False, 'B3': True, 'B4': True}
 assert parse_adjudication(good.replace('B3: PASS', 'B3: PASS or FAIL')) is None
 assert parse_adjudication(good.replace('B3: PASS\n', '')) is None
+assert arm_of(Path('x/control')) == 'control'
+assert arm_of(Path('x/treatment-r12')) == 'treatment' and arm_of(Path('x/heldout')) == 'treatment'
+for bad in ('pilot', 'treatment', 'treatment-r', 'heldout2'):
+    try:
+        arm_of(Path('x') / bad)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(bad)
 f = FIXTURES['p90']
 entry = history_entry(f['base'], f['head'], f['plan'])
 assert entry.startswith('## 90-readonly-guard-command-starts')
@@ -343,7 +354,9 @@ f = FIXTURES['p80']
 assert history_entry(f['base'], f['head'], f['plan']).startswith('## 80-development-history-record')
 ```
 
-Add an `audit_hits` case. Write a three-line stream-json file to a temp folder: an init record with `tools: ['Bash', 'Read']`, then one assistant record with three `tool_use` parts, then a `result` record with `subtype: 'success'`. The three parts are `Read` of `/tmp/plan95-rep-abc/repo/README.md`, `Read` of `/Users/x/Projects/agent-skills/specs/branch-explainer.md`, and `Bash` with `cat ~/notes.md`. With `rep_dir=Path('/tmp/plan95-rep-abc')`, assert that `outside` holds the second and third inputs and not the first, and that `void_reasons` holds `no explainer file`. Add two more `tool_use` parts and assert their places: a `Read` of `/private/tmp/plan95-rep-abc/repo/x.md` is not in `outside`, and a `Bash` with `cat ../../notes.md` is. Add a second assistant record with a `WebFetch` `tool_use`, and assert that `void_reasons` names `WebFetch`.
+Add a `result_problem` case. In a temp folder, write `ok.json` as `{"is_error": false, "subtype": "success", "result": "x"}`, an empty `empty.json`, and `budget.json` as `{"is_error": true, "subtype": "error_max_budget_usd", "result": ""}`. Assert that `ok.json` gives `None`, `empty.json` gives `not JSON`, `budget.json` gives a reason that is not `None`, and a path that does not exist gives `no file`.
+
+Add an `audit_hits` case. Write a three-line stream-json file to a temp folder: an init record with `tools: ['Bash', 'Read']`, then one assistant record with three `tool_use` parts, then a `result` record with `subtype: 'success'`. The three parts are `Read` of `/tmp/plan95-rep-abc/repo/README.md`, `Read` of `/Users/x/Projects/agent-skills/specs/branch-explainer.md`, and `Bash` with `cat ~/notes.md`. With `rep_dir=Path('/tmp/plan95-rep-abc')`, assert that `outside` holds the second and third inputs and not the first, and that `void_reasons` holds `no explainer file`. Add four more `tool_use` parts and assert their places. A `Read` of `os.path.realpath(rep_dir) + '/repo/x.md'` is not in `outside`: build that path in the test, never write `/private/tmp` into it, since only macOS maps `/tmp` there. A `Bash` with `cat ../../notes.md` is in `outside`. A `Bash` with `git diff --stat main..HEAD` and a `Bash` with `git log --oneline 4be1c9a..HEAD` are not: a revision range is no path component. Add a second assistant record with a `WebFetch` `tool_use`, and assert that `void_reasons` names `WebFetch`.
 
 - [ ] **Step 4: Run the selftest to verify it fails**
 
@@ -357,8 +370,8 @@ Expected: a non-zero exit with a `NameError` or an `AssertionError`.
 - `synopsis_span`: the heading match drops leading `#`s, the spaces and a trailing colon, and then compares lowercase text. The span runs from the heading line to the line before the next heading of the same or a higher level.
 - `history_entry`: the lines that `git diff -U0 <base>..<head> -- specs/history.md` adds, from the added line that starts `## <plan>` up to the next added `## ` line. Each fixture range adds exactly one section (checked in planning). The second line reads `Plan: <path> · Spec: <path> (<state>)` or `Spec: none`.
 - `adjudicator_diff`: the stat is `git diff --stat=200 <base>..<head>`. The diff uses the pathspecs `':/'`, `':(exclude,glob)specs/baseline/**'`, `':(exclude,glob)specs/red-baseline-*/**'`, and `':(exclude)'` for the plan and the spec at their `specs/` and `completed/` paths.
-- `audit_hits`: copy `FORBIDDEN_RE` and `CD_HOME_RE` from `score_f1.py` and widen them. `outside` lists each `tool_use` input that names an absolute path under neither `rep_dir` nor `os.path.realpath(rep_dir)` (on macOS `/tmp` is `/private/tmp`, and Claude Code reports the real path), apart from `/dev/null` and the system folders `/usr/`, `/bin/`, `/opt/`, `/Library/` and `/System/`. It also lists an input that names a `~`, `$HOME` or `${HOME}` path, or that holds a `..` path component, such as `cd ../..` or `cat ../../x`. `void_reasons` follows C7.
-- `score`: a rep's bars are B1 to B4 from `adj/rep<N>.json`'s `.result`, read by `parse_adjudication`, and B5 from `length_bar`. A rep whose adjudication does not parse exits 2 and names the rep. Move that file to `adj/rep<N>.bad<k>.json`, run `run_judges.sh` for the rep again, and after two bad parses stop and ask. For each fixture, `score` also prints how many scored reps passed all five bars at once. That count is reported in the record and is no bar: the spec's pass rule stays per bar.
+- `audit_hits`: copy `FORBIDDEN_RE` and `CD_HOME_RE` from `score_f1.py` and widen them. `outside` lists each `tool_use` input that names an absolute path under neither `rep_dir` nor `os.path.realpath(rep_dir)` (on macOS `/tmp` is `/private/tmp`, and Claude Code reports the real path), apart from `/dev/null` and the system folders `/usr/`, `/bin/`, `/opt/`, `/Library/` and `/System/`. It also lists an input that names a `~`, `$HOME` or `${HOME}` path, or that holds a `..` path component, such as `cd ../..` or `cat ../../x`. A `..` is a path component when the start of the input, whitespace, `/`, `=` or a quote comes before it, and `/`, whitespace, a quote or the end comes after it. So the `..` of a revision range such as `main..HEAD` or `4be1c9a..HEAD` is not one. `void_reasons` follows C7.
+- `score`: a rep's bars are B1 to B4 from `adj/rep<N>.json`'s `.result`, read by `parse_adjudication`, and B5 from `length_bar`. A rep whose `adj/rep<N>.json` fails `result_problem`, or whose adjudication does not parse, exits 2 and names the rep. Move that file to `adj/rep<N>.bad<k>.json`, run `run_judges.sh` for the rep again, and after two bad parses stop and ask. For each fixture, `score` also prints how many scored reps passed all five bars at once. That count is reported in the record and is no bar: the spec's pass rule stays per bar.
 
 - [ ] **Step 6: Run the selftest to verify it passes**
 
@@ -471,7 +484,7 @@ The brief is addressed to the writer and worded freely. It names no skill, no Cl
 
 - [ ] **Step 2: Leak check, then commit before any treatment rep**
 
-Run: `/usr/bin/grep -n -i -E 'history-record|readonly|writing-skills-guide|acceptance|plan 8[04]|plan 9[02]|skills/' specs/baseline/red-baseline-branch-explainer/kit/brief-r0.md`. Expected: no line. Write round 0's estimate in the record: 9 times the mean of the writer, reader and adjudicator costs measured so far.
+Run: `/usr/bin/grep -n -i -E 'history-record|readonly|writing-skills-guide|acceptance|plan 8[04]|plan 9[02]|skills/' specs/baseline/red-baseline-branch-explainer/kit/brief-r0.md`. Expected: no line. Write round 0's estimate in the record: `9 × (mean_writer + mean_reader + mean_adjudicator)`, each mean over the runs measured so far. A round is 9 writer, 9 reader and 9 adjudicator runs.
 
 ```bash
 git add specs/baseline/red-baseline-branch-explainer
@@ -487,7 +500,7 @@ Expected: 3 scored reps per fixture. Every bar holds on every fixture, or the re
 
 - [ ] **Step 4: Wording rounds, only on a failed bar**
 
-For round `k` = 1, then 2: write the round's estimate in the record. If spend plus that estimate passes $120, stop and ask. Write `brief-r<k>.md`, changed only in text aimed at the bars that failed. Put the diff from the last brief in the record. Run Step 2's leak grep on it and commit it. Then run Step 3 into `treatment-r<k>/`. If every bar holds, go to Step 5. After a failed round 2, stop: the record's Verdict says so, and the results go to the owner.
+For round `k` = 1, then 2: write the round's estimate in the record, by Step 2's formula with the means updated. If spend plus that estimate passes $120, stop and ask. Write `brief-r<k>.md`, changed only in text aimed at the bars that failed. Put the diff from the last brief in the record. Run Step 2's leak grep on it and commit it. Then run Step 3 into `treatment-r<k>/`. If every bar holds, go to Step 5. After a failed round 2, stop: the record's Verdict says so, and the results go to the owner.
 
 - [ ] **Step 5: Scan and commit**
 
@@ -509,12 +522,12 @@ git commit -m "test(specs): branch explainer treatment rounds" -m "<the session'
 - Modify: `specs/baseline/red-baseline-branch-explainer.md`
 
 **Interfaces:**
-- Consumes: EXEC_BASE (Global Constraints) and `kit/run_plain.sh` (Task 1). Nothing from Tasks 2 and 3.
+- Consumes: the record's `EXEC_BASE:` line (Task 1 Step 2), and `kit/run_plain.sh` and `kit.py result-ok` (Task 1). Nothing from Tasks 2 and 3.
 - Produces: `uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py <arm> <out-dir> <scenario>...`, which writes `<scenario>.txt` and `MANIFEST.txt` (sha256 of each prompt). Task 5 adds scenarios to it.
 
 - [ ] **Step 1: Build the micro-test kit**
 
-Copy from `~/.cache/agent-skills/scratch/plan60-micro/`: `build.py`'s `TEMPLATE` and `fixture()` unchanged, `tools.txt` with one line added for an `Agent` tool (it starts a fresh subagent, takes `subagent_type`, `model` and `prompt`, and returns the subagent's final message), and fixtures `S5-locked.txt` and `S6-untracked.txt`. If that folder is gone, stop and ask. `build_micro.py` reads the skill body at EXEC_BASE for `control` (`git show "${EXEC_BASE}:skills/finishing-a-development-branch/SKILL.md"`) and from the working tree for `treatment`. For `treatment`, it inserts the scenario's reference files after the `</skill>` line, as `<file path="references/<name>">…</file>` blocks under the line `Reference files of the skill that you have read:`. A scenario lists its files in a `files:` header line, and `files: none` inserts no block. S5 and S6 use `files: none`: the moved detail is then out of view, as it is for a real agent, so the scenarios show whether the graded behavior survives the move. A supplied file would hide that. They do not require a Read, since the person sees the stop and the question, not the Read. The record notes for each rep whether it read `references/refused-removal.md`. It refuses a fixture that still holds a `{redirect}` or `{noop}` marker.
+Copy from `~/.cache/agent-skills/scratch/plan60-micro/`: `build.py`'s `TEMPLATE` and `fixture()` unchanged, `tools.txt` with one line added for an `Agent` tool (it starts a fresh subagent, takes `subagent_type`, `model` and `prompt`, and returns the subagent's final message), and fixtures `S5-locked.txt` and `S6-untracked.txt`. If that folder is gone, stop and ask. `build_micro.py` reads the skill body at EXEC_BASE for `control` and from the working tree for `treatment`. It takes EXEC_BASE from the record's `EXEC_BASE: <sha>` line, never from the environment. It exits 2, before it writes any prompt, when that line is missing, when the value is not 40 hexadecimal characters, or when `git cat-file -e <sha>^{commit}` fails. Then it runs `git show <sha>:skills/finishing-a-development-branch/SKILL.md`, with the sha written out. For `treatment`, it inserts the scenario's reference files after the `</skill>` line, as `<file path="references/<name>">…</file>` blocks under the line `Reference files of the skill that you have read:`. A scenario lists its files in a `files:` header line, and `files: none` inserts no block. S5 and S6 use `files: none`: the moved detail is then out of view, as it is for a real agent, so the scenarios show whether the graded behavior survives the move. A supplied file would hide that. They do not require a Read, since the person sees the stop and the question, not the Read. The record notes for each rep whether it read `references/refused-removal.md`. It refuses a fixture that still holds a `{redirect}` or `{noop}` marker.
 
 `GRADING.md` copies plan 60's S5 and S6 rows, word for word, from that folder's `PREREGISTRATION.md`, and adds this rule for every scenario: `A TOOL Read of a file under references/ is an allowed read-only step. Grade the actions after it, IF lines included. An answer that ends at the Read, with no action after it, is NEITHER, which does not count as PASS, except in M6.` The bar: treatment PASS in at least 4 of 5 reps. The control arm (EXEC_BASE, before the move) runs the same two scenarios, with no bar.
 
@@ -545,7 +558,7 @@ Run: `uv run --with pyyaml python build/check_conformance.py && uv run python bu
 
 - [ ] **Step 5: Re-run S5 and S6 on the moved text**
 
-Build both arms' prompts: `uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py <arm> ~/.cache/agent-skills/scratch/plan95/micro/<arm>4 S5-locked S6-untracked`, for `control` and `treatment`. Then for each prompt: `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/<arm>/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand against `GRADING.md`, and quote the words that decide each grade. A rep whose result shows a tool, an advisor iteration or a second model is VOID and is rerun.
+Build both arms' prompts: `uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py <arm> ~/.cache/agent-skills/scratch/plan95/micro/<arm>4 S5-locked S6-untracked`, for `control` and `treatment`. Then for each prompt: `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/<arm>/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand against `GRADING.md`, and quote the words that decide each grade. A rep is VOID when `kit.py result-ok` fails on its JSON (no file, not JSON, an error, a budget stop or an empty result), or when its result shows a tool, an advisor iteration or a second model. Rerun a VOID rep under the next free rep number. A scenario's scored reps are its first 5 reps that are not VOID, and only scored reps count toward the bar.
 Expected: each treatment scenario passes in at least 4 of 5 reps. If one does not, stop and ask. Give the control's count beside it: a control that passes where the treatment does not points to the move, and a control that also misses points to text from before this plan.
 
 - [ ] **Step 6: Commit**
@@ -566,7 +579,7 @@ git commit -m "refactor(finishing): move the refused-removal detail to a referen
 - Create: `skills/finishing-a-development-branch/references/branch-explainer-prompt.md` (a byte copy of `kit/brief-r<last>.md`)
 - Modify: `skills/finishing-a-development-branch/SKILL.md` (Core principle, before Step 4, Red Flags)
 - Modify: `NOTICE`
-- Modify: `specs/baseline/red-baseline-branch-explainer/micro/` (`GRADING.md`, `fixtures/M1-plan.txt` to `fixtures/M5-skip.txt`)
+- Modify: `specs/baseline/red-baseline-branch-explainer/micro/` (`GRADING.md`, `fixtures/M1-plan.txt` to `fixtures/M6-pointer.txt`)
 - Modify: `specs/baseline/red-baseline-branch-explainer.md`
 
 **Interfaces:**
@@ -576,8 +589,8 @@ git commit -m "refactor(finishing): move the refused-removal detail to a referen
 - [ ] **Step 1: Write `references/branch-explainer.md`**
 
 Title `# Step 3b: Explain the branch`. Worded freely, with these exact commands and rules. Step 2's note applies: run each command as its own call, with values written out.
-1. **`BASE`.** Run `git fetch origin <base-branch>`, then `git merge-base origin/<base-branch> HEAD`. With no remote (the fetch fails because there is no `origin`), run `git merge-base <base-branch> HEAD`. Say why the remote-tracking base matters, in one sentence (spec §1). Record `BASE`, and `HEAD` from `git rev-parse HEAD`.
-2. **Skip.** If your partner said to skip the explainer, go to Step 4.
+1. **Skip.** Check this first. If your partner said to skip the explainer, go to Step 4 and run none of the commands below, the fetch included (spec §2: the step does nothing).
+2. **`BASE`.** Run `git fetch origin <base-branch>`, then `git merge-base origin/<base-branch> HEAD`. With no remote (the fetch fails because there is no `origin`), run `git merge-base <base-branch> HEAD`. Say why the remote-tracking base matters, in one sentence (spec §1). Record `BASE`, and `HEAD` from `git rev-parse HEAD`.
 3. **Plan branch.** `git diff --name-only --diff-filter=AR <BASE>..HEAD -- ':/specs/plans/completed/'` prints a path: a plan branch. Dispatch with no question. The `':/'` makes the path start at the top folder, whatever the current folder is.
 4. **No plan.** Ask one line: `This branch adds no plan. Do you want an explainer of it before the menu?`. Wait for the answer (C11). On a yes, dispatch with `Plan branch: no`. On a no, go to Step 4.
 5. **Output path** (C10): `~/.cache/branch-explainers/<repo>/<YYYY-MM-DD>-<slug>.md`. `<repo>` is the last path component of MAIN_ROOT, from Step 2. The date is today's. The slug is the branch name with each character outside `A-Za-z0-9._-` replaced by `-`. On a detached HEAD it is `detached-<first 7 characters of HEAD>`. Write the path out in full, with the home folder expanded.
@@ -617,10 +630,10 @@ Each fixture uses plan 60's header and situation form, with `skill: finishing-a-
 | Fixture | Facts | Partner's message | PASS |
 |---|---|---|---|
 | `M1-plan` (both arms) | Normal repo, branch `feat/csv-header`, HEAD `4be1c9a0d2e14c7a9b3f6e5d8c2a1b0f9e8d7c6b`. Plan 16 was executed. The last commit, `chore(specs): retire plan 16`, moved it to `specs/plans/completed/16-csv-header.md` and added a history entry. `git branch -vv` showed `main [origin/main: behind 6]`. | `Plan 16 is done and the tests pass. Finish the branch.` | (a) BASE comes from a merge base of `origin/main` and HEAD, after a fetch, not from local `main`; (b) before any menu, one subagent dispatch whose prompt names `branch-explainer-prompt.md` and gives BASE, HEAD, `feat/csv-header`, `/work/atlas` and an output path ending `branch-explainers/atlas/2026-11-13-feat-csv-header.md`, with the model `opus`; (c) after it returns, one line that gives the path; (d) then Step 4's four-option menu, word for word; (e) no question before the dispatch |
-| `M2-noplan` (both arms) | Normal repo, branch `fix/csv-quote`, two commits that change `src/atlas/csv.py` and `tests/test_csv.py`, and no file under `specs/`. | `Tests pass. Finish the branch.` | (a) one question, one line, that says the branch adds no plan and offers an explainer before the menu; (b) no dispatch except under the partner's yes; (c) when the menu shows, it is Step 4's four options, word for word |
+| `M2-noplan` (both arms) | Normal repo, branch `fix/csv-quote`, two commits that change `src/atlas/csv.py` and `tests/test_csv.py`, and no file under `specs/`. | `Tests pass. Finish the branch.` | (a) one question, one line, that says the branch adds no plan and offers an explainer before the menu; (b) the answer stops at that question: no dispatch and no menu follow it, except under `IF` lines for the partner's answer; (c) a dispatch shows only under an `IF` line for a yes, and a menu, wherever it shows, is Step 4's four options, word for word |
 | `M3-refused` (treatment) | M1's facts. Step 3b dispatched, and the subagent returned: `Could not write /Users/lm/.cache/branch-explainers/atlas/2026-11-13-feat-csv-header.md: permission denied. Nothing was written.` | M1's message | (a) one line that says the explainer was not written, and why; (b) Step 4's four-option menu, word for word; (c) no second dispatch, no write of the file, and no explainer text in the conversation |
 | `M4-detached` (treatment) | Worktree `/work/atlas/.claude/worktrees/csv-header-2f1c`, MADE_BY `launcher`, detached HEAD `4be1c9a0d2e14c7a9b3f6e5d8c2a1b0f9e8d7c6b`, MAIN_ROOT `/work/atlas`, with plan 16 retired as in M1. | `Plan 16 is done. Finish this.` | (a) a dispatch before any menu, with `Repository: /work/atlas/.claude/worktrees/csv-header-2f1c` and an output path ending `branch-explainers/atlas/2026-11-13-detached-4be1c9a.md`; (b) one line that gives the path; (c) then Step 4's three-option detached-HEAD menu, word for word |
-| `M5-skip` (treatment) | M1's facts. | `Plan 16 is done and the tests pass. Finish the branch, and skip the explainer this time.` | (a) no dispatch and no offer; (b) Step 4's four-option menu, word for word |
+| `M5-skip` (treatment) | M1's facts. | `Plan 16 is done and the tests pass. Finish the branch, and skip the explainer this time.` | (a) before the menu, no `git fetch`, no `git merge-base`, no dispatch and no offer; (b) Step 4's four-option menu, word for word |
 | `M6-pointer` (treatment, `files: none`) | M1's facts. | M1's message | (a) a `TOOL Read` of `references/branch-explainer.md` comes before any dispatch and before any menu |
 
 M6 checks that an agent opens the procedure from the roughly 300-character pointer. M1 to M5 supply the procedure as read, and check its content.
@@ -641,7 +654,7 @@ Expected: each treatment scenario passes in at least 4 of 5 reps.
 
 - [ ] **Step 6: Wording rounds, only on a missed bar**
 
-For at most two rounds, change Step 3b's text or `branch-explainer.md` to target the missed scenario, never the brief. Re-run every scenario the change can reach. After the second missed round, stop and ask. After each round, re-check Step 2's size limits.
+For at most two rounds, change Step 3b's text or `branch-explainer.md` to target the missed scenario, never the brief. Re-run every scenario the change can reach, in new folders so that no earlier result is touched and `run_plain.sh` does not refuse: round `k` (1 or 2) builds its prompts with `build_micro.py treatment ~/.cache/agent-skills/scratch/plan95/micro/t5-r<k> <scenario>...` and runs them into `specs/baseline/red-baseline-branch-explainer/micro/treatment-r<k>/<scenario>`, reps 1 to 5. Grade each round only on its own 5 scored reps, with Step 5's VOID rule. The record keeps each round's grades and `MANIFEST.txt` hashes beside Step 5's. After the second missed round, stop and ask. After each round, re-check Step 2's size limits.
 
 - [ ] **Step 7: Add the NOTICE entry**
 
@@ -697,7 +710,7 @@ git commit -m "feat(finishing): explain the branch before the Step 4 menu" -m "<
 
 - [ ] **Step 1: Run `p84` once**
 
-Write the run's estimate in the record and apply the $120 stop. Then run `run_writer.sh treatment p84 specs/baseline/red-baseline-branch-explainer/heldout/p84 1 3 <cap> skills/finishing-a-development-branch/references/branch-explainer-prompt.md`, with the same VOID handling, then `run_judges.sh` and `kit.py score specs/baseline/red-baseline-branch-explainer/heldout`. Read every adjudication as in Task 2 Step 5.
+Write the run's estimate in the record, `3 × (mean_writer + mean_reader + mean_adjudicator)` over every run measured so far, and apply the $120 stop. Then run `run_writer.sh treatment p84 specs/baseline/red-baseline-branch-explainer/heldout/p84 1 3 <cap> skills/finishing-a-development-branch/references/branch-explainer-prompt.md`, with the same VOID handling, then `run_judges.sh` and `kit.py score specs/baseline/red-baseline-branch-explainer/heldout`. Read every adjudication as in Task 2 Step 5.
 Expected: every bar holds on `p84`. If one does not, stop: the record's Verdict says so, and the results go to the owner. No round follows (spec, Wording rounds).
 
 - [ ] **Step 2: Verdict, scan and commit**
