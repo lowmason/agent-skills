@@ -6681,7 +6681,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       history_entry tests pass.
 
 ## 96-marimo-notebook-seam — 2026-11-13
-- [ ] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
+- [x] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
       and the code-reviewer; the gate deferred it, 2026-11-13).** In `skills/tech-debt/scripts/scan.sh`, the
       rg arm skips an in-repo `.venv`, because uv writes a `.gitignore` inside it. The fallback arm does not.
       `FILES()` uses `find "$ROOT" -name .git -prune -o -type f -print` and `GREP()` uses
@@ -6695,6 +6695,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       directory names; a `test_scan.py` case, run in the grep arm, puts a marimo tutorial under
       `.venv/lib/python3.13/site-packages/marimo/_tutorials/` and sees it in no section of the report; and the
       existing scan tests pass in both arms.
+      → done 2026-11-13 (/deferred quick fix): `FILES()` and `GREP()` in the fallback arm now prune `.venv`,
+      `venv`, `site-packages` and `node_modules`. `test_grep_arm_skips_installed_packages` runs in the grep arm
+      once for each of the four names, with a tutorial that has a hit for most sections, and it failed RED
+      before the fix. The tech-debt suite passes (28 tests), and a direct run under bash 3.2.57 with BSD grep
+      lists only the project's own files. The rg arm is unchanged.
 - [ ] **Older text in public files names work repos, or their family names (plan 96 final review, the
       code-reviewer; the gate deferred it, 2026-11-13).** The mentions predate plan 96, and the plan changed
       none of them. At `d926122` they sit in `hooks/README.md` (lines 18, 19 and 48), in
