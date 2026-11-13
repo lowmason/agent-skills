@@ -1,0 +1,40 @@
+name: cc-guide-drift
+
+# Advisory only. Weekly, it runs the Claude Code guide's drift check (build/cc_guide/cli.py check) on
+# the checked-out tree and fails when the check reports something due: an untriaged release batch,
+# changed docs blocks, a probe or an audit past its cadence, or an error. GitHub then sends its
+# failed-run notice, which reaches the owner on any operating system and in any client, unlike the
+# session-start notice. The job log holds the whole report; the step summary holds only its
+# unindented summary lines. It is not a required check, and it opens no issue or PR and commits
+# nothing. GitHub disables a scheduled workflow after 60 days without repository activity, and it
+# runs the schedule from the default branch only.
+
+on:
+  schedule:
+    - cron: '41 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - name: Check the guide for drift
+        run: |
+          set -o pipefail
+          uv run python build/cc_guide/cli.py check --worktree | tee "$RUNNER_TEMP/cc-guide-check.txt"
+      - name: Summarize
+        if: always()
+        run: |
+          {
+            echo '```text'
+            grep -v '^  ' "$RUNNER_TEMP/cc-guide-check.txt" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
