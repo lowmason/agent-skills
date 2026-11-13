@@ -24,13 +24,31 @@ from duration import parse_duration
     ('1h2m3s', 3723),
     ('1h30m', 5400),
     ('5m10s', 310),
+    ('1h5s', 3605),
+    ('05m', 300),
     ('0h0m0s', 0),
 ])
 def test_parse_duration_returns_seconds(text, seconds):
-    assert parse_duration(text) == seconds
+    result = parse_duration(text)
+    assert result == seconds
+    assert type(result) is int
 
 
-@pytest.mark.parametrize('text', ['', '30m1h', '90'])
+@pytest.mark.parametrize('text', [
+    '',
+    '30m1h',
+    '1h1h',
+    '90',
+    '1h30',
+    'h',
+    '1d',
+    '1H',
+    '١h',  # an Arabic-Indic digit one, not an ASCII digit
+    '+1h',
+    ' 1h',
+    '1h 30m',
+    '1h\n',
+])
 def test_parse_duration_rejects_other_text(text):
     with pytest.raises(ValueError):
         parse_duration(text)
@@ -48,7 +66,7 @@ In `duration.py`, write `parse_duration` as the spec's rules say.
 - [ ] **Step 4: Run the tests to see them pass**
 
 Run: `/tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py`
-Expected: PASS (10 passed).
+Expected: PASS (22 passed).
 
 - [ ] **Step 5: Commit**
 
