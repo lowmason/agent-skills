@@ -12,7 +12,9 @@
 # <prompt-dir> is build_prompts.py's output. Each rep copies fixtures/<fixture>/repo/ into a new
 # /tmp/mt-rep-XXXXXX/repo, commits it, and puts brief.md and spec.md into .sdd/plan/ as
 # task-1-brief.md and task-1-spec.md. Into <out-dir>/rep<N>/ it writes final.diff, the copied
-# workspace files, and summary.json last. The raw stream goes to
+# workspace files, and summary.json last. The copies and summary.json write $TMPDIR (in its
+# /private form too) as `$TMPDIR`, pytest's `pytest-of-<user>` as `pytest-of-$USER`, and $HOME as
+# `~`, because a mutant run log holds pytest's tmp_path in its failure output. The raw stream goes to
 # ~/.cache/agent-skills/scratch/plan93/<out-dir's parent name>/<out-dir name>/, outside the repository.
 # The first rep runs alone and writes the prompt cache; the others then run together.
 set -u
@@ -94,8 +96,17 @@ INIT_KEYS = ('cwd', 'tools', 'mcp_servers', 'model', 'permissionMode', 'slash_co
 RESULT_KEYS = ('subtype', 'is_error', 'num_turns', 'duration_ms', 'total_cost_usd', 'modelUsage')
 
 
+def scrub(text):
+    tmpdir, user = os.environ.get('TMPDIR', '').rstrip('/'), os.environ.get('USER', '')
+    if tmpdir:
+        text = text.replace('/private' + tmpdir, '$TMPDIR').replace(tmpdir, '$TMPDIR')
+    if user:
+        text = text.replace(f'pytest-of-{user}', 'pytest-of-$USER')
+    return text.replace(home, '~')
+
+
 def tilde(value):
-    return json.loads(json.dumps(value).replace(home, '~'))
+    return json.loads(scrub(json.dumps(value)))
 
 
 def git(*args, env=None):
@@ -136,7 +147,7 @@ workspace = repo / '.sdd' / 'plan'
 copied = []
 for path in sorted(workspace.glob('task-1-report.md')) + sorted(workspace.glob('task-1-mutants*')):
     if path.name.endswith('.md') or path.name.endswith('.log'):
-        (dest / path.name).write_text(path.read_text(errors='replace').replace(home, '~'))
+        (dest / path.name).write_text(scrub(path.read_text(errors='replace')))
         copied.append(path.name)
 
 err_lines = Path(err).read_text(errors='replace').splitlines() if Path(err).exists() else []
