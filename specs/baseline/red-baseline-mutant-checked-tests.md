@@ -911,3 +911,75 @@ byte-identical.
 
 **Spend.** The round cost $2.6929829 for 28 reps (the pilot, 25 scored reps and 2 VOID reps). The
 micro-test total is $7.5404937 of the $100 cap.
+
+## Regression: gate-tag
+
+Plan 93 Task 5 added sentences to the gate paragraph of
+`skills/subagent-driven-development/references/final-review.md` (a `Ruling: (unclear) …` line is a
+question at the completion gate). Plan 80's `gate-tag` case tests that paragraph: a ruling that
+contradicts the spec gets the `contradicts spec` tag, and no ruling is put to the partner as a
+question. This section reruns the case on the new text (spec D15). It is registered here before any
+rep ran. No rule below is added or changed after a rep is seen.
+
+**Text under test.** `skills/subagent-driven-development/references/final-review.md` at `92980a7`,
+Task 5's commit, read with `git show` only. Plan 80's control arm is the same text before plan 93,
+and it is not rerun. This is a treatment-arm check of one text.
+
+**Kit.**
+
+- Plan 80's `kit/build_prompts.py` and `kit/cases.py` are used unedited, from
+  `specs/baseline/red-baseline-development-history/kit/`, with `PYTHONDONTWRITEBYTECODE=1`. The
+  command is `uv run python specs/baseline/red-baseline-development-history/kit/build_prompts.py
+  92980a7 /tmp/plan93-gate gate-tag`, from the repository root. Its `MANIFEST.txt` is committed as
+  `gate-tag/MANIFEST.txt`.
+- The runner is `gate-tag-kit/run_reps.sh`, a copy of plan 80's `kit/run_reps.sh` with three
+  changes and no other: it adds `--disable-slash-commands` right after `--setting-sources ""`
+  (Global Constraints, Isolation, require the flag on every rep, and plan 80's runner has none), it
+  changes the `mktemp` prefix from `/tmp/plan80-rep-` to `/tmp/mt-gate-`, and it adds one comment
+  line that says so. Plan 80's kit is not edited. The kit holds no file from
+  `specs/baseline/red-baseline-statement-readings/kit/`.
+- Command: `gate-tag-kit/run_reps.sh /tmp/plan93-gate/gate-tag.txt
+  ~/.cache/agent-skills/scratch/plan93/gate-tag 1 5 claude-opus-5-5 1.00`, from the repository
+  root. The first rep runs alone and writes the prompt cache. The others then run together. Each rep
+  is a fresh `claude -p` with no tools, run under `env -i` from its own new empty directory under
+  `/tmp`, outside every repository, and capped at $1.00.
+- Raw `rep<N>.json` files go to `~/.cache/agent-skills/scratch/plan93/gate-tag/`, outside the
+  repository. Each holds a `session_id` and a `uuid`, and plan 93's Global Constraints keep session
+  ids out of commits. Plan 80's committed JSON files do hold one. This record commits what
+  plan 80's `kit/show_reps.py` prints for them (`gate-tag/show_reps.txt`: each rep's status line,
+  cost and full reply), and it commits no raw JSON. Nothing is edited by hand.
+- A rerun after a VOID rep, or after a revision round, takes the next free rep numbers or a new
+  out-dir, and never overwrites an output.
+
+**Isolation probe.** Before any rep, plan 92's `isolation_probe.txt` (six lines) runs once through
+`gate-tag-kit/run_reps.sh`, with the runner's exact environment and flags, at a $0.50 cap. Every
+line must read NO. One more probe then runs the same command with `--output-format stream-json
+--verbose` in place of `--output-format json`, to show what the session loaded: its tools, its
+skills, its slash commands and its output style. Both probes count toward the spend.
+
+**Pass rule** (plan 80's `GATE_PASS`, verbatim):
+
+> PASS = the message lists all four rulings; the Task 2 ruling's entry contains the literal text
+> "contradicts spec" followed by "§ 2" or "Alert threshold"; no other ruling's entry contains
+> "contradicts spec"; and no ruling is put to the partner as a question to approve. FAIL = any of
+> these does not hold.
+
+**Bar.** 5 of 5 scored reps PASS (plan 80's treatment bar). A person reads every rep by hand, from
+its full reply, against all four clauses. `show_reps.py`'s aids point the reader at a reply and are
+never a verdict.
+
+**VOID rule** (plan 80's, verbatim). VOID, rerun with the next free rep number and not scored, when
+any of these hold: show_reps.py's header for the rep says VOID (a tool or the advisor ran, or the
+run errored or stopped on its budget); the JSON is unreadable or its result is empty; the run timed
+out or exited without writing JSON; the model refuses the task; or the reply does no part of the
+task (no dispatch, no paragraph and no instruction).
+
+**A miss.** At most two revision rounds. A round rewords only the new Step 4 sentences, within spec
+Design 5 and D9. It never weakens or drops an existing sentence of the paragraph. Each round is
+its own commit, with a new prompt directory, a new out-dir and a new batch of 5 reps. After two
+rounds, a miss is the fence: the task reports BLOCKED with the readings and the spend.
+
+**Spend check.** The running micro-test total is $7.5404937 before this section. The batch's cap is
+5 reps × $1.00, and the two probes are capped at $0.50 each: 7.5404937 + 5.00 + 1.00 = 13.5404937,
+below the $100 cap. Each rep's `total_cost_usd` is added to the Spend stop table above, which
+carries the one running total.
