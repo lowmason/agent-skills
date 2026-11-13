@@ -151,7 +151,8 @@ human-facing guide, like the install section of `hooks/README.md`. It names no w
    2. Install marimo-pair for the repo. Link to its README for the commands. Do not copy them.
    3. Add the ruff ignore (below).
    4. Paste the notebook block (Plan B adds it).
-   5. Convert scratch `.ipynb` files by the tech-debt path (A3).
+   5. Convert scratch `.ipynb` files by the tech-debt path (A3). A marimo `.py` notebook outside `notebooks/` moves in,
+      or goes, by the same path. *(Step amended: owner, plan 96, 2026-11-13.)*
 3. The ruff ignore, as a TOML snippet in the repo's quote style:
 
    ```toml
