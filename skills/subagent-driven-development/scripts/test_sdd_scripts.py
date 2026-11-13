@@ -2073,6 +2073,66 @@ def test_mutant_run_stops_when_the_revert_run_changes_a_tracked_file(changed):
     assert not run_file(repo, 'mutant-active').exists()
 
 
+def test_mutant_run_reverts_a_rename_that_git_detects_as_one(calc):
+    # The plan's rename test changes most of a two-line file, which git never
+    # pairs as a rename. Here it does, so only --no-renames lists both paths.
+    body = ''.join(f'def f{i}():\n    return {i}\n\n\n' for i in range(10))
+    base = commit_files(calc, {'mod.py': body}, 'base')
+    git('mv', 'mod.py', 'renamed.py', cwd=calc)
+    (calc / 'renamed.py').write_text(body.replace('return 9\n', 'return 90\n'))
+    git('add', 'renamed.py', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    assert git('diff', '-M', '--name-status', base, 'HEAD', cwd=calc).stdout.startswith('R')
+    make_mutant(calc, 1, *A)
+    cmd = [
+        'sh', '-c',
+        'test -f mod.py && echo has-mod; test -e renamed.py || echo no-renamed; '
+        '"$0" -m pytest -q -p no:cacheprovider test_calc.py',
+        sys.executable,
+    ]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert path_lines(lines) == ['path: mod.py', 'path: renamed.py']
+    assert 'revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 3' in lines
+    output = run_section(lines, 'output: revert')
+    assert 'has-mod' in output
+    assert 'no-renamed' in output
+    assert not (calc / 'mod.py').exists()
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_builds_the_revert_after_the_last_mutant(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    # Hangs while mutant 1 is applied.
+    slow_mutant = ['sh', '-c', 'grep -q "a // 3" half.py && sleep 30; "$0" -m pytest -q -p no:cacheprovider', sys.executable]
+    proc = subprocess.Popen(
+        [str(MUTANT_RUN), 'plan.md', '1', base, '--', *slow_mutant],
+        cwd=repo, env=PY_ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    marker = run_file(repo, 'mutant-active')
+    deadline = time.monotonic() + REVERT_WAIT_SECONDS
+    while time.monotonic() < deadline:
+        try:
+            if (marker.read_text().split('\n', 1)[0] == 'task-1-mutant-1.patch'
+                    and 'a // 3' in (repo / 'half.py').read_text()):
+                break
+        except FileNotFoundError:
+            pass
+        if proc.poll() is not None:
+            pytest.fail('mutant-run ended before it applied mutant 1')
+        time.sleep(0.05)
+    else:
+        os.killpg(proc.pid, signal.SIGKILL)
+        pytest.fail('mutant 1 was never applied')
+    built = run_file(repo, 'task-1-revert.patch').exists()
+    os.killpg(proc.pid, signal.SIGKILL)
+    proc.wait(timeout=KILL_WAIT_SECONDS)
+    assert not built
+
+
 def test_mutant_run_keeps_its_exit_status_when_the_revert_times_out(changed):
     repo, base = changed
     make_mutant(repo, 1, *H, path='half.py')
