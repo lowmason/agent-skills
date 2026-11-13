@@ -94,7 +94,7 @@ ADDED_TESTS = {
     'test_count_words_counts_a_hash_after_other_whitespace_in_a_line': (
         ('hello\x0c# world\n', 3), ('hello\r# world\n', 3), (f'hello{LS}# world\n', 3)),
     'test_count_words_splits_on_any_run_of_whitespace': (('one  two\tthree \t four\n\nfive\r\nsix\n', 6),
-                                                         ('well-known a,b end.\n', 3)),
+                                                         ('well-known a,b end.\n', 3), ('hello  world', 2)),
     'test_count_words_splits_on_other_whitespace_inside_a_line': (
         ('a\x0bb\x0cc\rd\n', 4),
         (f'a\x1cb\x1dc\x1ed{NEL}e{LS}f{PS}g{NBSP}h{IDEOGRAPHIC_SPACE}i\n', 9)),
@@ -128,6 +128,7 @@ INPUTS = (
     (R8, 'a newline', 'test_count_words_splits_on_any_run_of_whitespace'),
     (R8, 'a blank line, so two newlines in a row', 'test_count_words_splits_on_any_run_of_whitespace'),
     (R8, 'a carriage return before a newline', 'test_count_words_splits_on_any_run_of_whitespace'),
+    (R8, 'a last line that holds words, with no newline after it', 'test_count_words_splits_on_any_run_of_whitespace'),
     (R8, 'punctuation with no whitespace (`well-known`, `a,b`): it never separates words',
      'test_count_words_splits_on_any_run_of_whitespace'),
     (R8, 'a vertical tab, a form feed or a lone `\\r` between words: each separates words and never ends a line',

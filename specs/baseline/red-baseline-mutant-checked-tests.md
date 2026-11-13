@@ -1600,7 +1600,8 @@ reading is the one that rule `:8` states: whitespace separates words. Each has a
   `split('\n')`, mutant 1 also catches each test whose input ends with a newline, through the empty
   segment after it. The test run, the mutant run and the diff are at head `a5fa8eb`, on a clean
   tree. A check of the rules' words for other line-break or whitespace shapes found none without a
-  row and a test. R1 has no planted gap.
+  row and a test. R1 has no planted gap. (Package change 2, below, found a gap that this check
+  missed: no test counts words on a last line with no newline after it.)
 - R2: its mutants file differs from R1's only in mutant 1's line. No `Mutant` line names
   `specs/wordcount.md:8`, and there is no `Unreachable:` line. The three whitespace tests are caught
   by mutant 1 (`return 0`) alone. Its report and diff are byte-identical to R1's. Its only gap is the
@@ -1629,6 +1630,10 @@ reading is the one that rule `:8` states: whitespace separates words. Each has a
 **Spend.** The micro-test total before the second control set is $8.1276048.
 
 ## Reviewer control, second set
+
+**Superseded and unscored.** After this set, a task review found one more gap in every package,
+and the controller ruled a second package change (Package change 2, below). The 15 reps of this set
+stay in place, and none is scored. The scored control is Reviewer control, third set.
 
 This set runs on the second build, after this change's commit (`aedcf2a`). Its rules are the
 registered ones, with reading B. This set is the scored control.
@@ -1713,3 +1718,130 @@ reads 5 of 5 under reading B.
 
 **Spend.** The second control set cost $0.4634277 for 15 reps, about $0.031 a rep. The micro-test
 total is $8.5910325 of the $100 cap.
+
+## Package change 2 (controller ruling, after the second control set)
+
+**The finding.** The task review of this task found one more gap, graded Important. R1's tests
+never count words on a last line with no newline after it. After the move to `text.split('\n')`,
+every R1 input with counted words ends with a newline. Only `''` and `'hello\n# last note'` have no
+final newline, and the last line of the second is a skipped comment. The reviewer ran R1's 13 tests
+against `text.split('\n')[:-1]`, a plausible slip that drops the empty piece after the final
+newline. All 13 passed, and `count_words('hello world')` returned 0. R2 has R1's tests, and R3's
+tests are a subset, so all three packages had the gap. The hand check in Package change said that
+it found none.
+
+**The ruling.** The controller ruled the fix, in the ledger. Spec Verification item 4 and the
+brief's R1 row make R1 free of gaps.
+
+1. Add the assertion and a rule `:8` Inputs row "a last line that holds words, with no newline after
+   it". No `Mutant` line, target list or number changes. R3's planted gap stays.
+2. Before the rebuild, check R1 the way the plan's own method would. In a scratch directory outside
+   the repository, write plausible wrong versions of R1's `count_words` and run R1's tests against
+   each one. Each version that a person could plausibly write must fail at least one test. A
+   survivor is another gap, and gets a test and a row. The mutants and the results go in this note.
+3. Rebuild through the real scripts, and redo the hand checks.
+4. Register the change, and commit it before any new rep. Control-v2 is superseded and unscored.
+5. Rerun all three controls into `reviewer/control-v3/`. Never delete earlier reps.
+
+**What changed.** Only `review-kit/build_packages.py` changed.
+
+- `test_count_words_splits_on_any_run_of_whitespace` gets a third assertion:
+  `count_words('hello  world') == 2`. The text has a run of two spaces and no final newline.
+- The rule `:8` row "a last line that holds words, with no newline after it" names that test. R1 and
+  R2 now have 25 rows (12 for `:7`, 13 for `:8`), and R3 has 23.
+- The mutants file keeps every `Mutant` line, target list and number. Mutant 1 (single spaces) and
+  R2's mutant 1 (`return 0`) also fail the new assertion, so no target list changes. Mutant 4 does
+  not touch it, so it still survives R3's run 1.
+
+**The wrong-version check.** `check.py`, in a scratch directory outside the repository, reads the
+test file from `build_packages.tests_text`. It runs that file's test functions against each wrong
+version of `count_words`. A test that raises counts as a kill. Ids `m01` to `m36` are plausible wrong
+versions. Ids `e01` to `e09` are versions that a person might write and that give the same result on
+every input. Each `e` version has its reason. Each was also run against the correct code on 200,000
+random texts (seed 93), drawn from whitespace characters, `#`, letters and punctuation, with no
+difference. A scan of every code point found that `re`'s `\s` and `str.isspace()` accept the same
+29 characters. Test names drop their `test_count_words_` prefix. "R1 before the fix" uses the tests
+at `aedcf2a`.
+
+| Id | Wrong version | R1 before the fix | R1 after the fix | R3 after the fix |
+|---|---|---|---|---|
+| m01 | drop the last piece after splitting on newlines | survives | killed: `splits_on_any_run_of_whitespace` | killed: `splits_on_any_run_of_whitespace` |
+| m02 | a loop that splits off one line per newline and forgets the rest | survives | killed: `splits_on_any_run_of_whitespace` | killed: `splits_on_any_run_of_whitespace` |
+| m03 | split words on single spaces | killed (11 tests) | killed (11 tests) | killed (10 tests) |
+| m04 | split words on single spaces, dropping empty pieces | killed (3 tests) | killed (3 tests) | killed (3 tests) |
+| m05 | split words on spaces and tabs only | killed: `counts_a_hash_after_other_whitespace_in_a_line`, `splits_on_other_whitespace_inside_a_line` | killed: `counts_a_hash_after_other_whitespace_in_a_line`, `splits_on_other_whitespace_inside_a_line` | killed: `counts_a_hash_after_other_whitespace_in_a_line`, `splits_on_other_whitespace_inside_a_line` |
+| m06 | split words on ASCII whitespace only | killed: `counts_a_hash_after_other_whitespace_in_a_line`, `splits_on_other_whitespace_inside_a_line` | killed: `counts_a_hash_after_other_whitespace_in_a_line`, `splits_on_other_whitespace_inside_a_line` | killed: `counts_a_hash_after_other_whitespace_in_a_line`, `splits_on_other_whitespace_inside_a_line` |
+| m07 | count words as runs of word characters | killed (3 tests) | killed (3 tests) | killed (3 tests) |
+| m08 | count spaces plus one | killed (11 tests) | killed (11 tests) | killed (10 tests) |
+| m09 | re.split on whitespace runs without dropping empty pieces | killed (12 tests) | killed (12 tests) | killed (11 tests) |
+| m10 | re.split on whitespace runs after strip, so an empty line counts one word | killed (12 tests) | killed (12 tests) | killed (11 tests) |
+| m11 | skip a line only when the raw line starts with # | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces` |
+| m12 | check the first character only | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces` |
+| m13 | check the first character of the stripped line by index | killed (12 tests) | killed (12 tests) | killed (11 tests) |
+| m14 | strip only spaces before the # check | killed: `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_a_tab_or_other_blank` | survives |
+| m15 | strip only spaces and tabs before the # check | killed: `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_a_tab_or_other_blank` | survives |
+| m16 | strip string.whitespace (ASCII) before the # check | killed: `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_a_tab_or_other_blank` | survives |
+| m17 | strip on the right before the # check | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces` |
+| m18 | require a blank after # | killed: `skips_a_comment_with_no_blank_after_the_hash` | killed: `skips_a_comment_with_no_blank_after_the_hash` | killed: `skips_a_comment_with_no_blank_after_the_hash` |
+| m19 | skip a line with # anywhere | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` |
+| m20 | cut each line at its first # (inline comments) | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` |
+| m21 | stop at the first comment line | killed (7 tests) | killed (7 tests) | killed (6 tests) |
+| m22 | drop # tokens from the count | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` |
+| m23 | first word must be exactly # | killed: `skips_a_comment_with_no_blank_after_the_hash` | killed: `skips_a_comment_with_no_blank_after_the_hash` | killed: `skips_a_comment_with_no_blank_after_the_hash` |
+| m24 | split lines with splitlines() | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` |
+| m25 | split lines on CRLF only | killed (7 tests) | killed (7 tests) | killed (6 tests) |
+| m26 | split lines on CR, LF or CRLF | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` |
+| m27 | split lines on newline, form feed and vertical tab | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `skips_a_whole_comment_line_past_other_whitespace`, `counts_a_hash_after_other_whitespace_in_a_line` |
+| m28 | overwrite the total with each line | killed (12 tests) | killed (12 tests) | killed (11 tests) |
+| m29 | start the total at 1 | killed (13 tests) | killed (13 tests) | killed (12 tests) |
+| m30 | count the whole text when its first line is not a comment | killed: `skips_a_comment_on_the_last_line`, `skips_several_comment_lines` | killed: `skips_a_comment_on_the_last_line`, `skips_several_comment_lines` | killed: `skips_a_comment_on_the_last_line`, `skips_several_comment_lines` |
+| m31 | a line that is only # is not a comment | killed: `skips_a_comment_with_no_blank_after_the_hash` | killed: `skips_a_comment_with_no_blank_after_the_hash` | killed: `skips_a_comment_with_no_blank_after_the_hash` |
+| m32 | return inside the loop, after the first line | killed: `splits_on_any_run_of_whitespace` | killed: `splits_on_any_run_of_whitespace` | killed: `splits_on_any_run_of_whitespace` |
+| m33 | remove comments with a regex that ends a comment at CR or LF | killed: `skips_a_whole_comment_line_past_other_whitespace` | killed: `skips_a_whole_comment_line_past_other_whitespace` | killed: `skips_a_whole_comment_line_past_other_whitespace` |
+| m34 | remove comments with a regex for column-0 # only | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces`, `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_spaces` |
+| m35 | remove comments with a regex that allows spaces and tabs before # | killed: `skips_a_comment_after_a_tab_or_other_blank` | killed: `skips_a_comment_after_a_tab_or_other_blank` | survives |
+| m36 | remove everything from # to the end of the line | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` | killed: `counts_a_hash_after_a_word`, `counts_a_hash_after_other_whitespace_in_a_line` |
+| e01 | strip both ends before the # check (equivalent: a # first after the left strip is first after a full strip) | survives | survives | survives |
+| e02 | first word starts with # (equivalent: the first word starts at the first non-whitespace character) | survives | survives | survives |
+| e03 | count runs of non-whitespace (equivalent: re \S is the complement of str.isspace for str patterns) | survives | survives | survives |
+| e04 | split lines with re on CRLF or LF (equivalent: a CR before LF is whitespace, which both the check and the count drop) | survives | survives | survives |
+| e05 | strip the text before splitting lines (equivalent: leading and trailing whitespace never changes a check or a count) | survives | survives | survives |
+| e06 | iterate io.StringIO lines (equivalent: StringIO with its default newline splits at LF only and keeps it, which split() drops) | survives | survives | survives |
+| e07 | drop trailing newlines before splitting lines (equivalent: the dropped pieces are empty lines, which count 0) | survives | survives | survives |
+| e08 | a regex match for whitespace then # (equivalent: re \s matches what str.isspace accepts, as lstrip() strips) | survives | survives | survives |
+| e09 | remove comment lines with a multiline regex, then count (equivalent: ^ follows LF only, \s* crosses only blank text, and . stops only at LF) | survives | survives | survives |
+
+- Before the fix, two plausible versions survived R1's tests: `m01` (drop the last piece) and `m02`
+  (a loop that splits off one line for each newline and forgets the rest). Both are the gap that
+  the review found. After the fix, the new assertion kills both, and no plausible version survives
+  R1's tests. R2 has R1's tests, so the same holds for R2.
+- In R3, the plausible survivors are `m14`, `m15`, `m16` and `m35`. Each strips only some whitespace
+  before `#`, so each is R3's planted gap: a non-space blank before `#`. `m14` is R3's mutant 4.
+
+**Hand checks, made before any new rep.**
+
+- Two builds made byte-identical packages, and the build into the repository matches them. The base
+  is still `0edad74`. R1 and R2 are at head `f16e205`, and R3 is at head `888c042`.
+- The new code passes all 13 tests. The old `splitlines()` code still fails the same two tests.
+- R1: 13 tests and 25 rows. Each test caught a mutant in the controller's run, at head `f16e205` on a
+  clean tree, with 3 caught, 0 survived and 0 invalid.
+- R2: its mutants file differs from R1's only in mutant 1's line. Its report and diff are
+  byte-identical to R1's. The three whitespace tests are caught by mutant 1 (`return 0`) alone.
+- R3: 12 tests and 23 rows. Run 1 shows `mutant 4: SURVIVED exit 0`. Applied to R1's scratch
+  repository, mutant 4's patch fails only the tab-or-other-blank test, with `3 == 1` on
+  `'\t# note\nhello\n'`. In run 3, the controller's, each of the 12 tests caught a mutant.
+- Leak check: the leak words hit nothing in the six new leak views. In the packages they hit only
+  R3's `Withdrawn: 4` line (now line 37) and its report's line 38, both exempt as before. The name
+  grep hit only `subagent` in the frames, and nothing in the packages.
+- The control prompts at `db4fede` differ from the second set's only in the inlined package files,
+  the Head lines and the run paths. A script checked that each prompt, control and Full Form dry
+  build, inlines each of its seven package files byte for byte. The agent body (`b5ca337f…`), the
+  Short Form block (`36635162…`) and the Full Form block (`090dbe7b…`) are unchanged. The control
+  prompts' sha256s are R1 `ce026bff…`, R2 `03ddf6e7…` and R3 `4d222beb…`.
+
+**Spend.** The micro-test total before the third control set is $8.5910325.
+
+## Reviewer control, third set
+
+This set runs on the third build, after this change's commit. Its rules are the registered ones,
+with reading B. Five reps per case run into `reviewer/control-v3/R<n>/`.

@@ -1,21 +1,21 @@
-# Review package: 0edad743a352ec5b72e3d5a4470457e7b4378bd0..98c7a21db6d078498b42e108f8af77b7123cf659
+# Review package: 0edad743a352ec5b72e3d5a4470457e7b4378bd0..f16e205e1ea3257086653f88d83ab15407787f01
 
 ## Commits
-98c7a21 Test each input shape of the two rules
+f16e205 Test each input shape of the two rules
 c6a078b Add count_words
 
 ## Files changed
- tests/test_wordcount.py | 58 +++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_wordcount.py | 65 +++++++++++++++++++++++++++++++++++++++++++++++++
  wordcount.py            |  7 ++++++
- 2 files changed, 65 insertions(+)
+ 2 files changed, 72 insertions(+)
 
 ## Diff
 diff --git a/tests/test_wordcount.py b/tests/test_wordcount.py
 new file mode 100644
-index 0000000..09964f6
+index 0000000..36e34e7
 --- /dev/null
 +++ b/tests/test_wordcount.py
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,65 @@
 +from wordcount import count_words
 +
 +
@@ -25,6 +25,12 @@ index 0000000..09964f6
 +
 +def test_count_words_skips_a_comment_after_spaces():
 +    assert count_words('   # note\nhello\n') == 1
++
++
++def test_count_words_skips_a_comment_after_a_tab_or_other_blank():
++    assert count_words('\t# note\nhello\n') == 1
++    assert count_words('\x0c\x0b# note\nhello\n') == 1
++    assert count_words('\r\x1c\x1d\x1e\x85\u2028\u2029\xa0\u3000# note\nhello\n') == 1
 +
 +
 +def test_count_words_skips_a_comment_with_no_blank_after_the_hash():
@@ -62,6 +68,7 @@ index 0000000..09964f6
 +def test_count_words_splits_on_any_run_of_whitespace():
 +    assert count_words('one  two\tthree \t four\n\nfive\r\nsix\n') == 6
 +    assert count_words('well-known a,b end.\n') == 3
++    assert count_words('hello  world') == 2
 +
 +
 +def test_count_words_splits_on_other_whitespace_inside_a_line():

@@ -1,21 +1,21 @@
-# Review package: 0edad743a352ec5b72e3d5a4470457e7b4378bd0..a5fa8ebebba01c1ccb78914379c61692750e37b8
+# Review package: 0edad743a352ec5b72e3d5a4470457e7b4378bd0..f16e205e1ea3257086653f88d83ab15407787f01
 
 ## Commits
-a5fa8eb Test each input shape of the two rules
+f16e205 Test each input shape of the two rules
 c6a078b Add count_words
 
 ## Files changed
- tests/test_wordcount.py | 64 +++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_wordcount.py | 65 +++++++++++++++++++++++++++++++++++++++++++++++++
  wordcount.py            |  7 ++++++
- 2 files changed, 71 insertions(+)
+ 2 files changed, 72 insertions(+)
 
 ## Diff
 diff --git a/tests/test_wordcount.py b/tests/test_wordcount.py
 new file mode 100644
-index 0000000..d8648c4
+index 0000000..36e34e7
 --- /dev/null
 +++ b/tests/test_wordcount.py
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,65 @@
 +from wordcount import count_words
 +
 +
@@ -68,6 +68,7 @@ index 0000000..d8648c4
 +def test_count_words_splits_on_any_run_of_whitespace():
 +    assert count_words('one  two\tthree \t four\n\nfive\r\nsix\n') == 6
 +    assert count_words('well-known a,b end.\n') == 3
++    assert count_words('hello  world') == 2
 +
 +
 +def test_count_words_splits_on_other_whitespace_inside_a_line():

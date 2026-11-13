@@ -21,6 +21,7 @@
 | specs/wordcount.md:8 | a newline | test_count_words_splits_on_any_run_of_whitespace |
 | specs/wordcount.md:8 | a blank line, so two newlines in a row | test_count_words_splits_on_any_run_of_whitespace |
 | specs/wordcount.md:8 | a carriage return before a newline | test_count_words_splits_on_any_run_of_whitespace |
+| specs/wordcount.md:8 | a last line that holds words, with no newline after it | test_count_words_splits_on_any_run_of_whitespace |
 | specs/wordcount.md:8 | punctuation with no whitespace (`well-known`, `a,b`): it never separates words | test_count_words_splits_on_any_run_of_whitespace |
 | specs/wordcount.md:8 | a vertical tab, a form feed or a lone `\r` between words: each separates words and never ends a line | test_count_words_splits_on_other_whitespace_inside_a_line |
 | specs/wordcount.md:8 | other Unicode whitespace between words (`\x1c` to `\x1e`, `\x85`, `\u2028`, `\u2029`, the no-break space `\u00a0`, the ideographic space `\u3000`) | test_count_words_splits_on_other_whitespace_inside_a_line |
