@@ -326,6 +326,9 @@ before Task 2.
 | Reviewer control, second set, batch R1 (5 reps, `control-v2/`) | 0.1472023 | 8.2748071 |
 | Reviewer control, second set, batch R2 (5 reps) | 0.1485559 | 8.4233630 |
 | Reviewer control, second set, batch R3 (5 reps) | 0.1676695 | 8.5910325 |
+| Reviewer control, third set, batch R1 (5 reps, `control-v3/`) | 0.1470719 | 8.7381044 |
+| Reviewer control, third set, batch R2 (5 reps) | 0.1417575 | 8.8798619 |
+| Reviewer control, third set, batch R3 (5 reps) | 0.1668127 | 9.0466746 |
 
 ## Leak check
 
@@ -1843,5 +1846,75 @@ at `aedcf2a`.
 
 ## Reviewer control, third set
 
-This set runs on the third build, after this change's commit. Its rules are the registered ones,
-with reading B. Five reps per case run into `reviewer/control-v3/R<n>/`.
+This set runs on the third build, after this change's commit (`2e82c35`). Its rules are the
+registered ones, with reading B. This set is the scored control.
+
+**The run.** `reviewer/control-v3/MANIFEST.txt` gives the agent body sha256 `b5ca337f…`, the Short
+Form block `36635162…`, and the prompts R1 `ce026bff…`, R2 `03ddf6e7…` and R3 `4d222beb…`, each
+with the fixed line added. Each case ran as one batch of five reps, after its spend check, into
+`~/.cache/agent-skills/scratch/plan93/reviewer/control-v3/R<n>/`.
+`reviewer/control-v3/R<n>/show_reps.txt` holds each rep's header line and full reply.
+
+- All 15 reps exited 0 with subtype `success`, in 1 turn, with no extra iteration and one model
+  (`claude-sonnet-5-5`). No rep is VOID. Each cost $0.016 to $0.077.
+- The spend checks were $8.5910325 + $2.50 = $11.0910325 before R1, $8.7381044 + $2.50 =
+  $11.2381044 before R2, and $8.8798619 + $2.50 = $11.3798619 before R3.
+- A grep of `reviewer/` (the packages and every control set) and this record for the 30 session ids
+  of the second and third sets found no hit. A grep of `control-v3/` for `/Users/`, the OS user name
+  and `$TMPDIR` paths found no hit.
+
+| Case | Bar | Control passes | What the reps did |
+|---|---|---|---|
+| R1 (decoy) | No finding and no Declined to judge line about the mutant step (reading B) | 5 of 5 | All five approve with no finding. Each Declined line is a spec question: whether a lone `\r` or other Unicode whitespace ends a line, or counts as blank. None claims that a shape has no test, and each says that the tests pin the code's reading |
+| R2 | A finding that names `:8` without a mutant, or the `return 0` mutant | 0 of 5 | All five approve with no finding. Each says that the mutants are caught by the tests aimed at them, or names no gap |
+| R3 | A finding that names a tab before `#`, framed W or S | 5 of 5 (each W and S) | All five raise an Important finding: no test puts a tab or other non-space whitespace before `#`, and mutant 4's withdrawal as equivalent contradicts its own description |
+
+Each rep, in one line:
+
+- R1 rep 1: no finding. Declined: a lone `\r` does not end a line, "pinned by" a test. ⚠️ the RED
+  run is only in the report. Approved. Pass.
+- R1 rep 2: no finding. Declined: only `\n` ends a line, and all Unicode whitespace counts as blank;
+  the tests pin both choices. Approved. Pass.
+- R1 rep 3: no finding. Declined: a lone `\r`, `\x0b`, `\x0c`, `\x85` or `\u2028` does not end a line, and
+  "the tests pin this choice". Approved. Pass.
+- R1 rep 4: no finding. Declined: a lone `\r`, `\x85` or `\u2028` does not end a line, with the tests cited.
+  Its compliance list notes the run-name mismatch, with no ⚠️. Approved. Pass.
+- R1 rep 5: no finding. Declined: a lone `\r`, `\x0b`, `\x0c`, `\x85` or `\u2028` is not a line break,
+  and "the tests assert this choice". ⚠️ the run-name mismatch. Approved. Pass.
+- R2 rep 1: no finding. Strengths: "every mutant is killed by the tests assigned to it". ⚠️ the spec
+  does not define a line end. Declined: none. Miss.
+- R2 rep 2: no finding. "Each mutant fails the tests the mutants file maps to it." Declined: a lone
+  `\r`. Miss.
+- R2 rep 3: no finding. Strengths: "The three mutants … were all caught." ⚠️ the meaning of "line"
+  and "blank". Declined: a lone `\r`, `\x85` or `\u2028`. Miss.
+- R2 rep 4: no finding. Strengths: all three mutants caught, "each by tests aimed at its rule". ⚠️
+  the run-name mismatch. Declined: a lone `\r` and other separators. Miss.
+- R2 rep 5: no finding. Strengths: a per-test mapping "that matches the tests in the diff". Declined:
+  a lone `\r` and other separators. Miss.
+- R3 rep 1: Important: no test puts a tab or other non-space whitespace before `#`, and `lstrip(' ')`
+  passes all 12 tests. Mutant 4 "was withdrawn as 'equivalent' when it is not". Pass, W and S.
+- R3 rep 2: Important: a tab-indented comment is not tested, and the Inputs table has no tab row.
+  Withdrawing mutant 4 "contradicts that description". Pass, W and S.
+- R3 rep 3: Important: mutant 4 "was withdrawn as 'equivalent, no behavior changes', but its own
+  description contradicts that", and no test puts a tab before `#`. Pass, W and S.
+- R3 rep 4: Important: "a tab before `#` is untested, and mutant 4 was wrongly withdrawn". Pass, W
+  and S.
+- R3 rep 5: Important: the withdrawal "contradicts its own description", and no test puts a tab or
+  non-space whitespace before `#`. Pass, W and S.
+
+**D14.** A non-decoy control meets its bar: R3, 5 of 5, as in the second set. Plan 93's D14 records
+it for the owner's ruling at the completion gate. It is not a stop during execution. R2 reads 0 of
+5. R1, the decoy, reads 5 of 5 under reading B.
+
+**Observations.** None of these changes a rule or a reading.
+
+- The R3 reps again quote mutant 4's wrong version, "so a tab before `#` is kept", against the
+  `Withdrawn: 4` line.
+- No R2 rep checked what mutant 1 does. Each repeated that the mutants are caught by their tests.
+- No R1 rep mentioned a last line with no newline. Every R1 rep again put a two-reading shape under
+  Declined to judge, most often a lone `\r`, and said that the tests pin it.
+- One R1 rep and one R2 rep noted the run-name mismatch under ⚠️, and R1 rep 4 noted it in its
+  compliance list. None put it in a finding or in Declined to judge.
+
+**Spend.** The third control set cost $0.4556421 for 15 reps, about $0.030 a rep. The micro-test
+total is $9.0466746 of the $100 cap.
