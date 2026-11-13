@@ -1,0 +1,95 @@
+{
+  "fixture": "F3",
+  "rep": 7,
+  "rep_dir": "/tmp/mt-rep-tyePj8",
+  "base": "92124ec95b3e1c9850eed8980c03d3501026f55f",
+  "prompt_sha256": "e0ca1c3fca3bd3dd30668d50508462772ae7d8de11c3f4441d291cebaaccb1f1",
+  "claude_exit": 0,
+  "wall_seconds": 19,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-tyePj8/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 18020,
+    "total_cost_usd": 0.07960069999999998,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 2448,
+        "cacheReadInputTokens": 67887,
+        "cacheCreationInputTokens": 12077,
+        "webSearchRequests": 0,
+        "costUSD": 0.07960069999999998,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 83,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12077,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commits:** 49a4c88 \"Add count_words\"\n- **Tests:** 5/5 passing, output pristine; mutants: caught 4, survived 0, invalid 0. The RED run failed with the expected ImportError.\n- **Concerns:** none. The plan test and the spec don't conflict.\n- **Report:** /tmp/mt-rep-tyePj8/repo/.sdd/plan/task-1-report.md\n\nThe mutant patches and `task-1-mutants.md` are in `.sdd/plan/` and not committed. The tree is clean apart from those.",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-tyePj8/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -a . tests 2>/dev/null"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-tyePj8/repo; grep -n \"Write mutants\" -A12 /tmp/mt-skill/references/mutants.md | cut -c1-3000; cat specs/wordcount.md; ls .sdd/plan"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-tyePj8/repo; sed -n 38,80p /tmp/mt-skill/references/mutants.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-tyePj8/repo; mkdir -p tests; cat > tests/test_wordcount.py <<'EOF'\nfrom wordcount import count_words\n\n\ndef test_count_words_skips_comment_lines():\n    assert count_words('# note\\nhello world\\n') == 2\n\n\ndef test_indented_comment_line_is_skipped():\n    assert count_words('  \\t# note here\\nhello\\n') == 1\n\n\ndef test_hash_after_first_word_is_not_a_comment():\n    assert count_words('hello # world\\n') == 3\n\n\ndef test_comment_only_and_empty_input_count_zero():\n    assert count_words('# a b c') == 0\n    assert count_words('') == 0\n\n\ndef test_words_separated_by_any_whitespace_run():\n    assert count_words('a  b\\t\\tc \\n\\n d') == 4\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py 2>&1 | tail -5\ncat > wordcount.py <<'EOF'\ndef count_words(text: str) -> int:\n    \"\"\"Count whitespace-separated words, ignoring comment lines.\"\"\"\n    total = 0\n    for line in text.splitlines():\n        if line.lstrip().startswith('#'):\n            continue\n        total += len(line.split())\n    return total\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py 2>&1 | tail -3\ngit add wordcount.py tests/test_wordcount.py; git commit -qm \"Add count_words\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"\nW=.sdd/plan\nmk(){ git diff -- wordcount.py > $W/task-1-mutant-$1.patch; git checkout -- wordcount.py; }\nsed -i '' \"s/line.lstrip().startswith/line.startswith/\" wordcount.py; mk 1\nsed -i '' \"s/line.lstrip().startswith('#')/'#' in line/\" wordcount.py; mk 2\nsed -i '' \"s/line.split()/line.split(' ')/\" wordcount.py; mk 3\nsed -i '' \"s/            continue/            total += 0/\" wordcount.py; mk 4\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/wordcount.md:7 | comment at line start | test_count_words_skips_comment_lines |\n| specs/wordcount.md:7 | indented comment | test_indented_comment_line_is_skipped |\n| specs/wordcount.md:7 | # after a word is not a comment | test_hash_after_first_word_is_not_a_comment |\n| specs/wordcount.md:7 | comment-only / empty input | test_comment_only_and_empty_input_count_zero |\n| specs/wordcount.md:8 | runs of spaces, tabs, blank lines | test_words_separated_by_any_whitespace_run |\n\n## Mutants\n\nMutant 1: specs/wordcount.md:7, test_indented_comment_line_is_skipped \u2014 leading blanks not stripped before the # check \u2014 task-1-mutant-1.patch\nMutant 2: specs/wordcount.md:7, test_hash_after_first_word_is_not_a_comment \u2014 any # in line makes it a comment \u2014 task-1-mutant-2.patch\nMutant 3: specs/wordcount.md:8, test_words_separated_by_any_whitespace_run \u2014 split on single space only \u2014 task-1-mutant-3.patch\nMutant 4: specs/wordcount.md:7, test_count_words_skips_comment_lines \u2014 comment lines are still counted \u2014 task-1-mutant-4.patch\nEOF\ngit status --short\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py 2>&1 | tail -12"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-tyePj8/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\nImplemented `count_words` in wordcount.py (skip lines whose first non-blank char is `#`; split rest on whitespace runs). Tests in tests/test_wordcount.py: plan test plus 4 added shape tests.\nTDD RED: pytest -> ImportError cannot import name 'count_words'. GREEN: 5 passed.\nMutants: /private/tmp/mt-rep-tyePj8/repo/.sdd/plan/task-1-mutants.log \u2014 caught 4, survived 0, invalid 0.\nFiles: wordcount.py, tests/test_wordcount.py, .sdd/plan/task-1-mutant-{1..4}.patch, task-1-mutants.md\nConcerns: none; no plan-test/spec conflict.\nEOF\ngit log --oneline | head -1; git status --short"
+      }
+    }
+  ],
+  "commits": [
+    "49a4c88 Add count_words"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

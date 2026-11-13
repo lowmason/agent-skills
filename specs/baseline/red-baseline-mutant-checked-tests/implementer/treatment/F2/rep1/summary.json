@@ -1,0 +1,108 @@
+{
+  "fixture": "F2",
+  "rep": 1,
+  "rep_dir": "/tmp/mt-rep-3EoTXr",
+  "base": "bad35cb394f8c13e8098f3da9dec3fb354c5922c",
+  "prompt_sha256": "543add160cec661f720b011896f692d245699b2cab7545967bc9e6e8b25c3234",
+  "claude_exit": 0,
+  "wall_seconds": 31,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-3EoTXr/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 8,
+    "duration_ms": 30038,
+    "total_cost_usd": 0.1190598,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 16,
+        "outputTokens": 4088,
+        "cacheReadInputTokens": 114878,
+        "cacheCreationInputTokens": 16665,
+        "webSearchRequests": 0,
+        "costUSD": 0.1190598,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 700,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 16665,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commit:** 94f06d4 \"Add checkconf.main\"\n- **Tests:** 5/5 passing, output pristine; mutants: caught 5, survived 0, invalid 0.\n- **Concerns:**\n  - None on the spec; the plan test and the spec do not conflict.\n  - One mutant first showed as a survivor, caused by a stale `.pyc` (same file size and mtime second). Rerunning with `PYTHONDONTWRITEBYTECODE=1` caught it, and no test changed. Other mutant runs on same-size patches could hit the same thing.\n- **Report:** /tmp/mt-rep-3EoTXr/repo/.sdd/plan/task-1-report.md",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-3EoTXr/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -a; cat plan.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-3EoTXr/repo; cat specs/checkconf.md; cat .gitignore; mkdir -p tests; cat > tests/test_checkconf.py <<'EOF'\nfrom checkconf import main\n\n\ndef test_main_reports_an_unknown_key(tmp_path, capsys):\n    settings = tmp_path / 'service.conf'\n    settings.write_text('name = web\\ncolour = red\\n')\n    main([str(settings)])\n    assert capsys.readouterr().out == 'unknown key: colour\\n'\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_checkconf.py 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-3EoTXr/repo; cat > checkconf.py <<'EOF'\nKNOWN_KEYS = {'name', 'port', 'debug'}\n\n\ndef main(argv):\n    with open(argv[0]) as settings:\n        lines = settings.read().splitlines()\n    status = 0\n    for line in lines:\n        key = line.partition('=')[0].strip()\n        if key not in KNOWN_KEYS:\n            print(f'unknown key: {key}')\n            status = 1\n    return status\nEOF\ncat >> tests/test_checkconf.py <<'EOF'\n\n\ndef run(tmp_path, text):\n    settings = tmp_path / 'service.conf'\n    settings.write_text(text)\n    return main([str(settings)])\n\n\ndef test_main_returns_1_for_an_unknown_key(tmp_path):\n    assert run(tmp_path, 'name = web\\ncolour = red\\n') == 1\n\n\ndef test_main_returns_0_and_prints_nothing_for_known_keys(tmp_path, capsys):\n    assert run(tmp_path, 'name = web\\nport = 80\\ndebug = on\\n') == 0\n    assert capsys.readouterr().out == ''\n\n\ndef test_main_reports_every_unknown_key_in_order(tmp_path, capsys):\n    assert run(tmp_path, 'colour = red\\nport = 80\\nsize = 3\\n') == 1\n    assert capsys.readouterr().out == 'unknown key: colour\\nunknown key: size\\n'\n\n\ndef test_main_returns_0_for_an_empty_file(tmp_path, capsys):\n    assert run(tmp_path, '') == 0\n    assert capsys.readouterr().out == ''\nEOF\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -3\ngit add checkconf.py tests; git commit -qm \"Add checkconf.main\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -1\nW=.sdd/plan\nmk(){ git diff -- checkconf.py > $W/task-1-mutant-$1.patch; git checkout -- checkconf.py; }\nsed -i '' \"s/'name', 'port', 'debug'/'name', 'port'/\" checkconf.py; mk 1\nsed -i '' \"s/status = 1/status = 0/\" checkconf.py; mk 2\nsed -i '' \"s/            status = 1/            return 1/\" checkconf.py; mk 3\nsed -i '' \"s/    status = 0/    status = 1/\" checkconf.py; mk 4\nsed -i '' \"s/if key not in KNOWN_KEYS:/if key not in KNOWN_KEYS and not key.startswith('c'):/\" checkconf.py; mk 5\nwc -c $W/*.patch\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/checkconf.md:7 | one unknown key | test_main_reports_an_unknown_key |\n| specs/checkconf.md:7 | several unknown keys, among known ones | test_main_reports_every_unknown_key_in_order |\n| specs/checkconf.md:7 | each known key (name, port, debug) | test_main_returns_0_and_prints_nothing_for_known_keys |\n| specs/checkconf.md:8 | unknown key | test_main_returns_1_for_an_unknown_key |\n| specs/checkconf.md:8 | only known keys | test_main_returns_0_and_prints_nothing_for_known_keys |\n| specs/checkconf.md:8 | empty file | test_main_returns_0_for_an_empty_file |\n\n## Mutants\n\nMutant 1: specs/checkconf.md:7, test_main_returns_0_and_prints_nothing_for_known_keys \u2014 `debug` treated as unknown \u2014 task-1-mutant-1.patch\nMutant 2: specs/checkconf.md:8, test_main_returns_1_for_an_unknown_key \u2014 status stays 0 on unknown key \u2014 task-1-mutant-2.patch\nMutant 3: specs/checkconf.md:7, test_main_reports_every_unknown_key_in_order \u2014 returns at first unknown key \u2014 task-1-mutant-3.patch\nMutant 4: specs/checkconf.md:8, test_main_returns_0_for_an_empty_file \u2014 status starts at 1 \u2014 task-1-mutant-4.patch\nMutant 5: specs/checkconf.md:7, test_main_reports_an_unknown_key \u2014 keys starting with c are ignored \u2014 task-1-mutant-5.patch\nEOF\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_checkconf.py 2>&1 | tail -12"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-3EoTXr/repo; cat .sdd/plan/task-1-mutant-2.patch; git status --short"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-3EoTXr/repo; grep -n -B3 -A25 \"mutant 2\" .sdd/plan/task-1-mutants.log | head -60"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-3EoTXr/repo; find . -name __pycache__ -exec rm -rf {} +; PYTHONDONTWRITEBYTECODE=1 /tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_checkconf.py 2>&1 | cut -c1-200 | grep -E \"result|mutant [0-9]|run:\"; git status --short"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-3EoTXr/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\n\nImplemented `main` in `checkconf.py` (splits each line at `=`, strips the key, prints `unknown key: <key>` for keys outside name/port/debug, returns 1 if any, else 0). Added the plan test plus 4 tests (return 1, known keys -> 0 and silent, several unknown keys in order, empty file).\n\n## TDD\nRED: `pytest -q tests/test_checkconf.py` -> `ImportError: cannot import name 'main' from 'checkconf'`.\nGREEN: `pytest -q` -> 5 passed.\n\n## Mutants\nLast run: /private/tmp/mt-rep-3EoTXr/repo/.sdd/plan/task-1-mutants-2.log \u2014 caught 5, survived 0, invalid 0.\nNote: the first run showed mutant 2 as a survivor. Cause: a stale `.pyc` (the mutant file had the same size and mtime second). Rerun with PYTHONDONTWRITEBYTECODE=1 and `-p no:cacheprovider` caught it. No test change.\n\n## Files changed\ncheckconf.py, tests/test_checkconf.py (commit 94f06d4)\n\n## Concerns\nNone. No plan-test/spec conflict.\nEOF\ngit status --short"
+      }
+    }
+  ],
+  "commits": [
+    "94f06d4 Add checkconf.main"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants-2.log",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

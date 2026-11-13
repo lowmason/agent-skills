@@ -1,0 +1,95 @@
+{
+  "fixture": "F1",
+  "rep": 3,
+  "rep_dir": "/tmp/mt-rep-9HPadp",
+  "base": "75d3fa6c04eee243e3333fc4baa80786c29c6f47",
+  "prompt_sha256": "45f13067d908c5f227df2eb709aef66bfca865fe48496f183e3efac9d12f8a87",
+  "claude_exit": 0,
+  "wall_seconds": 21,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-9HPadp/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 20472,
+    "total_cost_usd": 0.0856657,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 2925,
+        "cacheReadInputTokens": 70557,
+        "cacheCreationInputTokens": 12334,
+        "webSearchRequests": 0,
+        "costUSD": 0.0856657,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 212,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12334,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commit:** f841bd7 Add latest_report\n- **Tests:** 4/4 passing, output pristine; mutants: caught 5, survived 0, invalid 0\n- **Concerns:** None. The plan test and the spec don't conflict. One behavior the spec doesn't cover: a `.txt` file with no `date:` line makes `latest_report` raise `ValueError`.\n- **Report:** /tmp/mt-rep-9HPadp/repo/.sdd/plan/task-1-report.md\n\nThe mutant patches, the mutants file and the report are in `.sdd/plan` and are not committed.",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-9HPadp/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; ls -a; cat /tmp/mt-skill/references/mutants.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-9HPadp/repo; cat specs/picker.md; cat plan.md | head -30; ls tests 2>&1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-9HPadp/repo; mkdir tests; cat > tests/test_latest.py <<'EOF'\nfrom latest import latest_report\n\n\ndef test_latest_report_returns_the_latest_dated_report(tmp_path):\n    (tmp_path / 'report-a.txt').write_text('title: winter review\\ndate: 2024-01-05\\n')\n    (tmp_path / 'report-b.txt').write_text('title: spring review\\ndate: 2024-03-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'report-b.txt'\n\n\ndef test_file_names_carry_no_order(tmp_path):\n    (tmp_path / 'report-a.txt').write_text('date: 2024-03-01\\n')\n    (tmp_path / 'report-b.txt').write_text('date: 2024-01-05\\n')\n    assert latest_report(tmp_path) == tmp_path / 'report-a.txt'\n\n\ndef test_date_line_may_follow_other_lines_and_year_decides(tmp_path):\n    (tmp_path / 'a.txt').write_text('title: x\\nbody\\ndate: 2023-12-31\\n')\n    (tmp_path / 'b.txt').write_text('title: y\\nbody\\ndate: 2024-01-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'b.txt'\n\n\ndef test_only_txt_files_directly_in_folder_count(tmp_path):\n    (tmp_path / 'a.txt').write_text('date: 2024-01-01\\n')\n    (tmp_path / 'b.md').write_text('date: 2025-01-01\\n')\n    sub = tmp_path / 'sub'\n    sub.mkdir()\n    (sub / 'c.txt').write_text('date: 2026-01-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'a.txt'\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py 2>&1 | tail -5\ncat > latest.py <<'EOF'\nfrom pathlib import Path\n\n\ndef _report_date(report: Path) -> str:\n    for line in report.read_text().splitlines():\n        if line.startswith('date:'):\n            return line[len('date:'):].strip()\n    raise ValueError(f'no date line in {report}')\n\n\ndef latest_report(folder: Path) -> Path:\n    \"\"\"Return the .txt report in folder whose `date:` line is the latest.\"\"\"\n    return max(folder.glob('*.txt'), key=_report_date)\nEOF\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-9HPadp/repo; git add latest.py tests/test_latest.py; git commit -qm \"Add latest_report\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"\nW=.sdd/plan\nmk(){ sed -i '' \"$2\" latest.py; git diff -- latest.py > $W/task-1-mutant-$1.patch; git checkout -- latest.py; }\nmk 1 \"s/key=_report_date/key=lambda p: p.name/\"\nmk 2 \"s/max(/min(/\"\nmk 3 \"s/'\\*.txt'/'**\\/*.txt'/\"\nmk 4 \"s/'\\*.txt'/'*'/\"\nmk 5 \"s/key=_report_date/key=lambda p: _report_date(p)[5:]/\"\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/picker.md:7 | two reports, latest second | test_latest_report_returns_the_latest_dated_report |\n| specs/picker.md:7 | date line after other lines; year boundary | test_date_line_may_follow_other_lines_and_year_decides |\n| specs/picker.md:8 | latest report has the earlier name | test_file_names_carry_no_order |\n| brief: .txt directly in folder | non-.txt file, nested .txt | test_only_txt_files_directly_in_folder_count |\n\n## Mutants\n\nMutant 1: specs/picker.md:8, test_file_names_carry_no_order \u2014 orders by file name \u2014 task-1-mutant-1.patch\nMutant 2: specs/picker.md:7, test_latest_report_returns_the_latest_dated_report \u2014 picks earliest \u2014 task-1-mutant-2.patch\nMutant 3: brief: .txt directly in folder, test_only_txt_files_directly_in_folder_count \u2014 recurses \u2014 task-1-mutant-3.patch\nMutant 4: brief: .txt directly in folder, test_only_txt_files_directly_in_folder_count \u2014 any extension \u2014 task-1-mutant-4.patch\nMutant 5: specs/picker.md:7, test_date_line_may_follow_other_lines_and_year_decides \u2014 ignores the year \u2014 task-1-mutant-5.patch\nEOF\ngit status --short; /tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py 2>&1 | tail -12"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-9HPadp/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\nImplemented `latest_report` in latest.py (max over `*.txt` by `date:` line; ISO strings compare correctly). Raises ValueError if a report has no date line (unspecified by spec).\nTests: tests/test_latest.py \u2014 plan test plus 3 added (name order, date after other lines/year boundary, non-.txt and nested ignored). 4 passed.\nTDD RED: `pytest -q tests/test_latest.py` -> ImportError: cannot import name 'latest_report'. GREEN: 4 passed.\nMutants: /private/tmp/mt-rep-9HPadp/repo/.sdd/plan/task-1-mutants.log \u2014 caught 5, survived 0, invalid 0.\nFiles: latest.py, tests/test_latest.py, .sdd/plan mutant files (uncommitted).\nNo plan/spec conflicts.\nEOF\ngit log --oneline | head -1"
+      }
+    }
+  ],
+  "commits": [
+    "f841bd7 Add latest_report"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

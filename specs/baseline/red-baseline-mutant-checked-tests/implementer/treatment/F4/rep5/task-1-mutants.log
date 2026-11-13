@@ -1,0 +1,161 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_monthly.py
+head: acd71863a3dd8d771d44cb873fa00dbb7982f4ab
+tree: clean
+result: caught 6, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 d605346a82549563add4a7607922c561233b4ccc3069869bd0597c059d85443d tests: tests.test_monthly::test_summarize_totals_the_month tests.test_monthly::test_summarize_rejects_a_month_with_no_rows
+mutant 2: CAUGHT exit 1 sha256 bf2cdbcce881541bc161d012153b2c153b937d849e2fbab5bd5a39575bfd5796 tests: tests.test_monthly::test_summarize_totals_the_month
+mutant 3: CAUGHT exit 1 sha256 08fa690020b75ace98c6011cd43ec56966032d1a2d80b17a360c80f8522306ce tests: tests.test_monthly::test_summarize_totals_the_month
+mutant 4: CAUGHT exit 1 sha256 6e531f996aa4626a65feefe3e87ab87854bd1d72dbf7a647549cdbf56bbefab5 tests: tests.test_monthly::test_summarize_rejects_a_month_with_no_rows tests.test_monthly::test_summarize_rejects_empty_rows
+mutant 5: CAUGHT exit 1 sha256 99795bcb79a0117335d2ed77724a93e83f564bc57095c7869f56c788b6449a9c tests: tests.test_monthly::test_summarize_rejects_a_month_with_no_rows tests.test_monthly::test_summarize_rejects_empty_rows
+mutant 6: CAUGHT exit 1 sha256 8614fe8a4766d1657d39cbee0971721f45d4d0ebeb4397a4798479e64670ea6e tests: tests.test_monthly::test_summarize_totals_the_month tests.test_monthly::test_summarize_rejects_a_month_with_no_rows
+--- tests ---
+test tests.test_monthly::test_summarize_totals_the_month: caught 1 2 3 6
+test tests.test_monthly::test_summarize_rejects_a_month_with_no_rows: caught 1 4 5 6
+test tests.test_monthly::test_summarize_rejects_empty_rows: caught 4 5
+--- output: baseline ---
+...                                                                      [100%]
+3 passed in 0.00s
+--- output: mutant 1 ---
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_summarize_totals_the_month ________________________
+
+    def test_summarize_totals_the_month():
+>       assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
+E       AssertionError: assert {'month': '20..., 'total': 35} == {'month': '20..., 'total': 30}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'total': 35} != {'total': 30}
+E         {'count': 3} != {'count': 2}
+E         Use -v to get more diff
+
+tests/test_monthly.py:13: AssertionError
+_________________ test_summarize_rejects_a_month_with_no_rows __________________
+
+    def test_summarize_rejects_a_month_with_no_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_monthly.py:17: Failed
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_totals_the_month - AssertionErro...
+FAILED tests/test_monthly.py::test_summarize_rejects_a_month_with_no_rows - F...
+2 failed, 1 passed in 0.01s
+--- output: mutant 2 ---
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_summarize_totals_the_month ________________________
+
+    def test_summarize_totals_the_month():
+>       assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
+E       AssertionError: assert {'month': '20..., 'total': 35} == {'month': '20..., 'total': 30}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'total': 35} != {'total': 30}
+E         Use -v to get more diff
+
+tests/test_monthly.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_totals_the_month - AssertionErro...
+1 failed, 2 passed in 0.01s
+--- output: mutant 3 ---
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_summarize_totals_the_month ________________________
+
+    def test_summarize_totals_the_month():
+>       assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
+E       AssertionError: assert {'month': '20..., 'total': 30} == {'month': '20..., 'total': 30}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'count': 3} != {'count': 2}
+E         Use -v to get more diff
+
+tests/test_monthly.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_totals_the_month - AssertionErro...
+1 failed, 2 passed in 0.01s
+--- output: mutant 4 ---
+.FF                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_summarize_rejects_a_month_with_no_rows __________________
+
+    def test_summarize_rejects_a_month_with_no_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_monthly.py:17: Failed
+______________________ test_summarize_rejects_empty_rows _______________________
+
+    def test_summarize_rejects_empty_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_monthly.py:22: Failed
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_rejects_a_month_with_no_rows - F...
+FAILED tests/test_monthly.py::test_summarize_rejects_empty_rows - Failed: DID...
+2 failed, 1 passed in 0.01s
+--- output: mutant 5 ---
+.FF                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_summarize_rejects_a_month_with_no_rows __________________
+
+    def test_summarize_rejects_a_month_with_no_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: 
+E       - no rows for 2024-05
+E       + no rows
+
+tests/test_monthly.py:17: AssertionError
+______________________ test_summarize_rejects_empty_rows _______________________
+
+    def test_summarize_rejects_empty_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: 
+E       - no rows for 2024-04
+E       + no rows
+
+tests/test_monthly.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_rejects_a_month_with_no_rows - A...
+FAILED tests/test_monthly.py::test_summarize_rejects_empty_rows - AssertionEr...
+2 failed, 1 passed in 0.01s
+--- output: mutant 6 ---
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_summarize_totals_the_month ________________________
+
+    def test_summarize_totals_the_month():
+>       assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
+E       AssertionError: assert {'month': '20..., 'total': 35} == {'month': '20..., 'total': 30}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'total': 35} != {'total': 30}
+E         {'count': 3} != {'count': 2}
+E         Use -v to get more diff
+
+tests/test_monthly.py:13: AssertionError
+_________________ test_summarize_rejects_a_month_with_no_rows __________________
+
+    def test_summarize_rejects_a_month_with_no_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_monthly.py:17: Failed
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_totals_the_month - AssertionErro...
+FAILED tests/test_monthly.py::test_summarize_rejects_a_month_with_no_rows - F...
+2 failed, 1 passed in 0.01s

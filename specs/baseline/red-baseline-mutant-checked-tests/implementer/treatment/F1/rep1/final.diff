@@ -1,0 +1,67 @@
+diff --git a/latest.py b/latest.py
+index e69de29..5a32e0d 100644
+--- a/latest.py
++++ b/latest.py
+@@ -0,0 +1,14 @@
++from datetime import date
++from pathlib import Path
++
++
++def _report_date(report: Path) -> date:
++    for line in report.read_text().splitlines():
++        if line.startswith('date:'):
++            return date.fromisoformat(line[len('date:'):].strip())
++    raise ValueError(f'no date: line in {report}')
++
++
++def latest_report(folder: Path) -> Path:
++    reports = [p for p in folder.glob('*.txt') if p.is_file()]
++    return max(reports, key=_report_date)
+diff --git a/tests/test_latest.py b/tests/test_latest.py
+new file mode 100644
+index 0000000..25a3ed6
+--- /dev/null
++++ b/tests/test_latest.py
+@@ -0,0 +1,42 @@
++from latest import latest_report
++
++
++def test_latest_report_returns_the_latest_dated_report(tmp_path):
++    (tmp_path / 'report-a.txt').write_text('title: winter review\ndate: 2024-01-05\n')
++    (tmp_path / 'report-b.txt').write_text('title: spring review\ndate: 2024-03-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'report-b.txt'
++
++
++def test_file_names_carry_no_order(tmp_path):
++    (tmp_path / 'a.txt').write_text('date: 2024-03-01\n')
++    (tmp_path / 'z.txt').write_text('date: 2024-01-05\n')
++    assert latest_report(tmp_path) == tmp_path / 'a.txt'
++
++
++def test_date_is_compared_as_a_date_not_by_file_order(tmp_path):
++    (tmp_path / 'a.txt').write_text('date: 2023-12-31\n')
++    (tmp_path / 'b.txt').write_text('date: 2024-01-01\n')
++    (tmp_path / 'c.txt').write_text('date: 2023-02-28\n')
++    assert latest_report(tmp_path) == tmp_path / 'b.txt'
++
++
++def test_only_txt_files_directly_in_the_folder_count(tmp_path):
++    (tmp_path / 'a.txt').write_text('date: 2024-01-05\n')
++    (tmp_path / 'b.md').write_text('date: 2025-01-01\n')
++    sub = tmp_path / 'sub'
++    sub.mkdir()
++    (sub / 'c.txt').write_text('date: 2026-01-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'a.txt'
++
++
++def test_date_line_may_come_before_other_lines(tmp_path):
++    (tmp_path / 'a.txt').write_text('date: 2024-05-01\ntitle: x\n')
++    (tmp_path / 'b.txt').write_text('title: y\ndate: 2024-04-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'a.txt'
++
++
++def test_reports_in_the_same_month_are_ordered_by_day(tmp_path):
++    (tmp_path / 'a.txt').write_text('date: 2024-03-09\n')
++    (tmp_path / 'b.txt').write_text('date: 2024-03-21\n')
++    (tmp_path / 'c.txt').write_text('date: 2024-03-02\n')
++    assert latest_report(tmp_path) == tmp_path / 'b.txt'

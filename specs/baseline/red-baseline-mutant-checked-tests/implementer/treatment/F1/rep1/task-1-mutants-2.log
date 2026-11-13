@@ -1,0 +1,213 @@
+mutant-run: Task 1, run 2
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py
+head: 339ae5802b606ac9f1be36a17b1fb1403f70170a
+tree: clean
+result: caught 5, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 835ad7ec0cffc79b2c90837fbcaddd540683329f43d29196b679973cc3b3443e tests: tests.test_latest::test_latest_report_returns_the_latest_dated_report tests.test_latest::test_file_names_carry_no_order tests.test_latest::test_date_is_compared_as_a_date_not_by_file_order tests.test_latest::test_date_line_may_come_before_other_lines tests.test_latest::test_reports_in_the_same_month_are_ordered_by_day
+mutant 2: CAUGHT exit 1 sha256 76942019ebf20ed99bbeb3eb857f3da76af065c4c16026e86b3dd950580f940b tests: tests.test_latest::test_only_txt_files_directly_in_the_folder_count
+mutant 3: CAUGHT exit 1 sha256 b6816fc45cdeb5fc18bbda7ccd8a5e0a6237016a1f8e3f962e02749ae38457ac tests: tests.test_latest::test_only_txt_files_directly_in_the_folder_count
+mutant 4: CAUGHT exit 1 sha256 36ab22d68f5f50ca08ab4d546f15f185aa76d64a2c3ae2b438e26c2c3ba191ee tests: tests.test_latest::test_file_names_carry_no_order tests.test_latest::test_date_is_compared_as_a_date_not_by_file_order tests.test_latest::test_date_line_may_come_before_other_lines tests.test_latest::test_reports_in_the_same_month_are_ordered_by_day
+mutant 5: CAUGHT exit 1 sha256 bd972f8623995fbb1680c16a7a01554f37f0ecc489e62d454818db47940cf99f tests: tests.test_latest::test_reports_in_the_same_month_are_ordered_by_day
+--- tests ---
+test tests.test_latest::test_latest_report_returns_the_latest_dated_report: caught 1
+test tests.test_latest::test_file_names_carry_no_order: caught 1 4
+test tests.test_latest::test_date_is_compared_as_a_date_not_by_file_order: caught 1 4
+test tests.test_latest::test_date_line_may_come_before_other_lines: caught 1 4
+test tests.test_latest::test_reports_in_the_same_month_are_ordered_by_day: caught 1 4 5
+test tests.test_latest::test_only_txt_files_directly_in_the_folder_count: caught 2 3
+--- output: baseline ---
+......                                                                   [100%]
+6 passed in 0.02s
+--- output: mutant 1 ---
+FFF.FF                                                                   [100%]
+=================================== FAILURES ===================================
+______________ test_latest_report_returns_the_latest_dated_report ______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_latest_report_returns_the0')
+
+    def test_latest_report_returns_the_latest_dated_report(tmp_path):
+        (tmp_path / 'report-a.txt').write_text('title: winter review\ndate: 2024-01-05\n')
+        (tmp_path / 'report-b.txt').write_text('title: spring review\ndate: 2024-03-01\n')
+>       assert latest_report(tmp_path) == tmp_path / 'report-b.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_latest_report_returns_the0/report-a.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_latest_report_returns_the0') / 'report-b.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_latest_report_returns_the0/report-a.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_latest_report_returns_the0'))
+
+tests/test_latest.py:7: AssertionError
+________________________ test_file_names_carry_no_order ________________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_file_names_carry_no_order0')
+
+    def test_file_names_carry_no_order(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-03-01\n')
+        (tmp_path / 'z.txt').write_text('date: 2024-01-05\n')
+>       assert latest_report(tmp_path) == tmp_path / 'a.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_file_names_carry_no_order0/z.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_file_names_carry_no_order0') / 'a.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_file_names_carry_no_order0/z.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_file_names_carry_no_order0'))
+
+tests/test_latest.py:13: AssertionError
+______________ test_date_is_compared_as_a_date_not_by_file_order _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_is_compared_as_a_dat0')
+
+    def test_date_is_compared_as_a_date_not_by_file_order(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2023-12-31\n')
+        (tmp_path / 'b.txt').write_text('date: 2024-01-01\n')
+        (tmp_path / 'c.txt').write_text('date: 2023-02-28\n')
+>       assert latest_report(tmp_path) == tmp_path / 'b.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_is_compared_as_a_dat0/c.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_is_compared_as_a_dat0') / 'b.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_is_compared_as_a_dat0/c.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_is_compared_as_a_dat0'))
+
+tests/test_latest.py:20: AssertionError
+__________________ test_date_line_may_come_before_other_lines __________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_line_may_come_before0')
+
+    def test_date_line_may_come_before_other_lines(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-05-01\ntitle: x\n')
+        (tmp_path / 'b.txt').write_text('title: y\ndate: 2024-04-01\n')
+>       assert latest_report(tmp_path) == tmp_path / 'a.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_line_may_come_before0/b.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_line_may_come_before0') / 'a.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_line_may_come_before0/b.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_date_line_may_come_before0'))
+
+tests/test_latest.py:35: AssertionError
+______________ test_reports_in_the_same_month_are_ordered_by_day _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_reports_in_the_same_month0')
+
+    def test_reports_in_the_same_month_are_ordered_by_day(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-03-09\n')
+        (tmp_path / 'b.txt').write_text('date: 2024-03-21\n')
+        (tmp_path / 'c.txt').write_text('date: 2024-03-02\n')
+>       assert latest_report(tmp_path) == tmp_path / 'b.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_reports_in_the_same_month0/c.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_reports_in_the_same_month0') / 'b.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_reports_in_the_same_month0/c.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2360/test_reports_in_the_same_month0'))
+
+tests/test_latest.py:42: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_latest.py::test_latest_report_returns_the_latest_dated_report
+FAILED tests/test_latest.py::test_file_names_carry_no_order - AssertionError:...
+FAILED tests/test_latest.py::test_date_is_compared_as_a_date_not_by_file_order
+FAILED tests/test_latest.py::test_date_line_may_come_before_other_lines - Ass...
+FAILED tests/test_latest.py::test_reports_in_the_same_month_are_ordered_by_day
+5 failed, 1 passed in 0.02s
+--- output: mutant 2 ---
+...F..                                                                   [100%]
+=================================== FAILURES ===================================
+_______________ test_only_txt_files_directly_in_the_folder_count _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2361/test_only_txt_files_directly_i0')
+
+    def test_only_txt_files_directly_in_the_folder_count(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-01-05\n')
+        (tmp_path / 'b.md').write_text('date: 2025-01-01\n')
+        sub = tmp_path / 'sub'
+        sub.mkdir()
+        (sub / 'c.txt').write_text('date: 2026-01-01\n')
+>       assert latest_report(tmp_path) == tmp_path / 'a.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2361/test_only_txt_files_directly_i0/sub/c.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2361/test_only_txt_files_directly_i0') / 'a.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2361/test_only_txt_files_directly_i0/sub/c.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2361/test_only_txt_files_directly_i0'))
+
+tests/test_latest.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_latest.py::test_only_txt_files_directly_in_the_folder_count
+1 failed, 5 passed in 0.02s
+--- output: mutant 3 ---
+...F..                                                                   [100%]
+=================================== FAILURES ===================================
+_______________ test_only_txt_files_directly_in_the_folder_count _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2362/test_only_txt_files_directly_i0')
+
+    def test_only_txt_files_directly_in_the_folder_count(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-01-05\n')
+        (tmp_path / 'b.md').write_text('date: 2025-01-01\n')
+        sub = tmp_path / 'sub'
+        sub.mkdir()
+        (sub / 'c.txt').write_text('date: 2026-01-01\n')
+>       assert latest_report(tmp_path) == tmp_path / 'a.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2362/test_only_txt_files_directly_i0/b.md') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2362/test_only_txt_files_directly_i0') / 'a.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2362/test_only_txt_files_directly_i0/b.md') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2362/test_only_txt_files_directly_i0'))
+
+tests/test_latest.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_latest.py::test_only_txt_files_directly_in_the_folder_count
+1 failed, 5 passed in 0.02s
+--- output: mutant 4 ---
+.FF.FF                                                                   [100%]
+=================================== FAILURES ===================================
+________________________ test_file_names_carry_no_order ________________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_file_names_carry_no_order0')
+
+    def test_file_names_carry_no_order(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-03-01\n')
+        (tmp_path / 'z.txt').write_text('date: 2024-01-05\n')
+>       assert latest_report(tmp_path) == tmp_path / 'a.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_file_names_carry_no_order0/z.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_file_names_carry_no_order0') / 'a.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_file_names_carry_no_order0/z.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_file_names_carry_no_order0'))
+
+tests/test_latest.py:13: AssertionError
+______________ test_date_is_compared_as_a_date_not_by_file_order _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_is_compared_as_a_dat0')
+
+    def test_date_is_compared_as_a_date_not_by_file_order(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2023-12-31\n')
+        (tmp_path / 'b.txt').write_text('date: 2024-01-01\n')
+        (tmp_path / 'c.txt').write_text('date: 2023-02-28\n')
+>       assert latest_report(tmp_path) == tmp_path / 'b.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_is_compared_as_a_dat0/c.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_is_compared_as_a_dat0') / 'b.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_is_compared_as_a_dat0/c.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_is_compared_as_a_dat0'))
+
+tests/test_latest.py:20: AssertionError
+__________________ test_date_line_may_come_before_other_lines __________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_line_may_come_before0')
+
+    def test_date_line_may_come_before_other_lines(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-05-01\ntitle: x\n')
+        (tmp_path / 'b.txt').write_text('title: y\ndate: 2024-04-01\n')
+>       assert latest_report(tmp_path) == tmp_path / 'a.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_line_may_come_before0/b.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_line_may_come_before0') / 'a.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_line_may_come_before0/b.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_date_line_may_come_before0'))
+
+tests/test_latest.py:35: AssertionError
+______________ test_reports_in_the_same_month_are_ordered_by_day _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_reports_in_the_same_month0')
+
+    def test_reports_in_the_same_month_are_ordered_by_day(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-03-09\n')
+        (tmp_path / 'b.txt').write_text('date: 2024-03-21\n')
+        (tmp_path / 'c.txt').write_text('date: 2024-03-02\n')
+>       assert latest_report(tmp_path) == tmp_path / 'b.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_reports_in_the_same_month0/c.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_reports_in_the_same_month0') / 'b.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_reports_in_the_same_month0/c.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2363/test_reports_in_the_same_month0'))
+
+tests/test_latest.py:42: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_latest.py::test_file_names_carry_no_order - AssertionError:...
+FAILED tests/test_latest.py::test_date_is_compared_as_a_date_not_by_file_order
+FAILED tests/test_latest.py::test_date_line_may_come_before_other_lines - Ass...
+FAILED tests/test_latest.py::test_reports_in_the_same_month_are_ordered_by_day
+4 failed, 2 passed in 0.02s
+--- output: mutant 5 ---
+.....F                                                                   [100%]
+=================================== FAILURES ===================================
+______________ test_reports_in_the_same_month_are_ordered_by_day _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2364/test_reports_in_the_same_month0')
+
+    def test_reports_in_the_same_month_are_ordered_by_day(tmp_path):
+        (tmp_path / 'a.txt').write_text('date: 2024-03-09\n')
+        (tmp_path / 'b.txt').write_text('date: 2024-03-21\n')
+        (tmp_path / 'c.txt').write_text('date: 2024-03-02\n')
+>       assert latest_report(tmp_path) == tmp_path / 'b.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2364/test_reports_in_the_same_month0/c.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2364/test_reports_in_the_same_month0') / 'b.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2364/test_reports_in_the_same_month0/c.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2364/test_reports_in_the_same_month0'))
+
+tests/test_latest.py:42: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_latest.py::test_reports_in_the_same_month_are_ordered_by_day
+1 failed, 5 passed in 0.02s

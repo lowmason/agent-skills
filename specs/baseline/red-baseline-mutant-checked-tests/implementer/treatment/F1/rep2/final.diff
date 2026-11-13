@@ -1,0 +1,59 @@
+diff --git a/latest.py b/latest.py
+index e69de29..c2640b6 100644
+--- a/latest.py
++++ b/latest.py
+@@ -0,0 +1,19 @@
++from datetime import date
++from pathlib import Path
++
++
++def _report_date(path: Path) -> date | None:
++    for line in path.read_text().splitlines():
++        if line.startswith('date:'):
++            return date.fromisoformat(line[len('date:'):].strip())
++    return None
++
++
++def latest_report(folder: Path) -> Path:
++    """Return the .txt report in folder whose `date:` line holds the latest date."""
++    dated = [
++        (report_date, path)
++        for path in folder.glob('*.txt')
++        if path.is_file() and (report_date := _report_date(path)) is not None
++    ]
++    return max(dated, key=lambda pair: pair[0])[1]
+diff --git a/tests/test_latest.py b/tests/test_latest.py
+new file mode 100644
+index 0000000..fca1930
+--- /dev/null
++++ b/tests/test_latest.py
+@@ -0,0 +1,29 @@
++from latest import latest_report
++
++
++def test_latest_report_returns_the_latest_dated_report(tmp_path):
++    (tmp_path / 'report-a.txt').write_text('title: winter review\ndate: 2024-01-05\n')
++    (tmp_path / 'report-b.txt').write_text('title: spring review\ndate: 2024-03-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'report-b.txt'
++
++
++def test_file_names_carry_no_order(tmp_path):
++    (tmp_path / 'report-a.txt').write_text('date: 2024-03-01\n')
++    (tmp_path / 'report-b.txt').write_text('date: 2024-01-05\n')
++    assert latest_report(tmp_path) == tmp_path / 'report-a.txt'
++
++
++def test_date_line_need_not_be_first_and_dates_compare_as_dates(tmp_path):
++    (tmp_path / 'x.txt').write_text('date: 2023-12-31\n')
++    (tmp_path / 'y.txt').write_text('title: t\nbody\ndate: 2024-01-02\n')
++    (tmp_path / 'z.txt').write_text('date: 2024-01-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'y.txt'
++
++
++def test_only_txt_files_directly_in_folder_count(tmp_path):
++    (tmp_path / 'a.txt').write_text('date: 2024-01-01\n')
++    (tmp_path / 'b.md').write_text('date: 2025-01-01\n')
++    sub = tmp_path / 'sub'
++    sub.mkdir()
++    (sub / 'c.txt').write_text('date: 2026-01-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'a.txt'

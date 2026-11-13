@@ -1,0 +1,139 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_monthly.py
+head: 345e66af94c40e3d20d04fd186e19fa0c5a04da4
+tree: clean
+result: caught 4, survived 1, invalid 0
+--- mutants ---
+mutant 1: SURVIVED exit 0 sha256 e5ae5b564b2f592c50ea896891f798f3e992a62a7ce353fb533713cc02df634a
+mutant 2: CAUGHT exit 1 sha256 df68d5b3e97ebd315453593d6c4576453bde5129d61710fa2617bd066b05934a tests: tests.test_monthly::test_summarize_totals_the_month tests.test_monthly::test_summarize_ignores_rows_of_other_months
+mutant 3: CAUGHT exit 1 sha256 d3f8f2029f158a2f81fcb113e9e69547a3129f0f88b9800aaccf3bdf5a1a42f2 tests: tests.test_monthly::test_summarize_totals_the_month tests.test_monthly::test_summarize_ignores_rows_of_other_months
+mutant 4: CAUGHT exit 1 sha256 5abd93ac3d44164e0365ef3d2c34208fa53371feeaa3f62266354a5dea10ece0 tests: tests.test_monthly::test_summarize_rejects_a_month_with_no_rows
+mutant 5: CAUGHT exit 1 sha256 368e727d7ad4823cfac3d7a3f5b82631e6135f40b271ae35c882a48dac280e94 tests: tests.test_monthly::test_summarize_totals_the_month tests.test_monthly::test_summarize_rejects_a_month_with_no_rows tests.test_monthly::test_summarize_ignores_rows_of_other_months
+--- tests ---
+test tests.test_monthly::test_summarize_totals_the_month: caught 2 3 5
+test tests.test_monthly::test_summarize_ignores_rows_of_other_months: caught 2 3 5
+test tests.test_monthly::test_summarize_rejects_a_month_with_no_rows: caught 4 5
+--- output: baseline ---
+...                                                                      [100%]
+3 passed in 0.00s
+--- output: mutant 1 ---
+...                                                                      [100%]
+3 passed in 0.00s
+--- output: mutant 2 ---
+F.F                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_summarize_totals_the_month ________________________
+
+    def test_summarize_totals_the_month():
+>       assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
+E       AssertionError: assert {'month': '20..., 'total': 35} == {'month': '20..., 'total': 30}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'total': 35} != {'total': 30}
+E         Use -v to get more diff
+
+tests/test_monthly.py:13: AssertionError
+_________________ test_summarize_ignores_rows_of_other_months __________________
+
+    def test_summarize_ignores_rows_of_other_months():
+>       assert summarize(ROWS, '2024-06') == {'month': '2024-06', 'count': 1, 'total': 5}
+E       AssertionError: assert {'month': '20..., 'total': 35} == {'month': '20...1, 'total': 5}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'total': 35} != {'total': 5}
+E         Use -v to get more diff
+
+tests/test_monthly.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_totals_the_month - AssertionErro...
+FAILED tests/test_monthly.py::test_summarize_ignores_rows_of_other_months - A...
+2 failed, 1 passed in 0.01s
+--- output: mutant 3 ---
+F.F                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_summarize_totals_the_month ________________________
+
+    def test_summarize_totals_the_month():
+>       assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
+E       AssertionError: assert {'month': '20..., 'total': 30} == {'month': '20..., 'total': 30}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'count': 3} != {'count': 2}
+E         Use -v to get more diff
+
+tests/test_monthly.py:13: AssertionError
+_________________ test_summarize_ignores_rows_of_other_months __________________
+
+    def test_summarize_ignores_rows_of_other_months():
+>       assert summarize(ROWS, '2024-06') == {'month': '2024-06', 'count': 1, 'total': 5}
+E       AssertionError: assert {'month': '20...3, 'total': 5} == {'month': '20...1, 'total': 5}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'count': 3} != {'count': 1}
+E         Use -v to get more diff
+
+tests/test_monthly.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_totals_the_month - AssertionErro...
+FAILED tests/test_monthly.py::test_summarize_ignores_rows_of_other_months - A...
+2 failed, 1 passed in 0.01s
+--- output: mutant 4 ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_summarize_rejects_a_month_with_no_rows __________________
+
+    def test_summarize_rejects_a_month_with_no_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_monthly.py:17: Failed
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_rejects_a_month_with_no_rows - F...
+1 failed, 2 passed in 0.01s
+--- output: mutant 5 ---
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_summarize_totals_the_month ________________________
+
+    def test_summarize_totals_the_month():
+>       assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
+E       AssertionError: assert {'month': '20..., 'total': 35} == {'month': '20..., 'total': 30}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'total': 35} != {'total': 30}
+E         {'count': 3} != {'count': 2}
+E         Use -v to get more diff
+
+tests/test_monthly.py:13: AssertionError
+_________________ test_summarize_rejects_a_month_with_no_rows __________________
+
+    def test_summarize_rejects_a_month_with_no_rows():
+>       with pytest.raises(ValueError, match='^no rows$'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_monthly.py:17: Failed
+_________________ test_summarize_ignores_rows_of_other_months __________________
+
+    def test_summarize_ignores_rows_of_other_months():
+>       assert summarize(ROWS, '2024-06') == {'month': '2024-06', 'count': 1, 'total': 5}
+E       AssertionError: assert {'month': '20..., 'total': 35} == {'month': '20...1, 'total': 5}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'total': 35} != {'total': 5}
+E         {'count': 3} != {'count': 1}
+E         Use -v to get more diff
+
+tests/test_monthly.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monthly.py::test_summarize_totals_the_month - AssertionErro...
+FAILED tests/test_monthly.py::test_summarize_rejects_a_month_with_no_rows - F...
+FAILED tests/test_monthly.py::test_summarize_ignores_rows_of_other_months - A...
+3 failed in 0.01s

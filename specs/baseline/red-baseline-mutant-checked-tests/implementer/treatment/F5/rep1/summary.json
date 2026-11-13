@@ -1,0 +1,95 @@
+{
+  "fixture": "F5",
+  "rep": 1,
+  "rep_dir": "/tmp/mt-rep-6KH4a6",
+  "base": "88a88eb5920f8a56c57699e7deb93bd054310b64",
+  "prompt_sha256": "670e5d712d9ebaa94e617fad22ccbf03ae34f23d87f8c63b6671c9dce2fe3976",
+  "claude_exit": 0,
+  "wall_seconds": 24,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-6KH4a6/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 23879,
+    "total_cost_usd": 0.09936850000000001,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 3322,
+        "cacheReadInputTokens": 76605,
+        "cacheCreationInputTokens": 14616,
+        "webSearchRequests": 0,
+        "costUSD": 0.09936850000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 332,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14616,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commit:** 992d938 Add parse_duration\n- **Tests:** 22/22 passing, output pristine; mutants: caught 7, survived 0, invalid 0\n- **Concerns:** none. The plan tests and the spec don't conflict.\n- **Report:** /tmp/mt-rep-6KH4a6/repo/.sdd/plan/task-1-report.md",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-6KH4a6/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -a; cat plan.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-6KH4a6/repo; cat specs/duration.md; mkdir -p tests; cat > tests/test_duration.py <<'EOF'\nimport pytest\n\nfrom duration import parse_duration\n\n\n@pytest.mark.parametrize('text, seconds', [\n    ('2h', 7200),\n    ('15m', 900),\n    ('40s', 40),\n    ('1h2m3s', 3723),\n    ('1h30m', 5400),\n    ('5m10s', 310),\n    ('1h5s', 3605),\n    ('05m', 300),\n    ('0h0m0s', 0),\n])\ndef test_parse_duration_returns_seconds(text, seconds):\n    result = parse_duration(text)\n    assert result == seconds\n    assert type(result) is int\n\n\n@pytest.mark.parametrize('text', [\n    '',\n    '30m1h',\n    '1h1h',\n    '90',\n    '1h30',\n    'h',\n    '1d',\n    '1H',\n    '\u0661h',  # an Arabic-Indic digit one, not an ASCII digit\n    '+1h',\n    ' 1h',\n    '1h 30m',\n    '1h\\n',\n])\ndef test_parse_duration_rejects_other_text(text):\n    with pytest.raises(ValueError):\n        parse_duration(text)\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-6KH4a6/repo; cat > duration.py <<'EOF'\nimport re\n\n_DURATION = re.compile(r'(?:([0-9]+)h)?(?:([0-9]+)m)?(?:([0-9]+)s)?')\n\n\ndef parse_duration(text: str) -> int:\n    \"\"\"Return the number of seconds in a duration such as '1h30m'.\"\"\"\n    match = _DURATION.fullmatch(text)\n    if not text or match is None:\n        raise ValueError(f'invalid duration: {text!r}')\n    hours, minutes, seconds = (int(part or 0) for part in match.groups())\n    return hours * 3600 + minutes * 60 + seconds\nEOF\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -3\ngit add duration.py tests/test_duration.py; git commit -qm \"Add parse_duration\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -1\nW=.sdd/plan\nmk(){ sed \"$2\" duration.py > /tmp/d.py; diff -u --label a/duration.py --label b/duration.py duration.py /tmp/d.py > $W/task-1-mutant-$1.patch; }\nmk 1 's/\\[0-9\\]/\\\\d/g'\nmk 2 's/\\*\\?\\$//; s/fullmatch/match/'\nmk 3 's/ or match is None/ and False/; s/not text/not text/'\nmk 4 's/minutes \\* 60/minutes * 6/'\nmk 5 's/hours \\* 3600/hours * 360/'\nmk 6 's/if not text or match is None/if match is None/'\nmk 7 's/(?:(\\[0-9\\]+)s)?/(?:([0-9]+)s)/'\nmk 8 's/\\[0-9\\]+/[0-9]/g'\nmk 9 's/fullmatch/search/'\nhead -3 $W/task-1-mutant-3.patch | wc -l; for i in 1 2 3 4 5 6 7 8 9; do echo $i; grep -c '^[+-][^+-]' $W/task-1-mutant-$i.patch; done | paste -sd' '"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-6KH4a6/repo; W=.sdd/plan; rm $W/task-1-mutant-2.patch $W/task-1-mutant-3.patch\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/duration.md:7 | each single part (h, m, s) | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | all parts; skipped middle part | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | multi-digit, leading zero, zero | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | non-ASCII digit, sign | test_parse_duration_rejects_other_text |\n| specs/duration.md:7 | wrong order, repeated part, no part (empty) | test_parse_duration_rejects_other_text |\n| specs/duration.md:8 | int seconds | test_parse_duration_returns_seconds |\n| specs/duration.md:9 | trailing newline, spaces, unit without digits, no unit, unknown/uppercase unit | test_parse_duration_rejects_other_text |\n\n## Mutants\n\nMutant 1: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 \\d accepts non-ASCII digits \u2014 task-1-mutant-1.patch\nMutant 4: specs/duration.md:8, test_parse_duration_returns_seconds \u2014 minutes factor wrong \u2014 task-1-mutant-4.patch\nMutant 5: specs/duration.md:8, test_parse_duration_returns_seconds \u2014 hours factor wrong \u2014 task-1-mutant-5.patch\nMutant 6: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 empty string accepted \u2014 task-1-mutant-6.patch\nMutant 7: specs/duration.md:7, test_parse_duration_returns_seconds \u2014 seconds part required \u2014 task-1-mutant-7.patch\nMutant 8: specs/duration.md:7, test_parse_duration_returns_seconds \u2014 only one digit allowed \u2014 task-1-mutant-8.patch\nMutant 9: specs/duration.md:9, test_parse_duration_rejects_other_text \u2014 search instead of fullmatch \u2014 task-1-mutant-9.patch\nEOF\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | tail -12; git status --short"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-6KH4a6/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\n\nImplemented `parse_duration` in `duration.py` (regex `fullmatch` with ASCII `[0-9]`, explicit empty check) and added `tests/test_duration.py` exactly as the plan gives.\n\n## TDD\n- RED: `/tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py` -> `ImportError: cannot import name 'parse_duration' from 'duration'` (function not yet written).\n- GREEN: same command -> 22 passed; full suite 22 passed, output pristine.\n\n## Mutants\nRun: /private/tmp/mt-rep-6KH4a6/repo/.sdd/plan/task-1-mutants.log \u2014 caught 7, survived 0, invalid 0.\n\n## Files changed\nduration.py, tests/test_duration.py (committed); .sdd/plan mutant patches and mutants file.\n\n## Self-review\nNo plan/spec conflicts. No extra tests were needed: all input shapes are covered.\nEOF\ngit status --short"
+      }
+    }
+  ],
+  "commits": [
+    "992d938 Add parse_duration"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

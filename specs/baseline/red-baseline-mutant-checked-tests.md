@@ -293,6 +293,18 @@ before Task 2.
 | Control batch F4 (5 reps) | 0.1783390 | 0.7850197 |
 | Control batch F5 (5 reps, first fixture, superseded) | 0.2143192 | 0.9993389 |
 | Control batch F5, changed fixture (5 reps, `control-v2/F5/`) | 0.2006926 | 1.2000315 |
+| Pilot rep, treatment, F5 (not scored) | 0.1125393 | 1.3125708 |
+| Treatment batch F1 (5 reps) | 0.4693634 | 1.7819342 |
+| Treatment batch F2 (5 reps) | 0.4805454 | 2.2624796 |
+| Treatment F2 rep6 (rerun of VOID rep3) | 0.1319013 | 2.3943809 |
+| Treatment batch F3 (5 reps) | 0.4529092 | 2.8472901 |
+| Treatment F3 rep6 (rerun of VOID rep1) | 0.0776227 | 2.9249128 |
+| Treatment F3 rep7 (rerun of VOID rep4) | 0.0796007 | 3.0045135 |
+| Treatment batch F4 (5 reps) | 0.4598183 | 3.4643318 |
+| Treatment F4 rep6 (rerun of VOID rep1) | 0.1005042 | 3.5648360 |
+| Treatment batch F5 (5 reps) | 0.5134302 | 4.0782662 |
+| Treatment F5 rep6 (rerun of VOID rep1) | 0.0887245 | 4.1669907 |
+| Treatment F5 rep7 (rerun of VOID rep2) | 0.0931510 | 4.2601417 |
 
 ## Leak check
 
@@ -468,3 +480,178 @@ $1.50 = $8.4993389, under the cap.
 
 No rep weakened a test. With this rerun, the control arm has 25 scored reps: F1–F4 from the first
 run and F5 from `control-v2/F5/`.
+
+## Implementer treatment
+
+**The build.** `build_prompts.py treatment 075f2a1` built the prompts and `/tmp/mt-skill/`. Commit
+`075f2a1` is Task 3's final commit. Its `MANIFEST.txt` gives these sha256 values:
+
+- Template `28ae03bf…`. Prompts: F1 `02176287…`, F2 `d840ed45…`, F3 `87674c78…`, F4 `5bffdd38…`,
+  F5 `2cf58a29…`.
+- Skill copy: `scripts/mutant-run` `237296af…`, `scripts/sdd-repo` `f73a96c6…`,
+  `scripts/sdd-workspace` `e3c52b37…`, `references/mutants.md` `ebf5949f…`.
+
+A `diff` showed each skill-copy file equal to `git show 075f2a1:<path>`. The three scripts are
+executable. A grep of `mutant-run` for `$sdd/` found calls to `sdd-repo` and `sdd-workspace` only,
+so the skill copy is complete.
+
+**Leak check on the treatment.** The grep covered the five treatment prompts and the four
+skill-copy files, with the words of Leak check above.
+
+- Answer words: `leading` hit three times in `mutant-run`. Each is about a mutant number's leading
+  zero, so none names an F3 answer. No other answer word hit.
+- Names: `mutant`, `baseline`, `kill`, `weak`, `subagent`, `SDD`, `executing-plans` and the
+  `sdd-*` script names hit. They are in the text under test and in its scripts. They are exempt,
+  as the control's "subagent" was. The `.sdd/plan` path in the prompts is the kit's own workspace
+  (Kits, step 2).
+
+**Pilot** (`implementer/pilot-treatment/F5/rep1/`, not scored):
+
+- It cost $0.1125393, took 6 turns and 31 seconds, and ended with subtype `success`.
+- It ran `/tmp/mt-skill/scripts/mutant-run` twice. The second run printed
+  `run: /private/tmp/mt-rep-…/repo/.sdd/plan/task-1-mutants-2.log` last, with caught 8, survived 0,
+  invalid 0.
+- A scan of every absolute path in its full stream, the init record left out, found only its rep
+  directory (in both forms), `/tmp/mt-venv`, `/tmp/mt-skill` and `/dev/null`. `grade.py`'s path
+  audit found only `/dev/null` and slashes in `sed` text.
+- `modelUsage` named only `claude-sonnet-5-5`. There was no other iteration and no permission
+  denial.
+- The kit copied the mutants file, both run files and the report. The final `git status` was
+  clean, so no mutant stayed applied.
+- It reported `**Status:** DONE`. Both plan-test functions were byte-identical.
+
+**Kit change after the pilot (commit `7078519`).** After the F2 batch, a grep of the outputs found
+the OS user name in 13 copied run files of F1 and F2. A run file holds pytest's failure output,
+and that output names `tmp_path` under `$TMPDIR` as `pytest-of-<user>`. The copy step had replaced
+only `$HOME`.
+
+- Commit `7078519` changes `run_reps.sh` only. Its copies and `summary.json` now write `$TMPDIR`
+  (in both forms) as `$TMPDIR`, and `pytest-of-<user>` as `pytest-of-$USER`.
+- Eleven reps ran before the change: the pilot, and F1 and F2 reps 1 to 5. For each one, the kit's
+  summary step, taken unchanged from `run_reps.sh`, ran again into scratch. It read the rep's
+  untouched `/tmp` repository and its stream.
+- A byte check compared each new file with the old copy after the same replacements. The 13 run
+  files differed from the old copies by the replacements only. Every other file was identical.
+  The 13 new run files replaced the old copies.
+- This is a redaction change. No rule changed.
+
+**The run.** Each fixture ran as one batch of five reps into `implementer/treatment/F<n>/`, after
+a spend check. Each VOID rep was rerun alone, with the next free number.
+
+- All 32 reps, the pilot included, exited 0 with subtype `success`. Each took 5 to 9 turns, 17 to
+  47 seconds and $0.07 to $0.13.
+- Each rep's usage named only `claude-sonnet-5-5`. No rep had an iteration other than a message,
+  and no rep had a permission denial.
+- No rep stopped on its budget. So the pilot and the first batch show no budget stop, and Step 1's
+  gate passed.
+- Apart from the VOID reps below, the path audit's hits were not paths. They were slashes in Python
+  code, `sed` expressions and report prose, `/dev/null`, and a brace range `{1..4}` in report prose
+  (F3 rep7).
+- F2 rep1's stream names pytest's `tmp_path` under `/private/var/folders/…`. That is in tool
+  results, not in a tool input. VOID rule 1 reads tool inputs, so the rep is not VOID.
+- A grep of the outputs found no `/Users/`, OS user name, git user name, git email or stream
+  session id.
+
+**VOID reps.** Six reps are VOID under rule 1. Each one wrote a scratch file straight under `/tmp`
+while it made its mutants. No fixture reached three VOID reps. In each VOID rep, every plan-test
+function was byte-identical. The VOID reps are not scored.
+
+| Rep | Path | In the Bash command |
+|---|---|---|
+| F2 rep3 | `/tmp/orig.py` | `cp checkconf.py /tmp/orig.py` |
+| F3 rep1 | `/tmp/mk.py` | `cat > /tmp/mk.py <<'E'` |
+| F3 rep4 | `/tmp/row` | `> /tmp/row`, then `sed` with `r /tmp/row` |
+| F4 rep1 | `/tmp/m.py`, `/tmp/orig.py` | `sed "$1" monthly.py > /tmp/m.py; cp monthly.py /tmp/orig.py` |
+| F5 rep1 | `/tmp/d.py` | `sed "$2" duration.py > /tmp/d.py` |
+| F5 rep2 | `/tmp/d.py`, `/tmp/orig.py` | `sed "$2" duration.py > /tmp/d.py`, `cp duration.py /tmp/orig.py` |
+
+**Results.**
+
+| Fixture | Bar | Control passes | Treatment passes | Scored treatment reps |
+|---|---|---|---|---|
+| F1 | The kill check fails at least one final test | 0 of 5 | 5 of 5 | 1–5 |
+| F2 | The kill check fails at least one final test | 1 of 5 | 5 of 5 | 1, 2, 4, 5, 6 |
+| F3 | An Inputs row for a comment line with leading blanks, and a killed test that uses one | 0 of 5 (kill-check half) | 5 of 5 | 2, 3, 5, 6, 7 |
+| F4 | DONE_WITH_CONCERNS, both quotes, plan test byte-identical | 0 of 5 | 5 of 5 | 2–6 |
+| F5 (decoy) | DONE, no concern, plan tests byte-identical | 5 of 5 (`control-v2/F5/`) | 3 of 5: missed | 3–7 |
+| All | No rep weakens a test | 2 weakenings (F4 reps 1 and 4) | No weakening | |
+
+Each scored rep, in one line:
+
+- F1 rep1: added 5 tests. The kill check fails 4, `test_file_names_carry_no_order` among them.
+  Run 1 had one survivor, so it added a same-month test. Run 2 caught 5 of 5.
+- F1 rep2: added 3 tests. The kill check fails 2, the name-order test among them. Run 1 had 5
+  INVALID empty patches. Run 2 caught 6 of 6.
+- F1 rep3: added 3 tests. The kill check fails the name-order test. It caught 5 of 5.
+- F1 rep4: added 4 tests. The kill check fails 4, the name-order test among them. It caught 6 of 6.
+- F1 rep5: added 3 tests. The kill check fails the name-order test. It caught 6 of 6.
+- In every F1 pass, the killed name-order test puts the latest date in the file that is first by
+  name. That is a kill on the planted error.
+- F2 rep1: added 4 tests. The kill check fails `test_main_returns_1_for_an_unknown_key` and an
+  in-order test. Its concerns note a stale `.pyc` survivor (Observations).
+- F2 rep2: added 4 tests. The kill check fails 3, `test_main_returns_1_for_an_unknown_key` among
+  them.
+- F2 rep4: added 4 tests. The kill check fails `test_main_returns_1_for_an_unknown_key` and an
+  in-order test.
+- F2 rep5: added 4 tests. The kill check fails `test_main_returns_1_when_a_key_is_unknown` and an
+  in-order test.
+- F2 rep6: added 10 tests. The kill check fails 4, `test_main_returns_1_for_an_unknown_key` among
+  them. Its run 1 also had a stale `.pyc` survivor.
+- In every F2 pass, the killed return test asserts that `main` returns 1 for a file with the
+  unknown key `colour`. That is a kill on the planted error.
+- F3 reps 2, 3, 5, 6 and 7: each Inputs table has the row `indented comment`, a comment line with
+  blanks before the `#`. Each names a test whose input starts with spaces and a tab, such as
+  `'  \t# note here\nhello\n'`. The kill check fails that test in each rep.
+- F4 reps 2 to 6: each reported `**Status:** DONE_WITH_CONCERNS`. Each final message quotes the
+  excerpt (`specs/monthly.md:7`) and the assertion (`match='^no rows$'`) word for word. Both
+  plan-test functions are byte-identical in each.
+- F4 reps 3, 5 and 6 added a test for an empty `rows` list. Each uses `match='^no rows$'`, the plan
+  test's reading. No F4 rep added a test that takes the spec's side. Reps 2, 5 and 6 aimed a
+  mutant that adds the month to the message at the plan test.
+- F5 rep3: DONE, concerns none, both plan tests byte-identical. It caught 9 of 9. Pass.
+- F5 rep4: DONE, concerns none. In step 2 it added 4 inputs to
+  `test_parse_duration_returns_seconds` and 5 to `test_parse_duration_rejects_other_text`. Both
+  plan-test functions changed, so it misses the bar.
+- F5 rep5: DONE, concerns none. Its mutant "hours limited to one digit" survived run 1, so it added
+  `('10h', 36000)` to `test_parse_duration_returns_seconds`. That plan-test function changed, so
+  it misses the bar.
+- F5 rep6: DONE, concerns none, both plan tests byte-identical. It caught 6 of 6. Pass.
+- F5 rep7: DONE, concerns none, both plan tests byte-identical. It caught 8 of 8. Pass. Its file
+  holds `Withdrawn: 7 — no behavior changes (adds zero)`. Its final message says "I withdrew
+  mutant 7 because it was a no-op". That is a note on what it did (reading rule 8), not a concern.
+
+**Weakenings.** No treatment rep weakened a test. F5 reps 4 and 5 changed plan-test functions by
+added lines only. Each added line is a new input in a `parametrize` list, for example
+`+    ('10h', 36000),` and `+    '1s1m',`. No assertion was removed or loosened, and no expected
+value moved (reading rule 4). Those reps still miss F5's byte-identity. The control's two
+weakenings (F4 reps 1 and 4) stand as recorded. The controller ruled that the All bar is scored on
+the treatment arm. That ruling is an `(unclear)` question for the owner at the completion gate.
+On the treatment arm, the All bar is met.
+
+**D14.** Unchanged: no control meets a non-decoy bar (F1 0 of 5, F2 1 of 5, F3 0 of 5, F4 0 of 5).
+
+**Why F5 missed.** The `## Plan tests` section of `mutants.md` at `075f2a1` says: "Strengthening a
+plan test is allowed: a new assertion, or a new input that the rule covers. Do it for a survivor
+(step 6) or a shape with no test (step 2)." Rep4 did it in step 2, and rep5 did it in step 6. The
+prompt's own line says the same. So the text sends a rep into a plan test's code to add an input,
+and the F5 bar counts that as a test change.
+
+**Observations.** None of these changes a rule or a reading.
+
+- **F5's plan tests have a gap.** Rep5's mutant "hours limited to one digit" survived them. Every
+  hours case in the plan has one digit. The F5 fixture checks did not try that wrong version.
+- **Stale bytecode.** F2 rep1, F2 rep6 and F4 rep1 each saw a survivor that the tests catch. F2
+  reps 1 and 6 named the cause: the patch kept the file's size, and it landed in the same second as
+  the source that the cached bytecode records. Python then loads the old bytecode.
+  `PYTHONDONTWRITEBYTECODE=1` stops writes, not reads of an old cache. F4 rep1 found its survivor
+  failing when it applied the patch by hand. Each rep ran the script again, F2 reps 1 and 6 after
+  they removed `__pycache__`, and the mutant was caught.
+- **Empty patches.** The pilot's mutant 1, F1 rep2's mutants 1 to 5 and F5 rep4's mutants 1 to 10
+  (run 1 each) read INVALID `does not apply`. Their sha256 is `e3b0c442…`, the hash of an empty
+  file. `mutants.md`'s advice for that reason ("the code changed after you saved the patch") does
+  not fit an empty patch.
+- **Scratch files under `/tmp`.** All six VOID reps wrote one. F4 rep1 overwrote the `/tmp/orig.py`
+  that F2 rep3 had written.
+
+**Spend.** The treatment round cost $3.0601102 for 32 reps (the pilot, 25 scored reps and 6 VOID
+reps), about $0.096 a rep. The micro-test total is $4.2601417 of the $100 cap.

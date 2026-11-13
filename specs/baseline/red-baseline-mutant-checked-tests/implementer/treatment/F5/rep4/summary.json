@@ -1,0 +1,102 @@
+{
+  "fixture": "F5",
+  "rep": 4,
+  "rep_dir": "/tmp/mt-rep-yqK65f",
+  "base": "caa4455fb59520f6b7ea32a0e7b77b1e417733ff",
+  "prompt_sha256": "51af13197b7e94cdb340efc8264b23724c044f05421812a96f73c0a98ef304fc",
+  "claude_exit": 0,
+  "wall_seconds": 32,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-yqK65f/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 31174,
+    "total_cost_usd": 0.11598610000000001,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 14,
+        "outputTokens": 4306,
+        "cacheReadInputTokens": 96061,
+        "cacheCreationInputTokens": 15823,
+        "webSearchRequests": 0,
+        "costUSD": 0.11598610000000001,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 242,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 15823,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "**Status:** DONE\n**Commits:** 1997ec7 Add parse_duration\n**Tests:** 31/31 passing, output pristine. The plan's 22 tests are unchanged, and I added 9 inputs on top. Mutants: caught 10, survived 0, invalid 0.\n**Concerns:** None. No conflict between the plan tests and the spec.\n**Report:** /tmp/mt-rep-yqK65f/repo/.sdd/plan/task-1-report.md\n**Mutant run:** /tmp/mt-rep-yqK65f/repo/.sdd/plan/task-1-mutants-2.log\n\nI did not record the RED output (the failing run before implementation) in the report. Before `duration.py` had any code, the first pytest run stopped with a collection error.\n\n`git status` shows a clean tree, so the report, mutants file and patches under `.sdd/plan` don't show up as untracked. I didn't check whether `.gitignore` covers them, and they were not committed.",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yqK65f/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -a; cat plan.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yqK65f/repo; cat specs/duration.md; mkdir -p tests; cat > tests/test_duration.py <<'EOF'\nimport pytest\n\nfrom duration import parse_duration\n\n\n@pytest.mark.parametrize('text, seconds', [\n    ('2h', 7200),\n    ('15m', 900),\n    ('40s', 40),\n    ('1h2m3s', 3723),\n    ('1h30m', 5400),\n    ('5m10s', 310),\n    ('1h5s', 3605),\n    ('05m', 300),\n    ('0h0m0s', 0),\n])\ndef test_parse_duration_returns_seconds(text, seconds):\n    result = parse_duration(text)\n    assert result == seconds\n    assert type(result) is int\n\n\n@pytest.mark.parametrize('text', [\n    '',\n    '30m1h',\n    '1h1h',\n    '90',\n    '1h30',\n    'h',\n    '1d',\n    '1H',\n    '\u0661h',  # an Arabic-Indic digit one, not an ASCII digit\n    '+1h',\n    ' 1h',\n    '1h 30m',\n    '1h\\n',\n])\ndef test_parse_duration_rejects_other_text(text):\n    with pytest.raises(ValueError):\n        parse_duration(text)\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | tail -4"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yqK65f/repo; cat > duration.py <<'EOF'\nimport re\n\n_DURATION = re.compile(r'(?:([0-9]+)h)?(?:([0-9]+)m)?(?:([0-9]+)s)?')\n\n\ndef parse_duration(text: str) -> int:\n    \"\"\"Return the number of seconds in a duration such as ``1h30m``.\"\"\"\n    match = _DURATION.fullmatch(text)\n    if not text or match is None:\n        raise ValueError(f'invalid duration: {text!r}')\n    hours, minutes, seconds = (int(part or 0) for part in match.groups())\n    return hours * 3600 + minutes * 60 + seconds\nEOF\npython3 - <<'EOF'\np='tests/test_duration.py'\ns=open(p).read()\ns=s.replace(\"    ('0h0m0s', 0),\\n\",\"    ('0h0m0s', 0),\\n    ('10h', 36000),\\n    ('90s', 90),\\n    ('2m3s', 123),\\n    ('2h3s', 7203),\\n\")\ns=s.replace(\"    '1h\\\\n',\\n\",\"    '1h\\\\n',\\n    '1s1m',\\n    '1m1m',\\n    '1s1s',\\n    '1m1h',\\n    '1h2m3s4',\\n\")\nopen(p,'w').write(s)\nEOF\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -3; git add duration.py tests; git commit -qm \"Add parse_duration\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yqK65f/repo; W=.sdd/plan\nmk(){ git diff -- duration.py > $W/task-1-mutant-$1.patch; git checkout -- duration.py; }\nsed -i \"s/fullmatch(text)/match(text)/\" duration.py; mk 1\nsed -i \"s/\\[0-9\\]/\\\\\\\\d/g\" duration.py; mk 2\nsed -i \"s/hours \\* 3600/hours * 360/\" duration.py; mk 3\nsed -i \"s/minutes \\* 60/minutes * 6/\" duration.py; mk 4\nsed -i \"s/(?:(\\\\\\\\?\\[0-9\\]+)h)?/(?:([0-9]+)h)*/\" duration.py; mk 5\nsed -i \"s/if not text or match is None/if match is None/\" duration.py; mk 6\nsed -i \"s/ + seconds/ + seconds * 1.0/\" duration.py; mk 7\nsed -i \"s/\\[0-9\\]+/[0-9]/g\" duration.py; mk 8\nsed -i \"s/fullmatch(text)/fullmatch(text.strip())/\" duration.py; mk 9\nsed -i \"s/(?:(\\[0-9\\]+)m)?(?:(\\[0-9\\]+)s)?/(?:([0-9]+)s)?(?:([0-9]+)m)?/;s/hours, minutes, seconds/hours, seconds, minutes/\" duration.py; mk 10\nwc -c $W/*.patch\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/duration.md:7 | single part h, m, s | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | all parts, subsets, multi-digit, leading zero | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | wrong order, repeated parts | test_parse_duration_rejects_other_text |\n| specs/duration.md:7 | non-ASCII digit, sign | test_parse_duration_rejects_other_text |\n| specs/duration.md:7 | no parts (empty) | test_parse_duration_rejects_other_text |\n| specs/duration.md:8 | seconds as int | test_parse_duration_returns_seconds |\n| specs/duration.md:9 | whitespace, trailing newline, missing unit, uppercase, unknown unit | test_parse_duration_rejects_other_text |\n\n## Mutants\n\nMutant 1: specs/duration.md:9 \u2014 match instead of fullmatch (trailing junk) \u2014 task-1-mutant-1.patch\nMutant 2: specs/duration.md:7 \u2014 \\d instead of [0-9] \u2014 task-1-mutant-2.patch\nMutant 3: specs/duration.md:8 \u2014 hour factor wrong \u2014 task-1-mutant-3.patch\nMutant 4: specs/duration.md:8 \u2014 minute factor wrong \u2014 task-1-mutant-4.patch\nMutant 5: specs/duration.md:7 \u2014 hours part may repeat \u2014 task-1-mutant-5.patch\nMutant 6: specs/duration.md:7 \u2014 empty text accepted \u2014 task-1-mutant-6.patch\nMutant 7: specs/duration.md:8 \u2014 returns float \u2014 task-1-mutant-7.patch\nMutant 8: specs/duration.md:7 \u2014 single digit only \u2014 task-1-mutant-8.patch\nMutant 9: specs/duration.md:9 \u2014 input stripped \u2014 task-1-mutant-9.patch\nMutant 10: specs/duration.md:7 \u2014 s before m order \u2014 task-1-mutant-10.patch\nEOF\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | tail -15"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yqK65f/repo; W=.sdd/plan; git status --short\npython3 - <<'EOF'\nimport subprocess\norig=open('duration.py').read()\nM={\n1:[(\"fullmatch(text)\",\"match(text)\")],\n2:[(\"[0-9]\",\"\\\\d\")],\n3:[(\"hours * 3600\",\"hours * 360\")],\n4:[(\"minutes * 60\",\"minutes * 6\")],\n5:[(\"(?:([0-9]+)h)?\",\"(?:([0-9]+)h)*\")],\n6:[(\"not text or \",\"\")],\n7:[(\" + seconds\",\" + seconds * 1.0\")],\n8:[(\"[0-9]+\",\"[0-9]\")],\n9:[(\"fullmatch(text)\",\"fullmatch(text.strip())\")],\n10:[(\"(?:([0-9]+)m)?(?:([0-9]+)s)?\",\"(?:([0-9]+)s)?(?:([0-9]+)m)?\"),(\"hours, minutes, seconds\",\"hours, seconds, minutes\")],\n}\nfor k,reps in M.items():\n    s=orig\n    for a,b in reps:\n        assert a in s,(k,a); s=s.replace(a,b)\n    open('duration.py','w').write(s)\n    d=subprocess.run(['git','diff','--','duration.py'],capture_output=True,text=True).stdout\n    open(f'.sdd/plan/task-1-mutant-{k}.patch','w').write(d)\n    subprocess.run(['git','checkout','--','duration.py'])\nEOF\nwc -c $W/*.patch | tail -1\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | cut -c1-110"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yqK65f/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\nImplemented `parse_duration` in duration.py (regex fullmatch with [0-9], h/m/s in order, empty rejected). Tests in tests/test_duration.py: plan tests plus extra inputs (10h, 90s, 2m3s, 2h3s; rejects 1s1m, 1m1m, 1s1s, 1m1h, 1h2m3s4).\nRED: pytest collection error before implementation (parse_duration missing). GREEN: 31 passed.\nMutants: /private/tmp/mt-rep-yqK65f/repo/.sdd/plan/task-1-mutants-2.log \u2014 caught 10, survived 0, invalid 0.\nFiles: duration.py, tests/test_duration.py, .sdd/plan/task-1-mutants.md and patches (uncommitted workspace files).\nNo plan/spec conflicts.\nEOF\ngit status --short"
+      }
+    }
+  ],
+  "commits": [
+    "1997ec7 Add parse_duration"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants-2.log",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

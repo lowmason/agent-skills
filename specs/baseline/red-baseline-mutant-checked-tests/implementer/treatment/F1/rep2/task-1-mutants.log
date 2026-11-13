@@ -1,0 +1,65 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py
+head: e9abf8518505c3c9c94c44e43679f1480c3e783a
+tree: clean
+result: caught 1, survived 0, invalid 5
+--- mutants ---
+mutant 1: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 2: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 3: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 4: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 5: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 6: CAUGHT exit 1 sha256 a216f01304f6217d6ba74b5d8cbafcb36055ebef6477cacf7aebbce9080a1e25 tests: tests.test_latest::test_latest_report_returns_the_latest_dated_report tests.test_latest::test_date_line_need_not_be_first_and_dates_compare_as_dates
+--- tests ---
+test tests.test_latest::test_latest_report_returns_the_latest_dated_report: caught 6
+test tests.test_latest::test_date_line_need_not_be_first_and_dates_compare_as_dates: caught 6
+--- output: baseline ---
+....                                                                     [100%]
+4 passed in 0.01s
+--- output: mutant 6 ---
+F.F.                                                                     [100%]
+=================================== FAILURES ===================================
+______________ test_latest_report_returns_the_latest_dated_report ______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2391/test_latest_report_returns_the0')
+
+    def test_latest_report_returns_the_latest_dated_report(tmp_path):
+        (tmp_path / 'report-a.txt').write_text('title: winter review\ndate: 2024-01-05\n')
+        (tmp_path / 'report-b.txt').write_text('title: spring review\ndate: 2024-03-01\n')
+>       assert latest_report(tmp_path) == tmp_path / 'report-b.txt'
+               ^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_latest.py:7: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+folder = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2391/test_latest_report_returns_the0')
+
+    def latest_report(folder: Path) -> Path:
+        """Return the .txt report in folder whose `date:` line holds the latest date."""
+        dated = [
+            (report_date, path)
+            for path in folder.glob('*.txt')
+            if path.is_file() and (report_date := _report_date(path)) is not None
+        ]
+>       return max(dated, key=lambda pair: pair[0])[1]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: max() iterable argument is empty
+
+latest.py:20: ValueError
+_________ test_date_line_need_not_be_first_and_dates_compare_as_dates __________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2391/test_date_line_need_not_be_fir0')
+
+    def test_date_line_need_not_be_first_and_dates_compare_as_dates(tmp_path):
+        (tmp_path / 'x.txt').write_text('date: 2023-12-31\n')
+        (tmp_path / 'y.txt').write_text('title: t\nbody\ndate: 2024-01-02\n')
+        (tmp_path / 'z.txt').write_text('date: 2024-01-01\n')
+>       assert latest_report(tmp_path) == tmp_path / 'y.txt'
+E       AssertionError: assert PosixPath('$TMPDIR/pytest-of-$USER/pytest-2391/test_date_line_need_not_be_fir0/z.txt') == (PosixPath('$TMPDIR/pytest-of-$USER/pytest-2391/test_date_line_need_not_be_fir0') / 'y.txt')
+E        +  where PosixPath('$TMPDIR/pytest-of-$USER/pytest-2391/test_date_line_need_not_be_fir0/z.txt') = latest_report(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2391/test_date_line_need_not_be_fir0'))
+
+tests/test_latest.py:20: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_latest.py::test_latest_report_returns_the_latest_dated_report
+FAILED tests/test_latest.py::test_date_line_need_not_be_first_and_dates_compare_as_dates
+2 failed, 2 passed in 0.01s

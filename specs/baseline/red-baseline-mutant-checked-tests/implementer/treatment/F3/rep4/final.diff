@@ -1,0 +1,50 @@
+diff --git a/tests/test_wordcount.py b/tests/test_wordcount.py
+new file mode 100644
+index 0000000..61fe07b
+--- /dev/null
++++ b/tests/test_wordcount.py
+@@ -0,0 +1,31 @@
++from wordcount import count_words
++
++
++def test_count_words_skips_comment_lines():
++    assert count_words('# note\nhello world\n') == 2
++
++
++def test_indented_comment_line_is_skipped():
++    assert count_words('   \t# note here\nhello\n') == 1
++
++
++def test_hash_after_words_is_not_a_comment():
++    assert count_words('hello # world\n') == 3
++
++
++def test_words_separated_by_any_whitespace_run():
++    assert count_words('a  b\t\tc \t d\ne\r\nf') == 6
++
++
++def test_empty_and_blank_text():
++    assert count_words('') == 0
++    assert count_words('  \n\t\n') == 0
++
++
++def test_only_comments():
++    assert count_words('# a\n  # b c\n#d') == 0
++
++
++def test_comment_ends_at_any_line_break():
++    assert count_words('# note\rhello world') == 2
++    assert count_words('# note\r\nhello world') == 2
+diff --git a/wordcount.py b/wordcount.py
+index e69de29..2204f60 100644
+--- a/wordcount.py
++++ b/wordcount.py
+@@ -0,0 +1,8 @@
++def count_words(text: str) -> int:
++    """Count words in a note, ignoring comment lines (first non-blank char is '#')."""
++    total = 0
++    for line in text.splitlines():
++        if line.lstrip().startswith('#'):
++            continue
++        total += len(line.split())
++    return total
