@@ -47,6 +47,7 @@
 - **D1** (owner, brief, 2026-11-13): Plan A only. Plan B is planned after Plan A merges. Applied in: Global Constraints (Scope).
 - **D2** (owner, brief, 2026-11-13): The plan and its work are committed on `claude/marimo-notebook-integration-de2d68` and not pushed. Applied in: Global Constraints (Branch).
 - **D3** (owner, plan review, 2026-11-13): "Use 96 (Recommended)", in answer to which id this plan uses after 95 collided with `95-branch-explainer.md`, which was committed and reviewed first. Applied in: the file name and the scratch path `/tmp/marimo-probe/plan96/`.
+- **D4** (owner, plan review, 2026-11-13): "Approve it", in answer to "Approve plan 96 as written, with builder's calls C1 to C14?". The plan stands as written. That approves every builder's call, C4, C6, C7, C10 and C11 among them, as plan-level calls, so no spec amendment follows. Applied in: all tasks, Global Constraints.
 
 ## Builder's calls
 
