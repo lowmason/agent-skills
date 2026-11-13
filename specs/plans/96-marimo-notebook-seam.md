@@ -20,7 +20,7 @@
 
   ```bash
   mkdir -p /tmp/marimo-probe/plan96
-  for d in ~/Projects/*/; do [ -d "$d/.git" ] && basename "$d"; done | grep -vx agent-skills \
+  for d in ~/Projects/*/; do [ -e "$d/.git" ] && basename "$d"; done | grep -vx agent-skills \
     | awk '{print; a = $0; gsub(/-/, "_", a); print a; b = $0; gsub(/_/, "-", b); print b}' \
     | sort -u > /tmp/marimo-probe/plan96/names.txt
   ```
@@ -52,6 +52,7 @@
 - **D4** (owner, plan review, 2026-11-13): "Approve it", in answer to "Approve plan 96 as written, with builder's calls C1 to C14?". The plan stands as written. That approves every builder's call, C4, C6, C7, C10 and C11 among them, as plan-level calls, so no spec amendment follows. Applied in: all tasks, Global Constraints.
 - **D5** (owner, plan review, 2026-11-13): "But can we PR the spec and plan before execution?", asked after D4. The branch is pushed and the spec and plan go to `main` in their own PR. Execution runs after that PR merges, on a new branch. This replaces D2's "not pushed" for the spec and plan. Applied in: Global Constraints (Branch).
 - **D6** (owner, plan review, 2026-11-13): "Please see the Copilot PR review issues." and "Also make sure to run a Codex re-review on the changes before pushing the updated PR." The plan takes all six of Copilot's findings on lowmason/agent-skills#196: both separator spellings in the leak-check names and the check after `git add`, no root-`notebooks/` notebook in the scratch section, a formatter caveat with its check, the spec kept live at completion, and the guard bullet in the "Not caught" list. A Codex review reads the change before it is pushed. Applied in: Global Constraints (Leak check, Completion), Tasks 1, 3 and 4, C2, C14, C15.
+- **D7** (owner, plan review, 2026-11-13): "Add two pointers (Recommended)" and "Add application test (Recommended)", in answer to two findings of the Codex review of `54bebc5` that touched approved calls C8 and C10. CONVERT now also appears in the DELETE rule and in Prioritization. Task 2 opens with an application test, and C10's earlier reason (the spec names no test) is withdrawn. The same review's two other findings, a `.git` file in the leak check and `force-exclude` for the formatter exclude, are plan-level fixes. Applied in: Global Constraints (Leak check), Tasks 2 and 3, C8, C10, C15.
 
 ## Builder's calls
 
@@ -64,14 +65,14 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 - **C5.** The kit README also gives the `ruff.toml` form of the table, and says to merge the line into an existing table (Review Focus 4 and 5). (Task 3)
 - **C6.** The convert steps call marimo through `uvx` (`uvx marimo convert`, `uvx marimo check`), so they work whether or not marimo is a project dependency. The spec writes `marimo convert`. (Task 2)
 - **C7.** The scratch bullet also covers the new signal: a marimo `.py` notebook outside `notebooks/` needs no convert. It is moved with `git mv` into `notebooks/` when worth keeping. The spec gives that signal no action. (Task 2)
-- **C8.** The binary DELETE vs HARDEN framing stays at `SKILL.md:40`, `:55-57`, `:121-134`, `:166` and `:215`. CONVERT is an outcome of the scratch-notebook bullet only (designer's call 6). `scan.sh:5-6` and `:179` name it for scratch notebooks. (Task 2)
+- **C8.** The DELETE vs HARDEN headline stays at `SKILL.md:40`, `:55-57` and `:215`. CONVERT is an outcome of the scratch-notebook bullet (designer's call 6), and two pointers carry it into the decision: the DELETE rule (`:127-132`) names it as the one exception, and Prioritization (`:166`) scores CONVERT items too (D7). `scan.sh:5-6` and `:179` name it for scratch notebooks. (Task 2)
 - **C9.** The backlog example gains a new CONVERT row after `:194`, and the `scratchpad.ipynb` row stays. (Task 2)
-- **C10.** No micro-test for the tech-debt edit. The spec's Plan A testing names none, and the edit adds a triage option, not a discipline rule. (Task 2)
+- **C10.** Task 2 opens with an application test, because writing-skills' Iron Law asks for a failing test before any skill edit (D7). Two scenarios, 3 reps each, run on the current skill and again after the edit. There is no no-guidance control arm, because tech-debt is a technique skill, not a discipline skill. (Task 2)
 - **C11.** `README.md`'s folder tree gains a `templates/` line, beside the spec's `CLAUDE.md` clause. (Task 3)
 - **C12.** The `NOTICE` paragraph goes after the `runtimes/` paragraph, outside the "original works" list that `check_provenance.py` parses. Plans 93 and 94 edit other parts of `NOTICE`. (Task 3)
 - **C13.** The snippet check reads ruff versions from every git repo directly under `~/Projects/`, this repo excluded: the `uv.lock` version, the `ruff-pre-commit` rev and any version that a workflow pins. Extra versions only make the check stricter. It also runs the latest ruff. (Task 3)
 - **C14.** In `hooks/README.md`, the marimo note opens "Install into a work repo", and the guard bullet joins the guard's "Not caught" list, after the wrapper-script bullet (`:294`, D6). Only `hooks/README.md` is restamped, as the spec says. The new lines in `CLAUDE.md`, `README.md`, the tech-debt `SKILL.md` and the register state no Claude Code fact, so their citations stand. (Tasks 2 to 4)
-- **C15.** The kit README says the ignore covers `ruff check` only. For a repo whose formatter uses `quote-style = 'single'`, it gives a formatter exclude for `notebooks/**`, which the snippet check verifies (config `f`). Without it, the formatter rewrites marimo's three lines on every run, and marimo writes them back on save. A local check during planning found that this does not apply to the work repos today (D6). (Task 3)
+- **C15.** The kit README says the ignore covers `ruff check` only. For a repo whose formatter uses `quote-style = 'single'`, it gives a formatter exclude for `notebooks/**` with `force-exclude = true`, which the snippet check verifies for a tree run and for an explicit path (config `f`). Without it, the formatter rewrites marimo's three lines on every run, and marimo writes them back on save. A local check during planning found that this does not apply to the work repos today (D6). (Task 3)
 
 ## File map
 
@@ -79,12 +80,12 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 |---|---|---|
 | `skills/tech-debt/scripts/test_scan.py` | 7 tests, a fixture, 2 section prefixes | 1 |
 | `skills/tech-debt/scripts/scan.sh` | notebook helper and two sections (Task 1), header comment and closing line (Task 2) | 1, 2 |
-| `skills/tech-debt/SKILL.md` | signal row, scratch bullet, backlog row | 2 |
+| `skills/tech-debt/SKILL.md` | signal row, scratch bullet, two pointers, backlog row | 2 |
 | `templates/marimo-repo/README.md` | new: the kit guide | 3 |
 | `build/cc_guide/conformance.toml` | new kind `kit` | 3 |
 | `CLAUDE.md`, `README.md` | name `templates/` | 3 |
 | `NOTICE` | the kit's paragraph | 3 |
-| `specs/plans/96-marimo-notebook-seam.md` | Task 3's snippet-check result line | 3 |
+| `specs/plans/96-marimo-notebook-seam.md` | the result lines of Task 2's application test and Task 3's snippet check | 2, 3 |
 | `hooks/README.md` (and `build/cc_guide/baseline.json` if the restamp changes it) | two additions, restamp | 4 |
 
 ---
@@ -275,22 +276,53 @@ Replace the `Co-Authored-By` placeholder with the session's trailer before you r
 ### Task 2: The convert outcome in the tech-debt skill
 
 **Files:**
-- Modify: `skills/tech-debt/SKILL.md:79` (the "Scratch notebooks" signal row), `:151-153` (the "Scratch notebook beside prod code" bullet), after `:194` (a new backlog row)
+- Modify: `skills/tech-debt/SKILL.md:79` (the "Scratch notebooks" signal row), after `:132` (the end of the DELETE rule), `:151-153` (the "Scratch notebook beside prod code" bullet), `:166` (Prioritization's lead), after `:194` (a new backlog row)
 - Modify: `skills/tech-debt/scripts/scan.sh:5-6` (header comment), `:179` (closing line)
+- Modify: `specs/plans/96-marimo-notebook-seam.md` (Step 8's result line)
+- Use, read-only: `specs/baseline/red-baseline-backlog-protocol/kit/run_reps.sh` (isolated `claude -p` reps)
 
 **Interfaces:**
 - Consumes: the scratch section from Task 1, which now lists a marimo `.py` notebook outside `notebooks/`.
 - Produces: the CONVERT outcome, which the kit README (Task 3, install step 5) points to by the skill's name. It never names a path.
 
-- [ ] **Step 1: Load the write-with-asd-ste100 skill**
+- [ ] **Step 1: Run the baseline application test (C10)**
+
+writing-skills' Iron Law asks for a failing test before any skill edit. tech-debt is a technique skill, so the test is an application scenario. Write the two scenarios outside the repo:
+
+```bash
+mkdir -p /tmp/marimo-probe/plan96/apptest && cd /tmp/marimo-probe/plan96/apptest
+cat > s1.txt <<'EOF'
+A research repo has `src/pipeline.py`, with tests, and `march_drop.ipynb` beside `src/`. No module imports from the notebook, and the pipeline's outputs reproduce without it. The notebook holds two charts and a short write-up of a finding that the team will re-read next quarter. The repo uses uv. Following the skill above, what do you do with `march_drop.ipynb`? Name the triage outcome and list its steps.
+EOF
+cat > s2.txt <<'EOF'
+The tech-debt scan lists `explore_q3.py` at the root of a research repo as a scratch notebook. It is a marimo notebook: it has a top-level `app = marimo.App(` line. No module imports it, and it holds an analysis worth keeping. Following the skill above, what do you do with `explore_q3.py`? Name the triage outcome and list its steps.
+EOF
+```
+
+Each prompt is the skill, then one scenario. With `W` set to the worktree's absolute path:
+
+```bash
+for n in 1 2; do
+  { printf 'You are using this skill:\n\n'; cat "$W/skills/tech-debt/SKILL.md"; printf '\n---\n\n'; cat "s$n.txt"; } > "s$n-before.txt"
+  bash "$W/specs/baseline/red-baseline-backlog-protocol/kit/run_reps.sh" "s$n-before.txt" "out/s$n-before" 1 3 claude-opus-5-5
+done
+```
+
+Expected: `rep1 exit=0` to `rep3 exit=0` for each scenario. Read each reply by hand (`jq -r .result out/s1-before/rep1.json`) and score it:
+- S1 passes when the reply converts the notebook with marimo into `notebooks/`, runs `marimo check`, and deletes the `.ipynb`.
+- S2 passes when the reply moves the file into `notebooks/` (`git mv`) and does not convert it.
+
+Expected before the edit: S1 passes in fewer than 3 of 3 reps, because the skill has no CONVERT outcome yet. Note both counts for Step 8. If S1 already passes 3 of 3, note that and keep the edit, because spec A3 requires the outcome.
+
+- [ ] **Step 2: Load the write-with-asd-ste100 skill**
 
 The new `SKILL.md` lines are agent-facing text. Match the file's existing register (short, direct triage lines).
 
-- [ ] **Step 2: Edit the signal row (`:79`)**
+- [ ] **Step 3: Edit the signal row (`:79`)**
 
 The "What you're grepping for" cell keeps its `.ipynb` names and adds a marimo `.py` notebook (a top-level `app = marimo.App(` line) outside `notebooks/`. The Signal and "Why it's debt" cells do not change.
 
-- [ ] **Step 3: Rewrite the scratch bullet (`:151-153`)**
+- [ ] **Step 4: Rewrite the scratch bullet (`:151-153`)**
 
 The bullet keeps HARDEN for load-bearing logic (the model imports from it, or its output cannot be reproduced without it) and DELETE for doodles. Between them, it adds CONVERT for an `.ipynb` that is not load-bearing but is worth keeping as an analysis record. CONVERT has four numbered steps (C6):
 
@@ -301,13 +333,18 @@ The bullet keeps HARDEN for load-bearing logic (the model imports from it, or it
 
 Last, one sentence for C7: a marimo `.py` notebook outside `notebooks/` needs no convert. Move it with `git mv` into `notebooks/` when it is worth keeping, else DELETE it. The text names no `templates/` path and no marimo version.
 
-- [ ] **Step 4: Add the backlog row after `:194`**
+- [ ] **Step 5: Carry CONVERT into the DELETE rule and Prioritization (C8)**
+
+- After the DELETE rule's paragraph (`:127-132`, which ends "git remembers it if you ever need it back."), add one sentence. A scratch notebook that is not load-bearing but holds an analysis record worth keeping is the one exception: it goes to CONVERT (see the scratch-notebook rule below).
+- In Prioritization (`:166`), "Score each *surviving* (HARDEN) item" becomes "Score each *surviving* (HARDEN or CONVERT) item".
+
+- [ ] **Step 6: Add the backlog row after `:194`**
 
 ```markdown
 | `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `uvx marimo convert` into `notebooks/`, `uvx marimo check`, then delete the `.ipynb` |
 ```
 
-- [ ] **Step 5: Name CONVERT in `scan.sh`'s header comment (`:5-6`) and closing line (`:179`)**
+- [ ] **Step 7: Name CONVERT in `scan.sh`'s header comment (`:5-6`) and closing line (`:179`)**
 
 Both keep "DELETE vs HARDEN" and add that a scratch notebook may CONVERT. The closing line becomes:
 
@@ -315,7 +352,15 @@ Both keep "DELETE vs HARDEN" and add that a scratch notebook may CONVERT. The cl
 printf '\nDone. Each hit is a candidate — triage DELETE vs HARDEN (or CONVERT a scratch notebook) per SKILL.md.\n'
 ```
 
-- [ ] **Step 6: Run the checks**
+- [ ] **Step 8: Rerun the application test on the edited skill**
+
+Rebuild the prompts from the edited `SKILL.md` as `s1-after.txt` and `s2-after.txt`, run 3 reps of each into `out/s1-after` and `out/s2-after` with the same command, and score them as in Step 1.
+
+Bar: S1 and S2 each pass in 3 of 3 reps. On a miss, revise the wording once and rerun both scenarios. After two misses, stop and bring the replies to the owner. Then add one line under this step:
+
+`> Result (<YYYY-MM-DD>): S1 <n>/3 before, 3/3 after. S2 <n>/3 before, 3/3 after.`
+
+- [ ] **Step 9: Run the checks**
 
 Run each command. Expected output follows each one.
 
@@ -327,12 +372,12 @@ Run each command. Expected output follows each one.
 - `uv run python build/versions.py check`: `versions ok`.
 - `uv run python build/run_suites.py tech-debt`: `suite runs passed`.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 10: Commit**
 
 Run `check_conformance.py`. Stage the task's files, then run the leak check on what is staged:
 
 ```bash
-git add skills/tech-debt/SKILL.md skills/tech-debt/scripts/scan.sh
+git add skills/tech-debt/SKILL.md skills/tech-debt/scripts/scan.sh specs/plans/96-marimo-notebook-seam.md
 git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt
 ```
 
@@ -346,6 +391,8 @@ A scratch .ipynb that holds no load-bearing logic but is worth keeping
 as an analysis record now has a third outcome beside HARDEN and DELETE.
 CONVERT turns it into a marimo notebook in notebooks/ and checks it.
 A marimo notebook outside notebooks/ moves there when it is worth keeping.
+Two pointers carry CONVERT into the DELETE rule and Prioritization. An
+application test ran on the skill before and after the edit.
 
 Co-Authored-By: <the session's trailer>
 EOF
@@ -443,6 +490,9 @@ select = ['E', 'F', 'I', 'B']
 
 ```toml
 # f/pyproject.toml
+[tool.ruff]
+force-exclude = true
+
 [tool.ruff.format]
 quote-style = 'single'
 exclude = ['notebooks/**']
@@ -476,13 +526,16 @@ for v in $(cat versions.txt) latest; do
   done
   echo "== ruff $v, format, config f"
   (cd f && uvx "ruff@$v" format --no-cache --diff .)
+  echo "== ruff $v, format, config f, explicit path"
+  (cd f && uvx "ruff@$v" format --no-cache --diff notebooks/probe_nb.py)
 done
 ```
 
 Expected, for every version and config:
 - Every finding in `notebooks/probe_nb.py` is I001.
 - `scratch/probe_nb.py` shows I001 and B018 (configs `b` and `r`), or I001 and three Q000 findings (config `q`).
-- Config `f`: the format diff names `scratch/probe_nb.py` alone, and it puts marimo's three lines in single quotes. `notebooks/probe_nb.py` is not in it.
+- Config `f`: the format diff of `.` names `scratch/probe_nb.py` alone, and it puts marimo's three lines in single quotes. `notebooks/probe_nb.py` is not in it.
+- Config `f`, explicit path: no diff. `hooks/ruff-fix.sh` and pre-commit pass file paths like this, and `format.exclude` holds for them only with `force-exclude = true`.
 
 `scratch/` is the control: it shows that the fixture trips the rules that the ignore removes, and that the formatter rewrites marimo's lines. Any other code in `notebooks/`, a control without B018 or Q000, or a format diff for `notebooks/` fails the check. Then stop and bring the output to the owner, with versions and repo names kept out of the repo.
 
@@ -490,7 +543,7 @@ Expected, for every version and config:
 
 Under this step, add one line, with no version number and no repo name:
 
-`> Result (<YYYY-MM-DD>): at every ruff version the work repos run, and at the latest, the three lint configs left I001 and nothing else in notebooks/, and the formatter exclude kept notebooks/ out of ruff format.`
+`> Result (<YYYY-MM-DD>): at every ruff version the work repos run, and at the latest, the three lint configs left I001 and nothing else in notebooks/, and the formatter exclude kept notebooks/ out of ruff format, for a tree run and for an explicit path.`
 
 - [ ] **Step 5: Write `templates/marimo-repo/README.md`**
 
@@ -517,7 +570,7 @@ Plain English for people. It names no work repo. Headings and content:
   - The ignore matters wherever ruff runs over `notebooks/`: the Stop hook (`ruff-check.sh`, link `../../hooks/README.md`), pre-commit and CI. A pre-commit hook can pin a ruff version other than the lockfile's.
   - If the table already exists, merge the line into it. A second copy of the header is invalid TOML (C5).
   - In `ruff.toml` or `.ruff.toml`, the table is `[lint.per-file-ignores]` (C5).
-  - The ignore covers `ruff check` only, because `per-file-ignores` does not reach `ruff format`. A formatter set to `quote-style = 'single'` rewrites marimo's three lines, and marimo writes them back on every save. In such a repo, add `exclude = ['notebooks/**']` under `[tool.ruff.format]` (`[format]` in `ruff.toml`). `ruff format` then leaves notebook files alone, cell code included (C15).
+  - The ignore covers `ruff check` only, because `per-file-ignores` does not reach `ruff format`. A formatter set to `quote-style = 'single'` rewrites marimo's three lines, and marimo writes them back on every save. In such a repo, add `exclude = ['notebooks/**']` under `[tool.ruff.format]` (`[format]` in `ruff.toml`), and `force-exclude = true` under `[tool.ruff]` (top level in `ruff.toml`). Without `force-exclude`, ruff ignores the exclude for a file named on its command line, and `ruff-fix.sh` and pre-commit name files that way. `ruff format` then leaves notebook files alone, cell code included (C15).
   - Write the line in the repo's quote style.
 - `## During a live session`. Fix lint through marimo-pair, never by editing the file. marimo-pair changes cells through the running notebook server. A `Write` or `Edit` on the file goes around it.
 - `## Credits`. The kit is an original work by Lowell Mason under the MIT license (link `../../NOTICE`). It takes ideas, and no text, from Eric Ma's "Agent-assisted data science with marimo" (`https://ericmjl.github.io/blog/2026/10/14/agent-assisted-data-science-with-marimo/`) and "How to do agentic data science" (`https://ericmjl.github.io/blog/2026/2/1/how-to-do-agentic-data-science/`). It pairs with marimo-pair (Apache-2.0), links to it and copies none of its text.
