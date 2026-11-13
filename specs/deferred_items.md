@@ -6645,3 +6645,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       check is recorded, task-done refuses (exit 4) a task whose patch bytes differ from the run's recorded
       sha256, a test that edits a patch after a clean run at the same HEAD sees exit 4, and the other gate tests
       still pass.
+- [ ] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
+      2026-11-13).** `ruling_lines` in `skills/writing-plans/scripts/history_entry.py` (about line 305) takes
+      every ledger line that holds `Ruling:` anywhere (`line.partition(RULING_MARK)`). Plan 93's ledger had a
+      Task 3 note that quoted "executing-plans Section 2's `Ruling: (unclear)` ledger line". The drafted history
+      entry turned that note into a false ruling line, and the protocol run deleted the line by hand. The script
+      was not changed on the plan 93 branch, because that plan's scope fence kept `skills/writing-plans/` out of
+      bounds. Size: quick-fix. Done when: `ruling_lines` takes `Ruling:` only as a line's own mark (at its start,
+      or after a `Task <N>: ` or final-review prefix), not inside a code span or a quotation; a test whose ledger
+      has a note line that quotes `` `Ruling: (unclear)` `` gets no ruling line from it; and the existing
+      history_entry tests pass.
