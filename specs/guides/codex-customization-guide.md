@@ -2,7 +2,7 @@
 
 **Skills · slash commands · subagents · AGENTS.md · permissions · hooks — built and run on a token budget**
 
-> Verified against the [official Codex manual](https://developers.openai.com/codex/codex-manual.md) and its source documentation on **October 3, 2026**. Local CLI command and flag checks used **codex-cli 0.154.0**. Items marked ⚠ are especially version-sensitive. Check `codex --version`, `codex --help`, and the linked reference before adopting exact fields. CLI, IDE, desktop, and cloud experiences share concepts but have different controls and execution environments; a local configuration example does not establish cloud support.
+> Verified against the [official Codex manual](https://learn.chatgpt.com/docs/codex-manual.md) and its source documentation on **November 12, 2026**. Local CLI command and flag checks used **codex-cli 0.163.0**. Features added in releases 0.164.0 to 0.167.2 were checked against the documentation only. Items marked ⚠ are especially version-sensitive. Check `codex --version`, `codex --help`, and the linked reference before adopting exact fields. CLI, IDE, desktop, and cloud experiences share concepts but have different controls and execution environments; a local configuration example does not establish cloud support.
 
 This is the Codex counterpart of the [Claude Code Customization Guide](claude-code-customization-guide.md). It preserves that guide's organizing principle: customization should improve reliability without making every task pay for every workflow. Product behavior is sourced; budgeting and workflow recommendations are practical guidance.
 
@@ -179,9 +179,10 @@ Built-in slash commands control the client; skills provide reusable workflows. A
 | `/compact` | Reduce active history while retaining a summary |
 | `/new`, `/clear` | Start a fresh chat; `/clear` also clears the terminal display |
 | `/resume`, `/fork` | Continue saved work or branch an existing transcript |
-| `/agent` or `/subagents` | Inspect or switch among active agent threads |
+| `/subagents` | Inspect or switch among active subagent threads |
+| `/agents` | Open the agent command center to browse chats and switch agents |
 | `/diff`, `/review` | Inspect changes and request review |
-| `/goal` | Manage a persistent, measurable objective in supporting builds |
+| `/goal` | Set, edit, pause, resume, view, or clear a persistent task goal |
 
 Discover the installed client's commands from its `/` menu. IDE and desktop menus differ from the CLI list; do not assume a command exists on every surface. [CLI commands](https://learn.chatgpt.com/docs/developer-commands?surface=cli)
 
@@ -207,7 +208,6 @@ Example `.codex/agents/review-reader.toml`:
 ```toml
 name = "review-reader"
 description = "Inspect a supplied diff for correctness and requirement gaps; return findings with file and line references."
-sandbox_mode = "read-only"
 developer_instructions = """
 Read the supplied task brief and diff before judging the change.
 Report actionable correctness and requirement gaps with evidence.
@@ -218,18 +218,19 @@ Return a concise verdict and findings the caller can act on.
 
 | Field | Purpose |
 |---|---|
-| `name` | Required agent identity; duplicate names and built-in-name collisions affect discovery |
+| `name` | Required agent identity. Codex identifies the agent by this field, not by the filename |
 | `description` | Required delegation guidance |
 | `developer_instructions` | Required role instructions |
 | `model`, `model_reasoning_effort` | Optional overrides of the model and effort resolved for the subagent |
-| `sandbox_mode` | Optional local execution setting; parent live overrides and managed requirements still apply |
-| Supported additional config, such as MCP configuration | Role-specific configuration where the reference permits it |
+| `features.shell_tool`, `features.apps`, `features.plugins`, `features.memories`, or `features.request_permissions_tool` set to `false`, and `skills.config` | Optional capability reductions for this agent. Managed requirements still apply |
+
+Other session settings, such as `sandbox_mode`, `approval_policy`, `model_provider`, and `mcp_servers`, do not override the parent configuration when placed in an agent file. The subagent inherits the parent's permissions, provider, and MCP servers. [Custom agents](https://learn.chatgpt.com/docs/agent-configuration/subagents#custom-agents)
 
 Built-in roles include `default`, `worker`, and `explorer`. Avoid reusing a built-in name accidentally: a custom definition can shadow that role. The configuration reference also includes `[agents.<name>]` registration fields; check your version before adapting an older registered-agent setup. [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
 
-A role instruction is not a tool-removal manifest. Do not translate Claude's `tools: Read, Grep, Glob` into an unsupported Codex allowlist. Apply supported sandbox and integration controls, then state the role contract in `developer_instructions`.
+A role instruction is not a tool-removal manifest. Do not translate Claude's `tools: Read, Grep, Glob` into an unsupported Codex allowlist. Set sandbox and approval controls on the parent session. In the agent file, turn off supported capabilities with the feature keys above, then state the role contract in `developer_instructions`.
 
-Model and effort resolution considers explicit spawn settings, `[agents]` defaults, and the parent session, then applies the agent file's overrides. Set both fields when a role requires a specific combination. Parent live sandbox and approval overrides are reapplied at spawn, so the example's `sandbox_mode` alone is not proof that the effective child permissions are read-only; verify them in the active runtime. [Subagent inheritance](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+Model and effort resolution considers explicit spawn settings, `[agents]` defaults, and the parent session, then applies the agent file's overrides. Set both fields when a role requires a specific combination. Subagents inherit the parent turn's current sandbox and approval settings, including changes made with `/permissions` or `--yolo`. Agent instructions can ask a subagent to avoid edits, but they do not create a separate read-only sandbox. Verify the effective permissions in the active runtime. [Subagent inheritance](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 
 ### Context and ownership
 
@@ -275,7 +276,7 @@ Nested `AGENTS.md` files express guidance for their subtree, but the documented 
 
 ### Local memories ⚠
 
-Local Codex memories are optional, generated recall under `~/.codex/memories/`. Current documentation says they are off by default. `/memories` controls use and generation for a chat; global settings live in configuration and desktop personalization controls. Memory generation happens in the background and can be skipped when remaining quota is low. [Memories](https://learn.chatgpt.com/docs/customization/memories)
+Local Codex memories are optional, generated recall under `CODEX_HOME`. Current documentation says they are off by default. When enabled in a fresh Codex home, the CLI uses `$CODEX_HOME/memories_v2/` by default. An existing `$CODEX_HOME/memories/` store stays in use, and `memories.version` selects a version explicitly. `/memories` controls use and generation for a chat; global settings live in configuration and desktop personalization controls. Memory generation happens in the background and can be skipped when remaining quota is low. [Memories](https://learn.chatgpt.com/docs/customization/memories)
 
 Keep required team rules in `AGENTS.md` or checked-in documentation. Treat the memory directory as generated state, not as a manually maintained instruction file. Codex local memories and ChatGPT web memory have different storage and controls; Claude's first-200-lines `MEMORY.md` rule does not describe this system. [Memories](https://learn.chatgpt.com/docs/customization/memories)
 
@@ -312,7 +313,7 @@ Since Codex **0.134.0**, `--profile` no longer reads `[profiles.review]` from th
 
 ### Sandbox and approval are separate
 
-The sandbox constrains local command execution. Approval policy decides when Codex asks to step beyond current permissions. `approval_policy = "never"` removes approval prompts; it does not remove the sandbox. Automatic review can evaluate approval requests, but it does not expand the approved task's scope. [Agent approvals and security](https://learn.chatgpt.com/docs/agent-approvals-security), [auto-review](https://learn.chatgpt.com/docs/auto-review)
+The sandbox constrains local command execution. Approval policy decides when Codex asks to step beyond current permissions. `approval_policy = "never"` removes approval prompts; it does not remove the sandbox. Auto-review sends eligible approval requests to a reviewer agent. It does not change the sandbox or review actions that the sandbox already allows. [Agent approvals and security](https://learn.chatgpt.com/docs/agent-approvals-security), [auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review)
 
 With the older settings, `read-only`, `workspace-write`, and `danger-full-access` are sandbox modes. Workspace-write generally permits the project and temporary directories while protecting paths such as `.git`, `.agents`, and `.codex`. A writable project root does not guarantee that its configuration or Git metadata is writable. [Agent approvals and security](https://learn.chatgpt.com/docs/agent-approvals-security#protected-paths-in-writable-roots)
 
@@ -345,7 +346,7 @@ The deny glob has platform-specific limits. Linux, WSL, and native Windows may e
 
 Do not combine this with `sandbox_mode` or `[sandbox_workspace_write]`. Current docs say a legacy `sandbox_mode` in any loaded layer, or the CLI's `--sandbox`, selects the older mechanism instead. Managed `allowed_permission_profiles` is an exception that forces permission-profile use. Remove old settings deliberately when migrating. [Permissions](https://learn.chatgpt.com/docs/permissions)
 
-When enabling domain-restricted command networking, `network.enabled = true` is insufficient by itself: the network proxy must also be active for domain rules to constrain direct access. Use the documented profile and proxy setup rather than assuming the allowlist is enforced. [Permissions](https://learn.chatgpt.com/docs/permissions)
+When enabling domain-restricted command networking, `network.enabled = true` is insufficient by itself: the network proxy must also be active for domain rules to constrain direct access. Set `features.network_proxy = true`, or use enabled, administrator-managed network requirements. Use the documented profile and proxy setup rather than assuming the allowlist is enforced. [Permissions](https://learn.chatgpt.com/docs/permissions)
 
 Older compatible local-command configuration, as a separate alternative:
 
@@ -361,7 +362,7 @@ network_access = false
 
 ### Execution-policy `.rules` files ⚠
 
-Codex execution rules are experimental Starlark-style command policy, not Markdown guidance. Codex discovers `.rules` files under `rules/` beside active config layers; trusted project rules can live in `.codex/rules/`. They decide whether matching commands may run **outside the sandbox**. The strictest matching decision wins: `forbidden` → `prompt` → `allow`. [Rules](https://learn.chatgpt.com/docs/agent-configuration/rules)
+Codex execution rules are experimental Starlark-style command policy, not Markdown guidance. Codex discovers `.rules` files under `rules/` beside active config layers; trusted project rules can live in `.codex/rules/`. They decide whether matching commands may run **outside the sandbox**. A `prompt` rule can also require approval for a command that would run inside the sandbox. The strictest matching decision wins: `forbidden` → `prompt` → `allow`. [Rules](https://learn.chatgpt.com/docs/agent-configuration/rules), [auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review)
 
 Example `.codex/rules/release.rules`:
 
@@ -401,9 +402,10 @@ Typical local locations are `~/.codex/hooks.json` and project `.codex/hooks.json
 | `UserPromptSubmit` | Add context or reject a prompt before processing |
 | `Stop` | Request another model step with a reason before the main turn finishes |
 | `SubagentStop` | Apply a continuation check to a subagent |
-| `SessionStart` | Inject context on startup, resume, clear, or compact |
+| `SessionStart` | Inject context on startup, resume, clear, compact, or fork |
 | `SubagentStart` | Inject context into a new subagent |
 | `PreCompact`, `PostCompact` | Observe compaction or use the supported stop-control response |
+| `PreModelRequest`, `PostModelRequest` | Log each model request attempt and its outcome. Output is diagnostic only and cannot change context or block a request |
 | `Interrupt` | Main-thread interruption cleanup; does not run for subagents |
 | `SessionEnd` | Advisory main-thread cleanup; does not keep the thread open |
 
@@ -518,7 +520,7 @@ For `SessionStart`, inject a small summary of useful live state: the selected wo
 
 ### Know the measurement you are optimizing
 
-Use `/status` and the status line to watch a CLI session, and use the account usage view to understand shared limits. For scripted runs, `codex exec --json` emits events including completion usage fields such as input, cached input, and output tokens. Save the JSONL as an artifact rather than placing a large run transcript into another conversation. [Non-interactive mode](https://learn.chatgpt.com/docs/noninteractive)
+Use `/status` and the status line to watch a CLI session, and use the account usage view to understand shared limits. For scripted runs, `codex exec --json` emits events including completion usage fields such as input, cached input, and output tokens. Save the JSONL as an artifact rather than placing a large run transcript into another conversation. [Non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
 
 ```bash
 # Example agent run: save events and the final report separately.
@@ -545,12 +547,13 @@ Create `artifacts/` and supply the intended diff or revision scope before runnin
 
 Keep stable instructions and tool sets stable during a coherent task, but optimize for correct work first. Cached input can reduce metered cost; it does not make a bloated context small or eliminate the model's attention burden. Codex's exact cache reuse depends on the provider and runtime; do not import Claude's cache-layer invalidation list, cache-write premiums, or subscription TTL rules.
 
-Current **Standard-speed Codex credit rates**, verified October 3, 2026:
+Current **Standard-speed Codex credit rates**, verified November 12, 2026:
 
 | Model | Input credits / 1M tokens | Cached-input credits / 1M tokens | Output credits / 1M tokens |
 |---|---:|---:|---:|
 | GPT-6 Astra | 250 | 25 | 1,250 |
 | GPT-6.1 Sol | 50 | 2.5 | 250 |
+| GPT-6.1 Terra | 25 | 1.25 | 125 |
 | GPT-6 Sol | 50 | 5 | 250 |
 | GPT-6 Luna | 2.5 | 0.25 | 12.5 |
 
@@ -626,7 +629,7 @@ Use a skill to define the procedure and a scheduled task to define cadence. Curr
 
 Test the workflow manually before scheduling it. State what constitutes a meaningful finding, when to notify, and when to stop. Repeated schedules multiply model, tool, and filesystem costs; frequent worktree runs also require cleanup. Unattended runs use applicable sandbox and organization policies, so tools that require unavailable approvals can fail. [Scheduled tasks](https://learn.chatgpt.com/docs/automations)
 
-A **Goal** gives supporting Codex builds a persistent objective within a chat; a schedule decides when to revisit work. Use a measurable completion condition and supporting artifacts for multi-turn investigations. A normal prompt remains enough for an ordinary edit or explanation. A budget limit means work stopped within its budget, not that the objective was achieved. [Using Goals in Codex](https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex)
+A **Goal** gives a chat a persistent objective. Goals are stable and on by default in the desktop app, IDE extension, and CLI, where `/goal` manages them. A schedule decides when to revisit work. Use a measurable completion condition and supporting artifacts for multi-turn investigations. A normal prompt remains enough for an ordinary edit or explanation. A budget limit means work stopped within its budget, not that the objective was achieved. [Long-running work](https://learn.chatgpt.com/docs/long-running-work), [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference), [Using Goals in Codex](https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex)
 
 ### Translating a Claude Code setup
 
@@ -645,6 +648,8 @@ A **Goal** gives supporting Codex builds a persistent objective within a chat; a
 | Claude auto-memory layout and load cap | Optional Codex local memories with their own controls |
 | `/context` and Claude cache accounting | Codex `/status`, status-line counters, and Codex or API usage reporting |
 
+To migrate an existing setup, the desktop app's import flow and the CLI's `/import` command copy supported Claude Code items into Codex. Review the result before relying on it. Check tool restrictions in imported skills and agents, hooks, and command-style prompts that use arguments or shell interpolation. [Import from another agent](https://learn.chatgpt.com/docs/import)
+
 ## Repository application
 
 This repository's canonical skill content remains under `skills/`. Its installer places Codex skills under `~/.agents/skills/` and generated agent adapters under `~/.codex/agents/`. Canonical agent definitions stay in `agents/`; files under `runtimes/` are generated. Edit the canonical definition, regenerate, and check adapters using the maintainer commands in [CLAUDE.md](../../CLAUDE.md).
@@ -656,6 +661,6 @@ That arrangement preserves portable procedures while translating runtime-specifi
 - [Customization overview](https://learn.chatgpt.com/docs/customization/overview), [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md), [memories](https://learn.chatgpt.com/docs/customization/memories).
 - [Build skills](https://learn.chatgpt.com/docs/build-skills), [subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [hooks](https://learn.chatgpt.com/docs/hooks), [execution rules](https://learn.chatgpt.com/docs/agent-configuration/rules).
 - [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic), [advanced configuration](https://learn.chatgpt.com/docs/config-file/config-advanced), [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference), [managed configuration](https://learn.chatgpt.com/docs/enterprise/managed-configuration).
-- [Permissions](https://learn.chatgpt.com/docs/permissions), [agent approvals and security](https://learn.chatgpt.com/docs/agent-approvals-security), [auto-review](https://learn.chatgpt.com/docs/auto-review).
+- [Permissions](https://learn.chatgpt.com/docs/permissions), [agent approvals and security](https://learn.chatgpt.com/docs/agent-approvals-security), [auto-review](https://learn.chatgpt.com/docs/sandboxing/auto-review).
 - [CLI commands](https://learn.chatgpt.com/docs/developer-commands?surface=cli), [MCP](https://learn.chatgpt.com/docs/extend/mcp), [plugins](https://learn.chatgpt.com/docs/plugins), [scheduled tasks](https://learn.chatgpt.com/docs/automations).
 - [Model selection](https://learn.chatgpt.com/docs/model-selection), [speed tiers](https://learn.chatgpt.com/docs/agent-configuration/speed), [Codex credit pricing](https://learn.chatgpt.com/docs/pricing), [API pricing](https://developers.openai.com/api/docs/pricing).
