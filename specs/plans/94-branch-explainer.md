@@ -4,7 +4,7 @@
 
 **Goal:** finishing-a-development-branch gains Step 3b. Before the Step 4 menu, a fresh subagent writes an explainer of `BASE..HEAD`. After reading it, the owner can give a synopsis of the plan, the build and what the branch adds to the project. A baseline probe compares the new writer brief with no guidance first.
 
-**Architecture:** A probe kit under `specs/baseline/red-baseline-branch-explainer/` builds an isolated repository for each fixture branch. In it, an Opus writer with repository tools writes an explainer, either with no guidance (control) or with the writer brief (treatment). A tool-less Opus reader writes a synopsis from the explainer, with the treatment's own Synopsis cut out. A tool-less Opus adjudicator scores bars B1 to B4, and the kit counts words for B5. The brief is tuned on three fixtures and then scored once on a held-out fourth. `SKILL.md` gets a short Step 3b pointer. The procedure goes into `references/branch-explainer.md` and the writer brief into `references/branch-explainer-prompt.md`. To make room in the body, Step 6's refused-removal detail moves to `references/refused-removal.md`. A decision-only micro-test checks Step 3b's wording and the move.
+**Architecture:** A probe kit under `specs/baseline/red-baseline-branch-explainer/` builds an isolated repository for each fixture branch. In it, an Opus writer with repository tools writes an explainer, either with no guidance (control) or with the writer brief (treatment). A tool-less Opus reader writes a synopsis from the explainer, with the treatment's own Synopsis cut out. A tool-less Opus adjudicator scores bars B1 to B4, and the kit counts words for B5. The brief is tuned on three fixtures and then scored once on a held-out fourth. `SKILL.md` gets a short Step 3b pointer. The procedure goes into `references/branch-explainer.md` and the writer brief into `references/branch-explainer-prompt.md`. A decision-only micro-test checks Step 3b's wording.
 
 **Tech Stack:** Python 3.11+ standard library (a uv inline header), bash, `claude -p` 2.1.323 on `claude-opus-5-5` (probe) and `claude-sonnet-5-5` (micro-test), git, Markdown skill text, and the repo's commit lints.
 
@@ -12,39 +12,39 @@
 
 ## Owner review (answer at plan review)
 
-F1 and F2 are defaults from the handoff brief. C2 and C3 (under Calls) depart from the spec's text, so each needed the owner's approval and a spec amendment (Task 1 Step 1). The owner answered all four at plan review: D1 to D4 under Decisions.
+F1 and F2 are defaults from the handoff brief. C2 and C3 (under Calls) depart from the spec's text, so each needed the owner's approval and a spec amendment (Task 1 Step 1). The owner answered all four at plan review: D1 to D4 under Decisions. D5 later superseded F1.
 
-- **F1. Wait for plan 94: default yes.** The spec requires the two plans to run one at a time but fixes no order (`specs/branch-explainer.md:303-305`). Plan 94 (`specs/plans/94-copilot-pr-review-loop.md` on `refs/heads/claude/kind-kapitsa-bfb904`, approved) waits for plan 93 itself. Its body counts and its diff-stat check (its lines 19 and 40) assume a base at `af378ac`. Yes adds Base and order below, the refused-removal move (Task 4), and the body counts that start at 19,555. If "yes" is wrong, this plan waits behind plans 93 and 94 for nothing. If the answer is no, drop the wait and Task 4. The body then starts at 19,009, and plan 94's executor must stop and ledger at its own base.
-- **F2. Live run after retirement: default yes.** Task 7 runs the new Step 3b on this plan's own branch, in the shape of plan 94's Task 8. It has no checkboxes and runs after the Plan Completion Protocol's retire commit. Only then does `BASE..HEAD` add or rename a plan into `specs/plans/completed/`, so only then does the plan-branch rule fire (`specs/branch-explainer.md:138-141`). It is a check beside the probe, not a pass bar. If "yes" is wrong, it costs one extra Opus subagent run. If "no" is wrong, no real branch checks the step.
+- **F1. Wait for the Copilot loop plan: default yes (superseded by D5).** The spec requires the two plans to run one at a time but fixes no order (`specs/branch-explainer.md:303-305`). The owner first answered yes (D1): wait for that plan, then move Step 6's refused-removal detail to make room in the body. The owner later ruled the Copilot loop plan a no-go (D5), so this plan waits for no other plan and moves no text.
+- **F2. Live run after retirement: default yes.** Task 7 runs the new Step 3b on this plan's own branch, in a fresh session. It has no checkboxes and runs after the Plan Completion Protocol's retire commit. Only then does `BASE..HEAD` add or rename a plan into `specs/plans/completed/`, so only then does the plan-branch rule fire (`specs/branch-explainer.md:138-141`). It is a check beside the probe, not a pass bar. If "yes" is wrong, it costs one extra Opus subagent run. If "no" is wrong, no real branch checks the step.
 
 ## Global Constraints
 
 ### Base and order
 
-- **Wait for plan 94 (F1).** Executions run one at a time. Start only when `git fetch origin` succeeds and `git cat-file -e origin/main:specs/plans/completed/94-copilot-pr-review-loop.md` exits 0. Plan 94 itself waits for plan 93, so both are on `origin/main` by then.
-- **Base branch.** The spec and this plan reach `main` through their own PR before execution, as plan 92's did (#181). So start only when `git cat-file -e origin/main:specs/plans/95-branch-explainer.md` also exits 0, and cut the execution worktree from `origin/main` (EnterWorktree does this). If that check fails, stop and ask: never execute from `claude/branch-explainer-plan-9b2653`. Do not check out `claude/branch-explainer-pre-merge-fde7f8`, which worktree `bold-boyd-0eeb36` holds.
-- **Anchors.** Each edit's old text is its match key, not its line number. Line numbers in this plan are lines of the files at `af378ac`. Plan 93 moves lines in `NOTICE`. Plan 94 moves lines in `NOTICE` and in finishing's `SKILL.md`. Once the worktree exists, run `git diff --stat af378ac HEAD -- skills/finishing-a-development-branch NOTICE`. Expected: plan 94's finishing files (`SKILL.md`, `references/copilot-review-loop.md`, `references/common-mistakes.md`, `scripts/`) and `NOTICE`, which plans 93 and 94 and PR #195 changed. For any other path, re-read each cited line before a task quotes it, and ledger a `Ruling:` for task text that no longer fits. If an old text in a step no longer matches exactly once, stop and ledger it.
+- **One execution at a time (D5).** Start only when no other plan execution is running (plan 96 also edits `NOTICE`), `git fetch origin` succeeds, and `git cat-file -e origin/main:specs/plans/94-branch-explainer.md` exits 0. This plan waits for no other plan.
+- **Base branch.** The spec and this plan reached `main` through their own PRs before execution, as plan 92's did (#181). Cut the execution worktree from `origin/main` (EnterWorktree does this). If the check above fails, stop and ask: never execute from `claude/branch-explainer-plan-9b2653` or `claude/branch-explainer-plan-94`. Do not check out `claude/branch-explainer-pre-merge-fde7f8`, which worktree `bold-boyd-0eeb36` holds.
+- **Anchors.** Each edit's old text is its match key, not its line number. Line numbers in this plan are lines of the files at `af378ac`. At `origin/main` `a1a1f51`, finishing's files were unchanged since `af378ac`, and `NOTICE` had gained 30 lines (plan 93's entry and PR #195). Once the worktree exists, run `git diff --stat af378ac HEAD -- skills/finishing-a-development-branch NOTICE`. Expected: `NOTICE` only. For any other path, re-read each cited line before a task quotes it, and ledger a `Ruling:` for task text that no longer fits. If an old text in a step no longer matches exactly once, stop and ledger it.
 - **EXEC_BASE.** Before Task 1 changes anything, `git rev-parse HEAD` is EXEC_BASE. Task 1 writes it in the record. The micro-test's control arm reads finishing's text at EXEC_BASE.
 - **Self-modifying plan.** This plan edits finishing-a-development-branch. `~/.claude/skills/` serves the main checkout's copy, which has no Step 3b until this branch merges. Execute in the worktree. **The execution session never runs finishing-a-development-branch.** After the Plan Completion Protocol it ends with Task 7's handoff, and a fresh session runs the live run.
 
 ### Scope fence
 
-- Unchanged: the Step 4 menu, its wording and its "Don't add explanation" line, the aged-tail gate (Step 1b), Step 4b, Options 1 to 4, the Copilot loop, the reviewers, `specs/history.md`'s format and the Plan Completion Protocol (spec, Non-goals).
+- Unchanged: the Step 4 menu, its wording and its "Don't add explanation" line, the aged-tail gate (Step 1b), Step 4b, Options 1 to 4, the reviewers, `specs/history.md`'s format and the Plan Completion Protocol (spec, Non-goals).
 - `install.py` and `build/test_runtime_support.py` do not change. Step 3b and the two new references name no other skill by path, `references/` path or section, and no Claude-only tool. The dependency-drift test proves it.
-- Leave alone: plan 94's branches `claude/kind-kapitsa-bfb904` (worktree `peaceful-davinci-0a1696`) and `claude/copilot-pr-review-merge-e5714d` (worktree `loving-swanson-38fcea`); plan 93's branches `claude/cool-brahmagupta-88fa30` (worktree `deferred-probe-remaps-224445`), `claude/laughing-wright-00eeb6` (worktree `heuristic-stonebraker-8f62cb`), `claude/test-writer-subagent-sdd-666d94` and `claude/backlog-base-revert-mutant` (worktree `clever-cerf-bc46d2`); and `refs/heads/claude/branch-explainer-pre-merge-fde7f8` with worktree `bold-boyd-0eeb36`. The owner decides their cleanup.
+- Leave alone every branch and worktree this plan did not create. Among them: the worktrees left by the abandoned Copilot loop plan (`peaceful-davinci-0a1696`, `loving-swanson-38fcea`); plan 93's branches and worktrees (`claude/cool-brahmagupta-88fa30` in `deferred-probe-remaps-224445`, `claude/laughing-wright-00eeb6`, `heuristic-stonebraker-8f62cb`, `claude/test-writer-subagent-sdd-666d94`, and `claude/backlog-base-revert-mutant` in `clever-cerf-bc46d2`); plan 96's `claude/marimo-notebook-integration-de2d68`; and `refs/heads/claude/branch-explainer-pre-merge-fde7f8` with worktree `bold-boyd-0eeb36`. The owner decides their cleanup.
 - **The held-out fixture stays unread.** Until Task 6, nobody who writes or tunes the brief opens plan 84's plan, spec or history entry, or the range `650e13c..4cae5b2`. Task 1 builds that fixture only by its shas.
 
 ### Text, size and gates
 
 - **finishing's body** (frontmatter excluded) must fit the `compaction-window` check: 19,700 characters. Measure after each `SKILL.md` edit with `uv run --with pyyaml python -c "import sys; sys.path.insert(0, 'build'); import check_conformance as c; b, _ = c.skill_body(open('skills/finishing-a-development-branch/SKILL.md').read()); print('body chars', len(b))"`.
-  - Plan 94 projects 19,555 at EXEC_BASE. This plan's planning dry run applied plan 94's Task 1 and Task 5 edits to the `af378ac` file and measured 19,220 and then 19,555. Then it applied this plan's exact text: Task 4 gives −560 and Task 5 gives +383, so −177 in all, ending at 19,378.
-  - If EXEC_BASE measures other than 19,555, ledger the difference, and check every later count as a delta from EXEC_BASE.
+  - EXEC_BASE should measure 19,009: finishing's `SKILL.md` on `origin/main` (`a1a1f51`) is unchanged from `af378ac`. A dry run at the renumber (D5) applied Task 5's exact text to that file: each old text matched once, and the body went from 19,009 to 19,392 (+383).
+  - If EXEC_BASE measures other than 19,009, ledger the difference, and check every later count as a delta from EXEC_BASE.
   - A wording round in Task 5 may change Step 3b's text. The Step 3b block stays at 400 characters or fewer, and the body stays at 19,600 or fewer, which leaves 100 characters of room.
 - A description stays at 1,024 characters or fewer and holds no `<` or `>`. This plan does not change finishing's description.
 - A new Markdown link points only to a file that exists in the same commit (`check_links.py`).
-- **Orphan lint.** Every file in the skill directory is named by another non-test file of the skill in the same commit. So `SKILL.md` names `refused-removal.md` in Task 4's commit. `branch-explainer.md` and `branch-explainer-prompt.md` come in Task 5's commit with the `SKILL.md` line and the procedure text that name them.
+- **Orphan lint.** Every file in the skill directory is named by another non-test file of the skill in the same commit. `branch-explainer.md` and `branch-explainer-prompt.md` come in Task 5's commit with the `SKILL.md` line and the procedure text that name them.
 - **Gates.** Before each commit, `bash build/run_commit_lints.sh` prints `commit lints passed`. Commit messages follow Conventional Commits, use plain technical English, and end with the executing session's trailer, written below as `<the session's trailer>`.
-- **Shell.** The Bash tool runs zsh. Use `/usr/bin/grep` for sweeps, absolute paths, and `"${REF}:path"` forms. Planning scratch and full writer streams go under `~/.cache/agent-skills/scratch/plan95/`. Rep folders go under `/tmp/plan95-*` from `mktemp -d`, never bare `/tmp`, and never under `~/.cache/agent-skills/`. An isolated worktree session refuses `$(…)`, `git -C` and `cd … &&` forms. So run `mktemp -d …` as its own call and write the folder it prints into the next command, and put a sequence of git commands in another repository into a script under the scratch folder, run with `bash`.
+- **Shell.** The Bash tool runs zsh. Use `/usr/bin/grep` for sweeps, absolute paths, and `"${REF}:path"` forms. Planning scratch and full writer streams go under `~/.cache/agent-skills/scratch/plan94/`. Rep folders go under `/tmp/plan94-*` from `mktemp -d`, never bare `/tmp`, and never under `~/.cache/agent-skills/`. An isolated worktree session refuses `$(…)`, `git -C` and `cd … &&` forms. So run `mktemp -d …` as its own call and write the folder it prints into the next command, and put a sequence of git commands in another repository into a script under the scratch folder, run with `bash`.
 
 ### The probe
 
@@ -58,7 +58,7 @@ F1 and F2 are defaults from the handoff brief. C2 and C3 (under Calls) depart fr
   | `p84` | `84-spec-derived-acceptance-tests` | `4cae5b24491392c64854ce7d31eaa2318befaa26` | `650e13c4722a83684a33b219a26f74cb1ffe0fdc` | `claude/musing-dhawan-59a2d0` | 16 | held out |
 
   The planning session checked each row: the head is the merge's second parent (merges `ca3404f`, `d686779`, `d58980b`, `58337f5`). `BASE` is the merge base. The range adds the plan under `specs/plans/completed/` and adds a history entry. The spec named in that entry exists at the head.
-- **Writer command.** `run_writer.sh` runs each writer rep in `<rep>/repo` with exactly these flags. `<rep>` is a new `mktemp -d /tmp/plan95-rep-XXXXXX` folder. Treatment reps add `--add-dir <rep>/brief`. The write check (Task 2) drops `--add-dir <rep>/out`:
+- **Writer command.** `run_writer.sh` runs each writer rep in `<rep>/repo` with exactly these flags. `<rep>` is a new `mktemp -d /tmp/plan94-rep-XXXXXX` folder. Treatment reps add `--add-dir <rep>/brief`. The write check (Task 2) drops `--add-dir <rep>/out`:
 
   ```bash
   env -i <HOME USER LOGNAME PATH SHELL TMPDIR LANG, each only when set> \
@@ -69,11 +69,11 @@ F1 and F2 are defaults from the handoff brief. C2 and C3 (under Calls) depart fr
     --no-session-persistence --output-format stream-json --verbose --max-budget-usd "<cap>"
   ```
 
-- **Reader, adjudicator and micro-test command.** `run_plain.sh` is plan 91's `specs/baseline/red-baseline-causal-design-heldout/kit/run_reps.sh`, copied. It is tool-less (`--tools "" --strict-mcp-config --setting-sources ""`, `env -i`, run from an empty `/tmp` folder outside every repository). It adds `--disable-slash-commands` and the temp prefix `/tmp/plan95-plain-`.
+- **Reader, adjudicator and micro-test command.** `run_plain.sh` is plan 91's `specs/baseline/red-baseline-causal-design-heldout/kit/run_reps.sh`, copied. It is tool-less (`--tools "" --strict-mcp-config --setting-sources ""`, `env -i`, run from an empty `/tmp` folder outside every repository). It adds `--disable-slash-commands` and the temp prefix `/tmp/plan94-plain-`.
 - **VOID.** A writer rep is VOID when its `audit.json` lists a void reason (C7), or when a file `rep<N>.VOID` holds the executor's reason. The executor reads every audit path hit by hand, as plan 73's F1 did. A rep that read or ran anything outside `<rep>`, apart from system tools, gets a `.VOID` file. VOID reps are rerun under the next free rep number. A fixture's scored reps are its first 3 reps that are not VOID. Two budget-stop VOIDs on one fixture: stop and ask the owner before you raise the cap.
 - **Pass rules** (spec, exact). A bar holds on a fixture when it holds in at least 2 of 3 scored reps. **RED:** the control fails at least one bar on at least one fixture. **Shrink:** the control holds every bar on every fixture. **Treatment passes:** every bar holds on `p80`, `p90` and `p92`, and then on `p84`.
 - **Wording rounds** (spec, owner-approved gate). At most two follow a failed treatment run. Before a round runs, the record states its estimated cost, from the measured mean costs. A treatment that fails after round 2 stops the work, and the results go to the owner. `p84` runs once, after the last round. If it fails, the work stops and the results go to the owner. No round tunes against it.
-- **Public repository.** Commit explainers of this repository's public branches only. Full writer streams stay in `~/.cache/agent-skills/scratch/plan95/streams/`, and each rep's `result.json` records the stream's sha256 (C8). Before each commit of rep outputs, run `/usr/bin/grep -r -n -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[a-z]{2,}|sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{12,}|xox[abp]-' <dir>`. Expected: no line, or only lines that the record explains, such as the public `noreply@anthropic.com` trailer.
+- **Public repository.** Commit explainers of this repository's public branches only. Full writer streams stay in `~/.cache/agent-skills/scratch/plan94/streams/`, and each rep's `result.json` records the stream's sha256 (C8). Before each commit of rep outputs, run `/usr/bin/grep -r -n -E '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[a-z]{2,}|sk-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{12,}|xox[abp]-' <dir>`. Expected: no line, or only lines that the record explains, such as the public `noreply@anthropic.com` trailer.
 
 ### Cost (spec, owner-approved gate)
 
@@ -86,14 +86,14 @@ The basis: plan 73's tool-using Opus sessions cost $0.35 to $1.96 (`specs/baseli
 | Treatment round 0 | 9 each | $1.75, $0.05, $0.40 | about $20 |
 | Each wording round | 9 each | the same | about $20 |
 | Held-out (`p84`) | 3 each | the same | about $7 |
-| Micro-test (Sonnet, decision-only) | about 60 | $0.08 | about $5 |
+| Micro-test (Sonnet, decision-only) | about 40 | $0.08 | about $3 |
 | VOID reruns | — | — | about $5 |
 
-Expected: about **$59** with no wording round, and about **$99** with both. **Stops:** ask the owner when pilots and control together pass **$35**, or when spend plus the next step's estimate would pass **$120** for the plan. **The owner confirms the spend before the first `claude -p` call** (Task 2 Step 1). The cost pilot then replaces the estimate.
+Expected: about **$57** with no wording round, and about **$97** with both. **Stops:** ask the owner when pilots and control together pass **$35**, or when spend plus the next step's estimate would pass **$120** for the plan. **The owner confirms the spend before the first `claude -p` call** (Task 2 Step 1). The cost pilot then replaces the estimate.
 
 ### Mutant step and who runs what
 
-- Plan 93's mutant step is installed by then. No task here has a focused pytest command. Task 1's kit has a `selftest` subcommand, as plan 73's `score_f1.py` does, and no pytest suite. So no task is a mutant task. Where `task-done` asks, pass `--no-mutants 'probe kit with a selftest, no pytest suite'` (Task 1), `--no-mutants 'Markdown and probe records only'` (Tasks 4 and 5) or `--no-mutants 'controller task, no code change'` (Tasks 2, 3 and 6).
+- Plan 93's mutant step is installed by then. No task here has a focused pytest command. Task 1's kit has a `selftest` subcommand, as plan 73's `score_f1.py` does, and no pytest suite. So no task is a mutant task. Where `task-done` asks, pass `--no-mutants 'probe kit with a selftest, no pytest suite'` (Task 1), `--no-mutants 'micro-test kit, no pytest suite'` (Task 4), `--no-mutants 'Markdown and probe records only'` (Task 5) or `--no-mutants 'controller task, no code change'` (Tasks 2, 3 and 6).
 - Under subagent-driven-development, Tasks 1 and 4 may go to implementers. Tasks 2, 3, 5 and 6 are **controller** tasks: they spend on live runs, read every rep and stop for the owner. Task 7 runs in a **fresh session** after the plan retires.
 - Under subagent-driven-development an implementer cannot ask the owner. "Stop and ask" then means: report BLOCKED with the quoted results.
 
@@ -113,8 +113,8 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
 - **C10. Output path.** `<repo>` is the last path component of MAIN_ROOT, so a worktree folder name never appears. The slug is the branch name with each character outside `A-Za-z0-9._-` replaced by `-`. On a detached HEAD the slug is `detached-<first 7 characters of HEAD>`. Example: `~/.cache/branch-explainers/agent-skills/2026-11-20-claude-branch-explainer-plan-9b2653.md`.
 - **C11. The no-plan offer waits.** On a branch with no plan, Step 3b asks one line and waits for the answer, then shows the menu. It never puts the offer and the menu in one message.
 - **C12. Core principle and Red Flags mention Step 3b. Quick Reference does not:** its rows are per option, and Step 3b runs before any option.
-- **C13. The move** (F1 yes). Step 6's refused-removal detail moves to `references/refused-removal.md`. The stop and the ban on `--force` and unlock stay in the body and in Red Flags. It is a failure path, and the body's Common Mistakes pointer already sends failure detail to references. Plan 60's micro-test scenarios S5 and S6 re-run on the moved text.
-- **C14. Micro-test design.** Plan 60's decision-only template (`~/.cache/agent-skills/scratch/plan60-micro/build.py`). M1 to M5 get `references/branch-explainer.md` as a file already read, to test the procedure's content. M6, S5 and S6 get the body only, to test that an agent opens the reference from its pointer. A Read of a reference is an allowed step, graded by what follows it. M1, M2, S5 and S6 run both arms. M3 to M6 run the treatment only. Each treatment scenario needs at least 4 of 5 PASS.
+- **C13. The move: dropped (D5).** Under F1's yes, Step 6's refused-removal detail was to move to `references/refused-removal.md`. With the Copilot loop plan a no-go, Step 3b fits the body without it.
+- **C14. Micro-test design.** Plan 60's decision-only template (`~/.cache/agent-skills/scratch/plan60-micro/build.py`). M1 to M5 get `references/branch-explainer.md` as a file already read, to test the procedure's content. M6 gets the body only, to test that an agent opens the reference from its pointer. A Read of a reference is an allowed step, graded by what follows it. M1 and M2 run both arms. M3 to M6 run the treatment only. Each treatment scenario needs at least 4 of 5 PASS.
 - **C15. Briefs per round** live in the kit as `brief-r<k>.md`. The shipped brief is byte-identical to the last round's. Wording rounds change only the brief, never `DISPATCH`, the fixtures or the scoring.
 - **C16. The live run is report-only** (F2). After it, any commit to `main` falls outside this plan.
 
@@ -128,10 +128,11 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
 
 ## Decisions
 
-- **D1** (owner, plan review, 2026-11-13): F1, "Yes, wait". Execution starts only once `origin/main` holds plan 94's retired plan, then merges `origin/main`, and this plan moves Step 6's refused-removal detail to make room. Applied in: Global Constraints (Base and order, Text, size and gates), Task 4.
+- **D1** (owner, plan review, 2026-11-13): F1, "Yes, wait". Execution was to start only once `origin/main` held the Copilot loop plan's retired plan, and this plan was to move Step 6's refused-removal detail to make room. Superseded by D5. Applied in: none (superseded by D5).
 - **D2** (owner, plan review, 2026-11-13): F2, "Yes, one live run". A fresh session runs Step 3b on this plan's own branch after retirement, report-only. Applied in: Task 7.
 - **D3** (owner, plan review, 2026-11-13): C2, "Approve". The probe fixtures are isolated repositories, not worktrees, and the spec's Baseline probe sentence is amended. Applied in: Global Constraints (The probe), Task 1 (spec amendment).
 - **D4** (owner, plan review, 2026-11-13): C3, "Approve". Step 3b's procedure lives in `references/branch-explainer.md`, the writer brief alone in `references/branch-explainer-prompt.md`, and the spec's Compaction window sentence is amended. Applied in: Tasks 3 and 5, Task 1 (spec amendment).
+- **D5** (owner, after plan review, 2026-11-13): "rename it to 94 because the copilot plan has been determined to be a no-go", then "Drop Task 4 (Recommended)" and "Small PR now (Recommended)". The Copilot loop plan, which held the id 94, will not run. This plan is renumbered 94 and waits for no other plan. The refused-removal move is dropped: Step 3b alone takes finishing's body from 19,009 to 19,392, within 19,600. Task 4 keeps only the micro-test kit, and S5 and S6 do not run. The spec's Copilot-loop passages (Why, Current state, the Compaction window and Sequencing constraints, Left to the builder) are moot under the no-go, and the approved spec stays as written. Applied in: Owner review, Global Constraints, Calls (C13, C14), Decisions (D1), File Structure, Tasks 4 and 5.
 
 ---
 
@@ -148,8 +149,7 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
 | `specs/baseline/red-baseline-branch-explainer.md` | the record | 1 to 6 |
 | `specs/baseline/red-baseline-branch-explainer/{pilot,control,treatment-r<k>,heldout}/` | rep outputs | 2, 3, 6 |
 | `specs/baseline/red-baseline-branch-explainer/micro/` | micro-test kit, grading and reps | 4, 5 |
-| `skills/finishing-a-development-branch/references/refused-removal.md` | new: the moved text | 4 |
-| `skills/finishing-a-development-branch/SKILL.md` | the move (4); Step 3b, Core principle, Red Flags (5) | 4, 5 |
+| `skills/finishing-a-development-branch/SKILL.md` | Step 3b, Core principle, Red Flags | 5 |
 | `skills/finishing-a-development-branch/references/branch-explainer.md` | new: Step 3b's procedure | 5 |
 | `skills/finishing-a-development-branch/references/branch-explainer-prompt.md` | new: the writer brief | 5 |
 | `NOTICE` | one entry | 5 |
@@ -176,8 +176,8 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
   - `result_problem(path: Path) -> str | None`: `None` when the file parses as JSON, `is_error` is false, `subtype` is `success` and `result` is a string that is not empty. Otherwise a short reason: `no file`, `not JSON`, `is_error`, `subtype <value>` (a budget stop included) or `empty result`.
   - `arm_of(arm_dir: Path) -> str`: from the folder's last component, `control` gives `control`, and `heldout` or `treatment-r<k>` (`k` one or more digits) gives `treatment`. Any other name raises `ValueError`.
   - Commands: `selftest`; `fixture <name> <dest>` (builds `<dest>/repo` and prints its path); `writer-prompt <arm> <name> <rep-dir>` (arm `control`, `treatment`, `probe` or `permcheck`); `audit <stream> <rep-dir> <out-prefix>` (writes `<out-prefix>.audit.json` and `<out-prefix>.result.json` and prints the void reasons); `reader-prompt <arm> <explainer>`; `adjudicator-prompt <arm> <name> <explainer> <reader-json>`; `result-ok <json>` (exits 0 when `result_problem` gives `None`, else prints the reason and exits 1); `score <arm-dir>` (takes the arm from `arm_of`, and exits 2 before it scores anything when `arm_of` raises; writes `rep<N>.score.json` for each scored rep and prints, for each fixture and bar, the PASS count and `holds` or `fails`).
-  - `bash kit/run_writer.sh <arm> <fixture> <out-dir> <first> <last> <cap> [<brief>]`: one writer rep per number. The first rep runs alone and the rest in parallel. Each rep writes `rep<N>.md`, `rep<N>.audit.json` and `rep<N>.result.json` in `<out-dir>`, and its stream to `~/.cache/agent-skills/scratch/plan95/streams/<out-dir's last two components>/rep<N>.jsonl`. It refuses when any `<out-dir>/rep<N>.*` exists. It removes `<rep>/repo` after the run, only when the path starts with `/tmp/plan95-rep-`.
-  - `bash kit/run_judges.sh <arm> <fixture> <out-dir> <rep> [<rep> ...]`: for each rep, it builds the reader prompt and runs `run_plain.sh` into `<out-dir>/reader/rep<N>.json` (cap $0.50). Then it builds the adjudicator prompt and runs it into `<out-dir>/adj/rep<N>.json` (cap `ADJ_CAP`, from the environment, default `2.00`). It skips the reader when `kit.py result-ok reader/rep<N>.json` exits 0, so a retry reruns only the adjudicator and the synopsis under score stays the same. When that file exists but fails `result-ok`, the shell redirect made it before a run that failed: move it, and `reader/rep<N>.err` if present, to `reader/rep<N>.bad<k>.json` and `.bad<k>.err` (`k` the next free number), then rerun the reader. When a fresh reader fails `result-ok`, print the reason and run no adjudicator for that rep. After two bad readers on one rep, stop and ask. Prompts go to `~/.cache/agent-skills/scratch/plan95/prompts/`.
+  - `bash kit/run_writer.sh <arm> <fixture> <out-dir> <first> <last> <cap> [<brief>]`: one writer rep per number. The first rep runs alone and the rest in parallel. Each rep writes `rep<N>.md`, `rep<N>.audit.json` and `rep<N>.result.json` in `<out-dir>`, and its stream to `~/.cache/agent-skills/scratch/plan94/streams/<out-dir's last two components>/rep<N>.jsonl`. It refuses when any `<out-dir>/rep<N>.*` exists. It removes `<rep>/repo` after the run, only when the path starts with `/tmp/plan94-rep-`.
+  - `bash kit/run_judges.sh <arm> <fixture> <out-dir> <rep> [<rep> ...]`: for each rep, it builds the reader prompt and runs `run_plain.sh` into `<out-dir>/reader/rep<N>.json` (cap $0.50). Then it builds the adjudicator prompt and runs it into `<out-dir>/adj/rep<N>.json` (cap `ADJ_CAP`, from the environment, default `2.00`). It skips the reader when `kit.py result-ok reader/rep<N>.json` exits 0, so a retry reruns only the adjudicator and the synopsis under score stays the same. When that file exists but fails `result-ok`, the shell redirect made it before a run that failed: move it, and `reader/rep<N>.err` if present, to `reader/rep<N>.bad<k>.json` and `.bad<k>.err` (`k` the next free number), then rerun the reader. When a fresh reader fails `result-ok`, print the reason and run no adjudicator for that rep. After two bad readers on one rep, stop and ask. Prompts go to `~/.cache/agent-skills/scratch/plan94/prompts/`.
 
 The exact-copy constants (Python strings; `{…}` fields are `str.format` fields):
 
@@ -287,7 +287,7 @@ with:
 ```markdown
 Each fixture is an isolated repository that holds only the history of the branch head before the merge, with
 a detached HEAD there and `BASE` at its merge base. A worktree would share every ref of this repository with
-the reps (owner, plan 95, 2026-11-13).
+the reps (owner, plan 94, 2026-11-13).
 ```
 
 In Constraints, Compaction window, replace:
@@ -302,14 +302,14 @@ with:
 ```markdown
   some of them. Step 3b in `SKILL.md` is a short pointer, at most about 400 characters, and the procedure
   lives in `references/branch-explainer.md`, beside the prompt file, so the subagent reads only the prompt
-  file (owner, plan 95, 2026-11-13). If the two plans together pass the window, the plan that runs second moves
+  file (owner, plan 94, 2026-11-13). If the two plans together pass the window, the plan that runs second moves
 ```
 
-Run `bash build/run_commit_lints.sh`. Expected: `commit lints passed`. Then `git add specs/branch-explainer.md` and `git commit -m "docs(specs): amend the branch explainer spec for plan 95" -m "<the session's trailer>"`.
+Run `bash build/run_commit_lints.sh`. Expected: `commit lints passed`. Then `git add specs/branch-explainer.md` and `git commit -m "docs(specs): amend the branch explainer spec for plan 94" -m "<the session's trailer>"`.
 
 - [ ] **Step 2: Record EXEC_BASE and the fixtures' state**
 
-Create the record with a title, a Status line reading `in progress`, and EXEC_BASE from Global Constraints as one line, `EXEC_BASE: <the 40-character sha>` (Task 4's `build_micro.py` reads it). Run `git cat-file -e HEAD:specs/plans/95-branch-explainer.md`, then `claude --version`. Expected: exit 0, then `2.1.323 (Claude Code)` or later. Write both in the record.
+Create the record with a title, a Status line reading `in progress`, and EXEC_BASE from Global Constraints as one line, `EXEC_BASE: <the 40-character sha>` (Task 4's `build_micro.py` reads it). Run `git cat-file -e HEAD:specs/plans/94-branch-explainer.md`, then `claude --version`. Expected: exit 0, then `2.1.323 (Claude Code)` or later. Write both in the record.
 
 - [ ] **Step 3: Write the selftest**
 
@@ -356,7 +356,7 @@ assert history_entry(f['base'], f['head'], f['plan']).startswith('## 80-developm
 
 Add a `result_problem` case. In a temp folder, write `ok.json` as `{"is_error": false, "subtype": "success", "result": "x"}`, an empty `empty.json`, and `budget.json` as `{"is_error": true, "subtype": "error_max_budget_usd", "result": ""}`. Assert that `ok.json` gives `None`, `empty.json` gives `not JSON`, `budget.json` gives a reason that is not `None`, and a path that does not exist gives `no file`.
 
-Add an `audit_hits` case. Write a three-line stream-json file to a temp folder: an init record with `tools: ['Bash', 'Read']`, then one assistant record with three `tool_use` parts, then a `result` record with `subtype: 'success'`. The three parts are `Read` of `/tmp/plan95-rep-abc/repo/README.md`, `Read` of `/Users/x/Projects/agent-skills/specs/branch-explainer.md`, and `Bash` with `cat ~/notes.md`. With `rep_dir=Path('/tmp/plan95-rep-abc')`, assert that `outside` holds the second and third inputs and not the first, and that `void_reasons` holds `no explainer file`. Add four more `tool_use` parts and assert their places. A `Read` of `os.path.realpath(rep_dir) + '/repo/x.md'` is not in `outside`: build that path in the test, never write `/private/tmp` into it, since only macOS maps `/tmp` there. A `Bash` with `cat ../../notes.md` is in `outside`. A `Bash` with `git diff --stat main..HEAD` and a `Bash` with `git log --oneline 4be1c9a..HEAD` are not: a revision range is no path component. Add a second assistant record with a `WebFetch` `tool_use`, and assert that `void_reasons` names `WebFetch`.
+Add an `audit_hits` case. Write a three-line stream-json file to a temp folder: an init record with `tools: ['Bash', 'Read']`, then one assistant record with three `tool_use` parts, then a `result` record with `subtype: 'success'`. The three parts are `Read` of `/tmp/plan94-rep-abc/repo/README.md`, `Read` of `/Users/x/Projects/agent-skills/specs/branch-explainer.md`, and `Bash` with `cat ~/notes.md`. With `rep_dir=Path('/tmp/plan94-rep-abc')`, assert that `outside` holds the second and third inputs and not the first, and that `void_reasons` holds `no explainer file`. Add four more `tool_use` parts and assert their places. A `Read` of `os.path.realpath(rep_dir) + '/repo/x.md'` is not in `outside`: build that path in the test, never write `/private/tmp` into it, since only macOS maps `/tmp` there. A `Bash` with `cat ../../notes.md` is in `outside`. A `Bash` with `git diff --stat main..HEAD` and a `Bash` with `git log --oneline 4be1c9a..HEAD` are not: a revision range is no path component. Add a second assistant record with a `WebFetch` `tool_use`, and assert that `void_reasons` names `WebFetch`.
 
 - [ ] **Step 4: Run the selftest to verify it fails**
 
@@ -380,7 +380,7 @@ Expected: `selftest passed`.
 
 - [ ] **Step 7: Write the scripts and the probe file**
 
-- `run_plain.sh`: copy plan 91's `run_reps.sh`. Change only the temp prefix to `/tmp/plan95-plain-`, the comments to name plan 95, and add `--disable-slash-commands`.
+- `run_plain.sh`: copy plan 91's `run_reps.sh`. Change only the temp prefix to `/tmp/plan94-plain-`, the comments to name plan 94, and add `--disable-slash-commands`.
 - `run_writer.sh` and `run_judges.sh`: as Interfaces says, with the writer command from Global Constraints. `run_writer.sh` drops `--add-dir "<rep>/out"` for `permcheck` and adds `--add-dir "<rep>/brief"` for `treatment`.
 - `isolation_probe_tools.txt`: copy plan 73's file, change `Answer the seven numbered lines` to `Answer the eight numbered lines`, and add this line:
 
@@ -390,13 +390,13 @@ Expected: `selftest passed`.
 
 - [ ] **Step 8: Build each fixture once and check the prompts for leaks**
 
-For each of `p80`, `p90`, `p92` and `p84`, run `mktemp -d /tmp/plan95-fix-XXXXXX`, then `uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py fixture <name> <the folder it printed>`. Expected: four repository paths and no exit 2. Leave the folders: they are a check only. Then write both writer prompts for `p80` with the rep folder `/tmp/plan95-rep-LEAK`:
+For each of `p80`, `p90`, `p92` and `p84`, run `mktemp -d /tmp/plan94-fix-XXXXXX`, then `uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py fixture <name> <the folder it printed>`. Expected: four repository paths and no exit 2. Leave the folders: they are a check only. Then write both writer prompts for `p80` with the rep folder `/tmp/plan94-rep-LEAK`:
 
 ```bash
-mkdir -p ~/.cache/agent-skills/scratch/plan95/leak
-uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py writer-prompt control p80 /tmp/plan95-rep-LEAK > ~/.cache/agent-skills/scratch/plan95/leak/control.txt
-uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py writer-prompt treatment p80 /tmp/plan95-rep-LEAK > ~/.cache/agent-skills/scratch/plan95/leak/treatment.txt
-/usr/bin/grep -n -i -E 'synopsis|background|dependency|question|250|2,000|2000|agent-skills|plan 95' ~/.cache/agent-skills/scratch/plan95/leak/control.txt ~/.cache/agent-skills/scratch/plan95/leak/treatment.txt
+mkdir -p ~/.cache/agent-skills/scratch/plan94/leak
+uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py writer-prompt control p80 /tmp/plan94-rep-LEAK > ~/.cache/agent-skills/scratch/plan94/leak/control.txt
+uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py writer-prompt treatment p80 /tmp/plan94-rep-LEAK > ~/.cache/agent-skills/scratch/plan94/leak/treatment.txt
+/usr/bin/grep -n -i -E 'synopsis|background|dependency|question|250|2,000|2000|agent-skills|plan 94' ~/.cache/agent-skills/scratch/plan94/leak/control.txt ~/.cache/agent-skills/scratch/plan94/leak/treatment.txt
 ```
 
 Expected: the grep prints no line. Neither prompt tells the writer the layout or the limits, and neither names this repository's path.
@@ -428,7 +428,7 @@ git commit -m "test(specs): branch explainer probe kit and record" -m "<the sess
 
 - [ ] **Step 1: The owner confirms the spend**
 
-Ask: "Plan 95's probe is ready. The plan estimates about $59 for the live runs, or about $99 with both wording rounds. It stops to ask at $35 for pilots and control, and at $120 in all. Do you confirm the spend?" Wait. Write the answer in the record, quoted. On a no, stop.
+Ask: "Plan 94's probe is ready. The plan estimates about $57 for the live runs, or about $97 with both wording rounds. It stops to ask at $35 for pilots and control, and at $120 in all. Do you confirm the spend?" Wait. Write the answer in the record, quoted. On a no, stop.
 
 - [ ] **Step 2: Isolation probe and write check**
 
@@ -513,62 +513,24 @@ git commit -m "test(specs): branch explainer treatment rounds" -m "<the session'
 
 ---
 
-### Task 4: Make room: move Step 6's refused-removal detail
+### Task 4: The micro-test kit
 
 **Files:**
-- Create: `skills/finishing-a-development-branch/references/refused-removal.md`
-- Modify: `skills/finishing-a-development-branch/SKILL.md` (Step 6, `af378ac` lines 367-372)
-- Create: `specs/baseline/red-baseline-branch-explainer/micro/` (`build_micro.py`, `tools.txt`, `GRADING.md`, `fixtures/S5-locked.txt`, `fixtures/S6-untracked.txt`)
-- Modify: `specs/baseline/red-baseline-branch-explainer.md`
+- Create: `specs/baseline/red-baseline-branch-explainer/micro/` (`build_micro.py`, `tools.txt`, `GRADING.md`)
 
 **Interfaces:**
 - Consumes: the record's `EXEC_BASE:` line (Task 1 Step 2), and `kit/run_plain.sh` and `kit.py result-ok` (Task 1). Nothing from Tasks 2 and 3.
-- Produces: `uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py <arm> <out-dir> <scenario>...`, which writes `<scenario>.txt` and `MANIFEST.txt` (sha256 of each prompt). Task 5 adds scenarios to it.
+- Produces: `uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py <arm> <out-dir> <scenario>...`, which writes `<scenario>.txt` and `MANIFEST.txt` (sha256 of each prompt), and `GRADING.md` with the micro-test VOID rule. Task 5 adds the scenarios and runs them.
 
 - [ ] **Step 1: Build the micro-test kit**
 
-Copy from `~/.cache/agent-skills/scratch/plan60-micro/`: `build.py`'s `TEMPLATE` and `fixture()` unchanged, `tools.txt` with one line added for an `Agent` tool (it starts a fresh subagent, takes `subagent_type`, `model` and `prompt`, and returns the subagent's final message), and fixtures `S5-locked.txt` and `S6-untracked.txt`. If that folder is gone, stop and ask. `build_micro.py` reads the skill body at EXEC_BASE for `control` and from the working tree for `treatment`. It takes EXEC_BASE from the record's `EXEC_BASE: <sha>` line, never from the environment. It exits 2, before it writes any prompt, when that line is missing, when the value is not 40 hexadecimal characters, or when `git cat-file -e <sha>^{commit}` fails. Then it runs `git show <sha>:skills/finishing-a-development-branch/SKILL.md`, with the sha written out. For `treatment`, it inserts the scenario's reference files after the `</skill>` line, as `<file path="references/<name>">…</file>` blocks under the line `Reference files of the skill that you have read:`. A scenario lists its files in a `files:` header line, and `files: none` inserts no block. S5 and S6 use `files: none`: the moved detail is then out of view, as it is for a real agent, so the scenarios show whether the graded behavior survives the move. A supplied file would hide that. They do not require a Read, since the person sees the stop and the question, not the Read. The record notes for each rep whether it read `references/refused-removal.md`. It refuses a fixture that still holds a `{redirect}` or `{noop}` marker.
+Copy from `~/.cache/agent-skills/scratch/plan60-micro/`: `build.py`'s `TEMPLATE` and `fixture()` unchanged, and `tools.txt` with one line added for an `Agent` tool (it starts a fresh subagent, takes `subagent_type`, `model` and `prompt`, and returns the subagent's final message). If that folder is gone, stop and ask. `build_micro.py` reads the skill body at EXEC_BASE for `control` and from the working tree for `treatment`. It takes EXEC_BASE from the record's `EXEC_BASE: <sha>` line, never from the environment. It exits 2, before it writes any prompt, when that line is missing, when the value is not 40 hexadecimal characters, or when `git cat-file -e <sha>^{commit}` fails. Then it runs `git show <sha>:skills/finishing-a-development-branch/SKILL.md`, with the sha written out. For `treatment`, it inserts the scenario's reference files after the `</skill>` line, as `<file path="references/<name>">…</file>` blocks under the line `Reference files of the skill that you have read:`. A scenario lists its files in a `files:` header line, and `files: none` inserts no block. It refuses a fixture that still holds a `{redirect}` or `{noop}` marker.
 
-`GRADING.md` copies plan 60's S5 and S6 rows, word for word, from that folder's `PREREGISTRATION.md`, and adds this rule for every scenario: `A TOOL Read of a file under references/ is an allowed read-only step. Grade the actions after it, IF lines included. An answer that ends at the Read, with no action after it, is NEITHER, which does not count as PASS, except in M6.` The bar: treatment PASS in at least 4 of 5 reps. The control arm (EXEC_BASE, before the move) runs the same two scenarios, with no bar.
+`GRADING.md` holds two rules for every scenario. The read rule: `A TOOL Read of a file under references/ is an allowed read-only step. Grade the actions after it, IF lines included. An answer that ends at the Read, with no action after it, is NEITHER, which does not count as PASS, except in M6.` The VOID rule: A rep is VOID when `kit.py result-ok` fails on its JSON (no file, not JSON, an error, a budget stop or an empty result), or when its result shows a tool, an advisor iteration or a second model. Rerun a VOID rep under the next free rep number. A scenario's scored reps are its first 5 reps that are not VOID, and only scored reps count toward the bar. Task 5 adds the scenario rows.
 
 - [ ] **Step 2: Commit the kit before any rep**
 
-Run `bash build/run_commit_lints.sh`, then `git add specs/baseline/red-baseline-branch-explainer/micro`. Then `git commit -m "test(specs): micro-test kit for finishing's Step 6 move and Step 3b" -m "<the session's trailer>"`.
-
-- [ ] **Step 3: Move the text**
-
-Create `references/refused-removal.md` with this title and this opening line, then a blank line, then the moved text as it stands:
-
-```markdown
-# When `git worktree remove` refuses
-
-Step 6 sends you here after a refused removal. You have stopped, with no `--force`, no `-f -f` and no unlock.
-```
-
-The moved text is everything in Step 6 from `A lock can belong to a session that is still running` through `Delete the branch only once the worktree is gone.`, with the two bullets. In `SKILL.md`, replace that text and the blank line after it with `Then follow [references/refused-removal.md](references/refused-removal.md).` and one blank line. The paragraph keeps its first two sentences and now reads, followed by a blank line and the `**If Step 2 recorded MADE_BY \`launcher\`:**` paragraph:
-
-```markdown
-**If `git worktree remove` refuses, stop.** Do not add `--force` or `-f -f`, and do not run `git worktree unlock`, whatever git's message suggests. Then follow [references/refused-removal.md](references/refused-removal.md).
-```
-
-- [ ] **Step 4: Measure and run the lints**
-
-Run the body measure. Expected: 560 characters below EXEC_BASE's count (`body chars 18995` from 19,555).
-Run: `uv run --with pyyaml python build/check_conformance.py && uv run python build/check_links.py`. Expected: both pass.
-
-- [ ] **Step 5: Re-run S5 and S6 on the moved text**
-
-Build both arms' prompts: `uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py <arm> ~/.cache/agent-skills/scratch/plan95/micro/<arm>4 S5-locked S6-untracked`, for `control` and `treatment`. Then for each prompt: `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/<arm>/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand against `GRADING.md`, and quote the words that decide each grade. A rep is VOID when `kit.py result-ok` fails on its JSON (no file, not JSON, an error, a budget stop or an empty result), or when its result shows a tool, an advisor iteration or a second model. Rerun a VOID rep under the next free rep number. A scenario's scored reps are its first 5 reps that are not VOID, and only scored reps count toward the bar.
-Expected: each treatment scenario passes in at least 4 of 5 reps. If one does not, stop and ask. Give the control's count beside it: a control that passes where the treatment does not points to the move, and a control that also misses points to text from before this plan.
-
-- [ ] **Step 6: Commit**
-
-Write the S5 and S6 grades and the MANIFEST hashes in the record's Micro-test section. Run `bash build/run_commit_lints.sh`. Expected: `commit lints passed`.
-
-```bash
-git add skills/finishing-a-development-branch/SKILL.md skills/finishing-a-development-branch/references/refused-removal.md specs/baseline/red-baseline-branch-explainer specs/baseline/red-baseline-branch-explainer.md
-git commit -m "refactor(finishing): move the refused-removal detail to a reference" -m "<the session's trailer>"
-```
+Run `bash build/run_commit_lints.sh`. Expected: `commit lints passed`. Then `git add specs/baseline/red-baseline-branch-explainer/micro`, and `git commit -m "test(specs): micro-test kit for finishing's Step 3b" -m "<the session's trailer>"`.
 
 ---
 
@@ -616,11 +578,11 @@ Before the menu, have a fresh subagent write an explainer of the branch for your
 
 3. Red Flags, Always: after the line `- Detect environment before presenting menu`, add the line `- Explain a plan branch (Step 3b) before presenting options`.
 
-Then copy `specs/baseline/red-baseline-branch-explainer/kit/brief-r<last>.md` to `skills/finishing-a-development-branch/references/branch-explainer-prompt.md`. Check: `shasum -a 256` gives one hash for both files. `/usr/bin/grep -c -F 'Read {brief} and follow it to write a branch explainer.' skills/finishing-a-development-branch/references/branch-explainer.md` prints `1`. The body measure shows +383 from Task 4's count (`body chars 19378`). The Step 3b block, from its heading to the line before `### Step 4`, is at most 400 characters (306 as written).
+Then copy `specs/baseline/red-baseline-branch-explainer/kit/brief-r<last>.md` to `skills/finishing-a-development-branch/references/branch-explainer-prompt.md`. Check: `shasum -a 256` gives one hash for both files. `/usr/bin/grep -c -F 'Read {brief} and follow it to write a branch explainer.' skills/finishing-a-development-branch/references/branch-explainer.md` prints `1`. The body measure shows +383 from EXEC_BASE's count (`body chars 19392`). The Step 3b block, from its heading to the line before `### Step 4`, is at most 400 characters (306 as written).
 
 - [ ] **Step 3: Test the rule on a rename** (Review Focus 2)
 
-Write `~/.cache/agent-skills/scratch/plan95/rule-test.sh` and run it with `bash`. It makes a scratch repository with `mktemp -d /tmp/plan95-rule-XXXXXX`, commits `specs/plans/7-x.md` on `main`, branches, `git mv`s it to `specs/plans/completed/7-x.md` and commits. With `BASE` as `main`, it runs item 3's exact command from the top folder, then from `specs/` in the same repository, then from the top folder with `git -c diff.renames=false`. Last, it runs the command on a second branch whose only commit changes `src/a.py`.
+Write `~/.cache/agent-skills/scratch/plan94/rule-test.sh` and run it with `bash`. It makes a scratch repository with `mktemp -d /tmp/plan94-rule-XXXXXX`, commits `specs/plans/7-x.md` on `main`, branches, `git mv`s it to `specs/plans/completed/7-x.md` and commits. With `BASE` as `main`, it runs item 3's exact command from the top folder, then from `specs/` in the same repository, then from the top folder with `git -c diff.renames=false`. Last, it runs the command on a second branch whose only commit changes `src/a.py`.
 Expected: `specs/plans/completed/7-x.md` three times, then no output.
 
 - [ ] **Step 4: Write the M fixtures and grading rows, then commit them**
@@ -645,23 +607,23 @@ Bar: each scenario passes in at least 4 of 5 treatment reps (spec, Testing). The
 Build the prompts:
 
 ```bash
-uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py control ~/.cache/agent-skills/scratch/plan95/micro/c5 M1-plan M2-noplan
-uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py treatment ~/.cache/agent-skills/scratch/plan95/micro/t5 M1-plan M2-noplan M3-refused M4-detached M5-skip M6-pointer
+uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py control ~/.cache/agent-skills/scratch/plan94/micro/c5 M1-plan M2-noplan
+uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py treatment ~/.cache/agent-skills/scratch/plan94/micro/t5 M1-plan M2-noplan M3-refused M4-detached M5-skip M6-pointer
 ```
 
-For each prompt, run `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/<arm>/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand, with Task 4 Step 5's VOID rule, and quote the deciding words.
+For each prompt, run `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/<arm>/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand, with `GRADING.md`'s VOID rule (Task 4), and quote the deciding words.
 Expected: each treatment scenario passes in at least 4 of 5 reps.
 
 - [ ] **Step 6: Wording rounds, only on a missed bar**
 
-For at most two rounds, change Step 3b's text or `branch-explainer.md` to target the missed scenario, never the brief. Re-run every scenario the change can reach, in new folders so that no earlier result is touched and `run_plain.sh` does not refuse: round `k` (1 or 2) builds its prompts with `build_micro.py treatment ~/.cache/agent-skills/scratch/plan95/micro/t5-r<k> <scenario>...` and runs them into `specs/baseline/red-baseline-branch-explainer/micro/treatment-r<k>/<scenario>`, reps 1 to 5. Grade each round only on its own 5 scored reps, with Step 5's VOID rule. The record keeps each round's grades and `MANIFEST.txt` hashes beside Step 5's. After the second missed round, stop and ask. After each round, re-check Step 2's size limits.
+For at most two rounds, change Step 3b's text or `branch-explainer.md` to target the missed scenario, never the brief. Re-run every scenario the change can reach, in new folders so that no earlier result is touched and `run_plain.sh` does not refuse: round `k` (1 or 2) builds its prompts with `build_micro.py treatment ~/.cache/agent-skills/scratch/plan94/micro/t5-r<k> <scenario>...` and runs them into `specs/baseline/red-baseline-branch-explainer/micro/treatment-r<k>/<scenario>`, reps 1 to 5. Grade each round only on its own 5 scored reps, with Step 5's VOID rule. The record keeps each round's grades and `MANIFEST.txt` hashes beside Step 5's. After the second missed round, stop and ask. After each round, re-check Step 2's size limits.
 
 - [ ] **Step 7: Add the NOTICE entry**
 
 Insert this entry just before the blank line that precedes `    brainstorming/` and `    dispatching-parallel-agents/`, so it follows plan 93's entry. Key the edit on the three-line text `\n\n    brainstorming/\n    dispatching-parallel-agents/\n`, which must match once. Use the commit date for `<YYYY-MM-DD>`:
 
 ```text
-  - Plan 95 (<YYYY-MM-DD>) added Step 3b to finishing-a-development-branch.
+  - Plan 94 (<YYYY-MM-DD>) added Step 3b to finishing-a-development-branch.
     Before the Step 4 menu, a fresh subagent writes an explainer of the
     branch for the partner, from references/branch-explainer-prompt.md,
     and references/branch-explainer.md holds the step's procedure. Step
@@ -676,10 +638,7 @@ Insert this entry just before the blank line that precedes `    brainstorming/` 
     questions, the plan-branch rule and the inputs are this repository's
     own. references/branch-explainer.md and
     references/branch-explainer-prompt.md are original works by Lowell
-    Mason under the same MIT terms. The same plan moved Step 6's detail for a
-    refused worktree removal, plan 60's text with its credit to upstream
-    bb92a77 above, to references/refused-removal.md, so the body stays
-    inside the compaction window.
+    Mason under the same MIT terms.
 ```
 
 - [ ] **Step 8: Run the gates**
@@ -741,12 +700,12 @@ This task has no checkboxes. It runs after this plan is retired, so its outcome 
 1. **Handoff (execution session).** End with this message, with every value written out:
 
    ```text
-   Plan 95's live run. Open a fresh Claude Code session in <WORKTREE>.
+   Plan 94's live run. Open a fresh Claude Code session in <WORKTREE>.
    Read <WORKTREE>/skills/finishing-a-development-branch/SKILL.md and follow that copy, not the installed one.
    At Step 3b, follow <WORKTREE>/skills/finishing-a-development-branch/references/branch-explainer.md, and dispatch with
    {brief} = <WORKTREE>/skills/finishing-a-development-branch/references/branch-explainer-prompt.md.
    Codex reviewed <sha>
    ```
 
-2. **The run (fresh session).** Steps 1 to 3 run as written. At Step 3b, the retire commit has moved `specs/plans/95-branch-explainer.md`, which reached `main` first, to `specs/plans/completed/`. The rule's pathspec lists the new path, so the step dispatches with no question. This is Review Focus 2's case on a real branch. The path line comes first and the menu right after it, as the procedure ships. Add no wait of your own. The owner reads the explainer before answering the menu. Steps 4 to 6 then run as the owner picks. If a permission check refuses a step, give the owner the command and wait.
+2. **The run (fresh session).** Steps 1 to 3 run as written. At Step 3b, the retire commit has moved `specs/plans/94-branch-explainer.md`, which reached `main` first, to `specs/plans/completed/`. The rule's pathspec lists the new path, so the step dispatches with no question. This is Review Focus 2's case on a real branch. The path line comes first and the menu right after it, as the procedure ships. Add no wait of your own. The owner reads the explainer before answering the menu. Steps 4 to 6 then run as the owner picks. If a permission check refuses a step, give the owner the command and wait.
 3. **The report.** Give the explainer's path and word count. Say whether reading the brief or writing the file asked for permission, and what the owner answered. Name any step that failed. Add the owner's own words on whether the explainer let them state the plan, the build and what it adds, if they give any. Nothing from it is committed to `main` (C16).
