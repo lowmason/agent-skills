@@ -2612,7 +2612,7 @@ all 20 named a type.
       cc-drift-upkeep-2026-10-20). G5 is left uncovered: launchd's `PATH` is a macOS fact,
       not a Claude Code one. The first execution gap stays the probe item above. The
       2026-10-20 verify confirmed each added statement.
-- [ ] Observe the once-a-day half of the notice in real sessions (plan 49 Task 10 Step 4,
+- [x] Observe the once-a-day half of the notice in real sessions (plan 49 Task 10 Step 4,
       skipped: never observed live, and the owner chose to finish as built). Nothing is
       due on `main`, so the real `refresh` leaves an empty notice, and the plan's
       second-session check had nothing to show. The half rests on the offline tests
@@ -2623,6 +2623,7 @@ all 20 named a type.
       `notice.write_notice(cache, None)`. Size: quick-fix. Done when: the owner has seen
       both sessions and ticks this item with the result.
       → owner-only 2026-11-11: write a stand-in notice, start two terminal sessions in this repo on one day, record that only the first shows it, then restore the cache.
+      → done 2026-11-12 (owner): a real notice was due, so no stand-in was written. With `notice-shown` removed, the first terminal session showed the cc-guide notice and the second showed nothing. `notice-shown` then held `2026-11-12` and the digest in `notice.digest` (`04b13cd1…`).
 - [ ] `notice.sh` and `notice.py` robustness Minors (plan 49 task reviews and final review;
       left at the completion gate because none needed a fix before merge). In
       `build/cc_guide/notice.sh`: `fail_notice` has no cleanup if a write fails, so it can
@@ -3463,7 +3464,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → done 2026-10-19 (/deferred quick fix): fix-issue offers a worktree before the branch and
       hands its last step to finishing-a-development-branch, Option 2. The Gemini adapter is
       regenerated, the README row matches, and the dependency-drift test passes.
-- [ ] Run `/fix-issue` live once, end to end (audit-3-10-26 B12, found 2026-10-03). The
+- [x] Run `/fix-issue` live once, end to end (audit-3-10-26 B12, found 2026-10-03). The
       agents-and-commands spec deferred its live check "to first real use"
       (`specs/completed/agents-and-commands-expansion.md:233-234`), and plan 17 recorded it in
       its header only (`specs/plans/completed/17-agents-and-commands-expansion.md:13-16`),
@@ -3472,6 +3473,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       section first, so the run tests the final flow. Size: quick-fix. Done when: a real issue
       goes through `/fix-issue` and the resulting PR links it, with the run recorded here.
       → owner-only 2026-11-11: run `/fix-issue` on a real bug issue in an interactive session, and record the run and its PR here.
+      → done 2026-11-12 (owner): `/fix-issue 180` ran in an interactive CLI session (Claude Code 2.1.322) on lowmason/agent-skills#180, a 0-d `groups` that raised the wrong error in `skills/tune-hyperparameters/scripts/time_series_cv.py`. The run took the worktree, test-driven-development and verification-before-completion steps, then finished through finishing-a-development-branch. Its PR, lowmason/agent-skills#182 (`Fixes #180`), merged as `8427b72` and closed the issue.
 - [x] Build or retire plan 29's floating snippet tier (audit-3-10-26 B11, found 2026-10-03;
       re-verified 2026-10-18). Plan 29 designed an advisory tier that runs the harnessed
       snippets on unpinned latest packages and only warns
@@ -3751,7 +3753,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       759 manifest hashes. Size: design. Done when: the owner decides, and the decision is
       applied or recorded here.
       → retired 2026-10-31: owner chose "Keep them tracked": `specs/verification/32-jax-trials/` stays tracked as it is. Untracking would make clones no smaller and would not hide the `/Users/lowell` paths, which are in pushed history.
-- [ ] Check the skill listing after the four 2026-10-04 skill merges (audit-3-10-26 I7, found
+- [x] Check the skill listing after the four 2026-10-04 skill merges (audit-3-10-26 I7, found
       2026-10-03). No `/context` or `/doctor` reading has been recorded since the JAX and
       causal-design merges; the last is 2026-07-30 (30 skills, in section
       `19-methodology-pipeline-skills`). Descriptions now total 21,505 characters over 37
@@ -3762,6 +3764,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       not trim descriptions. The open plan-35 items `listing-aggregate` and guide note S-109
       cover the lint, not this reading. Size: quick-fix. Done when: the reading is recorded.
       → owner-only 2026-11-11: run `/context` and `/doctor` once in an interactive session on the execution model, and record the reading here.
+      → done 2026-11-12 (owner): on Claude Code 2.1.322 in the CLI with Sonnet 5.5 (the session log shows both), `/context` listed 103 skills at 19.6k tokens, and `/doctor` reported every personal skill's description in the listing. The one personal skill absent from it is dispatching-parallel-agents, by design (`disable-model-invocation: true`).
 - [x] `install.py` never reports a managed link whose source is gone (audit-3-10-26 H2,
       found 2026-10-03). The audit's dangling `recommend-causal-design` links resolved
       themselves when that branch merged (none on 2026-10-18), but `install.py` has no
@@ -4687,7 +4690,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       and its stamp stayed at 2.1.306; (d) `child_env` drops the names in `SCRUBBED_ENV`
       (`BASH_ENV`, `SHELLOPTS`). `test_the_caller_environment_cannot_change_the_hook_bash`
       failed 4 of 4 runs before the fix. The hooks suite passes 400 on both interpreters.
-- [ ] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
+- [x] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
       that exits 1 (plan 61's default P1, not verified). `hooks/ruff-check.sh` exits 1 with
       "ruff-check: ruff unavailable (exit N), so lint was not checked." when ruff cannot run, and
       the install check in `hooks/README.md` tells the reader to look for that line in the
@@ -4698,6 +4701,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       when: the result is recorded in `hooks/README.md`'s install check (the line shows, or the
       README names the Desktop gap and a different signal).
       → owner-only 2026-11-11: in a Desktop session, with `uv` off the hook's `PATH`, end a turn with `ruff-check.sh` as a `Stop` hook, and record in `hooks/README.md` whether the stderr line shows.
+      → done 2026-11-12 (owner): in a Desktop session (log `entrypoint` `claude-desktop`, Claude Code 2.1.321) with the Stop hook run as `env PATH=/usr/bin:/bin …/ruff-check.sh`, the log holds a `hook_non_blocking_error` (exit 1) whose stderr starts "ruff-check: ruff unavailable (exit 127)", and the owner saw nothing in the transcript. `hooks/README.md`'s install check now says to run the check from the `claude` CLI and, in a Desktop session, to grep the session logs for the line.
 
 ## 59-model-skill-comparator-and-cv-fixes — 2026-10-21
 
@@ -5001,13 +5005,14 @@ defer. Anchors are at the end of plan 59's fix wave.
       file now says about 1,000 to 2,000 points, as bayesian-workflow does. A script re-took
       the snippet-preamble def-only count: it is 4 of 41, not 3 (state-space.md's `local_level`
       was missing), and the docstring now says so.
-- [ ] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
+- [x] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
       (from `build/extract_structure.py`) has no chapters 1–2, and many PML1 subsections have no
       title, so title-only searches miss them. PML1 §2.6.3 supports the distributional-regression
       claim but cannot pass Gate A for that reason. Needs the local PDFs, so it is an owner step.
       Size: plan. Done when: the index covers chapters 1–2 and untitled subsections, or
       `build/CLAUDE.md` records the limit.
       → owner-only 2026-11-11: rebuild `build/.scratch/book1_sections.tsv` from the local PDFs so that it covers chapters 1–2 and untitled subsections, or record the limit in `build/CLAUDE.md`.
+      → done 2026-11-12 (/deferred quick fix): `build/extract_structure.py` reads the contents of the moved PDFs with `pdftotext -layout` (pages 9–25 and 9–29) and stops when a chapter or a title is missing (`e76e7ee`). The owner gave the PDFs' new folder. The rebuilt index covers Book 1's chapters 1–2 (71 new entries, PML1 §2.6.3 among them) and gives every entry its title (211 Book 1 and 312 Book 2 entries had none). Gate A exits 0 with no warnings.
 - [ ] Give rpm and creative-thinking harder routing scenarios. Plan 64's M2 and M3 had zero baseline
       failures, so bar 2 was vacuous and neither test can show that the new class names or the
       causal and neural hand-off sentences drive routing (M3's T1 shifted from creative-thinking
@@ -6457,8 +6462,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
 ## 89-cc-guide-owner-rulings — 2026-11-11
 - [x] `packets --files` marks a packet's sections by stamp alone (`build/cc_guide/packets.py:379-381`). A file that is stale only by hash, the #93 and #94 collision case, gets "Unchanged since @X" and an empty `changed` list for a section whose text changed, so the verifier's packet says the section did not change. The verifier contract (`.claude/agents/cc-guide-verifier.md:61-66`) still requires a quoted row for each statement that rests on any cited section, so the marks inform and do not narrow the review. Found by plan 89's Task 4 review, outside Task 4's file list (owner ruled defer at the gate). Fix: count a section as changed when `state['cited']` holds a hash for that file and section that differs from the section's `text_hash`, and pin it in `build/cc_guide/test_packets.py`. Size: quick-fix. Done when: the packet of a file that is stale only by hash marks the changed section as changed, and a test covers it.
       → done 2026-11-12 (/deferred quick fix): `packets.files` takes each file's changed sections from the lint's own `stale_citations`, so a section whose `text_hash` differs from the cited hash is listed in `changed` and marked "Changed after @<stamp>: its text differs from the text the file was cited against." `test_a_files_packet_marks_a_section_whose_text_changed_since_the_file_was_cited` in `build/cc_guide/test_packets.py` covers it.
-- [ ] Bring older checkouts and worktrees up to date after plan 89 merges. A checkout whose cc_guide code predates plan 89 refuses the new `baseline.json` (format 3). Its session start's `refresh` then runs a `check --hook` that exits 2 and writes a "check failed" notice into the shared `~/.cache/agent-skills/cc-guide/notice.json`, which every session shows until a checkout with plan 89's code runs a good check. Owner-only: it spans the owner's open branches and worktrees. Size: quick-fix. Done when: each open branch or worktree that predates plan 89 has merged `main` or been removed, and a session start shows no "check failed" notice.
+- [x] Bring older checkouts and worktrees up to date after plan 89 merges. A checkout whose cc_guide code predates plan 89 refuses the new `baseline.json` (format 3). Its session start's `refresh` then runs a `check --hook` that exits 2 and writes a "check failed" notice into the shared `~/.cache/agent-skills/cc-guide/notice.json`, which every session shows until a checkout with plan 89's code runs a good check. Owner-only: it spans the owner's open branches and worktrees. Size: quick-fix. Done when: each open branch or worktree that predates plan 89 has merged `main` or been removed, and a session start shows no "check failed" notice.
       → owner-only 2026-11-12: merge main into, or remove, each worktree that predates plan 89 (two detached ones today), then check that a session start shows no "check failed" notice.
+      → done 2026-11-12 (owner): every worktree and every local branch not yet merged into `main` contains plan 89's merge (`84efc99`), and today's session start showed the normal drift notice; `last-check.json` records exit 1 (due).
 - [ ] Two branches that each add a `cited` record in the same place of the sorted map conflict in `baseline.json`: both rewrite the closing brace line of the neighbouring entry. The conflict is loud, and taking one side drops the other file's record, so that file falls back to the stamp rule until its next `baseline cite`. Plan 89 accepted the limit: its Review Focus 3 holds only for records in different places, since D5 fixes one sorted JSON map (`build/cc_guide/baseline.py`, `state.py` `dump_baseline`). Size: plan. Revisit if: a real merge conflicts in the `cited` map of `build/cc_guide/baseline.json`.
 
 ## 90-readonly-guard-command-starts — 2026-11-12
