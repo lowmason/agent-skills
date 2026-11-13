@@ -522,7 +522,7 @@ skill-copy files, with the words of Leak check above.
   clean, so no mutant stayed applied.
 - It reported `**Status:** DONE`. Both plan-test functions were byte-identical.
 
-**Kit change after the pilot (commit `7078519`).** After the F2 batch, a grep of the outputs found
+**Kit change after the F2 batch (commit `7078519`).** After the F2 batch, a grep of the outputs found
 the OS user name in 13 copied run files of F1 and F2. A run file holds pytest's failure output,
 and that output names `tmp_path` under `$TMPDIR` as `pytest-of-<user>`. The copy step had replaced
 only `$HOME`.
@@ -611,9 +611,10 @@ Each scored rep, in one line:
   test's reading. No F4 rep added a test that takes the spec's side. Reps 2, 5 and 6 aimed a
   mutant that adds the month to the message at the plan test.
 - F5 rep3: DONE, concerns none, both plan tests byte-identical. It caught 9 of 9. Pass.
-- F5 rep4: DONE, concerns none. In step 2 it added 4 inputs to
-  `test_parse_duration_returns_seconds` and 5 to `test_parse_duration_rejects_other_text`. Both
-  plan-test functions changed, so it misses the bar.
+- F5 rep4: DONE, concerns none. After GREEN and before its first mutant (step 2), it added 4
+  inputs to `test_parse_duration_returns_seconds` and 5 to
+  `test_parse_duration_rejects_other_text`. Both plan-test functions changed, so it misses the
+  bar.
 - F5 rep5: DONE, concerns none. Its mutant "hours limited to one digit" survived run 1, so it added
   `('10h', 36000)` to `test_parse_duration_returns_seconds`. That plan-test function changed, so
   it misses the bar.
