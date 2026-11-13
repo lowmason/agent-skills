@@ -78,6 +78,7 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 | `build/cc_guide/conformance.toml` | new kind `kit` | 3 |
 | `CLAUDE.md`, `README.md` | name `templates/` | 3 |
 | `NOTICE` | the kit's paragraph | 3 |
+| `specs/plans/96-marimo-notebook-seam.md` | Task 3's snippet-check result line | 3 |
 | `hooks/README.md` (and `build/cc_guide/baseline.json` if the restamp changes it) | two additions, restamp | 4 |
 
 ---
@@ -155,21 +156,24 @@ def notebook_project(tmp_path):
     return root
 ```
 
-Add at the end of the file. Every test takes `@pytest.mark.parametrize('arm', ['rg', 'grep'])`, as the existing tests do:
+Add at the end of the file:
 
 ```python
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_marimo_notebook_outside_notebooks_dir_is_scratch(notebook_project, tmp_path, arm):
     hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
     assert 'explore_root.py' in hits, hits
     assert 'analysis/notebooks/nested_nb.py' in hits, hits  # only the root notebooks/ holds deliverables
 
 
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_marimo_notebook_under_notebooks_dir_is_not_scratch(notebook_project, tmp_path, arm):
     hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
     for name in ('report_nb.py', 'deep dive.py', 'nb_helpers.py'):
         assert name not in hits, f'{name} was listed:\n{hits}'
 
 
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_marimo_notebooks_are_not_untested_modules(notebook_project, tmp_path, arm):
     hits = section(scan(notebook_project, arm, tmp_path), UNTESTED)
     for name in ('explore_root.py', 'nested_nb.py', 'scratchpad_nb.py', 'report_nb.py', 'deep dive.py'):
@@ -178,6 +182,7 @@ def test_marimo_notebooks_are_not_untested_modules(notebook_project, tmp_path, a
         assert name in hits, f'{name} was not listed:\n{hits}'
 
 
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_notebook_ipynb_name_rule_is_unchanged(notebook_project, tmp_path, arm):
     hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
     assert 'scratchpad.ipynb' in hits, hits
@@ -185,18 +190,21 @@ def test_notebook_ipynb_name_rule_is_unchanged(notebook_project, tmp_path, arm):
     assert 'analysis_record.ipynb' not in hits, hits
 
 
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_marimo_mention_without_app_line_is_not_a_notebook(notebook_project, tmp_path, arm):
     sections = scan(notebook_project, arm, tmp_path)
     assert 'uses_marimo.py' not in section(sections, SCRATCH)
     assert 'src/uses_marimo.py' in section(sections, UNTESTED)
 
 
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_scratch_lists_each_notebook_once(notebook_project, tmp_path, arm):
     """scratchpad_nb.py matches the name rule and the marimo rule. The section lists it once."""
     hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
     assert hits.count('scratchpad_nb.py') == 1, hits
 
 
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_untested_modules_unchanged_without_notebooks(project, tmp_path, arm):
     """With no notebook in the repo, an empty notebook list must not filter out every module."""
     hits = section(scan(project, arm, tmp_path), UNTESTED)
@@ -243,6 +251,8 @@ section skips every one. Seven tests pin the change in both scan arms.
 Co-Authored-By: <the session's trailer>
 EOF
 ```
+
+Replace the `Co-Authored-By` placeholder with the session's trailer before you run the commit.
 
 ---
 
@@ -319,6 +329,8 @@ Co-Authored-By: <the session's trailer>
 EOF
 ```
 
+Replace the `Co-Authored-By` placeholder with the session's trailer before you run the commit.
+
 ---
 
 ### Task 3: The marimo-repo kit and its bookkeeping
@@ -329,6 +341,7 @@ EOF
 - Modify: `CLAUDE.md:8` (the sibling-folders sentence)
 - Modify: `README.md:33-42` (the folder tree)
 - Modify: `NOTICE` (a paragraph after the `runtimes/` paragraph that ends `:21` "…MIT license.")
+- Modify: `specs/plans/96-marimo-notebook-seam.md` (Step 4's result line)
 
 **Interfaces:**
 - Consumes: the CONVERT outcome (Task 2), named as "the tech-debt skill's convert outcome".
@@ -543,6 +556,8 @@ Co-Authored-By: <the session's trailer>
 EOF
 ```
 
+Replace the `Co-Authored-By` placeholder with the session's trailer before you run the commit.
+
 ---
 
 ### Task 4: The two `hooks/README.md` additions
@@ -610,5 +625,7 @@ accepted, because no read-only agent drives a live notebook.
 Co-Authored-By: <the session's trailer>
 EOF
 ```
+
+Replace the `Co-Authored-By` placeholder with the session's trailer before you run the commit.
 
 `git add` of an unchanged `baseline.json` stages nothing, which is correct.
