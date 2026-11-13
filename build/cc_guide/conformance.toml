@@ -679,7 +679,7 @@ type = 'deviation'
 sections = ['lean.ceremony']
 artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'Skip TDD for formatting, documentation and config changes.'
-reason = "The guide keeps TDD for behaviour changes, and skill wording changes agent behaviour, so the departure is narrow. writing-skills' Iron Law also covers an edit that changes no instruction (a typo, a link, a verbatim move), which the guide's TDD row would let skip the test. In practice the owner waives the micro-test for such edits case by case (commit 7bb8810)."
+reason = "The guide keeps TDD for behaviour changes, and skill wording changes agent behaviour, so the departure is narrow. writing-skills' Iron Law also covers an edit that changes no instruction (a typo, a link, a verbatim move), which the guide's TDD row would let skip the test. In practice the owner waives the micro-test case by case (commit 7bb8810)."
 evidence = 'Audit row S-97; owner gate 2026-10-04; owner decisions D2 and D4 of the writing-skills guide-rewrite spec, 2026-11-12 (plan 92).'
 revisit = "When the guide's TDD row names agent-facing text such as skills or prompts, or when writing-skills' Iron Law changes."
 
