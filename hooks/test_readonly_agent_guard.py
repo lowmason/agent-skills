@@ -1,4 +1,4 @@
-# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.306
+# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.323
 """Gate A for hooks/readonly-agent-guard.py — run from this directory, both ways.
 
 cd hooks

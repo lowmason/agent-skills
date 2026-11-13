@@ -1,4 +1,4 @@
-<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.306 -->
+<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.323 -->
 # Hooks
 
 Two categories live here, and they install differently. Read the category before
@@ -139,7 +139,8 @@ guard's **Tests** below, which run every test in this directory.
   unless the hook sets `"onFailure": "block"` (2.1.295+), which makes it act as exit 2
   does on that event, though not on `Stop`. A shell-form `PreToolUse` or
   `PermissionRequest` command hook on Windows without Git Bash (2.1.299+) also blocks
-  when it fails, unless it sets `shell` to powershell, which still fails open. An exit
+  when it fails, whether or not it sets `shell` to powershell (2.1.309+), while an
+  exec-form hook still fails open. An exit
   other than 0 or 2 that prints schema-valid JSON is decided by that JSON instead,
   except on a hook whose failure blocks (`onFailure: "block"` or that Windows case): there
   any exit other than 0 or 2 is a failure even with JSON that allows the action, so

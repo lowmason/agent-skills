@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cc-guide: skills.frontmatter commands.overview subagents.frontmatter subagents.tools subagents.models @2.1.306
+# cc-guide: skills.frontmatter commands.overview subagents.frontmatter subagents.tools subagents.models @2.1.323
 '''Frontmatter and bundled-path lint for every skill in the repo (Gate A pattern).
 
 Per <skill>/SKILL.md:

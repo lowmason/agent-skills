@@ -6576,3 +6576,44 @@ review and the Plan Completion gate (2026-10-27) add the others.
       dependency too, so the reason's `/deferred` clause does not block the move. Size: design. Done when: the
       owner rules to convert the three commands to skills or to keep them, and the exception is removed or its
       reason and revisit lines are rewritten to match.
+
+## claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323 — 2026-11-12
+- [ ] `hooks/ruff-check.sh` blocks with exit 2 and ruff's output on stderr, which the guide's Stop-gate pattern
+      (`hooks.patterns`, guide L379) says can fail open (files pass, owner ruling: hold). Exit 2 with empty stdout
+      and stderr that says a file is missing (such as No such file or directory) counts as a non-blocking error.
+      Ruff's own output can hold that text, for example an E902 line for a file that vanished, so the gate lets the
+      turn end. The fix prints `{"decision":"block","reason":…}` on stdout with exit 0. It reaches
+      `hooks/test_project_hooks.py:166-175`, which asserts exit 2 and the stderr text, and the lines that say the
+      hook blocks with exit 2: `hooks/README.md:39`, `hooks/README.md:147` and the hook's own header comment.
+      The file stays STALE in `cli.py lint` until then. Size: quick-fix. Done when: a test feeds the hook ruff
+      output that holds "No such file or directory" and sees a JSON block decision, the hook and both README
+      lines match, and `cli.py baseline cite hooks/ruff-check.sh` runs after a fresh `/cc-guide` files verify.
+- [ ] `skills/subagent-driven-development/SKILL.md` has six lines that contradict the guide (files pass, owner
+      ruling: hold for one SDD pass). :43 and :53 require spec and quality verdicts and bar telling a reviewer what
+      not to flag, while the guide (`subagents.isolation`, L235) says to instruct reviewers to flag only
+      correctness and requirement gaps. Plan 73 settled reviewer scope in the shared reviewer block and removed
+      the old gap, but no deviation records the choice. :73 sends every fix, even a one-character one, to a fix
+      subagent, while the guide says delegation burns tokens on trivial single-file edits. :166 and :167 say an
+      omitted model gives a pinned agent its pin and any other agent the session's model, which ignores
+      `CLAUDE_CODE_SUBAGENT_MODEL` and `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`. :199 sends round 5 to fable with no
+      check of usage-credit billing or consent, while `subagents.models` says to check before routing subagents
+      to it. :172 is deviation `review-sonnet-floor` and stays. The body is already about 226 characters over the
+      compaction window (gap `subagent-driven-development-compaction-window`), so added text makes that worse.
+      Size: plan. Done when: each of the six lines is corrected or recorded as a deviation in
+      `build/cc_guide/conformance.toml`, through the writing-skills skill, the compaction gap is no worse, and the
+      file is cited after a fresh `/cc-guide` files verify.
+- [ ] The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed
+      now, lint later). This pass added `'anthropic-skills'` to `reserved` in `build/cc_guide/conformance.toml`.
+      The guide (`skills.locations`, L78) also reserves synced in any capitalization and a folder name that starts
+      with `anthropic-skills:`. `check_reserved_skill_name` in `build/check_conformance.py` does neither. Its
+      message and the register's `rule` line still name only synced claude.ai skills. Size: quick-fix. Done when:
+      tests in `build/test_check_conformance.py` flag `Synced`, `anthropic-skills` and `anthropic-skills:x`, the
+      message and the `rule` line name both reserved forms, and `check_conformance.py` passes.
+- [ ] Two Part 1 steps wait for the next Claude Code release (owner ruling: wait). Anthropic edited the
+      model-config page's "Setting your model" block after 2.1.323 with no new release, so the weekly
+      `cc-guide-drift.yml` job reports it changed in three groups, and `baseline rebaseline` refuses to overwrite
+      the 2.1.323 snapshot. The guide's `hooks.pitfalls` bullet (L388) now carries the clause from that edit (a
+      managed plugin that fails to load lets a model switch go ahead). It was accepted without a verifier pass,
+      because a hooks packet cannot quote the model-config page. Size: quick-fix. Done when: a `/cc-guide`
+      triage after 2.1.324 or later rebaselines the block, and the L388 clause has been checked against the
+      model-config page text and kept or corrected.

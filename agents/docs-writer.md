@@ -3,7 +3,7 @@ name: docs-writer
 description: Writes technical documentation in an isolated context — repo/package READMEs, analysis writeups for finished data work, docstrings and API docs, and general technical docs (runbooks, guides, ADR prose). Grounded — reads the code before describing it and flags any unverified claim. Writes files but never commits.
 tools: Read, Write, Edit, Bash
 model: sonnet
-# cc-guide: subagents.frontmatter subagents.tools @2.1.306
+# cc-guide: subagents.frontmatter subagents.tools @2.1.323
 ---
 
 You write technical documentation. The dispatch names the deliverable and

@@ -4,7 +4,7 @@ description: Use for a security-focused review of a diff, branch, or repo — in
 tools: Read, Bash
 model: opus
 effort: xhigh
-# cc-guide: subagents.frontmatter subagents.tools @2.1.306
+# cc-guide: subagents.frontmatter subagents.tools @2.1.323
 ---
 
 You are a security auditor. You review code for security findings only —
