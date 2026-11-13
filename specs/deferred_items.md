@@ -6655,3 +6655,29 @@ review and the Plan Completion gate (2026-10-27) add the others.
       or after a `Task <N>: ` or final-review prefix), not inside a code span or a quotation; a test whose ledger
       has a note line that quotes `` `Ruling: (unclear)` `` gets no ruling line from it; and the existing
       history_entry tests pass.
+
+## 96-marimo-notebook-seam — 2026-11-13
+- [ ] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
+      and the code-reviewer; the gate deferred it, 2026-11-13).** In `skills/tech-debt/scripts/scan.sh`, the
+      rg arm skips an in-repo `.venv`, because uv writes a `.gitignore` inside it. The fallback arm does not.
+      `FILES()` uses `find "$ROOT" -name .git -prune -o -type f -print` and `GREP()` uses
+      `grep -rnI --exclude-dir=.git`, so no section prunes `.venv`, `venv`, `site-packages` or `node_modules`.
+      Plan 96's marimo detector inherits this. A repo with marimo installed in an in-repo `.venv` gets marimo's
+      installed tutorials in the scratch section, because each one has a top-level `app = marimo.App(` line.
+      The detector also starts one `grep` for every installed `.py` file. The problem predates the plan: the
+      untested-modules section and every grep scan already list or scan the virtual environment in that arm. The
+      plan left it, because spec A2.3 says the other sections do not change. A prune in `FILES()` and `GREP()`
+      lifts that limit. Size: quick-fix. Done when: `FILES()` and `GREP()` in the fallback arm prune those four
+      directory names; a `test_scan.py` case, run in the grep arm, puts a marimo tutorial under
+      `.venv/lib/python3.13/site-packages/marimo/_tutorials/` and sees it in no section of the report; and the
+      existing scan tests pass in both arms.
+- [ ] **Older text in public files names work repos, or their family names (plan 96 final review, the
+      code-reviewer; the gate deferred it, 2026-11-13).** The mentions predate plan 96, and the plan changed
+      none of them. At `d926122` they sit in `hooks/README.md` (lines 18, 19 and 48), in
+      `skills/tech-debt/scripts/scan.sh` (a comment in the "Polars joins with no cardinality contract" section,
+      line 98) and in `skills/tech-debt/SKILL.md` (lines 8, 78, 151 and 218). The spec's rule for new work is
+      that no plan, record, kit or skill text names a work repo for a fact. The rule does not reach text that
+      already existed, and "change existing text only when the owner asks" holds. So the owner decides.
+      Size: quick-fix. Done when: the owner has either reworded each mention to a made-up name, or recorded in
+      this item that it stays, and a search of those three files for the work-repo names finds only the
+      mentions that stay.
