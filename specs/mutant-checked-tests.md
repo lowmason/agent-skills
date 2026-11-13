@@ -1,6 +1,7 @@
 # Mutant-checked tests in plan execution — Design Spec
 
-**Status:** DRAFT (2026-11-12), for the owner's review.
+**Status:** APPROVED (2026-11-12). The owner approved this file, its designer's calls included. The question was "Do
+you approve the spec?", and the owner answered "Approve the spec". The next step is writing-plans, in a fresh context.
 
 This design came from a brainstorming session on 2026-11-12. It started from the owner's proposal of a separate
 test-writer agent for subagent-driven-development (below, "What this replaces"). The session's evidence moved the
