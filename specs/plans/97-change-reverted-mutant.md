@@ -137,6 +137,7 @@ From the brief: the planning session's hard limits are Global Constraints (only 
 - **D11** (planner default; owner approved it as written at plan review, 2026-11-13): `task-done`'s three new refusals and their order, as File formats pins them. Applied in: Task 3.
 - **D12** (planner default; owner approved it as written at plan review, 2026-11-13): `[BASE]` takes the full SHA that the controller recorded before the task's first dispatch, the same value as the reviewer's `[BASE_SHA]`. Applied in: Tasks 5, 7.
 - **D13** (planner default; owner approved it as written at plan review, 2026-11-13): R5 uses R4's task. In R4 the brief's regression test passes on the revert, with no line. In R5 that test fails on the revert, and a second test, which checks the normal case that the task keeps, passes on it with a `Keeps:` line that holds. This is how the spec's "the same test with a `Keeps:` line that holds" reads, because a `Keeps:` line can never hold for a test of changed behavior. Applied in: Task 8.
+- **D14** (owner, handoff H1, 2026-11-13): execute plan 97 after plan 96's execution ended (retired in 02b5002, merged as #202 at 7b2976b); <execution base> is 7b2976b. Applied in: Global Constraints, Base and execution; Tasks 4, 8, 12.
 
 ## Backlog items this plan touches
 
