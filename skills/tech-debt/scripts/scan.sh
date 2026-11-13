@@ -3,7 +3,8 @@
 #
 # Prints a grouped, file:line report of the signals described in SKILL.md. Each
 # hit is a *candidate*, not a verdict — the skill's triage step decides DELETE
-# vs HARDEN. Read-only: it greps and lists, never edits.
+# vs HARDEN (a scratch notebook may also CONVERT). Read-only: it greps and
+# lists, never edits.
 #
 # Usage:
 #   <this-skill-dir>/scripts/scan.sh [ROOT]   # ROOT defaults to the current directory
@@ -207,4 +208,4 @@ while IFS= read -r m; do
   fi
 done <<< "$mods" | sort -u
 
-printf '\nDone. Each hit is a candidate — triage DELETE vs HARDEN per SKILL.md.\n'
+printf '\nDone. Each hit is a candidate — triage DELETE vs HARDEN (or CONVERT a scratch notebook) per SKILL.md.\n'

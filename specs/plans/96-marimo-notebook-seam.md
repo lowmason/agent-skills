@@ -364,6 +364,8 @@ Bar: S1 and S2 each pass in 3 of 3 reps. On a miss, revise the wording once and 
 
 `> Result (<YYYY-MM-DD>): S1 <n>/3 before, 3/3 after. S2 <n>/3 before, 3/3 after.`
 
+> Result (2026-11-13): S1 0/3 before, 3/3 after. S2 0/3 before, 3/3 after.
+
 - [ ] **Step 9: Run the checks**
 
 Run each command. Expected output follows each one.
