@@ -6616,6 +6616,10 @@ review and the Plan Completion gate (2026-10-27) add the others.
       managed plugin that fails to load lets a model switch go ahead). It was accepted without a verifier pass,
       because a hooks packet cannot quote the model-config page. The branch review found one known correction:
       the page lets the switch go ahead when a managed plugin fails to load and also when its hooks fail to
-      load, while the clause names only the plugin. Size: quick-fix. Done when: a `/cc-guide` triage after 2.1.324 or later rebaselines
-      the block, and the L388 clause covers a plugin or its hooks that fail to load and has been checked against
-      the model-config page text.
+      load, while the clause names only the plugin. The PR review (Copilot, #194) found two more points. The
+      marker `2.1.323+` follows "Earlier builds refused the switch", so it can read as dating the refusal. And
+      only the model-config page dates the change: the changelog has no entry for it, and a docs edit after a
+      release does not by itself confirm the first build that changed. Size: quick-fix. Done when: a `/cc-guide`
+      triage after 2.1.324 or later rebaselines the block, and the L388 clause covers a plugin or its hooks that
+      fail to load, puts the version marker on the go-ahead behavior, dates it from a changelog entry or keeps
+      the page-only hedge, and has been checked against the model-config page text.
