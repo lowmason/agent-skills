@@ -123,8 +123,14 @@ Three options were dropped:
 
 ### 1. Where the step goes
 
-Step 3b, "Explain the branch", sits after Step 3 and before Step 4. Step 3 gives the base branch, and
-`BASE` is `git merge-base <base-branch> HEAD`. Step 4 and every later step stay as they are.
+Step 3b, "Explain the branch", sits after Step 3 and before Step 4. Step 3 gives the base branch. After a
+`git fetch`, `BASE` is `git merge-base origin/<base-branch> HEAD`. With no remote, it is
+`git merge-base <base-branch> HEAD`. Step 4 and every later step stay as they are.
+
+The remote-tracking base matters **(my call)**. A branch that merged `origin/main` while the local `main`
+fell behind would otherwise count other PRs' commits in `BASE..HEAD`. Most PRs in this repo retire a plan,
+so the plan-branch rule would fire on their plans, and the explainer would cover their work. Step 4b's
+`--base` has the same weakness today. This spec does not change Step 4b.
 
 ### 2. Which branches
 
