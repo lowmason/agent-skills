@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **Scope.** Plan B only. Plan A merged as #202. Do not change `scan.sh`, the tech-debt skill, `hooks/` or the kit's ruff ignore. Write no marimo skill (spec D1).
-- **Branch.** The spec and this plan reach `main` first, in a PR of their own, if the owner says so at plan review (D3). Execution then starts in a fresh session on a new branch cut from that `main`, in its own worktree. Commit there. Do not push during execution. finishing-a-development-branch decides how the branch is integrated.
+- **Branch.** The spec and this plan reach `main` first, in a PR of their own from `claude/marimo-plan-b-d0123f` (D3). Execution starts only after that PR merges, in a fresh session, on a new branch cut from the `main` that holds them, in its own worktree. Commit there. Do not push during execution. finishing-a-development-branch decides how the branch is integrated.
 - **Anchors.** Line numbers are lines at `7b2976b`. Each edit's old text is its match key. If an old text no longer matches, stop and ledger it. Live plans 94, 95 and 97 also edit `NOTICE`, in other parts. This plan adds one paragraph, before the `recommend-visualization/` paragraph.
 - **Public repo** (spec, Constraints). "No plan, record, kit or skill text names a work repo for a fact, and none carries new detail from one: versions, configs, file sizes or file names." The same holds for commit messages and reports. Every fixture name here is made up.
 - **Scratch root.** All scratch goes under `/tmp/mnb98/`, a folder that this plan makes new. The one exception is the empty rep directories that plan 74's runner makes under `/tmp` in Task 4. Reuse no `/tmp` folder from an earlier plan, because Plan A's probe copies hold names from work repos. No Codex run starts from, or names, such a folder.
@@ -51,7 +51,9 @@
 
 - **D1** (owner, brief, 2026-11-13): Plan B only. When it completes, the Plan Completion Protocol retires the spec too. Applied in: Global Constraints (Scope, Completion).
 - **D2** (owner, brief, 2026-11-13): The plan is committed on its branch and not pushed. No PR opens without the owner's word. Applied in: Global Constraints (Branch).
-- **D3** (owner, plan review, 2026-11-13): *Pending: whether the plan and spec go to `main` in their own PR before execution, as Plan A's D5 did.* Applied in: Global Constraints (Branch).
+- **D3** (owner, plan review, 2026-11-13): "Open the PR (Recommended)", in answer to whether the spec and this plan go to `main` in their own PR before execution, as Plan A's D5 did. Applied in: Global Constraints (Branch).
+- **D4** (owner, plan review, 2026-11-13): "Approve it (Recommended)", in answer to "Approve plan 98 (marimo seam, Plan B) as written, with builder's calls C1 to C15?". The plan stands as written. That approves every builder's call as a plan-level call, the Opus reps and the $100 cost ceiling (C3) among them, so no spec amendment follows. Applied in: all tasks, Global Constraints.
+- **D5** (owner, plan review, 2026-11-13): "Report beside the bar (Recommended)", in answer to whether the pin cases `tidy` and `verdict` decide the bar or are only reported beside it. The spec's bar stands as approved. Applied in: Builder's call C6, Task 3 Step 6, Global Constraints (Completion).
 
 ## Builder's calls
 
