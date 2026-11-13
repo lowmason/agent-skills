@@ -16,7 +16,7 @@
 - **Branch.** The spec and this plan reach `main` first, in a PR of their own, if the owner says so at plan review (D3). Execution then starts in a fresh session on a new branch cut from that `main`, in its own worktree. Commit there. Do not push during execution. finishing-a-development-branch decides how the branch is integrated.
 - **Anchors.** Line numbers are lines at `7b2976b`. Each edit's old text is its match key. If an old text no longer matches, stop and ledger it. Live plans 94, 95 and 97 also edit `NOTICE`, in other parts. This plan adds one paragraph, before the `recommend-visualization/` paragraph.
 - **Public repo** (spec, Constraints). "No plan, record, kit or skill text names a work repo for a fact, and none carries new detail from one: versions, configs, file sizes or file names." The same holds for commit messages and reports. Every fixture name here is made up.
-- **Scratch root.** All scratch goes under `/tmp/mnb98/`. The one exception is the empty rep directories that plan 74's runner makes under `/tmp` in Task 4. Never use `/tmp/marimo-probe/`: it holds Plan A's copies, and some names in it come from work repos. No Codex run starts from, or names, a path under `/tmp/marimo-probe/`.
+- **Scratch root.** All scratch goes under `/tmp/mnb98/`, a folder that this plan makes new. The one exception is the empty rep directories that plan 74's runner makes under `/tmp` in Task 4. Reuse no `/tmp` folder from an earlier plan, because Plan A's probe copies hold names from work repos. No Codex run starts from, or names, such a folder.
 - **Leak check.** Create `/tmp/mnb98/leakcheck.sh` in Task 1. It builds the name list in a temporary file, checks the staged diff, and deletes the list when it exits. No list outlives a check, so no Codex run can read one.
 
   ```bash
@@ -160,7 +160,7 @@ Replace the placeholder with the session's trailer before you run the commit.
 
 **Interfaces:**
 - Consumes: the record from Task 1.
-- Produces: `kit/run_reps.sh <arm> <case> <out-dir> <first> <last>`, with `<arm>` one of `control` or `block` and `<case>` one of `explore`, `override`, `lint`, `tidy`, `verdict`. The `block` arm inserts the working tree's `templates/marimo-repo/notebook-block.md` into the fixture `CLAUDE.md`, after the sentence `marimo-pair drives live notebook sessions in this repo.` and before the bullet list. Each rep writes `rep<N>/summary.json` (the init record's tools, skills and output style, the result's subtype, cost and turns, each tool call's name and input, the final message, the sha256 of the rep's `CLAUDE.md` and of the block, the stderr tail), `rep<N>/final.diff` and `rep<N>/notebook.py`. `kit/grade.py <out-dir>...` prints reading aids and no verdicts (Step 5). The case-to-notebook map: `explore` and `override` use `fixture/repo/notebooks/explore.py`, `lint` and `tidy` use `fixture/lint/explore.py`, and `verdict` uses `fixture/verdict/explore.py`.
+- Produces: `kit/run_reps.sh <arm> <case> <out-dir> <first> <last>`, with `<arm>` one of `control` or `block` and `<case>` one of `explore`, `override`, `lint`, `tidy`, `verdict`. The `block` arm inserts the working tree's `templates/marimo-repo/notebook-block.md` into the fixture `CLAUDE.md`, after the sentence `marimo-pair drives live notebook sessions in this repo.` and before the bullet list. Each rep writes `rep<N>/summary.json` (the init record's tools, skills and output style, the result's subtype, cost and turns, each tool call's name and input, the final message, the sha256 of the rep's `CLAUDE.md` and of the block, the stderr tail), `rep<N>/final.diff` and `rep<N>/notebook.py`. `kit/probe.sh <arm> <out-file> [<prompt-file>]` runs one probe prompt in a rep directory of that arm (Step 4). `kit/grade.py <out-dir>...` prints reading aids and no verdicts (Step 5). The case-to-notebook map: `explore` and `override` use `fixture/repo/notebooks/explore.py`, `lint` and `tidy` use `fixture/lint/explore.py`, and `verdict` uses `fixture/verdict/explore.py`.
 
 - [ ] **Step 1: Build the scratch venv**
 
@@ -227,7 +227,7 @@ Each file holds the text below, with no other line. `lint.txt` takes its `<L>:<C
 
 - [ ] **Step 4: Write the runner and the probes**
 
-Copy Plan 93's runner and change only what C2 lists, plus: it builds the rep's `CLAUDE.md` for the arm, it copies the case's notebook over `notebooks/explore.py`, it refuses an existing `rep<N>/`, and its first rep runs alone while the rest run together. `probe.sh` runs one probe prompt with the exact flags of `run_reps.sh`, from a rep directory of the control arm. `isolation_probe.txt` is Plan 93's file unchanged. `env_check.txt` keeps Plan 93's deny-rule steps. It replaces the venv step with three steps: run `marimo check notebooks/explore.py`, run `marimo export html notebooks/explore.py -o out.html`, and compute one Polars aggregate of the CSV. `kit/` holds no data generator.
+Plan 93's runner cannot run unchanged here, so adapt it. Keep its `env -i` line, its `claude -p` flags (with C2's changes), its rule that the first rep runs alone while the rest run together, its refusal of an existing `rep<N>/`, its temporary-index diff, its scrub of `$HOME` and temp paths, and its summary fields. Drop its `brief.md` and `spec.md` check, its `/tmp/mt-venv` check, its `.sdd/plan/` workspace and its copies of report and mutant files. Change its arguments to `<arm> <case> <out-dir> <first> <last>`. For each rep, it copies `fixture/repo/` into a new `/tmp/mnb98/rep-XXXXXX/repo`, writes the arm's `CLAUDE.md`, copies the case's notebook over `notebooks/explore.py`, runs `git init` and commits. It reads the prompt from `cases/<case>.txt`. `probe.sh <arm> <out-file> [<prompt-file>]` builds a rep directory the same way and runs one probe prompt in it with the exact flags of `run_reps.sh`. Drop Plan 93 `probe.sh`'s refusal to run inside a git repository, because a rep directory is one. The rep directory's parent must not be inside any other repository. `isolation_probe.txt` is Plan 93's file unchanged. `env_check.txt` keeps Plan 93's deny-rule steps. It replaces the venv step with three steps: run `marimo check notebooks/explore.py`, run `marimo export html notebooks/explore.py -o out.html`, and compute one Polars aggregate of the CSV. `kit/` holds no data generator.
 
 - [ ] **Step 5: Write the grader**
 
@@ -258,9 +258,9 @@ Write `## Rules` in the record, and commit it before any scored rep. A rep is VO
 |---|---|---|
 | `explore` | E1 one view | the notebook gains exactly one new code cell that shows a table or chart of the data, beyond any import or loader cell |
 | | E2 stops | no second view, no model fit and no statement of a conclusion, in the notebook or the final message |
-| | E3 facts cell | a markdown cell after the view holds numbers from a real run and no wording that says the outcome was met or not met |
+| | E3 facts cell | a markdown cell after the view holds numbers that match an independent Polars computation of the same quantities, and no wording that says the outcome was met or not met |
 | | E4 outcome | a markdown cell before the view, or the final message, states a hypothesis and an outcome that a number or share can decide |
-| `override` | O1 all three | the notebook gains three view cells, one for each requested view, and each ran |
+| `override` | O1 all three | the notebook gains three view cells, one for each requested view, and a tool call that ran the notebook after the last edit exited 0 |
 | `lint` | L1 no write | no `Write` or `Edit` targets the notebook and no Bash command writes it (C7) |
 | | L2 recorded | what the rep did instead: explained, asked, tried marimo-pair, or found it missing. Never scored |
 | `tidy` (pin) | T1 done | the final file has sorted imports and a renamed cell |
@@ -269,7 +269,7 @@ Write `## Rules` in the record, and commit it before any scored rep. A rep is VO
 | | V2 one view | exactly one new view, for carrier type, in one named cell, with a hypothesis cell before it and a facts cell after it |
 | | V3 stops | no second view, no model fit and no conclusion |
 | `steps-marimo` | M1 hypotheses | at least 2 candidate next steps, each with an outcome that names a measure and a threshold or a pattern |
-| | M2 stops | the reply builds or runs nothing, and ends with a request to pick one |
+| | M2 stops | the reply announces no build or run before the user's pick, and ends with a request to pick one |
 | `steps-plain` | P1 old shape | the next steps include a fix or drop for a flagged issue, a statement of the usable columns, or a named hand-off to another skill |
 | | P2 no stop | the reply does not end by asking the user to pick a hypothesis |
 
@@ -289,7 +289,7 @@ Replace the placeholder before you run the commit.
 
 - [ ] **Step 8: Run the isolation gate. Stop if it fails.**
 
-From a rep directory of the control arm, run `probe.sh` with `isolation_probe.txt`. Expected: line 1 is YES and quotes `# Freight analysis`. Lines 2 to 6 are NO. The init record lists only the tools Bash, Edit, Read and Write, no skills, no MCP server, and the default output style. If line 1 is NO, stop: the block arm would equal the control. Then run `env_check.txt`. Expected: every step reads OK or names a refusal that matches a deny rule, and the notebook checks, exports and runs. Task 3 repeats this gate on the block arm.
+Run `probe.sh control <out-file>` with `isolation_probe.txt`, so the probe runs in a control-arm rep directory. Expected: line 1 is YES and quotes `# Freight analysis`. Lines 2 to 6 are NO. The init record lists only the tools Bash, Edit, Read and Write, no skills, no MCP server, and the default output style. If line 1 is NO, stop: the block arm would equal the control. Then run `env_check.txt`. Expected: every step reads OK or names a refusal that matches a deny rule, and the notebook checks, exports and runs. Task 3 repeats this gate on the block arm.
 
 - [ ] **Step 9: Run one pilot rep and check the cost**
 
@@ -381,7 +381,7 @@ Until the user gives a verdict, build no second view, fit no model and state no 
 
 - [ ] **Step 4: Commit round 1, then repeat the isolation gate**
 
-Commit the file before any rep (message `feat(templates): add the marimo notebook block, round 1`), with the leak check first. Then run `probe.sh` on a block-arm rep directory. Expected: line 1 quotes `# Freight analysis`, and the rep's `CLAUDE.md` holds the block (the summary's block sha256 matches the file).
+Commit the file before any rep (message `feat(templates): add the marimo notebook block, round 1`), with the leak check first. Then run `probe.sh block <out-file>`. Expected: line 1 quotes `# Freight analysis`, and the rep's `CLAUDE.md` holds the block (the summary's block sha256 matches the file).
 
 - [ ] **Step 5: Run the block arm**
 
