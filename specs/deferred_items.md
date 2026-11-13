@@ -6584,16 +6584,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Ruff's own output can hold that text, for example an E902 line for a file that vanished, so the gate lets the
       turn end. The fix prints `{"decision":"block","reason":…}` on stdout with exit 0. It reaches
       `hooks/test_project_hooks.py:166-175`, which asserts exit 2 and the stderr text, and the lines that say the
-      hook blocks with exit 2: `hooks/README.md:39`, `hooks/README.md:147` and the hook's own header comment.
-      The file stays STALE in `cli.py lint` until then. Size: quick-fix. Done when: a test feeds the hook ruff
-      output that holds "No such file or directory" and sees a JSON block decision, the hook and both README
-      lines match, and `cli.py baseline cite hooks/ruff-check.sh` runs after a fresh `/cc-guide` files verify.
+      hook blocks with exit 2: `README.md:184`, `hooks/README.md:39`, `hooks/README.md:147` and the hook's own
+      header comment. The file stays STALE in `cli.py lint` until then. Size: quick-fix. Done when: a test feeds
+      the hook ruff output that holds "No such file or directory" and sees a JSON block decision, the hook and the
+      three README lines match, and `cli.py baseline cite hooks/ruff-check.sh` runs after a fresh `/cc-guide` files verify.
 - [ ] `skills/subagent-driven-development/SKILL.md` has six lines that contradict the guide (files pass, owner
       ruling: hold for one SDD pass). :43 and :53 require spec and quality verdicts and bar telling a reviewer what
       not to flag, while the guide (`subagents.isolation`, L235) says to instruct reviewers to flag only
       correctness and requirement gaps. Plan 73 settled reviewer scope in the shared reviewer block and removed
-      the old gap, but no deviation records the choice. :73 sends every fix, even a one-character one, to a fix
-      subagent, while the guide says delegation burns tokens on trivial single-file edits. :166 and :167 say an
+      the old gap, but no deviation records the choice. :73 sends every fix that changes behavior, even by one
+      character, to a fix subagent (a fix confined to one file that changes no behavior may be made by hand), while the guide says delegation burns tokens on trivial single-file edits. :166 and :167 say an
       omitted model gives a pinned agent its pin and any other agent the session's model, which ignores
       `CLAUDE_CODE_SUBAGENT_MODEL` and `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`. :199 sends round 5 to fable with no
       check of usage-credit billing or consent, while `subagents.models` says to check before routing subagents
@@ -6614,6 +6614,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `cc-guide-drift.yml` job reports it changed in three groups, and `baseline rebaseline` refuses to overwrite
       the 2.1.323 snapshot. The guide's `hooks.pitfalls` bullet (L388) now carries the clause from that edit (a
       managed plugin that fails to load lets a model switch go ahead). It was accepted without a verifier pass,
-      because a hooks packet cannot quote the model-config page. Size: quick-fix. Done when: a `/cc-guide`
-      triage after 2.1.324 or later rebaselines the block, and the L388 clause has been checked against the
-      model-config page text and kept or corrected.
+      because a hooks packet cannot quote the model-config page. The branch review found one known correction:
+      the page lets the switch go ahead when a managed plugin fails to load and also when its hooks fail to
+      load, while the clause names only the plugin. Size: quick-fix. Done when: a `/cc-guide` triage after 2.1.324 or later rebaselines
+      the block, and the L388 clause covers a plugin or its hooks that fail to load and has been checked against
+      the model-config page text.
