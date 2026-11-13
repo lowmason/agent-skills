@@ -23,6 +23,32 @@ GREP_ARM_TOOLS = ('git', 'grep', 'find', 'sort', 'basename', 'dirname', 'cat', '
 SEEDS = 'Magic seeds'
 ARTIFACTS = 'Committed model artifacts'
 MIGRATION = 'Migration debt'
+SCRATCH = 'Scratch / scratchpad notebooks'
+UNTESTED = 'Source modules with no obvious test'
+
+# No `__main__` guard here: a guard at the start of a line, even inside this string,
+# makes check_frontmatter.py treat this test file as a runnable script.
+MARIMO_NOTEBOOK = '''\
+import marimo
+
+app = marimo.App(width="medium")
+
+
+@app.cell
+def _():
+    import marimo as mo
+    return (mo,)
+'''
+
+# Mentions marimo, but its app line is not top-level, so it is a module.
+MARIMO_MENTION = '''\
+import marimo
+
+
+def build():
+    app = marimo.App()
+    return app
+'''
 
 SIGNAL_SOURCE = """\
 import jax
@@ -81,6 +107,32 @@ def project(tmp_path):
     git(root.parent, 'init', '-q', str(root))
     git(root, 'add', '-A')
     (root / 'weights' / 'local_only.pt').write_bytes(b'\x00untracked')  # never committed
+    return root
+
+
+@pytest.fixture
+def notebook_project(tmp_path):
+    """A git project with marimo notebooks inside and outside the root notebooks/, plus controls."""
+    root = tmp_path / 'nbproject'
+    files = {
+        'explore_root.py': MARIMO_NOTEBOOK,
+        'analysis/notebooks/nested_nb.py': MARIMO_NOTEBOOK.replace('App(width="medium")', 'App()'),
+        'scratchpad_nb.py': MARIMO_NOTEBOOK,
+        'notebooks/report_nb.py': MARIMO_NOTEBOOK,
+        'notebooks/scratchpad_record.py': MARIMO_NOTEBOOK,
+        'notebooks/q3/deep dive.py': MARIMO_NOTEBOOK,
+        'notebooks/nb_helpers.py': 'def share(x):\n    return x\n',
+        'src/uses_marimo.py': MARIMO_MENTION,
+        'src/model_core.py': 'def fit():\n    return 1\n',
+        'scratchpad.ipynb': '{}',
+        'notebooks/Untitled1.ipynb': '{}',
+        'notebooks/analysis_record.ipynb': '{}',
+    }
+    for name, text in files.items():
+        (root / name).parent.mkdir(parents=True, exist_ok=True)
+        (root / name).write_text(text)
+    git(root.parent, 'init', '-q', str(root))
+    git(root, 'add', '-A')
     return root
 
 
@@ -184,3 +236,58 @@ def test_migration_debt_flags_pandas_and_pymc_imports(project, tmp_path, arm):
         assert line in hits, f'{line!r} was not flagged:\n{hits}'
     for line in ('import polars', 'import numpyro', 'import pandasql', 'import pymc_extras'):
         assert line not in hits, f'{line!r} should not be flagged:\n{hits}'
+
+
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
+def test_marimo_notebook_outside_notebooks_dir_is_scratch(notebook_project, tmp_path, arm):
+    hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
+    assert 'explore_root.py' in hits, hits
+    assert 'analysis/notebooks/nested_nb.py' in hits, hits  # only the root notebooks/ holds deliverables
+
+
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
+def test_marimo_notebook_under_notebooks_dir_is_not_scratch(notebook_project, tmp_path, arm):
+    """A notebook in the root notebooks/ is a deliverable, even when the name rule's `scratchpad` matches it."""
+    hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
+    for name in ('report_nb.py', 'scratchpad_record.py', 'deep dive.py', 'nb_helpers.py'):
+        assert name not in hits, f'{name} was listed:\n{hits}'
+
+
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
+def test_marimo_notebooks_are_not_untested_modules(notebook_project, tmp_path, arm):
+    hits = section(scan(notebook_project, arm, tmp_path), UNTESTED)
+    notebooks = ('explore_root.py', 'nested_nb.py', 'scratchpad_nb.py', 'report_nb.py', 'deep dive.py',
+                 'scratchpad_record.py')
+    for name in notebooks:
+        assert name not in hits, f'{name} is a notebook, not a module:\n{hits}'
+    for name in ('src/model_core.py', 'notebooks/nb_helpers.py'):  # a module stays listed wherever it sits
+        assert name in hits, f'{name} was not listed:\n{hits}'
+
+
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
+def test_notebook_ipynb_name_rule_is_unchanged(notebook_project, tmp_path, arm):
+    hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
+    assert 'scratchpad.ipynb' in hits, hits
+    assert 'notebooks/Untitled1.ipynb' in hits, hits  # the name rule holds in notebooks/ too
+    assert 'analysis_record.ipynb' not in hits, hits
+
+
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
+def test_marimo_mention_without_app_line_is_not_a_notebook(notebook_project, tmp_path, arm):
+    sections = scan(notebook_project, arm, tmp_path)
+    assert 'uses_marimo.py' not in section(sections, SCRATCH)
+    assert 'src/uses_marimo.py' in section(sections, UNTESTED)
+
+
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
+def test_scratch_lists_each_notebook_once(notebook_project, tmp_path, arm):
+    """scratchpad_nb.py matches the name rule and the marimo rule. The section lists it once."""
+    hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
+    assert hits.count('scratchpad_nb.py') == 1, hits
+
+
+@pytest.mark.parametrize('arm', ['rg', 'grep'])
+def test_untested_modules_unchanged_without_notebooks(project, tmp_path, arm):
+    """With no notebook in the repo, an empty notebook list must not filter out every module."""
+    hits = section(scan(project, arm, tmp_path), UNTESTED)
+    assert 'src/signals.py' in hits and 'src/frames.py' in hits, hits

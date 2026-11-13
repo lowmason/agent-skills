@@ -35,6 +35,19 @@ FILES() {
   fi
 }
 
+# A marimo notebook is a plain .py file with a top-level `app = marimo.App(`
+# line, so neither the .ipynb name rule nor the module heuristic can tell it
+# from source. Prints each notebook in the form FILES prints it. Loop over FILES
+# instead of using `grep -rl`: BSD grep -r drops the leading ./ that find and rg
+# print, and the callers match these paths against FILES output.
+marimo_notebooks() {
+  local f
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    if grep -qE '^app[[:space:]]*=[[:space:]]*marimo\.App\(' "$f"; then printf '%s\n' "$f"; fi
+  done < <(FILES | grep '\.py$')
+}
+
 section() { printf '\n========== %s ==========\n' "$1"; }
 
 # --- Reproducibility / correctness risk -----------------------------------
@@ -97,8 +110,21 @@ fi
 section "Duplicated v1/v2 scripts & abandoned approaches (DELETE candidates)"
 FILES | grep -iE '(_v[0-9]+|_old|_new|_final|_copy|_backup|_bak|/archive/|/scratch/|/deprecated/|/tmp/|\.bak$)' || true
 
-section "Scratch / scratchpad notebooks beside production code"
-FILES | grep -iE '(scratch|sandbox|playground|untitled|test_notebook).*\.ipynb$|scratchpad' || true
+MARIMO=$(marimo_notebooks)
+
+section "Scratch / scratchpad notebooks beside production code (.ipynb by name, marimo .py outside notebooks/)"
+# Only the root notebooks/ holds deliverables, so a marimo notebook there is
+# never scratch, even when the name rule's `scratchpad` matches its path.
+{
+  FILES | grep -iE '(scratch|sandbox|playground|untitled|test_notebook).*\.ipynb$|scratchpad'
+  printf '%s\n' "$MARIMO"
+} | sort -u | while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  case "$f" in
+    ./notebooks/*|notebooks/*) grep -qxF -- "$f" <<< "$MARIMO" && continue ;;
+  esac
+  printf '%s\n' "$f"
+done
 
 section "Migration debt: pandas / PyMC imports (the stack is Polars / NumPyro)"
 # Each hit is code still waiting to move, or a deliberate bridge to a library
@@ -167,6 +193,11 @@ fi
 # --- Test coverage gaps ---------------------------------------------------
 section "Source modules with no obvious test (heuristic — confirm manually)"
 mods=$(FILES | grep -E '\.py$' | grep -ivE '(/tests?/|test_|conftest|__init__|/archive/|/scratch/)')
+# A marimo notebook is an app, not a module. With no notebook there is nothing
+# to drop, so mods stays whole.
+if [ -n "$MARIMO" ]; then
+  mods=$(grep -vxFf <(printf '%s\n' "$MARIMO") <<< "$mods")
+fi
 tests=$(FILES | grep -E '\.py$' | grep -E '(/tests?/|test_)')
 while IFS= read -r m; do
   [ -n "$m" ] || continue
