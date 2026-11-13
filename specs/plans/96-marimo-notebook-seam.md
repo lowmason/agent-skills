@@ -552,6 +552,8 @@ Under this step, add one line, with no version number and no repo name:
 
 `> Result (<YYYY-MM-DD>): at every ruff version the work repos run, and at the latest, the three lint configs left I001 and nothing else in notebooks/, and the formatter exclude kept notebooks/ out of ruff format, for a tree run and for an explicit path.`
 
+> Result (2026-11-13): at every ruff version the work repos run, and at the latest, the three lint configs left I001 and nothing else in notebooks/, and the formatter exclude kept notebooks/ out of ruff format, for a tree run and for an explicit path.
+
 - [ ] **Step 5: Write `templates/marimo-repo/README.md`**
 
 Plain English for people. It names no work repo. Headings and content:
