@@ -27,7 +27,7 @@ Cite an excerpt by its `path:line`, and a rule from the brief as `brief: <requir
 
 `<workspace>` is the plan's workspace: the directory your dispatch names, or the one `<this-skill-dir>/scripts/sdd-workspace PLAN_FILE` prints. `<N>` is the task number. `<K>` numbers the mutants 1, 2, 3 and so on.
 
-1. **List the stated rules,** from the places above. When an excerpt and a plan test's assertion cannot both hold, leave that rule out of steps 2 and 3 until a ruling decides it: add no test for it, aim no mutant at it, and write no `Unreachable:` line for it. Report the conflict as "Plan tests" says.
+1. **List the stated rules,** from the places above. When an excerpt and a plan test's assertion cannot both hold, keep the rule on the plan test's reading: add no test that takes the spec's side of that assertion, cover the rule's other shapes as usual (step 2), and aim a mutant at the rule as the plan test pins it, so that the plan test catches it (step 3). Report the conflict as "Plan tests" says.
 2. **Cover each rule's input shapes.** For each rule, list the input shapes its words cover: for example quoted, nested, empty, at a boundary, repeated, or at the start or end. For each shape, name the test that uses it. For each shape with no test, add a test, and fix the code if that test fails. Commit. Only shapes that the rule's words cover count. If every shape has a test, add nothing. This step comes first because a mutant cannot find a missing branch: a mutant changes code that exists, and no change reaches a shape the code never handles (the example at the end shows one).
 3. **Write mutants:** at least one aimed at each stated rule, and enough that each test the task adds or changes, plan tests included, is aimed at by one. One mutant may serve several targets. For each test, ask what wrong version of the code it would let through, and write that version. Each mutant is a plausible mistake, not a syntax break. To make one, edit the code, save `git diff -- <file> > <workspace>/task-<N>-mutant-<K>.patch`, and restore the file with `git checkout -- <file>`.
 4. **Write the mutants file,** `<workspace>/task-<N>-mutants.md`, in the form below.
@@ -56,7 +56,7 @@ Withdrawn: <K> — <why no behavior a person could see changes>
 
 The table has one row for each rule and shape. Each `Mutant`, `Unproven`, `Unreachable` and `Withdrawn` line starts at column 0 with that word.
 
-Most tasks need no `Unproven:`, `Unreachable:` or `Withdrawn:` line. Each one is a claim that a reviewer checks against the code. A survivor is never a reason for one: a survivor means a test is too weak, and step 6 strengthens it. Before you write one of these lines, make its check:
+Most tasks need no `Unproven:`, `Unreachable:` or `Withdrawn:` line. Each one is a claim that a reviewer checks against the code. Survival alone is never a reason for one: most survivors mean a test is too weak, and step 6 strengthens it. Before you write one of these lines, make its check:
 
 - **`Unproven:`** First name a plausible wrong version of the code that the test should catch. If you can name one, it is a mutant: write it. Write the line only when no plausible wrong version exists.
 - **`Unreachable:`** If code in this task's diff decides the rule, the rule is reachable: write a mutant. Write the line only when no code change in this task can break the rule.
