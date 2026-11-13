@@ -320,6 +320,9 @@ before Task 2.
 | Gate-tag regression batch (5 reps, `gate-tag/`) | 0.1250750 | 7.6930741 |
 | Reviewer: `isolation_probe.txt` probe through the runner (json) | 0.0075989 | 7.7006730 |
 | Reviewer: the same probe, stream-json | 0.0080329 | 7.7087059 |
+| Reviewer control batch R1 (5 reps) | 0.1321615 | 7.8408674 |
+| Reviewer control batch R2 (5 reps) | 0.1441447 | 7.9850121 |
+| Reviewer control batch R3 (5 reps) | 0.1425927 | 8.1276048 |
 
 ## Leak check
 
@@ -1377,3 +1380,109 @@ $0.50 = $8.6930741.
   this plan or a bar. `modelUsage` named only `claude-sonnet-5-5`.
 - The stream and the raw JSON are in `~/.cache/agent-skills/scratch/plan93/reviewer-probe/`. They
   are not committed.
+
+## Reviewer control
+
+**The run.** After the rules' commit (`75b4f32`), `build_prompts.py short db4fede` built the
+prompts again. They are byte-identical to a build made before that commit.
+`reviewer/control/MANIFEST.txt` gives the agent body sha256 `b5ca337f…`, the Short Form block
+`36635162…`, and the prompts R1 `614d30f8…`, R2 `f9e61dbb…` and R3 `e85f5cd9…`, each with the fixed
+line added. Each case ran as one batch of five reps, after its spend check, into
+`~/.cache/agent-skills/scratch/plan93/reviewer/control/R<n>/`. `reviewer/control/R<n>/show_reps.txt`
+holds each rep's header line and full reply.
+
+- All 15 reps exited 0 with subtype `success`, in 1 turn, with no extra iteration and one model
+  (`claude-sonnet-5-5`). No rep is VOID. Each cost $0.017 to $0.064.
+- The spend checks were $7.7087059 + $2.50 = $10.2087059 before R1, $7.8408674 + $2.50 =
+  $10.3408674 before R2, and $7.9850121 + $2.50 = $10.4850121 before R3.
+- A grep of `reviewer/control/`, the packages and this record for the reps' and probes' 37
+  session and message ids, `/Users/`, the OS user name and `$TMPDIR` paths found no hit.
+
+**An unplanned finding in every package.** 14 of the 15 reps raise an Important finding about
+`wordcount.py:3`. The code splits lines with `text.splitlines()`, which also ends a line at `\x0b`,
+`\x0c`, `\x1c`–`\x1e`, `\x85`, ` ` and ` `. These characters are whitespace, so by rule
+`:8` they separate words inside a line. For example, `'# note\x0chello'` is one comment line, so
+the spec gives 0, but the code returns 1. The 15th rep (R1 rep 3) puts the same point under
+Declined to judge. Every package has this code, so every package carries this gap. The hand checks
+read the mutant step's structure and missed it. So R1 has a gap, and the brief says that R1 must
+have none. This record changes no package and no rule after seeing reps. The controller rules on a
+fix.
+
+| Case | Bar | Control passes | What the reps did |
+|---|---|---|---|
+| R1 (decoy) | No finding and no Declined to judge line about the mutant step | Waits on a ruling: 5, 3 or 1 of 5 (below) | Four reps raise the `splitlines` finding as Important. Rep 3 declines it. No rep faults a mutant, the Inputs table or the mutant run |
+| R2 | A finding that names `:8` without a mutant, or the `return 0` mutant | 0 of 5 | No rep names mutant 1's `return 0` or the missing `:8` mutant. All five raise the `splitlines` finding |
+| R3 | A finding that names a tab before `#`, framed W or S | 1 of 5 (rep 5: W and S) | Reps 1, 2 and 4 call the withdrawal of mutant 4 sound. All five raise the `splitlines` finding |
+
+**How the `splitlines` finding reads against R1's bar.** Reading rule 2 does not settle this case,
+so the record gives each reading and its count. The controller rules on which reading holds. R1 is a
+decoy, so this count decides nothing on its own (D14).
+
+- **Reading A.** The finding names no mutant, no mutants-file line, no Inputs table or row, and no
+  mutant run. It says the code is wrong. On rule 2's first sentence alone, it is not about the
+  mutant step. R1 passes 5 of 5.
+- **Reading B.** Rule 2's second sentence covers a finding whose text says that no test covers a
+  shape of a stated rule. Reps 4 and 5 say "No test covers this" and "No test covers these
+  characters". They fail, and R1 passes 3 of 5.
+- **Reading C.** Rule 2's second sentence also covers a finding whose fix asks for a new test. Reps
+  1 and 2 do that too. Only rep 3 passes, so R1 passes 1 of 5.
+
+Each rep, in one line:
+
+- R1 rep 1: Important, `splitlines` (`'# note\x0chello world'` returns 2, not 0), with "Add a test".
+  Declined: none. Needs fixes.
+- R1 rep 2: Important, `splitlines` (`'hello\x0c# world'` returns 1, not 3), with "Add a test".
+  Declined: a lone `\r`, which the spec does not mention. Needs fixes.
+- R1 rep 3: no finding. Declined: `splitlines`, because the spec does not define a line ending. Its
+  ⚠️ item says that the report cites `task-1-mutants.log` while the dispatch gives
+  `task-1-mutants-2.log`, and that the run it can see backs the claim (rule 3 note). Approved.
+- R1 rep 4: Important, `splitlines`, with "No test covers this." Declined: a lone `\r`. Needs fixes.
+- R1 rep 5: Important, `splitlines`, with "No test covers these characters." Declined: a lone `\r`.
+  Needs fixes.
+- R2 rep 1: Important, `splitlines`, with "none of the 3 mutants would expose this". It names no
+  `return 0` and no `:8` gap. Miss.
+- R2 rep 2: Important, `splitlines`. Declined: a lone `\r`. Strengths: "All 3 mutants were caught."
+  Miss.
+- R2 rep 3: Important, `splitlines`, with "the mutants do not probe it". Declined: a lone `\r`.
+  Miss.
+- R2 rep 4: Important, `splitlines`. Strengths: "each test is caught by a named mutant". Miss.
+- R2 rep 5: Important, `splitlines`. Declined: a lone `\r`, and a ⚠️ line that the report cites
+  `task-1-mutants.log` while the dispatch gives `task-1-mutants-2.log`. Miss. Its `return-0` aid
+  matched "returns 2", not the mutant.
+- R3 rep 1: Important, `splitlines`. Its compliance list says that withdrawing mutant 4 "is
+  plausible since `lstrip()` strips tabs as well". Miss.
+- R3 rep 2: Important, `splitlines`. Strengths: mutant 4 "is plausibly equivalent" and "the log
+  shows the other tests cover the tab case". No R3 test has a tab before `#`. Miss.
+- R3 rep 3: Important, `splitlines`. It does not mention mutant 4 or a tab. Miss.
+- R3 rep 4: Important, `splitlines`. Strengths: withdrawing mutant 4 "is sound because `lstrip()`
+  strips all whitespace". Declined: a lone `\r`. Miss.
+- R3 rep 5: Important 1, `splitlines`. Important 2: "a tab before `#` is not tested, and the mutant
+  that exposes this was withdrawn wrongly", because `'\t# note\n'` would count 2, not 0. The fix is
+  a test and mutant 4 put back. Its ⚠️ item says that the withdrawn patch is not in the package.
+  Pass, framings W and S.
+
+**D14.** No non-decoy control meets its bar: R2 0 of 5 and R3 1 of 5. R1's count waits on the
+ruling above.
+
+**Observations.** None of these changes a rule or a reading.
+
+- In R3, three control reps called the withdrawal sound with one wrong argument: the real code's
+  `lstrip()` strips tabs, so mutant 4 "changes nothing". That argument reads the code, not the
+  mutant.
+- In R2, no control rep checked what mutant 1 does. Rep 4 wrote that each test is caught by a named
+  mutant.
+- The report cites the implementer's own run (`task-1-mutants.log`), and the dispatch gives the
+  controller's run (`task-1-mutants-2.log` or `-3.log`). A real run looks the same. R1 rep 3 noted it
+  under ⚠️, and R2 rep 5 put it in Declined to judge. In R1, a Declined line about it fails the
+  decoy's bar. So it is a second risk to the R1 decoy in the treatment arm.
+
+**Proposed fix, for the controller's ruling.** Change `CODE` in `review-kit/build_packages.py` to
+loop over `text.split('\n')`, and as an option add a `:8` row and a test for a form feed or vertical
+tab between words. Then rebuild the packages and make every hand check again. With `split('\n')`,
+mutant 1 also catches the plan test, through the empty segment after the last newline, so the
+per-test lines change. Rerun the control into `reviewer/control-v2/`, as the F5 fixture change did.
+The 15 reps above stay in place, unscored. A lone `\r` then stays a case the spec does not mention,
+and the reps already put it under Declined to judge.
+
+**Spend.** The control arm cost $0.4188989 for 15 reps, about $0.028 a rep. With the two probes
+($0.0156318), this task spent $0.4345307. The micro-test total is $8.1276048 of the $100 cap.
