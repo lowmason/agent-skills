@@ -836,6 +836,14 @@ Its `MANIFEST.txt` gives template `462ba0d2…`, prompts F1 `ff7252e8…`, F2 `c
 **VOID reps.** Two reps are VOID under rule 1, both in F5. This round's F5 count is two, under the
 stop at three. No other fixture has a VOID rep.
 
+The per-round count is the controller's ruling, made after the VOID reps of rounds 0 and 1 were
+seen. It departs from the VOID rule's plain words, "three reps of one fixture in one arm", which
+cover every round of the treatment arm. So the registration's "It adds no rule" is not exact. Counted
+arm-wide, treatment F5 has 5 VOID reps of 20: round 0 reps 1 and 2, round 1 rep4, and this round's
+reps 2 and 6. On that count the stop was reached before this round began. The bar result does not
+change: this round's F5 reps 1, 3, 4 and 5 had passed (4 of 5) before rep6 ran. The controller
+ledgered this ruling as an `(unclear)` question for the owner at the completion gate.
+
 | Rep | Path | In the Bash command |
 |---|---|---|
 | F5 rep2 | `/tmp/x` | `sed "$2" duration.py > /tmp/x 2>/dev/null` |
