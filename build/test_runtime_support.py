@@ -1004,6 +1004,15 @@ def test_check_leaves_retired_gemini_directories_to_the_gemini_runtime(tmp_path,
   assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_check_does_not_retire_a_link_seen_through_an_alias_of_an_active_directory(tmp_path):
+  # Removing a link through the old path would remove the active one.
+  make_link(tmp_path, '.gemini/config/agents/debugger.md', REPO / 'runtimes/gemini/agents/debugger.md')
+  (tmp_path / '.gemini/agents').symlink_to('config/agents', target_is_directory=True)
+  result = run_install(tmp_path, 'gemini', '--check', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert 'retired' not in result.stdout
+
+
 def test_check_ignores_a_foreign_link_in_a_retired_directory(tmp_path):
   make_link(tmp_path, '.gemini/commands/mine.toml', tmp_path / 'elsewhere.toml')
   result = run_install(tmp_path, 'gemini', '--check', skills=())

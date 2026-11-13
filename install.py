@@ -399,8 +399,14 @@ def dangling_links(runtime: str, home: Path) -> list[tuple[Path, Path]]:
 
 def retired_links(runtime: str, home: Path) -> list[tuple[Path, Path]]:
   '''Every link into this repository left in a directory the runtime no longer
-  installs into, each with the path it points at.'''
-  return repo_links(home, runtime_scope(RETIRED_DIRECTORIES, runtime))
+  installs into, each with the path it points at. A link that a retired directory
+  only shows through an alias of an active one is the active link, so it stays.'''
+  active = {
+    physical_location(link)
+    for link, _ in repo_links(home, runtime_scope(RUNTIME_DIRECTORIES, runtime))
+  }
+  links = repo_links(home, runtime_scope(RETIRED_DIRECTORIES, runtime))
+  return [(link, target) for link, target in links if physical_location(link) not in active]
 
 
 def link_noun(count: int) -> str:
