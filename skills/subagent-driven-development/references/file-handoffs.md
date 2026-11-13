@@ -41,7 +41,10 @@ and is re-read on every later turn. Hand artifacts over as files:
   Interfaces block. Leave out the Global Constraints, which the brief already
   carries. When the plan's `Spec:` is `none`, the file holds the single line
   `none: <why>`. Write it for every task, a task that is not a mutant task
-  included.
+  included. For a batch ([batching.md](batching.md)), N is the batch's first
+  task number: name the one excerpts file with it, holding the excerpts of
+  every task in the batch, and tell the implementer in the dispatch to use it
+  as `<N>` for its mutants file and its mutant patches.
 - **Review package (diffs):** generate every reviewer's diff as a file — run
   `<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD` and pass it the
   path the script reports (or, without bash: `git log --oneline`,
@@ -62,7 +65,8 @@ and is re-read on every later turn. Hand artifacts over as files:
 - **Reviewer inputs:** the task reviewer gets seven paths — the same brief
   file, the report file, your test run's file ([test-run.md](test-run.md)),
   the review package, the excerpts file (`[SPEC_EXCERPTS_FILE]`), the mutants
-  file (`[MUTANTS_FILE]`, `<workspace>/task-N-mutants.md`) and the mutant run
+  file (`[MUTANTS_FILE]`, `<workspace>/task-N-mutants.md`, N the batch's first
+  task number for a batch) and the mutant run
   file (`[MUTANT_RUN_FILE]`, the run file the mutant run reported) — plus the global constraints
   that bind the task, and `[TEST_RULINGS]`: the ledger's `Ruling:` lines that
   cover a change to this task's plan tests, quoted, or `none`. A path for a file

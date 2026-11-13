@@ -22,7 +22,7 @@ From the worktree root, run:
   - **0:** every mutant was caught. Give the reviewer the run file's path alone, not the `run:` line: `[MUTANT_RUN_FILE]` in the task review, `<MUTANT_RUN_FILE>` in a scoped re-review.
   - **1 or 3:** a survivor, an invalid mutant or a failing baseline. Send the implementer a fix round before any review, with the run file as the finding. The round counts toward the five-attempt cap.
   - **2:** the script refused, so read its message. A dirty tree is handled as in "Check the run". `no mutants for task N` is a fix round. A mutant already in HEAD is a fix round that takes the mutant out of the commit.
-  - **No `run:` line after a killed run:** run it again. The script reverses a patch that the killed run left.
+  - **No `run:` line after a killed run:** run it again with a longer timeout, as for a killed test run: a run that still does not finish is a failing run. The script reverses a patch that the killed run left, and notes it in the run file.
   - **After each fix round,** run test-run, then mutant-run.
 - **A task that is not a mutant task** gets `none: <why>` where the mutant run path goes.
 - **No command to run.** When the brief names no runnable test command (a prose or skill-text task) and the project documents none that the change can reach, run nothing. Put `none: <why>` where the path goes.
