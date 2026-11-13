@@ -1,6 +1,7 @@
 # marimo notebooks: the seam with this repo's skills, hooks and rules — Design Spec
 
-**Status:** DRAFT (2026-11-13), awaiting the owner's approval.
+**Status:** APPROVED (2026-11-13). The owner approved this file, its designer's calls included, on 2026-11-13. The
+question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it".
 
 The design came from a brainstorming session on 2026-11-12 and 2026-11-13. A builder check read the draft, and the
 owner answered its four open questions (D6 to D9). Text marked *(designer's call)* is the designer's choice, and
