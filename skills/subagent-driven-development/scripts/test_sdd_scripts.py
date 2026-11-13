@@ -1971,6 +1971,23 @@ def test_mutant_run_lists_each_outcome_with_its_message(changed):
     ]
 
 
+def test_mutant_run_lists_no_test_case_for_an_internal_error_on_the_revert(calc):
+    # On the revert, the hook cannot import double, so pytest stops with an
+    # internal error (exit 3) before any test runs. Its report holds one case,
+    # pytest::internal, which is no test and must not read as one that passed.
+    base = head_sha(calc)
+    hook = 'def pytest_collection_modifyitems(items):\n    from calc import double\n'
+    double = '\n\ndef double(a):\n    return 2 * a\n'
+    commit_files(calc, {'calc.py': CALC + double, 'conftest.py': hook}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert 'revert: ran, exit 3, failed 0, not loaded 0, skipped 0, passed 0' in lines
+    patch = run_file(calc, 'task-1-revert.patch')
+    assert run_section(lines, 'revert') == ['path: calc.py', f'sha256: {patch_sha(patch)}']
+
+
 def test_mutant_run_never_loads_revert_bytecode_cached_before_its_baseline(changed):
     # A .pyc of BASE's half.py, left by someone who ran the old code by hand,
     # would make the baseline run the old code and fail. Mutant 1 edits calc.py,
