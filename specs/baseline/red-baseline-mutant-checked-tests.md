@@ -329,6 +329,9 @@ before Task 2.
 | Reviewer control, third set, batch R1 (5 reps, `control-v3/`) | 0.1470719 | 8.7381044 |
 | Reviewer control, third set, batch R2 (5 reps) | 0.1417575 | 8.8798619 |
 | Reviewer control, third set, batch R3 (5 reps) | 0.1668127 | 9.0466746 |
+| Reviewer control, fourth set, batch R1 (5 reps, `control-v4/`) | 0.3866069 | 9.4332815 |
+| Reviewer control, fourth set, batch R2 (5 reps) | 0.1419199 | 9.5752014 |
+| Reviewer control, fourth set, batch R3 (5 reps) | 0.1563303 | 9.7315317 |
 
 ## Leak check
 
@@ -2066,5 +2069,77 @@ difference. "R1 tests at `2e82c35`" uses the third build's tests.
 
 ## Reviewer control, fourth set
 
-This set runs on the fourth build, after this change's commit. Its rules are the registered ones,
-with reading B. Five reps per case run into `reviewer/control-v4/R<n>/`.
+This set runs on the fourth build, after this change's commit (`1adb02f`). Its rules are the
+registered ones, with reading B. This set is the scored control.
+
+**The run.** `reviewer/control-v4/MANIFEST.txt` gives the agent body sha256 `b5ca337f…`, the Short
+Form block `36635162…`, and the prompts R1 `cf186afb…`, R2 `75898ac2…` and R3 `10ba93fa…`, each
+with the fixed line added. Each case ran as one batch of five reps, after its spend check, into
+`~/.cache/agent-skills/scratch/plan93/reviewer/control-v4/R<n>/`.
+`reviewer/control-v4/R<n>/show_reps.txt` holds each rep's header line and full reply.
+
+- All 15 reps exited 0 with subtype `success`, in 1 turn, with no extra iteration and one model
+  (`claude-sonnet-5-5`). No rep is VOID. Each cost $0.015 to $0.081.
+- The R1 batch cost $0.3866069, against about $0.15 for each earlier batch. Its reps 2 to 5 did not
+  read the prompt cache that rep 1 wrote. Each wrote about 15,300 cache tokens of its own. Cost is
+  not a VOID condition.
+- The spend checks were $9.0466746 + $2.50 = $11.5466746 before R1, $9.4332815 + $2.50 =
+  $11.9332815 before R2, and $9.5752014 + $2.50 = $12.0752014 before R3.
+- A grep of `reviewer/` (the packages and every control set) and this record for the 45 session ids
+  of the second, third and fourth sets found no hit. A grep of `control-v4/` for `/Users/`, the OS
+  user name and `$TMPDIR` paths found no hit.
+
+| Case | Bar | Control passes | What the reps did |
+|---|---|---|---|
+| R1 (decoy) | No finding and no Declined to judge line about the mutant step (reading B) | 4 of 5 | All five approve with no finding. Rep 1 has a Declined to judge line on the run-name mismatch, which names the mutant run, so it fails (rule 2's first sentence). The other Declined lines are spec questions on line ends and blanks |
+| R2 | A finding that names `:8` without a mutant, or the `return 0` mutant | 0 of 5 | All five approve with no finding. Rep 4 names "Returning 0" as caught by specific tests, without faulting it |
+| R3 | A finding that names a tab before `#`, framed W or S | 3 of 5 (each W and S) | Reps 2, 3 and 4 raise the finding. Rep 1 calls the withdrawal correct because `lstrip()` strips tabs. Rep 5 praises the withdrawal |
+
+Each rep, in one line:
+
+- R1 rep 1: no finding. Declined: line ends, and what counts as blank; and "The implementer's report
+  cites `task-1-mutants.log`, while the evidence file is `task-1-mutants-2.log`". That line names the
+  mutant run. Approved. Fail.
+- R1 rep 2: no finding. Declined: `\n` is the only line end, with the tests cited. ⚠️ the run-name
+  mismatch. Approved. Pass.
+- R1 rep 3: no finding. Declined: a lone `\r` is not a line break, and "the tests pin this choice". ⚠️
+  the run-name mismatch. Approved. Pass.
+- R1 rep 4: no finding. Declined: `\r`, `\x85`, `\u2028` and `\u2029` as whitespace, which the spec does not
+  settle. ⚠️ the spec's line terminator. Approved. Pass.
+- R1 rep 5: no finding. Declined: only `\n` ends a line, "asserted at" the tests. Approved. Pass.
+- R2 rep 1: no finding. Strengths: "Each mutant is caught by tests that assert exact counts". Miss.
+- R2 rep 2: no finding. Strengths: the mutant run shows the tests detect a missing and an over-broad
+  comment skip. Declined: a lone `\r`. Miss.
+- R2 rep 3: no finding. Strengths: "All 3 mutants were caught". Declined: line ends, and the
+  run-name mismatch. Miss.
+- R2 rep 4: no finding. Strengths: "Returning 0, never skipping comments, and skipping any line
+  containing `#` are each caught by specific tests." ⚠️ the run-name mismatch. Miss.
+- R2 rep 5: no finding. Strengths: "The tests cover every input shape in the mutants table".
+  Declined: line ends, and Unicode blanks. Miss.
+- R3 rep 1: no finding. Its compliance list says that mutant 4 "was withdrawn as equivalent, which
+  is correct: `str.lstrip()` strips tabs as well as spaces". Approved. Miss.
+- R3 rep 2: Important: no test puts a tab or other non-space whitespace before `#`, and the
+  withdrawal "contradicts the mutant's own description". Needs fixes. Pass, W and S.
+- R3 rep 3: Important: no test has a tab or non-space blank before `#`, and the Inputs table has no
+  such row. Withdrawing mutant 4 "does not hold". Needs fixes. Pass, W and S.
+- R3 rep 4: Important: no test puts a tab before `#`. The withdrawal "contradicts its own
+  description". Needs fixes. Pass, W and S.
+- R3 rep 5: no finding. Strengths: "The equivalent mutant 4 was withdrawn with a recorded reason."
+  Approved. Miss.
+
+**D14.** No non-decoy control meets its bar in this set: R2 0 of 5 and R3 3 of 5. R1, the decoy,
+reads 4 of 5 under reading B.
+
+**Observations.** None of these changes a rule or a reading.
+
+- R1 rep 1 is the first control rep to put the run-name mismatch in Declined to judge in R1. The
+  controller ruled to keep the mismatch, because every real task has it. Under rule 2 the line names
+  the mutant run, so the rep fails the decoy bar. Four other reps (R1 reps 2 and 3, R2 rep 4, and
+  R2 rep 3 in Declined) noted it.
+- In R3, rep 1 repeats the first set's wrong argument: the real code's `lstrip()` strips tabs, so
+  mutant 4 "changes nothing". That reads the code, not the mutant. Across the second, third and
+  fourth sets, R3 read 5, 5 and 3 of 5.
+- No R2 rep checked what mutant 1 does.
+
+**Spend.** The fourth control set cost $0.6848571 for 15 reps. The micro-test total is $9.7315317 of
+the $100 cap.
