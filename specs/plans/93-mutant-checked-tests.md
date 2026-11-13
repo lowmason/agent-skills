@@ -1,5 +1,7 @@
 # Mutant-checked tests Implementation Plan
 
+**Status: COMPLETE (2026-11-13)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make each task of a subagent-driven or inline plan run prove that its tests can fail. The implementer covers each stated rule's input shapes and writes plausible mutants. A new script, `mutant-run`, decides caught, survived and invalid. The task reviewer and executing-plans' `task-done` then gate on that script's run file.
@@ -148,7 +150,7 @@ From the brief: none. The owner's decisions D1 and D2 and the designer's calls a
 - **D6** (planner default; owner approved it as written at plan review, 2026-11-12): a JUnit `<error>` counts as a failed test, like `<failure>`. pytest exits 1 for both, and both name a test whose outcome the mutant changed. Applied in: Task 1.
 - **D7** (planner default; owner approved it as written at plan review, 2026-11-12): a batch uses its first task number for its excerpts file, mutants file, patches and mutant run, as test-run.md already does for its run. Applied in: Task 5.
 - **D8** (planner default; owner approved it as written at plan review, 2026-11-12): Design 1's excerpt rules live in `references/file-handoffs.md`, which the controller reads before its first dispatch. Applied in: Task 5.
-- **D9** (planner default; owner approved it as written at plan review, 2026-11-12): an `(unclear)` ruling that the owner overrules at the gate is work that the answer unblocks. writing-plans protocol step 1 implements it now, which is the spec's "follow-up task". The alternative is a deferred item, the rule the same paragraph gives a reverted tagged ruling. The spec places these questions under protocol step 1 (`skills/writing-plans/SKILL.md:291-299`), so step 1's rule governs. Backlog item `:6180` stays open (see Backlog items). Applied in: Tasks 5, 9.
+- **D9** (planner default; owner approved it as written at plan review, 2026-11-12): an `(unclear)` ruling that the owner overrules at the gate is work that the answer unblocks. writing-plans protocol step 1 implements it now, which is the spec's "follow-up task". The alternative is a deferred item, the rule the same paragraph gives a reverted tagged ruling. The spec places these questions under protocol step 1 (`skills/writing-plans/SKILL.md:291-299`), so step 1's rule governs. Backlog item `:6180` stays open (see Backlog items). Applied in: Tasks 5, 9. → item: 80-development-history-record — 2026-11-08
 - **D10** (planner default; owner approved it as written at plan review, 2026-11-12): the reviewer gets `[TEST_RULINGS]`, so that it can judge a loosened plan test against its covering ruling (Design 5's last sentence). Applied in: Tasks 5, 7.
 - **D11** (planner default; owner approved it as written at plan review, 2026-11-12): `task-done` also refuses a task with no mutants file, and it checks each listed mutant against the run (Design 7's third condition). Applied in: Task 9.
 - **D12** (planner default; owner approved it as written at plan review, 2026-11-12): the implementer micro-test runs multi-turn reps with Bash, Read, Edit and Write in a new kit. The spec's estimate of $15–50 for 50 reps fits that kind of rep, and the bars need runs that a one-turn rep cannot see. The reviewer micro-test runs one-turn reps with no tools in a copy of plan 84's kit, `specs/baseline/red-baseline-test-run/kit/`, with plan 92's `--disable-slash-commands` and its sixth probe line. Applied in: Tasks 2, 4, 6, 8.
@@ -202,7 +204,7 @@ From the brief: none. The owner's decisions D1 and D2 and the designer's calls a
 - Consumes: `sdd-repo --with-commit` and `sdd-workspace PLAN_FILE`, unchanged.
 - Produces: `mutant-run`, its run file, its marker and its exit codes, exactly as Global Constraints, File formats, pins them. `test-run`'s new refusal: exit 2, a stderr line that names `mutant-active`, and the command never runs.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `test_sdd_scripts.py`, change the docstring's "five bundled bash scripts" to "six" and "five files" to "six files". Add `import hashlib` and `import sys`. Add these helpers after the test-run tests:
 
@@ -264,12 +266,14 @@ The mutants are: **A** `return a + b` → `return a - b` (both add tests fail); 
 | `test_mutant_run_refuses_a_task_number_that_is_not_an_id` | the six cases of `test_test_run_refuses_a_task_number_that_is_not_an_id`; command `['sh', '-c', 'touch ran']` | `rc == 2`; `'mutant-run: bad task number'` in stderr; no `ran`; no `.sdd` |
 | `test_test_run_refuses_while_a_mutant_is_applied` | `committed`; create `.sdd/plan/mutant-active`; `test-run` with command `['sh', '-c', 'touch ran']` | `rc == 2`; `'mutant-active'` in stderr; no `ran`; no `task-1-tests.log` |
 
-- [ ] **Step 2: Run the tests to verify they fail**
+> Deviation: tests beyond the table pin mutant bytecode, pytest's collection and internal errors behind an exit-1 wrapper (62f77b0) and the bytecode purge before each run (c19303a); each strengthens, and no table test changed.
+
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py subagent-driven-development -- -k "mutant"`
 Expected: every new test fails or errors, because `mutant-run` does not exist and `test-run` does not refuse. Read each failure: a missing file or an unrefused command is the right red. The older tests are deselected by `-k`.
 
-- [ ] **Step 3: Implement `mutant-run`**
+- [x] **Step 3: Implement `mutant-run`**
 
 Follow the spec's Design 3 steps 1–7 in order, with these decisions:
 - Copy test-run's argument check, task-number check and command rendering. Name `mutant-run` in the messages.
@@ -283,22 +287,30 @@ Follow the spec's Design 3 steps 1–7 in order, with these decisions:
 - A trap on TERM, INT and HUP reverses the applied patch, removes the marker, and exits 143, 130 or 129.
 - Outputs wait in temporary files named `mutant-run.<random>` in `$dir`. The run file is written once, at the end, as test-run does. A tracked difference after the baseline or after a reverse (D2) is exit 2 with `git diff --name-only HEAD`.
 
-- [ ] **Step 4: Make `test-run` refuse while a mutant is applied**
+> Deviation: a JUnit `<error>` whose message is pytest's collection failure or internal error marks no failed test, a narrowing of D6 that spec:23-24 decides (62f77b0).
+
+> Deviation: Task 1 reopened after Task 4, whose reps got a false SURVIVED from stale bytecode: `mutant-run` now drops the patched files' cached bytecode before and after each run (22c50ef, c19303a).
+
+> Deviation: after the final review, `mutant-run` starts the command through perl with SIGINT and SIGQUIT at their defaults (1acd8ef); this overturned Task 1's ruling that left both signals ignored, and perl is now a runtime dependency.
+
+> Deviation: after the final review, `mutant-run`'s header says that a command that starts pytest more than once and keeps going after a failure can hide a catch (81ee9ec, unmeasured; the record's `## Changes after measurement`, ef8257a).
+
+- [x] **Step 4: Make `test-run` refuse while a mutant is applied**
 
 After `dir=$("$sdd/sdd-workspace" "$plan")`: when `$dir/mutant-active` exists, print `test-run: a mutant is still applied (<path of the marker>); run mutant-run again, which reverses it first` to stderr and exit 2. Add one line to the header's refusal list.
 
-- [ ] **Step 5: Name `mutant-run` in the two headers**
+- [x] **Step 5: Name `mutant-run` in the two headers**
 
 In `sdd-workspace`'s header, the sentence "so task-brief, review-package and test-run cannot drift" becomes "so task-brief, review-package, test-run and mutant-run cannot drift". In `sdd-repo`'s header, the callers sentence names test-run and mutant-run among the `--with-commit` callers.
 
-- [ ] **Step 6: Run the suite, under both shells**
+- [x] **Step 6: Run the suite, under both shells**
 
 Run: `uv run python build/run_suites.py subagent-driven-development`
 Expected: all pass; the new tests pass, and no other test changed state.
 Run: `PATH="/bin:$PATH" uv run python build/run_suites.py subagent-driven-development`
 Expected: the same result. Then `PATH="/bin:$PATH" /usr/bin/env bash -c 'echo $BASH_VERSION'` prints `3.2.57(1)-release`.
 
-- [ ] **Step 7: Lint and commit**
+- [x] **Step 7: Lint and commit**
 
 Run: `uv run --with pyyaml python build/check_conformance.py && uv run python build/check_helper_paths.py`
 Expected: both exit 0. `mutant-run` is named in `sdd-workspace`'s header, so the orphan rule passes.
@@ -321,7 +333,7 @@ git commit -m "feat(sdd): add mutant-run, which proves each mutant is caught"
 - Consumes: `implementer-prompt.md` at `db4fede` (the control text); Task 1's scripts at its commit (the treatment, in Task 4).
 - Produces: `build_prompts.py <arm> <sha> <out-dir> [<fixture> ...]` with `<arm>` `control` or `treatment`; `run_reps.sh <prompt-dir> <fixture> <out-dir> <first> <last>`; `probe.sh <out-file>`; `grade.py <out-dir> ...`; the record, committed with every rule before any rep.
 
-- [ ] **Step 1: Write the five fixtures**
+- [x] **Step 1: Write the five fixtures**
 
 Each `fixtures/F<n>/` holds:
 - `repo/`: the files committed in the rep's repository before it starts: `plan.md` (a one-task plan whose Task 1 is the brief's text), `specs/<name>.md` (a short spec that holds the excerpt sentences at the cited lines) and an empty module file.
@@ -339,7 +351,9 @@ The domains are kept apart from each other, from the examples in `references/mut
 | F4 | `monthly.py`: `summarize(rows: list[dict], month: str) -> dict` | "When no row falls in the month, `summarize` raises `ValueError` with the message `no rows for <month>`, for example `no rows for 2024-05`." | `pytest.raises(ValueError, match='^no rows$')`. It contradicts the excerpt. | (none: F4 is scored on the report) |
 | F5 | `duration.py`: `parse_duration(text: str) -> int` | Three sentences: parts `<n>h`, `<n>m` and `<n>s`, in that order, each optional, at least one; the result is in seconds; any other text raises `ValueError`. | Strong tests that cover each part alone, the three together, two pairs, zero values, an empty string, a wrong order and a unit-less number. | (none: F5 is the decoy) |
 
-- [ ] **Step 2: Write the kit**
+> Deviation: after the control, F5's `<n>` became ASCII digits only, with a plan-test case for a non-ASCII digit, because 4 of 5 control reps found that untested shape (ddac0f1).
+
+- [x] **Step 2: Write the kit**
 
 The kit is new. It takes the comment block and the refusal checks of plan 92's `run_reps.sh` (`specs/baseline/red-baseline-writing-skills-guide/kit/`) and copies no other code.
 - `build_prompts.py` takes the dispatch body, the `prompt: |` block of `implementer-prompt.md` at `<sha>` read with `git show`. It fills `[BRIEF_FILE]`, `[REPORT_FILE]`, `[directory]`, the task name, and a one-line scene for each fixture. The control body gets one added line after the brief line: `The spec excerpts your task rests on: <path of task-1-spec.md>`. The treatment body fills its own placeholders, and `[MUTANTS_GUIDE]` and `[MUTANT_RUN]` point into a skill copy under `/tmp/mt-skill/`. `build_prompts.py` writes that copy (`scripts/mutant-run`, `scripts/sdd-repo`, `scripts/sdd-workspace` and `references/mutants.md`, all from `<sha>`) and a `MANIFEST.txt` with each prompt's sha256. `git show` keeps no file mode, so it runs `chmod +x` on `/tmp/mt-skill/scripts/*`.
@@ -348,7 +362,9 @@ The kit is new. It takes the comment block and the refusal checks of plan 92's `
 - `grade.py` prints reading aids for each rep. It shows the `**Status:**` value and the plan-test functions that differ from `brief.md`. For F1–F3, it runs a kill check: in a scratch copy of the rep's final repository, it puts `wrong.py` in place of the module and runs the rep's final test files with the focused command. The check prints the failing test IDs.
 - `isolation_probe.txt` is plan 92's six-line probe, with one line added: "Use no tool for this answer." `probe.sh <out-file>` runs it under the exact rep flags.
 
-- [ ] **Step 3: Write the record's rules**
+> Deviation: `build/versions.toml` pins no pytest, so `/tmp/mt-venv` takes pytest at the repo's freeze date, 9.2.0 (the record's `## Kits`, e32623e).
+
+- [x] **Step 3: Write the record's rules**
 
 Create the record with these sections, filled before any rep: Base (`db4fede`), Kits, Fixtures, Arms, Bars, Reading rules, VOID rule, Spend stop, Leak check, Isolation probe.
 
@@ -379,23 +395,25 @@ A rep that stops on its budget is not VOID, in either arm. It is reported and sc
 
 Spend stop: Global Constraints, Spend.
 
-- [ ] **Step 4: Check for leaks and pilot**
+- [x] **Step 4: Check for leaks and pilot**
 
 Grep each fixture's `repo/`, `brief.md` and `spec.md`, and the control prompts, for each fixture's answer words: F1 `name order`, `sorted(`; F3 `indent`, `lstrip`, `leading`; F4 `no rows for` in the plan test. Record each hit, and each exemption with its reason. Then run `probe.sh` once: the init record lists exactly Bash, Read, Edit and Write, no MCP server, no skill or slash command, and `output_style` `default`, and every probe line reads NO. Run one control rep on F5 as a pilot. Audit its stream for any path outside the allowed roots. The pilot counts toward spend and is not scored.
 
-- [ ] **Step 5: Commit the kit and the rules, before any scored rep**
+- [x] **Step 5: Commit the kit and the rules, before any scored rep**
 
 ```bash
 git add specs/baseline/red-baseline-mutant-checked-tests.md specs/baseline/red-baseline-mutant-checked-tests/impl-kit/
 git commit -m "test(specs): register the implementer micro-test for mutant-checked tests"
 ```
 
-- [ ] **Step 6: Run the control arm**
+- [x] **Step 6: Run the control arm**
 
 `build_prompts.py control db4fede <tmp-dir>`, then five reps per fixture with `run_reps.sh` into `implementer/control/F<n>/`, one fixture per batch. Check spend before each batch.
 Expected: 25 scored reps.
 
-- [ ] **Step 7: Grade, record and commit**
+> Deviation: the F5 control ran again, five reps on the changed fixture, into a new directory (cc67cf2); the first F5 set stays in the record, superseded and unscored.
+
+- [x] **Step 7: Grade, record and commit**
 
 Read every rep by hand with `grade.py`'s aids. Under `## Implementer control`, write a table of each fixture's pass count, every weakening with its quoted lines, the spend so far, and any control that meets a non-decoy bar (D14).
 
@@ -417,7 +435,7 @@ git commit -m "test(specs): record the implementer micro-test's control arm"
 - Consumes: Task 1's `mutant-run` and the File formats.
 - Produces: `references/mutants.md`, whose steps 1–7 Tasks 5 and 9 cite by number, and the implementer placeholders.
 
-- [ ] **Step 1: Write the failing lint test**
+- [x] **Step 1: Write the failing lint test**
 
 In `build/test_check_helper_paths.py`, add:
 
@@ -430,11 +448,11 @@ def test_an_unanchored_mutant_run_mention_fails(tmp_path):
 Run: `uv run python build/run_suites.py build -- test_check_helper_paths.py`
 Expected: the new test fails. `HELPERS` lacks `mutant-run`, so `check` finds no mention and returns the stale-pattern line, `(['no helper reference under skills/; the pattern is stale'], 0)`.
 
-- [ ] **Step 2: Add `mutant-run` to `HELPERS`**
+- [x] **Step 2: Add `mutant-run` to `HELPERS`**
 
 `HELPERS` gains `'mutant-run'`. The docstring's first line names "the six SDD and executing-plans helpers", and its second sentence lists all six. `build/CLAUDE.md` and the root `CLAUDE.md` Commands comment change "five" to "six" and add `mutant-run` to the list. Run the Step 1 command again. Expected: pass.
 
-- [ ] **Step 3: Write `references/mutants.md`**
+- [x] **Step 3: Write `references/mutants.md`**
 
 Its first line after the title: "Read this after GREEN and the commit, in a mutant task, before you report." The file holds these parts, in this order. The prose is yours, within spec Design 2.
 1. **Terms.** The spec's Terms (spec lines 16–31): mutant, caught, input shape, survived, invalid, stated rule, unproven test, mutant task. A task that is not a mutant task skips this file and reports `mutants: none: <why>`.
@@ -445,7 +463,9 @@ Its first line after the title: "Read this after GREEN and the commit, in a muta
 6. **Plan tests.** Strengthening a plan test is allowed. Weakening one (removing or loosening an assertion, or moving an expected value) never is without a `Ruling:` line in the ledger.
 7. **One worked example**, from a domain that no fixture uses: the spec's plan 80 case (code that masks plain fences passes the plain-fence test, and a blockquoted fence was never tested).
 
-- [ ] **Step 4: Change `implementer-prompt.md`**
+> Deviation: after the final review, `mutants.md` gives a second cause for `no failed test in the JUnit report`: a command that starts pytest more than once and keeps going after a failure (81ee9ec, Codex C1; unmeasured, the record's `## Changes after measurement`, ef8257a).
+
+- [x] **Step 4: Change `implementer-prompt.md`**
 
 - "## Task Description": after the brief line, add: "Read the spec excerpts your task rests on: [SPEC_EXCERPTS_FILE]. You may open the spec at the path it names."
 - "## Your Job": add a step between "Commit your work" and "Self-review": "Prove your tests: in a mutant task, follow [MUTANTS_GUIDE]. Your plan file is [PLAN_FILE], your workspace [WORKSPACE], and the script [MUTANT_RUN]."
@@ -454,12 +474,14 @@ Its first line after the title: "Read this after GREEN and the commit, in a muta
 - "## Report Format": the report file gains "Mutants: the last mutant run's path and its counts, or `none: <why>`". The short reply gains the counts on its test-summary line.
 - Add a `**Placeholders:**` list after the template, for the five implementer placeholders of File formats.
 
-- [ ] **Step 5: Check for leaks**
+> Deviation: after the final review, the "After Review Findings" mutant sentence starts "In a mutant task", as step 5 of "Your Job" does (351ff03, Codex C4; unmeasured, the record's `## Changes after measurement`, ef8257a).
+
+- [x] **Step 5: Check for leaks**
 
 Run `/usr/bin/grep -n -i -E` over `references/mutants.md` and `implementer-prompt.md` for every leak word in the record's Leak check (Task 2 Step 4), and for the fixture module names `latest`, `checkconf`, `wordcount`, `monthly`, `duration`.
 Expected: no hit, or only hits the record already exempts. A hit is a Channel 3 leak: reword the text before Task 4.
 
-- [ ] **Step 6: Lint and commit**
+- [x] **Step 6: Lint and commit**
 
 Run: `uv run python build/check_helper_paths.py && uv run python build/check_links.py && uv run --with pyyaml python build/check_conformance.py && uv run python build/check_snippets.py skills/`
 Expected: all exit 0.
@@ -481,25 +503,29 @@ git commit -m "feat(sdd): give implementers the mutant step and the test-versus-
 **Interfaces:**
 - Consumes: Task 2's kit and rules; Task 3's commit.
 
-- [ ] **Step 1: Build the treatment and pilot it**
+- [x] **Step 1: Build the treatment and pilot it**
 
 `build_prompts.py treatment <Task 3's sha> <tmp-dir>` writes the prompts and `/tmp/mt-skill/`. Run one pilot rep on F5. Audit its stream for any path outside the allowed roots, and check that `/tmp/mt-skill/scripts/mutant-run` printed a `run:` line in it. Not scored. If the pilot and the first treatment batch together show more than one budget stop, stop and ask the owner before more spend.
 
-- [ ] **Step 2: Run the treatment arm**
+- [x] **Step 2: Run the treatment arm**
 
 Five reps per fixture into `implementer/treatment/F<n>/`, one fixture per batch. Check spend before each batch.
 Expected: 25 scored reps.
 
-- [ ] **Step 3: Grade and record**
+- [x] **Step 3: Grade and record**
 
 Read every rep as the reading rules say. Under `## Implementer treatment`, write each fixture's pass count against its bar, each weakening, each control that meets a non-decoy bar (D14), and the spend.
 
-- [ ] **Step 4: Revise a missed bar, at most twice**
+- [x] **Step 4: Revise a missed bar, at most twice**
 
 For each fixture whose treatment misses its bar: reword `mutants.md` or the prompt within spec Design 2 and 5, commit, rebuild the treatment at the new sha, and rerun only the failing fixtures into `treatment-r<k>/`. After two rounds, a fixture that still misses is the fence: stop and ask the owner, with the record's tables and the spend.
 Expected: every treatment bar met, and no rep in either arm weakens a test.
 
-- [ ] **Step 5: Commit**
+> Deviation: revision round 1 (af8b69e) put a strengthening in a new test, and F5 then met its bar (c5456f7); a text fix followed (b77577e), and a confirmatory round ran all five fixtures at `b77577e`, registered before any rep (da2037e, b88077e).
+
+> Deviation: round 1 ran one rep past the registered VOID stop (72e06b5, da2037e), and the confirmatory round counted VOID reps per round, not arm-wide; the owner kept that ruling at the completion gate (9eb64f9).
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-mutant-checked-tests.md specs/baseline/red-baseline-mutant-checked-tests/implementer/
@@ -523,7 +549,7 @@ git commit -m "test(specs): record the implementer micro-test's treatment arm"
 - Consumes: the File formats; `references/mutants.md`'s Terms and steps (Task 3).
 - Produces: the controller's mutant-run step, which Task 7's reviewer inputs rely on.
 
-- [ ] **Step 1: `references/test-run.md` (Design 4)**
+- [x] **Step 1: `references/test-run.md` (Design 4)**
 
 - The first line also covers the mutant run.
 - A new paragraph after "A passing run" covers a mutant task. Run `<this-skill-dir>/scripts/mutant-run PLAN_FILE N -- <focused command>` from the worktree root. The focused command is the brief's `Run:` steps that run tests and expect a pass, put in one call as for test-run. It is never the documented suite.
@@ -536,41 +562,49 @@ git commit -m "test(specs): record the implementer micro-test's treatment arm"
 - A batch uses its first task number (D7).
 - The "No `run:` line" bullet's list of refusals gains "or a mutant still applied (`mutant-active`)" (D4).
 
-- [ ] **Step 2: `references/file-handoffs.md` (Design 1, D8, D10)**
+> Deviation: a killed mutant run is run again with a longer timeout, and one that still does not finish is a failing run, as for a killed test run (494c517).
+
+> Deviation: after the final review, `test-run.md` says that a command that starts pytest more than once and keeps going after a failure can hide a catch (81ee9ec, Codex C1).
+
+- [x] **Step 2: `references/file-handoffs.md` (Design 1, D8, D10)**
 
 - A new "Spec excerpts" bullet after "Task brief". Before you dispatch an implementer, write `<workspace>/task-N-spec.md` in the pinned form. Take each sentence verbatim from three places: the spec sections the task's text cites, the plan's Review Focus lines that name this task, and the spec's sentences about the names and values in the task's Interfaces block. Leave out the Global Constraints, which the brief already carries. When the plan's `Spec:` is `none`, write `none: <why>`. Write it for every task, a task that is not a mutant task included.
 - The dispatch list gains the excerpts path beside the brief, and `[MUTANTS_GUIDE]`, `[MUTANT_RUN]`, `[PLAN_FILE]` and `[WORKSPACE]`.
 - "Reviewer inputs" lists seven paths: the brief, the report, the test run, the review package, the excerpts file, the mutants file and the mutant run file. It adds `[TEST_RULINGS]`.
 - The fix-dispatch bullet says re-reviews read the new mutant run file too.
 
-- [ ] **Step 3: `references/handling-reports.md` and `references/fix-loop.md` (Design 5)**
+- [x] **Step 3: `references/handling-reports.md` and `references/fix-loop.md` (Design 5)**
 
 - handling-reports.md, DONE_WITH_CONCERNS: a concern that a plan test conflicts with a spec excerpt is ruled on, before review, as fix-loop.md's plan-text ruling says.
 - fix-loop.md, after line 21: a survivor or an invalid mutant starts a round too, and after every round you run mutant-run again.
 - fix-loop.md, in the plan-mandated bullet: a ruling on a test-versus-spec conflict quotes the deciding spec sentence word for word. When the test is wrong, dispatch a fix round that changes it; the ruling covers the change, and you give the ruling to the reviewer as `[TEST_RULINGS]`. When no sentence decides it, keep the plan's test and ledger `Ruling: (unclear) <what> — <why> — <cost if wrong>`. A ruling with no quote counts as unclear.
 
-- [ ] **Step 4: `references/final-review.md` (Design 5, D9)**
+- [x] **Step 4: `references/final-review.md` (Design 5, D9)**
 
-In the gate paragraph, keep each existing sentence word for word. Add the exception as new sentences right after "Your partner may still ask to revert it, which makes it a deferred item.": a `Ruling: (unclear) …` line is not a decision taken. It is a question in the same batch, stalled on your partner's input (writing-plans' protocol step 1). If your partner overrules it, the change is a follow-up task, and protocol step 1 implements it now.
+In the gate paragraph, keep each existing sentence word for word. Add the exception as new sentences right after "Your partner may still ask to revert it, which makes it a deferred item.": a `Ruling: (unclear) …` line is not a decision taken. It is a question in the same batch, stalled on your partner's input (writing-plans' protocol step 1). If your partner overrules it, the change is a follow-up task, and protocol step 1 implements it now. → item: 80-development-history-record — 2026-11-08
 
-- [ ] **Step 5: `references/model-selection.md` (Design 8)**
+- [x] **Step 5: `references/model-selection.md` (Design 8)**
 
 Signal 2 gains one sentence: a mutant task (`mutants.md`, Terms) gets the **standard** floor even when the brief holds the complete code, because writing a plausible mutant is judgment.
 
-- [ ] **Step 6: Lint and commit**
+- [x] **Step 6: Lint and commit**
 
 Run: `uv run python build/check_helper_paths.py && uv run python build/check_links.py && uv run --with pyyaml python build/check_conformance.py && git diff --quiet db4fede -- skills/subagent-driven-development/SKILL.md`
 Expected: all exit 0. The last command proves that SKILL.md is unchanged.
+
+> Deviation: the fence check ran against `5130d1f`, the base merge, not `db4fede`, because main's own commits reached this branch through that merge (`git diff --quiet 5130d1f HEAD -- …`).
 
 ```bash
 git add skills/subagent-driven-development/references/
 git commit -m "feat(sdd): run mutant-run before review and rule on test-versus-spec conflicts"
 ```
 
-- [ ] **Step 7: Rerun the gate-tag case (D15)**
+- [x] **Step 7: Rerun the gate-tag case (D15)**
 
 Run: `uv run python specs/baseline/red-baseline-development-history/kit/build_prompts.py <this task's sha> /tmp/plan93-gate gate-tag`, then that kit's `run_reps.sh /tmp/plan93-gate/gate-tag.txt specs/baseline/red-baseline-mutant-checked-tests/gate-tag/ 1 5 claude-opus-5-5 1.00`. Check spend first.
 Expected: 5 of 5 PASS under the kit's `GATE_PASS`, read by hand. Record it under `## Regression: gate-tag` and commit. A miss gets at most two revision rounds of the Step 4 sentence, then the fence.
+
+> Deviation: the rerun used a copy of plan 80's `run_reps.sh` with `--disable-slash-commands` added, which the Isolation constraint requires (c6bd4f0), and committed only `show_reps.txt` and `MANIFEST.txt`; the raw rep JSON stays in scratch (f7fbab4).
 
 ---
 
@@ -585,11 +619,11 @@ Expected: 5 of 5 PASS under the kit's `GATE_PASS`, read by hand. Record it under
 - Consumes: Task 1's scripts at Task 1's commit; `review-package`; F3's fixture.
 - Produces: `build_prompts.py <arm> <sha> <out-dir> [<case> ...]` with `<arm>` `short` or `full`; packages R1–R3 of seven files each; the reviewer rules in the record, committed before any rep.
 
-- [ ] **Step 1: Copy and adapt the kit**
+- [x] **Step 1: Copy and adapt the kit**
 
 Copy the four files. In `run_reps.sh`, add `--disable-slash-commands` after `--setting-sources ""`, and change the `mktemp` prefix to `/tmp/mt-review-`, which names no plan. In `isolation_probe.txt`, add plan 92's sixth line. Change `plan 84` to `plan 93` in the comments. `build_prompts.py` gains an `<arm>` argument, before `<sha>`. `short` frames the agent body of `agents/task-reviewer.md` as plan 84's reviewer-run case does, followed by the Short Form dispatch. `full` gives the Full Form dispatch alone, as a general-purpose subagent gets it.
 
-- [ ] **Step 2: Build the packages**
+- [x] **Step 2: Build the packages**
 
 `build_packages.py` builds a repository from F3's fixture with a correct `count_words` and strong tests. It writes the excerpts file and a mutants file, and makes each patch. It then runs `test-run`, `mutant-run` and `review-package` from the worktree's `skills/subagent-driven-development/scripts/`, and copies the seven files (brief, report, test run, diff, excerpts, mutants file, mutant run) into `reviewer/packages/R<n>/`.
 
@@ -599,7 +633,9 @@ Copy the four files. In `run_reps.sh`, add `--disable-slash-commands` after `--s
 | R2 | R1 with mutant 1 replaced by `return 0` at the top of `count_words`, and with the whitespace rule left with no mutant and no `Unreachable:` line |
 | R3 | R1 plus mutant 3, which counts a tab-indented `#` line as words. It survived, and the file says `Withdrawn: 3 — equivalent, no behavior changes`. The change is visible. |
 
-- [ ] **Step 3: Write the reviewer rules into the record**
+> Deviation: R3 is R1 without its tab test and Inputs row, plus withdrawn mutant 4, not mutant 3, because R1 needs three mutants (75b4f32).
+
+- [x] **Step 3: Write the reviewer rules into the record**
 
 Under `## Reviewer micro-test`, write the rules. The cases are R1–R3, and the model is `sonnet` at $0.50 a rep. There are three arms:
 - `control`: `agents/task-reviewer.md` and the Short Form at `db4fede`, plus one fixed line that names the three new files.
@@ -613,7 +649,9 @@ Every arm gets the same seven files, inlined as already read. `[TEST_RULINGS]` i
 
 R1 is a decoy (D14). Copy the VOID rule from plan 84's kit word for word. Leak check: grep the leak views for `trivial`, `equivalent`, `withdraw` and `uncovered` outside the packages, and record each hit.
 
-- [ ] **Step 4: Pilot, commit the rules, run the control**
+> Deviation: R1's bar is read finding by subject (reading B), registered after the first control set and before any later rep (aedcf2a).
+
+- [x] **Step 4: Pilot, commit the rules, run the control**
 
 Run the isolation probe: six NO lines and no tools in the init record. Commit the kit, the packages and the rules. Then run five control reps per case into `reviewer/control/R<n>/`, after the spend check. Record the pass counts and any non-decoy control that meets a bar, and commit.
 
@@ -621,6 +659,8 @@ Run the isolation probe: six NO lines and no tools in the init record. Commit th
 git add specs/baseline/red-baseline-mutant-checked-tests.md specs/baseline/red-baseline-mutant-checked-tests/review-kit/ specs/baseline/red-baseline-mutant-checked-tests/reviewer/
 git commit -m "test(specs): register the reviewer micro-test and record its control arm"
 ```
+
+> Deviation: four control sets ran, after three package changes (a line-break fix with its test, then two last-line test cases), each registered before any rep (aedcf2a, 2e82c35, 1adb02f); the fourth set, control-v4 (b5d1cab), is the scored control, and the first three stay, superseded and unscored.
 
 ---
 
@@ -635,7 +675,7 @@ git commit -m "test(specs): register the reviewer micro-test and record its cont
 **Interfaces:**
 - Consumes: the File formats; the reviewer placeholders; Task 5's controller inputs.
 
-- [ ] **Step 1: Write the `## Mutants` section**
+- [x] **Step 1: Write the `## Mutants` section**
 
 Place it after `## Tests` and before `## Review scope`, in `agents/task-reviewer.md` and in the Full Form. The text is the same in both, apart from the Full Form's 4-space indent. The prose is yours, within spec Design 6, and it carries these points:
 - What you read: the excerpts file, the mutants file and the mutant run. A mutant run at a head other than the diff's head, or on a dirty tree, is a gap for the controller, as in Tests. When the mutant run is `none: <why>`, check that the why holds under the Terms: a task with a focused pytest command over code it changes is a mutant task.
@@ -643,14 +683,18 @@ Place it after `## Tests` and before `## Review scope`, in `agents/task-reviewer
 - Why each gap is a finding under the shared block's own terms. The mutant step is part of the task's requirements, so a gap is "a missed or misread requirement", graded Important. A test that no plausible wrong version can fail is the block's "tests that assert nothing".
 - The block's last pass, which deletes what a person would not notice, does not delete these findings. A test that lets a plausible wrong version through lets a defect reach that person.
 
-- [ ] **Step 2: Add the inputs to every dispatch**
+> Deviation: check 3 also makes a finding of a plan test that conflicts with an excerpt when the report never raised the conflict, so that every conflict reaches a ruling (39c1ed3).
+
+- [x] **Step 2: Add the inputs to every dispatch**
 
 - `agents/task-reviewer.md`'s inputs paragraph names the three new files and the test rulings.
 - In both forms of `task-reviewer-prompt.md`, after "## The Controller's Test Run", add "## The Mutant Step", with lines for `[SPEC_EXCERPTS_FILE]`, `[MUTANTS_FILE]` and `[MUTANT_RUN_FILE]`. "## What Was Requested" gains "Rulings that change this task's plan tests: [TEST_RULINGS]".
 - Placeholders gains the four, as File formats defines them.
 - In `re-review-prompt.md`, after the `<RUN_FILE>` paragraph: the controller's mutant run after the fixes is at `<MUTANT_RUN_FILE>`, and the mutants file is at `<MUTANTS_FILE>`. A test that the fixes add or change, that catches no mutant in that run and that has no `Unproven:` line, is a new Important finding. A plan test that the fixes loosen with no line in `<TEST_RULINGS>` is a new Important finding. Its Placeholders paragraph gains the three.
 
-- [ ] **Step 3: Check that the two `## Mutants` texts are the same**
+> Deviation: beyond this text, the re-review checks that `Unproven:`, `Withdrawn:` and `Unreachable:` lines hold, and it checks every `Withdrawn:` and `Unreachable:` line, not only new ones (39c1ed3, 37f56f5).
+
+- [x] **Step 3: Check that the two `## Mutants` texts are the same**
 
 Run:
 
@@ -660,12 +704,12 @@ uv run python -c "import re, textwrap; a = open('agents/task-reviewer.md').read(
 
 Expected: `True`.
 
-- [ ] **Step 4: Regenerate the adapters and lint**
+- [x] **Step 4: Regenerate the adapters and lint**
 
 Run: `uv run --with pyyaml python build/sync_runtime_assets.py && uv run --with pyyaml python build/sync_runtime_assets.py --check && uv run python build/check_reviewer_block.py && uv run --with pyyaml python build/check_conformance.py && uv run python build/cc_guide/cli.py lint && uv run python build/check_links.py && uv run python build/check_helper_paths.py`
 Expected: all exit 0. `check_reviewer_block.py` passes with no edit to its four copies' shared block.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add agents/task-reviewer.md skills/subagent-driven-development/task-reviewer-prompt.md skills/subagent-driven-development/re-review-prompt.md runtimes/
@@ -681,20 +725,22 @@ git commit -m "feat(sdd): task reviewer checks the mutant step"
 - Create: `specs/baseline/red-baseline-mutant-checked-tests/reviewer/treatment-short/`, `treatment-full/` (and `-r1`, `-r2` after a revision)
 - Modify (only in a revision round): `agents/task-reviewer.md`, `skills/subagent-driven-development/task-reviewer-prompt.md`, `runtimes/`
 
-- [ ] **Step 1: Run both treatment arms**
+- [x] **Step 1: Run both treatment arms**
 
 Build the prompts at Task 7's sha for `short` and `full`. Run five reps per case per arm, 30 in all, one case and arm per batch, after the spend check.
 
-- [ ] **Step 2: Grade and record**
+- [x] **Step 2: Grade and record**
 
 Read each rep by hand. Under `## Reviewer treatment`, write each arm's pass count per case against its bar, each non-decoy control that meets a bar (D14), and the spend.
 
-- [ ] **Step 3: Revise a missed bar, at most twice**
+- [x] **Step 3: Revise a missed bar, at most twice**
 
 Reword the `## Mutants` section within spec Design 6. Keep the two copies the same (Task 7 Step 3) and regenerate the adapters. Commit, and rerun only the failing cases, in both treatment arms, into `-r<k>/`. After two rounds, a case that still misses is the fence: stop and ask the owner.
 Expected: every treatment bar met in both arms.
 
-- [ ] **Step 4: Commit**
+> Deviation: not needed; every treatment bar was met in both arms at `37f56f5`, so no revision round ran (9373663).
+
+- [x] **Step 4: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-mutant-checked-tests.md specs/baseline/red-baseline-mutant-checked-tests/reviewer/
@@ -716,7 +762,7 @@ git commit -m "test(specs): record the reviewer micro-test's treatment arms"
 - Consumes: the mutant run file and the mutants file, as File formats pins them; SDD's `mutant-run`, beside `test-run`, by relative path.
 - Produces: `task-done`'s new argument, exit 4 and completion line.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 - Add `NO_MUTANTS = ('--no-mutants', 'demo task')`. In each existing test that expects a completion line, put `*NO_MUTANTS` before `'--'`. These are the tests that record a passing task, a silent pass and blank-only output, the ones that start a new ledger and match an absolute plan line, the ones run from a subdirectory or through a symlinked repo path, a file symlink, or a file symlink under a directory symlink, the ones with a plan path that holds a space and a run through test-run, the failed run and its retry, and the multi-line command. In `test_task_done_records_a_passing_task`, the expected line becomes `f'Task 1: complete (commits {base[:7]}..{head(repo)[:7]}, mutants: none: demo task, tests: sh -c \'echo "Ran 3 tests"; echo OK\' → OK)'`. Their other assertions stay as they are. This is a call change, not a weakening.
 - Add `write_mutants(repo, numbers, withdrawn=())`, which writes `task-1-mutants.md` with one `Mutant K:` line per number and one `Withdrawn: K — demo` line per withdrawn number.
@@ -736,23 +782,27 @@ git commit -m "test(specs): record the reviewer micro-test's treatment arms"
 | `test_task_done_rejects_no_mutants_without_a_reason` | `--no-mutants ''` | `rc == 2`; no completion line |
 | `test_task_done_accepts_a_run_that_mutant_run_wrote` | copy Task 1's `CALC`, `TEST_CALC`, `PYTEST` and `PY_ENV` into this test file; commit `calc.py` and `test_calc.py`; make mutant A; run `skills/subagent-driven-development/scripts/mutant-run` (by the path `task-done` uses); `write_mutants([1])` | `task-done ... -- <PYTEST>` exits 0, and the line holds `mutants: 1/1` |
 
-- [ ] **Step 2: Run them to verify they fail**
+> Deviation: the no-reason test also asserts the usage line and gives a command that must not run, because its first RED was vacuous; this strengthens the test (82b594c).
+
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py executing-plans`
 Expected: the new tests fail (no gate, and `--no-mutants` is not an argument), and so do the existing tests that now pass `*NO_MUTANTS`, since the old script rejects the argument. The failing-task test and the refusal tests still pass.
 
-- [ ] **Step 3: Implement the gate**
+- [x] **Step 3: Implement the gate**
 
 - Arguments: `--no-mutants REASON` may come between `BASE` and `--`. An empty reason, or a missing `--`, is exit 2 with the new usage line.
 - The gate runs only after a passing test run, in this order: newest run by number, then its `head:`, then its `result:` (must match `^result: caught ([0-9]+), survived 0, invalid 0$`), then the mutants file, then each listed mutant against the run's `mutant K:` lines and the `Withdrawn:` lines. The first failure prints `task-done: <reason>; Task <N> NOT recorded (mutant run: <path or none>)` and exits 4.
 - The completion line follows File formats. The header comment documents the gate, exit 4 and `--no-mutants`.
 
-- [ ] **Step 4: Run the suite, under both shells**
+> Deviation: the gate also refuses a `Withdrawn: K` line whose `task-N-mutant-K.patch` is still in the workspace, an added absence check that the pinned rename makes safe (82b594c).
+
+- [x] **Step 4: Run the suite, under both shells**
 
 Run: `uv run python build/run_suites.py executing-plans`, then `PATH="/bin:$PATH" uv run python build/run_suites.py executing-plans`
 Expected: all pass in both runs.
 
-- [ ] **Step 5: Change `SKILL.md` (Design 7)**
+- [x] **Step 5: Change `SKILL.md` (Design 7)**
 
 - Section 2, after the commit paragraph, gets "**Prove the tests.**" In a mutant task (`../subagent-driven-development/references/mutants.md`, Terms), after GREEN and the commit, work that file's steps 1–6. You read the spec at setup, so write no excerpts file: cite the spec as `path:line` in the mutants file. The command is `<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N -- <the brief's focused test command>`. Link the file.
 - Section 2's "The plan is wrong" bullet gains the layer-4 case. A plan test that conflicts with the spec is never edited silently. Rule only when a spec sentence decides it, and quote that sentence in the ruling. When none decides it, keep the plan's test and ledger `Task <N>: Ruling: (unclear) …`, which the completion gate asks about.
@@ -762,13 +812,13 @@ Expected: all pass in both runs.
 Measure the body: `uv run --with pyyaml python -c "import sys; sys.path.insert(0, 'build'); import check_conformance as c; b, _ = c.skill_body(open('skills/executing-plans/SKILL.md').read()); print('body chars', len(b))"`
 Expected: 18,500 or fewer (it is 16,392 at `db4fede`).
 
-- [ ] **Step 6: Change `references/final-review.md`**
+- [x] **Step 6: Change `references/final-review.md`**
 
 - Item 1 (code-reviewer) gains the mutant check. When the workspace holds mutant files, add to `[PLAN_OR_REQUIREMENTS]` the path of each task's `task-N-mutants.md` and newest `task-N-mutants*.log`, with a check list in your own words of the six checks of spec Design 6. A gap is Important. The code-reviewer files themselves do not change (scope fence).
 - Item 1 also gains the ledger's `mutants: none: <why>` completion lines, with the Terms test the task reviewer uses: a task with a focused pytest command over code it changes is a mutant task, so its `none:` reason does not hold. Such a task is an Important finding.
 - The gate paragraph gets the same `(unclear)` exception as Task 5 Step 4, in the same place: right after "Your partner may still ask to revert it, which makes it a deferred item." Each existing sentence stays word for word.
 
-- [ ] **Step 7: Add the NOTICE entry**
+- [x] **Step 7: Add the NOTICE entry**
 
 After the plan 92 entry, add this entry, with the commit date:
 
@@ -792,7 +842,7 @@ After the plan 92 entry, add this entry, with the commit date:
     (specs/baseline/red-baseline-mutant-checked-tests.md).
 ```
 
-- [ ] **Step 8: Lint and commit**
+- [x] **Step 8: Lint and commit**
 
 Run: `uv run python build/check_helper_paths.py && uv run python build/check_links.py && uv run --with pyyaml python build/check_conformance.py && uv run python build/check_provenance.py && uv run python build/cc_guide/cli.py lint && (cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies)`
 Expected: all pass.
@@ -809,7 +859,7 @@ git commit -m "feat(executing-plans): gate task-done on a clean mutant run"
 **Files:**
 - Modify: `specs/baseline/red-baseline-mutant-checked-tests.md`
 
-- [ ] **Step 1: Run every lint and every suite the change reaches**
+- [x] **Step 1: Run every lint and every suite the change reaches**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: exit 0.
@@ -818,7 +868,9 @@ Expected: all pass in both runs.
 Run: `git diff --quiet db4fede -- skills/subagent-driven-development/SKILL.md skills/writing-plans agents/code-reviewer.md skills/requesting-code-review`
 Expected: exit 0.
 
-- [ ] **Step 2: Write the summary**
+> Deviation: the fence check ran against `5130d1f`, the base merge, not `db4fede`, because main's own `skills/writing-plans` changes reached this branch through that merge (`git diff --quiet 5130d1f HEAD -- …`).
+
+- [x] **Step 2: Write the summary**
 
 Under `## Summary`, write:
 - each bar and its result, per arm;
@@ -827,7 +879,9 @@ Under `## Summary`, write:
 - each wording revision, with its commit;
 - the line for backlog item `:5719`: R1–R3 ran on the Full Form's `## Mutants` section; the rest of the Full Form is still untested.
 
-- [ ] **Step 3: Commit**
+> Deviation: after the summary, the record gained `## Changes after measurement`, which names the final review's edits to measured texts and to `mutant-run` and why no fixture reaches them (ef8257a).
+
+- [x] **Step 3: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-mutant-checked-tests.md
