@@ -20,8 +20,9 @@ while [ "$i" -le "$LAST" ]; do
   [ -e "$OUT/rep$i.json" ] && { echo "refusing: $OUT/rep$i.json exists"; exit 2; }
   i=$((i + 1))
 done
+# rep returns the status of its `claude` run, so a failed rep reaches the script's exit status.
 rep() {
-  local run
+  local run status
   run="$(mktemp -d /tmp/rsm-rep-XXXXXX)" || return 2
   (
     cd "$run" || exit 2
@@ -32,13 +33,22 @@ rep() {
       --no-session-persistence --output-format json --max-budget-usd 0.50 \
       ${FLAGS[@]+"${FLAGS[@]}"} < "$PROMPT" > "$OUT/rep$1.json" 2> "$OUT/rep$1.err"
   )
-  echo "rep$1 exit=$?"
+  status=$?
+  echo "rep$1 exit=$status"
   [ -s "$OUT/rep$1.err" ] || rm -f "$OUT/rep$1.err"
+  return "$status"
 }
-rep "$FIRST"
+# The first rep writes the prompt cache for the others, so a failure there stops the batch.
+rep "$FIRST" || { echo "rep$FIRST failed, so the other reps did not run"; exit 1; }
+pids=()
 i=$((FIRST + 1))
 while [ "$i" -le "$LAST" ]; do
   rep "$i" &
+  pids+=("$!")
   i=$((i + 1))
 done
-wait
+failed=0
+for pid in ${pids[@]+"${pids[@]}"}; do
+  wait "$pid" || failed=$((failed + 1))
+done
+[ "$failed" -eq 0 ] || { echo "$failed rep(s) failed"; exit 1; }

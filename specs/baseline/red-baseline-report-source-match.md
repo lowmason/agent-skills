@@ -8,7 +8,10 @@ and plots are checked against the tables they reflect. `NOTICE` credits the idea
 Each rep is a fresh, decision-only `claude -p` with no tools. It runs from an empty directory under
 `/tmp`, under `env -i`, with `--setting-sources ""` and `--disable-slash-commands`. The isolation
 probe (`kit/isolation_probe.txt`) answered NO on all six lines on 2.1.323, and the init record
-showed no tools, no MCP servers, no skills and the default output style.
+showed no tools, no MCP servers, no skills and the default output style. `kit/show_reps.py` marks
+a rep VOID when its file is unreadable, the run is an error, or a tool or the advisor ran (more
+than one turn, an iteration that is not a message, or more than one model). None of the 30 reps
+is VOID.
 
 The 10 Sonnet RED reps and the 10 GREEN reps were read by hand in full. The 10 Opus RED reps were
 scored from their ACTION lines and from the lines that name the planted values, so the false-flag
