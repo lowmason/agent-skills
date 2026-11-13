@@ -1,6 +1,6 @@
 test-run: Task 1, run 1
 command: sh -c '(/tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py) && (/tmp/mt-venv/bin/python -m pytest -q)'
-head: 888c042742c2055a84ec6173a547856df60b0165
+head: 8672a0d6f639e67e98b03d1b1db1b4a28e168765
 tree: clean
 exit: 0
 --- output ---

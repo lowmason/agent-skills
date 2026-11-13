@@ -94,7 +94,8 @@ ADDED_TESTS = {
     'test_count_words_counts_a_hash_after_other_whitespace_in_a_line': (
         ('hello\x0c# world\n', 3), ('hello\r# world\n', 3), (f'hello{LS}# world\n', 3)),
     'test_count_words_splits_on_any_run_of_whitespace': (('one  two\tthree \t four\n\nfive\r\nsix\n', 6),
-                                                         ('well-known a,b end.\n', 3), ('hello  world', 2)),
+                                                         ('well-known a,b end.\n', 3), ('hello  world', 2),
+                                                         ('one\ntwo a', 3)),
     'test_count_words_splits_on_other_whitespace_inside_a_line': (
         ('a\x0bb\x0cc\rd\n', 4),
         (f'a\x1cb\x1dc\x1ed{NEL}e{LS}f{PS}g{NBSP}h{IDEOGRAPHIC_SPACE}i\n', 9)),

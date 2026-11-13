@@ -1,6 +1,6 @@
 mutant-run: Task 1, run 2
 command: /tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py
-head: f16e205e1ea3257086653f88d83ab15407787f01
+head: 396f3d6962e03e45b0eb0b59eb36d87ef01b45da
 tree: clean
 result: caught 3, survived 0, invalid 0
 --- mutants ---
@@ -122,7 +122,7 @@ __________ test_count_words_splits_on_other_whitespace_inside_a_line ___________
 E       AssertionError: assert 0 == 4
 E        +  where 0 = count_words('a\x0bb\x0cc\rd\n')
 
-tests/test_wordcount.py:57: AssertionError
+tests/test_wordcount.py:58: AssertionError
 _______________ test_count_words_ignores_whitespace_at_the_ends ________________
 
     def test_count_words_ignores_whitespace_at_the_ends():
@@ -130,7 +130,7 @@ _______________ test_count_words_ignores_whitespace_at_the_ends ________________
 E       AssertionError: assert 0 == 2
 E        +  where 0 = count_words('  one two  \n')
 
-tests/test_wordcount.py:62: AssertionError
+tests/test_wordcount.py:63: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_wordcount.py::test_count_words_skips_comment_lines - Assert...
 FAILED tests/test_wordcount.py::test_count_words_skips_a_comment_after_spaces
