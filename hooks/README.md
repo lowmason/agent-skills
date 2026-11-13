@@ -43,6 +43,8 @@ All three parse the hook JSON payload from stdin with `jq` (already on your mach
 
 ## Install into a work repo
 
+A repo with marimo notebooks needs one step first. marimo is a Python notebook tool. Add the ruff ignore from [the marimo-repo kit](../templates/marimo-repo/README.md#the-ruff-ignore) before you install `ruff-check.sh`. Without it, the Stop hook blocks every turn while a notebook has a display line. A display line is the last expression of a cell, and ruff reports it as B018 (a useless expression). Under single-quote rules, the same happens with marimo's own double-quoted lines, which ruff reports as Q000 (a quote-style error).
+
 From the target repo (e.g. `~/Projects/alt-nfp-stats`):
 
 ```bash
@@ -292,6 +294,10 @@ fails closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Oth
   `git -c core.fsmonitor=… status`, `git -c diff.external=… diff`,
   `GIT_EXTERNAL_DIFF=… git diff`.
 - Anything reached through an alias, a function defined elsewhere, or a wrapper script.
+- marimo-pair's `bash …/execute-code.sh`. marimo-pair lets an agent drive a live marimo
+  notebook, and this script can create, edit and run its cells. The guard accepts this
+  gap, because no read-only agent has a reason to drive a live notebook. It adds no rule
+  for it.
 
 Known false positives, accepted rather than widened:
 
