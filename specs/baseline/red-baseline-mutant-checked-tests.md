@@ -1127,6 +1127,11 @@ Every kit Python command runs with `PYTHONDONTWRITEBYTECODE=1`, from the reposit
 
 ### Packages
 
+**First build, superseded.** This section describes the first build, which the first control set
+ran on. After that set, the controller ruled a package change (Package change, below). The current
+packages are the second build that section describes. The first build's files stay in the history
+at `a919a93`.
+
 `review-kit/build_packages.py specs/baseline/red-baseline-mutant-checked-tests/reviewer/packages`
 built R1 to R3. Each package is the seven files a task reviewer reads: the brief, the report, the
 controller's test run, the review package (the diff), the excerpts file, the mutants file and the
@@ -1274,6 +1279,15 @@ during execution.
    Inputs table or one of its rows, or the mutant run or one of its lines. A finding that a stated
    rule's input shape has no test is also about the Inputs table, whether or not it names the
    table, because R1's table claims every shape.
+
+   **Added after the first control set: reading B, the controller's ruling.** The first control
+   set, now superseded, prompted this ruling. R1's bar reads by subject. A finding or a Declined to
+   judge line that claims that a stated rule's input shape has no test is a mutant finding, whatever
+   words it uses. Spec line 418 says "R1 draws no mutant finding", and Design 6's first check (spec
+   lines 319-320) is "The inputs table lists the shapes each stated rule's words cover, and each
+   shape has a test." A pure code finding that makes no such claim is not a mutant finding. A fix
+   that only asks for a new test makes no such claim, so reading C (Reviewer control) is not
+   adopted.
 3. **R1.** A pass has no finding and no Declined to judge line about the mutant step (rule 2). The
    reader notes each other finding, and each ⚠️ item or Assessment sentence that doubts the mutant
    step. These notes do not change the score.
@@ -1383,6 +1397,10 @@ $0.50 = $8.6930741.
 
 ## Reviewer control
 
+**Superseded and unscored.** After this set, the controller ruled a package change (Package
+change, below). The 15 reps of this set stay in place, and none is scored. The scored control is
+Reviewer control, second set.
+
 **The run.** After the rules' commit (`75b4f32`), `build_prompts.py short db4fede` built the
 prompts again. They are byte-identical to a build made before that commit.
 `reviewer/control/MANIFEST.txt` gives the agent body sha256 `b5ca337f…`, the Short Form block
@@ -1400,7 +1418,7 @@ holds each rep's header line and full reply.
 
 **An unplanned finding in every package.** 14 of the 15 reps raise an Important finding about
 `wordcount.py:3`. The code splits lines with `text.splitlines()`, which also ends a line at `\x0b`,
-`\x0c`, `\x1c`–`\x1e`, `\x85`, ` ` and ` `. These characters are whitespace, so by rule
+`\x0c`, `\x1c`–`\x1e`, `\x85`, `\u2028` and `\u2029`. These characters are whitespace, so by rule
 `:8` they separate words inside a line. For example, `'# note\x0chello'` is one comment line, so
 the spec gives 0, but the code returns 1. The 15th rep (R1 rep 3) puts the same point under
 Declined to judge. Every package has this code, so every package carries this gap. The hand checks
@@ -1416,7 +1434,8 @@ fix.
 
 **How the `splitlines` finding reads against R1's bar.** Reading rule 2 does not settle this case,
 so the record gives each reading and its count. The controller rules on which reading holds. R1 is a
-decoy, so this count decides nothing on its own (D14).
+decoy, so this count decides nothing on its own (D14). The controller ruled reading B, which
+Reviewer reading rules now holds (rule 2). Under it, this superseded set's R1 reads 3 of 5.
 
 - **Reading A.** The finding names no mutant, no mutants-file line, no Inputs table or row, and no
   mutant run. It says the code is wrong. On rule 2's first sentence alone, it is not about the
@@ -1482,7 +1501,131 @@ tab between words. Then rebuild the packages and make every hand check again. Wi
 mutant 1 also catches the plan test, through the empty segment after the last newline, so the
 per-test lines change. Rerun the control into `reviewer/control-v2/`, as the F5 fixture change did.
 The 15 reps above stay in place, unscored. A lone `\r` then stays a case the spec does not mention,
-and the reps already put it under Declined to judge.
+and the reps already put it under Declined to judge. The controller ruled yes, with more shapes
+(Package change, below).
 
 **Spend.** The control arm cost $0.4188989 for 15 reps, about $0.028 a rep. With the two probes
 ($0.0156318), this task spent $0.4345307. The micro-test total is $8.1276048 of the $100 cap.
+
+## Package change (controller ruling, after the first control set)
+
+**The ruling.** The controller ruled on the three questions of the first control set. The ruling is
+in the ledger.
+
+- **Fix the packages.** R1 must be a clean decoy (spec Verification item 4: "R1: a plausible mutant
+  set with every rule covered."). A real code defect makes it a finding fixture. This is the same
+  case as the F5 fixture change. The code loops over `text.split('\n')`. The form feed or vertical
+  tab inside a line gets an Inputs row and a test: it separates words and never ends a line. Every
+  other line-break or whitespace shape that the rules' words plainly cover gets a row and a test in
+  R1, and so in R2 and R3 apart from their planted gaps. That covers at least `\r\n` line endings and
+  a lone `\r`. Where a shape has two honest readings under the rules' words, the package takes the
+  reading that the code implements, and this section says so. F3's fixture under `impl-kit/` does not
+  change.
+- **R1 reads by subject, reading B.** Reviewer reading rules, rule 2, now holds it.
+- **The run mismatch stays.** The report cites the implementer's `task-1-mutants.log`, and the
+  dispatch gives the controller's `task-1-mutants-2.log`. Every real task has it, because
+  `references/test-run.md` has the controller run `mutant-run` again and give the reviewer its own
+  run file. If a treatment text makes reviewers flag it, that is over-triggering, which the R1 decoy
+  exists to catch.
+- **The departures stand.** R3 is built from R1 without the tab test and its row, the withdrawn
+  mutant is number 4, and R3 carries the controller's run after the withdrawal.
+- The first control set is superseded and unscored. Its 15 reps stay in place.
+
+**What changed.** Only `review-kit/build_packages.py` changed. The packages were rebuilt from it with
+the real scripts.
+
+- `count_words` loops over `text.split('\n')` in place of `text.splitlines()`. Only a newline ends a
+  line. A `\r` before a newline is whitespace, which `split()` and `lstrip()` remove.
+- The script writes each test input with `repr()`, so every escape stays visible in the test file.
+  The test file holds no character outside ASCII.
+- R1 now has 13 tests: the plan test and 12 added tests. These are the changed and new ones. The
+  other tests are unchanged.
+
+| Test | Inputs | Expected |
+|---|---|---|
+| `test_count_words_skips_a_comment_after_a_tab_or_other_blank` (was `…_after_a_tab`) | `'\t# note\nhello\n'`, `'\x0c\x0b# note\nhello\n'`, `'\r\x1c\x1d\x1e\x85\u2028\u2029\xa0\u3000# note\nhello\n'` | 1, 1, 1 |
+| `test_count_words_skips_a_comment_with_no_blank_after_the_hash` | `'#note here\nhello\n'`, and new `'#\nhello\n'` | 1, 1 |
+| `test_count_words_skips_several_comment_lines` (new) | `'# one\n# two\nhello\n'`, `'# only\n# comments\n'` | 1, 0 |
+| `test_count_words_skips_a_comment_line_that_ends_with_crlf` (new) | `'# note\r\nhello\r\n'` | 1 |
+| `test_count_words_skips_a_whole_comment_line_past_other_whitespace` (new) | `'# a\x0bb\x0cc\rd\x85e\u2028f\nhello\n'` | 1 |
+| `test_count_words_counts_a_hash_after_other_whitespace_in_a_line` (new) | `'hello\x0c# world\n'`, `'hello\r# world\n'`, `'hello\u2028# world\n'` | 3, 3, 3 |
+| `test_count_words_splits_on_any_run_of_whitespace` | the old input, and new `'well-known a,b end.\n'` | 6, 3 |
+| `test_count_words_splits_on_other_whitespace_inside_a_line` (new) | `'a\x0bb\x0cc\rd\n'`, `'a\x1cb\x1dc\x1ed\x85e\u2028f\u2029g\xa0h\u3000i\n'` | 4, 9 |
+| `test_count_words_ignores_whitespace_at_the_ends` | the old inputs, and new `'\u3000one two\x85\n'` | 2 |
+
+- R1's Inputs table has 24 rows, 12 for each rule. The new rows for `specs/wordcount.md:7` are:
+  other whitespace before `#` (a form feed, a vertical tab, a lone `\r`, `\x1c` to `\x1e`, `\x85`,
+  `\u2028`, `\u2029`, the no-break space `\u00a0`, the ideographic space `\u3000`); a line that is only `#`; several comment
+  lines in a row, and text that is only comments; a comment line that ends with `\r\n`; other
+  whitespace inside a comment line (a vertical tab, a form feed, a lone `\r`, `\x85`, `\u2028`),
+  where only a newline ends the line; and `#` after a word and a form feed, a lone `\r` or `\u2028`
+  in the same line. The new rows for `specs/wordcount.md:8` are: punctuation with no whitespace,
+  which never separates words; a vertical tab, a form feed or a lone `\r` between words, each of
+  which separates words and never ends a line; and other Unicode whitespace between words (`\x1c` to
+  `\x1e`, `\x85`, `\u2028`, `\u2029`, the no-break space `\u00a0`, the ideographic space `\u3000`).
+  The row for whitespace at the start and end of a line now names Unicode whitespace too (`\u3000`,
+  `\x85`).
+- The mutants keep their numbers and their wrong versions. Mutant 1 also names the new whitespace
+  test. Mutant 2 also names the three new comment-line tests. Mutant 3 also names the new
+  hash-after-other-whitespace test. R2's mutant 1 (`return 0`) names the three whitespace tests and
+  no rule. R3 leaves out the tab-or-other-blank test and its two rows. Mutant 4 and its `Withdrawn:`
+  line are unchanged.
+- The report says that the code splits at each newline. Its sentence on the added tests no longer
+  says "one for each input shape", because some tests cover several shapes.
+
+**Shapes with two honest readings, and the reading the packages take.** In each case the code's
+reading is the one that rule `:8` states: whitespace separates words. Each has a row and a test.
+
+- "Blank" in rule `:7` ("first non-blank character") can mean a space or a tab only, or any
+  whitespace. The code reads it as any whitespace, because `lstrip()` removes every character that
+  `str.isspace()` accepts. So each whitespace character before `#` still makes a comment line.
+- A lone `\r` can be an old line ending or whitespace inside a line. The code reads it as
+  whitespace: it separates words and never ends a line.
+- `\x0b`, `\x0c`, `\x1c` to `\x1e`, `\x85`, `\u2028` and `\u2029` are line ends to `str.splitlines()`
+  and whitespace to `str.split()`. The code reads them as whitespace, as the first control set's
+  reps argued from rule `:8`.
+- The no-break space `\u00a0` can be a joiner of two words or whitespace. The code reads it as
+  whitespace, as `str.split()` does, so it separates words.
+
+**Hand checks, made before any new rep.**
+
+- The new code passes all 13 tests. The old `splitlines()` code fails two of them,
+  `test_count_words_skips_a_whole_comment_line_past_other_whitespace` and
+  `test_count_words_counts_a_hash_after_other_whitespace_in_a_line`, so those tests pin the change.
+- R1: each rule has a mutant (`:7` mutants 2 and 3, `:8` mutant 1). Each of the 24 rows names a test
+  that uses its shape. Each of the 13 tests caught a mutant, in the run's `test` lines. With
+  `split('\n')`, mutant 1 also catches each test whose input ends with a newline, through the empty
+  segment after it. The test run, the mutant run and the diff are at head `a5fa8eb`, on a clean
+  tree. A check of the rules' words for other line-break or whitespace shapes found none without a
+  row and a test. R1 has no planted gap.
+- R2: its mutants file differs from R1's only in mutant 1's line. No `Mutant` line names
+  `specs/wordcount.md:8`, and there is no `Unreachable:` line. The three whitespace tests are caught
+  by mutant 1 (`return 0`) alone. Its report and diff are byte-identical to R1's. Its only gap is the
+  planted one.
+- R3: 12 tests and 22 rows, at head `98c7a21`. Run 1 in the scratch workspace shows
+  `mutant 4: SURVIVED exit 0`. Applied to R1's scratch repository, mutant 4's patch fails only the
+  tab-or-other-blank test, with `3 == 1` on `'\t# note\nhello\n'`. In run 3, the controller's, each
+  of the 12 tests caught a mutant. Its only gap is the planted one.
+- Two builds made byte-identical packages. The base is still `0edad74`.
+- Leak check on the second build: the leak words hit nothing in the six new leak views. In the
+  packages they hit only R3's `Withdrawn: 4` line (now line 36) and its report's line 38, both
+  exempt as before. The name grep hit only `subagent` in the frames, and nothing in the packages.
+- The control prompts at `db4fede` differ from the first set's only in the inlined package files,
+  the Base and Head lines and the run paths. A script checked that each prompt inlines each of its
+  seven package files byte for byte. The agent body (`b5ca337f…`) and the Short Form block
+  (`36635162…`) are unchanged. The control prompts' sha256s are R1 `9c64bdaa…`, R2 `2dd68a32…` and
+  R3 `2f1a6136…`. A Full Form dry build at `db4fede` (block `090dbe7b…`) passes the same check.
+- **A first rebuild, found short before the commit.** The first rebuild (heads `4134fce` and
+  `e91ce4a`) named only a form feed and a vertical tab as other whitespace before `#`, and tested
+  only space and tab whitespace at the ends of a line. The rule `:8` rows already named the whole
+  Unicode set. A reviewer could then say that the rest of that set before `#` had no test. A review
+  before the commit found it. The tab-or-other-blank test and the ends test each got one input, and
+  the two rows widened. The new input before `#` is in the tab-or-other-blank test, so R3 still
+  leaves it out and mutant 4 still survives in R3's run 1. No rep ran on the first rebuild.
+
+**Spend.** The micro-test total before the second control set is $8.1276048.
+
+## Reviewer control, second set
+
+This set runs on the second build, after this change's commit. Its rules are the registered ones,
+with reading B. Five reps per case run into `reviewer/control-v2/R<n>/`.

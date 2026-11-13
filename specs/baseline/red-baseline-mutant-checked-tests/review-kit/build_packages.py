@@ -50,7 +50,7 @@ DATES = ('2026-11-02T09:00:00+0000', '2026-11-02T09:20:00+0000', '2026-11-02T09:
 
 CODE = '''def count_words(text: str) -> int:
     total = 0
-    for line in text.splitlines():
+    for line in text.split('\\n'):
         if line.lstrip().startswith('#'):
             continue
         total += len(line.split())
@@ -73,30 +73,54 @@ PLAN_TEST = r'''from wordcount import count_words
 def test_count_words_skips_comment_lines():
     assert count_words('# note\nhello world\n') == 2
 '''
-# The tests that commit 2 adds, in file order, as (name, body).
+TAB_TEST = 'test_count_words_skips_a_comment_after_a_tab_or_other_blank'
+# NEL, LS and PS are whitespace to str.split() and line ends to str.splitlines(). NBSP and
+# IDEOGRAPHIC_SPACE are whitespace to str.split().
+NEL, LS, PS = '\x85', chr(0x2028), chr(0x2029)
+NBSP, IDEOGRAPHIC_SPACE = '\xa0', chr(0x3000)
+# The tests that commit 2 adds, in file order, as {name: ((input, expected), ...)}. Each input is
+# written into the test file with repr(), so every escape stays visible.
 ADDED_TESTS = {
-    'test_count_words_skips_a_comment_after_spaces': r"    assert count_words('   # note\nhello\n') == 1",
-    'test_count_words_skips_a_comment_after_a_tab': r"    assert count_words('\t# note\nhello\n') == 1",
-    'test_count_words_skips_a_comment_with_no_blank_after_the_hash': r"    assert count_words('#note here\nhello\n') == 1",
-    'test_count_words_skips_a_comment_on_the_last_line': r"    assert count_words('hello\n# last note') == 1",
-    'test_count_words_counts_a_hash_after_a_word': r"    assert count_words('hello # world\n') == 3",
-    'test_count_words_splits_on_any_run_of_whitespace': r"    assert count_words('one  two\tthree \t four\n\nfive\r\nsix\n') == 6",
-    'test_count_words_ignores_whitespace_at_the_ends': (r"    assert count_words('  one two  \n') == 2" '\n'
-                                                        r"    assert count_words('') == 0" '\n'
-                                                        r"    assert count_words(' \t\n') == 0"),
+    'test_count_words_skips_a_comment_after_spaces': (('   # note\nhello\n', 1),),
+    TAB_TEST: (('\t# note\nhello\n', 1), ('\x0c\x0b# note\nhello\n', 1),
+               (f'\r\x1c\x1d\x1e{NEL}{LS}{PS}{NBSP}{IDEOGRAPHIC_SPACE}# note\nhello\n', 1)),
+    'test_count_words_skips_a_comment_with_no_blank_after_the_hash': (('#note here\nhello\n', 1), ('#\nhello\n', 1)),
+    'test_count_words_skips_a_comment_on_the_last_line': (('hello\n# last note', 1),),
+    'test_count_words_skips_several_comment_lines': (('# one\n# two\nhello\n', 1), ('# only\n# comments\n', 0)),
+    'test_count_words_skips_a_comment_line_that_ends_with_crlf': (('# note\r\nhello\r\n', 1),),
+    'test_count_words_skips_a_whole_comment_line_past_other_whitespace': (
+        (f'# a\x0bb\x0cc\rd{NEL}e{LS}f\nhello\n', 1),),
+    'test_count_words_counts_a_hash_after_a_word': (('hello # world\n', 3),),
+    'test_count_words_counts_a_hash_after_other_whitespace_in_a_line': (
+        ('hello\x0c# world\n', 3), ('hello\r# world\n', 3), (f'hello{LS}# world\n', 3)),
+    'test_count_words_splits_on_any_run_of_whitespace': (('one  two\tthree \t four\n\nfive\r\nsix\n', 6),
+                                                         ('well-known a,b end.\n', 3)),
+    'test_count_words_splits_on_other_whitespace_inside_a_line': (
+        ('a\x0bb\x0cc\rd\n', 4),
+        (f'a\x1cb\x1dc\x1ed{NEL}e{LS}f{PS}g{NBSP}h{IDEOGRAPHIC_SPACE}i\n', 9)),
+    'test_count_words_ignores_whitespace_at_the_ends': (('  one two  \n', 2), (f'{IDEOGRAPHIC_SPACE}one two{NEL}\n', 2),
+                                                        ('', 0), (' \t\n', 0)),
 }
-TAB_TEST = 'test_count_words_skips_a_comment_after_a_tab'
 
 R7 = 'specs/wordcount.md:7'
 R8 = 'specs/wordcount.md:8'
-# The Inputs table, as (rule, shape, test). R3 leaves out the row whose test is TAB_TEST.
+# The Inputs table, as (rule, shape, test). R3 leaves out the rows whose test is TAB_TEST.
 INPUTS = (
     (R7, '`#` at column 0', 'test_count_words_skips_comment_lines'),
     (R7, 'spaces before `#`', 'test_count_words_skips_a_comment_after_spaces'),
     (R7, 'a tab before `#`', TAB_TEST),
+    (R7, 'other whitespace before `#`: a form feed, a vertical tab, a lone `\\r`, `\\x1c` to `\\x1e`, '
+         '`\\x85`, `\\u2028`, `\\u2029`, the no-break space `\\u00a0`, the ideographic space `\\u3000`', TAB_TEST),
     (R7, 'no blank after `#`', 'test_count_words_skips_a_comment_with_no_blank_after_the_hash'),
+    (R7, 'a line that is only `#`', 'test_count_words_skips_a_comment_with_no_blank_after_the_hash'),
     (R7, 'a comment on the last line, with no newline after it', 'test_count_words_skips_a_comment_on_the_last_line'),
+    (R7, 'several comment lines in a row, and text that is only comments', 'test_count_words_skips_several_comment_lines'),
+    (R7, 'a comment line that ends with `\\r\\n`', 'test_count_words_skips_a_comment_line_that_ends_with_crlf'),
+    (R7, 'other whitespace inside a comment line (a vertical tab, a form feed, a lone `\\r`, `\\x85`, `\\u2028`): '
+         'only a newline ends the line', 'test_count_words_skips_a_whole_comment_line_past_other_whitespace'),
     (R7, '`#` after a word, so not the first non-blank character', 'test_count_words_counts_a_hash_after_a_word'),
+    (R7, '`#` after a word and a form feed, a lone `\\r` or `\\u2028` in the same line',
+     'test_count_words_counts_a_hash_after_other_whitespace_in_a_line'),
     (R8, 'one space', 'test_count_words_skips_comment_lines'),
     (R8, 'a run of spaces', 'test_count_words_splits_on_any_run_of_whitespace'),
     (R8, 'a tab', 'test_count_words_splits_on_any_run_of_whitespace'),
@@ -104,21 +128,33 @@ INPUTS = (
     (R8, 'a newline', 'test_count_words_splits_on_any_run_of_whitespace'),
     (R8, 'a blank line, so two newlines in a row', 'test_count_words_splits_on_any_run_of_whitespace'),
     (R8, 'a carriage return before a newline', 'test_count_words_splits_on_any_run_of_whitespace'),
-    (R8, 'whitespace at the start and end of a line', 'test_count_words_ignores_whitespace_at_the_ends'),
+    (R8, 'punctuation with no whitespace (`well-known`, `a,b`): it never separates words',
+     'test_count_words_splits_on_any_run_of_whitespace'),
+    (R8, 'a vertical tab, a form feed or a lone `\\r` between words: each separates words and never ends a line',
+     'test_count_words_splits_on_other_whitespace_inside_a_line'),
+    (R8, 'other Unicode whitespace between words (`\\x1c` to `\\x1e`, `\\x85`, `\\u2028`, `\\u2029`, '
+         'the no-break space `\\u00a0`, the ideographic space `\\u3000`)',
+     'test_count_words_splits_on_other_whitespace_inside_a_line'),
+    (R8, 'whitespace at the start and end of a line, Unicode whitespace too (`\\u3000`, `\\x85`)',
+     'test_count_words_ignores_whitespace_at_the_ends'),
     (R8, 'empty text, and whitespace only', 'test_count_words_ignores_whitespace_at_the_ends'),
 )
-WHITESPACE_TESTS = ('test_count_words_splits_on_any_run_of_whitespace', 'test_count_words_ignores_whitespace_at_the_ends')
+WHITESPACE_TESTS = ('test_count_words_splits_on_any_run_of_whitespace',
+                    'test_count_words_splits_on_other_whitespace_inside_a_line',
+                    'test_count_words_ignores_whitespace_at_the_ends')
 COMMENT_TESTS = ('test_count_words_skips_comment_lines', 'test_count_words_skips_a_comment_after_spaces', TAB_TEST,
                  'test_count_words_skips_a_comment_with_no_blank_after_the_hash',
-                 'test_count_words_skips_a_comment_on_the_last_line')
+                 'test_count_words_skips_a_comment_on_the_last_line', 'test_count_words_skips_several_comment_lines',
+                 'test_count_words_skips_a_comment_line_that_ends_with_crlf',
+                 'test_count_words_skips_a_whole_comment_line_past_other_whitespace')
+HASH_TESTS = ('test_count_words_counts_a_hash_after_a_word', 'test_count_words_counts_a_hash_after_other_whitespace_in_a_line')
 
 # Each mutant as (number, edit, targets, the wrong version in one line). A target list leaves out
 # a test the package does not have.
 R1_MUTANTS = (
     (1, 'single-spaces', (R8, *WHITESPACE_TESTS), 'splits each line on single spaces, not on any run of whitespace'),
     (2, 'no-skip', (R7, *COMMENT_TESTS), 'comment lines are not skipped, so their words count'),
-    (3, 'hash-anywhere', (R7, 'test_count_words_counts_a_hash_after_a_word'),
-     'a line with `#` anywhere in it is skipped as a comment'),
+    (3, 'hash-anywhere', (R7, *HASH_TESTS), 'a line with `#` anywhere in it is skipped as a comment'),
 )
 R2_MUTANT_1 = (1, 'return-0', WHITESPACE_TESTS, 'returns 0 at the top of `count_words`')
 R3_MUTANT_4 = (4, 'spaces-only', (R7, 'test_count_words_skips_a_comment_after_spaces'),
@@ -135,14 +171,14 @@ REPORT = '''# Task 1 report
 
 ## What I implemented
 
-`count_words(text: str) -> int` in `wordcount.py`. It splits the text into lines, skips each line whose first non-blank character is `#`, and counts the words of every other line with `str.split()`, so any run of whitespace separates two words.
+`count_words(text: str) -> int` in `wordcount.py`. It splits the text into lines at each newline, skips each line whose first non-blank character is `#`, and counts the words of every other line with `str.split()`. So any run of whitespace separates two words, and only a newline ends a line.
 
 ## What I tested
 
 - `{focused}`: {focused_last}
 - `{suite}`: {suite_last}
 
-The plan's test is unchanged. I added {added} tests in a second commit, one for each input shape of the two rules that the plan's test does not use. The Inputs table in the mutants file lists each shape and its test.
+The plan's test is unchanged. I added {added} tests in a second commit. Together they cover each input shape of the two rules that the plan's test does not use, and the Inputs table in the mutants file lists each shape and its test.
 
 ## TDD Evidence
 
@@ -213,7 +249,8 @@ def tests_text(tab_test: bool) -> str:
     for name, body in ADDED_TESTS.items():
         if name == TAB_TEST and not tab_test:
             continue
-        parts.append(f'\n\ndef {name}():\n{body}\n')
+        asserts = ''.join(f'    assert count_words({text!r}) == {expected}\n' for text, expected in body)
+        parts.append(f'\n\ndef {name}():\n{asserts}')
     return ''.join(parts)
 
 

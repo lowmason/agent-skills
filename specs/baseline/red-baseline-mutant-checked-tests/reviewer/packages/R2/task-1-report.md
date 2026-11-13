@@ -2,14 +2,14 @@
 
 ## What I implemented
 
-`count_words(text: str) -> int` in `wordcount.py`. It splits the text into lines, skips each line whose first non-blank character is `#`, and counts the words of every other line with `str.split()`, so any run of whitespace separates two words.
+`count_words(text: str) -> int` in `wordcount.py`. It splits the text into lines at each newline, skips each line whose first non-blank character is `#`, and counts the words of every other line with `str.split()`. So any run of whitespace separates two words, and only a newline ends a line.
 
 ## What I tested
 
-- `/tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py`: 8 passed in 0.00s
-- `/tmp/mt-venv/bin/python -m pytest -q`: 8 passed in 0.00s
+- `/tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py`: 13 passed in 0.01s
+- `/tmp/mt-venv/bin/python -m pytest -q`: 13 passed in 0.01s
 
-The plan's test is unchanged. I added 7 tests in a second commit, one for each input shape of the two rules that the plan's test does not use. The Inputs table in the mutants file lists each shape and its test.
+The plan's test is unchanged. I added 12 tests in a second commit. Together they cover each input shape of the two rules that the plan's test does not use, and the Inputs table in the mutants file lists each shape and its test.
 
 ## TDD Evidence
 
