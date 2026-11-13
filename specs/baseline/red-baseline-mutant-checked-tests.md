@@ -1,7 +1,7 @@
 # Plan 93 micro-tests: mutant-checked tests
 
-This record holds the micro-tests of plan 93 (`specs/plans/93-mutant-checked-tests.md`). The spec,
-`specs/mutant-checked-tests.md`, asks for them in Verification items 3 and 4. They follow
+This record holds the micro-tests of plan 93 (`specs/plans/completed/93-mutant-checked-tests.md`). The
+spec, `specs/completed/mutant-checked-tests.md`, asks for them in Verification items 3 and 4. They follow
 writing-skills' micro-test method, main's copy. Each arm has five scored reps per fixture, each in
 a fresh context, at the standard tier (`sonnet`). A control arm runs today's text first. A person
 reads every verdict by hand from the rep's full output. `grade.py` prints reading aids, never
@@ -148,7 +148,7 @@ The task review found that the first F5 was not a clean task. Its rule said "`<n
 digits", and Python's `\d` and `int()` accept non-ASCII Unicode digits, which no plan test used.
 The first control reps found that gap: rep 4 listed it as a concern, and reps 2, 3 and 5 changed
 the code to accept ASCII digits only. The controller ruled the fixture must be fixed, under the
-spec's "**F5:** a clean task with strong tests and no conflict." (`specs/mutant-checked-tests.md:397`).
+spec's "**F5:** a clean task with strong tests and no conflict." (`specs/completed/mutant-checked-tests.md:399`).
 
 What changed, in `fixtures/F5/` only:
 

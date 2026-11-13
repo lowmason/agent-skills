@@ -996,7 +996,7 @@ Changes from upstream:
     upstream text was taken.
   - Plan 93 (2026-11-13) adds mutant-checked tests to
     subagent-driven-development and executing-plans
-    (specs/mutant-checked-tests.md). A new script,
+    (specs/completed/mutant-checked-tests.md). A new script,
     subagent-driven-development/scripts/mutant-run, applies each mutant
     patch that an implementer writes, runs the task's focused tests, and
     records each mutant as caught, survived or invalid. It follows

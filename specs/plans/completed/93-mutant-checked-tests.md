@@ -10,7 +10,7 @@
 
 **Tech Stack:** bash (macOS 3.2 compatible), git, pytest JUnit XML; Markdown skill text; pytest suites that drive the scripts as subprocesses; `claude -p` micro-test kits; the repo's commit lints (`build/run_commit_lints.sh`).
 
-**Spec:** `specs/mutant-checked-tests.md` (approved 2026-11-12; commits `b719246`..`14f5400`, merged into this branch at `db4fede`). Its Terms, Design, Verification and Constraints sections are authoritative. Read the spec in full before Task 1.
+**Spec:** `specs/completed/mutant-checked-tests.md` (approved 2026-11-12; commits `b719246`..`14f5400`, merged into this branch at `db4fede`). Its Terms, Design, Verification and Constraints sections are authoritative. Read the spec in full before Task 1.
 
 ## Global Constraints
 
@@ -604,7 +604,7 @@ git commit -m "feat(sdd): run mutant-run before review and rule on test-versus-s
 Run: `uv run python specs/baseline/red-baseline-development-history/kit/build_prompts.py <this task's sha> /tmp/plan93-gate gate-tag`, then that kit's `run_reps.sh /tmp/plan93-gate/gate-tag.txt specs/baseline/red-baseline-mutant-checked-tests/gate-tag/ 1 5 claude-opus-5-5 1.00`. Check spend first.
 Expected: 5 of 5 PASS under the kit's `GATE_PASS`, read by hand. Record it under `## Regression: gate-tag` and commit. A miss gets at most two revision rounds of the Step 4 sentence, then the fence.
 
-> Deviation: the rerun used a copy of plan 80's `run_reps.sh` with `--disable-slash-commands` added, which the Isolation constraint requires (c6bd4f0), and committed only `show_reps.txt` and `MANIFEST.txt`; the raw rep JSON stays in scratch (f7fbab4).
+> Deviation: the rerun used a copy of plan 80's `run_reps.sh` with `--disable-slash-commands` added, which the Isolation constraint requires (c6bd4f0); it kept plan 80's frozen prompt frame, which names the skill under test, and committed only `show_reps.txt` and `MANIFEST.txt`, so the raw rep JSON stays in scratch (f7fbab4).
 
 ---
 

@@ -1,7 +1,8 @@
 # Mutant-checked tests in plan execution — Design Spec
 
-**Status:** APPROVED (2026-11-12). The owner approved this file, its designer's calls included. The question was "Do
-you approve the spec?", and the owner answered "Approve the spec". The next step is writing-plans, in a fresh context.
+**Status: COMPLETE (2026-11-13)** — implemented by plan 93 (`specs/plans/completed/93-mutant-checked-tests.md`) and
+retired here. It was APPROVED on 2026-11-12. The owner approved this file, its designer's calls included. The
+question was "Do you approve the spec?", and the owner answered "Approve the spec".
 
 This design came from a brainstorming session on 2026-11-12. It started from the owner's proposal of a separate
 test-writer agent for subagent-driven-development (below, "What this replaces"). The session's evidence moved the
@@ -301,6 +302,7 @@ authority):
   today list every `Ruling:` line at the gate as "a decision taken, not a question" (SDD `:41`, executing-plans
   `:84`). Each gains one exception: a `(unclear)` ruling is a question in the gate's batch, stalled on the owner's
   input (`skills/writing-plans/SKILL.md:291-299`). If the owner overrules, the change is a follow-up task.
+  → item: 80-development-history-record — 2026-11-08
 
 The owner's proposal had an Opus adjudicator rule on these conflicts, with unclear cases sent to the owner at the
 completion gate. *(Designer's call)* The controller keeps that role. It already rules on findings against plan text
@@ -455,7 +457,7 @@ reviewer's inputs make visible, since a missing file shows as a missing input.
 - Whether test-run refuses to run while a `mutant-active` marker exists.
 - A per-mutant timeout that works under macOS bash 3.2.
 - How mutant-run compares the tree after a run when the tests leave untracked files.
-- Which task number a batch ([batching.md](../skills/subagent-driven-development/references/batching.md)) uses for
+- Which task number a batch ([batching.md](../../skills/subagent-driven-development/references/batching.md)) uses for
   its mutant files.
 - Which reference file holds Design 1's excerpt rules.
 
