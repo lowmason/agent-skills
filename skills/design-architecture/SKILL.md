@@ -30,12 +30,12 @@ reasoning behind it** at the moment it is made. The value is not the document �
 tribal memory, and every new session re-derives, re-argues, or quietly contradicts it.
 
 The cost is real, and this skill grew out of it. In late 2025 the **same NFP-nowcasting
-problem was solved three ways**: NumPyro/JAX in `alt-nfp`, and PyMC in both `alt_nfp` and
-`oi-indices`, with no recorded rationale for the split. An agent reading any one repo could not
+problem was solved three ways**: NumPyro/JAX in `payroll-nowcast`, and PyMC in both `payroll_nowcast` and
+`sector-indices`, with no recorded rationale for the split. An agent reading any one repo could not
 tell whether the other engines were deliberate (parity cross-checks, GPU vs ergonomics) or
 accidental drift. An ADR turns such a fork from a mystery into a decision you can build on.
-(That trio is history: a 2026-09 split turned `alt-nfp` into `alt-nfp-stats` and
-`alt-nfp-model` and archived `alt_nfp`. In a real decision log, the split is itself a
+(That trio is history: a 2026-09 split turned `payroll-nowcast` into `payroll-stats` and
+`payroll-model` and archived `payroll_nowcast`. In a real decision log, the split is itself a
 superseding ADR.)
 
 Two modes, both first-class:
@@ -86,13 +86,13 @@ Proposed ──► Accepted ──► Deprecated          (no longer relevant; n
 ## Where ADRs live
 
 Follow the repo's existing design-record culture rather than inventing a new home. In this
-stack the conventions are `specs/` (active design, e.g. `alt-nfp-stats/specs/`) plus MkDocs + per-package
+stack the conventions are `specs/` (active design, e.g. `payroll-stats/specs/`) plus MkDocs + per-package
 `CLAUDE.md`. So:
 
 - **Default to `docs/adr/` when the repo publishes a MkDocs site** — ADRs render as a browsable
   decision log and link from the nav. Add an `index.md` listing them.
 - **Use `specs/adr/` when the repo's design record already lives in `specs/`** (as
-  `alt-nfp-stats` does) — keep ADRs beside the specs and plans they formalize.
+  `payroll-stats` does) — keep ADRs beside the specs and plans they formalize.
 - **Use `specs/adr/` when the repo publishes a Great Docs site.** The site serves the package's
   users, and ADRs serve its maintainers.
 
@@ -114,7 +114,7 @@ Keep ADRs short — one decision, one page. Prose over bullet soup; a reader sho
 - **Status:** Proposed | Accepted | Deprecated | Superseded by NNNN
 - **Date:** YYYY-MM-DD
 - **Deciders:** <who agreed>
-- **Blast radius:** <packages/repos affected, e.g. nfp-model only | whole uv workspace | alt-nfp-stats + alt-nfp-model>
+- **Blast radius:** <packages/repos affected, e.g. payroll-model only | whole uv workspace | payroll-stats + payroll-model>
 
 ## Context
 
@@ -176,10 +176,10 @@ that actually drives it, and the real alternatives. Read them when you need a mo
 Decision or Alternatives section, or a check that your own sketch is honest. They come from
 these projects:
 
-- **NFP nowcasting** (the `alt-nfp` family, late 2025): the inference engine, the parquet store
+- **NFP nowcasting** (the `payroll-nowcast` family, late 2025): the inference engine, the parquet store
   layout, scraper resilience, as-of censoring, and workspace boundaries.
-- **LLM evidence extraction** (`earnings-themes`): which open-weight model a live test runs.
-- **Revision research** (`ces-revisions`): declining a causal claim the data cannot identify.
+- **LLM evidence extraction** (`call-themes`): which open-weight model a live test runs.
+- **Revision research** (`jobs-revisions`): declining a causal claim the data cannot identify.
 - **Repo tooling** (`agent-skills`): one canonical skills tree, linked into each runtime.
 
 The flagship inference-engine ADR is worked in full in
@@ -197,7 +197,7 @@ not whether you'd have made the same call. Apply this rubric.
 | **Alternatives genuine** | ≥2 viable options, each with a *concrete* losing reason | One option, or strawmen ("we could do nothing") |
 | **One decision** | A single choice; compounds are split | "X and also Y and while we're at it Z" |
 | **Reversibility named** | States one-way vs two-way door; what would trigger a revisit | Silent on cost of being wrong |
-| **Blast radius scoped** | Names the packages/repos affected (e.g. `nfp-model` only vs whole workspace) | "It's fine" with no scope |
+| **Blast radius scoped** | Names the packages/repos affected (e.g. `payroll-model` only vs whole workspace) | "It's fine" with no scope |
 | **Testability / parity** | Says how the decision is verified — parity gate, fixtures, determinism/seed, golden masters | No way to tell if it's working |
 | **Context is frozen-able** | Reads as a dated snapshot, not a living wishlist | Aspirations mixed into recorded fact |
 | **Determinism** | For modeling/data decisions: seeds, float precision, ordering pinned | Reproducibility left implicit |

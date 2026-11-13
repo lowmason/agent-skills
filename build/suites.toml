@@ -98,7 +98,7 @@ dir = 'skills/llm-wiki/scripts'
 with = ['pytest']
 notes = [
     'Bundled wiki-script tests (bootstrap, lint, session and specs distillers; stdlib only).',
-    'The @needs_pilot tests read a pilot wiki at $LLM_WIKI_ROOT (default ~/research-wiki) and skip without one.',
+    'The @needs_pilot tests read a pilot wiki at $LLM_WIKI_ROOT (default ~/llm-wiki) and skip without one.',
 ]
 
 [[suite]]

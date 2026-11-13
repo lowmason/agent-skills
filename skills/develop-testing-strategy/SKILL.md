@@ -84,7 +84,7 @@ parser is a pure function of an HTML string. Then feed it recorded fixtures:
   fields; weekend/last-business-day rollback. Each variant is a tiny fixture string and an
   expected parsed value.
 - Test the small pure helpers directly — date parsers, period mappers, link extractors —
-  exactly as the `bls-stats` package (now inside `alt-nfp-stats`) does for its period parser
+  exactly as the `release-stats` package (now inside `payroll-stats`) does for its period parser
   and reference dates. These are the highest-value, cheapest tests in a scraper.
 
 **Mark the live test and exclude it from CI.** Keep *one* test that actually fetches, to prove
@@ -164,7 +164,7 @@ catches almost nothing. Replace it with four checks that *are* falsifiable:
 
 3. **Shapes / dims / coords.** Assert posterior site shapes against `(chains, draws, *dims)`,
    that deterministics line up with the sites they are built from, and that every array is
-   finite. This is exactly the `nfp_model` smoke pattern (`post["tau"].shape == (2, 40)`,
+   finite. This is exactly the `payroll_model` smoke pattern (`post["tau"].shape == (2, 40)`,
    `np.all(np.isfinite(arr))`, deterministics reconstructed and compared with
    `assert_allclose`). Cheap, and it catches the broadcasting bugs that produce plausible-looking
    garbage.
@@ -178,7 +178,7 @@ catches almost nothing. Replace it with four checks that *are* falsifiable:
 
 **Keep full MCMC behind `@pytest.mark.slow` with a tiny smoke config in CI.** Real inference is
 tens of seconds to minutes — not a per-push cost. Define a `TINY` sampler config
-(`num_samples=40, num_warmup=40, num_chains=2`, à la `nfp_model`) for the slow smoke and
+(`num_samples=40, num_warmup=40, num_chains=2`, à la `payroll_model`) for the slow smoke and
 recovery tests, and let CI run only the millisecond-scale shape/determinism/unit tests by
 default. The minutes-long full parity run belongs in a script (`scripts/run_*_parity.py`) and
 an opt-in env flag, with the pytest version re-running *one* fixture as a reproducibility guard.
@@ -234,7 +234,7 @@ markers = [
   or a manual `pytest -m slow`.
 - **`network`** — the one live fetch and the canary. Scheduled, never in PR CI.
 - **`real_store`** — anything touching the real vintage store. Fail closed by default: an
-  *unmarked* test that reaches the store should be blocked (the `alt-nfp-stats` conftest blanks
+  *unmarked* test that reaches the store should be blocked (the `payroll-stats` conftest blanks
   credentials and severs the s3fs path for unmarked tests precisely so a stray write cannot
   destroy irreplaceable data). Opt in deliberately with the marker for read-only access.
 

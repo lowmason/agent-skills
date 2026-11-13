@@ -9,7 +9,7 @@ golden-master parity. Full MCMC stays behind `@pytest.mark.slow` with a `TINY` c
 import numpy as np
 import pytest
 
-# Tiny config so slow tests are tens of seconds, not minutes. Mirrors nfp_model's TINY.
+# Tiny config so slow tests are tens of seconds, not minutes. Mirrors payroll_model's TINY.
 TINY = dict(num_samples=40, num_warmup=40, num_chains=2)
 
 SEED = sum(map(ord, "model-tests"))     # descriptive, reproducible — never a bare 42
@@ -91,7 +91,7 @@ test — keep it in a script, not pytest.
 
 ## 3. Shapes / dims / coords and finiteness
 
-Cheap, runs in the fast tier with `TINY`. Mirrors the nfp_model smoke pattern: assert layout,
+Cheap, runs in the fast tier with `TINY`. Mirrors the payroll_model smoke pattern: assert layout,
 reconstruct deterministics from their sites, assert finiteness.
 
 ```python
