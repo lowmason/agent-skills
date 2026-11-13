@@ -37,6 +37,7 @@ agent-skills/
 ├── runtimes/    # generated Codex and Antigravity (gemini runtime) adapters
 ├── hooks/       # Claude Code hooks: gates for Python/uv work repos + the read-only agent guard and the dispatch model guard (see Hooks below)
 ├── rules/       # rule files: path-scoped via .claude/rules/, one user-level (see Rules below)
+├── templates/   # kits a work repo copies by hand (templates/marimo-repo/), never installed
 ├── build/       # lints and commit gates, the adapter generator, the Claude Code guide's drift detector, citation checks
 ├── specs/       # design records + implementation plans (retired work under completed/)
 └── install.py   # safe installer for Claude, Codex, Gemini, or all three (idempotent when linking)

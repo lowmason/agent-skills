@@ -76,7 +76,7 @@ back from `rg` to `grep -r` so they run anywhere.
 |---|---|---|
 | Abandoned approaches | `archive/`, `old/`, `deprecated/`, `_old`/`_bak` files | Dead branches of exploration; usually DELETE |
 | Duplicated v1/v2/v3 | `_v2`, `_final`, `_copy`; sibling repos (`alt_nfp` / `alt-nfp` / `alt_nfp_bsts`) | Ambiguity about which is canonical — a correctness trap |
-| Scratch notebooks | `scratchpad.ipynb`, `sandbox.ipynb`, `Untitled*.ipynb` beside `src/` | Hidden logic that can't be rerun or tested |
+| Scratch notebooks | `scratchpad.ipynb`, `sandbox.ipynb`, `Untitled*.ipynb` beside `src/`, or a marimo `.py` notebook (a top-level `app = marimo.App(` line) outside `notebooks/` | Hidden logic that can't be rerun or tested |
 | Hardcoded paths | `/Users/`, `/home/`, `read_parquet("/...")` | Breaks on every other machine; blocks reproduction |
 | Wall-clock leakage | `datetime.now()`, `date.today()`, `pl.*.now()` inside a pipeline | Same code → different output by day; kills as-of/vintage correctness |
 | Missing/weak seeds | `seed=42`, `PRNGKey(42)`, `jax.random.key(42)`, `torch.manual_seed(42)`, `np.random.seed(` | Non-reproducible inference (see `bayesian-workflow` for the seed convention) |
@@ -129,7 +129,10 @@ don't even document it. The single most common mistake in research-code cleanup 
 *hardening a throwaway*: someone adds type hints and a test suite to an `archive/` script
 that should have been a `git rm`. The whole point of an exploratory branch is that you're
 allowed to throw it away. Deleting dead code is the highest-leverage, lowest-risk action
-available — git remembers it if you ever need it back.
+available — git remembers it if you ever need it back. There is one exception. A scratch `.ipynb`
+that is not load-bearing but holds an analysis record worth keeping goes to CONVERT. A
+marimo `.py` notebook of that kind moves into `notebooks/`. See the scratch-notebook rule
+below.
 
 If **yes** → **HARDEN**, proportionally to how load-bearing it is:
 - Pull the logic out of a notebook into an importable, runnable module.
@@ -150,7 +153,29 @@ A few rules of thumb for the ambiguous middle:
   why. Leaving three live copies is itself the correctness risk.
 - **Scratch notebook beside prod code:** if the model imports from it or you can't
   reproduce the output without it, it's load-bearing → HARDEN (extract to a module). If
-  it's just where you doodled charts, → DELETE.
+  it's just where you doodled charts and it holds nothing to re-read, → DELETE. Between
+  the two sits an `.ipynb` that is not load-bearing. It is worth keeping as an analysis
+  record, such as a finding the team will re-read. That one → CONVERT into a marimo
+  notebook in `notebooks/`. In steps 2 to 4, write `marimo` as `uv run marimo` where the
+  repo declares marimo as a dependency. Otherwise write `uvx marimo` in steps 2 and 3,
+  and `uv run --with marimo marimo` in step 4. Run every step from the repo root, and
+  write the notebook's path from the root in place of `<name>.ipynb`.
+  1. Choose `notebooks/<name>.py` as the target. If that file exists, pick another name,
+     because `marimo convert` overwrites it without asking.
+  2. `marimo convert <name>.ipynb -o notebooks/<name>.py`
+  3. `marimo check notebooks/<name>.py`. Fix each cell it reports. A cell of notes that
+     is not Python becomes a markdown cell, or goes.
+  4. `marimo export html notebooks/<name>.py -o /tmp/<name>.html`. This runs the
+     notebook. Compare its outputs with the outputs saved in the `.ipynb`, because
+     `marimo convert` drops saved outputs and `marimo check` runs no cell.
+  5. Delete the `.ipynb` only when the outputs match. Otherwise keep it, and log the gap
+     as a backlog row.
+
+  A marimo `.py` notebook outside `notebooks/` needs no convert. Move it into
+  `notebooks/` when it is worth keeping (`git mv` when git tracks it, else `mv`).
+  Otherwise DELETE it. Before the move, if `notebooks/<name>.py` exists, pick another
+  name, as in step 1. After the move, run the notebook once and fix any path or import
+  that breaks.
 - **`Optional`/`Any`:** these are not automatically debt. `Optional[SecretStr]` for an
   API key that legitimately may be absent is correct. Flag a region only when the looseness
   hides a real shape you depend on.
@@ -163,7 +188,7 @@ than refactor.
 
 ## Prioritization
 
-Score each *surviving* (HARDEN) item — deletes are usually just-do-it — on two axes:
+Score each *surviving* (HARDEN or CONVERT) item — deletes are usually just-do-it — on two axes:
 
 - **Impact (H/M/L):** what breaks, and how visibly, if you ignore it? Correctness and
   security findings start at High. A typo in a docstring is Low.
@@ -192,6 +217,7 @@ The deliverable is a single prioritized table. Keep it scannable; one row per fi
 | `src/pkg/archive/` (3 files) | Maintainability | Low | S | DELETE — dead exploratory branch; git retains history |
 | `alt_nfp` / `alt-nfp` / `alt_nfp_bsts` | Correctness | High | M | Confirm canonical repo; archive or delete the other two |
 | `scratchpad.ipynb` beside `src/` | Reproducibility | High | M | Extract load-bearing transforms into a runnable module; then DELETE notebook |
+| `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `marimo convert` into a free name in `notebooks/` (never over an existing file), `marimo check`, run it and compare its outputs, then delete the `.ipynb` if they match |
 | `import_csv.py:160` hardcoded `/Users/...` | Reproducibility | High | S | Replace with config/CLI path relative to repo root |
 | `model.py` (no test) | Correctness | Med | M | HARDEN: add one end-to-end + output-schema characterization test |
 | `pyproject.toml` `Add your description here` | Onboarding | Low | S | Write a one-line description |

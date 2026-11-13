@@ -105,6 +105,11 @@ description = 'Every file kept under a skill directory: the SKILL.md plus its re
 globs = ['skills/*/**', '.claude/skills/*/**']
 sections = ['skills.locations', 'skills.progressive-disclosure']
 
+[kinds.kit]
+description = 'Kits that a work repo copies by hand, such as templates/marimo-repo/. Text that a kit pastes into a CLAUDE.md is CLAUDE.md content.'
+globs = ['templates/marimo-repo/**']
+sections = ['rules.claude-md', 'rules.hierarchy', 'context.overview', 'mechanisms.overview']
+
 # ---------------------------------------------------------------------------
 # Sections that govern no repo file, each with its reason. Disjoint from the
 # kinds' sections; together they cover every anchor.

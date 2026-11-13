@@ -20,6 +20,18 @@ inherits the attribution and license of its canonical source. The adapter
 generator, installer, runtime entrypoint files, and compatibility documentation
 are original works by Lowell Mason under this repository's MIT license.
 
+Files under templates/marimo-repo/ are a kit that a work repo copies by hand
+when it adopts marimo notebooks (https://marimo.io). The kit is an original
+work by Lowell Mason under this repository's MIT license. It takes ideas,
+and no text, from two posts by Eric Ma: "Agent-assisted data science with
+marimo"
+(https://ericmjl.github.io/blog/2026/10/14/agent-assisted-data-science-with-marimo/)
+and "How to do agentic data science"
+(https://ericmjl.github.io/blog/2026/2/1/how-to-do-agentic-data-science/).
+The kit pairs with marimo-pair (https://github.com/marimo-team/marimo-pair,
+Apache-2.0), which drives live notebooks. It links to marimo-pair and copies
+none of its text.
+
 bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
