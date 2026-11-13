@@ -148,9 +148,9 @@ Subagent (general-purpose):
     the controller runs the task's tests again before each review, and the
     reviewer checks your report against that run.
 
-    A fix that adds or changes a test needs a mutant aimed at it. Write one as
-    [MUTANTS_GUIDE] says, run [MUTANT_RUN] again, and append the run's path
-    and counts to your fix report.
+    In a mutant task, a fix that adds or changes a test needs a mutant aimed
+    at it. Write one as [MUTANTS_GUIDE] says, run [MUTANT_RUN] again, and
+    append the run's path and counts to your fix report.
 
     ## Report Format
 
