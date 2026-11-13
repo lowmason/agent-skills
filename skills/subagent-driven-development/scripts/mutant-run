@@ -35,12 +35,15 @@
 #
 # Verdicts. Exit 0 is SURVIVED. Exit 1 with at least one failed test in the
 # run's JUnit report is CAUGHT: a <testcase> that holds a <failure> or an
-# <error>. Any other result is INVALID, exit 1 with no report or no failed test
-# in it included, so a runner other than pytest can never produce a false
-# catch. Every run, the baseline included, gets a JUnit report at a fresh path
-# through PYTEST_ADDOPTS, added to any value already set. pytest's FAILED
-# summary lines are not read: its -r flag is last-wins, so a command with -rs
-# prints none.
+# <error>, except pytest's collection-failure and internal-error <error>s,
+# which a command that turns every failure into exit 1 would otherwise read
+# as a catch. Any other result is INVALID, exit 1 with no report or no failed
+# test in it included, so a runner other than pytest can never produce a
+# false catch. Every run, the baseline included, gets a JUnit report at a
+# fresh path through PYTEST_ADDOPTS, added to any value already set. pytest's
+# FAILED summary lines are not read: its -r flag is last-wins, so a command
+# with -rs prints none. Every run also gets PYTHONDONTWRITEBYTECODE=1, so no
+# mutant's bytecode outlives its reverse.
 #
 # Each mutant's run has a time limit: ten times the baseline's whole seconds,
 # plus 60, or MUTANT_RUN_TIMEOUT (whole seconds) when it is set. A run past its
@@ -299,10 +302,14 @@ run_command() {
   timed_out=false
   # set +e and the explicit exit keep a missing command's status 127: under
   # set -e, bash 3.2's subshell reports 1 for it.
+  # PYTHONDONTWRITEBYTECODE: a timestamp .pyc is checked only by its source's
+  # whole-second mtime and size, so a mutant's bytecode written in the second
+  # of its reverse would load for the next mutant, and for every later run.
   (
     set +e
     PYTEST_ADDOPTS=$addopts
-    export PYTEST_ADDOPTS
+    PYTHONDONTWRITEBYTECODE=1
+    export PYTEST_ADDOPTS PYTHONDONTWRITEBYTECODE
     "${test_cmd[@]}"
     exit $?
   ) < /dev/null > "$out" 2>&1 &
@@ -326,7 +333,7 @@ run_command() {
 }
 
 # Print the IDs (<classname>::<name>) of the test cases in JUnit file $1 that
-# hold a <failure> or an <error>, each once, in report order. A missing file
+# hold a <failure> or a test's <error>, each once, in report order. A missing file
 # prints nothing. Newlines become spaces and each '<' starts a line, so every
 # line is one tag, whatever line breaks the file has: a '<' inside text or an
 # attribute is always escaped.
@@ -348,7 +355,15 @@ failed_tests() {
       open = substr($0, 1, index($0, ">")) !~ /\/>$/
       next
     }
-    open && /^(failure|error)[ \t\/>]/ { failed = 1; next }
+    # pytest writes a collection error and an internal error as an <error>
+    # too. Neither is a test that the mutant made fail, so behind a command
+    # that turns every failure into exit 1, neither may read as a catch.
+    open && /^error[ \t\/>]/ {
+      m = attr($0, "message")
+      if (m != "collection failure" && m != "internal error") failed = 1
+      next
+    }
+    open && /^failure[ \t\/>]/ { failed = 1; next }
     /^\/testcase>/ {
       if (open && failed && !(id in seen)) { seen[id] = 1; print id }
       open = 0

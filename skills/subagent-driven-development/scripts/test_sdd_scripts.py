@@ -1047,6 +1047,57 @@ def test_mutant_run_marks_a_collection_error_invalid(calc):
     assert line == f'mutant 1: INVALID exit 2 sha256 {patch_sha(p1)} reason: exit status 2'
 
 
+# A wrapper that turns every failed run into exit 1, as run_suites.py does.
+WRAPPED_PYTEST = ['sh', '-c', '"$0" -m pytest -q -p no:cacheprovider test_calc.py || exit 1', sys.executable]
+NO_CATCH = 'reason: no failed test in the JUnit report'
+
+
+def test_mutant_run_never_reads_a_collection_error_as_a_catch(calc):
+    p1 = make_mutant(calc, 1, *X)
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *WRAPPED_PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert mutant_line(mutant_lines(calc), 1) == f'mutant 1: INVALID exit 1 sha256 {patch_sha(p1)} {NO_CATCH}'
+
+
+def test_mutant_run_never_reads_an_internal_error_as_a_catch(calc):
+    # A hook that raises during collection stops pytest with an internal error (exit 3).
+    (calc / 'conftest.py').write_text(
+        'from calc import add\n\n\ndef pytest_collection_modifyitems(items):\n    assert add(1, 2) == 3\n'
+    )
+    git('add', 'conftest.py', cwd=calc)
+    git('commit', '-qm', 'hook', cwd=calc)
+    p1 = make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *WRAPPED_PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert mutant_line(mutant_lines(calc), 1) == f'mutant 1: INVALID exit 1 sha256 {patch_sha(p1)} {NO_CATCH}'
+
+
+def test_mutant_run_reads_a_fixture_setup_error_as_a_catch(calc):
+    (calc / 'test_fixture.py').write_text(
+        'import pytest\n\nfrom calc import add\n\n\n@pytest.fixture\ndef three():\n'
+        '    assert add(1, 2) == 3\n    return 3\n\n\ndef test_three(three):\n    assert three == 3\n'
+    )
+    git('add', 'test_fixture.py', cwd=calc)
+    git('commit', '-qm', 'fixture', cwd=calc)
+    p1 = make_mutant(calc, 1, *A)
+    cmd = [*PYTEST[:-1], 'test_fixture.py']
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    want = f'mutant 1: CAUGHT exit 1 sha256 {patch_sha(p1)} tests: test_fixture::test_three'
+    assert mutant_line(mutant_lines(calc), 1) == want
+
+
+def test_mutant_run_writes_no_bytecode_that_could_outlive_a_reverse(calc):
+    # A timestamp .pyc is checked only by the source's whole-second mtime and
+    # its size, so a mutant's bytecode written in the second of its reverse
+    # would still run against the restored source.
+    env = {k: v for k, v in GIT_ENV.items() if k not in ('PYTHONDONTWRITEBYTECODE', 'PYTHONPYCACHEPREFIX')}
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert not list(calc.glob('**/__pycache__/calc*.pyc'))
+
+
 def test_mutant_run_needs_a_failed_test_in_the_report_to_catch(calc):
     make_mutant(calc, 1, *A)
     cmd = ['sh', '-c', 'grep -q "a - b" calc.py && exit 1; exit 0']
