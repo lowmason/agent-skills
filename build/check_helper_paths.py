@@ -1,8 +1,8 @@
-'''Fail when a skill names one of the five SDD and executing-plans helpers without an anchor.
+'''Fail when a skill names one of the six SDD and executing-plans helpers without an anchor.
 
-The helpers are sdd-workspace, task-brief, review-package, task-start and task-done. An agent runs
-them from the user's repository, so a bare `scripts/task-brief` can resolve against that
-repository instead of the installed skill. Every mention in a Markdown file under `skills/` must
+The helpers are sdd-workspace, task-brief, review-package, task-start, task-done and mutant-run.
+An agent runs them from the user's repository, so a bare `scripts/task-brief` can resolve against
+that repository instead of the installed skill. Every mention in a Markdown file under `skills/` must
 put `<this-skill-dir>/` right before `scripts/`, or `<this-skill-dir>/../<skill>/` for a helper
 that another skill owns. The check also fails when it finds no mention at all, since its pattern
 is then stale.
@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-HELPERS = ('sdd-workspace', 'task-brief', 'review-package', 'task-start', 'task-done')
+HELPERS = ('sdd-workspace', 'task-brief', 'review-package', 'task-start', 'task-done', 'mutant-run')
 # A mention is `scripts/<helper>` that no word character or hyphen follows, so
 # `scripts/task-briefing` is another file. A dot may follow a mention (a sentence end).
 MENTION = re.compile(r'scripts/(' + '|'.join(HELPERS) + r')(?![\w-])')

@@ -1,0 +1,103 @@
+{
+  "fixture": "F5",
+  "rep": 2,
+  "rep_dir": "/tmp/mt-rep-nHmbn9",
+  "base": "d1d987210b0db7a402c6f09e2d5ee27792ef2bed",
+  "prompt_sha256": "472e41927cda8301f5109a323cd6ddd3f34c1d8c52b2e87116fdb51e7c9a38f0",
+  "claude_exit": 0,
+  "wall_seconds": 38,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-nHmbn9/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 36864,
+    "total_cost_usd": 0.1276083,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 14,
+        "outputTokens": 4757,
+        "cacheReadInputTokens": 100423,
+        "cacheCreationInputTokens": 17492,
+        "webSearchRequests": 0,
+        "costUSD": 0.1276083,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 409,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 17492,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commits:**\n  - `b0341e7` Add parse_duration\n  - `3f35d70` Test uppercase units are rejected\n- **Tests:** 38/38 passing, output pristine. The 22 plan tests are verbatim. I added 16 more cases across three new tests: multi-digit parts, wrong order or repeated parts, and uppercase units. Mutants: caught 9, survived 0, invalid 0. The first run had one survivor, an uppercase `S` accepted, so I added the uppercase-units test and re-ran.\n- **TDD:** RED was the `ImportError` for `parse_duration` at collection, as the plan expected.\n- **Concerns:** none. No plan test conflicts with the spec.\n- **Report:** `/tmp/mt-rep-nHmbn9/repo/.sdd/plan/task-1-report.md`. The final mutant run is `.sdd/plan/task-1-mutants-2.log`.\n\nThe mutant patches and `task-1-mutants.md` sit untracked in `.sdd/plan`.",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-nHmbn9/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -a; cat plan.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-nHmbn9/repo; cat specs/duration.md; mkdir -p tests\npython3 - <<'E'\nimport re\np=open('plan.md').read()\nt=p.split(\"```python\\n\")[1].split(\"```\")[0]\nopen('tests/test_duration.py','w').write(t)\nE\n/tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-nHmbn9/repo; cat > duration.py <<'E'\nimport re\n\n_DURATION = re.compile(r'(?:([0-9]+)h)?(?:([0-9]+)m)?(?:([0-9]+)s)?')\n\n\ndef parse_duration(text: str) -> int:\n    \"\"\"Return the number of seconds in a duration such as '1h30m'.\"\"\"\n    match = _DURATION.fullmatch(text)\n    if match is None or not text:\n        raise ValueError(f'invalid duration: {text!r}')\n    hours, minutes, seconds = (int(part) if part else 0 for part in match.groups())\n    return hours * 3600 + minutes * 60 + seconds\nE\ncat >> tests/test_duration.py <<'E'\n\n\n@pytest.mark.parametrize('text, seconds', [\n    ('100s', 100),\n    ('123h', 442800),\n    ('1h0m5s', 3605),\n    ('1m1s', 61),\n    ('90m', 5400),\n])\ndef test_parse_duration_multi_digit_parts(text, seconds):\n    assert parse_duration(text) == seconds\n\n\n@pytest.mark.parametrize('text', ['1s1m', '1m1h', '1s1h', '1h1s1m', '1h30m\\n', '1m1m', '1s1s'])\ndef test_parse_duration_rejects_wrong_order_or_repeats(text):\n    with pytest.raises(ValueError):\n        parse_duration(text)\nE\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -3\ngit add duration.py tests && git commit -qm \"Add parse_duration\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"\nW=.sdd/plan\nmk(){ sed \"$2\" duration.py > /tmp/x 2>/dev/null; }\n# mutants via in-place edits\nedit(){ k=$1; shift; python3 - \"$@\" <<'E'\nimport sys\ns=open('duration.py').read(); a,b=sys.argv[1],sys.argv[2]\nassert a in s; open('duration.py','w').write(s.replace(a,b,1))\nE\ngit diff -- duration.py > $W/task-1-mutant-$k.patch; git checkout -- duration.py; }\nedit 1 \"fullmatch\" \"match\"\nedit 2 \"[0-9]+h\" \"\\\\d+h\"\nedit 3 \"or not text\" \"or False\"\nedit 4 \"hours * 3600\" \"hours * 3600 + 0 * hours + (hours and 0)\"\nedit 5 \"minutes * 60\" \"minutes * 6\"\nedit 6 \"(?:([0-9]+)m)?(?:([0-9]+)s)?\" \"(?:([0-9]+)s)?(?:([0-9]+)m)?\"\nedit 7 \"(?:([0-9]+)h)?\" \"(?:([0-9]+)h)*\"\nedit 8 \"[0-9]+)s\" \"[0-9]+)S\"\nwc -c $W/task-1-mutant-*.patch"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-nHmbn9/repo; W=.sdd/plan; git status --short; rm $W/task-1-mutant-*.patch\nedit(){ k=$1; python3 - \"$2\" \"$3\" <<'E'\nimport sys\ns=open('duration.py').read(); a,b=sys.argv[1],sys.argv[2]\nassert a in s; open('duration.py','w').write(s.replace(a,b,1))\nE\ngit diff -- duration.py > $W/task-1-mutant-$k.patch; git checkout -- duration.py; }\nedit 1 \"_DURATION.fullmatch(text)\" \"_DURATION.match(text)\"\nedit 2 \"(?:([0-9]+)h)\" \"(?:(\\\\d+)h)\"\nedit 3 \" or not text\" \"\"\nedit 4 \"hours * 3600\" \"hours * 360\"\nedit 5 \"minutes * 60\" \"minutes * 6\"\nedit 6 \"(?:([0-9]+)m)?(?:([0-9]+)s)?\" \"(?:([0-9]+)s)?(?:([0-9]+)m)?\"\nedit 7 \"(?:([0-9]+)h)?\" \"(?:([0-9]+)h)*\"\nedit 8 \"([0-9]+)s)?'\" \"([0-9]+)[sS])?'\"\nedit 9 \"([0-9]+)m\" \"([0-9])m\"\nwc -c $W/task-1-mutant-*.patch\ncat > $W/task-1-mutants.md <<'E'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/duration.md:7 | each single part, all parts, subsets | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | multi-digit n, leading zero | test_parse_duration_multi_digit_parts, test_parse_duration_returns_seconds |\n| specs/duration.md:7 | wrong order, repeated part | test_parse_duration_rejects_wrong_order_or_repeats, test_parse_duration_rejects_other_text |\n| specs/duration.md:7 | empty text (no part) | test_parse_duration_rejects_other_text |\n| specs/duration.md:7 | non-ASCII digit, sign, whitespace, trailing newline, uppercase | test_parse_duration_rejects_other_text |\n| specs/duration.md:8 | seconds value, int type | test_parse_duration_returns_seconds |\n| specs/duration.md:9 | other text raises ValueError | test_parse_duration_rejects_other_text |\n\n## Mutants\n\nMutant 1: specs/duration.md:9, test_parse_duration_rejects_other_text \u2014 prefix match instead of full match \u2014 task-1-mutant-1.patch\nMutant 2: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 \\d accepts non-ASCII digits \u2014 task-1-mutant-2.patch\nMutant 3: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 empty text accepted as 0 \u2014 task-1-mutant-3.patch\nMutant 4: specs/duration.md:8, test_parse_duration_returns_seconds \u2014 hour factor 360 \u2014 task-1-mutant-4.patch\nMutant 5: specs/duration.md:8, test_parse_duration_returns_seconds \u2014 minute factor 6 \u2014 task-1-mutant-5.patch\nMutant 6: specs/duration.md:7, test_parse_duration_rejects_wrong_order_or_repeats \u2014 s before m \u2014 task-1-mutant-6.patch\nMutant 7: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 hours part may repeat \u2014 task-1-mutant-7.patch\nMutant 8: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 uppercase S accepted \u2014 task-1-mutant-8.patch\nMutant 9: specs/duration.md:7, test_parse_duration_multi_digit_parts \u2014 minutes limited to one digit \u2014 task-1-mutant-9.patch\nE\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | tail -15"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-nHmbn9/repo; cat >> tests/test_duration.py <<'E'\n\n\n@pytest.mark.parametrize('text', ['1M', '1S', '1h1M', '1m1S'])\ndef test_parse_duration_rejects_uppercase_units(text):\n    with pytest.raises(ValueError):\n        parse_duration(text)\nE\ngit add tests; git commit -qm \"Test uppercase units are rejected\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"\nsed -i 's/^Mutant 8: specs\\/duration.md:7, test_parse_duration_rejects_other_text/Mutant 8: specs\\/duration.md:7, test_parse_duration_rejects_uppercase_units/' .sdd/plan/task-1-mutants.md\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | grep -E \"^(result|run)\"\n/tmp/mt-venv/bin/python -m pytest -q 2>&1|tail -2; git status --short"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-nHmbn9/repo; python3 - <<'E'\np='.sdd/plan/task-1-mutants.md'\ns=open(p).read()\ns=s.replace(\"Mutant 8: specs/duration.md:7, test_parse_duration_rejects_other_text\",\"Mutant 8: specs/duration.md:7, test_parse_duration_rejects_uppercase_units\")\nopen(p,'w').write(s)\nE\ncat > .sdd/plan/task-1-report.md <<'E'\n# Task 1 report\nImplemented `parse_duration` in duration.py (regex fullmatch on `(?:([0-9]+)h)?(?:([0-9]+)m)?(?:([0-9]+)s)?`, empty rejected). Tests: plan tests verbatim plus 3 added tests (multi-digit, wrong order/repeats, uppercase units).\nTDD: RED = ImportError for parse_duration at collection; GREEN = 34 passed, later 38 passed full suite.\nMutants: .sdd/plan/task-1-mutants-2.log \u2014 caught 9, survived 0, invalid 0 (first run: mutant 8, uppercase S, survived; fixed by new test).\nFiles: duration.py, tests/test_duration.py, .sdd/plan/task-1-mutant-*.patch, task-1-mutants.md.\nCommits: \"Add parse_duration\", \"Test uppercase units are rejected\".\nConcerns: none; no plan test conflicts with the spec. Plan said 22 passed; plan tests alone give 22 (9+13), extras add 16.\nE\ngit status --short; git log --oneline|head -3"
+      }
+    }
+  ],
+  "commits": [
+    "3f35d70 Test uppercase units are rejected",
+    "b0341e7 Add parse_duration"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants-2.log",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

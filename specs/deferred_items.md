@@ -5722,6 +5722,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       body, as production does when the agent is installed (decision D14). Size: plan.
       Revisit if: a runtime without the installed `task-reviewer` agent dispatches the Full
       Form, or its text changes.
+      → progress 2026-11-13 (plan 93): R1–R3 ran on the Full Form's `## Mutants` section; the rest of the Full Form is still untested. Plan 93's Task 7 changed the Full Form (68233d8, 39c1ed3), and its treatment-full arm met each bar in 5 of 5 reps (`specs/baseline/red-baseline-mutant-checked-tests.md`, `## Reviewer treatment`).
 - [ ] Declined review line: `agents/security-auditor.md` keeps its Minor tier (plan 73 final
       review, owner ruled defer; a spec non-goal). Size: quick-fix. Revisit if:
       security-auditor is dispatched in a flow that expects the two-grade scale.
@@ -6223,7 +6224,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → retired 2026-11-11: the revisit condition can no longer fire. `specs/completed/statement-level-readings.md` replaces the test-writing second reader and says "No acceptance tests exist in this design."
 
 ## 83-statement-level-readings — 2026-11-09
-- [ ] **Layer 4 of the spec-reading test check: spec excerpts in the implementer brief (plan 83, Task 6
+- [x] **Layer 4 of the spec-reading test check: spec excerpts in the implementer brief (plan 83, Task 6
       Step 5; the owner chose no build plan at D8).** The closed item "Spec-reading test check" proposed five
       layers against a spec misreading that the plan's own tests share. Plan 73 adopted layer 2, and
       `specs/completed/statement-level-readings.md` decided layers 1, 3 and 5 (plan 83). Layer 4 is the one
@@ -6235,6 +6236,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`specs/baseline/red-baseline-acceptance-tests.md`, `specs/baseline/red-baseline-statement-readings.md`). It was first
       found in specs/deferred_items.md (spec-reading-test-check), 2026-10-28. Size: design. Done when: a spec
       decides layer 4 for subagent-driven-development and executing-plans, and its plan lands.
+      → planned 2026-11-12: specs/plans/93-mutant-checked-tests.md
+      → done 2026-11-13 (plan 93): `specs/completed/mutant-checked-tests.md` decides layer 4 for both executors (Design 1, 5 and 7), and plan 93 built it. The subagent-driven controller writes `task-N-spec.md`, the excerpts that the task rests on, before each dispatch (`references/file-handoffs.md`). The implementer prompt's `## Plan Tests and the Spec` has the implementer leave a conflicting plan test as written and report it as DONE_WITH_CONCERNS with both quotes. The controller rules only on a quoted spec sentence, or ledgers `Ruling: (unclear)` for the owner at the completion gate. executing-plans' SKILL.md carries the same case for the inline agent. Fixture F4 of `specs/baseline/red-baseline-mutant-checked-tests.md` met its bar in 5 of 5 treatment reps, against 0 of 5 in the control.
 - [ ] **The statement-readings kit's scorer accepts adjudicator rulings that quote no words (plan 83, final
       review, Codex's finding).** Spec Design 7 in `specs/completed/statement-level-readings.md` has the
       adjudicator quote the words that decide each case, or rule `unclear`. The kit's scorer
@@ -6623,3 +6626,32 @@ review and the Plan Completion gate (2026-10-27) add the others.
       triage after 2.1.324 or later rebaselines the block, and the L388 clause covers a plugin or its hooks that
       fail to load, puts the version marker on the go-ahead behavior, dates it from a changelog entry or keeps
       the page-only hedge, and has been checked against the model-config page text.
+
+## 93-mutant-checked-tests — 2026-11-13
+- [ ] **task-done never checks that a mutant patch is the one its run measured (plan 93 final review, Codex
+      C2 at `cfa17ca`; the owner chose a backlog item at the completion gate, 2026-11-13).** The mutant gate in
+      `skills/executing-plans/scripts/task-done` (the block at lines 164-233) reads the newest
+      `task-N-mutants*.log` and checks its `head:` line, its `result:` line and a `mutant K:` line for each
+      listed mutant. It never compares a patch file's current sha256 with the `sha256` that the run recorded for
+      that mutant. So under executing-plans, a patch that is edited after a clean run at the same HEAD still
+      passes, and task-done records the task. Under subagent-driven-development the controller runs mutant-run
+      itself before review, so the case does not arise there. The spec's gate
+      (`specs/completed/mutant-checked-tests.md:343-349`) lists three conditions, and none of them reads the
+      patch bytes. The plan's `write_run` fixture
+      (`skills/executing-plans/scripts/test_executing_plans_scripts.py:128`) writes each `sha256` as 64 zeros
+      and makes no patch files. So a strict check, one that also refuses a missing patch, needs that fixture
+      changed. A check that compares only when the patch file exists fits the fixture, but a deleted patch then
+      goes unchecked. Size: design. Done when: the choice between the strict check and the compare-when-present
+      check is recorded, task-done refuses (exit 4) a task whose patch bytes differ from the run's recorded
+      sha256, a test that edits a patch after a clean run at the same HEAD sees exit 4, and the other gate tests
+      still pass.
+- [ ] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
+      2026-11-13).** `ruling_lines` in `skills/writing-plans/scripts/history_entry.py` (about line 305) takes
+      every ledger line that holds `Ruling:` anywhere (`line.partition(RULING_MARK)`). Plan 93's ledger had a
+      Task 3 note that quoted "executing-plans Section 2's `Ruling: (unclear)` ledger line". The drafted history
+      entry turned that note into a false ruling line, and the protocol run deleted the line by hand. The script
+      was not changed on the plan 93 branch, because that plan's scope fence kept `skills/writing-plans/` out of
+      bounds. Size: quick-fix. Done when: `ruling_lines` takes `Ruling:` only as a line's own mark (at its start,
+      or after a `Task <N>: ` or final-review prefix), not inside a code span or a quotation; a test whose ledger
+      has a note line that quotes `` `Ruling: (unclear)` `` gets no ruling line from it; and the existing
+      history_entry tests pass.

@@ -1,0 +1,1335 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py
+head: a8e50ad595f96ab16dc5facdd4d9376382ebff0d
+tree: clean
+result: caught 9, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 3a492c3afef3b145c73fed99fdc4cea9a0ca9ae7785f687803a7269e4d861e10 tests: tests.test_duration::test_parse_duration_multi_digit_parts[12h-43200] tests.test_duration::test_parse_duration_multi_digit_parts[100h-360000] tests.test_duration::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+mutant 2: CAUGHT exit 1 sha256 31408462658926ee9b069dc2c10912f698ea3182d19780aeb7d19980aea6fc4a tests: tests.test_duration::test_parse_duration_returns_seconds[15m-900] tests.test_duration::test_parse_duration_returns_seconds[1h30m-5400] tests.test_duration::test_parse_duration_returns_seconds[05m-300] tests.test_duration::test_parse_duration_multi_digit_parts[123m4s-7384] tests.test_duration::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+mutant 3: CAUGHT exit 1 sha256 396ae35889b6494e6d08b69809c16359531cfd2bcf27b59be9fb44d223cb82d4 tests: tests.test_duration::test_parse_duration_returns_seconds[40s-40] tests.test_duration::test_parse_duration_returns_seconds[5m10s-310] tests.test_duration::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+mutant 4: CAUGHT exit 1 sha256 4d67e4fa04cea356072f78cba64a2febfa86cdb4ab69e59230bb67c29e2eb5da tests: tests.test_duration::test_parse_duration_rejects_other_text[\u0661h]
+mutant 5: CAUGHT exit 1 sha256 60989415bba24e6cf8d79476de2f8a78ade37027b2a021f7da7dc98ead26b8e3 tests: tests.test_duration::test_parse_duration_rejects_other_text[]
+mutant 6: CAUGHT exit 1 sha256 a0e8c51e6767296f0f75c46765de142a98e4543d9e22f2d31273de3b9aecb3de tests: tests.test_duration::test_parse_duration_returns_seconds[2h-7200] tests.test_duration::test_parse_duration_returns_seconds[1h2m3s-3723] tests.test_duration::test_parse_duration_returns_seconds[1h30m-5400] tests.test_duration::test_parse_duration_returns_seconds[1h5s-3605] tests.test_duration::test_parse_duration_multi_digit_parts[12h-43200] tests.test_duration::test_parse_duration_multi_digit_parts[100h-360000] tests.test_duration::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+mutant 7: CAUGHT exit 1 sha256 4d60985c39231cc45aa315654cd94e6b5f7d0304c6b02bafde7190ea82d6ca7a tests: tests.test_duration::test_parse_duration_returns_seconds[15m-900] tests.test_duration::test_parse_duration_returns_seconds[1h2m3s-3723] tests.test_duration::test_parse_duration_returns_seconds[1h30m-5400] tests.test_duration::test_parse_duration_returns_seconds[5m10s-310] tests.test_duration::test_parse_duration_returns_seconds[05m-300] tests.test_duration::test_parse_duration_multi_digit_parts[123m4s-7384] tests.test_duration::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+mutant 8: CAUGHT exit 1 sha256 97bb49be1c6aad50684411c9156e2c340d31c4f13f53fa6f0cd0ab31a501d190 tests: tests.test_duration::test_parse_duration_rejects_other_text[30m1h] tests.test_duration::test_parse_duration_rejects_other_text[1h1h] tests.test_duration::test_parse_duration_rejects_other_text[90] tests.test_duration::test_parse_duration_rejects_other_text[1h30] tests.test_duration::test_parse_duration_rejects_other_text[h] tests.test_duration::test_parse_duration_rejects_other_text[1d] tests.test_duration::test_parse_duration_rejects_other_text[1H] tests.test_duration::test_parse_duration_rejects_other_text[\u0661h] tests.test_duration::test_parse_duration_rejects_other_text[+1h] tests.test_duration::test_parse_duration_rejects_other_text[ 1h] tests.test_duration::test_parse_duration_rejects_other_text[1h 30m] tests.test_duration::test_parse_duration_rejects_other_text[1h\n]
+mutant 9: CAUGHT exit 1 sha256 4c70e97699e9b15d45fa82683031dd6b797457c820f724a59d39cbe613fb33f2 tests: tests.test_duration::test_parse_duration_returns_seconds[15m-900] tests.test_duration::test_parse_duration_returns_seconds[40s-40] tests.test_duration::test_parse_duration_returns_seconds[1h2m3s-3723] tests.test_duration::test_parse_duration_returns_seconds[1h30m-5400] tests.test_duration::test_parse_duration_returns_seconds[5m10s-310] tests.test_duration::test_parse_duration_returns_seconds[1h5s-3605] tests.test_duration::test_parse_duration_returns_seconds[05m-300] tests.test_duration::test_parse_duration_returns_seconds[0h0m0s-0] tests.test_duration::test_parse_duration_multi_digit_parts[123m4s-7384] tests.test_duration::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+--- tests ---
+test tests.test_duration::test_parse_duration_multi_digit_parts[12h-43200]: caught 1 6
+test tests.test_duration::test_parse_duration_multi_digit_parts[100h-360000]: caught 1 6
+test tests.test_duration::test_parse_duration_multi_digit_parts[10h20m30s-37230]: caught 1 2 3 6 7 9
+test tests.test_duration::test_parse_duration_returns_seconds[15m-900]: caught 2 7 9
+test tests.test_duration::test_parse_duration_returns_seconds[1h30m-5400]: caught 2 6 7 9
+test tests.test_duration::test_parse_duration_returns_seconds[05m-300]: caught 2 7 9
+test tests.test_duration::test_parse_duration_multi_digit_parts[123m4s-7384]: caught 2 7 9
+test tests.test_duration::test_parse_duration_returns_seconds[40s-40]: caught 3 9
+test tests.test_duration::test_parse_duration_returns_seconds[5m10s-310]: caught 3 7 9
+test tests.test_duration::test_parse_duration_rejects_other_text[\u0661h]: caught 4 8
+test tests.test_duration::test_parse_duration_rejects_other_text[]: caught 5
+test tests.test_duration::test_parse_duration_returns_seconds[2h-7200]: caught 6
+test tests.test_duration::test_parse_duration_returns_seconds[1h2m3s-3723]: caught 6 7 9
+test tests.test_duration::test_parse_duration_returns_seconds[1h5s-3605]: caught 6 9
+test tests.test_duration::test_parse_duration_rejects_other_text[30m1h]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[1h1h]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[90]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[1h30]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[h]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[1d]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[1H]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[+1h]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[ 1h]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[1h 30m]: caught 8
+test tests.test_duration::test_parse_duration_rejects_other_text[1h\n]: caught 8
+test tests.test_duration::test_parse_duration_returns_seconds[0h0m0s-0]: caught 9
+--- output: baseline ---
+..........................                                               [100%]
+26 passed in 0.01s
+--- output: mutant 1 ---
+......................FF.F                                               [100%]
+=================================== FAILURES ===================================
+_______________ test_parse_duration_multi_digit_parts[12h-43200] _______________
+
+text = '12h', seconds = 43200
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '12h'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '12h'
+
+duration.py:10: ValueError
+______________ test_parse_duration_multi_digit_parts[100h-360000] ______________
+
+text = '100h', seconds = 360000
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '100h'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '100h'
+
+duration.py:10: ValueError
+____________ test_parse_duration_multi_digit_parts[10h20m30s-37230] ____________
+
+text = '10h20m30s', seconds = 37230
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '10h20m30s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '10h20m30s'
+
+duration.py:10: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[12h-43200]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[100h-360000]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+3 failed, 23 passed in 0.02s
+--- output: mutant 2 ---
+.F..F..F................FF                                               [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_duration_returns_seconds[15m-900] _________________
+
+text = '15m', seconds = 900
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '15m'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '15m'
+
+duration.py:10: ValueError
+_______________ test_parse_duration_returns_seconds[1h30m-5400] ________________
+
+text = '1h30m', seconds = 5400
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '1h30m'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '1h30m'
+
+duration.py:10: ValueError
+_________________ test_parse_duration_returns_seconds[05m-300] _________________
+
+text = '05m', seconds = 300
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '05m'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '05m'
+
+duration.py:10: ValueError
+______________ test_parse_duration_multi_digit_parts[123m4s-7384] ______________
+
+text = '123m4s', seconds = 7384
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '123m4s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '123m4s'
+
+duration.py:10: ValueError
+____________ test_parse_duration_multi_digit_parts[10h20m30s-37230] ____________
+
+text = '10h20m30s', seconds = 37230
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '10h20m30s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '10h20m30s'
+
+duration.py:10: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[15m-900]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h30m-5400]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[05m-300]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[123m4s-7384]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+5 failed, 21 passed in 0.02s
+--- output: mutant 3 ---
+..F..F...................F                                               [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_duration_returns_seconds[40s-40] __________________
+
+text = '40s', seconds = 40
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '40s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '40s'
+
+duration.py:10: ValueError
+________________ test_parse_duration_returns_seconds[5m10s-310] ________________
+
+text = '5m10s', seconds = 310
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '5m10s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '5m10s'
+
+duration.py:10: ValueError
+____________ test_parse_duration_multi_digit_parts[10h20m30s-37230] ____________
+
+text = '10h20m30s', seconds = 37230
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '10h20m30s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '10h20m30s'
+
+duration.py:10: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[40s-40] - ...
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[5m10s-310]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+3 failed, 23 passed in 0.02s
+--- output: mutant 4 ---
+.................F........                                               [100%]
+=================================== FAILURES ===================================
+_______________ test_parse_duration_rejects_other_text[\u0661h] ________________
+
+text = '١h'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[\u0661h]
+1 failed, 25 passed in 0.01s
+--- output: mutant 5 ---
+.........F................                                               [100%]
+=================================== FAILURES ===================================
+___________________ test_parse_duration_rejects_other_text[] ___________________
+
+text = ''
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[] - Fai...
+1 failed, 25 passed in 0.01s
+--- output: mutant 6 ---
+F..FF.F...............FF.F                                               [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_duration_returns_seconds[2h-7200] _________________
+
+text = '2h', seconds = 7200
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 120 == 7200
+
+tests/test_duration.py:19: AssertionError
+_______________ test_parse_duration_returns_seconds[1h2m3s-3723] _______________
+
+text = '1h2m3s', seconds = 3723
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 183 == 3723
+
+tests/test_duration.py:19: AssertionError
+_______________ test_parse_duration_returns_seconds[1h30m-5400] ________________
+
+text = '1h30m', seconds = 5400
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 1860 == 5400
+
+tests/test_duration.py:19: AssertionError
+________________ test_parse_duration_returns_seconds[1h5s-3605] ________________
+
+text = '1h5s', seconds = 3605
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 65 == 3605
+
+tests/test_duration.py:19: AssertionError
+_______________ test_parse_duration_multi_digit_parts[12h-43200] _______________
+
+text = '12h', seconds = 43200
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+E       AssertionError: assert 720 == 43200
+E        +  where 720 = parse_duration('12h')
+
+tests/test_duration.py:50: AssertionError
+______________ test_parse_duration_multi_digit_parts[100h-360000] ______________
+
+text = '100h', seconds = 360000
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+E       AssertionError: assert 6000 == 360000
+E        +  where 6000 = parse_duration('100h')
+
+tests/test_duration.py:50: AssertionError
+____________ test_parse_duration_multi_digit_parts[10h20m30s-37230] ____________
+
+text = '10h20m30s', seconds = 37230
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+E       AssertionError: assert 1830 == 37230
+E        +  where 1830 = parse_duration('10h20m30s')
+
+tests/test_duration.py:50: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[2h-7200]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h2m3s-3723]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h30m-5400]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h5s-3605]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[12h-43200]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[100h-360000]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+7 failed, 19 passed in 0.02s
+--- output: mutant 7 ---
+.F.FFF.F................FF                                               [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_duration_returns_seconds[15m-900] _________________
+
+text = '15m', seconds = 900
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 54000 == 900
+
+tests/test_duration.py:19: AssertionError
+_______________ test_parse_duration_returns_seconds[1h2m3s-3723] _______________
+
+text = '1h2m3s', seconds = 3723
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 10803 == 3723
+
+tests/test_duration.py:19: AssertionError
+_______________ test_parse_duration_returns_seconds[1h30m-5400] ________________
+
+text = '1h30m', seconds = 5400
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 111600 == 5400
+
+tests/test_duration.py:19: AssertionError
+________________ test_parse_duration_returns_seconds[5m10s-310] ________________
+
+text = '5m10s', seconds = 310
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 18010 == 310
+
+tests/test_duration.py:19: AssertionError
+_________________ test_parse_duration_returns_seconds[05m-300] _________________
+
+text = '05m', seconds = 300
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 18000 == 300
+
+tests/test_duration.py:19: AssertionError
+______________ test_parse_duration_multi_digit_parts[123m4s-7384] ______________
+
+text = '123m4s', seconds = 7384
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+E       AssertionError: assert 442804 == 7384
+E        +  where 442804 = parse_duration('123m4s')
+
+tests/test_duration.py:50: AssertionError
+____________ test_parse_duration_multi_digit_parts[10h20m30s-37230] ____________
+
+text = '10h20m30s', seconds = 37230
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+E       AssertionError: assert 108030 == 37230
+E        +  where 108030 = parse_duration('10h20m30s')
+
+tests/test_duration.py:50: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[15m-900]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h2m3s-3723]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h30m-5400]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[5m10s-310]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[05m-300]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[123m4s-7384]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+7 failed, 19 passed in 0.02s
+--- output: mutant 8 ---
+..........FFFFFFFFFFFF....                                               [100%]
+=================================== FAILURES ===================================
+________________ test_parse_duration_rejects_other_text[30m1h] _________________
+
+text = '30m1h'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+_________________ test_parse_duration_rejects_other_text[1h1h] _________________
+
+text = '1h1h'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+__________________ test_parse_duration_rejects_other_text[90] __________________
+
+text = '90'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+_________________ test_parse_duration_rejects_other_text[1h30] _________________
+
+text = '1h30'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+__________________ test_parse_duration_rejects_other_text[h] ___________________
+
+text = 'h'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+__________________ test_parse_duration_rejects_other_text[1d] __________________
+
+text = '1d'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+__________________ test_parse_duration_rejects_other_text[1H] __________________
+
+text = '1H'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+_______________ test_parse_duration_rejects_other_text[\u0661h] ________________
+
+text = '١h'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+_________________ test_parse_duration_rejects_other_text[+1h] __________________
+
+text = '+1h'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+_________________ test_parse_duration_rejects_other_text[ 1h] __________________
+
+text = ' 1h'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+________________ test_parse_duration_rejects_other_text[1h 30m] ________________
+
+text = '1h 30m'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+_________________ test_parse_duration_rejects_other_text[1h\n] _________________
+
+text = '1h\n'
+
+    @pytest.mark.parametrize('text', [
+        '',
+        '30m1h',
+        '1h1h',
+        '90',
+        '1h30',
+        'h',
+        '1d',
+        '1H',
+        '١h',  # an Arabic-Indic digit one, not an ASCII digit
+        '+1h',
+        ' 1h',
+        '1h 30m',
+        '1h\n',
+    ])
+    def test_parse_duration_rejects_other_text(text):
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_duration.py:39: Failed
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[30m1h]
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[1h1h]
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[90] - F...
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[1h30]
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[h] - Fa...
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[1d] - F...
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[1H] - F...
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[\u0661h]
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[+1h] - ...
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[ 1h] - ...
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[1h 30m]
+FAILED tests/test_duration.py::test_parse_duration_rejects_other_text[1h\n]
+12 failed, 14 passed in 0.02s
+--- output: mutant 9 ---
+.FFFFFFFF...............FF                                               [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_duration_returns_seconds[15m-900] _________________
+
+text = '15m', seconds = 900
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 15 == 900
+
+tests/test_duration.py:19: AssertionError
+_________________ test_parse_duration_returns_seconds[40s-40] __________________
+
+text = '40s', seconds = 40
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 2400 == 40
+
+tests/test_duration.py:19: AssertionError
+_______________ test_parse_duration_returns_seconds[1h2m3s-3723] _______________
+
+text = '1h2m3s', seconds = 3723
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '1h2m3s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '1h2m3s'
+
+duration.py:10: ValueError
+_______________ test_parse_duration_returns_seconds[1h30m-5400] ________________
+
+text = '1h30m', seconds = 5400
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 3630 == 5400
+
+tests/test_duration.py:19: AssertionError
+________________ test_parse_duration_returns_seconds[5m10s-310] ________________
+
+text = '5m10s', seconds = 310
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '5m10s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '5m10s'
+
+duration.py:10: ValueError
+________________ test_parse_duration_returns_seconds[1h5s-3605] ________________
+
+text = '1h5s', seconds = 3605
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 3900 == 3605
+
+tests/test_duration.py:19: AssertionError
+_________________ test_parse_duration_returns_seconds[05m-300] _________________
+
+text = '05m', seconds = 300
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+        result = parse_duration(text)
+>       assert result == seconds
+E       assert 5 == 300
+
+tests/test_duration.py:19: AssertionError
+________________ test_parse_duration_returns_seconds[0h0m0s-0] _________________
+
+text = '0h0m0s', seconds = 0
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('2h', 7200),
+        ('15m', 900),
+        ('40s', 40),
+        ('1h2m3s', 3723),
+        ('1h30m', 5400),
+        ('5m10s', 310),
+        ('1h5s', 3605),
+        ('05m', 300),
+        ('0h0m0s', 0),
+    ])
+    def test_parse_duration_returns_seconds(text, seconds):
+>       result = parse_duration(text)
+                 ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '0h0m0s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '0h0m0s'
+
+duration.py:10: ValueError
+______________ test_parse_duration_multi_digit_parts[123m4s-7384] ______________
+
+text = '123m4s', seconds = 7384
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '123m4s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '123m4s'
+
+duration.py:10: ValueError
+____________ test_parse_duration_multi_digit_parts[10h20m30s-37230] ____________
+
+text = '10h20m30s', seconds = 37230
+
+    @pytest.mark.parametrize('text, seconds', [
+        ('12h', 43200),
+        ('100h', 360000),
+        ('123m4s', 7384),
+        ('10h20m30s', 37230),
+    ])
+    def test_parse_duration_multi_digit_parts(text, seconds):
+>       assert parse_duration(text) == seconds
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_duration.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '10h20m30s'
+
+    def parse_duration(text: str) -> int:
+        """Return the number of seconds in a duration such as '1h30m'."""
+        match = _DURATION.fullmatch(text)
+        if match is None or not text:
+>           raise ValueError(f'invalid duration: {text!r}')
+E           ValueError: invalid duration: '10h20m30s'
+
+duration.py:10: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[15m-900]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[40s-40] - ...
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h2m3s-3723]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h30m-5400]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[5m10s-310]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[1h5s-3605]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[05m-300]
+FAILED tests/test_duration.py::test_parse_duration_returns_seconds[0h0m0s-0]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[123m4s-7384]
+FAILED tests/test_duration.py::test_parse_duration_multi_digit_parts[10h20m30s-37230]
+10 failed, 16 passed in 0.02s

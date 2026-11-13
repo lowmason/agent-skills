@@ -1,0 +1,17 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py
+head: a57be3a1892816ea40c3bb62a1db6967b281ebe1
+tree: clean
+result: caught 0, survived 0, invalid 7
+--- mutants ---
+mutant 1: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 2: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 3: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 4: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 5: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 6: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 7: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+--- tests ---
+--- output: baseline ---
+......................                                                   [100%]
+22 passed in 0.01s

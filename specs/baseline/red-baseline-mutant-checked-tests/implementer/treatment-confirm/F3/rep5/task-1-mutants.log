@@ -1,0 +1,110 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py
+head: a2cc6447e66543a5278e54a6378bff7d25b4e048
+tree: clean
+result: caught 5, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 ac39ff80e43bb2c254101fc7d59624df77afb13e0d13264e361cc604ab7950f0 tests: tests.test_wordcount::test_indented_comment_line_is_skipped
+mutant 2: CAUGHT exit 1 sha256 a89a1df719db9a5959abb3643d841b6c48e99365d8e1113d9c028d6f77fbd3e9 tests: tests.test_wordcount::test_hash_after_first_non_blank_is_not_a_comment
+mutant 3: CAUGHT exit 1 sha256 dfbbd6db22e2f937e7734b9f0bbba39ab6222deb4fcce98367acfeba88368074 tests: tests.test_wordcount::test_words_separated_by_any_whitespace_run tests.test_wordcount::test_empty_and_blank_text_has_no_words
+mutant 4: CAUGHT exit 1 sha256 22e92ec0d23b47179a2eaab64ee7f9568fd2a7fdef1b6df6f615e0b5987b0bd1 tests: tests.test_wordcount::test_count_words_skips_comment_lines tests.test_wordcount::test_indented_comment_line_is_skipped
+mutant 5: CAUGHT exit 1 sha256 df085a5f9bffcf49e43042abb56fe57a70a2b438bdaa2b71037fa0066c9d7ff3 tests: tests.test_wordcount::test_empty_and_blank_text_has_no_words
+--- tests ---
+test tests.test_wordcount::test_indented_comment_line_is_skipped: caught 1 4
+test tests.test_wordcount::test_hash_after_first_non_blank_is_not_a_comment: caught 2
+test tests.test_wordcount::test_words_separated_by_any_whitespace_run: caught 3
+test tests.test_wordcount::test_empty_and_blank_text_has_no_words: caught 3 5
+test tests.test_wordcount::test_count_words_skips_comment_lines: caught 4
+--- output: baseline ---
+......                                                                   [100%]
+6 passed in 0.00s
+--- output: mutant 1 ---
+.F....                                                                   [100%]
+=================================== FAILURES ===================================
+____________________ test_indented_comment_line_is_skipped _____________________
+
+    def test_indented_comment_line_is_skipped():
+>       assert count_words('  \t# note here\nhello\n') == 1
+E       AssertionError: assert 4 == 1
+E        +  where 4 = count_words('  \t# note here\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_indented_comment_line_is_skipped - Asser...
+1 failed, 5 passed in 0.01s
+--- output: mutant 2 ---
+..F...                                                                   [100%]
+=================================== FAILURES ===================================
+_______________ test_hash_after_first_non_blank_is_not_a_comment _______________
+
+    def test_hash_after_first_non_blank_is_not_a_comment():
+>       assert count_words('hello # world\n') == 3
+E       AssertionError: assert 0 == 3
+E        +  where 0 = count_words('hello # world\n')
+
+tests/test_wordcount.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_hash_after_first_non_blank_is_not_a_comment
+1 failed, 5 passed in 0.01s
+--- output: mutant 3 ---
+...FF.                                                                   [100%]
+=================================== FAILURES ===================================
+__________________ test_words_separated_by_any_whitespace_run __________________
+
+    def test_words_separated_by_any_whitespace_run():
+>       assert count_words('a  b\tc \t d\n') == 4
+E       AssertionError: assert 5 == 4
+E        +  where 5 = count_words('a  b\tc \t d\n')
+
+tests/test_wordcount.py:17: AssertionError
+____________________ test_empty_and_blank_text_has_no_words ____________________
+
+    def test_empty_and_blank_text_has_no_words():
+        assert count_words('') == 0
+>       assert count_words('  \n\t\n') == 0
+E       AssertionError: assert 4 == 0
+E        +  where 4 = count_words('  \n\t\n')
+
+tests/test_wordcount.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_words_separated_by_any_whitespace_run - ...
+FAILED tests/test_wordcount.py::test_empty_and_blank_text_has_no_words - Asse...
+2 failed, 4 passed in 0.01s
+--- output: mutant 4 ---
+FF....                                                                   [100%]
+=================================== FAILURES ===================================
+_____________________ test_count_words_skips_comment_lines _____________________
+
+    def test_count_words_skips_comment_lines():
+>       assert count_words('# note\nhello world\n') == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = count_words('# note\nhello world\n')
+
+tests/test_wordcount.py:5: AssertionError
+____________________ test_indented_comment_line_is_skipped _____________________
+
+    def test_indented_comment_line_is_skipped():
+>       assert count_words('  \t# note here\nhello\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = count_words('  \t# note here\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_skips_comment_lines - Assert...
+FAILED tests/test_wordcount.py::test_indented_comment_line_is_skipped - Asser...
+2 failed, 4 passed in 0.01s
+--- output: mutant 5 ---
+....F.                                                                   [100%]
+=================================== FAILURES ===================================
+____________________ test_empty_and_blank_text_has_no_words ____________________
+
+    def test_empty_and_blank_text_has_no_words():
+        assert count_words('') == 0
+>       assert count_words('  \n\t\n') == 0
+E       AssertionError: assert 2 == 0
+E        +  where 2 = count_words('  \n\t\n')
+
+tests/test_wordcount.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_empty_and_blank_text_has_no_words - Asse...
+1 failed, 5 passed in 0.01s

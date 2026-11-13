@@ -22,7 +22,10 @@ on a genuine toss-up, and defaulting to **standard** when nothing clearly fires
    or debugging from symptoms → **capable**, regardless of file count or diff size.
 2. **Source of the work** — the complete code is in the brief (transcription +
    testing) → **cheap**; behavior is described in prose → **standard floor**
-   (prose implementers never get the cheap tier).
+   (prose implementers never get the cheap tier). A mutant task
+   ([mutants.md](mutants.md), Terms) gets the **standard** floor even when the
+   brief holds the complete code, because writing a plausible mutant is
+   judgment.
 3. **Spread** — 1-2 files with a clear spec → **cheap**; multiple files /
    integration / pattern-matching → **standard**; open design judgment or
    broad-codebase understanding → **capable**.

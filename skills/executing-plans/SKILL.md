@@ -234,9 +234,24 @@ read its output, and compare. Three outcomes:
   wrong>`, and
   continue. The ruling is carried, not remembered: later tasks that touch
   the same interface read it from the ledger.
+  A plan test that conflicts with the spec is never edited silently. Rule
+  only when a spec sentence decides it: quote that sentence in the ruling,
+  and ledger the ruling before you change the test. When no sentence
+  decides it, keep the plan's test and ledger
+  `Task <N>: Ruling: (unclear) <the conflict>`, which the plan-completion
+  gate asks your partner about.
 
 Commit as the plan's commit steps say. A task that spans several commits
 is fine; BASE is what the review range is cut from, never `HEAD~1`.
+
+**Prove the tests.** In a mutant task (Terms in
+[../subagent-driven-development/references/mutants.md](../subagent-driven-development/references/mutants.md)),
+after GREEN and the commit, work that file's steps 1–6. You read the spec
+at setup, so write no excerpts file: cite each spec sentence in the
+mutants file as `path:line`. The command is
+`<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N -- <the brief's focused test command>`.
+The last run comes after the task's last commit: `task-done` refuses a run
+whose `head:` is not HEAD.
 
 ### 3. The completion contract
 
@@ -250,25 +265,35 @@ in this session — not inferred from the diff looking right:
   "other tests"), not only the files the brief names.
 - Every `Expected:` line in the brief was compared against real output.
 - Every deviation from the brief has a `Ruling:` line in the ledger.
+- The task's newest mutant run shows no survivor and no invalid mutant,
+  or the task is not a mutant task and `task-done` gets
+  `--no-mutants '<why>'`.
 
 **REQUIRED SUB-SKILL:** verification-before-completion governs
 the claim. If any item is missing, the task is not complete: finish it.
 
 ### 4. Complete the task
 
-Run `<this-skill-dir>/scripts/task-done PLAN_FILE N BASE -- <test command>`
+Run `<this-skill-dir>/scripts/task-done PLAN_FILE N BASE [--no-mutants '<why>'] -- <test command>`
 with the project's documented test command(s) that the change can reach.
 `task-done` takes one command, run from the current directory: put several
 documented commands, or suites that run from their own directories, into
 one call (`-- sh -c '<cmd1> && <cmd2>'`), never one call each.
 It runs the
 tests, keeps the full output in the workspace, prints the tail, and — only
-if they pass — appends the completion line to the ledger:
+if they pass and the mutant gate holds — appends the completion line to
+the ledger:
 
-`Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)`
+`Task <N>: complete (commits <base7>..<head7>, mutants: <caught>/<total>, tests: <command> → <result>)`
 
-A failing run records nothing; the task is not complete. When it records,
-mark the todo complete and take the next task.
+The gate reads the task's newest mutant run: it is at HEAD, no mutant
+survived or is invalid, and each `Mutant K:` line in the mutants file is
+in the run or has a `Withdrawn: K` line. With `--no-mutants`, the gate is
+skipped and the field reads `mutants: none: <why>`.
+
+A failing run records nothing, and so does a refused gate (exit 4): the
+task is not complete. When it records, mark the todo complete and take
+the next task.
 
 When the last task's ledger line is written, read
 [references/final-review.md](references/final-review.md) and follow it.

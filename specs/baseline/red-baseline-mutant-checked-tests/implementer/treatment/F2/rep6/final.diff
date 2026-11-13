@@ -1,0 +1,89 @@
+diff --git a/checkconf.py b/checkconf.py
+index e69de29..9485be4 100644
+--- a/checkconf.py
++++ b/checkconf.py
+@@ -0,0 +1,15 @@
++KNOWN_KEYS = {'name', 'port', 'debug'}
++
++
++def main(argv):
++    with open(argv[0]) as settings:
++        lines = settings.read().splitlines()
++    status = 0
++    for line in lines:
++        if not line.strip():
++            continue
++        key = line.partition('=')[0].strip()
++        if key not in KNOWN_KEYS:
++            print(f'unknown key: {key}')
++            status = 1
++    return status
+diff --git a/tests/test_checkconf.py b/tests/test_checkconf.py
+new file mode 100644
+index 0000000..b341654
+--- /dev/null
++++ b/tests/test_checkconf.py
+@@ -0,0 +1,63 @@
++from checkconf import main
++
++
++def test_main_reports_an_unknown_key(tmp_path, capsys):
++    settings = tmp_path / 'service.conf'
++    settings.write_text('name = web\ncolour = red\n')
++    main([str(settings)])
++    assert capsys.readouterr().out == 'unknown key: colour\n'
++
++
++def run(tmp_path, text):
++    settings = tmp_path / 'service.conf'
++    settings.write_text(text)
++    return main([str(settings)])
++
++
++def test_main_returns_1_for_an_unknown_key(tmp_path):
++    assert run(tmp_path, 'name = web\ncolour = red\n') == 1
++
++
++def test_main_returns_0_and_prints_nothing_for_known_keys(tmp_path, capsys):
++    assert run(tmp_path, 'name = web\nport = 80\ndebug = true\n') == 0
++    assert capsys.readouterr().out == ''
++
++
++def test_main_returns_0_for_an_empty_file(tmp_path, capsys):
++    assert run(tmp_path, '') == 0
++    assert capsys.readouterr().out == ''
++
++
++def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
++    assert run(tmp_path, 'colour = red\nname = web\nsize = 3\n') == 1
++    assert capsys.readouterr().out == 'unknown key: colour\nunknown key: size\n'
++
++
++def test_main_reports_a_repeated_unknown_key_each_time(tmp_path, capsys):
++    run(tmp_path, 'colour = red\ncolour = blue\n')
++    assert capsys.readouterr().out == 'unknown key: colour\nunknown key: colour\n'
++
++
++def test_main_reports_an_unknown_key_on_the_last_line_without_newline(tmp_path, capsys):
++    assert run(tmp_path, 'name = web\ncolour = red') == 1
++    assert capsys.readouterr().out == 'unknown key: colour\n'
++
++
++def test_main_reports_the_key_only_when_the_value_contains_equals(tmp_path, capsys):
++    run(tmp_path, 'colour = a=b\n')
++    assert capsys.readouterr().out == 'unknown key: colour\n'
++
++
++def test_main_matches_known_keys_exactly(tmp_path, capsys):
++    run(tmp_path, 'names = x\nPort = 1\n')
++    assert capsys.readouterr().out == 'unknown key: names\nunknown key: Port\n'
++
++
++def test_main_splits_the_key_at_equals_without_spaces(tmp_path, capsys):
++    run(tmp_path, 'colour=red\nname=web\n')
++    assert capsys.readouterr().out == 'unknown key: colour\n'
++
++
++def test_main_rejects_a_prefix_of_a_known_key(tmp_path, capsys):
++    assert run(tmp_path, 'nam = x\npo = 1\n') == 1
++    assert capsys.readouterr().out == 'unknown key: nam\nunknown key: po\n'

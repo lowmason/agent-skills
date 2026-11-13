@@ -1,0 +1,15 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py
+head: 569f58acab8d8f5380b7d31b5610461510f0dc3b
+tree: clean
+result: caught 0, survived 0, invalid 5
+--- mutants ---
+mutant 1: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 2: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 3: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 4: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 5: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+--- tests ---
+--- output: baseline ---
+.....                                                                    [100%]
+5 passed in 0.01s

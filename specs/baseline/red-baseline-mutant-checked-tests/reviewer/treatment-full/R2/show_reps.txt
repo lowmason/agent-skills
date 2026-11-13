@@ -1,0 +1,187 @@
+== R2/rep1: is_error=False subtype=success cost=$0.089 turns=1 extra-iters=- models=1 first='### spec compliance' aids=mutant,inputs-table,tab,return-0,rule-7,rule-8,unreachable
+### Spec Compliance
+
+- ❌ Issues found: the code is spec compliant, but the mutant step fails check 3 for the whitespace rule (`specs/wordcount.md:8`). Details are under Important.
+- ✅ Code against the brief: `wordcount.py:1-7` skips lines whose first non-blank character is `#` and counts words with `str.split()`. The plan test is unchanged (`tests/test_wordcount.py:4-5`). The brief's two files are both present in the diff.
+- ✅ Test evidence: the controller's run is at head 396f3d6 on a clean tree. It shows 13 passed, matching the report.
+- ✅ Mutant run: it is at head 396f3d6 on a clean tree, and all three mutants are CAUGHT.
+
+### Strengths
+- The Inputs table is thorough. Each row has a test that really uses its shape: Unicode whitespace before `#`, `\r\n` comment lines, a comment on the last line, and `#` after a word.
+- The code is small and correct for the stated rules. `lstrip()` and `split()` agree on what counts as whitespace, and splitting lines only on `\n` is applied consistently.
+- No plan test was loosened. The 12 extra tests only strengthen coverage.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **No mutant aimed at the whitespace-separation rule (`specs/wordcount.md:8`); mutant step check 3.**
+   - The code in this diff decides the rule at `wordcount.py:6` (`len(line.split())`), so no `Unreachable:` line could hold.
+   - Of the three mutants, only mutant 1 (return 0 at the top) touches the rule-8 tests. It breaks every call, so it does not count as aimed at the rule.
+   - Mutants 2 and 3 both target the comment rule (`specs/wordcount.md:7`).
+
+2. **Three tests have no catch that counts; mutant step check 4.**
+   - The three tests are `test_count_words_splits_on_any_run_of_whitespace`, `test_count_words_splits_on_other_whitespace_inside_a_line` and `test_count_words_ignores_whitespace_at_the_ends` (`tests/test_wordcount.py:49-66`).
+   - The run shows each caught only by mutant 1 (`mutants-2.log` lines `caught 1`).
+   - A plausible wrong version the tests should catch is `line.split(' ')`. Tabs, `\r`, `\x0b` and `\x0c` would then glue words together, and runs of spaces would add empty words.
+   - Another is `line.split(None, 1)` or a regex that splits only on `[ \t]`.
+   - **Fix:** add a mutant that replaces `line.split()` with `line.split(' ')`, and one that splits only on spaces and tabs, then have the controller re-run them.
+
+### Declined to judge
+- A lone `\r` (old-Mac line ending) does not end a line. `'# note\rhello'` is skipped entirely as one comment line. The spec says nothing about line terminators and the tests pin this behavior deliberately, so the controller should rule on whether it is wanted.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The implementation is correct and well tested for the stated rules. The mutant step is incomplete: no mutant targets the whitespace-separation rule, so three tests have no counting catch.
+
+== R2/rep2: is_error=False subtype=success cost=$0.023 turns=1 extra-iters=- models=1 first='### spec compliance' aids=mutant,tab,return-0,rule-8,unproven,unreachable
+### Spec Compliance
+
+- ✅ Spec compliant: `wordcount.py:1-7` implements both rules. A line is skipped when `line.lstrip().startswith('#')`, and the other lines are counted with `line.split()`, which splits on any run of whitespace. The plan test is unchanged and passes.
+- ❌ Mutant step fails checks 3 and 4 (see Important).
+- ⚠️ Lines end only at `\n`, so a lone `\r` mid-line is whitespace, not a line break. A text with old-Mac `\r` endings would count `a\r# b` as 3 words. The spec excerpts don't say; the controller should confirm this reading is intended.
+
+### Strengths
+- The implementation is minimal and correct for the stated rules.
+- The tests are thorough on edge shapes: Unicode whitespace, `\r\n`, a comment on the last line, `#` after a word, and empty or whitespace-only text.
+- The controller's runs are at head 396f3d6 on a clean tree and agree with the report (13 passed).
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+
+1. **No mutant aimed at rule 8 (specs/wordcount.md:8, "Words are separated by any run of whitespace").**
+   - The only mutant that touches the word-splitting behavior is Mutant 1, `return 0` at the top of the function (task-1-mutants.md). It breaks every call, so it reads CAUGHT under any test and does not count toward check 3.
+   - No `Unreachable:` line applies, because `wordcount.py:6` decides the rule.
+   - Fix: add a mutant that changes only the splitting, e.g. `len(line.split(' '))`, which miscounts runs and tabs, or `re.split(r'[ \t]+', ...)`, which ignores other whitespace.
+
+2. **Three tests have no valid catch and no `Unproven:` line (check 4).**
+   - `test_count_words_splits_on_any_run_of_whitespace`, `test_count_words_splits_on_other_whitespace_inside_a_line` and `test_count_words_ignores_whitespace_at_the_ends` are caught only by Mutant 1 in task-1-mutants-2.log, which does not count.
+   - I can name a plausible wrong version they should catch: `line.split(' ')` counts empty strings for `'one  two'` and treats `\t` as part of a word, so a person would get wrong counts on tab- or double-space-separated text.
+   - These tests may well catch it. The mutant just has to exist and be run against them, and the fix for item 1 provides that.
+
+### Declined to judge
+- Treating `\x1c`–`\x1f` and `\x85` as whitespace, as `str.split()` does: the spec says only "any run of whitespace", and Python's definition is a reasonable reading.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The code and tests match the spec. The mutant step fails check 3 for rule 8 and check 4 for three tests, because the only mutant covering them is a whole-function `return 0`, which proves nothing.
+
+== R2/rep3: is_error=False subtype=success cost=$0.023 turns=1 extra-iters=- models=1 first='### spec compliance' aids=mutant,inputs-table,tab,return-0,rule-8,unproven,unreachable
+### Spec Compliance
+
+- ✅ Spec compliant for the code. `wordcount.py:1-7` skips a line when `line.lstrip().startswith('#')` and counts the rest with `split()`. That matches both global constraints. `lstrip()` and `split()` use the same Unicode whitespace set, so they cannot disagree. The plan test is unchanged, so check 6 raises nothing.
+- ⚠️ Cannot verify from the diff: the code ends a line only at `\n`. A lone `\r`, `\x85` or `\u2028` is treated as in-line whitespace, and the tests pin that choice (`tests/test_wordcount.py:37`, `:45`). The excerpts say only "a line". The controller should confirm that this matches the spec's definition of a line.
+
+### Strengths
+
+- The tests and the Inputs table are thorough. They cover Unicode whitespace, `\r\n`, a comment on the last line, a lone `#`, and `#` after a word.
+- The test run and the mutant run are both at head 396f3d6 on a clean tree. The 13-test count matches the report.
+- Mutants 2 and 3 are plausible wrong versions of rule 7. They are caught by the tests aimed at them.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+1. **No live mutant for the word-separator rule (specs/wordcount.md:8).** `wordcount.py:6` (`len(line.split())`) decides this rule. The only mutant that any rule-8 test catches is Mutant 1, which returns 0 at the top of `count_words`. That mutant breaks every call, so it does not count toward checks 3 and 4. There is no `Unreachable:` line. Mutant 3's own description gives no other mutant either.
+   - Fix: add a mutant that changes the separator rule, for example `line.split(' ')` with an empty-string filter, or `line.split(' ')` counted without the filter. A person would meet doubled or miscounted words on tabs or runs of spaces.
+
+2. **Three tests have no catch from a valid mutant (check 4).** These are `test_count_words_splits_on_any_run_of_whitespace`, `test_count_words_splits_on_other_whitespace_inside_a_line` and `test_count_words_ignores_whitespace_at_the_ends`. The run shows each caught only by Mutant 1 (`task-1-mutants-2.log`, `test ...: caught 1`). There is no `Unproven:` line, and plausible wrong versions exist:
+   - `line.split(' ')` miscounts tabs, runs of spaces and leading or trailing blanks.
+   - `re.split(r'[ \t]+', line)` misses `\x0b`, `\x0c`, `\x85` and `\u3000`.
+   - Fix: adding the rule-8 mutant above should show these tests catching it. Add a second mutant limited to ASCII space and tab, to cover the Unicode-whitespace assertions.
+
+### Declined to judge
+
+- A line ending only at `\n` (lone `\r`, `\x85` and `\u2028` are not line breaks): the excerpts do not define "line", so I raised it as a ⚠️ and did not grade it.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The implementation is correct and the tests are broad. The mutant step still fails checks 3 and 4 for the whitespace-separator rule: its only catching mutant is the break-everything one, so three tests are unproven against a plausible wrong separator.
+
+== R2/rep4: is_error=False subtype=success cost=$0.022 turns=1 extra-iters=- models=1 first='### spec compliance' aids=mutant,tab,return-0,rule-8,unproven,unreachable
+### Spec Compliance
+
+- ✅ Spec compliant for the code. `wordcount.py:1-7` skips lines whose first non-blank character is `#`, and counts words with `str.split()`, which splits on any run of whitespace. `lstrip()` and `split()` use the same whitespace definition, so the two rules agree. The plan's test is present unchanged, so nothing was loosened (check 6).
+- ⚠️ Cannot verify from the diff: the spec says "blank" and "whitespace" without defining them. The code treats all Unicode whitespace as blank (`\xa0`, `\u3000`, `\x1c`–`\x1e` and so on), and the tests pin that choice. The controller should confirm it is intended.
+
+### Strengths
+- The tests cover many input shapes. They include `#` after a word or after other whitespace, a comment on the last line with no newline, CRLF, a lone `\r`, and a line ending only at `\n`.
+- The tests and the mutant run are at head `396f3d6` on a clean tree, and the counts match the report (13 passed).
+- Mutants 2 and 3 are real, distinct mistakes aimed at rule 7, and each is caught by the tests that should catch it.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+
+1. **No mutant aims at rule 8 (`specs/wordcount.md:8`, decided by `wordcount.py:6`).**
+   - Mutant 1 returns 0 for every call, so it does not count as a mutant aimed at a rule (check 2). Mutants 2 and 3 target rule 7 only.
+   - The rule is decided by code in this diff, so no `Unreachable:` line could hold.
+   - A plausible wrong version is `line.split(' ')`. It counts empty strings for `'one  two'`, and treats a tab as part of a word. Another is `line.split()` replaced by splitting on `' '` and `'\t'` only.
+   - Fix: add a mutant such as `len(line.split(' '))` in `wordcount.py` with its patch file and a `Mutant 4:` line, then have the controller run it.
+
+2. **Four tests have no valid catch and no `Unproven:` line.**
+   - The tests are `test_count_words_splits_on_any_run_of_whitespace`, `test_count_words_splits_on_other_whitespace_inside_a_line`, `test_count_words_ignores_whitespace_at_the_ends` (`tests/test_wordcount.py:49-66`).
+   - The run shows each caught only by mutant 1, the all-calls mutant, which check 2 excludes.
+   - The `split(' ')` mutant from item 1 would be the real catch. Running it would show whether these tests actually fail on it.
+   - Fix: the same mutant 4 resolves this. If a test still passes under it, add the missing input.
+
+### Declined to judge
+None.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The implementation is correct and the tests are broad, but the mutant step is incomplete. Rule 8 has no mutant aimed at it, and three whitespace tests are caught only by the emptied-function mutant. One whitespace-splitting mutant, run by the controller, would close both gaps.
+
+== R2/rep5: is_error=False subtype=success cost=$0.021 turns=1 extra-iters=- models=1 first='### spec compliance' aids=mutant,inputs-table,tab,return-0,rule-8,unproven,unreachable
+### Spec Compliance
+
+- ✅ Spec compliant. `count_words` (`wordcount.py:1-7`) splits on `\n` only, skips lines where `line.lstrip().startswith('#')`, and counts the rest with `line.split()`. This matches both stated rules. The plan's test is unchanged and still asserts `== 2` (`tests/test_wordcount.py:4-5`).
+- ❌ The mutant step fails check 3, covered under Issues.
+
+### Strengths
+- The tests and the Inputs table cover many shapes of both rules: `#` after spaces, tabs and Unicode blanks, a bare `#`, a comment on the last line, CRLF, and `#` after a word. Each row names a test that uses its shape.
+- The controller's test run (`task-1-tests.log`) and mutant run (`task-1-mutants-2.log`) are both at head 396f3d6 on a clean tree. The test counts (13 passed) match the report.
+- Mutants 2 and 3 are real, plausible mutants for rule 7. They are caught by the expected tests.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **No mutant aimed at rule 8 (`specs/wordcount.md:8`, "any run of whitespace").** The code in `wordcount.py:6` decides this rule, so `Unreachable:` does not apply.
+   - The only mutant that touches word counting is Mutant 1, which returns 0 for every call. It is caught by every test, so it does not count as aimed at rule 8 (check 2).
+   - As a result, `test_count_words_splits_on_any_run_of_whitespace`, `..._splits_on_other_whitespace_inside_a_line` and `..._ignores_whitespace_at_the_ends` are caught only by that all-breaking mutant (`task-1-mutants-2.log` test lines). That is no real catch (check 4). No `Unproven:` line exists for them.
+   - Fix: add mutants that change `line.split()` to a plausible wrong version and show the tests catch them. Examples are `line.split(' ')` (tabs and runs of spaces miscounted) and `line.split(' ')` combined with a `.strip()`, or a split on `\t` and space only.
+
+### Declined to judge
+- A lone `\r` (and `\x0b`, `\x0c`, `\x85`, `\u2028`) is treated as in-line whitespace and not a line terminator, because the code splits on `\n` only. The tests pin this. The spec excerpts do not say what ends a line, so the controller should rule on whether old-style `\r` line endings should end a comment.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The implementation is correct and the tests are thorough. The mutant step fails check 3 for rule 8 because it has no live mutant aimed at that rule, and that leaves three tests without a real catch.
+
+total cost $0.18

@@ -1,0 +1,119 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py
+head: e4b4ffa536798de6d67e8dc5a4f839db38735508
+tree: clean
+result: caught 5, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 84402e858829aad51596a2308d26da455960d7ac2ac733f10110f7a6ecf2c0b9 tests: tests.test_wordcount::test_count_words_skips_indented_comment_lines
+mutant 2: CAUGHT exit 1 sha256 47a5cd9f729d5430bb1a96a566b84aa5597f9da246097a27293dc17b70d1ca63 tests: tests.test_wordcount::test_count_words_splits_on_runs_of_mixed_whitespace tests.test_wordcount::test_count_words_empty_and_blank_text
+mutant 3: CAUGHT exit 1 sha256 f748b8f0d6bd2c7e61cefd76b777483c2bb07eff0a937c0938f4f48b50366a35 tests: tests.test_wordcount::test_count_words_counts_hash_after_first_word
+mutant 4: CAUGHT exit 1 sha256 47857237a5fadc9187c8f89ba7faa1e246de8e5ec9de51ac96f5df51dd7c3221 tests: tests.test_wordcount::test_count_words_skips_comment_lines tests.test_wordcount::test_count_words_skips_indented_comment_lines tests.test_wordcount::test_count_words_comment_only_and_last_line_without_newline
+mutant 5: CAUGHT exit 1 sha256 16126cbf0368f0034e0b3e8ebe610063a3e3235c2c6cd7347fbab9107316f693 tests: tests.test_wordcount::test_count_words_splits_on_runs_of_mixed_whitespace
+--- tests ---
+test tests.test_wordcount::test_count_words_skips_indented_comment_lines: caught 1 4
+test tests.test_wordcount::test_count_words_splits_on_runs_of_mixed_whitespace: caught 2 5
+test tests.test_wordcount::test_count_words_empty_and_blank_text: caught 2
+test tests.test_wordcount::test_count_words_counts_hash_after_first_word: caught 3
+test tests.test_wordcount::test_count_words_skips_comment_lines: caught 4
+test tests.test_wordcount::test_count_words_comment_only_and_last_line_without_newline: caught 4
+--- output: baseline ---
+......                                                                   [100%]
+6 passed in 0.01s
+--- output: mutant 1 ---
+.F....                                                                   [100%]
+=================================== FAILURES ===================================
+________________ test_count_words_skips_indented_comment_lines _________________
+
+    def test_count_words_skips_indented_comment_lines():
+>       assert count_words('  \t# note here\nhello\n') == 1
+E       AssertionError: assert 4 == 1
+E        +  where 4 = count_words('  \t# note here\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_skips_indented_comment_lines
+1 failed, 5 passed in 0.01s
+--- output: mutant 2 ---
+...FF.                                                                   [100%]
+=================================== FAILURES ===================================
+_____________ test_count_words_splits_on_runs_of_mixed_whitespace ______________
+
+    def test_count_words_splits_on_runs_of_mixed_whitespace():
+>       assert count_words('a  b\t\tc \t d\ne') == 5
+E       AssertionError: assert 6 == 5
+E        +  where 6 = count_words('a  b\t\tc \t d\ne')
+
+tests/test_wordcount.py:17: AssertionError
+____________________ test_count_words_empty_and_blank_text _____________________
+
+    def test_count_words_empty_and_blank_text():
+        assert count_words('') == 0
+>       assert count_words('  \n\t\n') == 0
+E       AssertionError: assert 4 == 0
+E        +  where 4 = count_words('  \n\t\n')
+
+tests/test_wordcount.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_splits_on_runs_of_mixed_whitespace
+FAILED tests/test_wordcount.py::test_count_words_empty_and_blank_text - Asser...
+2 failed, 4 passed in 0.01s
+--- output: mutant 3 ---
+..F...                                                                   [100%]
+=================================== FAILURES ===================================
+________________ test_count_words_counts_hash_after_first_word _________________
+
+    def test_count_words_counts_hash_after_first_word():
+>       assert count_words('hello # world\n') == 3
+E       AssertionError: assert 0 == 3
+E        +  where 0 = count_words('hello # world\n')
+
+tests/test_wordcount.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_counts_hash_after_first_word
+1 failed, 5 passed in 0.01s
+--- output: mutant 4 ---
+FF...F                                                                   [100%]
+=================================== FAILURES ===================================
+_____________________ test_count_words_skips_comment_lines _____________________
+
+    def test_count_words_skips_comment_lines():
+>       assert count_words('# note\nhello world\n') == 2
+E       AssertionError: assert 4 == 2
+E        +  where 4 = count_words('# note\nhello world\n')
+
+tests/test_wordcount.py:5: AssertionError
+________________ test_count_words_skips_indented_comment_lines _________________
+
+    def test_count_words_skips_indented_comment_lines():
+>       assert count_words('  \t# note here\nhello\n') == 1
+E       AssertionError: assert 4 == 1
+E        +  where 4 = count_words('  \t# note here\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+_________ test_count_words_comment_only_and_last_line_without_newline __________
+
+    def test_count_words_comment_only_and_last_line_without_newline():
+>       assert count_words('# a b c') == 0
+E       AssertionError: assert 4 == 0
+E        +  where 4 = count_words('# a b c')
+
+tests/test_wordcount.py:26: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_skips_comment_lines - Assert...
+FAILED tests/test_wordcount.py::test_count_words_skips_indented_comment_lines
+FAILED tests/test_wordcount.py::test_count_words_comment_only_and_last_line_without_newline
+3 failed, 3 passed in 0.01s
+--- output: mutant 5 ---
+...F..                                                                   [100%]
+=================================== FAILURES ===================================
+_____________ test_count_words_splits_on_runs_of_mixed_whitespace ______________
+
+    def test_count_words_splits_on_runs_of_mixed_whitespace():
+>       assert count_words('a  b\t\tc \t d\ne') == 5
+E       AssertionError: assert 1 == 5
+E        +  where 1 = count_words('a  b\t\tc \t d\ne')
+
+tests/test_wordcount.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_splits_on_runs_of_mixed_whitespace
+1 failed, 5 passed in 0.01s

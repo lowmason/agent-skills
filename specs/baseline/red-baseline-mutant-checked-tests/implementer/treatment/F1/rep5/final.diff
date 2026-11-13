@@ -1,0 +1,53 @@
+diff --git a/latest.py b/latest.py
+index e69de29..6a08513 100644
+--- a/latest.py
++++ b/latest.py
+@@ -0,0 +1,14 @@
++from datetime import date
++from pathlib import Path
++
++
++def _report_date(report: Path) -> date:
++    for line in report.read_text().splitlines():
++        if line.startswith('date:'):
++            return date.fromisoformat(line[len('date:'):].strip())
++    raise ValueError(f'no date: line in {report}')
++
++
++def latest_report(folder: Path) -> Path:
++    """Return the .txt report in folder whose date: line holds the latest date."""
++    return max(folder.glob('*.txt'), key=_report_date)
+diff --git a/tests/test_latest.py b/tests/test_latest.py
+new file mode 100644
+index 0000000..259591b
+--- /dev/null
++++ b/tests/test_latest.py
+@@ -0,0 +1,28 @@
++from latest import latest_report
++
++
++def test_latest_report_returns_the_latest_dated_report(tmp_path):
++    (tmp_path / 'report-a.txt').write_text('title: winter review\ndate: 2024-01-05\n')
++    (tmp_path / 'report-b.txt').write_text('title: spring review\ndate: 2024-03-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'report-b.txt'
++
++
++def test_file_names_carry_no_order(tmp_path):
++    (tmp_path / 'report-a.txt').write_text('date: 2024-03-01\n')
++    (tmp_path / 'report-b.txt').write_text('date: 2024-01-05\n')
++    assert latest_report(tmp_path) == tmp_path / 'report-a.txt'
++
++
++def test_date_line_may_follow_other_lines_and_dates_compare_by_year_first(tmp_path):
++    (tmp_path / 'x.txt').write_text('title: t\nbody\ndate: 2023-12-31\n')
++    (tmp_path / 'y.txt').write_text('date: 2024-01-01\nbody\n')
++    assert latest_report(tmp_path) == tmp_path / 'y.txt'
++
++
++def test_only_txt_files_directly_in_the_folder_count(tmp_path):
++    (tmp_path / 'a.txt').write_text('date: 2024-01-01\n')
++    (tmp_path / 'b.md').write_text('date: 2025-01-01\n')
++    sub = tmp_path / 'sub'
++    sub.mkdir()
++    (sub / 'c.txt').write_text('date: 2026-01-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'a.txt'

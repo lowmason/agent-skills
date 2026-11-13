@@ -32,6 +32,8 @@ Subagent (task-reviewer):
     Global constraints from the spec/design that bind this task:
     [GLOBAL_CONSTRAINTS]
 
+    Rulings that change this task's plan tests: [TEST_RULINGS]
+
     ## What the Implementer Claims They Built
 
     Read the implementer's report: [REPORT_FILE]
@@ -39,6 +41,14 @@ Subagent (task-reviewer):
     ## The Controller's Test Run
 
     Read the controller's run of the task's tests: [RUN_FILE]
+
+    ## The Mutant Step
+
+    Read the spec excerpts the task rests on: [SPEC_EXCERPTS_FILE]
+
+    Read the implementer's mutants file: [MUTANTS_FILE]
+
+    Read the controller's mutant run: [MUTANT_RUN_FILE]
 
     ## Diff Under Review
 
@@ -91,6 +101,8 @@ Subagent (general-purpose):
     Global constraints from the spec/design that bind this task:
     [GLOBAL_CONSTRAINTS]
 
+    Rulings that change this task's plan tests: [TEST_RULINGS]
+
     ## What the Implementer Claims They Built
 
     Read the implementer's report: [REPORT_FILE]
@@ -98,6 +110,14 @@ Subagent (general-purpose):
     ## The Controller's Test Run
 
     Read the controller's run of the task's tests: [RUN_FILE]
+
+    ## The Mutant Step
+
+    Read the spec excerpts the task rests on: [SPEC_EXCERPTS_FILE]
+
+    Read the implementer's mutants file: [MUTANTS_FILE]
+
+    Read the controller's mutant run: [MUTANT_RUN_FILE]
 
     ## Diff Under Review
 
@@ -179,6 +199,106 @@ Subagent (general-purpose):
 
     Warnings or other noise in the run's output, or in the implementer's
     reported test output, are findings — test output should be pristine.
+
+    ## Mutants
+
+    A mutant is a small patch that makes the task's code wrong in a way a
+    person could plausibly write. The implementer wrote mutants for this
+    task, and the controller ran the task's focused tests once with each
+    mutant applied. The dispatch names three files for this mutant step:
+
+    - The spec excerpts file: the spec sentences the task rests on, each
+      with its `path:line`. An excerpt that says what the code must do for
+      some class of inputs is a stated rule, and so is each rule in the
+      brief. When the file holds `none: <why>`, the brief's own requirement
+      lines are the stated rules.
+    - The mutants file: an Inputs table (rule, input shape, test), then a
+      `Mutant K:` line for each mutant, with its targets, the wrong version
+      in one line and its patch file, then any `Unproven:`, `Unreachable:`
+      and `Withdrawn:` lines. Each patch file sits beside the mutants file,
+      and its name ends in `.withdrawn` when a `Withdrawn: K` line names
+      it. Read a patch when its line does not show what the mutant changes.
+    - The mutant run: the controller's run. Its `mutant K:` lines give each
+      mutant's verdict, and its `test <id>: caught K ...` lines name the
+      mutants that each test caught. A test's `<id>` is
+      `<classname>::<name>`: match it to the mutants file and the diff by
+      the test's name.
+
+    Judge the step by this run. The implementer's report may cite an
+    earlier run of its own under another file name, and that is expected.
+    A batch's files all carry the batch's first task number. A mutant run
+    at a commit other than the diff's head, or on a dirty working tree, is
+    not evidence for this diff: report it as a gap for the controller, as
+    in Tests. When the dispatch gives a mutant run, a `Mutant K:` line
+    with no `mutant K: CAUGHT` line in it, and no `Withdrawn: K` line, is
+    a finding.
+
+    When the dispatch gives `none: <why>` for the mutant run, check that
+    the why holds. A task whose brief has a focused pytest command that
+    tests code the task changes is a mutant task, and needs the mutant
+    step. Lints, link checks and checks over Markdown do not make a task a
+    mutant task. If the why does not hold and the mutants file is `none`
+    too, the task skipped a required step: that is a finding. If the
+    mutants file exists, the missing run is a gap for the controller. If
+    the why holds, checks 1 to 5 below do not apply, and check 6 still
+    does.
+
+    Check the mutant step in this order:
+
+    1. **Inputs.** For each stated rule, the table lists each input shape
+       that the rule's words cover, such as a quoted, nested, empty or
+       repeated form, or a value at a boundary. Each row names a test that
+       uses its shape. A shape that the rule's words plainly cover with no
+       row, or a row whose test does not use its shape, is a finding: name
+       the shape as a concrete input, and what a person would meet if the
+       code got it wrong. A shape that the rule's words do not cover needs
+       no row.
+    2. **Plausible mutants.** Each mutant is a mistake a person might make
+       while writing this code: a wrong condition or boundary, a missed
+       case, the wrong field or value. A mutant that breaks every call at
+       once (a crash or an emptied function) reads CAUGHT under any
+       test, and one that changes nothing a person could see proves
+       nothing. Neither counts as a mutant aimed at its targets in
+       checks 3 and 4.
+    3. **A mutant for each stated rule,** or an `Unreachable:` line that
+       holds. The line holds when no code in this task's diff decides the
+       rule. When a plan test and an excerpt cannot both hold, the mutant
+       aims at the rule as the plan test pins it, and that mutant counts.
+       It is not a missing mutant. The report raises the conflict as a
+       concern, for the controller to rule on. A conflict that the report
+       does not raise is a finding.
+    4. **A catch for each test the task adds or changes,** plan tests that
+       the task writes included: a `test <id>:` line in the run, or an
+       `Unproven:` line that holds. The line holds only when you cannot
+       name a plausible wrong version of the task's code that the test
+       should catch. If you can name one, put it in the finding.
+    5. **Each `Withdrawn:` line holds.** It holds when no input makes the
+       mutant's result differ from the code's in anything a person could
+       see, such as a return value, an output, an error or a file written.
+       If you can name such an input, the line does not hold: name the
+       input, which is a missing test. A number used again is a finding
+       too. A `Withdrawn: K` line whose K also has a live mutant (a
+       `mutant K:` line in the run, or a second `Mutant K:` line) would
+       excuse that live mutant.
+    6. **No plan test loosened without a ruling.** A plan test is a test
+       whose code the plan gives: compare it in the diff with the brief.
+       Removing or loosening an assertion, changing an expected value (even
+       to one the spec gives), or skipping or deleting the test loosens it.
+       Each loosening needs a line in the dispatch's test rulings that
+       covers that change. A new assertion or a new input strengthens a
+       test and needs no ruling.
+
+    A mutant step that passes all six checks gives no finding.
+
+    Each finding in this section is graded Important. The mutant step is
+    part of this task's requirements, so a failed check is "a missed or
+    misread requirement" in Grades. A test with no catch and no
+    `Unproven:` line that holds is, on the run's evidence, a test that no
+    plausible wrong version can fail: Grades' "tests that assert nothing".
+    Review scope's last pass, which deletes what a person would not notice,
+    does not delete these findings. A test that lets a plausible wrong
+    version through lets that defect reach a person using the software, who
+    would notice it.
 
     ## Review scope
 
@@ -337,6 +457,24 @@ Subagent (general-purpose):
   `<this-skill-dir>/scripts/test-run PLAN_FILE N -- <command>` printed on its
   last line, `run: <path>` (pass the path alone), or `none: <why>` when the
   task has no command to run ([references/test-run.md](references/test-run.md))
+- `[SPEC_EXCERPTS_FILE]` — REQUIRED: the absolute path of the task's
+  spec excerpts file, `<workspace>/task-N-spec.md`, the file the
+  implementer read. `<workspace>` is the directory
+  `<this-skill-dir>/scripts/sdd-workspace PLAN_FILE` prints, and for a
+  batch N is the batch's first task number
+  ([references/file-handoffs.md](references/file-handoffs.md))
+- `[MUTANTS_FILE]` — REQUIRED: the absolute path of the implementer's
+  mutants file, `<workspace>/task-N-mutants.md`, or `none: <why>` for a
+  task that is not a mutant task
+  ([references/mutants.md](references/mutants.md))
+- `[MUTANT_RUN_FILE]` — REQUIRED: the path that
+  `<this-skill-dir>/scripts/mutant-run PLAN_FILE N -- <focused command>`
+  printed on its last line, `run: <path>` (pass the path alone), or
+  `none: <why>` for a task that is not a mutant task
+  ([references/test-run.md](references/test-run.md))
+- `[TEST_RULINGS]` — REQUIRED: the ledger's `Ruling:` lines that cover a
+  change to this task's plan tests, quoted, or `none`
+  ([references/fix-loop.md](references/fix-loop.md))
 - `[BASE_SHA]` — commit before this task
 - `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review

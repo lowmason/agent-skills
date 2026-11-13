@@ -1,0 +1,416 @@
+mutant-run: Task 1, run 2
+command: /tmp/mt-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_checkconf.py
+head: f2dee7d3440144d505ddb823e575bb48e695c728
+tree: clean
+result: caught 8, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 fb06100b6e7e36dc9c33326a58b233977dae4cc0e9970029f67ec478edae9a92 tests: tests.test_checkconf::test_main_returns_1_for_an_unknown_key tests.test_checkconf::test_main_reports_every_unknown_key_in_order tests.test_checkconf::test_main_reports_an_unknown_key_on_the_last_line_without_newline tests.test_checkconf::test_main_rejects_a_prefix_of_a_known_key
+mutant 2: CAUGHT exit 1 sha256 7bcf44375aecef8e7a5e48e28cc3363f0dd3b3b986b3482f5b55315005f8822c tests: tests.test_checkconf::test_main_returns_0_and_prints_nothing_for_known_keys
+mutant 3: CAUGHT exit 1 sha256 aa6e689a22c1e7fc71b7d39a2b7522ffae3f2429a5204238ec5eced9e85c4441 tests: tests.test_checkconf::test_main_reports_every_unknown_key_in_order tests.test_checkconf::test_main_reports_a_repeated_unknown_key_each_time tests.test_checkconf::test_main_matches_known_keys_exactly tests.test_checkconf::test_main_rejects_a_prefix_of_a_known_key
+mutant 4: CAUGHT exit 1 sha256 0c473e8a21154b7a8c54de3c7aa3539701400138bd2d1d52d626a7818cfcf119 tests: tests.test_checkconf::test_main_matches_known_keys_exactly
+mutant 5: CAUGHT exit 1 sha256 051a63278efec687006d36d9641b81c52f8815ce88951967780019a2012ac2a8 tests: tests.test_checkconf::test_main_splits_the_key_at_equals_without_spaces
+mutant 6: CAUGHT exit 1 sha256 17d16bdcb7296215f6336f7cdfdc86f5bc8b85f9da637002db951029473ce633 tests: tests.test_checkconf::test_main_reports_an_unknown_key tests.test_checkconf::test_main_returns_1_for_an_unknown_key tests.test_checkconf::test_main_reports_every_unknown_key_in_order tests.test_checkconf::test_main_reports_a_repeated_unknown_key_each_time tests.test_checkconf::test_main_reports_an_unknown_key_on_the_last_line_without_newline tests.test_checkconf::test_main_reports_the_key_only_when_the_value_contains_equals tests.test_checkconf::test_main_matches_known_keys_exactly tests.test_checkconf::test_main_rejects_a_prefix_of_a_known_key
+mutant 7: CAUGHT exit 1 sha256 12448d151a0e4b2fec5cadc4ec7a0d110b63113530cf23e90e9b088849ab1d86 tests: tests.test_checkconf::test_main_reports_every_unknown_key_in_order tests.test_checkconf::test_main_reports_a_repeated_unknown_key_each_time tests.test_checkconf::test_main_matches_known_keys_exactly tests.test_checkconf::test_main_rejects_a_prefix_of_a_known_key
+mutant 8: CAUGHT exit 1 sha256 e3c8877e199b77c3f98a0442102bc37e7f66332af6f2b12a83fc8b8e4f4ac332 tests: tests.test_checkconf::test_main_rejects_a_prefix_of_a_known_key
+--- tests ---
+test tests.test_checkconf::test_main_returns_1_for_an_unknown_key: caught 1 6
+test tests.test_checkconf::test_main_reports_every_unknown_key_in_order: caught 1 3 6 7
+test tests.test_checkconf::test_main_reports_an_unknown_key_on_the_last_line_without_newline: caught 1 6
+test tests.test_checkconf::test_main_rejects_a_prefix_of_a_known_key: caught 1 3 6 7 8
+test tests.test_checkconf::test_main_returns_0_and_prints_nothing_for_known_keys: caught 2
+test tests.test_checkconf::test_main_reports_a_repeated_unknown_key_each_time: caught 3 6 7
+test tests.test_checkconf::test_main_matches_known_keys_exactly: caught 3 4 6 7
+test tests.test_checkconf::test_main_splits_the_key_at_equals_without_spaces: caught 5
+test tests.test_checkconf::test_main_reports_an_unknown_key: caught 6
+test tests.test_checkconf::test_main_reports_the_key_only_when_the_value_contains_equals: caught 6
+--- output: baseline ---
+...........                                                              [100%]
+11 passed in 0.01s
+--- output: mutant 1 ---
+.F..F.F...F                                                              [100%]
+=================================== FAILURES ===================================
+____________________ test_main_returns_1_for_an_unknown_key ____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_returns_1_for_an_unk0')
+
+    def test_main_returns_1_for_an_unknown_key(tmp_path):
+>       assert run(tmp_path, 'name = web\ncolour = red\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_returns_1_for_an_unk0'), 'name = web\ncolour = red\n')
+
+tests/test_checkconf.py:18: AssertionError
+----------------------------- Captured stdout call -----------------------------
+unknown key: colour
+_________________ test_main_reports_every_unknown_key_in_order _________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_reports_every_unknow0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10aa283e0>
+
+    def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
+>       assert run(tmp_path, 'colour = red\nname = web\nsize = 3\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_reports_every_unknow0'), 'colour = red\nname = web\nsize = 3\n')
+
+tests/test_checkconf.py:32: AssertionError
+----------------------------- Captured stdout call -----------------------------
+unknown key: colour
+unknown key: size
+______ test_main_reports_an_unknown_key_on_the_last_line_without_newline _______
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_reports_an_unknown_k1')
+capsys = <_pytest.capture.CaptureFixture object at 0x10a95be30>
+
+    def test_main_reports_an_unknown_key_on_the_last_line_without_newline(tmp_path, capsys):
+>       assert run(tmp_path, 'name = web\ncolour = red') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_reports_an_unknown_k1'), 'name = web\ncolour = red')
+
+tests/test_checkconf.py:42: AssertionError
+----------------------------- Captured stdout call -----------------------------
+unknown key: colour
+__________________ test_main_rejects_a_prefix_of_a_known_key ___________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_rejects_a_prefix_of_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10a96ee50>
+
+    def test_main_rejects_a_prefix_of_a_known_key(tmp_path, capsys):
+>       assert run(tmp_path, 'nam = x\npo = 1\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2454/test_main_rejects_a_prefix_of_0'), 'nam = x\npo = 1\n')
+
+tests/test_checkconf.py:62: AssertionError
+----------------------------- Captured stdout call -----------------------------
+unknown key: nam
+unknown key: po
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_returns_1_for_an_unknown_key - Asse...
+FAILED tests/test_checkconf.py::test_main_reports_every_unknown_key_in_order
+FAILED tests/test_checkconf.py::test_main_reports_an_unknown_key_on_the_last_line_without_newline
+FAILED tests/test_checkconf.py::test_main_rejects_a_prefix_of_a_known_key - A...
+4 failed, 7 passed in 0.02s
+--- output: mutant 2 ---
+..F........                                                              [100%]
+=================================== FAILURES ===================================
+____________ test_main_returns_0_and_prints_nothing_for_known_keys _____________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2455/test_main_returns_0_and_prints0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10b1d2710>
+
+    def test_main_returns_0_and_prints_nothing_for_known_keys(tmp_path, capsys):
+>       assert run(tmp_path, 'name = web\nport = 80\ndebug = true\n') == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2455/test_main_returns_0_and_prints0'), 'name = web\nport = 80\ndebug = true\n')
+
+tests/test_checkconf.py:22: AssertionError
+----------------------------- Captured stdout call -----------------------------
+unknown key: debug
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_returns_0_and_prints_nothing_for_known_keys
+1 failed, 10 passed in 0.02s
+--- output: mutant 3 ---
+....FF..F.F                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_main_reports_every_unknown_key_in_order _________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2456/test_main_reports_every_unknow0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10ada42b0>
+
+    def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
+        assert run(tmp_path, 'colour = red\nname = web\nsize = 3\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: size\n'
+E       AssertionError: assert 'unknown key: colour\n' == 'unknown key:...n key: size\n'
+E         
+E           unknown key: colour
+E         - unknown key: size
+
+tests/test_checkconf.py:33: AssertionError
+______________ test_main_reports_a_repeated_unknown_key_each_time ______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2456/test_main_reports_a_repeated_u0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10ada4640>
+
+    def test_main_reports_a_repeated_unknown_key_each_time(tmp_path, capsys):
+        run(tmp_path, 'colour = red\ncolour = blue\n')
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: colour\n'
+E       AssertionError: assert 'unknown key: colour\n' == 'unknown key:...key: colour\n'
+E         
+E           unknown key: colour
+E         - unknown key: colour
+
+tests/test_checkconf.py:38: AssertionError
+_____________________ test_main_matches_known_keys_exactly _____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2456/test_main_matches_known_keys_e0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10ace5590>
+
+    def test_main_matches_known_keys_exactly(tmp_path, capsys):
+        run(tmp_path, 'names = x\nPort = 1\n')
+>       assert capsys.readouterr().out == 'unknown key: names\nunknown key: Port\n'
+E       AssertionError: assert 'unknown key: names\n' == 'unknown key:...n key: Port\n'
+E         
+E           unknown key: names
+E         - unknown key: Port
+
+tests/test_checkconf.py:53: AssertionError
+__________________ test_main_rejects_a_prefix_of_a_known_key ___________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2456/test_main_rejects_a_prefix_of_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10acd2750>
+
+    def test_main_rejects_a_prefix_of_a_known_key(tmp_path, capsys):
+        assert run(tmp_path, 'nam = x\npo = 1\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: nam\nunknown key: po\n'
+E       AssertionError: assert 'unknown key: nam\n' == 'unknown key:...own key: po\n'
+E         
+E           unknown key: nam
+E         - unknown key: po
+
+tests/test_checkconf.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_reports_every_unknown_key_in_order
+FAILED tests/test_checkconf.py::test_main_reports_a_repeated_unknown_key_each_time
+FAILED tests/test_checkconf.py::test_main_matches_known_keys_exactly - Assert...
+FAILED tests/test_checkconf.py::test_main_rejects_a_prefix_of_a_known_key - A...
+4 failed, 7 passed in 0.02s
+--- output: mutant 4 ---
+........F..                                                              [100%]
+=================================== FAILURES ===================================
+_____________________ test_main_matches_known_keys_exactly _____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2457/test_main_matches_known_keys_e0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1071c5150>
+
+    def test_main_matches_known_keys_exactly(tmp_path, capsys):
+        run(tmp_path, 'names = x\nPort = 1\n')
+>       assert capsys.readouterr().out == 'unknown key: names\nunknown key: Port\n'
+E       AssertionError: assert 'unknown key: names\n' == 'unknown key:...n key: Port\n'
+E         
+E           unknown key: names
+E         - unknown key: Port
+
+tests/test_checkconf.py:53: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_matches_known_keys_exactly - Assert...
+1 failed, 10 passed in 0.02s
+--- output: mutant 5 ---
+.........F.                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_main_splits_the_key_at_equals_without_spaces _______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2458/test_main_splits_the_key_at_eq0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10b056050>
+
+    def test_main_splits_the_key_at_equals_without_spaces(tmp_path, capsys):
+        run(tmp_path, 'colour=red\nname=web\n')
+>       assert capsys.readouterr().out == 'unknown key: colour\n'
+E       AssertionError: assert 'unknown key:...y: name=web\n' == 'unknown key: colour\n'
+E         
+E         - unknown key: colour
+E         + unknown key: colour=red
+E         ?                    ++++
+E         + unknown key: name=web
+
+tests/test_checkconf.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_splits_the_key_at_equals_without_spaces
+1 failed, 10 passed in 0.02s
+--- output: mutant 6 ---
+FF..FFFFF.F                                                              [100%]
+=================================== FAILURES ===================================
+_______________________ test_main_reports_an_unknown_key _______________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_reports_an_unknown_k0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1087dfcb0>
+
+    def test_main_reports_an_unknown_key(tmp_path, capsys):
+        settings = tmp_path / 'service.conf'
+        settings.write_text('name = web\ncolour = red\n')
+        main([str(settings)])
+>       assert capsys.readouterr().out == 'unknown key: colour\n'
+E       AssertionError: assert '' == 'unknown key: colour\n'
+E         
+E         - unknown key: colour
+
+tests/test_checkconf.py:8: AssertionError
+____________________ test_main_returns_1_for_an_unknown_key ____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_returns_1_for_an_unk0')
+
+    def test_main_returns_1_for_an_unknown_key(tmp_path):
+>       assert run(tmp_path, 'name = web\ncolour = red\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_returns_1_for_an_unk0'), 'name = web\ncolour = red\n')
+
+tests/test_checkconf.py:18: AssertionError
+_________________ test_main_reports_every_unknown_key_in_order _________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_reports_every_unknow0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1088c8770>
+
+    def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
+        assert run(tmp_path, 'colour = red\nname = web\nsize = 3\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: size\n'
+E       AssertionError: assert 'unknown key: colour\n' == 'unknown key:...n key: size\n'
+E         
+E           unknown key: colour
+E         - unknown key: size
+
+tests/test_checkconf.py:33: AssertionError
+______________ test_main_reports_a_repeated_unknown_key_each_time ______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_reports_a_repeated_u0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1088c8c30>
+
+    def test_main_reports_a_repeated_unknown_key_each_time(tmp_path, capsys):
+        run(tmp_path, 'colour = red\ncolour = blue\n')
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: colour\n'
+E       AssertionError: assert 'unknown key: colour\n' == 'unknown key:...key: colour\n'
+E         
+E           unknown key: colour
+E         - unknown key: colour
+
+tests/test_checkconf.py:38: AssertionError
+______ test_main_reports_an_unknown_key_on_the_last_line_without_newline _______
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_reports_an_unknown_k1')
+capsys = <_pytest.capture.CaptureFixture object at 0x108823770>
+
+    def test_main_reports_an_unknown_key_on_the_last_line_without_newline(tmp_path, capsys):
+>       assert run(tmp_path, 'name = web\ncolour = red') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_reports_an_unknown_k1'), 'name = web\ncolour = red')
+
+tests/test_checkconf.py:42: AssertionError
+________ test_main_reports_the_key_only_when_the_value_contains_equals _________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_reports_the_key_only0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10884cf30>
+
+    def test_main_reports_the_key_only_when_the_value_contains_equals(tmp_path, capsys):
+        run(tmp_path, 'colour = a=b\n')
+>       assert capsys.readouterr().out == 'unknown key: colour\n'
+E       AssertionError: assert '' == 'unknown key: colour\n'
+E         
+E         - unknown key: colour
+
+tests/test_checkconf.py:48: AssertionError
+_____________________ test_main_matches_known_keys_exactly _____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_matches_known_keys_e0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10884d9d0>
+
+    def test_main_matches_known_keys_exactly(tmp_path, capsys):
+        run(tmp_path, 'names = x\nPort = 1\n')
+>       assert capsys.readouterr().out == 'unknown key: names\nunknown key: Port\n'
+E       AssertionError: assert 'unknown key: names\n' == 'unknown key:...n key: Port\n'
+E         
+E           unknown key: names
+E         - unknown key: Port
+
+tests/test_checkconf.py:53: AssertionError
+__________________ test_main_rejects_a_prefix_of_a_known_key ___________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2459/test_main_rejects_a_prefix_of_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10883ad50>
+
+    def test_main_rejects_a_prefix_of_a_known_key(tmp_path, capsys):
+        assert run(tmp_path, 'nam = x\npo = 1\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: nam\nunknown key: po\n'
+E       AssertionError: assert 'unknown key: nam\n' == 'unknown key:...own key: po\n'
+E         
+E           unknown key: nam
+E         - unknown key: po
+
+tests/test_checkconf.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_reports_an_unknown_key - AssertionE...
+FAILED tests/test_checkconf.py::test_main_returns_1_for_an_unknown_key - Asse...
+FAILED tests/test_checkconf.py::test_main_reports_every_unknown_key_in_order
+FAILED tests/test_checkconf.py::test_main_reports_a_repeated_unknown_key_each_time
+FAILED tests/test_checkconf.py::test_main_reports_an_unknown_key_on_the_last_line_without_newline
+FAILED tests/test_checkconf.py::test_main_reports_the_key_only_when_the_value_contains_equals
+FAILED tests/test_checkconf.py::test_main_matches_known_keys_exactly - Assert...
+FAILED tests/test_checkconf.py::test_main_rejects_a_prefix_of_a_known_key - A...
+8 failed, 3 passed in 0.02s
+--- output: mutant 7 ---
+....FF..F.F                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_main_reports_every_unknown_key_in_order _________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2460/test_main_reports_every_unknow0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1093582b0>
+
+    def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
+        assert run(tmp_path, 'colour = red\nname = web\nsize = 3\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: size\n'
+E       AssertionError: assert 'unknown key: colour\n' == 'unknown key:...n key: size\n'
+E         
+E           unknown key: colour
+E         - unknown key: size
+
+tests/test_checkconf.py:33: AssertionError
+______________ test_main_reports_a_repeated_unknown_key_each_time ______________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2460/test_main_reports_a_repeated_u0')
+capsys = <_pytest.capture.CaptureFixture object at 0x109358640>
+
+    def test_main_reports_a_repeated_unknown_key_each_time(tmp_path, capsys):
+        run(tmp_path, 'colour = red\ncolour = blue\n')
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: colour\n'
+E       AssertionError: assert 'unknown key: colour\n' == 'unknown key:...key: colour\n'
+E         
+E           unknown key: colour
+E         - unknown key: colour
+
+tests/test_checkconf.py:38: AssertionError
+_____________________ test_main_matches_known_keys_exactly _____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2460/test_main_matches_known_keys_e0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1092c5590>
+
+    def test_main_matches_known_keys_exactly(tmp_path, capsys):
+        run(tmp_path, 'names = x\nPort = 1\n')
+>       assert capsys.readouterr().out == 'unknown key: names\nunknown key: Port\n'
+E       AssertionError: assert 'unknown key: names\n' == 'unknown key:...n key: Port\n'
+E         
+E           unknown key: names
+E         - unknown key: Port
+
+tests/test_checkconf.py:53: AssertionError
+__________________ test_main_rejects_a_prefix_of_a_known_key ___________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2460/test_main_rejects_a_prefix_of_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1092b2750>
+
+    def test_main_rejects_a_prefix_of_a_known_key(tmp_path, capsys):
+        assert run(tmp_path, 'nam = x\npo = 1\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: nam\nunknown key: po\n'
+E       AssertionError: assert 'unknown key: nam\n' == 'unknown key:...own key: po\n'
+E         
+E           unknown key: nam
+E         - unknown key: po
+
+tests/test_checkconf.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_reports_every_unknown_key_in_order
+FAILED tests/test_checkconf.py::test_main_reports_a_repeated_unknown_key_each_time
+FAILED tests/test_checkconf.py::test_main_matches_known_keys_exactly - Assert...
+FAILED tests/test_checkconf.py::test_main_rejects_a_prefix_of_a_known_key - A...
+4 failed, 7 passed in 0.02s
+--- output: mutant 8 ---
+..........F                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_main_rejects_a_prefix_of_a_known_key ___________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2461/test_main_rejects_a_prefix_of_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x109522150>
+
+    def test_main_rejects_a_prefix_of_a_known_key(tmp_path, capsys):
+>       assert run(tmp_path, 'nam = x\npo = 1\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2461/test_main_rejects_a_prefix_of_0'), 'nam = x\npo = 1\n')
+
+tests/test_checkconf.py:62: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_rejects_a_prefix_of_a_known_key - A...
+1 failed, 10 passed in 0.02s

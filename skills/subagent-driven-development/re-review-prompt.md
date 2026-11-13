@@ -35,6 +35,27 @@ that the fixes introduced nothing new.
     is `none: <why>`, no run exists, and the fix report is the only test
     evidence.
 
+    The controller's mutant run after the fixes is at <MUTANT_RUN_FILE>,
+    and the mutants file is at <MUTANTS_FILE>. A test that the fixes add
+    or change, that catches no mutant in that run (no `test <id>:` line
+    names it) and that has no `Unproven:` line that holds, is a new
+    Important finding. An `Unproven:` line holds only when you cannot
+    name a plausible wrong version of the task's code that the test
+    should catch. Check each `Withdrawn:` and `Unreachable:` line in the
+    mutants file too, since a fix can change the code that the line
+    rests on. A `Withdrawn:` line holds only when no input makes the
+    mutant's result differ from the code's in anything a person could
+    see, such as a return value, an output, an error or a file written.
+    An `Unreachable:` line holds only when no code in this task's diff
+    decides its rule. A `Withdrawn:` or `Unreachable:` line that does
+    not hold is a new Important finding: name the input, or the code
+    that decides the rule. A plan test (a test whose code the plan
+    gives) that the fixes loosen with no line in <TEST_RULINGS> is a new
+    Important finding. A mutant run at a commit other than the amended
+    diff's head, or on a dirty working tree, is a gap for the controller
+    too. When <MUTANT_RUN_FILE> is `none: <why>`, the task has no mutant
+    step, and only the plan-test check applies.
+
     For EACH numbered finding, return one verdict:
       ADDRESSED     — the diff resolves it; say which hunk does
       NOT ADDRESSED — it remains; say what is still missing
@@ -64,7 +85,12 @@ can get its own verdict; `<DIFF_FILE>` is the path reported by
 `wrote <path>: …` summary line — the path alone, not the whole line;
 `<REPORT_FILE>` is the implementer's report path; `<RUN_FILE>` is the path
 `<this-skill-dir>/scripts/test-run` printed on its `run: <path>` line after this
-round, the path alone, or `none: <why>`.
+round, the path alone, or `none: <why>`; `<MUTANT_RUN_FILE>` is the path
+`<this-skill-dir>/scripts/mutant-run` printed on its `run: <path>` line after
+this round, the path alone, or `none: <why>`; `<MUTANTS_FILE>` is the
+implementer's mutants file, `<workspace>/task-N-mutants.md` as an absolute
+path, or `none: <why>`; `<TEST_RULINGS>` is the ledger's `Ruling:` lines that
+cover a change to this task's plan tests, quoted, or `none`.
 
 **Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED) plus
 any new findings and their Declined to judge list.

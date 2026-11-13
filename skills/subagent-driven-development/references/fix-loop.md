@@ -20,6 +20,10 @@ review: the run file is the round's finding. After every round, run the task's
 tests again before the next review. When no task review has run yet, that review
 is the full task review, not the scoped re-review.
 
+A survivor or an invalid mutant in the mutant run ([test-run.md](test-run.md))
+starts a round too, before any review: the run file is the round's finding.
+After every round, run mutant-run again, as well as the task's tests.
+
 Going fresh at round 4 is the load-bearing half. A resumed implementer carries
 its own failed attempts as context, which anchors it to the approach that is not
 working; a fresh one does not. Escalate in the order context, then effort, then
@@ -59,8 +63,15 @@ human partner only for the five stops listed under Fix dispatches.
   and ledger `Ruling: <what you decided> — <why> — <what it costs if
   wrong>` before you act on it. Do not dismiss the finding because the
   plan mandates it, and do not dispatch a fix that contradicts the plan
-  without a recorded ruling. Five things stop such a ruling, and only
-  these; for them, stop and ask your human partner:
+  without a recorded ruling. A ruling on a plan test that conflicts with a
+  spec excerpt quotes the deciding spec sentence word for word. When the test
+  is wrong, dispatch a fix round that changes it: the ruling covers the
+  change, and you give the ruling to the reviewer as `[TEST_RULINGS]`. When no
+  sentence decides it, keep the plan's test, so the task completes on the
+  plan's reading, and ledger `Ruling: (unclear) <what you decided> — <why> —
+  <what it costs if wrong>`. A ruling with no quote counts as unclear. Five
+  things stop such a ruling, and only these; for them, stop and ask your
+  human partner:
   1. An irreversible or destructive operation.
   2. A security-sensitive action.
   3. A side effect outside this worktree that norms say you ask about first: a merge, a push to a shared branch, a publish.

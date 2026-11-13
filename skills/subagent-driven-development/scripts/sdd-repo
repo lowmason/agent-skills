@@ -19,8 +19,9 @@
 # repository or commit yet. Line 2 is git's own first line, which names the
 # real cause when line 1 alone would mislead.
 #
-# Three callers: sdd-workspace (plain), review-package and executing-plans'
-# task-start (both with --with-commit). task-done keeps its own BASE check.
+# Five callers: sdd-workspace (plain), and review-package, test-run,
+# mutant-run and executing-plans' task-start (all four with --with-commit).
+# task-done keeps its own BASE check.
 #
 # Single source of truth for which repository the scripts work in, so no two
 # of them can disagree.

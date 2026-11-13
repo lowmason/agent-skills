@@ -1,0 +1,95 @@
+{
+  "fixture": "F2",
+  "rep": 3,
+  "rep_dir": "/tmp/mt-rep-LgFZCD",
+  "base": "2b0dea397d253477bdadae95d585d268caebd1bb",
+  "prompt_sha256": "b9e54d7bf00aaa9ea2e7c1398c73be61b5b8e18010eff8f5f9702311c530cb9a",
+  "claude_exit": 0,
+  "wall_seconds": 22,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-LgFZCD/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 21419,
+    "total_cost_usd": 0.0873032,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 2995,
+        "cacheReadInputTokens": 70932,
+        "cacheCreationInputTokens": 12559,
+        "webSearchRequests": 0,
+        "costUSD": 0.0873032,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 98,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12559,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commit:** ebfb7c1 Add checkconf.main\n- **Tests:** 5/5 passing, output pristine; mutants: caught 5, survived 0, invalid 0\n- **Concerns:** none. The plan test does not conflict with the spec. I added 4 tests of my own: return 1, known keys give 0 and no output, several unknown keys, and an empty file.\n- **Report:** /tmp/mt-rep-LgFZCD/repo/.sdd/plan/task-1-report.md\n\n`git status` is clean after the commit, so the `.sdd/plan` files must be ignored or already tracked. I didn't check which.",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-LgFZCD/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -a"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-LgFZCD/repo; cat specs/checkconf.md; cat .gitignore; ls .sdd/plan"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-LgFZCD/repo; mkdir -p tests\ncat > tests/test_checkconf.py <<'EOF'\nfrom checkconf import main\n\n\ndef test_main_reports_an_unknown_key(tmp_path, capsys):\n    settings = tmp_path / 'service.conf'\n    settings.write_text('name = web\\ncolour = red\\n')\n    main([str(settings)])\n    assert capsys.readouterr().out == 'unknown key: colour\\n'\n\n\ndef test_main_returns_1_for_an_unknown_key(tmp_path):\n    settings = tmp_path / 'service.conf'\n    settings.write_text('name = web\\ncolour = red\\n')\n    assert main([str(settings)]) == 1\n\n\ndef test_main_returns_0_and_prints_nothing_for_known_keys(tmp_path, capsys):\n    settings = tmp_path / 'service.conf'\n    settings.write_text('name = web\\nport = 80\\ndebug = true\\n')\n    assert main([str(settings)]) == 0\n    assert capsys.readouterr().out == ''\n\n\ndef test_main_reports_each_unknown_key(tmp_path, capsys):\n    settings = tmp_path / 'service.conf'\n    settings.write_text('colour = red\\nname = web\\nsize = 3\\n')\n    assert main([str(settings)]) == 1\n    assert capsys.readouterr().out == 'unknown key: colour\\nunknown key: size\\n'\n\n\ndef test_main_returns_0_for_an_empty_file(tmp_path, capsys):\n    settings = tmp_path / 'service.conf'\n    settings.write_text('')\n    assert main([str(settings)]) == 0\n    assert capsys.readouterr().out == ''\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_checkconf.py 2>&1 | tail -5\ncat > checkconf.py <<'EOF'\nKNOWN_KEYS = {'name', 'port', 'debug'}\n\n\ndef main(argv):\n    status = 0\n    with open(argv[0]) as settings:\n        for line in settings:\n            if not line.strip():\n                continue\n            key = line.split('=', 1)[0].strip()\n            if key not in KNOWN_KEYS:\n                print(f'unknown key: {key}')\n                status = 1\n    return status\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_checkconf.py 2>&1 | tail -3\ngit add checkconf.py tests/test_checkconf.py; git commit -qm \"Add checkconf.main\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-LgFZCD/repo; W=.sdd/plan\nmk(){ sed -i '' \"$2\" checkconf.py; git diff -- checkconf.py > $W/task-1-mutant-$1.patch; test -s $W/task-1-mutant-$1.patch || echo EMPTY $1; git checkout -- checkconf.py; }\nmk 1 \"s/'name', 'port', 'debug'/'name', 'port'/\"\nmk 2 \"s/status = 1/status = 0/\"\nmk 3 \"s/if key not in KNOWN_KEYS/if key not in KNOWN_KEYS and status == 0/\"\nmk 4 \"s/print(f'unknown key: {key}')/print(f'unknown key: {key}'); break/\"\nmk 5 \"s/status = 0\\$/status = 1/;1,/status = 1/!b\"\ngit checkout -- checkconf.py\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/checkconf.md:7 | one unknown key among known | test_main_reports_an_unknown_key |\n| specs/checkconf.md:7 | several unknown keys | test_main_reports_each_unknown_key |\n| specs/checkconf.md:7 | all three known keys | test_main_returns_0_and_prints_nothing_for_known_keys |\n| specs/checkconf.md:8 | unknown key returns 1 | test_main_returns_1_for_an_unknown_key |\n| specs/checkconf.md:8 | no unknown key returns 0 | test_main_returns_0_and_prints_nothing_for_known_keys |\n| specs/checkconf.md:8 | empty file returns 0 | test_main_returns_0_for_an_empty_file |\n\n## Mutants\n\nMutant 1: specs/checkconf.md:7, test_main_returns_0_and_prints_nothing_for_known_keys \u2014 `debug` treated as unknown \u2014 task-1-mutant-1.patch\nMutant 2: specs/checkconf.md:8, test_main_returns_1_for_an_unknown_key \u2014 unknown key leaves status 0 \u2014 task-1-mutant-2.patch\nMutant 3: specs/checkconf.md:7, test_main_reports_each_unknown_key \u2014 only first unknown key is reported \u2014 task-1-mutant-3.patch\nMutant 4: specs/checkconf.md:7, test_main_reports_each_unknown_key \u2014 stops after first unknown key \u2014 task-1-mutant-4.patch\nMutant 5: specs/checkconf.md:8, test_main_returns_0_for_an_empty_file \u2014 status starts at 1 \u2014 task-1-mutant-5.patch\nEOF\ncat $W/task-1-mutant-5.patch | head -20\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_checkconf.py 2>&1 | tail -12"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-LgFZCD/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\nImplemented `main` in checkconf.py (prints `unknown key: <key>` per unknown key, returns 1/0). Tests in tests/test_checkconf.py: plan test plus 4 added (return 1, known keys -> 0 and silent, multiple unknown keys, empty file).\n## TDD\nRED: `pytest -q tests/test_checkconf.py` -> ImportError: cannot import name 'main' from 'checkconf'.\nGREEN: 5 passed.\n## Mutants\n/private/tmp/mt-rep-LgFZCD/repo/.sdd/plan/task-1-mutants.log \u2014 caught 5, survived 0, invalid 0\n## Files\ncheckconf.py, tests/test_checkconf.py\n## Concerns\nNone; plan test did not conflict with spec.\nEOF\ngit status --short"
+      }
+    }
+  ],
+  "commits": [
+    "ebfb7c1 Add checkconf.main"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

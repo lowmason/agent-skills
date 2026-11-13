@@ -1,0 +1,62 @@
+diff --git a/checkconf.py b/checkconf.py
+index e69de29..f3aa013 100644
+--- a/checkconf.py
++++ b/checkconf.py
+@@ -0,0 +1,13 @@
++KNOWN_KEYS = {'name', 'port', 'debug'}
++
++
++def main(argv):
++    with open(argv[0]) as settings:
++        lines = settings.read().splitlines()
++    unknown = 0
++    for line in lines:
++        key = line.partition('=')[0].strip()
++        if key not in KNOWN_KEYS:
++            print(f'unknown key: {key}')
++            unknown = 1
++    return unknown
+diff --git a/tests/test_checkconf.py b/tests/test_checkconf.py
+new file mode 100644
+index 0000000..45b05a2
+--- /dev/null
++++ b/tests/test_checkconf.py
+@@ -0,0 +1,38 @@
++import pytest
++
++from checkconf import main
++
++
++def test_main_reports_an_unknown_key(tmp_path, capsys):
++    settings = tmp_path / 'service.conf'
++    settings.write_text('name = web\ncolour = red\n')
++    main([str(settings)])
++    assert capsys.readouterr().out == 'unknown key: colour\n'
++
++
++def test_main_returns_1_for_an_unknown_key(tmp_path):
++    settings = tmp_path / 'service.conf'
++    settings.write_text('name = web\ncolour = red\n')
++    assert main([str(settings)]) == 1
++
++
++@pytest.mark.parametrize('text', ['', 'name = web\nport = 80\ndebug = true\n'])
++def test_main_accepts_known_keys_and_empty_file(tmp_path, capsys, text):
++    settings = tmp_path / 'service.conf'
++    settings.write_text(text)
++    assert main([str(settings)]) == 0
++    assert capsys.readouterr().out == ''
++
++
++def test_main_reports_each_unknown_key(tmp_path, capsys):
++    settings = tmp_path / 'service.conf'
++    settings.write_text('colour = red\nport = 80\nsize = 3\n')
++    assert main([str(settings)]) == 1
++    assert capsys.readouterr().out == 'unknown key: colour\nunknown key: size\n'
++
++
++def test_main_reports_an_unknown_key_on_the_first_line(tmp_path, capsys):
++    settings = tmp_path / 'service.conf'
++    settings.write_text('colour = red')
++    assert main([str(settings)]) == 1
++    assert capsys.readouterr().out == 'unknown key: colour\n'

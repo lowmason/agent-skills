@@ -16,21 +16,55 @@
 # different plan is refused before the command runs (exit 3), so one plan's
 # progress is never recorded under another's.
 #
-# Usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
+# The mutant gate. After a passing run, and before the line is written, the
+# task's newest mutant run must prove its tests: mutant-run's run file in the
+# workspace, task-<N>-mutants.log for run 1 and task-<N>-mutants-<K>.log for
+# run K, the newest being the highest run number. task-done reads that file
+# and never runs mutant-run. In order, the gate refuses (exit 4) when:
+#   - the task has no mutant run;
+#   - the run's head: line is not HEAD;
+#   - its result: line is not "caught <c>, survived 0, invalid 0";
+#   - the workspace has no task-<N>-mutants.md;
+#   - a "Mutant K:" line in that file has no "mutant K:" line in the run and
+#     no "Withdrawn: K" line;
+#   - a "Withdrawn: K" line's patch, task-<N>-mutant-<K>.patch, is still in
+#     the workspace: a withdrawn patch is renamed .patch.withdrawn, so the
+#     line would excuse a mutant that may never have run.
+# A refusal prints its reason and the run's path, and records nothing.
+# --no-mutants REASON skips the gate, for a task that is not a mutant task:
+# the line records the reason in place of the counts.
+#
+# Usage: task-done PLAN_FILE TASK_NUMBER BASE [--no-mutants REASON] -- TEST_COMMAND [ARGS...]
 #   BASE is the SHA task-start printed; the completion line records BASE..HEAD.
+#   REASON is not empty.
+# The completion line:
+#   Task <N>: complete (commits <base7>..<head7>, mutants: <caught>/<total>, tests: <command> → <last output line>)
+# <caught> is the run's caught count, and <total> the number of "Mutant K:"
+# lines in task-<N>-mutants.md. With --no-mutants the field reads
+# "mutants: none: <REASON>".
 # Exit: the test command's exit status; 2 for bad arguments, BASE or task
-# number; 3 when the ledger belongs to another plan.
+# number; 3 when the ledger belongs to another plan; 4 when the mutant gate
+# refuses.
 set -euo pipefail
 
-if [ $# -lt 5 ] || [ "$4" != "--" ]; then
-  echo "usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
+usage() {
+  echo "usage: task-done PLAN_FILE TASK_NUMBER BASE [--no-mutants REASON] -- TEST_COMMAND [ARGS...]" >&2
   exit 2
-fi
+}
 
+[ $# -ge 5 ] || usage
 plan=$1
 n=$2
 base=$3
-shift 4
+no_mutants=''
+if [ "$4" = "--no-mutants" ]; then
+  [ $# -ge 7 ] && [ -n "$5" ] && [ "$6" = "--" ] || usage
+  no_mutants=$5
+  shift 6
+else
+  [ "$4" = "--" ] || usage
+  shift 4
+fi
 sdd="$(cd "$(dirname "$0")/../../subagent-driven-development/scripts" && pwd)"
 
 git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
@@ -110,6 +144,94 @@ if [ "$rc" -ne 0 ]; then
   exit "$rc"
 fi
 
+# The mutant gate (see the header). test-run has checked the task number, so
+# it holds only letters, digits and dots, and is safe inside a file pattern.
+mutant_run='none'
+refuse() {
+  echo "task-done: $1; Task $n NOT recorded (mutant run: $mutant_run)" >&2
+  exit 4
+}
+nl='
+'
+# Whether $1 is one whole line of $2.
+has_line() {
+  case "$nl$2$nl" in
+    *"$nl$1$nl"*) return 0 ;;
+  esac
+  return 1
+}
+
+if [ -n "$no_mutants" ]; then
+  mutants_field="mutants: none: $no_mutants"
+else
+  # The newest run is the highest run number, never the newest by time. A run
+  # number has no leading zero, as mutant-run writes it.
+  newest=0
+  if [ -f "$dir/task-$n-mutants.log" ]; then
+    mutant_run="$dir/task-$n-mutants.log"
+    newest=1
+  fi
+  for f in "$dir/task-$n-mutants-"*.log; do
+    [ -f "$f" ] || continue
+    k=${f#"$dir/task-$n-mutants-"}
+    k=${k%.log}
+    case "$k" in
+      '' | 0* | *[!0-9]*) continue ;;
+    esac
+    if [ "$k" -gt "$newest" ]; then
+      mutant_run=$f
+      newest=$k
+    fi
+  done
+  [ "$newest" -gt 0 ] || refuse "no mutant run for Task $n"
+
+  # The header's head: line comes after the command, which may span lines,
+  # and its result: line comes before the first section.
+  run_head=$(awk 'NR > 1 && /^head: / { sub(/^head: /, ""); print; exit }' "$mutant_run")
+  head_sha=$(git rev-parse HEAD)
+  [ "$run_head" = "$head_sha" ] \
+    || refuse "the mutant run is at ${run_head:-no head}, not HEAD $head_sha"
+  run_result=$(awk '
+    NR > 1 && !h && /^head: / { h = 1; next }
+    h && /^--- / { exit }
+    h && /^result: / { print; exit }
+  ' "$mutant_run")
+  caught=$(printf '%s\n' "$run_result" \
+    | sed -n 's/^result: caught \([0-9][0-9]*\), survived 0, invalid 0$/\1/p')
+  [ -n "$caught" ] \
+    || refuse "the mutant run does not show every mutant caught (${run_result:-no result: line})"
+
+  mutants_file="$dir/task-$n-mutants.md"
+  [ -f "$mutants_file" ] || refuse "no task-$n-mutants.md in $dir"
+  # The run's mutant K: lines, read from its mutants section only.
+  ran=$(awk '
+    /^--- mutants ---$/ { m = 1; next }
+    m && /^--- / { exit }
+    m { print }
+  ' "$mutant_run" | sed -n 's/^mutant \([0-9][0-9]*\): .*/\1/p')
+  withdrawn=$(sed -n 's/^Withdrawn: \([0-9][0-9]*\) .*/\1/p' "$mutants_file")
+  listed=$(sed -n 's/^Mutant \([0-9][0-9]*\): .*/\1/p' "$mutants_file")
+  total=0
+  while IFS= read -r k; do
+    [ -n "$k" ] || continue
+    total=$((total + 1))
+    has_line "$k" "$ran" || has_line "$k" "$withdrawn" \
+      || refuse "mutant $k of task-$n-mutants.md is not in the run and has no Withdrawn: $k line"
+  done <<EOF3
+$listed
+EOF3
+  # A withdrawn mutant's patch is renamed .patch.withdrawn. A live patch beside
+  # a Withdrawn: K line means the line may excuse a mutant that never ran.
+  while IFS= read -r k; do
+    [ -n "$k" ] || continue
+    [ ! -e "$dir/task-$n-mutant-$k.patch" ] \
+      || refuse "Withdrawn: $k in task-$n-mutants.md, but task-$n-mutant-$k.patch is not renamed .patch.withdrawn"
+  done <<EOF4
+$withdrawn
+EOF4
+  mutants_field="mutants: $caught/$total"
+fi
+
 # The rendered command starts on the run file's second line, after "command: ".
 # It runs on until the "head: " line, because an argument may hold a newline.
 # The output follows the first "--- output ---" line.
@@ -123,6 +245,6 @@ if [ ! -f "$ledger" ]; then
   esac
   printf 'Plan: %s\n' "$plan_line" > "$ledger"
 fi
-line="Task $n: complete (commits $(git rev-parse --short=7 "$base")..$(git rev-parse --short=7 HEAD), tests: $cmd → $last)"
+line="Task $n: complete (commits $(git rev-parse --short=7 "$base")..$(git rev-parse --short=7 HEAD), $mutants_field, tests: $cmd → $last)"
 printf '%s\n' "$line" >> "$ledger"
 echo "ledger: $line"

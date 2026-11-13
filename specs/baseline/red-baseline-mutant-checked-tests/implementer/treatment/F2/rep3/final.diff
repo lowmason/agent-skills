@@ -1,0 +1,62 @@
+diff --git a/checkconf.py b/checkconf.py
+index e69de29..9fb8053 100644
+--- a/checkconf.py
++++ b/checkconf.py
+@@ -0,0 +1,12 @@
++KNOWN_KEYS = {'name', 'port', 'debug'}
++
++
++def main(argv):
++    unknown = 0
++    with open(argv[0]) as settings:
++        for line in settings:
++            key = line.split('=', 1)[0].strip()
++            if key not in KNOWN_KEYS:
++                print(f'unknown key: {key}')
++                unknown += 1
++    return 1 if unknown else 0
+diff --git a/tests/test_checkconf.py b/tests/test_checkconf.py
+new file mode 100644
+index 0000000..6ef4466
+--- /dev/null
++++ b/tests/test_checkconf.py
+@@ -0,0 +1,39 @@
++from checkconf import main
++
++
++def test_main_reports_an_unknown_key(tmp_path, capsys):
++    settings = tmp_path / 'service.conf'
++    settings.write_text('name = web\ncolour = red\n')
++    main([str(settings)])
++    assert capsys.readouterr().out == 'unknown key: colour\n'
++
++
++def run(tmp_path, capsys, text):
++    settings = tmp_path / 'service.conf'
++    settings.write_text(text)
++    status = main([str(settings)])
++    return status, capsys.readouterr().out
++
++
++def test_main_returns_1_for_an_unknown_key(tmp_path, capsys):
++    status, _ = run(tmp_path, capsys, 'name = web\ncolour = red\n')
++    assert status == 1
++
++
++def test_main_accepts_all_known_keys(tmp_path, capsys):
++    status, out = run(tmp_path, capsys, 'name = web\nport = 80\ndebug = on\n')
++    assert (status, out) == (0, '')
++
++
++def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
++    status, out = run(tmp_path, capsys, 'colour = red\nport = 1\nsize = 2\n')
++    assert (status, out) == (1, 'unknown key: colour\nunknown key: size\n')
++
++
++def test_main_accepts_an_empty_file(tmp_path, capsys):
++    assert run(tmp_path, capsys, '') == (0, '')
++
++
++def test_main_treats_key_names_as_case_sensitive(tmp_path, capsys):
++    status, out = run(tmp_path, capsys, 'Name = web\n')
++    assert (status, out) == (1, 'unknown key: Name\n')

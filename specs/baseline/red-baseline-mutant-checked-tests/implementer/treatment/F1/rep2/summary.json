@@ -1,0 +1,108 @@
+{
+  "fixture": "F1",
+  "rep": 2,
+  "rep_dir": "/tmp/mt-rep-bVUHPU",
+  "base": "75d3fa6c04eee243e3333fc4baa80786c29c6f47",
+  "prompt_sha256": "3f8891d241175b7813ab137b339c14781017c19022a55e58e84b2a644fc1d234",
+  "claude_exit": 0,
+  "wall_seconds": 28,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-bVUHPU/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 8,
+    "duration_ms": 27408,
+    "total_cost_usd": 0.1027744,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 16,
+        "outputTokens": 3796,
+        "cacheReadInputTokens": 102144,
+        "cacheCreationInputTokens": 13642,
+        "webSearchRequests": 0,
+        "costUSD": 0.1027744,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 106,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13642,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commits:** e9abf85 Add latest_report\n- **Tests:** 4/4 passing, output pristine; mutants: caught 6, survived 0, invalid 0\n- **Concerns:** none. The plan's test has the later date in the later-named file, so it can't catch a version that picks by file name. I added three strengthening tests and left the plan test unchanged. They cover name order opposite to date order, a `date:` line that isn't first, and non-`.txt` files and subdirectories being ignored.\n- **Report:** /tmp/mt-rep-bVUHPU/repo/.sdd/plan/task-1-report.md",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-bVUHPU/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; ls -a; cat /tmp/mt-skill/references/mutants.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-bVUHPU/repo; cat specs/picker.md; cat .gitignore; ls tests 2>&1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-bVUHPU/repo; mkdir tests\ncat > tests/test_latest.py <<'EOF'\nfrom latest import latest_report\n\n\ndef test_latest_report_returns_the_latest_dated_report(tmp_path):\n    (tmp_path / 'report-a.txt').write_text('title: winter review\\ndate: 2024-01-05\\n')\n    (tmp_path / 'report-b.txt').write_text('title: spring review\\ndate: 2024-03-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'report-b.txt'\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-bVUHPU/repo\ncat > latest.py <<'EOF'\nfrom datetime import date\nfrom pathlib import Path\n\n\ndef _report_date(path: Path) -> date | None:\n    for line in path.read_text().splitlines():\n        if line.startswith('date:'):\n            return date.fromisoformat(line[len('date:'):].strip())\n    return None\n\n\ndef latest_report(folder: Path) -> Path:\n    \"\"\"Return the .txt report in folder whose `date:` line holds the latest date.\"\"\"\n    dated = [\n        (report_date, path)\n        for path in folder.glob('*.txt')\n        if path.is_file() and (report_date := _report_date(path)) is not None\n    ]\n    return max(dated, key=lambda pair: pair[0])[1]\nEOF\ncat >> tests/test_latest.py <<'EOF'\n\n\ndef test_file_names_carry_no_order(tmp_path):\n    (tmp_path / 'report-a.txt').write_text('date: 2024-03-01\\n')\n    (tmp_path / 'report-b.txt').write_text('date: 2024-01-05\\n')\n    assert latest_report(tmp_path) == tmp_path / 'report-a.txt'\n\n\ndef test_date_line_need_not_be_first_and_dates_compare_as_dates(tmp_path):\n    (tmp_path / 'x.txt').write_text('date: 2023-12-31\\n')\n    (tmp_path / 'y.txt').write_text('title: t\\nbody\\ndate: 2024-01-02\\n')\n    (tmp_path / 'z.txt').write_text('date: 2024-01-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'y.txt'\n\n\ndef test_only_txt_files_directly_in_folder_count(tmp_path):\n    (tmp_path / 'a.txt').write_text('date: 2024-01-01\\n')\n    (tmp_path / 'b.md').write_text('date: 2025-01-01\\n')\n    sub = tmp_path / 'sub'\n    sub.mkdir()\n    (sub / 'c.txt').write_text('date: 2026-01-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'a.txt'\nEOF\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -5; git add latest.py tests; git commit -qm \"Add latest_report\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-bVUHPU/repo; W=.sdd/plan\nmk(){ git diff -- latest.py > $W/task-1-mutant-$1.patch; git checkout -- latest.py; }\nsed -i \"s/key=lambda pair: pair\\[0\\]/key=lambda pair: pair[1].name/\" latest.py; mk 1\nsed -i \"s/max(dated, key=lambda pair: pair\\[0\\])/min(dated, key=lambda pair: pair[0])/\" latest.py; mk 2\nsed -i \"s/glob('\\*.txt')/rglob('*.txt')/\" latest.py; mk 3\nsed -i \"s/glob('\\*.txt')/glob('*')/\" latest.py; mk 4\nsed -i \"s/key=lambda pair: pair\\[0\\]/key=lambda pair: str(pair[0].day)/\" latest.py; mk 5\npython3 - <<'EOF'\np='latest.py';s=open(p).read()\ns=s.replace(\"            return date.fromisoformat(line[len('date:'):].strip())\\n    return None\",\"            return date.fromisoformat(line[len('date:'):].strip())\\n        break\\n    return None\")\nopen(p,'w').write(s)\nEOF\nmk 6\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/picker.md:7 | two reports, later one second | test_latest_report_returns_the_latest_dated_report |\n| specs/picker.md:7 | date line not first; dates differ across month/year | test_date_line_need_not_be_first_and_dates_compare_as_dates |\n| specs/picker.md:7 | only .txt files directly in folder | test_only_txt_files_directly_in_folder_count |\n| specs/picker.md:8 | name order opposite to date order | test_file_names_carry_no_order |\n\n## Mutants\n\nMutant 1: specs/picker.md:8, test_file_names_carry_no_order \u2014 picks by file name \u2014 task-1-mutant-1.patch\nMutant 2: specs/picker.md:7, test_latest_report_returns_the_latest_dated_report \u2014 returns earliest date \u2014 task-1-mutant-2.patch\nMutant 3: brief: directly in folder, test_only_txt_files_directly_in_folder_count \u2014 recursive glob \u2014 task-1-mutant-3.patch\nMutant 4: brief: .txt, test_only_txt_files_directly_in_folder_count \u2014 any extension \u2014 task-1-mutant-4.patch\nMutant 5: specs/picker.md:7, test_date_line_need_not_be_first_and_dates_compare_as_dates \u2014 compares only day of month \u2014 task-1-mutant-5.patch\nMutant 6: specs/picker.md:7, test_date_line_need_not_be_first_and_dates_compare_as_dates \u2014 only looks at first line for date \u2014 task-1-mutant-6.patch\nEOF\ngit status --short; /tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py 2>&1 | tail -12"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-bVUHPU/repo; W=.sdd/plan; git status --short\nm(){ python3 - \"$1\" \"$2\" <<'EOF'\nimport sys\ns=open('latest.py').read(); assert sys.argv[1] in s\nopen('latest.py','w').write(s.replace(sys.argv[1],sys.argv[2]))\nEOF\ngit diff -- latest.py > $W/task-1-mutant-$3.patch; git checkout -- latest.py; }\nm \"key=lambda pair: pair[0]\" \"key=lambda pair: pair[1].name\" 1\nm \"max(dated\" \"min(dated\" 2\nm \"glob('*.txt')\" \"rglob('*.txt')\" 3\nm \"glob('*.txt')\" \"glob('*')\" 4\nm \"key=lambda pair: pair[0]\" \"key=lambda pair: pair[0].day\" 5\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py 2>&1 | cut -c1-150"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-bVUHPU/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\nImplemented `latest_report` in latest.py (glob *.txt files directly in folder, parse `date:` line as ISO date, max by date). \nTests: plan test + 3 added (name order opposite to date order; date line not first / month-year compare; non-.txt and subdir ignored). 4/4 passing.\nTDD RED: pytest -> ImportError cannot import name 'latest_report'. GREEN: 4 passed.\nMutants: /private/tmp/mt-rep-bVUHPU/repo/.sdd/plan/task-1-mutants-2.log \u2014 caught 6, survived 0, invalid 0\nFiles: latest.py, tests/test_latest.py, .sdd/plan/task-1-mutant-*.patch, task-1-mutants.md\nNote: plan test alone has name order == date order, so it can't catch name-based picking; added test_file_names_carry_no_order (strengthening only).\nEOF\ngit status --short"
+      }
+    }
+  ],
+  "commits": [
+    "e9abf85 Add latest_report"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants-2.log",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

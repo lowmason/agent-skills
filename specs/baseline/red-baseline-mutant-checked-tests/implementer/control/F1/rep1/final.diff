@@ -1,0 +1,31 @@
+diff --git a/latest.py b/latest.py
+index e69de29..dea0502 100644
+--- a/latest.py
++++ b/latest.py
+@@ -0,0 +1,13 @@
++from datetime import date
++from pathlib import Path
++
++
++def _report_date(path: Path) -> date:
++    for line in path.read_text().splitlines():
++        if line.startswith('date:'):
++            return date.fromisoformat(line[len('date:'):].strip())
++    raise ValueError(f'no date: line in {path}')
++
++
++def latest_report(folder: Path) -> Path:
++    return max(folder.glob('*.txt'), key=_report_date)
+diff --git a/tests/test_latest.py b/tests/test_latest.py
+new file mode 100644
+index 0000000..fdad939
+--- /dev/null
++++ b/tests/test_latest.py
+@@ -0,0 +1,7 @@
++from latest import latest_report
++
++
++def test_latest_report_returns_the_latest_dated_report(tmp_path):
++    (tmp_path / 'report-a.txt').write_text('title: winter review\ndate: 2024-01-05\n')
++    (tmp_path / 'report-b.txt').write_text('title: spring review\ndate: 2024-03-01\n')
++    assert latest_report(tmp_path) == tmp_path / 'report-b.txt'

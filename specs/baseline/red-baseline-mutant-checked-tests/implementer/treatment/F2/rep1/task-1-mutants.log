@@ -1,0 +1,138 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_checkconf.py
+head: 94f06d456d8c3a129c3875c6b67cd4edeb02d8e7
+tree: clean
+result: caught 4, survived 1, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 6061b84605446fb05f42ca24027ba6610514ca2492ea3ed8a84762f3139f39dd tests: tests.test_checkconf::test_main_returns_0_and_prints_nothing_for_known_keys
+mutant 2: SURVIVED exit 0 sha256 907ff740d4128300c5eeb61bf446347c43eaaaa5684715de8619fcf5dd5fdca6
+mutant 3: CAUGHT exit 1 sha256 1e2cabf2e8647bca295218809c03d8690f59638cc52d4d0685b5cfe74d992d61 tests: tests.test_checkconf::test_main_reports_every_unknown_key_in_order
+mutant 4: CAUGHT exit 1 sha256 ac5655b6e3c98c48742955008abf64dcddf1a9389ff62d0fe3e25aec1fed00ec tests: tests.test_checkconf::test_main_returns_0_and_prints_nothing_for_known_keys tests.test_checkconf::test_main_returns_0_for_an_empty_file
+mutant 5: CAUGHT exit 1 sha256 48ebc83bcbc2f4497a695a97bcad0428e8ec3782711f4f762982325799188450 tests: tests.test_checkconf::test_main_reports_an_unknown_key tests.test_checkconf::test_main_returns_1_for_an_unknown_key tests.test_checkconf::test_main_reports_every_unknown_key_in_order
+--- tests ---
+test tests.test_checkconf::test_main_returns_0_and_prints_nothing_for_known_keys: caught 1 4
+test tests.test_checkconf::test_main_reports_every_unknown_key_in_order: caught 3 5
+test tests.test_checkconf::test_main_returns_0_for_an_empty_file: caught 4
+test tests.test_checkconf::test_main_reports_an_unknown_key: caught 5
+test tests.test_checkconf::test_main_returns_1_for_an_unknown_key: caught 5
+--- output: baseline ---
+.....                                                                    [100%]
+5 passed in 0.01s
+--- output: mutant 1 ---
+..F..                                                                    [100%]
+=================================== FAILURES ===================================
+____________ test_main_returns_0_and_prints_nothing_for_known_keys _____________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2401/test_main_returns_0_and_prints0')
+capsys = <_pytest.capture.CaptureFixture object at 0x109252490>
+
+    def test_main_returns_0_and_prints_nothing_for_known_keys(tmp_path, capsys):
+>       assert run(tmp_path, 'name = web\nport = 80\ndebug = on\n') == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2401/test_main_returns_0_and_prints0'), 'name = web\nport = 80\ndebug = on\n')
+
+tests/test_checkconf.py:22: AssertionError
+----------------------------- Captured stdout call -----------------------------
+unknown key: debug
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_returns_0_and_prints_nothing_for_known_keys
+1 failed, 4 passed in 0.01s
+--- output: mutant 2 ---
+.....                                                                    [100%]
+5 passed in 0.01s
+--- output: mutant 3 ---
+...F.                                                                    [100%]
+=================================== FAILURES ===================================
+_________________ test_main_reports_every_unknown_key_in_order _________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2403/test_main_reports_every_unknow0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1090365d0>
+
+    def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
+        assert run(tmp_path, 'colour = red\nport = 80\nsize = 3\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: size\n'
+E       AssertionError: assert 'unknown key: colour\n' == 'unknown key:...n key: size\n'
+E         
+E           unknown key: colour
+E         - unknown key: size
+
+tests/test_checkconf.py:28: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_reports_every_unknown_key_in_order
+1 failed, 4 passed in 0.02s
+--- output: mutant 4 ---
+..F.F                                                                    [100%]
+=================================== FAILURES ===================================
+____________ test_main_returns_0_and_prints_nothing_for_known_keys _____________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2404/test_main_returns_0_and_prints0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10765e490>
+
+    def test_main_returns_0_and_prints_nothing_for_known_keys(tmp_path, capsys):
+>       assert run(tmp_path, 'name = web\nport = 80\ndebug = on\n') == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2404/test_main_returns_0_and_prints0'), 'name = web\nport = 80\ndebug = on\n')
+
+tests/test_checkconf.py:22: AssertionError
+____________________ test_main_returns_0_for_an_empty_file _____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2404/test_main_returns_0_for_an_emp0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1076e0180>
+
+    def test_main_returns_0_for_an_empty_file(tmp_path, capsys):
+>       assert run(tmp_path, '') == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2404/test_main_returns_0_for_an_emp0'), '')
+
+tests/test_checkconf.py:32: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_returns_0_and_prints_nothing_for_known_keys
+FAILED tests/test_checkconf.py::test_main_returns_0_for_an_empty_file - Asser...
+2 failed, 3 passed in 0.01s
+--- output: mutant 5 ---
+FF.F.                                                                    [100%]
+=================================== FAILURES ===================================
+_______________________ test_main_reports_an_unknown_key _______________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2405/test_main_reports_an_unknown_k0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10b1c42f0>
+
+    def test_main_reports_an_unknown_key(tmp_path, capsys):
+        settings = tmp_path / 'service.conf'
+        settings.write_text('name = web\ncolour = red\n')
+        main([str(settings)])
+>       assert capsys.readouterr().out == 'unknown key: colour\n'
+E       AssertionError: assert '' == 'unknown key: colour\n'
+E         
+E         - unknown key: colour
+
+tests/test_checkconf.py:8: AssertionError
+____________________ test_main_returns_1_for_an_unknown_key ____________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2405/test_main_returns_1_for_an_unk0')
+
+    def test_main_returns_1_for_an_unknown_key(tmp_path):
+>       assert run(tmp_path, 'name = web\ncolour = red\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = run(PosixPath('$TMPDIR/pytest-of-$USER/pytest-2405/test_main_returns_1_for_an_unk0'), 'name = web\ncolour = red\n')
+
+tests/test_checkconf.py:18: AssertionError
+_________________ test_main_reports_every_unknown_key_in_order _________________
+
+tmp_path = PosixPath('$TMPDIR/pytest-of-$USER/pytest-2405/test_main_reports_every_unknow0')
+capsys = <_pytest.capture.CaptureFixture object at 0x10b183110>
+
+    def test_main_reports_every_unknown_key_in_order(tmp_path, capsys):
+        assert run(tmp_path, 'colour = red\nport = 80\nsize = 3\n') == 1
+>       assert capsys.readouterr().out == 'unknown key: colour\nunknown key: size\n'
+E       AssertionError: assert 'unknown key: size\n' == 'unknown key:...n key: size\n'
+E         
+E         - unknown key: colour
+E           unknown key: size
+
+tests/test_checkconf.py:28: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_checkconf.py::test_main_reports_an_unknown_key - AssertionE...
+FAILED tests/test_checkconf.py::test_main_returns_1_for_an_unknown_key - Asse...
+FAILED tests/test_checkconf.py::test_main_reports_every_unknown_key_in_order
+3 failed, 2 passed in 0.01s
