@@ -5,7 +5,7 @@ description: >
   cleaning up before handing a project off, deciding what to refactor or delete next, building a
   maintenance backlog, or estimating refactor effort. Trigger on: abandoned approaches in
   archive/ or old/ dirs, scratch notebooks beside production modules, duplicated v1/v2/v3 scripts
-  or sibling repos (alt_nfp vs alt-nfp), hardcoded /Users/ or absolute paths, 'type: ignore' and
+  or sibling repos (payroll_model vs payroll-model), hardcoded /Users/ or absolute paths, 'type: ignore' and
   sprawling Any, complex modules with no tests, empty or 'Add your description here' READMEs and
   pyprojects, committed .env files or API keys, raise NotImplementedError / TODO / FIXME stubs,
   and reproducibility hazards (datetime.now() in a pipeline, magic seeds, as-of/vintage joins
@@ -75,7 +75,7 @@ back from `rg` to `grep -r` so they run anywhere.
 | Signal | What you're grepping for | Why it's debt |
 |---|---|---|
 | Abandoned approaches | `archive/`, `old/`, `deprecated/`, `_old`/`_bak` files | Dead branches of exploration; usually DELETE |
-| Duplicated v1/v2/v3 | `_v2`, `_final`, `_copy`; sibling repos (`alt_nfp` / `alt-nfp` / `alt_nfp_bsts`) | Ambiguity about which is canonical — a correctness trap |
+| Duplicated v1/v2/v3 | `_v2`, `_final`, `_copy`; sibling repos (`payroll_model` / `payroll-model` / `payroll_model_bsts`) | Ambiguity about which is canonical — a correctness trap |
 | Scratch notebooks | `scratchpad.ipynb`, `sandbox.ipynb`, `Untitled*.ipynb` beside `src/`, or a marimo `.py` notebook (a top-level `app = marimo.App(` line) outside `notebooks/` | Hidden logic that can't be rerun or tested |
 | Hardcoded paths | `/Users/`, `/home/`, `read_parquet("/...")` | Breaks on every other machine; blocks reproduction |
 | Wall-clock leakage | `datetime.now()`, `date.today()`, `pl.*.now()` inside a pipeline | Same code → different output by day; kills as-of/vintage correctness |
@@ -148,7 +148,7 @@ If **yes** → **HARDEN**, proportionally to how load-bearing it is:
 
 A few rules of thumb for the ambiguous middle:
 
-- **Duplicated v1/v2/v3 (the `alt_nfp` family):** decide which is canonical *first*, then
+- **Duplicated v1/v2/v3 (the `payroll_model` family):** decide which is canonical *first*, then
   DELETE the others or move them out of the way with a one-line note saying which won and
   why. Leaving three live copies is itself the correctness risk.
 - **Scratch notebook beside prod code:** if the model imports from it or you can't
@@ -215,7 +215,7 @@ The deliverable is a single prioritized table. Keep it scannable; one row per fi
 |---|---|---|---|---|
 | `.env` (tracked) | Security | High | S | Rotate key, `git rm --cached`, add to `.gitignore` — **do first** |
 | `src/pkg/archive/` (3 files) | Maintainability | Low | S | DELETE — dead exploratory branch; git retains history |
-| `alt_nfp` / `alt-nfp` / `alt_nfp_bsts` | Correctness | High | M | Confirm canonical repo; archive or delete the other two |
+| `payroll_model` / `payroll-model` / `payroll_model_bsts` | Correctness | High | M | Confirm canonical repo; archive or delete the other two |
 | `scratchpad.ipynb` beside `src/` | Reproducibility | High | M | Extract load-bearing transforms into a runnable module; then DELETE notebook |
 | `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `marimo convert` into a free name in `notebooks/` (never over an existing file), `marimo check`, run it and compare its outputs, then delete the `.ipynb` if they match |
 | `import_csv.py:160` hardcoded `/Users/...` | Reproducibility | High | S | Replace with config/CLI path relative to repo root |
