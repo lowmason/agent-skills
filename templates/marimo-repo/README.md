@@ -12,7 +12,7 @@ You read the kit here and copy it by hand. `install.py` does not install it.
 2. Install marimo-pair for the repo. Follow the commands in its [README](https://github.com/marimo-team/marimo-pair). This kit copies none of them.
 3. Add [the ruff ignore](#the-ruff-ignore).
 4. Paste the notebook block. The block is not written yet, so skip this step for now.
-5. Run the tech-debt skill on each scratch `.ipynb` file. An `.ipynb` file is a Jupyter notebook. The skill's convert outcome turns a notebook worth keeping into a marimo notebook under `notebooks/`. The skill hardens or deletes the rest.
+5. Run the tech-debt skill on each scratch `.ipynb` file. An `.ipynb` file is a Jupyter notebook. The skill's convert outcome turns a notebook worth keeping into a marimo notebook under `notebooks/`. The skill moves the logic of a notebook that other code needs into a module. It deletes a throwaway notebook.
 
 ## The ruff ignore
 
