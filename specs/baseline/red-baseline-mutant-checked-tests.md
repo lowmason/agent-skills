@@ -315,6 +315,9 @@ before Task 2.
 | Confirmatory batch F5 (5 reps) | 0.5503169 | 7.3322249 |
 | Confirmatory F5 rep6 (rerun of VOID rep2) | 0.0947403 | 7.4269652 |
 | Confirmatory F5 rep7 (rerun of VOID rep6) | 0.1135285 | 7.5404937 |
+| Gate-tag regression: `isolation_probe.txt` probe through the runner (json) | 0.0195338 | 7.5600275 |
+| Gate-tag regression: the same probe, stream-json | 0.0079716 | 7.5679991 |
+| Gate-tag regression batch (5 reps, `gate-tag/`) | 0.1250750 | 7.6930741 |
 
 ## Leak check
 
@@ -983,3 +986,68 @@ rounds, a miss is the fence: the task reports BLOCKED with the readings and the 
 5 reps × $1.00, and the two probes are capped at $0.50 each: 7.5404937 + 5.00 + 1.00 = 13.5404937,
 below the $100 cap. Each rep's `total_cost_usd` is added to the Spend stop table above, which
 carries the one running total.
+
+### Gate-tag regression: results
+
+**Isolation probe.** Plan 92's `isolation_probe.txt` (six lines) ran from a new empty directory
+under `/tmp`, on Claude Code 2.1.323, at `claude-opus-5-5`.
+
+- Through `gate-tag-kit/run_reps.sh`, with the runner's exact environment and flags ($0.0195338, 1
+  turn, no tool, one model, `success`): lines 1 to 5 read NO, and line 6 read NO. Line 6's reply
+  adds that the session guidance mentions one command, `/code-review ultra`, in passing. That is
+  system-prompt text, not a list of skills or slash commands.
+- With `--output-format stream-json --verbose` in place of `--output-format json`, and every other
+  flag and variable the same ($0.0079716, 1 turn, `success`): the init record listed no tools, no
+  MCP server, no skill, no slash command, and `output_style` `default`. It also listed Claude
+  Code's built-in agent types and four built-in plugins (`cc-plugin-agents-md`,
+  `cc-plugin-telemetry`, `cc-plugin-privacy`, `cc-plugin-plugin-authoring`), as in the plan 93
+  implementer probe. All six lines read NO again. `modelUsage` named only `claude-opus-5-5`, and
+  `usage.iterations` was empty.
+- The stream, its stderr and the raw reps are in
+  `~/.cache/agent-skills/scratch/plan93/gate-tag-probe/` and `…/gate-tag/`. They are not committed.
+
+**Prompt.** `build_prompts.py 92980a7 /tmp/plan93-gate gate-tag` wrote `gate-tag.txt`, sha256
+`11bfc2e7ecc3b0548d63a904a433f49c9af9684dfc7fc2444a60a0e6e0e42b7f`. A `diff` showed the
+`final-review.md` block in it equal to `git show 92980a7:…/final-review.md`, and the new sentence
+"One kind of ruling is not a decision taken" is in it. The prompt's frame, plan 80's and unedited,
+tells the rep that the skill's files sit in `~/.claude/skills/subagent-driven-development/`. That
+is the frame of the text under test, and it names no bar and no plan.
+
+**Reps.** `gate-tag-kit/run_reps.sh /tmp/plan93-gate/gate-tag.txt
+~/.cache/agent-skills/scratch/plan93/gate-tag 1 5 claude-opus-5-5 1.00`. Every rep exited 0 and
+wrote no error file. `show_reps.py` flags no VOID: every rep ran 1 turn with no extra iteration,
+one model and `success`, and every reply is a gate message. So 5 reps are scored, and none is VOID.
+`gate-tag/show_reps.txt` holds each rep's header and full reply. The five costs sum to $0.1250750.
+
+| Rep | 1 All four rulings | 2 Task 2 tag | 3 No other tag | 4 No ruling put as a question | Reading |
+|---|---|---|---|---|---|
+| 1 | yes | yes: `contradicts spec: § 2 Alert threshold` | yes | yes | PASS |
+| 2 | yes | yes: `contradicts spec: § 2 Alert threshold` | yes | yes | PASS |
+| 3 | yes | yes: `contradicts spec: § 2 Alert threshold` | yes | yes | PASS |
+| 4 | yes | yes: `contradicts spec: § 2 Alert threshold` | yes | yes | PASS |
+| 5 | yes | yes: `contradicts spec: § 2 Alert threshold` | yes | yes | PASS |
+
+**Reading notes.**
+
+- Each rep puts the four rulings in order, each with its cost if wrong, under a heading or a lead
+  line that calls them decisions already taken. Rep 1 says "no answer needed", rep 2 says "They
+  are not questions", rep 3 says "not questions", rep 4 says "You don't need to answer anything
+  here", and rep 5 says "I'm not asking about them".
+- In every rep, the Task 2 entry carries the tag with `§ 2 Alert threshold`, and the reply says
+  the plan's `specs/history.md` entry records it in place of a spec amendment. No other entry
+  carries the tag. Ruling 3 cites "spec § 3" in some reps, which is not the tag.
+- Every rep offers a revert that becomes a deferred item. That offer is not a request to approve a
+  ruling.
+- Every rep also asks one question, whether email is the right channel for night alerts. That is
+  the final review's Declined to judge line, which the text folds into the same batch. It is not a
+  ruling, so clause 4 holds.
+- The fixture holds no `Ruling: (unclear)` line, so no rep met the new sentences' own case. The
+  check is that the new sentences did not turn any other ruling into a question.
+
+**Result.** 5 of 5 PASS, so the bar holds at `92980a7`. No revision round was needed. A grep of
+`gate-tag/`, this record and the kit copy for `/Users/` (new text), the OS user name, the `$TMPDIR`
+value, `/private/var` and `/var/folders` (new text), and the ten session and message ids of the
+reps found no hit in anything committed.
+
+**Spend.** The probes and the batch cost $0.1525804. The micro-test total is $7.6930741 of the
+$100 cap.
