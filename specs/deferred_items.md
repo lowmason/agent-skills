@@ -6555,3 +6555,24 @@ review and the Plan Completion gate (2026-10-27) add the others.
       That defeats the fail-on-missing-title behavior that `build/CLAUDE.md` describes. Size: quick-fix.
       Done when: a numbered contents line with a page and no title is kept or rejected so that `check_complete`
       raises on it, and a test in `build/test_extract_structure.py` covers it.
+
+## claude/code-customization-guide-currency-657677 Step 4b review — 2026-11-12
+- [ ] Skill text gives Gemini CLI instructions but none for Antigravity CLI (`agy`), which the `gemini` install
+      runtime now targets (branch review, code-reviewer Declined to judge). `skills/llm-wiki/INSTALL.md:65-67`
+      and `skills/bayesian-workflow/README.md:43` link skills into `~/.agents/skills/`, which `agy` does not read
+      (probed, `specs/guides/antigravity-customization-guide.md`). `skills/writing-skills/SKILL.md:23` names that
+      folder as the cross-runtime alias and does not say `agy` skips it. `skills/brainstorming/visual-companion.md:77`
+      gives only a Gemini CLI recipe for the companion server. `skills/prepare-handoff/SKILL.md:109` and
+      `skills/writing-plans/SKILL.md:260` give only `gemini -m <model>` launch lines. Fixing it means a probe of how
+      `agy` takes a first prompt and keeps a background shell, then the `agy` form beside each place (skills go to
+      `~/.gemini/config/skills/`, and `--model` picks the model), through the writing-skills skill. Size: plan.
+      Done when: each named place gives a correct `agy` form or says `agy` is not covered, and the dependency-drift
+      test passes.
+- [ ] The revisit trigger of the `commands-stay-command-files` exception in `build/cc_guide/conformance.toml` may
+      have fired (branch review, code-reviewer Declined to judge). It reads "When the Gemini adapters can be
+      generated from skills." This branch made the `agy` adapters skills, generated from `commands/*.md`, and `agy`
+      loads a skill as its slash command. So if `commands/deferred.md`, `commands/fix-issue.md` and
+      `commands/license-audit.md` became skills, `agy` would load them with no adapter. A skill can be an install
+      dependency too, so the reason's `/deferred` clause does not block the move. Size: design. Done when: the
+      owner rules to convert the three commands to skills or to keep them, and the exception is removed or its
+      reason and revisit lines are rewritten to match.
