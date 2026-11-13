@@ -54,6 +54,7 @@
 - **D6** (owner, plan review, 2026-11-13): "Please see the Copilot PR review issues." and "Also make sure to run a Codex re-review on the changes before pushing the updated PR." The plan takes all six of Copilot's findings on lowmason/agent-skills#196: both separator spellings in the leak-check names and the check after `git add`, no root-`notebooks/` notebook in the scratch section, a formatter caveat with its check, the spec kept live at completion, and the guard bullet in the "Not caught" list. A Codex review reads the change before it is pushed. Applied in: Global Constraints (Leak check, Completion), Tasks 1, 3 and 4, C2, C14, C15.
 - **D7** (owner, plan review, 2026-11-13): "Add two pointers (Recommended)" and "Add application test (Recommended)", in answer to two findings of the Codex review of `54bebc5` that touched approved calls C8 and C10. CONVERT now also appears in the DELETE rule and in Prioritization. Task 2 opens with an application test, and C10's earlier reason (the spec names no test) is withdrawn. The same review's two other findings, a `.git` file in the leak check and `force-exclude` for the formatter exclude, are plan-level fixes. Applied in: Global Constraints (Leak check), Tasks 2 and 3, C8, C10, C15.
 - **D8** (owner, plan review, 2026-11-13): "Amend the recipe (Recommended)", with the five steps shown, in answer to the Codex review of `d3f7c39`. That review found, and a scratch test confirmed, that `marimo convert` overwrites an existing target without asking and keeps no saved output, while `marimo check` runs no cell. The convert recipe gains a target check and a run-and-compare step before the delete. The same review's third finding, that `git mv` fails on an untracked notebook, is a plan-level fix in C7. Applied in: Task 2, C6, C7, Task 5 (spec amendment).
+- **D9** (owner, plan review, 2026-11-13): "Use the repo's marimo (Recommended)" and "Push after this round (Recommended)", in answer to the Codex review of `4f359db`. That review found that `uvx marimo` and `uv run --with marimo` can check a notebook with a marimo version other than the repo's, and that the formatter `exclude` must be merged into an existing list. The convert steps now run `uv run marimo` where the repo declares marimo. The merge rule is a plan-level fix in C15, and config `f` carries a merged list. The PR is pushed after this round, with no fourth Codex pass. Applied in: Task 2, Task 3, C6, C15.
 
 ## Builder's calls
 
@@ -64,7 +65,7 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 - **C3.** The register gets a new kind, `kit`, and `claude-md` stays as it is. The kit README is a guide for people, not a loaded `CLAUDE.md`, so `claude-md-size` and that kind's description do not fit it. The new kind takes the four `claude-md` sections that govern text pasted into a `CLAUDE.md`. (Task 3)
 - **C4.** The kit README keeps step 4, "Paste the notebook block", as a stub that says the block is not written yet. Plan B replaces the stub's text, so the step numbers hold. (Task 3)
 - **C5.** The kit README also gives the `ruff.toml` form of the table, and says to merge the line into an existing table (Review Focus 4 and 5). (Task 3)
-- **C6.** The convert steps call marimo through `uvx` (`uvx marimo convert`, `uvx marimo check`), so they work whether or not marimo is a project dependency. The spec writes `marimo convert`. The run step uses `uv run --with marimo`, because the cells need the project's own dependencies (D8). (Task 2)
+- **C6.** The convert steps run the repo's own marimo, `uv run marimo`, where the repo declares it, so they check the notebook with the version the repo uses (D9). A repo without marimo falls back to `uvx marimo` for convert and check, and to `uv run --with marimo` for the run, because the cells need the project's own dependencies (D8). The spec writes `marimo convert`. (Task 2)
 - **C7.** The scratch bullet also covers the new signal: a marimo `.py` notebook outside `notebooks/` needs no convert. It is moved into `notebooks/` when worth keeping, with `git mv` when git tracks it and `mv` when it does not, because the scan lists untracked files too. The spec gives that signal no action. (Task 2)
 - **C8.** The DELETE vs HARDEN headline stays at `SKILL.md:40`, `:55-57` and `:215`. CONVERT is an outcome of the scratch-notebook bullet (designer's call 6), and two pointers carry it into the decision: the DELETE rule (`:127-132`) names it as the one exception, and Prioritization (`:166`) scores CONVERT items too (D7). `scan.sh:5-6` and `:179` name it for scratch notebooks. (Task 2)
 - **C9.** The backlog example gains a new CONVERT row after `:194`, and the `scratchpad.ipynb` row stays. (Task 2)
@@ -73,7 +74,7 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 - **C12.** The `NOTICE` paragraph goes after the `runtimes/` paragraph, outside the "original works" list that `check_provenance.py` parses. Plans 93 and 94 edit other parts of `NOTICE`. (Task 3)
 - **C13.** The snippet check reads ruff versions from every git repo directly under `~/Projects/`, this repo excluded: the `uv.lock` version, the `ruff-pre-commit` rev and any version that a workflow pins. Extra versions only make the check stricter. It also runs the latest ruff. (Task 3)
 - **C14.** In `hooks/README.md`, the marimo note opens "Install into a work repo", and the guard bullet joins the guard's "Not caught" list, after the wrapper-script bullet (`:294`, D6). Only `hooks/README.md` is restamped, as the spec says. The new lines in `CLAUDE.md`, `README.md`, the tech-debt `SKILL.md` and the register state no Claude Code fact, so their citations stand. (Tasks 2 to 4)
-- **C15.** The kit README says the ignore covers `ruff check` only. For a repo whose formatter uses `quote-style = 'single'`, it gives a formatter exclude for `notebooks/**` with `force-exclude = true`, which the snippet check verifies for a tree run and for an explicit path (config `f`). Without it, the formatter rewrites marimo's three lines on every run, and marimo writes them back on save. A local check during planning found that this does not apply to the work repos today (D6). (Task 3)
+- **C15.** The kit README says the ignore covers `ruff check` only. For a repo whose formatter uses `quote-style = 'single'`, it gives a formatter exclude for `notebooks/**`, appended to any existing `exclude` list, with `force-exclude = true`, which the snippet check verifies for a tree run and for an explicit path (config `f`). Without it, the formatter rewrites marimo's three lines on every run, and marimo writes them back on save. A local check during planning found that this does not apply to the work repos today (D6). (Task 3)
 
 ## File map
 
@@ -326,12 +327,12 @@ The "What you're grepping for" cell keeps its `.ipynb` names and adds a marimo `
 
 - [ ] **Step 4: Rewrite the scratch bullet (`:151-153`)**
 
-The bullet keeps HARDEN for load-bearing logic (the model imports from it, or its output cannot be reproduced without it) and DELETE for doodles. Between them, it adds CONVERT for an `.ipynb` that is not load-bearing but is worth keeping as an analysis record. CONVERT has five numbered steps (C6, D8):
+The bullet keeps HARDEN for load-bearing logic (the model imports from it, or its output cannot be reproduced without it) and DELETE for doodles. Between them, it adds CONVERT for an `.ipynb` that is not load-bearing but is worth keeping as an analysis record. CONVERT has five numbered steps (C6, D8), and one line before them on how to run marimo (D9): where the repo declares marimo as a dependency, steps 2 to 4 use `uv run marimo`. Otherwise steps 2 and 3 use `uvx marimo`, and step 4 uses `uv run --with marimo marimo`.
 
 1. Choose `notebooks/<name>.py` as the target. If that file exists, pick another name, because `marimo convert` overwrites it without asking.
-2. `uvx marimo convert <name>.ipynb -o notebooks/<name>.py`
-3. `uvx marimo check notebooks/<name>.py`. Fix each cell it reports. A cell of notes that is not Python becomes a markdown cell, or goes.
-4. `uv run --with marimo marimo export html notebooks/<name>.py -o /tmp/<name>.html`. This runs the notebook. Compare its outputs with the outputs saved in the `.ipynb`, because `marimo convert` drops saved outputs and `marimo check` runs no cell.
+2. `marimo convert <name>.ipynb -o notebooks/<name>.py`
+3. `marimo check notebooks/<name>.py`. Fix each cell it reports. A cell of notes that is not Python becomes a markdown cell, or goes.
+4. `marimo export html notebooks/<name>.py -o /tmp/<name>.html`. This runs the notebook. Compare its outputs with the outputs saved in the `.ipynb`, because `marimo convert` drops saved outputs and `marimo check` runs no cell.
 5. Delete the `.ipynb` only when the outputs match. Otherwise keep it, and log the gap as a backlog row.
 
 Last, one sentence for C7: a marimo `.py` notebook outside `notebooks/` needs no convert. Move it into `notebooks/` when it is worth keeping (`git mv` when git tracks it, else `mv`), else DELETE it. The text names no `templates/` path and no marimo version.
@@ -344,7 +345,7 @@ Last, one sentence for C7: a marimo `.py` notebook outside `notebooks/` needs no
 - [ ] **Step 6: Add the backlog row after `:194`**
 
 ```markdown
-| `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `uvx marimo convert` into `notebooks/`, `uvx marimo check`, run it and compare its outputs, then delete the `.ipynb` |
+| `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `marimo convert` into `notebooks/`, `marimo check`, run it and compare its outputs, then delete the `.ipynb` |
 ```
 
 - [ ] **Step 7: Name CONVERT in `scan.sh`'s header comment (`:5-6`) and closing line (`:179`)**
@@ -459,7 +460,7 @@ if __name__ == "__main__":
     app.run()
 ```
 
-The four configs. `b` already has a table, so the kit's line is merged into it (Review Focus 4). `r` is the `ruff.toml` form (Review Focus 5). `f` is a formatter set to single quotes, with the exclude the kit gives for that case (C15).
+The four configs. `b` already has a table, so the kit's line is merged into it (Review Focus 4). `r` is the `ruff.toml` form (Review Focus 5). `f` is a formatter set to single quotes, with an existing `exclude` list that the kit's entry is appended to (C15).
 
 ```toml
 # b/pyproject.toml
@@ -499,7 +500,7 @@ force-exclude = true
 
 [tool.ruff.format]
 quote-style = 'single'
-exclude = ['notebooks/**']
+exclude = ['build/**', 'notebooks/**']
 ```
 
 Run: `cd /tmp/marimo-probe/plan96/b && uvx marimo check notebooks/probe_nb.py`
@@ -574,7 +575,7 @@ Plain English for people. It names no work repo. Headings and content:
   - The ignore matters wherever ruff runs over `notebooks/`: the Stop hook (`ruff-check.sh`, link `../../hooks/README.md`), pre-commit and CI. A pre-commit hook can pin a ruff version other than the lockfile's.
   - If the table already exists, merge the line into it. A second copy of the header is invalid TOML (C5).
   - In `ruff.toml` or `.ruff.toml`, the table is `[lint.per-file-ignores]` (C5).
-  - The ignore covers `ruff check` only, because `per-file-ignores` does not reach `ruff format`. A formatter set to `quote-style = 'single'` rewrites marimo's three lines, and marimo writes them back on every save. In such a repo, add `exclude = ['notebooks/**']` under `[tool.ruff.format]` (`[format]` in `ruff.toml`), and `force-exclude = true` under `[tool.ruff]` (top level in `ruff.toml`). Without `force-exclude`, ruff ignores the exclude for a file named on its command line, and `ruff-fix.sh` and pre-commit name files that way. `ruff format` then leaves notebook files alone, cell code included (C15).
+  - The ignore covers `ruff check` only, because `per-file-ignores` does not reach `ruff format`. A formatter set to `quote-style = 'single'` rewrites marimo's three lines, and marimo writes them back on every save. In such a repo, add `'notebooks/**'` to the `exclude` list under `[tool.ruff.format]` (`[format]` in `ruff.toml`), or create the list if there is none. A second `exclude` key is invalid TOML, and replacing the list drops its other entries. Also set `force-exclude = true` under `[tool.ruff]` (top level in `ruff.toml`). Without `force-exclude`, ruff ignores the exclude for a file named on its command line, and `ruff-fix.sh` and pre-commit name files that way. `ruff format` then leaves notebook files alone, cell code included (C15).
   - Write the line in the repo's quote style.
 - `## During a live session`. Fix lint through marimo-pair, never by editing the file. marimo-pair changes cells through the running notebook server. A `Write` or `Edit` on the file goes around it.
 - `## Credits`. The kit is an original work by Lowell Mason under the MIT license (link `../../NOTICE`). It takes ideas, and no text, from Eric Ma's "Agent-assisted data science with marimo" (`https://ericmjl.github.io/blog/2026/10/14/agent-assisted-data-science-with-marimo/`) and "How to do agentic data science" (`https://ericmjl.github.io/blog/2026/2/1/how-to-do-agentic-data-science/`). It pairs with marimo-pair (Apache-2.0), links to it and copies none of its text.
