@@ -5921,6 +5921,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       with no `sandbox_mode` key, and README.md states the limit. Touches
       build/sync_runtime_assets.py and runtimes/codex/agents/test-runner.toml. See specs/plans/completed/76-whole-repo-review-fixes.md.
       Size: design. Revisit if: Codex adds a sandbox mode with a writable cache directory.
+      → progress 2026-11-12 (PR #187): the Codex docs, read on 2026-11-12 and not probed, say that a custom agent file cannot override the parent session's sandbox. So no Codex adapter sets `sandbox_mode` now, and a fix cannot go in the two files that the Touches line names. A fix belongs in the parent session's config. One documented option, not tested here, is `sandbox_workspace_write.writable_roots` with ~/.cache/uv.
 - [x] **Inline run_diagnostics tail-ESS moves with stats.ci_prob (plan 76 Task 18
       ruling).** The inline `run_diagnostics` in
       skills/bayesian-workflow/references/diagnostics.md (about line 231) gates on
