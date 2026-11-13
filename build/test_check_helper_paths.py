@@ -1,5 +1,5 @@
 '''Tests for check_helper_paths.py, the commit lint that keeps every skill reference to the
-five SDD and executing-plans helpers anchored at <this-skill-dir>/.'''
+six SDD and executing-plans helpers anchored at <this-skill-dir>/.'''
 from check_helper_paths import check
 
 
@@ -40,6 +40,11 @@ def test_other_scripts_files_and_trees_are_out_of_scope(tmp_path):
         'archive/skills/c/SKILL.md': 'Run `scripts/task-brief`.\n',
     })
     assert check(tmp_path) == ([], 1)
+
+
+def test_an_unanchored_mutant_run_mention_fails(tmp_path):
+    write_tree(tmp_path, {'skills/a/SKILL.md': 'Run `scripts/mutant-run PLAN N -- cmd`.\n'})
+    assert check(tmp_path) == (['skills/a/SKILL.md:1: scripts/mutant-run has no <this-skill-dir>/ anchor'], 1)
 
 
 def test_no_reference_at_all_means_the_pattern_is_stale(tmp_path):

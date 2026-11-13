@@ -122,8 +122,8 @@ uv run python build/check_reviewer_block.py
 # build/deferral_baseline.txt) fails on a deferral sentence with no → item: or → dropped: marker in its paragraph
 uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt
 
-# Helper paths: every mention under skills/ of the five SDD and executing-plans helpers (sdd-workspace,
-# task-brief, review-package, task-start, task-done) carries the <this-skill-dir>/ anchor
+# Helper paths: every mention under skills/ of the six SDD and executing-plans helpers (sdd-workspace,
+# task-brief, review-package, task-start, task-done, mutant-run) carries the <this-skill-dir>/ anchor
 uv run python build/check_helper_paths.py
 
 # Compaction-waiver guard: a compaction-window waiver hides that file's late-heading scan, so this test reruns it on each waived file

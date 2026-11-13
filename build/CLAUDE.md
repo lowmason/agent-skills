@@ -46,11 +46,11 @@ paragraph. The baseline is frozen, so never add a file to it.
 the advisory form.
 
 `check_helper_paths.py` is the thirteenth commit lint: it fails when a
-Markdown file under `../skills/` names one of the five subagent-driven-development
+Markdown file under `../skills/` names one of the six subagent-driven-development
 and executing-plans helpers (`sdd-workspace`, `task-brief`, `review-package`,
-`task-start`, `task-done`) by a `scripts/` path without the `<this-skill-dir>/`
-anchor. It also fails when it finds no such mention, since its pattern is then
-stale.
+`task-start`, `task-done`, `mutant-run`) by a `scripts/` path without the
+`<this-skill-dir>/` anchor. It also fails when it finds no such mention, since
+its pattern is then stale.
 
 The fourteenth commit lint is `compaction_waiver_guard`. It runs
 `test_check_conformance.py::test_waived_compaction_window_files_hide_no_late_heading`.

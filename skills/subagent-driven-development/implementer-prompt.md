@@ -15,6 +15,9 @@ Subagent (general-purpose):
     Read your task brief first: [BRIEF_FILE]
     It contains the full task text from the plan.
 
+    Read the spec excerpts your task rests on: [SPEC_EXCERPTS_FILE]. You may
+    open the spec at the path it names.
+
     ## Context
 
     [Scene-setting: where this fits, dependencies, architectural context]
@@ -38,8 +41,11 @@ Subagent (general-purpose):
     2. Write tests (following TDD if task says to)
     3. Verify implementation works
     4. Commit your work
-    5. Self-review (see below)
-    6. Report back
+    5. Prove your tests: in a mutant task, follow [MUTANTS_GUIDE]. Your plan
+       file is [PLAN_FILE], your workspace [WORKSPACE], and the script
+       [MUTANT_RUN].
+    6. Self-review (see below)
+    7. Report back
 
     Work from: [directory]
 
@@ -49,6 +55,22 @@ Subagent (general-purpose):
 
     While iterating, run the focused test for what you're changing; run the
     full suite once before committing, not after every edit.
+
+    ## Plan Tests and the Spec
+
+    A plan test is a test whose code the plan gives. When a plan test's
+    assertion and an excerpt in [SPEC_EXCERPTS_FILE] cannot both hold:
+    1. Leave the test as the plan wrote it, and make the code pass it.
+    2. Report DONE_WITH_CONCERNS. In your concerns, quote the excerpt with its
+       `path:line` and the assertion with its `file:line`, each word for word.
+    3. Finish the rest of the task. The controller rules on the conflict, and
+       its ruling covers any change to the test.
+
+    Do this even when the spec's reading looks plainly right. Never edit a
+    plan test to fit your own reading. Strengthening a plan test (a new
+    assertion, or a new input) is allowed. Weakening one (removing or
+    loosening an assertion, or moving an expected value) is never allowed
+    without the controller's ruling.
 
     ## Code Organization
 
@@ -125,6 +147,10 @@ Subagent (general-purpose):
     the controller runs the task's tests again before each review, and the
     reviewer checks your report against that run.
 
+    A fix that adds or changes a test needs a mutant aimed at it. Write one as
+    [MUTANTS_GUIDE] says, run [MUTANT_RUN] again, and append the run's path
+    and counts to your fix report.
+
     ## Report Format
 
     Write your full report to [REPORT_FILE]:
@@ -133,6 +159,7 @@ Subagent (general-purpose):
     - **TDD Evidence** (if TDD was required for this task):
       - RED: command run, relevant failing output before implementation, and why the failure was expected
       - GREEN: command run and relevant passing output after implementation
+    - Mutants: the last mutant run's path and its counts, or `none: <why>`
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns
@@ -141,7 +168,8 @@ Subagent (general-purpose):
     report file):
     - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
     - Commits created (short SHA + subject)
-    - One-line test summary (e.g. "14/14 passing, output pristine")
+    - One-line test summary, with the mutant counts (e.g. "14/14 passing,
+      output pristine; mutants: caught 5, survived 0, invalid 0")
     - Your concerns, if any
     - The report file path
 
@@ -152,3 +180,14 @@ Subagent (general-purpose):
     Use BLOCKED if you cannot complete the task. Use NEEDS_CONTEXT if you need
     information that wasn't provided. Never silently produce work you're unsure about.
 ```
+
+**Placeholders:** the controller fills each one with an absolute path. A
+placeholder for a file that does not exist takes `none: <why>`.
+- `[SPEC_EXCERPTS_FILE]` — the task's spec excerpts file,
+  `<workspace>/task-N-spec.md`
+- `[MUTANTS_GUIDE]` — [references/mutants.md](references/mutants.md), as
+  `<this-skill-dir>/references/mutants.md`
+- `[MUTANT_RUN]` — `<this-skill-dir>/scripts/mutant-run`
+- `[PLAN_FILE]` — the plan file
+- `[WORKSPACE]` — the plan's workspace, the directory that
+  `<this-skill-dir>/scripts/sdd-workspace PLAN_FILE` prints
