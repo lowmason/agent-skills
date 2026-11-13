@@ -102,7 +102,7 @@ fi
 section "Polars joins with no cardinality contract (validate=)"
 # A .join() without validate= accepts m:m silently. When a key that should be
 # unique is duplicated upstream, rows fan out and every downstream array is
-# misaligned -- with no error. Measured 2026-08-26: alt-nfp had 54 Polars join
+# misaligned -- with no error. Measured 2026-08-26: one work repo had 54 Polars join
 # sites, 0 with validate= (the token appears nowhere in the workspace). The filter drops str.join()/os.path.join() false positives.
 # A hit is a candidate, not a verdict: validate= is unnecessary where the
 # cardinality is already guaranteed by construction upstream.

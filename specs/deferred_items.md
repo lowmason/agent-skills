@@ -6700,7 +6700,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       once for each of the four names, with a tutorial that has a hit for most sections, and it failed RED
       before the fix. The tech-debt suite passes (28 tests), and a direct run under bash 3.2.57 with BSD grep
       lists only the project's own files. The rg arm is unchanged.
-- [ ] **Older text in public files names work repos, or their family names (plan 96 final review, the
+- [x] **Older text in public files names work repos, or their family names (plan 96 final review, the
       code-reviewer; the gate deferred it, 2026-11-13).** The mentions predate plan 96, and the plan changed
       none of them. At `d926122` they sit in `hooks/README.md` (lines 18, 19 and 48), in
       `skills/tech-debt/scripts/scan.sh` (a comment in the "Polars joins with no cardinality contract" section,
@@ -6710,3 +6710,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: quick-fix. Done when: the owner has either reworded each mention to a made-up name, or recorded in
       this item that it stays, and a search of those three files for the work-repo names finds only the
       mentions that stay.
+      → done 2026-11-13 (/deferred quick fix): the owner chose to reword all seven mentions. `hooks/README.md`
+      (lines 18, 19 and 48) and `skills/tech-debt/SKILL.md` (lines 8, 78, 151 and 218) now use made-up names
+      (`payroll-stats`, `payroll-model`, `industry-embedder`, `payroll_model`). The `scan.sh` comment, which had
+      moved to line 105, says "one work repo", because the 54-join count is a real measurement. A search of the
+      three files for the work-repo names and their family names finds nothing.
