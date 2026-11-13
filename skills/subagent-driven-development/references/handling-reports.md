@@ -2,7 +2,7 @@
 
 Read this when an implementer reports one of these three statuses.
 
-**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review. Either way, run the task's tests before the review, as for DONE ([test-run.md](test-run.md)).
+**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review. A concern that a plan test conflicts with a spec excerpt gets a ruling before review, as the plan-text ruling in [fix-loop.md](fix-loop.md) says. Either way, run the task's tests before the review, as for DONE ([test-run.md](test-run.md)).
 
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
 
