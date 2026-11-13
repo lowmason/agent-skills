@@ -6273,6 +6273,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       finding 21's helper is `test-run`, and `mutant-run` sits beside it. A change to `mutant-run`'s run-file format
       must keep `task-done`'s gate and the reviewer's `## Mutants` section reading it. Size: design. Done when: a
       spec decides the change-reverted mutant and its plan lands.
+      → planned 2026-11-13: specs/plans/97-change-reverted-mutant.md, from the spec specs/change-reverted-mutant.md (owner-approved 2026-11-13, decisions D1 to D4). No execution starts before plan 96's execution ends.
 
 ## superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 - [x] **dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift
