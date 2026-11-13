@@ -1,0 +1,118 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py
+head: df568b127ef4da26d74fe1e875d1ebf9a2f97c62
+tree: clean
+result: caught 5, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 c6e91171c8b0745a992bb0bbd68f5c437fa81c4570628e4aabdaca7cc480c740 tests: tests.test_wordcount::test_indented_comment_line_is_skipped tests.test_wordcount::test_only_comments_has_no_words
+mutant 2: CAUGHT exit 1 sha256 ec9b012513e3a4bf3628c56e83086f8b866b5921b929ef7a6a8e718379104e4d tests: tests.test_wordcount::test_hash_after_first_non_blank_is_not_a_comment
+mutant 3: CAUGHT exit 1 sha256 193fa1f052e1beb5b27ece02d2ccf719cbfa6c6ce0fa8f9dc2b85d234a3beb7d tests: tests.test_wordcount::test_words_split_on_any_whitespace_run tests.test_wordcount::test_words_split_across_lines_and_blank_lines
+mutant 4: CAUGHT exit 1 sha256 ea7dc7cc8fb5c7047e3a4c16c11ddd560e66018992f0e64322ddd77885f27d20 tests: tests.test_wordcount::test_count_words_skips_comment_lines tests.test_wordcount::test_indented_comment_line_is_skipped
+mutant 5: CAUGHT exit 1 sha256 74d58de8edb455e704108629650d6e6f6a570db2cbb437b6eb910e47f31df524 tests: tests.test_wordcount::test_indented_comment_line_is_skipped
+--- tests ---
+test tests.test_wordcount::test_indented_comment_line_is_skipped: caught 1 4 5
+test tests.test_wordcount::test_only_comments_has_no_words: caught 1
+test tests.test_wordcount::test_hash_after_first_non_blank_is_not_a_comment: caught 2
+test tests.test_wordcount::test_words_split_on_any_whitespace_run: caught 3
+test tests.test_wordcount::test_words_split_across_lines_and_blank_lines: caught 3
+test tests.test_wordcount::test_count_words_skips_comment_lines: caught 4
+--- output: baseline ---
+.......                                                                  [100%]
+7 passed in 0.01s
+--- output: mutant 1 ---
+.F....F                                                                  [100%]
+=================================== FAILURES ===================================
+____________________ test_indented_comment_line_is_skipped _____________________
+
+    def test_indented_comment_line_is_skipped():
+>       assert count_words('   \t# note here\nhello\n') == 1
+E       AssertionError: assert 4 == 1
+E        +  where 4 = count_words('   \t# note here\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+_______________________ test_only_comments_has_no_words ________________________
+
+    def test_only_comments_has_no_words():
+>       assert count_words('# a\n  # b c\n#d') == 0
+E       AssertionError: assert 3 == 0
+E        +  where 3 = count_words('# a\n  # b c\n#d')
+
+tests/test_wordcount.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_indented_comment_line_is_skipped - Asser...
+FAILED tests/test_wordcount.py::test_only_comments_has_no_words - AssertionEr...
+2 failed, 5 passed in 0.01s
+--- output: mutant 2 ---
+..F....                                                                  [100%]
+=================================== FAILURES ===================================
+_______________ test_hash_after_first_non_blank_is_not_a_comment _______________
+
+    def test_hash_after_first_non_blank_is_not_a_comment():
+>       assert count_words('hello # world\n') == 3
+E       AssertionError: assert 0 == 3
+E        +  where 0 = count_words('hello # world\n')
+
+tests/test_wordcount.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_hash_after_first_non_blank_is_not_a_comment
+1 failed, 6 passed in 0.01s
+--- output: mutant 3 ---
+...FF..                                                                  [100%]
+=================================== FAILURES ===================================
+____________________ test_words_split_on_any_whitespace_run ____________________
+
+    def test_words_split_on_any_whitespace_run():
+>       assert count_words('a  b\tc \t d\n') == 4
+E       AssertionError: assert 5 == 4
+E        +  where 5 = count_words('a  b\tc \t d\n')
+
+tests/test_wordcount.py:17: AssertionError
+________________ test_words_split_across_lines_and_blank_lines _________________
+
+    def test_words_split_across_lines_and_blank_lines():
+>       assert count_words('a\n\n   \nb c') == 3
+E       AssertionError: assert 8 == 3
+E        +  where 8 = count_words('a\n\n   \nb c')
+
+tests/test_wordcount.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_words_split_on_any_whitespace_run - Asse...
+FAILED tests/test_wordcount.py::test_words_split_across_lines_and_blank_lines
+2 failed, 5 passed in 0.01s
+--- output: mutant 4 ---
+FF.....                                                                  [100%]
+=================================== FAILURES ===================================
+_____________________ test_count_words_skips_comment_lines _____________________
+
+    def test_count_words_skips_comment_lines():
+>       assert count_words('# note\nhello world\n') == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = count_words('# note\nhello world\n')
+
+tests/test_wordcount.py:5: AssertionError
+____________________ test_indented_comment_line_is_skipped _____________________
+
+    def test_indented_comment_line_is_skipped():
+>       assert count_words('   \t# note here\nhello\n') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = count_words('   \t# note here\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_skips_comment_lines - Assert...
+FAILED tests/test_wordcount.py::test_indented_comment_line_is_skipped - Asser...
+2 failed, 5 passed in 0.01s
+--- output: mutant 5 ---
+.F.....                                                                  [100%]
+=================================== FAILURES ===================================
+____________________ test_indented_comment_line_is_skipped _____________________
+
+    def test_indented_comment_line_is_skipped():
+>       assert count_words('   \t# note here\nhello\n') == 1
+E       AssertionError: assert 4 == 1
+E        +  where 4 = count_words('   \t# note here\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_indented_comment_line_is_skipped - Asser...
+1 failed, 6 passed in 0.01s

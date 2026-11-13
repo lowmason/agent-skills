@@ -1,0 +1,96 @@
+{
+  "fixture": "F5",
+  "rep": 4,
+  "rep_dir": "/tmp/mt-rep-4oNmE3",
+  "base": "d1d987210b0db7a402c6f09e2d5ee27792ef2bed",
+  "prompt_sha256": "0e8641c715f3fba5d1f81c2ea001dec102ea2b4ce298088557d412fa6726d37b",
+  "claude_exit": 0,
+  "wall_seconds": 28,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-4oNmE3/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 27449,
+    "total_cost_usd": 0.1088407,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 3749,
+        "cacheReadInputTokens": 77947,
+        "cacheCreationInputTokens": 15883,
+        "webSearchRequests": 0,
+        "costUSD": 0.1088407,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 345,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 15883,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've finished the work and am writing up the report now. Nothing else is pending.\n\n- **Status:** DONE\n- **Commits:**\n  - `8b45e4d` Add parse_duration\n  - `a8e50ad` Test multi-digit duration parts\n- **Tests:** 26/26 passing, output pristine (the 22 plan tests plus 4 new multi-digit cases). Mutants: caught 9, survived 0, invalid 0.\n- **Concerns:** none. No plan test conflicts with the spec. The extra multi-digit test is a new test; the plan tests are unchanged.\n- **Report:** `/tmp/mt-rep-4oNmE3/repo/.sdd/plan/task-1-report.md`",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-4oNmE3/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -a; cat plan.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-4oNmE3/repo; cat specs/duration.md; cat .gitignore; mkdir -p tests\ncat > tests/test_duration.py <<'EOF'\nimport pytest\n\nfrom duration import parse_duration\n\n\n@pytest.mark.parametrize('text, seconds', [\n    ('2h', 7200),\n    ('15m', 900),\n    ('40s', 40),\n    ('1h2m3s', 3723),\n    ('1h30m', 5400),\n    ('5m10s', 310),\n    ('1h5s', 3605),\n    ('05m', 300),\n    ('0h0m0s', 0),\n])\ndef test_parse_duration_returns_seconds(text, seconds):\n    result = parse_duration(text)\n    assert result == seconds\n    assert type(result) is int\n\n\n@pytest.mark.parametrize('text', [\n    '',\n    '30m1h',\n    '1h1h',\n    '90',\n    '1h30',\n    'h',\n    '1d',\n    '1H',\n    '\u0661h',  # an Arabic-Indic digit one, not an ASCII digit\n    '+1h',\n    ' 1h',\n    '1h 30m',\n    '1h\\n',\n])\ndef test_parse_duration_rejects_other_text(text):\n    with pytest.raises(ValueError):\n        parse_duration(text)\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-4oNmE3/repo\ncat > duration.py <<'EOF'\nimport re\n\n_DURATION = re.compile(r'(?:([0-9]+)h)?(?:([0-9]+)m)?(?:([0-9]+)s)?')\n\n\ndef parse_duration(text: str) -> int:\n    \"\"\"Return the number of seconds in a duration such as '1h30m'.\"\"\"\n    match = _DURATION.fullmatch(text)\n    if match is None or not text:\n        raise ValueError(f'invalid duration: {text!r}')\n    hours, minutes, seconds = (int(part) if part else 0 for part in match.groups())\n    return hours * 3600 + minutes * 60 + seconds\nEOF\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -3\ngit add duration.py tests/test_duration.py; git commit -qm \"Add parse_duration\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-4oNmE3/repo\ncat >> tests/test_duration.py <<'EOF'\n\n\n@pytest.mark.parametrize('text, seconds', [\n    ('12h', 43200),\n    ('100h', 360000),\n    ('123m4s', 7384),\n    ('10h20m30s', 37230),\n])\ndef test_parse_duration_multi_digit_parts(text, seconds):\n    assert parse_duration(text) == seconds\nEOF\nW=.sdd/plan\nmut(){ n=$1; shift; sed -i '' \"$@\" duration.py; git diff -- duration.py > $W/task-1-mutant-$n.patch; git checkout -- duration.py; wc -l < $W/task-1-mutant-$n.patch; }\nmut 1 's/(\\[0-9\\]+)h/([0-9])h/'\nmut 2 's/(\\[0-9\\]+)m/([0-9])m/'\nmut 3 's/(\\[0-9\\]+)s/([0-9])s/'\nmut 4 's/\\[0-9\\]/\\\\d/g'\nmut 5 's/ or not text//'\nmut 6 's/hours \\* 3600/hours * 60/'\nmut 7 's/minutes \\* 60/minutes * 3600/'\nmut 8 's/fullmatch/match/'\nmut 9 's/(?:(\\[0-9\\]+)m)?(?:(\\[0-9\\]+)s)?/(?:([0-9]+)s)?(?:([0-9]+)m)?/'\ngit add tests; git commit -qm \"Test multi-digit duration parts\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/duration.md:7 | each part alone (h, m, s) | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | parts combined, parts skipped | test_parse_duration_returns_seconds |\n| specs/duration.md:7 | multi-digit and leading-zero n | test_parse_duration_multi_digit_parts, test_parse_duration_returns_seconds |\n| specs/duration.md:7 | non-ASCII digit | test_parse_duration_rejects_other_text |\n| specs/duration.md:7 | wrong order, repeated part | test_parse_duration_rejects_other_text |\n| specs/duration.md:7 | no part (empty) | test_parse_duration_rejects_other_text |\n| specs/duration.md:9 | trailing/leading garbage, whitespace, sign, case, unit-less | test_parse_duration_rejects_other_text |\n| specs/duration.md:8 | seconds value, int type | test_parse_duration_returns_seconds |\n\n## Mutants\n\nMutant 1: specs/duration.md:7, test_parse_duration_multi_digit_parts \u2014 hours accept one digit only \u2014 task-1-mutant-1.patch\nMutant 2: specs/duration.md:7, test_parse_duration_multi_digit_parts \u2014 minutes accept one digit only \u2014 task-1-mutant-2.patch\nMutant 3: specs/duration.md:7, test_parse_duration_multi_digit_parts \u2014 seconds accept one digit only \u2014 task-1-mutant-3.patch\nMutant 4: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 \\d accepts non-ASCII digits \u2014 task-1-mutant-4.patch\nMutant 5: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 empty text accepted as 0 \u2014 task-1-mutant-5.patch\nMutant 6: specs/duration.md:8, test_parse_duration_returns_seconds \u2014 hours multiplied by 60 \u2014 task-1-mutant-6.patch\nMutant 7: specs/duration.md:8, test_parse_duration_returns_seconds \u2014 minutes multiplied by 3600 \u2014 task-1-mutant-7.patch\nMutant 8: specs/duration.md:9, test_parse_duration_rejects_other_text \u2014 match instead of fullmatch allows trailing text \u2014 task-1-mutant-8.patch\nMutant 9: specs/duration.md:7, test_parse_duration_rejects_other_text \u2014 m and s order swapped in the pattern \u2014 task-1-mutant-9.patch\nEOF\ngit status --short\n/tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_duration.py"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-4oNmE3/repo\ncat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\n\nImplemented `parse_duration` in `duration.py` (regex `fullmatch` with ASCII `[0-9]+` parts, rejects empty text) and `tests/test_duration.py` (plan tests verbatim plus a new multi-digit test).\n\nTDD\n- RED: `pytest -q tests/test_duration.py` -> ImportError: cannot import name 'parse_duration' from 'duration'.\n- GREEN: `pytest -q` -> 22 passed (plan tests); 26 with the added multi-digit test.\n\nMutants: /private/tmp/mt-rep-4oNmE3/repo/.sdd/plan/task-1-mutants.log \u2014 caught 9, survived 0, invalid 0.\n\nFiles: duration.py, tests/test_duration.py (+ .sdd/plan mutant files).\nCommits: 8b45e4d Add parse_duration; second commit adds multi-digit test (aimed at one-digit-only hour mutant).\nSelf-review: no spec/plan-test conflicts; no concerns.\nEOF\ngit log --oneline | head -3; git status --short"
+      }
+    }
+  ],
+  "commits": [
+    "a8e50ad Test multi-digit duration parts",
+    "8b45e4d Add parse_duration"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

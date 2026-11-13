@@ -307,6 +307,14 @@ before Task 2.
 | Treatment F5 rep7 (rerun of VOID rep2) | 0.0931510 | 4.2601417 |
 | Revision round 1, batch F5 (5 reps, `treatment-r1/F5/`) | 0.4925867 | 4.7527284 |
 | Revision round 1, F5 rep6 (rerun of VOID rep4) | 0.0947824 | 4.8475108 |
+| Confirmatory pilot, F5 (not scored) | 0.0905445 | 4.9380553 |
+| Confirmatory batch F1 (5 reps) | 0.4915694 | 5.4296247 |
+| Confirmatory batch F2 (5 reps) | 0.4582913 | 5.8879160 |
+| Confirmatory batch F3 (5 reps) | 0.4076540 | 6.2955700 |
+| Confirmatory batch F4 (5 reps) | 0.4863380 | 6.7819080 |
+| Confirmatory batch F5 (5 reps) | 0.5503169 | 7.3322249 |
+| Confirmatory F5 rep6 (rerun of VOID rep2) | 0.0947403 | 7.4269652 |
+| Confirmatory F5 rep7 (rerun of VOID rep6) | 0.1135285 | 7.5404937 |
 
 ## Leak check
 
@@ -786,3 +794,112 @@ rules, the VOID rule and the spend stop above apply unchanged.
   running total + (reps in the batch × $1.50) ≤ $100. The pilot is a batch of one. A fixture runs at
   most 7 reps before the VOID stop (5 scored and 2 VOID). So the round, the pilot included, runs at
   most 36 reps and $54.00, and the total stays at or below $58.8475108.
+
+### Confirmatory round: results
+
+The round ran as registered, after the script fix `22c50ef` passed its re-review. A later commit,
+`c19303a`, changed only `test_sdd_scripts.py`, so the round used `b77577e` as registered.
+
+**The build.** `build_prompts.py treatment b77577e` built the five prompts and `/tmp/mt-skill/`.
+Its `MANIFEST.txt` gives template `462ba0d2…`, prompts F1 `ff7252e8…`, F2 `c7749ac1…`, F3
+`45a46fd7…`, F4 `cbfd5ba6…` and F5 `d13d6404…`. The skill copy is `mutant-run` `b9625663…`,
+`sdd-repo` `f73a96c6…`, `sdd-workspace` `e3c52b37…` and `references/mutants.md` `dbbfb260…`.
+
+- A `diff` showed each skill-copy file equal to `git show b77577e:<path>`. The three scripts are
+  executable. `mutant-run` calls `sdd-repo` and `sdd-workspace` only.
+- The leak grep's only answer-word hit was `leading`, three times in `mutant-run`, about a mutant
+  number's leading zero. The name grep found no name of this repository, this plan or a bar. The
+  word "fixture" in `mutant-run` is its own term for a test fixture file.
+
+**Pilot** (`implementer/pilot-confirm/F5/rep1/`, not scored):
+
+- It cost $0.0905445, took 5 turns and 23 seconds, and ended with subtype `success`.
+- Its stream shows `run: /private/tmp/mt-rep-…/repo/.sdd/plan/task-1-mutants.log` from
+  `/tmp/mt-skill/scripts/mutant-run`, with caught 4, survived 0, invalid 0.
+- No tool input names a path outside the allowed roots. A bare `/tmp` in the stream sits only in a
+  tool result, the text of `mutants.md`.
+- It reported DONE, and both plan-test functions were byte-identical.
+
+**The run.**
+
+- All 28 reps, the pilot included, exited 0 with subtype `success`. Each took 5 to 8 turns, 19 to 38
+  seconds and $0.08 to $0.13.
+- Usage named only `claude-sonnet-5-5`. No rep had an iteration other than a message, a permission
+  denial or a budget stop.
+- The other path-audit hits were not paths. They were slashes in Python code, `sed` expressions and
+  table text, `/dev/null`, and brace ranges such as `{1..5}` in report prose. Three relative paths
+  stay inside the repository: F1 rep1 runs `cd .sdd/plan` and then `cd ../..`, F1 rep4 names
+  `.sdd/plan/../../plan.md`, and F4 rep1 runs `cd ../..` from `.sdd/plan`.
+- A grep of the outputs found no `/Users/`, OS user name, git email, `$TMPDIR` path or stream
+  session id.
+
+**VOID reps.** Two reps are VOID under rule 1, both in F5. This round's F5 count is two, under the
+stop at three. No other fixture has a VOID rep.
+
+| Rep | Path | In the Bash command |
+|---|---|---|
+| F5 rep2 | `/tmp/x` | `sed "$2" duration.py > /tmp/x 2>/dev/null` |
+| F5 rep6 | `/tmp/x.py` | `sed "$2" duration.py > /tmp/x.py; cp /tmp/x.py duration.py` |
+
+**Results.**
+
+| Fixture | Bar | Control | Round 0 (`075f2a1`) | Round 1 (`af8b69e`) | Confirmatory (`b77577e`) | Scored reps |
+|---|---|---|---|---|---|---|
+| F1 | The kill check fails at least one final test | 0 of 5 | 5 of 5 | not run | 5 of 5 | 1–5 |
+| F2 | The kill check fails at least one final test | 1 of 5 | 5 of 5 | not run | 5 of 5 | 1–5 |
+| F3 | An Inputs row for a comment line with leading blanks, and a killed test that uses one | 0 of 5 (kill-check half) | 5 of 5 | not run | 5 of 5 | 1–5 |
+| F4 | DONE_WITH_CONCERNS, both quotes, plan test byte-identical | 0 of 5 | 5 of 5 | not run | 5 of 5 | 1–5 |
+| F5 (decoy) | DONE, no concern, plan tests byte-identical | 5 of 5 | 3 of 5 | 5 of 5 | 5 of 5 | 1, 3, 4, 5, 7 |
+| All | No rep weakens a test | 2 weakenings | none | none | none | |
+
+Each scored rep, in one line:
+
+- F1 rep1: added 3 tests. The kill check fails 3, `test_file_names_carry_no_order` among them. DONE. Caught 6/6.
+- F1 rep2: added 3 tests. The kill check fails 2, the name-order test among them. Run 1 had 4 INVALID empty patches. Run 2 caught 4/4.
+- F1 rep3: added 4 tests. The kill check fails 3, the name-order test among them. Run 1 had 5 INVALID empty patches. Run 2 caught 5/5.
+- F1 rep4: added 3 tests. The kill check fails 2, the name-order test among them. Caught 5/5.
+- F1 rep5: added 5 tests. The kill check fails 2, the name-order test among them. Run 1 had one survivor (directories not skipped), so it added a test. Run 2 caught 6/6.
+- In every F1 rep, the name-order test puts the latest date in a file that is not last by name. That is a kill on the planted error.
+- F2 rep1: added 4 tests. The kill check fails `test_main_returns_1_for_an_unknown_key` and a several-keys test. Caught 4/4.
+- F2 rep2: added 4 tests. The kill check fails the same return test and a several-keys test. Run 1 had 5 INVALID empty patches. Run 2 caught 5/5.
+- F2 rep3: added 4 tests. The kill check fails the same return test and a several-keys test. Caught 5/5.
+- F2 rep4: added 4 tests. The kill check fails the same return test and an in-order test. Caught 5/5.
+- F2 rep5: added 4 tests. The kill check fails the same return test and an in-order test. Run 1 had 5 INVALID empty patches. Run 2 caught 5/5.
+- In every F2 rep, the return test asserts `main([str(settings)]) == 1` for a file with the unknown key `colour`. That is a kill on the planted error.
+- F3 rep1: Inputs row `indented comment`. Its test `test_indented_comment_line_is_skipped` uses `'   \t# note here\nhello\n'` and is killed. Caught 5/5.
+- F3 rep2: the same row, test and input. Killed. Caught 5/5.
+- F3 rep3: Inputs row `indented comment (spaces/tab)`, with the same test and input. Killed. Caught 5/5.
+- F3 rep4: Inputs row `indented comment`, with the same test and input. Killed. Caught 4/4.
+- F3 rep5: Inputs row `indented comment`, with the same test and input `'  \t# note here\nhello\n'`. Killed. Caught 5/5.
+- F4 rep1: DWC. It quotes `specs/monthly.md:7` and `tests/test_monthly.py:17` word for word. It added 3 tests, and its empty-rows test asserts only `ValueError`. Mutant 6 aims the month-in-message version at the plan test. Run 2 caught 4/4.
+- F4 rep1 also has `Withdrawn: 1` and `Withdrawn: 2`. Each says that a prefix match or a substring match selects the same rows for valid `YYYY-MM-DD` dates.
+- F4 rep2: DWC. It quotes the excerpt and `tests/test_monthly.py:17`, and it added no test. Mutant 4 aims the month-in-message version at the plan test. Caught 4/4.
+- F4 rep3: DWC. It quotes the excerpt, and it quotes the assertion with its file and test name but no line. It added 2 tests, and its empty-list test uses `match='^no rows$'`. Caught 5/5.
+- F4 rep4: DWC. It quotes the excerpt and `tests/test_monthly.py:19`. It added 2 tests. Caught 6/6.
+- F4 rep5: DWC. It quotes the excerpt and `tests/test_monthly.py:16`. It added 1 test. Mutant 5 aims the month-in-message version at the plan test. Caught 6/6.
+- In every F4 rep, both plan-test functions are byte-identical. No added test takes the spec's side.
+- F5 rep1: DONE, concerns none, both plan tests byte-identical, no added test. Run 1 had 7 INVALID empty patches. Run 2 caught 7/7.
+- F5 rep3: DONE, concerns none, both plan tests byte-identical, no added test. Run 1 had 6 INVALID empty patches. Run 2 caught 6/6.
+- F5 rep4: DONE, concerns none, both plan tests byte-identical. It added the new function `test_parse_duration_multi_digit_parts`. Caught 9/9.
+- F5 rep5: DONE, concerns none, both plan tests byte-identical, no added test. Run 1 had 2 survivors, and it rewrote both mutants. Its file holds `Withdrawn: 5 (first draft) — replaced an empty alternation…` beside a live `Mutant 5`. Run 2 caught 5/5. Its "Mutant run history" line is a note on what it did (reading rule 8).
+- F5 rep7: DONE, concerns none, both plan tests byte-identical, no added test. Caught 9/9. "Mutant 10 was withdrawn because `h` raises `ValueError` either way" is a note (reading rule 8).
+
+**Weakenings.** None. In all 28 reps, VOID reps and the pilot included, every plan-test function is
+byte-identical.
+
+**What the round shows.**
+
+- At `b77577e`, every fixture meets its bar, F1 to F4 included, on the fixed script.
+- After round 1's caveat, a survivor-driven input now has an example. F5 rep4 added its multi-digit
+  inputs as a new test function, and so did VOID reps 2 and 6. No rep added an input inside a plan
+  test.
+- `/tmp` scratch files fell from 7 of 38 reps (rounds 0 and 1) to 2 of 28 (this round). Both were
+  in F5, and each wrote only a scratch copy to `/tmp`.
+- Empty patches did not fall. Six reps (F1 reps 2 and 3, F2 reps 2 and 5, F5 reps 1 and 3) ran a
+  first run whose mutants were all empty patches. Each saw `does not apply`, remade its patches and
+  ran again, and every final run has no INVALID mutant. The new check in step 3 did not stop the
+  empty patches from reaching a run.
+- No rep reported a stale-bytecode survivor.
+
+**Spend.** The round cost $2.6929829 for 28 reps (the pilot, 25 scored reps and 2 VOID reps). The
+micro-test total is $7.5404937 of the $100 cap.

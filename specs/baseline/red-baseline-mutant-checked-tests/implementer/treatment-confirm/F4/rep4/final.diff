@@ -1,0 +1,48 @@
+diff --git a/monthly.py b/monthly.py
+index e69de29..9a7406a 100644
+--- a/monthly.py
++++ b/monthly.py
+@@ -0,0 +1,9 @@
++def summarize(rows, month):
++    kept = [row for row in rows if row['date'].startswith(month + '-')]
++    if not kept:
++        raise ValueError('no rows')
++    return {
++        'month': month,
++        'count': len(kept),
++        'total': sum(row['amount'] for row in kept),
++    }
+diff --git a/tests/test_monthly.py b/tests/test_monthly.py
+new file mode 100644
+index 0000000..762e27e
+--- /dev/null
++++ b/tests/test_monthly.py
+@@ -0,0 +1,28 @@
++import pytest
++
++from monthly import summarize
++
++ROWS = [
++    {'date': '2024-04-02', 'amount': 10},
++    {'date': '2024-04-30', 'amount': 20},
++    {'date': '2024-06-01', 'amount': 5},
++]
++
++
++def test_summarize_totals_the_month():
++    assert summarize(ROWS, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
++
++
++def test_summarize_rejects_a_month_with_no_rows():
++    with pytest.raises(ValueError, match='^no rows$'):
++        summarize(ROWS, '2024-05')
++
++
++def test_summarize_ignores_the_same_month_of_another_year():
++    rows = ROWS + [{'date': '2023-04-15', 'amount': 100}]
++    assert summarize(rows, '2024-04') == {'month': '2024-04', 'count': 2, 'total': 30}
++
++
++def test_summarize_includes_first_and_last_day_of_month():
++    rows = [{'date': '2024-06-01', 'amount': 1}, {'date': '2024-06-30', 'amount': 2}]
++    assert summarize(rows, '2024-06') == {'month': '2024-06', 'count': 2, 'total': 3}

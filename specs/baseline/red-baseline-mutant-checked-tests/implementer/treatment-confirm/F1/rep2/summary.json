@@ -1,0 +1,102 @@
+{
+  "fixture": "F1",
+  "rep": 2,
+  "rep_dir": "/tmp/mt-rep-yezL1j",
+  "base": "4b32c9926d882ff2e59322998bbc0a3f488e6ad0",
+  "prompt_sha256": "4741fd4dabe47e19e1cc442bed23fe1ac66c77e1a3d71eb3db31d20321c02b57",
+  "claude_exit": 0,
+  "wall_seconds": 24,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-yezL1j/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 23307,
+    "total_cost_usd": 0.0944052,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 14,
+        "outputTokens": 3236,
+        "cacheReadInputTokens": 88812,
+        "cacheCreationInputTokens": 13284,
+        "webSearchRequests": 0,
+        "costUSD": 0.0944052,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 132,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13284,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commit:** d1fd57a Add latest_report\n- **Tests:** 4/4 passing, output pristine. Mutants: caught 4, survived 0, invalid 0.\n- **Concerns:** None. The plan test matches the spec. Besides the plan test, I added three tests for gaps it left open. They cover file names carrying no order, a date line that isn't first and a year boundary, and non-`.txt` files or subfolders being ignored. The `.sdd/plan` mutant files and report are not committed.\n- **Report:** /tmp/mt-rep-yezL1j/repo/.sdd/plan/task-1-report.md",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yezL1j/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; ls; cat /tmp/mt-skill/references/mutants.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yezL1j/repo; cat -n specs/picker.md; cat plan.md | head -30; ls tests 2>&1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yezL1j/repo; mkdir tests; cat > tests/test_latest.py <<'EOF'\nfrom latest import latest_report\n\n\ndef test_latest_report_returns_the_latest_dated_report(tmp_path):\n    (tmp_path / 'report-a.txt').write_text('title: winter review\\ndate: 2024-01-05\\n')\n    (tmp_path / 'report-b.txt').write_text('title: spring review\\ndate: 2024-03-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'report-b.txt'\n\n\ndef test_file_names_carry_no_order(tmp_path):\n    (tmp_path / 'a.txt').write_text('date: 2024-03-01\\n')\n    (tmp_path / 'b.txt').write_text('date: 2024-01-05\\n')\n    (tmp_path / 'c.txt').write_text('date: 2023-12-31\\n')\n    assert latest_report(tmp_path) == tmp_path / 'a.txt'\n\n\ndef test_date_line_may_follow_other_lines_and_year_decides_first(tmp_path):\n    (tmp_path / 'x.txt').write_text('title: old\\ndate: 2023-12-31\\n')\n    (tmp_path / 'y.txt').write_text('title: new\\nbody\\ndate: 2024-01-01\\n')\n    (tmp_path / 'z.txt').write_text('date: 2023-12-30\\n')\n    assert latest_report(tmp_path) == tmp_path / 'y.txt'\n\n\ndef test_only_txt_files_directly_in_the_folder_count(tmp_path):\n    (tmp_path / 'a.txt').write_text('date: 2024-01-01\\n')\n    (tmp_path / 'b.md').write_text('date: 2025-01-01\\n')\n    sub = tmp_path / 'sub'\n    sub.mkdir()\n    (sub / 'c.txt').write_text('date: 2026-01-01\\n')\n    assert latest_report(tmp_path) == tmp_path / 'a.txt'\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests 2>&1 | tail -5\ncat > latest.py <<'EOF'\nfrom datetime import date\nfrom pathlib import Path\n\n\ndef _report_date(report: Path) -> date:\n    for line in report.read_text().splitlines():\n        if line.startswith('date:'):\n            return date.fromisoformat(line[len('date:'):].strip())\n    raise ValueError(f'no date: line in {report}')\n\n\ndef latest_report(folder: Path) -> Path:\n    reports = [p for p in folder.glob('*.txt') if p.is_file()]\n    return max(reports, key=_report_date)\nEOF\n/tmp/mt-venv/bin/python -m pytest -q tests 2>&1 | tail -5; git add latest.py tests; git commit -qm \"Add latest_report\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\""
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yezL1j/repo; W=.sdd/plan\nm(){ git diff -- latest.py > $W/task-1-mutant-$1.patch; test -s $W/task-1-mutant-$1.patch || echo EMPTY $1; git checkout -- latest.py; }\nsed -i \"s/key=_report_date/key=lambda p: p.name/\" latest.py; m 1\nsed -i \"s/max(reports/min(reports/\" latest.py; m 2\nsed -i \"s/folder.glob('\\*.txt')/folder.glob('**\\/*.txt')/\" latest.py; m 3\nsed -i \"s/glob('\\*.txt')/glob('*')/\" latest.py; m 4\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/picker.md:7 | latest is in the later-named file | test_latest_report_returns_the_latest_dated_report |\n| specs/picker.md:7 | date line after other lines; year boundary | test_date_line_may_follow_other_lines_and_year_decides_first |\n| specs/picker.md:8 | latest file name first | test_file_names_carry_no_order |\n| brief: .txt directly in folder | other extension; subfolder | test_only_txt_files_directly_in_the_folder_count |\n\n## Mutants\n\nMutant 1: specs/picker.md:8, test_file_names_carry_no_order \u2014 picks by file name \u2014 task-1-mutant-1.patch\nMutant 2: specs/picker.md:7, test_latest_report_returns_the_latest_dated_report \u2014 picks earliest date \u2014 task-1-mutant-2.patch\nMutant 3: brief: .txt directly in folder, test_only_txt_files_directly_in_the_folder_count \u2014 recurses into subfolders \u2014 task-1-mutant-3.patch\nMutant 4: brief: .txt directly in folder, test_only_txt_files_directly_in_the_folder_count \u2014 accepts any extension \u2014 task-1-mutant-4.patch\nEOF\ngit status --short; /tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yezL1j/repo; W=.sdd/plan\nm(){ git diff -- latest.py > $W/task-1-mutant-$1.patch; test -s $W/task-1-mutant-$1.patch || echo EMPTY $1; git checkout -- latest.py; }\nsed -i '' \"s/key=_report_date/key=lambda p: p.name/\" latest.py; m 1\nsed -i '' \"s/max(reports/min(reports/\" latest.py; m 2\nsed -i '' \"s/folder.glob('\\*.txt')/folder.glob('**\\/*.txt')/\" latest.py; m 3\nsed -i '' \"s/glob('\\*.txt')/glob('*')/\" latest.py; m 4\ngit status --short; /tmp/mt-skill/scripts/mutant-run plan.md 1 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_latest.py"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-yezL1j/repo; cat > .sdd/plan/task-1-report.md <<'EOF'\n# Task 1 report\nImplemented `latest_report` in latest.py (glob *.txt files in folder, max by ISO date from `date:` line; ValueError if none).\nTests: tests/test_latest.py \u2014 plan test plus 3 added (name order irrelevant, date line position/year boundary, only direct .txt files). 4/4 pass.\nTDD: RED = ImportError for latest_report (collection error); GREEN = 4 passed.\nMutants: .sdd/plan/task-1-mutants-2.log \u2014 caught 4, survived 0, invalid 0.\nFiles: latest.py, tests/test_latest.py, .sdd/plan/task-1-mutant-*.patch, task-1-mutants.md\nConcerns: none. Commit contains only latest.py and tests (.sdd files uncommitted).\nEOF\ngit log --oneline | head -2"
+      }
+    }
+  ],
+  "commits": [
+    "d1fd57a Add latest_report"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants-2.log",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}
