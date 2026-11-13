@@ -1399,6 +1399,40 @@ def test_mutant_run_marks_a_hung_mutant_invalid_after_its_time_limit(calc):
     assert (calc / 'calc.py').read_text() == CALC
 
 
+# A suite that sends itself SIGINT or SIGQUIT, as build/cc_guide/test_probes.py
+# does, needs both at their defaults. The last test checks that the command
+# stays in mutant-run's process group, so a signal sent to that group still
+# reaches it, and the hung-mutant test's group check still covers it.
+SIGNALS_TEST = '''import os
+import signal
+
+
+def test_sigint_raises_keyboard_interrupt():
+    assert signal.getsignal(signal.SIGINT) is signal.default_int_handler
+
+
+def test_sigquit_is_at_its_default():
+    assert signal.getsignal(signal.SIGQUIT) == signal.SIG_DFL
+
+
+def test_the_command_shares_the_callers_process_group():
+    assert os.getpgrp() == int(os.environ['EXPECT_PGID'])
+'''
+
+
+def test_mutant_run_starts_its_command_with_sigint_and_sigquit_at_their_defaults(calc):
+    # A non-interactive bash starts a background job with SIGINT and SIGQUIT
+    # ignored, so without a reset such a suite fails its baseline.
+    (calc / 'test_signals.py').write_text(SIGNALS_TEST)
+    git('add', 'test_signals.py', cwd=calc)
+    git('commit', '-qm', 'signals', cwd=calc)
+    make_mutant(calc, 1, *A)
+    env = {**PY_ENV, 'EXPECT_PGID': str(os.getpgrp())}
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, 'test_signals.py', cwd=calc, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
+
+
 def test_mutant_run_keeps_dotted_task_ids_apart(calc):
     make_mutant(calc, 1, *A, task='2')
     make_mutant(calc, 1, *S, task='2.1')

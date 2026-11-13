@@ -56,10 +56,23 @@
 # script waits on, so a TERM, INT or HUP is handled at once: the command's
 # process tree is killed, the applied patch is reversed, the marker is
 # removed, and the script exits 143, 130 or 129 with no run file. As a
-# background job, the command reads /dev/null as stdin and runs with SIGINT
-# and SIGQUIT ignored; a suite that needs either fails its baseline. Every git
-# call runs from the top of the working tree, so a patch applies from any
-# subdirectory.
+# background job, the command reads /dev/null as stdin. It stays in the
+# script's process group, so a signal sent to that group reaches it too.
+#
+# A non-interactive bash starts a background job with SIGINT and SIGQUIT
+# ignored, and `trap - INT QUIT` in the job sets them back on bash 5 but not
+# on bash 3.2. So perl sets both to their defaults and then runs the command
+# in its own place, and a suite that needs either one passes here as it does
+# in the foreground. Not `set -m`: it would move the command into a process
+# group of its own, out of reach of a signal sent to the script's group. Not
+# `env --default-signal`: it is GNU-only. perl ships with macOS, where shasum
+# is itself a perl script, and with Debian and Ubuntu as an essential
+# package. A command that cannot start exits 127 when it is not found and
+# 126 otherwise, as under bash. Without perl on PATH, every run exits 127,
+# the baseline first, with an output that names perl.
+#
+# Every git call runs from the top of the working tree, so a patch applies
+# from any subdirectory.
 #
 # Run file: task-<N>-mutants.log for a task's first run, task-<N>-mutants-<K>.log
 # for run K = 2, 3 and so on (the smallest K whose file does not exist). It is
@@ -292,6 +305,14 @@ sh_quote() {
   printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
 }
 
+# Perl code that sets SIGINT and SIGQUIT to their defaults and then runs its
+# arguments as a command, searching PATH, in perl's place. When that fails it
+# exits as bash would: 127 for a command not found, 126 for any other reason.
+default_signals='$SIG{INT} = $SIG{QUIT} = "DEFAULT";
+exec { $ARGV[0] } @ARGV;
+print STDERR "mutant-run: $ARGV[0]: $!\n";
+exit($!{ENOENT} ? 127 : 126);'
+
 # Run the test command with its output in file $1 and a time limit of $2
 # seconds (0: none). The JUnit report goes to $1.xml, a path that does not
 # exist before the run. Set run_rc to the command's exit status and timed_out
@@ -303,18 +324,15 @@ run_command() {
   addopts="${PYTEST_ADDOPTS:+$PYTEST_ADDOPTS }--junitxml=$(sh_quote "$out.xml")"
   run_rc=0
   timed_out=false
-  # set +e and the explicit exit keep a missing command's status 127: under
-  # set -e, bash 3.2's subshell reports 1 for it.
   # PYTHONDONTWRITEBYTECODE: a timestamp .pyc is checked only by its source's
   # whole-second mtime and size, so a mutant's bytecode written in the second
   # of its reverse would load for the next mutant, and for every later run.
+  # The subshell becomes perl, which becomes the command (see the header).
   (
-    set +e
     PYTEST_ADDOPTS=$addopts
     PYTHONDONTWRITEBYTECODE=1
     export PYTEST_ADDOPTS PYTHONDONTWRITEBYTECODE
-    "${test_cmd[@]}"
-    exit $?
+    exec perl -e "$default_signals" -- "${test_cmd[@]}"
   ) < /dev/null > "$out" 2>&1 &
   cmd_pid=$!
   if [ "$limit" -gt 0 ]; then
