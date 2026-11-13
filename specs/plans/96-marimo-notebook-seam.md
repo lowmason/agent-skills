@@ -53,6 +53,7 @@
 - **D5** (owner, plan review, 2026-11-13): "But can we PR the spec and plan before execution?", asked after D4. The branch is pushed and the spec and plan go to `main` in their own PR. Execution runs after that PR merges, on a new branch. This replaces D2's "not pushed" for the spec and plan. Applied in: Global Constraints (Branch).
 - **D6** (owner, plan review, 2026-11-13): "Please see the Copilot PR review issues." and "Also make sure to run a Codex re-review on the changes before pushing the updated PR." The plan takes all six of Copilot's findings on lowmason/agent-skills#196: both separator spellings in the leak-check names and the check after `git add`, no root-`notebooks/` notebook in the scratch section, a formatter caveat with its check, the spec kept live at completion, and the guard bullet in the "Not caught" list. A Codex review reads the change before it is pushed. Applied in: Global Constraints (Leak check, Completion), Tasks 1, 3 and 4, C2, C14, C15.
 - **D7** (owner, plan review, 2026-11-13): "Add two pointers (Recommended)" and "Add application test (Recommended)", in answer to two findings of the Codex review of `54bebc5` that touched approved calls C8 and C10. CONVERT now also appears in the DELETE rule and in Prioritization. Task 2 opens with an application test, and C10's earlier reason (the spec names no test) is withdrawn. The same review's two other findings, a `.git` file in the leak check and `force-exclude` for the formatter exclude, are plan-level fixes. Applied in: Global Constraints (Leak check), Tasks 2 and 3, C8, C10, C15.
+- **D8** (owner, plan review, 2026-11-13): "Amend the recipe (Recommended)", with the five steps shown, in answer to the Codex review of `d3f7c39`. That review found, and a scratch test confirmed, that `marimo convert` overwrites an existing target without asking and keeps no saved output, while `marimo check` runs no cell. The convert recipe gains a target check and a run-and-compare step before the delete. The same review's third finding, that `git mv` fails on an untracked notebook, is a plan-level fix in C7. Applied in: Task 2, C6, C7, Task 5 (spec amendment).
 
 ## Builder's calls
 
@@ -63,8 +64,8 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 - **C3.** The register gets a new kind, `kit`, and `claude-md` stays as it is. The kit README is a guide for people, not a loaded `CLAUDE.md`, so `claude-md-size` and that kind's description do not fit it. The new kind takes the four `claude-md` sections that govern text pasted into a `CLAUDE.md`. (Task 3)
 - **C4.** The kit README keeps step 4, "Paste the notebook block", as a stub that says the block is not written yet. Plan B replaces the stub's text, so the step numbers hold. (Task 3)
 - **C5.** The kit README also gives the `ruff.toml` form of the table, and says to merge the line into an existing table (Review Focus 4 and 5). (Task 3)
-- **C6.** The convert steps call marimo through `uvx` (`uvx marimo convert`, `uvx marimo check`), so they work whether or not marimo is a project dependency. The spec writes `marimo convert`. (Task 2)
-- **C7.** The scratch bullet also covers the new signal: a marimo `.py` notebook outside `notebooks/` needs no convert. It is moved with `git mv` into `notebooks/` when worth keeping. The spec gives that signal no action. (Task 2)
+- **C6.** The convert steps call marimo through `uvx` (`uvx marimo convert`, `uvx marimo check`), so they work whether or not marimo is a project dependency. The spec writes `marimo convert`. The run step uses `uv run --with marimo`, because the cells need the project's own dependencies (D8). (Task 2)
+- **C7.** The scratch bullet also covers the new signal: a marimo `.py` notebook outside `notebooks/` needs no convert. It is moved into `notebooks/` when worth keeping, with `git mv` when git tracks it and `mv` when it does not, because the scan lists untracked files too. The spec gives that signal no action. (Task 2)
 - **C8.** The DELETE vs HARDEN headline stays at `SKILL.md:40`, `:55-57` and `:215`. CONVERT is an outcome of the scratch-notebook bullet (designer's call 6), and two pointers carry it into the decision: the DELETE rule (`:127-132`) names it as the one exception, and Prioritization (`:166`) scores CONVERT items too (D7). `scan.sh:5-6` and `:179` name it for scratch notebooks. (Task 2)
 - **C9.** The backlog example gains a new CONVERT row after `:194`, and the `scratchpad.ipynb` row stays. (Task 2)
 - **C10.** Task 2 opens with an application test, because writing-skills' Iron Law asks for a failing test before any skill edit (D7). Two scenarios, 3 reps each, run on the current skill and again after the edit. There is no no-guidance control arm, because tech-debt is a technique skill, not a discipline skill. (Task 2)
@@ -87,6 +88,7 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 | `NOTICE` | the kit's paragraph | 3 |
 | `specs/plans/96-marimo-notebook-seam.md` | the result lines of Task 2's application test and Task 3's snippet check | 2, 3 |
 | `hooks/README.md` (and `build/cc_guide/baseline.json` if the restamp changes it) | two additions, restamp | 4 |
+| `specs/marimo-notebook-seam.md` | A3's convert steps (spec amendment, D8) | 5 |
 
 ---
 
@@ -309,8 +311,8 @@ done
 ```
 
 Expected: `rep1 exit=0` to `rep3 exit=0` for each scenario. Read each reply by hand (`jq -r .result out/s1-before/rep1.json`) and score it:
-- S1 passes when the reply converts the notebook with marimo into `notebooks/`, runs `marimo check`, and deletes the `.ipynb`.
-- S2 passes when the reply moves the file into `notebooks/` (`git mv`) and does not convert it.
+- S1 passes when the reply converts the notebook with marimo into `notebooks/`, runs `marimo check`, runs the new notebook and compares its outputs with the saved ones, and deletes the `.ipynb` only when they match.
+- S2 passes when the reply moves the file into `notebooks/` (`git mv`, or `mv` for an untracked file) and does not convert it.
 
 Expected before the edit: S1 passes in fewer than 3 of 3 reps, because the skill has no CONVERT outcome yet. Note both counts for Step 8. If S1 already passes 3 of 3, note that and keep the edit, because spec A3 requires the outcome.
 
@@ -324,14 +326,15 @@ The "What you're grepping for" cell keeps its `.ipynb` names and adds a marimo `
 
 - [ ] **Step 4: Rewrite the scratch bullet (`:151-153`)**
 
-The bullet keeps HARDEN for load-bearing logic (the model imports from it, or its output cannot be reproduced without it) and DELETE for doodles. Between them, it adds CONVERT for an `.ipynb` that is not load-bearing but is worth keeping as an analysis record. CONVERT has four numbered steps (C6):
+The bullet keeps HARDEN for load-bearing logic (the model imports from it, or its output cannot be reproduced without it) and DELETE for doodles. Between them, it adds CONVERT for an `.ipynb` that is not load-bearing but is worth keeping as an analysis record. CONVERT has five numbered steps (C6, D8):
 
-1. `uvx marimo convert <name>.ipynb -o notebooks/<name>.py`
-2. `uvx marimo check notebooks/<name>.py`
-3. Fix each cell it reports. A cell of notes that is not Python becomes a markdown cell, or goes.
-4. Delete the `.ipynb`.
+1. Choose `notebooks/<name>.py` as the target. If that file exists, pick another name, because `marimo convert` overwrites it without asking.
+2. `uvx marimo convert <name>.ipynb -o notebooks/<name>.py`
+3. `uvx marimo check notebooks/<name>.py`. Fix each cell it reports. A cell of notes that is not Python becomes a markdown cell, or goes.
+4. `uv run --with marimo marimo export html notebooks/<name>.py -o /tmp/<name>.html`. This runs the notebook. Compare its outputs with the outputs saved in the `.ipynb`, because `marimo convert` drops saved outputs and `marimo check` runs no cell.
+5. Delete the `.ipynb` only when the outputs match. Otherwise keep it, and log the gap as a backlog row.
 
-Last, one sentence for C7: a marimo `.py` notebook outside `notebooks/` needs no convert. Move it with `git mv` into `notebooks/` when it is worth keeping, else DELETE it. The text names no `templates/` path and no marimo version.
+Last, one sentence for C7: a marimo `.py` notebook outside `notebooks/` needs no convert. Move it into `notebooks/` when it is worth keeping (`git mv` when git tracks it, else `mv`), else DELETE it. The text names no `templates/` path and no marimo version.
 
 - [ ] **Step 5: Carry CONVERT into the DELETE rule and Prioritization (C8)**
 
@@ -341,7 +344,7 @@ Last, one sentence for C7: a marimo `.py` notebook outside `notebooks/` needs no
 - [ ] **Step 6: Add the backlog row after `:194`**
 
 ```markdown
-| `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `uvx marimo convert` into `notebooks/`, `uvx marimo check`, then delete the `.ipynb` |
+| `Untitled3.ipynb` beside `src/` (no dependents, a finding worth keeping) | Reproducibility | Low | S | CONVERT: `uvx marimo convert` into `notebooks/`, `uvx marimo check`, run it and compare its outputs, then delete the `.ipynb` |
 ```
 
 - [ ] **Step 7: Name CONVERT in `scan.sh`'s header comment (`:5-6`) and closing line (`:179`)**
@@ -389,8 +392,9 @@ feat(tech-debt): add a convert outcome for scratch notebooks
 
 A scratch .ipynb that holds no load-bearing logic but is worth keeping
 as an analysis record now has a third outcome beside HARDEN and DELETE.
-CONVERT turns it into a marimo notebook in notebooks/ and checks it.
-A marimo notebook outside notebooks/ moves there when it is worth keeping.
+CONVERT turns it into a marimo notebook in notebooks/, checks and runs
+it, and deletes the .ipynb only when the outputs match. A marimo
+notebook outside notebooks/ moves there when it is worth keeping.
 Two pointers carry CONVERT into the DELETE rule and Prioritization. An
 application test ran on the skill before and after the edit.
 
@@ -728,3 +732,73 @@ EOF
 Replace the `Co-Authored-By` placeholder with the session's trailer before you run the commit.
 
 `git add` of an unchanged `baseline.json` stages nothing, which is correct.
+
+---
+
+### Task 5: Amend the spec's convert recipe (D8)
+
+**Files:**
+- Modify: `specs/marimo-notebook-seam.md:184-187` (A3's convert steps)
+
+**Interfaces:**
+- Consumes: the five convert steps that Task 2 wrote into the tech-debt skill, in the same order.
+- Produces: nothing later tasks use.
+
+- [ ] **Step 1: Replace A3's convert steps**
+
+Old text, the match key (two-space indent):
+
+```markdown
+  1. Run `marimo convert <name>.ipynb -o notebooks/<name>.py`.
+  2. Run `marimo check` on the result.
+  3. Fix each cell it reports. A cell of notes that is not Python becomes a markdown cell or goes (F10).
+  4. Delete the `.ipynb`.
+```
+
+New text:
+
+```markdown
+  1. Choose `notebooks/<name>.py` as the target. If that file exists, pick another name, because `marimo convert`
+     overwrites it without asking.
+  2. Run `marimo convert <name>.ipynb -o notebooks/<name>.py`.
+  3. Run `marimo check` on the result. Fix each cell it reports. A cell of notes that is not Python becomes a
+     markdown cell or goes (F10).
+  4. Run the new notebook and compare its outputs with the outputs saved in the `.ipynb`. `marimo convert` drops
+     saved outputs, and `marimo check` runs no cell.
+  5. Delete the `.ipynb` only when the outputs match. Otherwise keep it, and log the gap as a backlog row.
+
+  *(Steps amended: owner, plan 96, 2026-11-13.)*
+```
+
+The spec's status line does not change.
+
+- [ ] **Step 2: Check the amendment**
+
+- `git diff --stat specs/marimo-notebook-seam.md`: one file, only the A3 lines.
+- `head -3 specs/marimo-notebook-seam.md | grep -c 'APPROVED (2026-11-13)'`: `1`.
+
+- [ ] **Step 3: Commit**
+
+Stage the file, then run the leak check on what is staged:
+
+```bash
+git add specs/marimo-notebook-seam.md
+git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt
+```
+
+Expected: no output. If it prints a line, reword it, stage again and rerun the check. Then commit:
+
+```bash
+git commit -F - <<'EOF'
+docs(specs): amend the marimo seam's convert recipe (plan 96, D8)
+
+The convert recipe now checks that its target is free, because marimo
+convert overwrites an existing file, and runs the new notebook before
+the .ipynb is deleted, because convert drops saved outputs and marimo
+check runs no cell.
+
+Co-Authored-By: <the session's trailer>
+EOF
+```
+
+Replace the `Co-Authored-By` placeholder with the session's trailer before you run the commit.
