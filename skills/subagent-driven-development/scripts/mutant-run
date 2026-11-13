@@ -17,13 +17,19 @@
 #      patch text, so a later run can reverse it even when the patch file is
 #      gone. A run killed with a patch applied leaves the marker behind, and
 #      the next run reverses that patch first and notes it in its run file.
-#   2. Refuse a tree that `git status --porcelain --untracked-files=normal`
+#   2. Check BASE. It must resolve to a commit
+#      (`git rev-parse --verify --quiet "<BASE>^{commit}"`) that is an ancestor
+#      of HEAD (a BASE equal to HEAD is allowed). The run file records its
+#      full sha. This runs after the recovery, which never needs BASE, so a
+#      bad BASE never leaves a killed run's patch applied, and before the
+#      dirty-tree refusal.
+#   3. Refuse a tree that `git status --porcelain --untracked-files=normal`
 #      lists anything for, so a reverse can never undo a person's edit.
-#   3. Stop when a patch reverses cleanly (`git apply -R --check`): it is
+#   4. Stop when a patch reverses cleanly (`git apply -R --check`): it is
 #      already in HEAD, so a mutant reached a commit.
-#   4. Run the baseline. A failing baseline stops the run before any patch,
+#   5. Run the baseline. A failing baseline stops the run before any patch,
 #      because every mutant would then look caught.
-#   5. Each patch. One that touches a test or fixture file (test_*.py,
+#   6. Each patch. One that touches a test or fixture file (test_*.py,
 #      *_test.py, conftest.py, *.test.*, *.spec.*, or a path under a tests/,
 #      test/ or fixtures/ directory) is INVALID and never applied, and so is
 #      one that `git apply --check` refuses. Otherwise the script writes the
@@ -86,6 +92,7 @@
 #   mutant-run: Task <N>, run <K>
 #   command: <the command, rendered the way a person would type it>
 #   head: <the full sha of HEAD>
+#   base: <the full sha of BASE>
 #   tree: clean
 #   result: caught <c>, survived <s>, invalid <i>
 #   note: reversed <patch file name>, left applied by a killed run
@@ -101,14 +108,17 @@
 # failing baseline writes the header through the note, with "result: baseline
 # failed, exit <n>", then "--- output: baseline ---" and its output only.
 #
-# Usage: mutant-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]
+# Usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
 #   TASK_NUMBER is a task ID in task-brief's grammar, as test-run takes it.
+#   BASE is the task's base commit, as task-done takes it: any name git
+#   resolves to a commit, a short sha included.
 # stdout: the result line, each mutant line, then "run: <absolute path of the
 #   run file>" last. A failing baseline prints the last 5 lines of its output,
 #   then the result line, then the run line. A refusal prints no run line.
 # Exit: 0 when every mutant is CAUGHT; 1 when any is SURVIVED or INVALID; 2 for
-#   bad arguments, a bad task or mutant number, a dirty tree, no mutants, a
-#   mutant already in HEAD, or a tree the script could not restore; 3 for a
+#   bad arguments, a bad task or mutant number, a BASE that is not a commit or
+#   not an ancestor of HEAD, a dirty tree, no mutants, a mutant already in
+#   HEAD, or a tree the script could not restore; 3 for a
 #   failing baseline; 143, 130 or 129 after TERM, INT or HUP, once the applied
 #   patch is reversed. sdd-repo's and sdd-workspace's exit 2 pass through.
 #
@@ -116,14 +126,15 @@
 # executor. executing-plans' task-done reads the run file and never runs it.
 set -euo pipefail
 
-if [ $# -lt 4 ] || [ "$3" != "--" ]; then
-  echo "usage: mutant-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]" >&2
+if [ $# -lt 5 ] || [ "$4" != "--" ]; then
+  echo "usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
   exit 2
 fi
 
 plan=$1
 n=$2
-shift 3
+base=$3
+shift 4
 test_cmd=("$@")
 sdd="$(cd "$(dirname "$0")" && pwd)"
 
@@ -264,7 +275,18 @@ if [ -e "$marker" ]; then
   fi
 fi
 
-# 2. Refuse a dirty tree.
+# 2. Check BASE: a commit, and an ancestor of HEAD. The recovery never needs
+# it, so it ran first. base_sha is the full sha the run file records.
+if ! base_sha=$(git -C "$top" rev-parse --verify --quiet "$base^{commit}"); then
+  echo "mutant-run: bad BASE: $base" >&2
+  exit 2
+fi
+if ! git -C "$top" merge-base --is-ancestor "$base_sha" HEAD; then
+  echo "mutant-run: HEAD is not a descendant of BASE $base" >&2
+  exit 2
+fi
+
+# 3. Refuse a dirty tree.
 changed=$(git -C "$top" status --porcelain --untracked-files=normal)
 if [ -n "$changed" ]; then
   echo "mutant-run: the working tree has changed or untracked paths; commit or remove them first, so that no reverse can undo them:" >&2
@@ -272,7 +294,7 @@ if [ -n "$changed" ]; then
   exit 2
 fi
 
-# 3. Find the patches, in K order.
+# 4. Find the patches, in K order.
 ks=
 for f in "$dir/task-$n-mutant-"*.patch; do
   [ -e "$f" ] || continue
@@ -461,7 +483,7 @@ $py_files
 EOF
 }
 
-# 4. Baseline.
+# 5. Baseline.
 base_out=$(mktemp "$dir/mutant-run.XXXXXX")
 start=$SECONDS
 run_command "$base_out" 0
@@ -490,6 +512,7 @@ write_header() {
   printf 'mutant-run: Task %s, run %s\n' "$n" "$run_k"
   printf 'command: %s\n' "$cmd"
   printf 'head: %s\n' "$head_sha"
+  printf 'base: %s\n' "$base_sha"
   printf 'tree: clean\n'
   printf '%s\n' "$result"
   [ -z "$note" ] || printf '%s\n' "$note"
@@ -518,7 +541,7 @@ else
   limit=$((10 * base_secs + 60))
 fi
 
-# 5. Each patch.
+# 6. Each patch.
 caught=0
 survived=0
 invalid=0
@@ -597,7 +620,7 @@ EOF
   mutant_lines+=("mutant $k: $verdict exit $status sha256 $sha$detail")
 done
 
-# 6. Write the run file.
+# 7. Write the run file.
 result="result: caught $caught, survived $survived, invalid $invalid"
 next_run_file
 {
@@ -624,7 +647,7 @@ rm -f "$base_out" ${ran_outs[@]+"${ran_outs[@]}"}
 printf '%s\n' "$result" "${mutant_lines[@]}"
 echo "run: $run_file"
 
-# 7. Exit.
+# 8. Exit.
 if [ "$survived" -eq 0 ] && [ "$invalid" -eq 0 ]; then
   exit 0
 fi

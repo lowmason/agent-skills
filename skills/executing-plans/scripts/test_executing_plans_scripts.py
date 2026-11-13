@@ -615,7 +615,7 @@ def test_task_done_accepts_a_run_that_mutant_run_wrote(repo):
     assert patch
     git('checkout', '--', 'calc.py', cwd=repo)
     (workspace(repo) / 'task-1-mutant-1.patch').write_text(patch)
-    mutants = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    mutants = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
     assert mutants.returncode == 0, mutants.stdout + mutants.stderr
     write_mutants(repo, [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
