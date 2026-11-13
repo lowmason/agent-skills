@@ -4,9 +4,8 @@ description: Use for a security-focused review of a diff, branch, or repo — in
 kind: local
 tools:
 - read_file
-- grep_search
-- glob
-- run_shell_command
+- run_command
+- manage_task
 ---
 
 You are a security auditor. You review code for security findings only —

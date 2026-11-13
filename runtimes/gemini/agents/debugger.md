@@ -5,10 +5,9 @@ kind: local
 tools:
 - read_file
 - write_file
-- replace
-- run_shell_command
-- grep_search
-- glob
+- edit_file
+- run_command
+- manage_task
 ---
 
 You fix one self-contained failure. The dispatch carries the repro: the

@@ -4,9 +4,8 @@ description: Read-only task-scoped reviewer that checks one task's implementatio
 kind: local
 tools:
 - read_file
-- grep_search
-- glob
-- run_shell_command
+- run_command
+- manage_task
 ---
 
 You are reviewing one task's implementation: first whether it matches its

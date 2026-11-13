@@ -24,7 +24,9 @@ manages none, so --copy needs old copies removed first. It checks every
 destination before writing, so a conflict leaves nothing half-installed.
 --check installs nothing. It lists the links in the runtime's directories that
 point into this repository at a source that is gone, as a renamed, archived or
-removed skill leaves them, and exits 1 when it finds any. It never removes one.
+removed skill leaves them. It also lists every link into this repository left
+in a directory the runtime no longer installs into (for gemini, ~/.gemini/commands
+and ~/.gemini/agents). It exits 1 when it finds any. It never removes one.
 '''
 from __future__ import annotations
 
@@ -85,7 +87,14 @@ USER_RULES: dict[str, tuple[str, ...]] = {
 RUNTIME_DIRECTORIES: dict[str, tuple[str, ...]] = {
   'claude': ('.claude/skills', '.claude/agents', '.claude/commands', '.claude/rules'),
   'codex': ('.agents/skills', '.codex/agents'),
-  'gemini': ('.agents/skills', '.gemini/agents', '.gemini/commands'),
+  'gemini': ('.gemini/config/skills', '.gemini/config/agents'),
+}
+
+# Directories a runtime once installed into and no longer does. --check reports
+# every link into this repository left there, dangling or not, since a live one
+# can shadow the item at its new place. The gemini runtime moved to agy in 2026-11.
+RETIRED_DIRECTORIES: dict[str, tuple[str, ...]] = {
+  'gemini': ('.gemini/commands', '.gemini/agents'),
 }
 
 # .gitignore's generic entries, fixed here, for --copy where git keeps none of
@@ -170,6 +179,14 @@ def file_items(source_dir: Path, suffix: str, destination_dir: Path) -> list[Ins
   ]
 
 
+def folder_items(source_dir: Path, destination_dir: Path) -> list[InstallItem]:
+  return [
+    InstallItem(source, destination_dir / source.name)
+    for source in sorted(source_dir.iterdir())
+    if source.is_dir()
+  ]
+
+
 def runtime_items(
   runtime: str,
   home: Path,
@@ -196,13 +213,15 @@ def runtime_items(
     )
     command_items = []
   elif runtime == 'gemini':
-    skill_root = home / '.agents' / 'skills'
+    # Antigravity CLI (agy), Gemini CLI's successor, reads global skills from
+    # ~/.gemini/config/skills, and a skill is its slash command, so the command
+    # adapters are skills there too. Its main agent dispatches an agent from
+    # ~/.gemini/config/agents but not from ~/.gemini/agents (agy 1.5.7, probed).
+    skill_root = home / '.gemini' / 'config' / 'skills'
     agent_items = file_items(
-      runtimes / 'gemini' / 'agents', '.md', home / '.gemini' / 'agents'
+      runtimes / 'gemini' / 'agents', '.md', home / '.gemini' / 'config' / 'agents'
     )
-    command_items = file_items(
-      runtimes / 'gemini' / 'commands', '.toml', home / '.gemini' / 'commands'
-    )
+    command_items = folder_items(runtimes / 'gemini' / 'skills', skill_root)
   else:
     raise InstallError(f'unsupported runtime: {runtime}')
   skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]
@@ -335,16 +354,16 @@ def repo_roots() -> list[Path]:
   return roots
 
 
-def dangling_links(runtime: str, home: Path) -> list[tuple[Path, Path]]:
-  '''The links in the runtime's directories that point into this repository at a
-  source that is gone, each with the path it points at.
+def runtime_scope(
+  directories: dict[str, tuple[str, ...]], runtime: str
+) -> dict[str, tuple[str, ...]]:
+  '''The runtime's entries of a directory table, or every runtime's for all.'''
+  return directories if runtime == 'all' else {runtime: directories.get(runtime, ())}
 
-  plan() visits only the repository's current items, so a link left by a renamed,
-  archived or removed skill, or one into a removed worktree, never reaches it.
-  '''
-  by_runtime = (
-    RUNTIME_DIRECTORIES if runtime == 'all' else {runtime: RUNTIME_DIRECTORIES[runtime]}
-  )
+
+def repo_links(home: Path, by_runtime: dict[str, tuple[str, ...]]) -> list[tuple[Path, Path]]:
+  '''The links in these directories that point into this repository, each with
+  the path it points at, once per physical entry.'''
   roots = repo_roots()
   seen: set[Path] = set()
   found: list[tuple[Path, Path]] = []
@@ -358,30 +377,64 @@ def dangling_links(runtime: str, home: Path) -> list[tuple[Path, Path]]:
         if location in seen or not entry.is_symlink():
           continue
         seen.add(location)
-        if entry.exists():
-          continue
         try:
           target = entry.resolve()
-        except (OSError, RuntimeError):  # a symlink loop is not a gone source
+        except (OSError, RuntimeError):  # a symlink loop points nowhere
           continue
         if any(target.is_relative_to(root) for root in roots):
           found.append((entry, target))
   return found
 
 
+def dangling_links(runtime: str, home: Path) -> list[tuple[Path, Path]]:
+  '''The links in the runtime's directories that point into this repository at a
+  source that is gone, each with the path it points at.
+
+  plan() visits only the repository's current items, so a link left by a renamed,
+  archived or removed skill, or one into a removed worktree, never reaches it.
+  '''
+  links = repo_links(home, runtime_scope(RUNTIME_DIRECTORIES, runtime))
+  return [(link, target) for link, target in links if not link.exists()]
+
+
+def retired_links(runtime: str, home: Path) -> list[tuple[Path, Path]]:
+  '''Every link into this repository left in a directory the runtime no longer
+  installs into, each with the path it points at. A link that a retired directory
+  only shows through an alias of an active one is the active link, so it stays.'''
+  active = {
+    physical_location(link)
+    for link, _ in repo_links(home, runtime_scope(RUNTIME_DIRECTORIES, runtime))
+  }
+  links = repo_links(home, runtime_scope(RETIRED_DIRECTORIES, runtime))
+  return [(link, target) for link, target in links if physical_location(link) not in active]
+
+
+def link_noun(count: int) -> str:
+  return 'link' if count == 1 else 'links'
+
+
 def check_links(runtime: str, home: Path) -> int:
-  found = dangling_links(runtime, home)
-  for link, target in found:
+  dangling = dangling_links(runtime, home)
+  retired = retired_links(runtime, home)
+  for link, target in dangling:
     print(f'dangling {link} -> {target}')
-  if not found:
+  for link, target in retired:
+    print(f'retired {link} -> {target}')
+  if not dangling and not retired:
     print('ok: no link into this repository is broken')
     return 0
-  noun = 'link' if len(found) == 1 else 'links'
-  print(
-    f'install: {len(found)} dangling {noun} into this repository; '
-    'install never removes a link, so delete each stale one with rm',
-    file=sys.stderr,
-  )
+  if dangling:
+    print(
+      f'install: {len(dangling)} dangling {link_noun(len(dangling))} into this repository; '
+      'install never removes a link, so delete each stale one with rm',
+      file=sys.stderr,
+    )
+  if retired:
+    print(
+      f'install: {len(retired)} {link_noun(len(retired))} into this repository in a '
+      'directory this runtime no longer installs into; delete each one with rm',
+      file=sys.stderr,
+    )
   return 1
 
 
