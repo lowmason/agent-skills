@@ -12,7 +12,7 @@
 
 ## Owner review (answer at plan review)
 
-These two defaults come from the handoff brief. The owner's answers become D1 and D2 under Decisions.
+F1 and F2 are defaults from the handoff brief. C2 and C3 (under Calls) depart from the spec's text, so each needs the owner's approval and a spec amendment (Task 1 Step 1). The owner's answers become D1 to D4 under Decisions.
 
 - **F1. Wait for plan 94: default yes.** The spec requires the two plans to run one at a time but fixes no order (`specs/branch-explainer.md:303-305`). Plan 94 (`specs/plans/94-copilot-pr-review-loop.md` on `refs/heads/claude/kind-kapitsa-bfb904`, approved) waits for plan 93 itself. Its body counts and its diff-stat check (its lines 19 and 40) assume a base at `af378ac`. Yes adds Base and order below, the refused-removal move (Task 4), and the body counts that start at 19,555. If "yes" is wrong, this plan waits behind plans 93 and 94 for nothing. If the answer is no, drop the wait and Task 4. The body then starts at 19,009, and plan 94's executor must stop and ledger at its own base.
 - **F2. Live run after retirement: default yes.** Task 7 runs the new Step 3b on this plan's own branch, in the shape of plan 94's Task 8. It has no checkboxes and runs after the Plan Completion Protocol's retire commit. Only then does `BASE..HEAD` add a plan under `specs/plans/completed/`, so only then does the plan-branch rule fire (`specs/branch-explainer.md:138-141`). It is a check beside the probe, not a pass bar. If "yes" is wrong, it costs one extra Opus subagent run. If "no" is wrong, no real branch checks the step.
@@ -77,7 +77,7 @@ These two defaults come from the handoff brief. The owner's answers become D1 an
 
 ### Cost (spec, owner-approved gate)
 
-The basis: plan 73's tool-using Opus sessions cost $0.35 to $1.96 (`specs/baseline/red-baseline-reviewer-planning-contract/f1/runs/`). An adjudicator prompt is 200 to 260 KB, about 50,000 to 65,000 tokens. Prompt caching cuts the cost of reps 2 and 3 on a fixture.
+The basis: plan 73's tool-using Opus sessions cost $0.35 to $1.96 (`specs/baseline/red-baseline-reviewer-planning-contract/f1/runs/`). An adjudicator prompt is 200 to 260 KB, about 50,000 to 65,000 tokens. The table counts every adjudicator as uncached. The pilot measures an uncached one, and each round's estimate uses the measured mean costs, with no assumed cache discount.
 
 | Item | Runs | Each (estimate) | Total |
 |---|---|---|---|
@@ -86,10 +86,10 @@ The basis: plan 73's tool-using Opus sessions cost $0.35 to $1.96 (`specs/baseli
 | Treatment round 0 | 9 each | $1.75, $0.05, $0.40 | about $20 |
 | Each wording round | 9 each | the same | about $20 |
 | Held-out (`p84`) | 3 each | the same | about $7 |
-| Micro-test (Sonnet, decision-only) | about 45 | $0.08 | about $4 |
+| Micro-test (Sonnet, decision-only) | about 60 | $0.08 | about $5 |
 | VOID reruns | — | — | about $5 |
 
-Expected: about **$58** with no wording round, and about **$98** with both. **Stops:** ask the owner when pilots and control together pass **$35**, or when spend plus the next step's estimate would pass **$120** for the plan. **The owner confirms the spend before the first `claude -p` call** (Task 2 Step 1). The cost pilot then replaces the estimate.
+Expected: about **$59** with no wording round, and about **$99** with both. **Stops:** ask the owner when pilots and control together pass **$35**, or when spend plus the next step's estimate would pass **$120** for the plan. **The owner confirms the spend before the first `claude -p` call** (Task 2 Step 1). The cost pilot then replaces the estimate.
 
 ### Mutant step and who runs what
 
@@ -101,9 +101,9 @@ Expected: about **$58** with no wording round, and about **$98** with both. **St
 
 The spec leaves these to the builder (Left to the builder) or does not settle them. The owner may overturn any of them at plan review.
 
-- **C1. Held-out fixture: plan 84.** It must have a spec, a plan and a history entry, and be of a kind other than the three tuning fixtures: a script plus skill text (80), hook code plus tests (90), mostly skill text (92). Plans 82, 87, 88, 89 and 91 have `Spec: none`. Plans 81 and 83 are probe-only branches whose diffs are 297,000 and 2,230,000 inserted lines of probe records. Plan 85 changes only derive-roadmap's skill text, which is fixture 92's kind. Plan 84 alone changes one contract across surfaces: an agent definition (`agents/task-reviewer.md`), its generated Codex and Gemini adapters, SDD prompt templates and references, and a new bash helper with tests.
-- **C2. Isolated fixture repositories, not worktrees.** A worktree shares every ref of this repository, so `git branch -a` or `git log --all` from a rep would show this plan's branches (isolation Channel 1). The kit runs `git init`, fetches only the head's full sha, sets `main` to `BASE`, detaches `HEAD` at the head and deletes `.git/FETCH_HEAD`, which names this repository's path. A planning test of this recipe on `p92` found only `refs/heads/main`, 15 commits in `main..HEAD`, and no commit subject that holds "explainer".
-- **C3. Two references, not one.** `references/branch-explainer-prompt.md` holds only the writer brief, and the subagent reads only that file. `references/branch-explainer.md` holds Step 3b's procedure for the finishing session. The spec says the procedure lives in the prompt file (Constraints, Compaction window). The split keeps finishing-session text out of the writer's context. The probe's treatment arm then reads exactly the bytes that ship.
+- **C1. Held-out fixture: plan 84.** It must have a spec, a plan and a history entry, and be of a kind other than the three tuning fixtures: a script plus skill text (80), hook code plus tests (90), mostly skill text (92). Plans 82, 86, 87, 88, 89 and 91 have `Spec: none`. Plans 81 and 83 are probe-only branches whose diffs are 297,000 and 2,230,000 inserted lines of probe records. Plan 85 changes only derive-roadmap's skill text, which is fixture 92's kind. Plan 84 alone changes one contract across surfaces: an agent definition (`agents/task-reviewer.md`), its generated Codex and Gemini adapters, SDD prompt templates and references, and a new bash helper with tests.
+- **C2. Isolated fixture repositories, not worktrees (a spec departure: amended in Task 1 Step 1 on approval).** The spec says "a detached worktree". A worktree shares every ref of this repository, so `git branch -a` or `git log --all` from a rep would show this plan's branches (isolation Channel 1). The kit runs `git init`, fetches only the head's full sha, sets `main` to `BASE`, detaches `HEAD` at the head and deletes `.git/FETCH_HEAD`, which names this repository's path. A planning test of this recipe on `p92` found only `refs/heads/main`, 15 commits in `main..HEAD`, and no commit subject that holds "explainer".
+- **C3. Two references, not one (a spec departure: amended in Task 1 Step 1 on approval).** `references/branch-explainer-prompt.md` holds only the writer brief, and the subagent reads only that file. `references/branch-explainer.md` holds Step 3b's procedure for the finishing session. The spec says the procedure lives in the prompt file (Constraints, Compaction window). The split keeps finishing-session text out of the writer's context. The probe's treatment arm then reads exactly the bytes that ship.
 - **C4. The treatment dispatch is by path.** The real dispatch tells the subagent to read the brief at its absolute path. The probe copies the round's brief to `<rep>/brief/branch-explainer-prompt.md` and sends the same dispatch text (`DISPATCH`, Task 1). No path into this repository reaches a rep.
 - **C5. The adjudicator is tool-less, with its inputs inline**, as the spec lists them: spec, plan, history entry, diff, explainer and synopsis. Its diff leaves out `specs/baseline/**`, `specs/red-baseline-*/**`, and the plan and spec files (given apart), at both their `specs/` and `completed/` paths. The full `git diff --stat=200` lists every file. Without these cuts, `p92`'s diff alone is 953 KB.
 - **C6. Models.** The reader and the adjudicator run on `claude-opus-5-5`, like the writer. The micro-test runs on `claude-sonnet-5-5`, the house micro-test model and the usual model of the execution sessions that run finishing.
@@ -114,7 +114,7 @@ The spec leaves these to the builder (Left to the builder) or does not settle th
 - **C11. The no-plan offer waits.** On a branch with no plan, Step 3b asks one line and waits for the answer, then shows the menu. It never puts the offer and the menu in one message.
 - **C12. Core principle and Red Flags mention Step 3b. Quick Reference does not:** its rows are per option, and Step 3b runs before any option.
 - **C13. The move** (F1 yes). Step 6's refused-removal detail moves to `references/refused-removal.md`. The stop and the ban on `--force` and unlock stay in the body and in Red Flags. It is a failure path, and the body's Common Mistakes pointer already sends failure detail to references. Plan 60's micro-test scenarios S5 and S6 re-run on the moved text.
-- **C14. Micro-test design.** Plan 60's decision-only template (`~/.cache/agent-skills/scratch/plan60-micro/build.py`), with the reference files that a step points to added as files already read. M1 and M2 run both arms. M3, M4, M5, S5 and S6 run the treatment only. Each needs at least 4 of 5 PASS. Pointer-following is untested here, and Task 7 covers it on a real session.
+- **C14. Micro-test design.** Plan 60's decision-only template (`~/.cache/agent-skills/scratch/plan60-micro/build.py`). M1 to M5 get `references/branch-explainer.md` as a file already read, to test the procedure's content. M6, S5 and S6 get the body only, to test that an agent opens the reference from its pointer. A Read of a reference is an allowed step, graded by what follows it. M1, M2, S5 and S6 run both arms. M3 to M6 run the treatment only. Each treatment scenario needs at least 4 of 5 PASS.
 - **C15. Briefs per round** live in the kit as `brief-r<k>.md`. The shipped brief is byte-identical to the last round's. Wording rounds change only the brief, never `DISPATCH`, the fixtures or the scoring.
 - **C16. The live run is report-only** (F2). After it, any commit to `main` falls outside this plan.
 
@@ -157,9 +157,10 @@ None.
 
 **Files:**
 - Create: `specs/baseline/red-baseline-branch-explainer/kit/kit.py`, `run_writer.sh`, `run_judges.sh`
-- Create: `specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh` (copy of `specs/baseline/red-baseline-causal-design-heldout/kit/run_reps.sh`, with the changes Step 6 lists)
+- Create: `specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh` (copy of `specs/baseline/red-baseline-causal-design-heldout/kit/run_reps.sh`, with the changes Step 7 lists)
 - Create: `specs/baseline/red-baseline-branch-explainer/kit/isolation_probe_tools.txt` (copy of `specs/baseline/red-baseline-reviewer-planning-contract/f1/isolation_probe_tools.txt`, plus line 8 below)
 - Create: `specs/baseline/red-baseline-branch-explainer.md`
+- Modify: `specs/branch-explainer.md` (the C2 and C3 amendments, Step 1)
 
 **Interfaces:**
 - Consumes: nothing.
@@ -268,11 +269,44 @@ Contradicted: none, or one line per claim: "<quoted claim>" against <file>: <wha
 Write the single word ok to the file {path}. Then reply DONE, or reply REFUSED with the reason if the write was refused.
 ```
 
-- [ ] **Step 1: Record EXEC_BASE and the fixtures' state**
+- [ ] **Step 1: Apply the spec amendments approved at plan review (C2, C3)**
+
+Each old text must match exactly once in `specs/branch-explainer.md`. Leave its Status line as it is. In the Baseline probe section, replace:
+
+```markdown
+Each fixture is a detached worktree at the branch head before the merge, with `BASE` at its merge base.
+```
+
+with:
+
+```markdown
+Each fixture is an isolated repository that holds only the history of the branch head before the merge, with
+a detached HEAD there and `BASE` at its merge base. A worktree would share every ref of this repository with
+the reps (owner, plan 95, 2026-11-13).
+```
+
+In Constraints, Compaction window, replace:
+
+```markdown
+  some of them. Step 3b in `SKILL.md` is a short pointer, at most about 400 characters, and the procedure
+  lives in the prompt file. If the two plans together pass the window, the plan that runs second moves
+```
+
+with:
+
+```markdown
+  some of them. Step 3b in `SKILL.md` is a short pointer, at most about 400 characters, and the procedure
+  lives in `references/branch-explainer.md`, beside the prompt file, so the subagent reads only the prompt
+  file (owner, plan 95, 2026-11-13). If the two plans together pass the window, the plan that runs second moves
+```
+
+Run `bash build/run_commit_lints.sh`. Expected: `commit lints passed`. Then `git add specs/branch-explainer.md` and `git commit -m "docs(specs): amend the branch explainer spec for plan 95" -m "<the session's trailer>"`.
+
+- [ ] **Step 2: Record EXEC_BASE and the fixtures' state**
 
 Create the record with a title, a Status line reading `in progress`, and EXEC_BASE from Global Constraints. Run `git merge-base --is-ancestor b414fe1 HEAD`, then `claude --version`. Expected: exit 0, then `2.1.323 (Claude Code)` or later. Write both in the record.
 
-- [ ] **Step 2: Write the selftest**
+- [ ] **Step 3: Write the selftest**
 
 `kit.py selftest` asserts each case below, prints `selftest passed`, and exits 1 on the first failure:
 
@@ -308,12 +342,12 @@ assert history_entry(f['base'], f['head'], f['plan']).startswith('## 80-developm
 
 Add an `audit_hits` case. Write a three-line stream-json file to a temp folder: an init record with `tools: ['Bash', 'Read']`, then one assistant record with three `tool_use` parts, then a `result` record with `subtype: 'success'`. The three parts are `Read` of `/tmp/plan95-rep-abc/repo/README.md`, `Read` of `/Users/x/Projects/agent-skills/specs/branch-explainer.md`, and `Bash` with `cat ~/notes.md`. With `rep_dir=Path('/tmp/plan95-rep-abc')`, assert that `outside` holds the second and third inputs and not the first, and that `void_reasons` holds `no explainer file`. Add a second assistant record with a `WebFetch` `tool_use`, and assert that `void_reasons` names `WebFetch`.
 
-- [ ] **Step 3: Run the selftest to verify it fails**
+- [ ] **Step 4: Run the selftest to verify it fails**
 
 Run: `uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py selftest`
 Expected: a non-zero exit with a `NameError` or an `AssertionError`.
 
-- [ ] **Step 4: Implement `kit.py`**
+- [ ] **Step 5: Implement `kit.py`**
 
 - `fixture`: `git init -q -b main <dest>/repo`, then `git -C <dest>/repo fetch -q --no-tags <repo root> <head>`, where `<repo root>` is `git rev-parse --show-toplevel` of the working directory (short shas fail), `update-ref refs/heads/main <base>`, `checkout -q --detach <head>`, and delete `.git/FETCH_HEAD`. It checks `git rev-list --count main..HEAD` against `commits`, and that `git for-each-ref` prints only `refs/heads/main`. It exits 2 when either check fails.
 - `writer-prompt`: control gives `CONTROL_REQUEST`, and treatment gives `DISPATCH`. Probe gives the file `isolation_probe_tools.txt`, and permcheck gives `WRITE_CHECK` with `{path}` set to `<rep>/out/check.txt`.
@@ -323,12 +357,12 @@ Expected: a non-zero exit with a `NameError` or an `AssertionError`.
 - `audit_hits`: copy `FORBIDDEN_RE` and `CD_HOME_RE` from `score_f1.py` and widen them. `outside` lists each `tool_use` input that names an absolute path not under `rep_dir`, apart from `/dev/null` and the system folders `/usr/`, `/bin/`, `/opt/`, `/Library/` and `/System/`, or that names a `~`, `$HOME` or `${HOME}` path. `void_reasons` follows C7.
 - `score`: a rep's bars are B1 to B4 from `adj/rep<N>.json`'s `.result`, read by `parse_adjudication`, and B5 from `length_bar`. A rep whose adjudication does not parse exits 2 and names the rep. Move that file to `adj/rep<N>.bad<k>.json`, run `run_judges.sh` for the rep again, and after two bad parses stop and ask.
 
-- [ ] **Step 5: Run the selftest to verify it passes**
+- [ ] **Step 6: Run the selftest to verify it passes**
 
 Run: `uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py selftest`
 Expected: `selftest passed`.
 
-- [ ] **Step 6: Write the scripts and the probe file**
+- [ ] **Step 7: Write the scripts and the probe file**
 
 - `run_plain.sh`: copy plan 91's `run_reps.sh`. Change only the temp prefix to `/tmp/plan95-plain-`, the comments to name plan 95, and add `--disable-slash-commands`.
 - `run_writer.sh` and `run_judges.sh`: as Interfaces says, with the writer command from Global Constraints. `run_writer.sh` drops `--add-dir "<rep>/out"` for `permcheck` and adds `--add-dir "<rep>/brief"` for `treatment`.
@@ -338,7 +372,7 @@ Expected: `selftest passed`.
 8. Run `git for-each-ref --format='%(refname)'` with your Bash tool and quote its whole output.
 ```
 
-- [ ] **Step 7: Build each fixture once and check the prompts for leaks**
+- [ ] **Step 8: Build each fixture once and check the prompts for leaks**
 
 For each of `p80`, `p90`, `p92` and `p84`, run `uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py fixture <name> "$(mktemp -d /tmp/plan95-fix-XXXXXX)"`. Expected: four repository paths and no exit 2. Leave the folders: they are a check only. Then write both writer prompts for `p80` with the rep folder `/tmp/plan95-rep-LEAK`:
 
@@ -351,11 +385,11 @@ uv run specs/baseline/red-baseline-branch-explainer/kit/kit.py writer-prompt tre
 
 Expected: the grep prints no line. Neither prompt tells the writer the layout or the limits, and neither names this repository's path.
 
-- [ ] **Step 8: Write the record skeleton**
+- [ ] **Step 9: Write the record skeleton**
 
 The record holds EXEC_BASE, the Claude Code version and the fixture table, with C1's argument for `p84`. It holds the kit's files, with what each copied file changed from its source. It holds every exact-copy constant, the pass rules, the VOID rule, both run commands and the cost table with its stops. It holds the known limits: one model, 3 reps per arm, a reader who is a model, not the owner, a tool-less adjudicator who sees no code outside the diff, and no `Plan branch: no` or `Spec: none` case in the probe. Empty sections follow: Pilots, Control, Treatment, Held-out, Micro-test, Spend and Verdict.
 
-- [ ] **Step 9: Commit before any live run**
+- [ ] **Step 10: Commit before any live run**
 
 Run: `bash build/run_commit_lints.sh`. Expected: `commit lints passed`.
 
@@ -378,7 +412,7 @@ git commit -m "test(specs): branch explainer probe kit and record" -m "<the sess
 
 - [ ] **Step 1: The owner confirms the spend**
 
-Ask: "Plan 95's probe is ready. The plan estimates about $58 for the live runs, or about $98 with both wording rounds. It stops to ask at $35 for pilots and control, and at $120 in all. Do you confirm the spend?" Wait. Write the answer in the record, quoted. On a no, stop.
+Ask: "Plan 95's probe is ready. The plan estimates about $59 for the live runs, or about $99 with both wording rounds. It stops to ask at $35 for pilots and control, and at $120 in all. Do you confirm the spend?" Wait. Write the answer in the record, quoted. On a no, stop.
 
 - [ ] **Step 2: Isolation probe and write check**
 
@@ -477,7 +511,9 @@ git commit -m "test(specs): branch explainer treatment rounds" -m "<the session'
 
 - [ ] **Step 1: Build the micro-test kit**
 
-Copy from `~/.cache/agent-skills/scratch/plan60-micro/`: `build.py`'s `TEMPLATE` and `fixture()` unchanged, `tools.txt` with one line added for an `Agent` tool (it starts a fresh subagent, takes `subagent_type`, `model` and `prompt`, and returns the subagent's final message), and fixtures `S5-locked.txt` and `S6-untracked.txt`. If that folder is gone, stop and ask. `build_micro.py` reads the skill body at EXEC_BASE for `control` (`git show "${EXEC_BASE}:skills/finishing-a-development-branch/SKILL.md"`) and from the working tree for `treatment`. For `treatment`, it inserts the scenario's reference files after the `</skill>` line, as `<file path="references/<name>">…</file>` blocks under the line `Reference files of the skill that you have read:`. A scenario lists its files in a `files:` header line. S5 and S6 list `refused-removal.md`. It refuses a fixture that still holds a `{redirect}` or `{noop}` marker. `GRADING.md` copies plan 60's S5 and S6 rows, word for word, from that folder's `PREREGISTRATION.md`, with the bar: treatment PASS in at least 4 of 5 reps.
+Copy from `~/.cache/agent-skills/scratch/plan60-micro/`: `build.py`'s `TEMPLATE` and `fixture()` unchanged, `tools.txt` with one line added for an `Agent` tool (it starts a fresh subagent, takes `subagent_type`, `model` and `prompt`, and returns the subagent's final message), and fixtures `S5-locked.txt` and `S6-untracked.txt`. If that folder is gone, stop and ask. `build_micro.py` reads the skill body at EXEC_BASE for `control` (`git show "${EXEC_BASE}:skills/finishing-a-development-branch/SKILL.md"`) and from the working tree for `treatment`. For `treatment`, it inserts the scenario's reference files after the `</skill>` line, as `<file path="references/<name>">…</file>` blocks under the line `Reference files of the skill that you have read:`. A scenario lists its files in a `files:` header line, and `files: none` inserts no block. S5 and S6 use `files: none`: the move's one new risk is an agent that never opens the reference, and a supplied file would hide it. It refuses a fixture that still holds a `{redirect}` or `{noop}` marker.
+
+`GRADING.md` copies plan 60's S5 and S6 rows, word for word, from that folder's `PREREGISTRATION.md`, and adds this rule for every scenario: `A TOOL Read of a file under references/ is an allowed read-only step. Grade the actions after it, IF lines included. An answer that ends at the Read, with no action after it, is NEITHER, which does not count as PASS.` The bar: treatment PASS in at least 4 of 5 reps. The control arm (EXEC_BASE, before the move) runs the same two scenarios, with no bar.
 
 - [ ] **Step 2: Commit the kit before any rep**
 
@@ -506,8 +542,8 @@ Run: `uv run --with pyyaml python build/check_conformance.py && uv run python bu
 
 - [ ] **Step 5: Re-run S5 and S6 on the moved text**
 
-Build the treatment prompts: `build_micro.py treatment ~/.cache/agent-skills/scratch/plan95/micro/t4 S5-locked S6-untracked`. Then for each: `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/treatment/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand against `GRADING.md`, and quote the words that decide each grade. A rep whose result shows a tool, an advisor iteration or a second model is VOID and is rerun.
-Expected: each scenario passes in at least 4 of 5 reps. If one does not, stop and ask: the move is the cause, since plan 60's treatment passed 5 of 5.
+Build both arms' prompts: `uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py <arm> ~/.cache/agent-skills/scratch/plan95/micro/<arm>4 S5-locked S6-untracked`, for `control` and `treatment`. Then for each prompt: `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/<arm>/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand against `GRADING.md`, and quote the words that decide each grade. A rep whose result shows a tool, an advisor iteration or a second model is VOID and is rerun.
+Expected: each treatment scenario passes in at least 4 of 5 reps. If one does not, stop and ask. Give the control's count beside it: a control that passes where the treatment does not points to the move, and a control that also misses points to text from before this plan.
 
 - [ ] **Step 6: Commit**
 
@@ -573,7 +609,7 @@ Expected: `specs/plans/completed/7-x.md` both times, then no output.
 
 - [ ] **Step 4: Write the M fixtures and grading rows, then commit them**
 
-Each fixture uses plan 60's header and situation form, with `skill: finishing-a-development-branch`, and lists `branch-explainer.md` in `files:`. Repository `/work/atlas`, today 2026-11-13. Steps 1 to 3 are done: tests passed, `aged >45d: 0`, Step 2's values recorded, and `BASE_BRANCH` is `main`. Write each fixture's facts as below. Copy each grading row into `GRADING.md` word for word. Each row passes only when every lettered part holds. Grade the branch of `IF` lines that matches the session's facts.
+Each fixture uses plan 60's header and situation form, with `skill: finishing-a-development-branch`. M1 to M5 list `branch-explainer.md` in `files:`, and M6 has `files: none`. Repository `/work/atlas`, today 2026-11-13. Steps 1 to 3 are done: tests passed, `aged >45d: 0`, Step 2's values recorded, and `BASE_BRANCH` is `main`. Write each fixture's facts as below. Copy each grading row into `GRADING.md` word for word. Each row passes only when every lettered part holds. Grade the branch of `IF` lines that matches the session's facts.
 
 | Fixture | Facts | Partner's message | PASS |
 |---|---|---|---|
@@ -582,6 +618,9 @@ Each fixture uses plan 60's header and situation form, with `skill: finishing-a-
 | `M3-refused` (treatment) | M1's facts. Step 3b dispatched, and the subagent returned: `Could not write /Users/lm/.cache/branch-explainers/atlas/2026-11-13-feat-csv-header.md: permission denied. Nothing was written.` | M1's message | (a) one line that says the explainer was not written, and why; (b) Step 4's four-option menu, word for word; (c) no second dispatch, no write of the file, and no explainer text in the conversation |
 | `M4-detached` (treatment) | Worktree `/work/atlas/.claude/worktrees/csv-header-2f1c`, MADE_BY `launcher`, detached HEAD `4be1c9a0d2e14c7a9b3f6e5d8c2a1b0f9e8d7c6b`, MAIN_ROOT `/work/atlas`, with plan 16 retired as in M1. | `Plan 16 is done. Finish this.` | (a) a dispatch before any menu, with an output path ending `branch-explainers/atlas/2026-11-13-detached-4be1c9a.md`; (b) one line that gives the path; (c) then Step 4's three-option detached-HEAD menu, word for word |
 | `M5-skip` (treatment) | M1's facts. | `Plan 16 is done and the tests pass. Finish the branch, and skip the explainer this time.` | (a) no dispatch and no offer; (b) Step 4's four-option menu, word for word |
+| `M6-pointer` (treatment, `files: none`) | M1's facts. | M1's message | (a) a `TOOL Read` of `references/branch-explainer.md` comes before any dispatch and before any menu |
+
+M6 checks that an agent opens the procedure from the roughly 300-character pointer. M1 to M5 supply the procedure as read, and check its content.
 
 Bar: each scenario passes in at least 4 of 5 treatment reps (spec, Testing). The control arms of M1 and M2 are recorded and have no bar. Run `bash build/run_commit_lints.sh`, then commit only `specs/baseline/red-baseline-branch-explainer/micro/` with `test(specs): pre-register Step 3b micro-test scenarios`. The skill edits stay uncommitted until Step 9.
 
@@ -591,7 +630,7 @@ Build the prompts:
 
 ```bash
 uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py control ~/.cache/agent-skills/scratch/plan95/micro/c5 M1-plan M2-noplan
-uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py treatment ~/.cache/agent-skills/scratch/plan95/micro/t5 M1-plan M2-noplan M3-refused M4-detached M5-skip
+uv run specs/baseline/red-baseline-branch-explainer/micro/build_micro.py treatment ~/.cache/agent-skills/scratch/plan95/micro/t5 M1-plan M2-noplan M3-refused M4-detached M5-skip M6-pointer
 ```
 
 For each prompt, run `bash specs/baseline/red-baseline-branch-explainer/kit/run_plain.sh <prompt> specs/baseline/red-baseline-branch-explainer/micro/<arm>/<scenario> 1 5 claude-sonnet-5-5 0.50`. Grade every answer by hand, with Task 4 Step 5's VOID rule, and quote the deciding words.
@@ -619,8 +658,9 @@ Insert this entry just before the blank line that precedes `    brainstorming/` 
     (https://ericmjl.github.io/blog/2026/7/24/understanding-zeitgeist-ai-code-review/).
     Neither source states a license. The three-part synopsis, the recall
     questions, the plan-branch rule and the inputs are this repository's
-    own, and both new references are original works by Lowell Mason
-    under the same MIT terms. The same plan moved Step 6's detail for a
+    own. references/branch-explainer.md and
+    references/branch-explainer-prompt.md are original works by Lowell
+    Mason under the same MIT terms. The same plan moved Step 6's detail for a
     refused worktree removal, plan 60's text with its credit to upstream
     bb92a77 above, to references/refused-removal.md, so the body stays
     inside the compaction window.
@@ -690,9 +730,8 @@ This task has no checkboxes. It runs after this plan is retired, so its outcome 
    Read <WORKTREE>/skills/finishing-a-development-branch/SKILL.md and follow that copy, not the installed one.
    At Step 3b, follow <WORKTREE>/skills/finishing-a-development-branch/references/branch-explainer.md, and dispatch with
    {brief} = <WORKTREE>/skills/finishing-a-development-branch/references/branch-explainer-prompt.md.
-   Give the owner the explainer's path, and wait for the owner to read it before Step 4.
    Codex reviewed <sha>
    ```
 
-2. **The run (fresh session).** Steps 1 to 3 run as written. At Step 3b, `BASE..HEAD` adds `specs/plans/completed/95-branch-explainer.md`, so the step dispatches with no question. Give the path in one line. The owner reads the explainer before the Step 4 pick. Steps 4 to 6 then run as the owner picks. If a permission check refuses a step, give the owner the command and wait.
+2. **The run (fresh session).** Steps 1 to 3 run as written. At Step 3b, `BASE..HEAD` adds `specs/plans/completed/95-branch-explainer.md`, so the step dispatches with no question. The path line comes first and the menu right after it, as the procedure ships. Add no wait of your own. The owner reads the explainer before answering the menu. Steps 4 to 6 then run as the owner picks. If a permission check refuses a step, give the owner the command and wait.
 3. **The report.** Give the explainer's path and word count. Say whether reading the brief or writing the file asked for permission, and what the owner answered. Name any step that failed. Add the owner's own words on whether the explainer let them state the plan, the build and what it adds, if they give any. Nothing from it is committed to `main` (C16).
