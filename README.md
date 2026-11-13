@@ -119,8 +119,7 @@ Beyond that cleanup, I rewired the planning and execution skills around the spec
 The canonical subagent definitions live in [`agents/`](agents/). Claude Code loads these files
 directly. The generated Codex TOML and Gemini Markdown adapters live under
 [`runtimes/`](runtimes/). The adapters keep the same system-prompt body and map Gemini's tool
-identifiers. They declare read-only sandboxes in Codex where required. They inherit the active
-runtime model instead of carrying Claude model names.
+identifiers. They inherit the active runtime model instead of carrying Claude model names.
 
 Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`, `Explore`, and
 `test-runner`. They keep a shell, and each runtime handles that shell differently:
@@ -128,7 +127,7 @@ Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`,
 - **Claude Code:** their `tools:` lists hold no `Write` or `Edit`. The read-only agent guard, once
   you install it (see [Hooks](#hooks)), denies Bash commands that change files or git state. The
   guard is a guardrail against drift from the contract, not a sandbox.
-- **Codex:** every adapter sets `sandbox_mode = "read-only"` except `test-runner`. Its test commands write caches (uv writes `~/.cache/uv`), and a read-only sandbox blocks that. It sets no sandbox mode and inherits the session's mode. Its contract alone keeps it from editing. A probe with `codex sandbox` on 2026-11-01 showed that both the read-only and the workspace-write modes block `~/.cache/uv`. In those modes `test-runner` can run only commands that write no cache, unless you start Codex with a wider mode.
+- **Codex:** only the contract in each agent's instructions keeps it from editing. A subagent inherits the parent session's sandbox and approval settings. The Codex docs say that a custom agent file cannot override them, so the adapters set no `sandbox_mode` (docs read on 2026-11-12, not probed). No documented agent-file key makes one agent read-only. To enforce read-only, start the parent session with `codex --sandbox read-only`. That mode also blocks uv's cache (`~/.cache/uv`), so `test-runner` cannot run the documented suites under it. A probe with `codex sandbox` on 2026-11-01 showed that the workspace-write mode blocks that cache too. In those modes `test-runner` can run only commands that write no cache, unless you start Codex with a wider mode.
 - **Gemini CLI:** each adapter lists `run_shell_command` with no restriction.
 
 | Agent | Description |
