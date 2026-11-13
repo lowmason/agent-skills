@@ -1,7 +1,8 @@
 # Branch explainer — Design Spec
 
-**Status: DRAFT (2026-11-12)** — written after brainstorming and a builder check. It waits for the owner's
-review. The next step after approval is writing-plans, in a fresh session.
+**Status: APPROVED (2026-11-13)** — the owner approved it on 2026-11-13, after brainstorming and a builder
+check. The next step is writing-plans, in a fresh session on branch
+`claude/branch-explainer-pre-merge-fde7f8`.
 
 ## What this builds
 
