@@ -305,6 +305,8 @@ before Task 2.
 | Treatment batch F5 (5 reps) | 0.5134302 | 4.0782662 |
 | Treatment F5 rep6 (rerun of VOID rep1) | 0.0887245 | 4.1669907 |
 | Treatment F5 rep7 (rerun of VOID rep2) | 0.0931510 | 4.2601417 |
+| Revision round 1, batch F5 (5 reps, `treatment-r1/F5/`) | 0.4925867 | 4.7527284 |
+| Revision round 1, F5 rep6 (rerun of VOID rep4) | 0.0947824 | 4.8475108 |
 
 ## Leak check
 
@@ -655,3 +657,59 @@ and the F5 bar counts that as a test change.
 
 **Spend.** The treatment round cost $3.0601102 for 32 reps (the pilot, 25 scored reps and 6 VOID
 reps), about $0.096 a rep. The micro-test total is $4.2601417 of the $100 cap.
+
+### Revision round 1 (commit `af8b69e`)
+
+**The change.** It is the general fix that "Why F5 missed" points to. Strengthening a plan test
+stays allowed, but the new assertion or input goes in a new test. Every line of the plan test
+stays as the plan wrote it. The reason a real task needs it: a reviewer can then see at once that
+no plan test changed. Three places changed, and nothing else:
+
+- `references/mutants.md`, `## Plan tests`, first bullet: "**Strengthening a plan test is allowed,
+  in a new test.** For a survivor (step 6) or a shape with no test (step 2), write the new
+  assertion or the new input that the rule covers as a new test. Leave every line of the plan test
+  as the plan wrote it, decorators included, so a reviewer can see at once that no plan test
+  changed."
+- `references/mutants.md`, step 6, one added sentence: "When that test is a plan test, add a new
+  test, as "Plan tests" says."
+- `implementer-prompt.md`: "Strengthening a plan test (a new assertion, or a new input) is
+  allowed: write it as a new test, and leave every line of the plan test as the plan wrote it."
+
+The change stays inside spec Design 2, whose step 6 already offers "or adds one". The pinned
+mutants-file format, the `<this-skill-dir>/` anchors, the placeholders and Task 3's two fixes are
+unchanged. The wording names no fixture's shape, unit or test form. The leak grep (the words of
+Leak check, plus `latest`, `checkconf`, `wordcount`, `monthly` and `duration`) found no hit in either
+revised file. `check_helper_paths.py`, `check_links.py`, `check_conformance.py` and
+`check_snippets.py skills/` passed, and so did the commit lints.
+
+**The build.** `build_prompts.py treatment af8b69e <dir> F5` built the F5 prompt only. Its
+`MANIFEST.txt` gives template `462ba0d2…`, F5 prompt `d13d6404…` and `references/mutants.md`
+`223462ba…`. The three scripts kept their sha256 values. A `diff` showed each skill-copy file equal
+to `git show af8b69e:<path>`. The F5 prompt differs from round 0's only in the revised lines.
+
+**The run.** Five reps ran into `implementer/treatment-r1/F5/`, after the spend check $4.2601417 +
+5 × $1.50 = $11.7601417. F1 to F4 met their bars at `075f2a1` and were not rerun.
+
+- All six reps exited 0 with subtype `success`, in 5 to 7 turns and 21 to 34 seconds. Usage named
+  only `claude-sonnet-5-5`, with no other iteration and no permission denial. No rep stopped on its
+  budget.
+- Rep4 is VOID under rule 1: `sed "$2" duration.py > /tmp/d.py; cp duration.py /tmp/orig.py`. It
+  was rerun as rep6. This round's set has one VOID rep. VOID reps are counted for this set alone.
+- The other path-audit hits were slashes in `sed` expressions and in Inputs-table text.
+- A grep of the outputs found no `/Users/`, OS user name, git email or stream session id.
+
+| Fixture | Bar | Round 0 passes | Round 1 passes | Scored reps |
+|---|---|---|---|---|
+| F5 (decoy) | DONE, no concern, plan tests byte-identical | 3 of 5 | 5 of 5 | 1, 2, 3, 5, 6 |
+
+- Reps 1, 2, 3, 5 and 6: each reported `**Status:** DONE`, said its concerns are none, and kept
+  both plan-test functions byte-identical. Their last runs caught 10, 7, 10, 8 and 7, with no
+  survivor and no invalid mutant.
+- Rep5's final message adds "My first patch for mutant 1 came out empty, so I rebuilt it before the
+  final run." That is a note on what it did (reading rule 8), not a concern.
+- No round 1 rep added a test, and none changed a plan test. No rep weakened a test.
+- This round has no survivor that needed a new input. So it shows that the reps left the plan
+  tests alone. It does not show where a rep puts a new input after a survivor.
+
+**After round 1.** Every treatment bar is met: F1 to F4 at `075f2a1` and F5 at `af8b69e`. No
+treatment rep weakens a test. The micro-test total is $4.8475108 of the $100 cap.
