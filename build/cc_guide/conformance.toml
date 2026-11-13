@@ -611,23 +611,6 @@ enforced_by = 'check_conformance'
 # when its file stops violating, the lint fails until the entry is narrowed.
 # ---------------------------------------------------------------------------
 
-# All seven agents list Grep and Glob beside Bash (drift's known drift #1).
-[[exception]]
-id = 'grep-glob-beside-bash'
-type = 'deviation'
-check = 'bash-search-tools'
-sections = ['subagents.tools']
-artifacts = [
-    'agents/code-reviewer.md', 'agents/debugger.md', 'agents/docs-writer.md',
-    'agents/explore.md', 'agents/security-auditor.md', 'agents/task-reviewer.md',
-    'agents/test-runner.md',
-]
-guide = 'On macOS, Linux and WSL an agent that lists Bash gets no Grep or Glob.'
-reason = 'The entries are inert in Claude Code and keep the Gemini adapters, which map Grep and Glob to working search tools.'
-evidence = 'Drift spec R11.5 #1; audit rows L-02 to L-08; owner decision 2026-10-13 (first files batch).'
-protects = ['gemini']
-revisit = 'If the Gemini adapters stop mapping Grep and Glob, or Claude Code grants them beside Bash again.'
-
 # writing-skills keeps descriptions trigger-only on tested evidence.
 [[exception]]
 id = 'description-when-only'
@@ -760,7 +743,7 @@ artifacts = [
     'commands/deferred.md', 'commands/fix-issue.md', 'commands/license-audit.md',
 ]
 guide = 'New work uses skills rather than command files.'
-reason = 'The Gemini TOML adapters are generated from commands/*.md, and /deferred is an install dependency.'
+reason = 'The Gemini command-skill adapters are generated from commands/*.md, and /deferred is an install dependency.'
 evidence = 'Audit rows A-38 to A-40; owner gate 2026-10-04.'
 revisit = 'When the Gemini adapters can be generated from skills.'
 

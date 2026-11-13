@@ -4,9 +4,8 @@ description: Use for reviews dispatched by the requesting-code-review skill and 
 kind: local
 tools:
 - read_file
-- grep_search
-- glob
-- run_shell_command
+- run_command
+- manage_task
 ---
 
 You are a Senior Code Reviewer with expertise in software architecture,

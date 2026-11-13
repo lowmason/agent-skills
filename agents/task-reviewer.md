@@ -1,7 +1,7 @@
 ---
 name: task-reviewer
 description: Read-only task-scoped reviewer that checks one task's implementation against its brief — spec compliance first, then code quality. Dispatched by the subagent-driven-development skill after each task; expects a task brief, an implementer report, the controller's test run and a diff file in the dispatch.
-tools: Read, Grep, Glob, Bash
+tools: Read, Bash
 model: sonnet  # task-review floor per subagent-driven-development Model Selection; the controller escalates to opus for risky/subtle diffs via an explicit dispatch override. The final whole-branch review (code-reviewer) stays opus.
 # effort: intentionally unpinned — effort follows the per-dispatch tier (SDD Model
 # Selection); a pin would only be a default, since a per-spawn effort overrides it.
