@@ -6251,6 +6251,29 @@ review and the Plan Completion gate (2026-10-27) add the others.
       that fails first. Size: quick-fix. Revisit if: a plan copies `specs/baseline/red-baseline-statement-readings/kit/`,
       as plan 83 copied plan 81's kit.
 
+## mutant-checked-tests follow-up (no plan; owner request, branch claude/backlog-base-revert-mutant) — 2026-11-12
+- [ ] **A "change reverted" mutant, so that a task's new tests must fail on the pre-change code (owner, 2026-11-12,
+      filed for after plan 93, which merged on 2026-11-13 as #198).** The controller runs a task's tests at HEAD
+      (`test-run`), but RED is only a claim in the implementer's "TDD Evidence", and nothing reruns the new tests on
+      the pre-change code. Plan 93 (`specs/plans/completed/93-mutant-checked-tests.md`, spec
+      `specs/completed/mutant-checked-tests.md`) added
+      `skills/subagent-driven-development/scripts/mutant-run`. It applies the implementer's mutant patches in place
+      and proves that a test catches each one, but it has no run at BASE. The proposal: `mutant-run` adds one mutant
+      that no agent picks, the reverse of the task's non-test diff from BASE, applied in place with the test files at
+      HEAD. A new or changed test that passes on it does not test the change. Source: the heuristic "demand a test
+      that fails on the pre-change behavior"
+      (https://ericmjl.github.io/blog/2026/7/24/understanding-zeitgeist-ai-code-review/). Plan 93 already settles the
+      mechanism (in place, never a scratch worktree), the collection-error case (a pytest collection failure or
+      internal error is INVALID, even behind a command that turns every failure into exit 1), the executing-plans
+      gate (`task-done` reads the mutant run) and the reviewer (its `## Mutants` section). Four questions stay open.
+      (1) An import inside a test body raises a test `<failure>`, which `mutant-run` reads as caught. (2) Is the
+      mutant required only for bugfix and behavior-change tasks? A revert of new code fails every test on import.
+      (3) How does the brief's BASE reach `mutant-run`? (4) What does the reviewer do with a SURVIVED revert? Not in
+      scope: spec-derived acceptance tests and a second test-writing agent (plans 81 and 83). Superpowers drift
+      finding 21's helper is `test-run`, and `mutant-run` sits beside it. A change to `mutant-run`'s run-file format
+      must keep `task-done`'s gate and the reviewer's `## Mutants` section reading it. Size: design. Done when: a
+      spec decides the change-reverted mutant and its plan lands.
+
 ## superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 - [x] **dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift
       finding 26, the worktree half).** The skill's own example sends three agents to fix three test files at
