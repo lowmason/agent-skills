@@ -323,6 +323,9 @@ before Task 2.
 | Reviewer control batch R1 (5 reps) | 0.1321615 | 7.8408674 |
 | Reviewer control batch R2 (5 reps) | 0.1441447 | 7.9850121 |
 | Reviewer control batch R3 (5 reps) | 0.1425927 | 8.1276048 |
+| Reviewer control, second set, batch R1 (5 reps, `control-v2/`) | 0.1472023 | 8.2748071 |
+| Reviewer control, second set, batch R2 (5 reps) | 0.1485559 | 8.4233630 |
+| Reviewer control, second set, batch R3 (5 reps) | 0.1676695 | 8.5910325 |
 
 ## Leak check
 
@@ -1627,5 +1630,86 @@ reading is the one that rule `:8` states: whitespace separates words. Each has a
 
 ## Reviewer control, second set
 
-This set runs on the second build, after this change's commit. Its rules are the registered ones,
-with reading B. Five reps per case run into `reviewer/control-v2/R<n>/`.
+This set runs on the second build, after this change's commit (`aedcf2a`). Its rules are the
+registered ones, with reading B. This set is the scored control.
+
+**The run.** `reviewer/control-v2/MANIFEST.txt` gives the agent body sha256 `b5ca337f…`, the Short
+Form block `36635162…`, and the prompts R1 `9c64bdaa…`, R2 `2dd68a32…` and R3 `2f1a6136…`, each
+with the fixed line added. Each case ran as one batch of five reps, after its spend check, into
+`~/.cache/agent-skills/scratch/plan93/reviewer/control-v2/R<n>/`.
+`reviewer/control-v2/R<n>/show_reps.txt` holds each rep's header line and full reply.
+
+- All 15 reps exited 0 with subtype `success`, in 1 turn, with no extra iteration and one model
+  (`claude-sonnet-5-5`). No rep is VOID. Each cost $0.016 to $0.078.
+- The spend checks were $8.1276048 + $2.50 = $10.6276048 before R1, $8.2748071 + $2.50 =
+  $10.7748071 before R2, and $8.4233630 + $2.50 = $10.9233630 before R3.
+- A grep of `reviewer/control-v2/`, the packages and this record for the 15 reps' session ids,
+  `/Users/`, the OS user name and `$TMPDIR` paths found no hit.
+
+| Case | Bar | Control passes | What the reps did |
+|---|---|---|---|
+| R1 (decoy) | No finding and no Declined to judge line about the mutant step (reading B) | 5 of 5 | All five approve with no finding. Each Declined line is a spec question: whether a lone `\r` or other Unicode whitespace ends a line, or counts as blank. None claims that a shape has no test, and most say that the tests pin the code's reading |
+| R2 | A finding that names `:8` without a mutant, or the `return 0` mutant | 0 of 5 | All five approve with no finding. Rep 2 names mutant 1 as "always return 0" and calls each mutant caught by the tests aimed at it. Rep 5 says that the mutants cover the two rules |
+| R3 | A finding that names a tab before `#`, framed W or S | 5 of 5 (each W and S) | All five raise an Important finding: no test has a tab or other non-space blank before `#`, and the withdrawal of mutant 4 as equivalent is wrong |
+
+Each rep, in one line:
+
+- R1 rep 1: no finding. Declined: a lone `\r`, `\x85` or `\u2028` does not end a line, and the tests
+  pin it; non-ASCII whitespace counts as blank and as a separator. ⚠️ the report cites
+  `task-1-mutants.log`, and the dispatch gives `task-1-mutants-2.log`. Approved. Pass.
+- R1 rep 2: no finding. Declined: a lone `\r` does not end a line, and "The tests pin the
+  `\n`-only behavior deliberately". ⚠️ the same run-name mismatch, with "the claim is supported".
+  Approved. Pass.
+- R1 rep 3: no finding. Declined: a lone `\r`, `\x85`, `\u2028` or `\u2029` is not a line break, and
+  "The tests pin this behavior". ⚠️ the run-name mismatch. Approved. Pass.
+- R1 rep 4: no finding. Declined: a lone `\r` does not end a line, and the tests "pin the current
+  behavior deliberately". Its compliance list notes the run-name mismatch, with no ⚠️. Approved.
+  Pass.
+- R1 rep 5: no finding. Declined: a lone `\r`, `\x0b`, `\x0c`, `\x85` or `\u2028` does not end a line,
+  "locked in by" two tests. ⚠️ the run-name mismatch. Approved. Pass.
+- R2 rep 1: no finding. Strengths: "All three mutants are caught." Declined: a lone `\r`. ⚠️ the
+  run-name mismatch. Miss.
+- R2 rep 2: no finding. Strengths: the three mutants, "always return 0" first, "are each caught by
+  the tests aimed at them". Declined: a lone `\r` and other separators; Unicode blank before `#`.
+  ⚠️ the run-name mismatch. Miss.
+- R2 rep 3: no finding. Strengths: "Each mutant is caught by tests that target it." Declined: a lone
+  `\r`. Miss.
+- R2 rep 4: no finding. Strengths: "each mutant is caught by tests aimed at its rule". Declined: a
+  non-ASCII blank before `#`. ⚠️ the rest of the spec is unseen. Miss.
+- R2 rep 5: no finding. Strengths: "The mutants cover the two rules". Declined: a lone `\r`, and
+  Unicode blank before `#`. ⚠️ the rest of the spec is unseen. Miss.
+- R3 rep 1: Important: no test has a non-space blank before `#`, such as `'\t# note\nhello\n'`. Mutant 4
+  is that regression, and its own description says that its behavior differs. The Inputs table has
+  no row. Fix: reinstate mutant 4 and add the test. Pass, W and S.
+- R3 rep 2: Important: no test has a non-space blank before `#`. With `line.lstrip(' ')`,
+  `'\t# note\nhello\n'` returns 3, not 1, so mutant 4 is not equivalent. Fix: add the test and restore
+  mutant 4. Pass, W and S.
+- R3 rep 3: Important: mutant 4's withdrawal as equivalent "is wrong". No test puts a tab or any
+  non-space whitespace before `#`. Fix: add the test, restore mutant 4 and update the Inputs table.
+  Pass, W and S.
+- R3 rep 4: Important: the only indented-comment test uses spaces, and no test puts a tab before
+  `#`. Withdrawing mutant 4 as equivalent "looks wrong". Pass, W and S.
+- R3 rep 5: Important: no test puts a tab or other non-space whitespace before `#`. Mutant 4 "is not
+  equivalent". Fix: restore mutant 4 and add the test. Pass, W and S.
+
+Each R3 rep also has a ⚠️ item that says the withdrawn patch is not in the package.
+
+**D14.** A non-decoy control meets its bar: R3, 5 of 5. Plan 93's D14 records this for the owner's
+ruling at the completion gate. It is not a stop during execution. R2 reads 0 of 5. R1, the decoy,
+reads 5 of 5 under reading B.
+
+**Observations.** None of these changes a rule or a reading.
+
+- Each R3 rep quotes mutant 4's wrong version from the mutants file: "strips only spaces before the
+  `#` check, so a tab before `#` is kept". That sentence names the changed behavior. Then the
+  `Withdrawn: 4 — equivalent, no behavior changes` line contradicts it on the same page. In the
+  first control set, where every rep raised the `splitlines` defect, R3 read 1 of 5.
+- In R2, no rep checked what mutant 1 does, as in the first set.
+- Every R1 rep put a two-reading shape under Declined to judge, most often a lone `\r` as a line end.
+  None claims that a shape has no test, and most say that the tests pin the code's reading. A treatment
+  reply that calls the same shape missing from the Inputs table would fail R1 under reading B.
+- Four R1 reps and two R2 reps noted the run-name mismatch under ⚠️, and R1 rep 4 noted it in its
+  compliance list. None put it in a finding or in Declined to judge.
+
+**Spend.** The second control set cost $0.4634277 for 15 reps, about $0.031 a rep. The micro-test
+total is $8.5910325 of the $100 cap.
