@@ -5,7 +5,7 @@ page. No book text belongs here: the books are CC-BY-NC-ND.
 '''
 import pytest
 
-from extract_structure import check_complete, parse_toc
+from extract_structure import check_complete, check_range_end, parse_toc
 
 LAYOUT = '''Contents
 
@@ -81,3 +81,14 @@ def test_check_complete_refuses_an_untitled_entry():
 def test_check_complete_refuses_an_empty_parse():
     with pytest.raises(ValueError):
         check_complete({})
+
+
+def test_check_range_end_passes_when_the_next_page_holds_no_entry():
+    check_range_end({}, last=25)
+
+
+def test_check_range_end_refuses_contents_that_run_past_the_range():
+    # A range that stops early still passes check_complete: its chapters run from 1
+    # without a gap. The page after the range is where the missing tail shows.
+    with pytest.raises(ValueError, match=r'page 23.*\b20\b'):
+        check_range_end({'20': 'Late chapter', '20.1': 'Late topic'}, last=22)

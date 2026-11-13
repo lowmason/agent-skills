@@ -5,8 +5,9 @@ which keeps each entry's number, title and page on one line; the pyprobml listin
 from gh. A contents page range that starts late drops whole chapters without an error:
 until 2026-11-12, Book 1's range began two pages after its contents and lost chapters 1
 and 2. So `check_complete` refuses a parse whose chapters do not run from 1 without a gap,
-or that leaves an entry without a title. Gate A checks number existence; title-correctness
-is Gate B.
+or that leaves an entry without a title, and `check_range_end` refuses a range whose next
+page still holds contents entries. Gate A checks number existence; title-correctness is
+Gate B.
 
 CC-BY-NC-ND note: these are factual section numbers/titles used only to VERIFY our own
 citations at build time — not shipped, not redistributed prose.
@@ -26,7 +27,8 @@ SCRATCH = Path(__file__).parent / ".scratch"
 # PDF pages of the detailed contents, and of the first body page (chapter 1), in the builds
 # dated 2025-04-18 (Book 1, 860 pages) and 2025-12-10 (Book 2, 1,370 pages); verified
 # 2026-11-12. A new build can move them: check_complete catches a contents range that
-# misses a page, and a body start that is late cuts the start of chapter 1 from the dump.
+# starts late, check_range_end one that stops early, and a body start that is late cuts
+# the start of chapter 1 from the dump.
 TOC = {'1': (BOOK1, 9, 25), '2': (BOOK2, 9, 29)}
 BODY_START = {'1': 31, '2': 35}
 
@@ -71,14 +73,32 @@ def check_complete(rows: dict[str, str]) -> None:
         raise ValueError('; '.join(problems))
 
 
-def extract_book(book: str, pdf: Path, first: int, last: int) -> int:
+def check_range_end(after: dict[str, str], last: int) -> None:
+    '''Raise ValueError when the page after the contents range still holds entries.
+
+    `after` is parse_toc's map for page `last + 1`. A range that stops early passes
+    check_complete, since its chapters still run from 1 without a gap, so the missing
+    tail shows only here.
+    '''
+    if after:
+        first = min(after, key=lambda n: [int(p) for p in n.split('.')])
+        raise ValueError(
+            f'contents continue on page {last + 1} ({first} {after[first]}): widen the range')
+
+
+def _contents(pdf: Path, first: int, last: int) -> dict[str, str]:
     txt = subprocess.run(
         ['pdftotext', '-layout', '-f', str(first), '-l', str(last), str(pdf), '-'],
         capture_output=True, text=True, check=True,
     ).stdout
-    rows = parse_toc(txt)
+    return parse_toc(txt)
+
+
+def extract_book(book: str, pdf: Path, first: int, last: int) -> int:
+    rows = _contents(pdf, first, last)
     try:
         check_complete(rows)
+        check_range_end(_contents(pdf, last + 1, last + 1), last)
     except ValueError as err:
         raise ValueError(f'book{book}, contents pages {first}-{last} of {pdf.name}: {err}') from err
     out = SCRATCH / f'book{book}_sections.tsv'
