@@ -66,10 +66,12 @@ def path_audit(summary: dict) -> list[str]:
                 hits.append(f'call {number} {call["name"]}: {path}')
         elif call.get('name') == 'Bash':
             command = args.get('command', '')
-            for path in PATH_IN_COMMAND.findall(command):
-                if outside(path.rstrip('/'), allowed):
+            for match in PATH_IN_COMMAND.finditer(command):
+                path = match.group(1)
+                if outside(path.rstrip('/') or '/', allowed):
                     note = ' (null device)' if path == '/dev/null' else ''
-                    hits.append(f'call {number} Bash names {path}{note}')
+                    context = command[max(0, match.start() - 25):match.end() + 15]
+                    hits.append(f'call {number} Bash names {path}{note}, in: {context!r}')
             if '..' in command:
                 hits.append(f'call {number} Bash holds "..": {command[:200]}')
     return hits
