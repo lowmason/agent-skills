@@ -1,0 +1,5 @@
+sha WORKTREE
+variant stale
+body sha256 f6fb198820153271998bed79089a2a0968d6da6d5d90bc5806805b0e556598bc
+body chars 19137
+prompt.txt sha256 99245c53cf2eefb9b14aba4d41e55c3dfea7de0d048382fcdd2b9d5a306efc38
