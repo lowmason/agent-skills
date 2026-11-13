@@ -21,10 +21,11 @@
   ```bash
   mkdir -p /tmp/marimo-probe/plan96
   for d in ~/Projects/*/; do [ -d "$d/.git" ] && basename "$d"; done | grep -vx agent-skills \
-    | awk '{print; gsub(/-/, "_"); print}' | sort -u > /tmp/marimo-probe/plan96/names.txt
+    | awk '{print; a = $0; gsub(/-/, "_", a); print a; b = $0; gsub(/_/, "-", b); print b}' \
+    | sort -u > /tmp/marimo-probe/plan96/names.txt
   ```
 
-  Before each commit, run `git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt`. Expected: no output. Read any hit by hand. A new mention is a leak, so reword it before you commit. Never copy the list into the repo, a commit message, the ledger or a report.
+  After `git add` and before `git commit`, run `git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt`. Expected: no output. With nothing staged, the check reads nothing, so it never runs before `git add`. Read any hit by hand. A new mention is a leak: reword it, stage again and rerun the check before you commit. Never copy the list into the repo, a commit message, the ledger or a report.
 - **Provenance.** Take ideas from Eric Ma's posts and from marimo-pair, never text. Credit Eric Ma by URL and idea only. marimo-pair is Apache-2.0: link to it, and copy nothing.
 - **Install dependencies.** No skill text names a `templates/` path, because `install.py` installs skills, not the kit.
 - **Style.** Human prose (the kit README, `hooks/README.md`, `NOTICE`, `README.md`, commit messages) follows the always-on plain-English rule. Do not use semicolons. Write one idea in each sentence. Agent-facing text (the tech-debt `SKILL.md` lines) uses the write-with-asd-ste100 skill. Python uses single quotes. `scan.sh` must stay runnable by bash 3.2: no `declare -A` and no `mapfile`.
@@ -33,6 +34,7 @@
 - **Register and lints.** Run `uv run --with pyyaml python build/check_conformance.py` before each commit. The pre-commit hook runs `build/run_commit_lints.sh` on each commit, because `core.hooksPath` is set. If it fails, fix the cause. Never use `--no-verify`.
 - **Held citations.** `cli.py lint` prints `STALE` for `hooks/ruff-check.sh` and `skills/subagent-driven-development/SKILL.md`. They are held on purpose (`d778c3e`). Leave them.
 - **Commits.** Each commit message ends with the session's `Co-Authored-By` trailer.
+- **Completion.** The Plan Completion Protocol retires plan 96 alone. Keep `specs/marimo-notebook-seam.md` in `specs/`, not marked complete, because Plan B (B0 to B4) still implements it and is planned only after this plan merges. Pass only the plan to `deferral_scan.py scan`.
 
 ## Review Focus
 
@@ -49,13 +51,14 @@
 - **D3** (owner, plan review, 2026-11-13): "Use 96 (Recommended)", in answer to which id this plan uses after 95 collided with `95-branch-explainer.md`, which was committed and reviewed first. Applied in: the file name and the scratch path `/tmp/marimo-probe/plan96/`.
 - **D4** (owner, plan review, 2026-11-13): "Approve it", in answer to "Approve plan 96 as written, with builder's calls C1 to C14?". The plan stands as written. That approves every builder's call, C4, C6, C7, C10 and C11 among them, as plan-level calls, so no spec amendment follows. Applied in: all tasks, Global Constraints.
 - **D5** (owner, plan review, 2026-11-13): "But can we PR the spec and plan before execution?", asked after D4. The branch is pushed and the spec and plan go to `main` in their own PR. Execution runs after that PR merges, on a new branch. This replaces D2's "not pushed" for the spec and plan. Applied in: Global Constraints (Branch).
+- **D6** (owner, plan review, 2026-11-13): "Please see the Copilot PR review issues." and "Also make sure to run a Codex re-review on the changes before pushing the updated PR." The plan takes all six of Copilot's findings on lowmason/agent-skills#196: both separator spellings in the leak-check names and the check after `git add`, no root-`notebooks/` notebook in the scratch section, a formatter caveat with its check, the spec kept live at completion, and the guard bullet in the "Not caught" list. A Codex review reads the change before it is pushed. Applied in: Global Constraints (Leak check, Completion), Tasks 1, 3 and 4, C2, C14, C15.
 
 ## Builder's calls
 
 These settle the spec's "Left to the builder" items for Plan A, and two gaps the spec leaves. The owner reviews them at plan review.
 
 - **C1.** The detector: a `.py` file with a line that matches the ERE `^app[[:space:]]*=[[:space:]]*marimo\.App\(`. One helper serves both arms and prints paths in the form that `FILES` prints. (Task 1)
-- **C2.** The scratch section keeps its title and appends `(.ipynb by name, marimo .py outside notebooks/)`. The untested-modules title does not change. (Task 1)
+- **C2.** The scratch section keeps its title and appends `(.ipynb by name, marimo .py outside notebooks/)`. The untested-modules title does not change. A marimo notebook under the root `notebooks/` is never listed as scratch, even when the name rule's `scratchpad` matches it, so a converted notebook clears its finding (D6). (Task 1)
 - **C3.** The register gets a new kind, `kit`, and `claude-md` stays as it is. The kit README is a guide for people, not a loaded `CLAUDE.md`, so `claude-md-size` and that kind's description do not fit it. The new kind takes the four `claude-md` sections that govern text pasted into a `CLAUDE.md`. (Task 3)
 - **C4.** The kit README keeps step 4, "Paste the notebook block", as a stub that says the block is not written yet. Plan B replaces the stub's text, so the step numbers hold. (Task 3)
 - **C5.** The kit README also gives the `ruff.toml` form of the table, and says to merge the line into an existing table (Review Focus 4 and 5). (Task 3)
@@ -67,7 +70,8 @@ These settle the spec's "Left to the builder" items for Plan A, and two gaps the
 - **C11.** `README.md`'s folder tree gains a `templates/` line, beside the spec's `CLAUDE.md` clause. (Task 3)
 - **C12.** The `NOTICE` paragraph goes after the `runtimes/` paragraph, outside the "original works" list that `check_provenance.py` parses. Plans 93 and 94 edit other parts of `NOTICE`. (Task 3)
 - **C13.** The snippet check reads ruff versions from every git repo directly under `~/Projects/`, this repo excluded: the `uv.lock` version, the `ruff-pre-commit` rev and any version that a workflow pins. Extra versions only make the check stricter. It also runs the latest ruff. (Task 3)
-- **C14.** In `hooks/README.md`, the marimo note opens "Install into a work repo", and the guard bullet follows the `git fetch` bullet. Only `hooks/README.md` is restamped, as the spec says. The new lines in `CLAUDE.md`, `README.md`, the tech-debt `SKILL.md` and the register state no Claude Code fact, so their citations stand. (Tasks 2 to 4)
+- **C14.** In `hooks/README.md`, the marimo note opens "Install into a work repo", and the guard bullet joins the guard's "Not caught" list, after the wrapper-script bullet (`:294`, D6). Only `hooks/README.md` is restamped, as the spec says. The new lines in `CLAUDE.md`, `README.md`, the tech-debt `SKILL.md` and the register state no Claude Code fact, so their citations stand. (Tasks 2 to 4)
+- **C15.** The kit README says the ignore covers `ruff check` only. For a repo whose formatter uses `quote-style = 'single'`, it gives a formatter exclude for `notebooks/**`, which the snippet check verifies (config `f`). Without it, the formatter rewrites marimo's three lines on every run, and marimo writes them back on save. A local check during planning found that this does not apply to the work repos today (D6). (Task 3)
 
 ## File map
 
@@ -142,6 +146,7 @@ def notebook_project(tmp_path):
         'analysis/notebooks/nested_nb.py': MARIMO_NOTEBOOK.replace('App(width="medium")', 'App()'),
         'scratchpad_nb.py': MARIMO_NOTEBOOK,
         'notebooks/report_nb.py': MARIMO_NOTEBOOK,
+        'notebooks/scratchpad_record.py': MARIMO_NOTEBOOK,
         'notebooks/q3/deep dive.py': MARIMO_NOTEBOOK,
         'notebooks/nb_helpers.py': 'def share(x):\n    return x\n',
         'src/uses_marimo.py': MARIMO_MENTION,
@@ -170,15 +175,18 @@ def test_marimo_notebook_outside_notebooks_dir_is_scratch(notebook_project, tmp_
 
 @pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_marimo_notebook_under_notebooks_dir_is_not_scratch(notebook_project, tmp_path, arm):
+    """A notebook in the root notebooks/ is a deliverable, even when the name rule's `scratchpad` matches it."""
     hits = section(scan(notebook_project, arm, tmp_path), SCRATCH)
-    for name in ('report_nb.py', 'deep dive.py', 'nb_helpers.py'):
+    for name in ('report_nb.py', 'scratchpad_record.py', 'deep dive.py', 'nb_helpers.py'):
         assert name not in hits, f'{name} was listed:\n{hits}'
 
 
 @pytest.mark.parametrize('arm', ['rg', 'grep'])
 def test_marimo_notebooks_are_not_untested_modules(notebook_project, tmp_path, arm):
     hits = section(scan(notebook_project, arm, tmp_path), UNTESTED)
-    for name in ('explore_root.py', 'nested_nb.py', 'scratchpad_nb.py', 'report_nb.py', 'deep dive.py'):
+    notebooks = ('explore_root.py', 'nested_nb.py', 'scratchpad_nb.py', 'report_nb.py', 'deep dive.py',
+                 'scratchpad_record.py')
+    for name in notebooks:
         assert name not in hits, f'{name} is a notebook, not a module:\n{hits}'
     for name in ('src/model_core.py', 'notebooks/nb_helpers.py'):  # a module stays listed wherever it sits
         assert name in hits, f'{name} was not listed:\n{hits}'
@@ -216,14 +224,14 @@ def test_untested_modules_unchanged_without_notebooks(project, tmp_path, arm):
 - [ ] **Step 2: Run the tests to verify the RED**
 
 Run: `uv run python build/run_suites.py tech-debt -- -k notebook`
-Expected: `4 failed, 10 passed`. The 4 failures are `test_marimo_notebook_outside_notebooks_dir_is_scratch` and `test_marimo_notebooks_are_not_untested_modules`, each in both arms. The other five tests are guards. They pass before the change, and each fails against a wrong implementation: one that skips by folder, lists `notebooks/`, drops the `.ipynb` rule, matches a mention, lists a file twice or filters on an empty list. Read each failure: it must be an assertion about a file name, not a fixture error or `command not found`. Planning ran these tests on a scratch copy of `scan.sh` at `85877be`: `4 failed, 10 passed`, as above.
+Expected: `6 failed, 8 passed`. The 6 failures are `test_marimo_notebook_outside_notebooks_dir_is_scratch`, `test_marimo_notebook_under_notebooks_dir_is_not_scratch` and `test_marimo_notebooks_are_not_untested_modules`, each in both arms. The second fails because the name rule's `|scratchpad` already lists `notebooks/scratchpad_record.py`. The other four tests are guards. They pass before the change, and each fails against a wrong implementation: one that skips by folder, drops the `.ipynb` rule, matches a mention, lists a file twice or filters on an empty list. Read each failure: it must be an assertion about a file name, not a fixture error or `command not found`. Planning ran these tests on a scratch copy of `scan.sh` at `85877be`: `6 failed, 8 passed`, as above.
 
 - [ ] **Step 3: Implement `marimo_notebooks` and use it in the two sections of `scan.sh`**
 
 - `marimo_notebooks` goes right after `FILES`. It filters the `.py` paths that `FILES` prints and keeps each file with a line that matches C1's ERE. Keep the paths as `FILES` prints them. Trap: BSD `grep -r` (macOS) drops the `./` that `find` and `rg` print. A list built from `grep -rl` then fails to match `mods` in the grep arm, and the untested skip misses every notebook. A `while read` loop over `FILES | grep '\.py$'`, with `grep -qE` on each file, keeps the form in both arms.
 - Call it once, before the scratch section, and reuse the result in both sections.
 - New code calls only the tools in `GREP_ARM_TOOLS` (`git grep find sort basename dirname cat tr`) and bash builtins. If it needs another tool, add the tool to that tuple in `test_scan.py` in this commit.
-- Scratch section (`:100-101`): append C2's text to the title. Print the union of the name rule's hits (unchanged) and the notebooks whose path does not start with the root `notebooks/` (`^(\./)?notebooks/`), through `sort -u`.
+- Scratch section (`:100-101`): append C2's text to the title. Print the name rule's hits (its pattern unchanged) and the marimo notebooks, through `sort -u`, minus every marimo notebook under the root `notebooks/` (`^(\./)?notebooks/`). The name rule's `|scratchpad` matches any path, so this filter also drops `notebooks/scratchpad_record.py`. It never drops an `.ipynb` hit.
 - Untested-modules section (`:168-177`): drop from `mods` every path the helper printed, by whole-line match. With no notebooks, `mods` stays whole.
 - The other sections do not change (spec A2.3), and the script stays read-only.
 
@@ -237,10 +245,16 @@ Expected: every test passes (14 more than before), none skips while `rg` is inst
 
 - [ ] **Step 5: Commit**
 
-Run the leak check and `check_conformance.py` (Global Constraints). Then:
+Run `check_conformance.py`. Stage the task's files, then run the leak check on what is staged:
 
 ```bash
 git add skills/tech-debt/scripts/scan.sh skills/tech-debt/scripts/test_scan.py
+git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt
+```
+
+Expected: no output. If it prints a line, reword it, stage again and rerun the check. Then commit:
+
+```bash
 git commit -F - <<'EOF'
 fix(tech-debt): list marimo notebooks as scratch, never as untested modules
 
@@ -315,10 +329,16 @@ Run each command. Expected output follows each one.
 
 - [ ] **Step 7: Commit**
 
-Run the leak check and `check_conformance.py`. Then:
+Run `check_conformance.py`. Stage the task's files, then run the leak check on what is staged:
 
 ```bash
 git add skills/tech-debt/SKILL.md skills/tech-debt/scripts/scan.sh
+git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt
+```
+
+Expected: no output. If it prints a line, reword it, stage again and rerun the check. Then commit:
+
+```bash
 git commit -F - <<'EOF'
 feat(tech-debt): add a convert outcome for scratch notebooks
 
@@ -351,7 +371,7 @@ Replace the `Co-Authored-By` placeholder with the session's trailer before you r
 
 - [ ] **Step 1: Build the snippet check outside the repo**
 
-Create `/tmp/marimo-probe/plan96/{b,q,r}/`. Each holds `notebooks/probe_nb.py` and `scratch/probe_nb.py`, two copies of this notebook. Each display line trips B018, marimo's three double-quoted lines trip Q000 under single quotes, and the import cell trips I001:
+Create `/tmp/marimo-probe/plan96/{b,q,r,f}/`. Each holds `notebooks/probe_nb.py` and `scratch/probe_nb.py`, two copies of this notebook. Each display line trips B018, marimo's three double-quoted lines trip Q000 under single quotes, and the import cell trips I001:
 
 ```python
 import marimo
@@ -388,7 +408,7 @@ if __name__ == "__main__":
     app.run()
 ```
 
-The three configs. `b` already has a table, so the kit's line is merged into it (Review Focus 4). `r` is the `ruff.toml` form (Review Focus 5).
+The four configs. `b` already has a table, so the kit's line is merged into it (Review Focus 4). `r` is the `ruff.toml` form (Review Focus 5). `f` is a formatter set to single quotes, with the exclude the kit gives for that case (C15).
 
 ```toml
 # b/pyproject.toml
@@ -421,6 +441,13 @@ select = ['E', 'F', 'I', 'B']
 'notebooks/**' = ['B018']
 ```
 
+```toml
+# f/pyproject.toml
+[tool.ruff.format]
+quote-style = 'single'
+exclude = ['notebooks/**']
+```
+
 Run: `cd /tmp/marimo-probe/plan96/b && uvx marimo check notebooks/probe_nb.py`
 Expected: exit 0. The fixture is a valid marimo notebook.
 
@@ -447,20 +474,23 @@ for v in $(cat versions.txt) latest; do
     echo "== ruff $v, config $d"
     (cd "$d" && uvx "ruff@$v" check --no-cache --output-format concise .)
   done
+  echo "== ruff $v, format, config f"
+  (cd f && uvx "ruff@$v" format --no-cache --diff .)
 done
 ```
 
 Expected, for every version and config:
 - Every finding in `notebooks/probe_nb.py` is I001.
 - `scratch/probe_nb.py` shows I001 and B018 (configs `b` and `r`), or I001 and three Q000 findings (config `q`).
+- Config `f`: the format diff names `scratch/probe_nb.py` alone, and it puts marimo's three lines in single quotes. `notebooks/probe_nb.py` is not in it.
 
-`scratch/` is the control: it shows that the fixture trips the rules that the ignore removes. Any other code in `notebooks/`, or a control without B018 or Q000, fails the check. Then stop and bring the output to the owner, with versions and repo names kept out of the repo.
+`scratch/` is the control: it shows that the fixture trips the rules that the ignore removes, and that the formatter rewrites marimo's lines. Any other code in `notebooks/`, a control without B018 or Q000, or a format diff for `notebooks/` fails the check. Then stop and bring the output to the owner, with versions and repo names kept out of the repo.
 
 - [ ] **Step 4: Record the result in this plan**
 
 Under this step, add one line, with no version number and no repo name:
 
-`> Result (<YYYY-MM-DD>): at every ruff version the work repos run, and at the latest, all three configs left I001 and nothing else in notebooks/.`
+`> Result (<YYYY-MM-DD>): at every ruff version the work repos run, and at the latest, the three lint configs left I001 and nothing else in notebooks/, and the formatter exclude kept notebooks/ out of ruff format.`
 
 - [ ] **Step 5: Write `templates/marimo-repo/README.md`**
 
@@ -487,6 +517,7 @@ Plain English for people. It names no work repo. Headings and content:
   - The ignore matters wherever ruff runs over `notebooks/`: the Stop hook (`ruff-check.sh`, link `../../hooks/README.md`), pre-commit and CI. A pre-commit hook can pin a ruff version other than the lockfile's.
   - If the table already exists, merge the line into it. A second copy of the header is invalid TOML (C5).
   - In `ruff.toml` or `.ruff.toml`, the table is `[lint.per-file-ignores]` (C5).
+  - The ignore covers `ruff check` only, because `per-file-ignores` does not reach `ruff format`. A formatter set to `quote-style = 'single'` rewrites marimo's three lines, and marimo writes them back on every save. In such a repo, add `exclude = ['notebooks/**']` under `[tool.ruff.format]` (`[format]` in `ruff.toml`). `ruff format` then leaves notebook files alone, cell code included (C15).
   - Write the line in the repo's quote style.
 - `## During a live session`. Fix lint through marimo-pair, never by editing the file. marimo-pair changes cells through the running notebook server. A `Write` or `Edit` on the file goes around it.
 - `## Credits`. The kit is an original work by Lowell Mason under the MIT license (link `../../NOTICE`). It takes ideas, and no text, from Eric Ma's "Agent-assisted data science with marimo" (`https://ericmjl.github.io/blog/2026/10/14/agent-assisted-data-science-with-marimo/`) and "How to do agentic data science" (`https://ericmjl.github.io/blog/2026/2/1/how-to-do-agentic-data-science/`). It pairs with marimo-pair (Apache-2.0), links to it and copies none of its text.
@@ -540,10 +571,16 @@ none of its text.
 
 - [ ] **Step 10: Commit**
 
-Run the leak check. Then:
+Stage the task's files, then run the leak check on what is staged:
 
 ```bash
 git add templates/marimo-repo/README.md build/cc_guide/conformance.toml CLAUDE.md README.md NOTICE specs/plans/96-marimo-notebook-seam.md
+git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt
+```
+
+Expected: no output. If it prints a line, reword it, stage again and rerun the check. Then commit:
+
+```bash
 git commit -F - <<'EOF'
 feat(templates): add the marimo-repo kit with its ruff ignore
 
@@ -551,6 +588,7 @@ templates/marimo-repo/README.md tells a work repo how to adopt marimo
 notebooks: where notebooks live, the marimo-pair install, the ruff
 ignore and the convert path for scratch notebooks. The ignore was
 checked at every ruff version the work repos run: only I001 remained.
+A formatter exclude covers a repo whose formatter uses single quotes.
 The register gains a kit kind. CLAUDE.md, README.md and NOTICE name
 the new folder.
 
@@ -565,7 +603,7 @@ Replace the `Co-Authored-By` placeholder with the session's trailer before you r
 ### Task 4: The two `hooks/README.md` additions
 
 **Files:**
-- Modify: `hooks/README.md:44-46` (the start of "Install into a work repo"), after `:389` (the end of the `git fetch` bullet in the guard's "Limitations (by design)")
+- Modify: `hooks/README.md:44-46` (the start of "Install into a work repo"), after `:294` (the wrapper-script bullet that ends the guard's "Not caught" list)
 - Modify, if the restamp changes them: `hooks/README.md:1`, `build/cc_guide/baseline.json`
 
 **Interfaces:**
@@ -584,15 +622,15 @@ From the target repo
 
 Between the heading and "From the target repo", add one short paragraph. In a repo with marimo notebooks, add the ruff ignore from [the marimo-repo kit](../templates/marimo-repo/README.md#the-ruff-ignore) before you install `ruff-check.sh`. Without it, the Stop hook blocks every turn while a notebook has a display line (B018) or, under single-quote rules, marimo's own double-quoted lines (Q000).
 
-- [ ] **Step 2: Add the guard bullet to the read-only guard's "Limitations (by design)"**
+- [ ] **Step 2: Add the bullet to the read-only guard's "Not caught" list**
 
-Old text, the match key, the end of the `git fetch` bullet:
+Old text, the match key, the list's last bullet:
 
 ```markdown
-  this as an oversight; if a real case appears, flipping it is one line.
+- Anything reached through an alias, a function defined elsewhere, or a wrapper script.
 ```
 
-After it, a new bullet in the list's style. **marimo-pair's `bash …/execute-code.sh` passes the guard.** That script can create, edit and run cells in a live notebook. This is accepted, because no read-only agent has a reason to drive a live notebook, so the guard adds no rule for it.
+After it, a plain bullet in the list's style: marimo-pair's `bash …/execute-code.sh`, which can create, edit and run cells in a live notebook. Say that this is accepted, because no read-only agent has a reason to drive a live notebook, so the guard adds no rule for it.
 
 - [ ] **Step 3: Review and restamp**
 
@@ -612,10 +650,16 @@ Expected: no `STALE` line names `hooks/README.md`.
 
 - [ ] **Step 5: Commit**
 
-Run the leak check. Then:
+Stage the task's files, then run the leak check on what is staged:
 
 ```bash
 git add hooks/README.md build/cc_guide/baseline.json
+git diff --cached -U0 | grep '^+' | grep -i -F -f /tmp/marimo-probe/plan96/names.txt
+```
+
+Expected: no output. If it prints a line, reword it, stage again and rerun the check. Then commit:
+
+```bash
 git commit -F - <<'EOF'
 docs(hooks): note the marimo ruff ignore and the execute-code.sh gap
 
