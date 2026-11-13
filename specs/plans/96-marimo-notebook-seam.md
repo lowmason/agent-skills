@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - **Scope.** Plan A only (D1). Do not write the notebook block or `templates/marimo-repo/notebook-block.md`, and do not edit explore-data or recommend-visualization. Those are Plan B.
-- **Branch.** Work in this worktree, on `claude/marimo-notebook-integration-de2d68`. Commit there. Never push (D2).
+- **Branch.** The spec and this plan reach `main` first, in a PR of their own from `claude/marimo-notebook-integration-de2d68` (D5). Execution starts only after that PR merges, on a new branch cut from the `main` that holds them, in its own worktree. Commit there. Do not push during execution. How the branch is integrated is decided at the end, by finishing-a-development-branch.
 - **Anchors.** Line numbers are lines at `85877be`. Each edit's old text is its match key, not its line number. If an old text no longer matches exactly, stop and ledger it. Live plans 93, 94 and 95 also edit `NOTICE`, in its superpowers part, and plan 93 edits `CLAUDE.md`'s Commands section. This plan's edits to both files sit elsewhere.
 - **Public repo** (spec, Constraints). "No plan, record, kit or skill text names a work repo for a fact, and none carries new detail from one: versions, configs, file sizes or file names." The same holds for commit messages, the ledger and task reports. Every fixture name in this plan is made up. Never swap in a name from `/tmp/marimo-probe/`, because some of its folder and file names come from work repos.
 - **Leak check.** Build the name list once, outside the repo:
@@ -48,6 +48,7 @@
 - **D2** (owner, brief, 2026-11-13): The plan and its work are committed on `claude/marimo-notebook-integration-de2d68` and not pushed. Applied in: Global Constraints (Branch).
 - **D3** (owner, plan review, 2026-11-13): "Use 96 (Recommended)", in answer to which id this plan uses after 95 collided with `95-branch-explainer.md`, which was committed and reviewed first. Applied in: the file name and the scratch path `/tmp/marimo-probe/plan96/`.
 - **D4** (owner, plan review, 2026-11-13): "Approve it", in answer to "Approve plan 96 as written, with builder's calls C1 to C14?". The plan stands as written. That approves every builder's call, C4, C6, C7, C10 and C11 among them, as plan-level calls, so no spec amendment follows. Applied in: all tasks, Global Constraints.
+- **D5** (owner, plan review, 2026-11-13): "But can we PR the spec and plan before execution?", asked after D4. The branch is pushed and the spec and plan go to `main` in their own PR. Execution runs after that PR merges, on a new branch. This replaces D2's "not pushed" for the spec and plan. Applied in: Global Constraints (Branch).
 
 ## Builder's calls
 
