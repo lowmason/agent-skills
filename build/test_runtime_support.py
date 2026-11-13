@@ -32,17 +32,24 @@ def test_committed_runtime_assets_are_current():
   assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_codex_agent_adapter_is_valid_and_read_only():
+def test_codex_agent_adapter_is_valid_and_inherits_model():
   data = tomllib.loads((REPO / 'runtimes/codex/agents/code-reviewer.toml').read_text())
   assert data['name'] == 'code-reviewer'
-  assert data['sandbox_mode'] == 'read-only'
   assert 'Ready to merge?' in data['developer_instructions']
   assert 'model' not in data
 
 
-def test_codex_test_runner_is_not_read_only():
-  data = tomllib.loads((REPO / 'runtimes/codex/agents/test-runner.toml').read_text())
-  assert data.get('sandbox_mode') != 'read-only'
+def test_codex_agent_adapters_carry_no_parent_session_keys():
+  # Codex ignores these keys in a custom agent file: the subagent inherits the
+  # parent session's value. A key here would claim an enforcement that does not exist.
+  ignored = {'sandbox_mode', 'approval_policy', 'model_provider', 'mcp_servers'}
+  adapters = sorted((REPO / 'runtimes/codex/agents').glob('*.toml'))
+  assert adapters
+  carriers = {
+    path.name: sorted(ignored & tomllib.loads(path.read_text()).keys())
+    for path in adapters
+  }
+  assert {name: keys for name, keys in carriers.items() if keys} == {}
 
 
 def test_gemini_agent_adapter_maps_tools_to_antigravity_and_inherits_model():
