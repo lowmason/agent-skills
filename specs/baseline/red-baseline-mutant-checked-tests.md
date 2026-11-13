@@ -332,6 +332,12 @@ before Task 2.
 | Reviewer control, fourth set, batch R1 (5 reps, `control-v4/`) | 0.3866069 | 9.4332815 |
 | Reviewer control, fourth set, batch R2 (5 reps) | 0.1419199 | 9.5752014 |
 | Reviewer control, fourth set, batch R3 (5 reps) | 0.1563303 | 9.7315317 |
+| Reviewer treatment-short batch R1 (5 reps, `treatment-short/`) | 0.4689505 | 10.2004822 |
+| Reviewer treatment-short batch R2 (5 reps) | 0.1868067 | 10.3872889 |
+| Reviewer treatment-short batch R3 (5 reps) | 0.1752951 | 10.5625840 |
+| Reviewer treatment-full batch R1 (5 reps, `treatment-full/`) | 0.1613811 | 10.7239651 |
+| Reviewer treatment-full batch R2 (5 reps) | 0.1778647 | 10.9018298 |
+| Reviewer treatment-full batch R3 (5 reps) | 0.1742391 | 11.0760689 |
 
 ## Leak check
 
@@ -2143,3 +2149,199 @@ reads 4 of 5 under reading B.
 
 **Spend.** The fourth control set cost $0.6848571 for 15 reps. The micro-test total is $9.7315317 of
 the $100 cap.
+
+## Reviewer treatment
+
+Task 8 ran both treatment arms on the fourth build, the packages that the fourth control set ran on.
+The rules are the registered ones (Reviewer base to Reviewer isolation probe), with reading B. No
+rule or reading was added after a rep was seen.
+
+**The build.** `build_prompts.py short 37f56f5` and `build_prompts.py full 37f56f5` built the
+prompts into scratch. Commit `37f56f5` is Task 7's final commit.
+`reviewer/treatment-short/MANIFEST.txt` and `reviewer/treatment-full/MANIFEST.txt` give these
+sha256 values:
+
+- `treatment-short`: the agent body `ba686868…` and the Short Form block `9a4560cf…`. The prompts
+  are R1 `143ba206…`, R2 `6bf8a38d…` and R3 `f855bc7a…`.
+- `treatment-full`: the Full Form block `33f6ad4e…`. The prompts are R1 `b654525d…`, R2 `dd66b7b4…`
+  and R3 `85b1b7dc…`.
+
+Checks made on the six prompts before any rep:
+
+- Each dispatch reads "four placeholders filled" in the MANIFEST, with `[TEST_RULINGS]` as `none`.
+  No prompt holds a bracket placeholder. Each holds the `## Mutants` section and the dispatch's
+  `## The Mutant Step`, with the three package paths and "Rulings that change this task's plan
+  tests: none".
+- The two R2 prompts are byte-identical to the controller's pre-rep builds at `37f56f5`.
+- A script checked that each prompt inlines each of its seven package files byte for byte. Each
+  package file's sha256 in the two MANIFESTs equals its sha256 in `control-v4/MANIFEST.txt`.
+
+**Leak check on the treatment.** The greps are Reviewer leak check's. `build_prompts.py short
+leakview` and `full leakview` wrote the treatment leak views.
+
+| Grep | Where | Hits |
+|---|---|---|
+| `trivial`, `equivalent`, `withdraw`, `uncovered`, with `-i` | the six treatment leak views | none |
+| the names of Reviewer leak check, with `-i` | the six treatment leak views | `subagent` in each frame's first line, exempt as before |
+| the same four words | the six real treatment prompts | five lines of the `## Mutants` text under test in each prompt, and R3's two planted lines |
+
+- The six leak views are byte-identical to the fourth set's. A leak view holds no text under test,
+  and the packages did not change.
+- The five lines in the text under test each hold `Withdrawn` or `.withdrawn`: the mutants file's
+  description (two lines), the rule for a `Mutant K:` line with no catch, and check 5 (two lines).
+  The text under test is what the arms measure, so these lines are not leaks. `trivial`,
+  `equivalent` and `uncovered` are not in the text under test.
+- R3's two hits are the `Withdrawn: 4` line (mutants file, line 37) and the report's line 38, exempt
+  as before.
+
+**The run.** Each case in each arm ran as one batch of five reps, after its spend check, into
+`~/.cache/agent-skills/scratch/plan93/reviewer/<arm>/R<n>/`. `reviewer/<arm>/R<n>/show_reps.txt`
+holds each rep's header line and full reply.
+
+- `claude --version` printed `2.1.323` before each batch, so the reviewer isolation probe carries
+  over.
+- All 30 reps exited 0 with subtype `success`, in 1 turn, with no extra iteration and one model
+  (`claude-sonnet-5-5`). No rep is VOID, so no rep was rerun. Each cost $0.019 to $0.098.
+- The spend checks were:
+  - `treatment-short`: $9.7315317 + $2.50 = $12.2315317 before R1, $10.2004822 + $2.50 =
+    $12.7004822 before R2, and $10.3872889 + $2.50 = $12.8872889 before R3.
+  - `treatment-full`: $10.5625840 + $2.50 = $13.0625840 before R1, $10.7239651 + $2.50 =
+    $13.2239651 before R2, and $10.9018298 + $2.50 = $13.4018298 before R3.
+- The `treatment-short` R1 batch cost $0.4689505. Its reps 2 to 5 did not read the prompt cache
+  that rep 1 wrote. Each wrote about 18,360 cache tokens of its own, as the fourth control set's R1
+  reps did. In the other five batches, reps 2 to 5 read rep 1's cache and cost about $0.02 each.
+  Cost is not a VOID condition.
+- A grep of `reviewer/` (the packages, every control set and both treatment arms) and this record
+  for the 30 reps' 60 session and message ids found no hit. A grep of `treatment-short/` and
+  `treatment-full/` for `/Users/`, the OS user name and the `$TMPDIR` path found no hit.
+
+| Case | Bar | Control, fourth set | `treatment-short` | `treatment-full` |
+|---|---|---|---|---|
+| R1 (decoy) | No finding and no Declined to judge line about the mutant step (reading B) | 4 of 5 | 5 of 5 | 5 of 5 |
+| R2 | A finding that names `:8` without a mutant, or the `return 0` mutant | 0 of 5 | 5 of 5 (each names both) | 5 of 5 (each names both) |
+| R3 | A finding that names a tab before `#`, framed W or S | 3 of 5 | 5 of 5 (each W and S) | 5 of 5 (each W and S) |
+
+Each treatment bar is met in both arms. No case missed a bar, so Step 3 ran no revision round, and
+no `-r1/` directory exists.
+
+**`treatment-short`, each rep in one line:**
+
+- R1 rep 1: no finding. Strengths: "every shape the two rules cover has a row". Declined: a lone
+  `\r` does not end a line, and "the tests pin this behaviour". It also declines the whitespace
+  set, which follows `str.isspace`: "I left the choice to the controller". Approved. Pass.
+- R1 rep 2: no finding. ⚠️ the spec does not define a line end. Declined: a lone `\r`, `\x85` or
+  `\u2028` does not end a line, and "the tests pin the behavior deliberately". It also declines
+  that "blank" is what `str.lstrip()` strips. Approved. Pass.
+- R1 rep 3: no finding. Declined: a lone `\r`, `\x85` or `\u2028` does not end a line, and the tests
+  "pin this reading". Approved. Pass.
+- R1 rep 4: no finding. Its Strengths walk checks 1 to 5. Declined: none. Approved. Pass.
+- R1 rep 5: no finding. ⚠️ the spec does not define "blank" or "whitespace". Declined: a lone `\r`,
+  `\x0b`, `\x0c`, `\x85` or `\u2028` is not a line break, and "the tests pin the current behavior".
+  It also declines non-ASCII whitespace as a separator and a blank: "Controller to rule".
+  Approved. Pass.
+- R2 rep 1: Important 1: "No mutant aims at rule 8", and mutant 1 "returns 0 for every call, so
+  under check 2 it breaks everything and does not count". Important 2: the three whitespace tests
+  are caught only by mutant 1. Needs fixes. Pass, both.
+- R2 rep 2: Important 1: "No mutant aims at the whitespace rule (specs/wordcount.md:8)", and mutant
+  1 "returns 0 for every call". Important 2: the three whitespace tests have "no real catch (check
+  4)". Needs fixes. Pass, both.
+- R2 rep 3: Important: "No mutant aimed at the whitespace-separation rule", and mutant 1 "returns 0
+  at the top of `count_words`. It breaks every call". Needs fixes. Pass, both.
+- R2 rep 4: Important 1: "No aimed mutant for rule `specs/wordcount.md:8`", and mutant 1 "breaks
+  every call". Important 2: the three whitespace tests. Needs fixes. Pass, both.
+- R2 rep 5: Important: "No mutant for the rule at specs/wordcount.md:8", and mutant 1 "returns 0
+  for every call". The three whitespace tests have "only the degenerate catch". Needs fixes. Pass,
+  both.
+- R3 rep 1: Important: "`Withdrawn: 4` does not hold, and a rule 7 shape is untested".
+  `'\t# note\nhello\n'` gives 1 from the code and 3 from the mutant. The Inputs table has no row for
+  a tab before `#`. ⚠️ the withdrawn patch is not in the package. Needs fixes. Pass, W and S.
+- R3 rep 2: Important 1: "Withdrawn mutant 4 is not equivalent", with the same input, and "No test
+  uses that input". Important 2: no Inputs row for a tab before `#`. Needs fixes. Pass, W and S.
+- R3 rep 3: Important 1: "Withdrawn: 4 does not hold", and "That is a missing test, not an
+  equivalent mutant." Important 2: the Inputs table has no row for a tab or `\u3000` before `#`.
+  Needs fixes. Pass, W and S.
+- R3 rep 4: Important 1: "Withdrawn mutant 4 does not hold", with the same input. Important 2:
+  "Missing Inputs-table row and test for a non-space blank before `#`". ⚠️ the withdrawn patch is not
+  in the package. Needs fixes. Pass, W and S.
+- R3 rep 5: Important: "The `Withdrawn: 4` line does not hold, and there is no test for a tab
+  before `#`", with the same input. Needs fixes. Pass, W and S.
+
+**`treatment-full`, each rep in one line:**
+
+- R1 rep 1: no finding. Strengths: "The Inputs table rows each name a test that uses its shape."
+  Declined: a lone `\r`, `\x85`, `\u2028` or `\u2029` is not a line break, and "the controller should
+  confirm this reading". Approved. Pass.
+- R1 rep 2: no finding. ⚠️ if the full spec defines "blank" or "whitespace" more narrowly than
+  `str.isspace`, the Unicode tests "would pin the wrong behavior". Declined: none. Approved. Pass.
+- R1 rep 3: no finding. A section of its own, "Mutant step", walks checks 1 to 6 and finds each
+  met. Declined: none. Approved. Pass.
+- R1 rep 4: no finding. Its "Mutant step" list walks checks 1 to 6. Declined: none. Approved. Pass.
+- R1 rep 5: no finding. Strengths: "The mutant step passes all six checks". Declined: none.
+  Approved. Pass.
+- R2 rep 1: Important 1: "No mutant aimed at the whitespace-separation rule
+  (`specs/wordcount.md:8`)", and mutant 1 (return 0) "breaks every call, so it does not count".
+  Important 2: the three whitespace tests have "no catch that counts". Needs fixes. Pass, both.
+- R2 rep 2: Important 1: "No mutant aimed at rule 8", and mutant 1, "`return 0` at the top of the
+  function", "does not count toward check 3". Important 2: the three whitespace tests. The
+  Assessment calls it "a whole-function `return 0`, which proves nothing". Needs fixes. Pass, both.
+- R2 rep 3: Important 1: "No live mutant for the word-separator rule (specs/wordcount.md:8)", and
+  mutant 1 "breaks every call". Important 2: the three whitespace tests. Needs fixes. Pass, both.
+- R2 rep 4: Important 1: "No mutant aims at rule 8", and "Mutant 1 returns 0 for every call, so it
+  does not count". Important 2 is headed "Four tests" and lists the three whitespace tests. Needs
+  fixes. Pass, both.
+- R2 rep 5: Important: "No mutant aimed at rule 8", and mutant 1 "returns 0 for every call. It is
+  caught by every test, so it does not count". Needs fixes. Pass, both.
+- R3 rep 1: Important: "Mutant 4 is withdrawn, and the withdrawal does not hold", with
+  `'\t# note\nhello\n'` (1 against 3), and "no test puts a tab, or any non-space whitespace, before
+  `#`". Needs fixes. Pass, W and S.
+- R3 rep 2: Important: "Withdrawn mutant 4 does not hold", with the same input, and the Inputs
+  table has "none for a tab before `#`". ⚠️ the withdrawn patch is not in the package. Needs fixes.
+  Pass, W and S.
+- R3 rep 3: Important 1: "Withdrawn mutant 4 does not hold", with the same input. Important 2:
+  "Missing row in the Inputs table for check 1". Needs fixes. Pass, W and S.
+- R3 rep 4: Important: "Mutant 4's `Withdrawn:` line does not hold", with the same input, and no
+  test puts a tab before `#`. ⚠️ the withdrawn patch is not in the package. Needs fixes. Pass, W
+  and S.
+- R3 rep 5: Important: "Withdrawn Mutant 4 is not equivalent, and the tab-before-`#` shape is
+  untested", with the same input. ⚠️ the withdrawn patch is not in the package. Needs fixes. Pass, W
+  and S.
+
+"Both" means that the rep names both of R2's points: rule `:8` has no mutant aimed at it, and the
+`return 0` mutant does not count. Each of the ten R2 reps also says that the three whitespace tests
+are caught only by mutant 1 (check 4), in a second finding or in the first.
+
+**Comparison with the control.**
+
+- **R1, the decoy.** Each arm reads 5 of 5, and the fourth control set read 4 of 5. Under D14, "the
+  text adds nothing" is not read from a decoy's control. No treatment rep mentioned the run-name
+  mismatch. The treatment text says that the report may cite an earlier run under another file
+  name. In the fourth control set, five reps noted the mismatch. R1 rep 1 and R2 rep 3 put it in
+  Declined to judge, and R1 rep 1 failed the decoy bar for it. No treatment R1 rep claimed that a
+  shape has no test, and none asked for a test of a whitespace character that the Inputs rows do
+  not name. Each Declined line is a spec question on line ends or on the whitespace set.
+- **R2.** Each arm reads 5 of 5. The control read 0 of 5 in all four sets. No control R2 rep
+  faulted mutant 1. In the fourth set, control rep 4 named it as caught by specific tests.
+- **R3.** Each arm reads 5 of 5, each W and S. The control read 5, 5 and 3 of 5 in the second, third
+  and fourth sets (the controller's ruling: read R3 against that spread, not against the fourth set
+  alone). The treatment count is in that spread, so it does not show on its own that the text
+  changes R3. In the fourth set, control rep 1 called the withdrawal correct because `lstrip()`
+  strips tabs, and control rep 5 praised it. No treatment rep defended the withdrawal.
+
+**D14.** No non-decoy control in the fourth set meets its bar: R2 0 of 5 and R3 3 of 5. R3's
+control met its bar in the second and third sets, 5 of 5 in each. Plan 93's D14 records that history
+for the owner's ruling at the completion gate. It is not a stop during execution. R2's control met
+its bar in no set.
+
+**Observations.** None of these changes a rule or a reading.
+
+- Five of the ten R3 reps (`treatment-short` reps 1 and 4, `treatment-full` reps 2, 4 and 5) have a
+  ⚠️ item that says the withdrawn patch is not in the package. Each judged mutant 4 from its line
+  in the mutants file.
+- Most R1 reps walk the mutant checks in their Strengths. `treatment-full` R1 rep 3 adds a section
+  of its own, `### Mutant step`, which the report format does not have. Rep 4 puts a bold "Mutant
+  step" list inside its Strengths. No rep graded a met check as a finding.
+- Each R2 rep names a plausible wrong version for rule `:8`, and each names `line.split(' ')` among
+  them.
+
+**Spend.** The treatment arms cost $1.3445372 for 30 reps: `treatment-short` $0.8310523 and
+`treatment-full` $0.5134849. The micro-test total is $11.0760689 of the $100 cap.
