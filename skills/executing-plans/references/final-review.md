@@ -23,6 +23,48 @@ partner confirmed.
    `[PLAN_OR_REQUIREMENTS]` (the reviewer checks each
    Review Focus line deliberately), BASE as `[BASE_SHA]`, and the capable
    model tier (opus), as for any final whole-branch review.
+
+   No per-task reviewer read this run's mutant step, so this review does.
+   Add to `[PLAN_OR_REQUIREMENTS]` the ledger's `mutants: none: <why>`
+   completion lines. When the workspace holds mutant files, add the path of
+   each task's `task-<N>-mutants.md` and of its newest run, the one with
+   the highest run number (`task-<N>-mutants.log` is run 1, and
+   `task-<N>-mutants-<K>.log` is run K), and this check list. Each
+   mutant's patch sits beside its mutants file, and a withdrawn one ends
+   in `.withdrawn`.
+
+   - **Inputs.** For each stated rule (a spec sentence the mutants file
+     cites as `path:line`, or a rule in the task's brief), the Inputs
+     table lists each input shape the rule's words cover, and each row's
+     test uses its shape.
+   - **Plausible mutants.** Each mutant is a mistake a person might make
+     in this code. A syntax break, a crash on every call, or a change no
+     one could see is not aimed at anything.
+   - **Rules.** Each stated rule has a mutant aimed at it, or an
+     `Unreachable:` line that holds: no code in the task's diff decides
+     the rule. A spec sentence the task's code rests on that the mutants
+     file never cites is a gap.
+   - **Tests.** Each test the task adds or changes caught a mutant (a
+     `test <id>: caught` line in the run), or has an `Unproven:` line that
+     holds: no plausible wrong version of the code exists that the test
+     should catch.
+   - **Withdrawals.** Each `Withdrawn: K` line holds: no input makes
+     mutant K's result differ from the code's in anything a person could
+     see. A `Withdrawn: K` whose K also has a live mutant (a `mutant K:`
+     line in the run, or a second `Mutant K:` line) does not hold.
+   - **Plan tests.** No test whose code the plan gives is loosened (an
+     assertion removed or loosened, an expected value changed, the test
+     skipped or deleted) without a `Ruling:` line that covers the change.
+   - **Exemptions.** A task whose brief has a focused pytest command over
+     code the task changes is a mutant task, so its `mutants: none: <why>`
+     reason does not hold. Lints, link checks and checks over Markdown do
+     not make a task a mutant task.
+
+   Each run's `head:` is its task's last commit, the second sha in that
+   task's ledger line, not the branch's HEAD. Each gap is an Important
+   finding: the mutant step is part of the task's requirements, and a
+   test that lets a plausible wrong version through lets that defect
+   reach a person. The review's last pass does not delete these findings.
 2. **Codex** — the second-opinion review in
    [codex-review.md](../../requesting-code-review/codex-review.md), with
    `--base <BASE>`.
@@ -84,8 +126,11 @@ partner to rule on, into the same batch, so your human partner gets at most
 one round-trip. A tagged ruling is still a decision taken, not a question:
 the plan's entry in `specs/history.md` records it in place of a spec
 amendment, so ask your partner nothing about it. Your partner may still ask
-to revert it, which makes it a deferred item. Findings the fix pass left
-unfixed feed the gate.
+to revert it, which makes it a deferred item. One kind of ruling is not a
+decision taken: a `Ruling: (unclear) …` line. It is a question in the same
+batch, stalled on your partner's input (writing-plans' protocol step 1). If
+your partner overrules it, the change is a follow-up task, and protocol step
+1 implements it now. Findings the fix pass left unfixed feed the gate.
 
 When the protocol has finished, delete this plan's workspace — the
 directory `sdd-workspace` printed at setup; if you lost it, re-run the

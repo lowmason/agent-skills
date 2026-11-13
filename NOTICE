@@ -994,6 +994,23 @@ Changes from upstream:
     examples show references/ and scripts/. The new file departs from
     upstream v7.0.1's references/ map, which plan 72 followed. No
     upstream text was taken.
+  - Plan 93 (2026-11-13) adds mutant-checked tests to
+    subagent-driven-development and executing-plans
+    (specs/mutant-checked-tests.md). A new script,
+    subagent-driven-development/scripts/mutant-run, applies each mutant
+    patch that an implementer writes, runs the task's focused tests, and
+    records each mutant as caught, survived or invalid. It follows
+    test-run's conventions, which adapt upstream's scripts (MIT). A new
+    file, references/mutants.md, holds the implementer's steps for both
+    executors. The implementer prompt, the task reviewer's Mutants
+    section in agents/task-reviewer.md and task-reviewer-prompt.md, the
+    re-review prompt, the controller's references, and executing-plans'
+    SKILL.md, final-review.md and task-done gain the matching steps.
+    task-done records a task only after a mutant run with no survivor
+    and no invalid mutant, or with --no-mutants and a reason. The changes
+    are local, and no upstream text was taken. The micro-test fixtures
+    are this repository's own
+    (specs/baseline/red-baseline-mutant-checked-tests.md).
 
     brainstorming/
     dispatching-parallel-agents/

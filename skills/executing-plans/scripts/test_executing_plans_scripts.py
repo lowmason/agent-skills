@@ -5,11 +5,17 @@ cd skills/executing-plans/scripts && uv run --with pytest python -m pytest -q
 The scripts are bash, so each test drives one as a subprocess and asserts on
 exit code, stdout, stderr and written files. The scripts call the sibling
 skill's helpers by relative path, so the tests reach those only through them.
+One test is the exception: it runs two of them directly, by that same
+relative path, to write a real mutant run. sdd-workspace writes the
+self-ignoring .sdd/.gitignore, and mutant-run, which task-done never runs,
+writes the run file that task-done reads.
 The cases adapt upstream's tests/claude-code/test-executing-plans-scripts.sh.
+The mutant gate's cases are local.
 """
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -17,6 +23,10 @@ import pytest
 SCRIPTS = Path(__file__).resolve().parent
 TASK_START = SCRIPTS / 'task-start'
 TASK_DONE = SCRIPTS / 'task-done'
+# The sibling skill's scripts, by the relative path task-done uses.
+SDD_SCRIPTS = SCRIPTS / '..' / '..' / 'subagent-driven-development' / 'scripts'
+MUTANT_RUN = SDD_SCRIPTS / 'mutant-run'
+SDD_WORKSPACE = SDD_SCRIPTS / 'sdd-workspace'
 
 # Sanitised so the suite ignores the user's global and system git config
 # (commit.gpgsign, core.hooksPath, init.templateDir, ...).
@@ -39,6 +49,8 @@ PLAN = """\
 """
 
 OK_CMD = ['sh', '-c', 'echo "Ran 3 tests"; echo OK']
+# A task that is not a mutant task passes the mutant gate with a reason.
+NO_MUTANTS = ('--no-mutants', 'demo task')
 
 
 def run(*argv, cwd=None, env=None):
@@ -82,6 +94,61 @@ def commit_work(repo, name='work.txt'):
     (repo / name).write_text('x\n')
     git('add', name, cwd=repo)
     git('commit', '-q', '-m', 'work', cwd=repo)
+
+
+def recorded(repo, task=1):
+    '''Whether the ledger holds a completion line for the task.'''
+    ledger = workspace(repo) / 'progress.md'
+    if not ledger.exists():
+        return False
+    return any(line.startswith(f'Task {task}: complete') for line in ledger.read_text().splitlines())
+
+
+def write_mutants(repo, numbers, withdrawn=()):
+    '''Write task-1-mutants.md: a Mutant line per number, a Withdrawn line per withdrawn number.'''
+    lines = [
+        '# Task 1 mutants',
+        '',
+        '## Inputs',
+        '',
+        '| Rule | Shape | Test |',
+        '|---|---|---|',
+        '| brief: demo rule | a demo input | test_demo |',
+        '',
+        '## Mutants',
+        '',
+        *[f'Mutant {k}: brief: demo rule, test_demo — wrong version {k} — task-1-mutant-{k}.patch' for k in numbers],
+        *[f'Withdrawn: {k} — demo' for k in withdrawn],
+    ]
+    ws = workspace(repo)
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / 'task-1-mutants.md').write_text('\n'.join(lines) + '\n')
+
+
+def write_run(repo, name, run_head, result, numbers):
+    '''Write a mutant run file in mutant-run's layout, each numbered mutant CAUGHT.'''
+    task, _, rest = name.removeprefix('task-').partition('-mutants')
+    run_number = rest.removeprefix('-').removesuffix('.log') or '1'
+    zeros = '0' * 64
+    caught = ' '.join(str(k) for k in numbers)
+    lines = [
+        f'mutant-run: Task {task}, run {run_number}',
+        'command: sh -c true',
+        f'head: {run_head}',
+        'tree: clean',
+        f'result: {result}',
+        '--- mutants ---',
+        *[f'mutant {k}: CAUGHT exit 1 sha256 {zeros} tests: t::a' for k in numbers],
+        '--- tests ---',
+        f'test t::a: caught {caught}',
+        '--- output: baseline ---',
+        '1 passed',
+    ]
+    for k in numbers:
+        lines += [f'--- output: mutant {k} ---', '1 failed']
+    ws = workspace(repo)
+    ws.mkdir(parents=True, exist_ok=True)
+    (ws / name).write_text('\n'.join(lines) + '\n')
 
 
 # -- task-start --------------------------------------------------------------
@@ -147,10 +214,10 @@ def test_task_start_passes_an_unclosed_fence_refusal_through(repo):
 def test_task_done_records_a_passing_task(repo):
     base = head(repo)
     commit_work(repo)
-    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    result = run(TASK_DONE, 'plan.md', 1, base, *NO_MUTANTS, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 0, result.stderr
     expected = (
-        f'Task 1: complete (commits {base[:7]}..{head(repo)[:7]}, '
+        f'Task 1: complete (commits {base[:7]}..{head(repo)[:7]}, mutants: none: demo task, '
         f'tests: sh -c \'echo "Ran 3 tests"; echo OK\' → OK)'
     )
     assert (workspace(repo) / 'progress.md').read_text().splitlines()[1:] == [expected]
@@ -170,7 +237,7 @@ def test_task_done_records_nothing_for_a_failing_task(repo):
 
 
 def test_task_done_records_a_silent_pass_as_no_output(repo):
-    result = run(TASK_DONE, 'plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    result = run(TASK_DONE, 'plan.md', 1, head(repo), *NO_MUTANTS, '--', 'true', cwd=repo)
     assert result.returncode == 0, result.stderr
     ledger = (workspace(repo) / 'progress.md').read_text()
     assert ledger.splitlines()[-1].endswith('→ (no output))')
@@ -178,14 +245,14 @@ def test_task_done_records_a_silent_pass_as_no_output(repo):
 
 def test_task_done_treats_blank_only_output_as_no_output(repo):
     cmd = ['sh', '-c', "printf '\\n  \\n'"]
-    result = run(TASK_DONE, 'plan.md', 1, head(repo), '--', *cmd, cwd=repo)
+    result = run(TASK_DONE, 'plan.md', 1, head(repo), *NO_MUTANTS, '--', *cmd, cwd=repo)
     assert result.returncode == 0, result.stderr
     ledger = (workspace(repo) / 'progress.md').read_text()
     assert ledger.splitlines()[-1].endswith('→ (no output))')
 
 
 def test_task_done_starts_a_new_ledger_with_the_plan_line(repo):
-    result = run(TASK_DONE, 'plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    result = run(TASK_DONE, 'plan.md', 1, head(repo), *NO_MUTANTS, '--', 'true', cwd=repo)
     assert result.returncode == 0, result.stderr
     first = (workspace(repo) / 'progress.md').read_text().splitlines()[0]
     assert first == 'Plan: plan.md'
@@ -195,7 +262,7 @@ def test_task_done_matches_an_absolute_plan_line_against_a_relative_argument(rep
     ws = workspace(repo)
     ws.mkdir(parents=True)
     (ws / 'progress.md').write_text(f'Plan: {(repo / "plan.md").resolve()}\n')
-    result = run(TASK_DONE, 'plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    result = run(TASK_DONE, 'plan.md', 1, head(repo), *NO_MUTANTS, '--', 'true', cwd=repo)
     assert result.returncode == 0, result.stderr
     assert 'Task 1: complete' in (ws / 'progress.md').read_text()
 
@@ -206,21 +273,21 @@ def test_task_done_matches_from_a_subdirectory(repo):
     ws = workspace(repo)
     ws.mkdir(parents=True)
     (ws / 'progress.md').write_text('Plan: plan.md\n')
-    result = run(TASK_DONE, '../plan.md', 1, head(repo), '--', 'true', cwd=sub)
+    result = run(TASK_DONE, '../plan.md', 1, head(repo), *NO_MUTANTS, '--', 'true', cwd=sub)
     assert result.returncode == 0, result.stderr
     assert 'Task 1: complete' in (ws / 'progress.md').read_text()
 
 
 def test_task_done_matches_through_a_symlinked_repo_path(repo, tmp_path_factory):
     base = head(repo)
-    first = run(TASK_DONE, 'plan.md', 1, base, '--', 'true', cwd=repo)
+    first = run(TASK_DONE, 'plan.md', 1, base, *NO_MUTANTS, '--', 'true', cwd=repo)
     assert first.returncode == 0, first.stderr
     link = tmp_path_factory.mktemp('links') / 'link'
     link.symlink_to(repo)
     # Bash keeps an inherited PWD only when it names the cwd, so set it to the
     # symlinked path; otherwise the shell would silently use the physical path.
     env = {**GIT_ENV, 'PWD': str(link)}
-    second = run(TASK_DONE, 'plan.md', 2, base, '--', 'true', cwd=link, env=env)
+    second = run(TASK_DONE, 'plan.md', 2, base, *NO_MUTANTS, '--', 'true', cwd=link, env=env)
     assert second.returncode == 0, second.stderr
     lines = (workspace(repo) / 'progress.md').read_text().splitlines()
     assert sum(l.startswith('Task ') and 'complete' in l for l in lines) == 2
@@ -272,7 +339,7 @@ def test_task_done_matches_a_plan_reached_through_a_file_symlink(repo):
     ws.mkdir(parents=True)
     ledger = ws / 'progress.md'
     ledger.write_text('Plan: specs/plan.md\n')
-    result = run(TASK_DONE, 'alias/plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    result = run(TASK_DONE, 'alias/plan.md', 1, head(repo), *NO_MUTANTS, '--', 'true', cwd=repo)
     assert result.returncode == 0, result.stderr
     assert 'Task 1: complete' in ledger.read_text()
 
@@ -288,7 +355,7 @@ def test_task_done_resolves_a_file_symlink_beneath_a_directory_symlink(repo):
     ws.mkdir(parents=True)
     ledger = ws / 'progress.md'
     ledger.write_text('Plan: plan.md\n')
-    result = run(TASK_DONE, 'alias/plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    result = run(TASK_DONE, 'alias/plan.md', 1, head(repo), *NO_MUTANTS, '--', 'true', cwd=repo)
     assert result.returncode == 3, result.stderr
 
 
@@ -311,7 +378,7 @@ def test_task_done_refuses_another_plans_ledger(repo):
 
 def test_task_done_handles_a_plan_path_with_a_space(repo):
     (repo / 'my plan.md').write_text(PLAN)
-    result = run(TASK_DONE, 'my plan.md', 1, head(repo), '--', 'true', cwd=repo)
+    result = run(TASK_DONE, 'my plan.md', 1, head(repo), *NO_MUTANTS, '--', 'true', cwd=repo)
     assert result.returncode == 0, result.stderr
     ledger = repo / '.sdd' / 'my plan' / 'progress.md'
     assert ledger.read_text().splitlines()[0] == 'Plan: my plan.md'
@@ -323,6 +390,8 @@ def test_task_done_handles_a_plan_path_with_a_space(repo):
         ('plan.md', 1, 'HEAD', 'true', 'x'),  # no '--'
         ('plan.md', 1, 'HEAD', '--'),  # fewer than 5 args
         ('plan.md', 1, 'HEAD'),
+        ('plan.md', 1, 'HEAD', '--no-mutants', 'why', 'true', 'x'),  # no '--' after the reason
+        ('plan.md', 1, 'HEAD', '--no-mutants', 'why', '--'),  # no command
     ],
 )
 def test_task_done_rejects_bad_arguments(repo, argv):
@@ -348,7 +417,7 @@ def test_task_done_refuses_a_repository_with_no_commit(tmp_path):
 def test_task_done_runs_its_command_through_test_run(repo):
     base = head(repo)
     commit_work(repo)
-    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    result = run(TASK_DONE, 'plan.md', 1, base, *NO_MUTANTS, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 0, result.stderr
     log = workspace(repo) / 'task-1-tests.log'
     lines = log.read_text().splitlines()
@@ -360,9 +429,9 @@ def test_task_done_runs_its_command_through_test_run(repo):
 
 def test_task_done_keeps_a_failed_run_and_records_the_retry(repo):
     base = head(repo)
-    fail = run(TASK_DONE, 'plan.md', 1, base, '--', 'sh', '-c', 'echo boom; exit 1', cwd=repo)
+    fail = run(TASK_DONE, 'plan.md', 1, base, *NO_MUTANTS, '--', 'sh', '-c', 'echo boom; exit 1', cwd=repo)
     assert fail.returncode == 1
-    ok = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    ok = run(TASK_DONE, 'plan.md', 1, base, *NO_MUTANTS, '--', *OK_CMD, cwd=repo)
     assert ok.returncode == 0, ok.stderr
     ws = workspace(repo)
     assert 'exit: 1' in (ws / 'task-1-tests.log').read_text().splitlines()
@@ -384,7 +453,172 @@ def test_task_done_refuses_a_task_number_that_is_not_an_id(repo):
 def test_task_done_keeps_a_multi_line_command_whole_in_its_ledger_line(repo):
     base = head(repo)
     commit_work(repo)
-    result = run(TASK_DONE, 'plan.md', 1, base, '--', 'sh', '-c', 'echo a\necho b', cwd=repo)
+    result = run(TASK_DONE, 'plan.md', 1, base, *NO_MUTANTS, '--', 'sh', '-c', 'echo a\necho b', cwd=repo)
     assert result.returncode == 0, result.stderr
     ledger = (workspace(repo) / 'progress.md').read_text()
     assert "tests: sh -c 'echo a\necho b' → b)" in ledger
+
+
+# -- task-done: the mutant gate ----------------------------------------------
+
+CLEAN = 'caught 1, survived 0, invalid 0'
+
+
+def test_task_done_records_a_task_whose_mutant_run_is_clean(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1, 2], withdrawn=[2])
+    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    last = (workspace(repo) / 'progress.md').read_text().splitlines()[-1]
+    assert ', mutants: 1/2, tests: ' in last
+
+
+def test_task_done_blocks_a_task_with_no_mutant_run(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'no mutant run for Task 1' in result.stderr
+    assert 'Task 1 NOT recorded' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_blocks_a_stale_mutant_run(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', base, CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'Task 1 NOT recorded' in result.stderr
+    assert not recorded(repo)
+
+
+@pytest.mark.parametrize(
+    'outcome',
+    ['caught 1, survived 1, invalid 0', 'caught 1, survived 0, invalid 1', 'baseline failed, exit 1'],
+)
+def test_task_done_blocks_a_run_that_is_not_all_caught(repo, outcome):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), outcome, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert not recorded(repo)
+
+
+def test_task_done_blocks_a_listed_mutant_the_run_lacks(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1, 2])
+    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'mutant 2' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_blocks_a_task_with_no_mutants_file(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'task-1-mutants.md' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_blocks_a_withdrawn_mutant_whose_patch_is_still_live(repo):
+    # A withdrawn mutant's patch is renamed .patch.withdrawn. A Withdrawn line
+    # beside a live patch is a stray line that could excuse a mutant never run.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1, 2], withdrawn=[2])
+    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    (workspace(repo) / 'task-1-mutant-2.patch').write_text('a demo patch\n')
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'task-1-mutant-2.patch' in result.stderr
+    assert 'Task 1 NOT recorded' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_reads_the_newest_mutant_run_by_number(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants-2.log', head(repo), CLEAN, [1])
+    write_run(repo, 'task-1-mutants-10.log', head(repo), 'caught 0, survived 1, invalid 0', [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'task-1-mutants-10.log' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_ignores_another_tasks_mutant_run(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-10-mutants.log', head(repo), CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'no mutant run for Task 1' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_rejects_no_mutants_without_a_reason(repo):
+    cmd = ['sh', '-c', 'touch ran']
+    result = run(TASK_DONE, 'plan.md', 1, head(repo), '--no-mutants', '', '--', *cmd, cwd=repo)
+    assert result.returncode == 2
+    assert '[--no-mutants REASON]' in result.stderr
+    assert not (repo / 'ran').exists()
+    assert not recorded(repo)
+
+
+# Task 1's demo module and tests from the subagent-driven-development suite.
+PY_ENV = {**GIT_ENV, 'PYTHONDONTWRITEBYTECODE': '1'}
+PYTEST = [sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider', 'test_calc.py']
+
+CALC = 'def add(a, b):\n    return a + b\n\n\ndef neg(a):\n    return -a\n'
+TEST_CALC = '''from calc import add, neg
+
+
+def test_add_small():
+    assert add(1, 2) == 3
+
+
+def test_add_large():
+    assert add(100, 200) == 300
+
+
+def test_neg():
+    assert neg(2) == -2
+'''
+
+
+def test_task_done_accepts_a_run_that_mutant_run_wrote(repo):
+    base = head(repo)
+    (repo / 'calc.py').write_text(CALC)
+    (repo / 'test_calc.py').write_text(TEST_CALC)
+    git('add', 'calc.py', 'test_calc.py', cwd=repo)
+    git('commit', '-q', '-m', 'calc', cwd=repo)
+    # sdd-workspace writes the self-ignoring .sdd/.gitignore, so the patch is
+    # never an untracked file and mutant-run finds a clean tree.
+    made = run(SDD_WORKSPACE, 'plan.md', cwd=repo)
+    assert made.returncode == 0, made.stderr
+    (repo / 'calc.py').write_text(CALC.replace('return a + b', 'return a - b'))
+    patch = git('diff', '--', 'calc.py', cwd=repo).stdout
+    assert patch
+    git('checkout', '--', 'calc.py', cwd=repo)
+    (workspace(repo) / 'task-1-mutant-1.patch').write_text(patch)
+    mutants = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    assert mutants.returncode == 0, mutants.stdout + mutants.stderr
+    write_mutants(repo, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *PYTEST, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    last = (workspace(repo) / 'progress.md').read_text().splitlines()[-1]
+    assert 'mutants: 1/1' in last
