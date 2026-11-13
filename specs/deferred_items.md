@@ -6544,3 +6544,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       tool set of background subagents, and that Claude Code waits for the result in `claude -p` and Agent SDK
       runs. The repo lint rejects a `background` key, so an author cannot change the default. Size: quick-fix.
       Done when: the fork paragraph of `claude-code.md` states the default.
+
+## 92-writing-skills-guide-rewrite Step 4b review — 2026-11-12
+- [ ] `build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex
+      review, P2; the code came from PR #184). `TOC_LINE_RE` needs a title between the section number and the
+      page, so a line such as `1.1 2` does not match and `parse_toc` leaves that section out. `check_complete`
+      checks chapter gaps, chapter presence and the titles of parsed entries only, so it passes while a section is
+      missing. A sample of `1 Intro 5`, `1.1 2`, `1.2 Next 7` and `2 Part two 20` parses to three rows and passes.
+      That defeats the fail-on-missing-title behavior that `build/CLAUDE.md` describes. Size: quick-fix.
+      Done when: a numbered contents line with a page and no title is kept or rejected so that `check_complete`
+      raises on it, and a test in `build/test_extract_structure.py` covers it.
