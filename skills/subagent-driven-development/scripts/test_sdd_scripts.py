@@ -1971,6 +1971,93 @@ def test_mutant_run_lists_each_outcome_with_its_message(changed):
     ]
 
 
+TEST_MODSKIP = '''import pytest
+
+newmod = pytest.importorskip('newmod')
+
+
+def test_m():
+    assert newmod.g() == 1
+'''
+
+
+def test_mutant_run_lists_a_module_level_skip_by_its_name(changed):
+    # An importorskip at a file's top skips the whole file at collection.
+    # pytest writes that case with no classname, so the line gives its name
+    # alone, as a not loaded line does.
+    repo, base = changed
+    commit_files(repo, {'test_modskip.py': TEST_MODSKIP}, 'more')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 1, not loaded 1, skipped 2, passed 6' in lines
+    assert 'skipped test_modskip: collection skipped' in run_section(lines, 'revert')
+
+
+def test_mutant_run_lists_a_passed_case_that_has_a_body(changed):
+    # A passed case with a property is no self-closing tag, so the reader
+    # lists it at its closing tag.
+    repo, base = changed
+    commit_files(repo, {'test_prop.py': "def test_prop(record_property):\n    record_property('k', 'v')\n"}, 'more')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 1, not loaded 1, skipped 1, passed 7' in lines
+    assert 'passed test_prop::test_prop' in run_section(lines, 'revert')
+
+
+# Settings in a user's git config that change what git diff writes: no a/ and
+# b/ prefixes, colour codes, an external diff that fails, and a textconv
+# driver that rewrites .py files.
+DIFF_CONFIG = {
+    'diff.noprefix': 'true',
+    'color.ui': 'always',
+    'diff.external': 'false',
+    'diff.upper.textconv': 'sed s/return/RETURN/',
+}
+
+
+def config_env(env, settings):
+    '''env with git config settings added through GIT_CONFIG_COUNT, as a user's global config would add them.'''
+    added = {'GIT_CONFIG_COUNT': str(len(settings))}
+    for i, (key, value) in enumerate(settings.items()):
+        added[f'GIT_CONFIG_KEY_{i}'] = key
+        added[f'GIT_CONFIG_VALUE_{i}'] = value
+    return {**env, **added}
+
+
+def test_mutant_run_builds_the_revert_patch_whatever_the_users_diff_config(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    # Untracked, so the tree stays clean: the textconv driver applies to .py files.
+    (repo / '.git' / 'info' / 'attributes').write_text('*.py diff=upper\n')
+    env = config_env(PY_ENV, DIFF_CONFIG)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 1, not loaded 1, skipped 1, passed 6' in lines
+    assert 'failed test_half::test_half_floors: AssertionError: assert 1.5 == 1' in lines
+
+
+def test_mutant_run_reverts_a_nested_path_from_a_subdirectory(calc):
+    # git apply run from sub/ would skip every path outside sub/ and report
+    # success, so the revert must apply from the top.
+    base = commit_files(calc, {'src/half.py': HALF, 'src/test_half.py': TEST_HALF_BASE}, 'base')
+    commit_files(calc, {'src/half.py': HALF_HEAD, 'src/test_half.py': TEST_HALF}, 'task')
+    (calc / 'sub').mkdir()
+    make_mutant(calc, 1, *H, path='src/half.py')
+    cmd = ['sh', '-c', 'cd .. && "$0" -m pytest -q -p no:cacheprovider src/test_half.py', sys.executable]
+    result = run(MUTANT_RUN, '../plan.md', 1, base, '--', *cmd, cwd=calc / 'sub', env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert path_lines(lines) == ['path: src/half.py']
+    assert 'revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 2' in lines
+    assert 'failed src.test_half::test_half_floors: AssertionError: assert 1.5 == 1' in lines
+    assert tree_is_head(calc)
+
+
 def test_mutant_run_lists_no_test_case_for_an_internal_error_on_the_revert(calc):
     # On the revert, the hook cannot import double, so pytest stops with an
     # internal error (exit 3) before any test runs. Its report holds one case,

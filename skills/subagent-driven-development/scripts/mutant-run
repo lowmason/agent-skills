@@ -46,6 +46,8 @@
 #      With no path left, nothing runs. Otherwise `git diff --no-renames
 #      --binary HEAD BASE` over those paths goes to
 #      <workspace>/task-<N>-revert.patch, which each run overwrites and keeps.
+#      That diff also takes --no-color, --no-ext-diff, --no-textconv and the
+#      a/ and b/ prefixes, so the user's git config cannot change the patch.
 #      It runs as a patch does in step 6, with the marker and the mutants' time
 #      limit, and with --continue-on-collection-errors added for it alone, so
 #      a test file that cannot load hides no other file's tests. It gets no
@@ -75,7 +77,9 @@
 # The revert's JUnit report is read one test case at a time, in report order:
 # a collection failure is "not loaded", a <failure> or any other test's
 # <error> is "failed", a <skipped> is "skipped", and any other test case is
-# "passed". pytest's internal error is no test case, so it gets no line.
+# "passed". pytest's internal error is no test case, so it gets no line. A
+# collection-level case (a not loaded file, or a file skipped at its top) has
+# no classname, so its line gives the name alone.
 #
 # Each mutant's run has a time limit: ten times the baseline's whole seconds,
 # plus 60, or MUTANT_RUN_TIMEOUT (whole seconds) when it is set. A run past its
@@ -127,7 +131,7 @@
 #   sha256: <hex of the revert patch file>
 #   failed <id>: <the first line of the failure's message>
 #   not loaded <name>: <the cause line>
-#   skipped <id>: <the skip reason>
+#   skipped <id, or name for a file skipped at its top>: <the skip reason>
 #   passed <id>
 #   --- output: baseline ---
 #   <the baseline's output>
@@ -147,11 +151,14 @@
 #   revert: none: no file outside the tests and the project config changed
 # The revert section exists when a revert patch was built, and its test case
 # lines only for a revert that ran and wrote a report. <name> on a "not
-# loaded" line is the collection failure's name: its module's dotted path.
-# The cause line is the last line of the error text that starts with "E ",
-# less that prefix and the spaces after it, or else the error's message. The
-# first line of a rewritten assert's message gets back the "AssertionError: "
-# that pytest takes off it. A skip reason is the <skipped> message.
+# loaded" line is the collection failure's name: its module's dotted path. A
+# "skipped" line for a file skipped at its top (a collection-level skip, such
+# as an importorskip there) has no classname either, so it gives that name
+# too. The cause line is the last line of the error text that starts with
+# "E ", less that prefix and the spaces after it, or else the error's message.
+# The first line of a rewritten assert's message gets back the
+# "AssertionError: " that pytest takes off it. A skip reason is the <skipped>
+# message.
 #
 # Usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
 #   TASK_NUMBER is a task ID in task-brief's grammar, as test-run takes it.
@@ -503,7 +510,8 @@ revert_outcomes() {
     }
     /^testcase[ \t\/>]/ {
       name = unescape(raw($0, "name"))
-      id = unescape(raw($0, "classname")) "::" name
+      classname = unescape(raw($0, "classname"))
+      id = classname "::" name
       outcome = "passed"
       detail = ""
       # The first ">" ends the tag; "/>" there closes the case at once.
@@ -526,8 +534,10 @@ revert_outcomes() {
       if (outcome == "passed") { outcome = "skipped"; detail = unescape(raw($0, "message")) }
       next
     }
+    # A collection-level case has no classname, so its line gives the name.
     /^\/testcase>/ {
       if (open && outcome == "not loaded") print "not loaded " name ": " detail
+      else if (open && outcome == "skipped" && classname == "") print "skipped " name ": " detail
       else if (open && outcome == "passed") print "passed " id
       else if (open && outcome != "none") print outcome " " id ": " detail
       open = 0
@@ -786,7 +796,12 @@ else
   for p in "${revert_paths[@]}"; do
     pathspecs+=(":(literal)$p")
   done
-  git -C "$top" diff --no-renames --binary HEAD "$base_sha" -- "${pathspecs[@]}" > "$revert_patch"
+  # The patch must not depend on the user's git config: color.ui or
+  # color.diff "always" would write colour codes, diff.noprefix would drop
+  # the a/ and b/ that git apply strips, and diff.external or a textconv
+  # driver would write something other than the files' bytes.
+  git -C "$top" diff --no-renames --binary --no-color --no-ext-diff --no-textconv \
+    --src-prefix=a/ --dst-prefix=b/ HEAD "$base_sha" -- "${pathspecs[@]}" > "$revert_patch"
   revert_sha=$(file_sha256 "$revert_patch")
   revert='revert: not applied: does not apply'
   if git -C "$top" apply --check --whitespace=nowarn "$revert_patch" > /dev/null 2>&1; then
