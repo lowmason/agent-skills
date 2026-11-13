@@ -1,0 +1,549 @@
+#!/usr/bin/env bash
+# Prove that a task's focused tests catch each of its mutants, and keep the
+# proof in a run file in the plan's workspace. A mutant is a small patch that
+# makes the task's code wrong in a way a person could plausibly write. The
+# script runs the test command once with no patch (the baseline), then once
+# with each patch applied, and prints each verdict and the path of the run
+# file.
+#
+# The mutants are the workspace's task-<N>-mutant-<K>.patch files, K a
+# positive whole number with no leading zero, each the output of
+# `git diff -- <file>` for one edit to the task's code. They run in K order. A
+# withdrawn mutant, renamed task-<N>-mutant-<K>.patch.withdrawn, is not read.
+#
+# In order:
+#   1. Recover. <workspace>/mutant-active exists only while a patch is
+#      applied: its first line is the patch's file name and the rest is the
+#      patch text, so a later run can reverse it even when the patch file is
+#      gone. A run killed with a patch applied leaves the marker behind, and
+#      the next run reverses that patch first and notes it in its run file.
+#   2. Refuse a tree that `git status --porcelain --untracked-files=normal`
+#      lists anything for, so a reverse can never undo a person's edit.
+#   3. Stop when a patch reverses cleanly (`git apply -R --check`): it is
+#      already in HEAD, so a mutant reached a commit.
+#   4. Run the baseline. A failing baseline stops the run before any patch,
+#      because every mutant would then look caught.
+#   5. Each patch. One that touches a test or fixture file (test_*.py,
+#      *_test.py, conftest.py, *.test.*, *.spec.*, or a path under a tests/,
+#      test/ or fixtures/ directory) is INVALID and never applied, and so is
+#      one that `git apply --check` refuses. Otherwise the script writes the
+#      marker, applies the patch, runs the command, reverses the patch and
+#      removes the marker.
+# After the baseline and after each reverse, tracked files must equal HEAD
+# (`git diff --quiet HEAD`). Untracked files are not compared, because tests
+# leave caches.
+#
+# Verdicts. Exit 0 is SURVIVED. Exit 1 with at least one failed test in the
+# run's JUnit report is CAUGHT: a <testcase> that holds a <failure> or an
+# <error>. Any other result is INVALID, exit 1 with no report or no failed test
+# in it included, so a runner other than pytest can never produce a false
+# catch. Every run, the baseline included, gets a JUnit report at a fresh path
+# through PYTEST_ADDOPTS, added to any value already set. pytest's FAILED
+# summary lines are not read: its -r flag is last-wins, so a command with -rs
+# prints none.
+#
+# Each mutant's run has a time limit: ten times the baseline's whole seconds,
+# plus 60, or MUTANT_RUN_TIMEOUT (whole seconds) when it is set. A run past its
+# limit is INVALID, and its whole process tree is killed, so no process it
+# started keeps running.
+#
+# The command runs from the current directory, as a background job that the
+# script waits on, so a TERM, INT or HUP is handled at once: the command's
+# process tree is killed, the applied patch is reversed, the marker is
+# removed, and the script exits 143, 130 or 129 with no run file. As a
+# background job, the command reads /dev/null as stdin and runs with SIGINT
+# and SIGQUIT ignored; a suite that needs either fails its baseline. Every git
+# call runs from the top of the working tree, so a patch applies from any
+# subdirectory.
+#
+# Run file: task-<N>-mutants.log for a task's first run, task-<N>-mutants-<K>.log
+# for run K = 2, 3 and so on (the smallest K whose file does not exist). It is
+# written once, at the end. Until then each command's output waits in a
+# temporary file in the workspace, mutant-run.<random>. A killed run, or one
+# that stops because the command changed a tracked file, leaves those files
+# behind.
+#   mutant-run: Task <N>, run <K>
+#   command: <the command, rendered the way a person would type it>
+#   head: <the full sha of HEAD>
+#   tree: clean
+#   result: caught <c>, survived <s>, invalid <i>
+#   note: reversed <patch file name>, left applied by a killed run
+#   --- mutants ---
+#   mutant <K>: <CAUGHT|SURVIVED|INVALID> exit <status, or - when nothing ran> sha256 <hex>[ tests: <id> ...][ reason: <why>]
+#   --- tests ---
+#   test <id>: caught <K>[ <K> ...]
+#   --- output: baseline ---
+#   <the baseline's output>
+#   --- output: mutant <K> ---
+#   <that mutant's output, for each mutant whose command ran>
+# The note line appears only after a recovery. <id> is <classname>::<name>. A
+# failing baseline writes the header through the note, with "result: baseline
+# failed, exit <n>", then "--- output: baseline ---" and its output only.
+#
+# Usage: mutant-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]
+#   TASK_NUMBER is a task ID in task-brief's grammar, as test-run takes it.
+# stdout: the result line, each mutant line, then "run: <absolute path of the
+#   run file>" last. A failing baseline prints the last 5 lines of its output,
+#   then the result line, then the run line. A refusal prints no run line.
+# Exit: 0 when every mutant is CAUGHT; 1 when any is SURVIVED or INVALID; 2 for
+#   bad arguments, a bad task or mutant number, a dirty tree, no mutants, a
+#   mutant already in HEAD, or a tree the script could not restore; 3 for a
+#   failing baseline; 143, 130 or 129 after TERM, INT or HUP, once the applied
+#   patch is reversed. sdd-repo's and sdd-workspace's exit 2 pass through.
+#
+# Callers: the SDD implementer and controller, and executing-plans' inline
+# executor. executing-plans' task-done reads the run file and never runs it.
+set -euo pipefail
+
+if [ $# -lt 4 ] || [ "$3" != "--" ]; then
+  echo "usage: mutant-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]" >&2
+  exit 2
+fi
+
+plan=$1
+n=$2
+shift 3
+test_cmd=("$@")
+sdd="$(cd "$(dirname "$0")" && pwd)"
+
+# The task number becomes part of a file name, so it must be an ID before any
+# path is built. The characters are listed, not ranged, so the locale cannot
+# widen them.
+id_chars='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+case "$n" in
+  '' | .* | *. | *..* | *[!"$id_chars".]*) bad_id=1 ;;
+  *[0-9]*) bad_id=0 ;;
+  *) bad_id=1 ;;
+esac
+if [ "$bad_id" -ne 0 ]; then
+  echo "mutant-run: bad task number: $n" >&2
+  exit 2
+fi
+
+# A leading zero is refused too, so the number never reads as octal.
+timeout=${MUTANT_RUN_TIMEOUT:-}
+case "$timeout" in
+  '') ;;
+  0* | *[!0-9]*)
+    echo "mutant-run: MUTANT_RUN_TIMEOUT must be a whole number of seconds above 0: $timeout" >&2
+    exit 2
+    ;;
+esac
+
+top=$("$sdd/sdd-repo" --with-commit)
+dir=$("$sdd/sdd-workspace" "$plan")
+marker="$dir/mutant-active"
+
+# Render the command the way a person would type it.
+cmd=""
+for a in "$@"; do
+  case "$a" in
+    *[[:space:]\"\;\|\&]*) cmd="$cmd '$a'" ;;
+    *) cmd="$cmd $a" ;;
+  esac
+done
+cmd=${cmd# }
+
+file_sha256() {
+  local sum
+  if command -v sha256sum > /dev/null 2>&1; then
+    sum=$(sha256sum < "$1")
+  else
+    sum=$(shasum -a 256 < "$1")
+  fi
+  printf '%s\n' "${sum%% *}"
+}
+
+# Print a process and all of its descendants, parents first.
+tree_pids() {
+  local child
+  printf '%s\n' "$1"
+  for child in $(pgrep -P "$1" || true); do
+    tree_pids "$child"
+  done
+}
+
+# Send signal $1 to process $2 and all of its descendants. The whole tree is
+# listed before any process is signalled: a child whose parent dies first is
+# re-parented, and pgrep -P no longer finds it.
+kill_tree() {
+  local pids
+  pids=$(tree_pids "$2")
+  # The list is split into words on purpose: one PID per argument.
+  kill -"$1" $pids 2> /dev/null || true
+}
+
+# Put the tree back as it was before the patch the marker names, using the
+# patch text the marker holds, then remove the marker. Set restored to
+# "reversed", or to "not applied" for a run killed between writing the marker
+# and applying the patch. Return 1, keeping the marker, when the patch neither
+# reverses nor applies.
+restore_marked() {
+  if tail -n +2 "$marker" | git -C "$top" apply -R --check --whitespace=nowarn > /dev/null 2>&1; then
+    tail -n +2 "$marker" | git -C "$top" apply -R --whitespace=nowarn || return 1
+    restored='reversed'
+  elif tail -n +2 "$marker" | git -C "$top" apply --check --whitespace=nowarn > /dev/null 2>&1; then
+    restored='not applied'
+  else
+    return 1
+  fi
+  rm -f "$marker"
+}
+
+# Written whole and then renamed, so a reader never finds half a marker.
+write_marker() {
+  local tmp
+  tmp=$(mktemp "$dir/mutant-run.XXXXXX")
+  { printf '%s\n' "$1"; cat "$2"; } > "$tmp"
+  mv "$tmp" "$marker"
+}
+
+cmd_pid=
+watch_pid=
+on_signal() {
+  trap '' TERM INT HUP
+  set +e
+  local pid
+  for pid in $cmd_pid $watch_pid; do
+    kill_tree KILL "$pid"
+    wait "$pid" 2> /dev/null
+  done
+  if [ -e "$marker" ] && ! restore_marked; then
+    echo "mutant-run: could not reverse the patch $marker names; restore the tree by hand, then remove the marker" >&2
+    exit 2
+  fi
+  exit "$1"
+}
+trap 'on_signal 143' TERM
+trap 'on_signal 130' INT
+trap 'on_signal 129' HUP
+
+# Tracked files must equal HEAD after every run ($1 says which).
+check_tree() {
+  if ! git -C "$top" diff --quiet HEAD; then
+    echo "mutant-run: tracked files differ from HEAD $1, so the test command changed them; the outputs so far are in $dir/mutant-run.*. Changed paths:" >&2
+    git -C "$top" diff --name-only HEAD >&2
+    exit 2
+  fi
+}
+
+# 1. Recover.
+note=
+if [ -e "$marker" ]; then
+  left=$(head -n 1 "$marker")
+  if ! restore_marked; then
+    echo "mutant-run: could not reverse $left, which a killed run left applied ($marker); restore the tree by hand, then remove the marker" >&2
+    exit 2
+  fi
+  if [ "$restored" = 'reversed' ]; then
+    note="note: reversed $left, left applied by a killed run"
+    echo "mutant-run: reversed $left, left applied by a killed run" >&2
+  else
+    echo "mutant-run: removed the marker for $left, which a killed run left before applying it" >&2
+  fi
+fi
+
+# 2. Refuse a dirty tree.
+changed=$(git -C "$top" status --porcelain --untracked-files=normal)
+if [ -n "$changed" ]; then
+  echo "mutant-run: the working tree has changed or untracked paths; commit or remove them first, so that no reverse can undo them:" >&2
+  printf '%s\n' "$changed" >&2
+  exit 2
+fi
+
+# 3. Find the patches, in K order.
+ks=
+for f in "$dir/task-$n-mutant-"*.patch; do
+  [ -e "$f" ] || continue
+  k=${f##*/}
+  k=${k#task-"$n"-mutant-}
+  k=${k%.patch}
+  case "$k" in
+    '' | 0* | *[!0-9]*)
+      echo "mutant-run: bad mutant number in ${f##*/}: it must be a whole number above 0, with no leading zero" >&2
+      exit 2
+      ;;
+  esac
+  ks="$ks $k"
+done
+if [ -z "$ks" ]; then
+  echo "mutant-run: no mutants for task $n (no task-$n-mutant-<K>.patch in $dir)" >&2
+  exit 2
+fi
+# Each K is digits only, so splitting the list into words is safe.
+ks=$(printf '%s\n' $ks | sort -n)
+
+for k in $ks; do
+  if git -C "$top" apply -R --check --whitespace=nowarn "$dir/task-$n-mutant-$k.patch" > /dev/null 2>&1; then
+    echo "mutant-run: task-$n-mutant-$k.patch is already in HEAD, so a mutant reached a commit; revert it, then run again" >&2
+    exit 2
+  fi
+done
+
+head_sha=$(git -C "$top" rev-parse HEAD)
+
+# Quote a value for PYTEST_ADDOPTS, which pytest splits as a shell would.
+sh_quote() {
+  printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
+}
+
+# Run the test command with its output in file $1 and a time limit of $2
+# seconds (0: none). The JUnit report goes to $1.xml, a path that does not
+# exist before the run. Set run_rc to the command's exit status and timed_out
+# to true or false.
+run_command() {
+  local out=$1 limit=$2 addopts
+  rm -f "$out.xml" "$out.timeout"
+  addopts="${PYTEST_ADDOPTS:+$PYTEST_ADDOPTS }--junitxml=$(sh_quote "$out.xml")"
+  run_rc=0
+  timed_out=false
+  # set +e and the explicit exit keep a missing command's status 127: under
+  # set -e, bash 3.2's subshell reports 1 for it.
+  (
+    set +e
+    PYTEST_ADDOPTS=$addopts
+    export PYTEST_ADDOPTS
+    "${test_cmd[@]}"
+    exit $?
+  ) < /dev/null > "$out" 2>&1 &
+  cmd_pid=$!
+  if [ "$limit" -gt 0 ]; then
+    ( sleep "$limit"; : > "$out.timeout"; kill_tree KILL "$cmd_pid" ) > /dev/null 2>&1 &
+    watch_pid=$!
+  fi
+  # A 2> /dev/null keeps bash's "Killed" notice for a killed job off stderr.
+  wait "$cmd_pid" 2> /dev/null || run_rc=$?
+  cmd_pid=
+  if [ -n "$watch_pid" ]; then
+    kill_tree KILL "$watch_pid"
+    wait "$watch_pid" 2> /dev/null || true
+    watch_pid=
+  fi
+  if [ -e "$out.timeout" ]; then
+    timed_out=true
+    rm -f "$out.timeout"
+  fi
+}
+
+# Print the IDs (<classname>::<name>) of the test cases in JUnit file $1 that
+# hold a <failure> or an <error>, each once, in report order. A missing file
+# prints nothing. Newlines become spaces and each '<' starts a line, so every
+# line is one tag, whatever line breaks the file has: a '<' inside text or an
+# attribute is always escaped.
+failed_tests() {
+  [ -f "$1" ] || return 0
+  tr '\n<' ' \n' < "$1" | awk '
+    function attr(s, key,    i, v) {
+      i = index(s, " " key "=\"")
+      if (i == 0) return ""
+      v = substr(s, i + length(key) + 3)
+      v = substr(v, 1, index(v, "\"") - 1)
+      gsub(/&lt;/, "<", v); gsub(/&gt;/, ">", v); gsub(/&quot;/, "\"", v); gsub(/&amp;/, "\\&", v)
+      return v
+    }
+    /^testcase[ \t\/>]/ {
+      id = attr($0, "classname") "::" attr($0, "name")
+      failed = 0
+      # The first ">" ends the tag; "/>" there closes the case at once.
+      open = substr($0, 1, index($0, ">")) !~ /\/>$/
+      next
+    }
+    open && /^(failure|error)[ \t\/>]/ { failed = 1; next }
+    /^\/testcase>/ {
+      if (open && failed && !(id in seen)) { seen[id] = 1; print id }
+      open = 0
+    }
+  '
+}
+
+# Print the paths patch $1 touches, one to a line. -z keeps git from quoting
+# a path; a rename's two paths each get a line of their own.
+patch_paths() {
+  git -C "$top" apply --numstat -z "$1" 2> /dev/null | tr '\0' '\n' \
+    | awk '{ sub(/^[0-9-]+\t[0-9-]+\t/, ""); if ($0 != "") print }'
+}
+
+# Whether path $1 is a test or fixture file: by its base name, or by any of
+# its directory parts.
+is_test_path() {
+  local path=$1
+  case "${path##*/}" in
+    test_*.py | *_test.py | conftest.py | *.test.* | *.spec.*) return 0 ;;
+  esac
+  while [ "$path" != "${path#*/}" ]; do
+    case "${path%%/*}" in
+      tests | test | fixtures) return 0 ;;
+    esac
+    path=${path#*/}
+  done
+  return 1
+}
+
+# 4. Baseline.
+base_out=$(mktemp "$dir/mutant-run.XXXXXX")
+start=$SECONDS
+run_command "$base_out" 0
+base_secs=$((SECONDS - start))
+rm -f "$base_out.xml"
+base_rc=$run_rc
+check_tree 'after the baseline'
+
+# The smallest K whose file does not exist.
+next_run_file() {
+  run_k=1
+  run_file="$dir/task-${n}-mutants.log"
+  while [ -e "$run_file" ]; do
+    run_k=$((run_k + 1))
+    run_file="$dir/task-${n}-mutants-${run_k}.log"
+  done
+}
+
+# Copy file $1, ending it with a newline when it has none.
+cat_lines() {
+  cat "$1"
+  [ -z "$(tail -c 1 "$1")" ] || echo
+}
+
+write_header() {
+  printf 'mutant-run: Task %s, run %s\n' "$n" "$run_k"
+  printf 'command: %s\n' "$cmd"
+  printf 'head: %s\n' "$head_sha"
+  printf 'tree: clean\n'
+  printf '%s\n' "$result"
+  [ -z "$note" ] || printf '%s\n' "$note"
+}
+
+if [ "$base_rc" -ne 0 ]; then
+  result="result: baseline failed, exit $base_rc"
+  next_run_file
+  {
+    write_header
+    printf -- '--- output: baseline ---\n'
+    cat "$base_out"
+  } > "$run_file"
+  tail -n 5 "$base_out"
+  # A last line with no newline must not run into the result line.
+  [ -z "$(tail -c 1 "$base_out")" ] || echo
+  rm -f "$base_out"
+  printf '%s\n' "$result"
+  echo "run: $run_file"
+  exit 3
+fi
+
+if [ -n "$timeout" ]; then
+  limit=$timeout
+else
+  limit=$((10 * base_secs + 60))
+fi
+
+# 5. Each patch.
+caught=0
+survived=0
+invalid=0
+mutant_lines=()
+ran_ks=()
+ran_outs=()
+pairs=''
+for k in $ks; do
+  name="task-$n-mutant-$k.patch"
+  patch="$dir/$name"
+  sha=$(file_sha256 "$patch")
+  status='-'
+  verdict='INVALID'
+  detail=''
+  touched=''
+  if ! paths=$(patch_paths "$patch"); then
+    detail=' reason: does not apply'
+  else
+    while IFS= read -r p; do
+      if is_test_path "$p"; then
+        touched=$p
+        break
+      fi
+    done <<EOF
+$paths
+EOF
+    if [ -n "$touched" ]; then
+      detail=" reason: touches a test file: $touched"
+    elif ! git -C "$top" apply --check --whitespace=nowarn "$patch" > /dev/null 2>&1; then
+      detail=' reason: does not apply'
+    else
+      write_marker "$name" "$patch"
+      if ! git -C "$top" apply --whitespace=nowarn "$patch"; then
+        # A refused patch writes nothing, so there is nothing to reverse.
+        rm -f "$marker"
+        check_tree "after $name did not apply"
+        detail=' reason: does not apply'
+      else
+        out=$(mktemp "$dir/mutant-run.XXXXXX")
+        run_command "$out" "$limit"
+        if ! restore_marked; then
+          echo "mutant-run: could not reverse $name after its run ($marker); restore the tree by hand, then remove the marker" >&2
+          exit 2
+        fi
+        check_tree "after reversing $name"
+        ids=$(failed_tests "$out.xml")
+        rm -f "$out.xml"
+        ran_ks+=("$k")
+        ran_outs+=("$out")
+        status=$run_rc
+        if [ "$timed_out" = true ]; then
+          detail=" reason: timeout after ${limit}s"
+        elif [ "$run_rc" -eq 0 ]; then
+          verdict='SURVIVED'
+        elif [ "$run_rc" -eq 1 ] && [ -n "$ids" ]; then
+          verdict='CAUGHT'
+          detail=" tests: $(printf '%s' "$ids" | tr '\n' ' ')"
+          while IFS= read -r id; do
+            pairs="$pairs$id"$'\t'"$k"$'\n'
+          done <<EOF
+$ids
+EOF
+        elif [ "$run_rc" -eq 1 ]; then
+          detail=' reason: no failed test in the JUnit report'
+        else
+          detail=" reason: exit status $run_rc"
+        fi
+      fi
+    fi
+  fi
+  case "$verdict" in
+    CAUGHT) caught=$((caught + 1)) ;;
+    SURVIVED) survived=$((survived + 1)) ;;
+    *) invalid=$((invalid + 1)) ;;
+  esac
+  mutant_lines+=("mutant $k: $verdict exit $status sha256 $sha$detail")
+done
+
+# 6. Write the run file.
+result="result: caught $caught, survived $survived, invalid $invalid"
+next_run_file
+{
+  write_header
+  printf -- '--- mutants ---\n'
+  printf '%s\n' "${mutant_lines[@]}"
+  printf -- '--- tests ---\n'
+  printf '%s' "$pairs" | awk -F '\t' '
+    !($1 in ks) { order[++count] = $1; ks[$1] = $2; next }
+    { ks[$1] = ks[$1] " " $2 }
+    END { for (i = 1; i <= count; i++) print "test " order[i] ": caught " ks[order[i]] }
+  '
+  printf -- '--- output: baseline ---\n'
+  cat_lines "$base_out"
+  i=0
+  while [ "$i" -lt "${#ran_ks[@]}" ]; do
+    printf -- '--- output: mutant %s ---\n' "${ran_ks[$i]}"
+    cat_lines "${ran_outs[$i]}"
+    i=$((i + 1))
+  done
+} > "$run_file"
+rm -f "$base_out" ${ran_outs[@]+"${ran_outs[@]}"}
+
+printf '%s\n' "$result" "${mutant_lines[@]}"
+echo "run: $run_file"
+
+# 7. Exit.
+if [ "$survived" -eq 0 ] && [ "$invalid" -eq 0 ]; then
+  exit 0
+fi
+exit 1

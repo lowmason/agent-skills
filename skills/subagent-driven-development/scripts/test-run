@@ -28,15 +28,17 @@
 # behind, holding the output so far.
 #
 # A repository with no commit is refused before anything runs, because the
-# header names HEAD (sdd-repo --with-commit). A refusal writes no file.
+# header names HEAD (sdd-repo --with-commit). So is a mutant still applied
+# (mutant-run's mutant-active marker). A refusal writes no file.
 #
 # Usage: test-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]
 #   TASK_NUMBER is a task ID in task-brief's grammar: letters and digits,
 #   optionally dot-separated, with at least one digit (3, 6b, A1, 2.1).
 # stdout: the last 5 lines of the output, then "run: <absolute path of the run
 #   file>" as the last line. The "run:" line tells a run from a refusal.
-# Exit: the test command's exit status; 2 for bad arguments or a bad task
-#   number. sdd-repo's and sdd-workspace's exit 2 pass through.
+# Exit: the test command's exit status; 2 for bad arguments, a bad task
+#   number or a mutant still applied. sdd-repo's and sdd-workspace's exit 2
+#   pass through.
 #
 # Two callers: the SDD controller, and executing-plans' task-done.
 set -euo pipefail
@@ -67,6 +69,10 @@ fi
 
 "$sdd/sdd-repo" --with-commit > /dev/null
 dir=$("$sdd/sdd-workspace" "$plan")
+if [ -e "$dir/mutant-active" ]; then
+  echo "test-run: a mutant is still applied ($dir/mutant-active); run mutant-run again, which reverses it first" >&2
+  exit 2
+fi
 
 # Render the command the way a person would type it.
 cmd=""
