@@ -181,10 +181,16 @@ The script stays read-only. Each changed section works in both arms (rg, and gre
 - The "Scratch notebooks" row in the signal table (`:79`) adds a marimo `.py` notebook outside `notebooks/`.
 - The triage bullet "Scratch notebook beside prod code" (`:151-153`) gains a third outcome beside HARDEN and DELETE:
   **convert**, for a notebook worth keeping as an analysis record. The steps:
-  1. Run `marimo convert <name>.ipynb -o notebooks/<name>.py`.
-  2. Run `marimo check` on the result.
-  3. Fix each cell it reports. A cell of notes that is not Python becomes a markdown cell or goes (F10).
-  4. Delete the `.ipynb`.
+  1. Choose `notebooks/<name>.py` as the target. If that file exists, pick another name, because `marimo convert`
+     overwrites it without asking.
+  2. Run `marimo convert <name>.ipynb -o notebooks/<name>.py`.
+  3. Run `marimo check` on the result. Fix each cell it reports. A cell of notes that is not Python becomes a
+     markdown cell or goes (F10).
+  4. Run the new notebook and compare its outputs with the outputs saved in the `.ipynb`. `marimo convert` drops
+     saved outputs, and `marimo check` runs no cell.
+  5. Delete the `.ipynb` only when the outputs match. Otherwise keep it, and log the gap as a backlog row.
+
+  *(Steps amended: owner, plan 96, 2026-11-13.)*
 
   HARDEN (extract into a module) stays the outcome for load-bearing logic. The example backlog row (`:194`) may show
   the new outcome *(builder's call)*.
