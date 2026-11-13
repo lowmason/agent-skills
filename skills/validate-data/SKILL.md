@@ -223,6 +223,10 @@ survive a skeptic who shares your data.
 mean anything — two sign changes do not establish a lead. If the code computes correlation, the
 claim cannot be about causation.
 
+**Do the figures show what the tables say?** Viewing the image is not the check. For each figure,
+open the script that drew it, find the file or frame it plots, and compare that with the table the
+figure reflects, in code. A figure with no traceable source is a FAIL.
+
 **Within vs composition effects.** When you decompose a divergence into "composition" (the mix
 shifted) and "within" (rates moved within cells), verify both terms are actually computed. A
 decomposition that hardcodes one term — `pl.lit(0.0).alias("composition_effect")` — and dumps the
@@ -300,6 +304,7 @@ runs; expand the prose with problem-specific context. Write it to `<slug>/valida
 
 ## 4. Methodology & bias
 - Conclusions supported: PASS/WARN/FAIL — <claim → evidence map>
+- Figures match sources: PASS/FAIL — <figure → script → file or frame, checked against table>
 - Within vs composition: PASS/WARN/FAIL — <both terms computed? simplifications named>
 - Coverage / selection / survivorship / revision: PASS/WARN — <biases assessed>
 

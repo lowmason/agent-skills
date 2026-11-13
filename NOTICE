@@ -286,6 +286,19 @@ Philosophy of Software Design" (2nd ed., 2021) — deep modules and
 comments-as-design, used to temper the tiny-function and comment-minimalism
 readings. No text from any of these is reproduced.
 
+validate-data/ additionally carries one check, "Do the figures show what
+the tables say?" in its Methodology & bias section, with its report line.
+The idea comes from lesson 4, "Give it report-writing skills", of Eric J.
+Ma's blog post "How to Do Agentic Data Science" (2026-02-01,
+https://ericmjl.github.io/blog/2026/2/1/how-to-do-agentic-data-science/):
+every table and plot is scrutinized, and plots are checked against the
+tables they reflect. Only the idea was taken, by citation. The wording is
+original, and no text from the post is reproduced. A measured baseline
+(specs/baseline/red-baseline-report-source-match.md) found that agents
+given the skill's existing text already caught every planted mismatch
+between a report's text and its tables (20 of 20 reps), so only the
+figure check was added.
+
 The following skills are adapted from the "superpowers" project
 (https://github.com/obra/superpowers), MIT licensed, Copyright (c) 2025
 Jesse Vincent. The full upstream license text is in LICENSE-superpowers;
