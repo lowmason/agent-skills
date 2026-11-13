@@ -42,8 +42,10 @@
 # false catch. Every run, the baseline included, gets a JUnit report at a
 # fresh path through PYTEST_ADDOPTS, added to any value already set. pytest's
 # FAILED summary lines are not read: its -r flag is last-wins, so a command
-# with -rs prints none. Every run also gets PYTHONDONTWRITEBYTECODE=1, so no
-# mutant's bytecode outlives its reverse.
+# with -rs prints none. Every run also gets PYTHONDONTWRITEBYTECODE=1, and the
+# cached bytecode of each .py file a patch touches is removed before and after
+# every run, so no run loads bytecode older than its source and no mutant's
+# bytecode outlives its reverse.
 #
 # Each mutant's run has a time limit: ten times the baseline's whole seconds,
 # plus 60, or MUTANT_RUN_TIMEOUT (whole seconds) when it is set. A run past its
@@ -297,6 +299,7 @@ sh_quote() {
 run_command() {
   local out=$1 limit=$2 addopts
   rm -f "$out.xml" "$out.timeout"
+  purge_bytecode
   addopts="${PYTEST_ADDOPTS:+$PYTEST_ADDOPTS }--junitxml=$(sh_quote "$out.xml")"
   run_rc=0
   timed_out=false
@@ -321,6 +324,9 @@ run_command() {
   # A 2> /dev/null keeps bash's "Killed" notice for a killed job off stderr.
   wait "$cmd_pid" 2> /dev/null || run_rc=$?
   cmd_pid=
+  # Bytecode the command wrote anyway (compileall ignores
+  # PYTHONDONTWRITEBYTECODE) must not outlive the reverse that follows.
+  purge_bytecode
   if [ -n "$watch_pid" ]; then
     kill_tree KILL "$watch_pid"
     wait "$watch_pid" 2> /dev/null || true
@@ -392,6 +398,46 @@ is_test_path() {
     path=${path#*/}
   done
   return 1
+}
+
+# The .py files that any patch touches, one to a line.
+py_files=''
+for k in $ks; do
+  paths=$(patch_paths "$dir/task-$n-mutant-$k.patch") || continue
+  while IFS= read -r p; do
+    case "$p" in
+      *.py) py_files="$py_files$p"$'\n' ;;
+    esac
+  done <<EOF
+$paths
+EOF
+done
+
+# Remove the cached bytecode of each of those files, before and after every
+# run: from its __pycache__ (every optimization level), and from the mirror
+# under PYTHONPYCACHEPREFIX when the caller sets one. Python can load a .pyc
+# that predates the source it stands for: a timestamp .pyc is checked only by
+# the source's whole-second mtime and its size, and an unchecked-hash .pyc not
+# at all. A mutant would then never load and would read SURVIVED. Cached
+# bytecode is never a tracked file, so the D2 check is unaffected. A fresh
+# prefix for every run would also do it, but it recompiles every library.
+purge_bytecode() {
+  local p src stem
+  while IFS= read -r p; do
+    [ -n "$p" ] || continue
+    case "$p" in
+      */*) src="$top/${p%/*}" ;;
+      *) src=$top ;;
+    esac
+    stem=${p##*/}
+    stem=${stem%.py}
+    rm -f "$src/__pycache__/$stem".*.pyc
+    if [ -n "${PYTHONPYCACHEPREFIX:-}" ]; then
+      rm -f "$PYTHONPYCACHEPREFIX/${src#/}/$stem".*.pyc
+    fi
+  done <<EOF
+$py_files
+EOF
 }
 
 # 4. Baseline.

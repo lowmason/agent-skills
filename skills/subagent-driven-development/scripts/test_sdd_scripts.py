@@ -1098,6 +1098,55 @@ def test_mutant_run_writes_no_bytecode_that_could_outlive_a_reverse(calc):
     assert not list(calc.glob('**/__pycache__/calc*.pyc'))
 
 
+# An unchecked-hash .pyc loads whatever the source says, so it hides a mutant
+# with no timing involved, as a timestamp .pyc written in the mutant's second
+# does. compileall writes it even under PYTHONDONTWRITEBYTECODE.
+COMPILE_ARGS = '-m compileall -q --invalidation-mode unchecked-hash calc.py'
+
+
+def ignore_pycache(repo):
+    '''Commit a .gitignore for __pycache__/, as most Python repos have, so cached bytecode leaves the tree clean.'''
+    (repo / '.gitignore').write_text('__pycache__/\n')
+    git('add', '.gitignore', cwd=repo)
+    git('commit', '-qm', 'ignore bytecode', cwd=repo)
+
+
+def compile_unchecked(repo, env):
+    made = run(sys.executable, *COMPILE_ARGS.split(), cwd=repo, env=env)
+    assert made.returncode == 0, made.stdout + made.stderr
+
+
+def test_mutant_run_never_loads_bytecode_cached_before_it_ran(calc):
+    ignore_pycache(calc)
+    make_mutant(calc, 1, *A)
+    compile_unchecked(calc, PY_ENV)
+    assert list(calc.glob('__pycache__/calc*.pyc'))
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
+
+
+def test_mutant_run_never_loads_bytecode_cached_under_the_callers_prefix(calc, tmp_path_factory):
+    prefix = tmp_path_factory.mktemp('pycache-prefix')
+    env = {**PY_ENV, 'PYTHONPYCACHEPREFIX': str(prefix)}
+    make_mutant(calc, 1, *A)
+    compile_unchecked(calc, env)
+    assert list(prefix.rglob('calc*.pyc'))
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
+
+
+def test_mutant_run_leaves_no_mutant_bytecode_that_its_command_writes(calc):
+    ignore_pycache(calc)
+    make_mutant(calc, 1, *A)
+    cmd = ['sh', '-c', f'"$0" {COMPILE_ARGS} && "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
+    assert not list(calc.glob('__pycache__/calc*.pyc'))
+
+
 def test_mutant_run_needs_a_failed_test_in_the_report_to_catch(calc):
     make_mutant(calc, 1, *A)
     cmd = ['sh', '-c', 'grep -q "a - b" calc.py && exit 1; exit 0']
