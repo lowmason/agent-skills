@@ -1,0 +1,5 @@
+sha WORKTREE
+variant partial
+body sha256 f6fb198820153271998bed79089a2a0968d6da6d5d90bc5806805b0e556598bc
+body chars 19137
+prompt.txt sha256 ed34920775db663a3bb1863dec341fc024acda6538b3e0164285f7a4c526bf16

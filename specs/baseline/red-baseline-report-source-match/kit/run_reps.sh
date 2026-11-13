@@ -15,6 +15,13 @@ OUT="$(mkdir -p "$2" && cd "$2" && pwd)" || exit 2
 FIRST="$3"
 LAST="$4"
 MODEL="${5:?usage: run_reps.sh <prompt-file> <out-dir> <first-rep> <last-rep> <model>}"
+# Check the range before the overwrite guard: a reversed or non-numeric range would skip the guard.
+for n in "$FIRST" "$LAST"; do
+  case "$n" in
+    '' | *[!0-9]*) echo "refusing: first-rep and last-rep must be positive integers"; exit 2 ;;
+  esac
+done
+[ "$FIRST" -ge 1 ] && [ "$FIRST" -le "$LAST" ] || { echo "refusing: need 1 <= first-rep <= last-rep"; exit 2; }
 i="$FIRST"
 while [ "$i" -le "$LAST" ]; do
   [ -e "$OUT/rep$i.json" ] && { echo "refusing: $OUT/rep$i.json exists"; exit 2; }

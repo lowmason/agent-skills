@@ -10,10 +10,10 @@ Each rep is a fresh, decision-only `claude -p` with no tools. It runs from an em
 probe (`kit/isolation_probe.txt`) answered NO on all six lines on 2.1.323, and the init record
 showed no tools, no MCP servers, no skills and the default output style. `kit/show_reps.py` marks
 a rep VOID when its file is unreadable, the run is an error, or a tool or the advisor ran (more
-than one turn, an iteration that is not a message, or more than one model). None of the 50 reps
-in rounds 1 and 2 is VOID.
+than one turn, an iteration that is not a message, or more than one model). None of the 65 reps
+in rounds 1 to 3 is VOID.
 
-All 40 Sonnet reps were read by hand in full. The 10 Opus RED reps were scored from their ACTION
+All 55 Sonnet reps were read by hand in full. The 10 Opus RED reps were scored from their ACTION
 lines and from the lines that name the planted values, so the false-flag statements below do not
 cover them.
 
@@ -176,6 +176,58 @@ differ from the round 1 prompts by that line only.
 - **full:** reps 1 to 5 all give FAIL. Rep 5 cites `make_figures.py:3` for the read on line 4.
 
 Round 2 cost about $1.17: RED $0.40, GREEN $0.76.
+
+## Round 3: second Codex pass and Copilot's re-review
+
+Codex reviewed the branch through `595fa15`, and Copilot re-reviewed `df93605`. Three findings
+remained:
+
+- **The stale delivered image again** (Codex P1, and Copilot). Round 2 showed agents already check
+  the delivered PNGs, so this reads as an objection to the text, not to agent behavior. The text
+  invites it: "Viewing the image is not the check" says the delivered image does not matter.
+- **Figures with no table** (Codex P2). "Compare that with the table the figure reflects" assumes
+  every figure has a table. A trace plot or a raw-data boxplot has none, and N-A covered only "no
+  figures".
+- **A reversed or non-numeric rep range** (Copilot). `run_reps.sh` skipped its overwrite guard and
+  replaced an existing rep file. This was reproduced with a stand-in `claude` and fixed: the script
+  now refuses unless both numbers are integers with 1 ≤ first ≤ last.
+
+The owner chose to condition the two claims, add no new instruction, and stop after this round
+with no further Codex pass. The paragraph now reads "Viewing the image alone is not the check" and
+"For each figure that reflects a table". The report line's N-A reads "or no figure reflects a
+table".
+
+**GREEN bars** (registered before any round 3 rep ran). Sonnet, 5 reps each, on the round 3 text,
+with the round 2 scoring rules:
+
+- **stale:** at least 4 of 5 reps PASS.
+- **partial:** at least 4 of 5 reps have an ACTION line that reads `make_figures.py`.
+- **full:** no regression. Each rep names M1, M2 and M3, lists them as blocking, and flags no
+  correct item.
+
+No RED arm runs, because the edit adds no instruction.
+
+### Round 3 results
+
+The body is 19,137 characters, sha256
+`f6fb198820153271998bed79089a2a0968d6da6d5d90bc5806805b0e556598bc`. The `v3-*` prompts differ from
+the `v2-*` prompts by the two edited lines only.
+
+| Arm | Bar | Result |
+|---|---|---|
+| stale | ≥ 4/5 PASS | 5/5 |
+| partial | ≥ 4/5 read `make_figures.py` | 5/5 |
+| full | each rep names M1–M3, lists them as blocking, flags no correct item | 5/5 |
+
+- **stale:** reps 1, 3, 4 and 5 open the delivered PNGs, reps 2 and 3 re-render and compare, and
+  rep 1 also compares file times. Every rep says the figures are not yet confirmed. In round 2,
+  only 2 of 5 reps opened the PNGs.
+- **partial:** every rep also names M1 and M2, and none makes a false side claim.
+- **full:** every rep gives FAIL. Rep 3 adds a fourth blocker, the unverified date coverage. Two
+  side slips touch no report item: rep 5 cites `make_figures.py:3`, and rep 1 says the report
+  date 2026-10-09 "predates" the 2026-10-02 fix.
+
+Round 3 cost about $0.77. With it, the owner's stop applies: no further Codex pass on this branch.
 
 ## Limits
 
