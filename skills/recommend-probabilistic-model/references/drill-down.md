@@ -16,22 +16,26 @@ local PDFs are **optional**: if they are absent, fall back to pyprobml + the pub
 
 | Source | How to read it |
 |--------|----------------|
-| **Book 1** (`prob_ml_1-book.pdf`, 88 MB) | The Read tool works directly (pass `pages:`), or `pdftotext -f N -l M`. |
-| **Book 2** (`prob_ml_book.pdf`, 144 MB) | **Read tool fails** (>100 MB text cap). Use `pdftotext -f N -l M prob_ml_book.pdf -` for text; `pdftoppm -png -f N -l M -r 120 prob_ml_book.pdf /tmp/pg` for figures/equations. |
+| **Book 1** (`Probabilistic Machine Learning - An Introduction (Murphy).pdf`, 92 MB) | The Read tool works directly (pass `pages:`), or `pdftotext -f N -l M "$PDF1" -`. |
+| **Book 2** (`Probabilistic Machine Learning - Advanced Topics (Murphy).pdf`, 151 MB) | **Read tool fails** (>100 MB text cap). Use `pdftotext -f N -l M "$PDF2" -` for text; `pdftoppm -png -f N -l M -r 120 "$PDF2" /tmp/pg` for figures/equations. |
 | **Ruled out** | Splitting Book 2 with `pdfseparate`+`pdfunite` — it duplicates shared fonts/images per page and produces a file *larger* than the source (180 MB from 20 pages). Do not. |
 
-Local PDF directory (if present): `~/Documents/Bayesian/Probabilistic Machine Learning/`.
+Local PDF directory (if present): `~/Library/Mobile Documents/com~apple~CloudDocs/PDFs/Books/Machine Learning/`.
+Step 2 sets `$PDF1` and `$PDF2`. In these builds (Book 1 of 2025-04-18, Book 2 of
+2025-12-10), PDF page = book page + 30 in Book 1 and book page + 34 in Book 2.
 
 ## Procedure
 
 1. **Classify** the problem (task type + the question), as in SKILL.md Step 1.
 2. **Locate the topic in the books.** Find the section by name:
    ```bash
-   PDF1="$HOME/Documents/Bayesian/Probabilistic Machine Learning/prob_ml_1-book.pdf"
-   PDF2="$HOME/Documents/Bayesian/Probabilistic Machine Learning/prob_ml_book.pdf"
+   PDF_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/PDFs/Books/Machine Learning"
+   PDF1="$PDF_DIR/Probabilistic Machine Learning - An Introduction (Murphy).pdf"
+   PDF2="$PDF_DIR/Probabilistic Machine Learning - Advanced Topics (Murphy).pdf"
    # Search Book 2's table of contents (front matter) for the topic:
    pdftotext -f 5 -l 35 "$PDF2" - | grep -iE "reinforcement|policy|bandit"
-   # Then read the section's body by page range (book page ≈ PDF page; widen if needed):
+   # Then read the section's body by page range (PDF page = book page + 34 in Book 2,
+   # + 30 in Book 1; widen if needed):
    pdftotext -f <p> -l <p+8> "$PDF2" -
    ```
    Murphy's books cover the standard treatment in Book 1 and the advanced/extended treatment in

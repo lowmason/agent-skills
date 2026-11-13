@@ -298,3 +298,8 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review)." (deferred by 37-recommend-causal-design).
+
+## /deferred — 2026-11-12
+
+Closed deferred items:
+- "Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`" (deferred by 64-bayesian-rpm-routing): e76e7ee reads the moved PDFs' contents with `pdftotext -layout` and stops on a missing chapter or title. The rebuilt index covers Book 1's chapters 1–2 and titles every entry, and Gate A passes.

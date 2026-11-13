@@ -83,6 +83,13 @@ ruff could not run in that repo. The exit status in that line names the cause:
 - 1: the project does not sync.
 - 2: ruff is not one of the project's dev dependencies, or its ruff config is bad.
 
+Run this check from the `claude` CLI. In the CLI, the transcript shows the first stderr
+line of a hook that exits 1 (`hooks.exit-codes`). The Desktop app does not show it. On
+Claude Code 2.1.321 its transcript showed nothing after a Stop hook exited 1, but the
+session log recorded the line (checked 2026-11-12). So in a Desktop session, look in the
+logs: `grep -l 'ruff unavailable' ~/.claude/projects/*/*.jsonl` lists each session where
+ruff-check could not run.
+
 Optionally pair with a permission allowlist in the same file so the `uv` forms don't
 prompt. The `uv run` rule holds in manual permission mode only: auto mode sets aside
 broad allow rules for script runners such as `uv run`, so there that rule has no effect:

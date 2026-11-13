@@ -1,14 +1,17 @@
-"""Extract ground truth for citation verification into build/.scratch/ (gitignored).
+'''Extract ground truth for citation verification into build/.scratch/ (gitignored).
 
-Book section indices come from the TOC pages via pdftotext; the pyprobml listing from gh.
-The visual TOC mangles under pdftotext (multi-column: some pages give "10.4 Title", others
-stack bare "8.2 / 8.3 / 8.4" separated from their titles). So we collect section *numbers*
-robustly (any line whose leading token is `D.D(.D)*`), with titles captured opportunistically
-when present on the same line. Gate A checks number existence; title-correctness is Gate B.
+Book section indices come from the detailed-contents pages, read with `pdftotext -layout`,
+which keeps each entry's number, title and page on one line; the pyprobml listing comes
+from gh. A contents page range that starts late drops whole chapters without an error:
+until 2026-11-12, Book 1's range began two pages after its contents and lost chapters 1
+and 2. So `check_complete` refuses a parse whose chapters do not run from 1 without a gap,
+or that leaves an entry without a title, and `check_range_end` refuses a range whose next
+page still holds contents entries. Gate A checks number existence; title-correctness is
+Gate B.
 
 CC-BY-NC-ND note: these are factual section numbers/titles used only to VERIFY our own
 citations at build time — not shipped, not redistributed prose.
-"""
+'''
 from __future__ import annotations
 
 import json
@@ -16,47 +19,90 @@ import re
 import subprocess
 from pathlib import Path
 
-PDF_DIR = Path.home() / "Documents/Bayesian/Probabilistic Machine Learning"
-BOOK1 = PDF_DIR / "prob_ml_1-book.pdf"
-BOOK2 = PDF_DIR / "prob_ml_book.pdf"
+PDF_DIR = Path.home() / 'Library/Mobile Documents/com~apple~CloudDocs/PDFs/Books/Machine Learning'
+BOOK1 = PDF_DIR / 'Probabilistic Machine Learning - An Introduction (Murphy).pdf'
+BOOK2 = PDF_DIR / 'Probabilistic Machine Learning - Advanced Topics (Murphy).pdf'
 SCRATCH = Path(__file__).parent / ".scratch"
 
-# Detailed-CONTENTS page ranges (verified 2026-06-21: B1 body starts p31, B2 body p36).
-TOC = {"1": (BOOK1, 11, 26), "2": (BOOK2, 8, 35)}
+# PDF pages of the detailed contents, and of the first body page (chapter 1), in the builds
+# dated 2025-04-18 (Book 1, 860 pages) and 2025-12-10 (Book 2, 1,370 pages); verified
+# 2026-11-12. A new build can move them: check_complete catches a contents range that
+# starts late, check_range_end one that stops early, and a body start that is late cuts
+# the start of chapter 1 from the dump.
+TOC = {'1': (BOOK1, 9, 25), '2': (BOOK2, 9, 29)}
+BODY_START = {'1': 31, '2': 35}
 
-# A section number: at least one dot (distinguishes from bare page numbers like "358").
-SEC_RE = re.compile(r"^(\d+\.\d+(?:\.\d+)*)(?:\s+(.+?))?\s*$")
-# A chapter line: integer + Capitalized title on the same line (skips bare page numbers).
-CHAP_RE = re.compile(r"^(\d+)\s+([A-Z].+?)\s*$")
+# One contents entry under `pdftotext -layout`: the number, the title, then the page.
+TOC_LINE_RE = re.compile(r'^\s*(\d+(?:\.\d+)*)\s+(\S.*?)\s+\d+\s*$')
+ADVANCED_MARK = '*'
 
 
-def _clean_title(t: str | None) -> str:
-    if not t:
-        return ""
-    t = t.strip().rstrip("*").strip()       # drop the "advanced section" marker
-    return "" if t.isdigit() else t          # a lone trailing page number is not a title
+def parse_toc(text: str) -> dict[str, str]:
+    '''Map each section number in a `pdftotext -layout` contents dump to its title.
+
+    A line counts only when it starts with a section number and ends with an arabic page
+    number, so front-matter lines (`Preface  xxvii`) and page footers drop out. The
+    advanced-section marker is removed from a title, and a repeated number keeps its
+    first title.
+    '''
+    rows: dict[str, str] = {}
+    for line in text.splitlines():
+        m = TOC_LINE_RE.match(line)
+        if m:
+            rows.setdefault(m.group(1), m.group(2).removesuffix(ADVANCED_MARK).strip())
+    return rows
+
+
+def check_complete(rows: dict[str, str]) -> None:
+    '''Raise ValueError unless the chapters run from 1 with no gap, every section's
+    chapter is present, and every entry has a title.'''
+    if not rows:
+        raise ValueError('no contents entries parsed: check the contents page range')
+    chapters = {int(n) for n in rows if '.' not in n}
+    problems = []
+    missing = sorted(set(range(1, max(chapters, default=0) + 1)) - chapters)
+    if missing:
+        problems.append(f'chapters missing: {", ".join(map(str, missing))}')
+    orphans = [n for n in rows if '.' in n and int(n.split('.')[0]) not in chapters]
+    if orphans:
+        problems.append(f'sections whose chapter is absent: {", ".join(orphans)}')
+    untitled = [n for n, title in rows.items() if not title]
+    if untitled:
+        problems.append(f'entries with no title: {", ".join(untitled)}')
+    if problems:
+        raise ValueError('; '.join(problems))
+
+
+def check_range_end(after: dict[str, str], last: int) -> None:
+    '''Raise ValueError when the page after the contents range still holds entries.
+
+    `after` is parse_toc's map for page `last + 1`. A range that stops early passes
+    check_complete, since its chapters still run from 1 without a gap, so the missing
+    tail shows only here.
+    '''
+    if after:
+        first = min(after, key=lambda n: [int(p) for p in n.split('.')])
+        raise ValueError(
+            f'contents continue on page {last + 1} ({first} {after[first]}): widen the range')
+
+
+def _contents(pdf: Path, first: int, last: int) -> dict[str, str]:
+    txt = subprocess.run(
+        ['pdftotext', '-layout', '-f', str(first), '-l', str(last), str(pdf), '-'],
+        capture_output=True, text=True, check=True,
+    ).stdout
+    return parse_toc(txt)
 
 
 def extract_book(book: str, pdf: Path, first: int, last: int) -> int:
-    txt = subprocess.run(
-        ["pdftotext", "-f", str(first), "-l", str(last), str(pdf), "-"],
-        capture_output=True, text=True, check=True,
-    ).stdout
-    rows: dict[str, str] = {}
-    for line in txt.splitlines():
-        line = line.strip()
-        m = SEC_RE.match(line)
-        if m:
-            num, title = m.group(1), _clean_title(m.group(2))
-            rows.setdefault(num, title)
-            if title and not rows[num]:
-                rows[num] = title
-            continue
-        c = CHAP_RE.match(line)
-        if c and not c.group(2).isupper():   # skip ALL-CAPS running headers like "CONTENTS"
-            rows.setdefault(c.group(1), _clean_title(c.group(2)))
-    out = SCRATCH / f"book{book}_sections.tsv"
-    out.write_text("\n".join(f"{n}\t{t}" for n, t in sorted(rows.items(), key=_sortkey)))
+    rows = _contents(pdf, first, last)
+    try:
+        check_complete(rows)
+        check_range_end(_contents(pdf, last + 1, last + 1), last)
+    except ValueError as err:
+        raise ValueError(f'book{book}, contents pages {first}-{last} of {pdf.name}: {err}') from err
+    out = SCRATCH / f'book{book}_sections.tsv'
+    out.write_text('\n'.join(f'{n}\t{t}' for n, t in sorted(rows.items(), key=_sortkey)))
     return len(rows)
 
 
@@ -69,12 +115,11 @@ def extract_fulltext() -> dict[str, int]:
     accurate (original-wording) summaries and for Gate B's semantic verification — robust
     to the TOC's page-number mangling. Gitignored; CC-BY-NC-ND own-use extraction only."""
     # Start at the body (skip front matter + TOC) so a section heading's first match in the
-    # dump is its real occurrence, not its table-of-contents line. Body starts: B1 p31, B2 p36.
-    body_start = {"1": 31, "2": 36}
+    # dump is its real occurrence, not its table-of-contents line.
     sizes = {}
     for book, pdf in (("1", BOOK1), ("2", BOOK2)):
         out = SCRATCH / f"book{book}_full.txt"
-        subprocess.run(["pdftotext", "-f", str(body_start[book]), str(pdf), str(out)], check=True)
+        subprocess.run(['pdftotext', '-f', str(BODY_START[book]), str(pdf), str(out)], check=True)
         sizes[book] = out.stat().st_size
     return sizes
 
