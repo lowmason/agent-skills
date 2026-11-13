@@ -1,13 +1,13 @@
 <!-- cc-guide: skills.locations @2.1.306 -->
 # CLAUDE.md
 
-This file is the canonical maintainer guide for Claude Code, Codex, and Gemini CLI when working in this repository. `AGENTS.md` points Codex here and `GEMINI.md` imports it.
+This file is the canonical maintainer guide for Claude Code, Codex, and Antigravity CLI (`agy`, Gemini CLI's successor) when working in this repository. `AGENTS.md` points Codex here and `GEMINI.md` includes it for `agy`.
 
 ## What this repo is
 
 A personal collection of coding-agent configuration, centered on the portable [Agent Skills specification](https://agentskills.io/specification). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (canonical Claude-format subagent definitions), `commands/` (canonical Claude slash commands), `runtimes/` (generated Codex and Gemini adapters), `hooks/` (Claude Code hook templates and its read-only-agent guard), and `rules/` (Claude Code path-scoped rules). There is no application here to run — the "product" is the skill text, companion configuration, and bundled scripts. `archive/skills/` keeps retired skills whole for a later restore (`archive/README.md`). `install.py` does not install them, no suite runs their tests, and the skill lints skip them; only repo-wide scans such as the binary-asset check still cover the folder.
 
-`install.py` installs skills and companion assets for Claude, Codex, Gemini, or all three. Claude uses `~/.claude/skills/`; Codex and Gemini share `~/.agents/skills/`. This repo *is* the user's symlinked source, so edits here are live.
+`install.py` installs skills and companion assets for Claude, Codex, Gemini, or all three. Its `gemini` runtime targets `agy`, not Gemini CLI. Claude uses `~/.claude/skills/`, Codex `~/.agents/skills/`, and `agy` `~/.gemini/config/skills/`. This repo *is* the user's symlinked source, so edits here are live.
 
 ## Runtime adapters
 
@@ -18,7 +18,7 @@ uv run --with pyyaml python build/sync_runtime_assets.py
 uv run --with pyyaml python build/sync_runtime_assets.py --check
 ```
 
-The generator translates manifest syntax and Gemini tool names only. Codex and Gemini agents inherit the active runtime model; Claude-specific model pins do not cross runtimes. Gemini gets TOML command adapters. Codex has no command adapter here; reusable Codex workflows are skills.
+The generator translates manifest syntax and `agy` tool names only. Codex and Gemini agents inherit the active runtime model; Claude-specific model pins do not cross runtimes. In `agy` a skill is the slash command, so each command becomes a generated skill under `runtimes/gemini/skills/`. The Gemini agents install to `~/.gemini/config/agents/`, where `agy`'s main agent can dispatch them and `agy --agent <name>` can start a session with one. Codex has no command adapter here; reusable Codex workflows are skills.
 
 ## Provenance is load-bearing — preserve it
 
@@ -94,7 +94,10 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_l
 # Claude Code guide drift detector (build/cc_guide/): suite cc_guide; lint, run before committing a change to the guide, to
 # build/cc_guide/ or to a file carrying a citation (its STALE lines never fail it); check, which fetches the docs and
 # reports what is due (exit 1 = due; reads main unless --worktree); /cc-guide acts on what it reports; a SessionStart
-# hook (build/cc_guide/notice.sh) runs check --hook once the last good check is a day old; the terminal shows its notice, and Claude gets it as context in the CLI and Desktop
+# hook (build/cc_guide/notice.sh) runs check --hook once the last good check is a day old; the terminal shows its notice, and Claude gets it as context in the CLI and Desktop;
+# .github/workflows/cc-guide-drift.yml runs check --worktree weekly as an advisory job that fails when something is due;
+# check also compares the Codex and agy guides' cli-stamp lines with the installed CLIs (build/cc_guide/cli_versions.py); the notice
+# names a guide whose CLI has a newer major.minor, and a guide refresh updates its stamp line with its header
 uv run python build/cc_guide/cli.py lint
 uv run python build/cc_guide/cli.py check
 

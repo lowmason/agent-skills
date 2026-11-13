@@ -5,10 +5,9 @@ kind: local
 tools:
 - read_file
 - write_file
-- replace
-- grep_search
-- glob
-- run_shell_command
+- edit_file
+- run_command
+- manage_task
 ---
 
 You write technical documentation. The dispatch names the deliverable and

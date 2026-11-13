@@ -154,6 +154,47 @@ def test_after_check_writes_the_notice_for_each_exit_then_the_record(tmp_path):
     assert notice.read_last_check(tmp_path)['run'] == 'r3'
 
 
+PART = 'agy guide 1.5.7, installed 1.6.0'
+CODEX_PART = 'codex guide 0.167.2, installed 0.168.0'
+
+
+def line_in(cache):
+    return json.loads((cache / notice.NOTICE).read_text())['systemMessage']
+
+
+def test_after_check_adds_each_guide_behind_its_cli_to_the_line_for_every_exit(tmp_path):
+    '''The Codex and agy guides' parts need no network, so a failed docs fetch
+    must not hide them, and they make a notice when nothing else is due.'''
+    due = report(changelog={'releases': 2, 'oldest': '2.1.901', 'last_triage': '2026-10-10', 'due': True})
+    notice.after_check(tmp_path, 1, due, NOW, TODAY, 'r1', [PART])
+    assert line_in(tmp_path) == f'cc-guide · 2 releases untriaged (last triage 7 d ago) → /cc-guide · {PART}'
+    notice.after_check(tmp_path, 0, report(), NOW, TODAY, 'r2', [PART, CODEX_PART])
+    assert line_in(tmp_path) == f'cc-guide · {PART} · {CODEX_PART}'
+    failing = dict(report(), errors=['https://example.invalid/llms.txt: HTTP 503'])
+    notice.after_check(tmp_path, 2, failing, NOW, TODAY, 'r3', [PART])
+    assert line_in(tmp_path) == ('cc-guide · check failed: https://example.invalid/llms.txt: HTTP 503 · '
+                                 f'last good check 0 d ago → uv run python build/cc_guide/cli.py check · {PART}')
+    notice.after_check(tmp_path, 0, report(), NOW, TODAY, 'r4', [])
+    assert (tmp_path / notice.NOTICE).read_text() == ''
+
+
+def test_the_guide_parts_keep_their_room_on_a_full_line_and_after_a_long_error(tmp_path):
+    sections = [f'group{g}.section-{s:02d}' for g in range(6) for s in range(7)][:38]
+    findings = [tuple(sections[(i + k) % 38] for k in range(3)) for i in range(172)]
+    full = report(findings=findings, lint=2,
+                  changelog={'releases': 4, 'oldest': '2.1.299', 'last_triage': '2026-10-14', 'due': True})
+    notice.after_check(tmp_path, 1, full, NOW, TODAY, 'r1', [PART, CODEX_PART])
+    got = line_in(tmp_path)
+    assert len(got) < notice.LIMIT
+    assert ' more) · 4 releases untriaged' in got
+    assert got.endswith(f' → /cc-guide · {PART} · {CODEX_PART}')
+    notice.after_check(tmp_path, 2, dict(report(), errors=['x' * 1000]), NOW, TODAY, 'r2', [PART, CODEX_PART])
+    got = line_in(tmp_path)
+    assert len(got) < notice.LIMIT
+    assert '…' in got
+    assert got.endswith(f' → uv run python build/cc_guide/cli.py check · {PART} · {CODEX_PART}')
+
+
 def test_after_failure_writes_the_error_line_and_records_an_exit_two(tmp_path):
     notice.after_failure(tmp_path, 'RuntimeError: boom', NOW, 'r9')
     assert json.loads((tmp_path / notice.NOTICE).read_text())['systemMessage'] == (

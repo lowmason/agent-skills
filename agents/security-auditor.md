@@ -1,7 +1,7 @@
 ---
 name: security-auditor
 description: Use for a security-focused review of a diff, branch, or repo — injection risks, committed secrets and credential handling, insecure deserialization, TLS verification, dependency risks. Read-only; reports severity-ranked findings with file:line and concrete remediation. Not a general code reviewer — dispatch code-reviewer for plan/spec conformance and code quality.
-tools: Read, Grep, Glob, Bash
+tools: Read, Bash
 model: opus
 effort: xhigh
 # cc-guide: subagents.frontmatter subagents.tools @2.1.306

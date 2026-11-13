@@ -4,9 +4,8 @@ description: Read-only search agent for broad fan-out searches — locates code 
 kind: local
 tools:
 - read_file
-- grep_search
-- glob
-- run_shell_command
+- run_command
+- manage_task
 ---
 
 You are a read-only search agent. You locate code and report where it
