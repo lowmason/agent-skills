@@ -1,0 +1,108 @@
+mutant-run: Task 1, run 2
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_wordcount.py
+head: e50904922db7d301c59e302bee6539ab599882b5
+tree: clean
+result: caught 3, survived 0, invalid 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 193fa1f052e1beb5b27ece02d2ccf719cbfa6c6ce0fa8f9dc2b85d234a3beb7d tests: tests.test_wordcount::test_count_words_splits_on_any_run_of_whitespace tests.test_wordcount::test_count_words_ignores_whitespace_at_the_ends
+mutant 2: CAUGHT exit 1 sha256 bef28db2530d12d822f03ac19e3ebccb9fe977dce569062c487266f70942010c tests: tests.test_wordcount::test_count_words_skips_comment_lines tests.test_wordcount::test_count_words_skips_a_comment_after_spaces tests.test_wordcount::test_count_words_skips_a_comment_after_a_tab tests.test_wordcount::test_count_words_skips_a_comment_with_no_blank_after_the_hash tests.test_wordcount::test_count_words_skips_a_comment_on_the_last_line
+mutant 3: CAUGHT exit 1 sha256 ec9b012513e3a4bf3628c56e83086f8b866b5921b929ef7a6a8e718379104e4d tests: tests.test_wordcount::test_count_words_counts_a_hash_after_a_word
+--- tests ---
+test tests.test_wordcount::test_count_words_splits_on_any_run_of_whitespace: caught 1
+test tests.test_wordcount::test_count_words_ignores_whitespace_at_the_ends: caught 1
+test tests.test_wordcount::test_count_words_skips_comment_lines: caught 2
+test tests.test_wordcount::test_count_words_skips_a_comment_after_spaces: caught 2
+test tests.test_wordcount::test_count_words_skips_a_comment_after_a_tab: caught 2
+test tests.test_wordcount::test_count_words_skips_a_comment_with_no_blank_after_the_hash: caught 2
+test tests.test_wordcount::test_count_words_skips_a_comment_on_the_last_line: caught 2
+test tests.test_wordcount::test_count_words_counts_a_hash_after_a_word: caught 3
+--- output: baseline ---
+........                                                                 [100%]
+8 passed in 0.01s
+--- output: mutant 1 ---
+......FF                                                                 [100%]
+=================================== FAILURES ===================================
+_______________ test_count_words_splits_on_any_run_of_whitespace _______________
+
+    def test_count_words_splits_on_any_run_of_whitespace():
+>       assert count_words('one  two\tthree \t four\n\nfive\r\nsix\n') == 6
+E       AssertionError: assert 8 == 6
+E        +  where 8 = count_words('one  two\tthree \t four\n\nfive\r\nsix\n')
+
+tests/test_wordcount.py:29: AssertionError
+_______________ test_count_words_ignores_whitespace_at_the_ends ________________
+
+    def test_count_words_ignores_whitespace_at_the_ends():
+>       assert count_words('  one two  \n') == 2
+E       AssertionError: assert 6 == 2
+E        +  where 6 = count_words('  one two  \n')
+
+tests/test_wordcount.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_splits_on_any_run_of_whitespace
+FAILED tests/test_wordcount.py::test_count_words_ignores_whitespace_at_the_ends
+2 failed, 6 passed in 0.01s
+--- output: mutant 2 ---
+FFFFF...                                                                 [100%]
+=================================== FAILURES ===================================
+_____________________ test_count_words_skips_comment_lines _____________________
+
+    def test_count_words_skips_comment_lines():
+>       assert count_words('# note\nhello world\n') == 2
+E       AssertionError: assert 4 == 2
+E        +  where 4 = count_words('# note\nhello world\n')
+
+tests/test_wordcount.py:5: AssertionError
+________________ test_count_words_skips_a_comment_after_spaces _________________
+
+    def test_count_words_skips_a_comment_after_spaces():
+>       assert count_words('   # note\nhello\n') == 1
+E       AssertionError: assert 3 == 1
+E        +  where 3 = count_words('   # note\nhello\n')
+
+tests/test_wordcount.py:9: AssertionError
+_________________ test_count_words_skips_a_comment_after_a_tab _________________
+
+    def test_count_words_skips_a_comment_after_a_tab():
+>       assert count_words('\t# note\nhello\n') == 1
+E       AssertionError: assert 3 == 1
+E        +  where 3 = count_words('\t# note\nhello\n')
+
+tests/test_wordcount.py:13: AssertionError
+________ test_count_words_skips_a_comment_with_no_blank_after_the_hash _________
+
+    def test_count_words_skips_a_comment_with_no_blank_after_the_hash():
+>       assert count_words('#note here\nhello\n') == 1
+E       AssertionError: assert 3 == 1
+E        +  where 3 = count_words('#note here\nhello\n')
+
+tests/test_wordcount.py:17: AssertionError
+______________ test_count_words_skips_a_comment_on_the_last_line _______________
+
+    def test_count_words_skips_a_comment_on_the_last_line():
+>       assert count_words('hello\n# last note') == 1
+E       AssertionError: assert 4 == 1
+E        +  where 4 = count_words('hello\n# last note')
+
+tests/test_wordcount.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_skips_comment_lines - Assert...
+FAILED tests/test_wordcount.py::test_count_words_skips_a_comment_after_spaces
+FAILED tests/test_wordcount.py::test_count_words_skips_a_comment_after_a_tab
+FAILED tests/test_wordcount.py::test_count_words_skips_a_comment_with_no_blank_after_the_hash
+FAILED tests/test_wordcount.py::test_count_words_skips_a_comment_on_the_last_line
+5 failed, 3 passed in 0.01s
+--- output: mutant 3 ---
+.....F..                                                                 [100%]
+=================================== FAILURES ===================================
+_________________ test_count_words_counts_a_hash_after_a_word __________________
+
+    def test_count_words_counts_a_hash_after_a_word():
+>       assert count_words('hello # world\n') == 3
+E       AssertionError: assert 0 == 3
+E        +  where 0 = count_words('hello # world\n')
+
+tests/test_wordcount.py:25: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_wordcount.py::test_count_words_counts_a_hash_after_a_word
+1 failed, 7 passed in 0.01s

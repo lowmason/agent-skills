@@ -318,6 +318,8 @@ before Task 2.
 | Gate-tag regression: `isolation_probe.txt` probe through the runner (json) | 0.0195338 | 7.5600275 |
 | Gate-tag regression: the same probe, stream-json | 0.0079716 | 7.5679991 |
 | Gate-tag regression batch (5 reps, `gate-tag/`) | 0.1250750 | 7.6930741 |
+| Reviewer: `isolation_probe.txt` probe through the runner (json) | 0.0075989 | 7.7006730 |
+| Reviewer: the same probe, stream-json | 0.0080329 | 7.7087059 |
 
 ## Leak check
 
@@ -1051,3 +1053,327 @@ reps found no hit in anything committed.
 
 **Spend.** The probes and the batch cost $0.1525804. The micro-test total is $7.6930741 of the
 $100 cap.
+
+## Reviewer micro-test
+
+This section holds the reviewer micro-test that the spec asks for in Verification item 4. Plan 93
+Task 6 wrote it. Its rules (Reviewer base to Reviewer isolation probe) were written and committed
+before any scored rep ran. No rule is added after a rep is seen. Task 8 adds the treatment arms.
+
+### Reviewer base
+
+- **Texts under test.** The body of `agents/task-reviewer.md`, its frontmatter removed, and the
+  Short Form and Full Form `prompt: |` blocks of
+  `skills/subagent-driven-development/task-reviewer-prompt.md`. A text enters a prompt only
+  through `git show <sha>:<path>`, never through `~/.claude/`.
+- After `db4fede`, `agents/task-reviewer.md` changed only in a frontmatter comment, its cc-guide
+  stamp (`@2.1.306` to `@2.1.323`). The prompt drops the frontmatter, so the control reads both
+  files at `db4fede`, as the plan says.
+- Claude Code 2.1.323. `--model sonnet` resolves to `claude-sonnet-5-5` (both probes' usage).
+
+### Reviewer kit
+
+The kit is `specs/baseline/red-baseline-mutant-checked-tests/review-kit/`. Four files are copies of
+plan 84's kit (`specs/baseline/red-baseline-test-run/kit/`), and two are new. No file comes from
+`specs/baseline/red-baseline-statement-readings/kit/`, and the kit holds no scorer code from it.
+The kit holds no tests.
+
+- `run_reps.sh`: plan 84's runner with three changes and no other. It adds
+  `--disable-slash-commands` right after `--setting-sources ""`. Its `mktemp` prefix is
+  `/tmp/mt-review-` in place of `/tmp/plan84-rep-`. Its first comment line names plan 93 in place
+  of plan 84, and one added comment line says what changed. Each rep is a fresh `claude -p` with no
+  tools (`--tools ""`), `--output-format json` and `--max-budget-usd 0.50`. It runs from a new
+  empty directory under `/tmp`, outside every repository, under `env -i`.
+- `isolation_probe.txt`: plan 84's probe with plan 92's sixth line added, and "five" changed to
+  "six" in its first line. It is byte-identical to plan 92's `kit/isolation_probe.txt`.
+- `show_reps.py`: its docstring names plan 93, and its reading aids are this test's: `mutant`,
+  `withdraw`, `inputs-table`, `tab`, `return-0`, `rule-7`, `rule-8`, `unproven` and `unreachable`.
+  Its VOID flags and its cost sum are unchanged.
+- `build_prompts.py`: rewritten from plan 84's. It keeps plan 84's `show`, `body`, `sha256` and
+  leak-view parts. It gains `<arm>` before `<sha>`: `build_prompts.py <arm> <sha> <out-dir>
+  [<case> ...]`, with `<arm>` `short` or `full`.
+  - `short`: the agent body in `<agent name="task-reviewer">` tags, inside plan 84's
+    `REVIEWER_FRAME`, as plan 84's `reviewer-run` case frames it. The Short Form dispatch follows,
+    then plan 84's `REVIEWER_TASK`.
+  - `full`: the Full Form dispatch alone, as a general-purpose subagent gets it. The frame
+    (`FULL_FRAME`) says "You are a general-purpose subagent on Claude Code." The task
+    (`FULL_TASK`) is "Write your review report now, in the format your dispatch gives."
+  - The dispatch is the form's `prompt: |` block with its indent removed and its placeholders
+    filled. A template that holds all four of `[SPEC_EXCERPTS_FILE]`, `[MUTANTS_FILE]`,
+    `[MUTANT_RUN_FILE]` and `[TEST_RULINGS]` gets them filled, with `[TEST_RULINGS]` as `none`. A
+    template that holds none of them gets the control's fixed line (Reviewer arms). A template
+    that holds some of them is refused, and so is a dispatch that still holds a placeholder after
+    the fill.
+  - The seven package files follow the dispatch, each in `<file path="...">` tags, in the order
+    the dispatch names them: brief, report, test run, excerpts, mutants file, mutant run, diff.
+    They are read from the working tree, never at `<sha>`. A package whose run files are not at the
+    diff's head on a clean tree is refused.
+  - `<sha>` `leakview` puts a placeholder in place of each text under test and each package file's
+    body. It lists the fill values and the fixed line after the dispatch placeholder.
+  - `MANIFEST.txt` gives the arm, the full sha, the sha256 of each text under test, of each
+    package file and of each prompt, the model, the budget and the dispatch mode (fixed line added,
+    or four placeholders filled).
+- `cases.py`: new. It holds `VOID`, `REVIEWER_FRAME` and `REVIEWER_TASK`, copied word for word from
+  plan 84's `cases.py`. A script compared them with plan 84's module, and they are equal. It also
+  holds `FULL_FRAME`, `FULL_TASK`, the fill values, the fixed line, the leak words and the bars for
+  the reader. `build_prompts.py` never writes a bar into a prompt.
+- `build_packages.py`: new. It builds the packages (next section).
+
+Every kit Python command runs with `PYTHONDONTWRITEBYTECODE=1`, from the repository root, through
+`uv run python`.
+
+### Packages
+
+`review-kit/build_packages.py specs/baseline/red-baseline-mutant-checked-tests/reviewer/packages`
+built R1 to R3. Each package is the seven files a task reviewer reads: the brief, the report, the
+controller's test run, the review package (the diff), the excerpts file, the mutants file and the
+controller's mutant run. `reviewer/packages/MANIFEST.txt` gives each file's sha256, each package's
+base and head, and the sha256 of each script used. For each package, the script does these steps
+with this worktree's `skills/subagent-driven-development/scripts/`:
+
+1. It makes a new git repository under `/tmp`, outside every other repository, from F3's `repo/`.
+   Its first commit, "Start the project", is the base.
+2. It writes the brief with `task-brief plan.md 1` and checks that the brief equals F3's
+   `brief.md`. The excerpts file is F3's `spec.md`.
+3. As the implementer, it runs the plan test and sees RED (the `ImportError`). It writes a correct
+   `count_words`, sees GREEN and commits "Add count_words". It adds a test for each input shape and
+   commits "Test each input shape of the two rules". It writes the patches and the mutants file,
+   and runs `mutant-run`.
+4. It writes the implementer's report from the real output of those runs.
+5. As the controller, it runs `test-run` on the focused command and the plan's documented suite,
+   each in its own parentheses. It then runs `mutant-run` on the focused command, and
+   `review-package` from the base to HEAD.
+6. It copies the seven files with the scratch repository's path written as `/work/notes`. It
+   stops when a copied file still names the scratch path, `/Users/`, `$HOME`, `$TMPDIR` or the OS
+   user name.
+
+Each commit has a fixed author and date, so a rebuild makes the same shas. Two builds made
+byte-identical packages. The base is `0edad74`.
+
+**The code.** Every package has the same correct `count_words`: it skips a line when
+`line.lstrip().startswith('#')`, and counts `len(line.split())` for each other line of
+`text.splitlines()`.
+
+**R1's tests.** The plan test, unchanged, and seven added tests:
+
+| Test | Input | Expected |
+|---|---|---|
+| `test_count_words_skips_comment_lines` (plan test) | `'# note\nhello world\n'` | 2 |
+| `test_count_words_skips_a_comment_after_spaces` | `'   # note\nhello\n'` | 1 |
+| `test_count_words_skips_a_comment_after_a_tab` | `'\t# note\nhello\n'` | 1 |
+| `test_count_words_skips_a_comment_with_no_blank_after_the_hash` | `'#note here\nhello\n'` | 1 |
+| `test_count_words_skips_a_comment_on_the_last_line` | `'hello\n# last note'` | 1 |
+| `test_count_words_counts_a_hash_after_a_word` | `'hello # world\n'` | 3 |
+| `test_count_words_splits_on_any_run_of_whitespace` | `'one  two\tthree \t four\n\nfive\r\nsix\n'` | 6 |
+| `test_count_words_ignores_whitespace_at_the_ends` | `'  one two  \n'`, `''`, `' \t\n'` | 2, 0, 0 |
+
+R1's Inputs table has 15 rows. For `specs/wordcount.md:7` the shapes are: `#` at column 0, spaces
+before `#`, a tab before `#`, no blank after `#`, a comment on the last line with no newline after
+it, and `#` after a word. For `specs/wordcount.md:8` they are: one space, a run of spaces, a tab, a
+run of spaces and tabs, a newline, a blank line, a carriage return before a newline, whitespace at
+the start and end of a line, and empty text or whitespace only. Each row names a test that uses its
+shape.
+
+**R1's mutants.**
+
+| Mutant | Wrong version | Rule | Caught by |
+|---|---|---|---|
+| 1 | splits each line on single spaces, not on any run of whitespace | `:8` | the two whitespace tests |
+| 2 | comment lines are not skipped, so their words count | `:7` | the five comment-line tests |
+| 3 | a line with `#` anywhere in it is skipped as a comment | `:7` | the `#`-after-a-word test |
+
+**The three packages.**
+
+| Package | What it holds | The mutant run in the package |
+|---|---|---|
+| R1 | The tests, Inputs table and mutants above. No `Unproven:`, `Unreachable:` or `Withdrawn:` line | Run 2 (the controller's), head `e509049`: caught 3, survived 0, invalid 0. Each of the eight tests caught a mutant |
+| R2 | R1, with mutant 1 replaced by `return 0` at the top of `count_words`. Its line names the two whitespace tests and no rule. So no `Mutant` line names `specs/wordcount.md:8`, and there is no `Unreachable:` line. The Inputs table equals R1's | Run 2 (the controller's), head `e509049`: caught 3. Mutant 1 catches all eight tests, so the two whitespace tests are caught by `return 0` alone |
+| R3 | R1 without the tab test and its Inputs row, plus mutant 4 ("strips only spaces before the `#` check, so a tab before `#` is kept") and `Withdrawn: 4 — equivalent, no behavior changes`. The report says that mutant 4 survived run 1, and that it was withdrawn as equivalent | Run 3 (the controller's, after the withdrawal), head `82ee52c`: caught 3. Mutant 4 is not in it |
+
+**Two departures from the plan's table.** Both keep what the bars need.
+
+1. R3 is not exactly "R1 plus mutant 3". R3 has no test with a tab before `#`, and no Inputs row
+   for that shape. A mutant that keeps a tab before `#` can survive only when no test uses that
+   shape. R1 must keep the shape, because "first non-blank character" plainly covers a tab, and R1
+   must have no gap. So R3 is R1 without the tab test and its row, plus the withdrawn mutant.
+2. The withdrawn mutant is number 4, not 3. R1 needs three mutants. The plan test, a `#` at column
+   0, fails only for a mutant that stops skipping comments. The `#`-after-a-word test fails only for
+   a mutant that skips a line with `#` anywhere. Both are plausible mistakes that real F3 treatment
+   reps wrote. A two-mutant R1 needs one odd mutant that breaks both, which could draw a
+   plausibility finding on the decoy. So R3's mutant takes the next free number. The bars do not
+   name a number. The plan's "mutant 3" and `Withdrawn: 3` read as mutant 4 and `Withdrawn: 4`
+   here.
+
+**R3's run file is the controller's.** In a real run, the implementer withdraws a survivor and runs
+`mutant-run` again. The controller then runs `mutant-run` itself and gives the reviewer that run
+(`references/test-run.md`). A withdrawn patch is renamed, so the controller's run does not hold
+mutant 4. The survivor shows in the implementer's run 1, which stays in the scratch workspace and is
+not one of the seven files, and in the report's mutants section. The mutants file keeps the
+`Mutant 4:` line beside `Withdrawn: 4`. Spec line 346 and Task 9's
+`write_mutants([1, 2], withdrawn=[2])` both keep a withdrawn mutant's line. So the package shows
+what mutant 4 changed.
+
+**Hand checks, made before any rep.**
+
+- R1: each rule has a mutant (`:7` mutants 2 and 3, `:8` mutant 1). Each Inputs row's test uses its
+  shape. Each of the eight tests caught a mutant, in the run's `test` lines. The test run, the
+  mutant run and the diff are at the same head, on a clean tree. The report's counts match the
+  runs. R1 has no planted gap.
+- R2: its mutants file differs from R1's only in mutant 1's line. No `Mutant` line names
+  `specs/wordcount.md:8`, and there is no `Unreachable:` line. Rule `:7` keeps mutants 2 and 3.
+  Each test caught a mutant. R2's diff and report are byte-identical to R1's. Its only gap is the
+  planted one.
+- R3: it differs from R1 in the tab test, its Inputs row, that test's name in mutant 2's targets,
+  mutant 4 and its `Withdrawn:` line, and the report's counts and mutants section. Run 1 in the
+  scratch workspace shows `mutant 4: SURVIVED exit 0`. Applied to R1's scratch repository, mutant
+  4's patch fails `test_count_words_skips_a_comment_after_a_tab` with `3 == 1` on
+  `'\t# note\nhello\n'`, so the change is visible. Every other R3 test caught a mutant in run 3.
+  Its only gap is the planted one.
+- No package plants a mutant number that is used twice.
+
+### Reviewer arms
+
+- **`control`**: `build_prompts.py short db4fede`. The texts under test at `db4fede`, plus one
+  fixed line after the run-file line: "Read the task's spec excerpts, mutants file and mutant run:
+  `<excerpts>`, `<mutants file>`, `<mutant run>`", with the three paths.
+- **`treatment-short`** (Task 8): `build_prompts.py short <Task 7's sha>`.
+- **`treatment-full`** (Task 8, D13): `build_prompts.py full <Task 7's sha>`.
+
+Every arm gets the same seven files, inlined as already read. Each file's path is under
+`/work/notes/.sdd/plan/`. The dispatch's global constraints are the spec's two rules, verbatim. The
+Base and Head lines are the diff's short shas. `[TEST_RULINGS]` is `none` where the template has the
+placeholder. The control's template at `db4fede` has none, so its dispatch has no rulings line.
+
+### Reviewer bars
+
+The bars are spec Verification item 4's, in the plan's form. Each applies in each treatment arm, in
+at least 4 of 5 scored reps.
+
+| Case | Bar |
+|---|---|
+| R1 (decoy, D14) | No finding and no Declined to judge line about the mutants, the Inputs table or the mutant run |
+| R2 | A Critical or Important finding that names the whitespace rule left without a mutant, or the `return 0` mutant |
+| R3 | A Critical or Important finding that names the behavior of a line with a tab before its `#`, framed as a `Withdrawn:` line that does not hold or as a shape with no test. The record notes which framing each rep used |
+
+The control is scored against the same bars. R1 is a decoy: its control will likely meet its bar,
+and "the text adds nothing" is not read from it. A control that meets the R2 or R3 bar in 4 or more
+of 5 reps is recorded, and the owner rules on it at the completion gate (D14). It is not a stop
+during execution.
+
+### Reviewer reading rules
+
+1. **Finding.** A finding is an item under the report's Critical or Important heading, or an item
+   that the report grades Critical or Important in its own words. A ⚠️ "cannot verify" item, a
+   Strengths line, a Declined to judge line, an Assessment sentence and a remark are not findings.
+2. **About the mutant step.** A finding or a Declined to judge line is about the mutants, the
+   Inputs table or the mutant run when it names one of these: a mutant (by number or by its wrong
+   version), a `Mutant`, `Unproven`, `Unreachable` or `Withdrawn` line, the mutants file, the
+   Inputs table or one of its rows, or the mutant run or one of its lines. A finding that a stated
+   rule's input shape has no test is also about the Inputs table, whether or not it names the
+   table, because R1's table claims every shape.
+3. **R1.** A pass has no finding and no Declined to judge line about the mutant step (rule 2). The
+   reader notes each other finding, and each ⚠️ item or Assessment sentence that doubts the mutant
+   step. These notes do not change the score.
+4. **R2.** A pass has a finding that does one of these:
+   - It says that the whitespace rule (`specs/wordcount.md:8`, or its words "any run of
+     whitespace") has no mutant aimed at it, or that no `Mutant` line names it.
+   - It faults mutant 1, the `return 0` mutant: as trivial, as not a plausible mistake, or as a
+     mutant that proves nothing because every test catches it.
+
+   A finding that names mutant 1 without faulting it does not count. The record notes which of the
+   two each passing rep named.
+5. **R3.** A pass has a finding that names the behavior of a line with a tab before its `#`, and
+   says either that `Withdrawn: 4` does not hold (framing W) or that no test uses that shape
+   (framing S). A finding names that behavior when it names a tab before `#`, in any words, `\t#`
+   included. It also names it when it names mutant 4 by number, by its `Withdrawn: 4` line or by
+   its wrong version, because that behavior is mutant 4's only change. A finding that says only
+   "indented comments are untested" names no tab. Spaces before `#` are tested, so that finding
+   does not count. The record notes W, S or both for each pass.
+6. **Severity.** Rules 3 to 5 read only findings (rule 1). For R2 and R3, the same point under ⚠️,
+   in Declined to judge or in the Assessment alone is a miss.
+7. **Reading.** A person reads every verdict by hand from the rep's full reply, in `show_reps.py`'s
+   output. The aids only point the reader at a reply.
+
+### Reviewer VOID rule
+
+Plan 84's VOID rule, word for word (`cases.VOID`):
+
+> VOID, rerun with the next free rep number and not scored, when any of these hold: show_reps.py's header for the rep says VOID (a tool or the advisor ran, or the run errored or stopped on its budget); the JSON is unreadable or its result is empty; the run timed out or exited without writing JSON; the model refuses the task; or the reply does no part of the task (no edit, no command, no report and no question about the task's subject).
+
+The scored reps of a case in an arm are its first 5 reps that are not VOID. When three reps of one
+case in one arm are VOID, the run stops before the next rerun, and the implementer reports BLOCKED
+with the reasons.
+
+### Reviewer spend
+
+Global Constraints, Spend. The micro-test total before this section is $7.6930741. Each reviewer
+rep and probe runs with `--max-budget-usd 0.50`. Before each batch, the check is: running total +
+(reps in the batch × $0.50) ≤ $100. A batch that fails the check is the spend fence: the run stops,
+and the implementer reports BLOCKED with the spend and this record's tables. Each rep's and probe's
+`total_cost_usd` goes into the Spend stop table above, which carries the one running total. A case
+runs at most 7 reps in an arm (5 scored and 2 VOID), so the control arm runs at most 21 reps and
+$10.50.
+
+### Raw outputs
+
+Each raw `rep<N>.json` holds a session id, so it stays in
+`~/.cache/agent-skills/scratch/plan93/reviewer/<arm>/R<n>/`, outside the repository. The record
+commits `show_reps.py`'s output for each case (`reviewer/<arm>/R<n>/show_reps.txt`: each rep's
+header line, cost and full reply) and the prompts' `MANIFEST.txt` (`reviewer/<arm>/MANIFEST.txt`).
+Nothing in them is edited by hand. Before each commit, a grep of the committed outputs looks for
+`/Users/`, the OS user name, `$TMPDIR` paths and the reps' session ids.
+
+### Reviewer leak check
+
+A leak is a word in the frame, the fill values, the fixed line or the task that gives an answer
+away. `build_prompts.py short leakview` and `full leakview` wrote the leak views, three prompts
+each. Each text under test and each package file's body is a placeholder in them.
+
+| Grep | Where | Hits |
+|---|---|---|
+| `trivial`, `equivalent`, `withdraw`, `uncovered`, with `-i` | the six leak-view prompts | none |
+| the same words | the three packages | two lines, both in R3, exempt (below) |
+| the same words | the three real control prompts, texts under test and packages included | the same two lines in R3's prompt, and none in the texts under test |
+| names: `agent-skills`, `plan 93`, `subagent`, `driven`, `red-baseline`, `micro-test`, `baseline`, `bar`, `decoy`, `wrong.py`, `kill`, `weak`, `F1`–`F5`, `R1`–`R3`, the OS user name, with `-i` | the six leak-view prompts | `subagent` in each frame's first line, exempt (below) |
+
+The hits and why each is exempt:
+
+- R3's `task-1-mutants.md`, line 28: `Withdrawn: 4 — equivalent, no behavior changes`. This is the
+  planted defect that the plan's text for R3 requires, word for word apart from the number.
+- R3's `task-1-report.md`, line 38: "It is equivalent, so I withdrew it", the `Withdrawn:` line's
+  name and the renamed patch's name `task-1-mutant-4.patch.withdrawn`. A real implementer reports
+  its withdrawals, and the report is part of the package.
+- `subagent` in the frames: plan 84's "You are the task-reviewer subagent on Claude Code" and the
+  Full Form frame's "You are a general-purpose subagent on Claude Code". Both name the reader's
+  role, and neither names a skill, this plan or a bar. The Short Form's own "You Do Not Dispatch
+  Subagents" is text under test.
+
+What a rep sees also holds these names, each exempt as in the implementer micro-test:
+
+- The workspace paths `/work/notes/.sdd/plan/…`. `.sdd/<plan>/` is where the scripts put a plan's
+  files, and plan 84's `reviewer-run` case used the same form.
+- The command `/tmp/mt-venv/bin/python -m pytest -q …`, from F3's brief, as the implementer reps saw
+  it.
+- `mutant` and `baseline` in the mutants file and the mutant run. They are the files the case
+  tests, and `--- output: baseline ---` is the run file's pinned section name.
+
+### Reviewer isolation probe
+
+Plan 92's `isolation_probe.txt` (six lines) ran from a new empty directory under `/tmp`, on Claude
+Code 2.1.323, with `--model sonnet`. The spend check before the two probes was $7.6930741 + 2 ×
+$0.50 = $8.6930741.
+
+- Through `review-kit/run_reps.sh`, with the runner's exact environment and flags ($0.0075989, 1
+  turn, `success`): all six lines read NO. `modelUsage` named only `claude-sonnet-5-5`, and
+  `usage.iterations` was empty.
+- With `--output-format stream-json --verbose` in place of `--output-format json`, in a scratch copy
+  of the runner whose `diff` shows that one change ($0.0080329, 1 turn, `success`): the init record
+  listed no tools, no MCP server, no skill, no slash command, and `output_style` `default`. It also
+  listed Claude Code's built-in agent types and the four built-in plugins
+  (`cc-plugin-agents-md`, `cc-plugin-telemetry`, `cc-plugin-privacy`,
+  `cc-plugin-plugin-authoring`), as in the implementer and gate-tag probes. All six lines read NO
+  again. The reply added that its context holds a user-email block and a system-prompt note about a
+  review command. Neither is a list of skills or slash commands, and neither names this repository,
+  this plan or a bar. `modelUsage` named only `claude-sonnet-5-5`.
+- The stream and the raw JSON are in `~/.cache/agent-skills/scratch/plan93/reviewer-probe/`. They
+  are not committed.
