@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 6306,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.011687300000000001,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 12033,
+    "output_tokens": 904,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 904,
+      "cacheReadInputTokens": 12033,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.011687300000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`, which matches the brief and the spec rule (specs/window.md:8). The start boundary is unchanged: a day before the start date is still outside the window. Both listed files have their hunks: `window.py` is modified and `tests/test_window.py` is created.\n- The plan test `test_window_includes_end_date` is unchanged from the brief, so no ruling is needed (check 6).\n\n### Strengths\n\n- The one-line fix is minimal and correct at both boundaries.\n- The plan test is kept verbatim. The added test covers the day before start, the start date, the end date, a one-day window and a window across a year end.\n- The test run (`task-1-tests.log`) ran at head c39e286 on a clean tree and exited 0. It shows 2 passed, matching the report, with no warnings.\n- The mutant run ran at head c39e286 on a clean tree. Both mutants are CAUGHT, and the revert check shows the original `<` version failing the new test.\n\n### Issues\n\n#### Critical (Must Fix)\nNone.\n\n#### Important (Should Fix)\nNone.\n\nMutant-step checks:\n1. Inputs: the rule's shapes are the end date, the day after the end, a one-day window and a year-end window. Each row names a test that uses its shape (`tests/test_window.py:8-9, 16-18`).\n2. Plausible mutants: Mutant 1 (`< end`, the original bug) and Mutant 2 (the end check dropped) are both plausible, and neither crashes every call.\n3. The one stated rule (specs/window.md:8) has mutants aimed at it.\n4. Both tests are caught: `test_window_holds_its_start_and_end_dates` catches 1 and `test_window_includes_end_date` catches 2. Neither has an `Unproven:` line.\n5. There is no `Withdrawn:` line.\n6. No plan test was loosened.\n\n### Declined to judge\n\n- The start-boundary rule (a day before the start date is outside) is a global constraint, but this task's change does not alter it. The new test asserts it only for 2026-02-28 and the start date. A mutant such as `start < day <= end` would be caught by `in_window(start, ...)`, so there is no gap.\n- Behavior for `start > end` (an inverted window) is unspecified, and `in_window` returns False for every day. I set it aside because the requirements are silent and the task does not change it.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The fix is a correct one-token change at the end boundary. The tests pin both boundaries, and the controller's mutant run shows both mutants caught at the diff's head.",
+  "ttft_ms": 6358,
+  "type": "result",
+  "duration_ms": 6371,
+  "ttft_stream_ms": 698,
+  "time_to_request_ms": 67,
+  "first_content_frame_ms": 698,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

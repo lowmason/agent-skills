@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 13894,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.08259749999999999,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 15770,
+    "cache_read_input_tokens": 1635,
+    "output_tokens": 1935,
+    "output_tokens_details": {
+      "thinking_tokens": 974
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 15770,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1935,
+      "cacheReadInputTokens": 1635,
+      "cacheCreationInputTokens": 15770,
+      "webSearchRequests": 0,
+      "costUSD": 0.08259749999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 974,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 15770,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `units.py:4-12` uses `SIZE.fullmatch` with `[0-9]+` and `(B|KB|MB)`, and the multipliers are 1, 1024 and 1024*1024, as specs/sizes.md:7-9 require. `fullmatch` also rejects a trailing newline, which `$` would let through. The brief's files `units.py` and `tests/test_units.py` both appear in the diff, and the plan tests are unchanged from the brief.\n- The test run (`task-1-tests.log`) was at head 3741c4f on a clean tree, exit 0, 4 passed. It matches the implementer's report and has no warnings.\n- The mutant run was at head 3741c4f with base ff7346e, which is the diff's base, on a clean tree.\n\n### Strengths\n\n- The implementation is minimal and exact. It uses an explicit ASCII `[0-9]` class rather than `\\d`, and `fullmatch` rather than `match`.\n- The added `test_units_shapes.py` covers zero, leading zeros and a wide set of rejected shapes: empty, no unit, no number, wrong unit, wrong case, blanks, a trailing newline, trailing text, signs, a decimal point, an underscore and a non-ASCII digit.\n- Mutant check 1 (inputs): every shape that the rules' words cover has a row naming a test that uses it.\n- Mutant check 2 (plausible mutants): all five are plausible mistakes, and none crashes every call.\n- Mutant check 3 (a mutant per rule): rule :7 has mutants 3 and 5, rule :8 has mutants 1 and 2, and rule :9 has mutants 4 and 5. There are no `Unreachable:` or `Withdrawn:` lines.\n- Mutant check 4 (a catch per test): each of the 4 tests has a `test ...: caught` line.\n- Mutant check 6 (plan tests loosened): the plan tests are unchanged, and the dispatch rulings are `none`.\n- Mutant check 7 (revert): the revert run shows `tests.test_units` not loaded and both `test_units_shapes` tests failed. Every test fails on the revert, so no `Keeps:` line is needed.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\n### Declined to judge\n\n- Non-`str` input (for example `None` or `bytes`) raises `TypeError` from `fullmatch`, not `ValueError`. The spec's \"any other text\" covers text only, and the signature is `text: str`.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The implementation matches all three spec rules and the plan tests are untouched. The extra tests cover the boundary and rejection shapes. Every mutant is caught, and every added test fails on the revert.",
+  "ttft_ms": 7834,
+  "type": "result",
+  "duration_ms": 13949,
+  "ttft_stream_ms": 800,
+  "time_to_request_ms": 55,
+  "first_content_frame_ms": 800,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

@@ -1,0 +1,194 @@
+mutant-run: Task 1, run 2
+command: /tmp/mt-venv/bin/python -m pytest -q tests
+head: 3741c4fa9bd222f9879f8f17a25b0b952471a503
+base: ff7346e122a8bcd1d9f822fde0d14edfb5974849
+tree: clean
+result: caught 5, survived 0, invalid 0
+revert: ran, exit 1, failed 2, not loaded 1, skipped 0, passed 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 ac787b2d064d4022c7bc21ad35667c64edcf306aa50ebdd8bab1008e8bc75c1f tests: tests.test_units::test_to_bytes_reads_each_unit tests.test_units::test_to_bytes_reads_a_number_of_several_digits tests.test_units_shapes::test_to_bytes_reads_zero_and_leading_zeros
+mutant 2: CAUGHT exit 1 sha256 5379f356f1321e06773284cd54cddea3ea54cf22cff2fe6d1cb0f6aea5335a57 tests: tests.test_units::test_to_bytes_reads_each_unit
+mutant 3: CAUGHT exit 1 sha256 097f7823a53e022abb93eb906ba8b74d3d244fc828f39f70ae169ac414fa8292 tests: tests.test_units::test_to_bytes_reads_a_number_of_several_digits tests.test_units_shapes::test_to_bytes_reads_zero_and_leading_zeros
+mutant 4: CAUGHT exit 1 sha256 9d272bd820fd463cdd44b8ca410bbc9df2f3be41e2978e93e19b2fc30ee3023d tests: tests.test_units_shapes::test_to_bytes_rejects_any_other_text
+mutant 5: CAUGHT exit 1 sha256 3e8edcbd73bc5fbeb219b8b02af90a9f373eb092a69ba020d655d5d35da3b7dd tests: tests.test_units_shapes::test_to_bytes_rejects_any_other_text
+--- tests ---
+test tests.test_units::test_to_bytes_reads_each_unit: caught 1 2
+test tests.test_units::test_to_bytes_reads_a_number_of_several_digits: caught 1 3
+test tests.test_units_shapes::test_to_bytes_reads_zero_and_leading_zeros: caught 1 3
+test tests.test_units_shapes::test_to_bytes_rejects_any_other_text: caught 4 5
+--- revert ---
+path: units.py
+sha256: 450688d269fe7bbf280f98d04f48bf6f28c3ea7a08ba9086e34bbde3643782ba
+not loaded tests.test_units: ModuleNotFoundError: No module named 'units'
+failed tests.test_units_shapes::test_to_bytes_reads_zero_and_leading_zeros: ModuleNotFoundError: No module named 'units'
+failed tests.test_units_shapes::test_to_bytes_rejects_any_other_text: ModuleNotFoundError: No module named 'units'
+--- output: baseline ---
+....                                                                     [100%]
+4 passed in 0.01s
+--- output: mutant 1 ---
+FFF.                                                                     [100%]
+=================================== FAILURES ===================================
+________________________ test_to_bytes_reads_each_unit _________________________
+
+    def test_to_bytes_reads_each_unit():
+        assert to_bytes('7B') == 7
+>       assert to_bytes('2KB') == 2048
+E       AssertionError: assert 2000 == 2048
+E        +  where 2000 = to_bytes('2KB')
+
+tests/test_units.py:6: AssertionError
+________________ test_to_bytes_reads_a_number_of_several_digits ________________
+
+    def test_to_bytes_reads_a_number_of_several_digits():
+>       assert to_bytes('15KB') == 15360
+E       AssertionError: assert 15000 == 15360
+E        +  where 15000 = to_bytes('15KB')
+
+tests/test_units.py:11: AssertionError
+__________________ test_to_bytes_reads_zero_and_leading_zeros __________________
+
+    def test_to_bytes_reads_zero_and_leading_zeros():
+        from units import to_bytes
+    
+        assert to_bytes('0B') == 0
+>       assert to_bytes('007KB') == 7168
+E       AssertionError: assert 7000 == 7168
+E        +  where 7000 = <function to_bytes at 0x10ada5300>('007KB')
+
+tests/test_units_shapes.py:8: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_each_unit - AssertionError: a...
+FAILED tests/test_units.py::test_to_bytes_reads_a_number_of_several_digits - ...
+FAILED tests/test_units_shapes.py::test_to_bytes_reads_zero_and_leading_zeros
+3 failed, 1 passed in 0.01s
+--- output: mutant 2 ---
+F...                                                                     [100%]
+=================================== FAILURES ===================================
+________________________ test_to_bytes_reads_each_unit _________________________
+
+    def test_to_bytes_reads_each_unit():
+        assert to_bytes('7B') == 7
+        assert to_bytes('2KB') == 2048
+>       assert to_bytes('3MB') == 3145728
+E       AssertionError: assert 3072000 == 3145728
+E        +  where 3072000 = to_bytes('3MB')
+
+tests/test_units.py:7: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_each_unit - AssertionError: a...
+1 failed, 3 passed in 0.01s
+--- output: mutant 3 ---
+.FF.                                                                     [100%]
+=================================== FAILURES ===================================
+________________ test_to_bytes_reads_a_number_of_several_digits ________________
+
+    def test_to_bytes_reads_a_number_of_several_digits():
+>       assert to_bytes('15KB') == 15360
+               ^^^^^^^^^^^^^^^^
+
+tests/test_units.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '15KB'
+
+    def to_bytes(text: str) -> int:
+        match = SIZE.fullmatch(text)
+        if match is None:
+>           raise ValueError(f'not a size: {text!r}')
+E           ValueError: not a size: '15KB'
+
+units.py:10: ValueError
+__________________ test_to_bytes_reads_zero_and_leading_zeros __________________
+
+    def test_to_bytes_reads_zero_and_leading_zeros():
+        from units import to_bytes
+    
+        assert to_bytes('0B') == 0
+>       assert to_bytes('007KB') == 7168
+               ^^^^^^^^^^^^^^^^^
+
+tests/test_units_shapes.py:8: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '007KB'
+
+    def to_bytes(text: str) -> int:
+        match = SIZE.fullmatch(text)
+        if match is None:
+>           raise ValueError(f'not a size: {text!r}')
+E           ValueError: not a size: '007KB'
+
+units.py:10: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_a_number_of_several_digits - ...
+FAILED tests/test_units_shapes.py::test_to_bytes_reads_zero_and_leading_zeros
+2 failed, 2 passed in 0.01s
+--- output: mutant 4 ---
+...F                                                                     [100%]
+=================================== FAILURES ===================================
+_____________________ test_to_bytes_rejects_any_other_text _____________________
+
+    def test_to_bytes_rejects_any_other_text():
+        from units import to_bytes
+    
+        for text in ('', '12', 'KB', '3GB', '3kb', '3Kb', '3 KB', ' 3KB', '3KB ', '3KB\n', '3KBs', '-3KB', '+3KB',
+                     '1.5KB', '1_0KB', '\u0663KB'):
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+tests/test_units_shapes.py:16: Failed
+=========================== short test summary info ============================
+FAILED tests/test_units_shapes.py::test_to_bytes_rejects_any_other_text - Fai...
+1 failed, 3 passed in 0.01s
+--- output: mutant 5 ---
+...F                                                                     [100%]
+=================================== FAILURES ===================================
+_____________________ test_to_bytes_rejects_any_other_text _____________________
+
+    def test_to_bytes_rejects_any_other_text():
+        from units import to_bytes
+    
+        for text in ('', '12', 'KB', '3GB', '3kb', '3Kb', '3 KB', ' 3KB', '3KB ', '3KB\n', '3KBs', '-3KB', '+3KB',
+                     '1.5KB', '1_0KB', '\u0663KB'):
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+tests/test_units_shapes.py:16: Failed
+=========================== short test summary info ============================
+FAILED tests/test_units_shapes.py::test_to_bytes_rejects_any_other_text - Fai...
+1 failed, 3 passed in 0.01s
+--- output: revert ---
+FF                                                                       [100%]
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_units.py _____________________
+ImportError while importing test module '/work/project/tests/test_units.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+~/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_units.py:1: in <module>
+    from units import to_bytes
+E   ModuleNotFoundError: No module named 'units'
+=================================== FAILURES ===================================
+__________________ test_to_bytes_reads_zero_and_leading_zeros __________________
+
+    def test_to_bytes_reads_zero_and_leading_zeros():
+>       from units import to_bytes
+E       ModuleNotFoundError: No module named 'units'
+
+tests/test_units_shapes.py:5: ModuleNotFoundError
+_____________________ test_to_bytes_rejects_any_other_text _____________________
+
+    def test_to_bytes_rejects_any_other_text():
+>       from units import to_bytes
+E       ModuleNotFoundError: No module named 'units'
+
+tests/test_units_shapes.py:12: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_units_shapes.py::test_to_bytes_reads_zero_and_leading_zeros
+FAILED tests/test_units_shapes.py::test_to_bytes_rejects_any_other_text - Mod...
+ERROR tests/test_units.py
+2 failed, 1 error in 0.01s

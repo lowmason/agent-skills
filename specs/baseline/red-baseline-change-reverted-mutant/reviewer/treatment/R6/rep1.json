@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 13942,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0860789,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 16795,
+    "cache_read_input_tokens": 649,
+    "output_tokens": 1883,
+    "output_tokens_details": {
+      "thinking_tokens": 869
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 16795,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1883,
+      "cacheReadInputTokens": 649,
+      "cacheCreationInputTokens": 16795,
+      "webSearchRequests": 0,
+      "costUSD": 0.0860789,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 869,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 16795,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `units.py:4-12` uses `fullmatch` on `([0-9]+)(B|KB|MB)`, with units 1, 1024 and 1024*1024. That covers the three stated rules (`specs/sizes.md:7-9`): the number, the unit and nothing between them (`:7`), the 1 KB = 1024 B and 1 MB = 1024 KB factors (`:8`), and `ValueError` for any other text (`:9`). The brief's two plan tests are byte-identical in the diff (`tests/test_units.py:1-11`).\n- ⚠️ None.\n\n### Strengths\n\n- `fullmatch` with an explicit `[0-9]` class, rather than `\\d` or `match`, correctly rejects trailing text, a trailing `\\n` and non-ASCII digits. `tests/test_units_shapes.py:14-17` pins each of these.\n- The plan tests are untouched and no ruling is needed. The extra tests sit in a separate file and only add shapes.\n- Evidence is consistent:\n  - The test run (`task-1-tests.log`) and the mutant run (`task-1-mutants-2.log`) are both at head 3741c4f on a clean tree, with base ff7346e matching the diff.\n  - The tests log shows 4 passed, matching the report, with no warnings.\n\n### Mutant step\n\n1. **Inputs:** every shape the rules cover has a row with a test that uses it. The rows cover:\n   - each unit, several digits, zero and leading zeros;\n   - empty text, a missing unit, a missing number, and a wrong or lowercase unit;\n   - a blank between, before or after, and text after the unit;\n   - a sign, a decimal point, an underscore, and a non-ASCII digit.\n2. **Plausible mutants:** all five are plausible single-point mistakes (`task-1-mutants.md`). None is a crash-everything or no-op mutant.\n3. **A mutant per rule:** mutants 3, 4 and 5 target `:7` and `:9`, and mutants 1 and 2 target `:8`. No stated rule lacks a mutant.\n4. **A catch per test:** all four added tests have a `caught` line in the run (`task-1-mutants-2.log` \"tests\" section). There are no `Unproven:` lines.\n5. **Withdrawn:** none.\n6. **Plan tests loosened:** none; the diff matches the brief.\n7. **Revert:** `tests.test_units` is \"not loaded\" and both `test_units_shapes` tests fail on the revert, so every added test fails on the old code. No `Keeps:` lines are needed.\n\n### Issues\n\n#### Critical (Must Fix)\nNone.\n\n#### Important (Should Fix)\nNone.\n\n### Declined to judge\n\nNone.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The implementation matches the three spec rules exactly. All five mutants are caught, every added test fails on the revert, and the controller's runs are at the diff's head on a clean tree.",
+  "ttft_ms": 7371,
+  "type": "result",
+  "duration_ms": 14028,
+  "ttft_stream_ms": 893,
+  "time_to_request_ms": 85,
+  "first_content_frame_ms": 893,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

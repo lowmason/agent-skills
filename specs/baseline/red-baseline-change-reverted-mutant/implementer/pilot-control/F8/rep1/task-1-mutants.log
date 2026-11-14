@@ -1,0 +1,35 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_units.py
+head: 3eb2aef4c7cdd7c5bc2eba5c7d37f4a53e65da9e
+base: d2811097bbea8caa48a475f5f5e9decd4a5afe61
+tree: clean
+result: caught 0, survived 0, invalid 3
+revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0
+--- mutants ---
+mutant 1: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 2: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 3: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+--- tests ---
+--- revert ---
+path: units.py
+sha256: 200af4be2744d702ef0f1b18e3a286fc7527559b79c037de8dce060bb746975a
+not loaded tests.test_units: ModuleNotFoundError: No module named 'units'
+--- output: baseline ---
+..                                                                       [100%]
+2 passed in 0.01s
+--- output: revert ---
+
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_units.py _____________________
+ImportError while importing test module '/private/tmp/mt-rep-iJa0Xd/repo/tests/test_units.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+~/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_units.py:1: in <module>
+    from units import to_bytes
+E   ModuleNotFoundError: No module named 'units'
+=========================== short test summary info ============================
+ERROR tests/test_units.py
+1 error in 0.01s

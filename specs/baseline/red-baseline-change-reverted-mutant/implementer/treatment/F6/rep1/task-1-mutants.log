@@ -1,0 +1,89 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_stock.py
+head: 85368e2e7e5b38d2da8085995e15ff397070aec9
+base: 174b9563369fcfc824e4cea2efcf7d6b2e1e91c8
+tree: clean
+result: caught 3, survived 0, invalid 0
+revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 2
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 40456f9e3a3713b06844b039285730d9cbd5616779db677d76da30bee1dbab31 tests: tests.test_stock::test_reorder_when_level_equals_threshold
+mutant 2: CAUGHT exit 1 sha256 aaf38156e72defdfdf593b04a3ed908befecd4a327043b7fce1033913a92e407 tests: tests.test_stock::test_reorder_at_threshold
+mutant 3: CAUGHT exit 1 sha256 7b4fb9c5b1564a97b98733f810f3b743cb815d09a71a9db2f67ed5f65432404c tests: tests.test_stock::test_reorder_at_threshold tests.test_stock::test_no_reorder_above_threshold
+--- tests ---
+test tests.test_stock::test_reorder_when_level_equals_threshold: caught 1
+test tests.test_stock::test_reorder_at_threshold: caught 2 3
+test tests.test_stock::test_no_reorder_above_threshold: caught 3
+--- revert ---
+path: stock.py
+sha256: 40456f9e3a3713b06844b039285730d9cbd5616779db677d76da30bee1dbab31
+passed tests.test_stock::test_reorder_at_threshold
+failed tests.test_stock::test_reorder_when_level_equals_threshold: AssertionError: assert False is True
+passed tests.test_stock::test_no_reorder_above_threshold
+--- output: baseline ---
+...                                                                      [100%]
+3 passed in 0.00s
+--- output: mutant 1 ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+___________________ test_reorder_when_level_equals_threshold ___________________
+
+    def test_reorder_when_level_equals_threshold():
+>       assert reorder_needed(5, 5) is True
+E       assert False is True
+E        +  where False = reorder_needed(5, 5)
+
+tests/test_stock.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_stock.py::test_reorder_when_level_equals_threshold - assert...
+1 failed, 2 passed in 0.01s
+--- output: mutant 2 ---
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+__________________________ test_reorder_at_threshold ___________________________
+
+    def test_reorder_at_threshold():
+>       assert reorder_needed(2, 5) is True
+E       assert False is True
+E        +  where False = reorder_needed(2, 5)
+
+tests/test_stock.py:5: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_stock.py::test_reorder_at_threshold - assert False is True
+1 failed, 2 passed in 0.01s
+--- output: mutant 3 ---
+F.F                                                                      [100%]
+=================================== FAILURES ===================================
+__________________________ test_reorder_at_threshold ___________________________
+
+    def test_reorder_at_threshold():
+>       assert reorder_needed(2, 5) is True
+E       assert False is True
+E        +  where False = reorder_needed(2, 5)
+
+tests/test_stock.py:5: AssertionError
+_______________________ test_no_reorder_above_threshold ________________________
+
+    def test_no_reorder_above_threshold():
+>       assert reorder_needed(6, 5) is False
+E       assert True is False
+E        +  where True = reorder_needed(6, 5)
+
+tests/test_stock.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_stock.py::test_reorder_at_threshold - assert False is True
+FAILED tests/test_stock.py::test_no_reorder_above_threshold - assert True is ...
+2 failed, 1 passed in 0.01s
+--- output: revert ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+___________________ test_reorder_when_level_equals_threshold ___________________
+
+    def test_reorder_when_level_equals_threshold():
+>       assert reorder_needed(5, 5) is True
+E       assert False is True
+E        +  where False = reorder_needed(5, 5)
+
+tests/test_stock.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_stock.py::test_reorder_when_level_equals_threshold - assert...
+1 failed, 2 passed in 0.01s

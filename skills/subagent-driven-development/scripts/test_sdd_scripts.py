@@ -993,6 +993,10 @@ def patch_sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def head_sha(repo):
+    return git('rev-parse', 'HEAD', cwd=repo).stdout.strip()
+
+
 def no_mutant_run_file(repo):
     return not list(run_file(repo, '').glob('task-1-mutants*.log'))
 
@@ -1000,14 +1004,15 @@ def no_mutant_run_file(repo):
 def test_mutant_run_catches_a_mutant_and_names_its_failing_tests(calc):
     p1 = make_mutant(calc, 1, *A)
     make_mutant(calc, 2, *M)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
-    sha = git('rev-parse', 'HEAD', cwd=calc).stdout.strip()
+    sha = head_sha(calc)
     path = run_file(calc, 'task-1-mutants.log')
     lines = mutant_lines(calc)
-    assert [lines[0], lines[2], lines[3], lines[4]] == [
+    assert [lines[0], lines[2], lines[3], lines[4], lines[5]] == [
         'mutant-run: Task 1, run 1',
         f'head: {sha}',
+        f'base: {sha}',
         'tree: clean',
         'result: caught 2, survived 0, invalid 0',
     ]
@@ -1017,6 +1022,7 @@ def test_mutant_run_catches_a_mutant_and_names_its_failing_tests(calc):
     assert line.startswith(head)
     assert set(line.removeprefix(head).split()) == {'test_calc::test_add_small', 'test_calc::test_add_large'}
     assert 'test test_calc::test_add_small: caught 1 2' in lines
+    assert lines[6] == 'revert: none: no file outside the tests and the project config changed'
     assert result.stdout.splitlines()[-1] == 'run: ' + str(path)
     assert (calc / 'calc.py').read_text() == CALC
     assert not run_file(calc, 'mutant-active').exists()
@@ -1024,7 +1030,7 @@ def test_mutant_run_catches_a_mutant_and_names_its_failing_tests(calc):
 
 def test_mutant_run_reports_a_survivor(calc):
     p1 = make_mutant(calc, 1, *S)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     lines = mutant_lines(calc)
     assert 'result: caught 0, survived 1, invalid 0' in lines
@@ -1034,14 +1040,14 @@ def test_mutant_run_reports_a_survivor(calc):
 def test_mutant_run_reads_a_catch_when_the_caller_sets_r_flags(calc):
     make_mutant(calc, 1, *A)
     env = {**PY_ENV, 'PYTEST_ADDOPTS': '-rs'}
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, '-rs', cwd=calc, env=env)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, '-rs', cwd=calc, env=env)
     assert result.returncode == 0, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
 
 
 def test_mutant_run_marks_a_collection_error_invalid(calc):
     p1 = make_mutant(calc, 1, *X)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     line = mutant_line(mutant_lines(calc), 1)
     assert line == f'mutant 1: INVALID exit 2 sha256 {patch_sha(p1)} reason: exit status 2'
@@ -1054,7 +1060,7 @@ NO_CATCH = 'reason: no failed test in the JUnit report'
 
 def test_mutant_run_never_reads_a_collection_error_as_a_catch(calc):
     p1 = make_mutant(calc, 1, *X)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *WRAPPED_PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *WRAPPED_PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1) == f'mutant 1: INVALID exit 1 sha256 {patch_sha(p1)} {NO_CATCH}'
 
@@ -1067,7 +1073,7 @@ def test_mutant_run_never_reads_an_internal_error_as_a_catch(calc):
     git('add', 'conftest.py', cwd=calc)
     git('commit', '-qm', 'hook', cwd=calc)
     p1 = make_mutant(calc, 1, *A)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *WRAPPED_PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *WRAPPED_PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1) == f'mutant 1: INVALID exit 1 sha256 {patch_sha(p1)} {NO_CATCH}'
 
@@ -1081,7 +1087,7 @@ def test_mutant_run_reads_a_fixture_setup_error_as_a_catch(calc):
     git('commit', '-qm', 'fixture', cwd=calc)
     p1 = make_mutant(calc, 1, *A)
     cmd = [*PYTEST[:-1], 'test_fixture.py']
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     want = f'mutant 1: CAUGHT exit 1 sha256 {patch_sha(p1)} tests: test_fixture::test_three'
     assert mutant_line(mutant_lines(calc), 1) == want
@@ -1093,7 +1099,7 @@ def test_mutant_run_writes_no_bytecode_that_could_outlive_a_reverse(calc):
     # would still run against the restored source.
     env = {k: v for k, v in GIT_ENV.items() if k not in ('PYTHONDONTWRITEBYTECODE', 'PYTHONPYCACHEPREFIX')}
     make_mutant(calc, 1, *A)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=env)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=env)
     assert result.returncode == 0, result.stdout + result.stderr
     assert not list(calc.glob('**/__pycache__/calc*.pyc'))
 
@@ -1124,7 +1130,7 @@ def test_mutant_run_never_loads_bytecode_cached_before_it_ran(calc):
     make_mutant(calc, 1, *A)
     compile_unchecked(calc, PYCACHE_ENV)
     assert list(calc.glob('__pycache__/calc*.pyc'))
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PYCACHE_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PYCACHE_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
 
@@ -1138,7 +1144,7 @@ def test_mutant_run_never_loads_mutant_bytecode_cached_before_its_baseline(calc)
     compile_unchecked(calc, PYCACHE_ENV)
     git('checkout', '--', 'calc.py', cwd=calc)
     assert list(calc.glob('__pycache__/calc*.pyc'))
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PYCACHE_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PYCACHE_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
 
@@ -1149,7 +1155,7 @@ def test_mutant_run_never_loads_bytecode_cached_under_the_callers_prefix(calc, t
     make_mutant(calc, 1, *A)
     compile_unchecked(calc, env)
     assert list(prefix.rglob('calc*.pyc'))
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=env)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=env)
     assert result.returncode == 0, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
 
@@ -1158,7 +1164,7 @@ def test_mutant_run_leaves_no_mutant_bytecode_that_its_command_writes(calc):
     ignore_pycache(calc)
     make_mutant(calc, 1, *A)
     cmd = ['sh', '-c', f'"$0" {COMPILE_ARGS} && "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PYCACHE_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PYCACHE_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
     assert not list(calc.glob('__pycache__/calc*.pyc'))
@@ -1167,7 +1173,7 @@ def test_mutant_run_leaves_no_mutant_bytecode_that_its_command_writes(calc):
 def test_mutant_run_needs_a_failed_test_in_the_report_to_catch(calc):
     make_mutant(calc, 1, *A)
     cmd = ['sh', '-c', 'grep -q "a - b" calc.py && exit 1; exit 0']
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     line = mutant_line(mutant_lines(calc), 1)
     assert line.startswith('mutant 1: INVALID exit 1 ')
@@ -1181,7 +1187,7 @@ def test_mutant_run_never_reads_an_earlier_mutants_report(calc):
         'sh', '-c', 'grep -q "a \\* b" calc.py && exit 1; "$0" -m pytest -q -p no:cacheprovider test_calc.py',
         sys.executable,
     ]
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     lines = mutant_lines(calc)
     assert mutant_line(lines, 1).startswith('mutant 1: CAUGHT exit 1 ')
@@ -1203,7 +1209,7 @@ def test_mutant_run_never_applies_a_patch_that_touches_a_test_file(calc, path):
         git('commit', '-qm', 'helper', cwd=calc)
         old, new = 'x = 1', 'x = 2'
     p1 = make_mutant(calc, 1, old, new, path=path)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     lines = mutant_lines(calc)
     want = f'mutant 1: INVALID exit - sha256 {patch_sha(p1)} reason: touches a test file: {path}'
@@ -1215,7 +1221,7 @@ def test_mutant_run_marks_a_patch_that_does_not_apply_invalid(calc):
     p1 = make_mutant(calc, 1, *A)
     (calc / 'calc.py').write_text(CALC.replace('return a + b', 'return b + a'))
     git('commit', '-qam', 'swap', cwd=calc)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     line = mutant_line(mutant_lines(calc), 1)
     assert line.endswith('exit - sha256 ' + patch_sha(p1) + ' reason: does not apply')
@@ -1224,7 +1230,7 @@ def test_mutant_run_marks_a_patch_that_does_not_apply_invalid(calc):
 def test_mutant_run_refuses_a_dirty_tree(calc):
     make_mutant(calc, 1, *A)
     (calc / 'scratch.txt').write_text('x\n')
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', 'sh', '-c', 'touch ran', cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', 'sh', '-c', 'touch ran', cwd=calc, env=PY_ENV)
     assert result.returncode == 2
     assert 'scratch.txt' in result.stderr
     assert not (calc / 'ran').exists()
@@ -1234,7 +1240,7 @@ def test_mutant_run_refuses_a_dirty_tree(calc):
 def test_mutant_run_refuses_a_task_with_no_mutants(calc):
     p1 = make_mutant(calc, 1, *A)
     p1.rename(p1.with_name('task-1-mutant-1.patch.withdrawn'))
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 2
     assert 'no mutants for task 1' in result.stderr
     assert no_mutant_run_file(calc)
@@ -1244,7 +1250,7 @@ def test_mutant_run_stops_when_a_mutant_is_already_in_head(calc):
     p1 = make_mutant(calc, 1, *A)
     git('apply', p1, cwd=calc)
     git('commit', '-qam', 'a mutant reaches a commit', cwd=calc)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 2
     assert 'task-1-mutant-1.patch' in result.stderr
     assert no_mutant_run_file(calc)
@@ -1253,13 +1259,14 @@ def test_mutant_run_stops_when_a_mutant_is_already_in_head(calc):
 def test_mutant_run_stops_on_a_failing_baseline_before_any_patch(calc):
     make_mutant(calc, 1, *A)
     cmd = ['sh', '-c', 'cat calc.py; exit 1']
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
     assert result.returncode == 3
     lines = mutant_lines(calc)
-    assert lines[4] == 'result: baseline failed, exit 1'
-    assert lines[5] == '--- output: baseline ---'
+    assert lines[3] == f'base: {head_sha(calc)}'
+    assert lines[5] == 'result: baseline failed, exit 1'
+    assert lines[6] == '--- output: baseline ---'
     assert '--- mutants ---' not in lines
-    assert '    return a + b' in lines[6:]
+    assert '    return a + b' in lines[7:]
     assert not any('a - b' in x for x in lines)
     assert result.stdout.splitlines()[-1].startswith('run: ')
 
@@ -1267,7 +1274,7 @@ def test_mutant_run_stops_on_a_failing_baseline_before_any_patch(calc):
 def test_mutant_run_runs_mutants_in_number_order(calc):
     make_mutant(calc, 10, *A)
     make_mutant(calc, 2, *M)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     numbers = [int(m.group(1)) for m in map(re.compile(r'mutant (\d+): ').match, mutant_lines(calc)) if m]
     assert numbers == [2, 10]
@@ -1276,7 +1283,7 @@ def test_mutant_run_runs_mutants_in_number_order(calc):
 def test_mutant_run_refuses_a_mutant_number_that_is_not_an_integer(calc):
     p1 = make_mutant(calc, 1, *A)
     p1.with_name('task-1-mutant-x.patch').write_bytes(p1.read_bytes())
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 2
     assert 'task-1-mutant-x.patch' in result.stderr
     assert no_mutant_run_file(calc)
@@ -1286,7 +1293,7 @@ def test_mutant_run_applies_patches_from_a_subdirectory(calc):
     (calc / 'sub').mkdir()
     make_mutant(calc, 1, *A)
     cmd = ['sh', '-c', 'cd .. && "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
-    result = run(MUTANT_RUN, '../plan.md', 1, '--', *cmd, cwd=calc / 'sub', env=PY_ENV)
+    result = run(MUTANT_RUN, '../plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc / 'sub', env=PY_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
 
@@ -1295,7 +1302,7 @@ def test_mutant_run_ignores_untracked_files_its_command_leaves(calc):
     make_mutant(calc, 1, *A)
     make_mutant(calc, 2, *S)
     cmd = ['sh', '-c', 'date > out.txt; "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *cmd, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     assert 'result: caught 1, survived 1, invalid 0' in mutant_lines(calc)
     assert run('git', 'diff', '--quiet', 'HEAD', cwd=calc).returncode == 0
@@ -1306,10 +1313,10 @@ def test_mutant_run_ignores_untracked_files_its_command_leaves(calc):
 
 def test_mutant_run_writes_a_new_file_for_each_run(calc):
     make_mutant(calc, 1, *A)
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     first = run_file(calc, 'task-1-mutants.log').read_bytes()
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     assert run_file(calc, 'task-1-mutants.log').read_bytes() == first
     assert mutant_lines(calc, 'task-1-mutants-2.log')[0] == 'mutant-run: Task 1, run 2'
@@ -1318,7 +1325,7 @@ def test_mutant_run_writes_a_new_file_for_each_run(calc):
 def start_slow_mutant_run(repo):
     '''Start mutant-run on SLOW in a session of its own, so killpg reaches every process it starts.'''
     return subprocess.Popen(
-        [str(MUTANT_RUN), 'plan.md', '1', '--', *SLOW],
+        [str(MUTANT_RUN), 'plan.md', '1', head_sha(repo), '--', *SLOW],
         cwd=repo, env=PY_ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         start_new_session=True,
     )
@@ -1357,7 +1364,7 @@ def test_mutant_run_recovers_a_patch_a_killed_run_left_applied(calc):
     proc.wait(timeout=KILL_WAIT_SECONDS)
     assert run_file(calc, 'mutant-active').exists()
     assert 'a - b' in (calc / 'calc.py').read_text()
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', 'true', cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', 'true', cwd=calc, env=PY_ENV)
     assert result.returncode == 1, result.stdout + result.stderr
     assert 'note: reversed task-1-mutant-1.patch, left applied by a killed run' in mutant_lines(calc)
     assert (calc / 'calc.py').read_text() == CALC
@@ -1386,7 +1393,7 @@ def test_mutant_run_marks_a_hung_mutant_invalid_after_its_time_limit(calc):
     # that the test can check is empty: the command's output goes to a file,
     # so a grandchild that survives the time limit holds no pipe open.
     proc = subprocess.Popen(
-        [str(MUTANT_RUN), 'plan.md', '1', '--', *SLOW],
+        [str(MUTANT_RUN), 'plan.md', '1', head_sha(calc), '--', *SLOW],
         cwd=calc, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
         start_new_session=True,
     )
@@ -1428,7 +1435,7 @@ def test_mutant_run_starts_its_command_with_sigint_and_sigquit_at_their_defaults
     git('commit', '-qm', 'signals', cwd=calc)
     make_mutant(calc, 1, *A)
     env = {**PY_ENV, 'EXPECT_PGID': str(os.getpgrp())}
-    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, 'test_signals.py', cwd=calc, env=env)
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, 'test_signals.py', cwd=calc, env=env)
     assert result.returncode == 0, result.stdout + result.stderr
     assert mutant_line(mutant_lines(calc), 1).startswith('mutant 1: CAUGHT exit 1 ')
 
@@ -1436,7 +1443,7 @@ def test_mutant_run_starts_its_command_with_sigint_and_sigquit_at_their_defaults
 def test_mutant_run_keeps_dotted_task_ids_apart(calc):
     make_mutant(calc, 1, *A, task='2')
     make_mutant(calc, 1, *S, task='2.1')
-    result = run(MUTANT_RUN, 'plan.md', 2, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', 2, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 0, result.stdout + result.stderr
     found = [x for x in mutant_lines(calc, 'task-2-mutants.log') if re.match(r'mutant \d+: ', x)]
     assert len(found) == 1
@@ -1446,17 +1453,803 @@ def test_mutant_run_keeps_dotted_task_ids_apart(calc):
 
 @pytest.mark.parametrize('argv', [
     [], ['plan.md'], ['plan.md', 1], ['plan.md', 1, '--'], ['plan.md', 1, 'x', 'true'],
+    ['plan.md', 1, '--', 'true'], ['plan.md', 1, 'HEAD', '--'], ['plan.md', 1, 'HEAD', 'x', 'true'],
 ])
 def test_mutant_run_rejects_bad_arguments(committed, argv):
     result = run(MUTANT_RUN, *argv, cwd=committed, env=PY_ENV)
     assert result.returncode == 2
-    assert 'usage: mutant-run PLAN_FILE TASK_NUMBER -- TEST_COMMAND [ARGS...]' in result.stderr
+    assert 'usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]' in result.stderr
 
 
 @pytest.mark.parametrize('task', ['../x', 'a/b', 'x', '.1', '1.', ''])
 def test_mutant_run_refuses_a_task_number_that_is_not_an_id(committed, task):
-    result = run(MUTANT_RUN, 'plan.md', task, '--', 'sh', '-c', 'touch ran', cwd=committed, env=PY_ENV)
+    result = run(MUTANT_RUN, 'plan.md', task, head_sha(committed), '--', 'sh', '-c', 'touch ran', cwd=committed, env=PY_ENV)
     assert result.returncode == 2
     assert 'mutant-run: bad task number' in result.stderr
     assert not (committed / 'ran').exists()
     assert not (committed / '.sdd').exists()
+
+
+# ── mutant-run: BASE ─────────────────────────────────────────────────────
+
+def side_commit(repo, start='HEAD'):
+    '''Commit a file on a side branch cut from start, switch back, and return the commit's sha: not an ancestor of HEAD.'''
+    git('checkout', '-q', '-b', 'side', start, cwd=repo)
+    (repo / 'side.txt').write_text('side\n')
+    git('add', 'side.txt', cwd=repo)
+    git('commit', '-qm', 'side', cwd=repo)
+    sha = head_sha(repo)
+    git('checkout', '-q', '-', cwd=repo)
+    return sha
+
+
+def test_mutant_run_requires_a_base(calc):
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert 'usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]' in result.stderr
+    assert no_mutant_run_file(calc)
+
+
+def test_mutant_run_refuses_a_base_that_is_not_a_commit(calc):
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, 'nosuch', '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert 'mutant-run: bad BASE: nosuch' in result.stderr
+    assert no_mutant_run_file(calc)
+
+
+def test_mutant_run_refuses_a_base_that_is_not_an_ancestor_of_head(calc):
+    sha = side_commit(calc)
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, sha, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert 'HEAD is not a descendant of BASE' in result.stderr
+    assert no_mutant_run_file(calc)
+
+
+def test_mutant_run_records_base_as_a_full_sha(calc):
+    make_mutant(calc, 1, *A)
+    full = head_sha(calc)
+    result = run(MUTANT_RUN, 'plan.md', 1, full[:7], '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_lines(calc)[3] == f'base: {full}'
+
+
+def test_mutant_run_recovers_before_it_checks_base(calc):
+    make_mutant(calc, 1, *A)
+    proc = start_slow_mutant_run(calc)
+    wait_for_the_applied_mutant(calc, proc)
+    os.killpg(proc.pid, signal.SIGKILL)
+    proc.wait(timeout=KILL_WAIT_SECONDS)
+    assert 'a - b' in (calc / 'calc.py').read_text()
+    result = run(MUTANT_RUN, 'plan.md', 1, 'nosuch', '--', 'true', cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert 'bad BASE' in result.stderr
+    assert (calc / 'calc.py').read_text() == CALC
+    assert not run_file(calc, 'mutant-active').exists()
+
+
+def test_mutant_run_records_the_base_it_is_given_when_head_is_past_it(calc):
+    make_mutant(calc, 1, *A)
+    base = head_sha(calc)
+    (calc / 'notes.txt').write_text('later\n')
+    git('add', 'notes.txt', cwd=calc)
+    git('commit', '-qm', 'later', cwd=calc)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert lines[2] == f'head: {head_sha(calc)}'
+    assert lines[3] == f'base: {base}'
+    assert lines[2] != f'head: {base}'
+
+
+def test_mutant_run_refuses_a_base_that_names_a_tree(calc):
+    make_mutant(calc, 1, *A)
+    tree = git('rev-parse', 'HEAD^{tree}', cwd=calc).stdout.strip()
+    result = run(MUTANT_RUN, 'plan.md', 1, tree, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert f'mutant-run: bad BASE: {tree}' in result.stderr.splitlines()
+    assert no_mutant_run_file(calc)
+
+
+def test_mutant_run_names_a_refused_base_as_it_was_given(calc):
+    short = side_commit(calc)[:7]
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, short, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert f'mutant-run: HEAD is not a descendant of BASE {short}' in result.stderr.splitlines()
+    assert no_mutant_run_file(calc)
+
+
+@pytest.mark.parametrize('kind', ['not a commit', 'not an ancestor'])
+def test_mutant_run_checks_base_before_it_refuses_a_dirty_tree(calc, kind):
+    if kind == 'not a commit':
+        base = 'nosuch'
+        want = 'mutant-run: bad BASE: nosuch'
+    else:
+        base = side_commit(calc)
+        want = f'mutant-run: HEAD is not a descendant of BASE {base}'
+    make_mutant(calc, 1, *A)
+    (calc / 'scratch.txt').write_text('x\n')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', 'sh', '-c', 'touch ran', cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert want in result.stderr.splitlines()
+    assert 'scratch.txt' not in result.stderr
+    assert not (calc / 'ran').exists()
+
+
+@pytest.mark.parametrize('base', ['', '--', '-n'])
+def test_mutant_run_refuses_a_base_that_is_empty_or_looks_like_an_option(calc, base):
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert f'mutant-run: bad BASE: {base}' in result.stderr.splitlines()
+    assert no_mutant_run_file(calc)
+
+
+def test_mutant_run_refuses_a_base_on_a_diverged_branch(calc):
+    sibling = side_commit(calc, start='HEAD~1')
+    fork = git('rev-parse', 'HEAD~1', cwd=calc).stdout.strip()
+    assert git('merge-base', sibling, 'HEAD', cwd=calc).stdout.strip() == fork
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, sibling, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert f'mutant-run: HEAD is not a descendant of BASE {sibling}' in result.stderr.splitlines()
+    assert no_mutant_run_file(calc)
+
+
+# ── mutant-run: the revert ───────────────────────────────────────────────
+
+# Every test file, so a file that cannot load on the revert shows beside the others.
+PYTEST_ALL = [sys.executable, '-m', 'pytest', '-q', '-p', 'no:cacheprovider']
+
+HALF = 'def half(a):\n    return a / 2\n'
+HALF_HEAD = 'def half(a):\n    return a // 2\n'
+TEST_HALF_BASE = '''from half import half
+
+
+def test_half_even():
+    assert half(4) == 2
+'''
+TEST_HALF = TEST_HALF_BASE + (
+    '\n\ndef test_half_floors():\n    assert half(3) == 1\n'
+    '\n\ndef test_half_zero():\n    assert half(0) == 0\n'
+)
+TEST_PARAM = '''import pytest
+
+
+@pytest.mark.parametrize('x', [1], ids=['a&b'])
+def test_p(x):
+    assert True
+'''
+NEWMOD = 'def g():\n    return 1\n'
+TEST_NEWMOD = '''from newmod import g
+
+
+def test_g():
+    assert g() == 1
+'''
+TEST_SKIP = '''import pytest
+
+
+def test_g_skip():
+    pytest.importorskip('newmod')
+'''
+H = ('return a // 2', 'return a // 3')  # test_half_even fails
+# Hangs only on the revert, where half.py divides again.
+SLOW_REVERT = ['sh', '-c', 'grep -q "a / 2" half.py && sleep 30; "$0" -m pytest -q -p no:cacheprovider', sys.executable]
+# The baseline and a mutant run before the revert, so allow them time too.
+REVERT_WAIT_SECONDS = 30
+
+
+@pytest.fixture
+def changed(calc):
+    '''calc with a BASE commit and a task commit on it; returns (repo, base).
+
+    The task floors half(), adds two tests for it (test_half_zero passes on the
+    old code too), adds newmod.py with a test file that imports it at its top,
+    and adds a test that importorskips it. BASE's test_param.py has a case whose
+    ID XML escapes.'''
+    (calc / 'half.py').write_text(HALF)
+    (calc / 'test_half.py').write_text(TEST_HALF_BASE)
+    (calc / 'test_param.py').write_text(TEST_PARAM)
+    git('add', 'half.py', 'test_half.py', 'test_param.py', cwd=calc)
+    git('commit', '-qm', 'base', cwd=calc)
+    base = head_sha(calc)
+    (calc / 'half.py').write_text(HALF_HEAD)
+    (calc / 'test_half.py').write_text(TEST_HALF)
+    (calc / 'newmod.py').write_text(NEWMOD)
+    (calc / 'test_newmod.py').write_text(TEST_NEWMOD)
+    (calc / 'test_skip.py').write_text(TEST_SKIP)
+    git('add', 'half.py', 'test_half.py', 'newmod.py', 'test_newmod.py', 'test_skip.py', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    return calc, base
+
+
+def commit_files(repo, files, message):
+    '''Write each file (text or bytes), creating its directory, commit them all, and return the new HEAD.'''
+    for path, content in files.items():
+        (repo / path).parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(content, bytes):
+            (repo / path).write_bytes(content)
+        else:
+            (repo / path).write_text(content)
+    git('add', '--', *[f':(literal){p}' for p in files], cwd=repo)
+    git('commit', '-qm', message, cwd=repo)
+    return head_sha(repo)
+
+
+def stamp(path, word):
+    '''A config file's text that differs by word. A pytest.ini keeps its section, so pytest still reads it.'''
+    section = '[pytest]\n' if path.endswith('pytest.ini') else ''
+    return f'{section}# {word}\n'
+
+
+def run_section(lines, name):
+    '''The lines of the run file's "--- <name> ---" section, up to the next section.'''
+    start = lines.index(f'--- {name} ---') + 1
+    end = next((i for i in range(start, len(lines)) if lines[i].startswith('--- ')), len(lines))
+    return lines[start:end]
+
+
+def path_lines(lines):
+    return [x for x in lines if x.startswith('path: ')]
+
+
+def tree_is_head(repo):
+    return run('git', 'diff', '--quiet', 'HEAD', cwd=repo).returncode == 0
+
+
+def test_mutant_run_lists_each_test_on_the_revert(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    result_line = 'result: caught 1, survived 0, invalid 0'
+    revert_line = 'revert: ran, exit 1, failed 1, not loaded 1, skipped 1, passed 6'
+    assert result_line in lines
+    assert revert_line in lines
+    assert lines.index(revert_line) > lines.index(result_line)
+    revert = run_section(lines, 'revert')
+    patch = run_file(repo, 'task-1-revert.patch')
+    assert 'path: half.py' in revert
+    assert 'path: newmod.py' in revert
+    assert f'sha256: {patch_sha(patch)}' in revert
+    assert any(x.startswith('failed test_half::test_half_floors: AssertionError') for x in revert)
+    [not_loaded] = [x for x in revert if x.startswith('not loaded test_newmod: ')]
+    assert 'newmod' in not_loaded.removeprefix('not loaded test_newmod: ')
+    assert any(x.startswith('skipped test_skip::test_g_skip: ') for x in revert)
+    assert 'passed test_half::test_half_even' in revert
+    assert 'passed test_half::test_half_zero' in revert
+    assert run_section(lines, 'tests') == ['test test_half::test_half_even: caught 1']
+    assert '--- output: revert ---' in lines
+    out = result.stdout.splitlines()
+    assert out[-1].startswith('run: ')
+    assert out[-2] == revert_line
+    assert tree_is_head(repo)
+    assert (repo / 'newmod.py').exists()
+    assert not run_file(repo, 'mutant-active').exists()
+
+
+def test_mutant_run_keeps_test_and_config_files_at_head(calc):
+    kept = [
+        'pyproject.toml', 'pkg/pyproject.toml', 'uv.lock', '.python-version', 'requirements-dev.txt',
+        'pytest.ini', 'tests/helper.py',
+    ]
+    base = commit_files(calc, {p: stamp(p, 'base') for p in kept}, 'base')
+    double = '\n\ndef double(a):\n    return 2 * a\n'
+    commit_files(calc, {**{p: stamp(p, 'task') for p in kept}, 'calc.py': CALC + double}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert path_lines(mutant_lines(calc)) == ['path: calc.py'], result.stdout + result.stderr
+
+
+def test_mutant_run_writes_revert_none_when_only_tests_and_config_changed(calc):
+    base = head_sha(calc)
+    test_calc = TEST_CALC + '\n\ndef test_add_zero():\n    assert add(0, 0) == 0\n'
+    commit_files(calc, {'test_calc.py': test_calc, 'pyproject.toml': '[project]\nname = "demo"\n'}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    lines = mutant_lines(calc)
+    assert 'revert: none: no file outside the tests and the project config changed' in lines, result.stdout + result.stderr
+    assert '--- revert ---' not in lines
+    assert '--- output: revert ---' not in lines
+    assert not run_file(calc, 'task-1-revert.patch').exists()
+
+
+def test_mutant_run_round_trips_a_deleted_file_and_a_new_script(calc):
+    base = commit_files(calc, {'old.py': 'OLD = 1\n'}, 'base')
+    git('rm', '-q', 'old.py', cwd=calc)
+    (calc / 'tool.sh').write_text('#!/bin/sh\necho tool\n')
+    (calc / 'tool.sh').chmod(0o755)
+    git('add', 'tool.sh', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    lines = mutant_lines(calc)
+    assert 'path: old.py' in lines, result.stdout + result.stderr
+    assert 'path: tool.sh' in lines
+    assert not (calc / 'old.py').exists()
+    assert os.access(calc / 'tool.sh', os.X_OK)
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_reverts_a_renamed_file(changed):
+    repo, base = changed
+    git('mv', 'half.py', 'halve.py', cwd=repo)
+    (repo / 'test_half.py').write_text(TEST_HALF.replace('from half import', 'from halve import'))
+    git('add', 'test_half.py', cwd=repo)
+    git('commit', '-qm', 'rename', cwd=repo)
+    make_mutant(repo, 1, *H, path='halve.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    lines = mutant_lines(repo)
+    assert 'path: half.py' in lines, result.stdout + result.stderr
+    assert 'path: halve.py' in lines
+    assert not (repo / 'half.py').exists()
+    assert tree_is_head(repo)
+
+
+def test_mutant_run_reverts_a_path_with_a_space(calc):
+    base = commit_files(calc, {'my mod.py': 'X = 1\n'}, 'base')
+    commit_files(calc, {'my mod.py': 'X = 2\n'}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert 'path: my mod.py' in mutant_lines(calc), result.stdout + result.stderr
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_lists_revert_ids_unescaped(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert 'passed test_param::test_p[a&b]' in mutant_lines(repo), result.stdout + result.stderr
+
+
+def test_mutant_run_records_a_revert_with_no_report(changed):
+    repo, base = changed
+    commit_files(repo, {'conftest.py': 'import newmod\n'}, 'conftest')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 4, no report' in lines
+    assert 'newmod' in '\n'.join(run_section(lines, 'output: revert'))
+
+
+def test_mutant_run_records_a_revert_that_times_out(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    env = {**PY_ENV, 'MUTANT_RUN_TIMEOUT': '2'}
+    start = time.monotonic()
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *SLOW_REVERT, cwd=repo, env=env)
+    elapsed = time.monotonic() - start
+    assert 'revert: timeout after 2s' in mutant_lines(repo), result.stdout + result.stderr
+    assert elapsed < 15
+    assert (repo / 'half.py').read_text() == HALF_HEAD
+
+
+def wait_for_the_applied_revert(repo, proc):
+    # The marker is written before the revert is applied, so the marker alone
+    # does not show that half.py divides again yet.
+    marker = run_file(repo, 'mutant-active')
+    deadline = time.monotonic() + REVERT_WAIT_SECONDS
+    while time.monotonic() < deadline:
+        try:
+            if (marker.read_text().split('\n', 1)[0] == 'task-1-revert.patch'
+                    and 'a / 2' in (repo / 'half.py').read_text()):
+                return
+        except FileNotFoundError:
+            pass
+        if proc.poll() is not None:
+            pytest.fail('mutant-run ended before it applied the revert')
+        time.sleep(0.05)
+    os.killpg(proc.pid, signal.SIGKILL)
+    pytest.fail('the revert was never applied')
+
+
+def test_mutant_run_recovers_a_revert_a_killed_run_left_applied(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    proc = subprocess.Popen(
+        [str(MUTANT_RUN), 'plan.md', '1', base, '--', *SLOW_REVERT],
+        cwd=repo, env=PY_ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    wait_for_the_applied_revert(repo, proc)
+    os.killpg(proc.pid, signal.SIGKILL)
+    proc.wait(timeout=KILL_WAIT_SECONDS)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', 'true', cwd=repo, env=PY_ENV)
+    note = 'note: reversed task-1-revert.patch, left applied by a killed run'
+    assert note in mutant_lines(repo), result.stdout + result.stderr
+    assert (repo / 'half.py').read_text() == HALF_HEAD
+    assert not run_file(repo, 'mutant-active').exists()
+
+
+# ── mutant-run: the revert, further shapes ───────────────────────────────
+
+def test_mutant_run_keeps_each_project_config_name_at_head_and_reverts_look_alikes(calc):
+    kept = ['uv.toml', 'setup.cfg', 'tox.ini', 'requirements.txt', 'docs/requirements.txt']
+    look_alikes = ['app.cfg', 'local.ini', 'notes.txt', 'requirements.in', 'settings.toml']
+    base = commit_files(calc, {p: stamp(p, 'base') for p in kept + look_alikes}, 'base')
+    commit_files(calc, {p: stamp(p, 'task') for p in kept + look_alikes}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert path_lines(mutant_lines(calc)) == [f'path: {p}' for p in look_alikes]
+
+
+def test_mutant_run_applies_the_revert_to_a_binary_file_and_unusual_names(calc):
+    # Without --binary, git writes no binary patch that git apply takes.
+    # Without :(literal), the pathspec a*.py also takes the test file
+    # abc_test.py into the revert. Without -z, git quotes q"t.py.
+    blob = bytes(range(256))
+    base = commit_files(calc, {
+        'blob.bin': blob, 'my mod.py': 'X = 1\n', 'a*.py': 'Y = 1\n', 'q"t.py': 'Z = 1\n',
+        'abc_test.py': 'def test_y():\n    assert True\n',
+    }, 'base')
+    commit_files(calc, {
+        'blob.bin': blob[::-1], 'my mod.py': 'X = 2\n', 'a*.py': 'Y = 2\n', 'q"t.py': 'Z = 2\n',
+        'abc_test.py': 'def test_y():\n    assert 1\n',
+    }, 'task')
+    make_mutant(calc, 1, *A)
+    cmd = ['sh', '-c', 'cat "my mod.py" "a*.py"; "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert 'revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 3' in lines
+    assert path_lines(lines) == ['path: a*.py', 'path: blob.bin', 'path: my mod.py', 'path: q"t.py']
+    output = run_section(lines, 'output: revert')
+    assert 'X = 1' in output
+    assert 'Y = 1' in output
+    assert b'abc_test.py' not in run_file(calc, 'task-1-revert.patch').read_bytes()
+    assert (calc / 'blob.bin').read_bytes() == blob[::-1]
+    assert tree_is_head(calc)
+
+
+TEST_FIX = '''import pytest
+
+from half import half
+
+
+@pytest.fixture
+def floored():
+    assert half(3) == 1
+    return 1
+
+
+def test_floored(floored):
+    assert floored == 1
+'''
+TEST_CHAIN = '''try:
+    import newmod
+except ImportError:
+    raise RuntimeError('newmod is <missing> & gone')
+
+
+def test_chained():
+    assert newmod.g() == 1
+'''
+TEST_PLAIN = '''import pytest
+
+try:
+    import newmod
+except ImportError:
+    pytest.fail('newmod is gone', pytrace=False)
+
+
+def test_plain():
+    assert newmod.g() == 1
+'''
+
+
+def test_mutant_run_lists_each_outcome_with_its_message(changed):
+    # A rewritten assert's message has no type, so the line restores it.
+    # test_chain's error text has two E lines: the cause is the last one,
+    # unescaped. test_plain's has none: the cause is the message attribute.
+    repo, base = changed
+    commit_files(repo, {'test_fix.py': TEST_FIX, 'test_chain.py': TEST_CHAIN, 'test_plain.py': TEST_PLAIN}, 'more')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 2, not loaded 3, skipped 1, passed 6' in lines
+    assert run_section(lines, 'revert')[3:] == [
+        'not loaded test_chain: RuntimeError: newmod is <missing> & gone',
+        "not loaded test_newmod: ModuleNotFoundError: No module named 'newmod'",
+        'not loaded test_plain: collection failure',
+        'passed test_calc::test_add_small',
+        'passed test_calc::test_add_large',
+        'passed test_calc::test_neg',
+        'failed test_fix::test_floored: failed on setup with "assert 1.5 == 1',
+        'passed test_half::test_half_even',
+        'failed test_half::test_half_floors: AssertionError: assert 1.5 == 1',
+        'passed test_half::test_half_zero',
+        'passed test_param::test_p[a&b]',
+        "skipped test_skip::test_g_skip: could not import 'newmod': No module named 'newmod'",
+    ]
+
+
+TEST_MODSKIP = '''import pytest
+
+newmod = pytest.importorskip('newmod')
+
+
+def test_m():
+    assert newmod.g() == 1
+'''
+
+
+def test_mutant_run_lists_a_module_level_skip_by_its_name(changed):
+    # An importorskip at a file's top skips the whole file at collection.
+    # pytest writes that case with no classname, so the line gives its name
+    # alone, as a not loaded line does.
+    repo, base = changed
+    commit_files(repo, {'test_modskip.py': TEST_MODSKIP}, 'more')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 1, not loaded 1, skipped 2, passed 6' in lines
+    assert 'skipped test_modskip: collection skipped' in run_section(lines, 'revert')
+
+
+def test_mutant_run_lists_a_passed_case_that_has_a_body(changed):
+    # A passed case with a property is no self-closing tag, so the reader
+    # lists it at its closing tag.
+    repo, base = changed
+    commit_files(repo, {'test_prop.py': "def test_prop(record_property):\n    record_property('k', 'v')\n"}, 'more')
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 1, not loaded 1, skipped 1, passed 7' in lines
+    assert 'passed test_prop::test_prop' in run_section(lines, 'revert')
+
+
+# Settings in a user's git config that change what git diff writes: no a/ and
+# b/ prefixes, colour codes, an external diff that fails, and a textconv
+# driver that rewrites .py files.
+DIFF_CONFIG = {
+    'diff.noprefix': 'true',
+    'color.ui': 'always',
+    'diff.external': 'false',
+    'diff.upper.textconv': 'sed s/return/RETURN/',
+}
+
+
+def config_env(env, settings):
+    '''env with git config settings added through GIT_CONFIG_COUNT, as a user's global config would add them.'''
+    added = {'GIT_CONFIG_COUNT': str(len(settings))}
+    for i, (key, value) in enumerate(settings.items()):
+        added[f'GIT_CONFIG_KEY_{i}'] = key
+        added[f'GIT_CONFIG_VALUE_{i}'] = value
+    return {**env, **added}
+
+
+def test_mutant_run_builds_the_revert_patch_whatever_the_users_diff_config(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    # Untracked, so the tree stays clean: the textconv driver applies to .py files.
+    (repo / '.git' / 'info' / 'attributes').write_text('*.py diff=upper\n')
+    env = config_env(PY_ENV, DIFF_CONFIG)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'revert: ran, exit 1, failed 1, not loaded 1, skipped 1, passed 6' in lines
+    assert 'failed test_half::test_half_floors: AssertionError: assert 1.5 == 1' in lines
+
+
+SCALE = 'def double(a):\n    return a * a\n\n\ndef triple(a):\n    return 3 * a\n'
+TEST_SCALE = 'from scale import double\n\n\ndef test_double():\n    assert double(3) == 6\n'
+
+
+def test_mutant_run_builds_the_revert_patch_whatever_the_users_diff_context(calc):
+    # git apply refuses a hunk with no context lines unless it ends its file,
+    # so the task's edit sits in the middle of scale.py.
+    base = commit_files(calc, {'scale.py': SCALE}, 'base')
+    commit_files(calc, {'scale.py': SCALE.replace('a * a', '2 * a'), 'test_scale.py': TEST_SCALE}, 'task')
+    make_mutant(calc, 1, *A)
+    # Set after make_mutant, whose git diff would read it too. The repository's
+    # own config, which every git reads.
+    git('config', 'diff.context', '0', cwd=calc)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    [revert] = [x for x in lines if x.startswith('revert: ')]
+    assert revert == 'revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 3'
+    assert 'failed test_scale::test_double: AssertionError: assert 9 == 6' in lines
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_reverts_a_nested_path_from_a_subdirectory(calc):
+    # git apply run from sub/ would skip every path outside sub/ and report
+    # success, so the revert must apply from the top.
+    base = commit_files(calc, {'src/half.py': HALF, 'src/test_half.py': TEST_HALF_BASE}, 'base')
+    commit_files(calc, {'src/half.py': HALF_HEAD, 'src/test_half.py': TEST_HALF}, 'task')
+    (calc / 'sub').mkdir()
+    make_mutant(calc, 1, *H, path='src/half.py')
+    cmd = ['sh', '-c', 'cd .. && "$0" -m pytest -q -p no:cacheprovider src/test_half.py', sys.executable]
+    result = run(MUTANT_RUN, '../plan.md', 1, base, '--', *cmd, cwd=calc / 'sub', env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert path_lines(lines) == ['path: src/half.py']
+    assert 'revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 2' in lines
+    assert 'failed src.test_half::test_half_floors: AssertionError: assert 1.5 == 1' in lines
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_lists_no_test_case_for_an_internal_error_on_the_revert(calc):
+    # On the revert, the hook cannot import double, so pytest stops with an
+    # internal error (exit 3) before any test runs. Its report holds one case,
+    # pytest::internal, which is no test and must not read as one that passed.
+    base = head_sha(calc)
+    hook = 'def pytest_collection_modifyitems(items):\n    from calc import double\n'
+    double = '\n\ndef double(a):\n    return 2 * a\n'
+    commit_files(calc, {'calc.py': CALC + double, 'conftest.py': hook}, 'task')
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert 'revert: ran, exit 3, failed 0, not loaded 0, skipped 0, passed 0' in lines
+    patch = run_file(calc, 'task-1-revert.patch')
+    assert run_section(lines, 'revert') == ['path: calc.py', f'sha256: {patch_sha(patch)}']
+
+
+def test_mutant_run_never_loads_revert_bytecode_cached_before_its_baseline(changed):
+    # A .pyc of BASE's half.py, left by someone who ran the old code by hand,
+    # would make the baseline run the old code and fail. Mutant 1 edits calc.py,
+    # so only the revert's path list names half.py for the purge.
+    repo, base = changed
+    ignore_pycache(repo)
+    make_mutant(repo, 1, *A)
+    (repo / 'half.py').write_text(HALF)
+    made = run(
+        sys.executable, '-m', 'compileall', '-q', '--invalidation-mode', 'unchecked-hash', 'half.py',
+        cwd=repo, env=PYCACHE_ENV,
+    )
+    assert made.returncode == 0, made.stdout + made.stderr
+    git('checkout', '--', 'half.py', cwd=repo)
+    assert list(repo.glob('__pycache__/half*.pyc'))
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PYCACHE_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert 'failed test_half::test_half_floors: AssertionError: assert 1.5 == 1' in mutant_lines(repo)
+
+
+def test_mutant_run_records_a_revert_that_does_not_apply(calc):
+    base = commit_files(calc, {'old.py': 'OLD = 1\n'}, 'base')
+    git('rm', '-q', 'old.py', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    make_mutant(calc, 1, *A)
+    # The command leaves an untracked old.py where the revert must put BASE's.
+    cmd = ['sh', '-c', 'echo stray > old.py; "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    line = 'revert: not applied: does not apply'
+    assert line in lines
+    patch = run_file(calc, 'task-1-revert.patch')
+    assert run_section(lines, 'revert') == ['path: old.py', f'sha256: {patch_sha(patch)}']
+    assert '--- output: revert ---' not in lines
+    assert result.stdout.splitlines()[-2] == line
+
+
+def test_mutant_run_writes_the_revert_line_after_the_note(calc):
+    p1 = make_mutant(calc, 1, *A)
+    # What a run killed with mutant 1 applied leaves behind.
+    git('apply', p1, cwd=calc)
+    run_file(calc, 'mutant-active').write_text('task-1-mutant-1.patch\n' + p1.read_text())
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_lines(calc)[5:8] == [
+        'result: caught 1, survived 0, invalid 0',
+        'note: reversed task-1-mutant-1.patch, left applied by a killed run',
+        'revert: none: no file outside the tests and the project config changed',
+    ]
+
+
+def test_mutant_run_overwrites_the_revert_patch_on_its_next_run(calc):
+    # The second run's HEAD has moved, so only a fresh patch applies to it.
+    base = head_sha(calc)
+    double = '\n\ndef double(a):\n    return 2 * a\n'
+    commit_files(calc, {'calc.py': CALC + double}, 'task')
+    make_mutant(calc, 1, *A)
+    first = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert first.returncode == 0, first.stdout + first.stderr
+    commit_files(calc, {'calc.py': CALC + double + '\n\ndef triple(a):\n    return 3 * a\n'}, 'fix')
+    second = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert second.returncode == 0, second.stdout + second.stderr
+    lines = mutant_lines(calc, 'task-1-mutants-2.log')
+    assert 'revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 3' in lines
+    patch = run_file(calc, 'task-1-revert.patch')
+    assert run_section(lines, 'revert')[:2] == ['path: calc.py', f'sha256: {patch_sha(patch)}']
+    assert b'triple' in patch.read_bytes()
+
+
+def test_mutant_run_stops_when_the_revert_run_changes_a_tracked_file(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    cmd = [
+        'sh', '-c', 'grep -q "a / 2" half.py && echo "# touched" >> calc.py; "$0" -m pytest -q -p no:cacheprovider',
+        sys.executable,
+    ]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=repo, env=PY_ENV)
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert 'tracked files differ from HEAD after reversing task-1-revert.patch' in result.stderr
+    assert 'calc.py' in result.stderr.splitlines()
+    assert no_mutant_run_file(repo)
+    assert not run_file(repo, 'mutant-active').exists()
+
+
+def test_mutant_run_reverts_a_rename_that_git_detects_as_one(calc):
+    # The plan's rename test changes most of a two-line file, which git never
+    # pairs as a rename. Here it does, so only --no-renames lists both paths.
+    body = ''.join(f'def f{i}():\n    return {i}\n\n\n' for i in range(10))
+    base = commit_files(calc, {'mod.py': body}, 'base')
+    git('mv', 'mod.py', 'renamed.py', cwd=calc)
+    (calc / 'renamed.py').write_text(body.replace('return 9\n', 'return 90\n'))
+    git('add', 'renamed.py', cwd=calc)
+    git('commit', '-qm', 'task', cwd=calc)
+    assert git('diff', '-M', '--name-status', base, 'HEAD', cwd=calc).stdout.startswith('R')
+    make_mutant(calc, 1, *A)
+    cmd = [
+        'sh', '-c',
+        'test -f mod.py && echo has-mod; test -e renamed.py || echo no-renamed; '
+        '"$0" -m pytest -q -p no:cacheprovider test_calc.py',
+        sys.executable,
+    ]
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert path_lines(lines) == ['path: mod.py', 'path: renamed.py']
+    assert 'revert: ran, exit 0, failed 0, not loaded 0, skipped 0, passed 3' in lines
+    output = run_section(lines, 'output: revert')
+    assert 'has-mod' in output
+    assert 'no-renamed' in output
+    assert not (calc / 'mod.py').exists()
+    assert tree_is_head(calc)
+
+
+def test_mutant_run_builds_the_revert_after_the_last_mutant(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    # Hangs while mutant 1 is applied.
+    slow_mutant = ['sh', '-c', 'grep -q "a // 3" half.py && sleep 30; "$0" -m pytest -q -p no:cacheprovider', sys.executable]
+    proc = subprocess.Popen(
+        [str(MUTANT_RUN), 'plan.md', '1', base, '--', *slow_mutant],
+        cwd=repo, env=PY_ENV, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    marker = run_file(repo, 'mutant-active')
+    deadline = time.monotonic() + REVERT_WAIT_SECONDS
+    while time.monotonic() < deadline:
+        try:
+            if (marker.read_text().split('\n', 1)[0] == 'task-1-mutant-1.patch'
+                    and 'a // 3' in (repo / 'half.py').read_text()):
+                break
+        except FileNotFoundError:
+            pass
+        if proc.poll() is not None:
+            pytest.fail('mutant-run ended before it applied mutant 1')
+        time.sleep(0.05)
+    else:
+        os.killpg(proc.pid, signal.SIGKILL)
+        pytest.fail('mutant 1 was never applied')
+    built = run_file(repo, 'task-1-revert.patch').exists()
+    os.killpg(proc.pid, signal.SIGKILL)
+    proc.wait(timeout=KILL_WAIT_SECONDS)
+    assert not built
+
+
+def test_mutant_run_keeps_its_exit_status_when_the_revert_times_out(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    env = {**PY_ENV, 'MUTANT_RUN_TIMEOUT': '2'}
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *SLOW_REVERT, cwd=repo, env=env)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo)
+    assert 'result: caught 1, survived 0, invalid 0' in lines
+    patch = run_file(repo, 'task-1-revert.patch')
+    assert run_section(lines, 'revert') == ['path: half.py', 'path: newmod.py', f'sha256: {patch_sha(patch)}']
+    assert '--- output: revert ---' in lines

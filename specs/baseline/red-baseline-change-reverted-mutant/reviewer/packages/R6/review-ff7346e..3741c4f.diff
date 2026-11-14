@@ -1,0 +1,71 @@
+# Review package: ff7346e122a8bcd1d9f822fde0d14edfb5974849..3741c4fa9bd222f9879f8f17a25b0b952471a503
+
+## Commits
+3741c4f Test zero, leading zeros and any other text
+ece2bc8 Add to_bytes
+
+## Files changed
+ tests/test_units.py        | 11 +++++++++++
+ tests/test_units_shapes.py | 17 +++++++++++++++++
+ units.py                   | 12 ++++++++++++
+ 3 files changed, 40 insertions(+)
+
+## Diff
+diff --git a/tests/test_units.py b/tests/test_units.py
+new file mode 100644
+index 0000000..916aafd
+--- /dev/null
++++ b/tests/test_units.py
+@@ -0,0 +1,11 @@
++from units import to_bytes
++
++
++def test_to_bytes_reads_each_unit():
++    assert to_bytes('7B') == 7
++    assert to_bytes('2KB') == 2048
++    assert to_bytes('3MB') == 3145728
++
++
++def test_to_bytes_reads_a_number_of_several_digits():
++    assert to_bytes('15KB') == 15360
+diff --git a/tests/test_units_shapes.py b/tests/test_units_shapes.py
+new file mode 100644
+index 0000000..7baaa35
+--- /dev/null
++++ b/tests/test_units_shapes.py
+@@ -0,0 +1,17 @@
++import pytest
++
++
++def test_to_bytes_reads_zero_and_leading_zeros():
++    from units import to_bytes
++
++    assert to_bytes('0B') == 0
++    assert to_bytes('007KB') == 7168
++
++
++def test_to_bytes_rejects_any_other_text():
++    from units import to_bytes
++
++    for text in ('', '12', 'KB', '3GB', '3kb', '3Kb', '3 KB', ' 3KB', '3KB ', '3KB\n', '3KBs', '-3KB', '+3KB',
++                 '1.5KB', '1_0KB', '\u0663KB'):
++        with pytest.raises(ValueError):
++            to_bytes(text)
+diff --git a/units.py b/units.py
+new file mode 100644
+index 0000000..2afc663
+--- /dev/null
++++ b/units.py
+@@ -0,0 +1,12 @@
++import re
++
++UNITS = {'B': 1, 'KB': 1024, 'MB': 1024 * 1024}
++SIZE = re.compile(r'([0-9]+)(B|KB|MB)')
++
++
++def to_bytes(text: str) -> int:
++    match = SIZE.fullmatch(text)
++    if match is None:
++        raise ValueError(f'not a size: {text!r}')
++    digits, unit = match.groups()
++    return int(digits) * UNITS[unit]

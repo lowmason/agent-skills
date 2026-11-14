@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 7286,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0126958,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 14478,
+    "output_tokens": 980,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 980,
+      "cacheReadInputTokens": 14478,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.0126958,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`, which includes the end date, excludes the day after it, and keeps the start boundary. The brief's regression test appears verbatim at `tests/test_window.py:6-9`. Both global constraints (start inclusive, end inclusive) are tested.\n- The tests log is at head 66c72f2 on a clean tree, with exit 0 and 3 passed, matching the report.\n- The mutant run is at head 66c72f2, `base: f387177`, on a clean tree, so it is valid evidence for this diff.\n\n### Strengths\n\n- The one-line fix is minimal and correct.\n- The plan test is unchanged. No ruling was needed, since nothing was loosened (check 6).\n- The extra tests add real shapes: a one-day window, and a window across a year end where the end is in January (`tests/test_window.py:13-14`). They also test the start boundary on both sides (`tests/test_window.py:19-20`).\n\n### Mutant step (checks 1-7)\n\n1. **Inputs:** The rule at specs/window.md:8 covers a day on the end date and a day after it, plus a one-day window and a year-end window. Each has a row, and the named tests use those shapes (`tests/test_window.py:8-9, 13-14`). ✅\n2. **Plausible mutants:** The three mutants are `<` for `<=`, a dropped end check, and a start-exclusive version. Each is a plausible slip and none breaks every call. ✅\n3. **Mutant per rule:** Mutants 1 and 2 aim at specs/window.md:8. The start rule is a global constraint, not an excerpt, and mutant 3 covers it anyway. ✅\n4. **Catch per test:** All three tests have `test ...: caught` lines (`includes_end_date` 1 2, `other_windows` 1 3, `starts_on_start_date` 3). ✅\n5. **Withdrawn:** There are none. ✅\n6. **No loosening:** The plan test matches the brief exactly. ✅\n7. **Revert:** `includes_end_date` and `holds_its_end_date_in_other_windows` fail on the revert. `test_window_starts_on_start_date` passes on the revert, and its `Keeps:` line holds. That test checks start-boundary behavior that exists at BASE (`start <= day`) and is not changed by the brief. The brief's behavior change is checked, because two tests fail on the revert. ✅\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\n### Declined to judge\n\nNone.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The fix is a correct one-character boundary change, with tests covering both window boundaries. The valid mutant and revert runs show every added test catches a plausible wrong version, and the one test that passes on the revert has a holding `Keeps:` line.",
+  "ttft_ms": 7358,
+  "type": "result",
+  "duration_ms": 7370,
+  "ttft_stream_ms": 637,
+  "time_to_request_ms": 84,
+  "first_content_frame_ms": 638,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

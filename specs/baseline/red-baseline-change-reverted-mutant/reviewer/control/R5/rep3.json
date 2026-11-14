@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 6113,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0105969,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 362,
+    "cache_read_input_tokens": 13449,
+    "output_tokens": 780,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 362,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 780,
+      "cacheReadInputTokens": 13449,
+      "cacheCreationInputTokens": 362,
+      "webSearchRequests": 0,
+      "costUSD": 0.0105969,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 362,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`, which includes the end date and still excludes a day after the end and a day before the start (the global constraints). The brief's listed files each have a hunk: `window.py` is modified and `tests/test_window.py` is created. The plan test `test_window_includes_end_date` matches the brief verbatim.\n\n### Strengths\n\n- The fix is the one-token change the bug needs, and the diff touches nothing else.\n- The plan test is unchanged, and the two added tests strengthen it: a one-day window and a window across a year end for the end date, and both start-date boundaries.\n- The controller's test run is at head 66c72f2 on a clean tree, exits 0 with 3 passed, and matches the report's count. The output has no warnings or skips.\n- The mutant run is at the diff's head on a clean tree, with all 3 mutants CAUGHT, and each test has a `caught` line.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone. The mutant checks:\n\n1. **Inputs:** the rule at specs/window.md:8 has rows for a day on the end date, the day after, a one-day window and a year-end window. Each named test uses its shape (test_window.py:8-9, 13-14).\n2. **Plausible mutants:** the three mutants are `<`, a dropped end check, and a start `<`, each plausible and each failing only specific inputs.\n3. **Rule coverage:** mutants 1 and 2 target the stated rule. Mutant 3 targets the start-date global constraint.\n4. **Test catches:** each of the three tests has a `test ...: caught` line in the run.\n5. **Withdrawn:** there are none.\n6. **Plan test loosening:** the plan test is unchanged, and no rulings are needed.\n\n### Declined to judge\n\n- Behavior when `start > end` (an inverted window): the brief and spec excerpts give no rule for it. The code returns False for every day, which is reasonable, and no spec line is available to rule on it.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The one-line fix satisfies the end-inclusive and start-inclusive rules. The tests and mutant run confirm both boundaries, and the evidence is at the diff's head on a clean tree.",
+  "ttft_ms": 6149,
+  "type": "result",
+  "duration_ms": 6164,
+  "ttft_stream_ms": 604,
+  "time_to_request_ms": 50,
+  "first_content_frame_ms": 604,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

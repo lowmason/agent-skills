@@ -55,16 +55,58 @@ partner confirmed.
    - **Plan tests.** No test whose code the plan gives is loosened (an
      assertion removed or loosened, an expected value changed, the test
      skipped or deleted) without a `Ruling:` line that covers the change.
+   - **Revert.** After the mutants, the run ran the tests once more on
+     the revert. The revert is the task's diff, from the run's `base:`
+     to its `head:`, reversed over each changed path except test files
+     and project config files (`pyproject.toml`, `uv.lock`, `uv.toml`,
+     `.python-version`, `requirements*.txt`, `setup.cfg`, `pytest.ini`
+     and `tox.ini`, at any depth). It puts the task's code back as it
+     was at the run's `base:` and keeps the tests at its `head:`. The
+     header's `revert:` line sums up that run. The revert section,
+     `--- revert ---`, holds a `path:` line for each path that the
+     revert put back and a `sha256:` line, then one line for each test
+     case in the run's report: `failed <id>: <message>`,
+     `not loaded <name>: <cause>` for the test file whose dotted module
+     name is `<name>`, `skipped <id>: <reason>`, or `passed <id>`. A
+     `skipped` line for a file skipped at its top gives its module name
+     alone. A test that skips at the run's `head:` too did not run. The
+     revert's output is under `--- output: revert ---`.
+
+     Each test that the task adds or changes fails on the revert, plan
+     tests that the task writes included. A test fails on the revert
+     when the revert section lists it as failed, or lists its file as
+     not loaded. A skip that the revert caused, of the test or of its
+     file, counts too. When the `revert:` line gives counts, a test with
+     no entry did not run: that is a gap. A test that passes on the
+     revert needs a `Keeps:` line or, for a plan test, a `Strengthened:`
+     line in the mutants file that holds. A `Keeps:` line holds when the test checks behavior
+     that exists at the run's `base:` and that the task keeps. It never
+     holds for behavior that the task's brief, or a spec sentence that
+     the mutants file cites as `path:line`, changes. A `Strengthened:`
+     line holds when its new test fails on the revert and checks the
+     behavior that the plan test should have caught. A test with no line
+     that holds is a finding: name the behavior that it should have
+     caught on the old code. Also check a task whose brief states a
+     behavior change. If the `revert:` line gives counts and no test
+     fails on the revert, no test checks the change, and that is a
+     finding, unless a test that the task adds or changes has no entry.
+     A `revert: none: …` line holds when the task's diff changes only
+     test files and project config files, and is a gap when it does not.
+     A `revert: not applied: …` line is a gap. Read a `no report` or
+     `timeout` revert from its output. A `conftest.py` that cannot load
+     means that every test needs the change. Any other cause is a gap.
    - **Exemptions.** A task whose brief has a focused pytest command over
      code the task changes is a mutant task, so its `mutants: none: <why>`
      reason does not hold. Lints, link checks and checks over Markdown do
      not make a task a mutant task.
 
    Each run's `head:` is its task's last commit, the second sha in that
-   task's ledger line, not the branch's HEAD. Each gap is an Important
-   finding: the mutant step is part of the task's requirements, and a
-   test that lets a plausible wrong version through lets that defect
-   reach a person. The review's last pass does not delete these findings.
+   task's ledger line, not the branch's HEAD. Each run's `base:` is the
+   first sha in that line, as its `head:` is the second. Each gap is an
+   Important finding: the mutant step is part of the task's requirements,
+   and a test that lets a plausible wrong version through lets that
+   defect reach a person. The review's last pass does not delete these
+   findings.
 2. **Codex** — the second-opinion review in
    [codex-review.md](../../requesting-code-review/codex-review.md), with
    `--base <BASE>`.
@@ -103,6 +145,10 @@ re-review: it would re-read a diff whose covering tests already answer
 A finding you decide not to fix is a ruling — `Final: Ruling: <finding> —
 <why the code stands> — <cost if wrong>` — and reaches your human partner
 in the rulings list at the plan-completion gate. There is no second fix pass.
+A test that the revert never ran has one such case that no rerun can clear:
+a test in a second suite that one pytest call cannot run with the first. The
+revert section has no entry for it however often the script runs. Rule on it
+with a `Ruling:` line that names the test and the second suite.
 
 The code-reviewer's Declined to judge lines are not ruled on here: they go
 to your partner at the plan-completion gate.

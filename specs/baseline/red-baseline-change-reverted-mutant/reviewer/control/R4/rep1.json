@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 6436,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0520555,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 10757,
+    "cache_read_input_tokens": 1635,
+    "output_tokens": 886,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 10757,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 886,
+      "cacheReadInputTokens": 1635,
+      "cacheCreationInputTokens": 10757,
+      "webSearchRequests": 0,
+      "costUSD": 0.0520555,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 10757,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`. This matches specs/window.md:8 (end date included, day after outside) and the global constraint that a day before the start is outside. The brief's two files each have their hunk (`window.py`, `tests/test_window.py`). The plan test appears verbatim in the diff.\n\n### Strengths\n\n- The one-line fix is minimal and correct.\n- The plan test is unchanged, and the added test covers the boundaries: the day before start, start, end, a one-day window and a window across a year end.\n- Tests: the controller's run is at head c39e286 on a clean tree and exit 0 with 2 passed. This matches the report. The output is pristine.\n- Mutant run: it is at head on a clean tree. Both mutants are CAUGHT, and the revert check ran (1 failed, 1 passed), confirming the fix is what makes the tests pass.\n\n### Issues\n\n#### Critical (Must Fix)\nNone.\n\n#### Important (Should Fix)\n\nNone. The mutant checks:\n\n1. **Inputs:** the shapes the rule covers are the end-date day, a one-day window, a year-end window and the day after the end. Each has a row, and each named test uses its shape (the first three in `tests/test_window.py:12-17`, the day after in `tests/test_window.py:9`).\n2. **Plausible mutants:** `<` for `<=` and a dropped end check are both realistic mistakes. Neither crashes everything, and each changes a visible result.\n3. **A mutant for each stated rule:** the only rule is specs/window.md:8, and both mutants target it. The start-boundary rule from the dispatch's global constraints is not in the spec excerpts file, which is not a finding. The existing start check `start <= day` was not changed by the diff.\n4. **A catch for each test:** the run lists `test_window_holds_its_start_and_end_dates: caught 1` and `test_window_includes_end_date: caught 2`.\n5. **Withdrawn:** there are no `Withdrawn:` lines.\n6. **Plan tests loosened:** none. The plan test matches the brief, and the rulings are `none`.\n\n### Declined to judge\n\n- Behavior when `start > end` (an inverted window) is not covered by the brief or spec, and `in_window` returns False for every day in that case. This is reasonable, so no finding is raised.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The fix makes the end date inclusive and leaves the start boundary and the day after the end correct. The tests exercise every boundary, and both mutants are caught on a clean run at head.",
+  "ttft_ms": 6501,
+  "type": "result",
+  "duration_ms": 6515,
+  "ttft_stream_ms": 834,
+  "time_to_request_ms": 78,
+  "first_content_frame_ms": 834,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

@@ -204,6 +204,10 @@ in the workspace and read its tail; read a brief, not the whole plan.
 
 - Run `<this-skill-dir>/scripts/task-start PLAN_FILE N`. It prints the
   brief path and BASE (the commit the task's range is cut from) in one call.
+  A resumed task that already has commits keeps its BASE for the mutant run
+  and `task-done`: the commit before its first commit in `git log` (for a
+  later task, the second sha of the previous task's ledger line), not a new
+  `task-start` value or HEAD.
   Read the brief for every task, including ones you remember from setup:
   what you remember is a summary, the brief has the exact values,
   signatures, and test cases.
@@ -246,10 +250,12 @@ is fine; BASE is what the review range is cut from, never `HEAD~1`.
 
 **Prove the tests.** In a mutant task (Terms in
 [../subagent-driven-development/references/mutants.md](../subagent-driven-development/references/mutants.md)),
-after GREEN and the commit, work that file's steps 1–6. You read the spec
+after GREEN and the commit, work that file's steps 1–7. You read the spec
 at setup, so write no excerpts file: cite each spec sentence in the
 mutants file as `path:line`. The command is
-`<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N -- <the brief's focused test command>`.
+`<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N BASE -- <the brief's focused test command>`,
+with the task's BASE: the one `task-start` printed on its `base:` line,
+or, for a resumed task, the kept one (Take the task).
 The last run comes after the task's last commit: `task-done` refuses a run
 whose `head:` is not HEAD.
 

@@ -1,0 +1,222 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_slug.py
+head: 66d0826b99550eba298dff171fc5d118c9a8d843
+base: 2116abaa1990b4394d1f8559740dead1fc9f3677
+tree: clean
+result: caught 4, survived 0, invalid 0
+revert: ran, exit 1, failed 5, not loaded 0, skipped 0, passed 2
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 e44616deca22e4456d2d175d515954529a29eaf89e898ea1b01dab6579205aa4 tests: tests.test_slug::test_slugify_collapses_tab_and_newline_runs
+mutant 2: CAUGHT exit 1 sha256 7721c77946f765fa8dcfcd4852c12802f055859b86510a5b1ef206acac6a73be tests: tests.test_slug::test_slugify_collapses_space_runs tests.test_slug::test_slugify_collapses_long_space_run tests.test_slug::test_slugify_collapses_tab_and_newline_runs tests.test_slug::test_slugify_collapses_runs_at_edges tests.test_slug::test_slugify_collapses_each_run_separately
+mutant 3: CAUGHT exit 1 sha256 cdd93f7e589f5c80ede031cb5d91edaabc1d30a34293a2ce9993cd1bb500b4f5 tests: tests.test_slug::test_slugify_lowercases tests.test_slug::test_slugify_collapses_each_run_separately
+mutant 4: CAUGHT exit 1 sha256 40fad60a3316cd95d85fa3d85acc055eda0259965d6e40b4b1ca4f23e768bc4d tests: tests.test_slug::test_slugify_collapses_runs_at_edges
+--- tests ---
+test tests.test_slug::test_slugify_collapses_tab_and_newline_runs: caught 1 2
+test tests.test_slug::test_slugify_collapses_space_runs: caught 2
+test tests.test_slug::test_slugify_collapses_long_space_run: caught 2
+test tests.test_slug::test_slugify_collapses_runs_at_edges: caught 2 4
+test tests.test_slug::test_slugify_collapses_each_run_separately: caught 2 3
+test tests.test_slug::test_slugify_lowercases: caught 3
+--- revert ---
+path: slug.py
+sha256: 12444903011ae1a39810097edb763e87899e153e37961e0c30baa05f8e38fba8
+failed tests.test_slug::test_slugify_collapses_space_runs: AssertionError: assert 'a--b' == 'a-b'
+passed tests.test_slug::test_slugify_lowercases
+passed tests.test_slug::test_slugify_single_space
+failed tests.test_slug::test_slugify_collapses_long_space_run: AssertionError: assert 'a-----b' == 'a-b'
+failed tests.test_slug::test_slugify_collapses_tab_and_newline_runs: AssertionError: assert 'a\t\nb' == 'a-b'
+failed tests.test_slug::test_slugify_collapses_runs_at_edges: AssertionError: assert '--a--' == '-a-'
+failed tests.test_slug::test_slugify_collapses_each_run_separately: AssertionError: assert 'a--b---c' == 'a-b-c'
+--- output: baseline ---
+.......                                                                  [100%]
+7 passed in 0.01s
+--- output: mutant 1 ---
+....F..                                                                  [100%]
+=================================== FAILURES ===================================
+_________________ test_slugify_collapses_tab_and_newline_runs __________________
+
+    def test_slugify_collapses_tab_and_newline_runs():
+>       assert slugify('a\t\nb') == 'a-b'
+E       AssertionError: assert 'a\t\nb' == 'a-b'
+E         
+E         - a-b
+E         + a	
+E         + b
+
+tests/test_slug.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_slug.py::test_slugify_collapses_tab_and_newline_runs - Asse...
+1 failed, 6 passed in 0.01s
+--- output: mutant 2 ---
+F..FFFF                                                                  [100%]
+=================================== FAILURES ===================================
+______________________ test_slugify_collapses_space_runs _______________________
+
+    def test_slugify_collapses_space_runs():
+>       assert slugify('a  b') == 'a-b'
+E       AssertionError: assert 'a--b' == 'a-b'
+E         
+E         - a-b
+E         + a--b
+E         ?   +
+
+tests/test_slug.py:5: AssertionError
+____________________ test_slugify_collapses_long_space_run _____________________
+
+    def test_slugify_collapses_long_space_run():
+>       assert slugify('a     b') == 'a-b'
+E       AssertionError: assert 'a-----b' == 'a-b'
+E         
+E         - a-b
+E         + a-----b
+
+tests/test_slug.py:17: AssertionError
+_________________ test_slugify_collapses_tab_and_newline_runs __________________
+
+    def test_slugify_collapses_tab_and_newline_runs():
+>       assert slugify('a\t\nb') == 'a-b'
+E       AssertionError: assert 'a--b' == 'a-b'
+E         
+E         - a-b
+E         + a--b
+E         ?   +
+
+tests/test_slug.py:21: AssertionError
+_____________________ test_slugify_collapses_runs_at_edges _____________________
+
+    def test_slugify_collapses_runs_at_edges():
+>       assert slugify('  a  ') == '-a-'
+E       AssertionError: assert '--a--' == '-a-'
+E         
+E         - -a-
+E         + --a--
+E         ? +   +
+
+tests/test_slug.py:27: AssertionError
+__________________ test_slugify_collapses_each_run_separately __________________
+
+    def test_slugify_collapses_each_run_separately():
+>       assert slugify('A  B   C') == 'a-b-c'
+E       AssertionError: assert 'a--b---c' == 'a-b-c'
+E         
+E         - a-b-c
+E         + a--b---c
+E         ?  +   ++
+
+tests/test_slug.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_slug.py::test_slugify_collapses_space_runs - AssertionError...
+FAILED tests/test_slug.py::test_slugify_collapses_long_space_run - AssertionE...
+FAILED tests/test_slug.py::test_slugify_collapses_tab_and_newline_runs - Asse...
+FAILED tests/test_slug.py::test_slugify_collapses_runs_at_edges - AssertionEr...
+FAILED tests/test_slug.py::test_slugify_collapses_each_run_separately - Asser...
+5 failed, 2 passed in 0.01s
+--- output: mutant 3 ---
+.F....F                                                                  [100%]
+=================================== FAILURES ===================================
+___________________________ test_slugify_lowercases ____________________________
+
+    def test_slugify_lowercases():
+>       assert slugify('Hello') == 'hello'
+E       AssertionError: assert 'Hello' == 'hello'
+E         
+E         - hello
+E         ? ^
+E         + Hello
+E         ? ^
+
+tests/test_slug.py:9: AssertionError
+__________________ test_slugify_collapses_each_run_separately __________________
+
+    def test_slugify_collapses_each_run_separately():
+>       assert slugify('A  B   C') == 'a-b-c'
+E       AssertionError: assert 'A-B-C' == 'a-b-c'
+E         
+E         - a-b-c
+E         + A-B-C
+
+tests/test_slug.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_slug.py::test_slugify_lowercases - AssertionError: assert '...
+FAILED tests/test_slug.py::test_slugify_collapses_each_run_separately - Asser...
+2 failed, 5 passed in 0.01s
+--- output: mutant 4 ---
+.....F.                                                                  [100%]
+=================================== FAILURES ===================================
+_____________________ test_slugify_collapses_runs_at_edges _____________________
+
+    def test_slugify_collapses_runs_at_edges():
+>       assert slugify('  a  ') == '-a-'
+E       AssertionError: assert 'a' == '-a-'
+E         
+E         - -a-
+E         + a
+
+tests/test_slug.py:27: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_slug.py::test_slugify_collapses_runs_at_edges - AssertionEr...
+1 failed, 6 passed in 0.01s
+--- output: revert ---
+F..FFFF                                                                  [100%]
+=================================== FAILURES ===================================
+______________________ test_slugify_collapses_space_runs _______________________
+
+    def test_slugify_collapses_space_runs():
+>       assert slugify('a  b') == 'a-b'
+E       AssertionError: assert 'a--b' == 'a-b'
+E         
+E         - a-b
+E         + a--b
+E         ?   +
+
+tests/test_slug.py:5: AssertionError
+____________________ test_slugify_collapses_long_space_run _____________________
+
+    def test_slugify_collapses_long_space_run():
+>       assert slugify('a     b') == 'a-b'
+E       AssertionError: assert 'a-----b' == 'a-b'
+E         
+E         - a-b
+E         + a-----b
+
+tests/test_slug.py:17: AssertionError
+_________________ test_slugify_collapses_tab_and_newline_runs __________________
+
+    def test_slugify_collapses_tab_and_newline_runs():
+>       assert slugify('a\t\nb') == 'a-b'
+E       AssertionError: assert 'a\t\nb' == 'a-b'
+E         
+E         - a-b
+E         + a	
+E         + b
+
+tests/test_slug.py:21: AssertionError
+_____________________ test_slugify_collapses_runs_at_edges _____________________
+
+    def test_slugify_collapses_runs_at_edges():
+>       assert slugify('  a  ') == '-a-'
+E       AssertionError: assert '--a--' == '-a-'
+E         
+E         - -a-
+E         + --a--
+E         ? +   +
+
+tests/test_slug.py:27: AssertionError
+__________________ test_slugify_collapses_each_run_separately __________________
+
+    def test_slugify_collapses_each_run_separately():
+>       assert slugify('A  B   C') == 'a-b-c'
+E       AssertionError: assert 'a--b---c' == 'a-b-c'
+E         
+E         - a-b-c
+E         + a--b---c
+E         ?  +   ++
+
+tests/test_slug.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_slug.py::test_slugify_collapses_space_runs - AssertionError...
+FAILED tests/test_slug.py::test_slugify_collapses_long_space_run - AssertionE...
+FAILED tests/test_slug.py::test_slugify_collapses_tab_and_newline_runs - Asse...
+FAILED tests/test_slug.py::test_slugify_collapses_runs_at_edges - AssertionEr...
+FAILED tests/test_slug.py::test_slugify_collapses_each_run_separately - Asser...
+5 failed, 2 passed in 0.01s

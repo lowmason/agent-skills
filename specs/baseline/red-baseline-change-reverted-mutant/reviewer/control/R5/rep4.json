@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 6115,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.011668900000000001,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 360,
+    "cache_read_input_tokens": 13449,
+    "output_tokens": 888,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 360,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 888,
+      "cacheReadInputTokens": 13449,
+      "cacheCreationInputTokens": 360,
+      "webSearchRequests": 0,
+      "costUSD": 0.011668900000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 360,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`. That matches the brief's rule and the spec excerpt (specs/window.md:8). The start boundary is still inclusive, which matches the global constraint. `tests/test_window.py` is created as listed, and the plan test is byte-identical to the brief's.\n\n### Strengths\n\n- The fix is minimal and correct at both boundaries.\n- The plan test is unchanged, and the rulings list is `none`, so check 6 has nothing to flag.\n- The added tests cover the one-day window and the cross-year window on the end date.\n- The added start-date test covers the other global constraint.\n- The controller's test run is at head 66c72f2 on a clean tree, exit 0, 3 passed. It matches the report, with no warnings.\n- The mutant run is at head 66c72f2 on a clean tree, with all 3 mutants CAUGHT. The revert check shows 2 failed and 1 passed, which is consistent with the original bug.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\nMutant step checks:\n1. **Inputs.** The rule at specs/window.md:8 covers a day on the end date, the day after it, a one-day window, and a cross-year window. Each has a row naming a test that uses its shape. The cross-year shape appears at `tests/test_window.py:14`, and the day after the end date at `tests/test_window.py:9`.\n2. **Plausible mutants.** `<` for `<=` on the end, a dropped end check, and an exclusive start are all realistic boundary mistakes.\n3. **A mutant for each rule.** Mutants 1 and 2 aim at the end-date rule. Mutant 3 aims at the start-date global constraint.\n4. **A catch for each test.** `test_window_includes_end_date` caught 1 and 2. `test_window_holds_its_end_date_in_other_windows` caught 1 and 3. `test_window_starts_on_start_date` caught 3.\n5. **Withdrawn.** There are no `Withdrawn:` lines.\n6. **No loosening.** The plan test is unchanged from the brief.\n\n### Declined to judge\n\n- Behavior when `start > end`: `in_window` returns False for every day. The brief and spec excerpt are silent, and the diff does not change this. A person would plausibly expect an empty window.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The one-line fix is correct, and the tests pin both boundaries. All three mutants are caught in a run at the diff's head on a clean tree.",
+  "ttft_ms": 6178,
+  "type": "result",
+  "duration_ms": 6192,
+  "ttft_stream_ms": 552,
+  "time_to_request_ms": 76,
+  "first_content_frame_ms": 552,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

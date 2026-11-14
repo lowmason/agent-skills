@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 19000,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.027914200000000004,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 13062,
+    "output_tokens": 2516,
+    "output_tokens_details": {
+      "thinking_tokens": 1382
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2516,
+      "cacheReadInputTokens": 13062,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.027914200000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1382,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`, so the end date is included. The start date is still included, and a day before the start or after the end is still outside. The diff touches both files the brief lists, `window.py` and `tests/test_window.py`. The plan test matches the brief verbatim, so no plan test was loosened and no ruling is needed.\n- ⚠️ Cannot verify from the diff: the spec excerpts file holds only `specs/window.md:8`, the end-date sentence. The dispatch also binds the task to \"a window starts on its start date: a day before the start date is outside it\". That rule has no excerpt and no mutant. The controller should decide whether it needs an excerpt and a mutant, for example `start < day <= end` or `day <= end`. Tests already pin it: `tests/test_window.py:14-15` assert the start date is in and Feb 28 is out.\n\n### Strengths\n\n- The one-line fix is minimal and correct.\n- The added test `test_window_holds_its_start_and_end_dates` covers the end date, the start date, a day before the start, a one-day window and a year-end window.\n- The controller's test run is at head `c39e286` on a clean tree, exits 0, and agrees with the report's 2 passed. Its output has no warnings.\n- Both mutants are plausible and CAUGHT. Mutant 1 is `<`, an off-by-one at the end date. Mutant 2 drops the end check. The added test is caught by mutant 1 and the plan test by mutant 2.\n- The inputs table covers each shape the end-date rule names.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\n1. **Plan test passes on the revert with no `Strengthened:` line** (`tests/test_window.py:6-9`, mutants file, revert section of `task-1-mutants-2.log`).\n   - **What's wrong:** `test_window_includes_end_date` is the brief's regression test, but it never uses the end date. It asserts Mar 30 is in and Apr 1 is out, and both held at BASE. The revert section lists it as `passed`.\n   - **Why it matters:** the mutants file has no `Keeps:` or `Strengthened:` line for it, so the check fails as written. The plan-mandated test would still pass if the bug came back.\n   - **Fix:** add `Strengthened: test_window_includes_end_date by test_window_holds_its_start_and_end_dates` to the mutants file. The line holds: the new test fails on the revert at `tests/test_window.py:16`, and it asserts `in_window(end, start, end)`, which is the behavior the plan test should have caught. This weakness comes from the plan, so the controller may want to rule on it. A one-line fix to the plan test would be to assert `in_window(date(2026, 3, 31), start, end) is True`.\n\n### Declined to judge\n\n- A reversed window (`end < start`) always returns False. The brief and spec are silent on it. Behavior is unchanged by this task.\n- Passing a `datetime` rather than a `date` is not handled or tested. It is outside the brief.\n\n### Assessment\n\n**Task quality:** Needs fixes\n\n**Reasoning:** The code change is correct and the added test catches the regression. The plan's regression test does not exercise the end date and passes on the old code, and the mutants file gives no `Strengthened:` line for it.",
+  "ttft_ms": 11406,
+  "type": "result",
+  "duration_ms": 19081,
+  "ttft_stream_ms": 625,
+  "time_to_request_ms": 80,
+  "first_content_frame_ms": 625,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

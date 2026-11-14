@@ -1,8 +1,8 @@
 # Change-reverted mutant: new tests must fail on the pre-change code — Design Spec
 
-**Status:** APPROVED (2026-11-13). The owner approved this file, its designer's calls included, on 2026-11-13. The
-question was "Do you approve the change-reverted mutant spec (specs/change-reverted-mutant.md, uncommitted), with its
-11 designer's calls?", and the owner answered "Approve it".
+**Status: COMPLETE (2026-11-14)** — implemented by plan 97 (`specs/plans/completed/97-change-reverted-mutant.md`) and
+retired here. APPROVED on 2026-11-13. The owner's question was "Do you approve the change-reverted mutant spec
+(specs/change-reverted-mutant.md, uncommitted), with its 11 designer's calls?", and the owner answered "Approve it".
 
 This design came from a brainstorming session on 2026-11-13. A side session ran it to design the backlog item "A
 'change reverted' mutant, so that a task's new tests must fail on the pre-change code" (`specs/deferred_items.md:6255`).

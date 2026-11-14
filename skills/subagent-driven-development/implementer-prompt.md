@@ -42,8 +42,8 @@ Subagent (general-purpose):
     3. Verify implementation works
     4. Commit your work
     5. Prove your tests: in a mutant task, follow [MUTANTS_GUIDE]. Your plan
-       file is [PLAN_FILE], your workspace [WORKSPACE], and the script
-       [MUTANT_RUN].
+       file is [PLAN_FILE], your workspace [WORKSPACE], the script
+       [MUTANT_RUN], and BASE [BASE].
     6. Self-review (see below)
     7. Report back
 
@@ -150,7 +150,10 @@ Subagent (general-purpose):
 
     In a mutant task, a fix that adds or changes a test needs a mutant aimed
     at it. Write one as [MUTANTS_GUIDE] says, run [MUTANT_RUN] again, and
-    append the run's path and counts to your fix report.
+    append the run's path and counts to your fix report. Pass it the same
+    BASE, [BASE], so that the revert covers the whole task, and answer the
+    revert for each test that the fix adds or changes, as the guide's step
+    "The revert" says.
 
     ## Report Format
 
@@ -183,12 +186,16 @@ Subagent (general-purpose):
 ```
 
 **Placeholders:** the controller fills each one with an absolute path. A
-placeholder for a file that does not exist takes `none: <why>`.
+placeholder for a file that does not exist takes `none: <why>`. `[BASE]`
+is the exception: it is a value, not a path.
 - `[SPEC_EXCERPTS_FILE]` — the task's spec excerpts file,
   `<workspace>/task-N-spec.md`
 - `[MUTANTS_GUIDE]` — [references/mutants.md](references/mutants.md), as
   `<this-skill-dir>/references/mutants.md`
 - `[MUTANT_RUN]` — `<this-skill-dir>/scripts/mutant-run`
+- `[BASE]` — the task's BASE as a full SHA: the commit the controller
+  recorded before the task's first dispatch, the same value as the
+  reviewer's `[BASE_SHA]`. Fix rounds keep it.
 - `[PLAN_FILE]` — the plan file
 - `[WORKSPACE]` — the plan's workspace, the directory that
   `<this-skill-dir>/scripts/sdd-workspace PLAN_FILE` prints

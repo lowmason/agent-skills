@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 15041,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0742535,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 13204,
+    "cache_read_input_tokens": 1635,
+    "output_tokens": 2127,
+    "output_tokens_details": {
+      "thinking_tokens": 1047
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 13204,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 2127,
+      "cacheReadInputTokens": 1635,
+      "cacheCreationInputTokens": 13204,
+      "webSearchRequests": 0,
+      "costUSD": 0.0742535,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 1047,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 13204,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`, so a day on the end date is in the window. A day after the end date and a day before the start date are still outside it, and the start date is still included. The brief's Files list (`window.py` modified, `tests/test_window.py` created) matches the diff's two hunks.\n- The plan test `test_window_includes_end_date` is unchanged from the brief (`tests/test_window.py:6-9`). No test rulings apply, and none were needed.\n\n### Strengths\n\n- The fix is a one-character change to the boundary.\n- The two added tests cover the end-date shapes the rule's words cover: a one-day window, and a window that crosses a year end and ends on its end date (`tests/test_window.py:13-14`). They also cover the start boundary the global constraints name (`tests/test_window.py:18-20`).\n- The controller's test run is at head 66c72f2 on a clean tree and shows 3 passed. This matches the report and has no warnings.\n- The mutant run is at the diff's head and base, and every mutant is CAUGHT.\n\n### Mutant step\n\n- **Inputs:** each of the four table rows names a test that uses its shape. Checked against `tests/test_window.py:8-9, 13-14`.\n- **Plausible mutants:**\n  - Mutant 1 (`<` on the end) is the original bug.\n  - Mutant 2 (the end check dropped) is a plausible miss.\n  - Mutant 3 (`<` on the start) is a plausible boundary error.\n  - Each is caught by at least one test, and none is a crash-everything mutant.\n- **Mutant for the stated rule:** mutants 1 and 2 target specs/window.md:8.\n- **Catch for each added test:** each of the three tests has a `test <id>: caught` line in the run.\n- **Withdrawn / Unproven:** the mutants file has none.\n- **Loosened plan tests:** none. The plan test matches the brief verbatim.\n- **Revert:**\n  - On the revert, `test_window_includes_end_date` and `test_window_holds_its_end_date_in_other_windows` fail.\n  - `test_window_starts_on_start_date` passes, and its `Keeps:` line holds. Start-date inclusion exists at BASE (`start <= day`) and the task keeps it, and the brief does not change it.\n  - The brief's behavior change (end date included) is checked by the two failing tests.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\n### Declined to judge\n\n- A mutant that drops the start check (`day <= end`) has no entry. The \"day before the start is outside\" rule appears only in the dispatch's global constraints, not in the spec excerpts or the brief's rules. The assertion for it exists (`tests/test_window.py:20`), and the task did not change that behavior. The controller can rule on whether the global constraints count as stated rules.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The one-token boundary fix meets the brief and the global constraints. The tests are meaningful, each fails on the revert or carries a valid `Keeps:` line, and all three mutants are caught at the correct head and base.",
+  "ttft_ms": 8339,
+  "type": "result",
+  "duration_ms": 15136,
+  "ttft_stream_ms": 729,
+  "time_to_request_ms": 95,
+  "first_content_frame_ms": 729,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

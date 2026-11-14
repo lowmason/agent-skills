@@ -1,0 +1,195 @@
+== R4/rep1: is_error=False subtype=success cost=$0.071 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,keeps,strengthened,end-date-test
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`. The end date is inside the window, the day after it is outside, and the start rule is kept. Both listed files have hunks.
+- ⚠️ The mutant-step failures below are about the mutants file and the rulings. The code is correct.
+
+### Strengths
+
+- The one-line fix is minimal and right.
+- The added test `test_window_holds_its_start_and_end_dates` pins the end date directly, plus a one-day window and a year-end window. It fails on the revert (`assert False is True`) and is caught by mutant 1.
+- The test run and mutant run are both at head c39e286 on a clean tree, with `base:` f254ffc matching the diff. The report matches the run: 2 passed.
+- The plan test is unchanged from the brief, so nothing was loosened (check 6).
+- Mutants 1 and 2 are plausible, one per half of the end-date rule, and each is CAUGHT.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+1. **The plan test `test_window_includes_end_date` passes on the revert, with no `Strengthened:` or `Keeps:` line** (`tests/test_window.py:7-9`, task-1-mutants-2.log revert section: `passed tests.test_window::test_window_includes_end_date`).
+   - The plan test checks 3/30 (True) and 4/1 (False). The BASE code `start <= day < end` already gives both results, so it never checks the end date and cannot catch the bug it is named for.
+   - The report says "Issues or concerns: None" and does not raise this, even though the plan's regression test is vacuous for the bug (plan-mandated).
+   - The mutants file has no line for it.
+   - Fix: add `Strengthened: test_window_includes_end_date by test_window_holds_its_start_and_end_dates` to task-1-mutants.md. That line holds, because the new test fails on the revert and checks the end date. Also raise the plan-test weakness as a concern for the controller.
+
+2. **No input rows or mutant for the start-date rule** (task-1-mutants.md; the dispatch's global constraints).
+   - The dispatch binds the task to two rules: "a window starts on its start date: a day before the start date is outside it" and "a window includes its end date".
+   - The Inputs table and both mutants cover only the end-date rule.
+   - The diff changes `window.py:5`, which also decides the start condition. `Unreachable:` therefore does not hold.
+   - Missing shapes: a day on the start date and a day before it. A person would meet a window that wrongly drops its first day or admits the day before it.
+   - Fix: add rows for both shapes, naming `test_window_holds_its_start_and_end_dates` (lines 14-15). Add a mutant such as `start < day <= end` or `day <= end`, and have the controller run it.
+
+### Declined to judge
+
+None.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The code fix is correct and well tested by the added test. The mutant step is incomplete: the plan test passes on the revert with no `Strengthened:` line, and the start-date rule has no inputs rows or mutant.
+
+== R4/rep2: is_error=False subtype=success cost=$0.012 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,pre-change,keeps,strengthened,end-date-test,mar-30
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`, matching "a window includes its end date" (specs/window.md:8). The start boundary is unchanged: a day before the start is still outside. The brief's files are both present in the diff (`window.py`, `tests/test_window.py`). The plan test is verbatim, and no ruling is needed because nothing was loosened.
+
+### Strengths
+
+- The fix is a minimal one-token change, and the start boundary is preserved.
+- The plan test is kept as written. The added test covers the start and end dates, a day before the start, a one-day window, and a window across a year end.
+- The controller's test run is at head c39e286 on a clean tree, exit 0, with 2 passed in both invocations, matching the report. The output has no warnings.
+- Mutant step:
+  - **Inputs:** each shape has a row whose test uses it.
+  - **Mutants:** both are plausible and aimed at the rule. Mutant 1 is `<`, which leaves out the end date. Mutant 2 drops the end check. Both are CAUGHT.
+  - **Test catches:** each added test has a catch line.
+  - **Revert:** the run is at the right head and base on a clean tree. On the revert, `test_window_holds_its_start_and_end_dates` fails, which covers the behavior change. `test_window_includes_end_date` passes on the revert because its assertions (March 30 in, April 1 out) hold at BASE too. It is the plan test and is not strengthened by a `Strengthened:` line, but the new test fails on the revert and checks the end-date behavior the plan test misses. This holds as a strengthening, though the mutants file lacks the explicit line. It is not a defect in the code.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- `task-1-mutants.md`: the plan test `test_window_includes_end_date` passes on the revert. It has no `Keeps:` or `Strengthened:` line, as check 7 requires. The brief calls it "the regression test for the bug", yet it never uses the end date itself (March 30 and April 1 only), so it cannot catch the bug it is named for. The strengthening test does fail on the revert, so the fix is a `Strengthened: test_window_includes_end_date by test_window_holds_its_start_and_end_dates` line in the mutants file. No code change is needed.
+
+### Declined to judge
+
+None.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The one-line fix is correct and the boundaries are covered. Both mutants are caught, and the added test fails on the revert. The only gap is a missing `Strengthened:` line in the mutants file for the plan test, which the controller should have the implementer add.
+
+== R4/rep3: is_error=False subtype=success cost=$0.030 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,pre-change,keeps,strengthened,end-date-test
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`. The end date is now in the window, and the day after it and the day before the start are still outside. The brief's two files each have a hunk (`window.py`, `tests/test_window.py`). The plan test is verbatim and has no loosening, and the rulings are `none`.
+- ⚠️ Cannot verify from the diff: the spec excerpts file holds only `specs/window.md:8` (end date). The dispatch also quotes "a window starts on its start date" as a binding constraint, but that sentence has no excerpt, no Inputs row and no mutant. The code line that decides it, `start <=`, is in this diff. `test_window_holds_its_start_and_end_dates` does assert the start date is in and the day before it is out (`tests/test_window.py:13-14`), so the behavior is tested. The controller should decide whether that rule needs a mutant such as `start < day <= end`.
+
+### Strengths
+
+- The fix is minimal and correct.
+- The added test covers the end date itself, a one-day window and a window across a year end. This is exactly the input the plan test misses.
+- The controller's test run is at head `c39e286` on a clean tree and exit 0, with 2 passed and no warnings. It matches the report.
+- The mutant run is at the diff's head and base, on a clean tree. Mutants 1 and 2 are plausible wrong versions, and both read CAUGHT. Each test has a catch line.
+- The implementer ran the red phase first.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+1. **Plan test `test_window_includes_end_date` passes on the revert, with no `Keeps:` or `Strengthened:` line** (`tests/test_window.py:7-9`; `task-1-mutants-2.log` revert section: `passed tests.test_window::test_window_includes_end_date`; `task-1-mutants.md` has neither line).
+   - **Cause:** the plan's regression test checks 3/30 and 4/1. The old code `start <= day < end` returns True and False for those, so the test cannot see the end-date bug it claims to guard. This is plan-mandated: the plan's test is weak.
+   - **Check 7:** a test that passes on the revert needs a `Strengthened:` line that holds, and none exists. The new test does fail on the revert and checks the end date, so such a line would hold.
+   - **Fix:** add `Strengthened: test_window_includes_end_date by test_window_holds_its_start_and_end_dates` to the mutants file. The report also says "Issues or concerns: None", so it should raise this weakness.
+   - **Also:** `test_window_holds_its_start_and_end_dates` is the only guard for the end-date rule, so it must stay in place.
+
+### Declined to judge
+
+None.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The code change is correct and well tested. The mutant step is incomplete because the plan regression test passes on the pre-fix code and no `Strengthened:` line records that the added test covers for it. The controller should also rule on the start-date mutant noted above.
+
+== R4/rep4: is_error=False subtype=success cost=$0.028 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,pre-change,keeps,strengthened,end-date-test,mar-30
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`, so the end date is included. The start date is still included, and a day before the start or after the end is still outside. The diff touches both files the brief lists, `window.py` and `tests/test_window.py`. The plan test matches the brief verbatim, so no plan test was loosened and no ruling is needed.
+- ⚠️ Cannot verify from the diff: the spec excerpts file holds only `specs/window.md:8`, the end-date sentence. The dispatch also binds the task to "a window starts on its start date: a day before the start date is outside it". That rule has no excerpt and no mutant. The controller should decide whether it needs an excerpt and a mutant, for example `start < day <= end` or `day <= end`. Tests already pin it: `tests/test_window.py:14-15` assert the start date is in and Feb 28 is out.
+
+### Strengths
+
+- The one-line fix is minimal and correct.
+- The added test `test_window_holds_its_start_and_end_dates` covers the end date, the start date, a day before the start, a one-day window and a year-end window.
+- The controller's test run is at head `c39e286` on a clean tree, exits 0, and agrees with the report's 2 passed. Its output has no warnings.
+- Both mutants are plausible and CAUGHT. Mutant 1 is `<`, an off-by-one at the end date. Mutant 2 drops the end check. The added test is caught by mutant 1 and the plan test by mutant 2.
+- The inputs table covers each shape the end-date rule names.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+1. **Plan test passes on the revert with no `Strengthened:` line** (`tests/test_window.py:6-9`, mutants file, revert section of `task-1-mutants-2.log`).
+   - **What's wrong:** `test_window_includes_end_date` is the brief's regression test, but it never uses the end date. It asserts Mar 30 is in and Apr 1 is out, and both held at BASE. The revert section lists it as `passed`.
+   - **Why it matters:** the mutants file has no `Keeps:` or `Strengthened:` line for it, so the check fails as written. The plan-mandated test would still pass if the bug came back.
+   - **Fix:** add `Strengthened: test_window_includes_end_date by test_window_holds_its_start_and_end_dates` to the mutants file. The line holds: the new test fails on the revert at `tests/test_window.py:16`, and it asserts `in_window(end, start, end)`, which is the behavior the plan test should have caught. This weakness comes from the plan, so the controller may want to rule on it. A one-line fix to the plan test would be to assert `in_window(date(2026, 3, 31), start, end) is True`.
+
+### Declined to judge
+
+- A reversed window (`end < start`) always returns False. The brief and spec are silent on it. Behavior is unchanged by this task.
+- Passing a `datetime` rather than a `date` is not handled or tested. It is outside the brief.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The code change is correct and the added test catches the regression. The plan's regression test does not exercise the end date and passes on the old code, and the mutants file gives no `Strengthened:` line for it.
+
+== R4/rep5: is_error=False subtype=success cost=$0.015 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,keeps,strengthened,end-date-test,mar-30
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`. This matches the brief and specs/window.md:8. The start boundary is unchanged: a day before the start date stays outside, and the start date is inside. The brief's regression test is present verbatim in `tests/test_window.py`. Both listed files (`window.py`, `tests/test_window.py`) have hunks.
+
+### Strengths
+
+- The fix is a one-token change with no extra scope.
+- The plan test is unchanged, and `test_window_holds_its_start_and_end_dates` adds the start date, the end date, a one-day window and a year-end window.
+- The controller's test run is at head c39e286 on a clean tree: exit 0, 2 passed, no warnings. It matches the report.
+- The mutant run is at head c39e286 and base f254ffc on a clean tree.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+1. **Mutant step, check 1 (inputs): the day before the start date has no row.** The global constraint "a day before the start date is outside it" is a stated rule. The Inputs table has rows only for the end-date rule (specs/window.md:8). `test_window_holds_its_start_and_end_dates` does use that input (`date(2026, 2, 28)`, `tests/test_window.py:13`), but the table does not list it.
+   - Check 3 also applies: no mutant targets the start boundary, for example `start < day <= end`, which would exclude the start date.
+   - If the spec excerpts file is the only source of stated rules, the brief's own requirement lines still count. The dispatch's global constraints say a window starts on its start date. A person would meet the start date wrongly excluded.
+   - Fix: add a start-boundary mutant (`start < day <= end`) and table rows for the start date and the day before it. The existing assertions at `tests/test_window.py:13-14` should catch it.
+
+### Declined to judge
+
+- Behavior when `start > end` (an inverted window): the brief and spec are silent. It returns False for every day, which is reasonable.
+- `datetime` instances passed as `date`: outside the type contract.
+
+### Assessment
+
+**Task quality:** Needs fixes
+
+**Reasoning:** The code fix and tests are correct, and the revert fails exactly the new test (`task-1-mutants-2.log`). The mutant step covers only the end-date rule, so the start-boundary constraint has no mutant. Check 7 also does not hold for the plan test: it passes on the revert, and there is no `Strengthened:` line. The new test fails on the revert and checks the same behavior, so a `Strengthened: test_window_includes_end_date -> test_window_holds_its_start_and_end_dates` line would hold. The mutants file lacks that line, so this is a second finding.
+
+2. **Mutant step, check 7: the plan test passes on the revert with no `Strengthened:` line.** `test_window_includes_end_date` passes on the revert (`passed tests.test_window::test_window_includes_end_date` in `task-1-mutants-2.log`). The reason is that it checks `date(2026, 3, 30)`, not the end date itself, so it does not catch the original bug. The mutants file has no `Keeps:` or `Strengthened:` line for it.
+   - Fix: add `Strengthened: test_window_includes_end_date -> test_window_holds_its_start_and_end_dates`. That new test fails on the revert at `tests/test_window.py:16` and checks the end-date behavior the plan test should have caught.
+
+total cost $0.16

@@ -1,0 +1,101 @@
+{
+  "fixture": "F8",
+  "rep": 1,
+  "rep_dir": "/tmp/mt-rep-OUe9tC",
+  "base": "8c1e6e26753747d6f44349d80790014e8b04a916",
+  "prompt_sha256": "ebd31f9478146de7021cf14a4b867c533cc22161da9cc3542739bb4347a9c233",
+  "claude_exit": 0,
+  "wall_seconds": 19,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-OUe9tC/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 7,
+    "duration_ms": 18956,
+    "total_cost_usd": 0.0932579,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 2628,
+        "cacheReadInputTokens": 80779,
+        "cacheCreationInputTokens": 14719,
+        "webSearchRequests": 0,
+        "costUSD": 0.0932579,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 169,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 14719,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "I've finished the work and am sending the final report now.\n\n- **Status:** DONE\n- **Commits:** 5939b6d Add to_bytes\n- **Tests:** 2/2 passing, output pristine. Mutants: caught 5, survived 0, invalid 0. Both tests fail on the revert.\n- **Concerns:** None. I also made `to_bytes` raise `ValueError` on malformed input, which the spec doesn't ask for.\n- **Report:** /tmp/mt-rep-OUe9tC/repo/.sdd/plan/task-1-report.md",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-OUe9tC/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -R . | grep -v .git | head -30"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-OUe9tC/repo; cat specs/sizes.md; mkdir -p tests\ncat > tests/test_units.py <<'E'\nfrom units import to_bytes\n\n\ndef test_to_bytes_reads_each_unit():\n    assert to_bytes('7B') == 7\n    assert to_bytes('2KB') == 2048\n    assert to_bytes('3MB') == 3145728\n\n\ndef test_to_bytes_reads_a_number_of_several_digits():\n    assert to_bytes('15KB') == 15360\nE\n/tmp/mt-venv/bin/python -m pytest -q tests/test_units.py 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-OUe9tC/repo; cat > units.py <<'E'\nimport re\n\n_FACTORS = {'B': 1, 'KB': 1024, 'MB': 1024 * 1024}\n\n\ndef to_bytes(text: str) -> int:\n    match = re.fullmatch(r'(\\d+)(B|KB|MB)', text)\n    if match is None:\n        raise ValueError(f'invalid size: {text!r}')\n    return int(match.group(1)) * _FACTORS[match.group(2)]\nE\n/tmp/mt-venv/bin/python -m pytest -q tests/test_units.py 2>&1 | tail -3\ngit add units.py tests/test_units.py; git commit -qm \"Add to_bytes\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"; git log --oneline | head -1"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-OUe9tC/repo; cat .gitignore 2>/dev/null; git status --short"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-OUe9tC/repo; W=.sdd/plan\nmk(){ sed -i '' \"$2\" units.py; git diff -- units.py > $W/task-1-mutant-$1.patch; test -s $W/task-1-mutant-$1.patch || echo EMPTY; git checkout -- units.py; }\nmk 1 \"s/'KB': 1024/'KB': 1000/\"\nmk 2 \"s/'MB': 1024 \\* 1024/'MB': 1024 * 1000/\"\nmk 3 \"s/'B': 1,/'B': 8,/\"\nmk 4 \"s/(\\\\\\\\d+)/(\\\\\\\\d)/\"\nmk 5 \"s/'MB': 1024 \\* 1024/'MB': 1024/\"\nhead -3 $W/task-1-mutant-4.patch >/dev/null; grep '^[+-]' $W/task-1-mutant-4.patch\ncat > $W/task-1-mutants.md <<'E'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/sizes.md:7 | unit B | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | unit KB, 1 KB = 1024 B | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | unit MB | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | multi-digit number | test_to_bytes_reads_a_number_of_several_digits |\n\n## Mutants\n\nMutant 1: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 KB is 1000 \u2014 task-1-mutant-1.patch\nMutant 2: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 MB is 1024*1000 \u2014 task-1-mutant-2.patch\nMutant 3: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 B factor is 8 \u2014 task-1-mutant-3.patch\nMutant 4: specs/sizes.md:7, test_to_bytes_reads_a_number_of_several_digits \u2014 only one digit is read \u2014 task-1-mutant-4.patch\nMutant 5: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 MB is 1024 \u2014 task-1-mutant-5.patch\nE\n/tmp/mt-skill/scripts/mutant-run plan.md 1 8c1e6e26753747d6f44349d80790014e8b04a916 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_units.py 2>&1 | tail -20"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-OUe9tC/repo; cat > .sdd/plan/task-1-report.md <<'E'\n# Task 1 report\nImplemented `to_bytes` in `units.py` (regex `\\d+` + `B|KB|MB`, 1 KB = 1024 B; ValueError on malformed input). Tests in `tests/test_units.py` as the plan wrote them.\n\nTDD\n- RED: `/tmp/mt-venv/bin/python -m pytest -q tests/test_units.py` -> `ModuleNotFoundError: No module named 'units'` (expected: module absent).\n- GREEN: same command -> `2 passed`.\n\nMutants: run /private/tmp/mt-rep-OUe9tC/repo/.sdd/plan/task-1-mutants.log \u2014 caught 5, survived 0, invalid 0. Revert: not loaded 1 (both tests fail on the revert).\n\nFiles: units.py, tests/test_units.py (commit 5939b6d); .sdd/plan/task-1-mutant-*.patch, task-1-mutants.md.\nSelf-review: no issues. No plan/spec conflict. ValueError on bad input is beyond spec but harmless.\nE\ngit status --short"
+      }
+    }
+  ],
+  "commits": [
+    "5939b6d Add to_bytes"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

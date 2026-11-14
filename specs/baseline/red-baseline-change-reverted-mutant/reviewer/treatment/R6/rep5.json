@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 14268,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0827135,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 15769,
+    "cache_read_input_tokens": 1635,
+    "output_tokens": 1947,
+    "output_tokens_details": {
+      "thinking_tokens": 976
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 15769,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1947,
+      "cacheReadInputTokens": 1635,
+      "cacheCreationInputTokens": 15769,
+      "webSearchRequests": 0,
+      "costUSD": 0.0827135,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 976,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 15769,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `units.py:4-12` matches the whole text (`fullmatch`) against `[0-9]+` followed by `B|KB|MB`, with nothing between them. The multipliers are 1, 1024 and 1024*1024, and any other text raises `ValueError`. The plan's two tests appear verbatim in `tests/test_units.py`, so there is no loosening and no ruling is needed (check 6).\n- Every file the brief lists, `units.py` and `tests/test_units.py`, has its hunk. `tests/test_units_shapes.py` is added by the mutant step and is not Extra.\n\n### Strengths\n\n- `fullmatch` with an explicit `[0-9]` class correctly rejects the trailing `\\n` and `$` pitfalls, and rejects non-ASCII digits such as `\\u0663`.\n- The shapes test covers 16 invalid inputs and asserts the zero and leading-zero cases.\n- The evidence is consistent and valid:\n  - The controller's test run is at head 3741c4f on a clean tree, shows 4 passed, and matches the report.\n  - The mutant run has base ff7346e, the same head, and a clean tree.\n  - All 5 mutants are CAUGHT.\n\n### Mutant step (checks 1-7)\n\n- **Inputs:** every shape that the three rules' words cover has a row that names a test using it. That includes the unit, several-digit, zero, leading-zero, empty, no-unit, no-number, lowercase, whitespace, trailing-text, sign, decimal, underscore and non-ASCII-digit shapes.\n- **Plausible mutants:** mutants 1-5 are plausible, and none breaks every call.\n- **Rule coverage:** mutants 1 and 2 cover line 8, mutant 3 covers line 7, and mutants 4 and 5 cover line 9. There are no `Unreachable:`, `Unproven:` or `Withdrawn:` lines.\n- **Catches:** all four tests added by the task have a `test <id>: caught` line in the run.\n- **Revert:** `tests.test_units` is not loaded on the revert, and both shapes tests fail. Every added test fails on the revert, so no `Keeps:` line is needed.\n\n### Issues\n\n#### Critical (Must Fix)\nNone.\n\n#### Important (Should Fix)\nNone.\n\n### Declined to judge\n\n- A non-`str` argument such as `None` or `bytes` raises `TypeError` from `fullmatch`, not `ValueError`. The spec says \"any other text\", which does not cover non-text, so I set it aside. The controller can rule on whether non-text input should also raise `ValueError`.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The implementation matches the spec rules exactly, and the tests cover the input shapes the rules name. All mutants are caught, and every added test fails on the revert.",
+  "ttft_ms": 8313,
+  "type": "result",
+  "duration_ms": 14325,
+  "ttft_stream_ms": 807,
+  "time_to_request_ms": 57,
+  "first_content_frame_ms": 807,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

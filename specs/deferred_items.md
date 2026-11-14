@@ -6252,7 +6252,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       as plan 83 copied plan 81's kit.
 
 ## mutant-checked-tests follow-up (no plan; owner request, branch claude/backlog-base-revert-mutant) — 2026-11-12
-- [ ] **A "change reverted" mutant, so that a task's new tests must fail on the pre-change code (owner, 2026-11-12,
+- [x] **A "change reverted" mutant, so that a task's new tests must fail on the pre-change code (owner, 2026-11-12,
       filed for after plan 93, which merged on 2026-11-13 as #198).** The controller runs a task's tests at HEAD
       (`test-run`), but RED is only a claim in the implementer's "TDD Evidence", and nothing reruns the new tests on
       the pre-change code. Plan 93 (`specs/plans/completed/93-mutant-checked-tests.md`, spec
@@ -6274,6 +6274,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       must keep `task-done`'s gate and the reviewer's `## Mutants` section reading it. Size: design. Done when: a
       spec decides the change-reverted mutant and its plan lands.
       → planned 2026-11-13: specs/plans/97-change-reverted-mutant.md, from the spec specs/change-reverted-mutant.md (owner-approved 2026-11-13, decisions D1 to D4). No execution starts before plan 96's execution ends.
+      → done 2026-11-14 (plan 97): `mutant-run` takes BASE and runs the task's tests on the reverted code; `task-done`, the reviewer's check 7 and the controller's references read the revert. The spec `specs/completed/change-reverted-mutant.md` decides the four open questions, and the plan is `specs/plans/completed/97-change-reverted-mutant.md`.
 
 ## superpowers-drift-v7.0.2 (no plan; drift-spec reconciliation, branch claude/superpowers-drift-spec-status-7bad03) — 2026-11-10
 - [x] **dispatching-parallel-agents does not keep apart concurrent agents that edit files (superpowers drift
@@ -6566,6 +6567,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       plan 92 verdict depended on it. Plan 72's kit has the same gap. Size: quick-fix. Done when:
       `isolation_probe.txt` asks whether the agent knows the user's name or email, and a pilot run records the
       answer.
+      → progress 2026-11-14 (plan 97): plan 97's kit copies carry the identity line (line 7), and its pilot read YES (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). Plan 92's and plan 72's kits still have no identity line, so this item stays open.
 - [ ] `skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by
       default in interactive sessions (plan 92 final review, Declined to judge). The `background` row of
       `skills.frontmatter` in the guide says a forked skill runs in the background by default, with the narrower
@@ -6782,3 +6784,47 @@ review and the Plan Completion gate (2026-10-27) add the others.
       of the live files finds each remaining made-up name standing for one real thing only, and the
       design-architecture, describe-critique-methodology, tech-debt and llm-wiki suites and the commit lints
       pass.
+
+## 97-change-reverted-mutant — 2026-11-14
+- [ ] **The revert has no evidence for a test in a second suite that one pytest call cannot run (plan 97 final
+      review, the code-reviewer; the owner accepted it as a known limit at the completion gate, 2026-11-14).**
+      `mutant-run` runs one command. `skills/subagent-driven-development/references/test-run.md` tells the
+      controller to write one pytest call for the tests of every step, but two directory-scoped suites with
+      different dependencies cannot share one call. A new test in the second suite then has no entry in the
+      revert section. The task reviewer reads it as did not run (check 7), and under executing-plans
+      `skills/executing-plans/references/final-review.md` makes it an Important gap that no fix pass can clear.
+      Step 7 of `skills/subagent-driven-development/references/mutants.md` ("run the script again on a command
+      that runs it") cannot close it either. The plan left mutants.md as measured (the record
+      `specs/baseline/red-baseline-change-reverted-mutant.md`) and added a ruling clause to final-review.md only.
+      Spec `specs/completed/change-reverted-mutant.md:478` names one way: a second `mutant-run` call over the
+      second suite, with both run files sent to the reviewer. That touches `task-done`, which reads one run,
+      mutants.md, the reviewer's check 7 and the micro-tested texts, so it needs a design. Size: design. Done
+      when: a spec picks a way to close the gap, its plan lands, and a task with new tests in two suites ends
+      with revert evidence for both.
+- [ ] **batching.md does not say which BASE a batch that spans several dispatches passes to `mutant-run` (plan 97
+      Task 7 ruling, 2026-11-14).** `skills/subagent-driven-development/references/file-handoffs.md` says the
+      BASE is the commit recorded before the task's first dispatch, and spec
+      `specs/completed/change-reverted-mutant.md:182` says a batch uses the batch's BASE.
+      `skills/subagent-driven-development/references/batching.md` says nothing about BASE. A controller could
+      pass the last dispatch's parent, and the revert would then cover only that dispatch's change. Task 7 read
+      "the batch's BASE" as the BASE recorded before the batch's first dispatch. Size: quick-fix. Done when:
+      batching.md names that BASE in one sentence, and `build/check_helper_paths.py`,
+      `build/check_conformance.py` and `build/check_links.py` pass.
+- [ ] **Committed micro-test rep JSON files carry `credential_expires_at` (plan 97 Task 8 ruling, 2026-11-14).**
+      The field is a login credential's expiry timestamp, not an identifier. Plan 97's reviewer rep JSON copies
+      under `specs/baseline/red-baseline-change-reverted-mutant/` carry it. Main already commits it in 281 rep
+      JSON files from seven earlier baselines (`git grep -l credential_expires_at main -- specs/baseline/`).
+      The ruling kept it, because a change to one plan's files would leave the 281 others. Size: quick-fix. Done
+      when: the owner has either stripped the field from every committed rep JSON and made the kits' copy step
+      drop it, or recorded in this item that it stays.
+- [ ] **The reviewer text supports two readings of "stated rule" (plan 97 Task 10, the R4 start-date finding;
+      the owner left it at the completion gate, 2026-11-14).** `agents/task-reviewer.md` line 21 says the global
+      constraints bind the task, and the mutant step in the same file takes stated rules from the spec
+      sentences that the mutants file cites and from the brief, which are the excerpts. On the R4 package the
+      start-date rule sits in the global constraints and not in the excerpts. The treatment arm then raised "no
+      row and no mutant for the start rule" in 4 of 5 R4 reps (reps 1 and 5 as Important, reps 3 and 4 as ⚠️),
+      and control rep 1 raised it too. The text predates plan 97's check 7, and no bar of the record moved.
+      Size: design. Done when: the reviewer text (`agents/task-reviewer.md`, the Full Form in
+      `skills/subagent-driven-development/task-reviewer-prompt.md` and the regenerated `runtimes/` copies) names
+      one place that stated rules come from, a micro-test shows the start-date finding gone from an R4-type
+      package with no bar of the record falling, and `build/check_reviewer_block.py` passes.

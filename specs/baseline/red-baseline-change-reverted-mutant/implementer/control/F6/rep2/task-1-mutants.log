@@ -1,0 +1,20 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_stock.py
+head: f038ab3d9f60e5344426da77d9ee72b99ef4d7cd
+base: 8851fc70752f9f4733edf4da9846c2f32a02809f
+tree: clean
+result: baseline failed, exit 1
+--- output: baseline ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+______________________ test_reorder_exactly_at_threshold _______________________
+
+    def test_reorder_exactly_at_threshold():
+>       assert reorder_needed(5, 5) is True
+E       assert False is True
+E        +  where False = reorder_needed(5, 5)
+
+tests/test_stock.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_stock.py::test_reorder_exactly_at_threshold - assert False ...
+1 failed, 2 passed in 0.01s

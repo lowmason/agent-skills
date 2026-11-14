@@ -23,6 +23,10 @@
 # and never runs mutant-run. In order, the gate refuses (exit 4) when:
 #   - the task has no mutant run;
 #   - the run's head: line is not HEAD;
+#   - the run has no base: line, or its base: is not the commit BASE names
+#     (both are resolved to full SHAs first, so a short BASE matches);
+#   - the run has no revert: line. task-done never reads what that line says,
+#     because only a reviewer can judge the revert's outcome;
 #   - its result: line is not "caught <c>, survived 0, invalid 0";
 #   - the workspace has no task-<N>-mutants.md;
 #   - a "Mutant K:" line in that file has no "mutant K:" line in the run and
@@ -191,6 +195,27 @@ else
   head_sha=$(git rev-parse HEAD)
   [ "$run_head" = "$head_sha" ] \
     || refuse "the mutant run is at ${run_head:-no head}, not HEAD $head_sha"
+  # base: follows head:, and revert: follows result:. Both are read from the
+  # header only, so a line of the same shape in a section (or in the command,
+  # which runs on until head:) never counts.
+  run_base=$(awk '
+    NR > 1 && !h && /^head: / { h = 1; next }
+    h && /^--- / { exit }
+    h && /^base: / { sub(/^base: /, ""); print; exit }
+  ' "$mutant_run")
+  [ -n "$run_base" ] || refuse "the mutant run has no base: line"
+  # Compare full SHAs. A name that is no commit resolves to nothing, and
+  # then never matches.
+  base_sha=$(git rev-parse --verify --quiet "$base^{commit}" || true)
+  run_base_sha=$(git rev-parse --verify --quiet "$run_base^{commit}" || true)
+  [ -n "$base_sha" ] && [ "$run_base_sha" = "$base_sha" ] \
+    || refuse "the mutant run is at base $run_base, not BASE ${base_sha:-$base}"
+  run_revert=$(awk '
+    NR > 1 && !h && /^head: / { h = 1; next }
+    h && /^--- / { exit }
+    h && /^revert: / { print; exit }
+  ' "$mutant_run")
+  [ -n "$run_revert" ] || refuse "the mutant run has no revert: line"
   run_result=$(awk '
     NR > 1 && !h && /^head: / { h = 1; next }
     h && /^--- / { exit }
@@ -245,6 +270,6 @@ if [ ! -f "$ledger" ]; then
   esac
   printf 'Plan: %s\n' "$plan_line" > "$ledger"
 fi
-line="Task $n: complete (commits $(git rev-parse --short=7 "$base")..$(git rev-parse --short=7 HEAD), $mutants_field, tests: $cmd → $last)"
+line="Task $n: complete (commits $(git rev-parse --short=7 "$base^{commit}")..$(git rev-parse --short=7 HEAD), $mutants_field, tests: $cmd → $last)"
 printf '%s\n' "$line" >> "$ledger"
 echo "ledger: $line"
