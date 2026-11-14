@@ -145,6 +145,10 @@ re-review: it would re-read a diff whose covering tests already answer
 A finding you decide not to fix is a ruling — `Final: Ruling: <finding> —
 <why the code stands> — <cost if wrong>` — and reaches your human partner
 in the rulings list at the plan-completion gate. There is no second fix pass.
+A test that the revert never ran has one such case that no rerun can clear:
+a test in a second suite that one pytest call cannot run with the first. The
+revert section has no entry for it however often the script runs. Rule on it
+with a `Ruling:` line that names the test and the second suite.
 
 The code-reviewer's Declined to judge lines are not ruled on here: they go
 to your partner at the plan-completion gate.
