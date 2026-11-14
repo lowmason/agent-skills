@@ -759,6 +759,22 @@ def test_task_done_refuses_in_the_order_head_base_revert_result(repo, stale_head
     assert not recorded(repo)
 
 
+@pytest.mark.parametrize('refusal', ['no-base', 'other-base', 'no-revert'])
+def test_task_done_names_the_run_in_each_new_refusal(repo, refusal):
+    # Each goes through refuse: the reason, then the run's path, and no record.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    run_base = {'no-base': None, 'other-base': head(repo), 'no-revert': base}[refusal]
+    revert = None if refusal == 'no-revert' else NONE_REVERT
+    write_run(repo, 'task-1-mutants.log', head(repo), run_base, CLEAN, [1], revert=revert)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert '; Task 1 NOT recorded (mutant run: ' in result.stderr
+    assert result.stderr.rstrip().endswith('/task-1-mutants.log)')
+    assert not recorded(repo)
+
+
 def test_task_done_refuses_a_base_that_is_not_a_commit(repo):
     # A tree passes the early BASE check, but it names no commit to compare.
     base = head(repo)
