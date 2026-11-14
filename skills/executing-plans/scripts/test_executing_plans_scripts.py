@@ -125,8 +125,15 @@ def write_mutants(repo, numbers, withdrawn=()):
     (ws / 'task-1-mutants.md').write_text('\n'.join(lines) + '\n')
 
 
-def write_run(repo, name, run_head, result, numbers):
-    '''Write a mutant run file in mutant-run's layout, each numbered mutant CAUGHT.'''
+# The revert: line of a run whose task changed no file outside the tests and the project config.
+NONE_REVERT = 'revert: none: no file outside the tests and the project config changed'
+
+
+def write_run(repo, name, run_head, run_base, result, numbers, revert=NONE_REVERT):
+    '''Write a mutant run file in mutant-run's layout, each numbered mutant CAUGHT.
+
+    run_base=None or revert=None leaves that header line out.
+    '''
     task, _, rest = name.removeprefix('task-').partition('-mutants')
     run_number = rest.removeprefix('-').removesuffix('.log') or '1'
     zeros = '0' * 64
@@ -135,8 +142,10 @@ def write_run(repo, name, run_head, result, numbers):
         f'mutant-run: Task {task}, run {run_number}',
         'command: sh -c true',
         f'head: {run_head}',
+        *([f'base: {run_base}'] if run_base is not None else []),
         'tree: clean',
         f'result: {result}',
+        *([revert] if revert is not None else []),
         '--- mutants ---',
         *[f'mutant {k}: CAUGHT exit 1 sha256 {zeros} tests: t::a' for k in numbers],
         '--- tests ---',
@@ -468,7 +477,7 @@ def test_task_done_records_a_task_whose_mutant_run_is_clean(repo):
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1, 2], withdrawn=[2])
-    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 0, result.stderr
     last = (workspace(repo) / 'progress.md').read_text().splitlines()[-1]
@@ -490,7 +499,7 @@ def test_task_done_blocks_a_stale_mutant_run(repo):
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1])
-    write_run(repo, 'task-1-mutants.log', base, CLEAN, [1])
+    write_run(repo, 'task-1-mutants.log', base, base, CLEAN, [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
     assert 'Task 1 NOT recorded' in result.stderr
@@ -505,7 +514,7 @@ def test_task_done_blocks_a_run_that_is_not_all_caught(repo, outcome):
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1])
-    write_run(repo, 'task-1-mutants.log', head(repo), outcome, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, outcome, [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
     assert not recorded(repo)
@@ -515,7 +524,7 @@ def test_task_done_blocks_a_listed_mutant_the_run_lacks(repo):
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1, 2])
-    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
     assert 'mutant 2' in result.stderr
@@ -525,7 +534,7 @@ def test_task_done_blocks_a_listed_mutant_the_run_lacks(repo):
 def test_task_done_blocks_a_task_with_no_mutants_file(repo):
     base = head(repo)
     commit_work(repo)
-    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
     assert 'task-1-mutants.md' in result.stderr
@@ -538,7 +547,7 @@ def test_task_done_blocks_a_withdrawn_mutant_whose_patch_is_still_live(repo):
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1, 2], withdrawn=[2])
-    write_run(repo, 'task-1-mutants.log', head(repo), CLEAN, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
     (workspace(repo) / 'task-1-mutant-2.patch').write_text('a demo patch\n')
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
@@ -551,8 +560,8 @@ def test_task_done_reads_the_newest_mutant_run_by_number(repo):
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1])
-    write_run(repo, 'task-1-mutants-2.log', head(repo), CLEAN, [1])
-    write_run(repo, 'task-1-mutants-10.log', head(repo), 'caught 0, survived 1, invalid 0', [1])
+    write_run(repo, 'task-1-mutants-2.log', head(repo), base, CLEAN, [1])
+    write_run(repo, 'task-1-mutants-10.log', head(repo), base, 'caught 0, survived 1, invalid 0', [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
     assert 'task-1-mutants-10.log' in result.stderr
@@ -563,10 +572,90 @@ def test_task_done_ignores_another_tasks_mutant_run(repo):
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1])
-    write_run(repo, 'task-10-mutants.log', head(repo), CLEAN, [1])
+    write_run(repo, 'task-10-mutants.log', head(repo), base, CLEAN, [1])
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
     assert 'no mutant run for Task 1' in result.stderr
+    assert not recorded(repo)
+
+
+def insert_after(repo, name, anchor, *lines):
+    '''Add lines to a run file, right after its first line that equals the anchor.'''
+    run_file = workspace(repo) / name
+    out = []
+    done = False
+    for line in run_file.read_text().splitlines():
+        out.append(line)
+        if not done and line == anchor:
+            out.extend(lines)
+            done = True
+    assert done, f'no {anchor!r} line in {name}'
+    run_file.write_text('\n'.join(out) + '\n')
+
+
+def test_task_done_blocks_a_run_with_no_base_line(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), None, CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'the mutant run has no base: line' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_blocks_a_run_at_another_base(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), head(repo), CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert f'the mutant run is at base {head(repo)}, not BASE {base}' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_blocks_a_run_with_no_revert_line(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1], revert=None)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'the mutant run has no revert: line' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_records_a_run_whose_revert_ran(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    revert = 'revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 3'
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1], revert=revert)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert recorded(repo)
+
+
+def test_task_done_matches_a_short_base(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base[:7], '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert recorded(repo)
+
+
+def test_task_done_reads_base_and_revert_from_the_header_only(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), None, CLEAN, [1], revert=None)
+    insert_after(repo, 'task-1-mutants.log', '1 passed', f'base: {base}', NONE_REVERT)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'no base: line' in result.stderr
     assert not recorded(repo)
 
 
