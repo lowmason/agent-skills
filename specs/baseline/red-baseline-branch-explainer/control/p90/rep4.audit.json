@@ -1,0 +1,27 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "cost": 0.39806299999999994,
+  "permission_denials": [],
+  "outside": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "ls ~/.local/bin 2>/dev/null | head; which uv pytest python3.12 python3.13 2>/dev/null; sed -n 99,110p specs/completed/readonly-guard-command-starts.md; sed -n 193,200p specs/completed/readonly-guard-command-starts.md; sed -n 257,268p specs/completed/readonly-guard-command-starts.md; grep -n 'D[1-6]' specs/plans/completed/90-readonly-guard-command-starts.md | head -30"
+      },
+      "hits": [
+        "~"
+      ]
+    }
+  ],
+  "void_reasons": []
+}

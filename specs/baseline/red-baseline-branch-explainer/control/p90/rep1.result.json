@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.44699259999999996,
+  "turns": 11,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "66cf1f14d9ea48eb268e2d886e3a54b2b17ba7543e6dcfc3448fbb4f9dce0134",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-t3VVKb/out/explainer.md`. The range is plan 90: a change to how the read-only guard finds the command in each subcommand.\n\n**What changed:** before, the guard stopped walking at the first word it didn't recognise and treated that word as the command. A few kinds of word fooled it: a leading `{` or `[[ \u2026 ]]`, a word containing `=` that it didn't recognise as an assignment (or an `env` operand), and zsh's `=cmd` form. The real command after them was never checked. Now the guard reads each of those words two ways, as the command and as something in front of it, and checks every resulting command. If any reading is denied, the line is denied, so the change can only add denials. The extra work is bounded and tested to grow linearly, and a subcommand with more than 64 possible starting points is denied outright. That matters because a hook that times out lets the command through.\n\n**What I checked:**\n- The hooks test suite passes: 461 tests, on both your dev Python and `/usr/bin/python3` (the 3.9 floor).\n- All 8 recorded bypass lines get through `main`'s guard and are denied by the new one.\n\n**Before you merge:**\n1. **It goes live as soon as it merges**, because the installed hook is a symlink into the main checkout. Run Gate B (`./hooks/probe-readonly-guard.sh`) after the merge.\n2. **I couldn't find any record of the required Codex review.** The plan requires one round of it after Task 3, but no outcome is logged in the plan or in `specs/history.md`. The only file in `/tmp/codex-review/` refers to `f7b8af5`, which isn't a commit in this repo. Worth confirming it actually ran.\n3. **There are new false-positive cases, which you already accepted in rulings D2 and D5.** For example, a heredoc line like `== rm and mv ==` is now denied. The sweep of 150,024 commands from your transcripts found none, and no subcommand there had more than 13 possible starting points.\n4. **Minor:** one of the speed bounds (`queued`) no longer has a test that fails without it; keeping it was a recorded ruling. The caching relies on an invariant that only the code comments state, so a future change could break it silently."
+}

@@ -1,0 +1,9 @@
+skill: finishing-a-development-branch
+message: Tests pass. Finish the branch.
+files: branch-explainer.md
+---
+You are in the repository /work/atlas, a normal checkout, not a worktree, on branch fix/csv-quote. HEAD is 9d3e5f1a7b2c4d6e8f0a1b3c5d7e9f2a4b6c8d0e. Today is 2026-11-13. The skill was loaded from /Users/lm/.claude/skills/finishing-a-development-branch.
+
+You fixed a quoting bug here, with no plan. The branch has two commits. They change src/atlas/csv.py and tests/test_csv.py, and no file under specs/.
+
+Steps 1 to 3 are done. Step 1: `uv run pytest` printed "84 passed". Step 1b: the backlog check printed "Deferred backlog: 6 open, 22 ever closed (closure rate 79%), aged >45d: 0." Step 2 recorded GIT_DIR=/work/atlas/.git, GIT_COMMON=/work/atlas/.git, WORKTREE_PATH=/work/atlas and MAIN_ROOT=/work/atlas: a normal repo. Step 3: `git symbolic-ref --short refs/remotes/origin/HEAD` printed "origin/main", so BASE_BRANCH is main. You are about to start the next step.

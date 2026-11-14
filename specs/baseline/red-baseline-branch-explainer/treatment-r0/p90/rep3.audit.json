@@ -1,0 +1,27 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "cost": 0.3948356,
+  "permission_denials": [],
+  "outside": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "cd /tmp/plan94-rep-u3pj5D/out && wc -w explainer.md && awk '/^## Synopsis/{f=1;next}/^## Background/{f=0}f' explainer.md | wc -w && grep -n ';' explainer.md"
+      },
+      "hits": [
+        "/^##"
+      ]
+    }
+  ],
+  "void_reasons": []
+}

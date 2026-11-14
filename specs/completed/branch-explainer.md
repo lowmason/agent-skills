@@ -1,8 +1,7 @@
 # Branch explainer — Design Spec
 
-**Status: APPROVED (2026-11-13)** — the owner approved it on 2026-11-13, after brainstorming and a builder
-check. The next step is writing-plans, in a fresh session on branch
-`claude/branch-explainer-pre-merge-fde7f8`.
+**Status: COMPLETE (2026-11-14)** — implemented by plan 94 (`specs/plans/completed/94-branch-explainer.md`) and
+retired here. It was APPROVED on 2026-11-13, after brainstorming and a builder check.
 
 ## What this builds
 
@@ -225,7 +224,9 @@ builder confirms each)**:
 | `90-readonly-guard-command-starts` | hook code plus tests | `d686779` | `d51bf64` | `84efc99` |
 | `92-writing-skills-guide-rewrite` | mostly skill text | `d58980b` | `0b6d34f` | `e382493` |
 
-Each fixture is a detached worktree at the branch head before the merge, with `BASE` at its merge base.
+Each fixture is an isolated repository that holds only the history of the branch head before the merge, with
+a detached HEAD there and `BASE` at its merge base. A worktree would share every ref of this repository with
+the reps (owner, plan 94, 2026-11-13).
 The repo merges PRs with merge commits, so the head is the merge commit's second parent. The builder check
 found that each range adds or renames a plan under `specs/plans/completed/` and adds a history entry.
 
@@ -298,7 +299,8 @@ If it fails, the work stops and the results go to the owner. No round tunes agai
 
 - **Compaction window.** About 690 characters are left in finishing's body, and the Copilot loop plan needs
   some of them. Step 3b in `SKILL.md` is a short pointer, at most about 400 characters, and the procedure
-  lives in the prompt file. If the two plans together pass the window, the plan that runs second moves
+  lives in `references/branch-explainer.md`, beside the prompt file, so the subagent reads only the prompt
+  file (owner, plan 94, 2026-11-13). If the two plans together pass the window, the plan that runs second moves
   existing text out of the body to a reference.
 - **Sequencing with the Copilot loop plan.** Both plans edit finishing's `SKILL.md` and `NOTICE`. They
   execute one at a time, not at once. The plan that runs second re-reads both files at its base. The design
@@ -347,8 +349,7 @@ If it fails, the work stops and the results go to the owner. No round tunes agai
 
 ## Not in this spec
 
-- **marimo notebooks with controls**, for model changes in downstream repos. → deferred at plan completion,
-  as an item in `specs/deferred_items.md`.
+- **marimo notebooks with controls**, for model changes in downstream repos. → item: 94-branch-explainer — 2026-11-14
 - HTML output, diagrams, and explainers for other people's PRs.
 - A gate on the questions.
 - Any change to the reviewers, the Copilot loop, `specs/history.md` or the Plan Completion Protocol.

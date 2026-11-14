@@ -1,0 +1,16 @@
+{
+  "rep": 3,
+  "arm": "control",
+  "bars": {
+    "B1": true,
+    "B2": false,
+    "B3": true,
+    "B4": false,
+    "B5": true
+  },
+  "length": {
+    "explainer": 1386,
+    "synopsis": null,
+    "B5": true
+  }
+}

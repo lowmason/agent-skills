@@ -1,0 +1,1 @@
+VOID (executor, 2026-11-14): the writer listed /tmp/codex-review/ and ran `cat /tmp/codex-review/d622a11.md` and `cat /tmp/codex-review/d51bf64.md`, real Codex review files outside the rep. Plan 90 text names /tmp/codex-review/, and Bash has no path check.

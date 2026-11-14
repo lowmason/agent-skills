@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.597414,
+  "turns": 12,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "6534cc84b489ea7c447244eecec386a0c372a7697f6a1de6c4530f54961982ba",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-PlZIm3/out/explainer.md`.\n\nThis branch carries out plan 92. It moves the `writing-skills` skill's Claude Code facts into a new file, `references/claude-code.md`. It also fixes claims in the skill that your Claude Code guide (in `specs/guides/`) doesn't support: that a description loads in every conversation, and the old reason against `@` links. The directory examples now show `references/` and `scripts/`. The skill's guide citation is restamped, so no file is reported as out of date any more. One exception in your conformance register (`writing-skills-guide-gaps`) is deleted, and another (`writing-skills-tdd-for-docs`) gets a narrower reason. The skill text itself changes by only about 100 lines. Most of the roughly 8,600 added lines are saved test runs.\n\n**Test results** (all taken from the committed record; I did not re-run any):\n- **Where the hard rule goes:** the check for whether agents put a hard rule after a long table found nothing. None of the 10 runs failed, so no new instruction was added.\n- **Does the new file help:** with the new text, every bar was met, 30 of 30 on whether agents get sent to the new file and 30 of 30 on whether they use its facts.\n- **Limits:**\n  - The 30 \"read\" passes all came from runs that made no edit, so the tests don't show that an agent reads the file before editing.\n  - Two of the three tasks also passed on the old text.\n  - The only task where the new text clearly helped was forking a skill that starts its own subagents: 0 of 5 on the old text, 5 of 5 on the new.\n\n**Before you merge:**\n1. **Your surname is committed in one test output.** `specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json` contains \"Mason, the two requirements conflict\u2026\". I found nothing else of that kind in the test directory, and no email address. If the repository is public, consider removing it.\n2. **The new file is missing a fact.** In interactive sessions a forked skill runs in the background by default, and `claude-code.md` doesn't say so. It's logged as an open backlog item.\n3. **A bug on `main`, recorded but not fixed here.** The last commit adds a backlog item for PR #184's `extract_structure.py`: a contents line with a page number but no title is silently dropped, and the completeness check still passes.\n\nThe commit lints pass, and `cli.py lint` now prints nothing."
+}

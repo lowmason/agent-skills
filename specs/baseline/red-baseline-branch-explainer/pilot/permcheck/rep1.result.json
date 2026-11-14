@@ -1,0 +1,29 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.0264056,
+  "turns": 2,
+  "subtype": "success",
+  "permission_denials": [
+    {
+      "tool_name": "Write",
+      "tool_use_id": "toolu_01EUcmqhWUhc1j22cze8vFgU",
+      "tool_input": {
+        "file_path": "/tmp/plan94-rep-3PRV53/out/check.txt",
+        "content": "ok"
+      }
+    }
+  ],
+  "stream_sha256": "e5839dbf7814e78856579ed7d7e84a285272016092b4fa47321e8f593ff8d26d",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "REFUSED: I couldn't write `ok` to `/tmp/plan94-rep-3PRV53/out/check.txt`. That path is outside the folders this session is allowed to use, so the write needed your approval. There's no way to approve it in this session, so it was denied automatically and the file wasn't created."
+}

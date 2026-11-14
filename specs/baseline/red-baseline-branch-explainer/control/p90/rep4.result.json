@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.39806299999999994,
+  "turns": 11,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "41d8461cb7e80651839aaec52b9c412620d2f5f4edb627a7ee36a14ac431eb75",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-FYoWoS/out/explainer.md`. The branch is a fast-forward from `main`: 24 commits that complete plan 90.\n\n**What it changes:** The read-only guard used to find a line's command word in one pass and assume the first word left was the command. Some words can either lead the command or be the command: a leading `{`, a `[[ \u2026 ]]` test, a word containing `=`, or a word starting with `=`. When the guard picked the wrong reading, the real command went unread. Lines like `{ git branch ]] HEAD; }`, `=rm x`, `arr[1]=x rm t` and `env a-b=x rm t` got through. The guard now reads those words both ways, and a denial from either reading stands. The first reading is always exactly what the old code did, so the change can only add denials.\n\n**What I checked:**\n- **Tests:** all 304 pass on Python 3.9 (the guard's minimum version) and on 3.13.\n- **Old vs new:** I ran the old and new guards on the same lines. The four lines above, and the other recorded bypasses I tried, went from allowed to denied. Everyday read-only commands like `git log` and `FOO=bar git status` are still allowed.\n- **Speed:** crafted lines of about 150 KB finish in 0.3 to 0.5 seconds and grow linearly with length. That matters because a hook that times out lets the call go on.\n\n**What you're accepting by merging:**\n- **New false positives.** Some harmless lines are now blocked, for example an AsciiDoc heading `== rm and mv ==` in a heredoc. You already accepted this at a plan review gate.\n- **A limit of 64.** Any part of a command with more than 64 places where the real command might start is denied. The highest count seen across 150,024 real commands was 13.\n- **One untested piece.** A dedup set (`queued`) no longer has a test that fails if it's removed. It was kept because the spec requires it.\n- **Still not caught:** a glob qualifier glued to the command word (`git(.) stash`) is filed as a new deferred item.\n- **Goes live immediately.** The hook path is a symlink into the main checkout, so merging turns this on in every repository.\n\n**One thing to watch:** the shortcut that keeps the walk fast keys on each word's text only. It's safe because the only place the code rewrites a word (stripping leading `=`) keeps everything else about the word the same. If someone adds another rewrite later, that needs rechecking."
+}

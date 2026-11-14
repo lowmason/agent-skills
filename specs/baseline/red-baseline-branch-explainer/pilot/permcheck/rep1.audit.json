@@ -1,0 +1,28 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "cost": 0.0264056,
+  "permission_denials": [
+    {
+      "tool_name": "Write",
+      "tool_use_id": "toolu_01EUcmqhWUhc1j22cze8vFgU",
+      "tool_input": {
+        "file_path": "/tmp/plan94-rep-3PRV53/out/check.txt",
+        "content": "ok"
+      }
+    }
+  ],
+  "outside": [],
+  "void_reasons": [
+    "no explainer file"
+  ]
+}

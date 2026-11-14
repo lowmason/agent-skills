@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.49183599999999994,
+  "turns": 11,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "ed9126a037edbb05f759e0f16fc02a88c722b575afbe8124a07912b650864298",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-Ix46Dd/out/explainer.md`. The hooks suite passes: 461 tests on your dev Python and 461 on `/usr/bin/python3`.\n\n**What the change does:** the read-only guard used to look for a subcommand's command at only one position. Now it checks every position where the command might start, and if any of them denies, the line is denied. This blocks the 8 recorded bypasses, which fall into three groups:\n- a leading `{` or `[[ \u2026 ]]`\n- zsh's `=cmd`\n- `name=value` words the guard didn't recognise as assignments\n\nThe old guard's answer is always checked first, so nothing it denied can become allowed. The plan's own check found 0 lines going from denied to allowed across about 150k commands.\n\nThe rest of the range is the spec, the plan and the decisions you made during the work. Most of that is about keeping the new search fast, because a hook that times out lets the command through. To do that:\n- each step of the search runs only once\n- remembered results stop long runs from being re-read\n- any subcommand with more than 64 possible starts is denied\n- under D6, all the leading `=` in a word are removed at once\n\nThe plan reports a crafted 512 KB line finishing in under 1 s.\n\n**Before you merge:**\n- **The Codex review round isn't recorded.** The spec and plan call for one Codex round that hunts for bypasses, with your fix/record/stop choice logged. Nothing in the range records its outcome: the decisions stop at D6. Please confirm it ran, or that you chose to skip it.\n- **It goes live the moment it merges.** The installed hook is a symlink into the main checkout. Afterwards, run `./hooks/probe-readonly-guard.sh` there; it should print three `ok:` lines. Nothing shows that check has run yet.\n- **You're accepting some extra denials (your rulings D2 and D5).** Some heredoc text now gets denied; I confirmed a heredoc line `== rm and mv ==` is denied. Lines that were already denied may show a different message.\n- **`queued` has nothing testing it.** No test fails without it since D6. You chose to keep it anyway.\n- **HEAD is not on a branch.** It's a bare checkout of `d51bf645`, so merge by commit or create a branch first.\n\nI didn't rerun the 150k-command check or the old-versus-new comparison; those numbers come from the plan's records. A small test script I wrote to try a few lines is still at `/tmp/plan94-rep-Ix46Dd/probe.py`."
+}

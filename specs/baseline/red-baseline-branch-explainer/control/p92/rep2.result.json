@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.6230434,
+  "turns": 17,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "9896d523a518058d6d84257e89095b06a9f65c515bede2cecac658bafa676bea",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-jUAqYo/out/explainer.md`.\n\n**What the change is:** this branch carries out plan 92. The diff is 115 files, but almost all of it is test evidence. The text that actually ships changes in about 120 lines across 7 files:\n- **New file:** `skills/writing-skills/references/claude-code.md` collects the facts that are only true in Claude Code: the extra frontmatter keys, why a Haiku `model` isn't portable, when to fork a skill, how the skill listing drops descriptions, and what survives compaction.\n- **Corrected claims:** descriptions are no longer called \"resident in every conversation\". The unsupported \"`@` force-loads 200k+ context\" claim is replaced with a portability reason. The directory examples now show `references/` and `scripts/`.\n- **Conformance register:** `writing-skills-guide-gaps` is removed, `writing-skills-tdd-for-docs` has a narrower reason, and `description-when-only` now also covers `discovery.md`.\n- **Citation:** the skill's guide citation is restamped, so `cli.py lint` now prints no `STALE` lines at all.\n\n**Checks I ran on HEAD:** the link check passes (231 links, 0 broken), `cli.py lint` exits 0 with no `STALE` lines, and `run_commit_lints.sh` passes. I didn't rerun the model tests; the results below are as the branch records them.\n\n**Before you merge:**\n1. **Your first name is in a committed test output.** One saved test reply (`new/P1a-sonnet/rep5.json`) starts by addressing you by name, which means your account identity reached a run that was meant to be isolated. All 85 saved replies also contain session IDs. I found no home paths or email addresses in them. Decide whether to redact these if the repo is public.\n2. **The test evidence is weaker than the 5/5 scores suggest.** In the \"does the agent go read the new file\" test, every pass came from the agent reading before doing anything, and no run got as far as an edit. Two of the three \"does the agent use the fact\" prompts also pass on the old text. Only the fork prompt shows a difference (0/5 on the old text, 5/5 on the new, Opus only, 5 runs). The text changes are fact-checked against the guide, so they don't depend on these tests.\n3. **Three review findings were flagged for you but left unchanged, with no backlog item:**\n   - \"injected into system prompt\" (`discovery.md:79`)\n   - the \"50\u2013100\u00d7\" context saving from subagents (`discovery.md:153`)\n   - category folders under `~/.claude/skills/` (`CLAUDE_MD_TESTING.md`)\n\nThe test where agents might put a hard rule below a long table found no such failure (0/5 on both models), so the planned \"Hard Rules\" slot in the body template was not added. Total test spend was $3.43 of the $30 cap."
+}

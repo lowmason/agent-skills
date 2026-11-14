@@ -1,0 +1,27 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "cost": 0.5361018,
+  "permission_denials": [],
+  "outside": [
+    {
+      "tool": "Read",
+      "input": {
+        "file_path": "/Users/lowell/.claude/projects/-private-tmp-plan94-rep-UGUEK2-repo/582fd0da-b047-4c95-b645-9eaedc4c198a/tool-results/bvun3ap8z.txt"
+      },
+      "hits": [
+        "/Users/lowell/.claude/projects/-private-tmp-plan94-rep-UGUEK2-repo/582fd0da-b047-4c95-b645-9eaedc4c198a/tool-results/bvun3ap8z.txt"
+      ]
+    }
+  ],
+  "void_reasons": []
+}
