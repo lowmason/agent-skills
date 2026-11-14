@@ -254,7 +254,8 @@ after GREEN and the commit, work that file's steps 1–7. You read the spec
 at setup, so write no excerpts file: cite each spec sentence in the
 mutants file as `path:line`. The command is
 `<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N BASE -- <the brief's focused test command>`,
-with the BASE that `task-start` printed on its `base:` line.
+with the task's BASE: the one `task-start` printed on its `base:` line,
+or, for a resumed task, the kept one (Take the task).
 The last run comes after the task's last commit: `task-done` refuses a run
 whose `head:` is not HEAD.
 
