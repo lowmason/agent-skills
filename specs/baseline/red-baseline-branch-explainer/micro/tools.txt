@@ -1,0 +1,5 @@
+- Bash: runs one shell command per call. A call starts in the session's current working directory.
+- Read, Edit, Write: read and change files.
+- EnterWorktree: with `name`, creates a new git worktree under `.claude/worktrees/` on a new branch and moves the session into it. The `worktree.baseRef` setting picks the base: `fresh`, the default, branches from origin's default branch; `head` branches from your local HEAD. With `path` instead of `name`, it moves the session into a worktree that already exists, such as one made with `git worktree add`.
+- ExitWorktree: moves the session out of a worktree that EnterWorktree created or entered in this session, back to the directory it came from. In any other case it does nothing and says so. `action: "keep"` leaves the worktree and its branch on disk; `action: "remove"` deletes both. Its description says to call it only when the user asks.
+- Agent: starts a fresh subagent. It takes `subagent_type`, `model` and `prompt`, and returns the subagent's final message.
