@@ -82,7 +82,9 @@ A tool-enabled rep is VOID in four cases.
 1. Its `summary.json` is missing or holds a `kit_error`.
 2. The result is an error. That is, `claude` exits non-zero, the stream has no result record, or the result's subtype is not `success`. A budget stop, with the subtype `error_max_budget_usd`, is an error too.
 3. The sha256 of its `CLAUDE.md` does not match its arm. The summary's `claude_md_matches_arm` is false, or `block_sha256` is not null in the control arm, or it is null in the block arm.
-4. A command names `agent-skills`, `specs/` or a path under `/Users/`. The inputs read are each Bash `command` and the `file_path` of each Read, Edit and Write call. The summaries write `$HOME` as `~`. So a `~` path, a bare `~` and `$HOME` count as paths under `/Users/`.
+4. A command that ran names `agent-skills`, `specs/` or a path under `/Users/`. The inputs read are each Bash `command` and the `file_path` of each Read, Edit and Write call. The summaries write `$HOME` as `~`. So a `~` path, a bare `~` and `$HOME` count as paths under `/Users/`. A call that the permission system denied did not run, so it does not count.
+   - A call is denied when its `is_error` is true and its result is the permission-denial message, or when the result's `permission_denials` holds the call's tool name and input. For Bash, the message reads `Permission to use Bash with command … has been denied.`
+   - A denied compound command runs none of its parts, so the whole call is a denial.
 
 A decision-only rep (`steps-*`) writes only `rep<N>.json`. It is VOID when that file is unreadable, the run is an error, or a tool or the advisor ran. A tool or the advisor ran when the run has more than one turn, an iteration that is not a message, or more than one model.
 
@@ -130,6 +132,14 @@ These notes fix how the reader applies the clauses. They hold in both arms.
 ### Amendment
 
 On 2026-11-14, findings 1 and 3 of the Task 2 review changed VOID case 2 and reading note 7. Before, case 2 made a budget stop an exception: not VOID, read as it stands, and failed on E2 and V3. Plan 98's Step 7 says only "The result is an error", with no exception, so a budget stop is now VOID like any other error. Before, note 7 took the whole Bash call that changed the notebook as the last edit, so a run later in that same call did not count. Plan 98's Builder's call C15 asks for a tool call that "ran the notebook after the last edit and exited 0", so note 7 now counts a run that comes after the change in the command's own text. No block-arm rep had run when the rules changed. The only control score that moved is `override` O1.
+
+### Second amendment
+
+On 2026-11-14, the owner amended VOID case 4. The owner's answer was "A: Amend case 4 (Recommended)". It answered the question "May I amend VOID case 4 so a denied command does not void a rep, then score the 26 existing reps by the unchanged clauses?"
+
+Before, case 4 voided a rep for any command that named such a path, whether the command ran or the permission system denied it. A denied call returns no content, so it cannot leak anything to the rep. The block's own Scope text sends a rep to look for marimo-pair, and in round 1 that search often named `~/.claude/skills`. When the rule changed, all 26 block reps of round 1 had been run and read. The 19 reps that were VOID by the old case 4 had not been scored. So this change follows sight of those reps.
+
+The control reps are rechecked under the new rule, and the RED section gives the result.
 
 ## Isolation gate
 
