@@ -546,10 +546,13 @@ Findings".
 **Leak check of the treatment text.** The same greps as the control's (Leak check), over the three
 treatment prompts and the treatment `mutants.md`, case-insensitive:
 
-- `at or below`, `stock`, `slug`, `byte`, `KB`, `lowercase`, `whitespace` and `hyphen`: no hit.
-  `reorder` and `threshold`: one hit each in F6's prompt, its task name, as in the control. `MB` and
-  `unit` hit only inside `numbers`, `number`, `JUnit` and `--junitxml`, and `boundary` only in "a
-  value at a boundary". The control `mutants.md` has the same hits.
+- `at or below`, `stock`, `KB`, `lowercase` and `hyphen`: no hit. `reorder` and `threshold`: one
+  hit each in F6's prompt, its task name, as in the control. `slug` and `whitespace`: one hit each
+  in F7's prompt, its task name. `byte`: one hit in F8's prompt, its task name (`to_bytes`). Each
+  task name is filled from the fixture the same way in both arms. `MB` and `unit` hit only inside
+  `numbers`, `number`, `JUnit` and `--junitxml`, and `boundary` only in "a value at a boundary"
+  (`mutants.md:11`) and "at a boundary" (`mutants.md:38`). The control `mutants.md` has the same
+  hits.
 - `F6`–`F8`, `bar`, `plan 97`, `plan 93`, `agent-skills`, `red-baseline`, `micro-test`, `decoy`,
   `change-reverted`, `treatment` and `driven`: no hit.
 - Exempt, as in the control: the text under test's own `subagent`, `controller`, `weak`, `skill`,
