@@ -515,8 +515,8 @@ bar measures the line, not the new test.
   every mutant read INVALID `does not apply`. Each patch has the sha256 `e3b0c442…`, the hash of an
   empty file: the rep's `sed` edit never changed the file. Each rep made its patches again, and its
   next run caught every mutant.
-- **A first commit without the fix.** F6 reps 1, 2, 3 and 5 report that a failed `sed` left
-  `stock.py` unchanged at their first commit. Reps 1 and 3 amended that commit, and reps 2 and 5
+- **A first commit without the fix.** F6 reps 1 to 5 report that a failed `sed` left
+  `stock.py` unchanged at their first commit. Reps 1, 3 and 4 amended that commit, and reps 2 and 5
   added a second commit. F6 reps 2 and 4 each had a first mutant run whose baseline failed. Each
   final tree holds the fix, and each final run's baseline passed.
 - **Scratch files under `/tmp`.** All three VOID reps wrote one, although the control `mutants.md`
