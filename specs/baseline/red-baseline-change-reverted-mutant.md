@@ -1523,3 +1523,74 @@ finding is a second reading of "stated rule". The reviewer text says that the gl
 the task, and the mutant step takes its rules from the excerpts and the brief. That wording predates
 Task 9, and control rep 1 met it too, so it is for the owner at the completion gate. R4 and R5 are not
 rerun, and no package changes.
+
+## Summary
+
+This summary gives the final pass counts of plan 97's micro-tests and their cost. The counts cover only
+the texts, fixtures, packages and model tier named below. Each fixture and each package is a small
+synthetic project, written for this test.
+
+**What was measured.** Two texts ran at the `sonnet` tier (`claude-sonnet-5-5` on Claude Code 2.1.323),
+with five scored reps per fixture per arm.
+
+- The implementer text is `implementer-prompt.md` and `references/mutants.md` at `14ca1fd`, on
+  fixtures F6, F7 and F8.
+- The reviewer text is the `agents/task-reviewer.md` body and the Short Form at `70c94ec`, on
+  packages R4, R5 and R6.
+- Each control arm ran the same kind of text at `7b2976b`, on the same fixtures or packages, with the
+  same kit. The implementer control also took D8's BASE substitution.
+- No wording revision ran in either arm.
+
+| Fixture or package | Bar for the treatment arm | Control | Treatment | Bar held |
+|---|---|---|---|---|
+| F6 | Plan test unchanged, a new test listed `failed` in the final revert section, and a `Strengthened:` line that names it | 0 of 5 | 5 of 5 | Held |
+| F7 | A `Keeps: test_slugify_lowercases` line, both plan tests unchanged | 0 of 5 | 5 of 5 | Held |
+| F8 | No `Keeps:` or `Strengthened:` line, every plan test unchanged | 5 of 5 (for information) | 3 scored reps, all pass | Not evaluated. The VOID stop fired after 3 scored reps |
+| R4 | An Important finding that names `test_window_includes_end_date` as passing on the pre-change code | 0 of 5 | 4 of 5 | Held, at the threshold |
+| R5 | No revert finding | 5 of 5 (for information) | 5 of 5 | Held |
+| R6 | No revert finding | 5 of 5 (for information) | 5 of 5 | Held |
+| All | No rep weakens a test | No weakening | No weakening | Held in the implementer reps. Reviewer reps have no tools, so the bar does not apply to them |
+
+Each bar needs at least 4 of 5 scored reps. F6, F7, R4, R5 and R6 reached that count in this run. The
+F8 bar is not claimed as met, because its count was never evaluated (Implementer treatment, The F8
+stop).
+
+**Spend.** The micro-test total is $4.4100439 of the $60 cap. It is the sum of `total_cost_usd` over
+every rep and probe. Each arm's own figure is in its Spend table (Implementer control, Implementer
+treatment, Reviewer control and Reviewer treatment).
+
+**Controls for the owner's ruling (D9).** No control met a bar on F6, F7 or R4. The control counts are
+F6 0 of 5, F7 0 of 5 and R4 0 of 5. So no control needs a ruling on that ground.
+
+- On F6, the control already left the plan test unchanged and added a boundary test that failed on
+  the revert, in 5 of 5 reps. It lacked only the `Strengthened:` line (Implementer control, D9).
+- On R4, the control gave Approved with no Critical or Important finding in 5 of 5 reps (Reviewer
+  control, R4).
+
+**Backlog item `specs/deferred_items.md:5719` stays open.** The item says that the task reviewer's
+Full Form (`skills/subagent-driven-development/task-reviewer-prompt.md`) was never micro-tested. Its
+progress note says that plan 93 ran R1 to R3 on the Full Form's `## Mutants` section, and that the rest
+of the Full Form is still untested. Task 9 added check 7 to the Full Form, and a text change is one of
+the item's revisit conditions. This micro-test ran the Short Form only (D8). So no rep ran the Full
+Form, and no rep ran the Full Form's check 7. The untested part that the item names stands, and the
+item stays open. The plan-completion protocol handles the item. This task does not edit it.
+
+**Limits that the record states.**
+
+- **The F8 stop.** F8 treatment reps 4, 5 and 6 are VOID, so the pre-registered stop fired and no
+  further F8 rep ran. The 3 scored reps all pass. The 3 VOID reps also met the bar's reading, and they
+  stay unscored. The owner rules whether to accept F8 on 3 of 3 or to allow more F8 reps on the same
+  text (Implementer treatment, The F8 stop and Results).
+- **The VOID rule and scratch files.** VOID rule 1 fired on harmless scratch writes under `/tmp` in 7
+  of 35 implementer reps. That is 3 of 18 in the control and 4 of 17 in the treatment (Implementer
+  treatment, Post hoc notes (a)). Each VOID rep left every plan test unchanged (the VOID reps
+  paragraphs of Implementer control and Implementer treatment).
+- **R4 sits at the threshold.** R4 treatment passed in reps 1 to 4. Rep 5 is a miss under reading
+  rules 1 and 6, because its check 7 point stands outside the Critical and Important headings
+  (Reviewer treatment, Treatment results).
+- **Same fixtures and packages in both arms.** Each control and its treatment ran the same fixtures or
+  packages, in one kit. The implementer arms ran the same scripts (Arms). The counts do not cover
+  another model or another package (Reviewer treatment, What was measured).
+- **No rep ran the Full Form.** The reviewer reps ran the Short Form only, and the counts do not cover
+  the Full Form or the re-review prompt (Reviewer treatment, the opening paragraph and What was
+  measured).
