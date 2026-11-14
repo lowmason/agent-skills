@@ -701,3 +701,412 @@ the 4 VOID reps, about $0.10 a rep. The micro-test total is $3.2728529 of the $6
 Before this record's commit, it ran over every file to be added: the 88 output files under
 `implementer/treatment/` and this record. It found 0 hits in the 89 files. Raw streams, prompts and
 unscrubbed originals stay under `~/.cache/agent-skills/scratch/plan97/`, outside the repository.
+
+## Reviewer rules
+
+This section holds the rules of the reviewer micro-test of reviewer check 7 (plan 97 Task 8). They
+were written before any reviewer rep ran, the pilot included. They were committed in one commit with
+the review kit, its identity scrub and the packages R4 to R6, before the pilot. The two isolation
+probes ran before that commit. No rule is added after a rep is seen. Task 10 adds the treatment arm.
+
+**The order.** The brief's Step 3 runs the probe and the pilot, and then commits the kit, the
+packages and the rules. Here the commit came before the pilot. The plan's Global Constraints,
+Micro-tests, say that the rules are committed before any rep runs, and the controller's ruling says
+that the scrub is committed before any rep. The pilot is a rep. A probe is not a rep, so the probes
+ran before the commit.
+
+### Reviewer base
+
+- **Control text (D8):** the body of `agents/task-reviewer.md`, its frontmatter removed, and the
+  Short Form `prompt: |` block of `skills/subagent-driven-development/task-reviewer-prompt.md`, both
+  at `7b2976b`, the plan's execution base (D14). Neither file changed between `7b2976b` and this
+  section's commit.
+- **Treatment text (Task 10):** the same two files at Task 9's commit.
+- A text under test enters a prompt only through `git show <sha>:<path>`, never through `~/.claude/`.
+- The Short Form at `7b2976b` already holds the four placeholders `[SPEC_EXCERPTS_FILE]`,
+  `[MUTANTS_FILE]`, `[MUTANT_RUN_FILE]` and `[TEST_RULINGS]`. So the control gets them filled, and
+  plan 93's fixed control line is not used.
+- **Scripts:** the packages were built with the six scripts of
+  `skills/subagent-driven-development/scripts/` at `60f3348`, Task 2's last commit, read with
+  `git show`. That `mutant-run` takes BASE and writes the revert section.
+- Claude Code 2.1.323. `--model sonnet` resolves to `claude-sonnet-5-5` (Reviewer isolation probe).
+
+### Reviewer kit
+
+The kit is `specs/baseline/red-baseline-change-reverted-mutant/review-kit/`. It is a copy of plan
+93's `specs/baseline/red-baseline-mutant-checked-tests/review-kit/` (D1). Plan 93's record and kits do
+not change. The kit holds no tests and no test file. These are the changes:
+
+- **`run_reps.sh <prompt-file> <out-dir> <first-rep> <last-rep> <model> [<budget>]`** keeps plan 93's
+  `claude` command line byte for byte: `--tools ""`, `--output-format json` and `--max-budget-usd`
+  0.50, under `env -i`, from a new empty directory `/tmp/mt-review-XXXXXX`. It takes the three fixes
+  of `specs/baseline/red-baseline-report-source-match/kit/run_reps.sh:18-50`:
+  1. It checks the rep range before the overwrite guard. `<first-rep>` and `<last-rep>` must be whole
+     numbers with 1 ≤ `<first-rep>` ≤ `<last-rep>`.
+  2. Each rep's status reaches the script's exit status. That status is the `claude` exit status,
+     or 2 for a kit error.
+  3. A failed first rep stops the batch, because the first rep writes the prompt cache.
+
+  The raw `rep<N>.json`, which holds a session id, and `rep<N>.err` go to
+  `~/.cache/agent-skills/scratch/plan97/reviewer/<out-dir's parent name>/<out-dir name>/`, outside the
+  repository. Into `<out-dir>` goes a copy of `rep<N>.json` without its `session_id` and `uuid`. The
+  copy writes `$HOME` as `~`, `$TMPDIR` as `$TMPDIR` and each identity form as its token, with the
+  implementer kit's `kit_identity.py` (Isolation probe, Kit change before any rep). The overwrite
+  guard checks both places.
+- **`probe.sh <out-file> [<prompt-file>]`** is new in this kit. Plan 93 ran its reviewer probe
+  through `run_reps.sh`. The `claude` command line of `probe.sh` is `run_reps.sh`'s, byte for byte, up
+  to the output redirect. A `diff` of the two command lines showed no change.
+- **`isolation_probe.txt`** is plan 93's reviewer probe with D1's line, "7. The name or the email
+  address of the user you work for (quote it).", and with "six" changed to "seven" in its first
+  line. Line 7 is the implementer kit's line 7, byte for byte.
+- **`show_reps.py <dir> ...`** reads the copies in each `<dir>`. Its VOID flags and its cost sum are
+  plan 93's, unchanged. Its reading aids are this test's: `revert`, `pre-change`, `keeps`,
+  `strengthened`, `end-date-test`, `start-test`, `not-loaded`, `import-error` and `mar-30`. It prints
+  all its text through the identity scrub.
+- **`build_prompts.py short <sha> <out-dir> [<case> ...]`** keeps only the `short` arm (D8) and
+  refuses any other arm. It refuses a template that lacks one of the four placeholders, and a
+  dispatch that still holds a placeholder after the fill. `[GLOBAL_CONSTRAINTS]` is the case's spec
+  rules, verbatim, and `[TEST_RULINGS]` is `none`. The seven package files follow the dispatch, in the
+  order that the dispatch names them, each in `<file path="...">` tags under
+  `/work/project/.sdd/plan/`. `build_prompts.py short leakview <out-dir>` puts a placeholder in place
+  of each text under test and each package file's body.
+- **`cases.py`** keeps plan 93's `VOID`, `REVIEWER_FRAME` and `REVIEWER_TASK`. A script compared
+  them with plan 93's module, and they are equal. It drops `FULL_FRAME`, `FULL_TASK` and the fixed
+  line. It holds the cases R4 to R6, their constraints, the leak words and the bars for the reader.
+  `build_prompts.py` never writes a bar into a prompt.
+- **`build_packages.py <out-dir>`** is rewritten for R4 to R6 (Packages). It keeps plan 93's refusal
+  of a package whose diff name, run heads and tree lines disagree. It adds a refusal of a package
+  whose mutant run's `base:` is not the diff's BASE (compared by prefix, because the diff's name holds
+  a short sha), or whose mutant run has no `revert:` line. `build_packages.py --check <packages-dir>`
+  runs the same check on built packages, and `build_prompts.py` runs it on each package it reads.
+- **`kit_identity.py`, `privacy_sweep.py` and `check_scrub.py`** are byte-identical copies of the
+  implementer kit's files.
+
+Every kit Python command runs with `PYTHONDONTWRITEBYTECODE=1`, from the repository root, through
+`uv run python`.
+
+### Packages
+
+`review-kit/build_packages.py specs/baseline/red-baseline-change-reverted-mutant/reviewer/packages`
+built R4 to R6. Each package is the seven files that a task reviewer reads: the brief, the report,
+the controller's test run, the review package (the diff), the excerpts file, the mutants file and
+the controller's mutant run. `reviewer/packages/MANIFEST.txt` gives each file's sha256, each
+package's base and head, and the sha256 of each script used. For each package, the script does these
+steps:
+
+1. It makes a new git repository, `/tmp/mt-review-build-XXXXXX/project`, outside every other
+   repository. Its first commit, "Start the project", is the task's BASE: `plan.md`, the spec under
+   `specs/`, the pre-change code (R4 and R5) and a `.gitignore`.
+2. It writes the brief with `task-brief plan.md 1`, and checks that the brief is the plan's Task 1
+   section. It writes the excerpts file in the pinned form, and checks each excerpt against its spec
+   line.
+3. As the implementer, it runs RED, writes the code, runs GREEN and commits. It writes the patches
+   and the mutants file, and runs `mutant-run plan.md 1 <BASE> -- <focused command>` (run 1).
+4. It writes the report from the real output of those runs.
+5. As the controller, it runs `test-run` on `(<focused command>) && (<suite>)`, then `mutant-run`
+   with BASE on the focused command (run 2), then `review-package` from BASE to HEAD.
+6. It copies the seven files with the scratch repository's path written as `/work/project` and
+   `$HOME` as `~`. It stops when a copied file still names the scratch path, `$HOME` or its parent
+   directory, `$TMPDIR`, the OS user name or an identity form.
+
+The script stops unless each run gives the result that the package needs: the RED and GREEN counts,
+every mutant caught in both mutant runs, the `revert:` line and each revert-section line in the table
+below. Each commit has a fixed author and date, so a rebuild makes the same shas. pytest's timing
+lines, and one function address in R6's mutant output, change on each build, so a rebuild changes the
+sha256 values. Two trial builds ran in scratch first. The second used this build's code, and a `diff`
+of its files with these showed only timing lines and that address. The packages in the record folder
+come from one build. After it, the copy check's literal home-parent path was replaced by
+`Path.home().parent`, the same path here, so that the privacy sweep passes on the script itself. A
+third trial build in scratch with the changed script differed from the record's packages only in
+timing lines, that address and the manifest's sha256 values. The packages were not rebuilt.
+
+**The tasks.**
+
+- **R4 and R5 (D13): one bugfix task.** At BASE, `window.py` has `in_window(day, start, end)`, which
+  returns `start <= day < end`. At HEAD it returns `start <= day <= end`. The excerpts file holds
+  `specs/window.md:8`: "A window includes its end date: a day after the end date is outside it." The
+  global constraints are `specs/window.md:7-8`, which add "A window starts on its start date: a day
+  before the start date is outside it." The focused command is
+  `/tmp/mt-venv/bin/python -m pytest -q tests/test_window.py`.
+  - The brief calls `test_window_includes_end_date` "the regression test for the bug: the window
+    includes its end date". The two briefs differ in one character, because the plan gives the plan
+    test's code. R4's plan test asserts `in_window(date(2026, 3, 30), start, end) is True`, the day
+    before the end date. R5's asserts the same for `date(2026, 3, 31)`, the end date. Both use the
+    window from `date(2026, 3, 1)` to `date(2026, 3, 31)`, and both assert that `date(2026, 4, 1)` is
+    outside it. So R4's plan test passes on the revert, and R5's fails.
+- **R6: a pure new-code task.** It adds `units.py` with `to_bytes(text: str) -> int`: a `fullmatch`
+  of the pattern `([0-9]+)(B|KB|MB)`, the number times 1, 1024 or 1024 × 1024, and `ValueError` for
+  any other text. It uses F8's domain and F8's two plan tests, byte for byte, which import `units` at
+  their file's top. Its spec has three rules with closed shapes in place of F8's one rule. The
+  excerpts and the global constraints are `specs/sizes.md:7-9`: "`to_bytes` reads a size: a number of
+  one or more digits `0` to `9`, then a unit, `B`, `KB` or `MB`, with nothing between them." "1 KB is
+  1024 B, and 1 MB is 1024 KB." "`to_bytes` raises `ValueError` for any other text." The focused
+  command is `/tmp/mt-venv/bin/python -m pytest -q tests`, so that the implementer's second test file
+  runs on the revert.
+
+**The tests and the revert.** Each package's `revert:` line, in both mutant runs:
+
+- R4: `revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 1`
+- R5: `revert: ran, exit 1, failed 2, not loaded 0, skipped 0, passed 1`
+- R6: `revert: ran, exit 1, failed 2, not loaded 1, skipped 0, passed 0`
+
+| Package | Test | Written by | Its line in the revert section | Its line in the mutants file |
+|---|---|---|---|---|
+| R4 | `test_window_includes_end_date` | the plan | `passed` | none |
+| R4 | `test_window_holds_its_start_and_end_dates`: a day before the start, the start date, the end date, a one-day window, a window across a year end | the implementer, in the task's one commit | `failed …: AssertionError: assert False is True` | none |
+| R5 | `test_window_includes_end_date` | the plan | `failed …: AssertionError: assert False is True` | none |
+| R5 | `test_window_holds_its_end_date_in_other_windows`: a one-day window, a window across a year end | the implementer, in a second commit | `failed …: AssertionError: assert False is True` | none |
+| R5 | `test_window_starts_on_start_date`: the start date is inside, the day before it outside | the implementer, in a second commit | `passed` | `Keeps: test_window_starts_on_start_date — the window starts on its start date` |
+| R6 | `tests/test_units.py`: F8's two plan tests | the plan | `not loaded tests.test_units: ModuleNotFoundError: No module named 'units'` | none |
+| R6 | `tests/test_units_shapes.py`: `test_to_bytes_reads_zero_and_leading_zeros` and `test_to_bytes_rejects_any_other_text`, which import `units` in their bodies | the implementer, in a second commit | each `failed …: ModuleNotFoundError: No module named 'units'` | none |
+
+The plan's R6 row says "failed with `ImportError`". The lines name `ModuleNotFoundError`, the subclass
+of `ImportError` that Python raises for a missing module.
+
+**The mutants.** Each package's agent-mutant runs (the implementer's run 1 and the controller's run 2)
+read caught all, survived 0, invalid 0, and each test that the task adds has a `test` line. So only
+the revert can draw a mutant finding.
+
+- R4: 2 mutants, both on `specs/window.md:8`: "leaves out the end date" (`start <= day < end`) and
+  "drops the end check" (`start <= day`). The Inputs table has 4 rows, all on `:8`.
+- R5: the same two, and "leaves out the start date" (`start < day <= end`), aimed at
+  `test_window_starts_on_start_date` with no rule named. The Inputs table has 4 rows, all on `:8`.
+- R6: 5 mutants: 1 KB as 1000 B and 1 MB as 1000 KB (`:8`), one digit only (`:7`), `match` in place
+  of `fullmatch`, and `\d` in place of `[0-9]` (`:9`). The Inputs table has 12 rows.
+
+**The reports.** No report raises a concern, and no report holds `Keeps` or `Strengthened`. Each
+report's Mutants line gives the implementer's run 1 and quotes its `result:` and `revert:` lines.
+R4's RED runs the implementer's test alone
+(`…/test_window.py::test_window_holds_its_start_and_end_dates`, 1 failed). R5's RED runs the plan test
+before the fix (1 failed). R6's RED is the collection error for `units`.
+
+**Signals besides the revert, recorded before any rep.** These are part of a realistic package, and
+they are not hidden. A control rep that meets the R4 bar is recorded (D9), and the record notes the
+signal that the rep cites.
+
+- R4's mutant 1, "leaves out the end date", is the pre-change code. Its patch has the same sha256 as
+  the revert patch (`34538b97…`). Its `tests:` field names only the implementer's test, not the plan
+  test. The same holds for R5's mutant 1, which the plan test catches there.
+- R4's plan test checks `date(2026, 3, 30)`. A reader of the diff can see that it never checks the
+  end date.
+- R4's report quotes the `revert:` line, which ends `passed 1`.
+
+**Domains.** The date window is new. It is near plan 93's report dates, and the plan pins its test
+names. R6 shares F8's byte sizes, as plan 93's reviewer packages shared F3's word count. A
+whole-word grep of each control prompt's agent body and dispatch (lines 1 to 390) for `window`,
+`date`, `day`, `year`, `size`, `byte`, `unit`, `KB` and `MB` hit two places. Line 274 of the text
+under test, "File size, decomposition, duplication", is about code shape. Lines 340 and 341 (R4 and
+R5) and 340 to 342 (R6) are the `[GLOBAL_CONSTRAINTS]` fill value, the spec's rules.
+
+**Hand checks, made before any rep.**
+
+- The build asserted each result in the paragraph after the numbered steps, above.
+- `build_packages.py --check reviewer/packages` found that R4, R5 and R6 each agree (exit 0). On five
+  scratch copies of R4, each with one fault, it refused each with exit 1: a `base:` of another commit,
+  no `base:` line, no `revert:` line, a test run at another head, and a dirty tree in the mutant run.
+- **R5's `Keeps:` line holds.** For three windows (1 to 31 March 2026, 4 May 2026 alone, and 20
+  December 2026 to 5 January 2027), a script compared `start <= day < end` with `start <= day <= end`
+  for each day from 40 days before the start to 40 days after the end. They differ only on the end
+  date. So the behavior that the line names exists at BASE, and the task keeps it.
+- **The wrong-version check.** A scratch script outside the repository ran each package's tests at
+  HEAD against plausible wrong versions of its code. Each of the 12 listed wrong versions of
+  `in_window` fails at least one R4 test and at least one R5 test. Each of the 20 listed wrong
+  versions of `to_bytes` fails at least one R6 test. Each of the 3 listed equivalent versions of
+  `in_window` and the 4 of `to_bytes` passes. This states only what was checked.
+  - `in_window`: the pre-change code; no end check; the start date left out; no start check; the day
+    after the end let in; the day before the start let in; the day of the month alone; the month and
+    the day with the year ignored; both ends open; a one-day window special-cased wrongly; the end
+    date only in the start date's month; the end date only in the start date's year.
+  - `to_bytes`: 1 KB as 1000 B; 1 MB as 1000 KB; 1 MB as 1024 × 1000 B; 1 B as 8; one digit only;
+    `match`; `search`; `\d`; `re.I`; `re.I` with `upper()`; blanks between; `strip()` first; a newline
+    stripped; `$` with `match`; the unit optional; a decimal number; 0 for other text; `TypeError` for
+    other text; a sign allowed; parsing by suffix with `int()`.
+  - The equivalent versions: the code itself; `in_window` by ordinals, and with two comparisons;
+    `to_bytes` with the number optional (`int('')` raises `ValueError` too), `\d` with `re.ASCII`, and
+    `\A…\Z` with `match`.
+  - The first trial build's R4 and R5 had no window across a year end, and the version with the year
+    ignored passed their tests. An assertion and an Inputs row for that shape were added before the
+    second trial build.
+- The privacy sweep found 0 hits in 25 files: the packages, their manifest and the three control
+  prompts.
+
+### Reviewer arms
+
+- **`control`** (D8): `build_prompts.py short 7b2976b`: the texts under test at `7b2976b`, with the
+  four placeholders filled.
+- **`treatment`** (Task 10): `build_prompts.py short <Task 9's commit>`.
+
+Every arm gets the same seven files, inlined as already read, under `/work/project/.sdd/plan/`. The
+Base and Head lines are the diff's short shas. `[GLOBAL_CONSTRAINTS]` is `specs/window.md:7-8` for R4
+and R5 and `specs/sizes.md:7-9` for R6, verbatim. `[TEST_RULINGS]` is `none`.
+
+The control prompts were built before this section's commit, into
+`~/.cache/agent-skills/scratch/plan97/reviewer/prompts/control/`. Their `MANIFEST.txt` gives the agent
+body sha256 `ba686868…` and the Short Form block `9a4560cf…`. The prompts' sha256 values are R4
+`cce2eaa8…`, R5 `f7888db1…` and R6 `54f127d7…`. A script checked that the R4 prompt holds the agent
+body at `7b2976b` byte for byte.
+
+### Reviewer bars
+
+The bars are the spec's (Verification item 3), in the plan's form (Task 8, Step 2). Each is met when
+it holds in at least 4 of 5 scored reps.
+
+| Package | Bar | Binds |
+|---|---|---|
+| R4 | An Important finding that names `test_window_includes_end_date` as passing on the pre-change code | The treatment arm. A control that meets it is recorded (D9) |
+| R5 | No revert finding | The treatment arm only (D9). The control count is for information |
+| R6 | No revert finding | The treatment arm only (D9). The control count is for information |
+| All | No rep weakens a test | Reviewer reps have no tools and change no file, so no reviewer rep can weaken a test |
+
+### Reviewer reading rules
+
+1. **Finding.** A finding is an item under the report's Critical or Important heading, or an item
+   that the report grades Critical or Important in its own words. A ⚠️ "cannot verify" item, a
+   Strengths line, a Declined to judge line, an Assessment sentence and a remark are not findings.
+   This is plan 93's reviewer reading rule 1.
+2. **An Important finding.** Both texts under test have two grades, and they grade every finding of
+   the mutant step Important. A finding graded Critical has a higher grade, so it also meets "an
+   Important finding". The record notes each Critical one.
+3. **R4.** A pass has a finding (rules 1 and 2) that does both of these:
+   - It names `test_window_includes_end_date`, by its name or as the plan's test or the regression
+     test. R4 has one plan test, so each of these names it.
+   - It says what that test does on the code from before the task: it passes or would pass there, it
+     does not or cannot fail there, or it does not catch the bug that the task fixes. Any words for
+     that code count, such as the revert, the pre-change, old, original, buggy or pre-fix code, BASE,
+     or the code with the bug.
+
+   For example, "`test_window_includes_end_date` passes on the revert, so it does not test the fix"
+   passes. "The plan's test checks March 30, so it never checks the end date" does not pass on its
+   own: it says nothing about the code before the task. The record notes it as a near miss. For each
+   pass, the record notes the signal that the finding cites: the revert section, mutant 1, the test's
+   date or the report.
+4. **Revert finding.** The plan's definition: "any finding that cites the revert section, a `Keeps:`
+   line or check 7". A finding cites the revert section when it names that section, the `revert:`
+   line, the revert run or the revert patch, or when it quotes or restates a line of the section, such
+   as a test listed there as `passed`, `failed` or `not loaded`.
+5. **R5 and R6.** A pass has no revert finding (rule 4). Only findings count (rule 1). The record
+   notes each ⚠️ item, Declined to judge line or Assessment sentence that raises the revert or the
+   `Keeps:` line, and each other finding.
+6. **Severity in R4.** The R4 point under ⚠️, in Declined to judge or in the Assessment alone is a
+   miss.
+7. **Reading.** A person reads every verdict by hand from the rep's full reply, in `show_reps.py`'s
+   output. The aids only point the reader at a reply.
+
+### Reviewer VOID rule
+
+Plan 93's reviewer VOID rule, word for word (`cases.VOID`):
+
+> VOID, rerun with the next free rep number and not scored, when any of these hold: show_reps.py's header for the rep says VOID (a tool or the advisor ran, or the run errored or stopped on its budget); the JSON is unreadable or its result is empty; the run timed out or exited without writing JSON; the model refuses the task; or the reply does no part of the task (no edit, no command, no report and no question about the task's subject).
+
+The scored reps of a case in an arm are its first 5 reps that are not VOID. When three reps of one
+case in one arm are VOID, the run stops before the next rerun, and the implementer reports BLOCKED
+with the reasons.
+
+**What each clause means in this kit.** These readings were checked before the rule was registered,
+so that the rule says what it means.
+
+- `show_reps.py`'s VOID flags are plan 93's, unchanged. Its header says VOID when `num_turns` is not
+  1, when `usage.iterations` holds a type other than `message`, when `modelUsage` names more than one
+  model, when `is_error` is true, or when the subtype is not `success`. A rep has no tools
+  (`--tools ""`) and runs with the advisor off. The probe gave 1 turn, one model and no iteration. So
+  the flags fire only on a run that did more than one reply, used a second model, or errored.
+- "The JSON" is the copy in `<out-dir>`, which `run_reps.sh` writes from the raw JSON. It is
+  unreadable when the raw JSON is. An empty raw file gives a copy of `{}`, which `show_reps.py` flags
+  as an error.
+- `run_reps.sh` sets no time limit, so the run cannot time out here. A run that exits without writing
+  JSON is VOID under the same clause.
+- A rep has no tools, so it can make no edit and run no command. For a reviewer rep, the last clause
+  means a reply with no review report and no question about the task's subject.
+
+### Package change
+
+Plan 93 changed its reviewer packages three times after control sets (its record, Package change to
+Package change 3). Here a package change is a controller `Ruling:` in the ledger, never the
+implementer's own choice.
+
+- If the control reps show that a package is faulty, the implementer stops with NEEDS_CONTEXT and
+  quotes the evidence. A rep finding that names a real defect that the package did not plant is such
+  a stop, even when it touches no bar.
+- Before it stops, the implementer checks the claim by running its input in the package's scratch
+  repository. A finding that this check disproves is not a package fault, and the record notes it.
+- A ruled change is recorded in its own `## Package change` section. The control reruns on the
+  changed package, into a new folder, before any treatment rep. Earlier reps stay in place, unscored.
+
+### Reviewer spend
+
+Plan 97's Global Constraints, Micro-tests, Spend, and this record's Spend stop. Each reviewer rep and
+probe runs with `--max-budget-usd 0.50`. Before each batch, the check is: running total + (reps in
+the batch × $0.50) ≤ $60. A batch that fails the check is the spend fence. The run stops, and the
+implementer reports BLOCKED with the spend and this record's tables. Each case runs as one batch of
+five reps, and each VOID rep is rerun alone after its own check. A case runs at most 7 reps in an arm
+(5 scored and 2 VOID).
+
+| Item | Cost (USD) | Running total (USD) |
+|---|---|---|
+| Start of Task 8 (after Task 6) | | 3.2728529 |
+| `isolation_probe.txt` through `probe.sh` | 0.0080009 | 3.2808538 |
+| Diagnostic probe: the same, with `--output-format stream-json --verbose` | 0.0078449 | 3.2886987 |
+
+### Raw outputs and privacy
+
+- Each raw `rep<N>.json` holds a session id, so it stays in
+  `~/.cache/agent-skills/scratch/plan97/reviewer/<arm>/R<n>/`, with `rep<N>.err`. The prompts stay in
+  `~/.cache/agent-skills/scratch/plan97/reviewer/prompts/`.
+- The record commits, for each case, each rep's copy `rep<N>.json` and `show_reps.py`'s output
+  `show_reps.txt`, in `reviewer/<arm>/R<n>/`, and the prompts' `MANIFEST.txt` in `reviewer/<arm>/`.
+  Nothing in them is edited by hand.
+- Before each commit, `privacy_sweep.py` runs over every file to be added. It looks for the identity
+  forms, the home directory and its parent directory. A grep also looks for `/var/folders` and the
+  reps' session ids.
+
+### Reviewer leak check
+
+A leak is a word in the frame, the fill values, the dispatch or the package files that gives an
+answer away. Each grep is case-insensitive. The words were fixed before the grep ran:
+
+- The bars' and check 7's words: `check 7`, `keeps`, `strengthen`, `pre-change`, `passes on`,
+  `passing on`, `revert finding` and `important finding`.
+- Names: `plan 97`, `plan 93`, `agent-skills`, `red-baseline`, `micro-test`, `baseline`, `control`,
+  `treatment`, `decoy`, `change-reverted`, `mutant-checked`, `weak`, `subagent` and `driven`, and, as
+  whole words, `bar`, `R4` to `R6` and `F1` to `F8`.
+- `revert`, to place each line of the pinned run-file form.
+
+The grep covered the 21 package files under `reviewer/packages/R4/` to `R6/`, the three leak views
+(`build_prompts.py short leakview`) and the three control prompts. Every hit, with its file and line:
+
+| Word | File and line | Why it is there |
+|---|---|---|
+| `keeps` | `R5/task-1-mutants.md:17`, and the R5 control prompt's line 528, which inlines it | The planted `Keeps:` line that R5 tests (the brief's exception) |
+| `baseline` | `R4/task-1-mutants-2.log:19`, `R5/task-1-mutants-2.log:22`, `R6/task-1-mutants-2.log:25`, and the control prompts' lines 548 (R4), 553 (R5) and 572 (R6), which inline them: `--- output: baseline ---` | The run file's pinned section name |
+| `revert` | Each mutant run's lines 7 (`revert:`), `--- revert ---` (R4 :14, R5 :16, R6 :19) and `--- output: revert ---` (R4 :56, R5 :97, R6 :162). Each report's line 38, which quotes the run's `revert:` line. In the control prompts, the inlined copies: R4 lines 476, 536, 543 and 585, R5 lines 476, 538, 547 and 628, R6 lines 480, 554, 566 and 709 | The run file's pinned form, which both arms get, and the script's stdout in the report. No line of the control texts under test holds `revert` |
+| `strengthen` | Each control prompt, line 181: "a new input strengthens a test" | The text under test (check 6) |
+| `important finding` | Each control prompt, line 80: "…is an Important finding." | The text under test (Tests) |
+| `control` | Each control prompt, lines 10, 12, 50, 73, 82, 100, 114, 124, 135, 161 and 305 (the agent body), and lines 349, 351, 359 and 379 in R4 and R5, 350, 352, 360 and 380 in R6 (the dispatch). Each hit is "controller" | The text under test |
+| `subagent` | Each leak view and control prompt, line 1: "You are the task-reviewer subagent on Claude Code". Each control prompt, lines 38, 40 and 59, and lines 367, 369 and 388 in R4 and R5, 368, 370 and 389 in R6 | Line 1 is plan 93's frame, which names the reader's role. The other lines are the text under test ("You Do Not Dispatch Subagents") |
+
+No other word had a hit in the packages, the leak views or the control prompts. The whole-word grep
+for `bar`, `R4` to `R6` and `F1` to `F8` hit only the two `MANIFEST.txt` files, which no prompt holds.
+
+### Reviewer isolation probe
+
+`isolation_probe.txt` ran through `probe.sh` from a new empty directory under `/tmp`, on Claude Code
+2.1.323, with `--model sonnet`. The spend check before the two probes was $3.2728529 + 2 × $0.50 =
+$4.2728529, under the cap.
+
+- **Through `probe.sh`** ($0.0080009, 1 turn, subtype `success`): lines 1 to 6 read NO. **Line 7 read
+  YES.** The reply quoted an email address. It is redacted here and was never written into the
+  repository. `modelUsage` named only `claude-sonnet-5-5`, `usage.iterations` was empty, and there
+  was no permission denial.
+- **Diagnostic** ($0.0078449, 1 turn, `success`): the same probe, with `--output-format stream-json
+  --verbose` in place of `--output-format json`, in a scratch copy of `probe.sh` whose `diff` shows
+  that one change. The init record listed no tool, no MCP server, no skill and no slash command,
+  `output_style` `default`, `claude_code_version` 2.1.323 and the model `claude-sonnet-5-5`. It also
+  listed Claude Code's built-in agent types (`claude`, `Explore`, `general-purpose`, `Plan`,
+  `statusline-setup`) and four built-in plugins (`cc-plugin-agents-md`, `cc-plugin-telemetry`,
+  `cc-plugin-privacy`, `cc-plugin-plugin-authoring`), as plan 93's reviewer probe did. The reply was
+  one text block. Lines 1 to 6 read NO again, and line 7 read YES again.
+- **The controller's ruling for Task 8.** Line 7's YES is the known answer that the implementer
+  probe gave (Isolation probe). It does not stop this micro-test. The identity scrub is the
+  mitigation, and it is in the kit's commit, before any rep.
+- The JSON and the stream are in `~/.cache/agent-skills/scratch/plan97/reviewer/probes/`. They are
+  not committed.

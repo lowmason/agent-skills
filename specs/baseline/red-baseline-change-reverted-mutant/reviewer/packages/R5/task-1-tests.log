@@ -1,0 +1,10 @@
+test-run: Task 1, run 1
+command: sh -c '(/tmp/mt-venv/bin/python -m pytest -q tests/test_window.py) && (/tmp/mt-venv/bin/python -m pytest -q)'
+head: 66c72f25d3ef2e5003d68af4b121d6f78c4c7e36
+tree: clean
+exit: 0
+--- output ---
+...                                                                      [100%]
+3 passed in 0.01s
+...                                                                      [100%]
+3 passed in 0.01s

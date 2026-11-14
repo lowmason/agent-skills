@@ -1,0 +1,72 @@
+mutant-run: Task 1, run 2
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_window.py
+head: c39e286b761c08bca24d5fe2f2fce79ebeb82a14
+base: f254ffc177f2cdccbb66df28c9e66bf2addaa8a2
+tree: clean
+result: caught 2, survived 0, invalid 0
+revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 1
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 34538b97d815fe70912034dc6195bdc0753ad64ef22b6f248568cfcfcf5fc95a tests: tests.test_window::test_window_holds_its_start_and_end_dates
+mutant 2: CAUGHT exit 1 sha256 88019b12a543720a6ac854f03e2ee6ece5711df554f535e180fa2e90183d1ef7 tests: tests.test_window::test_window_includes_end_date
+--- tests ---
+test tests.test_window::test_window_holds_its_start_and_end_dates: caught 1
+test tests.test_window::test_window_includes_end_date: caught 2
+--- revert ---
+path: window.py
+sha256: 34538b97d815fe70912034dc6195bdc0753ad64ef22b6f248568cfcfcf5fc95a
+passed tests.test_window::test_window_includes_end_date
+failed tests.test_window::test_window_holds_its_start_and_end_dates: AssertionError: assert False is True
+--- output: baseline ---
+..                                                                       [100%]
+2 passed in 0.01s
+--- output: mutant 1 ---
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+__________________ test_window_holds_its_start_and_end_dates ___________________
+
+    def test_window_holds_its_start_and_end_dates():
+        start, end = date(2026, 3, 1), date(2026, 3, 31)
+        assert in_window(date(2026, 2, 28), start, end) is False
+        assert in_window(start, start, end) is True
+>       assert in_window(end, start, end) is True
+E       assert False is True
+E        +  where False = in_window(datetime.date(2026, 3, 31), datetime.date(2026, 3, 1), datetime.date(2026, 3, 31))
+
+tests/test_window.py:16: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_window.py::test_window_holds_its_start_and_end_dates - asse...
+1 failed, 1 passed in 0.01s
+--- output: mutant 2 ---
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+________________________ test_window_includes_end_date _________________________
+
+    def test_window_includes_end_date():
+        start, end = date(2026, 3, 1), date(2026, 3, 31)
+        assert in_window(date(2026, 3, 30), start, end) is True
+>       assert in_window(date(2026, 4, 1), start, end) is False
+E       assert True is False
+E        +  where True = in_window(datetime.date(2026, 4, 1), datetime.date(2026, 3, 1), datetime.date(2026, 3, 31))
+E        +    where datetime.date(2026, 4, 1) = date(2026, 4, 1)
+
+tests/test_window.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_window.py::test_window_includes_end_date - assert True is F...
+1 failed, 1 passed in 0.01s
+--- output: revert ---
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+__________________ test_window_holds_its_start_and_end_dates ___________________
+
+    def test_window_holds_its_start_and_end_dates():
+        start, end = date(2026, 3, 1), date(2026, 3, 31)
+        assert in_window(date(2026, 2, 28), start, end) is False
+        assert in_window(start, start, end) is True
+>       assert in_window(end, start, end) is True
+E       assert False is True
+E        +  where False = in_window(datetime.date(2026, 3, 31), datetime.date(2026, 3, 1), datetime.date(2026, 3, 31))
+
+tests/test_window.py:16: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_window.py::test_window_holds_its_start_and_end_dates - asse...
+1 failed, 1 passed in 0.01s
