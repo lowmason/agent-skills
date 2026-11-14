@@ -77,11 +77,9 @@ partner confirmed.
      when the revert section lists it as failed, or lists its file as
      not loaded. A skip that the revert caused, of the test or of its
      file, counts too. When the `revert:` line gives counts, a test with
-     no entry did not run: that is a fault in the run, not a finding, so
-     report it to whoever dispatched you, as you report missing
-     evidence. A test that passes on the revert needs a `Keeps:` line
-     or, for a plan test, a `Strengthened:` line in the mutants file
-     that holds. A `Keeps:` line holds when the test checks behavior
+     no entry did not run: that is a gap. A test that passes on the
+     revert needs a `Keeps:` line or, for a plan test, a `Strengthened:`
+     line in the mutants file that holds. A `Keeps:` line holds when the test checks behavior
      that exists at the run's `base:` and that the task keeps. It never
      holds for behavior that the task's brief, or a spec sentence that
      the mutants file cites as `path:line`, changes. A `Strengthened:`
@@ -93,12 +91,10 @@ partner confirmed.
      fails on the revert, no test checks the change, and that is a
      finding, unless a test that the task adds or changes has no entry.
      A `revert: none: …` line holds when the task's diff changes only
-     test files and project config files, and is a fault in the run, not
-     a finding, when it does not. A `revert: not applied: …` line is a
-     fault in the run, not a finding. Read a `no report` or `timeout`
-     revert from its output. A `conftest.py` that cannot load means that
-     every test needs the change. Any other cause is a fault in the run,
-     not a finding.
+     test files and project config files, and is a gap when it does not.
+     A `revert: not applied: …` line is a gap. Read a `no report` or
+     `timeout` revert from its output. A `conftest.py` that cannot load
+     means that every test needs the change. Any other cause is a gap.
    - **Exemptions.** A task whose brief has a focused pytest command over
      code the task changes is a mutant task, so its `mutants: none: <why>`
      reason does not hold. Lints, link checks and checks over Markdown do
