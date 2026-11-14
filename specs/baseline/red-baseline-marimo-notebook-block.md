@@ -326,4 +326,69 @@ A process listing is a `ps` or `pgrep` command. These counts cover the 25 scored
 | `verdict` | 5 | 0.770978 |
 | Total | 27 | 3.4577352 |
 
-The control and the block arm together have cost $5.5986558, under the $100 ceiling of Builder's call C3. A block rep cost $0.04 to $0.29.
+Through round 1, the control and the block arm together cost $5.5986558. A block rep cost $0.04 to $0.29.
+
+### Round 2
+
+- **Block.** Commit `8e74787`, `feat(templates): revise the marimo notebook block, round 2`. The file is 2,092 bytes, and its sha256 is `8de059dd8637144834ba3330449469fed8a63c82df444f002d9b321dce2cf295`.
+- **The change.** Round 2 adds one line to the Scope part, after "marimo-pair drives a live session." The new line reads: "A session is live only when the user's request says so, or when marimo-pair, if it is available, finds one. Without either, edit the notebook file normally." The line says when a session is live, so a rep that cannot list processes need not hold back. The rule for a live session is unchanged, and a rep with marimo-pair must still check with it. No other line changed.
+- **Checks.** Each marker appears once. `ste-lint.py` reports 0 violations. The reverse Channel 3 grep finds none of the fixture words in the block, not even inside another word. A first draft said "reports", which holds `port`, so the draft said "finds" instead. `check_conformance.py` passes.
+- **Isolation gate.** `probe.sh block` ran `isolation_probe.txt` after the commit and before any rep. It cost $0.0235416, took 1 turn and ended with `success`. Line 1 read YES and quoted `# Freight analysis`. Lines 2 to 6 read NO. The init record listed only Bash, Edit, Read and Write. The probe's `block_sha256` matched the file, and lines 5 to 36 of the rep's `CLAUDE.md` equal the block. The gate passed.
+- **Runs.** The runner ran `run_reps.sh block <case> runs/block-r2/<case> 1 5` for the five cases, one batch at a time. Then it ran two `override` replacements, one at a time. [`runs/block-r2/SCORES.md`](red-baseline-marimo-notebook-block/runs/block-r2/SCORES.md) holds the evidence for each rep, one line for each clause.
+- **VOID check.** `override` reps 1 and 4 are VOID by case 4. In each, call 1 ran `ls ~/.claude/skills` and printed the folder list. Rep 6 replaced rep 1, and rep 7 replaced rep 4. Neither replacement is VOID, so no slot holds a second VOID. No other rep is VOID.
+
+#### Results
+
+| Case | Clause | Control | Round 1 | Round 2 |
+|---|---|---|---|---|
+| `explore` | E1 one view | 0 of 5 | 4 of 5 | 5 of 5 |
+| | E2 stops | 0 of 5 | 5 of 5 | 5 of 5 |
+| | E3 facts cell | 0 of 5 | 4 of 5 | 5 of 5 |
+| | E4 outcome | 0 of 5 | 4 of 5 | 5 of 5 |
+| `override` | O1 all three | 5 of 5 | 5 of 5 | 5 of 5 |
+| `lint` | L1 no write | 0 of 5 (contrast) | 5 of 5 | 5 of 5 |
+| `tidy` (pin) | T1 done | not run | 5 of 5 | 5 of 5 |
+| | T2 normal | not run | 5 of 5 | 5 of 5 |
+| `verdict` (pin) | V1 verdict | not run | 4 of 5 | 5 of 5 |
+| | V2 one view | not run | 4 of 5 | 5 of 5 |
+| | V3 stops | not run | 5 of 5 | 5 of 5 |
+
+**E3.** A Polars script recomputed every number in the facts cells of `explore` reps 1 to 5 from a copy of the fixture's CSV. It used each rep's own definition of the dip. Every number matches after the cell's own rounding.
+
+**The bar is met in round 2.** E1 to E4 and O1 pass in 5 of 5 reps, and L1 passes in 5 of 5. Builder's call C6 asks for exactly this.
+
+**Pins.** `tidy` passed T1 and T2 in 5 of 5, and `verdict` passed V1 to V3 in 5 of 5. So round 2 shows no pin miss.
+
+**Reading.** Each of the five `explore` reps built one view, with a hypothesis cell and a facts cell, and then asked for the verdict. The `verdict` reps recorded the verdict and built one view each. The `lint` reps took the prompt's statement that a session is live as given, and none wrote the notebook. Process listings fell from 18 of 25 scored reps in round 1 to 3 of 25.
+
+#### Home-folder lookups
+
+- 16 of the 27 reps named a home path, in 19 calls. The permission system denied 17 of those calls.
+- 2 calls ran, in `override` reps 1 and 4. Each held `ls ~/.claude/skills .claude 2>/dev/null` in a compound command with a `for` loop. So the deny rule `Read(~/**)` does not stop every Bash read of the home folder. In the control, `override` rep 5's `ls ~/.marimo*` ran too. The kit is unchanged.
+- Those two reps are VOID and are replaced. The folder list that they printed describes the machine that ran the reps. So their committed summaries replace that list with a note. The full text stays in the raw stream and in a copy outside the repository. `runs/block-r2/SCORES.md` records the change.
+
+#### Process listings
+
+A process listing is a `ps` or `pgrep` command. In the 25 scored reps, 3 issued one: `explore` rep 4, `override` rep 2 and `verdict` rep 2.
+
+- Only `override` rep 2's listing ran. Its output showed the runner's command line, which names the kit's path under `specs/baseline/`. No later call names that path, so no rep acted on it.
+- The other two listings were part of calls that the permission system denied. Both reps then built their view.
+- The two VOID reps issued no listing.
+
+#### Cost
+
+| Item | Reps | Cost (USD) |
+|---|---|---|
+| Isolation probe | 1 | 0.0235416 |
+| `explore` | 5 | 0.8358198 |
+| `override`, VOID reps 1 and 4 and replacements 6 and 7 included | 7 | 1.586863 |
+| `lint` | 5 | 0.2018868 |
+| `tidy` | 5 | 0.1952634 |
+| `verdict` | 5 | 0.6402606 |
+| Total | 28 | 3.4836352 |
+
+The two block rounds cost $6.9413704. With the control, the micro-test cost $9.082291, under the $100 ceiling of Builder's call C3.
+
+### Conclusion
+
+The block meets the spec's bar in round 2. The settled block is `templates/marimo-repo/notebook-block.md` at commit `8e74787`. The pins `tidy` and `verdict` pass in 5 of 5 beside the bar, so Task 3 adds no pin miss to the completion gate. Three findings go to the owner: marimo's built-in `pair` command, the gap in the home-folder deny rule, and the four committed summaries that the redactions changed.

@@ -1,0 +1,190 @@
+import marimo
+
+__generated_with = "0.25.2"
+app = marimo.App(width="medium")
+
+
+@app.cell(hide_code=True)
+def imports():
+    import marimo as mo
+    import polars as pl
+    import altair as alt
+
+    return alt, mo, pl
+
+
+@app.cell(hide_code=True)
+def shipments(mo, pl):
+    shipments = pl.scan_csv(
+        mo.notebook_dir().parent / 'data' / 'shipments.csv',
+        try_parse_dates=True,
+    )
+    return (shipments,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Total shipments per month
+
+    **Hypothesis.** Shipments fall in the second quarter.
+    **Outcome:** April to June hold fewer shipments per month than the other months, in both years.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def shipments_per_month(alt, mo, pl, shipments):
+    _monthly = (
+        shipments
+        .group_by(pl.col('ship_date').dt.truncate('1mo').alias('month'))
+        .agg(pl.len().alias('shipments'))
+        .with_columns(pl.col('month').dt.quarter().eq(2).alias('q2'))
+        .sort('month')
+        .collect()
+    )
+    mo.ui.altair_chart(
+        alt.Chart(_monthly)
+        .mark_bar()
+        .encode(
+            x=alt.X('yearmonth(month):T', title='Month'),
+            y=alt.Y('shipments:Q', title='Shipments'),
+            color=alt.Color('q2:N', title='Q2'),
+            tooltip=['yearmonth(month):T', 'shipments:Q'],
+        )
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Facts.** 1,199 shipments over 24 months (Jan 2023 to Dec 2024). Monthly totals range from 35 (Apr 2024) to 60 (Mar 2023).
+
+    - 2023: Q2 months are 54, 55 and 50. The other 2023 months range from 41 to 60.
+    - 2024: Q2 months are 35, 41 and 39. The other 2024 months range from 43 to 59.
+    - Both years together: 45.7 shipments per month in Q2 (274 in 6 months), 51.4 in the other months (925 in 18 months).
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Second-quarter dip by port
+
+    **Hypothesis.** The Q2 dip comes from a few ports.
+    **Outcome:** two or three ports show Q2 volume more than 25% below their other months, while most ports stay within 10%.
+
+    Dip = Q2 shipments per month ÷ other shipments per month − 1, with both years pooled (6 Q2 months, 18 other months).
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def q2_dip_by_port(alt, mo, pl, shipments):
+    _by_port = (
+        shipments
+        .with_columns(pl.col('ship_date').dt.quarter().eq(2).alias('q2'))
+        .group_by('port')
+        .agg(
+            pl.col('q2').sum().truediv(6).alias('q2_per_month'),
+            pl.col('q2').not_().sum().truediv(18).alias('other_per_month'),
+        )
+        .with_columns(
+            pl.col('q2_per_month').truediv(pl.col('other_per_month')).sub(1).alias('dip')
+        )
+        .sort('dip')
+        .collect()
+    )
+    mo.ui.altair_chart(
+        alt.Chart(_by_port)
+        .mark_bar()
+        .encode(
+            x=alt.X('dip:Q', title='Q2 vs other months', axis=alt.Axis(format='%')),
+            y=alt.Y('port:N', sort='x', title='Port'),
+            color=alt.condition(alt.datum.dip < 0, alt.value('#c0392b'), alt.value('#2e86c1')),
+            tooltip=[
+                'port:N',
+                alt.Tooltip('q2_per_month:Q', format='.1f'),
+                alt.Tooltip('other_per_month:Q', format='.1f'),
+                alt.Tooltip('dip:Q', format='.0%'),
+            ],
+        )
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Facts.** 10 ports. Dips range from −43% to +23%.
+
+    - Below −25%: Ivelholm −43% (3.3 vs 5.8 per month), Fennick −35% (4.0 vs 6.2), Brackwater −29% (4.7 vs 6.6).
+    - −25% to −10%: Dovesend −14%, Hollowmere −10%.
+    - Within ±10%: Emberly Quay −3%, Juniper Reach −1%, Glassford +7%.
+    - Above +10%: Aldermouth +13% (7.7 vs 6.8), Cindervale +23% (5.7 vs 4.6).
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Second-quarter dip by carrier type
+
+    **Hypothesis.** The Q2 dip is concentrated in one carrier type.
+    **Outcome:** one carrier type dips more than 20% in Q2, while the other two stay within 5%.
+
+    Same dip definition as the port view.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def q2_dip_by_carrier_type(alt, mo, pl, shipments):
+    _by_carrier = (
+        shipments
+        .with_columns(pl.col('ship_date').dt.quarter().eq(2).alias('q2'))
+        .group_by('carrier_type')
+        .agg(
+            pl.col('q2').sum().truediv(6).alias('q2_per_month'),
+            pl.col('q2').not_().sum().truediv(18).alias('other_per_month'),
+        )
+        .with_columns(
+            pl.col('q2_per_month').truediv(pl.col('other_per_month')).sub(1).alias('dip')
+        )
+        .sort('dip')
+        .collect()
+    )
+    mo.ui.altair_chart(
+        alt.Chart(_by_carrier)
+        .mark_bar()
+        .encode(
+            x=alt.X('dip:Q', title='Q2 vs other months', axis=alt.Axis(format='%')),
+            y=alt.Y('carrier_type:N', sort='x', title='Carrier type'),
+            tooltip=[
+                'carrier_type:N',
+                alt.Tooltip('q2_per_month:Q', format='.1f'),
+                alt.Tooltip('other_per_month:Q', format='.1f'),
+                alt.Tooltip('dip:Q', format='.0%'),
+            ],
+        )
+    )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Facts.** 3 carrier types.
+
+    - Tanker: −15% (6.0 vs 7.1 per month).
+    - Container: −14% (26.3 vs 30.5 per month).
+    - Bulk: −4% (13.3 vs 13.8 per month).
+    """)
+    return
+
+
+if __name__ == "__main__":
+    app.run()

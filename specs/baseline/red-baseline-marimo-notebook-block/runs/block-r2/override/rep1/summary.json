@@ -1,0 +1,175 @@
+{
+  "arm": "block",
+  "case": "override",
+  "rep": 1,
+  "rep_dir": "/tmp/mnb98/rep-XXXXXX",
+  "base": "5af8b8c01a39f5f394bfac5d074397737087d4a6",
+  "prompt_sha256": "c705b6d51c997e33097a8d21124bd9b652cf18ff442854ec894a5f7e1da1ebbb",
+  "claude_md_sha256": "64af1a386b16df7ffbff91b6ff1eafc967b6659f36d8951df32ad141114ca23b",
+  "arm_claude_md_sha256": "64af1a386b16df7ffbff91b6ff1eafc967b6659f36d8951df32ad141114ca23b",
+  "claude_md_matches_arm": true,
+  "block_sha256": "8de059dd8637144834ba3330449469fed8a63c82df444f002d9b321dce2cf295",
+  "notebook_present": true,
+  "claude_exit": 0,
+  "wall_seconds": 76,
+  "init": {
+    "cwd": "/tmp/mnb98/rep-XXXXXX/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 12,
+    "duration_ms": 75124,
+    "total_cost_usd": 0.2673501999999999,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 24,
+        "outputTokens": 6379,
+        "cacheReadInputTokens": 149331,
+        "cacheCreationInputTokens": 13726,
+        "webSearchRequests": 0,
+        "costUSD": 0.2673501999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 671,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 13726,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": [
+      {
+        "tool_name": "Bash",
+        "tool_input": {
+          "command": "head -60 ~/.claude/skills/recommend-visualization/SKILL.md; /tmp/mnb98/venv/bin/python -c \"\nimport polars as pl\nd=pl.read_csv('data/shipments.csv',try_parse_dates=True)\nprint(d.describe()); print(d['port'].unique().to_list(), d['carrier_type'].unique().to_list())\nprint(d.group_by(pl.col('ship_date').dt.truncate('1mo')).len().sort('ship_date'))\n\"",
+          "description": "Read viz skill and profile data"
+        }
+      }
+    ]
+  },
+  "final_message": "I added the three views to `notebooks/explore.py`, each in its own named cell. Before each view is a hypothesis cell, and after each is a facts cell with the numbers. The notebook passes `marimo check`, and an HTML export ran all three charts with no errors.\n\n1. **`shipments_per_month`**: a line chart of shipments per month, Jan 2023 to Dec 2024.\n   - 2023: April to June had 54, 55 and 50, in line with the other months (41 to 60).\n   - 2024: April to June had 35, 41 and 39. The lowest month in the data is April 2024.\n2. **`q2_dip_by_port`**: for each port, the change in shipments per month in Q2 compared with the rest of the same year, with one panel per year.\n   - 2024: Fennick \u221279.7%, Ivelholm \u221277.8% and Brackwater \u221263.8%. The other seven ports range from \u221218.9% to +25.8%.\n   - 2023: ports range from \u221226.7% to +33.9%.\n3. **`q2_dip_by_carrier_type`**: the same comparison for the three carrier types.\n   - 2024: tanker \u221244.3%, container \u221228.5%, bulk \u22126.1%.\n   - In actual shipments per month, containers lost the most (8.8, against 3.4 for tankers).\n\nI split the dip views by year because the dip shows up only in 2024. Pooling both years would make it look about half as large as it is.\n\nThe facts cells give the numbers only and don't say whether each outcome was met. Tell me what you make of each view and I'll add your verdict in your words.",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "ls -R data notebooks && cat notebooks/explore.py && ls ~/.claude/skills .claude 2>/dev/null; for f in data/*; do echo \"== $f\"; head -5 \"$f\"; done",
+        "description": "Inspect notebook and data files"
+      },
+      "is_error": false,
+      "result_tail": "hipments.csv',\n        try_parse_dates=True,\n    )\n    return (shipments,)\n\n\nif __name__ == \"__main__\":\n    app.run()\n[redacted: the listing of ~/.claude/skills that this call printed. See SCORES.md, Redaction.]\n== data/shipments.csv\nship_date,port,carrier_type,teu,value_usd\n2023-01-01,Aldermouth,bulk,36,448600\n2023-01-01,Ivelholm,container,117,3084900\n2023-01-02,Brackwater,container,50,1222200\n2023-01-02,Brackwater,container,261,7627800"
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "head -60 ~/.claude/skills/recommend-visualization/SKILL.md; /tmp/mnb98/venv/bin/python -c \"\nimport polars as pl\nd=pl.read_csv('data/shipments.csv',try_parse_dates=True)\nprint(d.describe()); print(d['port'].unique().to_list(), d['carrier_type'].unique().to_list())\nprint(d.group_by(pl.col('ship_date').dt.truncate('1mo')).len().sort('ship_date'))\n\"",
+        "description": "Read viz skill and profile data"
+      },
+      "is_error": true,
+      "result_tail": "Permission to use Bash with command head -60 ~/.claude/skills/recommend-visualization/SKILL.md; /tmp/mnb98/venv/bin/python -c \"\nimport polars as pl\nd=pl.read_csv('data/shipments.csv',try_parse_dates=True)\nprint(d.describe()); print(d['port'].unique().to_list(), d['carrier_type'].unique().to_list())\nprint(d.group_by(pl.col('ship_date').dt.truncate('1mo')).len().sort('ship_date'))\n\" has been denied."
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "/tmp/mnb98/venv/bin/python -c \"\nimport polars as pl\nd=pl.read_csv('data/shipments.csv',try_parse_dates=True)\nprint(d.describe()); print(d['port'].unique().to_list(), d['carrier_type'].unique().to_list())\nprint(d.group_by(pl.col('ship_date').dt.truncate('1mo')).len().sort('ship_date'))\n\"",
+        "description": "Profile shipments data"
+      },
+      "is_error": false,
+      "result_tail": "           \u2506 1199          \u2506 1199         \u2506 1199.0    \u2506 1199.0    \u2502\n\u2502 null_count \u2506 0                          \u2506 0             \u2506 0            \u2506 0.0       \u2506 0.0       \u2502\n\u2502 mean       \u2506 2023-12-21 04:47:02.351960 \u2506 null          \u2506 null         \u2506 84.346956 \u2506 2.0285e6  \u2502\n\u2502 std        \u2506 null                       \u2506 null          \u2506 null         \u2506 50.247133 \u2506 1.5921e6  \u2502\n\u2502 min        \u2506 2023-01-01                 \u2506 Aldermouth    \u2506 bulk         \u2506 13.0      \u2506 144000.0  \u2502\n\u2502 25%        \u2506 2023-06-12                 \u2506 null          \u2506 null         \u2506 47.0      \u2506 662800.0  \u2502\n\u2502 50%        \u2506 2023-12-13                 \u2506 null          \u2506 null         \u2506 75.0      \u2506 1.766e6   \u2502\n\u2502 75%        \u2506 2024-07-04                 \u2506 null          \u2506 null         \u2506 109.0     \u2506 2.9105e6  \u2502\n\u2502 max        \u2506 2024-12-31                 \u2506 Juniper Reach \u2506 tanker       \u2506 350.0     \u2506 1.08618e7 \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n['Emberly Quay', 'Juniper Reach', 'Cindervale', 'Hollowmere', 'Fennick', 'Brackwater', 'Dovesend', 'Glassford', 'Ivelholm', 'Aldermouth'] ['bulk', 'container', 'tanker']\nshape: (24, 2)\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 ship_date  \u2506 len \u2502\n\u2502 ---        \u2506 --- \u2502\n\u2502 date       \u2506 u32 \u2502\n\u255e\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2561\n\u2502 2023-01-01 \u2506 55  \u2502\n\u2502 2023-02-01 \u2506 56  \u2502\n\u2502 2023-03-01 \u2506 60  \u2502\n\u2502 2023-04-01 \u2506 54  \u2502\n\u2502 2023-05-01 \u2506 55  \u2502\n\u2502 \u2026          \u2506 \u2026   \u2502\n\u2502 2024-08-01 \u2506 44  \u2502\n\u2502 2024-09-01 \u2506 56  \u2502\n\u2502 2024-10-01 \u2506 50  \u2502\n\u2502 2024-11-01 \u2506 44  \u2502\n\u2502 2024-12-01 \u2506 55  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518"
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "/tmp/mnb98/venv/bin/python -c \"\nimport polars as pl\npl.Config.set_tbl_rows(40)\nd=pl.scan_csv('data/shipments.csv',try_parse_dates=True)\nprint(d.group_by(pl.col('ship_date').dt.truncate('1mo').alias('m')).agg(pl.len()).sort('m').collect())\nfor k in ['port','carrier_type']:\n  print(d.with_columns(pl.col('ship_date').dt.quarter().eq(2).alias('q2')).group_by(k,'q2').agg(pl.len().truediv(pl.when(pl.col('q2').first()).then(6).otherwise(18)).alias('per_month')).collect().pivot('q2',index=k,values='per_month').with_columns(pl.col('true').truediv(pl.col('false')).sub(1).mul(100).round(1).alias('pct')).sort('pct'))\n\"",
+        "description": "Compute monthly and Q2 dip numbers"
+      },
+      "is_error": false,
+      "result_tail": "01 \u2506 43  \u2502\n\u2502 2024-02-01 \u2506 54  \u2502\n\u2502 2024-03-01 \u2506 59  \u2502\n\u2502 2024-04-01 \u2506 35  \u2502\n\u2502 2024-05-01 \u2506 41  \u2502\n\u2502 2024-06-01 \u2506 39  \u2502\n\u2502 2024-07-01 \u2506 57  \u2502\n\u2502 2024-08-01 \u2506 44  \u2502\n\u2502 2024-09-01 \u2506 56  \u2502\n\u2502 2024-10-01 \u2506 50  \u2502\n\u2502 2024-11-01 \u2506 44  \u2502\n\u2502 2024-12-01 \u2506 55  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2518\nshape: (10, 4)\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 port          \u2506 false    \u2506 true     \u2506 pct   \u2502\n\u2502 ---           \u2506 ---      \u2506 ---      \u2506 ---   \u2502\n\u2502 str           \u2506 f64      \u2506 f64      \u2506 f64   \u2502\n\u255e\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2561\n\u2502 Ivelholm      \u2506 5.833333 \u2506 3.333333 \u2506 -42.9 \u2502\n\u2502 Fennick       \u2506 6.166667 \u2506 4.0      \u2506 -35.1 \u2502\n\u2502 Brackwater    \u2506 6.611111 \u2506 4.666667 \u2506 -29.4 \u2502\n\u2502 Dovesend      \u2506 5.055556 \u2506 4.333333 \u2506 -14.3 \u2502\n\u2502 Hollowmere    \u2506 4.444444 \u2506 4.0      \u2506 -10.0 \u2502\n\u2502 Emberly Quay  \u2506 3.944444 \u2506 3.833333 \u2506 -2.8  \u2502\n\u2502 Juniper Reach \u2506 4.055556 \u2506 4.0      \u2506 -1.4  \u2502\n\u2502 Glassford     \u2506 3.888889 \u2506 4.166667 \u2506 7.1   \u2502\n\u2502 Aldermouth    \u2506 6.777778 \u2506 7.666667 \u2506 13.1  \u2502\n\u2502 Cindervale    \u2506 4.611111 \u2506 5.666667 \u2506 22.9  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\nshape: (3, 4)\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 carrier_type \u2506 false     \u2506 true      \u2506 pct   \u2502\n\u2502 ---          \u2506 ---       \u2506 ---       \u2506 ---   \u2502\n\u2502 str          \u2506 f64       \u2506 f64       \u2506 f64   \u2502\n\u255e\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2561\n\u2502 tanker       \u2506 7.055556  \u2506 6.0       \u2506 -15.0 \u2502\n\u2502 container    \u2506 30.5      \u2506 26.333333 \u2506 -13.7 \u2502\n\u2502 bulk         \u2506 13.833333 \u2506 13.333333 \u2506 -3.6  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "/tmp/mnb98/venv/bin/python -c \"\nimport polars as pl\npl.Config.set_tbl_rows(40)\nd=pl.scan_csv('data/shipments.csv',try_parse_dates=True)\nfor k in ['port','carrier_type']:\n  print(d.with_columns(pl.col('ship_date').dt.year().alias('year'),pl.col('ship_date').dt.quarter().eq(2).alias('in_q2'))\n   .group_by(k,'year').agg(pl.col('in_q2').sum().truediv(3).alias('q2'),pl.col('in_q2').not_().sum().truediv(9).alias('rest'))\n   .with_columns(pl.col('q2').truediv(pl.col('rest')).sub(1).mul(100).round(1).alias('pct')).sort(k,'year').collect())\n\"",
+        "description": "Compute Q2 dip per year"
+      },
+      "is_error": false,
+      "result_tail": "      \u2506 2023 \u2506 3.666667 \u2506 5.0      \u2506 -26.7 \u2502\n\u2502 Dovesend      \u2506 2024 \u2506 5.0      \u2506 5.111111 \u2506 -2.2  \u2502\n\u2502 Emberly Quay  \u2506 2023 \u2506 4.333333 \u2506 3.777778 \u2506 14.7  \u2502\n\u2502 Emberly Quay  \u2506 2024 \u2506 3.333333 \u2506 4.111111 \u2506 -18.9 \u2502\n\u2502 Fennick       \u2506 2023 \u2506 6.666667 \u2506 5.777778 \u2506 15.4  \u2502\n\u2502 Fennick       \u2506 2024 \u2506 1.333333 \u2506 6.555556 \u2506 -79.7 \u2502\n\u2502 Glassford     \u2506 2023 \u2506 4.333333 \u2506 4.333333 \u2506 0.0   \u2502\n\u2502 Glassford     \u2506 2024 \u2506 4.0      \u2506 3.444444 \u2506 16.1  \u2502\n\u2502 Hollowmere    \u2506 2023 \u2506 4.0      \u2506 4.888889 \u2506 -18.2 \u2502\n\u2502 Hollowmere    \u2506 2024 \u2506 4.0      \u2506 4.0      \u2506 0.0   \u2502\n\u2502 Ivelholm      \u2506 2023 \u2506 5.333333 \u2506 5.666667 \u2506 -5.9  \u2502\n\u2502 Ivelholm      \u2506 2024 \u2506 1.333333 \u2506 6.0      \u2506 -77.8 \u2502\n\u2502 Juniper Reach \u2506 2023 \u2506 3.666667 \u2506 4.666667 \u2506 -21.4 \u2502\n\u2502 Juniper Reach \u2506 2024 \u2506 4.333333 \u2506 3.444444 \u2506 25.8  \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\nshape: (6, 5)\n\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510\n\u2502 carrier_type \u2506 year \u2506 q2        \u2506 rest      \u2506 pct   \u2502\n\u2502 ---          \u2506 ---  \u2506 ---       \u2506 ---       \u2506 ---   \u2502\n\u2502 str          \u2506 i32  \u2506 f64       \u2506 f64       \u2506 f64   \u2502\n\u255e\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u256a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2561\n\u2502 bulk         \u2506 2023 \u2506 14.666667 \u2506 14.888889 \u2506 -1.5  \u2502\n\u2502 bulk         \u2506 2024 \u2506 12.0      \u2506 12.777778 \u2506 -6.1  \u2502\n\u2502 container    \u2506 2023 \u2506 30.666667 \u2506 30.222222 \u2506 1.5   \u2502\n\u2502 container    \u2506 2024 \u2506 22.0      \u2506 30.777778 \u2506 -28.5 \u2502\n\u2502 tanker       \u2506 2023 \u2506 7.666667  \u2506 6.333333  \u2506 21.1  \u2502\n\u2502 tanker       \u2506 2024 \u2506 4.333333  \u2506 7.777778  \u2506 -44.3 \u2502\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2534\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518"
+    },
+    {
+      "name": "Edit",
+      "input": {
+        "replace_all": false,
+        "file_path": "/tmp/mnb98/rep-XXXXXX/repo/notebooks/explore.py",
+        "old_string": "    return (shipments,)\n\n\nif __name__",
+        "new_string": "    return (shipments,)\n\n\n@app.cell(hide_code=True)\ndef _(mo):\n    mo.md(r\"\"\"\n    ## Shipments per month\n\n    **Hypothesis.** Shipments dip in the second quarter.\n    **Outcome:** April to June have fewer shipments than the other months of the same year.\n    \"\"\")\n    return\n\n\n@app.cell(hide_code=True)\ndef shipments_per_month(mo, pl, shipments):\n    import altair as alt\n\n    _monthly = (\n        shipments\n        .group_by(pl.col('ship_date').dt.truncate('1mo').alias('month'))\n        .agg(pl.len().alias('shipments'))\n        .sort('month')\n        .collect()\n    )\n    shipments_per_month_chart = mo.ui.altair_chart(\n        alt.Chart(_monthly)\n        .mark_line(point=True)\n        .encode(\n            x=alt.X('month:T', title='Month'),\n            y=alt.Y('shipments:Q', title='Shipments', scale=alt.Scale(zero=True)),\n            tooltip=['month:T', 'shipments:Q'],\n        )\n        .properties(width='container', height=300)\n    )\n    shipments_per_month_chart\n    return (alt,)\n\n\n@app.cell(hide_code=True)\ndef _(mo):\n    mo.md(r\"\"\"\n    **Facts.** 1,199 shipments over 24 months (Jan 2023 to Dec 2024), 35 to 60 per month.\n\n    - 2023: April to June had 54, 55, 50. The other months had 41 to 60.\n    - 2024: April to June had 35, 41, 39. The other months had 43 to 59.\n    - The lowest month is April 2024 (35).\n    \"\"\")\n    return\n\n\n@app.cell(hide_code=True)\ndef _(mo):\n    mo.md(r\"\"\"\n    ## Second-quarter dip by port\n\n    **Hypothesis.** A few ports cause most of the second-quarter dip.\n    **Outcome:** Two or three ports show a much larger drop in shipments per month in Q2 than the rest of the ports.\n    \"\"\")\n    return\n\n\n@app.cell(hide_code=True)\ndef q2_dip_by_port(alt, mo, pl, shipments):\n    _dip = (\n        shipments\n        .with_columns(\n            pl.col('ship_date').dt.year().alias('year'),\n            pl.col('ship_date').dt.quarter().eq(2).alias('in_q2'),\n        )\n        .group_by('port', 'year')\n        .agg(\n            pl.col('in_q2').sum().truediv(3).alias('q2_per_month'),\n            pl.col('in_q2').not_().sum().truediv(9).alias('rest_per_month'),\n        )\n        .with_columns(\n            pl.col('q2_per_month').truediv(pl.col('rest_per_month')).sub(1).alias('q2_change'),\n        )\n        .sort('port', 'year')\n        .collect()\n    )\n    q2_dip_by_port_chart = mo.ui.altair_chart(\n        alt.Chart(_dip)\n        .mark_bar()\n        .encode(\n            x=alt.X('q2_change:Q', title='Q2 shipments per month vs rest of year', axis=alt.Axis(format='%')),\n            y=alt.Y('port:N', title='Port', sort=alt.EncodingSortField('q2_change', order='ascending')),\n            color=alt.condition(alt.datum.q2_change < 0, alt.value('#c0504d'), alt.value('#4f81bd')),\n            column=alt.Column('year:O', title='Year'),\n            tooltip=[\n                'port:N',\n                'year:O',\n                alt.Tooltip('q2_per_month:Q', format='.1f'),\n                alt.Tooltip('rest_per_month:Q', format='.1f'),\n                alt.Tooltip('q2_change:Q', format='.1%'),\n            ],\n        )\n        .properties(width=280, height=300)\n    )\n    q2_dip_by_port_chart\n    return\n\n\n@app.cell(hide_code=True)\ndef _(mo):\n    mo.md(r\"\"\"\n    **Facts.** Q2 shipments per month compared with the other nine months of the same year, for each of 10 ports.\n\n    - 2023: changes range from \u221226.7% (Dovesend) to +33.9% (Aldermouth). 5 ports are below zero.\n    - 2024: Fennick \u221279.7% (1.3 vs 6.6 per month), Ivelholm \u221277.8% (1.3 vs 6.0), Brackwater \u221263.8% (2.3 vs 6.4).\n    - 2024, the other 7 ports: \u221218.9% (Emberly Quay) to +25.8% (Juniper Reach).\n    \"\"\")\n    return\n\n\n@app.cell(hide_code=True)\ndef _(mo):\n    mo.md(r\"\"\"\n    ## Second-quarter dip by carrier type\n\n    **Hypothesis.** The second-quarter dip comes from one carrier type.\n    **Outcome:** One carrier type shows a much larger drop in shipments per month in Q2 than the others.\n    \"\"\")\n    return\n\n\n@app.cell(hide_code=True)\ndef q2_dip_by_carrier_type(alt, mo, pl, shipments):\n    _dip = (\n        shipments\n        .with_columns(\n            pl.col('ship_date').dt.year().alias('year'),\n            pl.col('ship_date').dt.quarter().eq(2).alias('in_q2'),\n        )\n        .group_by('carrier_type', 'year')\n        .agg(\n            pl.col('in_q2').sum().truediv(3).alias('q2_per_month'),\n            pl.col('in_q2').not_().sum().truediv(9).alias('rest_per_month'),\n        )\n        .with_columns(\n            pl.col('q2_per_month').truediv(pl.col('rest_per_month')).sub(1).alias('q2_change'),\n        )\n        .sort('carrier_type', 'year')\n        .collect()\n    )\n    q2_dip_by_carrier_type_chart = mo.ui.altair_chart(\n        alt.Chart(_dip)\n        .mark_bar()\n        .encode(\n            x=alt.X('q2_change:Q', title='Q2 shipments per month vs rest of year', axis=alt.Axis(format='%')),\n            y=alt.Y('carrier_type:N', title='Carrier type', sort=alt.EncodingSortField('q2_change', order='ascending')),\n            color=alt.condition(alt.datum.q2_change < 0, alt.value('#c0504d'), alt.value('#4f81bd')),\n            column=alt.Column('year:O', title='Year'),\n            tooltip=[\n                'carrier_type:N',\n                'year:O',\n                alt.Tooltip('q2_per_month:Q', format='.1f'),\n                alt.Tooltip('rest_per_month:Q', format='.1f'),\n                alt.Tooltip('q2_change:Q', format='.1%'),\n            ],\n        )\n        .properties(width=280, height=150)\n    )\n    q2_dip_by_carrier_type_chart\n    return\n\n\n@app.cell(hide_code=True)\ndef _(mo):\n    mo.md(r\"\"\"\n    **Facts.** Q2 shipments per month compared with the other nine months of the same year, for each of 3 carrier types.\n\n    - 2023: bulk \u22121.5%, container +1.5%, tanker +21.1%.\n    - 2024: tanker \u221244.3% (4.3 vs 7.8 per month), container \u221228.5% (22.0 vs 30.8), bulk \u22126.1% (12.0 vs 12.8).\n    - 2024, in absolute terms: container lost 8.8 shipments per month, tanker 3.4 and bulk 0.8.\n    \"\"\")\n    return\n\n\nif __name__"
+      },
+      "is_error": false,
+      "result_tail": "The file /tmp/mnb98/rep-XXXXXX/repo/notebooks/explore.py has been updated successfully."
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "/tmp/mnb98/venv/bin/marimo check notebooks/explore.py && /tmp/mnb98/venv/bin/marimo export html notebooks/explore.py -o /tmp/mnb98/explore.html 2>&1 | tail -20 && grep -c -i 'traceback\\|MarimoExceptionRaisedError' /tmp/mnb98/explore.html",
+        "description": "Lint and run notebook to check for errors"
+      },
+      "is_error": false,
+      "result_tail": "1"
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "grep -o -i '.\\{200\\}\\(traceback\\|MarimoExceptionRaisedError\\).\\{300\\}' /tmp/mnb98/explore.html | head -3",
+        "description": "Show the error context in the export"
+      },
+      "is_error": false,
+      "result_tail": "(Bash completed with no output)"
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "grep -o -i '.\\{0,150\\}\\(traceback\\|MarimoExceptionRaisedError\\).\\{0,150\\}' /tmp/mnb98/explore.html | head -3 | cut -c1-400",
+        "description": "Show error context with shorter window"
+      },
+      "is_error": false,
+      "result_tail": "ugrep: error: error at position 117\nxceptionRaisedError)(?:[^\\n\\x80-\\xbf][\\x80-\\xbf]*){0,150}\n                            exceeds complexity limits___/"
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mnb98 && /tmp/mnb98/venv/bin/python -c \"\nimport re;s=open('explore.html').read()\nfor m in re.finditer('(?i)traceback|MarimoExceptionRaisedError',s): print(s[max(0,m.start()-200):m.end()+300].replace('\\\\\\\\n','\\n'));print('----')\"",
+        "description": "Print error context from export"
+      },
+      "is_error": false,
+      "result_tail": "\"auto_instantiate\": false, \"auto_reload\": \"off\", \"default_csv_encoding\": \"utf-8\", \"default_sql_output\": \"auto\", \"on_cell_change\": \"autorun\", \"output_max_bytes\": 8000000, \"reactive_tests\": true, \"show_tracebacks\": false, \"std_stream_max_bytes\": 1000000, \"watcher_on_save\": \"lazy\"}, \"save\": {\"autosave\": \"after_delay\", \"autosave_delay\": 1000, \"format_on_save\": false}, \"server\": {\"browser\": \"default\", \"follow_symlink\": false}, \"snippets\": {\"custom_paths\": [], \"include_default_snippets\": true}},\n            \"c\n----\nShell cwd was reset to /tmp/mnb98/rep-XXXXXX/repo"
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mnb98 && /tmp/mnb98/venv/bin/python -c \"\ns=open('explore.html').read(); print(s.count('marimo-vega'), 'error' in s.lower() and [s.lower().count(w) for w in ['exception','marimo-error']])\"",
+        "description": "Count rendered charts and error markers"
+      },
+      "is_error": false,
+      "result_tail": "6 [0, 0]\nShell cwd was reset to /tmp/mnb98/rep-XXXXXX/repo"
+    }
+  ],
+  "commits": [],
+  "status_porcelain": [
+    " M notebooks/explore.py"
+  ],
+  "stderr_tail": []
+}
