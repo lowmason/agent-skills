@@ -1,0 +1,78 @@
+diff --git a/notebooks/explore.py b/notebooks/explore.py
+index afaa982..16a4422 100644
+--- a/notebooks/explore.py
++++ b/notebooks/explore.py
+@@ -21,5 +21,73 @@ def shipments(mo, pl):
+     return (shipments,)
+ 
+ 
++@app.cell(hide_code=True)
++def _(mo):
++    mo.md(r"""
++    ## Hypothesis: a few ports cause the Q2 dip
++
++    A few ports cause most of the second-quarter dip in shipments.
++    For each port and year, the Q2 shortfall is Q2 TEU minus the mean of Q1 and Q3 TEU.
++
++    **Outcome:** three ports hold more than half of the total Q2 shortfall (2023 and 2024 combined).
++    """)
++    return
++
++
++@app.cell(hide_code=True)
++def q2_shortfall_by_port(mo, pl, shipments):
++    import altair as alt
++
++    _quarterly = (
++        shipments
++        .with_columns(
++            year=pl.col('ship_date').dt.year(),
++            quarter=pl.col('ship_date').dt.quarter(),
++        )
++        .filter(pl.col('quarter').is_in([1, 2, 3]))
++        .group_by('port', 'year')
++        .agg(
++            q1=pl.col('teu').filter(pl.col('quarter').eq(1)).sum(),
++            q2=pl.col('teu').filter(pl.col('quarter').eq(2)).sum(),
++            q3=pl.col('teu').filter(pl.col('quarter').eq(3)).sum(),
++        )
++        .with_columns(
++            shortfall=pl.col('q2').sub(pl.col('q1').add(pl.col('q3')).truediv(2)),
++            year=pl.col('year').cast(pl.String),
++        )
++        .collect()
++    )
++
++    _chart = (
++        alt.Chart(_quarterly)
++        .mark_bar()
++        .encode(
++            x=alt.X('port:N', sort=alt.EncodingSortField('shortfall', op='sum'), title='Port'),
++            y=alt.Y('shortfall:Q', title='Q2 TEU minus mean of Q1 and Q3'),
++            color=alt.Color('year:N', title='Year'),
++            xOffset='year:N',
++            tooltip=['port', 'year', 'q1', 'q2', 'q3', alt.Tooltip('shortfall:Q', format='.0f')],
++        )
++        .properties(width='container', height=320)
++    )
++    q2_shortfall_by_port = mo.ui.altair_chart(_chart)
++    q2_shortfall_by_port
++    return (q2_shortfall_by_port,)
++
++
++@app.cell(hide_code=True)
++def _(mo):
++    mo.md(r"""
++    ### Facts
++
++    - Total TEU by quarter: 2023 Q1 14,050, Q2 13,036, Q3 14,802; 2024 Q1 12,991, Q2 9,622, Q3 13,290.
++    - Net Q2 shortfall across all ports: −1,390 TEU in 2023 and −3,518.5 TEU in 2024, so −4,908.5 combined.
++    - Combined shortfall by port: Ivelholm −1,997.5, Fennick −1,703, Brackwater −1,164, Juniper Reach −417.5, Hollowmere −414, Emberly Quay −254.5, Glassford −244, Dovesend −30.5.
++    - Two ports have a Q2 surplus: Cindervale +827, Aldermouth +489.5.
++    - Ivelholm, Fennick and Brackwater together: −4,864.5 TEU. Summed over the eight ports with a shortfall: −6,225 TEU.
++    """)
++    return
++
++
+ if __name__ == "__main__":
+     app.run()

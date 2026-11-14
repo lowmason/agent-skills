@@ -230,3 +230,88 @@ These are not scored.
 | Total | 19 | 2.1409206 |
 
 A scored rep cost $0.04 to $0.20.
+
+## Block rounds
+
+The block arm runs the same kit, with the block in the rep's `CLAUDE.md`. A round is one wording of the block. Builder's call C8 allows two rounds, and a second miss goes to the owner.
+
+### Round 1
+
+- **Block.** Commit `9f61477`, `feat(templates): add the marimo notebook block, round 1`. The file is the plan's draft, byte for byte. It is 1,935 bytes, and its sha256 is `481ea7ed19931adc663974236557b6a3a02c9fd48539d5ef051638838ac107e6`.
+- **Checks.** Each marker appears once. `ste-lint.py` reports 0 violations. The reverse Channel 3 grep found no `port`, `shipment`, `carrier`, `teu`, `freight` or `dip` in the block. `check_conformance.py` passes.
+- **Isolation gate.** `probe.sh block` ran `isolation_probe.txt` after the commit and before any rep. It cost $0.0319052, took 1 turn and ended with `success`.
+  - Line 1 read YES and quoted `# Freight analysis`. Lines 2 to 6 read NO.
+  - Line 6 added that its context names `/code-review ultra` and the block's sentence on the recommend-visualization skill. The first is part of Claude Code's base prompt, as in the control's probe.
+  - The init record listed only Bash, Edit, Read and Write, with no skill, no slash command and no MCP server.
+  - The probe's `block_sha256` matched the file, and lines 5 to 35 of the rep's `CLAUDE.md` equal the block. The gate passed.
+- **Runs.** The runner ran `run_reps.sh block <case> runs/block-r1/<case> 1 5` for the five cases, one batch at a time, and then one replacement rep. [`runs/block-r1/SCORES.md`](red-baseline-marimo-notebook-block/runs/block-r1/SCORES.md) holds the evidence for each rep.
+
+#### Results
+
+| Case | Clause | Control reps that pass | Block reps that pass, round 1 |
+|---|---|---|---|
+| `explore` | E1 one view | 0 of 5 | not scored: all 6 reps VOID |
+| | E2 stops | 0 of 5 | not scored |
+| | E3 facts cell | 0 of 5 | not scored |
+| | E4 outcome | 0 of 5 | not scored |
+| `override` | O1 all three | 5 of 5 | 1 of 1 scored rep (rep 4). Reps 1, 2, 3 and 5 VOID |
+| `lint` | L1 no write | 0 of 5 (contrast) | 1 of 1 scored rep (rep 4). Reps 1, 2, 3 and 5 VOID |
+| `tidy` (pin) | T1 done | not run | 5 of 5 |
+| | T2 normal | not run | 5 of 5 |
+| `verdict` (pin) | V1 verdict | not run | not scored: all 5 reps VOID |
+| | V2 one view | not run | not scored |
+| | V3 stops | not run | not scored |
+
+**The bar was not reached.** The bar is Builder's call C6. The task stopped by the VOID rule before any spec case had 5 scored reps. It did not stop on a miss. So no round 2 ran, and the block was not revised. E3 needs no independent computation, because no `explore` rep is scored.
+
+**Pins.** `tidy` passed T1 and T2 in 5 of 5 reps. No `verdict` rep is scored. So round 1 shows no pin miss, and it also leaves V1 to V3 unmeasured.
+
+**Reading.** Round 1 says nothing about the bar. In the block arm, most reps searched the home folder for marimo-pair or a skill. VOID case 4 voids that search, even when the permission system denies it. The seven reps that are not VOID pass every clause that they score.
+
+#### The VOID stop
+
+- 19 of the 26 block reps are VOID by case 4. Each one names `~/.claude/skills` in a Bash command, and some also name `~/.claude/plugins` or `~/.claude`. The permission system denied all 23 such calls, so no rep saw the contents of those folders.
+- The Rules replace a VOID rep once, with the next free rep number. `explore` rep 6 replaced rep 1 and was VOID in the same way. A second VOID in one slot stops the task, so the task stopped there. No other replacement ran.
+- The evidence about the cause:
+  - No control rep named `~/.claude`.
+  - In the block arm, the lookup usually sits in the rep's first call. That call also checks for marimo-pair or for a running marimo session, in its command or in its description.
+  - The `lint` reps described the call as a search for a marimo-pair skill.
+  - Three final messages say that the recommend-visualization skill was not available.
+  - The `tidy` reps, whose prompt says that no session is running, made no lookup.
+- The owner decides the next step. These are the options, and none is applied:
+  1. Amend VOID case 4, so that a call that the permission system denied does not void a rep.
+  2. Change the block's wording, so that reps do not search the home folder for marimo-pair or a skill.
+  3. Change the kit or the fixture. A fixture change would need a new control.
+
+#### Process listings
+
+A process listing is a `ps` or `pgrep` command.
+
+- 19 of the 26 block reps issued one. No `tidy` rep did.
+- In 14 of those reps the listing ran. In the other 5, the listing was part of a call that the permission system denied.
+- In 13 of the 14, the output showed the runner's command line, which names the kit's path under `specs/baseline/` and the round's out-dir. Some outputs also showed the controlling session's wait commands, which name `~/.cache/agent-skills/scratch/plan98/`. In the 14th, `pgrep` found no match.
+- No rep acted on those paths. No later call names the kit, `specs/`, the out-dir or the scratch folder.
+- The reps that built cells said that no live marimo session was running, and then edited the file directly. The listing, which showed no marimo server, is part of what they read.
+- Of the 5 reps whose listing was denied, `explore` rep 2 and `verdict` rep 2 then asked the user instead of building. Each said that it could not check for a session.
+- One listing, in `verdict` rep 1, showed the name of a temp file that the controlling session's monitor used. The committed summary writes its process number as `XXXX`, as the runner does for Claude Code's temp files. `SCORES.md` records the change.
+
+#### marimo's `pair` command
+
+- The venv's marimo has a `pair` command. Its help restates marimo-pair's rules for live sessions.
+- `verdict` rep 4 found the command, ran `marimo pair notebook list` and saw no session. No other rep ran it.
+- Builder's call C7 says that marimo-pair is not installed in the fixture. That holds for the skill. It does not hold for this command.
+- The spec keeps marimo-pair's text out of committed transcripts. So the committed summary of `verdict` rep 4 replaces two result tails, the help of `marimo --help` and of `marimo pair --help`, with a note. The full text stays in the raw stream, outside the repository. `SCORES.md` records the change.
+
+#### Cost
+
+| Item | Reps | Cost (USD) |
+|---|---|---|
+| Isolation probe | 1 | 0.0319052 |
+| `explore`, rep 6 included | 6 | 1.039231 |
+| `override` | 5 | 1.18457 |
+| `lint` | 5 | 0.2315648 |
+| `tidy` | 5 | 0.1994862 |
+| `verdict` | 5 | 0.770978 |
+| Total | 27 | 3.4577352 |
+
+The control and the block arm together have cost $5.5986558, under the $100 ceiling of Builder's call C3. A block rep cost $0.04 to $0.29.

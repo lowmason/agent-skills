@@ -1,0 +1,69 @@
+diff --git a/notebooks/explore.py b/notebooks/explore.py
+index afaa982..055508e 100644
+--- a/notebooks/explore.py
++++ b/notebooks/explore.py
+@@ -21,5 +21,64 @@ def shipments(mo, pl):
+     return (shipments,)
+ 
+ 
++@app.cell(hide_code=True)
++def _(mo):
++    mo.md(r"""
++    ## Hypothesis: the Q2 dip is mostly a few ports
++
++    The Q2 shortfall is the Q2 shipment count minus the average of Q1 and Q3, by port, with 2023 and 2024 pooled.
++
++    **Outcome:** three ports hold more than half of the total Q2 shortfall.
++    """)
++    return
++
++
++@app.cell(hide_code=True)
++def q2_shortfall_by_port(mo, pl, shipments):
++    import altair as alt
++
++    q2_shortfall = (
++        shipments
++        .with_columns(pl.col('ship_date').dt.quarter().alias('quarter'))
++        .filter(pl.col('quarter').is_in([1, 2, 3]))
++        .group_by('port')
++        .agg(
++            pl.col('quarter').eq(2).sum().alias('q2'),
++            pl.col('quarter').ne(2).sum().truediv(2).alias('q1_q3_avg'),
++        )
++        .with_columns(pl.col('q1_q3_avg').sub(pl.col('q2')).alias('shortfall'))
++        .sort('shortfall', descending=True)
++        .collect()
++    )
++
++    q2_shortfall_chart = mo.ui.altair_chart(
++        alt.Chart(q2_shortfall)
++        .mark_bar()
++        .encode(
++            x=alt.X('shortfall:Q', title='Q2 shortfall (shipments below Q1/Q3 average)'),
++            y=alt.Y('port:N', sort='-x', title=None),
++            color=alt.condition(alt.datum.shortfall > 0, alt.value('#c0392b'), alt.value('#95a5a6')),
++            tooltip=['port', 'q2', 'q1_q3_avg', 'shortfall'],
++        )
++        .properties(title='Q2 shortfall by port, 2023–2024 pooled')
++    )
++    q2_shortfall_chart
++    return
++
++
++@app.cell(hide_code=True)
++def _(mo):
++    mo.md(r"""
++    ## Facts
++
++    - All ports: Q1 average plus Q3 average is 324 shipments. Q2 has 274. Shortfall: 50.
++    - Ivelholm: 17.0 (37.0 → 20). Fennick: 16.5 (40.5 → 24). Brackwater: 16.0 (44.0 → 28).
++    - Those three add up to 49.5 of the 50.
++    - The other seven ports net to +0.5. Dovesend and Hollowmere are 4.5 each, Emberly Quay is 2.0, Juniper Reach is 0 and Glassford is −0.5. Cindervale is −5.5 and Aldermouth is −4.5. Both are above their Q1/Q3 average in Q2.
++    - By year, the total Q2 count was 159 in 2023 and 115 in 2024.
++    """)
++    return
++
++
+ if __name__ == "__main__":
+     app.run()

@@ -1,0 +1,87 @@
+import marimo
+
+__generated_with = "0.25.2"
+app = marimo.App(width="medium")
+
+
+@app.cell(hide_code=True)
+def imports():
+    import altair as alt
+    import marimo as mo
+    import polars as pl
+
+    return alt, mo, pl
+
+
+@app.cell(hide_code=True)
+def shipments(mo, pl):
+    shipments = pl.scan_csv(
+        mo.notebook_dir().parent / 'data' / 'shipments.csv',
+        try_parse_dates=True,
+    )
+    return (shipments,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Hypothesis: the Q2 2024 dip is mostly a few ports
+
+    Shipment count fell to 115 in Q2 2024, against 156 in Q1 and 157 in Q3.
+    Baseline per port = mean of its Q1 and Q3 2024 counts.
+
+    **Outcome:** three ports hold more than half of the net drop below baseline.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def q2_2024_change_by_port(alt, mo, pl, shipments):
+    _frame = (
+        shipments
+        .filter(pl.col('ship_date').dt.year().eq(2024))
+        .with_columns(pl.col('ship_date').dt.quarter().alias('quarter'))
+        .group_by('port')
+        .agg(
+            pl.col('quarter').eq(1).sum().alias('q1'),
+            pl.col('quarter').eq(2).sum().alias('q2'),
+            pl.col('quarter').eq(3).sum().alias('q3'),
+        )
+        .with_columns(pl.col('q1').add(pl.col('q3')).truediv(2).alias('baseline'))
+        .with_columns(pl.col('q2').sub(pl.col('baseline')).alias('change'))
+        .sort('change')
+        .collect()
+    )
+    q2_2024_change_by_port = mo.ui.altair_chart(
+        alt.Chart(_frame)
+        .mark_bar()
+        .encode(
+            x=alt.X('change:Q', title='Q2 shipments minus baseline (mean of Q1, Q3)'),
+            y=alt.Y('port:N', sort='x', title=None),
+            color=alt.condition(
+                alt.datum.change < 0, alt.value('#c0392b'), alt.value('#7f8c8d')
+            ),
+            tooltip=['port', 'q1', 'q2', 'q3', 'baseline', 'change'],
+        )
+        .properties(title='Change in shipment count, Q2 2024 vs baseline', height=280)
+    )
+    q2_2024_change_by_port
+    return (q2_2024_change_by_port,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### Facts
+
+    - Net change across all 10 ports: −41.5 shipments (Q2 115 vs baseline 156.5).
+    - Fennick −17 (21 → 4), Ivelholm −15 (19 → 4), Brackwater −14 (21 → 7).
+      Together −46, which is 111% of the net drop.
+    - Emberly Quay −3.5. Aldermouth and Hollowmere −0.5 each.
+    - Four ports rose: Juniper Reach +3, Cindervale +2.5, Glassford +2.5, Dovesend +1.
+    """)
+    return
+
+
+if __name__ == "__main__":
+    app.run()
