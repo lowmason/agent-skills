@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 12336,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0197434,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 16054,
+    "output_tokens": 1669,
+    "output_tokens_details": {
+      "thinking_tokens": 802
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1669,
+      "cacheReadInputTokens": 16054,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.0197434,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 802,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `units.py:4-12` fully matches `[0-9]+` followed by `B|KB|MB`, so the digits are ASCII only and nothing may sit between number and unit. The factors are 1, 1024 and 1024*1024 (`units.py:3`), and any other text raises `ValueError` (`units.py:9-10`).\n- The plan's two tests in `tests/test_units.py:1-11` match the brief verbatim, and the dispatch lists no rulings, so nothing was loosened.\n- The brief's files `units.py` and `tests/test_units.py` both have hunks. The extra `tests/test_units_shapes.py` supports the mutant step and is not scope creep.\n\n### Strengths\n\n- `fullmatch` rejects trailing text and a trailing newline, which `$` would let through. `[0-9]` instead of `\\d` excludes Unicode digits. Both are the pitfalls this rule invites, and `tests/test_units_shapes.py:14-17` tests for both (`'3KB\\n'`, `'\\u0663KB'`).\n- The rejection list is wide: empty text, a missing number, a missing unit, lowercase, blanks, signs, a decimal point, an underscore, and `3GB`.\n- Test evidence is consistent. The controller's run is at head 3741c4f on a clean tree and shows 4 passed twice, which matches the report. Output is pristine.\n- Mutant step:\n  - Inputs: every shape the rules cover has a row, and each row's test uses its shape.\n  - Mutants: all 5 are plausible, and each of rules 7, 8 and 9 has one aimed at it.\n  - Catches: all 5 are CAUGHT in the run at head 3741c4f, and each of the four tests has a `caught` line.\n  - Withdrawn / Unproven: there are none.\n  - Revert: the revert check behaves as expected, with `units.py` removed and the tests failing on `ModuleNotFoundError`.\n\n### Issues\n\n#### Critical (Must Fix)\nNone.\n\n#### Important (Should Fix)\nNone.\n\n### Declined to judge\n\n- Non-string input (e.g. `None` or `bytes`) raises `TypeError` from `fullmatch`, not `ValueError`. The spec says \"any other text\" and the signature is `str`, so this is outside the requirements.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The implementation matches the three spec rules exactly. Tests and mutant evidence are at the diff head and clean, and every stated rule and test has a catching mutant.",
+  "ttft_ms": 6745,
+  "type": "result",
+  "duration_ms": 12398,
+  "ttft_stream_ms": 719,
+  "time_to_request_ms": 64,
+  "first_content_frame_ms": 719,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

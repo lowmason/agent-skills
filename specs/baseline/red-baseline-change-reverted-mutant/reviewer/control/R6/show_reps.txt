@@ -1,0 +1,210 @@
+== R6/rep1: is_error=False subtype=success cost=$0.075 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert
+### Spec Compliance
+
+- ✅ Spec compliant. `units.py:4-12` matches the whole text against `([0-9]+)(B|KB|MB)`, using `fullmatch` so a trailing `\n` or other text is rejected. It multiplies by 1, 1024 or 1024*1024 and raises `ValueError` for anything else. This covers specs/sizes.md:7-9. The brief's `units.py` and `tests/test_units.py` are both present, and the plan tests are byte-for-byte as the brief gives them.
+- ⚠️ None.
+
+### Strengths
+
+- The regex uses `[0-9]` rather than `\d`, so non-ASCII digits are rejected. Mutant 5 and the `\u0663KB` input pin this.
+- `fullmatch` is used rather than `$` anchoring, which avoids the trailing-newline pitfall. The input `'3KB\n'` is tested.
+- The rejection test covers a wide set of shapes: empty text, a missing unit or number, wrong units, lowercase, whitespace in every position, trailing text, signs, a decimal point, an underscore and a non-ASCII digit.
+- The evidence lines up:
+  - The test run is at head 3741c4f on a clean tree, with 4 passed and no warnings, which matches the report.
+  - The mutant run is at the same head on a clean tree.
+  - The revert shows the expected failures.
+
+### Mutant step
+
+- **Check 1 (inputs):** each stated rule's shapes have a row, and each row's test uses its shape (test_units_shapes.py:7-8 and 14-17; test_units.py:5-7 and 11).
+- **Check 2 (plausible mutants):** all five are plausible single-point mistakes, and none is a crash or an emptied function.
+- **Check 3 (a mutant per rule):** mutants 1 and 2 aim at specs/sizes.md:8, mutants 3 and 5 at :7, and mutants 4 and 5 at :9. There is no plan-test/excerpt conflict.
+- **Check 4 (a catch per test):** every added or changed test has a `test <id>: caught` line. There are no `Unproven:` lines.
+- **Check 5 (withdrawn):** there are no `Withdrawn:` lines, and every mutant reads CAUGHT.
+- **Check 6 (plan tests):** the plan tests are unchanged, and the rulings are `none`.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+### Declined to judge
+
+None.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** `to_bytes` implements the three spec rules exactly. The tests cover the boundary and rejection shapes, and all five mutants are caught at the reviewed head.
+
+== R6/rep2: is_error=False subtype=success cost=$0.020 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,import-error
+### Spec Compliance
+
+- ✅ Spec compliant. `units.py:4-12` fully matches `[0-9]+` followed by `B|KB|MB`, so the digits are ASCII only and nothing may sit between number and unit. The factors are 1, 1024 and 1024*1024 (`units.py:3`), and any other text raises `ValueError` (`units.py:9-10`).
+- The plan's two tests in `tests/test_units.py:1-11` match the brief verbatim, and the dispatch lists no rulings, so nothing was loosened.
+- The brief's files `units.py` and `tests/test_units.py` both have hunks. The extra `tests/test_units_shapes.py` supports the mutant step and is not scope creep.
+
+### Strengths
+
+- `fullmatch` rejects trailing text and a trailing newline, which `$` would let through. `[0-9]` instead of `\d` excludes Unicode digits. Both are the pitfalls this rule invites, and `tests/test_units_shapes.py:14-17` tests for both (`'3KB\n'`, `'\u0663KB'`).
+- The rejection list is wide: empty text, a missing number, a missing unit, lowercase, blanks, signs, a decimal point, an underscore, and `3GB`.
+- Test evidence is consistent. The controller's run is at head 3741c4f on a clean tree and shows 4 passed twice, which matches the report. Output is pristine.
+- Mutant step:
+  - Inputs: every shape the rules cover has a row, and each row's test uses its shape.
+  - Mutants: all 5 are plausible, and each of rules 7, 8 and 9 has one aimed at it.
+  - Catches: all 5 are CAUGHT in the run at head 3741c4f, and each of the four tests has a `caught` line.
+  - Withdrawn / Unproven: there are none.
+  - Revert: the revert check behaves as expected, with `units.py` removed and the tests failing on `ModuleNotFoundError`.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+### Declined to judge
+
+- Non-string input (e.g. `None` or `bytes`) raises `TypeError` from `fullmatch`, not `ValueError`. The spec says "any other text" and the signature is `str`, so this is outside the requirements.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The implementation matches the three spec rules exactly. Tests and mutant evidence are at the diff head and clean, and every stated rule and test has a catching mutant.
+
+== R6/rep3: is_error=False subtype=success cost=$0.019 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,not-loaded
+### Spec Compliance
+
+- ✅ Spec compliant. `units.py:4-12` fully matches `[0-9]+` then `B|KB|MB` (no blanks, no other digits, no trailing text or newline), with `UNITS` giving 1, 1024 and 1024*1024. Other text raises `ValueError`. Both files the brief lists are created (`units.py`, `tests/test_units.py`). The plan's tests are byte-for-byte the brief's.
+- ⚠️ None.
+
+### Strengths
+
+- `fullmatch` with an explicit `[0-9]` class avoids the usual traps: `$` accepting a trailing newline, and `\d` accepting Unicode digits.
+- The rejection test (`tests/test_units_shapes.py:12-17`) covers empty text, a missing number or unit, wrong or lowercase units, blanks in every position, a sign, a decimal point, an underscore and a non-ASCII digit.
+- Tests run at head `3741c4f` on a clean tree: 4 passed, matching the report, with no warnings.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+None.
+
+Mutant step:
+1. **Inputs:** each shape the rules cover has a row, and each row's test uses its shape.
+2. **Plausible mutants:** mutants 1-5 are each a mistake a person might make, and each changes behavior a person could see.
+3. **Rule coverage:** line 7 has mutant 3, line 8 has mutants 1 and 2, and line 9 has mutants 4 and 5. There are no `Unreachable:` lines.
+4. **Catch for each test:** all four added tests have `caught` lines in the run.
+5. **Withdrawn:** there are no `Withdrawn:` lines.
+6. **Plan tests:** none loosened, and no rulings were needed.
+- The run was at head on a clean tree, and all five mutants are CAUGHT.
+- The revert result (failed 2, not loaded 1) is the expected effect of removing `units.py`.
+
+### Declined to judge
+
+- Non-`str` input (e.g. `None`) raises `TypeError` rather than `ValueError`. The spec covers only "text", and the signature is `str`.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The implementation matches the spec's three rules exactly, and the tests and the mutant run show each rule is pinned against plausible wrong versions. Evidence is at the diff's head on a clean tree.
+
+== R6/rep4: is_error=False subtype=success cost=$0.021 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert
+### Spec Compliance
+
+- ✅ Spec compliant. `units.py:4-12` matches specs/sizes.md:7-9.
+  - The `[0-9]+` pattern accepts digits 0-9 only, so Arabic-Indic digits are rejected.
+  - `fullmatch` allows nothing before, between or after the number and unit, and a trailing newline is rejected.
+  - Units are `B` = 1, `KB` = 1024 and `MB` = 1024 * 1024.
+  - Any non-match raises `ValueError`.
+- The brief lists three files (`units.py`, `tests/test_units.py`, `tests/test_units_shapes.py`) and the diff has a hunk for each. `tests/test_units_shapes.py` is an addition beyond the brief's two files, made for the mutant step.
+- The two plan tests in `tests/test_units.py:4-11` are identical to the brief's code, so no plan test was loosened and no ruling is needed.
+
+### Strengths
+
+- The implementation is minimal and correct. Using `fullmatch` with an explicit `[0-9]` avoids the common `$`-before-newline and `\d`-Unicode pitfalls.
+- `tests/test_units_shapes.py:12-17` covers a broad set of rejected inputs: empty, no unit, unknown unit, lowercase, whitespace and newline, trailing text, sign, decimal point, underscore and a non-ASCII digit.
+- The controller's test run (`task-1-tests.log`) is at head 3741c4f on a clean tree with exit 0. Its 4 passed matches the implementer's report.
+
+### Mutant step
+
+1. **Inputs:** every shape the rules' words cover has a row, and each named test uses its shape (`tests/test_units_shapes.py:8,15-16`; `tests/test_units.py:5-7,11`). No finding.
+2. **Plausible mutants:** the five mutants are each a mistake a person could plausibly write. None breaks every call. No finding.
+3. **A mutant for each stated rule:** the rules are covered as follows.
+   - specs/sizes.md:7: mutants 3 and 5.
+   - specs/sizes.md:8: mutants 1 and 2.
+   - specs/sizes.md:9: mutants 4 and 5.
+4. **A catch for each added test:** `task-1-mutants-2.log` has a `test ...: caught` line for all four tests. No `Unproven:` lines are used.
+5. **Withdrawn lines:** there are none.
+6. **No plan test loosened:** confirmed above.
+7. **Run validity:** the mutant run is at head 3741c4f on a clean tree, with all 5 mutants CAUGHT. The revert run fails as expected, with `units.py` removed.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+### Declined to judge
+
+None.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** `to_bytes` implements the spec rules exactly. The tests cover the boundary and rejection shapes, and every mutant is caught on a clean run at the diff's head.
+
+== R6/rep5: is_error=False subtype=success cost=$0.010 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert
+### Spec Compliance
+
+- ✅ Spec compliant. `units.py:4-12` matches the brief and specs/sizes.md:7-9. `[0-9]+` with `fullmatch` takes only ASCII digits, then `B`, `KB` or `MB`, with nothing between. `UNITS` gives 1, 1024 and 1024*1024. Any other text raises `ValueError`.
+
+### Strengths
+
+- The regex is anchored by `fullmatch` and uses `[0-9]` rather than `\d`, so Unicode digits, a trailing newline, and surrounding blanks are all rejected.
+- The plan tests in `tests/test_units.py` are identical to the brief. No rulings were given, and none were needed.
+- The mutant step passes all six checks:
+  - **Inputs:** every input shape the rules cover has a row, and each named test uses its shape. The reject list in `tests/test_units_shapes.py:14-15` contains every shape in the table.
+  - **Plausible mutants:** the five mutants are plausible, and none crashes every call.
+  - **A mutant per rule:** rules :7, :8 and :9 each have one or more mutants.
+  - **A catch per test:** all four tests have `caught` lines in the run.
+  - **Withdrawn and Unproven:** there are no `Withdrawn:` or `Unproven:` lines.
+  - **Plan tests:** none is loosened.
+- The controller's runs are at head 3741c4f on a clean tree and agree with the report: 4 passed, twice. The output is clean.
+- The mutant run shows `caught 5, survived 0, invalid 0`. The revert check fails as expected, because `units.py` is missing there.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+None.
+
+### Declined to judge
+
+None.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** `to_bytes` implements all three spec rules exactly, and its tests cover each unit, multi-digit and zero/leading-zero numbers, and a wide set of malformed inputs. All five mutants are caught by tests the diff adds.
+
+total cost $0.14

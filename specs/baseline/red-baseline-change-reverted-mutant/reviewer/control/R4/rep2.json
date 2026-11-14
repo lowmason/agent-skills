@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 6456,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0117213,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 12033,
+    "output_tokens": 907,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 907,
+      "cacheReadInputTokens": 12033,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.0117213,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` now returns `start <= day <= end`, which matches the brief and both global constraints: the start date is included, a day before it is outside, the end date is included, and a day after it is outside. The plan test `test_window_includes_end_date` is present, identical to the brief, and unchanged. Both files the brief lists (`window.py`, `tests/test_window.py`) have hunks in the diff.\n\n### Strengths\n\n- The fix is a one-token change, so the diff is minimal and correct.\n- The plan test is kept verbatim. The added test covers the shapes the rule's words cover: a day before the start, the start itself, the end itself, a one-day window, and a window across a year end.\n- The controller's test run (`task-1-tests.log`) is at head c39e286 on a clean tree and exit 0. It shows 2 passed for the focused run and 2 passed for the full suite, which matches the report. The output has no warnings.\n- The mutant run is at head c39e286 on a clean tree. Both mutants read CAUGHT, and the revert check shows the original bug fails the new test.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\nMutant step checks:\n1. **Inputs.** The four rows each name a test that uses the shape. The end-date, one-day-window and year-end shapes are used at `tests/test_window.py:16-18`, and the day after the end is used at `tests/test_window.py:9`.\n2. **Plausible mutants.** `start <= day < end` is the original off-by-one bug. `start <= day` drops the upper bound. Both are plausible mistakes and neither breaks every call.\n3. **A mutant for the rule.** Specs/window.md:8 has two mutants.\n4. **A catch for each test.** `test_window_includes_end_date` is caught by mutant 2 and `test_window_holds_its_start_and_end_dates` by mutant 1, both listed under `--- tests ---` in the run.\n5. **Withdrawn.** There are no `Withdrawn:` lines.\n6. **Plan tests loosened.** The plan test is unchanged and the dispatch gives no rulings, so none is needed.\n\n### Declined to judge\n\n- Reversed windows (`end < start`) return False for every day. The brief and spec excerpt don't say what they should do, so I left that to the controller.\n- Passing a `datetime` instead of a `date` is outside the signature and the brief.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The one-token fix in `window.py:5` implements the spec rule exactly. The tests cover the boundary shapes, and both mutants were caught on a clean run at head.",
+  "ttft_ms": 6495,
+  "type": "result",
+  "duration_ms": 6510,
+  "ttft_stream_ms": 697,
+  "time_to_request_ms": 55,
+  "first_content_frame_ms": 697,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

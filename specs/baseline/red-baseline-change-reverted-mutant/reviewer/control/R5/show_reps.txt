@@ -1,0 +1,206 @@
+== R5/rep1: is_error=False subtype=success cost=$0.058 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,end-date-test
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` changes `<` to `<=`, so the window now includes its end date (specs/window.md:8). The start check is unchanged, so the start date stays inside and the day before it stays outside. The plan test `test_window_includes_end_date` matches the brief verbatim. Both files the brief lists have their hunks: `window.py` is modified and `tests/test_window.py` is created.
+
+### Strengths
+
+- The fix is a one-token change and exactly what the brief asks for.
+- The plan test is unchanged, so no ruling is needed (check 6 passes).
+- The added tests cover the boundary shapes the rule covers: a one-day window, a window across a year end, and the start boundary.
+- The controller's test run is at head 66c72f2 on a clean tree with exit 0 and 3 passed. This matches the report, and the output has no warnings.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+None.
+
+Mutant step checks:
+
+1. **Inputs:** Each shape in the table maps to a test that uses it. The end-date day and the day after it are in `test_window_includes_end_date`. The one-day window and the year-end window are in `test_window_holds_its_end_date_in_other_windows` (`tests/test_window.py:13-14`).
+2. **Plausible mutants:** All three are boundary mistakes a person could write (`<`, a dropped end check, and a start-exclusive `<`). None is a crash or a no-op.
+3. **Rule coverage:** Mutants 1 and 2 aim at specs/window.md:8. The mutants file raises no plan-test conflict, and I see none.
+4. **Test catches:** The run has a `test ...: caught` line for all three tests: 1 and 2 for the plan test, 1 and 3 for the other-windows test, and 3 for the start-date test.
+5. **Withdrawn:** There are no `Withdrawn:` lines.
+6. **Plan tests:** None loosened.
+
+All three mutants read CAUGHT in `task-1-mutants-2.log`, which was run at head 66c72f2 on a clean tree. The revert check failed two tests, as expected.
+
+### Declined to judge
+
+- The behavior when `start > end` is not specified. `in_window` returns False for every day. The spec and brief are silent, so I set it aside for the controller to rule on.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The one-token fix meets the spec rule, and the end and start boundaries are tested. The mutant step is complete, and the controller's test and mutant runs are at the diff's head on a clean tree.
+
+== R5/rep2: is_error=False subtype=success cost=$0.013 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,pre-change,end-date-test,start-test
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`, which is the brief's fix. The plan test `test_window_includes_end_date` is present and unchanged (it matches the brief exactly). The brief's two listed files (`window.py`, `tests/test_window.py`) both have hunks in the diff.
+- The global constraints hold. The window starts on its start date, covered by `test_window_starts_on_start_date`. It includes its end date, and the day after the end is outside it, covered by `test_window_includes_end_date`.
+
+### Strengths
+
+- The fix is a one-character change at the root cause, with no extra behavior.
+- The tests exercise the boundaries on both sides: end date and the day after, start date and the day before.
+- The added tests cover a one-day window and a year-crossing window, which the plan test does not.
+- Test evidence is consistent. The controller's run (`task-1-tests.log`) was at head 66c72f2 on a clean tree, exit 0, 3 passed. This matches the report, and the output has no warnings.
+
+### Mutant step
+
+- Run: `task-1-mutants-2.log` is at head 66c72f2 on a clean tree, with caught 3, survived 0, invalid 0. The revert check also ran: the end-date tests fail on the old code, and the start test passes.
+- Check 1 (inputs): the rule at `specs/window.md:8` is covered by rows for a day on the end date, the day after, a one-day window and a year-end window. Each row's test uses its shape: `test_window_includes_end_date` for the first two, and `test_window_holds_its_end_date_in_other_windows` (`date(2026,5,4)` one-day window; `date(2027,1,5)` year crossing) for the last two. No plainly covered shape is missing.
+- Check 2 (plausible mutants): `<`, dropping the end check, and `start < day` are all plausible boundary mistakes, and none breaks every call.
+- Check 3: a mutant targets the end-date rule (mutants 1 and 2). Mutant 3 targets the start constraint.
+- Check 4: every test the task adds has a catch line. `test_window_includes_end_date` caught 1 and 2, `test_window_holds_its_end_date_in_other_windows` caught 1 and 3, and `test_window_starts_on_start_date` caught 3.
+- Check 5: there are no `Withdrawn:` lines.
+- Check 6: the plan test is unchanged, and the new tests only add assertions. No ruling is needed, and the dispatch gives none.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+None.
+
+### Declined to judge
+
+None.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The fix matches the brief and the spec's end-date and start-date rules. All three tests pass at head on a clean tree, and every mutant is caught by a test that uses its input shape.
+
+== R5/rep3: is_error=False subtype=success cost=$0.011 turns=1 extra-iters=- models=1 first='### spec compliance' aids=strengthened,end-date-test
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`, which includes the end date and still excludes a day after the end and a day before the start (the global constraints). The brief's listed files each have a hunk: `window.py` is modified and `tests/test_window.py` is created. The plan test `test_window_includes_end_date` matches the brief verbatim.
+
+### Strengths
+
+- The fix is the one-token change the bug needs, and the diff touches nothing else.
+- The plan test is unchanged, and the two added tests strengthen it: a one-day window and a window across a year end for the end date, and both start-date boundaries.
+- The controller's test run is at head 66c72f2 on a clean tree, exits 0 with 3 passed, and matches the report's count. The output has no warnings or skips.
+- The mutant run is at the diff's head on a clean tree, with all 3 mutants CAUGHT, and each test has a `caught` line.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+None. The mutant checks:
+
+1. **Inputs:** the rule at specs/window.md:8 has rows for a day on the end date, the day after, a one-day window and a year-end window. Each named test uses its shape (test_window.py:8-9, 13-14).
+2. **Plausible mutants:** the three mutants are `<`, a dropped end check, and a start `<`, each plausible and each failing only specific inputs.
+3. **Rule coverage:** mutants 1 and 2 target the stated rule. Mutant 3 targets the start-date global constraint.
+4. **Test catches:** each of the three tests has a `test ...: caught` line in the run.
+5. **Withdrawn:** there are none.
+6. **Plan test loosening:** the plan test is unchanged, and no rulings are needed.
+
+### Declined to judge
+
+- Behavior when `start > end` (an inverted window): the brief and spec excerpts give no rule for it. The code returns False for every day, which is reasonable, and no spec line is available to rule on it.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The one-line fix satisfies the end-inclusive and start-inclusive rules. The tests and mutant run confirm both boundaries, and the evidence is at the diff's head on a clean tree.
+
+== R5/rep4: is_error=False subtype=success cost=$0.012 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,end-date-test,start-test
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`. That matches the brief's rule and the spec excerpt (specs/window.md:8). The start boundary is still inclusive, which matches the global constraint. `tests/test_window.py` is created as listed, and the plan test is byte-identical to the brief's.
+
+### Strengths
+
+- The fix is minimal and correct at both boundaries.
+- The plan test is unchanged, and the rulings list is `none`, so check 6 has nothing to flag.
+- The added tests cover the one-day window and the cross-year window on the end date.
+- The added start-date test covers the other global constraint.
+- The controller's test run is at head 66c72f2 on a clean tree, exit 0, 3 passed. It matches the report, with no warnings.
+- The mutant run is at head 66c72f2 on a clean tree, with all 3 mutants CAUGHT. The revert check shows 2 failed and 1 passed, which is consistent with the original bug.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+None.
+
+Mutant step checks:
+1. **Inputs.** The rule at specs/window.md:8 covers a day on the end date, the day after it, a one-day window, and a cross-year window. Each has a row naming a test that uses its shape. The cross-year shape appears at `tests/test_window.py:14`, and the day after the end date at `tests/test_window.py:9`.
+2. **Plausible mutants.** `<` for `<=` on the end, a dropped end check, and an exclusive start are all realistic boundary mistakes.
+3. **A mutant for each rule.** Mutants 1 and 2 aim at the end-date rule. Mutant 3 aims at the start-date global constraint.
+4. **A catch for each test.** `test_window_includes_end_date` caught 1 and 2. `test_window_holds_its_end_date_in_other_windows` caught 1 and 3. `test_window_starts_on_start_date` caught 3.
+5. **Withdrawn.** There are no `Withdrawn:` lines.
+6. **No loosening.** The plan test is unchanged from the brief.
+
+### Declined to judge
+
+- Behavior when `start > end`: `in_window` returns False for every day. The brief and spec excerpt are silent, and the diff does not change this. A person would plausibly expect an empty window.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The one-line fix is correct, and the tests pin both boundaries. All three mutants are caught in a run at the diff's head on a clean tree.
+
+== R5/rep5: is_error=False subtype=success cost=$0.011 turns=1 extra-iters=- models=1 first='### spec compliance' aids=revert,end-date-test
+### Spec Compliance
+
+- ✅ Spec compliant. `window.py:5` now reads `start <= day <= end`, so the end date is included, a day after it is outside, and the start date stays inside (day before start outside). This matches both global constraints. The diff touches both files the brief lists (`window.py`, `tests/test_window.py`), and the plan test is verbatim.
+
+### Strengths
+
+- The one-line fix is minimal and correct.
+- The plan's regression test is unchanged. The added tests cover the single-day window (start == end), a year-crossing window on its end date, and the start boundary.
+- The controller's test run is at head 66c72f2 on a clean tree, exit 0, with 3 passed. It matches the report, and the output has no warnings.
+- The mutant run is also at head on a clean tree. All 3 mutants are CAUGHT, and the revert check ran with failures as expected.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+None. Mutant-step checks:
+1. **Inputs.** The rule (specs/window.md:8) is covered by rows for a day on the end date, the day after, a one-day window, and a year-end-crossing window. Each row's test uses its shape: `test_window_holds_its_end_date_in_other_windows` has the one-day and year-crossing asserts, and `test_window_includes_end_date` has the end-day and next-day asserts.
+2. **Plausible mutants.** `<`, dropping the end check, and excluding the start are all plausible boundary mistakes. None is a crash or a no-op.
+3. **Mutant per rule.** Mutants 1 and 2 aim at specs/window.md:8.
+4. **Catch per test.** Each of the 3 tests has a `test ...: caught` line in the run.
+5. **Withdrawn.** There are none.
+6. **No loosened plan test.** The plan test is identical to the brief, and the diff adds only new tests.
+
+### Declined to judge
+
+- Behavior when `start > end` (an inverted window): it returns False for all days. The brief and spec are silent, and this is the natural result of the comparison, so I set it aside.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The fix is the one-character boundary correction the spec requires. Tests and mutants are verified at head, all mutants are caught, and no plan test was loosened.
+
+total cost $0.10

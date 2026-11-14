@@ -1,0 +1,35 @@
+== R6/rep1: is_error=False subtype=success cost=$0.077 turns=1 extra-iters=- models=1 first='### spec compliance' aids=-
+### Spec Compliance
+
+- ✅ Spec compliant. `units.py:4-12` accepts exactly one or more `[0-9]` digits followed by `B`, `KB` or `MB`, with `fullmatch` so nothing can sit before, between or after. Units are 1, 1024 and 1024*1024, and any other text raises `ValueError`.
+- ⚠️ Cannot verify from diff: `specs/sizes.md` itself. I judged against the three quoted excerpt lines only.
+
+### Strengths
+
+- Using `fullmatch` with `[0-9]` rather than `\d` or `$` closes the trailing-newline and Unicode-digit holes. The tests pin both (`'3KB\n'`, `'\u0663KB'`).
+- The plan tests in `tests/test_units.py` match the brief verbatim. There are no rulings and none were needed, so check 6 gives nothing.
+- The test run and the mutant run are both at head 3741c4f on a clean tree, and the 4 passed count matches the report. Test output is clean.
+- The Inputs table covers every shape the rules' words cover, and each row's test uses its shape: each unit, several digits, zero and leading zeros, empty text, no unit, no number, wrong unit, lowercase, blanks, trailing text, signs, decimal point, underscore, non-ASCII digit.
+- Mutants 1 to 5 are plausible and each is CAUGHT. They cover rule 8 (KB and MB factors) and rule 7 (single digit only). Rule 9 is covered by `match` instead of `fullmatch` and `\d` instead of `[0-9]`.
+- Every added or changed test has a `caught` line in the run. No `Unproven:` or `Withdrawn:` lines exist, so checks 4 and 5 hold.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+### Declined to judge
+
+- A digit string longer than 4300 digits makes `int()` raise `ValueError` on Python 3.11+ instead of returning a value. The spec sets no size limit, and the error type is still `ValueError`, so I left it to the controller.
+- Non-`str` input raises `TypeError` from `fullmatch`. The spec covers only text, so I did not grade it.
+
+### Assessment
+
+**Task quality:** Approved
+
+**Reasoning:** The implementation matches the three stated rules exactly. The tests exercise every input shape the rules cover, and all five mutants are caught at the diff's head with no plan test loosened.
+
+total cost $0.08

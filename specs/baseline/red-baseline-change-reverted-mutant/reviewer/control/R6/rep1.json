@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 11929,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.0752035,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 14739,
+    "cache_read_input_tokens": 1635,
+    "output_tokens": 1608,
+    "output_tokens_details": {
+      "thinking_tokens": 675
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 14739,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1608,
+      "cacheReadInputTokens": 1635,
+      "cacheCreationInputTokens": 14739,
+      "webSearchRequests": 0,
+      "costUSD": 0.0752035,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 675,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 14739,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `units.py:4-12` matches the whole text against `([0-9]+)(B|KB|MB)`, using `fullmatch` so a trailing `\\n` or other text is rejected. It multiplies by 1, 1024 or 1024*1024 and raises `ValueError` for anything else. This covers specs/sizes.md:7-9. The brief's `units.py` and `tests/test_units.py` are both present, and the plan tests are byte-for-byte as the brief gives them.\n- ⚠️ None.\n\n### Strengths\n\n- The regex uses `[0-9]` rather than `\\d`, so non-ASCII digits are rejected. Mutant 5 and the `\\u0663KB` input pin this.\n- `fullmatch` is used rather than `$` anchoring, which avoids the trailing-newline pitfall. The input `'3KB\\n'` is tested.\n- The rejection test covers a wide set of shapes: empty text, a missing unit or number, wrong units, lowercase, whitespace in every position, trailing text, signs, a decimal point, an underscore and a non-ASCII digit.\n- The evidence lines up:\n  - The test run is at head 3741c4f on a clean tree, with 4 passed and no warnings, which matches the report.\n  - The mutant run is at the same head on a clean tree.\n  - The revert shows the expected failures.\n\n### Mutant step\n\n- **Check 1 (inputs):** each stated rule's shapes have a row, and each row's test uses its shape (test_units_shapes.py:7-8 and 14-17; test_units.py:5-7 and 11).\n- **Check 2 (plausible mutants):** all five are plausible single-point mistakes, and none is a crash or an emptied function.\n- **Check 3 (a mutant per rule):** mutants 1 and 2 aim at specs/sizes.md:8, mutants 3 and 5 at :7, and mutants 4 and 5 at :9. There is no plan-test/excerpt conflict.\n- **Check 4 (a catch per test):** every added or changed test has a `test <id>: caught` line. There are no `Unproven:` lines.\n- **Check 5 (withdrawn):** there are no `Withdrawn:` lines, and every mutant reads CAUGHT.\n- **Check 6 (plan tests):** the plan tests are unchanged, and the rulings are `none`.\n\n### Issues\n\n#### Critical (Must Fix)\nNone.\n\n#### Important (Should Fix)\nNone.\n\n### Declined to judge\n\nNone.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** `to_bytes` implements the three spec rules exactly. The tests cover the boundary and rejection shapes, and all five mutants are caught at the reviewed head.",
+  "ttft_ms": 5786,
+  "type": "result",
+  "duration_ms": 12010,
+  "ttft_stream_ms": 823,
+  "time_to_request_ms": 81,
+  "first_content_frame_ms": 823,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

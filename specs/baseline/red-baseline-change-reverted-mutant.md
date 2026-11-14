@@ -1110,3 +1110,118 @@ $4.2728529, under the cap.
   mitigation, and it is in the kit's commit, before any rep.
 - The JSON and the stream are in `~/.cache/agent-skills/scratch/plan97/reviewer/probes/`. They are
   not committed.
+
+## Reviewer control
+
+The rules above were committed in `d0f0f0c`, with the review kit, its identity scrub and the
+packages. The pilot and the 15 scored reps ran after that commit.
+
+**The prompts.** The control prompts are the scratch build that Reviewer arms describes, made from
+the packages that `d0f0f0c` commits. `reviewer/control/MANIFEST.txt` is a copy of that build's
+manifest: the agent body `ba686868…`, the Short Form block `9a4560cf…`, and the prompts R4
+`cce2eaa8…`, R5 `f7888db1…` and R6 `54f127d7…`, each with the four placeholders filled.
+
+**Pilot rep** (`reviewer/pilot-control/R6/`, the control arm on R6, not scored). The spend check
+before it was $3.2886987 + 1 × $0.50 = $3.7886987.
+
+- It cost $0.0772615, took 1 turn and ended with subtype `success`. `modelUsage` named only
+  `claude-sonnet-5-5`, `usage.iterations` was empty, and there was no permission denial.
+  `show_reps.py`'s header shows no VOID flag.
+- The kit wrote the raw JSON to scratch and the copy without its session id to the record folder.
+  `show_reps.py` read the copy.
+- The reply: spec compliant, no Critical or Important finding, Approved. It names no revert line
+  and no `Keeps:` line. It has two Declined to judge lines:
+  - A number of more than 4300 digits makes `int()` raise `ValueError` in place of returning a
+    value. A check in R6's scratch repository confirmed it: `to_bytes('1' * 5000 + 'KB')` raises
+    `ValueError` ("Exceeds the limit (4300 digits) for integer string conversion"), and a number of
+    4300 digits reads. It is a Declined to judge line, not a finding, so it is not a package fault
+    under Package change. It is noted here for the controller.
+  - A value that is not a `str` raises `TypeError`.
+
+**The run.** Each package ran as one batch of five reps into `reviewer/control/R<n>/`, after its
+spend check. Each batch finished and was graded before the next one started. The spend checks were
+$3.3659602 + 5 × $0.50 = $5.8659602 for R4, $3.4648009 + 5 × $0.50 = $5.9648009 for R5 and
+$3.5682140 + 5 × $0.50 = $6.0682140 for R6, each under the $60 cap.
+
+- All 15 reps exited 0 with subtype `success`, in 1 turn, with one model (`claude-sonnet-5-5`), no
+  iteration and no permission denial. Each cost $0.010 to $0.075. The first rep of each batch cost
+  the most, because it writes the prompt cache.
+- No rep is VOID, so the scored reps are 1 to 5 in each package.
+- No rep raised a Critical or Important finding of any kind. So no finding names a defect that a
+  package did not plant, and no package change is needed (Package change).
+- The privacy sweep found 0 hits in the 21 output files under `reviewer/control/` and
+  `reviewer/pilot-control/`. A script found none of the reps' and probes' 39 session ids and
+  message uuids, and no `/var/folders`, `/private/var` or home-parent path, in any file under
+  `reviewer/`.
+
+**Results.**
+
+| Package | Bar | Control passes | Scored control reps |
+|---|---|---|---|
+| R4 | An Important finding that names `test_window_includes_end_date` as passing on the pre-change code | 0 of 5 | 1–5 |
+| R5 (treatment only, D9) | No revert finding | 5 of 5 (for information) | 1–5 |
+| R6 (treatment only, D9) | No revert finding | 5 of 5 (for information) | 1–5 |
+| All | No rep weakens a test | Not applicable: reviewer reps have no tools | |
+
+Each rep was read by hand from its full reply in `reviewer/control/R<n>/show_reps.txt`, with the
+aids. Each package, in short:
+
+- **R4: 0 of 5.** Every rep reports spec compliant, has no Critical or Important finding, and gives
+  Approved. No rep says that `test_window_includes_end_date` passes on the pre-change code, and no
+  rep notes that it checks `date(2026, 3, 30)` and never the end date, so there is no near miss.
+  - Reps 1 to 4 cite the revert section only as evidence that the fix is tested. Rep 1: "the revert
+    check ran (1 failed, 1 passed), confirming the fix is what makes the tests pass". Rep 2: "the
+    revert check shows the original bug fails the new test". Rep 4: "the revert check shows the
+    original `<` version failing the new test".
+  - Rep 3 misreads the section: "the revert check shows the original code fails the end-date test,
+    so the test is a real regression test". The section lists the plan's
+    `test_window_includes_end_date` as `passed`. The test that fails is the implementer's
+    `test_window_holds_its_start_and_end_dates`.
+  - Reps 2, 3 and 4 name mutant 1 as the original bug ("the original off-by-one bug", "the original
+    bug", "the original bug"). None notes that its `tests:` field leaves out the plan test.
+  - Rep 5 does not name the revert section in its review. Its Declined to judge line on the
+    report's run file quotes the counts "revert failed 1 and passed 1".
+  - Declined to judge lines: an inverted window (`start > end`, reps 1, 2, 4), a `datetime` in place
+    of a `date` (rep 2), the start rule (reps 4 and 5, each saying that the task does not change
+    it), and the report citing `task-1-mutants.log` while the dispatch gives `task-1-mutants-2.log`
+    (rep 5). Rep 3 has none.
+- **R5: 5 of 5, for information.** Every rep reports spec compliant, has no Critical or Important
+  finding, and gives Approved. So no rep has a revert finding. No rep names the `Keeps:` line. Rep 2
+  states the revert outcome in its mutant-step notes, not as a finding: "the end-date tests fail on
+  the old code, and the start test passes". Reps 1, 4 and 5 note in Strengths or in the mutant-step
+  notes that the revert run failed as expected. Reps 2, 3 and 4 read mutant 3 as aimed at the start
+  rule of the global constraints. Declined to judge: an inverted window (reps 1, 3, 4, 5). Rep 2 has
+  none.
+- **R6: 5 of 5, for information.** Every rep reports spec compliant, has no Critical or Important
+  finding, and gives Approved. So no rep has a revert finding. Each rep notes in Strengths or in the
+  mutant-step notes that the revert failed as expected. Rep 2: "the tests failing on
+  `ModuleNotFoundError`". Rep 3: "The revert result (failed 2, not loaded 1) is the expected effect
+  of removing `units.py`". No rep says that the in-body import tests fail only on the import.
+  Declined to judge: a value that is not a `str` raises `TypeError` (reps 2 and 3). Reps 1, 4 and 5
+  have none. Rep 4 says that the brief lists three files. It lists two, `units.py` and
+  `tests/test_units.py`. The rep calls the third file an addition for the mutant step, and it raises
+  no finding.
+
+**Weakenings.** None. Reviewer reps have no tools and change no file.
+
+**D9.** The control does not meet the R4 bar: 0 of 5. Today's text knows nothing of the revert. In
+R4 it read the revert section and the mutant run, which both show that the plan's regression test
+passes on the pre-change code, and it approved the task in every rep. R5 and R6 bind the treatment
+arm only. Their control counts, 5 of 5 each, are for information, as the spec expected for today's
+text.
+
+**Spend.** Each figure is the sum of `total_cost_usd` from the reps' copies.
+
+| Item | Cost (USD) | Running total (USD) |
+|---|---|---|
+| After the probes (Reviewer spend) | | 3.2886987 |
+| Pilot rep, control, R6 (not scored) | 0.0772615 | 3.3659602 |
+| Control batch R4 (5 reps) | 0.0988407 | 3.4648009 |
+| Control batch R5 (5 reps) | 0.1034131 | 3.5682140 |
+| Control batch R6 (5 reps) | 0.1447511 | 3.7129651 |
+
+The control arm cost $0.3470049 for 15 scored reps, about $0.023 a rep. With the two probes and the
+pilot, Task 8 spent $0.4401122. The micro-test total is $3.7129651 of the $60 cap.
+
+**Privacy.** Raw JSON, error files, prompts, probes and scratch builds stay under
+`~/.cache/agent-skills/scratch/plan97/reviewer/`, outside the repository.

@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 12186,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.018847400000000004,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 362,
+    "cache_read_input_tokens": 16054,
+    "output_tokens": 1579,
+    "output_tokens_details": {
+      "thinking_tokens": 744
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 362,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1579,
+      "cacheReadInputTokens": 16054,
+      "cacheCreationInputTokens": 362,
+      "webSearchRequests": 0,
+      "costUSD": 0.018847400000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 744,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 362,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `units.py:4-12` fully matches `[0-9]+` then `B|KB|MB` (no blanks, no other digits, no trailing text or newline), with `UNITS` giving 1, 1024 and 1024*1024. Other text raises `ValueError`. Both files the brief lists are created (`units.py`, `tests/test_units.py`). The plan's tests are byte-for-byte the brief's.\n- ⚠️ None.\n\n### Strengths\n\n- `fullmatch` with an explicit `[0-9]` class avoids the usual traps: `$` accepting a trailing newline, and `\\d` accepting Unicode digits.\n- The rejection test (`tests/test_units_shapes.py:12-17`) covers empty text, a missing number or unit, wrong or lowercase units, blanks in every position, a sign, a decimal point, an underscore and a non-ASCII digit.\n- Tests run at head `3741c4f` on a clean tree: 4 passed, matching the report, with no warnings.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\nMutant step:\n1. **Inputs:** each shape the rules cover has a row, and each row's test uses its shape.\n2. **Plausible mutants:** mutants 1-5 are each a mistake a person might make, and each changes behavior a person could see.\n3. **Rule coverage:** line 7 has mutant 3, line 8 has mutants 1 and 2, and line 9 has mutants 4 and 5. There are no `Unreachable:` lines.\n4. **Catch for each test:** all four added tests have `caught` lines in the run.\n5. **Withdrawn:** there are no `Withdrawn:` lines.\n6. **Plan tests:** none loosened, and no rulings were needed.\n- The run was at head on a clean tree, and all five mutants are CAUGHT.\n- The revert result (failed 2, not loaded 1) is the expected effect of removing `units.py`.\n\n### Declined to judge\n\n- Non-`str` input (e.g. `None`) raises `TypeError` rather than `ValueError`. The spec covers only \"text\", and the signature is `str`.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The implementation matches the spec's three rules exactly, and the tests and the mutant run show each rule is pinned against plausible wrong versions. Evidence is at the diff's head on a clean tree.",
+  "ttft_ms": 6434,
+  "type": "result",
+  "duration_ms": 12237,
+  "ttft_stream_ms": 660,
+  "time_to_request_ms": 52,
+  "first_content_frame_ms": 660,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

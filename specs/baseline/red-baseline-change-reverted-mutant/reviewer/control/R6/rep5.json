@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 5155,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.010183399999999999,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 16054,
+    "output_tokens": 713,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 713,
+      "cacheReadInputTokens": 16054,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.010183399999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `units.py:4-12` matches the brief and specs/sizes.md:7-9. `[0-9]+` with `fullmatch` takes only ASCII digits, then `B`, `KB` or `MB`, with nothing between. `UNITS` gives 1, 1024 and 1024*1024. Any other text raises `ValueError`.\n\n### Strengths\n\n- The regex is anchored by `fullmatch` and uses `[0-9]` rather than `\\d`, so Unicode digits, a trailing newline, and surrounding blanks are all rejected.\n- The plan tests in `tests/test_units.py` are identical to the brief. No rulings were given, and none were needed.\n- The mutant step passes all six checks:\n  - **Inputs:** every input shape the rules cover has a row, and each named test uses its shape. The reject list in `tests/test_units_shapes.py:14-15` contains every shape in the table.\n  - **Plausible mutants:** the five mutants are plausible, and none crashes every call.\n  - **A mutant per rule:** rules :7, :8 and :9 each have one or more mutants.\n  - **A catch per test:** all four tests have `caught` lines in the run.\n  - **Withdrawn and Unproven:** there are no `Withdrawn:` or `Unproven:` lines.\n  - **Plan tests:** none is loosened.\n- The controller's runs are at head 3741c4f on a clean tree and agree with the report: 4 passed, twice. The output is clean.\n- The mutant run shows `caught 5, survived 0, invalid 0`. The revert check fails as expected, because `units.py` is missing there.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\n### Declined to judge\n\nNone.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** `to_bytes` implements all three spec rules exactly, and its tests cover each unit, multi-digit and zero/leading-zero numbers, and a wide set of malformed inputs. All five mutants are caught by tests the diff adds.",
+  "ttft_ms": 5209,
+  "type": "result",
+  "duration_ms": 5221,
+  "ttft_stream_ms": 614,
+  "time_to_request_ms": 67,
+  "first_content_frame_ms": 614,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}

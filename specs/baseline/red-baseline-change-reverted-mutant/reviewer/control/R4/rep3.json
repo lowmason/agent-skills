@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 6437,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.011401300000000003,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 361,
+    "cache_read_input_tokens": 12033,
+    "output_tokens": 875,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 361,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 875,
+      "cacheReadInputTokens": 12033,
+      "cacheCreationInputTokens": 361,
+      "webSearchRequests": 0,
+      "costUSD": 0.011401300000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 361,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`, which matches specs/window.md:8 (end date included, day after outside) and the global constraint that a day before the start is outside. The brief lists two files and the diff has a hunk for each: `window.py` modified, `tests/test_window.py` created.\n- The plan test `test_window_includes_end_date` is byte-identical to the brief's. No test rulings exist and none are needed.\n\n### Strengths\n\n- The fix is one operator, with no extra behavior.\n- The added test covers the boundaries the rule words reach: day before start, start, end, a one-day window, and a window across a year end.\n- The controller's run (`task-1-tests.log`) is at head c39e286 on a clean tree, exit 0, with 2 passed in both invocations and no warnings. It matches the report.\n- The mutant run (`task-1-mutants-2.log`) is also at head c39e286 on a clean tree. Both mutants are CAUGHT, and the revert check shows the original code fails the end-date test, so the test is a real regression test.\n\n### Mutant step checks\n\n1. **Inputs.** The rule is \"includes end date, day after is outside\". The table covers a day on the end date, a one-day window, a window across a year end, and the day after the end date. The start-boundary shape is covered by the global constraint rather than this rule's words, so it needs no row. ✅\n2. **Plausible mutants.** Mutant 1 (`< end`) is the original bug. Mutant 2 (`start <= day`, no upper bound) is a plausible over-correction. Neither is a crash or an empty function. ✅\n3. **Mutant per rule.** Both halves of specs/window.md:8 have a mutant. ✅\n4. **Catch per test.** Both added or changed tests have `test ...: caught` lines: `test_window_holds_its_start_and_end_dates` caught 1 and `test_window_includes_end_date` caught 2. ✅\n5. **Withdrawn.** There are no `Withdrawn:` lines. ✅\n6. **Plan tests loosened.** The plan test is unchanged. ✅\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\nNone.\n\n### Declined to judge\n\nNone.\n\n### Assessment\n\n**Task quality:** Approved\n\n**Reasoning:** The one-operator fix matches the spec's boundary rules. Both stated rules are pinned by tests that the controller's mutant run shows fail on plausible wrong versions, and the test and mutant runs are at head on a clean tree.",
+  "ttft_ms": 6487,
+  "type": "result",
+  "duration_ms": 6501,
+  "ttft_stream_ms": 698,
+  "time_to_request_ms": 66,
+  "first_content_frame_ms": 698,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}
