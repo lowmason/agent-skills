@@ -1,0 +1,39 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "cost": 0.420928,
+  "permission_denials": [],
+  "outside": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "cd /tmp/plan94-rep-0SbEei/repo && grep -n '^#' specs/plans/completed/90-readonly-guard-command-starts.md; sed -n '/## Decisions/,/^## [^D]/p' specs/plans/completed/90-readonly-guard-command-starts.md | head -80",
+        "description": "Show plan headings and decisions"
+      },
+      "hits": [
+        "/##"
+      ]
+    },
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "cd /tmp/plan94-rep-0SbEei/out && sed -i '' 's/^## Where the build differs from the spec$/### 6. Where the build differs from the spec/' explainer.md && grep -n '^##' explainer.md && wc -w explainer.md && awk '/^## Synopsis/{f=1;next}/^## /{f=0}f' explainer.md | wc -w",
+        "description": "Fix heading level and count words"
+      },
+      "hits": [
+        "/^##",
+        "/{f=0}f"
+      ]
+    }
+  ],
+  "void_reasons": []
+}

@@ -1,0 +1,16 @@
+{
+  "rep": 1,
+  "arm": "treatment",
+  "bars": {
+    "B1": false,
+    "B2": true,
+    "B3": true,
+    "B4": true,
+    "B5": true
+  },
+  "length": {
+    "explainer": 1624,
+    "synopsis": 206,
+    "B5": true
+  }
+}

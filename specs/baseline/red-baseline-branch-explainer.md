@@ -404,6 +404,65 @@ Two executor choices in the brief, each in the execution ledger:
 so far (the pilot writer and all 11 control writers, the VOID reps included). The reader and adjudicator means are over
 their 10 runs each. The isolation probe and the write check are not explainer runs, so they are not in the means.
 
+### Round 0 results
+
+Writer cap $3.00, `ADJ_CAP` $1.50, brief `kit/brief-r0.md`. Nine writer reps ran, and none is VOID. The executor read
+every `outside` hit by hand. They are sed, awk and grep patterns (`/^##`, `/5`, `grep -v '/base/\|/new/'`), explainer
+text in a `Bash` heredoc write, and the reps' own tool-result files.
+
+All nine explainers use the exact layout. Their Synopsis sections run from 196 to 235 words, and the whole explainers
+from 1,404 to 1,737.
+
+| Bar | `p80` | `p90` | `p92` |
+|---|---|---|---|
+| B1 Plan | 3/3 holds | 3/3 holds | 2/3 holds |
+| B2 Build | 3/3 holds | 3/3 holds | 3/3 holds |
+| B3 Project | 3/3 holds | 3/3 holds | 3/3 holds |
+| B4 Accuracy | 3/3 holds | 2/3 holds | 2/3 holds (3/3 under the executor's reading) |
+| B5 Length | 3/3 holds | 3/3 holds | 3/3 holds |
+| All five bars at once | 3/3 | 2/3 | 1/3 |
+
+**Every bar holds on all three tuning fixtures, so the treatment passes at round 0.** No wording round runs (plan
+Task 3 Step 4).
+
+**FAILs, checked against the fixture files.**
+
+- `p90` rep2 B4: "The `specs/history.md` entry records three rulings and four deviations." The entry has 3 rulings and
+  5 deviations. The executor agrees. Reps 1 and 3 state 3 and 5, correctly.
+- `p92` rep1 B1: the reader wrote "Eight claims (C1–C8) were wrong or missing", from the body's "The spec lists them
+  as C1 to C8". The spec lists six Claude Code claims, C1 to C6, and marks C6 "Correct as written". C7 and C8 are
+  edits that are "not Claude Code claims". The executor agrees.
+- `p92` rep2 B4: **contested.** The adjudicator read the hunk `@@ -107,6 +108,11 @@` and wrote that the pointer
+  paragraph is at lines 112 to 115, so "`SKILL.md` gains a pointer at lines 111–114" was wrong. The file at the head
+  has the paragraph at lines 111 to 114, with blank lines at 110 and 115. The executor's reading is that the claim is
+  correct, so rep2 passes B4. Both readings leave B4 holding on `p92`, so the reading does not go to the owner.
+
+**Spot-check of the PASS reps at the margin.** Three bars hold at exactly 2 of 3, so a wrong PASS could reverse a
+result. The executor checked the numbers and line citations in `p90` reps 1 and 3 and `p92` reps 1 and 3 against
+the fixture files. These all match:
+
+- `p90`: `hooks/readonly-agent-guard.py:108`, `:781`, `:822`, `:896` and `:921`; the cap of 64; 10 new test
+  functions; 148 test lines; the 16 repeats; 3 rulings and 5 deviations; 7 files, +1,262/−37; the guard's +123/−19;
+  the plan's 636 lines and the spec's 295.
+- `p92`: `discovery.md:11`, `:115-122` and `:202`; `SKILL.md:111-114`; the body's 18,285 to 18,753 characters; 25
+  reps in `f88f36a` and 60 in `2207cc5`.
+
+`p92` rep3's "cut the `SKILL.md` body to 434 lines" describes plan 72's earlier state, which the diff does not cover.
+Under B4's text it is no contradiction. No PASS is disputed.
+
+**What the brief changed.** The treatment fixed the control's failure mode. The control stated unchecked counts and
+line totals. The treatment reps ran `git diff --numstat`, `wc -w` and line counts before they wrote. The one remaining
+count error (`p90` rep2) is a ruling and deviation count. The brief's instruction to give "the line where that helps"
+brought in line citations, which are a new kind of B4 claim. All the cited lines that the executor checked are
+correct.
+
+**Held-out exposure check.** No round 0 explainer names plan 84 or its subject.
+
+**Spend.** Round 0: writers $4.96, readers $0.49, adjudicators $5.19, total $10.65 (estimate $10.24). Running total:
+$23.17.
+
+**Public repository scan** over `treatment-r0/`: no line.
+
 ## Held-out
 
 ## Micro-test

@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.46197859999999996,
+  "turns": 10,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "6b4452850d316fb9cc753654101e6fdcc291b436790c0bad47e5512519be09a0",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "/tmp/plan94-rep-fZ8o5U/out/explainer.md \u2014 1,806 words (`wc -w`)"
+}
