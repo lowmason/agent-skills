@@ -686,16 +686,22 @@ def test_task_done_reads_the_revert_line_from_the_header_only(repo):
     assert not recorded(repo)
 
 
-def test_task_done_ignores_base_and_revert_lines_inside_the_command(repo):
+@pytest.mark.parametrize('missing', ['base', 'revert'])
+def test_task_done_ignores_base_and_revert_lines_inside_the_command(repo, missing):
     # A command that spans lines puts its lines between command: and head:.
+    # The header lacks one line and the command holds a correct one.
     base = head(repo)
     commit_work(repo)
     write_mutants(repo, [1])
-    write_run(repo, 'task-1-mutants.log', head(repo), None, CLEAN, [1], revert=None)
-    insert_after(repo, 'task-1-mutants.log', 'command: sh -c true', f'base: {base}', NONE_REVERT)
+    if missing == 'base':
+        write_run(repo, 'task-1-mutants.log', head(repo), None, CLEAN, [1])
+        insert_after(repo, 'task-1-mutants.log', 'command: sh -c true', f'base: {base}')
+    else:
+        write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1], revert=None)
+        insert_after(repo, 'task-1-mutants.log', 'command: sh -c true', NONE_REVERT)
     result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 4
-    assert 'no base: line' in result.stderr
+    assert f'the mutant run has no {missing}: line' in result.stderr
     assert not recorded(repo)
 
 
