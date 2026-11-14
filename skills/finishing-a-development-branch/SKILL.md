@@ -20,7 +20,7 @@ metadata:
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Check deferred backlog → Detect environment → Present options → Codex review (merge/PR) → Execute choice → Clean up.
+**Core principle:** Verify tests → Check deferred backlog → Detect environment → Explain branch → Present options → Codex review (merge/PR) → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -165,6 +165,10 @@ gh repo view --json defaultBranchRef -q .defaultBranchRef.name
 
 **If both fail** — no `origin/HEAD`, and no `gh` to ask —
 ask instead: "This branch split from main - is that correct?"
+
+### Step 3b: Explain the Branch
+
+Before the menu, have a fresh subagent write an explainer of the branch for your partner to read before the pick, or offer one when the branch adds no plan. Follow [references/branch-explainer.md](references/branch-explainer.md). Skip this step when your partner says so.
 
 ### Step 4: Present Options
 
@@ -410,6 +414,7 @@ When a step above fails, or before you depart from one, read [references/common-
 - Verify tests before offering options
 - Check the deferred backlog before offering options
 - Detect environment before presenting menu
+- Explain a plan branch (Step 3b) before presenting options
 - Present exactly 4 options (or 3 for detached HEAD)
 - Run the Codex review (Step 4b) before merging or pushing
 - Get typed confirmation for Option 4 before it deletes anything

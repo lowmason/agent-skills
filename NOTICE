@@ -1061,6 +1061,22 @@ Changes from upstream:
     reproduced. The changes are local, and no upstream text was taken.
     The micro-test fixtures are this repository's own
     (specs/baseline/red-baseline-change-reverted-mutant.md).
+  - Plan 94 (2026-11-14) added Step 3b to finishing-a-development-branch.
+    Before the Step 4 menu, a fresh subagent writes an explainer of the
+    branch for the partner, from references/branch-explainer-prompt.md,
+    and references/branch-explainer.md holds the step's procedure. Step
+    3b adapts two ideas and takes no text: Geoffrey Litt's explain-diff
+    gist (background, then intuition, then a walk through the code in a
+    sensible order, then a quiz;
+    https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524),
+    and Eric J. Ma's post "The understanding zeitgeist in AI code review",
+    which frames understanding as the bottleneck
+    (https://ericmjl.github.io/blog/2026/7/24/understanding-zeitgeist-ai-code-review/).
+    Neither source states a license. The three-part synopsis, the recall
+    questions, the plan-branch rule and the inputs are this repository's
+    own. references/branch-explainer.md and
+    references/branch-explainer-prompt.md are original works by Lowell
+    Mason under the same MIT terms.
 
     brainstorming/
     dispatching-parallel-agents/

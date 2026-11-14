@@ -467,6 +467,70 @@ $23.17.
 
 ## Micro-test
 
+The shipped Step 3b, before its commit. The kit is `micro/` (`build_micro.py`, `tools.txt`, `GRADING.md` and
+`fixtures/`), committed before any rep (`c9e1952`, `a4595d8`). Each rep is a tool-less `claude -p` answer on
+`claude-sonnet-5-5`, cap $0.50, run by `kit/run_plain.sh`.
+
+**Skill text under test.**
+
+- `SKILL.md`: Core principle gains "Explain branch". A Step 3b pointer (306 characters, at most 400) sits before
+  Step 4. Red Flags, Always, gains "Explain a plan branch (Step 3b) before presenting options".
+- Finishing's body: 19,009 characters at EXEC_BASE, 19,392 now (+383), within the 19,700 window and the plan's
+  19,600 limit.
+- `references/branch-explainer.md` holds the procedure. Its `DISPATCH` block is the kit's text, byte for byte.
+- `references/branch-explainer-prompt.md` is `kit/brief-r0.md`, byte for byte (sha256
+  `c7f7ef606adde4fcda1369aa8bcf09d742109598f656a63c4926d5eacc90331e`).
+
+**Rule test** (Review Focus 2). On a scratch repository whose branch renames `specs/plans/7-x.md` to
+`specs/plans/completed/7-x.md`, item 3's command printed `specs/plans/completed/7-x.md` from the top folder, from
+`specs/` and with `diff.renames=false`. On a branch that changes only `src/a.py`, it printed nothing.
+
+**Prompt hashes** (`MANIFEST.txt`; prompts in `~/.cache/agent-skills/scratch/plan94/micro/`):
+
+| Arm | Scenario | sha256 |
+|---|---|---|
+| control | `M1-plan` | `d01d51e088272bbdf82f8e6df93d2161fe1beb9e63ab58e20e7769ddbd6983d5` |
+| control | `M2-noplan` | `cf715645b180ca3a5ae51534a441947999df3913632f40506ca39e2d99b9770d` |
+| treatment | `M1-plan` | `c282cba5fd87db1c19d704a1fcae1b1fca387bed57317d78eb20cc288195c276` |
+| treatment | `M2-noplan` | `9bbf9aea7329e5fa67397e8b6fde1f9d8fbc7f3777feec351bc03c67e40cdb54` |
+| treatment | `M3-refused` | `5aa3930bdbea5d499e34d6f15d432d6a6927aedd57e1ecfeee78cab3c1b753aa` |
+| treatment | `M4-detached` | `641747a37a09e18da1307fa4e66c61a3526e2f262a063e2e6f39252947cd78f0` |
+| treatment | `M5-skip` | `172a0592e1b1c5be4671f5a1f1ec20e630313369d5240fd6ee4f5d88434d86e2` |
+| treatment | `M6-pointer` | `00b2fc2fabfb9b2e6a14b971b2b410bbf529a44a3386198c6909cbf010efc6d1` |
+
+**VOIDs:** none. All 40 reps pass `result-ok`, and each names one model, `claude-sonnet-5-5`, with no non-message
+iteration, one turn and no permission denial.
+
+**Grades** (bar: at least 4 of 5 treatment reps; the control arms have no bar).
+
+| Scenario | Treatment | Control | Deciding words |
+|---|---|---|---|
+| `M1-plan` | 5/5 PASS | 0/5 dispatch | Every treatment rep runs `git fetch origin main`, then `git merge-base origin/main HEAD`, then dispatches `TOOL Agent subagent_type=general-purpose, model=opus` with `Repository: /work/atlas` and an output under `branch-explainers/atlas/`, then `REPORT Explainer (<N> words): <path>`, then the four-option menu. The no-plan question appears only under `IF it prints nothing`. Every control rep shows the menu at once. |
+| `M2-noplan` | 5/5 PASS | 0/5 offer | Every treatment rep asks `This branch adds no plan. Do you want an explainer of it before the menu?`, followed only by `IF yes` or `IF no` lines. Every control rep shows the menu at once. |
+| `M3-refused` | 5/5 PASS | — | "Explainer failed: the subagent could not write … (permission denied), so nothing was written. I won't retry it.", then the four-option menu. |
+| `M4-detached` | 5/5 PASS | — | `Repository: /work/atlas/.claude/worktrees/csv-header-2f1c`, a `detached-4be1c9a` slug, `REPORT Explainer (<N> words): <path>`, then the three-option detached-HEAD menu. |
+| `M5-skip` | 5/5 PASS | — | No `git fetch`, `git merge-base`, dispatch or offer. The four-option menu follows, after at most the skill's opening line. |
+| `M6-pointer` | 5/5 PASS | — | `TOOL Read file_path=/Users/lm/.claude/skills/finishing-a-development-branch/references/branch-explainer.md` comes first, before any dispatch or menu. |
+
+Grading readings, applied the same way to every rep:
+
+- **A placeholder for an unseen output counts as that output.** The answers write `<full BASE sha>`, `<HOME>` and
+  `<date>` for the outputs of the `RUN` lines that they name. Under the session's facts, the date is 2026-11-13 and
+  the slug is `feat-csv-header` or `detached-4be1c9a`. So each output path ends as the row requires. A decision-only
+  answer cannot write BASE in any other way.
+- **A dispatch under a branch that the facts do not take is not graded.** M2's answers show a dispatch under
+  `IF it prints a path`. The session's facts take the `prints nothing` branch, and the grading rule grades that branch.
+- **The backlog line before the menu is allowed.** `M1` rep5 reports Step 1b's summary line before the menu, as
+  Step 1b says ("report the summary line as printed"). The menu itself is word for word.
+
+**An observation from M6.** After the Read, the answers guess the procedure, because they have not seen the file. Two
+of them "REPORT the subagent's explainer", which the procedure forbids. M1 to M5, with the file read, never do that.
+M6's row tests only that the pointer opens the file.
+
+**Wording rounds:** none. Every treatment scenario met its bar on the first run.
+
+**Micro-test spend:** $0.78 for 40 reps.
+
 ## Spend
 
 ## Verdict
