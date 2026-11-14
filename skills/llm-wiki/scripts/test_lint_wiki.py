@@ -645,36 +645,36 @@ def write_spec_digest(root, name, text):
 
 PILOTED_DIGEST = '''---
 source: specs-harvest
-repo: bls-stats
+repo: release-stats
 repo_head: ad8abe0
 date: 2026-07-24
 files: 5
 captures: 2
 open_questions: 1
-brief: reports/harvest-bls-stats-2026-07-24.md
+brief: reports/harvest-release-stats-2026-07-24.md
 ---
 
 Ground-truth entries for the capture notes in wiki/sources/x.md.
 
 [d-01] Flat files primary; BLS API v2 demoted to utility
-at: specs/completed/bls-stats-architecture.md §6.1 · sha: 1d26d71
+at: specs/completed/release-stats-architecture.md §6.1 · sha: 1d26d71
 excerpt: "The BLS API v2 cannot carry full-universe daily increments"
 
 [g-05] LABSTAT files: space-padded headers and M13 annual rows
-at: specs/plans/completed/1-bls-stats-architecture.md L2611 · sha: 50e0f52
+at: specs/plans/completed/1-release-stats-architecture.md L2611 · sha: 50e0f52
   (also specs/completed/audit_5-7-26.md C-2 · sha: 168da46)
 excerpt: "rename(lambda c: c.strip())"
 note: dedicated fix commit
 
 [q-01] QCEW routine print count
-at: specs/completed/bls-stats-architecture.md §12.3
+at: specs/completed/release-stats-architecture.md §12.3
 The revision lifecycle is an unverified data-source fact.
 '''
 
 
 def test_piloted_specs_digest_at_lines_pass_clean(tmp_path):
   root = make_wiki(tmp_path)
-  write_spec_digest(root, '2026-07-24-bls-stats-specs-abcd1234.md',
+  write_spec_digest(root, '2026-07-24-release-stats-specs-abcd1234.md',
                     PILOTED_DIGEST)
   assert [f for f in lint_wiki.run_checks(root) if f[0] == 'ERROR'] == []
 

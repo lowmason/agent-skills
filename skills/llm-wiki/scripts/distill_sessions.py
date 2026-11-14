@@ -142,8 +142,8 @@ def _read_jsonl(path):
 
 def _project_name(records, proj_dir):
   '''Prefer the authoritative cwd basename — the encoded dir name mangles
-  hyphenated projects (-Users-lowell-Projects-alt-nfp splits to "nfp", not
-  "alt-nfp"). Fall back to the dir's last segment only if no record has cwd.'''
+  hyphenated projects (-Users-lowell-Projects-payroll-nowcast splits to "nowcast", not
+  "payroll-nowcast"). Fall back to the dir's last segment only if no record has cwd.'''
   cwd = next((r.get('cwd') for r in records
               if isinstance(r, dict) and r.get('cwd')), None)
   if cwd:

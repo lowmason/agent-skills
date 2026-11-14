@@ -4,7 +4,7 @@ Copy-paste starting points for testing BLS-style scrapers. The organizing idea: 
 is a pure function of an HTML string**, so it can be tested with recorded fixtures and never
 touches the network. Only one marked test and a marked canary ever fetch.
 
-The module path `bls_stats.release_dates.scraper` and the helper names below (`_parse_ref_date`,
+The module path `release_stats.release_dates.scraper` and the helper names below (`_parse_ref_date`,
 `_last_business_day` and the rest) are illustrative. Point each import at your own scraper's
 module and helpers. No package is guaranteed to export these names.
 
@@ -14,7 +14,7 @@ If `scrape_schedule()` both fetches and parses, you cannot test the parse hermet
 so a pure parser takes bytes/text:
 
 ```python
-# bls_stats/release_dates/scraper.py
+# release_stats/release_dates/scraper.py
 def fetch_schedule_html(client: httpx.Client, url: str) -> str:
     return client.get(url).raise_for_status().text
 
@@ -82,7 +82,7 @@ period-name variants BLS pages actually contain.
 ```python
 import pytest
 from datetime import date
-from bls_stats.release_dates.scraper import _parse_ref_date, _last_business_day
+from release_stats.release_dates.scraper import _parse_ref_date, _last_business_day
 
 @pytest.mark.parametrize("program, title, expected", [
     # month names, monthly programs

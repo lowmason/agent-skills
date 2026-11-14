@@ -3,7 +3,7 @@
 # requires-python = '>=3.11'
 # dependencies = []
 # ///
-'''Mechanical linter for the research-wiki (spec §10). Stdlib only; no yaml.
+'''Mechanical linter for the llm-wiki (spec §10). Stdlib only; no yaml.
 
 Exit status: 0 clean, 1 on any ERROR (or a WARN under --strict), 2 on a usage
 error such as a root with no wiki/ directory.'''
@@ -83,7 +83,7 @@ def discover_pages(root):
 
 
 def default_root():
-  return Path(os.environ.get('LLM_WIKI_ROOT', str(Path.home() / 'research-wiki')))
+  return Path(os.environ.get('LLM_WIKI_ROOT', str(Path.home() / 'llm-wiki')))
 
 
 def check_frontmatter_schema(root, pages):
@@ -422,11 +422,11 @@ def run_checks(root):
 
 
 def main(argv=None):
-  ap = argparse.ArgumentParser(description='Mechanical linter for research-wiki.')
+  ap = argparse.ArgumentParser(description='Mechanical linter for llm-wiki.')
   ap.add_argument('--strict', action='store_true',
                   help='warnings also cause a non-zero exit')
   ap.add_argument('root', nargs='?', default=None,
-                  help='wiki root (default $LLM_WIKI_ROOT or ~/research-wiki)')
+                  help='wiki root (default $LLM_WIKI_ROOT or ~/llm-wiki)')
   args = ap.parse_args(argv)
   root = Path(args.root) if args.root else default_root()
   if not (root / 'wiki').is_dir():

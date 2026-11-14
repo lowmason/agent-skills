@@ -27,12 +27,19 @@ if command -v rg >/dev/null 2>&1; then HAVE_RG=1; else HAVE_RG=0; fi
 
 # --hidden: committed dotfiles (.env!) must be visible to the scans.
 RG()   { rg -n --no-heading -S --hidden -g '!.git' "$@" "$ROOT" 2>/dev/null; }
-GREP() { grep -rnI --exclude-dir=.git "$@" "$ROOT" 2>/dev/null; }
+# rg skips an in-repo virtual environment because uv and python -m venv write a
+# .gitignore inside it. grep and find do not read one, so the fallback arm prunes
+# the four directory names that hold installed packages itself, in GREP and FILES.
+GREP() {
+  grep -rnI --exclude-dir=.git --exclude-dir=.venv --exclude-dir=venv \
+       --exclude-dir=site-packages --exclude-dir=node_modules "$@" "$ROOT" 2>/dev/null
+}
 FILES() {
   if [ "$HAVE_RG" = 1 ]; then
     rg --files --hidden -g '!.git' "$ROOT" 2>/dev/null
   else
-    find "$ROOT" -name .git -prune -o -type f -print 2>/dev/null
+    find "$ROOT" \( -name .git -o -type d \( -name .venv -o -name venv \
+         -o -name site-packages -o -name node_modules \) \) -prune -o -type f -print 2>/dev/null
   fi
 }
 
@@ -95,7 +102,7 @@ fi
 section "Polars joins with no cardinality contract (validate=)"
 # A .join() without validate= accepts m:m silently. When a key that should be
 # unique is duplicated upstream, rows fan out and every downstream array is
-# misaligned -- with no error. Measured 2026-08-26: alt-nfp had 54 Polars join
+# misaligned -- with no error. Measured 2026-08-26: one work repo had 54 Polars join
 # sites, 0 with validate= (the token appears nowhere in the workspace). The filter drops str.join()/os.path.join() false positives.
 # A hit is a candidate, not a verdict: validate= is unnecessary where the
 # cardinality is already guaranteed by construction upstream.

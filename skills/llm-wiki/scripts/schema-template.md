@@ -1,5 +1,5 @@
 <!-- schema-version: 3 (bump on a breaking contract change; `bootstrap_wiki.py --check` flags a root whose schema is behind the bundle) -->
-# SCHEMA — research-wiki normative formats
+# SCHEMA — llm-wiki normative formats
 
 This file is the machine-readable contract. `scripts/lint_wiki.py` enforces the
 mechanical parts; the `llm-wiki` skill reads this file before any operation.
@@ -159,7 +159,7 @@ is always a commit:
 
 ```
 ### [d-01] Flat files primary; BLS API v2 demoted to utility
-kind: decision · at: bls-stats specs/completed/bls-stats-architecture.md §6.1 · basis: git:1d26d71
+kind: decision · at: release-stats specs/completed/release-stats-architecture.md §6.1 · basis: git:1d26d71
 One- to three-sentence self-contained claim (no square brackets).
 ```
 
@@ -173,7 +173,7 @@ add secondary locations:
 ```
 - [x] [d-01] Flat files primary; BLS API v2 demoted to utility
   kind: decision · boundary: transferable
-  at: specs/completed/bls-stats-architecture.md §6.1 · sha: 1d26d71
+  at: specs/completed/release-stats-architecture.md §6.1 · sha: 1d26d71
   excerpt: "The BLS API v2 cannot carry full-universe daily increments"
   claim: One- to three-sentence self-contained claim (no square brackets).
 ```

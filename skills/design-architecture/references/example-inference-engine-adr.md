@@ -1,14 +1,14 @@
 # Worked example: the inference-engine ADR
 
 This is a fully-filled ADR for the decision whose *absence* motivated this skill — in late 2025
-the same NFP nowcast was solved three ways (NumPyro/JAX in `alt-nfp`, PyMC in `alt_nfp` and
-`oi-indices`). Read it as the exemplar of what "good" looks like, and copy it as a starting point
+the same NFP nowcast was solved three ways (NumPyro/JAX in `payroll-nowcast`, PyMC in `payroll_nowcast` and
+`sector-indices`). Read it as the exemplar of what "good" looks like, and copy it as a starting point
 for a real ADR. It is written as a snapshot dated to when the choice was made; the bracketed notes
 `[like this]` are authoring guidance, not part of the record — delete them when you adapt it.
 
 The record below is dated 2025-11-03 and stays as written, because an Accepted ADR is immutable.
-The repos it names have changed since: a 2026-09 split turned `alt-nfp` into `alt-nfp-stats` and
-`alt-nfp-model` and archived `alt_nfp`. In a real decision log that change arrives as a
+The repos it names have changed since: a 2026-09 split turned `payroll-nowcast` into `payroll-stats` and
+`payroll-model` and archived `payroll_nowcast`. In a real decision log that change arrives as a
 superseding ADR, not as an edit to this one.
 
 ---
@@ -18,18 +18,18 @@ superseding ADR, not as an edit to this one.
 - **Status:** Accepted
 - **Date:** 2025-11-03
 - **Deciders:** Lowell Mason
-- **Blast radius:** `nfp-model` (new) — the inference layer of `alt-nfp`. Establishes a deliberate
-  split from the PyMC implementations in `alt_nfp` (frozen reference) and `oi-indices` (separate
+- **Blast radius:** `payroll-model` (new) — the inference layer of `payroll-nowcast`. Establishes a deliberate
+  split from the PyMC implementations in `payroll_nowcast` (frozen reference) and `sector-indices` (separate
   index work). Does not touch the four `nfp_*` data packages.
 
 ## Context
 
-`alt_nfp` (v1) nowcasts US nonfarm payrolls with a PyMC state-space model. We are building `alt-nfp`
+`payroll_nowcast` (v1) nowcasts US nonfarm payrolls with a PyMC state-space model. We are building `payroll-nowcast`
 (v2), porting the data layer and **rewriting the model layer**. The backtest is the expensive part:
 fitting the model independently across a grid of as-of dates D, each on a censored snapshot of what
 was knowable on D. There are hundreds of such fits per backtest, and we want GPU as the speed lever.
 
-A separate repo, `oi-indices`, also fits a related nowcast in PyMC. So as of this date the *same
+A separate repo, `sector-indices`, also fits a related nowcast in PyMC. So as of this date the *same
 class of problem is solved twice in PyMC already*; the question is what v2's engine should be — and
 whether adding a third (JAX) implementation is justified rather than accidental.
 
@@ -39,7 +39,7 @@ Constraints that actually drive the choice, as of now:
   inputs. We want one vectorized fit, not a Python loop of independent samplers.
 - **GPU.** The intended A4 speed lever is GPU; the same batched code should run unmodified on CPU
   (CI) and GPU (backtests).
-- **Parity.** v2 must be gated for *port fidelity* against the frozen `alt_nfp` reference — a
+- **Parity.** v2 must be gated for *port fidelity* against the frozen `payroll_nowcast` reference — a
   statistical match enforced by golden-master fixtures. Parity is defined in **float64**.
 - **Reproducibility.** Fits must be deterministic given a descriptive seed.
 
@@ -48,9 +48,9 @@ NOT edit here; write a superseding ADR.]
 
 ## Decision
 
-We will implement the `alt-nfp` model layer in **NumPyro (NUTS) on JAX**, with `vmap`-batched
+We will implement the `payroll-nowcast` model layer in **NumPyro (NUTS) on JAX**, with `vmap`-batched
 fitting over the as-of grid, float64 enabled globally at import, and descriptive PRNG seeds. The
-PyMC implementation in `alt_nfp` is **retained, frozen, as the parity reference and fixture
+PyMC implementation in `payroll_nowcast` is **retained, frozen, as the parity reference and fixture
 generator** — not replaced and not a fallback.
 
 ## Consequences
@@ -62,13 +62,13 @@ generator** — not replaced and not a fallback.
   change must keep matching the frozen reference within tolerance); a **familiarity split** — the
   team now maintains JAX *and* PyMC across three repos; JAX debugging (traced control flow, no
   Python `if` on data, `jnp.where`) has a steeper learning curve than PyMC.
-- **Neutral / follow-on:** creates the golden-master fixture infrastructure (`s3://alt-nfp/golden/`)
-  and `nfp_model.parity`; raises a future question (its own ADR) of whether `oi-indices` should also
+- **Neutral / follow-on:** creates the golden-master fixture infrastructure (`s3://payroll-nowcast/golden/`)
+  and `payroll_model.parity`; raises a future question (its own ADR) of whether `sector-indices` should also
   migrate or stay PyMC.
 
 ## Alternatives considered
 
-- **Stay on PyMC** (like `alt_nfp` and `oi-indices`) — ergonomic, `nutpie` is fast, the team is
+- **Stay on PyMC** (like `payroll_nowcast` and `sector-indices`) — ergonomic, `nutpie` is fast, the team is
   fluent, and it would unify all three repos on one engine. **Rejected:** batching the as-of sweep
   and running on GPU are awkward in PyMC compared to a single `vmap`; the GPU speed lever is the
   whole point of v2's backtest.
@@ -88,9 +88,9 @@ would discard the JAX investment and the parity infrastructure. What would trigg
 superseding ADR): if GPU batching stops being the backtest bottleneck, the JAX maintenance cost may
 no longer pay for itself; or if the familiarity split causes more bugs than the speedup saves.
 
-Note on the three-way split this formalizes: it is **deliberate**, not drift. PyMC in `alt_nfp` is
-the frozen parity reference; PyMC in `oi-indices` is separate index work on its own timeline; JAX
-in `alt-nfp` is the GPU-batched production path. Anyone tempted to "unify" them should read this ADR
+Note on the three-way split this formalizes: it is **deliberate**, not drift. PyMC in `payroll_nowcast` is
+the frozen parity reference; PyMC in `sector-indices` is separate index work on its own timeline; JAX
+in `payroll-nowcast` is the GPU-batched production path. Anyone tempted to "unify" them should read this ADR
 first — collapsing them would break the parity cross-check, which is exactly the rationale this
 record exists to preserve. And note the floor it sets: **parity is fidelity, not correctness** —
 matching the frozen PyMC reference proves the port reproduced it, not that it is right. Correctness

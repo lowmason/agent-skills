@@ -6683,7 +6683,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       history_entry tests pass.
 
 ## 96-marimo-notebook-seam — 2026-11-13
-- [ ] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
+- [x] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
       and the code-reviewer; the gate deferred it, 2026-11-13).** In `skills/tech-debt/scripts/scan.sh`, the
       rg arm skips an in-repo `.venv`, because uv writes a `.gitignore` inside it. The fallback arm does not.
       `FILES()` uses `find "$ROOT" -name .git -prune -o -type f -print` and `GREP()` uses
@@ -6697,7 +6697,12 @@ review and the Plan Completion gate (2026-10-27) add the others.
       directory names; a `test_scan.py` case, run in the grep arm, puts a marimo tutorial under
       `.venv/lib/python3.13/site-packages/marimo/_tutorials/` and sees it in no section of the report; and the
       existing scan tests pass in both arms.
-- [ ] **Older text in public files names work repos, or their family names (plan 96 final review, the
+      → done 2026-11-13 (/deferred quick fix): `FILES()` and `GREP()` in the fallback arm now prune `.venv`,
+      `venv`, `site-packages` and `node_modules`. `test_grep_arm_skips_installed_packages` runs in the grep arm
+      once for each of the four names, with a tutorial that has a hit for most sections, and it failed RED
+      before the fix. The tech-debt suite passes (28 tests), and a direct run under bash 3.2.57 with BSD grep
+      lists only the project's own files. The rg arm is unchanged.
+- [x] **Older text in public files names work repos, or their family names (plan 96 final review, the
       code-reviewer; the gate deferred it, 2026-11-13).** The mentions predate plan 96, and the plan changed
       none of them. At `d926122` they sit in `hooks/README.md` (lines 18, 19 and 48), in
       `skills/tech-debt/scripts/scan.sh` (a comment in the "Polars joins with no cardinality contract" section,
@@ -6707,6 +6712,78 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: quick-fix. Done when: the owner has either reworded each mention to a made-up name, or recorded in
       this item that it stays, and a search of those three files for the work-repo names finds only the
       mentions that stay.
+      → done 2026-11-13 (/deferred quick fix): the owner chose to reword all seven mentions. `hooks/README.md`
+      (lines 18, 19 and 48) and `skills/tech-debt/SKILL.md` (lines 8, 78, 151 and 218) now use made-up names
+      (`payroll-stats`, `payroll-model`, `industry-embedder`, `payroll_model`). The `scan.sh` comment, which had
+      moved to line 105, says "one work repo", because the 54-join count is a real measurement. A search of the
+      three files for the work-repo names and their family names finds nothing.
+
+## work-repo-name-sweep — 2026-11-13
+- [x] **Older text in 17 more public files named work repos, or their family names (a side session of plan 96's
+      "older text" item, 2026-11-13).** The earlier sweep covered `hooks/README.md`, `skills/tech-debt/SKILL.md` and
+      `skills/tech-debt/scripts/scan.sh`. A search of every tracked file outside `specs/` and `archive/` found
+      the same kind of mention in 17 more files: three in the design-architecture skill, three in the
+      develop-testing-strategy skill, nine in the llm-wiki skill, `build/suites.toml` and
+      `skills/describe-critique-methodology/scripts/test_check_decoupling.py`. The search used the names of
+      every sibling git repo, the archived repos and the package names that the text itself cites. The owner
+      chose each group on 2026-11-13. The design-architecture and develop-testing-strategy examples, the
+      llm-wiki default root, the session and lint fixtures, the decoupling fixture and two schema examples now
+      use made-up names. The made-up names are the earlier sweep's `payroll-stats` and `payroll-model`, plus
+      `payroll-nowcast` (the original family), `payroll_nowcast` (its archived underscore twin),
+      `payroll_model` (the model package), `sector-indices` (a PyMC sibling repo that matches no folder
+      under `~/Projects`, so unverified), `call-themes`, `jobs-revisions`, `release-stats` (the stats package)
+      and `llm-wiki`. The wiki default root is code that behaves on the name. It moved from the old folder name
+      to `~/llm-wiki` in `lint_wiki.py`, `bootstrap_wiki.py` and the llm-wiki tests. An owner shell that exports
+      `LLM_WIKI_ROOT` is unaffected. **The owner kept one block.** The pilot fixture in
+      `skills/llm-wiki/scripts/test_distill_specs.py` (lines 1242 to 1445) still names the old stats package.
+      Its three `@needs_pilot` tests compare that fixture with a digest in the private wiki, so a rename in the
+      test file alone breaks them. The follow-up item below records the fix. **Not edited:** `archive/skills/classification-codes/SKILL.md:265` and
+      `archive/skills/classification-codes/scripts/build.py:35,66` (a retired snapshot that names the stats
+      package), and the `specs/` history. The item above covers the three earlier-sweep files.
+      Size: quick-fix. Done when: each mention in those 17 files is reworded or recorded as kept by the owner,
+      a search of those 17 files finds only the pilot block, the llm-wiki, describe-critique-methodology and
+      design-architecture suites pass, and the commit lints pass.
+      → done 2026-11-13 (owner-chosen sweep, no plan): llm-wiki 313 passed (unchanged from before the edit),
+      describe-critique-methodology 25, design-architecture 9, commit lints passed.
+
+## work-repo-name-sweep follow-ups (no plan) — 2026-11-13
+- [ ] **The llm-wiki pilot fixture still names the old stats package (the owner kept it in the work-repo name
+      sweep, 2026-11-13).** The sweep reworded every other mention. The owner kept the pilot fixture in
+      `skills/llm-wiki/scripts/test_distill_specs.py` (lines 1242 to 1445, 25 lines), because its three
+      `@needs_pilot` tests read two files in the private wiki and compare the fixture's entries with them: the
+      digest at `$LLM_WIKI_ROOT/raw/specs/2026-07-24-<package>-specs-harvest.md` and the source page of the
+      same name under `wiki/sources/`. A rename in the test file alone makes those tests fail. If the file
+      name also changes, `needs_pilot` skips them without a message. **Do not rename inside the private
+      wiki.** Its digest and source page carry real `at:` paths and commit SHAs, and step 3 of the harvest in
+      `skills/llm-wiki/SKILL.md` greps each excerpt at those paths and commits, so a made-up name there would
+      break their provenance (a Codex review finding, 2026-11-13). The fix moves the golden pair into the
+      repo instead. Commit an anonymized copy of the two pilot files next to the tests, under the made-up
+      name `release-stats`. Point `PILOT_DIGEST` and `PILOT_SOURCE` at the copies and drop the `needs_pilot`
+      skip, so the three tests run on every machine. The first step reads the private files, so the owner
+      approves who makes the copy. The schema examples in `skills/llm-wiki/scripts/schema-template.md`
+      already use the made-up name.
+      Size: quick-fix (the owner approves the first step). Done when: the repo holds the anonymized digest and
+      source page, the three pilot tests read them with no `needs_pilot` skip and no `$LLM_WIKI_ROOT` read,
+      `test_distill_specs.py` names the old package nowhere, the private wiki is unchanged, the llm-wiki note
+      in `build/suites.toml` no longer says the tests read a pilot wiki, and the llm-wiki suite passes with
+      the same count (313 passed before the sweep).
+- [ ] **One made-up name stands for different real things in the public files (the work-repo name sweep,
+      2026-11-13).** The two sweeps reused names. `payroll-model` is the model repo in
+      `skills/design-architecture/SKILL.md:38`, `skills/design-architecture/references/decision-examples.md:11`,
+      `skills/design-architecture/references/example-inference-engine-adr.md:11` and `hooks/README.md:19`. It
+      is the model package in `skills/design-architecture/SKILL.md:200`,
+      `skills/design-architecture/references/example-inference-engine-adr.md:21` and
+      `skills/describe-critique-methodology/scripts/test_check_decoupling.py:47-48`. Line 117 of
+      `skills/design-architecture/SKILL.md` uses it for both in one sentence. `payroll_model` is the model
+      package in `skills/design-architecture/references/example-inference-engine-adr.md:66`,
+      `skills/develop-testing-strategy/SKILL.md:167,181` and
+      `skills/develop-testing-strategy/references/model-tests.md:12,94`. In `skills/tech-debt/SKILL.md` (lines
+      8, 78, 151 and 218) the same two names, with `payroll_model_bsts`, stand for a trio of duplicate sibling
+      repos. Nothing leaks. A reader can take one project for two, or three. The owner picks which names
+      change. Size: quick-fix. Done when: the owner has chosen the new names, the files above use them, a search
+      of the live files finds each remaining made-up name standing for one real thing only, and the
+      design-architecture, describe-critique-methodology, tech-debt and llm-wiki suites and the commit lints
+      pass.
 
 ## 97-change-reverted-mutant — 2026-11-14
 - [ ] **The revert has no evidence for a test in a second suite that one pytest call cannot run (plan 97 final
