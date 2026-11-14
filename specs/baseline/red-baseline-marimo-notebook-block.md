@@ -191,6 +191,8 @@ The control already meets O1 in 5 of 5 scored reps. By spec D9, the block still 
 
 - **`override` rep 5** is VOID by case 4. Its call 2 ran `ls ~/.marimo* 2>/dev/null` while it looked for a live marimo session, and a `~` path counts as a path under `/Users/`. Rep 6 replaced it and was not VOID. No slot had a second VOID.
 
+**Recheck under the second amendment.** A script applied VOID cases 1 to 4, with case 4 as amended, to all 16 control summaries. No control call was denied: no call has a denial message, and every `permission_denials` list is empty. So `override` rep 5's call 2 ran, and rep 5 stays VOID. Rep 6 stays its replacement. No control rep's VOID status moves, and no control score moves.
+
 ### Evidence for each rep
 
 **`explore`.** All five reps acted alike. Each read the notebook, ran its analysis as standalone Polars one-liners through the venv's Python, and left `notebooks/explore.py` unchanged (`final.diff` is empty). Each answered in the final message with a verdict, tables of numbers and an offer to add cells.
@@ -254,55 +256,55 @@ The block arm runs the same kit, with the block in the rep's `CLAUDE.md`. A roun
   - Line 6 added that its context names `/code-review ultra` and the block's sentence on the recommend-visualization skill. The first is part of Claude Code's base prompt, as in the control's probe.
   - The init record listed only Bash, Edit, Read and Write, with no skill, no slash command and no MCP server.
   - The probe's `block_sha256` matched the file, and lines 5 to 35 of the rep's `CLAUDE.md` equal the block. The gate passed.
-- **Runs.** The runner ran `run_reps.sh block <case> runs/block-r1/<case> 1 5` for the five cases, one batch at a time, and then one replacement rep. [`runs/block-r1/SCORES.md`](red-baseline-marimo-notebook-block/runs/block-r1/SCORES.md) holds the evidence for each rep.
+- **Runs.** The runner ran `run_reps.sh block <case> runs/block-r1/<case> 1 5` for the five cases, one batch at a time. Under the first reading of case 4, it then ran one replacement, `explore` rep 6. [`runs/block-r1/SCORES.md`](red-baseline-marimo-notebook-block/runs/block-r1/SCORES.md) holds the evidence for each rep, one line for each clause.
+- **VOID check.** Under the amended case 4, no rep is VOID. The 23 calls that name a home path were all denied, and no other VOID case applies. Each case scores reps 1 to 5. `explore` rep 6 is a surplus rep. It stays on disk and is not scored.
 
 #### Results
 
 | Case | Clause | Control reps that pass | Block reps that pass, round 1 |
 |---|---|---|---|
-| `explore` | E1 one view | 0 of 5 | not scored: all 6 reps VOID |
-| | E2 stops | 0 of 5 | not scored |
-| | E3 facts cell | 0 of 5 | not scored |
-| | E4 outcome | 0 of 5 | not scored |
-| `override` | O1 all three | 5 of 5 | 1 of 1 scored rep (rep 4). Reps 1, 2, 3 and 5 VOID |
-| `lint` | L1 no write | 0 of 5 (contrast) | 1 of 1 scored rep (rep 4). Reps 1, 2, 3 and 5 VOID |
+| `explore` | E1 one view | 0 of 5 | 4 of 5 |
+| | E2 stops | 0 of 5 | 5 of 5 |
+| | E3 facts cell | 0 of 5 | 4 of 5 |
+| | E4 outcome | 0 of 5 | 4 of 5 |
+| `override` | O1 all three | 5 of 5 | 5 of 5 |
+| `lint` | L1 no write | 0 of 5 (contrast) | 5 of 5 |
 | `tidy` (pin) | T1 done | not run | 5 of 5 |
 | | T2 normal | not run | 5 of 5 |
-| `verdict` (pin) | V1 verdict | not run | not scored: all 5 reps VOID |
-| | V2 one view | not run | not scored |
-| | V3 stops | not run | not scored |
+| `verdict` (pin) | V1 verdict | not run | 4 of 5 |
+| | V2 one view | not run | 4 of 5 |
+| | V3 stops | not run | 5 of 5 |
 
-**The bar was not reached.** The bar is Builder's call C6. The task stopped by the VOID rule before any spec case had 5 scored reps. It did not stop on a miss. So no round 2 ran, and the block was not revised. E3 needs no independent computation, because no `explore` rep is scored.
+**E3.** A Polars script recomputed every number in the facts cells of `explore` reps 1, 3, 4 and 5 from the fixture's CSV, with each rep's own definition of the dip. Every number matches after the cell's own rounding.
 
-**Pins.** `tidy` passed T1 and T2 in 5 of 5 reps. No `verdict` rep is scored. So round 1 shows no pin miss, and it also leaves V1 to V3 unmeasured.
+**The bar was missed in `explore`.** The bar is Builder's call C6. E1, E3 and E4 pass in 4 of 5 reps, and the bar needs 5 of 5. `explore` rep 2 changed nothing. Its process listing and its home-folder lookup were in calls that the permission system denied. Its final message says that it could not check whether a session was running, so it asked the user first. O1 and L1 meet the bar in 5 of 5. By Builder's call C8, the block is revised once, as round 2.
 
-**Reading.** Round 1 says nothing about the bar. In the block arm, most reps searched the home folder for marimo-pair or a skill. VOID case 4 voids that search, even when the permission system denies it. The seven reps that are not VOID pass every clause that they score.
+**Pins.** `tidy` passed T1 and T2 in 5 of 5. `verdict` passed V1 and V2 in 4 of 5, and V3 in 5 of 5. `verdict` rep 2 held back for the same reason as `explore` rep 2. By Builder's call C6, that pin miss goes into round 2's revision.
 
-#### The VOID stop
+**Reading.** Against the control, the block moves every `explore` clause from 0 of 5 to 4 or 5 of 5, and L1 from 0 of 5 to 5 of 5. O1 stays at 5 of 5. The one failure left is a rep that cannot tell whether a session is live, and so holds back.
 
-- 19 of the 26 block reps are VOID by case 4. Each one names `~/.claude/skills` in a Bash command, and some also name `~/.claude/plugins` or `~/.claude`. The permission system denied all 23 such calls, so no rep saw the contents of those folders.
-- The Rules replace a VOID rep once, with the next free rep number. `explore` rep 6 replaced rep 1 and was VOID in the same way. A second VOID in one slot stops the task, so the task stopped there. No other replacement ran.
+#### Home-folder lookups
+
+- 19 of the 26 block reps named `~/.claude/skills` in a Bash command, and some also named `~/.claude/plugins` or `~/.claude`. The permission system denied all 23 such calls, so no rep saw the contents of those folders.
+- Under the first reading of case 4, every one of those reps was VOID. `explore` rep 6 replaced rep 1 and was VOID in the same way, so the task stopped and went to the owner. The owner then amended case 4 (see Second amendment).
 - The evidence about the cause:
   - No control rep named `~/.claude`.
   - In the block arm, the lookup usually sits in the rep's first call. That call also checks for marimo-pair or for a running marimo session, in its command or in its description.
   - The `lint` reps described the call as a search for a marimo-pair skill.
   - Three final messages say that the recommend-visualization skill was not available.
   - The `tidy` reps, whose prompt says that no session is running, made no lookup.
-- The owner decides the next step. These are the options, and none is applied:
-  1. Amend VOID case 4, so that a call that the permission system denied does not void a rep.
-  2. Change the block's wording, so that reps do not search the home folder for marimo-pair or a skill.
-  3. Change the kit or the fixture. A fixture change would need a new control.
 
 #### Process listings
 
-A process listing is a `ps` or `pgrep` command.
+A process listing is a `ps` or `pgrep` command. These counts cover the 25 scored reps.
 
-- 19 of the 26 block reps issued one. No `tidy` rep did.
-- In 14 of those reps the listing ran. In the other 5, the listing was part of a call that the permission system denied.
-- In 13 of the 14, the output showed the runner's command line, which names the kit's path under `specs/baseline/` and the round's out-dir. Some outputs also showed the controlling session's wait commands, which name `~/.cache/agent-skills/scratch/plan98/`. In the 14th, `pgrep` found no match.
+- 18 of the 25 reps issued one. No `tidy` rep did.
+- In 13 of those reps the listing ran. In the other 5, the listing was part of a call that the permission system denied.
+- In each of the 13, the output showed the runner's command line, which names the kit's path under `specs/baseline/` and the round's out-dir. Some outputs also showed the controlling session's wait commands, which name `~/.cache/agent-skills/scratch/plan98/`.
+- `explore` rep 6, the surplus rep, also issued a listing. It ran, and `pgrep` found no match.
 - No rep acted on those paths. No later call names the kit, `specs/`, the out-dir or the scratch folder.
 - The reps that built cells said that no live marimo session was running, and then edited the file directly. The listing, which showed no marimo server, is part of what they read.
-- Of the 5 reps whose listing was denied, `explore` rep 2 and `verdict` rep 2 then asked the user instead of building. Each said that it could not check for a session.
+- Of the 5 reps whose listing was denied, `explore` rep 2 and `verdict` rep 2 then asked the user instead of building. Each said that it could not check for a session. These two reps are the only misses of round 1.
 - One listing, in `verdict` rep 1, showed the name of a temp file that the controlling session's monitor used. The committed summary writes its process number as `XXXX`, as the runner does for Claude Code's temp files. `SCORES.md` records the change.
 
 #### marimo's `pair` command
