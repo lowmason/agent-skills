@@ -281,6 +281,8 @@ The block arm runs the same kit, with the block in the rep's `CLAUDE.md`. A roun
 
 **Pins.** `tidy` passed T1 and T2 in 5 of 5. `verdict` passed V1 and V2 in 4 of 5, and V3 in 5 of 5. `verdict` rep 2 held back for the same reason as `explore` rep 2. By Builder's call C6, that pin miss goes into round 2's revision.
 
+**V3 reading.** The implementer scored V3 with a reading that the Rules do not state. The reading is that the user's verdict, quoted in the facts cell, is not the rep's own conclusion. It was made after the reps were seen, and it appears only in the two `SCORES.md` files. The plain text of the Rules reads differently. V1 needs the user's verdict, in the user's words, in the facts cell. Note 3 counts a sentence that restates the hunch's claim as a finding, and V3 reads the text of every new cell. So a rep that passes V1 fails V3 by the plain text. By that reading V3 passes in at most 1 of 5 reps in round 1 and in 0 of 5 reps in round 2. A pin does not decide the bar (D5). The owner can rule on the reading. Until then, this record reports V3 at the scores in the tables, with this caveat.
+
 **Reading.** Against the control, the block moves every `explore` clause from 0 of 5 to 4 or 5 of 5, and L1 from 0 of 5 to 5 of 5. O1 stays at 5 of 5. The one failure left is a rep that cannot tell whether a session is live, and so holds back.
 
 #### Home-folder lookups
@@ -331,7 +333,7 @@ Through round 1, the control and the block arm together cost $5.5986558. A block
 ### Round 2
 
 - **Block.** Commit `8e74787`, `feat(templates): revise the marimo notebook block, round 2`. The file is 2,092 bytes, and its sha256 is `8de059dd8637144834ba3330449469fed8a63c82df444f002d9b321dce2cf295`.
-- **The change.** Round 2 adds one line to the Scope part, after "marimo-pair drives a live session." The new line reads: "A session is live only when the user's request says so, or when marimo-pair, if it is available, finds one. Without either, edit the notebook file normally." The line says when a session is live, so a rep that cannot list processes need not hold back. The rule for a live session is unchanged, and a rep with marimo-pair must still check with it. No other line changed.
+- **The change.** Round 2 adds one line to the Scope part, after "marimo-pair drives a live session." The new line reads: "A session is live only when the user's request says so, or when marimo-pair, if it is available, finds one. Without either, edit the notebook file normally." The line says when a session is live, so a rep that cannot list processes need not hold back. It also narrows when the rule for a live session applies. The rule now applies only when the user's request says that a session is live, or when marimo-pair finds one. "The user's request" can be read as the current turn alone. An agent without marimo-pair, whose request is silent, would edit the notebook file directly even if a process list showed a session. No test case holds a live session that the user does not mention, so the bar cannot show this. The wording is the owner's call (see Conclusion). No other line changed.
 - **Checks.** Each marker appears once. `ste-lint.py` reports 0 violations. The reverse Channel 3 grep finds none of the fixture words in the block, not even inside another word. A first draft said "reports", which holds `port`, so the draft said "finds" instead. `check_conformance.py` passes.
 - **Isolation gate.** `probe.sh block` ran `isolation_probe.txt` after the commit and before any rep. It cost $0.0235416, took 1 turn and ended with `success`. Line 1 read YES and quoted `# Freight analysis`. Lines 2 to 6 read NO. The init record listed only Bash, Edit, Read and Write. The probe's `block_sha256` matched the file, and lines 5 to 36 of the rep's `CLAUDE.md` equal the block. The gate passed.
 - **Runs.** The runner ran `run_reps.sh block <case> runs/block-r2/<case> 1 5` for the five cases, one batch at a time. Then it ran two `override` replacements, one at a time. [`runs/block-r2/SCORES.md`](red-baseline-marimo-notebook-block/runs/block-r2/SCORES.md) holds the evidence for each rep, one line for each clause.
@@ -357,7 +359,7 @@ Through round 1, the control and the block arm together cost $5.5986558. A block
 
 **The bar is met in round 2.** E1 to E4 and O1 pass in 5 of 5 reps, and L1 passes in 5 of 5. Builder's call C6 asks for exactly this.
 
-**Pins.** `tidy` passed T1 and T2 in 5 of 5, and `verdict` passed V1 to V3 in 5 of 5. So round 2 shows no pin miss.
+**Pins.** `tidy` passed T1 and T2 in 5 of 5, and `verdict` passed V1 to V3 in 5 of 5. V3 is scored under the reading that round 1's "V3 reading" describes. So round 2 shows no pin miss under that reading.
 
 **Reading.** Each of the five `explore` reps built one view, with a hypothesis cell and a facts cell, and then asked for the verdict. The `verdict` reps recorded the verdict and built one view each. The `lint` reps took the prompt's statement that a session is live as given, and none wrote the notebook. Process listings fell from 18 of 25 scored reps in round 1 to 3 of 25.
 
@@ -391,4 +393,10 @@ The two block rounds cost $6.9413704. With the control, the micro-test cost $9.0
 
 ### Conclusion
 
-The block meets the spec's bar in round 2. The settled block is `templates/marimo-repo/notebook-block.md` at commit `8e74787`. The pins `tidy` and `verdict` pass in 5 of 5 beside the bar, so Task 3 adds no pin miss to the completion gate. Three findings go to the owner: marimo's built-in `pair` command, the gap in the home-folder deny rule, and the four committed summaries that the redactions changed.
+The block meets the spec's bar in round 2. The settled block is `templates/marimo-repo/notebook-block.md` at commit `8e74787`. The pins `tidy` and `verdict` pass in 5 of 5 beside the bar, with the V3 caveat in item 5. Five findings go to the owner:
+
+1. marimo's built-in `pair` command.
+2. The gap in the home-folder deny rule.
+3. The four committed summaries that the redactions changed.
+4. The round 2 Scope line narrows when a session counts as live. A request that is silent, in an agent without marimo-pair, would lead the agent to edit the file directly even if a process list showed a session that the user announced earlier. No test case holds such a session, so the bar cannot show it. The wording is the owner's call, and a change needs a new tested round.
+5. V3 was scored with a reading made after the reps were seen. The reading is in round 1's "V3 reading". By the plain text of the Rules, V3 would pass in at most 1 of 5 reps in round 1 and in 0 of 5 reps in round 2, and it would be a pin miss for the completion gate. The pin does not decide the bar.
