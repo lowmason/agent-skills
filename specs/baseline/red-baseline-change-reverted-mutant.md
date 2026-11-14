@@ -1244,7 +1244,5 @@ before any treatment rep ran. Neither ruling changes a bar, a reading rule or a 
   the `Important (Should Fix)` heading, after the word "None.". The counts above read each as a remark
   (reading rules 1 and 5), so R5 and R6 are 5 of 5. Read as findings, they would be 4 of 5, which
   still meets "at least 4 of 5". For the treatment arm, the verdict on each bar follows reading rules
-  1 and 5 as registered. The record also gives a second count for each package, in which any text on
-  the revert, a `Keeps:` line or check 7 under a Critical or Important heading counts as a finding.
-  The second count changes no verdict. If the two counts fall on different sides of a bar, the record
-  states both and the owner rules at the completion gate.
+  1 and 5 as registered. Reading rule 5 already requires the record to note each remark that raises
+  the revert or the `Keeps:` line, so a reader sees each such sentence beside the count.
