@@ -1,0 +1,104 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_slug.py
+head: 46627db424bb46fd76ee418601bae57770ddab12
+base: 8b7e5ef01572d4f5118abfd77cce49d56eea2798
+tree: clean
+result: caught 0, survived 0, invalid 4
+revert: ran, exit 1, failed 6, not loaded 0, skipped 0, passed 2
+--- mutants ---
+mutant 1: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 2: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 3: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+mutant 4: INVALID exit - sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 reason: does not apply
+--- tests ---
+--- revert ---
+path: slug.py
+sha256: 12444903011ae1a39810097edb763e87899e153e37961e0c30baa05f8e38fba8
+failed tests.test_slug::test_slugify_collapses_space_runs: AssertionError: assert 'a--b' == 'a-b'
+passed tests.test_slug::test_slugify_lowercases
+passed tests.test_slug::test_slugify_single_space_is_one_hyphen
+failed tests.test_slug::test_slugify_collapses_long_runs: AssertionError: assert 'a-----b' == 'a-b'
+failed tests.test_slug::test_slugify_collapses_mixed_whitespace_runs: AssertionError: assert 'a-\t\n-b' == 'a-b'
+failed tests.test_slug::test_slugify_collapses_each_run_separately: AssertionError: assert 'a--b---c' == 'a-b-c'
+failed tests.test_slug::test_slugify_collapses_leading_and_trailing_runs: AssertionError: assert '--a--' == '-a-'
+failed tests.test_slug::test_slugify_lowercases_with_whitespace_runs: AssertionError: assert 'hello---world' == 'hello-world'
+--- output: baseline ---
+........                                                                 [100%]
+8 passed in 0.01s
+--- output: revert ---
+F..FFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+______________________ test_slugify_collapses_space_runs _______________________
+
+    def test_slugify_collapses_space_runs():
+>       assert slugify('a  b') == 'a-b'
+E       AssertionError: assert 'a--b' == 'a-b'
+E         
+E         - a-b
+E         + a--b
+E         ?   +
+
+tests/test_slug.py:5: AssertionError
+_______________________ test_slugify_collapses_long_runs _______________________
+
+    def test_slugify_collapses_long_runs():
+>       assert slugify('a     b') == 'a-b'
+E       AssertionError: assert 'a-----b' == 'a-b'
+E         
+E         - a-b
+E         + a-----b
+
+tests/test_slug.py:17: AssertionError
+_________________ test_slugify_collapses_mixed_whitespace_runs _________________
+
+    def test_slugify_collapses_mixed_whitespace_runs():
+>       assert slugify('a \t\n b') == 'a-b'
+E       AssertionError: assert 'a-\t\n-b' == 'a-b'
+E         
+E         + a-	
+E         - a-b
+E         ? -
+E         + -b
+
+tests/test_slug.py:21: AssertionError
+__________________ test_slugify_collapses_each_run_separately __________________
+
+    def test_slugify_collapses_each_run_separately():
+>       assert slugify('a  b   c') == 'a-b-c'
+E       AssertionError: assert 'a--b---c' == 'a-b-c'
+E         
+E         - a-b-c
+E         + a--b---c
+E         ?  +   ++
+
+tests/test_slug.py:25: AssertionError
+_______________ test_slugify_collapses_leading_and_trailing_runs _______________
+
+    def test_slugify_collapses_leading_and_trailing_runs():
+>       assert slugify('  a  ') == '-a-'
+E       AssertionError: assert '--a--' == '-a-'
+E         
+E         - -a-
+E         + --a--
+E         ? +   +
+
+tests/test_slug.py:29: AssertionError
+_________________ test_slugify_lowercases_with_whitespace_runs _________________
+
+    def test_slugify_lowercases_with_whitespace_runs():
+>       assert slugify('Hello   World') == 'hello-world'
+E       AssertionError: assert 'hello---world' == 'hello-world'
+E         
+E         - hello-world
+E         + hello---world
+E         ?       ++
+
+tests/test_slug.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_slug.py::test_slugify_collapses_space_runs - AssertionError...
+FAILED tests/test_slug.py::test_slugify_collapses_long_runs - AssertionError:...
+FAILED tests/test_slug.py::test_slugify_collapses_mixed_whitespace_runs - Ass...
+FAILED tests/test_slug.py::test_slugify_collapses_each_run_separately - Asser...
+FAILED tests/test_slug.py::test_slugify_collapses_leading_and_trailing_runs
+FAILED tests/test_slug.py::test_slugify_lowercases_with_whitespace_runs - Ass...
+6 failed, 2 passed in 0.01s

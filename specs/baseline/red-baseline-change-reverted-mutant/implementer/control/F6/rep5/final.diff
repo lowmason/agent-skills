@@ -1,0 +1,27 @@
+diff --git a/stock.py b/stock.py
+index e44e301..2184991 100644
+--- a/stock.py
++++ b/stock.py
+@@ -1,2 +1,2 @@
+ def reorder_needed(level: int, threshold: int) -> bool:
+-    return level < threshold
++    return level <= threshold
+diff --git a/tests/test_stock.py b/tests/test_stock.py
+new file mode 100644
+index 0000000..fc51bba
+--- /dev/null
++++ b/tests/test_stock.py
+@@ -0,0 +1,13 @@
++from stock import reorder_needed
++
++
++def test_reorder_at_threshold():
++    assert reorder_needed(2, 5) is True
++
++
++def test_reorder_when_level_equals_threshold():
++    assert reorder_needed(5, 5) is True
++
++
++def test_no_reorder_above_threshold():
++    assert reorder_needed(6, 5) is False

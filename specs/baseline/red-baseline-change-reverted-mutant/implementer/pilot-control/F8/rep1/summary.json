@@ -1,0 +1,96 @@
+{
+  "fixture": "F8",
+  "rep": 1,
+  "rep_dir": "/tmp/mt-rep-iJa0Xd",
+  "base": "d2811097bbea8caa48a475f5f5e9decd4a5afe61",
+  "prompt_sha256": "cf00b32c6154583e61d673b1c335f2ccd29ba44a70da9ae4f2338b931c80f75b",
+  "claude_exit": 0,
+  "wall_seconds": 19,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-iJa0Xd/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 18363,
+    "total_cost_usd": 0.0784752,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 2315,
+        "cacheReadInputTokens": 71412,
+        "cacheCreationInputTokens": 12040,
+        "webSearchRequests": 0,
+        "costUSD": 0.0784752,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 0,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12040,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "- **Status:** DONE\n- **Commits:** 3eb2aef Add to_bytes\n- **Tests:** 2/2 passing, output pristine; mutants: caught 3, survived 0, invalid 0\n- **Concerns:** none. Input with an unlisted unit such as `5GB` raises `KeyError`, which the spec doesn't cover.\n- **Report:** /tmp/mt-rep-iJa0Xd/repo/.sdd/plan/task-1-report.md",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iJa0Xd/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat /tmp/mt-skill/references/mutants.md; ls -R . | grep -v .git | head -30"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iJa0Xd/repo; cat specs/sizes.md; mkdir -p tests\ncat > tests/test_units.py <<'E'\nfrom units import to_bytes\n\n\ndef test_to_bytes_reads_each_unit():\n    assert to_bytes('7B') == 7\n    assert to_bytes('2KB') == 2048\n    assert to_bytes('3MB') == 3145728\n\n\ndef test_to_bytes_reads_a_number_of_several_digits():\n    assert to_bytes('15KB') == 15360\nE\n/tmp/mt-venv/bin/python -m pytest -q tests/test_units.py 2>&1 | tail -4"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iJa0Xd/repo; cat > units.py <<'E'\n_FACTORS = {'B': 1, 'KB': 1024, 'MB': 1024 ** 2}\n\n\ndef to_bytes(text: str) -> int:\n    digits = text.rstrip('BKM')\n    unit = text[len(digits):]\n    return int(digits) * _FACTORS[unit]\nE\n/tmp/mt-venv/bin/python -m pytest -q tests/test_units.py 2>&1 | tail -3\ngit add units.py tests/test_units.py; git commit -qm \"Add to_bytes\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"\nW=.sdd/plan\ncat > $W/task-1-mutants.md <<'E'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/sizes.md:7 | unit B | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | unit KB (1024) | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | unit MB | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | multi-digit number | test_to_bytes_reads_a_number_of_several_digits |\n\n## Mutants\n\nMutant 1: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 KB factor is 1000 \u2014 task-1-mutant-1.patch\nMutant 2: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 MB factor is 1024*1000 \u2014 task-1-mutant-2.patch\nMutant 3: specs/sizes.md:7, test_to_bytes_reads_a_number_of_several_digits \u2014 only first digit read \u2014 task-1-mutant-3.patch\nE\nsed -i \"s/'KB': 1024/'KB': 1000/\" units.py; git diff -- units.py > $W/task-1-mutant-1.patch; git checkout -- units.py\nsed -i \"s/1024 \\*\\* 2/1024 * 1000/\" units.py; git diff -- units.py > $W/task-1-mutant-2.patch; git checkout -- units.py\nsed -i \"s/int(digits)/int(digits[0])/\" units.py; git diff -- units.py > $W/task-1-mutant-3.patch; git checkout -- units.py\nwc -l $W/*.patch; git status --short\n/tmp/mt-skill/scripts/mutant-run plan.md 1 d2811097bbea8caa48a475f5f5e9decd4a5afe61 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_units.py"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iJa0Xd/repo; W=.sdd/plan\nsed -i '' \"s/'KB': 1024/'KB': 1000/\" units.py; git diff -- units.py > $W/task-1-mutant-1.patch; git checkout -- units.py\nsed -i '' \"s/1024 \\*\\* 2/1024 * 1000/\" units.py; git diff -- units.py > $W/task-1-mutant-2.patch; git checkout -- units.py\nsed -i '' \"s/int(digits)/int(digits[0])/\" units.py; git diff -- units.py > $W/task-1-mutant-3.patch; git checkout -- units.py\nwc -l $W/*.patch; git status --short\n/tmp/mt-skill/scripts/mutant-run plan.md 1 d2811097bbea8caa48a475f5f5e9decd4a5afe61 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_units.py"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iJa0Xd/repo; cat > .sdd/plan/task-1-report.md <<'E'\n# Task 1 report\nImplemented `to_bytes` in units.py (strip trailing unit letters, int * factor table); tests/test_units.py as given by plan.\nTDD: RED = ModuleNotFoundError-style collection error (\"1 error during collection\") before units.py existed. GREEN = `2 passed`.\nMutants: .sdd/plan/task-1-mutants-2.log \u2014 caught 3, survived 0, invalid 0 (first run had invalid patches from BSD sed; regenerated).\nFiles: units.py, tests/test_units.py (committed); mutants file/patches in .sdd/plan.\nConcerns: none. Invalid input (e.g. '5GB') raises KeyError; spec doesn't define it.\nE\ngit status --short; git log --oneline | head -2"
+      }
+    }
+  ],
+  "commits": [
+    "3eb2aef Add to_bytes"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants-2.log",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}

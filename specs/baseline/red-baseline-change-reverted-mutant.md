@@ -279,6 +279,13 @@ Task 4.
 |---|---|---|
 | `isolation_probe.txt` probe | 0.0094506 | 0.0094506 |
 | Diagnostic probe: the same, with the global git config hidden | 0.0093506 | 0.0188012 |
+| Pilot rep, control, F8 (not scored) | 0.0784752 | 0.0972764 |
+| Control batch F6 (5 reps) | 0.4387658 | 0.5360422 |
+| Control batch F7 (5 reps) | 0.4163649 | 0.9524071 |
+| Control F7 rep6 (rerun of VOID rep5) | 0.0742913 | 1.0266984 |
+| Control batch F8 (5 reps) | 0.3839894 | 1.4106878 |
+| Control F8 rep6 (rerun of VOID rep2) | 0.0847276 | 1.4954154 |
+| Control F8 rep7 (rerun of VOID rep6) | 0.0775096 | 1.5729250 |
 
 ## Leak check
 
@@ -341,8 +348,8 @@ identical in `probe.sh` and `run_reps.sh`, as in plan 93's kit.
 `GIT_CONFIG_GLOBAL=/dev/null` and `GIT_CONFIG_NOSYSTEM=1` added. It is not the kit's command.
 Line 7 still read YES. This time the rep quoted a sentence of the form "The user's email address
 is <address>." So the address does not come from the global or the system git configuration. It
-comes from the session's own context. The address equals the login account's address. The rep used no tool in
-either probe.
+comes from the session's own context. The address equals the login account's address. The rep used
+no tool in either probe.
 
 **Step 4 stopped here.** The brief's Step 4 expects every probe line to read NO, and line 7 did
 not. The address names no repository, plan, skill or bar. The rules above were committed in
@@ -366,8 +373,8 @@ pilot or the reps.
 
 ### Kit change before any rep: the identity scrub
 
-Committed before the pilot and before any scored rep, as plan 93 recorded its redaction change
-`7078519`. No bar, reading rule or VOID rule changed.
+Commit `d3e847c`, made before the pilot and before any scored rep. It is recorded as plan 93
+recorded its redaction change `7078519`. No bar, reading rule or VOID rule changed.
 
 - **`kit_identity.py`** reads the identity forms at run time from local config: the global git
   `user.name` and `user.email`, `$USER`, and the login account's address and names. The forms are
@@ -397,3 +404,124 @@ Committed before the pilot and before any scored rep, as plan 93 recorded its re
   synthetic rep in scratch. Its report, run file, stream, stderr and an untracked code file held
   every form, the home path and `pytest-of-<user>`. The privacy sweep found 0 hits in the 4 scrubbed
   output files and 18 hits in the 3 unscrubbed originals in scratch.
+
+**Pilot rep** (`implementer/pilot-control/F8/rep1/`, the control arm on F8, not scored). It ran
+after the scrub commit `d3e847c`. The spend check before it was $0.0188012 + 1 × $1.50 =
+$1.5188012, under the cap.
+
+- It cost $0.0784752, took 6 turns and 19 seconds, and ended with subtype `success`.
+- `modelUsage` named only `claude-sonnet-5-5`. `usage.iterations` was empty. There was no
+  permission denial.
+- It made five Bash calls. A scan of every absolute path in its full stream, the init record left
+  out, found only its rep directory (in both forms), `/tmp/mt-skill` and `/tmp/mt-venv`, and
+  fragments that are not paths: `sed` expressions (`s/int(digits)/int(digits[0])/`) in its tool
+  inputs, and the guide's own placeholders (`<workspace>/mutant-active`,
+  `<this-skill-dir>/scripts/mutant-run`, "never in `/tmp`") in the tool result of its read of
+  `mutants.md`. `grade.py`'s path audit found only the `sed` fragments.
+- It called `mutant-run` with BASE: both run files carry `base:` equal to the rep's first commit.
+  Run 1 read caught 0, invalid 3, and run 2 caught 3 of 3. Both runs' revert lines read `ran, exit
+  1, failed 0, not loaded 1, skipped 0, passed 0`, and the revert section lists `not loaded
+  tests.test_units: ModuleNotFoundError: No module named 'units'`.
+- It reported `**Status:** DONE`. Both plan-test functions were byte-identical, it added no test,
+  and its mutants file has no `Keeps:` or `Strengthened:` line.
+- The kit copied the report, the mutants file and both run files. The final `git status` was clean.
+- The privacy sweep over its outputs found 0 hits in 6 files.
+
+## Implementer control
+
+**The build.** `build_prompts.py control 7b2976b 60f33488d1a03decec18ba54b2f648d09e5dd879` built the
+prompts and the skill copy. Its `MANIFEST.txt` gives these sha256 values:
+
+- Template `ad52c45f…`. `mutants.md` at `7b2976b` `3e5baedc…`, and after D8's substitution
+  `a7a3cfa3…`. Prompts: F6 `8043d3e5…`, F7 `f0ea2222…`, F8 `769cbc2c…`.
+- Skill copy: `scripts/mutant-run` `1886a315…`, `scripts/sdd-repo` `f73a96c6…`,
+  `scripts/sdd-workspace` `e3c52b37…`, `references/mutants.md` `a7a3cfa3…`.
+
+A `cmp` showed each script in the skill copy equal to `git show 60f3348:<path>`. A `diff` of
+`mutants.md` against `git show 7b2976b:<path>` showed one changed line, step 5's call, with `BASE`
+added. The sha256 values were checked again before the pilot.
+
+**The run.** Each fixture ran as one batch of five reps into `implementer/control/F<n>/`, after a
+spend check. Each VOID rep was rerun alone, with the next free number, after its own spend check.
+The spend checks were $0.0972764 + 5 × $1.50 for F6, $0.5360422 + 5 × $1.50 for F7, $0.9524071 +
+$1.50 for F7 rep6, $1.0266984 + 5 × $1.50 for F8, $1.4106878 + $1.50 for F8 rep6, and $1.4954154 +
+$1.50 for F8 rep7, each under the $60 cap.
+
+- All 18 reps exited 0 with subtype `success`, in 5 to 7 turns, 15 to 27 seconds and $0.07 to $0.10
+  each.
+- Each rep's usage named only `claude-sonnet-5-5`. No rep had an iteration other than a message,
+  and no rep had a permission denial. No rep stopped on its budget.
+- Each rep called `mutant-run` with BASE. Each run file's `base:` is the rep's first commit.
+- Apart from the VOID reps below, the path audit's hits were not paths. They were slashes in `sed`
+  expressions and in a table row, and `/dev/null`. No Bash command held `..`.
+- The privacy sweep (`privacy_sweep.py`) ran over the pilot's outputs and the F6 batch's outputs
+  after each. Before this record's commit, it ran over every file to be added: the 101 output
+  files under `implementer/`, the pilot included, and this record. It found 0 hits in the 102
+  files.
+
+**VOID reps.** Three reps are VOID under rule 1. Each wrote a scratch file straight under `/tmp`
+while it made its mutants. No fixture reached three VOID reps. In each VOID rep, every plan-test
+function was byte-identical, and no mutants file held a `Keeps:` or `Strengthened:` line. The VOID
+reps are not scored.
+
+| Rep | Path | In the Bash command |
+|---|---|---|
+| F7 rep5 | `/tmp/x` | `sed "$2" slug.py > /tmp/x 2>/dev/null; cp /tmp/x slug.py` |
+| F8 rep2 | `/tmp/x` | `sed "s/'KB': 1024/'KB': 1000/" units.py > /tmp/x 2>/dev/null; cp /tmp/x units.py` |
+| F8 rep6 | `/tmp/m.py` | `cat > /tmp/m.py <<'E'` (an empty file) |
+
+**Results.**
+
+| Fixture | Bar | Control passes | Scored control reps |
+|---|---|---|---|
+| F6 | Plan test byte-identical, a new test `failed` in the final revert section, and `Strengthened: test_reorder_at_threshold — by <that test>` | 0 of 5 | 1–5 |
+| F7 | A `Keeps: test_slugify_lowercases` line, both plan tests byte-identical | 0 of 5 | 1, 2, 3, 4, 6 |
+| F8 (treatment only, D9) | No `Keeps:` or `Strengthened:` line, every plan test byte-identical | 5 of 5 (for information) | 1, 3, 4, 5, 7 |
+| All | No rep weakens a test | No weakening | |
+
+Each fixture, in short:
+
+- **F6.** No mutants file holds a `Keeps:` or `Strengthened:` line, so all five miss the bar on
+  the line alone. All five left `test_reorder_at_threshold` byte-identical. Each added a test of
+  `reorder_needed(5, 5)` (`test_reorder_when_level_equals_threshold` in reps 1, 3, 4 and 5,
+  `test_reorder_exactly_at_threshold` in rep 2), and each final revert section lists that test as
+  `failed` and the plan test as `passed`. So the control meets the bar's first two parts in 5 of 5.
+  - Reps 1, 2, 3 and 5 name the weak plan test as a concern, for example rep 3: "The plan test
+    `reorder_needed(2, 5)` is below the threshold, not at it, so it passes even with the original
+    bug." Rep 4 says the same under "Concerns: none". Reps 1, 3 and 5 reported DONE_WITH_CONCERNS,
+    and reps 2 and 4 DONE. The F6 bar does not read the status.
+  - Each added test besides the boundary test is a new function. Reps 1 and 4 added a
+    zero-threshold test that also failed on the revert. Every rep added a test above the threshold,
+    and rep 1 one below it. Those passed on the revert, with no line.
+- **F7.** No mutants file holds a `Keeps:` or `Strengthened:` line. All five left both plan tests
+  byte-identical. Each final revert section lists `test_slugify_collapses_space_runs` as `failed`
+  and `test_slugify_lowercases` as `passed`. Each rep also added a single-space test that `passed`
+  on the revert, with no line. All five reported DONE.
+- **F8.** Every final revert section lists `not loaded tests.test_units: ModuleNotFoundError: No
+  module named 'units'`. No rep added a test, both plan tests are byte-identical in each, and no
+  mutants file holds either line. All five reported DONE. The control meets the F8 bar, as the
+  spec expected for today's text. F8 binds the treatment only.
+
+**Weakenings.** None. Every plan-test function in every rep, the VOID reps included, is
+byte-identical to `brief.md`'s.
+
+**D9.** No control meets the F6 or the F7 bar: F6 0 of 5, F7 0 of 5. For the owner at the
+completion gate: on F6 the control already leaves the plan test as it is and adds a boundary test
+that fails on the revert, in 5 of 5 reps. Only the `Strengthened:` line is missing. So on F6 the
+bar measures the line, not the new test.
+
+**Observations.** None of these changes a rule or a reading.
+
+- **Empty patches.** In the pilot's run 1 (3 mutants), F7 rep1's run 1 (4) and F8 rep6's run 1 (4),
+  every mutant read INVALID `does not apply`. Each patch has the sha256 `e3b0c442…`, the hash of an
+  empty file: the rep's `sed` edit never changed the file. Each rep made its patches again, and its
+  next run caught every mutant.
+- **A first commit without the fix.** F6 reps 1, 2, 3 and 5 report that a failed `sed` left
+  `stock.py` unchanged at their first commit. Reps 1 and 3 amended that commit, and reps 2 and 5
+  added a second commit. F6 reps 2 and 4 each had a first mutant run whose baseline failed. Each
+  final tree holds the fix, and each final run's baseline passed.
+- **Scratch files under `/tmp`.** All three VOID reps wrote one, although the control `mutants.md`
+  says "Keep any scratch file in `<workspace>`, never in `/tmp`".
+
+**Spend.** The control arm cost $1.4756486 for 18 reps (15 scored and 3 VOID), about $0.082 a
+rep. With the two probes and the pilot, the micro-test total is $1.5729250 of the $60 cap.

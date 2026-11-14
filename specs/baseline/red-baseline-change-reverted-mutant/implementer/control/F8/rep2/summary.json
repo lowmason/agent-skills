@@ -1,0 +1,95 @@
+{
+  "fixture": "F8",
+  "rep": 2,
+  "rep_dir": "/tmp/mt-rep-iVJU3w",
+  "base": "1c9c25a512d3d71dd628dbd83621ec0fa1a6ea72",
+  "prompt_sha256": "3f52e07cf743068b61acea5f3df3be6beae778e7c8876fb733669df34b91fb29",
+  "claude_exit": 0,
+  "wall_seconds": 18,
+  "init": {
+    "cwd": "/private/tmp/mt-rep-iVJU3w/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-sonnet-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 6,
+    "duration_ms": 17521,
+    "total_cost_usd": 0.08030789999999999,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 2286,
+        "cacheReadInputTokens": 73319,
+        "cacheCreationInputTokens": 12523,
+        "webSearchRequests": 0,
+        "costUSD": 0.08030789999999999,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 0,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 12523,
+        "canonicalModel": "claude-sonnet-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "Wrapping up: the work is done and I'm reporting now.\n\n- **Status:** DONE\n- **Commits:** 399c53d Add to_bytes\n- **Tests:** 2/2 passing. RED was a `ModuleNotFoundError` for `units`. Mutants: caught 4, survived 0, invalid 0.\n- **Concerns:** none. `to_bytes` also raises `ValueError` on malformed input, which the spec doesn't require.\n- **Report:** /tmp/mt-rep-iVJU3w/repo/.sdd/plan/task-1-report.md",
+  "tool_calls": [
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iVJU3w/repo; cat .sdd/plan/task-1-brief.md .sdd/plan/task-1-spec.md; cat plan.md | head -80; git ls-files; cat /tmp/mt-skill/references/mutants.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iVJU3w/repo; cat specs/sizes.md; mkdir -p tests\ncat > tests/test_units.py <<'E'\nfrom units import to_bytes\n\n\ndef test_to_bytes_reads_each_unit():\n    assert to_bytes('7B') == 7\n    assert to_bytes('2KB') == 2048\n    assert to_bytes('3MB') == 3145728\n\n\ndef test_to_bytes_reads_a_number_of_several_digits():\n    assert to_bytes('15KB') == 15360\nE\n/tmp/mt-venv/bin/python -m pytest -q tests/test_units.py 2>&1 | tail -5"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iVJU3w/repo\ncat > units.py <<'E'\nimport re\n\n_FACTORS = {'B': 1, 'KB': 1024, 'MB': 1024 * 1024}\n\n\ndef to_bytes(text: str) -> int:\n    match = re.fullmatch(r'(\\d+)(B|KB|MB)', text)\n    if match is None:\n        raise ValueError(f'invalid size: {text!r}')\n    return int(match.group(1)) * _FACTORS[match.group(2)]\nE\n/tmp/mt-venv/bin/python -m pytest -q 2>&1 | tail -3\ngit add units.py tests/test_units.py && git commit -qm \"Add to_bytes\n\nCo-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\"\nW=.sdd/plan\n# mutants\nsed \"s/'KB': 1024/'KB': 1000/\" units.py > /tmp/x 2>/dev/null; cp /tmp/x units.py; git diff -- units.py > $W/task-1-mutant-1.patch; git checkout -- units.py\nsed \"s/1024 \\* 1024/1024 * 1000/\" units.py > $W/s; cp $W/s units.py; git diff -- units.py > $W/task-1-mutant-2.patch; git checkout -- units.py\nsed \"s/(\\\\\\\\d+)/(\\\\\\\\d)/\" units.py > $W/s; cp $W/s units.py; git diff -- units.py > $W/task-1-mutant-3.patch; git checkout -- units.py\nsed \"s/'B': 1,/'B': 2,/\" units.py > $W/s; cp $W/s units.py; git diff -- units.py > $W/task-1-mutant-4.patch; git checkout -- units.py\nrm $W/s; wc -l $W/*.patch; cat $W/task-1-mutant-3.patch; git status --short"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iVJU3w/repo; W=.sdd/plan\ncat > $W/task-1-mutants.md <<'E'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/sizes.md:7 | unit B | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | unit KB (1024) | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | unit MB | test_to_bytes_reads_each_unit |\n| specs/sizes.md:7 | multi-digit number | test_to_bytes_reads_a_number_of_several_digits |\n\n## Mutants\n\nMutant 1: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 KB is 1000 \u2014 task-1-mutant-1.patch\nMutant 2: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 MB is 1024*1000 \u2014 task-1-mutant-2.patch\nMutant 3: specs/sizes.md:7, test_to_bytes_reads_a_number_of_several_digits \u2014 only one digit read \u2014 task-1-mutant-3.patch\nMutant 4: specs/sizes.md:7, test_to_bytes_reads_each_unit \u2014 B factor is 2 \u2014 task-1-mutant-4.patch\nE\n/tmp/mt-skill/scripts/mutant-run plan.md 1 1c9c25a512d3d71dd628dbd83621ec0fa1a6ea72 -- /tmp/mt-venv/bin/python -m pytest -q tests/test_units.py 2>&1 | tail -8"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "cd /tmp/mt-rep-iVJU3w/repo; cat > .sdd/plan/task-1-report.md <<'E'\n# Task 1 report\nImplemented `to_bytes` in units.py (regex `\\d+` + B|KB|MB, ValueError otherwise) and plan tests in tests/test_units.py.\nRED: `pytest -q tests/test_units.py` -> ModuleNotFoundError: No module named 'units'.\nGREEN: 2 passed.\nMutants: /tmp/mt-rep-iVJU3w/repo/.sdd/plan/task-1-mutants.log \u2014 caught 4, survived 0, invalid 0.\nFiles: units.py, tests/test_units.py (committed); mutant files in .sdd/plan (uncommitted).\nConcerns: none. Invalid-input ValueError is beyond spec but harmless.\nE\ngit status --short; git log --oneline | head -2"
+      }
+    }
+  ],
+  "commits": [
+    "399c53d Add to_bytes"
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "task-1-report.md",
+    "task-1-mutants.log",
+    "task-1-mutants.md"
+  ],
+  "stderr_tail": []
+}
