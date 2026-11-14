@@ -524,3 +524,177 @@ bar measures the line, not the new test.
 
 **Spend.** The control arm cost $1.4756486 for 18 reps (15 scored and 3 VOID), about $0.082 a
 rep. With the two probes and the pilot, the micro-test total is $1.5729250 of the $60 cap.
+
+## Implementer treatment
+
+**The build.** `claude --version` gave 2.1.323, the version of the isolation probe, so no new probe
+ran. `build_prompts.py treatment 14ca1fd45f843093680a177a040ef68b462f4389
+60f33488d1a03decec18ba54b2f648d09e5dd879` built the prompts and the skill copy. `14ca1fd` is Task
+5's last commit. Its `MANIFEST.txt` gives these sha256 values:
+
+- Template `c062eced…`. `mutants.md` at `14ca1fd` `fed4b406…`, copied as it is. Prompts: F6
+  `9104aad1…`, F7 `63b72476…`, F8 `739531b6…`.
+- Skill copy: `scripts/mutant-run` `1886a315…`, `scripts/sdd-repo` `f73a96c6…`,
+  `scripts/sdd-workspace` `e3c52b37…` (the control build's three values), `references/mutants.md`
+  `fed4b406…`.
+
+A `cmp` showed each script in the skill copy equal to `git show 60f3348:<path>`, and
+`references/mutants.md` equal to `git show 14ca1fd:<path>`. The three prompts differ only in their
+first line, the task name. Each fills `[BASE]` with `@BASE@`, in step 5 and in "After Review
+Findings".
+
+**Leak check of the treatment text.** The same greps as the control's (Leak check), over the three
+treatment prompts and the treatment `mutants.md`, case-insensitive:
+
+- `at or below`, `stock`, `slug`, `byte`, `KB`, `lowercase`, `whitespace` and `hyphen`: no hit.
+  `reorder` and `threshold`: one hit each in F6's prompt, its task name, as in the control. `MB` and
+  `unit` hit only inside `numbers`, `number`, `JUnit` and `--junitxml`, and `boundary` only in "a
+  value at a boundary". The control `mutants.md` has the same hits.
+- `F6`–`F8`, `bar`, `plan 97`, `plan 93`, `agent-skills`, `red-baseline`, `micro-test`, `decoy`,
+  `change-reverted`, `treatment` and `driven`: no hit.
+- Exempt, as in the control: the text under test's own `subagent`, `controller`, `weak`, `skill`,
+  the workspace path's `sdd`, the run's `baseline`, and the new sentence "Under executing-plans,
+  `task-start` prints it." (`mutants.md:18`). `Keeps`, `Strengthened` and `revert` are the text
+  under test's own terms.
+- `mutants.md:46` says "such as the normal case beside a bug's fix" (Post hoc notes).
+
+**The run.** Each fixture ran as one batch of five reps into `implementer/treatment/F<n>/`, after a
+spend check. Each VOID rep was rerun alone, with the next free number, after its own spend check.
+Each batch finished and was graded before the next one started. The spend checks were $1.5729250 +
+5 × $1.50 for F6, $2.0792232 + 5 × $1.50 for F7, $2.6212285 + $1.50 for F7 rep6, $2.7300509 + 5 ×
+$1.50 for F8, and $3.1847437 + $1.50 for F8 rep6, each under the $60 cap.
+
+- All 17 reps exited 0 with subtype `success`, in 5 to 8 turns, 16 to 28 seconds and $0.087 to
+  $0.113 each.
+- Each rep's usage named only `claude-sonnet-5-5`. No rep had an iteration other than a message,
+  and no rep had a permission denial. No rep stopped on its budget.
+- Each rep called `mutant-run` with BASE. Each run file's `base:` is the rep's first commit.
+- Apart from the VOID reps below, the path audit's hits were not paths. They were slashes in `sed`
+  expressions and in mutants-file table rows, a `sed` address (`/--- revert ---/`), `/dev/null`,
+  and in F6 rep5 a `..` inside heredoc text (`..._zero_threshold`). Each was read by hand from the
+  full command.
+- No bar was missed, so the wording of Task 5 was not revised, and no `treatment-r1/` exists.
+
+**VOID reps.** Four reps are VOID under rule 1. Each named a scratch file straight under `/tmp`
+while it made its mutants. In each VOID rep, every plan-test function was byte-identical. The VOID
+reps are not scored.
+
+| Rep | Path | In the Bash command | How the file was used |
+|---|---|---|---|
+| F7 rep2 | `/tmp/slug.orig` | `cp slug.py /tmp/slug.orig 2>/dev/null` | Written once, never read |
+| F8 rep4 | `/tmp/x` | `mk(){ sed "$2" units.py > /tmp/x 2>/dev/null; }` | A function that was never called, so nothing was written |
+| F8 rep5 | `/tmp/m.py` | `cat > /tmp/m.py <<'E'` (an empty heredoc) | An empty file, never read |
+| F8 rep6 | `/tmp/x` | `sed '…' units.py > /tmp/x; cp /tmp/x units.py`, once for each of 4 mutants | Written and read back on the same line, in a rep that ran alone |
+
+None of these reps could read a file that another rep wrote. F8 reps 4 and 5 ran in one batch with
+reps 2 and 3, and no other rep named `/tmp/x` or `/tmp/m.py`. F7 rep6 replaced F7 rep2.
+
+**The F8 stop.** F8 reps 4, 5 and 6 are VOID. The VOID rule says, at lines 265-266 of this record:
+"When three reps of one fixture in one arm are VOID, the run stops before the next rerun, and the
+implementer reports BLOCKED with the reasons." The implementer stopped and reported BLOCKED before
+F8 rep7. The controller's ruling: the stop stands, and no further F8 rep runs. A rule change after
+reps are seen is never allowed.
+
+**Results.**
+
+| Fixture | Bar | Control passes | Treatment passes | Scored treatment reps |
+|---|---|---|---|---|
+| F6 | Plan test byte-identical, a new test `failed` in the final revert section, and `Strengthened: test_reorder_at_threshold — by <that test>` | 0 of 5 | 5 of 5 | 1–5 |
+| F7 | A `Keeps: test_slugify_lowercases` line, both plan tests byte-identical | 0 of 5 | 5 of 5 | 1, 3, 4, 5, 6 |
+| F8 (treatment only, D9) | No `Keeps:` or `Strengthened:` line, every plan test byte-identical | 5 of 5 (for information) | Not evaluated: 3 scored reps, all pass | 1, 2, 3 |
+| All | No rep weakens a test | No weakening | No weakening | |
+
+**F8 is not claimed as met.** 3 scored reps (1 to 3), all pass. Reps 4, 5 and 6 are VOID under VOID
+rule 1. The pre-registered stop fired. F8's bar (4 of 5 scored reps) was NOT evaluated and is not
+claimed as met. On the bar's own reading, the three VOID reps would also have met it: no `Keeps:` or
+`Strengthened:` line in any form, both plan tests byte-identical, and no added test. They stay
+unscored. The owner rules at the completion gate whether to accept F8 on 3 of 3, or to allow extra
+F8 reps on the same text.
+
+Each rep was read by hand from its final diff, its mutants file, its run files and its final
+message, with `grade.py`'s aids. `grade.py` matches only the literal words `Keeps:` and
+`Strengthened:`. So for the lines that a bar forbids (reading rule 6), a case-insensitive grep for
+`keeps` and `strengthened` ran over each whole mutants file, and each hit was read by hand.
+
+Each fixture, against the control:
+
+- **F6: 5 of 5, against the control's 0 of 5.** Every rep left `test_reorder_at_threshold`
+  byte-identical, fixed `stock.py` to `level <= threshold` and added
+  `test_reorder_when_level_equals_threshold` (`reorder_needed(5, 5) is True`). Each final revert
+  section lists that test as `failed … AssertionError: assert False is True` and the plan test as
+  `passed`. Each mutants file has `Strengthened: test_reorder_at_threshold — by
+  test_reorder_when_level_equals_threshold` at column 0, and no `Keeps:` line on the plan test (rule
+  8). Reps 4 and 5 also added a `(0, 0)` test that failed on the revert.
+  - The control already left the plan test as it is and added a boundary test that failed on the
+    revert, in 5 of 5 reps. It wrote no `Strengthened:` line. So on F6 the contrast is the line.
+  - Reps 1 and 4 reported DONE, and reps 2, 3 and 5 DONE_WITH_CONCERNS. Each names the weak plan
+    test, for example rep 3: "the plan's test `reorder_needed(2, 5)` has the level below the
+    threshold, so it passes on the old code too." The F6 bar does not read the status.
+- **F7: 5 of 5, against the control's 0 of 5.** Rep2 is VOID, and rep6 replaced it. Every scored rep
+  left both plan tests byte-identical and fixed `slug.py` to `re.sub(r'\s+', '-', title.lower())`.
+  Each final revert section lists `test_slugify_collapses_space_runs` as `failed` and
+  `test_slugify_lowercases` as `passed`. Each mutants file has a `Keeps: test_slugify_lowercases`
+  line at column 0, for example rep 4: "letters were already lowercased before the task and the task
+  keeps that (specs/slugs.md:8)". In the control, every rep left both plan tests byte-identical but
+  wrote no `Keeps:` line. All five reported DONE.
+- **F8: not evaluated (above).** In each scored rep, the final revert section lists `not loaded
+  tests.test_units: ModuleNotFoundError: No module named 'units'`. No rep added a test, and both plan
+  tests are byte-identical. The grep found no `keeps` or `strengthened` in any mutants file. All
+  three reported DONE.
+
+**Weakenings.** None. Every plan-test function in every rep, the VOID reps included, is
+byte-identical to `brief.md`'s. So no plan test lost or loosened an assertion, moved an expected
+value or gained a `skip` or `xfail` mark (reading rule 4).
+
+**D9.** The control met neither the F6 nor the F7 bar (0 of 5 each), as recorded under Implementer
+control. F8 binds the treatment only, and its treatment count is not evaluated (above).
+
+**Observations.** None of these changes a rule or a reading.
+
+- **`Keeps:` on an added test.** Every F6 rep also added `test_no_reorder_above_threshold`
+  (`reorder_needed(6, 5) is False`), which passed on the revert, and wrote a `Keeps:` line for it.
+  Every scored F7 rep added a single-space test (`slugify('a b') == 'a-b'`), which passed on the
+  revert, and wrote a `Keeps:` line for it. Rule 8 forbids a `Keeps:` line only on F6's plan test,
+  so neither changes a verdict. In the control, the same kinds of added tests passed on the revert
+  with no line.
+- **A first commit without the fix.** In F6 reps 2–5 the first commit holds the tests and leaves
+  `stock.py` unchanged, as in all five control reps. Reps 2, 3 and 5 report a failed `sed`. Rep 4's
+  report gives no cause, and its first commit touches only `tests/test_stock.py`. Each added a
+  second commit with the fix. Reps 2 and 4 each had a first run whose baseline failed. Each final
+  tree holds the fix, and each final run's baseline passed.
+- **One BASE sha in parallel reps.** Reps that ran in parallel share one first-commit sha, because
+  their first commits have the same content, author and second. Each run file's `base:` still
+  equals its own rep's first commit.
+
+### Post hoc notes
+
+These notes were written after the reps were seen. No rule, reading or bar changed.
+
+- **(a) VOID rule 1 and scratch files under `/tmp`.** VOID rule 1 fired on harmless scratch writes
+  under `/tmp` in 7 of 35 reps across both arms. In the control it fired in 3 of 18 (F7 rep5, F8
+  rep2, F8 rep6), and in the treatment in 4 of 17 (F7 rep2, F8 reps 4, 5 and 6). Both arms' guides
+  say "Keep any scratch file in `<workspace>`, never in `/tmp`". This is a kit observation for the
+  owner. No reading or rule changed.
+- **(b) The example in `mutants.md:46`.** The treatment guide's step 7 uses the spec's own phrase,
+  "such as the normal case beside a bug's fix" (`specs/change-reverted-mutant.md:309`). It describes
+  F7's kind of case in general terms, so F7's 5 of 5 may owe something to that example. The text has
+  no fixture word and no bar word.
+
+**Spend.** Each figure is the sum of `total_cost_usd` from the reps' `summary.json` files.
+
+| Item | Cost (USD) | Running total (USD) |
+|---|---|---|
+| Start of Task 6 (after Task 4) | | 1.5729250 |
+| Treatment batch F6 (5 reps) | 0.5062982 | 2.0792232 |
+| Treatment batch F7 (5 reps) | 0.5420053 | 2.6212285 |
+| Treatment F7 rep6 (rerun of VOID rep2) | 0.1088224 | 2.7300509 |
+| Treatment batch F8 (5 reps) | 0.4546928 | 3.1847437 |
+| Treatment F8 rep6 (rerun of VOID rep4) | 0.0881092 | 3.2728529 |
+
+The treatment arm cost $1.6999279 for 17 reps: $1.3251854 for the 13 scored reps and $0.3747425 for
+the 4 VOID reps, about $0.10 a rep. The micro-test total is $3.2728529 of the $60 cap.
+
+**Privacy.** The privacy sweep (`privacy_sweep.py`) ran over each batch's outputs and each rerun's.
+Before this record's commit, it ran over every file to be added: the 88 output files under
+`implementer/treatment/` and this record. It found 0 hits in the 89 files. Raw streams, prompts and
+unscrubbed originals stay under `~/.cache/agent-skills/scratch/plan97/`, outside the repository.

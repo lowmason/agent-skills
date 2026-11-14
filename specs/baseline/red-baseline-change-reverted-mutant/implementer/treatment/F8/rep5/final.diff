@@ -1,0 +1,31 @@
+diff --git a/tests/test_units.py b/tests/test_units.py
+new file mode 100644
+index 0000000..916aafd
+--- /dev/null
++++ b/tests/test_units.py
+@@ -0,0 +1,11 @@
++from units import to_bytes
++
++
++def test_to_bytes_reads_each_unit():
++    assert to_bytes('7B') == 7
++    assert to_bytes('2KB') == 2048
++    assert to_bytes('3MB') == 3145728
++
++
++def test_to_bytes_reads_a_number_of_several_digits():
++    assert to_bytes('15KB') == 15360
+diff --git a/units.py b/units.py
+new file mode 100644
+index 0000000..854fd10
+--- /dev/null
++++ b/units.py
+@@ -0,0 +1,8 @@
++_FACTORS = {'B': 1, 'KB': 1024, 'MB': 1024 * 1024}
++
++
++def to_bytes(text: str) -> int:
++    for unit in ('KB', 'MB', 'B'):
++        if text.endswith(unit):
++            return int(text[:-len(unit)]) * _FACTORS[unit]
++    raise ValueError(f'unknown unit in size: {text!r}')

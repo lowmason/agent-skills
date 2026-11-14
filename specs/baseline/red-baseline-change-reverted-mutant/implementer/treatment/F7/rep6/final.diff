@@ -1,0 +1,48 @@
+diff --git a/slug.py b/slug.py
+index b6e6794..dd86524 100644
+--- a/slug.py
++++ b/slug.py
+@@ -1,2 +1,5 @@
++import re
++
++
+ def slugify(title: str) -> str:
+-    return title.lower().replace(' ', '-')
++    return re.sub(r'\s+', '-', title.lower())
+diff --git a/tests/test_slug.py b/tests/test_slug.py
+new file mode 100644
+index 0000000..de6bcd4
+--- /dev/null
++++ b/tests/test_slug.py
+@@ -0,0 +1,31 @@
++from slug import slugify
++
++
++def test_slugify_collapses_space_runs():
++    assert slugify('a  b') == 'a-b'
++
++
++def test_slugify_lowercases():
++    assert slugify('Hello') == 'hello'
++
++
++def test_slugify_single_space():
++    assert slugify('a b') == 'a-b'
++
++
++def test_slugify_collapses_long_space_run():
++    assert slugify('a     b') == 'a-b'
++
++
++def test_slugify_collapses_tab_and_newline_runs():
++    assert slugify('a\t\nb') == 'a-b'
++    assert slugify('a\tb') == 'a-b'
++    assert slugify('a\nb') == 'a-b'
++
++
++def test_slugify_collapses_runs_at_edges():
++    assert slugify('  a  ') == '-a-'
++
++
++def test_slugify_collapses_each_run_separately():
++    assert slugify('A  B   C') == 'a-b-c'

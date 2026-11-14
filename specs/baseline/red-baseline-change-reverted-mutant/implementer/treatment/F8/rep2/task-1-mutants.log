@@ -1,0 +1,134 @@
+mutant-run: Task 1, run 1
+command: /tmp/mt-venv/bin/python -m pytest -q tests/test_units.py
+head: fdf38e138b6b34f110563275bb13f5635b999f94
+base: becc30c92e00e9723694296f642165079641c342
+tree: clean
+result: caught 5, survived 0, invalid 0
+revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 d2b7a2295ee5a23b300324515da242649dc7e3aecf93a9e3a013adcaf64ccff4 tests: tests.test_units::test_to_bytes_reads_each_unit tests.test_units::test_to_bytes_reads_a_number_of_several_digits
+mutant 2: CAUGHT exit 1 sha256 dd9d493926adf58bd6aac2b661b26f2fd77457812ca2519a867e5875c2dd2162 tests: tests.test_units::test_to_bytes_reads_each_unit
+mutant 3: CAUGHT exit 1 sha256 c0d328f14e06460f3ced763602adda86c926c9bd8279ad9f7273a1e65996bb2d tests: tests.test_units::test_to_bytes_reads_each_unit
+mutant 4: CAUGHT exit 1 sha256 2ea9afcea3c04073d38d0caed4abce9203ebf8edb5910d6e74a2df926a84dd91 tests: tests.test_units::test_to_bytes_reads_a_number_of_several_digits
+mutant 5: CAUGHT exit 1 sha256 f80447db1a7f3d1cd2da1a7c29f8450f3c99fc307e42b6158a5733dea7cabd99 tests: tests.test_units::test_to_bytes_reads_each_unit
+--- tests ---
+test tests.test_units::test_to_bytes_reads_each_unit: caught 1 2 3 5
+test tests.test_units::test_to_bytes_reads_a_number_of_several_digits: caught 1 4
+--- revert ---
+path: units.py
+sha256: c751d909ffb2cf0599a5e79b630f180d5233e16ba5b9b7daf8a701956a771c97
+not loaded tests.test_units: ModuleNotFoundError: No module named 'units'
+--- output: baseline ---
+..                                                                       [100%]
+2 passed in 0.00s
+--- output: mutant 1 ---
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________________________ test_to_bytes_reads_each_unit _________________________
+
+    def test_to_bytes_reads_each_unit():
+        assert to_bytes('7B') == 7
+>       assert to_bytes('2KB') == 2048
+E       AssertionError: assert 2000 == 2048
+E        +  where 2000 = to_bytes('2KB')
+
+tests/test_units.py:6: AssertionError
+________________ test_to_bytes_reads_a_number_of_several_digits ________________
+
+    def test_to_bytes_reads_a_number_of_several_digits():
+>       assert to_bytes('15KB') == 15360
+E       AssertionError: assert 15000 == 15360
+E        +  where 15000 = to_bytes('15KB')
+
+tests/test_units.py:11: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_each_unit - AssertionError: a...
+FAILED tests/test_units.py::test_to_bytes_reads_a_number_of_several_digits - ...
+2 failed in 0.01s
+--- output: mutant 2 ---
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+________________________ test_to_bytes_reads_each_unit _________________________
+
+    def test_to_bytes_reads_each_unit():
+        assert to_bytes('7B') == 7
+        assert to_bytes('2KB') == 2048
+>       assert to_bytes('3MB') == 3145728
+E       AssertionError: assert 3072000 == 3145728
+E        +  where 3072000 = to_bytes('3MB')
+
+tests/test_units.py:7: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_each_unit - AssertionError: a...
+1 failed, 1 passed in 0.01s
+--- output: mutant 3 ---
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+________________________ test_to_bytes_reads_each_unit _________________________
+
+    def test_to_bytes_reads_each_unit():
+>       assert to_bytes('7B') == 7
+E       AssertionError: assert 56 == 7
+E        +  where 56 = to_bytes('7B')
+
+tests/test_units.py:5: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_each_unit - AssertionError: a...
+1 failed, 1 passed in 0.01s
+--- output: mutant 4 ---
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+________________ test_to_bytes_reads_a_number_of_several_digits ________________
+
+    def test_to_bytes_reads_a_number_of_several_digits():
+>       assert to_bytes('15KB') == 15360
+               ^^^^^^^^^^^^^^^^
+
+tests/test_units.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '15KB'
+
+    def to_bytes(text: str) -> int:
+        """Convert a size such as '3KB' (digits then unit, no space) to bytes."""
+        match = re.fullmatch(r'(\d)(B|KB|MB)', text)
+        if match is None:
+>           raise ValueError(f'invalid size: {text!r}')
+E           ValueError: invalid size: '15KB'
+
+units.py:10: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_a_number_of_several_digits - ...
+1 failed, 1 passed in 0.01s
+--- output: mutant 5 ---
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+________________________ test_to_bytes_reads_each_unit _________________________
+
+    def test_to_bytes_reads_each_unit():
+        assert to_bytes('7B') == 7
+        assert to_bytes('2KB') == 2048
+>       assert to_bytes('3MB') == 3145728
+E       AssertionError: assert 3072 == 3145728
+E        +  where 3072 = to_bytes('3MB')
+
+tests/test_units.py:7: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_units.py::test_to_bytes_reads_each_unit - AssertionError: a...
+1 failed, 1 passed in 0.01s
+--- output: revert ---
+
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_units.py _____________________
+ImportError while importing test module '/private/tmp/mt-rep-ryjH8Q/repo/tests/test_units.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+~/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_units.py:1: in <module>
+    from units import to_bytes
+E   ModuleNotFoundError: No module named 'units'
+=========================== short test summary info ============================
+ERROR tests/test_units.py
+1 error in 0.01s
