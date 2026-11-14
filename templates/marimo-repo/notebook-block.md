@@ -2,6 +2,7 @@
 ## Notebooks
 
 Notebooks are marimo notebooks in `notebooks/`. marimo-pair drives a live session.
+A session is live only when the user's request says so, or when marimo-pair, if it is available, finds one. Without either, edit the notebook file normally.
 During a live session, change cells only through marimo-pair. This includes lint fixes.
 Never use `Write` or `Edit` on a notebook file then.
 
