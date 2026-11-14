@@ -40,31 +40,32 @@ set -u
 PARK="$HOME/.cache/agent-skills/scratch/plan98"
 
 # Keep these six functions identical in run_reps.sh and probe.sh.
-# Print the absolute, physical form of a path that need not exist yet, so that `..`, `.`, a
-# trailing slash and a linked parent such as /tmp all resolve. Call it in $(...), so that its
-# set -f stays in a subshell.
+# Print the absolute, physical path that `mkdir -p` would reach for a path that need not exist yet.
+# It walks the parts from left to right, as `mkdir -p` does. Each part that exists as a folder is
+# resolved with `cd -P`, so a link counts where `mkdir -p` follows it, even after a part that does
+# not exist yet. The current path is then always physical, so `..` is its parent. Call it in
+# $(...), so that its set -f stays in a subshell.
 resolve_path() {
-  local path="$1" rest='' part
+  local path="$1" cur part
   set -f
   case "$path" in
-    /*) ;;
-    *) path="$PWD/$path" ;;
+    /*) cur=/ ;;
+    *) cur="$(pwd -P)" || return 1 ;;
   esac
-  while [ ! -d "$path" ]; do
-    rest="${path##*/}${rest:+/$rest}"
-    path="${path%/*}"
-    [ -n "$path" ] || path=/
-  done
-  path="$(cd "$path" && pwd -P)" || return 1
   local IFS=/
-  for part in $rest; do
+  for part in $path; do
     case "$part" in
       '' | .) ;;
-      ..) path="${path%/*}"; [ -n "$path" ] || path=/ ;;
-      *) path="${path%/}/$part" ;;
+      ..) cur="${cur%/*}"; [ -n "$cur" ] || cur=/ ;;
+      *)
+        cur="${cur%/}/$part"
+        if [ -d "$cur" ]; then
+          cur="$(cd -P "$cur" && pwd -P)" || return 1
+        fi
+        ;;
     esac
   done
-  printf '%s\n' "$path"
+  printf '%s\n' "$cur"
 }
 
 # Refuse, with exit 2, an output path that is /tmp/mnb98/ or lies inside it, because reps can read
