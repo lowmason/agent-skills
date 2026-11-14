@@ -46,8 +46,8 @@
 #      With no path left, nothing runs. Otherwise `git diff --no-renames
 #      --binary HEAD BASE` over those paths goes to
 #      <workspace>/task-<N>-revert.patch, which each run overwrites and keeps.
-#      That diff also takes --no-color, --no-ext-diff, --no-textconv and the
-#      a/ and b/ prefixes, so the user's git config cannot change the patch.
+#      That diff also takes -U3, --no-color, --no-ext-diff, --no-textconv and
+#      the a/ and b/ prefixes, so the user's git config cannot break the patch.
 #      It runs as a patch does in step 6, with the marker and the mutants' time
 #      limit, and with --continue-on-collection-errors added for it alone, so
 #      a test file that cannot load hides no other file's tests. It gets no
@@ -796,11 +796,12 @@ else
   for p in "${revert_paths[@]}"; do
     pathspecs+=(":(literal)$p")
   done
-  # The patch must not depend on the user's git config: color.ui or
+  # The user's git config must not break the patch: color.ui or
   # color.diff "always" would write colour codes, diff.noprefix would drop
-  # the a/ and b/ that git apply strips, and diff.external or a textconv
-  # driver would write something other than the files' bytes.
-  git -C "$top" diff --no-renames --binary --no-color --no-ext-diff --no-textconv \
+  # the a/ and b/ that git apply strips, diff.external or a textconv driver
+  # would write something other than the files' bytes, and diff.context 0
+  # would write hunks with no context lines, which git apply refuses.
+  git -C "$top" diff -U3 --no-renames --binary --no-color --no-ext-diff --no-textconv \
     --src-prefix=a/ --dst-prefix=b/ HEAD "$base_sha" -- "${pathspecs[@]}" > "$revert_patch"
   revert_sha=$(file_sha256 "$revert_patch")
   revert='revert: not applied: does not apply'

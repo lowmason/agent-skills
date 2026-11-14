@@ -2041,6 +2041,28 @@ def test_mutant_run_builds_the_revert_patch_whatever_the_users_diff_config(chang
     assert 'failed test_half::test_half_floors: AssertionError: assert 1.5 == 1' in lines
 
 
+SCALE = 'def double(a):\n    return a * a\n\n\ndef triple(a):\n    return 3 * a\n'
+TEST_SCALE = 'from scale import double\n\n\ndef test_double():\n    assert double(3) == 6\n'
+
+
+def test_mutant_run_builds_the_revert_patch_whatever_the_users_diff_context(calc):
+    # git apply refuses a hunk with no context lines unless it ends its file,
+    # so the task's edit sits in the middle of scale.py.
+    base = commit_files(calc, {'scale.py': SCALE}, 'base')
+    commit_files(calc, {'scale.py': SCALE.replace('a * a', '2 * a'), 'test_scale.py': TEST_SCALE}, 'task')
+    make_mutant(calc, 1, *A)
+    # Set after make_mutant, whose git diff would read it too. The repository's
+    # own config, which every git reads.
+    git('config', 'diff.context', '0', cwd=calc)
+    result = run(MUTANT_RUN, 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    [revert] = [x for x in lines if x.startswith('revert: ')]
+    assert revert == 'revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 3'
+    assert 'failed test_scale::test_double: AssertionError: assert 9 == 6' in lines
+    assert tree_is_head(calc)
+
+
 def test_mutant_run_reverts_a_nested_path_from_a_subdirectory(calc):
     # git apply run from sub/ would skip every path outside sub/ and report
     # success, so the revert must apply from the top.
