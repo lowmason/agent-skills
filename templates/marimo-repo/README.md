@@ -11,7 +11,10 @@ You read the kit here and copy it by hand. `install.py` does not install it.
 1. Create `notebooks/` at the repo root. Use the root only. Ruff reads the ignore's `notebooks/**` pattern from the folder that holds the ruff config, and that folder is the repo root. A marimo notebook in any other folder counts as scratch. Scratch is throwaway exploration work.
 2. Install marimo-pair for the repo. Follow the commands in its [README](https://github.com/marimo-team/marimo-pair). This kit copies none of them.
 3. Add [the ruff ignore](#the-ruff-ignore).
-4. Paste the notebook block. The block is not written yet, so skip this step for now.
+4. Paste [the notebook block](notebook-block.md). It opens with the marker comment `<!-- marimo-repo:start -->` and closes with `<!-- marimo-repo:end -->`. Paste the whole file, both markers included.
+   - Paste the block into both `CLAUDE.md` and `AGENTS.md`, near the top, inside Codex's 32 KiB limit. Codex keeps only the first 32,768 bytes of a repo's `AGENTS.md` and drops the rest. Nothing in the model's input marks the cut. Two Codex checks in the block's test record show this, [B0](../../specs/baseline/red-baseline-marimo-notebook-block.md#b0) and [Placement](../../specs/baseline/red-baseline-marimo-notebook-block.md#placement).
+   - If a repo's `AGENTS.md` is near or past that limit, put the block before any other section.
+   - To update, replace the lines between the two marker comments in each file with the lines between them in the new `notebook-block.md`. Keep both markers. Paste no second copy of the block.
 5. Run the tech-debt skill on the repo. The skill returns a backlog that names one outcome for each scratch notebook.
    - An `.ipynb` file is a Jupyter notebook. One worth keeping gets a convert row, which turns it into a marimo notebook under `notebooks/`.
    - A marimo `.py` notebook outside `notebooks/` gets a row to move it into `notebooks/` or to delete it. The ruff ignore does not cover it until it moves.

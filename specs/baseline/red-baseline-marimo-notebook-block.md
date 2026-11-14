@@ -521,3 +521,37 @@ A rep cost $0.03 to $0.10. The first rep of each batch cost the most, because it
 ### Conclusion
 
 The paragraph meets the bar under case version 2, in its round 2 wording. `skills/explore-data/SKILL.md` carries it, and `NOTICE` credits the idea to lesson 10 of Eric Ma's post. The case version 1 runs stay committed as the record of the first two rounds.
+
+## Placement
+
+This section is Task 6's check of the placement rule. The rule is the kit README's advice to paste the block near the top of `AGENTS.md`. The check answers Review Focus 4 of the plan, which is the risk that a block at the bottom of an oversized `AGENTS.md` is lost. An oversized file is one past Codex's 32 KiB limit. The check asks two questions. Does the settled block load whole from the top of an oversized file? Is it lost from the bottom of one?
+
+**Run.** The check ran on 2026-11-14 with `codex-cli 0.167.2`.
+
+**Block.** The block is `templates/marimo-repo/notebook-block.md` as Task 3 settled it at commit `8e74787`. It is 2,092 bytes long, markers included. The markers are the two HTML comments that open and close the block, `<!-- marimo-repo:start -->` and `<!-- marimo-repo:end -->`. A script copied the block's bytes from the file. In each scratch file, the block's span has the file's sha256, `8de059dd8637144834ba3330449469fed8a63c82df444f002d9b321dce2cf295`.
+
+**Scratch files.** The check used three new git repositories under `/tmp/mnb98/b0/`. Each holds one `AGENTS.md`. Every filler line is 70 bytes long and carries its own line number, so a cut in the middle of a line shows. The files held synthetic filler and this repo's public block only.
+
+| Repository | Its `AGENTS.md` | Block starts at byte | Size in bytes |
+|---|---|---|---|
+| `top` | the block, then filler lines 33 to 705 | 0 | 49,202 |
+| `bottom` | filler lines 1 to 586, then the block | 41,020 | 43,112 |
+| `ctl` | one filler line, with no marker | none | 18 |
+
+`ctl` is the control. It shows whether any other part of the rendered input holds a marker.
+
+**Instrument.** In each repository, `codex debug prompt-input 'hello'` rendered the model-visible input without a model call. Each run exited 0 with empty error output. A script parsed the JSON output and counted each marker in its decoded text. It printed only counts. The raw output stays outside the repository.
+
+| Marker | Found in `top` | Found in `bottom` | Found in `ctl` |
+|---|---|---|---|
+| `<!-- marimo-repo:start -->` | 1 | 0 | 0 |
+| `<!-- marimo-repo:end -->` | 1 | 0 | 0 |
+
+**Cut.** The cut fell at byte 32,768 in both files, the same byte as in B0.
+
+- In `top`, the last full filler line in the rendered input is line 470. It starts at byte 32,682. The first 16 bytes of line 471 follow it. Line 471 starts at byte 32,752. So the cut falls at byte 32,768.
+- In `bottom`, the last full filler line is line 468. It starts at byte 32,690. The first 8 bytes of line 469 follow it. Line 469 starts at byte 32,760. So the cut falls at byte 32,768.
+- In both files, the rendered input holds the first 32,768 bytes of the file unchanged.
+- In both files, only the closing tag of the instruction block follows the cut. Nothing in the rendered input marks the cut.
+
+**Result.** The block at the top of an oversized `AGENTS.md` loads whole, and the block at the bottom is lost, so the placement rule holds.
