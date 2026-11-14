@@ -1,7 +1,7 @@
 # Plan 97 micro-tests: the change-reverted mutant
 
-This record holds the micro-tests of plan 97 (`specs/plans/97-change-reverted-mutant.md`). The spec,
-`specs/change-reverted-mutant.md`, asks for them in Verification item 3. They follow writing-skills'
+This record holds the micro-tests of plan 97 (`specs/plans/completed/97-change-reverted-mutant.md`). The spec,
+`specs/completed/change-reverted-mutant.md`, asks for them in Verification item 3. They follow writing-skills'
 micro-test method, main's copy, as plan 93 applied it (`specs/plans/completed/93-mutant-checked-tests.md:117-124`).
 Each arm has five scored reps per fixture, each in a fresh context, at the standard tier (`sonnet`).
 A control arm runs today's text first. A person reads every verdict by hand from the rep's full
@@ -679,7 +679,7 @@ These notes were written after the reps were seen. No rule, reading or bar chang
   say "Keep any scratch file in `<workspace>`, never in `/tmp`". This is a kit observation for the
   owner. No reading or rule changed.
 - **(b) The example in `mutants.md:46`.** The treatment guide's step 7 uses the spec's own phrase,
-  "such as the normal case beside a bug's fix" (`specs/change-reverted-mutant.md:309`). It describes
+  "such as the normal case beside a bug's fix" (`specs/completed/change-reverted-mutant.md:309`). It describes
   F7's kind of case in general terms, so F7's 5 of 5 may owe something to that example. The text has
   no fixture word and no bar word.
 
