@@ -270,6 +270,6 @@ if [ ! -f "$ledger" ]; then
   esac
   printf 'Plan: %s\n' "$plan_line" > "$ledger"
 fi
-line="Task $n: complete (commits $(git rev-parse --short=7 "$base")..$(git rev-parse --short=7 HEAD), $mutants_field, tests: $cmd → $last)"
+line="Task $n: complete (commits $(git rev-parse --short=7 "$base^{commit}")..$(git rev-parse --short=7 HEAD), $mutants_field, tests: $cmd → $last)"
 printf '%s\n' "$line" >> "$ledger"
 echo "ledger: $line"

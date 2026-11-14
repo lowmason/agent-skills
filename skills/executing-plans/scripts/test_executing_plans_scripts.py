@@ -794,7 +794,10 @@ def test_task_done_peels_an_annotated_tag_given_as_base(repo, name_kind):
     given = 'v-base' if name_kind == 'tag-name' else tag_sha
     result = run(TASK_DONE, 'plan.md', 1, given, '--', *OK_CMD, cwd=repo)
     assert result.returncode == 0, result.stderr
-    assert recorded(repo)
+    # The ledger line names the commit, as the run's base: does, not the tag object.
+    [line] = [x for x in (workspace(repo) / 'progress.md').read_text().splitlines() if x.startswith('Task 1: ')]
+    assert line.startswith(f'Task 1: complete (commits {base[:7]}..{head(repo)[:7]}, ')
+    assert tag_sha[:7] != base[:7]
 
 
 @pytest.mark.parametrize('name_kind', ['tag-name', 'tag-object-sha'])
