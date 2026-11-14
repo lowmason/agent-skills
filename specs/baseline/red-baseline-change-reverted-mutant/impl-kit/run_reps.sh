@@ -16,8 +16,12 @@
 # either token is refused. Into <out-dir>/rep<N>/ it writes final.diff, the copied workspace files,
 # and summary.json last. The copies and summary.json write $TMPDIR (in its /private form too) as
 # `$TMPDIR`, pytest's `pytest-of-<user>` as `pytest-of-$USER`, and $HOME as `~`, because a mutant run
-# log holds pytest's tmp_path in its failure output. The raw stream goes to
-# ~/.cache/agent-skills/scratch/plan97/<out-dir's parent name>/<out-dir name>/, outside the repository.
+# log holds pytest's tmp_path in its failure output. They also write the user's identity forms
+# (kit_identity.py: the name, its parts, the email address, its local part and $USER, read from local
+# config at run time) as tokens, final.diff included, so no such value reaches a file that gets
+# committed. The raw stream, and unscrubbed copies of final.diff and the workspace files in
+# rep<N>-orig/, go to ~/.cache/agent-skills/scratch/plan97/<out-dir's parent name>/<out-dir name>/,
+# outside the repository.
 # The first rep runs alone and writes the prompt cache; the others then run together.
 # Three fixes from the report-source-match runner (specs/baseline/red-baseline-report-source-match/
 # kit/run_reps.sh:18-50): the rep range is checked before the overwrite guard, each rep's status
@@ -106,9 +110,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, os.getcwd())
+import kit_identity  # noqa: E402 (the kit's directory is the cwd)
+
 stream, err, dest, fixture, rep, run_dir, repo, base, prompt, status, wall = sys.argv[1:12]
 home = os.environ['HOME']
 dest, repo = Path(dest), Path(repo)
+orig = Path(prompt).parent / f'rep{rep}-orig'
+orig.mkdir()
+IDENTITY = kit_identity.forms()
 INIT_KEYS = ('cwd', 'tools', 'mcp_servers', 'model', 'permissionMode', 'slash_commands', 'skills',
              'output_style', 'claude_code_version')
 RESULT_KEYS = ('subtype', 'is_error', 'num_turns', 'duration_ms', 'total_cost_usd', 'modelUsage')
@@ -120,7 +130,7 @@ def scrub(text):
         text = text.replace('/private' + tmpdir, '$TMPDIR').replace(tmpdir, '$TMPDIR')
     if user:
         text = text.replace(f'pytest-of-{user}', 'pytest-of-$USER')
-    return text.replace(home, '~')
+    return kit_identity.scrub(text.replace(home, '~'), IDENTITY)
 
 
 def tilde(value):
@@ -158,14 +168,18 @@ index = Path(run_dir) / 'final.index'
 shutil.copy(repo / '.git' / 'index', index)
 env = dict(os.environ, GIT_INDEX_FILE=str(index))
 git('add', '-A', env=env)
-(dest / 'final.diff').write_text(git('diff', '--cached', '--binary', base, env=env).stdout)
+diff = git('diff', '--cached', '--binary', base, env=env).stdout
+(orig / 'final.diff').write_text(diff)
+(dest / 'final.diff').write_text(scrub(diff))
 index.unlink()
 
 workspace = repo / '.sdd' / 'plan'
 copied = []
 for path in sorted(workspace.glob('task-1-report.md')) + sorted(workspace.glob('task-1-mutants*')):
     if path.name.endswith('.md') or path.name.endswith('.log'):
-        (dest / path.name).write_text(scrub(path.read_text(errors='replace')))
+        text = path.read_text(errors='replace')
+        (orig / path.name).write_text(text)
+        (dest / path.name).write_text(scrub(text))
         copied.append(path.name)
 
 err_lines = Path(err).read_text(errors='replace').splitlines() if Path(err).exists() else []

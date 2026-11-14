@@ -80,6 +80,9 @@ These are the changes from plan 93's kit:
   (`specs/deferred_items.md:6562`, which the plan cites as `:6561` at its base `99b876e`). The
   probe's first line now says "seven numbered lines" in place of "six".
 - **`probe.sh`** and **`env_check.txt`** are unchanged copies.
+- **`kit_identity.py`**, **`privacy_sweep.py`** and **`check_scrub.py`** were added after the rules'
+  commit and before any rep, with the identity scrub in `run_reps.sh` (Isolation probe, Kit change
+  before any rep).
 
 **The venv.** `/tmp/mt-venv` is plan 93's venv (its record, Kits): Python 3.13.16 and pytest 9.2.0.
 It is reused as it is.
@@ -341,6 +344,56 @@ is <address>." So the address does not come from the global or the system git co
 comes from the session's own context. The address equals the login account's address. The rep used no tool in
 either probe.
 
-**Step 4 stops here.** The brief's Step 4 expects every probe line to read NO, and line 7 does
-not. The address names no repository, plan, skill or bar. But the brief's check fails, so the
-pilot has not run and no rep has run. The owner rules on line 7 before the pilot.
+**Step 4 stopped here.** The brief's Step 4 expects every probe line to read NO, and line 7 did
+not. The address names no repository, plan, skill or bar. The rules above were committed in
+`45c2780`, and the implementer then asked the controller, before the pilot and before any rep.
+
+**Controller ruling, 2026-11-13: proceed with scrub and sweep.** Line 7's YES does not block the
+pilot or the reps.
+
+- The line is there because of D1, which the owner approved at plan review: "Each copied
+  `isolation_probe.txt` gains one line asking whether the agent knows the user's name or email (the
+  gap in backlog item `:6561`)." That item is `specs/deferred_items.md:6562` now. It asks that a
+  pilot run record the answer, and this section records it: account identity reaches the reps, and
+  the diagnostic probe places it in the session's own context, not in the git configuration.
+- Lines 1 to 6 read NO. So the probe passes for what Step 4's check guards: the repository, the
+  plan, the skill, the bars and the loaded tools. No verdict of this micro-test depends on identity.
+  Only a different login would remove it, and that is an owner step that this plan does not take.
+- The address and the name stay redacted in this record, in the report and in commit messages.
+- Before any rep, the pilot included, the kit scrubs the identity forms from every rep output that
+  gets committed (Kit change before any rep, below). Before each commit, a privacy sweep runs over
+  every file to be added.
+
+### Kit change before any rep: the identity scrub
+
+Committed before the pilot and before any scored rep, as plan 93 recorded its redaction change
+`7078519`. No bar, reading rule or VOID rule changed.
+
+- **`kit_identity.py`** reads the identity forms at run time from local config: the global git
+  `user.name` and `user.email`, `$USER`, and the login account's address and names. The forms are
+  each address (`<USER-EMAIL>`), each local part (`<USER-EMAIL-LOCAL>`), each full name and each
+  part of a name or of a local part (`<USER-NAME>`), and `$USER` (`$USER`). Values shorter than three
+  characters are left out. A form matches without regard to case, only where no letter or digit
+  touches it. The values stay in memory, and no file in the repository holds one.
+- **`run_reps.sh`**'s summary step applies that scrub after its `$HOME`, `$TMPDIR` and
+  `pytest-of-<user>` replacements. It covers the copied workspace files, `summary.json` and now
+  `final.diff` too. It keeps unscrubbed copies of `final.diff` and the workspace files in
+  `rep<N>-orig/` beside the raw stream under `~/.cache/agent-skills/scratch/plan97/`, outside the
+  repository. The `claude` command line did not change.
+- **`privacy_sweep.py <path> ...`** reads the same forms at run time and searches every given file
+  for them and for the home directory and its parent. A hit prints the file, the line and the kind
+  of form, never the value, and the script exits 1.
+- **`check_scrub.py`** checks the scrub on synthetic text built in memory. It writes no file and
+  prints no value.
+
+**The scrub checks, at no cost, before any rep:**
+
+- `check_scrub.py`: 5 forms read (one address, one local part, one full name and two name parts;
+  `$USER` matched a name part). Each form, in three cases (as read, lower, upper), was replaced by
+  its token on 15 lines, and the text around it was unchanged. No form was left. The 2 forms that
+  hold no other form stayed unchanged where a letter came before them or a digit after them, and
+  the ordinary code and report lines stayed unchanged. PASS.
+- An end-to-end check ran `run_reps.sh`'s summary step, taken unchanged from the script, on a
+  synthetic rep in scratch. Its report, run file, stream, stderr and an untracked code file held
+  every form, the home path and `pytest-of-<user>`. The privacy sweep found 0 hits in the 4 scrubbed
+  output files and 18 hits in the 3 unscrubbed originals in scratch.
