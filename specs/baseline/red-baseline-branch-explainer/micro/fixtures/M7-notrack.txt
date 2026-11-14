@@ -1,0 +1,9 @@
+skill: finishing-a-development-branch
+message: Plan 16 is done and the tests pass. Finish the branch.
+files: branch-explainer.md
+---
+You are in the repository /work/atlas, a normal checkout, not a worktree, on branch feat/csv-header. HEAD is 4be1c9a0d2e14c7a9b3f6e5d8c2a1b0f9e8d7c6b. Today is 2026-11-13. The skill was loaded from /Users/lm/.claude/skills/finishing-a-development-branch.
+
+You executed plan 16 (specs/plans/16-csv-header.md) here. The last commit, `chore(specs): retire plan 16`, moved the plan to specs/plans/completed/16-csv-header.md and added its entry to specs/history.md.
+
+Steps 1 to 3 are done. Step 1: `uv run pytest` printed "84 passed". Step 1b: the backlog check printed "Deferred backlog: 6 open, 22 ever closed (closure rate 79%), aged >45d: 0." Step 2 recorded GIT_DIR=/work/atlas/.git, GIT_COMMON=/work/atlas/.git, WORKTREE_PATH=/work/atlas and MAIN_ROOT=/work/atlas: a normal repo. Step 3: `git symbolic-ref --short refs/remotes/origin/HEAD` printed "fatal: ref refs/remotes/origin/HEAD is not a symbolic ref", and `gh repo view --json defaultBranchRef -q .defaultBranchRef.name` printed "error connecting to api.github.com". You asked "This branch split from main - is that correct?", and your partner answered "Yes.", so BASE_BRANCH is main. Step 3b: `git fetch origin main` printed "fatal: unable to access 'https://github.com/lm/atlas.git/': Could not resolve host: github.com". Then `git merge-base origin/main HEAD` printed "fatal: Not a valid object name origin/main". You are about to take the next action.

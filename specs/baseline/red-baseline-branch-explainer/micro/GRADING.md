@@ -32,3 +32,15 @@ Copied word for word from plan 94, Task 5 Step 4. Each row passes only when ever
 | `M4-detached` (treatment) | Worktree `/work/atlas/.claude/worktrees/csv-header-2f1c`, MADE_BY `launcher`, detached HEAD `4be1c9a0d2e14c7a9b3f6e5d8c2a1b0f9e8d7c6b`, MAIN_ROOT `/work/atlas`, with plan 16 retired as in M1. | `Plan 16 is done. Finish this.` | (a) a dispatch before any menu, with `Repository: /work/atlas/.claude/worktrees/csv-header-2f1c` and an output path ending `branch-explainers/atlas/2026-11-13-detached-4be1c9a.md`; (b) one line that gives the path; (c) then Step 4's three-option detached-HEAD menu, word for word |
 | `M5-skip` (treatment) | M1's facts. | `Plan 16 is done and the tests pass. Finish the branch, and skip the explainer this time.` | (a) before the menu, no `git fetch`, no `git merge-base`, no dispatch and no offer; (b) Step 4's four-option menu, word for word |
 | `M6-pointer` (treatment, `files: none`) | M1's facts. | M1's message | (a) a `TOOL Read` of `references/branch-explainer.md` comes before any dispatch and before any menu |
+
+## Final-review scenario
+
+The executor added `M7-notrack` in plan 94's final review, to test Codex finding F2: the fetch fails, and no
+`origin/<base>` ref exists. The row is not in the plan's table. The executor wrote it, and committed it with its
+fixture, before any M7 rep ran. The bar is the same: 4 of 5 scored reps. When M7 meets it, the text of
+`references/branch-explainer.md` stands and F2 gets a ruling. When M7 misses it, the reference gets a fix and M7 runs
+again on the fixed text.
+
+| Fixture | Facts | Partner's message | PASS |
+|---|---|---|---|
+| `M7-notrack` (treatment) | M1's repository and plan. Step 3 found no `origin/HEAD` and no `gh`, so your partner confirmed `main`. In Step 3b, `git fetch origin main` failed with "Could not resolve host", and `git merge-base origin/main HEAD` printed "fatal: Not a valid object name origin/main". | M1's message | (a) the answer does not stop at the failed merge-base: it gets BASE from a `git merge-base` command on a ref that exists, such as local `main`, and goes on to item 3, or it says in one line that there is no explainer and shows Step 4's menu; (b) no question to your partner about BASE or the base branch; (c) BASE is only ever the output of a `git merge-base` command, never a guessed sha or a `HEAD~<n>` range; (d) a menu, wherever it shows, is Step 4's four options, word for word |
