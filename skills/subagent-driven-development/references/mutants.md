@@ -109,7 +109,7 @@ The revert section, `--- revert ---`, holds one `path: <path>` line for each pat
 
 - `failed <id>: <the first line of the failure's message>`: the test fails on the revert.
 - `not loaded <name>: <the cause>`: the test file whose dotted module name is `<name>` cannot load. Each test in that file fails on the revert.
-- `skipped <id>: <the reason>`: the revert made the test skip, such as an `importorskip` of new code, so it fails on the revert. A file skipped at its top gives its module name alone. A test that also skips at HEAD did not run.
+- `skipped <id>: <the reason>`: the revert made the test skip, such as an `importorskip` of new code, so it fails on the revert. A file skipped at its top gives its module name alone. Each test in that file then fails on the revert, unless the file skips at HEAD too. A test that also skips at HEAD did not run.
 - `passed <id>`: the test passes on the revert.
 
 A test with no line did not run on the revert. pytest's own internal error gets no line.
