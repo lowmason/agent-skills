@@ -309,26 +309,27 @@ Subagent (general-purpose):
     7. **Each test that the task adds or changes fails on the revert,**
        plan tests that the task writes included. A test fails on the
        revert when the revert section lists it as failed, or lists its
-       file as not loaded. A skip that the revert caused counts too. When
-       the `revert:` line gives counts, a test with no entry did not run:
-       that is a gap for the controller, not a finding. A test that passes
-       on the revert needs a `Keeps:` line or, for a plan test, a
-       `Strengthened:` line that holds. A `Keeps:` line holds when the test
-       checks behavior that exists at BASE and that the task keeps. It
-       never holds for behavior that the brief or the excerpts change. A
-       `Strengthened:` line holds when its new test fails on the revert and
-       checks the behavior that the plan test should have caught. A test
-       with no line that holds is a finding: name the behavior that it
-       should have caught on the old code. Also check a task whose brief
-       states a behavior change. If the `revert:` line gives counts and no
-       test fails on the revert, no test checks the change, and that is a
-       finding, unless a test that the task adds or changes has no entry.
-       A `revert: none: …` line holds when the diff changes only test files
-       and project config files, and is a gap for the controller when it
-       does not. A `revert: not applied: …` line is a gap for the
-       controller, not a finding. Read a `no report` or `timeout` revert
-       from its output. A `conftest.py` that cannot load means that every
-       test needs the change. Any other cause is a gap for the controller.
+       file as not loaded. A skip that the revert caused, of the test or of
+       its file, counts too. When the `revert:` line gives counts, a test
+       with no entry did not run: that is a gap for the controller, not a
+       finding. A test that passes on the revert needs a `Keeps:` line or,
+       for a plan test, a `Strengthened:` line that holds. A `Keeps:` line
+       holds when the test checks behavior that exists at BASE and that the
+       task keeps. It never holds for behavior that the brief or the
+       excerpts change. A `Strengthened:` line holds when its new test
+       fails on the revert and checks the behavior that the plan test
+       should have caught. A test with no line that holds is a finding:
+       name the behavior that it should have caught on the old code. Also
+       check a task whose brief states a behavior change. If the `revert:`
+       line gives counts and no test fails on the revert, no test checks
+       the change, and that is a finding, unless a test that the task adds
+       or changes has no entry. A `revert: none: …` line holds when the
+       diff changes only test files and project config files, and is a gap
+       for the controller when it does not. A `revert: not applied: …` line
+       is a gap for the controller, not a finding. Read a `no report` or
+       `timeout` revert from its output. A `conftest.py` that cannot load
+       means that every test needs the change. Any other cause is a gap for
+       the controller.
 
     A mutant step that passes all seven checks gives no finding.
 

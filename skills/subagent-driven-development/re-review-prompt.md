@@ -64,9 +64,10 @@ that the fixes introduced nothing new.
     `not loaded <name>` for a test file that cannot load, `skipped <id>`
     or `passed <id>`. A test that skips at HEAD too did not run. A test
     fails on the revert when that section lists it as failed, or lists
-    its file as not loaded. A skip that the revert caused counts too. A
-    test with no entry did not run: that is a gap for the controller, not
-    a finding. A test that passes on the revert needs a `Keeps:` line or,
+    its file as not loaded. A skip that the revert caused, of the test or
+    of its file, counts too. When the `revert:` line gives counts, a test
+    with no entry did not run: that is a gap for the controller, not a
+    finding. A test that passes on the revert needs a `Keeps:` line or,
     for a plan test, a `Strengthened:` line in the mutants file that
     holds. A `Keeps:` line holds when the test checks behavior that exists
     at BASE and that the task keeps. It never holds for behavior that the
@@ -75,9 +76,11 @@ that the fixes introduced nothing new.
     plan test should have caught. A test with no line that holds is a new
     Important finding: name the behavior that it should have caught on
     the old code. A `revert: none: …` line holds when the amended diff
-    changes only test files and project config files. Read a `no report`
-    or `timeout` revert from its output, under `--- output: revert ---`.
-    A `conftest.py` that cannot load means that every test needs the
+    changes only test files and project config files, and is a gap for
+    the controller when it does not. A `revert: not applied: …` line is a
+    gap for the controller, not a finding. Read a `no report` or
+    `timeout` revert from its output, under `--- output: revert ---`. A
+    `conftest.py` that cannot load means that every test needs the
     change. Any other cause is a gap for the controller.
 
     A mutant run at a commit other than the amended diff's head, with a
