@@ -114,24 +114,43 @@ mutant applied. The dispatch names three files for this mutant step:
   lines are the stated rules.
 - The mutants file: an Inputs table (rule, input shape, test), then a
   `Mutant K:` line for each mutant, with its targets, the wrong version
-  in one line and its patch file, then any `Unproven:`, `Unreachable:`
-  and `Withdrawn:` lines. Each patch file sits beside the mutants file,
-  and its name ends in `.withdrawn` when a `Withdrawn: K` line names
-  it. Read a patch when its line does not show what the mutant changes.
+  in one line and its patch file, then any `Unproven:`, `Unreachable:`,
+  `Withdrawn:`, `Keeps:` and `Strengthened:` lines. A `Keeps:` line
+  names a test and the behavior from before the task that it checks. A
+  `Strengthened:` line names a plan test and the new test that
+  strengthens it. Each patch file sits beside the mutants file, and its
+  name ends in `.withdrawn` when a `Withdrawn: K` line names it. Read a
+  patch when its line does not show what the mutant changes.
 - The mutant run: the controller's run. Its `mutant K:` lines give each
   mutant's verdict, and its `test <id>: caught K ...` lines name the
   mutants that each test caught. A test's `<id>` is
   `<classname>::<name>`: match it to the mutants file and the diff by
-  the test's name.
+  the test's name. Its `base:` line names the commit that the run took
+  as BASE. BASE is the diff's base. After the mutants, the run ran the
+  tests once more on the revert. The revert is the task's diff from
+  BASE to HEAD reversed, over each changed path except test files and
+  project config files (`pyproject.toml`, `uv.lock`, `uv.toml`,
+  `.python-version`, `requirements*.txt`, `setup.cfg`, `pytest.ini` and
+  `tox.ini`, at any depth). It puts the task's code back as it was at
+  BASE and keeps the tests at HEAD. The header's `revert:` line sums up
+  that run. The revert section, `--- revert ---`, holds a `path:` line
+  for each path that the revert put back and a `sha256:` line, then one
+  line for each test case in the run's report: `failed <id>: <message>`,
+  `not loaded <name>: <cause>` for the test file whose dotted module
+  name is `<name>`, `skipped <id>: <reason>`, or `passed <id>`. A
+  `skipped` line for a file skipped at its top gives its module name
+  alone. A test that skips at HEAD too did not run. The revert's output
+  is under `--- output: revert ---`.
 
 Judge the step by this run. The implementer's report may cite an
 earlier run of its own under another file name, and that is expected.
 A batch's files all carry the batch's first task number. A mutant run
-at a commit other than the diff's head, or on a dirty working tree, is
-not evidence for this diff: report it as a gap for the controller, as
-in Tests. When the dispatch gives a mutant run, a `Mutant K:` line
-with no `mutant K: CAUGHT` line in it, and no `Withdrawn: K` line, is
-a finding.
+at a commit other than the diff's head, with a `base:` other than the
+diff's base, or on a dirty working tree, is not evidence for this
+diff: report it as a gap for the controller, as in Tests. When the
+dispatch gives a mutant run, a `Mutant K:` line with no
+`mutant K: CAUGHT` line in it, and no `Withdrawn: K` line, is a
+finding.
 
 When the dispatch gives `none: <why>` for the mutant run, check that
 the why holds. A task whose brief has a focused pytest command that
@@ -140,8 +159,8 @@ step. Lints, link checks and checks over Markdown do not make a task a
 mutant task. If the why does not hold and the mutants file is `none`
 too, the task skipped a required step: that is a finding. If the
 mutants file exists, the missing run is a gap for the controller. If
-the why holds, checks 1 to 5 below do not apply, and check 6 still
-does.
+the why holds, checks 1 to 5 and 7 below do not apply, and check 6
+still does.
 
 Check the mutant step in this order:
 
@@ -187,8 +206,28 @@ Check the mutant step in this order:
    Each loosening needs a line in the dispatch's test rulings that
    covers that change. A new assertion or a new input strengthens a
    test and needs no ruling.
+7. **Each test that the task adds or changes fails on the revert,**
+   plan tests that the task writes included. A test fails on the
+   revert when the revert section lists it as failed, or lists its
+   file as not loaded. A skip that the revert caused counts too. A
+   test with no entry did not run: that is a gap for the controller,
+   not a finding. A test that passes on the revert needs a `Keeps:`
+   line or, for a plan test, a `Strengthened:` line that holds. A
+   `Keeps:` line holds when the test checks behavior that exists at
+   BASE and that the task keeps. It never holds for behavior that the
+   brief or the excerpts change. A `Strengthened:` line holds when its
+   new test fails on the revert and checks the behavior that the plan
+   test should have caught. A test with no line that holds is a
+   finding: name the behavior that it should have caught on the old
+   code. Also check a task whose brief states a behavior change. If
+   its revert section shows no failed test and no file not loaded, no
+   test checks the change, and that is a finding. A `revert: none: …`
+   line holds when the diff changes only test files and project config
+   files. Read a `no report` or `timeout` revert from its output. A
+   `conftest.py` that cannot load means that every test needs the
+   change. Any other cause is a gap for the controller.
 
-A mutant step that passes all six checks gives no finding.
+A mutant step that passes all seven checks gives no finding.
 
 Each finding in this section is graded Important. The mutant step is
 part of this task's requirements, so a failed check is "a missed or

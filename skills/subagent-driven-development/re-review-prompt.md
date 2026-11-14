@@ -51,10 +51,40 @@ that the fixes introduced nothing new.
     not hold is a new Important finding: name the input, or the code
     that decides the rule. A plan test (a test whose code the plan
     gives) that the fixes loosen with no line in <TEST_RULINGS> is a new
-    Important finding. A mutant run at a commit other than the amended
-    diff's head, or on a dirty working tree, is a gap for the controller
-    too. When <MUTANT_RUN_FILE> is `none: <why>`, the task has no mutant
-    step, and only the plan-test check applies.
+    Important finding.
+
+    Each test that the fixes add or change must also fail on the revert.
+    BASE is the amended diff's base. The revert is the task's diff from
+    BASE to HEAD reversed, over each changed path except test files and
+    project config files (`pyproject.toml`, `uv.lock`, `uv.toml`,
+    `.python-version`, `requirements*.txt`, `setup.cfg`, `pytest.ini` and
+    `tox.ini`, at any depth). It puts the task's code back as it was at
+    BASE and keeps the tests at HEAD. The mutant run ran the tests on it,
+    and its `--- revert ---` section lists each test case: `failed <id>`,
+    `not loaded <name>` for a test file that cannot load, `skipped <id>`
+    or `passed <id>`. A test that skips at HEAD too did not run. A test
+    fails on the revert when that section lists it as failed, or lists
+    its file as not loaded. A skip that the revert caused counts too. A
+    test with no entry did not run: that is a gap for the controller, not
+    a finding. A test that passes on the revert needs a `Keeps:` line or,
+    for a plan test, a `Strengthened:` line in the mutants file that
+    holds. A `Keeps:` line holds when the test checks behavior that exists
+    at BASE and that the task keeps. It never holds for behavior that the
+    task changes, as the amended diff shows. A `Strengthened:` line holds
+    when its new test fails on the revert and checks the behavior that the
+    plan test should have caught. A test with no line that holds is a new
+    Important finding: name the behavior that it should have caught on
+    the old code. A `revert: none: …` line holds when the amended diff
+    changes only test files and project config files. Read a `no report`
+    or `timeout` revert from its output, under `--- output: revert ---`.
+    A `conftest.py` that cannot load means that every test needs the
+    change. Any other cause is a gap for the controller.
+
+    A mutant run at a commit other than the amended diff's head, with a
+    `base:` other than the amended diff's base, or on a dirty working
+    tree, is a gap for the controller too. When <MUTANT_RUN_FILE> is
+    `none: <why>`, the task has no mutant step, and only the plan-test
+    check applies.
 
     For EACH numbered finding, return one verdict:
       ADDRESSED     — the diff resolves it; say which hunk does
@@ -87,7 +117,8 @@ can get its own verdict; `<DIFF_FILE>` is the path reported by
 `<this-skill-dir>/scripts/test-run` printed on its `run: <path>` line after this
 round, the path alone, or `none: <why>`; `<MUTANT_RUN_FILE>` is the path
 `<this-skill-dir>/scripts/mutant-run` printed on its `run: <path>` line after
-this round, the path alone, or `none: <why>`; `<MUTANTS_FILE>` is the
+this round, from a call with the task's BASE (the base of the task review's
+diff), the path alone, or `none: <why>`; `<MUTANTS_FILE>` is the
 implementer's mutants file, `<workspace>/task-N-mutants.md` as an absolute
 path, or `none: <why>`; `<TEST_RULINGS>` is the ledger's `Ruling:` lines that
 cover a change to this task's plan tests, quoted, or `none`.
