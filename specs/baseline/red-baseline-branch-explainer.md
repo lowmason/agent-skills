@@ -2,8 +2,8 @@
 
 Status: complete
 
-This record holds the baseline probe for plan 94 (`specs/plans/94-branch-explainer.md`) and its spec
-(`specs/branch-explainer.md`). The probe asks one question. Does an Opus agent with no guidance already write a
+This record holds the baseline probe for plan 94 (`specs/plans/completed/94-branch-explainer.md`) and its spec
+(`specs/completed/branch-explainer.md`). The probe asks one question. Does an Opus agent with no guidance already write a
 branch explainer that meets the owner's bar? A writer rep writes an explainer of one merged plan branch. A tool-less
 reader writes a three-part synopsis from that explainer only. A tool-less adjudicator scores bars B1 to B4, and the
 kit counts words for B5. The rules below were fixed before any live run.

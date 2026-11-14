@@ -459,3 +459,38 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "**A "change reverted" mutant, so that a task's new tests must fail on the pre-change code (owner, 2026-11-12," (deferred by mutant-checked-tests follow-up).
+
+## 94-branch-explainer — 2026-11-14
+Plan: specs/plans/completed/94-branch-explainer.md · Spec: specs/completed/branch-explainer.md (retired)
+
+Differences from the design:
+- Ruling (Task 1): the record's `EXEC_BASE:` line is the ledger's 201d2d42e6112d7add38aa58cc15eb15145c0b1d, not `git rev-parse HEAD` at Step 2 (Step 1's commit moves HEAD first) — Global Constraints define EXEC_BASE as HEAD before Task 1 changes anything — if wrong, the micro-test control reads the wrong text.
+- Ruling (Task 1): audit_hits reads `models` from the init record's `model` and each assistant record's `message.model`, not from the result's `modelUsage` keys; result.json also records the `modelUsage` keys for reading by hand — C7 voids "a model other than claude-opus-5-5" for the writer; an internal call on another model is not the writer — if wrong, a second-model writer turn could slip through, but assistant records name every model that wrote a turn.
+- Ruling (Task 1): result.json adds two fields beyond C8's list: `result` (the final reply text) and `model_usage` (the modelUsage keys) — Task 2 Step 2 must record the probe's eight answers and the permcheck reply, which C8's fields do not hold — if wrong, result.json carries a reply the public scan must still pass.
+- Ruling (Task 1): run_writer.sh creates <rep>/out for every arm (permcheck included) and prints the rep path and the out/ listing — so the permcheck tests a refused write, not a missing folder (C9) — if wrong, permcheck could not test a missing-folder case, which no step needs.
+- Ruling (Task 1): synopsis_span and reader_view skip heading-like lines inside ``` code fences, with one added selftest case — a `# comment` in a bash block would otherwise end or move a section — if wrong, a fenced `#` line in a synopsis is never read as a heading, which no layout asks for.
+- Ruling (Task 1): the isolation probe and permcheck pilots are diagnostic; their expected void reasons (`no explainer file`, and the probe's line 7 read outside the rep) do not cause a rerun — Task 2 Step 2 runs each once and records it; the VOID rule is for scored reps — if wrong, two extra $1 runs are skipped.
+- Ruling (Task 1): audit_hits skips the `content` field of a `Write` tool_use (TEXT_ONLY_FIELDS) — it is text written, not a path read or run; an explainer that names `~/.claude/skills/` from the repo's own text would otherwise flag every rep — if wrong, a path named only in written text goes unflagged; the Write's `file_path` is still checked.
+- Ruling (Task 1): kit.py runs git with `--no-pager`, and its diffs with `--no-color --no-ext-diff` — the user's git config must not change the adjudicator's diff — no cost.
+- Ruling (Task 2): outside hits that are not VOID — (a) Reads of ~/.claude/projects/-private-tmp-plan94-rep-<id>-repo/<session>/tool-results/*.txt are Claude Code's saved copies of the rep's own long Bash outputs; (b) `cd ../../..` after a cd into the rep's own subfolder; (c) grep patterns such as `/5`, `/Users/`, `mason|lowell` that search the fixture's own files — none reads or runs anything outside <rep> — if wrong, a rep that saw only its own output is kept.
+- Ruling, contradicts spec (Task 3): brief-r0's Background adds "and the gap that the plan set out to close" to spec §5's Background — the treatment reader never sees the Synopsis (owner decision 6) and no other §5 body section states why the plan exists, so B1 could fail on layout alone — if wrong, Background is slightly wider than §5 and the instruction set leans toward B1, which the control held.
+- Ruling (Task 3): brief-r0's Inputs say "Read only files inside the Repository folder, and this brief." — spec §3: the writer sees only the files, as the owner would; §4 lists inputs that are all in the repository — if wrong, a real run cannot use an outside file that the owner would want read; no outside input is in §4.
+- Ruling (Task 4): a scenario's `files:` header takes a comma-separated list, and the control arm inserts no reference file — the plan says the treatment inserts the files; branch-explainer.md does not exist at EXEC_BASE — if wrong, a control scenario would need a file that its skill version never had.
+- Ruling (Task 4): GRADING.md adds the screen that applies the VOID rule's second half (plan 60's exclusion_reason: non-message usage.iterations, more than one modelUsage model, or a missing record; num_turns above 1 or a permission denial shows a tool) — the plan names what voids a rep but not how to see it — if wrong, a rep is voided on a sign the plan did not name.
+- Ruling (Task 5): branch-explainer.md item 2 adds "If the fetch fails for any other reason, run the same merge-base on the origin/<base-branch> that you have", and item 5 names the commands for the date, home folder and branch (`date +%Y-%m-%d`, `printf '%s\n' "$HOME"`, `git branch --show-current`) — the plan's items leave a failed fetch with a remote, and the source of each value, open; item 1 says "Worded freely" — if wrong, the procedure is three lines longer.
+- Ruling (Task 5): the M fixtures add facts the plan's table implies but does not spell out: the folder the skill was loaded from (/Users/lm/.claude/skills/finishing-a-development-branch, so item 6's {brief} has an absolute path, as a real session shows on load), Step 1/1b/2/3 outputs in plan 60's form, M2's HEAD sha, and M3's BASE sha and fetch result — none answers a grading row — if wrong, a scenario is easier than the plan meant by one path.
+- Ruling (Task 5): NOTICE entry placed after plan 97's entry, keyed on the plan's three-line text — the brief's drift note: plan 97's entry now sits between plan 93's and the key, and the key sets the place — no cost.
+- Deviation (Task 1): EXEC_BASE is the HEAD before Task 1's first commit. Source: plan, Task 1.
+- Deviation (Task 1): the kit's audit, `result.json` and heading rules differ from the plan text, as the rulings above say. Source: plan, Task 1.
+- Deviation (Task 1): `run_writer.sh` creates `<rep>/out` for every arm. Source: plan, Task 1.
+- Deviation (Task 2): the probe and the write check ran once each, as diagnostics. Source: plan, Task 2.
+- Deviation (Task 2): `p90` control reps 1 and 2 are VOID, and so is their replacement rep4 (by the final review). Reps 3, 5 and 6 are scored. Source: plan, Task 2.
+- Deviation (Task 3): the brief's Background and Inputs add one clause each. Source: plan, Task 3.
+- Deviation (Task 4): the micro-test kit takes a `files:` list and adds plan 60's VOID screen. Source: plan, Task 4.
+- Deviation (Task 5): items 2 and 5 of the procedure add a fetch fallback and the value commands. Source: plan, Task 5.
+- Deviation (Task 5): the micro-test fixtures add facts that the plan's table implies. Source: plan, Task 5.
+- Deviation (Task 5): the final review added micro-test `M7-notrack` (Codex finding F2), which passed 5 of 5. Source: plan, Task 5.
+- Deviation (Task 5): the NOTICE entry follows plan 97's entry. Source: plan, Task 5.
+- Decision D3 (spec amendment): the probe fixtures are isolated repositories, not worktrees. Source: plan, `## Decisions`.
+- Decision D4 (spec amendment): the procedure and the writer brief live in two reference files. Source: plan, `## Decisions`.
+- Deferred: 4 items. Source: specs/deferred_items.md, § 94-branch-explainer.

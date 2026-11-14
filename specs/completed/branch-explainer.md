@@ -1,8 +1,7 @@
 # Branch explainer — Design Spec
 
-**Status: APPROVED (2026-11-13)** — the owner approved it on 2026-11-13, after brainstorming and a builder
-check. The next step is writing-plans, in a fresh session on branch
-`claude/branch-explainer-pre-merge-fde7f8`.
+**Status: COMPLETE (2026-11-14)** — implemented by plan 94 (`specs/plans/completed/94-branch-explainer.md`) and
+retired here. It was APPROVED on 2026-11-13, after brainstorming and a builder check.
 
 ## What this builds
 
@@ -350,8 +349,7 @@ If it fails, the work stops and the results go to the owner. No round tunes agai
 
 ## Not in this spec
 
-- **marimo notebooks with controls**, for model changes in downstream repos. → deferred at plan completion,
-  as an item in `specs/deferred_items.md`.
+- **marimo notebooks with controls**, for model changes in downstream repos. → item: 94-branch-explainer — 2026-11-14
 - HTML output, diagrams, and explainers for other people's PRs.
 - A gate on the questions.
 - Any change to the reviewers, the Copilot loop, `specs/history.md` or the Plan Completion Protocol.

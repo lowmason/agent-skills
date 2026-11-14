@@ -6828,3 +6828,34 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `skills/subagent-driven-development/task-reviewer-prompt.md` and the regenerated `runtimes/` copies) names
       one place that stated rules come from, a micro-test shows the start-date finding gone from an R4-type
       package with no bar of the record falling, and `build/check_reviewer_block.py` passes.
+
+## 94-branch-explainer — 2026-11-14
+- [ ] **Notebook explainers with controls, for model changes in downstream repos (spec, Done when 6).** Step 3b
+      writes a Markdown explainer only. An explainer for a model change could sit beside it as a notebook with
+      controls, through the notebook seam of `specs/marimo-notebook-seam.md`. Source:
+      `specs/completed/branch-explainer.md`, Not in this spec. It would take a spec for which model changes get
+      a notebook and what its controls show. Size: design. Revisit if: the owner asks for an explainer with
+      controls for a model change in a downstream repository.
+- [ ] **Step 3b and brainstorming's builder check name `model: opus`, a Claude Code model name (plan 94 final
+      review, Codex finding F1; the owner kept the text and asked for this item, 2026-11-14).** Item 6 of
+      `skills/finishing-a-development-branch/references/branch-explainer.md` and
+      `skills/brainstorming/SKILL.md:318` both pass `opus`. The Codex guide
+      (`specs/guides/codex-customization-guide.md:234,255`) says that an explicit spawn model resolves per
+      account, so a Codex or agy subagent tool may reject the name. Step 3b then reports one failure line and
+      shows the menu with no explainer. It would take a run of each runtime and, where a run fails, a wording
+      that each runtime resolves. Size: plan. Done when: a Codex run and an agy run of Step 3b each dispatch
+      the writer with no model error, with the text of both skills changed where a run needed it.
+- [ ] **Two writer paths are unprobed: a branch with no plan, and a history entry that reads `Spec: none`
+      (plan 94 final review, the code-reviewer's Declined to judge; the owner asked for this item,
+      2026-11-14).** All four probe fixtures were plan branches with a spec
+      (`specs/baseline/red-baseline-branch-explainer.md`, Known limits). The brief
+      `skills/finishing-a-development-branch/references/branch-explainer-prompt.md` handles both paths by its
+      text only. It would take one fixture for each path, scored as the record scores the others. Size: plan.
+      Done when: a probe rep or a recorded live run of each path meets bars B1 to B5 as the record scores
+      them, or the brief changes until it does.
+- [ ] **The writer brief reads one plan per range (plan 94 final review, Codex finding F3; the owner asked
+      for this item, 2026-11-14).** Lines 21 to 24 of
+      `skills/finishing-a-development-branch/references/branch-explainer-prompt.md` ask for "the" history
+      entry, plan and spec. A range that retires two plans has two of each. The shipped brief is byte-identical
+      to the probed round 0, so a change needs a new probe round. Size: plan. Revisit if: an explainer of a
+      range that retires two plans leaves out one plan's intent.
