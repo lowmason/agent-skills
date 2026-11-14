@@ -126,11 +126,12 @@ def test_run_version_runs_the_cli_on_path_and_reports_how_it_failed(tmp_path, mo
     script(bin_dir, 'badcli', 'echo oops >&2; exit 3')
     script(bin_dir, 'slowcli', 'sleep 5')
     monkeypatch.setenv('PATH', os.pathsep.join([str(bin_dir), '/usr/bin', '/bin']))  # sleep for slowcli
-    monkeypatch.setattr(cli_versions, 'TIMEOUT', 0.5)
     assert cli_versions.run_version('goodcli') == 'goodcli --version 1.2.3 no-stdin\n'  # stdin is empty
     assert cli_versions.run_version('missingcli') is None
     with pytest.raises(cli_versions.CliError, match=r'^badcli --version exited 3: oops$'):
         cli_versions.run_version('badcli')
+    # Only slowcli gets the short limit: a new script's first run took 0.2 s on macOS, more under load.
+    monkeypatch.setattr(cli_versions, 'TIMEOUT', 0.5)
     with pytest.raises(cli_versions.CliError, match=r'^slowcli --version timed out after 0.5 s$'):
         cli_versions.run_version('slowcli')
 
