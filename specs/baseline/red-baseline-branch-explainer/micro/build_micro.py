@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[2]
+ROOT = HERE.parents[3]
 RECORD = HERE.parent.parent / 'red-baseline-branch-explainer.md'
 SKILL = 'skills/finishing-a-development-branch'
 MARKERS = ('{redirect}', '{noop}')
