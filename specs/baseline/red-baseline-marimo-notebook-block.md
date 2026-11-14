@@ -530,7 +530,7 @@ This section is Task 6's check of the placement rule. The rule is the kit README
 
 **Block.** The block is `templates/marimo-repo/notebook-block.md` as Task 3 settled it at commit `8e74787`. It is 2,092 bytes long, markers included. The markers are the two HTML comments that open and close the block, `<!-- marimo-repo:start -->` and `<!-- marimo-repo:end -->`. A script copied the block's bytes from the file. In each scratch file, the block's span has the file's sha256, `8de059dd8637144834ba3330449469fed8a63c82df444f002d9b321dce2cf295`.
 
-**Scratch files.** The check used three new git repositories under `/tmp/mnb98/b0/`. Each holds one `AGENTS.md`. Every filler line is 70 bytes long and carries its own line number, so a cut in the middle of a line shows. The files held synthetic filler and this repo's public block only.
+**Scratch files.** The check used three new git repositories under `/tmp/mnb98/b0/`. Each holds one `AGENTS.md`. Every filler line in `top` and `bottom` is 70 bytes long and carries its own line number, so a cut in the middle of a line shows. The one line in `ctl` is short. The files held synthetic filler and this repo's public block only.
 
 | Repository | Its `AGENTS.md` | Block starts at byte | Size in bytes |
 |---|---|---|---|
