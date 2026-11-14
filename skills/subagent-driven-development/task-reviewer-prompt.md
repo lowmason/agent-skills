@@ -319,13 +319,14 @@ Subagent (general-purpose):
        new test fails on the revert and checks the behavior that the plan
        test should have caught. A test with no line that holds is a
        finding: name the behavior that it should have caught on the old
-       code. Also check a task whose brief states a behavior change. If
-       its revert section shows no failed test and no file not loaded, no
-       test checks the change, and that is a finding. A `revert: none: …`
-       line holds when the diff changes only test files and project config
-       files. Read a `no report` or `timeout` revert from its output. A
-       `conftest.py` that cannot load means that every test needs the
-       change. Any other cause is a gap for the controller.
+       code. Also check a task whose brief states a behavior change. If no
+       test fails on the revert and no `conftest.py` fails to load, no test
+       checks the change, and that is a finding. A `revert: none: …` line
+       holds when the diff changes only test files and project config
+       files. A `revert: not applied: …` line is a gap for the controller,
+       not a finding. Read a `no report` or `timeout` revert from its
+       output. A `conftest.py` that cannot load means that every test needs
+       the change. Any other cause is a gap for the controller.
 
     A mutant step that passes all seven checks gives no finding.
 
