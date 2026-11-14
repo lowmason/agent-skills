@@ -766,6 +766,41 @@ def test_task_done_refuses_a_base_that_is_not_a_commit(repo):
     assert not recorded(repo)
 
 
+def test_task_done_refuses_a_run_base_that_names_no_commit(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), 'not-a-commit', CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert f'the mutant run is at base not-a-commit, not BASE {base}' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_names_a_short_base_in_full_when_it_refuses(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), head(repo), CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base[:7], '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert f'the mutant run is at base {head(repo)}, not BASE {base};' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_refuses_when_neither_base_names_a_commit(repo):
+    # Two names that resolve to nothing are not two names for one commit.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), 'not-a-commit', CLEAN, [1])
+    tree = git('rev-parse', 'HEAD^{tree}', cwd=repo).stdout.strip()
+    result = run(TASK_DONE, 'plan.md', 1, tree, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'the mutant run is at base not-a-commit' in result.stderr
+    assert not recorded(repo)
+
+
 def test_task_done_rejects_no_mutants_without_a_reason(repo):
     cmd = ['sh', '-c', 'touch ran']
     result = run(TASK_DONE, 'plan.md', 1, head(repo), '--no-mutants', '', '--', *cmd, cwd=repo)
