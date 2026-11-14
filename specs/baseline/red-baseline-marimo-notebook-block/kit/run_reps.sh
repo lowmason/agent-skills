@@ -33,8 +33,9 @@
 # into /tmp/mnb98/, such as an HTML export, to ~/.cache/agent-skills/scratch/plan98/stray/. It
 # moves and never deletes. So no rep can read an earlier rep's notebook or export. If rep 1's
 # directory or a stray is still in /tmp/mnb98/ after rep 1, the batch stops with exit 3 before
-# reps 2 to N start. The runner refuses, with exit 2, an <out-dir> that is /tmp/mnb98/ or lies
-# inside it, after it resolves `..`, `.` and links. Outputs go outside it.
+# reps 2 to N start. The runner resolves <out-dir> once, the way `mkdir -p` follows `..`, `.` and
+# links. It refuses that path, with exit 2, when it is /tmp/mnb98/ or lies inside it, and it writes
+# to that same path. So the check and the writes cannot disagree, and outputs stay outside.
 set -u
 [ "$#" -eq 5 ] || { echo "usage: run_reps.sh <arm> <case> <out-dir> <first> <last>"; exit 2; }
 PARK="$HOME/.cache/agent-skills/scratch/plan98"
@@ -69,14 +70,14 @@ resolve_path() {
 }
 
 # Refuse, with exit 2, an output path that is /tmp/mnb98/ or lies inside it, because reps can read
-# that folder. Outputs go outside it.
+# that folder. $1 is the path that resolve_path printed, and the caller writes to that same path.
+# $2, when given, is the argument as the caller wrote it, for the message.
 refuse_inside() {
-  local resolved root
-  resolved="$(resolve_path "$1")" || { echo "refusing (exit 2): cannot resolve $1"; exit 2; }
-  root="$(cd /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
-  case "$resolved" in
+  local root
+  root="$(cd -P /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
+  case "$1" in
     /tmp/mnb98 | /tmp/mnb98/* | /private/tmp/mnb98 | /private/tmp/mnb98/* | "$root" | "$root"/*)
-      echo "refusing (exit 2): $1 is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
+      echo "refusing (exit 2): ${2:-$1} is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
       exit 2
       ;;
   esac
@@ -142,8 +143,10 @@ case "$CASE" in
   *) echo "refusing: case must be explore, override, lint, tidy or verdict, not $CASE"; exit 2 ;;
 esac
 PROMPT="$KIT/cases/$CASE.txt"
-refuse_inside "$3"
-OUT="$(mkdir -p "$3" && cd "$3" && pwd)" || exit 2
+# Resolve <out-dir> once. The check and every write below use this one physical path.
+OUT="$(resolve_path "$3")" || { echo "refusing (exit 2): cannot resolve $3"; exit 2; }
+refuse_inside "$OUT" "$3"
+mkdir -p "$OUT" || exit 2
 FIRST="$4"
 LAST="$5"
 ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2

@@ -12,8 +12,9 @@
 # /tmp/mnb98/rep-XXXXXX, must not be inside any other repository. Like run_reps.sh, the probe
 # refuses to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh. After
 # the run, it moves its rep directory to ~/.cache/agent-skills/scratch/plan98/repdirs/ and any
-# stray entry to stray/. It refuses, with exit 2, an <out-file> that is /tmp/mnb98/ or lies inside
-# it. The last line printed gives the moved rep directory and the sha256 of its
+# stray entry to stray/. It resolves <out-file> once, the way `mkdir -p` follows `..`, `.` and
+# links, refuses that path with exit 2 when it is /tmp/mnb98/ or lies inside it, and writes the
+# stream to that same path. The last line printed gives the moved rep directory and the sha256 of its
 # CLAUDE.md and of the block (null in the control arm). The
 # stream holds home paths and a session id. Keep <out-file> outside the repository and never
 # commit it.
@@ -51,14 +52,14 @@ resolve_path() {
 }
 
 # Refuse, with exit 2, an output path that is /tmp/mnb98/ or lies inside it, because reps can read
-# that folder. Outputs go outside it.
+# that folder. $1 is the path that resolve_path printed, and the caller writes to that same path.
+# $2, when given, is the argument as the caller wrote it, for the message.
 refuse_inside() {
-  local resolved root
-  resolved="$(resolve_path "$1")" || { echo "refusing (exit 2): cannot resolve $1"; exit 2; }
-  root="$(cd /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
-  case "$resolved" in
+  local root
+  root="$(cd -P /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
+  case "$1" in
     /tmp/mnb98 | /tmp/mnb98/* | /private/tmp/mnb98 | /private/tmp/mnb98/* | "$root" | "$root"/*)
-      echo "refusing (exit 2): $1 is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
+      echo "refusing (exit 2): ${2:-$1} is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
       exit 2
       ;;
   esac
@@ -119,9 +120,10 @@ esac
 PROMPT="${3:-$KIT/isolation_probe.txt}"
 [ -f "$PROMPT" ] || { echo "refusing: no prompt file $PROMPT"; exit 2; }
 PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
-refuse_inside "$2"
-OUTDIR="$(mkdir -p "$(dirname "$2")" && cd "$(dirname "$2")" && pwd)" || exit 2
-OUT="$OUTDIR/$(basename "$2")"
+# Resolve <out-file> once. The check and the write below use this one physical path.
+OUT="$(resolve_path "$2")" || { echo "refusing (exit 2): cannot resolve $2"; exit 2; }
+refuse_inside "$OUT" "$2"
+mkdir -p "$(dirname "$OUT")" || exit 2
 [ -e "$OUT" ] && { echo "refusing: $OUT exists"; exit 2; }
 ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2
 BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
