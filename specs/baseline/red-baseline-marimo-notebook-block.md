@@ -410,3 +410,114 @@ The block meets the spec's bar in round 2. The settled block is `templates/marim
 3. The four committed summaries that the redactions changed.
 4. The round 2 Scope line narrows when a session counts as live. A request that is silent, in an agent without marimo-pair, would lead the agent to edit the file directly even if a process list showed a session that the user announced earlier. No test case holds such a session, so the bar cannot show it. The wording is the owner's call, and a change needs a new tested round.
 5. V3 was scored with a reading made after the reps were seen. The reading is in round 1's "V3 reading". By the plain text of the Rules, V3 would pass in at most 1 of 5 reps in round 1 and in 0 of 5 reps in round 2, and it would be a pin miss for the completion gate. The pin does not decide the bar.
+
+## explore-data
+
+This section is Task 4's application test of explore-data's marimo branch, which is spec item B2. A decision-only rep gives the model the skill text and one case, with no tools, and keeps its reply. `steps-marimo` profiles a dataset for a team that works in a marimo notebook. `steps-plain` profiles the same dataset for a team that works in plain Python scripts. The Rules section gives the clauses M1, M2, P1 and P2.
+
+- **Runner.** Plan 74's runner, `specs/baseline/red-baseline-backlog-protocol/kit/run_reps.sh`, ran every rep and was used read-only. Each rep is one fresh `claude -p` with no tools, the model `claude-opus-5-5` and a budget cap of $0.50. It runs from a new, empty directory outside every repository. Claude Code was version 2.1.323.
+- **Prompts.** Each prompt is the line "You are using this skill:", the full `SKILL.md`, a `---` line and the case text. The before arm uses `SKILL.md` at base commit `e9ab553`. The after arm uses the edited `SKILL.md`. A diff of each after prompt against its before prompt shows only the new paragraph and its blank line.
+- **VOID check.** Each `rep<N>.json` has the subtype `success`, one turn, no iterations and one model. No rep left an error file. No rep is VOID in any arm.
+- **The gate.** Builder's call C10 stops the task when the old skill already passes M1 and M2 in 5 of 5 `steps-marimo` reps. It did not trigger under either case version.
+
+### The paragraph
+
+The paragraph goes after the numbered list under `## Output`, with a blank line on each side.
+
+- **Round 1** is the plan's text, byte for byte. It is 523 characters long.
+- **Round 2** changes one sentence. "Offer the candidates and stop." became "Offer the candidates, end your reply with a question that asks the user to pick one, and stop." In round 1, the paragraph did not say where the request to pick goes. Round 2 is the text that ships. It is 587 characters long.
+- **Checks.** For both rounds, `ste-lint.py` reports 0 violations. The paragraph names no `templates/` path. None of the words `port`, `shipment`, `carrier`, `teu` and `freight` appears in it, as a word or inside a word.
+
+### Case version 1
+
+Case version 1 is the two cases as they stood before the third amendment, each ending with "Then say what you do next." Three arms ran on it, with 30 reps in all.
+
+- **Before.** The runs are in `runs/steps-case1-before/<case>/`.
+- **After, round 1.** The plan's paragraph. The runs are in `runs/steps-case1-after-r1/<case>/`.
+- **After, round 2.** The revised paragraph. The runs are in `runs/steps-case1-after-r2/<case>/`.
+
+| Case | Clause | Before | After, round 1 | After, round 2 |
+|---|---|---|---|---|
+| `steps-marimo` | M1 hypotheses | 0 of 5 | 5 of 5 | 5 of 5 |
+| | M2 stops | 0 of 5 | 1 of 5 | 1 of 5 |
+| `steps-plain` | P1 old shape | 5 of 5 | 5 of 5 | 5 of 5 |
+| | P2 no stop | 5 of 5 | 5 of 5 | 5 of 5 |
+
+- Each before rep of `steps-marimo` announced a run of checks before any pick, so M2 failed in all five.
+- These M2 counts read a request as an imperative or a question in the last paragraph. That test was fixed after the round 1 replies were seen.
+- In round 1, the last paragraphs of three reps said what happens once the user picks ("Once you pick a hypothesis, I'll …") and asked nothing. One last paragraph said "I stop here and wait for you to pick a hypothesis", and one said "Pick a hypothesis".
+- In round 2, every rep asked a pick question, such as "Which hypothesis do you want to pursue first?". Four of the five then added the section on what they do next, which the case asked for.
+- The bar was missed twice. The owner then amended the cases (Rules, Third amendment).
+- **Redaction.** Round 2 `steps-plain` rep 3 named a temp scratchpad path. The committed copy writes the path's uid, rep folder and session parts as `XXXX`. That string is the only change in the file. The original stays outside the repository.
+
+### Case version 2
+
+Case version 2 is the cases after the third amendment. The before arm uses the old skill. The after arm uses the round 2 paragraph, unchanged. The runs are in `runs/steps-before/<case>/` and `runs/steps-after/<case>/`.
+
+| Case | Clause | Before | After |
+|---|---|---|---|
+| `steps-marimo` | M1 hypotheses | 1 of 5 | 5 of 5 |
+| | M2 stops | 0 of 5 | 5 of 5 |
+| `steps-plain` | P1 old shape | 5 of 5 | 5 of 5 |
+| | P2 no stop | 5 of 5 | 5 of 5 |
+
+**The bar is met.** `steps-marimo` meets M1 and M2 in 5 of 5 reps. `steps-plain` meets P2 in 5 of 5 reps, and P1 in 5 of 5, as many as before the edit.
+
+**Before, `steps-marimo`.** The reps give their next steps as checks and code cells to run. None asks the user to pick.
+
+| Rep | M1 | M2 |
+|---|---|---|
+| 1 | fail: the steps are checks with questions and no outcome, such as "TEU dip: real decline or coverage loss?" | fail: the last paragraph is a hand-off to `validate-data` and `recommend-visualization` |
+| 2 | pass: two steps state outcomes, "If it's 100% for one January, treat it as a known data gap" and "If row count and port count drop along with TEU, it's a reporting gap." | fail: the last paragraph names `validate-data` and `recommend-probabilistic-model` as the next stops |
+| 3 | fail: one step states an outcome, "If one port's row count drops to near zero in Mar–May, the dip is a coverage gap." | fail: the last paragraph is a hand-off to `validate-data` and `recommend-visualization` |
+| 4 | fail: one step states an outcome, "If a port's row count drops to zero or near zero in April and May, the dip is a coverage gap." | fail: the last paragraph is a hand-off to `recommend-visualization` and `validate-data` |
+| 5 | fail: the steps are cells whose comments ask questions, such as "one January or every January?". The outcomes are in flagged issue 3, not in the steps. | fail: the last paragraph is a list of hand-offs |
+
+**Before, `steps-plain`.**
+
+| Rep | P1 | P2 |
+|---|---|---|
+| 1 | pass: a fix ("Reconcile the schema"), the usable metrics by dimension ("What's safe to use now") and a hand-off to `validate-data` | pass: it ends with that hand-off |
+| 2 | pass: a fix ("Reconcile `shipment_id`") and the usable dimensions and metrics ("What's safe now") | pass: it ends with a suggestion of permanent assertions in the script |
+| 3 | pass: a fix ("Settle the key"), the usable metrics ("Safe") and hand-offs to `validate-data` and `develop-testing-strategy` | pass: it ends with those hand-offs |
+| 4 | pass: a fix ("Resolve the key"), "Safe to use now" and a hand-off to `validate-data` | pass: it ends with that hand-off |
+| 5 | pass: a fix ("Settle the key question") and "Safe to use now" | pass: it ends with a list of what to hold until checked |
+
+**After, `steps-marimo`.** Every rep keeps the profile summary and the flagged issues, with a fix beside each flag. Every rep then offers 4 or 5 candidate hypotheses and ends with one question. No rep announces a build or a run before the pick, and no rep adds a cell.
+
+| Rep | M1 | M2 |
+|---|---|---|
+| 1 | pass: 4 hypotheses, such as "two or three ports account for more than half of the lost TEU" | pass: the last paragraph is "Which hypothesis do you want to pursue first?" |
+| 2 | pass: 4 hypotheses, such as "`teu` falls in at least 10 of the 14 ports at once" | pass: "Which hypothesis should we pursue first in `notebooks/explore.py`: H1, H2, H3, or H4?" |
+| 3 | pass: 5 hypotheses, such as "two or three of the 14 ports account for more than half of the March–May `teu` decline" | pass: "Which of these would you like to pursue first?" |
+| 4 | pass: 5 hypotheses, such as "one of the 3 `carrier_type` values accounts for more than half of the March→May TEU decline" | pass: "Which hypothesis would you like to pursue first?" |
+| 5 | pass: 5 hypotheses, such as "one or two of the 14 ports account for more than half of the 18% decline" | pass: "**Which hypothesis should we pursue first?**" |
+
+**After, `steps-plain`.** No rep mentions a hypothesis. Each keeps the old next steps: fixes, usable columns and hand-offs.
+
+| Rep | P1 | P2 |
+|---|---|---|
+| 1 | pass: all three, with "Settle the key", "Safe to use now" and hand-offs to `validate-data` and `develop-testing-strategy` | pass: it ends with those hand-offs |
+| 2 | pass: all three, with "Fix the schema question", "Safe to use now" and a hand-off to `validate-data` | pass: it ends with that hand-off |
+| 3 | pass: all three, with "Settle the schema and key", "Safe to use now" and hand-offs to three skills | pass: it ends with the list of hand-offs |
+| 4 | pass: all three, with "Resolve the `shipment_id` / column-count mismatch", "Safe to use now" and hand-offs to `validate-data` and `develop-testing-strategy` | pass: it ends with those hand-offs |
+| 5 | pass: all three, with "Confirm the schema", "Safe to use now" and hand-offs to `validate-data` and `develop-testing-strategy` | pass: it ends with those hand-offs |
+
+**A case artifact.** The case lists 7 columns and then says that `shipment_id` is unique. Every rep in both case versions flags the mismatch. The artifact is the same in every arm, so it does not favor one arm.
+
+### Cost
+
+| Arm | Reps | Cost (USD) |
+|---|---|---|
+| Case version 1, before | 10 | 0.5220128 |
+| Case version 1, after round 1 | 10 | 0.5013916 |
+| Case version 1, after round 2 | 10 | 0.4746564 |
+| Case version 2, before | 10 | 0.5363524 |
+| Case version 2, after | 10 | 0.4811916 |
+| Total | 50 | 2.5156048 |
+
+A rep cost $0.03 to $0.10. The first rep of each batch cost the most, because it wrote the prompt cache.
+
+### Conclusion
+
+The paragraph meets the bar under case version 2, in its round 2 wording. `skills/explore-data/SKILL.md` carries it, and `NOTICE` credits the idea to lesson 10 of Eric Ma's post. The case version 1 runs stay committed as the record of the first two rounds.
