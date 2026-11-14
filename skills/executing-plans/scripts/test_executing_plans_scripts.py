@@ -659,6 +659,113 @@ def test_task_done_reads_base_and_revert_from_the_header_only(repo):
     assert not recorded(repo)
 
 
+# The plan's tests above pin the three refusals. The tests below add the
+# shapes the spec's rules also cover.
+
+
+def test_task_done_matches_a_short_base_in_the_run(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base[:7], CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert recorded(repo)
+
+
+def test_task_done_reads_the_revert_line_from_the_header_only(repo):
+    # The base: line is right, so only the revert: reader can be fooled.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1], revert=None)
+    insert_after(repo, 'task-1-mutants.log', '1 passed', NONE_REVERT)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'the mutant run has no revert: line' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_ignores_base_and_revert_lines_inside_the_command(repo):
+    # A command that spans lines puts its lines between command: and head:.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), None, CLEAN, [1], revert=None)
+    insert_after(repo, 'task-1-mutants.log', 'command: sh -c true', f'base: {base}', NONE_REVERT)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'no base: line' in result.stderr
+    assert not recorded(repo)
+
+
+@pytest.mark.parametrize(
+    'revert',
+    [
+        'revert: ran, exit 1, no report',
+        'revert: timeout after 300s',
+        'revert: not applied: the revert patch does not apply',
+        NONE_REVERT,
+    ],
+)
+def test_task_done_records_a_run_with_any_revert_form(repo, revert):
+    # task-done checks that the line is there and never reads what it says.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1], revert=revert)
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert recorded(repo)
+
+
+UNCAUGHT = 'caught 1, survived 1, invalid 0'
+
+
+@pytest.mark.parametrize(
+    ('stale_head', 'run_base', 'revert', 'result', 'refusal'),
+    [
+        (True, None, None, CLEAN, 'not HEAD'),
+        (False, None, None, CLEAN, 'the mutant run has no base: line'),
+        (False, 'other', None, CLEAN, 'the mutant run is at base'),
+        (False, 'base', None, UNCAUGHT, 'the mutant run has no revert: line'),
+        (False, None, NONE_REVERT, UNCAUGHT, 'the mutant run has no base: line'),
+        (False, 'other', NONE_REVERT, UNCAUGHT, 'the mutant run is at base'),
+    ],
+    ids=[
+        'head-before-base',
+        'no-base-before-no-revert',
+        'other-base-before-no-revert',
+        'no-revert-before-result',
+        'no-base-before-result',
+        'other-base-before-result',
+    ],
+)
+def test_task_done_refuses_in_the_order_head_base_revert_result(repo, stale_head, run_base, revert, result, refusal):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    run_base = {None: None, 'base': base, 'other': head(repo)}[run_base]
+    write_run(repo, 'task-1-mutants.log', base if stale_head else head(repo), run_base, result, [1], revert=revert)
+    done = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert done.returncode == 4
+    assert refusal in done.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_refuses_a_base_that_is_not_a_commit(repo):
+    # A tree passes the early BASE check, but it names no commit to compare.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
+    tree = git('rev-parse', 'HEAD^{tree}', cwd=repo).stdout.strip()
+    result = run(TASK_DONE, 'plan.md', 1, tree, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert f'the mutant run is at base {base}, not BASE {tree}' in result.stderr
+    assert not recorded(repo)
+
+
 def test_task_done_rejects_no_mutants_without_a_reason(repo):
     cmd = ['sh', '-c', 'touch ran']
     result = run(TASK_DONE, 'plan.md', 1, head(repo), '--no-mutants', '', '--', *cmd, cwd=repo)
