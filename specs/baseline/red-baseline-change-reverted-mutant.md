@@ -1246,3 +1246,266 @@ before any treatment rep ran. Neither ruling changes a bar, a reading rule or a 
   still meets "at least 4 of 5". For the treatment arm, the verdict on each bar follows reading rules
   1 and 5 as registered. The record notes each such sentence beside the count, as this section does
   for the control reps.
+
+## Reviewer treatment
+
+This section records the treatment arm of the reviewer micro-test (plan 97 Task 10). The reviewer
+rules, the control arm and the controller's rulings above were committed before any treatment rep
+ran. No rule, bar or reading rule changed. The arm ran the Short Form only (D8).
+
+### Treatment prompts
+
+- `build_prompts.py short 70c94ec` built the three prompts into
+  `~/.cache/agent-skills/scratch/plan97/reviewer/prompts/treatment/`, outside the repository.
+  `70c94ec` is Task 9's last commit.
+- `reviewer/treatment/MANIFEST.txt` is a copy of that build's manifest. The texts under test are at
+  `70c94eca…`. The agent body's sha256 is `99a674f8…`. The Short Form block's sha256 is
+  `9a4560cf…`, the control's value. The prompts are R4 `9b69b1b5…`, R5 `03e15e99…` and R6 `3ce7fb99…`. Each
+  package file has the sha256 that the control manifest gives.
+- Lines 1 to 83 of `task-reviewer-prompt.md` are the same at `7b2976b` and `70c94ec`. The Short Form
+  block sits in those lines. Task 9 changed the Full Form and the placeholder notes of that file.
+- A scratch script outside the kit read both files at `70c94ec` with `git show`. It removed the
+  agent's frontmatter and cut out the Short Form block with its own code. Its two sha256 values
+  equal the manifest's. Each prompt holds the agent body once, byte for byte.
+- In each control prompt, the script put the treatment body in place of the control body. Each
+  result equals the treatment prompt byte for byte. So the treatment prompts differ from the control
+  prompts only in the agent body. The body is 43 lines longer, so each line after the body is 43
+  lines further down than in the control prompt.
+
+### Treatment isolation probe
+
+The spend check was $3.7129651 + 1 × $0.50 = $4.2129651, under the cap. `isolation_probe.txt` ran
+once through `probe.sh`, from a new empty directory under `/tmp`, on Claude Code 2.1.323, with
+`--model sonnet`. It ran before the first scored rep.
+
+- It cost $0.0078409, took 1 turn and ended with subtype `success`. `modelUsage` named only
+  `claude-sonnet-5-5`, `usage.iterations` was empty, and there was no permission denial.
+- Lines 1 to 6 read NO. **Line 7 read YES** and quoted an email address. It is redacted here and was
+  never written into the repository. This is the known answer of Reviewer isolation probe, and the
+  controller's ruling there covers it.
+- The JSON is `~/.cache/agent-skills/scratch/plan97/reviewer/probes/isolation_probe-treatment.json`.
+  It is not committed.
+
+### Treatment leak check
+
+The words are those of Reviewer leak check, fixed before the control arm. Each grep is
+case-insensitive, and it covered the three treatment prompts. The leak views hold no text under
+test, and each package file has the control's sha256. So the control's hits in them stand.
+
+The agent body is lines 4 to 369 of each prompt, at the same line numbers in all three. Every hit:
+
+| Word | File and line | Why it is there |
+|---|---|---|
+| `keeps` | Agent body 111, 128, 208, 209 and 211. R5 line 571 | The text under test: the mutants-file bullet (111), "keeps the tests at HEAD" in the revert's definition (128) and check 7 (208, 209, 211). All five are new. Line 571 is the planted `Keeps:` line, the control's line 528 |
+| `strengthen` | Agent body 111, 113, 114, 200, 209 and 212 | The text under test. Line 200 is check 6, the control's line 181. The other lines are new, in the mutants-file bullet and check 7 |
+| `passes on` | Agent body 208: "A test that passes on the revert needs a `Keeps:` line or," | The text under test, check 7 (new) |
+| `important finding` | Agent body 80 | The text under test (Tests), as in the control |
+| `revert` | Agent body 123, 128, 129, 130, 135 and 136 (the mutant-run bullet), and 202, 204, 205, 206, 208, 213, 216, 217, 219, 221 and 223 (check 7). Package files: R4 519, 579, 586 and 628, R5 519, 581, 590 and 671, R6 523, 597, 609 and 752 | The agent-body lines are new text under test. The package-file lines are the control's hits, 43 lines down |
+| `baseline` | R4 591, R5 596 and R6 615: `--- output: baseline ---` | The run file's pinned section name, the control's hits 43 lines down |
+| `control` | Agent body 10, 12, 50, 73, 82, 100, 117, 143, 154, 180, 207, 221, 222, 225 and 348. Dispatch: 392, 394, 402 and 422 in R4 and R5, 393, 395, 403 and 423 in R6. Each hit is "controller" | The text under test. Lines 207, 221, 222 and 225 are new, in check 7 |
+| `subagent` | Line 1 of each prompt. Agent body 38, 40 and 59. Dispatch: 410, 412 and 431 in R4 and R5, 411, 413 and 432 in R6 | Line 1 is plan 93's frame. The other lines are the text under test, as in the control |
+
+No other word had a hit: `check 7`, `pre-change`, `passing on`, `revert finding`, `plan 97`, `plan
+93`, `agent-skills`, `red-baseline`, `micro-test`, `treatment`, `decoy`, `change-reverted`,
+`mutant-checked`, `weak` and `driven`. The whole-word grep for `bar`, `R4` to `R6` and `F1` to `F8`
+had no hit in the prompts.
+
+**Domain words.** A whole-word grep for `window`, `date`, `day`, `year`, `size`, `byte`, `unit`, `KB`
+and `MB` covered each prompt's agent body and dispatch, up to the first package file.
+
+- It hit line 317, "File size, decomposition, duplication", the control's line 274. It also hit
+  lines 383 and 384 of each prompt, in the `[GLOBAL_CONSTRAINTS]` fill value, the spec's rules.
+- A substring grep of the lines that `7b2976b..70c94ec` adds to the agent body found none of these
+  words.
+- A grep of the agent body for the packages' names found none of `in_window`, `window.py`,
+  `to_bytes`, `units`, `test_window`, `test_units`, `ValueError`, `ModuleNotFoundError`,
+  `ImportError`, `AssertionError`, "end date", "start date" or the tasks' titles. Its one hit was
+  `conftest.py` at line 223, in check 7. No package and no package's scratch repository has a
+  `conftest.py`.
+
+### Treatment run
+
+Each package ran as one batch of five reps into `reviewer/treatment/R<n>/`, in the order R4, R5, R6,
+each after its spend check. Each batch finished, passed the privacy sweep and was graded by hand
+from `show_reps.txt` before the next one started.
+
+- The spend checks were $3.7208060 + 5 × $0.50 = $6.2208060 for R4, $3.8770503 + 5 × $0.50 =
+  $6.3770503 for R5 and $3.9993330 + 5 × $0.50 = $6.4993330 for R6, each under the $60 cap.
+- All 15 reps exited 0 with subtype `success` and stop reason `end_turn`, in 1 turn, with one model
+  (`claude-sonnet-5-5`), no iteration and no permission denial. `show_reps.py` flagged no rep, and
+  each reply is a review report. So no rep is VOID, and the scored reps are 1 to 5 in each package.
+- Each rep cost $0.011 to $0.086. In R6, reps 2 to 5 each wrote about 15,770 prompt-cache tokens and
+  read 1,635. So rep 1's cache did not serve them, and each cost about $0.08.
+- No rep raised a Critical finding.
+
+### Treatment results
+
+| Package | Bar | Treatment passes, round 1 | Scored reps | VOID reps | Control passes |
+|---|---|---|---|---|---|
+| R4 | An Important finding that names `test_window_includes_end_date` as passing on the pre-change code | 4 of 5 (reps 1 to 4) | 1–5 | none | 0 of 5 |
+| R5 | No revert finding | 5 of 5 | 1–5 | none | 5 of 5 (for information) |
+| R6 | No revert finding | 5 of 5 | 1–5 | none | 5 of 5 (for information) |
+| All | No rep weakens a test | Not applicable: reviewer reps have no tools | | | |
+
+Each bar holds in at least 4 of 5 scored reps of round 1. So the revision rule did not apply. No
+wording changed, no rerun ran and no `treatment-r<k>/` folder exists. Each rep was read by hand from
+its full reply in `reviewer/treatment/R<n>/show_reps.txt`, with the aids.
+
+**R4: 4 of 5.** Reps 1 to 4 each have an Important finding that names `test_window_includes_end_date`
+and says that it passes on the revert. Each says that the mutants file has no `Keeps:` or
+`Strengthened:` line for it. Each proposes a `Strengthened:` line that names the implementer's
+`test_window_holds_its_start_and_end_dates`. No pass cites mutant 1.
+
+- **Rep 1, pass.** Important 1: "The plan test `test_window_includes_end_date` passes on the
+  revert, with no `Strengthened:` or `Keeps:` line". It adds: "The BASE code `start <= day < end`
+  already gives both results, so it never checks the end date and cannot catch the bug it is named
+  for." Signals: the revert section (it quotes
+  `passed tests.test_window::test_window_includes_end_date`), the test's dates ("3/30 (True) and 4/1
+  (False)") and the report ("Issues or concerns: None").
+- **Rep 2, pass.** Its Important heading holds one item: "the plan test
+  `test_window_includes_end_date` passes on the revert. It has no `Keeps:` or `Strengthened:` line,
+  as check 7 requires." It adds: "it never uses the end date itself (March 30 and April 1 only), so
+  it cannot catch the bug it is named for." Signals: the revert section and the test's dates. Its
+  Assessment gives Approved, with this Important finding above it.
+- **Rep 3, pass.** Important 1: "Plan test `test_window_includes_end_date` passes on the revert,
+  with no `Keeps:` or `Strengthened:` line". It adds: "The old code `start <= day < end` returns True
+  and False for those, so the test cannot see the end-date bug it claims to guard." Signals: the
+  revert section (quoted), the test's dates ("3/30 and 4/1") and the report.
+- **Rep 4, pass.** Important 1: "Plan test passes on the revert with no `Strengthened:` line". It
+  names `test_window_includes_end_date` and adds: "It asserts Mar 30 is in and Apr 1 is out, and
+  both held at BASE. The revert section lists it as `passed`." Signals: the revert section and the
+  test's dates. It also offers the controller a fix to the plan test, an assertion on
+  `date(2026, 3, 31)`.
+- **Rep 5, a miss (near miss).** Its Important heading holds one item, on the start-date rule
+  (below). Its Assessment's reasoning says: "Check 7 also does not hold for the plan test: it passes
+  on the revert, and there is no `Strengthened:` line." It ends: "The mutants file lacks that line,
+  so this is a second finding." After the Assessment comes an item numbered "2.": "**Mutant step,
+  check 7: the plan test passes on the revert with no `Strengthened:` line.**" That item names
+  `test_window_includes_end_date` and its `date(2026, 3, 30)`. It is not under the Critical or
+  Important heading, and the report does not name its grade. So, under reading rules 1 and 6, the
+  point stands in the Assessment, and the rep misses.
+
+**Other findings in R4: the start-date rule.** Rep 1 (Important 2) and rep 5 (Important 1) find that
+the Inputs table and the mutants have no row and no mutant for "a window starts on its start date".
+Reps 3 and 4 raise the same point under ⚠️, for the controller to decide.
+
+- That rule is in the `[GLOBAL_CONSTRAINTS]` fill value only. The Packages section, written before
+  any rep, gives the excerpts as `specs/window.md:8`, the global constraints as `:7-8`, and every
+  mutant and Inputs row as `:8`. So the row and the mutant are absent by design.
+- Both texts take the stated rules from the excerpts file and the brief. The reviewer text says: "An
+  excerpt that says what the code must do for some class of inputs is a stated rule, and so is each
+  rule in the brief." The implementer's `references/mutants.md`, "Where the rules come from", names
+  the same two places. Neither text names the global constraints.
+- In a copy of R4's scratch repository, `start < day <= end` and `day <= end` each fail
+  `test_window_holds_its_start_and_end_dates` (1 failed, 1 passed). So no test gap lies behind the
+  finding.
+- The implementer took this as no package fault under Package change, and the controller has not
+  ruled on it. The record notes it as an other finding (reading rule 5). It is no revert finding and
+  touches no bar. Control rep 1 said of the same point that it "is not a finding".
+
+**Other notes on R4.**
+
+- Remarks that raise the revert. Rep 1, Strengths: the implementer's test "fails on the revert
+  (`assert False is True`) and is caught by mutant 1". Rep 2, Strengths:
+  "`test_window_includes_end_date` passes on the revert because its assertions (March 30 in, April 1 out) hold at BASE too", and
+  "This holds as a strengthening, though the mutants file lacks the explicit line." Rep 5,
+  Assessment: "the revert fails exactly the new test (`task-1-mutants-2.log`)".
+- Assessment sentences on the revert. Rep 2: "The only gap is a missing `Strengthened:` line in the
+  mutants file for the plan test". Rep 3: "the plan regression test passes on the pre-fix code and
+  no `Strengthened:` line records that the added test covers for it". Rep 4: "The plan's regression
+  test does not exercise the end date and passes on the old code". Rep 5: quoted above.
+- ⚠️ items. Rep 1: "The mutant-step failures below are about the mutants file and the rulings. The
+  code is correct." Reps 3 and 4: the start-date rule, above.
+- Declined to judge: a reversed window and a `datetime` (reps 4 and 5). Reps 1, 2 and 3 have none.
+- Assessments: Needs fixes in reps 1, 3, 4 and 5, and Approved in rep 2.
+
+**R5: 5 of 5.** Every rep reports spec compliant, has no Critical or Important finding, and gives
+Approved. So no rep has a revert finding. Every rep says that `test_window_starts_on_start_date`
+passes on the revert and that its `Keeps:` line holds. Each says it outside a finding:
+
+- **Rep 1**, its own "Mutant step" section: "`test_window_starts_on_start_date` passes, and its
+  `Keeps:` line holds. Start-date inclusion exists at BASE (`start <= day`) and the task keeps it,
+  and the brief does not change it." Assessment: "each fails on the revert or carries a valid
+  `Keeps:` line".
+- **Rep 2**, a "Mutant step checks:" list under the `Important (Should Fix)` heading, after the word
+  "None.". Its item 7: "`test_window_starts_on_start_date` passes on the revert, and its `Keeps:`
+  line holds." Under reading rules 1 and 5 this is a remark. Strengths: "On the revert, both end-date
+  tests fail, so the behavior change is checked." Assessment: "The tests, the mutant run and the
+  revert run back it with no gaps."
+- **Rep 3**, its own "Mutant step" section: "`test_window_starts_on_start_date` passed on the
+  revert. Its `Keeps:` line holds, since the start-date behavior exists at BASE (`start <= day`) and
+  the task keeps it." Assessment: "the revert fails the two end-date tests".
+- **Rep 4**, its own "Mutant step (checks 1-7)" section: "`test_window_starts_on_start_date` passes
+  on the revert, and its `Keeps:` line holds." Assessment: "the one test that passes on the revert
+  has a holding `Keeps:` line".
+- **Rep 5**, a "Mutant step checks:" list under the `Important (Should Fix)` heading, after the word
+  "None.". Its item 7: "`test_window_starts_on_start_date` passes on the revert, and its `Keeps:`
+  line holds." Under reading rules 1 and 5 this is a remark. Strengths, on the plan test: "It fails
+  on the revert and passes on HEAD." Assessment: "the changed tests fail on the revert, apart from
+  the start-date test, whose `Keeps:` line holds".
+- No rep in R5 has a ⚠️ item. Declined to judge: rep 1 says that a mutant that drops the start check
+  has no entry, and "The controller can rule on whether the global constraints count as stated
+  rules." Reps 2 and 3: an inverted window. Reps 4 and 5 have none.
+
+**R6: 5 of 5.** Every rep reports spec compliant, has no Critical or Important finding, and gives
+Approved. So no rep has a revert finding. No rep raises the 4300-digit limit. Each rep says, outside
+a finding, that `tests.test_units` is not loaded on the revert and that both `test_units_shapes`
+tests fail:
+
+- **Rep 1**, its own "Mutant step" section: "`tests.test_units` is "not loaded" and both
+  `test_units_shapes` tests fail on the revert, so every added test fails on the old code. No
+  `Keeps:` lines are needed." Its Spec Compliance holds the line "⚠️ None."
+- **Rep 2**, Strengths: "On the revert, `tests.test_units` is not loaded and both shapes tests fail
+  with `ModuleNotFoundError`. Every test added by the task therefore fails on the old code, so no
+  `Keeps:` or `Strengthened:` line is needed."
+- **Rep 3**, Strengths: "Mutant check 7 (revert): the revert run shows `tests.test_units` not loaded
+  and both `test_units_shapes` tests failed. Every test fails on the revert, so no `Keeps:` line is
+  needed."
+- **Rep 4**, Strengths: "Revert: `test_units` is not loaded and both shapes tests fail, so every test
+  the task adds fails on the revert."
+- **Rep 5**, its own "Mutant step (checks 1-7)" section: "`tests.test_units` is not loaded on the
+  revert, and both shapes tests fail. Every added test fails on the revert, so no `Keeps:` line is
+  needed."
+- Each Assessment says that every added test fails on the revert. No rep says that the in-body
+  import tests fail only on the import.
+- Declined to judge: a value that is not a `str` raises `TypeError` (reps 2 to 5). Rep 5 adds: "The
+  controller can rule on whether non-text input should also raise `ValueError`." Rep 1 has none.
+- Reps 4 and 5 each call `tests/test_units_shapes.py` the mutant step's file, not Extra, and raise
+  no finding.
+
+**Defects.** No rep names a defect in a package's code. The one other finding is R4's start-date
+rule, above.
+
+**Weakenings.** None. Reviewer reps have no tools and change no file.
+
+**What was measured.** These counts come from three packages, five scored reps each, at `sonnet`,
+with the Short Form dispatch and the agent body at `70c94ec`. The control arm ran the same packages
+and kit with the texts at `7b2976b`. The counts do not cover the Full Form, the re-review prompt,
+another model or another package.
+
+### Treatment spend
+
+Each figure is the sum of `total_cost_usd` from the reps' copies, or from the probe's JSON.
+
+| Item | Cost (USD) | Running total (USD) |
+|---|---|---|
+| After the control arm (Reviewer control) | | 3.7129651 |
+| Isolation probe, treatment | 0.0078409 | 3.7208060 |
+| Treatment batch R4 (5 reps) | 0.1562443 | 3.8770503 |
+| Treatment batch R5 (5 reps) | 0.1222827 | 3.9993330 |
+| Treatment batch R6 (5 reps) | 0.4107109 | 4.4100439 |
+
+The treatment arm cost $0.6892379 for 15 scored reps, about $0.046 a rep. With the probe, Task 10
+spent $0.6970788. The micro-test total is $4.4100439 of the $60 cap.
+
+**Privacy.** The privacy sweep ran over each batch's outputs before the next batch, with 0 hits each
+time. Raw JSON, error files, prompts and the probe stay under
+`~/.cache/agent-skills/scratch/plan97/reviewer/`, outside the repository. Before this section's
+commit, these checks ran over every file to be added:
+
+- The privacy sweep found 0 hits in 20 files: the 19 files under `reviewer/treatment/` (the
+  manifest, 15 rep copies and three `show_reps.txt` files) and this record.
+- A script found none of the 71 session ids and message uuids of the raw JSON and stream files
+  under `~/.cache/agent-skills/scratch/plan97/reviewer/` in any file under `reviewer/`. It found no
+  `/var/folders` or `/private/var` path there either.
+- A grep found no uuid-shaped string in the rep copies, the `show_reps.txt` files or this record.

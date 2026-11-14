@@ -1,0 +1,88 @@
+{
+  "duration_api_ms": 8622,
+  "stop_reason": "end_turn",
+  "total_cost_usd": 0.014696200000000001,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 359,
+    "cache_read_input_tokens": 13062,
+    "output_tokens": 1195,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 359,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 1195,
+      "cacheReadInputTokens": 13062,
+      "cacheCreationInputTokens": 359,
+      "webSearchRequests": 0,
+      "costUSD": 0.014696200000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 359,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "### Spec Compliance\n\n- ✅ Spec compliant. `window.py:5` changes `start <= day < end` to `start <= day <= end`. This matches the brief and specs/window.md:8. The start boundary is unchanged: a day before the start date stays outside, and the start date is inside. The brief's regression test is present verbatim in `tests/test_window.py`. Both listed files (`window.py`, `tests/test_window.py`) have hunks.\n\n### Strengths\n\n- The fix is a one-token change with no extra scope.\n- The plan test is unchanged, and `test_window_holds_its_start_and_end_dates` adds the start date, the end date, a one-day window and a year-end window.\n- The controller's test run is at head c39e286 on a clean tree: exit 0, 2 passed, no warnings. It matches the report.\n- The mutant run is at head c39e286 and base f254ffc on a clean tree.\n\n### Issues\n\n#### Critical (Must Fix)\n\nNone.\n\n#### Important (Should Fix)\n\n1. **Mutant step, check 1 (inputs): the day before the start date has no row.** The global constraint \"a day before the start date is outside it\" is a stated rule. The Inputs table has rows only for the end-date rule (specs/window.md:8). `test_window_holds_its_start_and_end_dates` does use that input (`date(2026, 2, 28)`, `tests/test_window.py:13`), but the table does not list it.\n   - Check 3 also applies: no mutant targets the start boundary, for example `start < day <= end`, which would exclude the start date.\n   - If the spec excerpts file is the only source of stated rules, the brief's own requirement lines still count. The dispatch's global constraints say a window starts on its start date. A person would meet the start date wrongly excluded.\n   - Fix: add a start-boundary mutant (`start < day <= end`) and table rows for the start date and the day before it. The existing assertions at `tests/test_window.py:13-14` should catch it.\n\n### Declined to judge\n\n- Behavior when `start > end` (an inverted window): the brief and spec are silent. It returns False for every day, which is reasonable.\n- `datetime` instances passed as `date`: outside the type contract.\n\n### Assessment\n\n**Task quality:** Needs fixes\n\n**Reasoning:** The code fix and tests are correct, and the revert fails exactly the new test (`task-1-mutants-2.log`). The mutant step covers only the end-date rule, so the start-boundary constraint has no mutant. Check 7 also does not hold for the plan test: it passes on the revert, and there is no `Strengthened:` line. The new test fails on the revert and checks the same behavior, so a `Strengthened: test_window_includes_end_date -> test_window_holds_its_start_and_end_dates` line would hold. The mutants file lacks that line, so this is a second finding.\n\n2. **Mutant step, check 7: the plan test passes on the revert with no `Strengthened:` line.** `test_window_includes_end_date` passes on the revert (`passed tests.test_window::test_window_includes_end_date` in `task-1-mutants-2.log`). The reason is that it checks `date(2026, 3, 30)`, not the end date itself, so it does not catch the original bug. The mutants file has no `Keeps:` or `Strengthened:` line for it.\n   - Fix: add `Strengthened: test_window_includes_end_date -> test_window_holds_its_start_and_end_dates`. That new test fails on the revert at `tests/test_window.py:16` and checks the end-date behavior the plan test should have caught.",
+  "ttft_ms": 8689,
+  "type": "result",
+  "duration_ms": 8702,
+  "ttft_stream_ms": 764,
+  "time_to_request_ms": 80,
+  "first_content_frame_ms": 764,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-11-30T19:36:55.523Z"
+}
