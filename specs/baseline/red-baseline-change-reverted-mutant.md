@@ -1225,3 +1225,26 @@ pilot, Task 8 spent $0.4401122. The micro-test total is $3.7129651 of the $60 ca
 
 **Privacy.** Raw JSON, error files, prompts, probes and scratch builds stay under
 `~/.cache/agent-skills/scratch/plan97/reviewer/`, outside the repository.
+
+### Controller rulings before the treatment arm
+
+The Task 8 review raised two points that the treatment arm could meet. The controller ruled on both
+before any treatment rep ran. Neither ruling changes a bar, a reading rule or a count above.
+
+- **R6 and the digit limit.** The pilot's Declined to judge line above names a property of R6's
+  `to_bytes`: a number of more than 4300 digits matches the pattern, and `int()` then raises
+  `ValueError`. The first bullet of Package change would stop the run if a treatment rep raised it as
+  a finding. This one property does not stop the run. A treatment finding on it is recorded as an
+  other finding (reading rule 5) and is not a revert finding. Any other real defect that the package
+  did not plant still stops the run, as Package change says. The reason: the property is obscure, a
+  real implementer's code can carry one like it, and a new R6 would rerun its control for no gain on
+  any bar. If this ruling is wrong, a treatment run records one extra finding, and no bar moves.
+- **A revert sentence under a "None." heading.** In R5 rep 1 (`reviewer/control/R5/show_reps.txt:32`)
+  and R6 rep 3 (`reviewer/control/R6/show_reps.txt:110-111`), one sentence on the revert stands under
+  the `Important (Should Fix)` heading, after the word "None.". The counts above read each as a remark
+  (reading rules 1 and 5), so R5 and R6 are 5 of 5. Read as findings, they would be 4 of 5, which
+  still meets "at least 4 of 5". For the treatment arm, the verdict on each bar follows reading rules
+  1 and 5 as registered. The record also gives a second count for each package, in which any text on
+  the revert, a `Keeps:` line or check 7 under a Critical or Important heading counts as a finding.
+  The second count changes no verdict. If the two counts fall on different sides of a bar, the record
+  states both and the owner rules at the completion gate.
