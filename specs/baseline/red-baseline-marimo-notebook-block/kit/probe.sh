@@ -12,31 +12,57 @@
 # /tmp/mnb98/rep-XXXXXX, must not be inside any other repository. Like run_reps.sh, the probe
 # refuses to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh. After
 # the run, it moves its rep directory to ~/.cache/agent-skills/scratch/plan98/repdirs/ and any
-# stray entry to stray/. The last line printed gives the moved rep directory and the sha256 of its
+# stray entry to stray/. It refuses, with exit 2, an <out-file> that is /tmp/mnb98/ or lies inside
+# it. The last line printed gives the moved rep directory and the sha256 of its
 # CLAUDE.md and of the block (null in the control arm). The
 # stream holds home paths and a session id. Keep <out-file> outside the repository and never
 # commit it.
 set -u
 [ "$#" -eq 2 ] || [ "$#" -eq 3 ] || { echo "usage: probe.sh <arm> <out-file> [<prompt-file>]"; exit 2; }
-KIT="$(cd "$(dirname "$0")" && pwd)" || exit 2
-ARM="$1"
-case "$ARM" in
-  control | block) ;;
-  *) echo "refusing: arm must be control or block, not $ARM"; exit 2 ;;
-esac
-PROMPT="${3:-$KIT/isolation_probe.txt}"
-[ -f "$PROMPT" ] || { echo "refusing: no prompt file $PROMPT"; exit 2; }
-PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
-OUTDIR="$(mkdir -p "$(dirname "$2")" && cd "$(dirname "$2")" && pwd)" || exit 2
-OUT="$OUTDIR/$(basename "$2")"
-[ -e "$OUT" ] && { echo "refusing: $OUT exists"; exit 2; }
-ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2
-BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
-ANCHOR='marimo-pair drives live notebook sessions in this repo.'
-DENY='{"permissions":{"deny":["Read(~/**)","Edit(~/**)","Write(~/**)"]}}'
 PARK="$HOME/.cache/agent-skills/scratch/plan98"
 
-# Keep these four functions identical in run_reps.sh and probe.sh.
+# Keep these six functions identical in run_reps.sh and probe.sh.
+# Print the absolute, physical form of a path that need not exist yet, so that `..`, `.`, a
+# trailing slash and a linked parent such as /tmp all resolve. Call it in $(...), so that its
+# set -f stays in a subshell.
+resolve_path() {
+  local path="$1" rest='' part
+  set -f
+  case "$path" in
+    /*) ;;
+    *) path="$PWD/$path" ;;
+  esac
+  while [ ! -d "$path" ]; do
+    rest="${path##*/}${rest:+/$rest}"
+    path="${path%/*}"
+    [ -n "$path" ] || path=/
+  done
+  path="$(cd "$path" && pwd -P)" || return 1
+  local IFS=/
+  for part in $rest; do
+    case "$part" in
+      '' | .) ;;
+      ..) path="${path%/*}"; [ -n "$path" ] || path=/ ;;
+      *) path="${path%/}/$part" ;;
+    esac
+  done
+  printf '%s\n' "$path"
+}
+
+# Refuse, with exit 2, an output path that is /tmp/mnb98/ or lies inside it, because reps can read
+# that folder. Outputs go outside it.
+refuse_inside() {
+  local resolved root
+  resolved="$(resolve_path "$1")" || { echo "refusing (exit 2): cannot resolve $1"; exit 2; }
+  root="$(cd /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
+  case "$resolved" in
+    /tmp/mnb98 | /tmp/mnb98/* | /private/tmp/mnb98 | /private/tmp/mnb98/* | "$root" | "$root"/*)
+      echo "refusing (exit 2): $1 is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
+      exit 2
+      ;;
+  esac
+}
+
 # Print each top-level entry of /tmp/mnb98/ other than venv/ and leakcheck.sh, one name a line.
 extra_entries() {
   local entry
@@ -49,12 +75,13 @@ extra_entries() {
   done
 }
 
-# Refuse to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh.
+# Stop, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh. $1 says why, and
+# "refusing" is the default.
 refuse_extras() {
   local found
   found="$(extra_entries)"
   [ -z "$found" ] && return 0
-  echo "refusing (exit 3): /tmp/mnb98/ holds more than venv/ and leakcheck.sh. Move each entry out first:"
+  echo "${1:-refusing} (exit 3): /tmp/mnb98/ holds more than venv/ and leakcheck.sh. Move each entry out first:"
   printf '%s\n' "$found" | sed 's|^|  /tmp/mnb98/|'
   exit 3
 }
@@ -82,6 +109,23 @@ park_rep_dir() {
   mv "$dir" "$PARK/repdirs/"
 }
 
+KIT="$(cd "$(dirname "$0")" && pwd)" || exit 2
+ARM="$1"
+case "$ARM" in
+  control | block) ;;
+  *) echo "refusing: arm must be control or block, not $ARM"; exit 2 ;;
+esac
+PROMPT="${3:-$KIT/isolation_probe.txt}"
+[ -f "$PROMPT" ] || { echo "refusing: no prompt file $PROMPT"; exit 2; }
+PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
+refuse_inside "$2"
+OUTDIR="$(mkdir -p "$(dirname "$2")" && cd "$(dirname "$2")" && pwd)" || exit 2
+OUT="$OUTDIR/$(basename "$2")"
+[ -e "$OUT" ] && { echo "refusing: $OUT exists"; exit 2; }
+ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2
+BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
+ANCHOR='marimo-pair drives live notebook sessions in this repo.'
+DENY='{"permissions":{"deny":["Read(~/**)","Edit(~/**)","Write(~/**)"]}}'
 [ "$ARM" = control ] || [ -f "$BLOCK" ] || { echo "refusing: no block at $BLOCK"; exit 2; }
 refuse_extras
 run="$(mktemp -d /tmp/mnb98/rep-XXXXXX)" || exit 2

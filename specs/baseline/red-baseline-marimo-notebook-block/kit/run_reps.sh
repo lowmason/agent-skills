@@ -31,34 +31,56 @@
 # written, the runner moves its rep directory to ~/.cache/agent-skills/scratch/plan98/repdirs/.
 # After the first rep and again after the whole batch, it moves each other entry that reps wrote
 # into /tmp/mnb98/, such as an HTML export, to ~/.cache/agent-skills/scratch/plan98/stray/. It
-# moves and never deletes. So no rep can read an earlier rep's notebook or export.
+# moves and never deletes. So no rep can read an earlier rep's notebook or export. If rep 1's
+# directory or a stray is still in /tmp/mnb98/ after rep 1, the batch stops with exit 3 before
+# reps 2 to N start. The runner refuses, with exit 2, an <out-dir> that is /tmp/mnb98/ or lies
+# inside it, after it resolves `..`, `.` and links. Outputs go outside it.
 set -u
 [ "$#" -eq 5 ] || { echo "usage: run_reps.sh <arm> <case> <out-dir> <first> <last>"; exit 2; }
-KIT="$(cd "$(dirname "$0")" && pwd)" || exit 2
-ARM="$1"
-CASE="$2"
-case "$ARM" in
-  control | block) ;;
-  *) echo "refusing: arm must be control or block, not $ARM"; exit 2 ;;
-esac
-case "$CASE" in
-  explore | override) NOTEBOOK="$KIT/fixture/repo/notebooks/explore.py" ;;
-  lint | tidy) NOTEBOOK="$KIT/fixture/lint/explore.py" ;;
-  verdict) NOTEBOOK="$KIT/fixture/verdict/explore.py" ;;
-  *) echo "refusing: case must be explore, override, lint, tidy or verdict, not $CASE"; exit 2 ;;
-esac
-PROMPT="$KIT/cases/$CASE.txt"
-OUT="$(mkdir -p "$3" && cd "$3" && pwd)" || exit 2
-FIRST="$4"
-LAST="$5"
-ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2
-BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
-ANCHOR='marimo-pair drives live notebook sessions in this repo.'
-SCRATCH="$HOME/.cache/agent-skills/scratch/plan98/$(basename "$(dirname "$OUT")")/$(basename "$OUT")"
-DENY='{"permissions":{"deny":["Read(~/**)","Edit(~/**)","Write(~/**)"]}}'
 PARK="$HOME/.cache/agent-skills/scratch/plan98"
 
-# Keep these four functions identical in run_reps.sh and probe.sh.
+# Keep these six functions identical in run_reps.sh and probe.sh.
+# Print the absolute, physical form of a path that need not exist yet, so that `..`, `.`, a
+# trailing slash and a linked parent such as /tmp all resolve. Call it in $(...), so that its
+# set -f stays in a subshell.
+resolve_path() {
+  local path="$1" rest='' part
+  set -f
+  case "$path" in
+    /*) ;;
+    *) path="$PWD/$path" ;;
+  esac
+  while [ ! -d "$path" ]; do
+    rest="${path##*/}${rest:+/$rest}"
+    path="${path%/*}"
+    [ -n "$path" ] || path=/
+  done
+  path="$(cd "$path" && pwd -P)" || return 1
+  local IFS=/
+  for part in $rest; do
+    case "$part" in
+      '' | .) ;;
+      ..) path="${path%/*}"; [ -n "$path" ] || path=/ ;;
+      *) path="${path%/}/$part" ;;
+    esac
+  done
+  printf '%s\n' "$path"
+}
+
+# Refuse, with exit 2, an output path that is /tmp/mnb98/ or lies inside it, because reps can read
+# that folder. Outputs go outside it.
+refuse_inside() {
+  local resolved root
+  resolved="$(resolve_path "$1")" || { echo "refusing (exit 2): cannot resolve $1"; exit 2; }
+  root="$(cd /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
+  case "$resolved" in
+    /tmp/mnb98 | /tmp/mnb98/* | /private/tmp/mnb98 | /private/tmp/mnb98/* | "$root" | "$root"/*)
+      echo "refusing (exit 2): $1 is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
+      exit 2
+      ;;
+  esac
+}
+
 # Print each top-level entry of /tmp/mnb98/ other than venv/ and leakcheck.sh, one name a line.
 extra_entries() {
   local entry
@@ -71,12 +93,13 @@ extra_entries() {
   done
 }
 
-# Refuse to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh.
+# Stop, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh. $1 says why, and
+# "refusing" is the default.
 refuse_extras() {
   local found
   found="$(extra_entries)"
   [ -z "$found" ] && return 0
-  echo "refusing (exit 3): /tmp/mnb98/ holds more than venv/ and leakcheck.sh. Move each entry out first:"
+  echo "${1:-refusing} (exit 3): /tmp/mnb98/ holds more than venv/ and leakcheck.sh. Move each entry out first:"
   printf '%s\n' "$found" | sed 's|^|  /tmp/mnb98/|'
   exit 3
 }
@@ -104,6 +127,29 @@ park_rep_dir() {
   mv "$dir" "$PARK/repdirs/"
 }
 
+KIT="$(cd "$(dirname "$0")" && pwd)" || exit 2
+ARM="$1"
+CASE="$2"
+case "$ARM" in
+  control | block) ;;
+  *) echo "refusing: arm must be control or block, not $ARM"; exit 2 ;;
+esac
+case "$CASE" in
+  explore | override) NOTEBOOK="$KIT/fixture/repo/notebooks/explore.py" ;;
+  lint | tidy) NOTEBOOK="$KIT/fixture/lint/explore.py" ;;
+  verdict) NOTEBOOK="$KIT/fixture/verdict/explore.py" ;;
+  *) echo "refusing: case must be explore, override, lint, tidy or verdict, not $CASE"; exit 2 ;;
+esac
+PROMPT="$KIT/cases/$CASE.txt"
+refuse_inside "$3"
+OUT="$(mkdir -p "$3" && cd "$3" && pwd)" || exit 2
+FIRST="$4"
+LAST="$5"
+ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2
+BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
+ANCHOR='marimo-pair drives live notebook sessions in this repo.'
+SCRATCH="$HOME/.cache/agent-skills/scratch/plan98/$(basename "$(dirname "$OUT")")/$(basename "$OUT")"
+DENY='{"permissions":{"deny":["Read(~/**)","Edit(~/**)","Write(~/**)"]}}'
 [ -f "$PROMPT" ] || { echo "refusing: no prompt $PROMPT"; exit 2; }
 [ -f "$NOTEBOOK" ] && [ -f "$KIT/fixture/repo/CLAUDE.md" ] || { echo "refusing: the fixture is incomplete"; exit 2; }
 [ "$ARM" = control ] || [ -f "$BLOCK" ] || { echo "refusing: no block at $BLOCK"; exit 2; }
@@ -321,6 +367,9 @@ rep() {
 
 rep "$FIRST"
 sweep_strays
+# Rep 1 runs alone. If its rep directory, or a stray, is still in /tmp/mnb98/ now, stop before the
+# other reps start beside it.
+refuse_extras 'stopping the batch after rep 1'
 i=$((FIRST + 1))
 while [ "$i" -le "$LAST" ]; do
   rep "$i" &
