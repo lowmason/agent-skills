@@ -21,7 +21,8 @@ and is re-read on every later turn. Hand artifacts over as files:
   (`<this-skill-dir>/references/mutants.md`), `[MUTANT_RUN]`
   (`<this-skill-dir>/scripts/mutant-run`), `[PLAN_FILE]` and `[WORKSPACE]`
   (the directory `<this-skill-dir>/scripts/sdd-workspace PLAN_FILE` prints),
-  each as an absolute path, as the placeholders list in
+  each as an absolute path, and `[BASE]`, the task's BASE as a full SHA
+  (a value, not a path), as the placeholders list in
   [implementer-prompt.md](../implementer-prompt.md) says.
   Exact values (numbers, magic strings, signatures, test
   cases) appear only in the brief.
@@ -56,8 +57,9 @@ and is re-read on every later turn. Hand artifacts over as files:
   your context; the reviewer sees the commit list, stat summary, and full diff
   in one Read. **Use the BASE you recorded before dispatching the implementer —
   never `HEAD~1`, which silently drops all but the last commit of a multi-commit
-  task.** For the final whole-branch review, BASE is the branch's merge base
-  (e.g. `git merge-base main HEAD`).
+  task.** The same BASE fills `[BASE]` in the implementer's dispatch and goes
+  to `mutant-run` ([test-run.md](test-run.md)). For the final whole-branch
+  review, BASE is the branch's merge base (e.g. `git merge-base main HEAD`).
 - **Report file:** name the implementer's report file after the brief
   (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
   the dispatch prompt. The implementer writes the full report there and
