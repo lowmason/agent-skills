@@ -311,7 +311,7 @@ the owner kept inline execution on Opus: "Keep inline on Opus (Recommended)".
 ## Control
 
 Writer cap $3.00, `ADJ_CAP` $1.50. Writer reps 1 to 3 ran on each fixture, and `p90` reps 4 and 5 replaced two VOID
-reps.
+reps. In the final review, `p90` rep4 became VOID, and rep6 replaced it.
 
 **VOIDs.**
 
@@ -320,6 +320,10 @@ reps.
 - The cause: plan 90's text names `/tmp/codex-review/`, the folder where the real Codex reviews of that branch were
   written. `Read` has a path check, which the isolation probe showed. `Bash`, allowed through `--allowedTools Bash`,
   has none. The writer reached the folder through `Bash`.
+- `p90` rep4 (made VOID in the final review): the writer ran `ls ~/.local/bin 2>/dev/null | head; which uv pytest
+  python3.12 python3.13`. The executor first kept this rep, because the VOID rule exempts system tools. The
+  code-reviewer read the rule as an exemption for running a system tool, not for listing a folder in the home folder.
+  The executor accepted that reading. `rep4.VOID` records it.
 
 **`outside` hits read and kept.** These hits are not VOID:
 
@@ -327,19 +331,17 @@ reps.
   long `Bash` output there, so these files hold the rep's own command output.
 - `cd ../../..` after a `cd` into the rep's own subfolder.
 - Grep patterns that search the fixture's own files, such as `/5`, `/Users/` and the owner's name.
-- `p90` rep4's `ls ~/.local/bin 2>/dev/null | head; which uv pytest python3.12 python3.13`. It looks up where system
-  tools are installed, which the VOID rule exempts.
 
-**Scores** (scored reps: `p80` 1 to 3, `p90` 3 to 5, `p92` 1 to 3). Each cell is the count of scored reps that pass.
+**Scores** (scored reps: `p80` 1 to 3, `p90` 3, 5 and 6, `p92` 1 to 3). Each cell is the count of scored reps that pass.
 
 | Bar | `p80` | `p90` | `p92` |
 |---|---|---|---|
 | B1 Plan | 3/3 holds | 3/3 holds | 3/3 holds |
 | B2 Build | 3/3 holds | 3/3 holds | 2/3 holds |
 | B3 Project | 2/3 holds | 3/3 holds | 3/3 holds |
-| B4 Accuracy | 1/3 **fails** | 0/3 **fails** | 1/3 **fails** |
+| B4 Accuracy | 1/3 **fails** | 1/3 **fails** | 1/3 **fails** |
 | B5 Length | 3/3 holds | 3/3 holds | 3/3 holds |
-| All five bars at once | 1/3 | 0/3 | 1/3 |
+| All five bars at once | 1/3 | 1/3 | 1/3 |
 
 Explainer lengths run from 1,119 to 1,574 words. Only `p92` rep2 has a section that C7 reads as a synopsis (220
 words). The others open with a summary under another heading, such as "In short", so B5 judges them on length only.
@@ -352,13 +354,13 @@ one:
 | `p80` rep1 | the history entry "lists 8 rulings and 6 deviations" | 8 rulings and 7 deviations |
 | `p80` rep3 | the branch "adds about 35 small JSON rep files" | 25 `rep<N>.json` files |
 | `p90` rep3 | `hooks/readonly-agent-guard.py` is "+142/−37"; "three 'Not caught' entries are removed" | +123/−19 (142 lines changed); one bullet removed, two rewritten |
-| `p90` rep4 | the cost tests use "inputs of 64 and 128 words" | `shape(64)` and `shape(128)` repeat a pattern 64 and 128 times, about 3n words |
 | `p90` rep5 | the guard file is "+142/−37 lines in total" | +123/−19 |
 | `p92` rep2 | a committed rep reply "begins its reply with your first name" | the reply names the owner once, by surname, about 200 characters in |
 | `p92` rep3 | "you waive those case by case", with the waiver limited to edits that change no instruction | a final-review ruling removed "for such edits" so that the waiver has no such limit |
 
-Six of the seven are numbers or details that the writer stated without checking them. They are counts, line totals,
-input sizes or a name. The seventh restates wording that a later commit of the same branch removed.
+Five of the six are numbers or details that the writer stated without checking them. They are counts, line totals
+or a name. The sixth restates wording that a later commit of the same branch removed. The VOID `p90` rep4 had one
+more of the first kind: input sizes of "64 and 128 words", where the tests repeat a pattern 64 and 128 times.
 
 **Other FAILs, not contested.** `p80` rep3 B3: the project part describes the new record and names no workflow step
 that changes. `p92` rep3 B2: the synopsis puts the register change before the micro-test whose null result it needs.
@@ -372,7 +374,7 @@ Neither FAIL changes its bar's result on the fixture.
 treatment brief adds one instruction aimed at B4 (Task 3).
 
 **Spend.** Pilots $1.34, control $11.18 (the two VOID writer reps included), total $12.52. That is below the $35 stop
-for pilots and control.
+for pilots and control. The final review's `p90` rep6 added $0.90 (Spend).
 
 **Public repository scan** over `pilot/` and `control/`: the plan's grep for email addresses and key shapes printed no
 line. An extra check for the owner's name and home folder found three kinds of text. Each is already public in this
@@ -560,6 +562,21 @@ M6's row tests only that the pointer opens the file.
 
 **Micro-test spend:** $0.78 for 40 reps.
 
+**Final-review scenario `M7-notrack`.** Codex finding F2 in the final review: the fetch fails, and no
+`origin/<base>` ref exists, so item 2 names no command that gives BASE. `GRADING.md` gained the M7 row and
+`fixtures/M7-notrack.txt` before any M7 rep ran (`6c0d244`). The text under test is the shipped text above.
+
+- Prompt: treatment `M7-notrack`, sha256 `b22912b075045f1c75f27dd80240cad8e20a2601f254d2732af9cbd36aaf7a9f`.
+- VOIDs: none. All 5 reps pass the screen.
+- Grade: **5/5 PASS**. Every rep runs `git merge-base main HEAD` first, records BASE under `IF it prints a sha`,
+  and goes on to item 3's plan check, the dispatch and the four-option menu, word for word. No rep guesses BASE.
+- The branch that the facts do not take: if local `main` also fails, reps 2, 4 and 5 report one line and show the
+  menu. Reps 1 and 3 ask the partner which commit the work starts after. The row grades the branch that the facts
+  take, so these lines do not count.
+- Cost: $0.15.
+
+The current text reaches BASE or the menu on this path, so it stays unchanged. The ledger records F2 as a ruling.
+
 ## Spend
 
 | Item | Cost |
@@ -569,23 +586,26 @@ M6's row tests only that the pointer opens the file.
 | Treatment round 0 (9 each) | $10.65 |
 | Micro-test (40 Sonnet reps) | $0.78 |
 | Held-out `p84` (3 each) | $4.03 |
-| **Total** | **$27.98** |
+| Final review: `p90` control rep6 (writer, reader, adjudicator) | $0.90 |
+| Final review: micro-test `M7-notrack` (5 Sonnet reps) | $0.15 |
+| **Total** | **$29.02** |
 
 The plan estimated about $57 with no wording round. The run stayed below both stops: pilots and control came to
-$12.52, against the $35 stop, and the total stayed below the $120 stop.
+$13.42 with the final review's `p90` rep6, against the $35 stop, and the total stayed below the $120 stop.
 
 ## Verdict
 
 - **Baseline: RED.** With no guidance, Opus writes an explainer that teaches the plan, the build and the project
-  (B1, B2, B3 and B5 hold on all three tuning fixtures). It fails B4 Accuracy on all three: 1/3 on `p80`, 0/3 on
-  `p90` and 1/3 on `p92`. Six of its seven contradicted claims are numbers or details that it did not check.
+  (B1, B2, B3 and B5 hold on all three tuning fixtures). It fails B4 Accuracy on all three: 1/3 on `p80`, 1/3 on
+  `p90` and 1/3 on `p92`. Five of its six contradicted claims are numbers or details that it did not check.
 - **Treatment: passes at round 0.** The brief adds the spec's layout, inputs, limits, style and output, and one
   instruction aimed at B4 ("Check before you state"). Every bar holds on `p80`, `p90` and `p92`. B4 rises to 3/3,
   2/3 and 2/3 (3/3 on `p92` under the executor's reading). No wording round ran.
 - **Held-out: passes.** On `p84`, every bar holds at 3/3 with the shipped brief.
 - **Contested readings:** one, `p92` treatment rep2 B4 (Treatment, Round 0 results). It changes no bar's result on
   the fixture, so it did not go to the owner.
-- **Step 3b wording:** every micro-test scenario passes 5 of 5 (Micro-test).
+- **Step 3b wording:** every micro-test scenario passes 5 of 5 (Micro-test), the final review's `M7-notrack`
+  included.
 - **Exposure:** no explainer of the tuning fixtures names plan 84.
 - **What the probe does not show:** see Known limits. The live run on this plan's own branch (plan Task 7) is
   report-only, and its result goes in the final report, not here.

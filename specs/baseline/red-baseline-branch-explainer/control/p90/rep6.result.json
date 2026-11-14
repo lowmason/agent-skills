@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.464209,
+  "turns": 9,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "dd5005b1553413087cbc97d57d8ff9965afcb9c17ac059832b02f9a724850729",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-ZdHI5i/out/explainer.md`.\n\n**What the change does:** the read-only guard used to take the first word it didn't skip as the command. Eight recorded lines slipped past because that word only introduced the command: a brace group, a `[[ \u2026 ]]` test, zsh's `=cmd`, or an assignment or `env` operand the guard didn't recognise. The guard now reads each such word two ways, as the command and as a word to keep walking past. If either reading is denied, the line is denied. Most of the other code keeps that walk fast, because a hook that times out lets the call through. Any subcommand with more than 64 possible command starts is denied outright. The rest of the 1,262 added lines are README updates, tests, and spec and plan records.\n\n**Tests:** I ran the hooks suite via `uv run python build/run_suites.py hooks`, and all 461 tests passed. The guard's own test file also passes under `/usr/bin/python3` (304 tests). I did not re-run the branch's transcript checks. Its records say they found no new false denials in 150,024 commands and lost no existing denial.\n\n**Before you merge:**\n- **No Codex review result is recorded anywhere in the branch.** The spec and plan require one round of Codex hunting for bypasses, with your ruling logged afterwards. Decisions D1\u2013D6 and the history entry don't mention it, so it either found nothing and wasn't written down, or it didn't run.\n- **The change goes live in every repository as soon as you merge,** because the installed hook is a symlink into the main checkout. `main` is at the base of this range, so the merge is a fast-forward.\n- **After merging, run `./hooks/probe-readonly-guard.sh`.** It should exit 0 and print three `ok:` lines.\n- **New false denials:** a `{`, `[[`, or a word with `=` at the start of a command now also gets the following word checked. So a heredoc line like `== rm and mv ==` is denied, and so is any subcommand with more than 64 possible starts. You accepted both of these during the plan, and the README documents them.\n- **Minor:** one of the speed safeguards (`queued`) no longer has a test that fails without it, since a later change made it redundant. It was kept on purpose, and you can ask to drop it later.\n- **Minor:** one known bypass, a glob qualifier glued to the command word, is left open on purpose. It's filed as a deferred item, and the README still lists it under \"Not caught\"."
+}

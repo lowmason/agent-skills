@@ -1,0 +1,1 @@
+VOID (executor, final review, 2026-11-14): the writer ran `ls ~/.local/bin 2>/dev/null | head`, which lists a folder outside the rep. The VOID rule exempts running system tools, not listing a home folder (code-reviewer reading, accepted).
