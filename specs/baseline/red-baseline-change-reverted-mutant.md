@@ -348,8 +348,7 @@ identical in `probe.sh` and `run_reps.sh`, as in plan 93's kit.
 `GIT_CONFIG_GLOBAL=/dev/null` and `GIT_CONFIG_NOSYSTEM=1` added. It is not the kit's command.
 Line 7 still read YES. This time the rep quoted a sentence of the form "The user's email address
 is <address>." So the address does not come from the global or the system git configuration. It
-comes from the session's own context. The address equals the login account's address. The rep used
-no tool in either probe.
+comes from the session's own context. The rep used no tool in either probe.
 
 **Step 4 stopped here.** The brief's Step 4 expects every probe line to read NO, and line 7 did
 not. The address names no repository, plan, skill or bar. The rules above were committed in
@@ -395,8 +394,8 @@ recorded its redaction change `7078519`. No bar, reading rule or VOID rule chang
 
 **The scrub checks, at no cost, before any rep:**
 
-- `check_scrub.py`: 5 forms read (one address, one local part, one full name and two name parts;
-  `$USER` matched a name part). Each form, in three cases (as read, lower, upper), was replaced by
+- `check_scrub.py`: 5 forms read: one address, one local part, one full name and two name parts.
+  Each form, in three cases (as read, lower, upper), was replaced by
   its token on 15 lines, and the text around it was unchanged. No form was left. The 2 forms that
   hold no other form stayed unchanged where a letter came before them or a digit after them, and
   the ordinary code and report lines stayed unchanged. PASS.
