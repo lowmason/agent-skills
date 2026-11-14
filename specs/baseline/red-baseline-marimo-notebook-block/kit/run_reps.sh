@@ -34,8 +34,9 @@
 # moves and never deletes. So no rep can read an earlier rep's notebook or export. If rep 1's
 # directory or a stray is still in /tmp/mnb98/ after rep 1, the batch stops with exit 3 before
 # reps 2 to N start. The runner resolves <out-dir> once, the way `mkdir -p` follows `..`, `.` and
-# links. It refuses that path, with exit 2, when it is /tmp/mnb98/ or lies inside it, and it writes
-# to that same path. So the check and the writes cannot disagree, and outputs stay outside.
+# links. It refuses that path, with exit 2, when it is /tmp/mnb98/ or lies inside it in any letter
+# case, and it writes to that same path. So the check and the writes cannot disagree, and outputs
+# stay outside.
 set -u
 [ "$#" -eq 5 ] || { echo "usage: run_reps.sh <arm> <case> <out-dir> <first> <last>"; exit 2; }
 PARK="$HOME/.cache/agent-skills/scratch/plan98"
@@ -71,11 +72,16 @@ resolve_path() {
 
 # Refuse, with exit 2, an output path that is /tmp/mnb98/ or lies inside it, because reps can read
 # that folder. $1 is the path that resolve_path printed, and the caller writes to that same path.
-# $2, when given, is the argument as the caller wrote it, for the message.
+# $2, when given, is the argument as the caller wrote it, for the message. The check ignores letter
+# case, because a macOS volume usually does: there /tmp/MNB98 is the same folder as /tmp/mnb98.
+# bash 3.2 has no ${var,,}, so tr lowers the case. When tr fails or prints nothing, it refuses.
 refuse_inside() {
-  local root
+  local root lower
   root="$(cd -P /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
-  case "$1" in
+  lower="$(printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]')" && [ -n "$lower" ] \
+    || { echo "refusing (exit 2): cannot check ${2:-$1}"; exit 2; }
+  root="$(printf '%s\n' "$root" | tr '[:upper:]' '[:lower:]')"
+  case "$lower" in
     /tmp/mnb98 | /tmp/mnb98/* | /private/tmp/mnb98 | /private/tmp/mnb98/* | "$root" | "$root"/*)
       echo "refusing (exit 2): ${2:-$1} is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
       exit 2

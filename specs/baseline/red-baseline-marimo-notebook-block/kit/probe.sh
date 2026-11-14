@@ -13,11 +13,11 @@
 # refuses to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh. After
 # the run, it moves its rep directory to ~/.cache/agent-skills/scratch/plan98/repdirs/ and any
 # stray entry to stray/. It resolves <out-file> once, the way `mkdir -p` follows `..`, `.` and
-# links, refuses that path with exit 2 when it is /tmp/mnb98/ or lies inside it, and writes the
-# stream to that same path. The last line printed gives the moved rep directory and the sha256 of its
-# CLAUDE.md and of the block (null in the control arm). The
-# stream holds home paths and a session id. Keep <out-file> outside the repository and never
-# commit it.
+# links. It refuses that path, with exit 2, when it is /tmp/mnb98/ or lies inside it in any letter
+# case, when it exists, and when it is a link, even one whose target is missing. So the stream goes
+# to that same path and not through a link. The last line printed gives the moved rep directory
+# and the sha256 of its CLAUDE.md and of the block (null in the control arm). The stream holds home
+# paths and a session id. Keep <out-file> outside the repository and never commit it.
 set -u
 [ "$#" -eq 2 ] || [ "$#" -eq 3 ] || { echo "usage: probe.sh <arm> <out-file> [<prompt-file>]"; exit 2; }
 PARK="$HOME/.cache/agent-skills/scratch/plan98"
@@ -53,11 +53,16 @@ resolve_path() {
 
 # Refuse, with exit 2, an output path that is /tmp/mnb98/ or lies inside it, because reps can read
 # that folder. $1 is the path that resolve_path printed, and the caller writes to that same path.
-# $2, when given, is the argument as the caller wrote it, for the message.
+# $2, when given, is the argument as the caller wrote it, for the message. The check ignores letter
+# case, because a macOS volume usually does: there /tmp/MNB98 is the same folder as /tmp/mnb98.
+# bash 3.2 has no ${var,,}, so tr lowers the case. When tr fails or prints nothing, it refuses.
 refuse_inside() {
-  local root
+  local root lower
   root="$(cd -P /tmp/mnb98 2> /dev/null && pwd -P)" || root=/private/tmp/mnb98
-  case "$1" in
+  lower="$(printf '%s\n' "$1" | tr '[:upper:]' '[:lower:]')" && [ -n "$lower" ] \
+    || { echo "refusing (exit 2): cannot check ${2:-$1}"; exit 2; }
+  root="$(printf '%s\n' "$root" | tr '[:upper:]' '[:lower:]')"
+  case "$lower" in
     /tmp/mnb98 | /tmp/mnb98/* | /private/tmp/mnb98 | /private/tmp/mnb98/* | "$root" | "$root"/*)
       echo "refusing (exit 2): ${2:-$1} is inside /tmp/mnb98/. Use a path outside it, for example under ~/.cache/agent-skills/scratch/plan98/."
       exit 2
@@ -125,6 +130,7 @@ OUT="$(resolve_path "$2")" || { echo "refusing (exit 2): cannot resolve $2"; exi
 refuse_inside "$OUT" "$2"
 mkdir -p "$(dirname "$OUT")" || exit 2
 [ -e "$OUT" ] && { echo "refusing: $OUT exists"; exit 2; }
+[ -L "$OUT" ] && { echo "refusing (exit 2): the out-file $2 is a link. Give the path of a new file."; exit 2; }
 ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2
 BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
 ANCHOR='marimo-pair drives live notebook sessions in this repo.'
