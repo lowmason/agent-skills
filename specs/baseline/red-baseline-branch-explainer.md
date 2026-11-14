@@ -588,7 +588,7 @@ The current text reaches BASE or the menu on this path, so it stays unchanged. T
 | Held-out `p84` (3 each) | $4.03 |
 | Final review: `p90` control rep6 (writer, reader, adjudicator) | $0.90 |
 | Final review: micro-test `M7-notrack` (5 Sonnet reps) | $0.15 |
-| **Total** | **$29.02** |
+| **Total** | **$29.03** |
 
 The plan estimated about $57 with no wording round. The run stayed below both stops: pilots and control came to
 $13.42 with the final review's `p90` rep6, against the $35 stop, and the total stayed below the $120 stop.
