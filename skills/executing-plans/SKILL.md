@@ -246,10 +246,11 @@ is fine; BASE is what the review range is cut from, never `HEAD~1`.
 
 **Prove the tests.** In a mutant task (Terms in
 [../subagent-driven-development/references/mutants.md](../subagent-driven-development/references/mutants.md)),
-after GREEN and the commit, work that file's steps 1–6. You read the spec
+after GREEN and the commit, work that file's steps 1–7. You read the spec
 at setup, so write no excerpts file: cite each spec sentence in the
 mutants file as `path:line`. The command is
-`<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N -- <the brief's focused test command>`.
+`<this-skill-dir>/../subagent-driven-development/scripts/mutant-run PLAN_FILE N BASE -- <the brief's focused test command>`,
+with the BASE that `task-start` printed on its `base:` line.
 The last run comes after the task's last commit: `task-done` refuses a run
 whose `head:` is not HEAD.
 

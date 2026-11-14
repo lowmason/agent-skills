@@ -1036,6 +1036,31 @@ Changes from upstream:
     are local, and no upstream text was taken. The micro-test fixtures
     are this repository's own
     (specs/baseline/red-baseline-mutant-checked-tests.md).
+  - Plan 97 (2026-11-14) adds a revert run to the mutant step of
+    subagent-driven-development and executing-plans
+    (specs/completed/change-reverted-mutant.md). The script
+    subagent-driven-development/scripts/mutant-run now takes BASE. After
+    the mutants, it runs the task's focused tests once more on the revert,
+    which is the task's code put back as it was at BASE, and it records
+    that run in the run file. A test that the task adds or changes and
+    that passes on the revert needs a `Keeps:` or `Strengthened:` line in
+    the mutants file. references/mutants.md and the implementer prompt
+    gain BASE and the steps for the revert. Check 7 in the task
+    reviewer's Mutants section (agents/task-reviewer.md and
+    task-reviewer-prompt.md), the re-review prompt, the controller's
+    references, and executing-plans' SKILL.md and final-review.md gain
+    the matching steps. task-done refuses a mutant run with no `base:`
+    line, a run at a different base, and a run with no `revert:` line. The
+    idea comes from the section "What breaks at the pull request" of
+    Eric J. Ma's blog post "The understanding zeitgeist in AI code
+    review" (2026-07-24,
+    https://ericmjl.github.io/blog/2026/7/24/understanding-zeitgeist-ai-code-review/):
+    when one agent writes both the code and its tests, a test should
+    fail on the behavior from before the change. Only the idea was taken,
+    by citation. The wording is original, and no text from the post is
+    reproduced. The changes are local, and no upstream text was taken.
+    The micro-test fixtures are this repository's own
+    (specs/baseline/red-baseline-change-reverted-mutant.md).
 
     brainstorming/
     dispatching-parallel-agents/
