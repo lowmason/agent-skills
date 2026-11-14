@@ -14,3 +14,7 @@ Read this after a /clear, a relaunch or a compaction, before any dispatch.
   with `git show <SHA>:<path>`. This repairs the cross-task context that
   `/clear` dropped — without it a relaunched controller dispatches stale
   signatures and the build breaks or the implementer stalls on NEEDS_CONTEXT.
+- A resumed task that already has commits keeps its BASE for the review
+  package and the mutant run: the commit before its first commit in `git log`
+  (for a later task, the second sha of the previous task's ledger line), not
+  HEAD.

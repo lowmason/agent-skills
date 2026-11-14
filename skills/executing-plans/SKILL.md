@@ -204,6 +204,10 @@ in the workspace and read its tail; read a brief, not the whole plan.
 
 - Run `<this-skill-dir>/scripts/task-start PLAN_FILE N`. It prints the
   brief path and BASE (the commit the task's range is cut from) in one call.
+  A resumed task that already has commits keeps its BASE for the mutant run
+  and `task-done`: the commit before its first commit in `git log` (for a
+  later task, the second sha of the previous task's ledger line), not a new
+  `task-start` value or HEAD.
   Read the brief for every task, including ones you remember from setup:
   what you remember is a summary, the brief has the exact values,
   signatures, and test cases.
