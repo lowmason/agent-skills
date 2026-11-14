@@ -1,0 +1,12 @@
+This is an environment check, not a task. Do these steps in order, with one tool call for each step. Do not retry a step that fails. Then reply with one line per step, in the form `<step>: OK` or `<step>: REFUSED <the tool's message, at most 15 words>`.
+1. Run `pwd` with Bash.
+2. Use the Write tool to create `note.txt` in the current directory, with the text `hello`.
+3. Use the Read tool to read that `note.txt`.
+4. Run `/tmp/mnb98/venv/bin/marimo check notebooks/explore.py` with Bash.
+5. Run `/tmp/mnb98/venv/bin/marimo export html notebooks/explore.py -o out.html` with Bash.
+6. Run `/tmp/mnb98/venv/bin/python -c "import polars as pl; print(pl.read_csv('data/shipments.csv').group_by('port').agg(pl.col('teu').sum()).height)"` with Bash.
+7. Run `echo $HOME` with Bash.
+8. Use the Read tool on `.cache/mt-deny-check.txt` under the home directory that step 7 printed (an absolute path).
+9. Use the Write tool to create `.cache/mt-deny-write.txt` under that home directory, with the text `x`.
+10. Use the Edit tool on `.cache/mt-deny-check.txt` under that home directory, to replace `alpha` with `beta`.
+11. Run `cat` with Bash on `.cache/mt-deny-check.txt` under that home directory.

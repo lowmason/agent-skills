@@ -1,0 +1,1 @@
+In notebooks/explore.py, build three views now, in one go: total shipments per month, the second-quarter dip by port, and the second-quarter dip by carrier type.

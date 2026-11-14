@@ -1,0 +1,1200 @@
+ship_date,port,carrier_type,teu,value_usd
+2023-01-01,Aldermouth,bulk,36,448600
+2023-01-01,Ivelholm,container,117,3084900
+2023-01-02,Brackwater,container,50,1222200
+2023-01-02,Brackwater,container,261,7627800
+2023-01-02,Cindervale,bulk,54,653500
+2023-01-02,Dovesend,container,124,2944000
+2023-01-03,Emberly Quay,tanker,51,964700
+2023-01-05,Brackwater,container,64,1835400
+2023-01-05,Cindervale,container,67,1697800
+2023-01-05,Emberly Quay,container,145,4303400
+2023-01-05,Glassford,container,92,2490600
+2023-01-05,Hollowmere,container,71,1767300
+2023-01-06,Aldermouth,container,80,2276200
+2023-01-06,Dovesend,bulk,75,824900
+2023-01-07,Aldermouth,tanker,83,1638500
+2023-01-07,Cindervale,bulk,87,1012500
+2023-01-07,Fennick,container,157,4270400
+2023-01-07,Juniper Reach,tanker,39,608700
+2023-01-08,Glassford,bulk,33,336100
+2023-01-09,Hollowmere,container,97,2806700
+2023-01-10,Glassford,bulk,51,591900
+2023-01-12,Dovesend,container,122,3306600
+2023-01-13,Brackwater,container,144,4378800
+2023-01-14,Aldermouth,container,58,1505500
+2023-01-14,Brackwater,container,55,1693600
+2023-01-14,Hollowmere,bulk,48,492500
+2023-01-15,Brackwater,container,87,2499000
+2023-01-15,Fennick,container,106,3342500
+2023-01-15,Glassford,container,158,3780500
+2023-01-15,Hollowmere,container,152,3625400
+2023-01-16,Fennick,container,68,1617700
+2023-01-16,Glassford,bulk,81,887600
+2023-01-16,Ivelholm,container,146,4242300
+2023-01-17,Emberly Quay,bulk,45,549200
+2023-01-17,Juniper Reach,container,98,2656100
+2023-01-18,Aldermouth,tanker,29,576400
+2023-01-18,Brackwater,container,151,4175300
+2023-01-18,Hollowmere,container,65,1763600
+2023-01-18,Hollowmere,container,99,2645000
+2023-01-18,Juniper Reach,tanker,45,899600
+2023-01-20,Brackwater,container,75,1978200
+2023-01-20,Cindervale,bulk,94,1202800
+2023-01-20,Cindervale,container,103,2892700
+2023-01-20,Dovesend,container,100,2869600
+2023-01-22,Aldermouth,container,96,2594700
+2023-01-22,Fennick,container,130,3515800
+2023-01-22,Glassford,container,169,4815400
+2023-01-23,Fennick,container,70,1769000
+2023-01-24,Emberly Quay,container,49,1314700
+2023-01-25,Dovesend,tanker,38,702100
+2023-01-29,Fennick,container,82,2043100
+2023-01-30,Aldermouth,tanker,29,544800
+2023-01-30,Ivelholm,container,50,1307200
+2023-01-30,Juniper Reach,container,65,1990800
+2023-01-31,Juniper Reach,bulk,47,533500
+2023-02-01,Aldermouth,bulk,56,739100
+2023-02-01,Brackwater,bulk,62,622500
+2023-02-01,Fennick,container,82,1950600
+2023-02-02,Brackwater,container,93,2906200
+2023-02-02,Hollowmere,bulk,59,719500
+2023-02-03,Hollowmere,container,79,1990400
+2023-02-04,Fennick,container,114,3572500
+2023-02-05,Emberly Quay,container,102,2661600
+2023-02-05,Glassford,bulk,73,865400
+2023-02-05,Ivelholm,container,88,2628700
+2023-02-06,Brackwater,container,95,2306700
+2023-02-06,Fennick,container,60,1412300
+2023-02-06,Hollowmere,container,51,1392300
+2023-02-07,Aldermouth,bulk,60,664000
+2023-02-07,Aldermouth,container,172,5220200
+2023-02-07,Cindervale,bulk,39,421300
+2023-02-07,Dovesend,tanker,31,529600
+2023-02-08,Aldermouth,tanker,39,647300
+2023-02-08,Dovesend,bulk,62,741900
+2023-02-09,Cindervale,bulk,37,421200
+2023-02-10,Cindervale,bulk,89,1164300
+2023-02-12,Brackwater,tanker,25,386100
+2023-02-12,Dovesend,container,161,3944400
+2023-02-12,Dovesend,bulk,49,604200
+2023-02-12,Ivelholm,container,126,3742200
+2023-02-13,Aldermouth,container,122,3012900
+2023-02-13,Dovesend,bulk,65,662100
+2023-02-14,Brackwater,container,57,1575900
+2023-02-14,Glassford,bulk,60,781100
+2023-02-14,Juniper Reach,bulk,72,734500
+2023-02-15,Dovesend,container,125,3500600
+2023-02-15,Emberly Quay,container,94,2953500
+2023-02-15,Fennick,container,101,2667800
+2023-02-16,Emberly Quay,bulk,39,489300
+2023-02-17,Brackwater,tanker,32,524400
+2023-02-17,Glassford,container,161,4403600
+2023-02-17,Ivelholm,container,102,2752700
+2023-02-17,Ivelholm,bulk,37,395700
+2023-02-18,Brackwater,bulk,30,302000
+2023-02-18,Juniper Reach,container,124,3028000
+2023-02-19,Ivelholm,bulk,24,306900
+2023-02-20,Fennick,container,146,3548400
+2023-02-21,Aldermouth,tanker,72,1129400
+2023-02-21,Cindervale,container,58,1508200
+2023-02-21,Hollowmere,bulk,52,625600
+2023-02-22,Ivelholm,tanker,34,606000
+2023-02-23,Juniper Reach,container,56,1397100
+2023-02-24,Aldermouth,bulk,50,592100
+2023-02-24,Dovesend,container,96,2312700
+2023-02-24,Fennick,container,102,3061500
+2023-02-24,Glassford,bulk,65,769300
+2023-02-24,Juniper Reach,bulk,62,696400
+2023-02-25,Emberly Quay,bulk,54,565300
+2023-02-27,Brackwater,container,150,4132900
+2023-02-27,Glassford,bulk,74,898400
+2023-02-28,Aldermouth,bulk,58,719900
+2023-03-01,Glassford,container,115,3100700
+2023-03-02,Brackwater,bulk,41,419000
+2023-03-02,Fennick,tanker,34,667500
+2023-03-02,Ivelholm,bulk,37,374600
+2023-03-03,Brackwater,container,102,2854100
+2023-03-03,Glassford,bulk,59,720400
+2023-03-03,Hollowmere,container,90,2817500
+2023-03-03,Juniper Reach,container,110,3253300
+2023-03-04,Hollowmere,tanker,33,591800
+2023-03-05,Emberly Quay,container,61,1479000
+2023-03-05,Fennick,container,121,3339700
+2023-03-07,Cindervale,tanker,29,498100
+2023-03-07,Dovesend,container,35,1096200
+2023-03-08,Aldermouth,tanker,46,881900
+2023-03-09,Glassford,container,38,988600
+2023-03-09,Hollowmere,container,63,1490100
+2023-03-09,Juniper Reach,bulk,38,412900
+2023-03-10,Emberly Quay,bulk,67,789100
+2023-03-11,Emberly Quay,container,97,2500000
+2023-03-11,Juniper Reach,tanker,26,418100
+2023-03-12,Aldermouth,container,73,1766000
+2023-03-12,Aldermouth,bulk,65,783600
+2023-03-12,Cindervale,bulk,99,1131400
+2023-03-12,Fennick,container,231,5522900
+2023-03-13,Glassford,bulk,40,476500
+2023-03-13,Hollowmere,container,163,4493800
+2023-03-14,Aldermouth,bulk,65,717900
+2023-03-16,Ivelholm,bulk,39,478400
+2023-03-17,Dovesend,bulk,51,651200
+2023-03-17,Hollowmere,container,84,2421600
+2023-03-18,Cindervale,bulk,23,272200
+2023-03-19,Cindervale,container,311,8253100
+2023-03-19,Fennick,bulk,28,331600
+2023-03-19,Ivelholm,container,157,4048200
+2023-03-20,Ivelholm,tanker,51,904100
+2023-03-21,Glassford,container,81,2303800
+2023-03-21,Ivelholm,container,77,2212000
+2023-03-22,Brackwater,bulk,37,471100
+2023-03-23,Aldermouth,container,283,8736400
+2023-03-23,Brackwater,bulk,103,1073300
+2023-03-23,Brackwater,bulk,37,437400
+2023-03-23,Fennick,container,117,3093300
+2023-03-24,Aldermouth,container,85,2288600
+2023-03-25,Glassford,bulk,47,594300
+2023-03-26,Brackwater,container,155,4710100
+2023-03-26,Fennick,bulk,35,419300
+2023-03-26,Hollowmere,bulk,74,889200
+2023-03-27,Emberly Quay,container,88,2402800
+2023-03-27,Ivelholm,container,183,4901700
+2023-03-28,Aldermouth,container,57,1536300
+2023-03-28,Cindervale,container,160,4159300
+2023-03-28,Dovesend,tanker,33,589400
+2023-03-28,Juniper Reach,bulk,51,521100
+2023-03-29,Brackwater,bulk,32,353000
+2023-03-30,Fennick,container,95,2524000
+2023-03-30,Juniper Reach,container,90,2139600
+2023-03-31,Dovesend,tanker,46,768700
+2023-03-31,Dovesend,bulk,50,541100
+2023-03-31,Emberly Quay,container,129,3952600
+2023-03-31,Fennick,container,117,2941500
+2023-04-01,Brackwater,container,88,2122000
+2023-04-01,Brackwater,bulk,58,686100
+2023-04-01,Fennick,tanker,47,828900
+2023-04-01,Ivelholm,container,94,2677300
+2023-04-02,Emberly Quay,container,125,3196000
+2023-04-02,Fennick,bulk,46,617300
+2023-04-05,Aldermouth,tanker,32,529600
+2023-04-06,Fennick,container,61,1445300
+2023-04-06,Ivelholm,bulk,53,545800
+2023-04-07,Aldermouth,container,130,3891100
+2023-04-07,Aldermouth,bulk,53,536700
+2023-04-07,Aldermouth,container,110,2910500
+2023-04-07,Cindervale,tanker,61,996500
+2023-04-07,Cindervale,bulk,69,832800
+2023-04-09,Brackwater,container,69,2031000
+2023-04-09,Brackwater,container,77,2206700
+2023-04-09,Fennick,container,68,1970800
+2023-04-11,Dovesend,bulk,52,671800
+2023-04-11,Hollowmere,bulk,44,584700
+2023-04-12,Brackwater,container,67,1568800
+2023-04-12,Hollowmere,container,52,1595600
+2023-04-12,Ivelholm,bulk,34,434900
+2023-04-13,Dovesend,container,156,4924800
+2023-04-13,Emberly Quay,bulk,48,590300
+2023-04-14,Juniper Reach,container,64,1980400
+2023-04-15,Fennick,bulk,64,837900
+2023-04-15,Ivelholm,bulk,53,590400
+2023-04-16,Cindervale,bulk,46,612800
+2023-04-16,Emberly Quay,container,74,2264300
+2023-04-16,Ivelholm,bulk,102,1131000
+2023-04-18,Emberly Quay,tanker,22,384200
+2023-04-18,Glassford,container,103,2546400
+2023-04-18,Hollowmere,bulk,39,508700
+2023-04-19,Brackwater,container,137,4278400
+2023-04-20,Cindervale,bulk,72,804500
+2023-04-20,Cindervale,bulk,63,791500
+2023-04-20,Cindervale,tanker,31,615400
+2023-04-20,Glassford,container,111,3458000
+2023-04-20,Ivelholm,container,53,1400800
+2023-04-21,Brackwater,container,97,2600200
+2023-04-23,Dovesend,tanker,27,543700
+2023-04-23,Glassford,bulk,47,603500
+2023-04-24,Emberly Quay,container,62,1915900
+2023-04-24,Juniper Reach,container,106,3150400
+2023-04-26,Brackwater,bulk,87,1177800
+2023-04-27,Aldermouth,container,144,4309000
+2023-04-27,Cindervale,bulk,58,715500
+2023-04-27,Ivelholm,container,170,4363400
+2023-04-27,Ivelholm,container,100,2820200
+2023-04-28,Aldermouth,bulk,78,919300
+2023-04-28,Aldermouth,bulk,99,1034000
+2023-04-28,Dovesend,container,116,3333100
+2023-04-30,Hollowmere,bulk,64,732200
+2023-04-30,Hollowmere,tanker,42,841900
+2023-05-01,Aldermouth,container,84,2518300
+2023-05-01,Emberly Quay,container,217,6327500
+2023-05-01,Juniper Reach,tanker,36,700100
+2023-05-03,Brackwater,container,194,5571400
+2023-05-03,Glassford,bulk,49,614100
+2023-05-04,Fennick,container,131,3641100
+2023-05-04,Fennick,bulk,35,368600
+2023-05-05,Aldermouth,container,197,5109600
+2023-05-05,Brackwater,container,100,2605600
+2023-05-05,Emberly Quay,container,140,3625300
+2023-05-06,Juniper Reach,container,83,1944800
+2023-05-07,Brackwater,container,53,1391300
+2023-05-09,Brackwater,bulk,57,572300
+2023-05-09,Emberly Quay,tanker,44,723000
+2023-05-09,Ivelholm,container,49,1432700
+2023-05-10,Hollowmere,bulk,34,402200
+2023-05-10,Ivelholm,container,81,2102500
+2023-05-11,Aldermouth,container,105,2931000
+2023-05-11,Emberly Quay,tanker,37,720300
+2023-05-11,Glassford,container,52,1567400
+2023-05-12,Aldermouth,bulk,24,252600
+2023-05-12,Dovesend,bulk,113,1426900
+2023-05-15,Aldermouth,bulk,67,675400
+2023-05-15,Glassford,tanker,26,528300
+2023-05-16,Emberly Quay,bulk,55,661200
+2023-05-17,Cindervale,container,44,1221500
+2023-05-17,Fennick,container,91,2193700
+2023-05-18,Fennick,container,133,3615600
+2023-05-18,Fennick,container,133,3425900
+2023-05-19,Juniper Reach,bulk,45,585900
+2023-05-19,Juniper Reach,container,51,1477300
+2023-05-20,Hollowmere,container,43,1212500
+2023-05-21,Brackwater,container,103,2557400
+2023-05-21,Brackwater,container,154,4082000
+2023-05-21,Fennick,bulk,37,461300
+2023-05-22,Aldermouth,container,94,2393000
+2023-05-22,Brackwater,container,104,3246200
+2023-05-22,Dovesend,container,59,1442400
+2023-05-22,Dovesend,tanker,40,608700
+2023-05-22,Emberly Quay,container,111,2986300
+2023-05-22,Glassford,bulk,54,562100
+2023-05-23,Cindervale,container,151,3540100
+2023-05-24,Aldermouth,tanker,28,458300
+2023-05-24,Dovesend,container,164,4051300
+2023-05-24,Fennick,container,84,2000900
+2023-05-25,Aldermouth,bulk,51,685400
+2023-05-25,Aldermouth,bulk,57,720800
+2023-05-25,Fennick,container,110,2599800
+2023-05-25,Hollowmere,container,84,2314400
+2023-05-25,Ivelholm,container,121,2884900
+2023-05-27,Fennick,container,76,1918100
+2023-05-27,Ivelholm,container,91,2221900
+2023-05-28,Juniper Reach,tanker,25,421100
+2023-05-29,Glassford,bulk,65,874300
+2023-05-31,Juniper Reach,container,45,1359600
+2023-06-01,Brackwater,container,138,3352300
+2023-06-01,Glassford,container,87,2109500
+2023-06-02,Cindervale,tanker,25,475200
+2023-06-02,Cindervale,container,109,3020700
+2023-06-02,Dovesend,container,118,3340600
+2023-06-03,Brackwater,container,202,4813900
+2023-06-03,Juniper Reach,tanker,20,351000
+2023-06-04,Aldermouth,container,116,3649300
+2023-06-04,Ivelholm,tanker,45,774300
+2023-06-05,Glassford,container,86,2702800
+2023-06-05,Ivelholm,tanker,44,719800
+2023-06-07,Cindervale,container,230,7118400
+2023-06-08,Ivelholm,bulk,62,738900
+2023-06-09,Fennick,container,120,3427900
+2023-06-10,Cindervale,container,146,3574400
+2023-06-10,Glassford,tanker,39,723700
+2023-06-11,Emberly Quay,bulk,34,353300
+2023-06-11,Glassford,bulk,60,648700
+2023-06-11,Hollowmere,container,186,4838100
+2023-06-11,Juniper Reach,container,86,2035300
+2023-06-12,Cindervale,container,187,4882800
+2023-06-12,Hollowmere,container,98,2320500
+2023-06-14,Aldermouth,container,47,1366300
+2023-06-15,Cindervale,container,225,7031200
+2023-06-16,Brackwater,container,90,2136500
+2023-06-16,Dovesend,bulk,22,258700
+2023-06-17,Aldermouth,container,138,4251900
+2023-06-17,Brackwater,container,140,4128200
+2023-06-17,Cindervale,container,111,2989700
+2023-06-17,Emberly Quay,container,67,2062400
+2023-06-17,Hollowmere,container,37,931800
+2023-06-19,Aldermouth,bulk,53,535900
+2023-06-19,Brackwater,bulk,59,676600
+2023-06-19,Fennick,container,103,3054500
+2023-06-20,Glassford,container,174,5264700
+2023-06-21,Aldermouth,container,109,3092700
+2023-06-21,Juniper Reach,bulk,25,283000
+2023-06-22,Hollowmere,container,55,1375300
+2023-06-24,Cindervale,container,113,3184800
+2023-06-24,Fennick,container,48,1507000
+2023-06-25,Aldermouth,container,82,2200300
+2023-06-26,Aldermouth,tanker,37,661600
+2023-06-26,Brackwater,container,96,2550100
+2023-06-26,Ivelholm,tanker,39,595000
+2023-06-28,Fennick,tanker,22,409100
+2023-06-28,Fennick,bulk,21,253800
+2023-06-28,Fennick,container,119,3469400
+2023-06-29,Aldermouth,container,98,2564100
+2023-06-29,Dovesend,tanker,26,495000
+2023-06-30,Aldermouth,container,106,2881900
+2023-07-02,Aldermouth,container,222,6576000
+2023-07-03,Brackwater,container,81,2143800
+2023-07-03,Fennick,container,59,1600200
+2023-07-03,Hollowmere,tanker,21,411600
+2023-07-03,Juniper Reach,container,51,1299800
+2023-07-04,Cindervale,container,313,9730300
+2023-07-04,Juniper Reach,container,139,3587000
+2023-07-05,Cindervale,bulk,33,437500
+2023-07-05,Glassford,container,77,2361900
+2023-07-06,Dovesend,container,127,3034200
+2023-07-07,Aldermouth,container,51,1303100
+2023-07-07,Brackwater,container,62,1589100
+2023-07-08,Brackwater,bulk,76,923000
+2023-07-08,Dovesend,tanker,54,1075500
+2023-07-09,Brackwater,container,123,3476100
+2023-07-10,Emberly Quay,bulk,56,662500
+2023-07-10,Juniper Reach,container,191,5764600
+2023-07-11,Juniper Reach,container,88,2206900
+2023-07-12,Juniper Reach,tanker,57,1043100
+2023-07-13,Aldermouth,bulk,61,763300
+2023-07-13,Glassford,container,68,1950400
+2023-07-14,Glassford,container,135,3374400
+2023-07-14,Hollowmere,container,66,1616400
+2023-07-16,Fennick,bulk,31,340800
+2023-07-16,Ivelholm,bulk,118,1423000
+2023-07-17,Dovesend,bulk,137,1821800
+2023-07-17,Ivelholm,bulk,50,637000
+2023-07-17,Ivelholm,tanker,55,874800
+2023-07-18,Brackwater,container,160,4754700
+2023-07-18,Brackwater,container,65,1914700
+2023-07-21,Fennick,bulk,24,319100
+2023-07-21,Glassford,tanker,50,992600
+2023-07-21,Ivelholm,container,107,3233500
+2023-07-22,Hollowmere,bulk,52,662800
+2023-07-23,Aldermouth,bulk,52,703200
+2023-07-24,Aldermouth,bulk,33,336000
+2023-07-24,Aldermouth,bulk,44,488800
+2023-07-24,Fennick,container,52,1459400
+2023-07-24,Hollowmere,bulk,44,476200
+2023-07-24,Juniper Reach,container,80,2099300
+2023-07-25,Hollowmere,bulk,60,621000
+2023-07-27,Dovesend,container,216,6358100
+2023-07-27,Ivelholm,container,80,1951200
+2023-07-28,Fennick,container,153,4716500
+2023-07-29,Aldermouth,tanker,41,749700
+2023-07-29,Fennick,container,167,3921600
+2023-07-29,Ivelholm,container,214,5684300
+2023-07-30,Brackwater,container,118,3580400
+2023-07-30,Brackwater,container,193,5197400
+2023-07-30,Cindervale,container,109,2587600
+2023-07-31,Cindervale,container,185,4898300
+2023-07-31,Ivelholm,container,86,2561600
+2023-07-31,Juniper Reach,container,60,1607500
+2023-08-01,Brackwater,container,83,2143400
+2023-08-01,Dovesend,container,251,7514000
+2023-08-03,Cindervale,container,77,2070500
+2023-08-03,Dovesend,bulk,40,480800
+2023-08-04,Brackwater,container,123,3618800
+2023-08-04,Ivelholm,container,215,6659900
+2023-08-05,Brackwater,container,96,2649900
+2023-08-05,Cindervale,container,136,3677200
+2023-08-05,Emberly Quay,bulk,82,910200
+2023-08-05,Glassford,container,126,3673900
+2023-08-05,Juniper Reach,container,96,2718800
+2023-08-08,Dovesend,tanker,27,547500
+2023-08-08,Emberly Quay,container,127,3555100
+2023-08-08,Fennick,container,126,3245200
+2023-08-08,Fennick,container,75,1875600
+2023-08-09,Emberly Quay,container,54,1401400
+2023-08-09,Hollowmere,container,107,2865300
+2023-08-09,Ivelholm,container,157,4722600
+2023-08-10,Cindervale,tanker,43,682100
+2023-08-10,Hollowmere,bulk,43,440300
+2023-08-11,Aldermouth,container,89,2348900
+2023-08-11,Brackwater,bulk,28,284500
+2023-08-11,Glassford,tanker,38,782200
+2023-08-12,Dovesend,bulk,116,1329400
+2023-08-12,Dovesend,tanker,33,616800
+2023-08-12,Emberly Quay,container,265,6279900
+2023-08-12,Ivelholm,tanker,29,509500
+2023-08-13,Aldermouth,container,129,3447400
+2023-08-13,Fennick,bulk,27,340800
+2023-08-14,Hollowmere,container,158,3710400
+2023-08-19,Brackwater,container,75,2313100
+2023-08-19,Fennick,container,82,1942100
+2023-08-19,Fennick,container,75,2155600
+2023-08-19,Hollowmere,container,99,2811300
+2023-08-20,Brackwater,container,56,1608400
+2023-08-21,Dovesend,bulk,36,411000
+2023-08-22,Aldermouth,bulk,71,814900
+2023-08-23,Aldermouth,bulk,32,374700
+2023-08-23,Ivelholm,bulk,50,613200
+2023-08-25,Cindervale,container,31,942700
+2023-08-25,Hollowmere,bulk,85,854300
+2023-08-26,Aldermouth,bulk,60,645800
+2023-08-26,Hollowmere,tanker,30,507500
+2023-08-27,Brackwater,container,189,4882600
+2023-08-27,Juniper Reach,container,97,2319600
+2023-08-28,Glassford,bulk,52,557900
+2023-08-29,Aldermouth,container,49,1211400
+2023-08-29,Cindervale,container,109,2987900
+2023-08-29,Dovesend,bulk,67,741300
+2023-08-30,Brackwater,bulk,37,458100
+2023-08-30,Ivelholm,container,113,2789600
+2023-08-31,Glassford,tanker,26,408700
+2023-08-31,Ivelholm,container,67,1737200
+2023-09-01,Brackwater,bulk,47,496600
+2023-09-01,Fennick,container,74,2013500
+2023-09-02,Aldermouth,bulk,56,587100
+2023-09-02,Fennick,container,129,3872200
+2023-09-03,Dovesend,container,84,2145700
+2023-09-04,Ivelholm,container,62,1551100
+2023-09-04,Ivelholm,container,92,2165300
+2023-09-05,Cindervale,bulk,30,311700
+2023-09-05,Dovesend,container,90,2473500
+2023-09-05,Emberly Quay,container,123,3227500
+2023-09-05,Ivelholm,container,226,7116600
+2023-09-06,Hollowmere,bulk,52,559600
+2023-09-06,Ivelholm,container,109,3265100
+2023-09-08,Dovesend,container,101,2478200
+2023-09-10,Brackwater,bulk,46,592400
+2023-09-10,Emberly Quay,container,223,5760800
+2023-09-12,Brackwater,bulk,61,629700
+2023-09-13,Brackwater,container,72,1860400
+2023-09-13,Emberly Quay,tanker,38,729600
+2023-09-14,Aldermouth,container,148,3959400
+2023-09-15,Hollowmere,container,103,2492600
+2023-09-15,Juniper Reach,container,213,5091400
+2023-09-16,Cindervale,container,99,2701000
+2023-09-16,Fennick,bulk,47,473800
+2023-09-16,Fennick,container,39,1125300
+2023-09-16,Glassford,container,216,6397400
+2023-09-17,Juniper Reach,container,264,8056000
+2023-09-18,Cindervale,container,61,1794400
+2023-09-18,Glassford,container,123,3123500
+2023-09-18,Glassford,bulk,51,661300
+2023-09-18,Hollowmere,container,83,2506800
+2023-09-19,Aldermouth,bulk,48,580300
+2023-09-20,Juniper Reach,container,91,2778500
+2023-09-21,Emberly Quay,container,126,3019000
+2023-09-21,Glassford,container,85,2177300
+2023-09-21,Hollowmere,container,40,994300
+2023-09-21,Ivelholm,container,119,3116000
+2023-09-22,Cindervale,bulk,57,627900
+2023-09-22,Fennick,tanker,25,420400
+2023-09-22,Ivelholm,tanker,41,822300
+2023-09-23,Dovesend,tanker,23,369200
+2023-09-23,Ivelholm,bulk,57,767300
+2023-09-23,Juniper Reach,bulk,53,656500
+2023-09-24,Aldermouth,bulk,45,602800
+2023-09-24,Fennick,container,134,3583800
+2023-09-26,Brackwater,container,84,2299700
+2023-09-26,Fennick,container,63,1949200
+2023-09-27,Emberly Quay,container,99,2681000
+2023-09-27,Ivelholm,container,91,2583700
+2023-09-28,Aldermouth,bulk,61,796500
+2023-09-29,Brackwater,container,77,1867800
+2023-09-29,Dovesend,tanker,46,797600
+2023-09-29,Fennick,container,46,1150800
+2023-09-29,Glassford,bulk,44,450200
+2023-09-29,Juniper Reach,container,178,4822100
+2023-09-30,Brackwater,container,81,2322500
+2023-09-30,Cindervale,container,162,4034500
+2023-09-30,Hollowmere,tanker,33,627100
+2023-10-01,Fennick,bulk,42,523700
+2023-10-01,Hollowmere,bulk,42,440700
+2023-10-01,Juniper Reach,container,83,2056900
+2023-10-03,Brackwater,container,55,1621000
+2023-10-03,Fennick,container,129,3750800
+2023-10-03,Ivelholm,bulk,56,611100
+2023-10-04,Fennick,bulk,75,1009800
+2023-10-06,Fennick,container,108,3051200
+2023-10-06,Glassford,bulk,26,323200
+2023-10-07,Cindervale,container,94,2519300
+2023-10-08,Hollowmere,container,91,2829400
+2023-10-09,Emberly Quay,container,107,3157800
+2023-10-09,Fennick,container,67,1620700
+2023-10-09,Hollowmere,container,93,2333800
+2023-10-11,Juniper Reach,container,113,3545000
+2023-10-14,Emberly Quay,bulk,59,630200
+2023-10-16,Cindervale,container,84,2392100
+2023-10-16,Juniper Reach,tanker,42,717500
+2023-10-16,Juniper Reach,container,84,2136900
+2023-10-17,Emberly Quay,container,119,2854600
+2023-10-18,Dovesend,container,278,8045700
+2023-10-18,Dovesend,container,93,2919900
+2023-10-18,Glassford,bulk,48,612700
+2023-10-20,Fennick,container,80,2291100
+2023-10-21,Aldermouth,tanker,28,526000
+2023-10-22,Aldermouth,container,84,2607500
+2023-10-22,Brackwater,tanker,26,487300
+2023-10-22,Brackwater,tanker,59,1055000
+2023-10-22,Cindervale,bulk,82,1032900
+2023-10-23,Fennick,container,257,7247600
+2023-10-23,Glassford,container,184,5466300
+2023-10-23,Ivelholm,container,94,2348500
+2023-10-24,Aldermouth,bulk,42,541900
+2023-10-24,Brackwater,container,106,2638800
+2023-10-25,Aldermouth,container,107,3059500
+2023-10-26,Aldermouth,container,86,2162700
+2023-10-26,Hollowmere,container,108,3296400
+2023-10-26,Ivelholm,bulk,68,800700
+2023-10-27,Fennick,container,140,3461600
+2023-10-28,Cindervale,tanker,73,1465900
+2023-10-29,Dovesend,container,101,2514300
+2023-10-31,Aldermouth,tanker,19,314300
+2023-10-31,Dovesend,container,79,2146600
+2023-10-31,Glassford,container,90,2437600
+2023-10-31,Ivelholm,container,95,2343100
+2023-11-01,Brackwater,container,87,2715000
+2023-11-01,Cindervale,tanker,42,777400
+2023-11-02,Juniper Reach,container,76,1789000
+2023-11-03,Brackwater,container,120,3070100
+2023-11-03,Ivelholm,container,122,3336700
+2023-11-04,Aldermouth,container,64,1911800
+2023-11-05,Ivelholm,container,78,2388100
+2023-11-05,Juniper Reach,tanker,37,689700
+2023-11-05,Juniper Reach,tanker,19,384200
+2023-11-09,Aldermouth,tanker,83,1625900
+2023-11-09,Hollowmere,bulk,60,810900
+2023-11-09,Ivelholm,container,100,2356900
+2023-11-10,Brackwater,container,90,2239500
+2023-11-12,Aldermouth,container,226,6172700
+2023-11-13,Fennick,container,150,4552200
+2023-11-15,Hollowmere,bulk,64,778200
+2023-11-16,Dovesend,container,90,2666300
+2023-11-16,Dovesend,container,71,1659800
+2023-11-17,Dovesend,container,45,1214800
+2023-11-17,Ivelholm,container,143,3856700
+2023-11-18,Aldermouth,container,194,4556000
+2023-11-18,Ivelholm,bulk,41,512700
+2023-11-20,Hollowmere,container,164,4125500
+2023-11-20,Ivelholm,container,70,1838000
+2023-11-20,Juniper Reach,container,53,1586400
+2023-11-21,Cindervale,container,49,1333000
+2023-11-21,Glassford,container,32,811800
+2023-11-24,Aldermouth,tanker,44,860500
+2023-11-24,Glassford,container,71,2027000
+2023-11-25,Cindervale,bulk,47,563900
+2023-11-26,Cindervale,container,138,3877900
+2023-11-26,Emberly Quay,bulk,46,506700
+2023-11-27,Cindervale,container,62,1848600
+2023-11-28,Brackwater,container,152,4667600
+2023-11-29,Brackwater,container,225,6261000
+2023-11-29,Emberly Quay,bulk,34,342800
+2023-11-29,Glassford,bulk,59,662800
+2023-11-30,Brackwater,bulk,40,443600
+2023-11-30,Emberly Quay,container,117,3478000
+2023-11-30,Fennick,container,132,3519300
+2023-11-30,Glassford,container,119,3481000
+2023-12-02,Dovesend,bulk,61,770500
+2023-12-03,Aldermouth,bulk,56,665100
+2023-12-03,Emberly Quay,container,53,1655800
+2023-12-04,Fennick,container,85,2279200
+2023-12-05,Brackwater,container,115,2743400
+2023-12-07,Emberly Quay,container,162,4273200
+2023-12-08,Aldermouth,tanker,33,660400
+2023-12-08,Dovesend,bulk,47,629500
+2023-12-08,Dovesend,container,75,1966800
+2023-12-08,Dovesend,container,199,5278900
+2023-12-08,Ivelholm,container,63,1573600
+2023-12-08,Juniper Reach,bulk,27,332100
+2023-12-08,Juniper Reach,bulk,52,662100
+2023-12-09,Emberly Quay,container,129,3239600
+2023-12-10,Aldermouth,tanker,41,834500
+2023-12-10,Glassford,container,101,2650600
+2023-12-10,Ivelholm,tanker,53,1023500
+2023-12-11,Brackwater,bulk,53,700200
+2023-12-12,Cindervale,tanker,21,385000
+2023-12-13,Aldermouth,bulk,56,730900
+2023-12-13,Brackwater,container,97,2579100
+2023-12-15,Hollowmere,bulk,78,957100
+2023-12-15,Juniper Reach,bulk,78,880300
+2023-12-16,Ivelholm,container,41,1147100
+2023-12-17,Dovesend,bulk,134,1620100
+2023-12-18,Hollowmere,container,89,2456400
+2023-12-18,Juniper Reach,container,102,2612700
+2023-12-18,Juniper Reach,bulk,28,297400
+2023-12-19,Fennick,container,127,3135100
+2023-12-19,Hollowmere,container,78,2452600
+2023-12-20,Cindervale,container,141,3479400
+2023-12-21,Aldermouth,tanker,27,466600
+2023-12-21,Fennick,bulk,99,1120700
+2023-12-22,Emberly Quay,container,112,3480400
+2023-12-22,Ivelholm,container,142,3446300
+2023-12-24,Hollowmere,tanker,36,734000
+2023-12-25,Brackwater,bulk,79,986600
+2023-12-26,Emberly Quay,bulk,44,548700
+2023-12-26,Ivelholm,container,129,3537000
+2023-12-27,Hollowmere,container,248,7624700
+2023-12-29,Brackwater,container,182,5706900
+2023-12-29,Juniper Reach,container,87,2494500
+2024-01-03,Juniper Reach,bulk,24,255100
+2024-01-04,Brackwater,bulk,57,696600
+2024-01-04,Glassford,bulk,37,412700
+2024-01-06,Dovesend,container,51,1386000
+2024-01-07,Dovesend,container,83,2515000
+2024-01-07,Fennick,bulk,65,761400
+2024-01-07,Ivelholm,container,84,2344400
+2024-01-08,Cindervale,tanker,49,996700
+2024-01-08,Ivelholm,bulk,34,438000
+2024-01-09,Brackwater,tanker,35,559300
+2024-01-09,Cindervale,container,142,3716500
+2024-01-09,Emberly Quay,container,84,2630400
+2024-01-10,Dovesend,bulk,32,346400
+2024-01-12,Aldermouth,container,80,2157900
+2024-01-12,Brackwater,container,100,2841500
+2024-01-13,Fennick,container,166,4301200
+2024-01-13,Glassford,tanker,33,599900
+2024-01-14,Aldermouth,container,111,3215800
+2024-01-15,Emberly Quay,bulk,29,318600
+2024-01-16,Ivelholm,container,191,5221900
+2024-01-18,Cindervale,container,104,2763300
+2024-01-18,Juniper Reach,container,107,2592300
+2024-01-19,Brackwater,bulk,55,620500
+2024-01-20,Juniper Reach,bulk,34,452600
+2024-01-21,Brackwater,bulk,37,413300
+2024-01-21,Fennick,container,63,1859900
+2024-01-22,Aldermouth,container,79,2200700
+2024-01-22,Fennick,container,99,3042100
+2024-01-22,Fennick,container,75,2258800
+2024-01-22,Hollowmere,container,149,3557800
+2024-01-23,Aldermouth,container,118,3240500
+2024-01-23,Fennick,container,78,2137600
+2024-01-24,Brackwater,bulk,71,760200
+2024-01-24,Fennick,container,144,4429800
+2024-01-26,Dovesend,bulk,39,423900
+2024-01-26,Hollowmere,container,134,3220100
+2024-01-27,Aldermouth,container,112,3264000
+2024-01-27,Brackwater,container,163,4650400
+2024-01-27,Hollowmere,tanker,32,591700
+2024-01-28,Hollowmere,bulk,21,221800
+2024-01-29,Glassford,container,94,2253200
+2024-01-31,Emberly Quay,container,81,2072700
+2024-01-31,Ivelholm,bulk,37,462100
+2024-02-01,Brackwater,bulk,74,987900
+2024-02-01,Dovesend,bulk,28,375100
+2024-02-01,Hollowmere,container,122,2927700
+2024-02-01,Ivelholm,container,109,3319300
+2024-02-01,Ivelholm,container,90,2461200
+2024-02-02,Aldermouth,container,125,3767700
+2024-02-02,Ivelholm,tanker,45,869300
+2024-02-03,Emberly Quay,bulk,80,1035100
+2024-02-04,Cindervale,container,52,1218500
+2024-02-05,Cindervale,bulk,60,643500
+2024-02-05,Ivelholm,container,77,2192700
+2024-02-06,Glassford,tanker,30,499900
+2024-02-06,Hollowmere,tanker,61,1195900
+2024-02-07,Dovesend,bulk,89,992300
+2024-02-08,Dovesend,container,162,3868700
+2024-02-08,Hollowmere,container,109,2742800
+2024-02-08,Ivelholm,container,184,5154500
+2024-02-08,Juniper Reach,container,91,2363300
+2024-02-09,Brackwater,bulk,27,289100
+2024-02-09,Emberly Quay,container,95,2336000
+2024-02-10,Emberly Quay,bulk,32,337900
+2024-02-10,Fennick,container,132,3780000
+2024-02-10,Fennick,container,53,1335500
+2024-02-10,Glassford,container,52,1421700
+2024-02-11,Juniper Reach,bulk,121,1534700
+2024-02-12,Brackwater,bulk,33,378000
+2024-02-13,Aldermouth,container,126,3310700
+2024-02-13,Brackwater,container,97,2322400
+2024-02-13,Ivelholm,container,96,2655100
+2024-02-14,Fennick,container,71,1707100
+2024-02-15,Brackwater,container,100,2946300
+2024-02-15,Dovesend,tanker,29,546000
+2024-02-15,Ivelholm,container,122,3141600
+2024-02-16,Ivelholm,container,106,2909500
+2024-02-18,Aldermouth,bulk,48,513300
+2024-02-20,Hollowmere,bulk,44,540600
+2024-02-21,Cindervale,bulk,27,283600
+2024-02-21,Emberly Quay,bulk,63,772500
+2024-02-21,Fennick,container,79,2243000
+2024-02-21,Glassford,container,70,1945700
+2024-02-22,Aldermouth,tanker,46,862100
+2024-02-22,Brackwater,tanker,40,775500
+2024-02-22,Hollowmere,container,82,2526700
+2024-02-22,Juniper Reach,container,83,1998200
+2024-02-23,Aldermouth,bulk,39,450100
+2024-02-23,Ivelholm,container,78,1961700
+2024-02-24,Cindervale,bulk,48,502800
+2024-02-25,Brackwater,bulk,43,575700
+2024-02-25,Cindervale,container,99,2458700
+2024-02-26,Emberly Quay,container,161,3907100
+2024-02-27,Aldermouth,container,77,1915900
+2024-02-27,Hollowmere,container,83,2115100
+2024-02-29,Brackwater,container,148,4211400
+2024-02-29,Cindervale,container,75,2346600
+2024-03-01,Hollowmere,container,67,1676000
+2024-03-03,Aldermouth,bulk,47,575000
+2024-03-03,Hollowmere,tanker,54,1003400
+2024-03-04,Aldermouth,bulk,59,631600
+2024-03-04,Cindervale,container,153,3744900
+2024-03-04,Ivelholm,container,350,10861800
+2024-03-05,Fennick,bulk,70,823800
+2024-03-06,Emberly Quay,bulk,41,521100
+2024-03-06,Fennick,container,85,2167100
+2024-03-07,Fennick,container,50,1252400
+2024-03-07,Hollowmere,bulk,23,232100
+2024-03-09,Aldermouth,container,67,1725000
+2024-03-09,Dovesend,container,138,3756600
+2024-03-10,Aldermouth,tanker,51,980900
+2024-03-10,Brackwater,container,132,3505500
+2024-03-10,Brackwater,bulk,55,662600
+2024-03-10,Ivelholm,bulk,47,575700
+2024-03-12,Brackwater,tanker,28,440800
+2024-03-12,Glassford,container,98,2347400
+2024-03-14,Cindervale,bulk,91,1115000
+2024-03-14,Cindervale,container,100,2430300
+2024-03-14,Ivelholm,container,86,2203600
+2024-03-14,Ivelholm,container,157,4134100
+2024-03-15,Fennick,container,29,759000
+2024-03-16,Emberly Quay,container,116,3601100
+2024-03-16,Hollowmere,tanker,29,528100
+2024-03-17,Brackwater,container,238,6433200
+2024-03-17,Fennick,container,80,2063900
+2024-03-17,Juniper Reach,container,73,2014700
+2024-03-18,Brackwater,bulk,46,562600
+2024-03-19,Aldermouth,container,130,3564200
+2024-03-20,Glassford,container,83,2192100
+2024-03-20,Juniper Reach,container,23,665800
+2024-03-21,Brackwater,container,56,1566400
+2024-03-21,Ivelholm,container,84,2436500
+2024-03-22,Cindervale,bulk,59,635500
+2024-03-22,Fennick,container,32,940900
+2024-03-22,Juniper Reach,container,55,1528100
+2024-03-23,Dovesend,container,85,2594900
+2024-03-24,Aldermouth,bulk,72,953100
+2024-03-24,Dovesend,container,115,3607200
+2024-03-24,Emberly Quay,bulk,32,411700
+2024-03-24,Fennick,container,99,2370400
+2024-03-25,Cindervale,bulk,46,575900
+2024-03-26,Aldermouth,bulk,86,998700
+2024-03-27,Emberly Quay,container,65,1777800
+2024-03-28,Aldermouth,container,259,6317200
+2024-03-28,Emberly Quay,container,96,2560900
+2024-03-28,Fennick,bulk,53,578100
+2024-03-28,Glassford,container,229,6293400
+2024-03-28,Ivelholm,tanker,64,974500
+2024-03-29,Hollowmere,tanker,52,1009100
+2024-03-30,Cindervale,container,83,2192300
+2024-03-30,Juniper Reach,container,94,2767000
+2024-03-31,Aldermouth,container,72,2178800
+2024-03-31,Aldermouth,container,98,2353500
+2024-03-31,Brackwater,container,155,4115100
+2024-03-31,Emberly Quay,bulk,55,734100
+2024-03-31,Ivelholm,container,173,4551300
+2024-04-01,Cindervale,container,45,1376200
+2024-04-01,Cindervale,container,64,1679400
+2024-04-02,Fennick,container,149,3843600
+2024-04-03,Glassford,container,74,1756900
+2024-04-04,Hollowmere,container,70,1717700
+2024-04-06,Ivelholm,tanker,22,421800
+2024-04-07,Glassford,bulk,75,790400
+2024-04-08,Emberly Quay,container,68,2116400
+2024-04-10,Aldermouth,tanker,46,829000
+2024-04-10,Ivelholm,bulk,77,968900
+2024-04-11,Aldermouth,container,142,3956100
+2024-04-12,Glassford,tanker,16,271800
+2024-04-12,Juniper Reach,container,141,4352000
+2024-04-13,Aldermouth,bulk,54,671800
+2024-04-13,Glassford,bulk,48,500500
+2024-04-13,Glassford,tanker,24,491400
+2024-04-16,Cindervale,container,122,3105300
+2024-04-16,Emberly Quay,bulk,86,1122600
+2024-04-16,Juniper Reach,container,96,2274800
+2024-04-19,Brackwater,container,78,1903400
+2024-04-20,Aldermouth,tanker,31,568500
+2024-04-20,Dovesend,bulk,23,248500
+2024-04-21,Cindervale,container,215,6392400
+2024-04-22,Dovesend,bulk,104,1268500
+2024-04-23,Aldermouth,container,62,1535700
+2024-04-24,Dovesend,bulk,73,970700
+2024-04-25,Dovesend,bulk,79,853900
+2024-04-25,Juniper Reach,bulk,57,758700
+2024-04-25,Juniper Reach,tanker,35,716100
+2024-04-28,Aldermouth,container,165,5042200
+2024-04-28,Emberly Quay,container,90,2243400
+2024-04-30,Aldermouth,container,98,2332300
+2024-04-30,Brackwater,container,151,4370600
+2024-04-30,Cindervale,tanker,32,497700
+2024-04-30,Hollowmere,container,136,4024100
+2024-05-01,Brackwater,container,33,1031200
+2024-05-02,Juniper Reach,container,131,3421100
+2024-05-04,Aldermouth,bulk,76,1010200
+2024-05-04,Cindervale,container,95,2275800
+2024-05-04,Dovesend,container,97,2525600
+2024-05-04,Juniper Reach,bulk,59,629900
+2024-05-05,Aldermouth,container,133,3241800
+2024-05-05,Aldermouth,container,38,1042500
+2024-05-05,Ivelholm,container,111,2835300
+2024-05-06,Cindervale,container,85,2526800
+2024-05-06,Cindervale,bulk,57,604900
+2024-05-06,Dovesend,bulk,77,940000
+2024-05-07,Brackwater,bulk,62,811300
+2024-05-07,Fennick,container,51,1349300
+2024-05-07,Hollowmere,bulk,49,651400
+2024-05-08,Brackwater,bulk,61,785900
+2024-05-08,Cindervale,container,154,4137300
+2024-05-08,Glassford,bulk,32,416400
+2024-05-08,Hollowmere,container,57,1510000
+2024-05-09,Cindervale,bulk,116,1468500
+2024-05-09,Dovesend,container,190,5559100
+2024-05-11,Dovesend,container,115,3422000
+2024-05-11,Emberly Quay,container,93,2763300
+2024-05-13,Glassford,container,110,2936600
+2024-05-16,Aldermouth,bulk,36,472100
+2024-05-18,Hollowmere,container,57,1713100
+2024-05-19,Aldermouth,container,173,4117600
+2024-05-19,Emberly Quay,container,134,3967600
+2024-05-23,Cindervale,container,85,2087500
+2024-05-23,Dovesend,container,114,3102900
+2024-05-24,Dovesend,container,67,1914500
+2024-05-25,Hollowmere,bulk,29,335000
+2024-05-25,Juniper Reach,container,129,3150800
+2024-05-26,Dovesend,bulk,54,661000
+2024-05-26,Emberly Quay,bulk,30,327100
+2024-05-27,Glassford,tanker,38,661400
+2024-05-29,Emberly Quay,tanker,63,1261100
+2024-05-30,Dovesend,container,169,4122900
+2024-05-30,Juniper Reach,container,142,4097800
+2024-05-31,Glassford,bulk,28,376400
+2024-05-31,Hollowmere,container,163,4080400
+2024-06-01,Aldermouth,container,73,2230900
+2024-06-01,Cindervale,container,98,3017200
+2024-06-01,Glassford,bulk,29,313600
+2024-06-01,Juniper Reach,container,75,1849700
+2024-06-03,Emberly Quay,tanker,19,390900
+2024-06-04,Aldermouth,bulk,70,778900
+2024-06-04,Ivelholm,container,165,4008200
+2024-06-05,Aldermouth,container,124,3181800
+2024-06-05,Aldermouth,bulk,45,588400
+2024-06-06,Cindervale,container,81,2133900
+2024-06-06,Juniper Reach,container,101,2777500
+2024-06-07,Emberly Quay,container,83,1955700
+2024-06-08,Dovesend,container,112,3256500
+2024-06-08,Hollowmere,bulk,33,350800
+2024-06-08,Juniper Reach,bulk,35,367900
+2024-06-09,Glassford,bulk,84,874300
+2024-06-09,Hollowmere,container,165,5172400
+2024-06-11,Brackwater,bulk,27,272400
+2024-06-11,Cindervale,container,73,2101200
+2024-06-13,Aldermouth,container,75,1852000
+2024-06-18,Juniper Reach,bulk,35,447200
+2024-06-19,Aldermouth,container,70,1934200
+2024-06-19,Aldermouth,container,123,3103700
+2024-06-20,Glassford,container,158,3715100
+2024-06-21,Aldermouth,bulk,75,969200
+2024-06-21,Hollowmere,bulk,60,796300
+2024-06-22,Aldermouth,container,92,2214900
+2024-06-23,Brackwater,container,54,1430600
+2024-06-23,Fennick,container,84,2437600
+2024-06-24,Cindervale,tanker,54,864100
+2024-06-24,Cindervale,container,152,4138700
+2024-06-25,Dovesend,container,120,3207200
+2024-06-26,Juniper Reach,container,71,1738000
+2024-06-28,Hollowmere,bulk,44,503400
+2024-06-29,Cindervale,tanker,30,602400
+2024-06-29,Dovesend,tanker,22,417500
+2024-06-29,Hollowmere,container,94,2867900
+2024-06-30,Emberly Quay,container,194,5637500
+2024-06-30,Fennick,bulk,82,903400
+2024-07-01,Dovesend,tanker,54,860800
+2024-07-01,Fennick,container,201,6164200
+2024-07-02,Aldermouth,container,58,1799300
+2024-07-03,Brackwater,container,75,2234000
+2024-07-03,Emberly Quay,bulk,55,592400
+2024-07-04,Brackwater,container,135,3778500
+2024-07-04,Glassford,container,98,2815400
+2024-07-04,Ivelholm,tanker,35,606800
+2024-07-04,Juniper Reach,bulk,53,536200
+2024-07-05,Aldermouth,container,174,4346300
+2024-07-05,Ivelholm,bulk,72,816000
+2024-07-06,Aldermouth,bulk,40,532300
+2024-07-06,Emberly Quay,tanker,38,639600
+2024-07-06,Fennick,bulk,33,417800
+2024-07-07,Aldermouth,tanker,41,819200
+2024-07-07,Brackwater,bulk,45,568400
+2024-07-07,Cindervale,bulk,39,464500
+2024-07-07,Fennick,bulk,60,637300
+2024-07-08,Dovesend,bulk,13,144000
+2024-07-08,Glassford,container,78,2183500
+2024-07-08,Juniper Reach,container,111,3174200
+2024-07-09,Emberly Quay,tanker,23,391200
+2024-07-12,Emberly Quay,container,77,1979600
+2024-07-13,Aldermouth,bulk,40,537500
+2024-07-14,Brackwater,bulk,34,423400
+2024-07-14,Hollowmere,container,113,2684200
+2024-07-15,Ivelholm,container,100,2426200
+2024-07-15,Juniper Reach,container,120,2956200
+2024-07-16,Aldermouth,container,110,2753700
+2024-07-16,Cindervale,bulk,44,590000
+2024-07-16,Glassford,container,53,1579500
+2024-07-17,Juniper Reach,container,64,1928500
+2024-07-18,Fennick,tanker,40,653800
+2024-07-18,Hollowmere,container,99,2357500
+2024-07-19,Aldermouth,container,173,5215700
+2024-07-19,Cindervale,tanker,29,442500
+2024-07-19,Ivelholm,container,84,2050500
+2024-07-19,Ivelholm,container,119,3400000
+2024-07-20,Dovesend,container,95,2230700
+2024-07-20,Emberly Quay,bulk,25,332700
+2024-07-20,Fennick,container,92,2556600
+2024-07-21,Brackwater,container,101,3182800
+2024-07-21,Emberly Quay,container,191,5237400
+2024-07-21,Fennick,tanker,38,655400
+2024-07-23,Dovesend,bulk,115,1184800
+2024-07-24,Ivelholm,container,67,2070300
+2024-07-24,Juniper Reach,container,134,3501000
+2024-07-25,Dovesend,bulk,38,464700
+2024-07-26,Dovesend,bulk,49,658500
+2024-07-26,Fennick,bulk,33,412300
+2024-07-27,Aldermouth,tanker,57,887700
+2024-07-27,Cindervale,container,85,2417100
+2024-07-27,Fennick,container,96,2416200
+2024-07-28,Aldermouth,tanker,19,382800
+2024-07-30,Fennick,container,66,1889200
+2024-07-30,Hollowmere,container,143,3438000
+2024-07-31,Brackwater,container,110,2703400
+2024-08-03,Hollowmere,tanker,51,949500
+2024-08-04,Aldermouth,container,80,1973100
+2024-08-05,Fennick,container,193,5004100
+2024-08-07,Aldermouth,bulk,49,528100
+2024-08-07,Dovesend,container,57,1507000
+2024-08-07,Emberly Quay,bulk,40,439500
+2024-08-07,Ivelholm,tanker,38,629500
+2024-08-07,Juniper Reach,tanker,33,623600
+2024-08-10,Dovesend,container,88,2350600
+2024-08-10,Dovesend,container,107,2808000
+2024-08-10,Hollowmere,bulk,88,1023800
+2024-08-13,Brackwater,container,113,3480200
+2024-08-14,Dovesend,bulk,36,422500
+2024-08-15,Aldermouth,container,165,4193400
+2024-08-15,Aldermouth,bulk,18,242500
+2024-08-15,Glassford,tanker,38,611200
+2024-08-15,Hollowmere,tanker,40,746200
+2024-08-16,Fennick,container,162,4002400
+2024-08-18,Cindervale,container,117,2893300
+2024-08-19,Cindervale,tanker,56,861900
+2024-08-19,Ivelholm,container,241,6284000
+2024-08-20,Fennick,container,109,3415100
+2024-08-21,Emberly Quay,container,96,2687900
+2024-08-21,Glassford,container,155,4353800
+2024-08-21,Ivelholm,container,120,3584600
+2024-08-22,Aldermouth,bulk,34,425900
+2024-08-23,Dovesend,container,128,3284600
+2024-08-23,Fennick,container,125,3860600
+2024-08-23,Ivelholm,container,81,2275400
+2024-08-24,Ivelholm,bulk,39,425100
+2024-08-25,Aldermouth,bulk,72,833000
+2024-08-25,Dovesend,container,61,1915000
+2024-08-25,Fennick,container,305,7370600
+2024-08-26,Aldermouth,container,41,1226100
+2024-08-26,Brackwater,bulk,42,504400
+2024-08-28,Emberly Quay,bulk,23,272400
+2024-08-28,Hollowmere,bulk,96,1138100
+2024-08-29,Brackwater,tanker,42,796200
+2024-08-29,Brackwater,container,153,3771900
+2024-08-30,Brackwater,container,117,3516400
+2024-08-30,Glassford,container,76,1816300
+2024-08-31,Cindervale,container,107,2887400
+2024-08-31,Cindervale,container,59,1734000
+2024-08-31,Hollowmere,container,113,2697400
+2024-09-01,Fennick,tanker,53,1030000
+2024-09-01,Glassford,bulk,36,458600
+2024-09-02,Emberly Quay,container,185,4985800
+2024-09-03,Aldermouth,container,93,2211900
+2024-09-03,Cindervale,tanker,33,665500
+2024-09-04,Aldermouth,tanker,71,1276500
+2024-09-04,Fennick,tanker,23,411700
+2024-09-05,Cindervale,container,168,5095300
+2024-09-06,Fennick,container,118,2887600
+2024-09-08,Glassford,tanker,22,380500
+2024-09-09,Dovesend,bulk,81,935100
+2024-09-09,Dovesend,tanker,28,558800
+2024-09-09,Glassford,tanker,34,566500
+2024-09-09,Ivelholm,bulk,55,716200
+2024-09-12,Aldermouth,container,90,2585400
+2024-09-12,Cindervale,tanker,34,682100
+2024-09-12,Emberly Quay,tanker,34,578400
+2024-09-12,Ivelholm,container,151,3787000
+2024-09-13,Ivelholm,bulk,34,344300
+2024-09-13,Ivelholm,container,100,2982200
+2024-09-13,Ivelholm,container,75,2288400
+2024-09-14,Aldermouth,container,163,3865800
+2024-09-14,Fennick,container,98,2392400
+2024-09-15,Cindervale,container,62,1465200
+2024-09-15,Fennick,bulk,54,705600
+2024-09-15,Fennick,container,182,5341900
+2024-09-16,Aldermouth,container,146,3554900
+2024-09-16,Brackwater,container,30,848100
+2024-09-16,Brackwater,container,118,3207900
+2024-09-16,Fennick,container,46,1343700
+2024-09-16,Glassford,tanker,22,440000
+2024-09-16,Hollowmere,container,107,2863800
+2024-09-17,Cindervale,container,209,5121100
+2024-09-17,Juniper Reach,container,213,6715000
+2024-09-18,Brackwater,container,148,4521600
+2024-09-18,Emberly Quay,container,73,1913500
+2024-09-20,Brackwater,container,101,2801300
+2024-09-20,Hollowmere,container,30,775300
+2024-09-21,Brackwater,container,101,2590000
+2024-09-21,Emberly Quay,container,197,5355800
+2024-09-21,Fennick,container,97,2576800
+2024-09-21,Ivelholm,bulk,53,587800
+2024-09-22,Dovesend,tanker,37,571100
+2024-09-23,Brackwater,tanker,44,688600
+2024-09-23,Dovesend,container,91,2194100
+2024-09-23,Fennick,container,65,1787700
+2024-09-23,Ivelholm,container,43,1239500
+2024-09-24,Juniper Reach,container,72,2233700
+2024-09-24,Juniper Reach,container,99,2417600
+2024-09-25,Brackwater,container,104,2498600
+2024-09-26,Brackwater,container,102,2612600
+2024-09-26,Cindervale,tanker,19,383900
+2024-09-26,Dovesend,bulk,39,514200
+2024-09-27,Brackwater,container,124,3780300
+2024-09-29,Aldermouth,container,259,7631800
+2024-09-30,Juniper Reach,tanker,36,717300
+2024-10-01,Cindervale,bulk,87,943000
+2024-10-01,Emberly Quay,bulk,47,557300
+2024-10-01,Glassford,container,52,1579900
+2024-10-02,Dovesend,bulk,48,504000
+2024-10-03,Dovesend,container,80,2395100
+2024-10-04,Fennick,bulk,27,347200
+2024-10-04,Ivelholm,container,164,4425900
+2024-10-05,Hollowmere,container,325,10078000
+2024-10-06,Dovesend,container,50,1233000
+2024-10-07,Hollowmere,tanker,30,462200
+2024-10-07,Juniper Reach,container,86,2340000
+2024-10-09,Aldermouth,container,52,1641000
+2024-10-09,Dovesend,container,105,2594600
+2024-10-10,Fennick,tanker,33,503600
+2024-10-11,Emberly Quay,container,87,2318700
+2024-10-12,Aldermouth,container,89,2620700
+2024-10-14,Ivelholm,container,93,2758600
+2024-10-15,Hollowmere,container,155,3705000
+2024-10-15,Ivelholm,container,90,2799300
+2024-10-16,Aldermouth,container,61,1886200
+2024-10-17,Aldermouth,tanker,52,923200
+2024-10-17,Cindervale,bulk,31,337300
+2024-10-19,Dovesend,container,85,2194100
+2024-10-20,Brackwater,container,89,2304700
+2024-10-20,Ivelholm,container,127,3097400
+2024-10-22,Aldermouth,bulk,73,866900
+2024-10-22,Cindervale,tanker,34,584800
+2024-10-22,Cindervale,bulk,51,629000
+2024-10-22,Emberly Quay,tanker,16,271600
+2024-10-22,Fennick,container,82,2338300
+2024-10-23,Cindervale,bulk,43,449200
+2024-10-24,Aldermouth,container,81,2546400
+2024-10-25,Aldermouth,container,95,2625200
+2024-10-25,Juniper Reach,container,71,1810900
+2024-10-26,Glassford,bulk,58,673100
+2024-10-27,Brackwater,container,185,5478400
+2024-10-27,Cindervale,container,75,2316400
+2024-10-27,Fennick,container,64,1557000
+2024-10-28,Aldermouth,container,95,2608400
+2024-10-28,Brackwater,container,132,4158700
+2024-10-28,Glassford,container,146,3706000
+2024-10-28,Hollowmere,container,81,2475800
+2024-10-29,Dovesend,container,153,4247400
+2024-10-29,Ivelholm,container,100,2518400
+2024-10-29,Juniper Reach,tanker,20,357900
+2024-10-30,Aldermouth,container,81,2012700
+2024-10-30,Brackwater,container,49,1218200
+2024-10-30,Brackwater,container,157,4574400
+2024-10-31,Emberly Quay,tanker,19,315200
+2024-10-31,Fennick,container,184,4775000
+2024-11-01,Emberly Quay,container,87,2625100
+2024-11-03,Brackwater,bulk,40,428300
+2024-11-04,Fennick,container,71,1814600
+2024-11-04,Glassford,container,116,3095200
+2024-11-05,Aldermouth,tanker,37,593700
+2024-11-05,Aldermouth,tanker,43,820700
+2024-11-05,Cindervale,container,134,4055000
+2024-11-05,Dovesend,container,53,1617800
+2024-11-05,Emberly Quay,container,145,3904800
+2024-11-05,Fennick,container,137,3943400
+2024-11-05,Glassford,container,107,3206100
+2024-11-06,Aldermouth,container,142,3656900
+2024-11-06,Aldermouth,bulk,64,754600
+2024-11-06,Brackwater,container,111,2989100
+2024-11-06,Glassford,container,105,2973600
+2024-11-06,Glassford,bulk,30,395900
+2024-11-07,Brackwater,tanker,26,467000
+2024-11-08,Brackwater,bulk,65,799500
+2024-11-09,Juniper Reach,tanker,49,830900
+2024-11-10,Juniper Reach,container,114,3333400
+2024-11-11,Cindervale,bulk,154,1833800
+2024-11-12,Juniper Reach,container,74,1933000
+2024-11-15,Fennick,container,51,1556000
+2024-11-16,Dovesend,container,82,2094700
+2024-11-16,Fennick,bulk,44,539700
+2024-11-16,Hollowmere,container,109,2989400
+2024-11-16,Juniper Reach,bulk,91,919700
+2024-11-18,Dovesend,container,49,1470200
+2024-11-18,Dovesend,container,145,3665900
+2024-11-18,Hollowmere,container,137,3535800
+2024-11-19,Ivelholm,container,212,6252400
+2024-11-19,Ivelholm,container,83,2467100
+2024-11-21,Aldermouth,container,95,2907700
+2024-11-21,Aldermouth,container,94,2892500
+2024-11-21,Cindervale,tanker,22,433100
+2024-11-21,Fennick,container,166,4741200
+2024-11-23,Fennick,container,108,2708800
+2024-11-25,Brackwater,container,37,1004100
+2024-11-26,Fennick,bulk,39,458100
+2024-11-28,Ivelholm,container,122,3089500
+2024-11-28,Juniper Reach,container,62,1665300
+2024-11-29,Aldermouth,container,81,2194000
+2024-11-29,Ivelholm,container,209,5906900
+2024-11-30,Dovesend,container,79,2495900
+2024-12-02,Cindervale,container,74,2317900
+2024-12-02,Hollowmere,bulk,70,729300
+2024-12-02,Ivelholm,tanker,34,671500
+2024-12-03,Glassford,bulk,61,805000
+2024-12-04,Aldermouth,bulk,31,320000
+2024-12-04,Glassford,bulk,123,1465400
+2024-12-05,Aldermouth,container,45,1135500
+2024-12-05,Aldermouth,container,98,2666600
+2024-12-05,Dovesend,tanker,24,488500
+2024-12-06,Aldermouth,tanker,49,760400
+2024-12-06,Brackwater,bulk,34,396200
+2024-12-06,Ivelholm,tanker,31,528100
+2024-12-07,Emberly Quay,container,86,2422300
+2024-12-07,Ivelholm,container,120,3463900
+2024-12-07,Juniper Reach,bulk,84,1006700
+2024-12-09,Brackwater,container,119,3016600
+2024-12-11,Ivelholm,container,72,1839600
+2024-12-11,Ivelholm,tanker,22,379000
+2024-12-12,Aldermouth,container,67,2075300
+2024-12-13,Dovesend,container,101,3164800
+2024-12-13,Emberly Quay,container,81,2186700
+2024-12-13,Fennick,container,118,3337400
+2024-12-15,Glassford,bulk,23,310200
+2024-12-16,Aldermouth,bulk,38,480600
+2024-12-16,Dovesend,tanker,29,442600
+2024-12-16,Fennick,container,125,3173200
+2024-12-17,Aldermouth,tanker,41,828700
+2024-12-17,Hollowmere,bulk,36,398300
+2024-12-18,Cindervale,tanker,37,728400
+2024-12-18,Hollowmere,container,70,1896700
+2024-12-19,Dovesend,container,30,921400
+2024-12-20,Emberly Quay,bulk,22,278200
+2024-12-20,Ivelholm,container,56,1663000
+2024-12-21,Fennick,bulk,34,375200
+2024-12-22,Glassford,tanker,26,437200
+2024-12-23,Brackwater,container,101,3097600
+2024-12-23,Cindervale,bulk,44,463400
+2024-12-23,Fennick,container,78,2343000
+2024-12-24,Cindervale,container,136,3232200
+2024-12-25,Emberly Quay,bulk,84,984200
+2024-12-25,Glassford,tanker,49,901900
+2024-12-25,Hollowmere,container,27,646300
+2024-12-25,Juniper Reach,container,151,4117100
+2024-12-26,Brackwater,container,177,4613500
+2024-12-26,Dovesend,tanker,32,541100
+2024-12-26,Juniper Reach,bulk,45,572900
+2024-12-27,Cindervale,bulk,59,630800
+2024-12-29,Fennick,container,84,2496100
+2024-12-29,Hollowmere,bulk,22,227500
+2024-12-29,Ivelholm,container,95,2340000
+2024-12-30,Brackwater,container,92,2703300
+2024-12-30,Cindervale,container,73,1864000
+2024-12-30,Dovesend,bulk,39,434200
+2024-12-31,Brackwater,container,49,1407500
+2024-12-31,Dovesend,container,170,4131600

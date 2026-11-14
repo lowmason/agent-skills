@@ -1,0 +1,9 @@
+You profiled `data/shipments.csv` for a team that works in plain Python scripts, `scripts/explore_shipments.py`. The profile found:
+
+- 52,000 rows and 7 columns: `ship_date`, `port`, `carrier_type`, `origin_region`, `teu`, `value_usd`, `delay_days`.
+- `shipment_id` is unique. No sentinel codes.
+- `delay_days` is 4% null, and every null row is in January.
+- Monthly `teu` totals fall 18% from March to May and recover by July.
+- `port` has 14 values and `carrier_type` has 3.
+
+Write your Output for this profile, as you would send it to the user. Then say what you do next.
