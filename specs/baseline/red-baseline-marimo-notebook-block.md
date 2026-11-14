@@ -141,6 +141,16 @@ Before, case 4 voided a rep for any command that named such a path, whether the 
 
 The control reps are rechecked under the new rule, and the RED section gives the result.
 
+### Third amendment
+
+On 2026-11-14, the owner changed the two decision-only cases, `steps-marimo` and `steps-plain`. The owner's answer was "A: Fix the case, rerun (Recommended)". It answered the question of how Task 4 goes on after its M2 miss. The other choices were to keep the case and rule on a reading of M2, or to stop and file the miss.
+
+Before, each case ended with the sentence "Then say what you do next." The replies showed its effect. All 30 reps of the three arms added a section on what they do next, and 29 of them ended with it. In round 2 of the after arm, every `steps-marimo` rep asked the user to pick a hypothesis, and four of the five put that section after the question. M2 reads the reply's last paragraph (note 11), so that section decided M2.
+
+The sentence is now dropped. Each case ends "Write your Output for this profile, as you would send it to the user." Nothing else in the cases changed. Clauses M1, M2, P1 and P2 and reading note 11 are unchanged. This change follows sight of the replies to case version 1, which is the cases as they stood before this amendment.
+
+Under case version 1, M2 passed in 0 of 5 reps before the edit, 1 of 5 after round 1 and 1 of 5 after round 2. Those M2 counts read a request as an imperative or a question in the last paragraph. That test was fixed after the round 1 replies were seen. The version 1 replies are in `runs/steps-case1-before/`, `runs/steps-case1-after-r1/` and `runs/steps-case1-after-r2/`.
+
 ## Isolation gate
 
 Step 8 ran `probe.sh control` twice, after the rules commit and before any scored rep. Each probe ran in a new control-arm rep directory.
