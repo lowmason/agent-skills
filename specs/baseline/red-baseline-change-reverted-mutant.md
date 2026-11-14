@@ -1395,13 +1395,16 @@ Reps 3 and 4 raise the same point under ⚠️, for the controller to decide.
 - Both texts take the stated rules from the excerpts file and the brief. The reviewer text says: "An
   excerpt that says what the code must do for some class of inputs is a stated rule, and so is each
   rule in the brief." The implementer's `references/mutants.md`, "Where the rules come from", names
-  the same two places. Neither text names the global constraints.
+  the same two places. The reviewer text also says that the global constraints quoted in the dispatch
+  bind the task (`agents/task-reviewer.md:21`, the same line at `7b2976b` and `70c94ec`), but neither
+  text names them as a place that stated rules come from.
 - In a copy of R4's scratch repository, `start < day <= end` and `day <= end` each fail
   `test_window_holds_its_start_and_end_dates` (1 failed, 1 passed). So no test gap lies behind the
   finding.
-- The implementer took this as no package fault under Package change, and the controller has not
-  ruled on it. The record notes it as an other finding (reading rule 5). It is no revert finding and
-  touches no bar. Control rep 1 said of the same point that it "is not a finding".
+- The implementer took this as no package fault under Package change. The controller's ruling is in
+  Controller ruling on the start-date finding, below. The record notes it as an other finding (reading
+  rule 5). It is no revert finding and touches no bar. Control rep 1 said of the same point that it
+  "is not a finding".
 
 **Other notes on R4.**
 
@@ -1509,3 +1512,14 @@ commit, these checks ran over every file to be added:
   under `~/.cache/agent-skills/scratch/plan97/reviewer/` in any file under `reviewer/`. It found no
   `/var/folders` or `/private/var` path there either.
 - A grep found no uuid-shaped string in the rep copies, the `show_reps.txt` files or this record.
+
+### Controller ruling on the start-date finding
+
+The Task 10 review asked for a ruling on whether the R4 start-date finding is a package fault. It is
+not. The Packages section registered the excerpts as `specs/window.md:8` and the global constraints as
+`:7-8` before any rep, so a row and a mutant for the start rule are absent by design. The Package change
+check disproves the claim that matters, since R4's tests catch the wrong start-date versions. The
+finding is a second reading of "stated rule". The reviewer text says that the global constraints bind
+the task, and the mutant step takes its rules from the excerpts and the brief. That wording predates
+Task 9, and control rep 1 met it too, so it is for the owner at the completion gate. R4 and R5 are not
+rerun, and no package changes.
