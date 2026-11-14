@@ -1,6 +1,6 @@
 # Plan 94 baseline probe: the branch explainer
 
-Status: in progress
+Status: complete
 
 This record holds the baseline probe for plan 94 (`specs/plans/94-branch-explainer.md`) and its spec
 (`specs/branch-explainer.md`). The probe asks one question. Does an Opus agent with no guidance already write a
@@ -465,6 +465,35 @@ $23.17.
 
 ## Held-out
 
+`p84` runs once, on the shipped brief `skills/finishing-a-development-branch/references/branch-explainer-prompt.md`,
+which is `kit/brief-r0.md` byte for byte. No round tunes against it.
+
+**Estimate:** 3 × ($0.546 + $0.050 + $0.563) = **$3.48**. The means are over every run so far: 21 explainer writers
+(pilot, control and round 0), 19 readers and 19 adjudicators. Spend so far is $23.95, so spend plus the estimate is
+$27.43, below the $120 stop.
+
+**Run.** Writer cap $3.00, `ADJ_CAP` $1.50. Three writer reps ran, and none is VOID. Every `outside` hit is a sed or
+awk pattern (`/^##`, `/p`). All three explainers use the exact layout. Their Synopsis sections have 208 to 221 words,
+and the whole explainers 1,556 to 1,737.
+
+| Bar | `p84` |
+|---|---|
+| B1 Plan | 3/3 holds |
+| B2 Build | 3/3 holds |
+| B3 Project | 3/3 holds |
+| B4 Accuracy | 3/3 holds |
+| B5 Length | 3/3 holds |
+| All five bars at once | 3/3 |
+
+**Every bar holds on the held-out fixture.** The executor read all three adjudications against the bar text and
+disputes none. A spot-check agrees with the adjudications: each explainer states the entry's counts as 12 rulings and
+13 deviations, and the entry has 12 and 13. Before they wrote, the writers counted these with `grep -c`, as the brief's
+B4 instruction asks.
+
+**Spend.** Writers $1.86, readers $0.15, adjudicators $2.02, total $4.03 (estimate $3.48).
+
+**Public repository scan** over `heldout/`: no line.
+
 ## Micro-test
 
 The shipped Step 3b, before its commit. The kit is `micro/` (`build_micro.py`, `tools.txt`, `GRADING.md` and
@@ -533,4 +562,30 @@ M6's row tests only that the pointer opens the file.
 
 ## Spend
 
+| Item | Cost |
+|---|---|
+| Pilots: isolation probe, write check, cost pilot | $1.34 |
+| Control arm (11 writers, 2 of them VOID; 9 readers; 9 adjudicators) | $11.18 |
+| Treatment round 0 (9 each) | $10.65 |
+| Micro-test (40 Sonnet reps) | $0.78 |
+| Held-out `p84` (3 each) | $4.03 |
+| **Total** | **$27.98** |
+
+The plan estimated about $57 with no wording round. The run stayed below both stops: pilots and control came to
+$12.52, against the $35 stop, and the total stayed below the $120 stop.
+
 ## Verdict
+
+- **Baseline: RED.** With no guidance, Opus writes an explainer that teaches the plan, the build and the project
+  (B1, B2, B3 and B5 hold on all three tuning fixtures). It fails B4 Accuracy on all three: 1/3 on `p80`, 0/3 on
+  `p90` and 1/3 on `p92`. Six of its seven contradicted claims are numbers or details that it did not check.
+- **Treatment: passes at round 0.** The brief adds the spec's layout, inputs, limits, style and output, and one
+  instruction aimed at B4 ("Check before you state"). Every bar holds on `p80`, `p90` and `p92`. B4 rises to 3/3,
+  2/3 and 2/3 (3/3 on `p92` under the executor's reading). No wording round ran.
+- **Held-out: passes.** On `p84`, every bar holds at 3/3 with the shipped brief.
+- **Contested readings:** one, `p92` treatment rep2 B4 (Treatment, Round 0 results). It changes no bar's result on
+  the fixture, so it did not go to the owner.
+- **Step 3b wording:** every micro-test scenario passes 5 of 5 (Micro-test).
+- **Exposure:** no explainer of the tuning fixtures names plan 84.
+- **What the probe does not show:** see Known limits. The live run on this plan's own branch (plan Task 7) is
+  report-only, and its result goes in the final report, not here.
