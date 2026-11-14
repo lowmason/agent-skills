@@ -26,6 +26,12 @@
 # needs the exit of a run. The raw stream goes to
 # ~/.cache/agent-skills/scratch/plan98/<out-dir's parent name>/<out-dir name>/, outside the
 # repository. The first rep runs alone and writes the prompt cache; the others then run together.
+# Isolation of rep directories: the runner refuses to start, with exit 3, while /tmp/mnb98/ holds
+# anything but venv/ and leakcheck.sh, and it names each such entry. When a rep's summary is
+# written, the runner moves its rep directory to ~/.cache/agent-skills/scratch/plan98/repdirs/.
+# After the first rep and again after the whole batch, it moves each other entry that reps wrote
+# into /tmp/mnb98/, such as an HTML export, to ~/.cache/agent-skills/scratch/plan98/stray/. It
+# moves and never deletes. So no rep can read an earlier rep's notebook or export.
 set -u
 [ "$#" -eq 5 ] || { echo "usage: run_reps.sh <arm> <case> <out-dir> <first> <last>"; exit 2; }
 KIT="$(cd "$(dirname "$0")" && pwd)" || exit 2
@@ -50,10 +56,59 @@ BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
 ANCHOR='marimo-pair drives live notebook sessions in this repo.'
 SCRATCH="$HOME/.cache/agent-skills/scratch/plan98/$(basename "$(dirname "$OUT")")/$(basename "$OUT")"
 DENY='{"permissions":{"deny":["Read(~/**)","Edit(~/**)","Write(~/**)"]}}'
+PARK="$HOME/.cache/agent-skills/scratch/plan98"
+
+# Keep these four functions identical in run_reps.sh and probe.sh.
+# Print each top-level entry of /tmp/mnb98/ other than venv/ and leakcheck.sh, one name a line.
+extra_entries() {
+  local entry
+  for entry in /tmp/mnb98/* /tmp/mnb98/.[!.]* /tmp/mnb98/..?*; do
+    { [ -e "$entry" ] || [ -L "$entry" ]; } || continue
+    case "${entry##*/}" in
+      venv | leakcheck.sh) ;;
+      *) printf '%s\n' "${entry##*/}" ;;
+    esac
+  done
+}
+
+# Refuse to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh.
+refuse_extras() {
+  local found
+  found="$(extra_entries)"
+  [ -z "$found" ] && return 0
+  echo "refusing (exit 3): /tmp/mnb98/ holds more than venv/ and leakcheck.sh. Move each entry out first:"
+  printf '%s\n' "$found" | sed 's|^|  /tmp/mnb98/|'
+  exit 3
+}
+
+# Move each stray entry that a rep wrote into /tmp/mnb98/ to stray/. A rep directory stays, because
+# its own rep moves it when the rep ends, and a rep directory that is still there may be running.
+sweep_strays() {
+  local name dest
+  mkdir -p "$PARK/stray" || return 1
+  extra_entries | while IFS= read -r name; do
+    case "$name" in
+      rep-??????) continue ;;
+    esac
+    dest="$PARK/stray/$(date +%Y%m%d-%H%M%S)-$$-$name"
+    mv "/tmp/mnb98/$name" "$dest" && echo "moved stray /tmp/mnb98/$name to ~/${dest#"$HOME"/}"
+  done
+}
+
+# Move a finished rep directory out of /tmp/mnb98/ into repdirs/, so that no later rep can read it.
+park_rep_dir() {
+  local dir="$1"
+  [ -n "$dir" ] && [ -d "$dir" ] || return 0
+  mkdir -p "$PARK/repdirs" || return 1
+  [ -e "$PARK/repdirs/${dir##*/}" ] && { echo "cannot move $dir: repdirs/ already holds ${dir##*/}"; return 1; }
+  mv "$dir" "$PARK/repdirs/"
+}
+
 [ -f "$PROMPT" ] || { echo "refusing: no prompt $PROMPT"; exit 2; }
 [ -f "$NOTEBOOK" ] && [ -f "$KIT/fixture/repo/CLAUDE.md" ] || { echo "refusing: the fixture is incomplete"; exit 2; }
 [ "$ARM" = control ] || [ -f "$BLOCK" ] || { echo "refusing: no block at $BLOCK"; exit 2; }
 [ -x /tmp/mnb98/venv/bin/marimo ] || { echo "refusing: /tmp/mnb98/venv/bin/marimo is missing (Step 1)"; exit 2; }
+refuse_extras
 mkdir -p "$SCRATCH" || exit 2
 i="$FIRST"
 while [ "$i" -le "$LAST" ]; do
@@ -69,8 +124,9 @@ kit_failed() {
   echo "rep$1 kit error: $2"
 }
 
-rep() {
-  local n="$1" run repo base start status claude_md_sha block_sha
+# run_rep sets the caller's `run`, so that rep can move the rep directory when run_rep ends.
+run_rep() {
+  local n="$1" repo base start status claude_md_sha block_sha
   mkdir "$OUT/rep$n" || return 2
   run="$(mktemp -d /tmp/mnb98/rep-XXXXXX)" || { kit_failed "$n" 'mktemp failed'; return 2; }
   (cd "$run" && git rev-parse --show-toplevel > /dev/null 2>&1) \
@@ -257,10 +313,18 @@ EOF
   ) || kit_failed "$n" 'summary step failed'
 }
 
+rep() {
+  local run=''
+  run_rep "$1"
+  park_rep_dir "$run" || echo "rep$1: its rep directory stays in /tmp/mnb98/, so the next start refuses"
+}
+
 rep "$FIRST"
+sweep_strays
 i=$((FIRST + 1))
 while [ "$i" -le "$LAST" ]; do
   rep "$i" &
   i=$((i + 1))
 done
 wait
+sweep_strays

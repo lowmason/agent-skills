@@ -9,8 +9,11 @@
 # second probe: it checks that a rep authenticates under `env -i`, that marimo and Polars run on
 # the fixture, and that the --settings deny rules load.
 # The rep directory is a git repository by design, so this script does not refuse one. Its parent,
-# /tmp/mnb98/rep-XXXXXX, must not be inside any other repository. The last line printed gives the
-# rep directory and the sha256 of its CLAUDE.md and of the block (null in the control arm). The
+# /tmp/mnb98/rep-XXXXXX, must not be inside any other repository. Like run_reps.sh, the probe
+# refuses to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh. After
+# the run, it moves its rep directory to ~/.cache/agent-skills/scratch/plan98/repdirs/ and any
+# stray entry to stray/. The last line printed gives the moved rep directory and the sha256 of its
+# CLAUDE.md and of the block (null in the control arm). The
 # stream holds home paths and a session id. Keep <out-file> outside the repository and never
 # commit it.
 set -u
@@ -31,7 +34,56 @@ ROOT="$(git -C "$KIT" rev-parse --show-toplevel)" || exit 2
 BLOCK="$ROOT/templates/marimo-repo/notebook-block.md"
 ANCHOR='marimo-pair drives live notebook sessions in this repo.'
 DENY='{"permissions":{"deny":["Read(~/**)","Edit(~/**)","Write(~/**)"]}}'
+PARK="$HOME/.cache/agent-skills/scratch/plan98"
+
+# Keep these four functions identical in run_reps.sh and probe.sh.
+# Print each top-level entry of /tmp/mnb98/ other than venv/ and leakcheck.sh, one name a line.
+extra_entries() {
+  local entry
+  for entry in /tmp/mnb98/* /tmp/mnb98/.[!.]* /tmp/mnb98/..?*; do
+    { [ -e "$entry" ] || [ -L "$entry" ]; } || continue
+    case "${entry##*/}" in
+      venv | leakcheck.sh) ;;
+      *) printf '%s\n' "${entry##*/}" ;;
+    esac
+  done
+}
+
+# Refuse to start, with exit 3, while /tmp/mnb98/ holds anything but venv/ and leakcheck.sh.
+refuse_extras() {
+  local found
+  found="$(extra_entries)"
+  [ -z "$found" ] && return 0
+  echo "refusing (exit 3): /tmp/mnb98/ holds more than venv/ and leakcheck.sh. Move each entry out first:"
+  printf '%s\n' "$found" | sed 's|^|  /tmp/mnb98/|'
+  exit 3
+}
+
+# Move each stray entry that a rep wrote into /tmp/mnb98/ to stray/. A rep directory stays, because
+# its own rep moves it when the rep ends, and a rep directory that is still there may be running.
+sweep_strays() {
+  local name dest
+  mkdir -p "$PARK/stray" || return 1
+  extra_entries | while IFS= read -r name; do
+    case "$name" in
+      rep-??????) continue ;;
+    esac
+    dest="$PARK/stray/$(date +%Y%m%d-%H%M%S)-$$-$name"
+    mv "/tmp/mnb98/$name" "$dest" && echo "moved stray /tmp/mnb98/$name to ~/${dest#"$HOME"/}"
+  done
+}
+
+# Move a finished rep directory out of /tmp/mnb98/ into repdirs/, so that no later rep can read it.
+park_rep_dir() {
+  local dir="$1"
+  [ -n "$dir" ] && [ -d "$dir" ] || return 0
+  mkdir -p "$PARK/repdirs" || return 1
+  [ -e "$PARK/repdirs/${dir##*/}" ] && { echo "cannot move $dir: repdirs/ already holds ${dir##*/}"; return 1; }
+  mv "$dir" "$PARK/repdirs/"
+}
+
 [ "$ARM" = control ] || [ -f "$BLOCK" ] || { echo "refusing: no block at $BLOCK"; exit 2; }
+refuse_extras
 run="$(mktemp -d /tmp/mnb98/rep-XXXXXX)" || exit 2
 (cd "$run" && git rev-parse --show-toplevel > /dev/null 2>&1) \
   && { echo "refusing: $run is inside a git repository"; exit 2; }
@@ -67,5 +119,7 @@ git -C "$repo" init -q \
     < "$PROMPT" > "$OUT"
 )
 status=$?
+park_rep_dir "$run" && repo="$PARK/repdirs/${run##*/}/repo"
+sweep_strays
 echo "probe exit=$status dir=$repo claude_md_sha256=$claude_md_sha block_sha256=$block_sha"
 exit "$status"

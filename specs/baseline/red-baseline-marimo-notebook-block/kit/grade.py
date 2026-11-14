@@ -17,7 +17,8 @@ For each rep it prints:
   marimo convert anywhere; whether final.diff changes the notebook;
 - each Bash command that runs the notebook (python on it, marimo export or run, app.run) or checks
   it (marimo check), with its call number and whether its result was an error, and the call number
-  of the last notebook write;
+  of the last notebook write. A call that both writes and runs the notebook is flagged, because
+  reading note 7 then turns on the order of the two inside the command;
 - conclusion phrases in new markdown cells and in the final message;
 - model-fit calls in new code cells, and in Bash commands as a separate note;
 - each tool input that names agent-skills, specs/, /Users/, a `~` path or $HOME. The summaries
@@ -176,9 +177,11 @@ def notebook_runs(calls: list[dict], last_write: int) -> None:
             label = 'check (static)'
         else:
             continue
-        after = 'after' if number > last_write else 'before'
-        print(f'  {label}: call {number} ({after} the last write) error={call.get("is_error")}: '
-              f'{command[:COMMAND_SHOWN]!r}')
+        if number == last_write:
+            order = 'in the same call as the last write: read the order in its text, note 7'
+        else:
+            order = f'{"after" if number > last_write else "before"} the last write'
+        print(f'  {label}: call {number} ({order}) error={call.get("is_error")}: {command[:COMMAND_SHOWN]!r}')
         tail = (call.get('result_tail') or '').strip().splitlines()[-3:]
         for line in tail:
             print(f'      > {line[:160]}')
