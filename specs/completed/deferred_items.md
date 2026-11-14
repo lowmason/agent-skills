@@ -701,6 +701,18 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       with verdicts for B1-B3, `specs/completed/synthesize-mode-verification-2026-10-12.md`.
       B1 FAILED (0/5 as scored); B2 and B3 held 5/5. The B1 failure and the
       staleness-check void path are filed as successors in plan 42's section below.
+- [x] **In-session SOTA pass as a Chat-Research alternative (spec "Out of
+      scope").** Today Describe mode always hands off to an external Claude
+      Chat session with Research enabled. An in-session variant — WebSearch
+      + paper search + an llm-wiki query — would close the loop without
+      leaving Claude Code, at the cost of the interactive push-back /
+      adjudication that makes the Chat critique valuable. Revisit after the
+      user has run a few real round-trips and can compare critique quality;
+      the spec's Req 13 round-trip is the natural evidence source.
+      → retired 2026-09-28: the revisit condition is met and the owner chose not to
+      build it (/deferred). The external loop is in routine use: the usable-series
+      synthesis, alt-nfp-model rounds 1 and 2 (round 2, e48bcbb, synthesized six
+      external reviews), and naics-embedder's Describe run (e96eb3f).
 
 ## 19-methodology-pipeline-skills — 2026-07-30
 - [x] **A stranded roadmap artifact.**
@@ -768,6 +780,46 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       → retired 2026-09-03: the owner made the call — both files are committed in
       alt-nfp as of 2026-08-02 (f87a134, 89c8b7f) and now live under
       `specs/completed/`. `git -C ../alt-nfp status --short -- specs/` is clean.
+- [x] **The stage-stamp lifecycle carrier is unbacked.**
+      `skills/derive-roadmap/references/roadmap-format.md` and
+      `skills/describe-critique-methodology/references/spec-synthesis.md` both assert
+      that writing-plans copies a spec's Rollout note verbatim into the stage plan's
+      header, and that "that copy is the whole carrier." `grep -rn -i "rollout"
+      skills/writing-plans/` returns zero matches; what writing-plans actually has is a
+      generic rule to copy the spec's project-wide requirements into the plan's Global
+      Constraints block. Req 10 deliberately rejected a writing-plans protocol edit for
+      v1 for this iteration (provenance-touching, needs its own RED cycle), naming the
+      one-line hook as the recorded fallback "if the carrier proves fragile." Owner's
+      decision: defer, and let the first real stage cycle settle it.
+      → retired 2026-09-28: the first real stage cycle settled it, and the carrier held
+      with no writing-plans hook. alt-nfp-stats' bls-stats-merge roadmap ran S0–S2.1:
+      the stamp line sits verbatim in the header of
+      `alt-nfp-stats:specs/plans/completed/22-bls-stats-merge-s1.1.md:7` and of stage
+      plans 23, 29, 30 and 32, and the roadmap carries the authoritative
+      `Stage N: COMPLETE` lines for S0 through S2.1
+      (`alt-nfp-stats:specs/bls-stats-merge-roadmap.md:737–803`).
+- [x] **Two of the skill's own checkpoints have no behavioural evidence.**
+      `skills/derive-roadmap/SKILL.md` §1's batched question set and §4's human approval
+      before Stage 1 both require an interactive turn; every test in this plan ran
+      non-interactively, so neither was exercised.
+      → retired 2026-09-28 by owner decision (/deferred): no further action. The skill
+      has had real interactive use since — alt-nfp-stats' bls-stats-merge roadmap was
+      derived 2026-09-22 (de6f0a8) and resumed through S2.1 in owner-run sessions — but
+      that is not evidence the checkpoints work. The transcripts do not show either one
+      firing: the derivation wrote the roadmap with no human turn before it, and §4's
+      approval comes after that write. The premise above still stands.
+- [x] **`derive-roadmap`'s RED baseline is still unmeasured; a re-run now has a known
+      method.** Plan 30 established four requirements for a clean round: (a) dispatch
+      from a session whose cwd was NEVER the skill's repo, so no repo CLAUDE.md or
+      gitStatus is ever captured — the only fix for Channel 5; (b) gate on a pilot
+      subagent's own transcript grepped for the skill name, not on the filesystem;
+      (c) a VOID rule distinguishing contamination from measured behaviour, since the
+      current one voids any rep that exhibits E2; (d) a fixture whose routing header
+      names a skill that exists, since renaming it makes the header legitimately
+      unfollowable. Not planned — the owner decides whether the question is worth
+      another round. See specs/completed/red-baseline-derive-roadmap-2026-09-08.md.
+      → retired 2026-09-28: the owner's go/no-go was no-go (/deferred). The four
+      requirements above stay on record should anyone reopen it.
 
 ## 20-bayesian-workflow-book-integration — 2026-09-03
 - [x] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
@@ -927,6 +979,32 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       changing `<= tlvl` to `< tlvl` leaves all 14 green, because `### Task 2` is terminated
       by the Task-heading rule before the level comparison is consulted. `CLAUDE.md`'s test
       counts were synced in the same pass (this suite 11 → 14, design-architecture 8 → 9).
+- [x] `skills/bayesian-workflow/scripts/calibration_check.py` still has no test
+      (audit H1). Owned by no plan: plan 20's scope fence excluded the file and
+      plan 21 left it out because the suite needs the full
+      arviz/arviz-plots/arviz-stats chain and the script is mostly ArviZ
+      delegation. Would take a fixture InferenceData with a known
+      over-/under-confident posterior plus assertions on
+      `assess_calibration`'s five returned keys. Confirmed at the 2026-09-03
+      gate as a deferral, not an accepted permanent gap.
+      → done 2026-09-28 (/deferred quick fix): `scripts/test_calibration_check.py`,
+      45 tests over both PIT paths — calibrated / too-narrow / too-wide / shifted normal
+      fixtures, a per-observation model on which PPC-PIT double-dips and LOO-PIT does
+      not, an exact-PIT fixture failing the coverage band alone, `--ci-prob` plumbing,
+      and CLI group checks. Mutation-verified: 21 targeted mutants, all killed — 12
+      written with the tests, one for the PPC-path defect below, and the 8 genuine gaps
+      an adversarial pass found among the ~48 mutants it generated. That pass's other
+      survivors were classified equivalent or benign-for-fixtures (band-simulation
+      count, rounding and ci_prob defaults no caller reaches) and still survive.
+      Writing the tests surfaced three defects, fixed the same session with the owner's
+      go-ahead: a pure location shift reported
+      `well_calibrated: False` beside `calibration_diagnosis: 'well-calibrated'` (now
+      `biased (predictions too high|low)`, with bias advice in `check_diagnostics.py`);
+      `--loo-pit` crashed on a missing `posterior` group instead of a JSON error; and the
+      PPC path crashed when `observed_data` held a variable with no predictive
+      counterpart. Two more were routed, not fixed: the diagnosis-precedence item below
+      (section deferred-triage) and the plot-vs-JSON method split (folded into plan 20's
+      Δ-ECDF item above).
 
 ## 22-sdd-hardening — 2026-09-03
 - [x] M1 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py:89-144`:
@@ -1287,6 +1365,44 @@ declined as YAGNI (zero instances in a one-page wiki).
       which is what keeps it `Size: plan` rather than a second quick fix.
       Size: plan. Done when: `check_snippets.py skills/` exits 0 and the invocation is in
       the root `CLAUDE.md` Commands block alongside the three bayesian-workflow tiers.
+
+## deferred-triage (no plan; /deferred pass, branch deferred-triage-2026-09-28) — 2026-09-28
+- [x] Calibration diagnosis labels: precedence misreads a pure location shift on a
+      minority of seeds, and a PIT-only shape failure is given a direction that is sign
+      noise. `assess_calibration` in `skills/bayesian-workflow/scripts/calibration_check.py`
+      lets a failed coverage band win: when both bands fail it reports over- or
+      under-confident from the coverage ΔECDF sign, and only a PIT-band-alone failure
+      becomes `biased (predictions too high|low)`. A shift is only second-order visible in
+      the coverage fold (it reads as mild over-confidence), so when that fold also trips,
+      the shift is named as a spread problem. Measured 2026-09-28 on the PPC path, seeds
+      0-99, N(0, 1) data under a right-spread predictive shifted ±0.4: `biased` 91/100 in
+      each direction, `over-confident` 7 (+0.4) and 8 (−0.4), `well-calibrated` 2 and 1.
+      Found by the adversarial pass on the new `scripts/test_calibration_check.py`, whose
+      shift fixtures sit on seeds where only the PIT band fails. Deferred by the owner:
+      choosing between two failed bands is a design decision — compare the PIT and
+      coverage ΔECDF magnitudes, report both verdicts, or add a combined label — and
+      `check_diagnostics.py`'s next-step routing keys on the label, so it moves too.
+      Second half (the branch's Codex P2 and code-reviewer passes, same day): a PIT-only
+      failure is always read as a shift, taking its direction from the sign of the
+      rounded mean PIT ΔECDF, which a shape failure can leave at zero. An exact PPC
+      fixture — `_model_with_pit_values` fed coverage levels c = (i + 0.5)/N, placed
+      above the predictive median (u = 0.5 + c/2) when c < 0.25 or c ≥ 0.75 and below
+      it (u = 0.5 − c/2) otherwise — fails the PIT band alone with E[u] = 0.5, and is
+      diagnosed `too low` at N = 200 (mean −0.000000) and N = 400, then `too high` at
+      N = 1000 (+0.0005). Its out-of-band points fall on both sides of zero every time
+      (4 above / 41 below at N = 200), which a pure shift never does in population.
+      Candidate rule, not adopted: take direction from the side of the out-of-band
+      points and give a two-sided excursion a direction-neutral label. It leaves open a
+      skewed predictive whose PIT mean moves off 0.5 and exits on one side, which would
+      still read as a shift (argued by the reviewer, not measured). The docstring and
+      `references/reporting.md` now call the verdict a heuristic (commit `0803a8a`).
+      Deferred by the owner with the precedence question, so one design pass covers the
+      whole label set.
+      Size: design. Done when: the precedence rule and the PIT-only direction rule are
+      decided, a shift fixture on a seed where both bands fail and the three-segment
+      fixture are each diagnosed according to them, and `check_diagnostics.py` routes
+      any new label.
+      → done in plan 34
 
 ## 35-claude-code-guide-conformance — 2026-10-04
 - [x] Gate the geographic-codes and classification-codes network rebuilds (plan 35 audit
