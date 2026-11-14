@@ -96,6 +96,14 @@ def commit_work(repo, name='work.txt'):
     git('commit', '-q', '-m', 'work', cwd=repo)
 
 
+def annotated_tag(repo, commit, name='v-base'):
+    '''Tag a commit with an annotated tag. Return the tag object's sha, which is not the commit's.'''
+    git('tag', '-a', '-m', 'a tag', name, commit, cwd=repo)
+    tag_sha = git('rev-parse', f'refs/tags/{name}', cwd=repo).stdout.strip()
+    assert tag_sha != commit
+    return tag_sha
+
+
 def recorded(repo, task=1):
     '''Whether the ledger holds a completion line for the task.'''
     ledger = workspace(repo) / 'progress.md'
@@ -773,6 +781,34 @@ def test_task_done_names_the_run_in_each_new_refusal(repo, refusal):
     assert '; Task 1 NOT recorded (mutant run: ' in result.stderr
     assert result.stderr.rstrip().endswith('/task-1-mutants.log)')
     assert not recorded(repo)
+
+
+@pytest.mark.parametrize('name_kind', ['tag-name', 'tag-object-sha'])
+def test_task_done_peels_an_annotated_tag_given_as_base(repo, name_kind):
+    # The tag is on the BASE side only. The run's base: is the commit's full sha.
+    base = head(repo)
+    tag_sha = annotated_tag(repo, base)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
+    given = 'v-base' if name_kind == 'tag-name' else tag_sha
+    result = run(TASK_DONE, 'plan.md', 1, given, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert recorded(repo)
+
+
+@pytest.mark.parametrize('name_kind', ['tag-name', 'tag-object-sha'])
+def test_task_done_peels_an_annotated_tag_in_the_runs_base(repo, name_kind):
+    # The tag is on the run's side only. BASE is the commit's full sha.
+    base = head(repo)
+    tag_sha = annotated_tag(repo, base)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    written = 'v-base' if name_kind == 'tag-name' else tag_sha
+    write_run(repo, 'task-1-mutants.log', head(repo), written, CLEAN, [1])
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert recorded(repo)
 
 
 def test_task_done_refuses_a_base_that_is_not_a_commit(repo):
