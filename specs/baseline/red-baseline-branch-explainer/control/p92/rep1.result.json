@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.613355,
+  "turns": 13,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "953945e8a43911ddf843bb9433f85216bae35103c3e03bd913e7c4706df32cfb",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-WnsMlU/out/explainer.md`.\n\n**What the range does:** it carries out plan 92, which checks the writing-skills skill against your Claude Code guide.\n- **New file:** `references/claude-code.md` (64 lines) now holds the skill's Claude Code facts. These cover what the frontmatter keys do, why `model: haiku` isn't portable, when to fork a skill, how the skill listing drops descriptions, and what of a skill body survives compaction.\n- **Edits:** `SKILL.md` and `discovery.md` keep only advice that holds on every runtime, and point to the new file.\n- **Claims corrected:**\n  - A description is no longer said to be loaded in every conversation.\n  - The \"`@` force-loads 200k+ context\" reason is replaced by a portability reason.\n  - The directory examples now show `references/` and `scripts/`.\n- **Register:** the `writing-skills-guide-gaps` entry is removed. The `tdd-for-docs` deviation stays, with a narrower reason.\n- **Backlog:** three items close, including the last STALE file, and five new items are filed.\n- **Size:** almost all of the ~8,600 added lines are micro-test data. The RED test came out null, so no \"put critical rules first\" instruction was added. Every bar on the new layout was met at 5 of 5 on both models.\n\n**Checks on HEAD:** `check_conformance.py`, `check_frontmatter.py` and `cli.py lint` all exit 0, and the lint prints no STALE lines. The first two needed `--with pyyaml` in my environment. I didn't run the pytest suites.\n\n**Before you merge:**\n1. **Your surname is in a committed test output.** In `new/P1a-sonnet/rep5.json`, the model's reply addresses you by surname. The branch filed the gap in the test kit that let this through as a backlog item, but the file itself is still committed. Redact it if you don't want your name in the repo.\n2. **Three review rows have no ruling.** The review asked you to rule on rows 38, 41, 48 and 56. Only row 38 got a ruling. Rows 41, 48 and 56 appear only in the test record, and no backlog item tracks them.\n3. **Some evidence is weaker than the summary table suggests.**\n   - All the read-arm passes came from agents saying they would make no edit yet. So the tests show agents follow the pointer, but not that they read `claude-code.md` before an edit.\n   - Two of the three apply prompts also passed 5 of 5 on the old layout, so they don't tell the layouts apart.\n\n   The test record states both limits itself.\n4. **One commit is unrelated to plan 92.** `0b6d34f` only files a backlog item about `extract_structure.py`, which came from PR #184."
+}

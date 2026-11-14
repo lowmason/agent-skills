@@ -1,0 +1,37 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "cost": 0.031227599999999998,
+  "permission_denials": [
+    {
+      "tool_name": "Read",
+      "tool_use_id": "toolu_0181tgMZqwKKa3nSLSCU2W4N",
+      "tool_input": {
+        "file_path": "/Users/lowell/Projects/agent-skills/README.md"
+      }
+    }
+  ],
+  "outside": [
+    {
+      "tool": "Read",
+      "input": {
+        "file_path": "~/Projects/agent-skills/README.md"
+      },
+      "hits": [
+        "~"
+      ]
+    }
+  ],
+  "void_reasons": [
+    "no explainer file"
+  ]
+}

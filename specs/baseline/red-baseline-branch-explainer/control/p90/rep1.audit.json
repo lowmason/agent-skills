@@ -1,0 +1,28 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "subtype": "success",
+  "cost": 0.44699259999999996,
+  "permission_denials": [],
+  "outside": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "grep -n -i \"codex\" specs/plans/completed/90-readonly-guard-command-starts.md | sed -n '4,40p' | cut -c1-400; ls /tmp/codex-review 2>/dev/null | tail -3",
+        "description": "Find Codex review outcomes in plan"
+      },
+      "hits": [
+        "/tmp/codex-review"
+      ]
+    }
+  ],
+  "void_reasons": []
+}

@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.5361018,
+  "turns": 10,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "aef3b493b8c46c1ff37f46f5da14fbbce77b97a13749d1952680e12c29a6f100",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-UGUEK2/out/explainer.md`.\n\n**What the change does:** it's plan 80, the development history record. Each project gets an append-only file, `specs/history.md`. When a plan retires, it appends an entry saying what the plan built and where the build differed from its design. A `/deferred` pass that closes items with quick fixes also writes an entry. A new script, `history_entry.py`, prints a draft of each entry, and the agent finishes it by hand. The completion gate in both executors now tags any ruling that contradicts the spec, and it treats that ruling as a decision already made rather than a question for you. Plan 80's own entry is the first one in the file, so you can read it to see what the output looks like.\n\n**Checks on HEAD:** all four passed.\n- The writing-plans tests: 402 passed, 4 expected failures.\n- The conformance check.\n- The check that the Gemini copy of `/deferred` is in sync.\n- The provenance check.\n\n**Things to look at before merging:**\n- **Docs don't match the script.** During final review, the rule for which decisions count as spec amendments was widened in the script to accept variants like `(spec amendments)` and `(spec amendment A2)`. Rule 4 in `skills/writing-plans/references/history.md` still describes only the exact `(spec amendment)` form. It's a one-line fix.\n- **Two open items were filed as deferred:**\n  - Two different rules cover what happens when you ask at the gate to revert a ruling.\n  - Nothing saved on disk records the gate's `contradicts spec` tags, so a `/clear` before the plan retires would lose them.\n- **Some wording isn't fully tested.** The gate wording needed a second round before it passed 5 of 5. The executing-plans copy of the gate text was never tested, though it uses the same sentences. One reading of the pass rule was written after the replies had been seen, but it changes no result.\n- **One commit doesn't stand alone.** To get past a lint, the commit that adds the skill text naming the script came before the script itself. At `a119dc0`, the text refers to a script that only arrives in the next commit, which matters if you bisect.\n- **Every retirement now takes a manual step.** Each plan retirement and each `/deferred` quick-fix pass needs someone to finish the draft by hand. That's deliberate, but it's ongoing work."
+}

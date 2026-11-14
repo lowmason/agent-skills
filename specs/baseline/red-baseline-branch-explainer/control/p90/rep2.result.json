@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.5352806,
+  "turns": 15,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "8589b45b0a2184eadc694e738bd00f1d7b99c84ab13d812a40a90664ffce9c84",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I wrote the explainer to `/tmp/plan94-rep-Br5dlO/out/explainer.md`.\n\n**What the change does:** this is plan 90. Before, the read-only guard looked for a subcommand's command in one place only. Now it checks every place the command could start. Some words can either come before the command or be the command:\n- a leading `{`\n- a leading `[[ \u2026 ]]` test\n- a word containing `=`\n- a word that begins with `=`\n\nThe guard used to assume these were the command, so whatever came after them was never checked. Now it reads them both ways, and a denial either way stands. This closes the 8 recorded bypass lines.\n\nIt can't allow anything `main` denies. The old answer is always checked first and unchanged, and the guard only adds more places to check. The plan also compared old and new guards on 150,024 commands from local transcripts: none went from denied to allowed, and no harmless command became newly denied.\n\n**Speed limits:** checking more places made long crafted lines slow (one took 159 s), and a hook that times out lets the call through. So the walk now does work in proportion to the line's length, and a subcommand with more than 64 possible starting places is denied. A later ruling (D6) strips all leading `=` from a word in one step, so long `=` underlines in heredocs stay allowed.\n\n**What I checked:**\n- The hooks suite passes: 461 tests through the repo's runner, and 304 guard tests under `/usr/bin/python3` 3.9.6.\n- I read through the reasoning for why the speed limits never change a result, and it holds.\n- Codex reviewed twice, on `d622a11` and on HEAD. Both found no actionable defect, but neither could run the full test suite in its sandbox. The plan called for only one round.\n\n**Before you merge:**\n- **It goes live immediately.** The installed hook is a symlink into the main checkout, so every repo gets the new guard as soon as this merges.\n- **Gate B is still to do.** After merging, run `./hooks/probe-readonly-guard.sh` in the main checkout. It should exit 0 and print three `ok:` lines.\n- **One safeguard has no test.** Removing the `queued` set alone fails no test since D6. It was kept on purpose and is recorded in `specs/history.md`.\n- **One known gap stays open.** A glob qualifier glued to the command word (like `git(.) stash`) still isn't caught. It's filed as a new deferred item."
+}

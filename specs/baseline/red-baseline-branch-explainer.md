@@ -269,7 +269,115 @@ first `claude -p` call. The cost pilot then replaces the estimate.
 
 ## Pilots
 
+**Spend confirmation (Task 2 Step 1, 2026-11-14).** The executor asked: "Plan 94's probe is ready. The plan
+estimates about $57 for the live runs, or about $97 with both wording rounds. It stops to ask at $35 for pilots and
+control, and at $120 in all. Do you confirm the spend?" The owner answered: "Yes, confirm". In the same question set,
+the owner kept inline execution on Opus: "Keep inline on Opus (Recommended)".
+
+**Isolation probe** (`pilot/probe/`, fixture `p90`, $0.03). The writer flags with the probe prompt.
+
+- Lines 1 to 6 read NO. Line 1 shows that no `CLAUDE.md` loads, the fixture's own included.
+- Line 7 reads NO. The `Read` of `~/Projects/agent-skills/README.md` was denied automatically and appears in
+  `permission_denials`. A read outside the rep's folders is refused under `--permission-prompts none`.
+- Line 8 quotes only `refs/heads/main`.
+- The init record lists exactly `Bash`, `Glob`, `Grep`, `Read` and `Write`. The model is `claude-opus-5-5`, and
+  `modelUsage` names only that model.
+- The audit's `no explainer file` and its one `outside` hit (the line 7 read) are expected for this prompt.
+
+**Write check** (`pilot/permcheck/`, fixture `p90`, $0.03). The writer flags without `--add-dir <rep>/out`.
+
+- The reply: "REFUSED: I couldn't write `ok` to `<rep>/out/check.txt`. That path is outside the folders this session
+  is allowed to use, so the write needed your approval. There's no way to approve it in this session, so it was
+  denied automatically and the file wasn't created."
+- `permission_denials` holds the `Write`. `<rep>/out/check.txt` does not exist.
+- So under `-p`, a write outside the working directory and the added folders is refused (C9). Step 3b's procedure
+  must handle a refused write in one line. Task 7's live run shows what happens in the owner's own session.
+
+**Cost pilot** (`pilot/writer/`, fixture `p92`, one unscored control rep, not scored).
+
+| Run | Cost | Notes |
+|---|---|---|
+| Writer | $0.68 | 14 turns, 1,647 words, no void reason, no `outside` hit |
+| Reader | $0.06 | |
+| Adjudicator | $0.54 | 63,266 input tokens written to the cache, none read from it; prompt 156,724 bytes |
+
+- The writer cap is twice the pilot writer's cost, rounded up to the next $0.50, with a $3.00 floor: **$3.00**.
+- `ADJ_CAP` is twice the pilot adjudicator's cost, rounded up to the next $0.50, with a $1.00 floor: **$1.50**.
+- The projection from the pilot for control, round 0 and held-out is 21 × ($0.68 + $0.06 + $0.54) = about $27. That
+  is below the $90 stop.
+- The pilot control headed its summary "In short", which is not a C7 synopsis name, so B5 would judge it on the
+  2,000-word limit only. Its adjudication parsed and gave B1 to B4 PASS.
+
 ## Control
+
+Writer cap $3.00, `ADJ_CAP` $1.50. Writer reps 1 to 3 ran on each fixture, and `p90` reps 4 and 5 replaced two VOID
+reps.
+
+**VOIDs.**
+
+- `p90` rep1: the writer ran `ls /tmp/codex-review 2>/dev/null | tail -3` and got three file names from that folder.
+- `p90` rep2: the writer listed `/tmp/codex-review/` and ran `cat` on two real Codex review files there.
+- The cause: plan 90's text names `/tmp/codex-review/`, the folder where the real Codex reviews of that branch were
+  written. `Read` has a path check, which the isolation probe showed. `Bash`, allowed through `--allowedTools Bash`,
+  has none. The writer reached the folder through `Bash`.
+
+**`outside` hits read and kept.** These hits are not VOID:
+
+- `Read`s of `~/.claude/projects/-private-tmp-plan94-rep-<id>-repo/<session>/tool-results/*.txt`. Claude Code saves a
+  long `Bash` output there, so these files hold the rep's own command output.
+- `cd ../../..` after a `cd` into the rep's own subfolder.
+- Grep patterns that search the fixture's own files, such as `/5`, `/Users/` and the owner's name.
+- `p90` rep4's `ls ~/.local/bin 2>/dev/null | head; which uv pytest python3.12 python3.13`. It looks up where system
+  tools are installed, which the VOID rule exempts.
+
+**Scores** (scored reps: `p80` 1 to 3, `p90` 3 to 5, `p92` 1 to 3). Each cell is the count of scored reps that pass.
+
+| Bar | `p80` | `p90` | `p92` |
+|---|---|---|---|
+| B1 Plan | 3/3 holds | 3/3 holds | 3/3 holds |
+| B2 Build | 3/3 holds | 3/3 holds | 2/3 holds |
+| B3 Project | 2/3 holds | 3/3 holds | 3/3 holds |
+| B4 Accuracy | 1/3 **fails** | 0/3 **fails** | 1/3 **fails** |
+| B5 Length | 3/3 holds | 3/3 holds | 3/3 holds |
+| All five bars at once | 1/3 | 0/3 | 1/3 |
+
+Explainer lengths run from 1,119 to 1,574 words. Only `p92` rep2 has a section that C7 reads as a synopsis (220
+words). The others open with a summary under another heading, such as "In short", so B5 judges them on length only.
+
+**The B4 failures.** The executor checked each contradicted claim against the fixture's files and agrees with every
+one:
+
+| Rep | Claim | What the branch shows |
+|---|---|---|
+| `p80` rep1 | the history entry "lists 8 rulings and 6 deviations" | 8 rulings and 7 deviations |
+| `p80` rep3 | the branch "adds about 35 small JSON rep files" | 25 `rep<N>.json` files |
+| `p90` rep3 | `hooks/readonly-agent-guard.py` is "+142/−37"; "three 'Not caught' entries are removed" | +123/−19 (142 lines changed); one bullet removed, two rewritten |
+| `p90` rep4 | the cost tests use "inputs of 64 and 128 words" | `shape(64)` and `shape(128)` repeat a pattern 64 and 128 times, about 3n words |
+| `p90` rep5 | the guard file is "+142/−37 lines in total" | +123/−19 |
+| `p92` rep2 | a committed rep reply "begins its reply with your first name" | the reply names the owner once, by surname, about 200 characters in |
+| `p92` rep3 | "you waive those case by case", with the waiver limited to edits that change no instruction | a final-review ruling removed "for such edits" so that the waiver has no such limit |
+
+Six of the seven are numbers or details that the writer stated without checking them. They are counts, line totals,
+input sizes or a name. The seventh restates wording that a later commit of the same branch removed.
+
+**Other FAILs, not contested.** `p80` rep3 B3: the project part describes the new record and names no workflow step
+that changes. `p92` rep3 B2: the synopsis puts the register change before the micro-test whose null result it needs.
+Neither FAIL changes its bar's result on the fixture.
+
+**Contested readings:** none.
+
+**Held-out exposure check.** No control explainer names plan 84 or its subject.
+
+**Verdict: RED.** The control fails B4 on all three tuning fixtures and holds B1, B2, B3 and B5 on all three. The
+treatment brief adds one instruction aimed at B4 (Task 3).
+
+**Spend.** Pilots $1.34, control $11.18 (the two VOID writer reps included), total $12.52. That is below the $35 stop
+for pilots and control.
+
+**Public repository scan** over `pilot/` and `control/`: the plan's grep for email addresses and key shapes printed no
+line. An extra check for the owner's name and home folder found three kinds of text. Each is already public in this
+repository: the home folder path in audit paths (already in 233 committed files), the owner's name in grep patterns
+(in `LICENSE`), and a quote of the surname line from `p92`'s committed rep file.
 
 ## Treatment
 

@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.683151,
+  "turns": 14,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "834fe5d9a45d9a8fd0d3c0327d0f5bcd1c7bd0047ba6da2ac86396204a091cca",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-z71Dts/out/explainer.md`.\n\n**What the branch does:** it carries out plan 92, which brings the `writing-skills` skill in line with the Claude Code guide and closes three backlog items.\n- **New file:** `skills/writing-skills/references/claude-code.md` collects the facts that only apply to Claude Code. That covers what the extra frontmatter keys do, why a Haiku `model` setting isn't portable, when to fork a skill, how the skill listing drops descriptions, and what survives compaction.\n- **Corrections:** `discovery.md` and `SKILL.md` now point to that file and fix four claims:\n  - a description is no longer said to load in every conversation;\n  - the reason against `@` links is now about portability;\n  - the directory examples show `references/` and `scripts/`;\n  - the listing wording no longer says it is always loaded.\n- **Register:** the gap entry `writing-skills-guide-gaps` is removed. The `writing-skills-tdd-for-docs` deviation has a narrower reason. `description-when-only` now also covers `discovery.md`, which was your ruling.\n- **Citation:** `SKILL.md`'s citation is restamped to `@2.1.306`, so the lint no longer reports any stale files.\n- **Micro-tests:** the test on where a skill states its hard rule found no problem (0 of 10 runs failed). The new layout met every bar at 5 of 5. Only one prompt, P3a, actually tells the old and new layouts apart: it went from 0 of 5 to 5 of 5 on Opus.\n\n**Checks:** I ran the commit lints, `cli.py lint`, the `cc_guide` suite (735 passed) and the conformance and frontmatter tests (446 passed). All pass. I did not re-run the micro-test runs.\n\n**Before you merge:**\n1. **Your name is in a committed test transcript.** `specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json` addresses you by name, because the test setup didn't hide your account identity. The new backlog item only fixes this for future runs. Your name is already in `SKILL.md`, but you may want to redact this file.\n2. **The evidence has limits, and the test record says so itself.**\n   - In the \"does the agent go read the new file\" runs, no run tried an edit. So nothing tested reading the file *before* editing.\n   - P1a and P2a only pass under loose readings of the rules.\n   - Two later edits to `discovery.md` were made after the tests ran and weren't re-tested. They only correct facts, and the tested pointer text is unchanged.\n3. **Two fork facts are incomplete.** The new reason against forking a skill that starts its own subagents only applies when fork mode is off. And the file doesn't yet say that a forked skill runs in the background by default in interactive sessions; that's on the backlog.\n\nThe last commit also adds a backlog item unrelated to plan 92: a Codex finding about `build/extract_structure.py`, which came from PR #184."
+}

@@ -1,0 +1,28 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.031227599999999998,
+  "turns": 3,
+  "subtype": "success",
+  "permission_denials": [
+    {
+      "tool_name": "Read",
+      "tool_use_id": "toolu_0181tgMZqwKKa3nSLSCU2W4N",
+      "tool_input": {
+        "file_path": "/Users/lowell/Projects/agent-skills/README.md"
+      }
+    }
+  ],
+  "stream_sha256": "2b0ed9c8adca950cfa0521ee13a87ae49a80d499ac1c5edb6ca5c336e4774b5b",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "1. NO\n2. NO\n3. NO\n4. NO\n5. NO\n6. NO\n7. NO. The read was blocked. The file is outside the allowed working directories, and this session has no way to approve a permission prompt, so it was denied automatically.\n8. YES: \"refs/heads/main\""
+}

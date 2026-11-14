@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.561709,
+  "turns": 13,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "018b64cd2d32ecb60992c13ac674d653018949badcb69405b0a8438db4872d00",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I wrote the explainer to `/tmp/plan94-rep-2y4E3T/out/explainer.md`. It's ready to merge apart from one small doc fix I'd make first.\n\n**What the change does:** this is plan 80, which adds a development history file. Each project gets one append-only file, `specs/history.md`, with a short entry for each completed plan and for each `/deferred` pass that does quick fixes. An entry lists only where the build differed from its design: rulings, deviations, spec-level decisions, and deferred and closed items. Each line points to its source.\n\nThe main reason for it is that the run's `Ruling:` lines were lost when the workspace was deleted. Now they're kept in the history entry.\n\n**How it's built:**\n- **A drafting script, `history_entry.py`:** it prints a draft entry but never writes a file, so the agent always finishes the draft and appends it.\n- **Plan retirement:** a new reference `references/history.md` holds the rules, and a 3-line pointer in step 5 of `SKILL.md` adds the entry in the retire commit. To keep `SKILL.md` under its size limit, an example block was removed; the same example is still in `deferred-backlog.md`.\n- **Gate tag:** at the completion gate, both executors now list a ruling that contradicts the spec with `contradicts spec: <section>`. It stays a decision already taken and isn't asked as a question.\n- **`/deferred`:** a pass that does a quick fix now writes an entry. The Gemini copy of the command was regenerated.\n\n**Checks I ran:**\n- The writing-plans tests pass (402 passed, 4 expected failures).\n- The conformance, runtime-sync, provenance and link checks are all clean.\n- The repeated-run tests of the new instruction text met their bar for both cases, though the gate wording needed one rewrite to get there. They cost $0.74 in total. The texts under test haven't changed since in any way that matters, except that the executing-plans copy of the gate wording was never tested this way.\n\n**Before merging:**\n1. **The reference is behind the script (fix this one).** Rule 4 in `references/history.md` says a decision counts only when it contains exactly `(spec amendment)`. The script also accepts forms like `(spec amendments)` and `(spec amendment A2)`. Agents follow the reference, so it should match the script. It's a one-line fix and isn't tracked as a deferred item.\n2. **Two new deferred items stay open:**\n   - Two rules disagree on what happens when you ask to revert a ruling at the gate.\n   - The gate's `contradicts spec` tags are lost if the context is cleared before the retire step.\n3. **The draft's date defaults to today.** The retire command doesn't pass `--date`, so this only matters if retiring a plan spans more than one day.\n4. **No backfill.** Plans retired before plan 80 get no entries, as the spec intends."
+}

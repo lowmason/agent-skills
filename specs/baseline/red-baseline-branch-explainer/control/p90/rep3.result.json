@@ -1,0 +1,20 @@
+{
+  "tools": [
+    "Bash",
+    "Glob",
+    "Grep",
+    "Read",
+    "Write"
+  ],
+  "model": "claude-opus-5-5",
+  "version": "2.1.323",
+  "cost": 0.37859779999999993,
+  "turns": 9,
+  "subtype": "success",
+  "permission_denials": [],
+  "stream_sha256": "5025920d4fa308a103df1c52202b4229651ddf3359cc52494a3ef394306d76e3",
+  "model_usage": [
+    "claude-opus-5-5"
+  ],
+  "result": "I've written the explainer to `/tmp/plan94-rep-6VE9Sy/out/explainer.md`.\n\n**What changed:** the read-only guard used to make one guess about where each subcommand's command starts. Now, at any word that might only lead the command, it reads that word both ways: as the command, and as a prefix to walk past. If either reading denies, the line is denied. That applies to a leading `{` or `[[ \u2026 ]]`, a word containing `=`, and a word starting with `=`. It closes the 8 recorded bypass lines, and it can't allow anything `main` denies: the first place it checks is always the old one, and the rest of the guard is unchanged. Only two files hold code: `hooks/readonly-agent-guard.py` (+142/\u221237) and its tests (+148). The rest of the range is the spec, the plan and the backlog bookkeeping.\n\n**Main risks covered in the explainer:**\n- **Speed:** most of the new code exists to keep checking fast on crafted lines. A guard that times out lets the command run, so a slow check fails open. Four mechanisms keep the work linear, plus a fail-closed cap at 64 places per subcommand. Each one's correctness argument is in the explainer.\n- **New false positives:** some heredoc text is now denied, such as `== rm and mv ==`, and so is any subcommand past the cap. You accepted both (D2 and D5), and the sweep found 0 false positives in 150,024 real commands.\n- **Untested code:** one of the four mechanisms (the `queued` set) has no test that fails without it since D6. It was kept on a recorded ruling; you could drop it as a follow-up.\n- **Live on merge:** the installed guard is a symlink into the main checkout, so this applies to every repository as soon as you merge. Gate B (`./hooks/probe-readonly-guard.sh`) still has to be run after merging.\n- **Codex review:** the plan required one bypass-hunting round by Codex, but I couldn't find its result in this range. I didn't look in `/tmp/codex-review/`.\n\n**Testing:** the guard's tests pass on HEAD (304 passed) under uv's default Python only. I did not run them under `/usr/bin/python3` (3.9), and I did not run the commit lints."
+}
