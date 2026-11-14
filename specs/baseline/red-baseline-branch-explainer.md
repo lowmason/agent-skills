@@ -381,6 +381,29 @@ repository: the home folder path in audit paths (already in 233 committed files)
 
 ## Treatment
 
+### Round 0 brief
+
+`kit/brief-r0.md` (853 words by `wc -w`). It holds the values, the inputs, the diff-versus-spec rule, the layout, the
+limits, the style and the output that plan Task 3 lists. The control failed B4 only, so the brief adds one
+instruction aimed at that bar:
+
+| Bar the control failed | Instruction in the brief |
+|---|---|
+| B4 Accuracy | "Check before you state": take each number from a command or a file read in the session, with `git diff --numstat` for one file's lines, and leave out an unchecked number; take names, limits and quoted words from the files at `HEAD`, and describe the later state when a later commit changes an earlier one. |
+
+Two executor choices in the brief, each in the execution ledger:
+
+- **Background carries the plan's gap.** Spec §5 gives Background "the parts of the project that the change touches,
+  as they worked before the branch". The brief adds "and the gap that the plan set out to close". The treatment's
+  reader never sees the Synopsis, and no other body section of §5 says why the plan exists.
+- **Inputs stay in the Repository folder.** The brief says "Read only files inside the Repository folder, and this
+  brief." Spec §3 says that the writer sees only the files, as the owner would. Two control reps read outside their
+  folder, and each such rep is VOID.
+
+**Round 0 estimate:** 9 × ($0.542 + $0.046 + $0.551) = **$10.24**. The writer mean is over the 12 explainer writer runs
+so far (the pilot writer and all 11 control writers, the VOID reps included). The reader and adjudicator means are over
+their 10 runs each. The isolation probe and the write check are not explainer runs, so they are not in the means.
+
 ## Held-out
 
 ## Micro-test
