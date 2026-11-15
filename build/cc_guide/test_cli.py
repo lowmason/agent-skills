@@ -16,7 +16,7 @@ import state
 from cc_fixtures import (DOCS, EXTRA_MANIFEST, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE,  # noqa: F401
                          docs_dir, drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache,
                          with_extra, write_tree)
-from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN
+from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN, text_hash, sections as guide_sections
 
 
 @pytest.fixture
@@ -723,6 +723,35 @@ def test_add_takes_several_ids_and_needs_at_least_one(world, capsys):
         main(cache, 'baseline', 'add')
     assert stop.value.code == 2
     assert 'the following arguments are required: ids' in capsys.readouterr().err
+
+
+def test_add_writes_the_entry_with_the_newest_cached_release_and_the_oldest_stamps(world):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    git(repo, 'commit', '-qam', 'a section created after init')
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    entry = load(repo)['sections']['alpha.extra']
+    assert entry['changed'] == '2.1.902'
+    assert entry['checked'] == entry['audited'] == {'release': '2.1.900', 'date': '2026-09-02'}
+    extra = next(s for s in guide_sections(with_extra(guide_text())) if s.id == 'alpha.extra')
+    assert entry['text_hash'] == text_hash(extra.text)
+
+
+def test_add_keeps_changed_above_a_citation_written_by_hand_before_it(world, capsys):
+    '''`cite` refuses an ID that baseline.json lacks, so a citation to a new
+    section is written by hand; add leaves it STALE (designer's call 3).'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.extra @2.1.902\nexit 0\n'})
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert load(repo)['sections']['alpha.extra']['changed'] == '2.1.902.1'
+    capsys.readouterr()
+    assert main(cache, 'lint') == 0
+    assert capsys.readouterr() == ('', 'STALE hooks/gate.sh alpha.extra\n')
 
 
 def test_the_repo_lints_clean(capsys):
