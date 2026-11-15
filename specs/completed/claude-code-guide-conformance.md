@@ -11,6 +11,10 @@
 - At the plan's completion gate (2026-10-04), the owner added the installer
   kind to R4.1's list and a note on `sh -c` quoting under R3.4.
 
+**Amended 2026-11-15** by `specs/completed/cc-guide-sections-after-init.md` (plan 99,
+`specs/plans/completed/99-cc-guide-sections-after-init.md`): the R1.2 test reads the guide at `18b4a71`, and the
+working tree's anchors are the lint's to check (R1.2).
+
 ## Purpose and scope
 
 `specs/guides/claude-code-customization-guide.md` (the guide) is the hub. The
@@ -187,10 +191,13 @@ the IDs and order of the R1.1 table in
 - Headings are found outside fenced code, through `build/fences.py`.
 - No other edit is made to the guide.
 
-R1.2 A test parses the real guide and pins three things:
+R1.2 A test parses the guide at `18b4a71`, the commit that added the anchors,
+and pins three things:
 - there are 38 headings outside fences;
 - each heading's next line is exactly one well-formed anchor;
 - the IDs, in heading order, equal the R1.1 table.
+
+The working tree's anchors are the lint's to check (R3.3), and drift R5's.
 
 This lint's heading–anchor pairing rule (R3.3) deliberately overlaps the
 drift spec's R5 rule, because this lint must work before drift Stage 1

@@ -90,7 +90,11 @@ baselined block on the same page has also changed or gone: list it too, or
 rebaseline the whole page. `settle` prints each `rebaseline` with `--head`
 and the packet's head, which refuses once a later `check` (a session start's
 `refresh` included) has refetched the docs. A missing page needs a
-`manifest.toml` edit first. When a merge brings in a `baseline.json` that the
+`manifest.toml` edit first. A section created after `baseline init` enters
+`baseline.json` through `baseline add <id>`, once the guide anchors it and
+`manifest.toml` lists it in a group. A removed section leaves through
+`baseline drop <id>`, then `baseline stamp`. `baseline init --force` is not for
+either: it resets every section's state. When a merge brings in a `baseline.json` that the
 parser before the spec's R3.2 MDX rewrite wrote, take that file and run
 `baseline rehash`. A second run changes nothing.
 A correction that resolves a conformance gap removes its `[[exception]]`, or
