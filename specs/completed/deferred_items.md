@@ -84,7 +84,7 @@
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
-      scope"): the direct `model: haiku` pins on `explore-data` and a skill since archived
+      scope"): the direct `model: haiku` pins on `explore-data`/`bls-data-context`
       only cover the *invoking* turn (a skill `model` override is per-turn). A single
       haiku-pinned `agents/Explore.md` would keep a whole multi-turn profiling
       workflow on Haiku via `context: fork` + `agent: Explore`, and double as a global
@@ -102,8 +102,8 @@
       superseded 2026-08-10 by Opus-default at auto effort, so the "before" baseline it
       would compare against no longer exists. What stays open is the indicator check
       alone, whose premise was re-confirmed 2026-09-08: the pins are still there to
-      observe (`model: haiku` on explore-data and three skills since archived;
-      `effort: xhigh` on bayesian-workflow / tune-hyperparameters).
+      observe (`model: haiku` on bls-data-context / classification-codes / explore-data
+      / geographic-codes; `effort: xhigh` on bayesian-workflow / tune-hyperparameters).
       Owner-only — needs an interactive terminal — and still the backlog's whole aged
       tail, so the finishing-a-development-branch merge/PR gate stays bound.
       → done in plan 31: superseded, not run. The 2026-09-28 transcript sweep answered

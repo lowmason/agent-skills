@@ -3260,6 +3260,57 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
       (a)–(c) land, with the new tests passing on both interpreters. → done in plan 61
+- [ ] Decide whether classification-codes bundles Census industry (IND) codes (audit-3-10-26 F5
+      and its Decision 10, found 2026-10-03; re-verified 2026-10-18: `data/` holds
+      `census_occ_*` files only, and no spec scopes IND out). CPS has used the 2022 Census
+      industry classification since January 2025 (`skills/bls-data-context/references/cps.md:309`),
+      and Census publishes the 2017 and 2022 industry code lists with crosswalks
+      (<https://www.census.gov/topics/employment/industry-occupation/guidance/code-lists.html>).
+      Bundle path, a plan: mirror the OCC pattern in `skills/classification-codes/scripts/build.py`
+      (`parse_census_occ` `:599`, `validate_census_occ` `:651`, `expand_census_occ` `:664`,
+      build entries `:812-841`) with `census_ind_2017`, `census_ind_2022` and a NAICS
+      expansion, and update the file table (`SKILL.md:41-56`) and recipes; adding "IND" to the
+      description needs writing-skills' micro-test. Out-of-scope path, a quick fix: one body
+      sentence at the boundary section (`SKILL.md:228-234`) pointing at the Census page.
+      Size: design. Done when: the owner picks a path and it lands.
+- [ ] Watch for the NAICS 2027 and SOC 2028 publications that would require a classification-codes
+      rebuild (audit-3-10-26 F12, routed "watch" and never filed; found 2026-10-03). The data
+      bundles NAICS 2022 and SOC 2018 only. Triggers: OMB's final NAICS 2027 notice; the Census
+      2027 structure and 2022→2027 concordance workbooks; the SOC 2028 second Federal Register
+      notice (still "TBD" on bls.gov/soc/2028 when the audit read it,
+      `revision-process.md:154`). A rebuild should land the count test from the H3 item in this
+      section first. Size: plan. Revisit if: any of those three publications appears.
+- [ ] Add tests for the classification-codes and geographic-codes builds (audit-3-10-26 H3, found
+      2026-10-03; re-verified 2026-10-18, all three parts open). (a) Three validators have no
+      test: `validate_naics_concordance` (`skills/classification-codes/scripts/build.py:380`),
+      `validate_soc_crosswalk` (`:581`) and `validate_census_occ` (`:651`); write RED-first
+      tests for their row-count bands, duplicates and SOC levels. (b) No test covers an offline
+      fetch: classification-codes' fetch tests (`test_build.py:661`, `:668`) never pass
+      `offline=True`, so the missing-cache error at `build.py:110-111` is untested, and
+      geographic-codes' `fetch` (`skills/geographic-codes/scripts/build.py:183-206`) has no test;
+      `read_sheet` (`:209`) is tested only indirectly. (c) Nothing ties the counts in the
+      SKILL.md file tables (classification-codes `SKILL.md:45-56`, "2,125 (1,012 six-digit)";
+      geographic-codes `SKILL.md:44-51`, "3,222 current plus 21 closed") to `data/` or
+      `MANIFEST.md`; they match today. Plan 53 (portability, not executed) edits both skills'
+      "Rebuilding the data" blocks and adds PEP 723 headers to both `build.py` files, so
+      sequence this around it. Size: plan. Done when: the tests in (a)–(c) exist and pass, and
+      (c) fails when a count drifts.
+      → progress 2026-11-15 (skill restore): plan 53 ran and retired on 2026-10-20, before the
+      archive, so there is nothing left to sequence around. The line anchors above still hold
+      on 2026-11-15.
+- [ ] Clean up bls-data-context's OEWS reference and research residue (audit-3-10-26 B4,
+      found 2026-10-03; parts (8) to (10) of the audit_1_3_26 P2-tier item in this section).
+      The three parts left that item when the skill was archived on 2026-10-27, before the
+      owner picked its keepers on 2026-10-31, so no ruling covers them. The skill came back
+      from `archive/skills/` on 2026-11-15. (8) `skills/bls-data-context/references/oews.md`
+      is still a downloader build-spec ("Build a repeatable downloader…" `:5`; "## 12.
+      Acceptance criteria" `:458`) with no panel, vintage or series-ID anatomy. (9)
+      Research-session residue: `qcew.md:5` ("Primary pages provided by the user:"),
+      `cps.md:547` (an unused `[CENSUS-TP66-USER-URL]` tag) and `oews.md:45` (first person).
+      (10) LAUS is a description trigger (`SKILL.md:9`) with no selector row (`:36-48`).
+      A change to the description needs writing-skills' micro-test. Size: plan. Done when:
+      the owner has picked the keepers, they are fixed, and the rest are recorded here as
+      dropped.
 - [x] Write the backlog-protocol spec: deferrals outside this file get lost, and the file
       only grows (audit-3-10-26 B1 and B6, found 2026-10-03; re-verified 2026-10-18 — no
       commit has touched `skills/writing-plans/references/deferred-backlog.md`,
