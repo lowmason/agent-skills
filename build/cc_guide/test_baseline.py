@@ -544,6 +544,8 @@ def test_drop_of_an_id_no_file_cites_leaves_cited_as_it_was(docs_dir, cited):
 
 def test_drop_of_several_ids_clears_each_from_sections_and_cited_in_one_run(docs_dir):
     s = fixture_state(docs_dir)
+    s['sections'] = {sid: s['sections'][sid]  # an order that no sort restores
+                     for sid in ('alpha.reference', 'beta.overview', 'alpha.overview', 'beta.reference')}
     s['cited'] = {'hooks/both.sh': {'beta.overview': OLD_HASH, 'beta.reference': OLD_HASH},
                   'hooks/first.sh': {'beta.overview': OLD_HASH},
                   'hooks/keeps.sh': {'alpha.reference': OLD_HASH, 'beta.reference': OLD_HASH},
@@ -551,7 +553,7 @@ def test_drop_of_several_ids_clears_each_from_sections_and_cited_in_one_run(docs
                   'hooks/other.sh': {'alpha.overview': OLD_HASH}}
     before = copy.deepcopy(s)
     new = baseline.drop(s, state.parse_manifest(NO_BETA_MANIFEST), NO_BETA_GUIDE, ['beta.reference', 'beta.overview'])
-    assert list(new['sections']) == ['alpha.overview', 'alpha.reference']
+    assert list(new['sections']) == ['alpha.reference', 'alpha.overview']
     assert new['sections'] == {i: before['sections'][i] for i in ('alpha.overview', 'alpha.reference')}
     assert new['cited'] == {'hooks/keeps.sh': {'alpha.reference': OLD_HASH},
                             'hooks/other.sh': {'alpha.overview': OLD_HASH}}
