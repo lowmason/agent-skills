@@ -59,6 +59,28 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE}: not found in the working tree\n')
 
 
+@pytest.mark.parametrize('edit, manifest_text, line', [
+    (with_extra, EXTRA_MANIFEST, 'section alpha.extra: missing from baseline.json; add it with '
+                                 '`uv run python build/cc_guide/cli.py baseline add alpha.extra`'),
+    (without_beta_reference, DROPPED_MANIFEST, 'section beta.reference: missing from the guide and manifest.toml;'
+                                               ' drop it with `uv run python build/cc_guide/cli.py baseline drop'
+                                               ' beta.reference`'),
+], ids=['add', 'drop'])
+def test_running_the_command_lint_prints_clears_the_id_set_violation(world, capsys, edit, manifest_text, line):
+    '''Review Focus 5.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(edit(guide.read_text()))
+    (repo / state.MANIFEST).write_text(manifest_text)
+    assert main(cache, 'lint') == 1
+    assert capsys.readouterr().out == line + '\n'
+    prefix = 'uv run python build/cc_guide/cli.py '
+    command = line.split('`')[1]
+    assert command.startswith(prefix)
+    assert main(cache, *command[len(prefix):].split()) == 0
+    assert main(cache, 'lint') == 0
+
+
 @pytest.mark.usefixtures('world')  # the committed repo, with cli pointed at it
 def test_a_label_newer_than_the_cached_changelog_is_a_note_not_a_violation(tmp_path, capsys):
     '''With only the bootstrap snapshot cached, a changelog that ends before the

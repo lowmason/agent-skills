@@ -31,15 +31,24 @@ def cell_count(row: str) -> int:
 def id_set_problems(guide_text: str, manifest: Manifest, state: dict) -> list[str]:
     '''The anchors, the manifest's groups and baseline.json's sections carry
     one ID set (R5). The manifest's own parse already holds each ID to one
-    group.'''
+    group. The message names the one command that clears two combinations:
+    `baseline add` for an ID that only baseline.json lacks, and `baseline
+    drop` for an ID that only baseline.json holds. Every other combination
+    needs a guide or manifest edit first, so its message names no command.'''
     where = {'the guide': {s.id for s in sections(guide_text) if s.id},
              'manifest.toml': set(manifest.group_of()),
              'baseline.json': set(state['sections'])}
     out = []
     for sid in sorted(set().union(*where.values())):
-        missing = ' and '.join(name for name, ids in where.items() if sid not in ids)
-        if missing:
-            out.append(f'section {sid}: missing from {missing}')
+        missing = [name for name, ids in where.items() if sid not in ids]
+        if not missing:
+            continue
+        message = f'section {sid}: missing from ' + ' and '.join(missing)
+        if missing == ['baseline.json']:
+            message += f'; add it with `{CLI} baseline add {sid}`'
+        elif missing == ['the guide', 'manifest.toml']:
+            message += f'; drop it with `{CLI} baseline drop {sid}`'
+        out.append(message)
     return out
 
 
