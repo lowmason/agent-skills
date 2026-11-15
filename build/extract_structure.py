@@ -32,8 +32,10 @@ SCRATCH = Path(__file__).parent / ".scratch"
 TOC = {'1': (BOOK1, 9, 25), '2': (BOOK2, 9, 29)}
 BODY_START = {'1': 31, '2': 35}
 
-# One contents entry under `pdftotext -layout`: the number, the title, then the page.
-TOC_LINE_RE = re.compile(r'^\s*(\d+(?:\.\d+)*)\s+(\S.*?)\s+\d+\s*$')
+# One contents entry under `pdftotext -layout`: the number, the title, then the page. The
+# title is optional so that a numbered line with a page and no title (`1.1 2`) is kept with
+# an empty title, which check_complete refuses, instead of dropping out unseen.
+TOC_LINE_RE = re.compile(r'^\s*(\d+(?:\.\d+)*)(?:\s+(\S.*?))?\s+\d+\s*$')
 ADVANCED_MARK = '*'
 
 
@@ -41,15 +43,16 @@ def parse_toc(text: str) -> dict[str, str]:
     '''Map each section number in a `pdftotext -layout` contents dump to its title.
 
     A line counts only when it starts with a section number and ends with an arabic page
-    number, so front-matter lines (`Preface  xxvii`) and page footers drop out. The
-    advanced-section marker is removed from a title, and a repeated number keeps its
-    first title.
+    number, so front-matter lines (`Preface  xxvii`) and page footers drop out. A line
+    with a number and a page but no title maps to an empty title. The advanced-section
+    marker is removed from a title, and a repeated number keeps its first title.
     '''
     rows: dict[str, str] = {}
     for line in text.splitlines():
         m = TOC_LINE_RE.match(line)
         if m:
-            rows.setdefault(m.group(1), m.group(2).removesuffix(ADVANCED_MARK).strip())
+            title = m.group(2) or ''
+            rows.setdefault(m.group(1), title.removesuffix(ADVANCED_MARK).strip())
     return rows
 
 

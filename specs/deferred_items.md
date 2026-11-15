@@ -6458,7 +6458,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: the fork paragraph of `claude-code.md` states the default.
 
 ## 92-writing-skills-guide-rewrite Step 4b review — 2026-11-12
-- [ ] `build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex
+- [x] `build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex
       review, P2; the code came from PR #184). `TOC_LINE_RE` needs a title between the section number and the
       page, so a line such as `1.1 2` does not match and `parse_toc` leaves that section out. `check_complete`
       checks chapter gaps, chapter presence and the titles of parsed entries only, so it passes while a section is
@@ -6466,6 +6466,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       That defeats the fail-on-missing-title behavior that `build/CLAUDE.md` describes. Size: quick-fix.
       Done when: a numbered contents line with a page and no title is kept or rejected so that `check_complete`
       raises on it, and a test in `build/test_extract_structure.py` covers it.
+      → done 2026-11-14 (/deferred quick fix): `TOC_LINE_RE`'s title group is now optional, so `parse_toc` keeps `1.1 2` with an empty title and `check_complete` refuses it ("entries with no title: 1.1"). The test that runs the item's four-line sample failed first and now passes (15 passed). Both local books still parse to the same entry counts as before (686 and 1,062) and pass both checks.
 
 ## claude/code-customization-guide-currency-657677 Step 4b review — 2026-11-12
 - [ ] Skill text gives Gemini CLI instructions but none for Antigravity CLI (`agy`), which the `gemini` install
