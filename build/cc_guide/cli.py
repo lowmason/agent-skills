@@ -47,16 +47,16 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
       release, or the release --to names, which settle sets to the audit
       packet's head. add creates the entry of each section created after
       init, once the guide anchors it and manifest.toml lists it in a group.
-      Its `changed` follows R2.4. Its `checked` and `audited` copy the oldest
-      among the group's sections, so add claims no check or audit and never
-      moves the stamp. It touches no blocks: check reports what the
-      section's terms select, and rebaseline settles it. init --force is not
-      the way to add a section: it resets every section's checked, changed
-      and audited and empties cited. rehash re-derives every baselined block
-      from its page's cached snapshot under R3.2's MDX rewrite and keeps
-      which blocks are baselined: run it on a baseline.json that the parser
-      before the rewrite wrote, as when a merge brings one in. A second run
-      changes nothing.
+      `changed` follows R2.4. `checked` and `audited` copy the oldest among
+      the group's sections, so add claims no check or audit and never moves
+      the stamp. It touches no blocks: check reports what the section's terms
+      select, and rebaseline settles it. init --force is not the way to add a
+      section: it resets every section's checked, changed and audited and
+      empties cited. rehash re-derives every baselined block from its page's
+      cached snapshot under R3.2's MDX rewrite and keeps which blocks are
+      baselined: run it on a baseline.json that the parser before the
+      rewrite wrote, as when a merge brings one in. A second run changes
+      nothing.
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
       A listed rebaseline refuses while an unlisted baselined block on the
