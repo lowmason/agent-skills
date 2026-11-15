@@ -170,19 +170,21 @@ def test_the_history_tests_pass_with_the_working_tree_guide_edited(monkeypatch):
     test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control()
 ```
 
-In `test_check_conformance.py` (add `from pathlib import Path`):
+In `test_check_conformance.py` (add `import re` and `from pathlib import Path`):
 
 ```python
-def test_the_r12_pin_passes_with_a_section_added_to_the_working_tree_guide(monkeypatch):
-    '''Spec S5: the pin reads the bootstrap record, so a section created after
-    init leaves it passing.'''
+def test_the_r12_pin_passes_with_the_working_tree_guide_edited(monkeypatch):
+    '''Spec S5: the pin reads the bootstrap record, so a heading edit and a
+    section created after init leave it passing.'''
     guide_file = (cc.REPO / GUIDE).resolve()
     real = Path.read_text
 
-    def added(self, *args, **kwargs):
+    def edited(self, *args, **kwargs):
         text = real(self, *args, **kwargs)
-        return text + '\n## Added later\n<!-- cc: added.later -->\n' if self.resolve() == guide_file else text
-    monkeypatch.setattr(Path, 'read_text', added)
+        if self.resolve() != guide_file:
+            return text
+        return re.sub(r'(?m)^(##+ .+)$', r'\1 (edited)', text) + '\n## Added later\n<!-- cc: added.later -->\n'
+    monkeypatch.setattr(Path, 'read_text', edited)
     test_real_guide_carries_the_drift_r11_anchors()
 ```
 
@@ -191,8 +193,8 @@ def test_the_r12_pin_passes_with_a_section_added_to_the_working_tree_guide(monke
 Run: `uv run python build/run_suites.py cc_guide -- test_baseline.py::test_the_history_tests_pass_with_the_working_tree_guide_edited`
 Expected: FAIL with `SetupError: R11.1: section … is not in the c33bc99 guide`.
 
-Run: `uv run python build/run_suites.py build -- test_check_conformance.py::test_the_r12_pin_passes_with_a_section_added_to_the_working_tree_guide`
-Expected: FAIL on `assert len(sections) == 38` (39 found).
+Run: `uv run python build/run_suites.py build -- test_check_conformance.py::test_the_r12_pin_passes_with_the_working_tree_guide_edited`
+Expected: FAIL on `assert len(sections) == 38` (39 found). The heading edits alone keep 38 IDs, so the appended section is what makes it RED today.
 
 A SKIP in place of a FAIL means this clone lacks `91474f6`, `c33bc99` or `18b4a71`. RED is then not shown: stop and report.
 
