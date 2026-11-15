@@ -6799,3 +6799,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       not an identifier. Size: quick-fix. Done when: the item of section `97-change-reverted-mutant` named
       "Committed micro-test rep JSON files carry `credential_expires_at`" is closed, and its strip or its record
       covers these 50 files.
+
+## 98-marimo-notebook-seam Step 4b review — 2026-11-14
+- [ ] **Parallel micro-test reps share the scratch folder (plan 98 Step 4b review, Codex finding P2; the owner
+      asked for this item, 2026-11-14).** `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh`
+      (lines 384 to 389) runs reps 2 to N together, and they share `/tmp/mnb98/`. 12 committed summaries show a
+      rep exporting to `/tmp/mnb98/explore.html`, and reps of one batch used the same path, so a rep could read
+      an export that another rep wrote. No clause of the plan 98 record reads an export, and the record says so
+      under `## Isolation gate`. Plan 93's runner, which this kit adapts, has the same run-together design. A kit
+      change after the runs would no longer match the runs behind the committed evidence, so it waits for the
+      next micro-test. Size: quick-fix. Done when: the kit that the next micro-test copies gives each rep its own
+      scratch folder, or runs the reps one after the other, and a no-model test shows that two reps cannot see
+      each other's files.
