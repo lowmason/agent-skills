@@ -3759,12 +3759,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       references/) or a LICENSE.
       → triggered 2026-11-11: a GitHub compare from `255631a3` to HEAD shows 31 danyuchn commits that change `scripts/ste-lint.py` and `README.md`. The prithivrajmu compare from `058c1f58` changes only `.github/workflows/`.
       → done 2026-11-12 (/deferred quick fix): danyuchn's 31 commits through `a4905d92` change only `scripts/ste-lint.py` and `README.md`. No rule-set file or LICENSE changed since `3944283c`, and the linter's `RULES` table is byte-identical. prithivrajmu's 4 commits through `cf9787b6` are Dependabot bumps in `.github/workflows/`. The linter now lints a front-matter `description` as prose, protects more modal hedges (`cannot`, `can't`, `won't`, `shan't`, `very`, `well`) and reads Markdown as GitHub does. The owner chose to re-vendor under that contract: b9fe65a makes `scripts/ste-lint.py` byte-identical to `a4905d92` (mode kept 100644). `test_ste_lint.py` pins the new bytes, tests that only the description is linted, and tests the wider hedge guard. The self-test passes under 3.13 and `/usr/bin/python3` 3.9.6. `NOTICE` and both sources files credit pull requests #43, #47 to #51, #53, #54, #56 and #61 to #63, and the list-marker and heading fixes committed upstream under the name "t", with no linked GitHub account. The next review is a watch item. → item: 52-write-with-asd-ste100 — 2026-10-18
-- [ ] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
+- [x] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
       2026-11-12 read danyuchn/asd-ste100-skill through `a4905d92` and prithivrajmu/asd-ste100
       through `cf9787b6`. Size: quick-fix. Revisit if: a compare from `a4905d92` (danyuchn) or
       `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
       → triggered 2026-11-14: a GitHub compare from `a4905d92` to danyuchn's `master` shows 1 commit, `d5caf549` (2026-11-12, a sentence-end fix for trailing emphasis marks), which changes `scripts/ste-lint.py` (+558/−27). The prithivrajmu compare from `cf9787b6` shows no commit.
+      → done 2026-11-14 (/deferred quick fix): danyuchn's 2 commits through `9c351694` are `d5caf549` (pull request #66 by Yuri Perin, `yupasik`: a trailing `*` or `_` after a stop ends a sentence only when emphasis uses it, so `file.*` no longer splits one) and `9c351694` (#70: upstream SKILL.md moves `version` under `metadata`, a key our SKILL.md does not have). `RULES`, `_front_matter` and `_scalar_pieces` are unchanged, so items [133] and [134] stay open, and no LICENSE changed. prithivrajmu has no commit after `cf9787b6`. The owner chose to re-vendor: `scripts/ste-lint.py` is now byte-identical to `9c351694` (blob `233590dc`, mode kept 100644). `test_ste_lint.py` pins the new bytes and tests that `file.*` does not end a sentence (failed first on the `a4905d92` copy) and that a bold closer still does. The suite passes (11 passed), the self-test included, under 3.13 and `/usr/bin/python3` 3.9.6. `NOTICE` and both sources files move the pin and credit #66, and `check_provenance.py` passes. → item: deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
 
 ## 55-test-suite-registry — 2026-10-18
 - [ ] Run the registered suites in CI (the spec's Out of scope).
@@ -6835,3 +6836,9 @@ review and the Plan Completion gate (2026-10-27) add the others.
       note names that ledger line outside the differences, a test in
       `skills/writing-plans/scripts/test_history_entry.py` covers it, and `references/history.md` says what the
       agent does with the line.
+- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+      `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-14 read
+      danyuchn/asd-ste100-skill through `9c351694` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
+      re-vendored `scripts/ste-lint.py` at `9c351694`. Size: quick-fix. Revisit if: a compare from `9c351694`
+      (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
+      references/) or a LICENSE.
