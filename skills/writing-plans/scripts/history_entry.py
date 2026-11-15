@@ -9,11 +9,12 @@ The `draft` subcommand prints the draft entry for one retired plan, from the pla
 its run ledger and the backlog. The agent that retires the plan finishes the draft
 and appends it to `specs/history.md`. The script never writes a file.
 
-The draft lists every ledger ruling. It also lists the plan's deviation notes and
-its decisions whose `Applied in:` part holds `(spec amendment` or `(spec amendments`
-(for example `(spec amendment A2)` or `(spec amendments: R6.11)`), the count of items
-the plan deferred, and the earlier deferred items that the plan closed. The agent
-removes the rulings that did not change the build (spec D7).
+The draft lists every ledger ruling, and names in a warning line each ledger line
+that holds `Ruling:` after a note, which it does not read. It also lists the plan's
+deviation notes and its decisions whose `Applied in:` part holds `(spec amendment` or
+`(spec amendments` (for example `(spec amendment A2)` or `(spec amendments: R6.11)`),
+the count of items the plan deferred, and the earlier deferred items that the plan
+closed. The agent removes the rulings that did not change the build (spec D7).
 
 A form inside a fenced block, a fenced block inside a blockquote, or an inline code
 span is quoted text, so it is never read. The plan's header lines come from above
@@ -86,7 +87,7 @@ SPEC_AMENDMENT_MARK_RE = re.compile(r'\(spec amendments?\b')
 # batch (`Tasks 4-7: `, `Tasks 2, 5, 9: `) or final-review prefix. A `Ruling:` later in
 # the line, as in a note that quotes one, is not a ruling.
 LEDGER_RULING_RE = re.compile(
-    r'^\s*(?:Task\s+(?P<number>\d+):\s*|Tasks\s+\d[\d,\s-]*:\s*|(?P<final>Final(?:\s+review)?):\s*)?'
+    r'^\s*(?:Task\s+(?P<number>\d+):\s*|Tasks\s+(?P<tasks>\d[\d,\s-]*?):\s*|(?P<final>Final(?:\s+review)?):\s*)?'
     + re.escape(RULING_MARK) + r'(?P<text>.*)$'
 )
 PLAN_ID_RE = re.compile(r'(?P<id>\d+)-')
@@ -311,7 +312,8 @@ def ruling_lines(ledger_text: str) -> list[str]:
     '''One difference line per ledger ruling, in ledger order.
 
     A ruling is a line whose own mark is `Ruling:` (LEDGER_RULING_RE). A task prefix
-    labels it with the task, a final-review prefix with `final review`.
+    labels it with the task, a batch prefix with its tasks, a final-review prefix with
+    `final review`.
     '''
     found = []
     for line in ledger_text.split('\n'):
@@ -321,10 +323,24 @@ def ruling_lines(ledger_text: str) -> list[str]:
         label = ''
         if ruling.group('number'):
             label = f' (Task {ruling.group("number")})'
+        elif ruling.group('tasks'):
+            label = f' (Tasks {ruling.group("tasks").strip()})'
         elif ruling.group('final'):
             label = ' (final review)'
         found.append(f'- Ruling{label}: {ruling.group("text").strip()}')
     return found
+
+
+def skipped_ruling_lines(ledger_text: str) -> list[str]:
+    '''A warning line for each ledger line that holds `Ruling:` but not as its own mark.
+
+    ruling_lines does not read such a line: a ruling written after a note, or a note
+    that quotes the form. The ledger is deleted after the plan retires, so the warning
+    carries the whole line, and the agent who finishes the draft decides what it is.
+    '''
+    return [f'Rulings: ledger line {number} holds `{RULING_MARK}` after a note and is not read: {line.strip()}'
+            for number, line in enumerate(ledger_text.split('\n'), start=1)
+            if RULING_MARK in line and not LEDGER_RULING_RE.match(line)]
 
 
 def closed_item_head(title: str, section: str) -> str:
@@ -422,6 +438,8 @@ def draft_entry(inputs: DraftInputs) -> str:
     warnings = [spec_warning] if spec_warning else []
     if ledger_text is None:
         warnings.append('Rulings: no ledger given')
+    else:
+        warnings += skipped_ruling_lines(ledger_text)
 
     differences = ruling_lines(ledger_text) if ledger_text is not None else []
     differences += deviation_lines(plan) + decision_lines(plan)
