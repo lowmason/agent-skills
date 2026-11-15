@@ -1152,7 +1152,7 @@
       → done 2026-10-05 (/deferred quick fix): (a)-(d) done: --help shows the
       docstring, ruling 7 is in R7/help/build/CLAUDE.md, the flow paragraph corrected,
       R6.9 reworded.
-- [ ] Sections created after `baseline init` (plan 38, T7-m3). No R7 subcommand adds a
+- [x] Sections created after `baseline init` (plan 38, T7-m3). No R7 subcommand adds a
       guide section created after init, so a new section needs `init --force`, which
       rebuilds every hash. `baseline.derive_changed` (`build/cc_guide/baseline.py`)
       aligns the July, refresh and current guides by heading text, so a later heading
@@ -1163,6 +1163,8 @@
       section created after init enters `baseline.json`, and the history test no longer
       depends on the working-tree guide's headings.
       → planned 2026-11-15: specs/plans/99-cc-guide-sections-after-init.md
+      → done 2026-11-15 (plan 99): `baseline add` and `baseline drop` are in drift R7, `lint` names them, and `init` and the
+      history tests read the guide at `18b4a71` (`baseline.ANCHORED`), not the working-tree guide.
 - [x] Unify the guide's anchor grammar (owner ruling 4, plan 38). `build/cc_guide/guide.py`
       repeats `build/check_conformance.py`'s R1.1 anchor grammar: `ANCHOR_RE` and
       `ANCHOR_LIKE_RE` are identical in both, `guide.anchor_problems` repeats
@@ -6890,3 +6892,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       with a case in `build/test_extract_structure.py`. Size: quick-fix. Revisit if: an
       `extract_structure.py` run stops with "widen the range" and the entry it names on page `last + 1` has
       no title.
+
+## 99-cc-guide-sections-after-init — 2026-11-15
+- [ ] `baseline drop` leaves the `groups` entry of a group that has left `manifest.toml` (plan 99, spec S2,
+      designer's call 9). `manifest.toml` cannot hold a group with no sections, so dropping a group's last
+      section also removes the group from the manifest, and its `groups` entry stays in `baseline.json`
+      (`baseline.drop` in `build/cc_guide/baseline.py`). The entry costs only space: only `rehash` reads a
+      stored group that the manifest lacks, and it skips one already. See
+      specs/completed/cc-guide-sections-after-init.md, § S2 and § Not in this spec. Size: quick-fix.
+      Revisit if: a `check`, `packets` or `rehash` run misreads a `groups` entry whose group has left
+      `manifest.toml`.

@@ -1,5 +1,7 @@
 # Guide sections created after `baseline init` Implementation Plan
 
+**Status: COMPLETE (2026-11-15)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let a guide section created after `baseline init` enter `baseline.json` (`baseline add`) and a removed one leave it (`baseline drop`), make `lint` name those commands, and cut the history tests and `init` loose from the working-tree guide.
@@ -80,7 +82,7 @@ None.
 - Produces: `baseline.ANCHORED: tuple[str, str]` (pinned above). `baseline.init(manifest, guide_text, docs, release, day, changed)` keeps its signature; a section that `changed` lacks takes `release`.
 - Produces (fixtures, `cc_fixtures.py`): `EXTRA_ID = 'alpha.extra'`; `with_extra(text: str) -> str`, the text with this block inserted before the line `## 2. Beta`: `### Extra`, `<!-- cc: alpha.extra -->`, a blank line, `` Extra reads `PIPE_ENV`. ``, a blank line; `EXTRA_MANIFEST: str`, `MANIFEST_TOML` with `'alpha.extra'` appended to group alpha's `sections`. The insertion leaves `alpha.reference`'s `text_hash` unchanged, since the hash collapses whitespace.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `cc_fixtures.py`, add `EXTRA_ID`, `with_extra` and `EXTRA_MANIFEST` as Interfaces states. Import `with_extra` and `EXTRA_MANIFEST` in `test_baseline.py` and `test_cli.py`.
 
@@ -113,24 +115,26 @@ def test_init_gives_a_section_without_a_derived_changed_its_release(docs_dir):
     assert {i: v['changed'] for i, v in s['sections'].items() if i != 'alpha.extra'} == FIXTURE_CHANGED
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_baseline.py test_cli.py -k init`
 Expected: the new unit test fails with `KeyError: 'alpha.extra'`. Every test that uses `history_repo` errors at `monkeypatch.setattr` with `AttributeError`, since `baseline` has no `ANCHORED` yet. The other selected tests pass.
 
-- [ ] **Step 3: Add `ANCHORED` and the `--release` fallback**
+- [x] **Step 3: Add `ANCHORED` and the `--release` fallback**
 
 - `baseline.py`: add `ANCHORED` beside `JULY` and `REFRESH`. Its comment says: R11.1's map from heading to ID; plan 35's commit, the first guide with anchors; its `##` and `###` headings are identical to the refresh's; the path differs from `OLD_GUIDE_PATH` because `79ad04f` moved the guide before `18b4a71`.
 - `derive_changed`: signature unchanged. Its docstring says the third input is the guide at `ANCHORED`, that the result keys the 38 bootstrap IDs, and that the refusal of a section the refresh lacks guards the `ANCHORED` constant.
 - `init`: each section's `changed` is `changed.get(s.id, release)`. The docstring says a section that `changed` lacks was created after the bootstrap and takes `release`, since `init` baselines every section's text at `release` (spec S4, designer's call 7).
 - `cli.py:311-312`: pass `git_show(*baseline.ANCHORED)` as `derive_changed`'s third input, in place of `guide_text`. `git_show`'s error text stays as it is.
 
-- [ ] **Step 4: Run the suite to verify it passes**
+- [x] **Step 4: Run the suite to verify it passes**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +2 tests.
 
-- [ ] **Step 5: Commit**
+> Deviation: +5 tests, not +2. The implementer added a test that pins `ANCHORED`, and a two-case test that a missing ref or path under `ANCHORED` exits 2 with the `git_show` error that names it.
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/baseline.py build/cc_guide/cli.py build/cc_guide/cc_fixtures.py build/cc_guide/test_baseline.py build/cc_guide/test_cli.py
@@ -147,7 +151,7 @@ git commit -m "feat(cc_guide): map headings to IDs through the guide at 18b4a71 
 - Consumes: `baseline.ANCHORED` (Task 1).
 - Produces: `history(ref: str, path: str) -> str` in `test_baseline.py`. The path is a required argument: a default bound at definition time would make the skip test's monkeypatch a no-op.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Both tests patch `Path.read_text` so that the working-tree guide reads edited, then call the existing tests. Today those tests read the working tree, so they fail. After Step 3 they never read it, so they pass.
 
@@ -188,7 +192,7 @@ def test_the_r12_pin_passes_with_the_working_tree_guide_edited(monkeypatch):
     test_real_guide_carries_the_drift_r11_anchors()
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_baseline.py::test_the_history_tests_pass_with_the_working_tree_guide_edited`
 Expected: FAIL with `SetupError: R11.1: section … is not in the c33bc99 guide`.
@@ -198,12 +202,12 @@ Expected: FAIL on `assert len(sections) == 38` (39 found). The heading edits alo
 
 A SKIP in place of a FAIL means this clone lacks `91474f6`, `c33bc99` or `18b4a71`. RED is then not shown: stop and report.
 
-- [ ] **Step 3: Read the guide at `18b4a71` in all three tests**
+- [x] **Step 3: Read the guide at `18b4a71` in all three tests**
 
 - `test_baseline.py`: `history(ref, path)` runs `git cat-file -e` and `git show {ref}:{path}` as today, and skips or fails as today. `test_history_skips_only_for_a_commit_this_clone_lacks` calls `history('0' * 40, baseline.OLD_GUIDE_PATH)` and `history('HEAD', 'no/such/guide.md')` and drops its monkeypatch. The two history tests read July and the refresh with `history(baseline.JULY[0], baseline.OLD_GUIDE_PATH)` and `history(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH)`, and the third input with `history(*baseline.ANCHORED)`. Their assertions stay as they are.
 - `test_check_conformance.py`: add `ANCHORED_REF = '18b4a71'` beside `GUIDE`. Its comment says that it restates `baseline.ANCHORED` in `cc_guide/baseline.py`, plan 35's commit, the first with anchors, and that the restatement keeps this file free of an import from `cc_guide/` that only works after `check_conformance` sets `sys.path`. Add a helper `anchored_guide() -> str` that runs `git cat-file -e` and `git show` in `cc.REPO` as `history()` does. It skips with the reason `18b4a71 is not in this clone (a shallow clone?)` when the commit is missing, and fails on any other git error. `test_real_guide_carries_the_drift_r11_anchors` reads `anchored_guide()`. Its three assertions stay. Its docstring says it pins the bootstrap record, and that `check_conformance.py` and `cli.py lint` keep the working tree's anchors covered.
 
-- [ ] **Step 4: Run both suites to verify they pass**
+- [x] **Step 4: Run both suites to verify they pass**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +1 test.
@@ -211,7 +215,7 @@ Expected: PASS, +1 test.
 Run: `uv run python build/run_suites.py build -- test_check_conformance.py`
 Expected: PASS, +1 test.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/test_baseline.py build/test_check_conformance.py
@@ -241,7 +245,7 @@ git commit -m "test(cc_guide): read the bootstrap guide at 18b4a71 in the histor
 - `sections` order: the guide's heading order for every ID the guide anchors, then each stored ID the guide lacks, in its current order (Review Focus 1).
 - Validate each named ID on its own. Do not call `check_ids`: an unrelated half-edited section must not refuse `add`.
 
-- [ ] **Step 1: Write the failing unit tests**
+- [x] **Step 1: Write the failing unit tests**
 
 In `test_baseline.py` (add `import copy`), define at module level:
 
@@ -323,7 +327,7 @@ def test_add_refuses_and_changes_nothing(docs_dir, ids, manifest_text, message):
     assert s == before
 ```
 
-- [ ] **Step 2: Write the failing CLI tests**
+- [x] **Step 2: Write the failing CLI tests**
 
 In `test_cli.py`:
 
@@ -384,12 +388,12 @@ In `test_help_shows_the_module_docstring_and_the_rebaseline_refusal`, add `asser
 
 The flow test's premise was checked on 2026-11-15 against today's code with an equivalent edit to `alpha.reference`: `check` printed that block line, exited 1, and exited 0 after `rebaseline alpha`.
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_baseline.py test_cli.py -k "add or created_after_init or help"`
 Expected: the unit tests fail with `AttributeError: module 'baseline' has no attribute 'add'`. The CLI tests fail at argparse with exit 2, `invalid choice: 'add'`. The help test fails on the missing usage line.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 - `guide.py`: `checked_order` and `audited_order` as Interfaces states; `render_stamp` uses them, and its output is unchanged.
 - `baseline.py`: `add` as Interfaces and the rules above state. Its docstring cites R7 `add` and D1 and D4.
@@ -399,12 +403,16 @@ Expected: the unit tests fail with `AttributeError: module 'baseline' has no att
   - Add an `elif args.action == 'add':` branch before the final `else:`, which is `rebaseline`'s. It reads `newest_releases(cache)[0].label` first, then `review_stamps(tree, manifest.guide, 'baseline add')`, then calls `baseline.add`. It falls through to the shared tail: the write, the stale-stamp check and `updated …`.
   - Docstring: add the usage line `  baseline add ID [ID ...]` after the `accept` line. Add to the paragraph after the usage lines: add creates the entry of each section created after init, once the guide anchors it and manifest.toml lists it in a group. `changed` follows R2.4. `checked` and `audited` copy the oldest among the group's sections, so add claims no check or audit and never moves the stamp. It touches no blocks: check reports what the section's terms select, and rebaseline settles it. init --force is not the way to add a section: it resets every section's checked, changed and audited and empties cited.
 
-- [ ] **Step 5: Run the suite to verify it passes**
+> Deviation: the CLI `add` branch checks the three ID refusals before it reads the cache and the citations. A new `baseline.check_add_ids` holds those checks, and `add` calls it too. The refusal order then follows the Global Constraints (the table's order), not this step's call order. See the ledger's refusal-order ruling.
+
+- [x] **Step 5: Run the suite to verify it passes**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +9 tests (6 unit items, 3 CLI).
 
-- [ ] **Step 6: Commit**
+> Deviation: +37 tests, not +9. The mutant step added shape, tie-order, refusal-order and write-set tests.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/cc_guide/guide.py build/cc_guide/baseline.py build/cc_guide/cli.py build/cc_guide/test_baseline.py build/cc_guide/test_cli.py
@@ -425,7 +433,7 @@ git commit -m "feat(cc_guide): add baseline add for a section created after init
   - `baseline.drop(state: dict, manifest: Manifest, guide_text: str, ids) -> dict`. It removes each ID's `sections` entry, and the ID from every map in `cited`. A file whose map empties leaves `cited` (designer's call 6). `groups`, `llms` and `format` stay. The input is never mutated. It validates each named ID on its own, without `check_ids`.
   - Fixtures: `without_beta_reference(text: str) -> str`, which replaces `'\n### Reference ⚠\n<!-- cc: beta.reference -->\n\n`BetaEvent` fires.\n'` with `'\n'`; `DROPPED_MANIFEST: str`, `MANIFEST_TOML` with group beta's `sections` as `['beta.overview']`. `beta.overview`'s `text_hash` stays unchanged.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `test_baseline.py` (import the two fixtures):
 
@@ -505,12 +513,12 @@ def test_drop_refuses_a_section_the_guide_still_has(world, capsys):
 
 In `test_help_shows_the_module_docstring_and_the_rebaseline_refusal`, add `assert '  baseline drop ID [ID ...]\n' in outs[0]` and `assert 'advance, audited and drop can move the oldest' in ' '.join(outs[0].split())`.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_baseline.py test_cli.py -k "drop or help"`
 Expected: the unit tests fail with `AttributeError: module 'baseline' has no attribute 'drop'`. The CLI tests fail at argparse with exit 2. The help test fails on the missing line.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 - `baseline.py`: `drop` as Interfaces states, with the pinned refusals in order. Its docstring cites R7 `drop` and designer's calls 6 and 9: `drop` leaves the `groups` entry of a group that has left the manifest.
 - `cli.py`:
@@ -518,12 +526,14 @@ Expected: the unit tests fail with `AttributeError: module 'baseline' has no att
   - Add an `elif args.action == 'drop':` branch before the final `else:` that calls `baseline.drop(state, manifest, guide_text, args.ids)` and falls through to the shared tail.
   - Docstring: add the usage line `  baseline drop ID [ID ...]` after the `add` line. Add to the paragraph after the usage lines: drop removes each named entry, and the ID from cited, once the guide and manifest.toml no longer have it. It edits no citing file, and stamp follows it. In the closing paragraph, "advance and audited can move the oldest `checked`, which the stamp names, so stamp follows them" becomes "advance, audited and drop can move the oldest `checked` or `audited`, which the stamp names, so stamp follows them". Extend Task 3's init --force sentence to read "the way to add or drop a section".
 
-- [ ] **Step 4: Run the suite to verify it passes**
+- [x] **Step 4: Run the suite to verify it passes**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +7 tests (5 unit items, 2 CLI).
 
-- [ ] **Step 5: Commit**
+> Deviation: +39 tests, not +7. The mutant step added shape, refusal-order and write-set tests, and two fixtures that the task does not name (`NO_BETA_MANIFEST`, `NO_BETA_GUIDE`) for a group whose last section is dropped.
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/baseline.py build/cc_guide/cli.py build/cc_guide/cc_fixtures.py build/cc_guide/test_baseline.py build/cc_guide/test_cli.py
@@ -540,7 +550,7 @@ git commit -m "feat(cc_guide): add baseline drop for a section removed from the 
 - Consumes: `baseline add` (Task 3), `baseline drop` (Task 4), `with_extra`, `EXTRA_MANIFEST`, `without_beta_reference`, `DROPPED_MANIFEST`.
 - Produces: the two pinned lint messages. Every other combination keeps today's text.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `test_lint.py`, `test_the_three_id_sets_must_agree` is expected to change: its second line becomes `f'section beta.reference: missing from baseline.json; add it with `{CLI} baseline add beta.reference`'`. Its first line, `'section beta.extra: missing from the guide and baseline.json'`, stays. Add:
 
@@ -580,21 +590,23 @@ def test_running_the_command_lint_prints_clears_the_id_set_violation(world, caps
     assert main(cache, 'lint') == 0
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_lint.py test_cli.py::test_running_the_command_lint_prints_clears_the_id_set_violation`
 Expected: `test_the_three_id_sets_must_agree`, the new lint test and both CLI cases fail, since each message lacks its command.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `id_set_problems`, append `` f'; add it with `{CLI} baseline add {sid}`' `` when the only missing place is `baseline.json`. Append `` f'; drop it with `{CLI} baseline drop {sid}`' `` when the missing places are exactly the guide and `manifest.toml`. Its docstring says the message names the one command that clears those two combinations, and that every other combination needs a guide or manifest edit first.
 
-- [ ] **Step 4: Run the suite to verify it passes**
+- [x] **Step 4: Run the suite to verify it passes**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +3 tests.
 
-- [ ] **Step 5: Commit**
+> Deviation: +11 tests, not +3. Seven combination cases and one multi-ID test cover every combination of the three places, so the four unchanged messages are pinned.
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/lint.py build/cc_guide/test_lint.py build/cc_guide/test_cli.py
@@ -613,7 +625,7 @@ git commit -m "feat(cc_guide): name baseline add and drop in the lint's ID-set m
 
 Each block below gives exact text. Every "old" text occurs once in its file (checked at `a4946ae`). Line breaks inside a block are the file's own. `<date>` is the day this task runs, as `YYYY-MM-DD`. The notes name the spec and plan by their retired paths, since the Plan Completion Protocol retires both on this branch before it merges.
 
-- [ ] **Step 1: Amend the drift spec**
+- [x] **Step 1: Amend the drift spec**
 
 Status note: after the paragraph that ends `Retired here by plan 58, the Stage 5 plan.`, insert a blank line and:
 
@@ -756,7 +768,7 @@ New:
   No history test reads the working-tree guide.
 ````
 
-- [ ] **Step 2: Amend the conformance spec**
+- [x] **Step 2: Amend the conformance spec**
 
 Status note: after the status block's last bullet, which ends `` a note on `sh -c` quoting under R3.4. ``, insert a blank line and:
 
@@ -779,7 +791,7 @@ After the line `- the IDs, in heading order, equal the R1.1 table.`, insert a bl
 The working tree's anchors are the lint's to check (R3.3), and drift R5's.
 ````
 
-- [ ] **Step 3: Add the flow to `build/CLAUDE.md`**
+- [x] **Step 3: Add the flow to `build/CLAUDE.md`**
 
 Old:
 
@@ -799,7 +811,7 @@ A missing page needs a
 either: it resets every section's state.
 ````
 
-- [ ] **Step 4: Run the artifact lints**
+- [x] **Step 4: Run the artifact lints**
 
 Run: `uv run --with pyyaml python build/check_conformance.py`
 Expected: exit 0. `build/CLAUDE.md` is a Claude Code artifact.
@@ -807,7 +819,7 @@ Expected: exit 0. `build/CLAUDE.md` is a Claude Code artifact.
 Run: `uv run python build/cc_guide/cli.py lint`
 Expected: exit 0. STALE lines on stderr do not change the exit.
 
-- [ ] **Step 5: Run both suites and the commit lints**
+- [x] **Step 5: Run both suites and the commit lints**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, no new tests.
@@ -818,7 +830,7 @@ Expected: PASS. The skips that the suite's notes name are expected.
 Run: `bash build/run_commit_lints.sh`
 Expected: exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add specs/completed/claude-code-drift-automation-spec.md specs/completed/claude-code-guide-conformance.md build/CLAUDE.md
