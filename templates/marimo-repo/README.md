@@ -36,7 +36,7 @@ Ruff is the Python linter. Add this table to the repo's `pyproject.toml`:
 
 - Add `B018` when the repo selects the B rules. marimo shows the last expression of a cell as output. Ruff reads each of those lines as a useless expression.
 - Add `Q000` when the repo selects the Q rules with single inline quotes. marimo writes three lines in double quotes. They are `__generated_with = "…"`, `app = marimo.App(…)` and `if __name__ == "__main__":`. marimo writes them back on every save, so a fix never holds.
-- Every other rule stays on, `I001` included. `I001` is the import-order rule. The agent fixes those findings through marimo-pair.
+- Every other rule stays on, `I001` included. `I001` is the import-order rule. During a live session, the agent fixes those findings through marimo-pair.
 - The ignore matters wherever ruff runs over `notebooks/`. That means the Stop hook (`ruff-check.sh`, see [hooks/README.md](../../hooks/README.md)), pre-commit and CI. A pre-commit hook can pin a ruff version other than the one in the lockfile.
 - If the table already exists, merge the line into it. A second copy of the header is invalid TOML. An older config may keep the table as `[tool.ruff.per-file-ignores]`. In `ruff.toml` it is a top-level `[per-file-ignores]` table. Merge the line into that table. A new `lint` table replaces it, and its other ignores stop working.
 - In `ruff.toml` or `.ruff.toml`, the table is `[lint.per-file-ignores]`.
