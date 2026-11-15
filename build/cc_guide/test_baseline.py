@@ -433,6 +433,38 @@ def test_add_changed_stays_above_only_the_new_sections_own_citers(docs_dir):
     assert own['sections']['alpha.extra']['changed'] == '2.1.950.1'
 
 
+def test_add_breaks_a_checked_tie_on_the_release_by_the_date(docs_dir):
+    '''`checked` is by release, then date (spec :155). The two sections tie on
+    release, and the first holds the later date, so a key that drops the date
+    copies the first.'''
+    s = fixture_state(docs_dir)
+    s['sections']['alpha.overview']['checked'] = {'release': '2.1.900', 'date': '2026-09-30'}
+    s['sections']['alpha.reference']['checked'] = {'release': '2.1.900', 'date': '2026-09-10'}
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert new['sections']['alpha.extra']['checked'] == {'release': '2.1.900', 'date': '2026-09-10'}
+
+
+def test_add_breaks_an_audited_tie_on_the_date_by_the_release(docs_dir):
+    '''`audited` is by date, then release (spec :161). The two sections tie on
+    date, and the first holds the newer release, so a key that drops the
+    release copies the first.'''
+    s = fixture_state(docs_dir)
+    s['sections']['alpha.overview']['audited'] = {'release': '2.1.901', 'date': '2026-09-12'}
+    s['sections']['alpha.reference']['audited'] = {'release': '2.1.900', 'date': '2026-09-12'}
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert new['sections']['alpha.extra']['audited'] == {'release': '2.1.900', 'date': '2026-09-12'}
+
+
+def test_add_in_a_new_group_leaves_every_groups_blocks_and_snapshot_alone(docs_dir):
+    '''Spec :114: add does not touch any group's `blocks` or `snapshot`, and
+    it opens no entry for a group that baseline.json lacks.'''
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    new = baseline.add(s, state.parse_manifest(GAMMA_MANIFEST), GAMMA_GUIDE, ['gamma.overview'], '2.1.902', {})
+    assert new['groups'] == before['groups']
+    assert list(new['groups']) == ['alpha', 'beta']
+
+
 def test_add_returns_a_state_that_shares_no_value_with_its_input(docs_dir):
     s = fixture_state(docs_dir)
     before = copy.deepcopy(s)

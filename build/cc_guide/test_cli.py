@@ -792,6 +792,23 @@ def test_add_refuses_an_id_before_it_reads_the_cache_or_the_citations(world, tmp
     assert dirty(repo) == []
 
 
+def test_add_leaves_the_guide_alone_even_when_its_stamp_region_is_stale(world, capsys):
+    '''Spec :166: add writes baseline.json only. A stamp region that already
+    lags baseline.json stays as it is, since `baseline stamp` regenerates it.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    stale = guide_text('> Checked against the Claude Code docs and changelog through 2.1.899 on 2026-08-01;'
+                       ' oldest full re-verification 2026-08-01, at 2.1.899.')
+    guide.write_text(with_extra(stale))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    git(repo, 'commit', '-qam', 'a section created after init, under a stale stamp')
+    before = guide.read_bytes()
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    assert guide.read_bytes() == before
+
+
 def test_the_repo_lints_clean(capsys):
     '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
     so no changelog is cached and the release-label check is skipped.'''
