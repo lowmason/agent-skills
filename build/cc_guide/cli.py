@@ -55,10 +55,10 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
       the ID from cited, once the guide and manifest.toml no longer have it.
       It edits no citing file, and stamp follows it. init --force is not the
       way to add or drop a section: it resets every section's checked, changed
-      and audited and empties cited. rehash re-derives every baselined block from its page's
-      cached snapshot under R3.2's MDX rewrite and keeps which blocks are
-      baselined: run it on a baseline.json that the parser before the
-      rewrite wrote, as when a merge brings one in. A second run changes
+      and audited and empties cited. rehash re-derives every baselined block
+      from its page's cached snapshot under R3.2's MDX rewrite and keeps which
+      blocks are baselined: run it on a baseline.json that the parser before
+      the rewrite wrote, as when a merge brings one in. A second run changes
       nothing.
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
