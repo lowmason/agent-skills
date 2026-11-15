@@ -1,6 +1,7 @@
 '''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation and R12.3's
 replay over it, and each `baseline` subcommand's effect on the state or a
 citing file (drift spec R7). The write sets on disk are test_cli.py's.'''
+import re
 import subprocess
 from pathlib import Path
 
@@ -62,33 +63,34 @@ def test_derive_changed_refuses_a_section_the_refresh_lacks():
     assert str(err.value) == "R11.1: section beta.reference ('### Renamed') is not in the c33bc99 guide"
 
 
-def history(ref):
-    '''The guide at ref, read where it lived before 79ad04f moved it. A clone
-    without ref (a shallow one) skips; any other git failure fails.'''
+def history(ref, path):
+    '''The guide at ref, read from git at path. The path is an argument, since
+    79ad04f moved the guide after the refresh commit and before 18b4a71.
+    A clone without ref (a shallow one) skips; any other git failure fails.'''
     present = subprocess.run(['git', 'cat-file', '-e', f'{ref}^{{commit}}'], cwd=REPO, capture_output=True)
     if present.returncode != 0:
         pytest.skip(f'{ref} is not in this clone (a shallow clone?)')
-    proc = subprocess.run(['git', 'show', f'{ref}:{baseline.OLD_GUIDE_PATH}'], cwd=REPO,
+    proc = subprocess.run(['git', 'show', f'{ref}:{path}'], cwd=REPO,
                           capture_output=True, encoding='utf-8')
     if proc.returncode != 0:
-        pytest.fail(f'git show {ref}:{baseline.OLD_GUIDE_PATH} failed: {proc.stderr.strip()}')
+        pytest.fail(f'git show {ref}:{path} failed: {proc.stderr.strip()}')
     return proc.stdout
 
 
-def test_history_skips_only_for_a_commit_this_clone_lacks(monkeypatch):
+def test_history_skips_only_for_a_commit_this_clone_lacks():
     '''A missing path at a present commit fails rather than hiding as a skip.'''
     with pytest.raises(pytest.skip.Exception):
-        history('0' * 40)
-    monkeypatch.setattr(baseline, 'OLD_GUIDE_PATH', 'no/such/guide.md')
+        history('0' * 40, baseline.OLD_GUIDE_PATH)
     with pytest.raises((pytest.skip.Exception, pytest.fail.Exception)) as err:
-        history('HEAD')
+        history('HEAD', 'no/such/guide.md')
     assert err.type is pytest.fail.Exception
     assert 'no/such/guide.md' in str(err.value)
 
 
 def test_r11_derivation_from_the_real_history():
-    changed = baseline.derive_changed(history(baseline.JULY[0]), history(baseline.REFRESH[0]),
-                                      (REPO / 'specs/guides/claude-code-customization-guide.md').read_text())
+    changed = baseline.derive_changed(history(baseline.JULY[0], baseline.OLD_GUIDE_PATH),
+                                      history(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH),
+                                      history(*baseline.ANCHORED))
     assert sorted(sid for sid, release in changed.items() if release == '2.1.219') == [
         'lean.ceremony', 'lean.overview', 'rules.auto-memory', 'rules.overview',
         'skills.description', 'skills.overview']
@@ -100,8 +102,8 @@ def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
     fixture citers stamped @2.1.219 of subagents.tools and hooks.patterns
     are stale, and a control citing skills.description is not.'''
     changed = baseline.derive_changed(
-        history(baseline.JULY[0]), history(baseline.REFRESH[0]),
-        (REPO / 'specs/guides/claude-code-customization-guide.md').read_text(encoding='utf-8'))
+        history(baseline.JULY[0], baseline.OLD_GUIDE_PATH), history(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH),
+        history(*baseline.ANCHORED))
     s = {'sections': {sid: {'changed': release} for sid, release in changed.items()}, 'cited': {}}
     citations, problems = guide.read_citations({
         'agents/replay.md': '---\nname: replay\n# cc-guide: subagents.tools @2.1.219\n---\n',
@@ -110,6 +112,22 @@ def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
     assert problems == []
     assert lint.stale_citations(citations, s) == [('agents/replay.md', ['subagents.tools']),
                                                    ('hooks/replay.sh', ['hooks.patterns'])]
+
+
+def test_the_history_tests_pass_with_the_working_tree_guide_edited(monkeypatch):
+    '''G3: a heading edit and a section created after init change neither
+    history test, since neither reads the working-tree guide.'''
+    guide_file = (REPO / 'specs/guides/claude-code-customization-guide.md').resolve()
+    real = Path.read_text
+
+    def edited(self, *args, **kwargs):
+        text = real(self, *args, **kwargs)
+        if self.resolve() != guide_file:
+            return text
+        return re.sub(r'(?m)^(##+ .+)$', r'\1 (edited)', text) + '\n## Added later\n<!-- cc: added.later -->\n'
+    monkeypatch.setattr(Path, 'read_text', edited)
+    test_r11_derivation_from_the_real_history()
+    test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control()
 
 
 def test_init_baselines_each_groups_selected_blocks(docs_dir):
