@@ -82,8 +82,13 @@ BLOCKQUOTE_PREFIX_RE = re.compile(r'^\s*>\s*')
 BARE_BLOCKQUOTE_RE = re.compile(r'^\s*>\s*$')
 DECISION_RE = re.compile(r'^- \*\*(?P<id>D\d+)\*\*')
 SPEC_AMENDMENT_MARK_RE = re.compile(r'\(spec amendments?\b')
-LEDGER_TASK_RE = re.compile(r'^\s*Task\s+(?P<number>\d+)')
-LEDGER_FINAL_RE = re.compile(r'^\s*Final\b')
+# A ledger ruling: `Ruling:` as the line's own mark, at its start or after one task,
+# batch (`Tasks 4-7: `, `Tasks 2, 5, 9: `) or final-review prefix. A `Ruling:` later in
+# the line, as in a note that quotes one, is not a ruling.
+LEDGER_RULING_RE = re.compile(
+    r'^\s*(?:Task\s+(?P<number>\d+):\s*|Tasks\s+\d[\d,\s-]*:\s*|(?P<final>Final(?:\s+review)?):\s*)?'
+    + re.escape(RULING_MARK) + r'(?P<text>.*)$'
+)
 PLAN_ID_RE = re.compile(r'(?P<id>\d+)-')
 ISO_DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
 
@@ -303,18 +308,22 @@ def decision_lines(plan: PlanText) -> list[str]:
 
 
 def ruling_lines(ledger_text: str) -> list[str]:
-    '''One difference line per ledger line that holds `Ruling:`, in ledger order.'''
+    '''One difference line per ledger ruling, in ledger order.
+
+    A ruling is a line whose own mark is `Ruling:` (LEDGER_RULING_RE). A task prefix
+    labels it with the task, a final-review prefix with `final review`.
+    '''
     found = []
     for line in ledger_text.split('\n'):
-        _, mark, text = line.partition(RULING_MARK)
-        if not mark:
+        ruling = LEDGER_RULING_RE.match(line)
+        if not ruling:
             continue
         label = ''
-        if task := LEDGER_TASK_RE.match(line):
-            label = f' (Task {task.group("number")})'
-        elif LEDGER_FINAL_RE.match(line):
+        if ruling.group('number'):
+            label = f' (Task {ruling.group("number")})'
+        elif ruling.group('final'):
             label = ' (final review)'
-        found.append(f'- Ruling{label}: {text.strip()}')
+        found.append(f'- Ruling{label}: {ruling.group("text").strip()}')
     return found
 
 

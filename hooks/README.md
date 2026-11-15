@@ -16,7 +16,7 @@ and `fork` pass. Install it globally, like the read-only guard.
 # Project tooling hooks
 
 Reusable Claude Code hook scripts for **your real Python/uv work repos** — `payroll-stats`,
-`payroll-model`, `industry-embedder` (each has a `pyproject.toml` + ruff dev-dep). They
+`jobs-model`, `industry-embedder` (each has a `pyproject.toml` + ruff dev-dep). They
 convert advisory CLAUDE.md prose ("always run ruff", "use uv, not
 pip") into deterministic gates that fire every time for ~0 tokens.
 

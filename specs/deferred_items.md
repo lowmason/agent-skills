@@ -3759,12 +3759,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       references/) or a LICENSE.
       → triggered 2026-11-11: a GitHub compare from `255631a3` to HEAD shows 31 danyuchn commits that change `scripts/ste-lint.py` and `README.md`. The prithivrajmu compare from `058c1f58` changes only `.github/workflows/`.
       → done 2026-11-12 (/deferred quick fix): danyuchn's 31 commits through `a4905d92` change only `scripts/ste-lint.py` and `README.md`. No rule-set file or LICENSE changed since `3944283c`, and the linter's `RULES` table is byte-identical. prithivrajmu's 4 commits through `cf9787b6` are Dependabot bumps in `.github/workflows/`. The linter now lints a front-matter `description` as prose, protects more modal hedges (`cannot`, `can't`, `won't`, `shan't`, `very`, `well`) and reads Markdown as GitHub does. The owner chose to re-vendor under that contract: b9fe65a makes `scripts/ste-lint.py` byte-identical to `a4905d92` (mode kept 100644). `test_ste_lint.py` pins the new bytes, tests that only the description is linted, and tests the wider hedge guard. The self-test passes under 3.13 and `/usr/bin/python3` 3.9.6. `NOTICE` and both sources files credit pull requests #43, #47 to #51, #53, #54, #56 and #61 to #63, and the list-marker and heading fixes committed upstream under the name "t", with no linked GitHub account. The next review is a watch item. → item: 52-write-with-asd-ste100 — 2026-10-18
-- [ ] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
+- [x] The next drift review of both upstreams. Compare from the pins in NOTICE. The review of
       2026-11-12 read danyuchn/asd-ste100-skill through `a4905d92` and prithivrajmu/asd-ste100
       through `cf9787b6`. Size: quick-fix. Revisit if: a compare from `a4905d92` (danyuchn) or
       `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
       → triggered 2026-11-14: a GitHub compare from `a4905d92` to danyuchn's `master` shows 1 commit, `d5caf549` (2026-11-12, a sentence-end fix for trailing emphasis marks), which changes `scripts/ste-lint.py` (+558/−27). The prithivrajmu compare from `cf9787b6` shows no commit.
+      → done 2026-11-14 (/deferred quick fix): danyuchn's 2 commits through `9c351694` are `d5caf549` (pull request #66 by Yuri Perin, `yupasik`: a trailing `*` or `_` after a stop ends a sentence only when emphasis uses it, so `file.*` no longer splits one) and `9c351694` (#70: upstream SKILL.md moves `version` under `metadata`, a key our SKILL.md does not have). `RULES`, `_front_matter` and `_scalar_pieces` are unchanged, so items [133] and [134] stay open, and no LICENSE changed. prithivrajmu has no commit after `cf9787b6`. The owner chose to re-vendor: `scripts/ste-lint.py` is now byte-identical to `9c351694` (blob `233590dc`, mode kept 100644). `test_ste_lint.py` pins the new bytes and tests that `file.*` does not end a sentence (failed first on the `a4905d92` copy) and that a bold closer still does. The suite passes (11 passed), the self-test included, under 3.13 and `/usr/bin/python3` 3.9.6. `NOTICE` and both sources files move the pin and credit #66, and `check_provenance.py` passes. → item: deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
 
 ## 55-test-suite-registry — 2026-10-18
 - [ ] Run the registered suites in CI (the spec's Out of scope).
@@ -5713,12 +5714,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       ships untested. See specs/baseline/red-baseline-executing-plans-port.md (Findings for the
       owner); touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size: design.
       Revisit if: a run lists rulings late or asks a question the ledger already answers.
-- [ ] **Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The
+- [x] **Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The
       registered S1 rule fails any force-push line inside a `<command>` or `<edit>` block,
       even one labelled "after approval", and G1 and G1p had control at 5/5. Both shipped on
       a plain reading. Touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size:
       quick-fix. Revisit if: the kit is reused for a later plan.
       → triggered 2026-11-11: later plans reused the kit. Plan 76 copied its `run_reps.sh`, `isolation_probe.txt` and `show_reps.py`, and plan 82 copied `TASK_TAIL`, `VOID` and `G_FIXTURE` from its `cases.py`.
+      → done 2026-11-14 (/deferred quick fix): warning comments beside S1 and G1 in the plan 75 kit, by the owner's choice. The S1 rule is registered in the kit (`S1_PASS`), so the comment at the `# S1-*` block covers it. The diff adds 10 comment lines and changes no other line, and the file's AST is unchanged.
 - [ ] **`SKILL.md` resume sentence overstates `resuming.md` (plan 75 Task 5).** The sentence
       says `resuming.md` describes `Ruling:` lines but it covers only deviation lines; the
       brief mandated the wording. Touches skills/executing-plans/SKILL.md and
@@ -6450,15 +6452,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `isolation_probe.txt` asks whether the agent knows the user's name or email, and a pilot run records the
       answer.
       → progress 2026-11-14 (plan 97): plan 97's kit copies carry the identity line (line 7), and its pilot read YES (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). Plan 92's and plan 72's kits still have no identity line, so this item stays open.
-- [ ] `skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by
+- [x] `skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by
       default in interactive sessions (plan 92 final review, Declined to judge). The `background` row of
       `skills.frontmatter` in the guide says a forked skill runs in the background by default, with the narrower
       tool set of background subagents, and that Claude Code waits for the result in `claude -p` and Agent SDK
       runs. The repo lint rejects a `background` key, so an author cannot change the default. Size: quick-fix.
       Done when: the fork paragraph of `claude-code.md` states the default.
+      → done 2026-11-14 (/deferred quick fix): the fork paragraph now says that a forked skill runs in the background by default in an interactive session, with the narrower tool set of background subagents, and that Claude Code waits for the result in `claude -p`, Agent SDK runs and under `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`. Since `check_frontmatter.py`'s `HOST_KEYS` has no `background`, it tells the author not to fork a skill that needs a tool background subagents lack. `cli.py lint` exits 0, and its output is the same as before the edit (two STALE lines, neither for this file).
 
 ## 92-writing-skills-guide-rewrite Step 4b review — 2026-11-12
-- [ ] `build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex
+- [x] `build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex
       review, P2; the code came from PR #184). `TOC_LINE_RE` needs a title between the section number and the
       page, so a line such as `1.1 2` does not match and `parse_toc` leaves that section out. `check_complete`
       checks chapter gaps, chapter presence and the titles of parsed entries only, so it passes while a section is
@@ -6466,6 +6469,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       That defeats the fail-on-missing-title behavior that `build/CLAUDE.md` describes. Size: quick-fix.
       Done when: a numbered contents line with a page and no title is kept or rejected so that `check_complete`
       raises on it, and a test in `build/test_extract_structure.py` covers it.
+      → done 2026-11-14 (/deferred quick fix): `TOC_LINE_RE`'s title group is now optional, so `parse_toc` keeps `1.1 2` with an empty title and `check_complete` refuses it ("entries with no title: 1.1"). The test that runs the item's four-line sample failed first and now passes (15 passed). Both local books still parse to the same entry counts as before (686 and 1,062) and pass both checks.
 
 ## claude/code-customization-guide-currency-657677 Step 4b review — 2026-11-12
 - [ ] Skill text gives Gemini CLI instructions but none for Antigravity CLI (`agy`), which the `gemini` install
@@ -6513,13 +6517,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: plan. Done when: each of the six lines is corrected or recorded as a deviation in
       `build/cc_guide/conformance.toml`, through the writing-skills skill, the compaction gap is no worse, and the
       file is cited after a fresh `/cc-guide` files verify.
-- [ ] The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed
+- [x] The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed
       now, lint later). This pass added `'anthropic-skills'` to `reserved` in `build/cc_guide/conformance.toml`.
       The guide (`skills.locations`, L78) also reserves synced in any capitalization and a folder name that starts
       with `anthropic-skills:`. `check_reserved_skill_name` in `build/check_conformance.py` does neither. Its
       message and the register's `rule` line still name only synced claude.ai skills. Size: quick-fix. Done when:
       tests in `build/test_check_conformance.py` flag `Synced`, `anthropic-skills` and `anthropic-skills:x`, the
       message and the `rule` line name both reserved forms, and `check_conformance.py` passes.
+      → done 2026-11-14 (/deferred quick fix): the register's `reserved` list is now two lists. `reserved_any_case = ['synced']` matches in any capitalization, and `reserved_prefix = ['anthropic-skills']` matches the name alone or followed by a colon. The message and the `rule` line name both forms. The new tests read the real register's lists. They failed first (`Synced` and `anthropic-skills:x` were not flagged, and the message was the old one), and now pass, with 366 passed in `test_check_conformance.py`. `check_conformance.py` exits 0, and `cli.py lint` shows no new STALE line.
 - [ ] Two Part 1 steps wait for the next Claude Code release (owner ruling: wait). Anthropic edited the
       model-config page's "Setting your model" block after 2.1.323 with no new release, so the weekly
       `cc-guide-drift.yml` job reports it changed in three groups, and `baseline rebaseline` refuses to overwrite
@@ -6553,7 +6558,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       check is recorded, task-done refuses (exit 4) a task whose patch bytes differ from the run's recorded
       sha256, a test that edits a patch after a clean run at the same HEAD sees exit 4, and the other gate tests
       still pass.
-- [ ] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
+- [x] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
       2026-11-13).** `ruling_lines` in `skills/writing-plans/scripts/history_entry.py` (about line 305) takes
       every ledger line that holds `Ruling:` anywhere (`line.partition(RULING_MARK)`). Plan 93's ledger had a
       Task 3 note that quoted "executing-plans Section 2's `Ruling: (unclear)` ledger line". The drafted history
@@ -6563,6 +6568,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       or after a `Task <N>: ` or final-review prefix), not inside a code span or a quotation; a test whose ledger
       has a note line that quotes `` `Ruling: (unclear)` `` gets no ruling line from it; and the existing
       history_entry tests pass.
+      → done 2026-11-14 (/deferred quick fix): `LEDGER_RULING_RE` takes `Ruling:` only at a line's start or after a `Task <N>: `, `Tasks <list>: ` (a batch line), `Final: ` or `Final review: ` prefix. The test whose ledger quotes `` `Ruling: (unclear)` `` and `"Ruling: keep it"` failed first, with the false line `- Ruling (Task 3): (unclear)` ledger line fits here.`. It now passes. A second test keeps the batch and `Final review:` prefixes. The writing-plans suite passes (408 passed, 4 xfailed). Over 25 archived ledgers, the stricter rule also drops 9 real rulings that were written after a note. → item: deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
 
 ## 96-marimo-notebook-seam — 2026-11-13
 - [x] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
@@ -6629,7 +6635,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       describe-critique-methodology 25, design-architecture 9, commit lints passed.
 
 ## work-repo-name-sweep follow-ups (no plan) — 2026-11-13
-- [ ] **The llm-wiki pilot fixture still names the old stats package (the owner kept it in the work-repo name
+- [x] **The llm-wiki pilot fixture still names the old stats package (the owner kept it in the work-repo name
       sweep, 2026-11-13).** The sweep reworded every other mention. The owner kept the pilot fixture in
       `skills/llm-wiki/scripts/test_distill_specs.py` (lines 1242 to 1445, 25 lines), because its three
       `@needs_pilot` tests read two files in the private wiki and compare the fixture's entries with them: the
@@ -6649,7 +6655,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `test_distill_specs.py` names the old package nowhere, the private wiki is unchanged, the llm-wiki note
       in `build/suites.toml` no longer says the tests read a pilot wiki, and the llm-wiki suite passes with
       the same count (313 passed before the sweep).
-- [ ] **One made-up name stands for different real things in the public files (the work-repo name sweep,
+      → done 2026-11-14 (/deferred quick fix): with the owner's approval to read the two private pilot files, `skills/llm-wiki/scripts/test_pilot_digest.md` and `test_pilot_source.md` are anonymized copies of them. One substitution map went into the copies and into `PILOT_HEADER` and `PILOT_ENTRIES`: `release-stats` for the old name, `audit_1-1-26` for the audit file name, and `abc0001` to `abc0008` for the 8 commit hashes. The copies keep the hand-authored entry bodies and drop the method note, the file list and the intro paragraph, which no test reads. `PILOT_DIGEST` and `PILOT_SOURCE` point at the copies, the three `needs_pilot` marks are gone, and the test file reads no `$LLM_WIKI_ROOT`. The suite passes with 313 passed under an empty `LLM_WIKI_ROOT`. One changed word in each copy fails its test. The private files' checksums are unchanged, and the owner reviewed both copies and the diff before the commit.
+- [x] **One made-up name stands for different real things in the public files (the work-repo name sweep,
       2026-11-13).** The two sweeps reused names. `payroll-model` is the model repo in
       `skills/design-architecture/SKILL.md:38`, `skills/design-architecture/references/decision-examples.md:11`,
       `skills/design-architecture/references/example-inference-engine-adr.md:11` and `hooks/README.md:19`. It
@@ -6666,6 +6673,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       of the live files finds each remaining made-up name standing for one real thing only, and the
       design-architecture, describe-critique-methodology, tech-debt and llm-wiki suites and the commit lints
       pass.
+      → done 2026-11-14 (/deferred quick fix): the owner chose the names. The model repo is now `jobs-model` in `hooks/README.md:19`, `skills/design-architecture/SKILL.md:38`, `decision-examples.md:11`, `example-inference-engine-adr.md:11` and the second name of `SKILL.md:117` (`payroll-stats + jobs-model`, the split's repo pair). The model package keeps `payroll-model` and `payroll_model` (the first name of `SKILL.md:117` reads as a package, as at `:200`). tech-debt's trio of sibling repos is now `claims_model` / `claims-model` / `claims_model_bsts` (lines 8, 78, 151 and 218). A `git grep` found no earlier use of the new names. Outside `specs/`, each made-up name now stands for one thing only. `check_frontmatter.py` passes, and the design-architecture, describe-critique-methodology, tech-debt, llm-wiki (313 passed) and hooks suites pass.
 
 ## 97-change-reverted-mutant — 2026-11-14
 - [ ] **The revert has no evidence for a test in a second suite that one pytest call cannot run (plan 97 final
@@ -6683,7 +6691,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       mutants.md, the reviewer's check 7 and the micro-tested texts, so it needs a design. Size: design. Done
       when: a spec picks a way to close the gap, its plan lands, and a task with new tests in two suites ends
       with revert evidence for both.
-- [ ] **batching.md does not say which BASE a batch that spans several dispatches passes to `mutant-run` (plan 97
+- [x] **batching.md does not say which BASE a batch that spans several dispatches passes to `mutant-run` (plan 97
       Task 7 ruling, 2026-11-14).** `skills/subagent-driven-development/references/file-handoffs.md` says the
       BASE is the commit recorded before the task's first dispatch, and spec
       `specs/completed/change-reverted-mutant.md:182` says a batch uses the batch's BASE.
@@ -6692,13 +6700,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       "the batch's BASE" as the BASE recorded before the batch's first dispatch. Size: quick-fix. Done when:
       batching.md names that BASE in one sentence, and `build/check_helper_paths.py`,
       `build/check_conformance.py` and `build/check_links.py` pass.
-- [ ] **Committed micro-test rep JSON files carry `credential_expires_at` (plan 97 Task 8 ruling, 2026-11-14).**
+      → done 2026-11-14 (/deferred quick fix): batching.md now says that the batch's BASE is the commit recorded before the batch's first dispatch, which fills `[BASE]` and goes to `review-package` and `mutant-run` in every round. `check_helper_paths.py` (29 references anchored), `check_conformance.py` (exit 0) and `check_links.py` (245 links, 0 broken) pass.
+- [x] **Committed micro-test rep JSON files carry `credential_expires_at` (plan 97 Task 8 ruling, 2026-11-14).**
       The field is a login credential's expiry timestamp, not an identifier. Plan 97's reviewer rep JSON copies
       under `specs/baseline/red-baseline-change-reverted-mutant/` carry it. Main already commits it in 281 rep
       JSON files from seven earlier baselines (`git grep -l credential_expires_at main -- specs/baseline/`).
       The ruling kept it, because a change to one plan's files would leave the 281 others. Size: quick-fix. Done
       when: the owner has either stripped the field from every committed rep JSON and made the kits' copy step
       drop it, or recorded in this item that it stays.
+      → done 2026-11-14 (/deferred quick fix): the owner ruled that the field stays in every committed rep JSON file (453 files in HEAD on 2026-11-14), because it is a timestamp and not an identifier, and git history would keep it after a strip. Kits built from now on drop it → item: deferred-2026-11-14 (no plan; /deferred pass, branch claude/deferred-07da07) — 2026-11-14
 - [ ] **The reviewer text supports two readings of "stated rule" (plan 97 Task 10, the R4 start-date finding;
       the owner left it at the completion gate, 2026-11-14).** `agents/task-reviewer.md` line 21 says the global
       constraints bind the task, and the mutant step in the same file takes stated rules from the spec
@@ -6743,7 +6753,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       range that retires two plans leaves out one plan's intent.
 
 ## 98-marimo-notebook-seam — 2026-11-14
-- [ ] **The Codex guide calls the 32 KiB limit "combined", and plan 98's B0 run does not show the global file
+- [x] **The Codex guide calls the 32 KiB limit "combined", and plan 98's B0 run does not show the global file
       counting against it (plan 98 Task 1; the plan ordered this item at the gate, 2026-11-14).**
       `specs/guides/codex-customization-guide.md:274` says "32 KiB combined instruction limit". The B0 run
       (`specs/baseline/red-baseline-marimo-notebook-block.md`, section `## B0`, `codex-cli 0.167.2`) loaded a
@@ -6752,7 +6762,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       file. The owner's rule is that the guide stays equal to the docs, so a probe-against-docs mismatch goes
       to the owner and no run edits the guide. Size: quick-fix. Done when: the owner has recorded whether the
       guide's line gets a note of the B0 observation, with the Codex version, or stays as the docs give it.
-- [ ] **V3 of the `verdict` pin is a miss under the Rules' plain text (plan 98 Task 3; the plan's Builder's call
+      → done 2026-11-14 (/deferred quick fix): the owner ruled that the guide's line stays as the docs give it. The B0 observation stays in `specs/baseline/red-baseline-marimo-notebook-block.md`, section `## B0`.
+- [x] **V3 of the `verdict` pin is a miss under the Rules' plain text (plan 98 Task 3; the plan's Builder's call
       C6 orders this item, 2026-11-14).** The record's `## Block rounds` (Conclusion, item 5) scores V3 with a
       reading made after the reps were seen: the user's quoted verdict in the facts cell is not the rep's own
       conclusion. By the plain text, every rep that passes V1 fails V3, so V1 and V3 cannot both hold. V3 then
@@ -6760,6 +6771,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quick-fix. Done when: the owner has either approved the reading as the record states it, or a corrected V3
       is written as a new amendment of the record's Rules and the existing reps are rescored by it, with the
       new counts in the record.
+      → done 2026-11-14 (/deferred quick fix): the owner approved the V3 reading as the record states it (round 1's "V3 reading" paragraph and Conclusion item 5 of `## Block rounds`). No count changes.
 - [ ] **The block's Scope line does not cover a silent request while a session is live (plan 98 Task 3; the
       owner kept the text and asked for this item at the completion gate, 2026-11-14).**
       `templates/marimo-repo/notebook-block.md` lines 4 to 7 say a session is live only when the user's request
@@ -6793,12 +6805,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       more than the code checks. If it fires, outputs sit inside `/tmp/mnb98/` for one batch, and the runner's
       strays sweep still moves them. Size: quick-fix. Done when: `refuse_inside` compares device and inode, with
       a no-model test for that spelling, or the record's claim names only the spellings that the code checks.
-- [ ] **Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50
+- [x] **Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50
       files under `specs/baseline/red-baseline-marimo-notebook-block/runs/` carry the field, as the 281 files in
       the item of section `97-change-reverted-mutant` do. The field is a login credential's expiry timestamp,
       not an identifier. Size: quick-fix. Done when: the item of section `97-change-reverted-mutant` named
       "Committed micro-test rep JSON files carry `credential_expires_at`" is closed, and its strip or its record
       covers these 50 files.
+      → done 2026-11-14 (/deferred quick fix): the item of section `97-change-reverted-mutant` is closed, and the owner's record there covers these 50 files. The field stays in them.
 
 ## 98-marimo-notebook-seam Step 4b review — 2026-11-14
 - [ ] **Parallel micro-test reps share the scratch folder (plan 98 Step 4b review, Codex finding P2; the owner
@@ -6811,3 +6824,41 @@ review and the Plan Completion gate (2026-10-27) add the others.
       next micro-test. Size: quick-fix. Done when: the kit that the next micro-test copies gives each rep its own
       scratch folder, or runs the reps one after the other, and a no-model test shows that two reps cannot see
       each other's files.
+
+## deferred-2026-11-14 (no plan; /deferred pass, branch claude/deferred-07da07) — 2026-11-14
+- [ ] **The next micro-test kit still copies `credential_expires_at` into its rep JSON files (the owner's ruling
+      on the plan 97 item, `/deferred` pass 2026-11-14).** The owner ruled that the field stays in the 453 rep
+      JSON files committed under `specs/baseline/` by 2026-11-14, and that kits built from now on drop it. The
+      field is a login credential's expiry timestamp. Nothing drops it today. In the newest kit the step that
+      writes each rep's files is the Python summary step of
+      `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh`, which already scrubs home paths and
+      the user name (`scrub`). A committed kit is evidence for its own runs, so the change goes into the kit
+      that the next micro-test builds, beside the per-rep scratch folder of the item in section
+      `98-marimo-notebook-seam Step 4b review — 2026-11-14`. Size: quick-fix. Done when: the next micro-test
+      kit removes `credential_expires_at` from every rep JSON file it writes, and a no-model test feeds that
+      step a stream with the field and finds no `credential_expires_at` in the output.
+
+## deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
+- [ ] **history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick
+      fix of 2026-11-14 to the item of section `93-mutant-checked-tests`).** `ruling_lines` in
+      `skills/writing-plans/scripts/history_entry.py` now takes `Ruling:` only as a line's own mark: at its start,
+      or after a `Task <N>: `, `Tasks <list>: `, `Final: ` or `Final review: ` prefix. Before that fix it took
+      `Ruling:` anywhere in a line. The 25 archived ledgers under `~/.cache/agent-skills/scratch/` (outside the
+      repo) hold 402 lines with `Ruling:`, and the new rule takes 388. Of the 14 lines it drops, 4 only quote or
+      name the form. The other 9 (one of them copied in two ledger files) are real rulings that the writer put
+      after a note, in the ledgers of plans 66, 89, 91, 93 and 94. Examples are
+      `Task 2: review round 1 -> Important (…): … Ruling: …`, `Protocol step 4: Ruling: …` and
+      `Task 1: reopened from Task 4's evidence. Ruling: …`. The ledger is deleted after plan completion, so the
+      history entry loses such a ruling for good. The executors tell the writer to start the line with
+      `Task <N>: Ruling:`, but writers did not always do it. It would take a draft line that names each ledger
+      line that holds `Ruling:` but is not read, and one line in `skills/writing-plans/references/history.md` that
+      says what the agent does with it. Size: quick-fix. Done when: a draft over a ledger with a `Ruling:` after a
+      note names that ledger line outside the differences, a test in
+      `skills/writing-plans/scripts/test_history_entry.py` covers it, and `references/history.md` says what the
+      agent does with the line.
+- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+      `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-14 read
+      danyuchn/asd-ste100-skill through `9c351694` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
+      re-vendored `scripts/ste-lint.py` at `9c351694`. Size: quick-fix. Revisit if: a compare from `9c351694`
+      (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
+      references/) or a LICENSE.

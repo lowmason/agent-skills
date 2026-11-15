@@ -35,7 +35,7 @@ problem was solved three ways**: NumPyro/JAX in `payroll-nowcast`, and PyMC in b
 tell whether the other engines were deliberate (parity cross-checks, GPU vs ergonomics) or
 accidental drift. An ADR turns such a fork from a mystery into a decision you can build on.
 (That trio is history: a 2026-09 split turned `payroll-nowcast` into `payroll-stats` and
-`payroll-model` and archived `payroll_nowcast`. In a real decision log, the split is itself a
+`jobs-model` and archived `payroll_nowcast`. In a real decision log, the split is itself a
 superseding ADR.)
 
 Two modes, both first-class:
@@ -114,7 +114,7 @@ Keep ADRs short — one decision, one page. Prose over bullet soup; a reader sho
 - **Status:** Proposed | Accepted | Deprecated | Superseded by NNNN
 - **Date:** YYYY-MM-DD
 - **Deciders:** <who agreed>
-- **Blast radius:** <packages/repos affected, e.g. payroll-model only | whole uv workspace | payroll-stats + payroll-model>
+- **Blast radius:** <packages/repos affected, e.g. payroll-model only | whole uv workspace | payroll-stats + jobs-model>
 
 ## Context
 
