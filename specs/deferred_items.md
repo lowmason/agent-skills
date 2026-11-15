@@ -1162,7 +1162,7 @@
       not survive a squash merge. Size: design. Done when: drift spec R7 says how a
       section created after init enters `baseline.json`, and the history test no longer
       depends on the working-tree guide's headings.
-      → planned 2026-11-15: specs/cc-guide-sections-after-init.md
+      → planned 2026-11-15: specs/plans/99-cc-guide-sections-after-init.md
 - [x] Unify the guide's anchor grammar (owner ruling 4, plan 38). `build/cc_guide/guide.py`
       repeats `build/check_conformance.py`'s R1.1 anchor grammar: `ANCHOR_RE` and
       `ANCHOR_LIKE_RE` are identical in both, `guide.anchor_problems` repeats
