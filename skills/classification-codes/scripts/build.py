@@ -32,7 +32,7 @@ Usage:
 bls.gov admits scripted downloads only when the User-Agent carries a contact email (it answers
 an Akamai "Access Denied" page, HTTP 403, otherwise, and also to any User-Agent containing
 tokens such as "github.com" or "python-requests"). Export BLS_CONTACT_EMAIL — the same variable
-the bls-stats transport layer uses — before building the SOC artifacts; without it the build
+the release-stats transport layer uses — before building the SOC artifacts; without it the build
 refuses to contact bls.gov and tells you to either set it or save the workbook from a browser
 into sources/ under its original filename, after which the cached copy is used. A blocked or
 failed download skips that artifact, records the reason as a validation problem, and lets the
@@ -63,7 +63,7 @@ import polars as pl
 
 # bls.gov's bot filter admits a script only if its User-Agent carries a contact email, and it
 # rejects User-Agents containing "github.com" or "python-requests" even with one (each form
-# verified 2026-09-02). Variable name and UA shape follow the bls-stats transport layer.
+# verified 2026-09-02). Variable name and UA shape follow the release-stats transport layer.
 CONTACT_EMAIL_VAR = 'BLS_CONTACT_EMAIL'
 CONTACT_HOSTS = ('bls.gov',)
 
