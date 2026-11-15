@@ -754,6 +754,17 @@ def test_add_keeps_changed_above_a_citation_written_by_hand_before_it(world, cap
     assert capsys.readouterr() == ('', 'STALE hooks/gate.sh alpha.extra\n')
 
 
+def test_add_stays_above_the_highest_of_several_hand_written_citations(world):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.extra @2.1.901\nexit 0\n',
+                 'hooks/later.sh': '#!/bin/sh\n# cc-guide: alpha.extra @2.1.903\nexit 0\n'})
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert load(repo)['sections']['alpha.extra']['changed'] == '2.1.903.1'
+
+
 def test_the_repo_lints_clean(capsys):
     '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
     so no changelog is cached and the release-label check is skipped.'''
