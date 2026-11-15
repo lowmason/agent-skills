@@ -6635,7 +6635,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       describe-critique-methodology 25, design-architecture 9, commit lints passed.
 
 ## work-repo-name-sweep follow-ups (no plan) — 2026-11-13
-- [ ] **The llm-wiki pilot fixture still names the old stats package (the owner kept it in the work-repo name
+- [x] **The llm-wiki pilot fixture still names the old stats package (the owner kept it in the work-repo name
       sweep, 2026-11-13).** The sweep reworded every other mention. The owner kept the pilot fixture in
       `skills/llm-wiki/scripts/test_distill_specs.py` (lines 1242 to 1445, 25 lines), because its three
       `@needs_pilot` tests read two files in the private wiki and compare the fixture's entries with them: the
@@ -6655,6 +6655,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `test_distill_specs.py` names the old package nowhere, the private wiki is unchanged, the llm-wiki note
       in `build/suites.toml` no longer says the tests read a pilot wiki, and the llm-wiki suite passes with
       the same count (313 passed before the sweep).
+      → done 2026-11-14 (/deferred quick fix): with the owner's approval to read the two private pilot files, `skills/llm-wiki/scripts/test_pilot_digest.md` and `test_pilot_source.md` are anonymized copies of them. One substitution map went into the copies and into `PILOT_HEADER` and `PILOT_ENTRIES`: `release-stats` for the old name, `audit_1-1-26` for the audit file name, and `abc0001` to `abc0008` for the 8 commit hashes. The copies keep the hand-authored entry bodies and drop the method note, the file list and the intro paragraph, which no test reads. `PILOT_DIGEST` and `PILOT_SOURCE` point at the copies, the three `needs_pilot` marks are gone, and the test file reads no `$LLM_WIKI_ROOT`. The suite passes with 313 passed under an empty `LLM_WIKI_ROOT`. One changed word in each copy fails its test. The private files' checksums are unchanged, and the owner reviewed both copies and the diff before the commit.
 - [x] **One made-up name stands for different real things in the public files (the work-repo name sweep,
       2026-11-13).** The two sweeps reused names. `payroll-model` is the model repo in
       `skills/design-architecture/SKILL.md:38`, `skills/design-architecture/references/decision-examples.md:11`,
