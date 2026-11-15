@@ -20,7 +20,7 @@ the task, or when you invoke the skill explicitly.
 >   - a short history of what each plan built and where it differed from its design, appended to `specs/history.md`
 >
 >   If your projects do not use that layout, these skills start to build it.
-> - **The review steps send code to OpenAI when the Codex CLI is present.** `executing-plans`, `subagent-driven-development`, and `finishing-a-development-branch` run a read-only second-opinion review with the Codex CLI (`codex exec review`) whenever `codex` is on your `PATH`. The review is agentic. It sends the branch diff to OpenAI under your Codex login, *and* every repository file and command output that Codex reads during the review. Where code egress is governed, keep `codex` off that machine or remove the step.
+> - **The review steps can send code to OpenAI.** `executing-plans`, `subagent-driven-development`, and `finishing-a-development-branch` offer a read-only second-opinion review with the Codex CLI (`codex exec review`) when `codex` is on your `PATH`. The review runs only with your approval. The agent asks once per session before the first run, unless the request or the repo's `CLAUDE.md` already approves Codex review for that repository. If you decline, the review continues without Codex. The Codex review is agentic. It sends the branch diff to OpenAI under your Codex login, *and* every repository file and command output that Codex reads during the review. Where code egress is governed, decline the run, or keep `codex` off that machine.
 > - **The data and modeling skills assume my stack.** That stack is Polars (not pandas), NumPyro + JAX (not PyMC), Python 3.13, and Altair, matplotlib, and plotly for charts. Three skills are specific to US federal statistics. `bls-data-context` covers the BLS (Bureau of Labor Statistics) employment programs. `classification-codes` covers the NAICS, SOC, and Census occupation codes. `geographic-codes` covers FIPS and CBSA geography. `validate-data` is tuned to the BLS side.
 
 ## Layout
@@ -112,9 +112,9 @@ Beyond that cleanup, I rewired the planning and execution skills around the spec
 | [`test-driven-development`](skills/test-driven-development/) | Write tests before implementation for any feature or bugfix. |
 | [`systematic-debugging`](skills/systematic-debugging/) | Diagnose bugs and test failures methodically before you propose fixes. |
 | [`verification-before-completion`](skills/verification-before-completion/) | Run the verification and check its output before you claim that work is done. |
-| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when you complete a feature or before you merge. It also carries the recipe for the Codex CLI second-opinion review (`codex-review.md`). The plan executors run that review beside `code-reviewer`, and branch finishing runs it before a merge or a PR. Where the `codex` CLI is absent, the review is skipped with a notice. |
+| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when you complete a feature or before you merge. It also carries the recipe for the Codex CLI second-opinion review (`codex-review.md`). The plan executors run that review beside `code-reviewer`, and branch finishing runs it before a merge or a PR. It runs only with your approval, and a decline skips it. Where the `codex` CLI is absent, the review is skipped with a notice. |
 | [`receiving-code-review`](skills/receiving-code-review/) | Handle review feedback with rigor instead of blind agreement. |
-| [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work: merge, PR, or cleanup. A Codex second-opinion review gates the merge and the PR. |
+| [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work: merge, PR, or cleanup. Before a merge or a PR, it runs the Codex second-opinion review, unless you decline it. |
 | [`using-git-worktrees`](skills/using-git-worktrees/) | Create an isolated workspace for feature work. |
 | [`writing-skills`](skills/writing-skills/) | Create, edit, and verify agent skills. |
 
@@ -189,9 +189,10 @@ fall into two groups, which install differently:
 | [`readonly-agent-guard.py`](hooks/readonly-agent-guard.py) | `PreToolUse` (`Bash`) | For the five read-only agents, denies Bash commands that change files or git state, such as `git checkout`, `git stash`, `git reset`, and `sed -i`. For every other agent, and for the main session, it exits at once and does nothing. Install it globally, by symlink. Then run [`probe-readonly-guard.sh`](hooks/probe-readonly-guard.sh) once, because a wrong path or a missing execute bit fails open. |
 | [`dispatch-model-guard.py`](hooks/dispatch-model-guard.py) | `PreToolUse` (`Agent`) | Denies an `Agent` call with no `model`. It allows model-pinned agents, built-in agents that pin their own model, and `fork`. An unknown agent type, plugin agents included, must name a model. Install it globally, like the read-only guard. |
 
-The three project tooling hooks read the hook JSON payload from stdin with `jq`. The guard is
-Python and needs no `jq`. To block, a hook uses **exit 2**, which feeds stderr back to Claude, or
-it prints a JSON deny decision, as the guard does. Exit 1 only logs, unless the hook sets
+The three project tooling hooks read the hook JSON payload from stdin with `jq`. The two guards
+are Python and need no `jq`. To block, a hook uses **exit 2**, which feeds stderr back to Claude,
+as `uv-guard.sh` does. Or it prints a JSON decision on stdout: a deny, as the guards do, or a
+block, as `ruff-check.sh` does. Exit 1 only logs, unless the hook sets
 `"onFailure": "block"` (2.1.295+). That setting has no effect on a `Stop` hook such as
 `ruff-check.sh`. A shell-form `PreToolUse` or `PermissionRequest` command hook on Windows without
 Git Bash (2.1.299+) also blocks when it fails, whether or not it sets `shell` to powershell
