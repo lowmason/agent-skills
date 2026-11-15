@@ -262,7 +262,7 @@ skips that artifact and records the reason in `MANIFEST.md` so the rest still bu
 
 **bls.gov admits scripts only with a contact email in the User-Agent** (an Akamai "Access
 Denied" 403 otherwise, and also for any User-Agent containing `github.com` or
-`python-requests`). Export `BLS_CONTACT_EMAIL` — the same variable `bls-stats` uses — before
+`python-requests`). Export `BLS_CONTACT_EMAIL` — the same variable `release-stats` uses — before
 building the SOC artifacts; without it the build refuses to contact bls.gov rather than get
 blocked. Fallback: save the workbook from a browser into `sources/` under its original filename
 without opening it in Excel (a re-save changes the bytes and the recorded sha256), and the
