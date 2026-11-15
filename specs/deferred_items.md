@@ -6450,12 +6450,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `isolation_probe.txt` asks whether the agent knows the user's name or email, and a pilot run records the
       answer.
       → progress 2026-11-14 (plan 97): plan 97's kit copies carry the identity line (line 7), and its pilot read YES (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). Plan 92's and plan 72's kits still have no identity line, so this item stays open.
-- [ ] `skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by
+- [x] `skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by
       default in interactive sessions (plan 92 final review, Declined to judge). The `background` row of
       `skills.frontmatter` in the guide says a forked skill runs in the background by default, with the narrower
       tool set of background subagents, and that Claude Code waits for the result in `claude -p` and Agent SDK
       runs. The repo lint rejects a `background` key, so an author cannot change the default. Size: quick-fix.
       Done when: the fork paragraph of `claude-code.md` states the default.
+      → done 2026-11-14 (/deferred quick fix): the fork paragraph now says that a forked skill runs in the background by default in an interactive session, with the narrower tool set of background subagents, and that Claude Code waits for the result in `claude -p`, Agent SDK runs and under `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`. Since `check_frontmatter.py`'s `HOST_KEYS` has no `background`, it tells the author not to fork a skill that needs a tool background subagents lack. `cli.py lint` exits 0, and its output is the same as before the edit (two STALE lines, neither for this file).
 
 ## 92-writing-skills-guide-rewrite Step 4b review — 2026-11-12
 - [x] `build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex
