@@ -1,0 +1,1 @@
+Tidy notebooks/explore.py: sort its imports, and give the first data cell a name that says what it loads. No marimo-pair session is running.

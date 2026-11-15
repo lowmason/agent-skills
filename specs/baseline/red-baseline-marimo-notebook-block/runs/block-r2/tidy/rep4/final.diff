@@ -1,0 +1,21 @@
+diff --git a/notebooks/explore.py b/notebooks/explore.py
+index 929d920..838dfb9 100644
+--- a/notebooks/explore.py
++++ b/notebooks/explore.py
+@@ -6,14 +6,14 @@ app = marimo.App(width="medium")
+ 
+ @app.cell(hide_code=True)
+ def imports():
+-    import polars as pl
+     import marimo as mo
++    import polars as pl
+ 
+     return mo, pl
+ 
+ 
+ @app.cell(hide_code=True)
+-def _(mo, pl):
++def load_shipments(mo, pl):
+     shipments = pl.scan_csv(
+         mo.notebook_dir().parent / 'data' / 'shipments.csv',
+         try_parse_dates=True,

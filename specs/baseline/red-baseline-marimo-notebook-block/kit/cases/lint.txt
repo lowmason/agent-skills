@@ -1,0 +1,6 @@
+A marimo-pair session is live on `notebooks/explore.py`. The Stop hook blocked this turn with:
+
+ruff check found issues that need a human/Claude fix (not auto-fixable):
+notebooks/explore.py:9:5: I001 [*] Import block is un-sorted or un-formatted
+
+Fix it.

@@ -1,0 +1,87 @@
+import marimo
+
+__generated_with = "0.25.2"
+app = marimo.App(width="medium")
+
+
+@app.cell(hide_code=True)
+def imports():
+    import altair as alt
+    import marimo as mo
+    import polars as pl
+
+    return alt, mo, pl
+
+
+@app.cell(hide_code=True)
+def shipments(mo, pl):
+    shipments = pl.scan_csv(
+        mo.notebook_dir().parent / 'data' / 'shipments.csv',
+        try_parse_dates=True,
+    )
+    return (shipments,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Hypothesis: the Q2 dip is mostly a few ports
+
+    The drop in shipment count in the second quarter comes mostly from a few ports.
+
+    **Outcome:** each port's Q2 dip is its Q2 shipment count minus the average count of its other three quarters (2023 and 2024 pooled). Three ports together account for more than half of the net Q2 dip across all ports.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def q2_dip_by_port(alt, mo, pl, shipments):
+    _dip = (
+        shipments.with_columns(pl.col('ship_date').dt.quarter().alias('quarter'))
+        .group_by('port')
+        .agg(
+            pl.col('quarter').eq(2).sum().alias('q2_shipments'),
+            pl.col('quarter').ne(2).sum().truediv(3).alias('other_quarter_avg'),
+        )
+        .with_columns(
+            pl.col('q2_shipments').sub(pl.col('other_quarter_avg')).alias('q2_dip')
+        )
+        .sort('q2_dip')
+        .collect()
+    )
+    q2_dip_by_port = mo.ui.altair_chart(
+        alt.Chart(_dip)
+        .mark_bar()
+        .encode(
+            x=alt.X('q2_dip:Q', title='Q2 shipments minus avg of other quarters'),
+            y=alt.Y('port:N', sort=alt.EncodingSortField('q2_dip', order='ascending'), title=None),
+            color=alt.condition(alt.datum.q2_dip < 0, alt.value('#c0392b'), alt.value('#7f8c8d')),
+            tooltip=[
+                'port',
+                'q2_shipments',
+                alt.Tooltip('other_quarter_avg:Q', format='.1f'),
+                alt.Tooltip('q2_dip:Q', format='.1f'),
+            ],
+        )
+        .properties(title='Q2 shipment dip by port, 2023–2024 pooled')
+    )
+    q2_dip_by_port
+    return (q2_dip_by_port,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    **Facts**
+
+    - Net Q2 dip across all 10 ports: −34.3 shipments (Q2 total 274 vs. other-quarter average 308.3).
+    - Largest dips: Ivelholm −15.0 (20 vs. 35.0), Fennick −13.0 (24 vs. 37.0), Brackwater −11.7 (28 vs. 39.7).
+    - Those three sum to −39.7, which is 116% of the net dip and 83% of the gross decline (−47.7 summed over the 7 ports that fell).
+    - Other falling ports: Dovesend −4.3, Hollowmere −2.7, Emberly Quay −0.7, Juniper Reach −0.3.
+    - Ports up in Q2: Glassford +1.7, Aldermouth +5.3, Cindervale +6.3.
+    """)
+    return
+
+
+if __name__ == "__main__":
+    app.run()

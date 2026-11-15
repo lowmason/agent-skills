@@ -208,6 +208,12 @@ posterior artifact or external tracking-service requirement. Optimization
 fixtures establish their small CPU math/placement/timing contracts only;
 real-checkpoint and accelerator recipes retain explicit verification limits.
 
+explore-data/ is an original work by Lowell Mason (MIT). Its marimo branch
+takes one idea, and no text, from lesson 10 of Eric Ma's post "How to do
+agentic data science"
+(https://ericmjl.github.io/blog/2026/2/1/how-to-do-agentic-data-science/):
+the agent follows the human's curiosity one question at a time.
+
 recommend-visualization/ is an original work by Lowell Mason (MIT). It CITES
 standard visualization literature by author-year only (Cleveland & McGill 1984;
 Tufte 1983; Munzner 2014; Wilke 2019; Satyanarayan et al. 2017) — summarizing in

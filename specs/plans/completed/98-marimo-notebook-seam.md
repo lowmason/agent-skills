@@ -1,5 +1,7 @@
 # marimo Notebook Seam, Plan B (the additions) Implementation Plan
 
+**Status: COMPLETE (2026-11-14)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship the notebook block, explore-data's marimo branch, recommend-visualization's marimo row and the kit's paste step. A micro-test or a check backs each one. A work repo that adopts marimo then gets the owner's exploration pacing, notebook conventions and Polars-first style.
@@ -14,7 +16,7 @@
 
 - **Scope.** Plan B only. Plan A merged as #202. Do not change `scan.sh`, the tech-debt skill, `hooks/` or the kit's ruff ignore. Write no marimo skill (spec D1).
 - **Branch.** The spec and this plan reach `main` first, in a PR of their own from `claude/marimo-plan-b-d0123f` (D3). Execution starts only after that PR merges, in a fresh session, on a new branch cut from the `main` that holds them, in its own worktree. Commit there. Do not push during execution. finishing-a-development-branch decides how the branch is integrated.
-- **Anchors.** Line numbers are lines at `7b2976b`. Each edit's old text is its match key. If an old text no longer matches, stop and ledger it. Live plans 94, 95 and 97 also edit `NOTICE`, in other parts. This plan adds one paragraph, before the `recommend-visualization/` paragraph.
+- **Anchors.** Line numbers are lines at `7b2976b`. Each edit's old text is its match key. If an old text no longer matches, stop and ledger it. Plans 94 (written as plan 95, then renumbered) and 97 have merged, and their `NOTICE` paragraphs are already in the file. No live plan edits `NOTICE`. This plan adds one paragraph, before the `recommend-visualization/` paragraph.
 - **Public repo** (spec, Constraints). "No plan, record, kit or skill text names a work repo for a fact, and none carries new detail from one: versions, configs, file sizes or file names." The same holds for commit messages and reports. Every fixture name here is made up.
 - **Scratch root.** All scratch goes under `/tmp/mnb98/`, a folder that this plan makes new. The one exception is the empty rep directories that plan 74's runner makes under `/tmp` in Task 4. Reuse no `/tmp` folder from an earlier plan, because Plan A's probe copies hold names from work repos. No Codex run starts from, or names, such a folder.
 - **Leak check.** Create `/tmp/mnb98/leakcheck.sh` in Task 1. It builds the name list in a temporary file, checks the staged diff, and deletes the list when it exits. No list outlives a check, so no Codex run can read one.
@@ -54,6 +56,8 @@
 - **D3** (owner, plan review, 2026-11-13): "Open the PR (Recommended)", in answer to whether the spec and this plan go to `main` in their own PR before execution, as Plan A's D5 did. Applied in: Global Constraints (Branch).
 - **D4** (owner, plan review, 2026-11-13): "Approve it (Recommended)", in answer to "Approve plan 98 (marimo seam, Plan B) as written, with builder's calls C1 to C15?". The plan stands as written. That approves every builder's call as a plan-level call, the Opus reps and the $100 cost ceiling (C3) among them, so no spec amendment follows. Applied in: all tasks, Global Constraints.
 - **D5** (owner, plan review, 2026-11-13): "Report beside the bar (Recommended)", in answer to whether the pin cases `tidy` and `verdict` decide the bar or are only reported beside it. The spec's bar stands as approved. Applied in: Builder's call C6, Task 3 Step 6, Global Constraints (Completion).
+- **D6** (owner, Task 3 stop, 2026-11-14): "A: Amend case 4 (Recommended)", in answer to whether VOID case 4 may be amended so that a denied command does not void a rep, with the 26 existing block reps then scored by the unchanged clauses. Applied in: the record's `### Second amendment` under `## Rules`, Task 3 Steps 5 and 6.
+- **D7** (owner, Task 4 stop, 2026-11-14): "A: Fix the case, rerun (Recommended)", in answer to how to proceed after the second M2 miss: drop "Then say what you do next" from both steps cases and rerun the before and after arms with the round 2 paragraph. Applied in: the record's `### Third amendment`, Task 4 Steps 1, 3 and 5.
 
 ## Builder's calls
 
@@ -100,21 +104,21 @@ These settle the spec's "Left to the builder" items for Plan B, and gaps the spe
 - Consumes: nothing.
 - Produces: the record file. Its `## B0` section holds the observed cut, which Task 6 cites and links.
 
-- [ ] **Step 1: Create the leak-check script**
+- [x] **Step 1: Create the leak-check script**
 
 Write the script from Global Constraints to `/tmp/mnb98/leakcheck.sh`. Run `bash /tmp/mnb98/leakcheck.sh` with nothing staged. Expected: no output, exit 0.
 
-- [ ] **Step 2: Build the scratch file**
+- [x] **Step 2: Build the scratch file**
 
 `/tmp/mnb98/b0/` is a new git repository. Its `AGENTS.md` holds about 48 KiB of filler lines. Sentinel lines mark the offsets. `SENTINEL-A-TOP` comes first. Then `B` sits at about 16 KiB, `C` at 26, `D` at 29, `E` at 31, `F` at 33 and `G` at 40. `SENTINEL-H-END` comes last. A filler line carries its own number. Write the builder as a throwaway script under `/tmp/mnb98/` and run it with `python3 -I`.
 
-- [ ] **Step 3: Render the model-visible input**
+- [x] **Step 3: Render the model-visible input**
 
 Run: `cd /tmp/mnb98/b0 && codex debug prompt-input 'hello' > /tmp/mnb98/b0-out.json`
 
 Count each sentinel in the output. Expected, as the planning probe saw: exit 0. `A` to `E` appear once. `F`, `G` and `H` appear 0 times. The last filler line is cut mid-line, at byte 32,768 of the file. Compute the byte offset of the cut from the last filler line present.
 
-- [ ] **Step 4: Corroborate with a live read-back**
+- [x] **Step 4: Corroborate with a live read-back**
 
 Write the values literally:
 
@@ -124,17 +128,19 @@ cd /tmp/mnb98/b0 && codex exec -m gpt-6-sol -c sandbox_mode=read-only -o /tmp/mn
 
 Expected: exit 0, and the reply lists `A` to `E` only. The run is VOID if the log shows a command, because the model could then read the file. If the run fails, report the log's last line and go on with Step 3's result alone, marked as one instrument.
 
-- [ ] **Step 5: Classify the result**
+- [x] **Step 5: Classify the result**
 
 - Truncation: `A` is present and `H` is absent. The placement rule holds. Go on.
 - No cut: every sentinel is present. Stop and bring the output to the owner, because the spec's Done when expects truncation.
 - Dropped file: no sentinel is present. Stop and bring the output to the owner, because the spec's placement then does not help an oversized file.
 
-- [ ] **Step 6: Write the record's first section**
+- [x] **Step 6: Write the record's first section**
+
+> Deviation: the brief said no file from this repo went to OpenAI. That was false, because Codex's skill list carries public `skills/` text from this repo. The record says the run opened no repo file and names that public list. A global file also loaded, so `~/.codex/AGENTS.md` reached OpenAI in the Step 4 read-back, as it does in every Codex run.
 
 Create the record with the title `# Micro-test: the marimo notebook block and explore-data's marimo branch`, a two-sentence purpose line that links the spec, and `## B0`. The section holds the Codex version, the two instruments, a table of sentinel against found, and the byte offset of the cut. It says whether a global file also loaded (yes or no, with no size). It ends with the result in one sentence. State that the scratch file held synthetic text only, and that no file from this repo went to OpenAI.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-marimo-notebook-block.md
@@ -165,7 +171,7 @@ Replace the placeholder with the session's trailer before you run the commit.
 - Consumes: the record from Task 1.
 - Produces: `kit/run_reps.sh <arm> <case> <out-dir> <first> <last>`, with `<arm>` one of `control` or `block` and `<case>` one of `explore`, `override`, `lint`, `tidy`, `verdict`. The `block` arm inserts the working tree's `templates/marimo-repo/notebook-block.md` into the fixture `CLAUDE.md`, after the sentence `marimo-pair drives live notebook sessions in this repo.` and before the bullet list. Each rep writes `rep<N>/summary.json` (the init record's tools, skills and output style, the result's subtype, cost and turns, each tool call's name and input, the final message, the sha256 of the rep's `CLAUDE.md` and of the block (null in the control arm), the stderr tail), `rep<N>/final.diff` and `rep<N>/notebook.py`. `kit/probe.sh <arm> <out-file> [<prompt-file>]` runs one probe prompt in a rep directory of that arm (Step 4). `kit/grade.py <out-dir>...` prints reading aids and no verdicts (Step 5). The case-to-notebook map: `explore` and `override` use `fixture/repo/notebooks/explore.py`, `lint` and `tidy` use `fixture/lint/explore.py`, and `verdict` uses `fixture/verdict/explore.py`.
 
-- [ ] **Step 1: Build the scratch venv**
+- [x] **Step 1: Build the scratch venv**
 
 ```bash
 uv venv --python 3.13 /tmp/mnb98/venv
@@ -174,7 +180,7 @@ uv pip install --python /tmp/mnb98/venv/bin/python --exclude-newer "$(awk '/^\[f
 
 Add any package that Step 8's environment check shows missing.
 
-- [ ] **Step 2: Make the fixture**
+- [x] **Step 2: Make the fixture**
 
 Write a throwaway generator under `/tmp/mnb98/` and ship only its output. `data/shipments.csv` has the columns `ship_date`, `port`, `carrier_type`, `teu`, `value_usd`, about 1,200 rows over 24 months, 10 ports and 3 carrier types. The second year's second quarter dips, and a few ports hold most of the dip, so a rep is tempted to write "confirmed". The three notebooks are marimo files, each valid under `/tmp/mnb98/venv/bin/marimo check`:
 
@@ -195,7 +201,7 @@ marimo-pair drives live notebook sessions in this repo.
 
 `fixture/repo/pyproject.toml`: a `[project]` table (name `freight`, `requires-python = '>=3.11'`) and ruff settings: `select = ['E', 'F', 'I', 'B']`, with `'notebooks/**' = ['B018']` in `per-file-ignores`.
 
-- [ ] **Step 3: Write the case prompts**
+- [x] **Step 3: Write the case prompts**
 
 Each file holds the text below, with no other line. `lint.txt` takes its `<L>:<C>` from `uvx ruff check --no-cache --output-format concise` on `fixture/lint/explore.py`. Copy the line's real text.
 
@@ -228,11 +234,13 @@ Each file holds the text below, with no other line. `lint.txt` takes its `<L>:<C
   Write your Output for this profile, as you would send it to the user. Then say what you do next.
   ```
 
-- [ ] **Step 4: Write the runner and the probes**
+- [x] **Step 4: Write the runner and the probes**
+
+> Deviation: the runner also parks each finished rep directory outside `/tmp/mnb98/`, sweeps strays after rep 1, refuses to start on a stray, refuses an output path inside `/tmp/mnb98/`, and resolves every path physically with `cd -P`. These guards closed channels where a rep could read another rep's files. Five review rounds found them. The firmlink spelling `/System/Volumes/Data/private/tmp/mnb98/` still passes the inside check, and it goes to `specs/deferred_items.md`.
 
 Plan 93's runner cannot run unchanged here, so adapt it. Keep its `env -i` line, its `claude -p` flags (with C2's changes), its rule that the first rep runs alone while the rest run together, its refusal of an existing `rep<N>/`, its temporary-index diff, its scrub of `$HOME` and temp paths, and its summary fields. Drop its `brief.md` and `spec.md` check, its `/tmp/mt-venv` check, its `.sdd/plan/` workspace and its copies of report and mutant files. Change its arguments to `<arm> <case> <out-dir> <first> <last>`. For each rep, it copies `fixture/repo/` into a new `/tmp/mnb98/rep-XXXXXX/repo`, writes the arm's `CLAUDE.md`, copies the case's notebook over `notebooks/explore.py`, runs `git init` and commits. It reads the prompt from `cases/<case>.txt`. `probe.sh <arm> <out-file> [<prompt-file>]` builds a rep directory the same way and runs one probe prompt in it with the exact flags of `run_reps.sh`. Drop Plan 93 `probe.sh`'s refusal to run inside a git repository, because a rep directory is one. The rep directory's parent must not be inside any other repository. `isolation_probe.txt` is Plan 93's file unchanged. `env_check.txt` keeps Plan 93's deny-rule steps. It replaces the venv step with three steps: run `marimo check notebooks/explore.py`, run `marimo export html notebooks/explore.py -o out.html`, and compute one Polars aggregate of the CSV. `kit/` holds no data generator.
 
-- [ ] **Step 5: Write the grader**
+- [x] **Step 5: Write the grader**
 
 `grade.py <out-dir>...` prints these reading aids for each rep and decides nothing:
 
@@ -243,7 +251,7 @@ Plan 93's runner cannot run unchanged here, so adapt it. Keep its `env -i` line,
 - each command that names `agent-skills`, `specs/` or a path under `/Users/`, which makes a rep VOID.
 - the cost and the number of turns.
 
-- [ ] **Step 6: Check for Channel 3 before any arm**
+- [x] **Step 6: Check for Channel 3 before any arm**
 
 A micro-test is void when something the rep can read holds the answer. Run, from the repo root:
 
@@ -253,7 +261,9 @@ git grep --untracked -n -i -E 'hypothes|facts cell|observable outcome|verdict|ch
 
 Expected: no output. `fixture/verdict/` holds prior cells by design, so it is left out. Repeat the check in the other direction after Tasks 3 and 4: the block and explore-data's text must not contain `port`, `shipment`, `carrier`, `teu` or `freight`.
 
-- [ ] **Step 7: Pre-register the rules**
+- [x] **Step 7: Pre-register the rules**
+
+> Deviation: note 7 (O1) was amended before any block rep. O1 now follows C15's words: a Bash command that edits the notebook and later runs it counts as a run after the edit. This moved only the control's O1 (override rep 2: fail to pass, 5 of 5). The record shows the amendment.
 
 Write `## Rules` in the record, and commit it before any scored rep. A tool-enabled rep is VOID in four cases. Its summary is missing or has a `kit_error`. The result is an error. The sha256 of its `CLAUDE.md` does not match its arm. A command names `agent-skills`, `specs/` or a path under `/Users/`. A decision-only rep (`steps-*`) writes only `rep<N>.json`, so it is VOID when that file is unreadable, the run is an error, or a tool or the advisor ran (more than one turn, an iteration that is not a message, or more than one model). A VOID rep is replaced once. A second VOID in one slot stops the task. Every rep is read by hand in full.
 
@@ -290,19 +300,21 @@ EOF
 
 Replace the placeholder before you run the commit.
 
-- [ ] **Step 8: Run the isolation gate. Stop if it fails.**
+- [x] **Step 8: Run the isolation gate. Stop if it fails.**
 
 Run `probe.sh control <out-file>` with `isolation_probe.txt`, so the probe runs in a control-arm rep directory. Expected: line 1 is YES and quotes `# Freight analysis`. Lines 2 to 6 are NO. The init record lists only the tools Bash, Edit, Read and Write, no skills, no MCP server, and the default output style. If line 1 is NO, stop: the block arm would equal the control. Then run `env_check.txt`. Expected: every step reads OK or names a refusal that matches a deny rule, and the notebook checks, exports and runs. Task 3 repeats this gate on the block arm.
 
-- [ ] **Step 9: Run one pilot rep and check the cost**
+- [x] **Step 9: Run one pilot rep and check the cost**
+
+> Deviation: probe and pilot outputs go under `~/.cache/agent-skills/scratch/plan98/`, not under `/tmp/mnb98/`, because the isolation rule keeps `/tmp/mnb98/` to `venv/` and `leakcheck.sh` while reps run.
 
 Run `run_reps.sh control explore /tmp/mnb98/pilot 1 1`. The pilot is not scored. Check two things by hand. First, the rep ran its view, and a facts cell holds a number that matches an independent Polars computation, so E3 is reachable. Second, `grade.py`'s cell counts match a hand count. Record the cost. Apply Builder's call C3: if the cost times 66 passes $100, stop and ask the owner.
 
-- [ ] **Step 10: Run the RED reps**
+- [x] **Step 10: Run the RED reps**
 
 Run the `control` arm for `explore`, `override` and `lint`, reps 1 to 5 each, into `runs/control/<case>/`. Read every rep. Score it by the rules, and write `## RED`: a table of clause against reps passed, the cost, and any VOID rep with its reason. Add `## Base`, `## Kit` and `## Fixture` sections that say what ran. If the control already meets the clauses in 5 of 5 reps, record it and go on. Spec D9 ships the block anyway.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-marimo-notebook-block specs/baseline/red-baseline-marimo-notebook-block.md
@@ -332,11 +344,11 @@ Replace the placeholder before you run the commit. The rules were committed earl
 - Consumes: the kit (Task 2) and the control's RED section.
 - Produces: `templates/marimo-repo/notebook-block.md`, between the markers `<!-- marimo-repo:start -->` and `<!-- marimo-repo:end -->`. Task 6 pastes nothing but links to it.
 
-- [ ] **Step 1: Load the write-with-asd-ste100 skill**
+- [x] **Step 1: Load the write-with-asd-ste100 skill**
 
 The block is agent-facing text, so use agent mode.
 
-- [ ] **Step 2: Create the block (round 1)**
+- [x] **Step 2: Create the block (round 1)**
 
 The text below is the plan's draft. It is 1,935 bytes and `ste-lint.py` reports 0 violations. Wording is settled by the test. Keep a change to the smallest edit that fixes a miss.
 
@@ -374,7 +386,7 @@ Until the user gives a verdict, build no second view, fit no model and state no 
 <!-- marimo-repo:end -->
 ````
 
-- [ ] **Step 3: Check the block**
+- [x] **Step 3: Check the block**
 
 - `wc -c templates/marimo-repo/notebook-block.md`: under 2,500.
 - `grep -c 'marimo-repo:start' templates/marimo-repo/notebook-block.md` and the same for `end`: `1` each.
@@ -382,23 +394,27 @@ Until the user gives a verdict, build no second view, fit no model and state no 
 - The reverse Channel 3 check from Task 2 Step 6: no fixture word in the block.
 - `uv run --with pyyaml python build/check_conformance.py`: passes. The `kit` kind covers the file.
 
-- [ ] **Step 4: Commit round 1, then repeat the isolation gate**
+- [x] **Step 4: Commit round 1, then repeat the isolation gate**
 
 Commit the file before any rep (message `feat(templates): add the marimo notebook block, round 1`), with the leak check first. Then run `probe.sh block <out-file>`. Expected: line 1 quotes `# Freight analysis`, and the rep's `CLAUDE.md` holds the block (the summary's block sha256 matches the file).
 
-- [ ] **Step 5: Run the block arm**
+- [x] **Step 5: Run the block arm**
+
+> Deviation: the block arm stopped at the plan's VOID rule. 19 of 26 reps were VOID because a command named `~/.claude/skills`, and every such call was denied. The owner chose to amend VOID case 4 so that a denied command does not void a rep (D6). The record's `### Second amendment` holds the new text, and the 26 reps were rescored by the unchanged clauses.
 
 Run `run_reps.sh block <case> runs/block-r1/<case> 1 5` for `explore`, `override`, `lint`, `tidy` and `verdict`. Read every rep, and score it by the Task 2 rules. Do not add a rule now.
 
-- [ ] **Step 6: Apply the bar and the rounds**
+- [x] **Step 6: Apply the bar and the rounds**
+
+> Deviation: round 2 ran, as C8 allows, and met the bar. Its Scope line narrows when the live-session rule applies. The owner kept it as tested and asked for a deferred item for a tested rewording. V3 was scored with a reading made after the reps were seen, which the record discloses. Under the plain text V3 is a pin miss, and it is filed as a deferred item (D5).
 
 The bar is Builder's call C6: E1 to E4 and O1 in 5 of 5 reps, and L1 in 5 of 5. A miss in a spec case: revise the block once (C8), commit it as `round 2`, and rerun all five cases into `runs/block-r2/`. A second miss stops the task, and the record goes to the owner. By spec D9, a behavior that the control already shows stays in the block. Report `tidy` and `verdict` beside the bar. A pin miss goes into round 2's revision if round 2 runs, and otherwise into the completion gate's leftovers.
 
-- [ ] **Step 7: Write `## Block rounds` in the record**
+- [x] **Step 7: Write `## Block rounds` in the record**
 
 For each round, give the commit and the block's sha256. Add a table of clause against reps passed, in the block arm beside the control. Add each pin, the cost, and a one-line reading of the result. State whether the bar was met.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-marimo-notebook-block specs/baseline/red-baseline-marimo-notebook-block.md templates/marimo-repo/notebook-block.md
@@ -430,7 +446,7 @@ Replace the placeholder before you run the commit.
 - Consumes: the cases `steps-marimo` and `steps-plain` and their rules (Task 2).
 - Produces: nothing a later task uses. The paragraph names no `templates/` path.
 
-- [ ] **Step 1: Run the before arm**
+- [x] **Step 1: Run the before arm**
 
 With `BASE` set to `git rev-parse HEAD` at the start of this task, build one prompt for each case, as Plan A's application test did:
 
@@ -443,11 +459,11 @@ done
 
 Expected: `rep1 exit=0` to `rep5 exit=0` for each case. Read every reply (`jq -r .result <file>`) and score it by the Task 2 rules.
 
-- [ ] **Step 2: Gate on a null control. Stop if it triggers.**
+- [x] **Step 2: Gate on a null control. Stop if it triggers.**
 
 If `steps-marimo` passes M1 and M2 in 5 of 5 reps before any edit, stop and bring the replies to the owner (Builder's call C10). If `steps-plain` fails P1 or P2 in any rep, note it. The after bar in Step 5 already allows for it.
 
-- [ ] **Step 3: Edit `SKILL.md`**
+- [x] **Step 3: Edit `SKILL.md`**
 
 Load the write-with-asd-ste100 skill. Insert this paragraph (round 1, 524 characters, 0 lint violations), with a blank line before and after:
 
@@ -457,7 +473,7 @@ Load the write-with-asd-ste100 skill. Insert this paragraph (round 1, 524 charac
 
 The text must read correctly in all three runtimes: it names no `templates/` path and no Claude-only file alone.
 
-- [ ] **Step 4: Add the NOTICE credit (B4)**
+- [x] **Step 4: Add the NOTICE credit (B4)**
 
 Insert before the `recommend-visualization/` paragraph, with one blank line on each side:
 
@@ -469,11 +485,13 @@ agentic data science"
 the agent follows the human's curiosity one question at a time.
 ```
 
-- [ ] **Step 5: Run the after arm**
+- [x] **Step 5: Run the after arm**
+
+> Deviation: the first after arm missed M2 twice, which is C8's stop. The owner chose to drop "Then say what you do next" from both steps cases and to rerun the before and after arms with the round 2 paragraph unchanged (D7). The first arms stay in `runs/steps-before` and `runs/steps-after`. The rerun is in `runs/steps-case1-before`, `runs/steps-case1-after-r1` and `runs/steps-case1-after-r2`. The record's `### Third amendment` holds the change.
 
 Rebuild the two prompts from the edited `SKILL.md` as `<case>-after.txt`, and run 5 reps of each into `runs/steps-after/<case>/`. The bar: `steps-marimo` meets M1 and M2 in 5 of 5 reps. `steps-plain` meets P2 in 5 of 5 reps, and P1 in at least as many reps as before the edit (Review Focus 1). A before arm that passed P1 in 5 of 5 reps makes that 5 of 5. On a miss, revise the paragraph once and rerun both cases. A second miss stops the task, and the replies go to the owner.
 
-- [ ] **Step 6: Run the checks**
+- [x] **Step 6: Run the checks**
 
 - `uv run --with pyyaml python build/check_frontmatter.py`: passes.
 - `uv run python build/check_snippets.py skills/`: passes.
@@ -486,7 +504,7 @@ Rebuild the two prompts from the edited `SKILL.md` as `<case>-after.txt`, and ru
 - `python3 skills/write-with-asd-ste100/scripts/ste-lint.py` on the new paragraph: 0 violations.
 - The reverse Channel 3 check: no `port`, `shipment`, `carrier`, `teu` or `freight` in the new text.
 
-- [ ] **Step 7: Write `## explore-data` in the record, then commit**
+- [x] **Step 7: Write `## explore-data` in the record, then commit**
 
 The section holds both arms, the rules' outcomes, and the cost. Then:
 
@@ -519,11 +537,11 @@ Replace the placeholder before you run the commit.
 - Consumes: nothing from earlier tasks.
 - Produces: nothing a later task uses. The block already names `mo.ui.altair_chart` and the skill by name.
 
-- [ ] **Step 1: Re-read the docs page and list the facts**
+- [x] **Step 1: Re-read the docs page and list the facts**
 
 Fetch `https://docs.marimo.io/api/plotting/`. Planning read it on 2026-11-13. It said: the default Altair transformer caps at 5,000 rows, and marimo raises that to 20,000. `mo.ui.altair_chart` sets the `marimo_csv` transformer, which the page says handles over 400,000 rows. A plain Altair chart needs `alt.data_transformers.enable('marimo_csv')`. The `value` of `mo.ui.altair_chart` is a dataframe of the plot data filtered by the selection. `mo.ui.plotly` gives a reactive selection only for the chart types that the page lists, and choropleth and Sankey are not among them. Check each fact against the live page. Write no sentence the page does not support, no marimo version, and no claim about the dataframe's type.
 
-- [ ] **Step 2: Add the table row**
+- [x] **Step 2: Add the table row**
 
 After the matplotlib row, before the plotly row, add:
 
@@ -533,19 +551,19 @@ After the matplotlib row, before the plotly row, add:
 
 The plotly row keeps its text. Re-read the table as a fresh reader: a marimo user must reach Altair, and a user outside marimo who wants interactivity must still reach plotly.
 
-- [ ] **Step 3: Add the note to `altair.md`**
+- [x] **Step 3: Add the note to `altair.md`**
 
 Load the write-with-asd-ste100 skill. Add a short subsection, "In a marimo notebook". It says: wrap the chart in `mo.ui.altair_chart`, and read the selection as a dataframe from `chart.value`. The default cap of 5,000 rows rises to 20,000 in marimo. `mo.ui.altair_chart` switches to the `marimo_csv` transformer, and a plain `alt.Chart` keeps the default unless the notebook enables `marimo_csv`. Pre-aggregation in Polars stays the first choice. One short Polars example shows the wrap, in the file's style (single quotes, lazy transform, small collected frame).
 
-- [ ] **Step 4: Run the example**
+- [x] **Step 4: Run the example**
 
 Put the example in a one-cell marimo notebook under `/tmp/mnb98/` and run `/tmp/mnb98/venv/bin/marimo export html <notebook> -o /tmp/mnb98/x.html`. Expected: exit 0. Print the type of `chart.value` once, and note it in the task report only.
 
-- [ ] **Step 5: Run the checks**
+- [x] **Step 5: Run the checks**
 
 The same list as Task 4 Step 6, with `uv run python build/check_snippets.py skills/` covering the new code block, and `ste-lint.py` on the new prose. Also run `uv run python build/versions.py check`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/recommend-visualization
@@ -576,11 +594,15 @@ Replace the placeholder before you run the commit.
 - Consumes: the final `templates/marimo-repo/notebook-block.md` (Task 3) and the `## B0` observation (Task 1).
 - Produces: nothing a later task uses.
 
-- [ ] **Step 1: Pin the placement (Review Focus 4)**
+- [x] **Step 1: Pin the placement (Review Focus 4)**
+
+> Deviation: the pin uses three scratch repositories, not two: `top`, `bottom` and a control `ctl` whose `AGENTS.md` holds one short line. The control makes the zero counts in `bottom` mean something. The record says so.
 
 Make two scratch git repositories, `/tmp/mnb98/b0/top/` and `/tmp/mnb98/b0/bottom/`. In `top`, the `AGENTS.md` is the final block followed by filler to about 48 KiB. In `bottom`, it is filler to about 40 KiB followed by the block. In each, run `codex debug prompt-input 'hello'` and look for both markers. Expected: `top` holds both markers, and `bottom` lacks `<!-- marimo-repo:end -->`. A different result means the placement rule fails: stop and bring it to the owner. Write `## Placement` in the record.
 
-- [ ] **Step 2: Replace install step 4**
+- [x] **Step 2: Replace install step 4**
+
+> Deviation: at the completion gate the owner lifted the fence on `## The ruff ignore` for one sentence. README line 39 now starts "During a live session," (f2bbec3). The heading and its anchor stay.
 
 The old text is the stub "Paste the notebook block. The block is not written yet, so skip this step for now." The new step links `notebook-block.md`, and says:
 
@@ -590,18 +612,18 @@ The old text is the stub "Paste the notebook block. The block is not written yet
 
 Its one fact about Codex's behavior is Task 1's observation, with a link to the record (`../../specs/baseline/red-baseline-marimo-notebook-block.md`). Name no work repo. Keep `## The ruff ignore` as it is, because `hooks/README.md` links it.
 
-- [ ] **Step 3: Check each claim in the new step**
+- [x] **Step 3: Check each claim in the new step**
 
 Check the step against the record's `## B0` and `## Placement`, and against the block file's markers. Read the whole README once as a fresh reader, because each review round of Plan A found a new wording error in this file. Check that step 2 and `## During a live session` still agree with the block's Scope lines.
 
-- [ ] **Step 4: Run the full lints and the Done-when walk**
+- [x] **Step 4: Run the full lints and the Done-when walk**
 
 - `bash build/run_commit_lints.sh`: every lint passes.
 - `grep -c '^## The ruff ignore$' templates/marimo-repo/README.md`: `1`.
 - `uv run python build/cc_guide/cli.py lint`: no `STALE` line that Plan B added.
 - Walk the spec's "Done when (Plan B)". Record the evidence for each item in the task report. B0's result is in Task 1. The block's markers, six parts and size are in Task 3. The README's paste step is in this task. The record holds the bar result for Tasks 3 and 4. The skill changes and `NOTICE` are in Tasks 4 and 5. The lints run in this step.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add templates/marimo-repo/README.md specs/baseline/red-baseline-marimo-notebook-block.md

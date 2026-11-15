@@ -1,0 +1,1 @@
+That matches what I see: the ports in your numbers are the dip. Next hunch: the dip looks the same for every carrier type. Take a look.

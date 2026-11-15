@@ -83,6 +83,7 @@ The encoding map from Phase 1 is a near-direct spec. Pick the library by where t
 |---------|---------|-----------|
 | exploratory / declarative (default) | **Altair** (Polars-native) | [references/altair.md](references/altair.md) |
 | publication / static (PDF/SVG, multi-panel) | **matplotlib** | [references/matplotlib.md](references/matplotlib.md) |
+| interactive, inside a marimo notebook | **Altair** through `mo.ui.altair_chart`. plotly only for chart types Altair lacks, such as choropleth and Sankey | [references/altair.md](references/altair.md) |
 | interactive / dashboard (hover, zoom, HTML) | **plotly** | [references/plotly.md](references/plotly.md) |
 
 Each reference carries the single Polars→library conversion boundary, the house conventions, the

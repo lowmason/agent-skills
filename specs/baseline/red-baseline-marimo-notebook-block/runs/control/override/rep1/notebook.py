@@ -1,0 +1,106 @@
+import marimo
+
+__generated_with = "0.25.2"
+app = marimo.App(width="medium")
+
+
+@app.cell(hide_code=True)
+def imports():
+    import marimo as mo
+    import polars as pl
+
+    return mo, pl
+
+
+@app.cell(hide_code=True)
+def shipments(mo, pl):
+    shipments = pl.scan_csv(
+        mo.notebook_dir().parent / 'data' / 'shipments.csv',
+        try_parse_dates=True,
+    )
+    return (shipments,)
+
+
+@app.cell
+def monthly_totals(mo, pl, shipments):
+    import altair as alt
+
+    monthly = (
+        shipments.group_by(month=pl.col('ship_date').dt.truncate('1mo'))
+        .agg(shipments=pl.len(), teu=pl.col('teu').sum())
+        .sort('month')
+        .collect()
+    )
+    monthly_chart = (
+        alt.Chart(monthly)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X('month:T', title='Month'),
+            y=alt.Y('shipments:Q', title='Shipments'),
+            tooltip=['month:T', 'shipments:Q', 'teu:Q'],
+        )
+        .properties(title='Total shipments per month', width='container')
+    )
+    mo.vstack([mo.md('## Total shipments per month'), monthly_chart])
+    return (alt,)
+
+
+@app.function
+def q2_dip(shipments, by):
+    """Shipments in Q2 2024 vs. the average of its neighbouring quarters (Q1 and Q3 2024)."""
+    import polars as pl
+
+    q = pl.col('ship_date').dt.quarter()
+    return (
+        shipments.filter(pl.col('ship_date').dt.year() == 2024)
+        .group_by(by)
+        .agg(
+            q2=(q == 2).sum(),
+            baseline=((q == 1).sum() + (q == 3).sum()) / 2,
+        )
+        .with_columns(change=pl.col('q2') - pl.col('baseline'))
+        .with_columns(change_pct=(pl.col('change') / pl.col('baseline') * 100).round(1))
+        .sort('change_pct')
+        .collect()
+    )
+
+
+@app.function
+def dip_chart(alt, df, by, title):
+    return (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x=alt.X('change_pct:Q', title='Q2 2024 vs. avg of Q1 & Q3 2024 (%)'),
+            y=alt.Y(f'{by}:N', sort='x', title=None),
+            color=alt.condition(alt.datum.change_pct < 0, alt.value('#d62728'), alt.value('#2ca02c')),
+            tooltip=[f'{by}:N', 'q2:Q', 'baseline:Q', 'change:Q', 'change_pct:Q'],
+        )
+        .properties(title=title, width='container')
+    )
+
+
+@app.cell
+def dip_by_port(alt, mo, shipments):
+    dip_port = q2_dip(shipments, 'port')
+    mo.vstack([
+        mo.md('## Q2 dip by port'),
+        dip_chart(alt, dip_port, 'port', 'Q2 2024 shipment change by port'),
+        dip_port,
+    ])
+    return
+
+
+@app.cell
+def dip_by_carrier(alt, mo, shipments):
+    dip_carrier = q2_dip(shipments, 'carrier_type')
+    mo.vstack([
+        mo.md('## Q2 dip by carrier type'),
+        dip_chart(alt, dip_carrier, 'carrier_type', 'Q2 2024 shipment change by carrier type'),
+        dip_carrier,
+    ])
+    return
+
+
+if __name__ == "__main__":
+    app.run()

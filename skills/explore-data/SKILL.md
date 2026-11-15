@@ -246,6 +246,8 @@ A profiling pass produces three things, in this order:
    chart fits). `recommend-visualization` reads this profile's JSON (`--json`) directly, and
    `recommend-probabilistic-model` reads the dataset itself.
 
+**In a marimo notebook.** When the work goes on in a marimo notebook, write the suggested next steps as candidate hypotheses. Give each one an observable outcome, such as "two clients hold more than half of the exits". Keep the profile summary and the flagged issues in your reply, and put each fix beside its flag. Add no cell to the notebook. Offer the candidates, end your reply with a question that asks the user to pick one, and stop. The user picks one. After that, the repo's notebook instructions govern the session. They are the notebook block in its `CLAUDE.md` or `AGENTS.md`.
+
 `scripts/profile.py --json profile.json` writes the shape, the per-column table, the date ranges,
 the quality flags and any key, vintage or panel check as JSON, so you can diff two vintages of
 the same dataset or attach the profile to a report. The JSON leaves out the numeric summary and

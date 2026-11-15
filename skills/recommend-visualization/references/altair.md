@@ -69,6 +69,43 @@ plotting a *summary*, not raw rows. Three escapes, in order of preference:
 3. **VegaFusion** for large raw data with server-side transforms: `alt.data_transformers.enable('vegafusion')`
    (needs `pip install vegafusion`). Altair then pushes binning/aggregation to Rust and the cap lifts.
 
+### In a marimo notebook
+
+Wrap the chart in `mo.ui.altair_chart`. Read the selection from `chart.value`. It is a dataframe of
+the plot data, filtered by the selection.
+
+marimo raises the default cap of 5,000 rows to 20,000 rows. `mo.ui.altair_chart` keeps a marimo
+transformer that you have set, and otherwise uses `marimo_arrow` (marimo 0.25.2). For a plain
+`alt.Chart`, `alt.data_transformers.enable('marimo_csv')` sets one. Selection does not work while the
+`vegafusion` transformer is on, so leave VegaFusion off for a chart whose selection you read.
+Pre-aggregate in Polars first, as above.
+
+```python
+import marimo as mo
+import polars as pl
+import altair as alt
+
+# transform (Polars, lazy) — collect only the plot-ready frame
+region_month = (
+    panel.lazy()
+    .group_by('region', 'month')
+    .agg(pl.col('employment').mean().alias('employment'))
+    .sort('month')
+    .collect()
+)
+
+# render: the wrapped chart is the last expression of its cell
+chart = mo.ui.altair_chart(
+    alt.Chart(region_month).mark_point().encode(x='month:T', y='employment:Q', color='region:N')
+)
+chart
+```
+
+```python
+# next cell: the selected rows
+chart.value
+```
+
 ## Templates
 
 ```python

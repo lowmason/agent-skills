@@ -1,7 +1,9 @@
 # marimo notebooks: the seam with this repo's skills, hooks and rules — Design Spec
 
-**Status:** APPROVED (2026-11-13). The owner approved this file, its designer's calls included, on 2026-11-13. The
-question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it".
+**Status: COMPLETE (2026-11-14)** — implemented by plan 96 (`specs/plans/completed/96-marimo-notebook-seam.md`, Plan A) and
+plan 98 (`specs/plans/completed/98-marimo-notebook-seam.md`, Plan B), and retired here. It was APPROVED on 2026-11-13. The
+owner approved this file, its designer's calls included. The question was "Do you approve the spec, with its designer's
+calls?", and the owner answered "Approve it".
 
 The design came from a brainstorming session on 2026-11-12 and 2026-11-13. A builder check read the draft, and the
 owner answered its four open questions (D6 to D9). Text marked *(designer's call)* is the designer's choice, and
