@@ -439,6 +439,22 @@ EXTRA_MANIFEST = MANIFEST_TOML.replace("sections = ['alpha.overview', 'alpha.ref
                                        f"sections = ['alpha.overview', 'alpha.reference', '{EXTRA_ID}']")
 
 
+# A section removed from the guide and the manifest: `without_beta_reference`
+# takes it out of the fixture guide, and group beta keeps only beta.overview.
+# The removal leaves beta.overview's text_hash unchanged, since the hash
+# collapses whitespace.
+def without_beta_reference(text: str) -> str:
+    '''`text` without the `### Reference ⚠` section that anchors beta.reference.'''
+    section = '\n### Reference ⚠\n<!-- cc: beta.reference -->\n\n`BetaEvent` fires.\n'
+    if section not in text:
+        raise ValueError('without_beta_reference needs the beta.reference section in the guide text')
+    return text.replace(section, '\n', 1)
+
+
+DROPPED_MANIFEST = MANIFEST_TOML.replace("sections = ['beta.overview', 'beta.reference']",
+                                         "sections = ['beta.overview']")
+
+
 def write_tree(root, files: dict) -> None:
     '''Write {relative path: text} under root.'''
     for rel, text in files.items():

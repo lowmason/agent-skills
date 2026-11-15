@@ -192,6 +192,37 @@ def add(state: dict, manifest: Manifest, guide_text: str, ids, newest: str,
     return new
 
 
+def drop(state: dict, manifest: Manifest, guide_text: str, ids) -> dict:
+    '''R7 drop (designer's calls 6 and 9): the mirror of add. It removes each
+    ID's `sections` entry and the ID from every map in `cited`, once the guide
+    no longer anchors it and no manifest.toml group lists it. A file whose map
+    empties leaves `cited`. `groups`, `llms` and `format` stay, so a group
+    that has left the manifest keeps its `groups` entry: only rehash reads one,
+    and it handles one already. It refuses in this order, and the first check
+    that fails raises with every ID that fails it, each once, in argument
+    order: an ID that is still a guide anchor, an ID still in a group, an ID
+    that baseline.json lacks (`known`), then a run that would leave `sections`
+    empty. Each ID is judged on its own, so an unrelated half-edited section
+    does not refuse drop.'''
+    ids = list(dict.fromkeys(ids))
+    anchors = {s.id for s in sections(guide_text) if s.id}
+    group_of = manifest.group_of()
+    for refusal, failed in (('still a guide anchor', lambda sid: sid in anchors),
+                            ('still in a manifest.toml group', lambda sid: sid in group_of)):
+        names = ', '.join(sid for sid in ids if failed(sid))
+        if names:
+            raise SetupError(f'baseline drop: {refusal}: {names}')
+    known(state, ids)
+    if not set(state['sections']) - set(ids):
+        raise SetupError('baseline drop: would leave baseline.json with no section')
+    new = copy.deepcopy(state)
+    for sid in ids:
+        del new['sections'][sid]
+    kept = {path: {sid: h for sid, h in by_id.items() if sid not in ids} for path, by_id in new['cited'].items()}
+    new['cited'] = {path: by_id for path, by_id in kept.items() if by_id}
+    return new
+
+
 def record_cites(state: dict, ids_by_path: dict[str, tuple[str, ...]], present: set[str]) -> dict:
     '''R7 cite's record: each path in `ids_by_path` maps to its cited
     sections' current text_hash, IDs sorted. A `cited` path not in

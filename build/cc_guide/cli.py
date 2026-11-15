@@ -35,6 +35,7 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
   baseline audited GROUP [--to RELEASE]
   baseline accept ID [ID ...] (--substantive | --editorial)
   baseline add ID [ID ...]
+  baseline drop ID [ID ...]
   baseline stamp
   baseline cite FILE [FILE ...]
   baseline rehash
@@ -50,9 +51,11 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
       `changed` follows R2.4. `checked` and `audited` copy the oldest among
       the group's sections, so add claims no check or audit and never moves
       the stamp. It touches no blocks: check reports what the section's terms
-      select, and rebaseline settles it. init --force is not the way to add a
-      section: it resets every section's checked, changed and audited and
-      empties cited. rehash re-derives every baselined block from its page's
+      select, and rebaseline settles it. drop removes each named entry, and
+      the ID from cited, once the guide and manifest.toml no longer have it.
+      It edits no citing file, and stamp follows it. init --force is not the
+      way to add or drop a section: it resets every section's checked, changed
+      and audited and empties cited. rehash re-derives every baselined block from its page's
       cached snapshot under R3.2's MDX rewrite and keeps which blocks are
       baselined: run it on a baseline.json that the parser before the
       rewrite wrote, as when a merge brings one in. A second run changes
@@ -111,10 +114,10 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance, then audited for an audited group, then stamp; then run
-lint and build/check_conformance.py. advance and audited can move the oldest
-`checked`, which the stamp names, so stamp follows them. A missing page
-needs a manifest.toml edit first: rebaseline keeps its entries. `checked`
-and `audited` record the day the check or audit was done, not the
+lint and build/check_conformance.py. advance, audited and drop can move the
+oldest `checked` or `audited`, which the stamp names, so stamp follows them. A
+missing page needs a manifest.toml edit first: rebaseline keeps its entries.
+`checked` and `audited` record the day the check or audit was done, not the
 release's date.
 '''
 import argparse
@@ -193,6 +196,7 @@ def parser() -> argparse.ArgumentParser:
     kind.add_argument('--substantive', action='store_true')
     kind.add_argument('--editorial', action='store_true')
     b.add_parser('add').add_argument('ids', nargs='+')
+    b.add_parser('drop').add_argument('ids', nargs='+')
     b.add_parser('stamp')
     b.add_parser('cite').add_argument('files', nargs='+')
     b.add_parser('rehash')
@@ -372,6 +376,8 @@ def run_baseline(args, cache: Path, today: date) -> int:
         newest = newest_releases(cache)[0].label
         stamps = review_stamps(tree, manifest.guide, 'baseline add')
         new = baseline.add(state, manifest, guide_text, args.ids, newest, stamps)
+    elif args.action == 'drop':
+        new = baseline.drop(state, manifest, guide_text, args.ids)
     elif args.action == 'advance':
         labels = {r.label for r in newest_releases(cache)}
         new = baseline.advance(state, args.ids, args.to, labels, day)

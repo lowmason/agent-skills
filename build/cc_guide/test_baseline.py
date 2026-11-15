@@ -13,14 +13,15 @@ import blocks
 import guide
 import lint
 import state
-from cc_fixtures import (DOCS, EXTRA_MANIFEST, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, MDX_PAGE,  # noqa: F401
-                         docs_dir, fixture_snapshot, fixture_state, guide_text, isolated_home, with_extra,
-                         write_tree)
+from cc_fixtures import (DOCS, DROPPED_MANIFEST, EXTRA_MANIFEST, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML,  # noqa: F401
+                         MDX_PAGE, docs_dir, fixture_snapshot, fixture_state, guide_text, isolated_home,
+                         with_extra, without_beta_reference, write_tree)
 
 REPO = Path(__file__).resolve().parents[2]
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 ENV = 'Environment variables'
 EXTRA = state.parse_manifest(EXTRA_MANIFEST)
+DROPPED = state.parse_manifest(DROPPED_MANIFEST)
 GAMMA_MANIFEST = MANIFEST_TOML.replace('[[exclusion]]', "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]")
 GAMMA_GUIDE = guide_text() + '## 3. Gamma\n<!-- cc: gamma.overview -->\n\nGamma reads `PIPE_ENV`.\n'
 GAMMA_GROUP = "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]"
@@ -475,6 +476,42 @@ def test_add_returns_a_state_that_shares_no_value_with_its_input(docs_dir):
     new['groups']['alpha']['blocks'].clear()
     new['llms'].append('x')
     assert s == before
+
+
+def test_drop_removes_the_entry_and_the_id_from_cited_only(docs_dir):
+    s = fixture_state(docs_dir)
+    h = {sid: v['text_hash'] for sid, v in s['sections'].items()}
+    s['cited'] = {'hooks/a.sh': {'beta.reference': h['beta.reference']},
+                  'hooks/b.sh': {'beta.overview': h['beta.overview'], 'beta.reference': h['beta.reference']}}
+    before = copy.deepcopy(s)
+    new = baseline.drop(s, DROPPED, without_beta_reference(guide_text()), ['beta.reference'])
+    assert new['sections'] == {i: v for i, v in before['sections'].items() if i != 'beta.reference'}
+    assert new['cited'] == {'hooks/b.sh': {'beta.overview': h['beta.overview']}}
+    assert {k: new[k] for k in ('format', 'groups', 'llms')} == {k: before[k] for k in ('format', 'groups', 'llms')}
+    assert s == before
+
+
+@pytest.mark.parametrize('guide_of, manifest, ids, message', [
+    (guide_text, DROPPED, ['beta.reference'], 'baseline drop: still a guide anchor: beta.reference'),
+    (lambda: without_beta_reference(guide_text()), MANIFEST, ['beta.reference'],
+     'baseline drop: still in a manifest.toml group: beta.reference'),
+    (guide_text, MANIFEST, ['gone.one'], 'unknown section IDs: gone.one'),
+])
+def test_drop_refuses_and_changes_nothing(docs_dir, guide_of, manifest, ids, message):
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    with pytest.raises(state.SetupError) as err:
+        baseline.drop(s, manifest, guide_of(), ids)
+    assert str(err.value) == message
+    assert s == before
+
+
+def test_drop_refuses_to_leave_no_section(docs_dir):
+    s = fixture_state(docs_dir)
+    s['sections'] = {'gone.one': s['sections']['beta.reference']}
+    with pytest.raises(state.SetupError) as err:
+        baseline.drop(s, MANIFEST, guide_text(), ['gone.one'])
+    assert str(err.value) == 'baseline drop: would leave baseline.json with no section'
 
 
 def latest_from(tmp_path, **edits):

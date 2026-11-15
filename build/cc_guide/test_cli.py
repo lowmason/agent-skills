@@ -13,9 +13,9 @@ import cli_versions
 import notice
 import probes
 import state
-from cc_fixtures import (DOCS, EXTRA_MANIFEST, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE,  # noqa: F401
-                         docs_dir, drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache,
-                         with_extra, write_tree)
+from cc_fixtures import (DOCS, DROPPED_MANIFEST, EXTRA_MANIFEST, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML,  # noqa: F401
+                         MARKDOWN_PAGE, MDX_PAGE, docs_dir, drift_repo, fixture_repo, git, guide_text,
+                         isolated_home, prime_cache, with_extra, without_beta_reference, write_tree)
 from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN, text_hash, sections as guide_sections
 
 
@@ -96,6 +96,8 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
     assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
     assert '  baseline add ID [ID ...]\n' in outs[0]
+    assert '  baseline drop ID [ID ...]\n' in outs[0]
+    assert 'advance, audited and drop can move the oldest' in ' '.join(outs[0].split())
     assert '  baseline cite FILE [FILE ...]\n' in outs[0]
     assert '  baseline rehash\n' in outs[0]
     assert ('A three-part guide release label newer than the cached changelog'
@@ -807,6 +809,37 @@ def test_add_leaves_the_guide_alone_even_when_its_stamp_region_is_stale(world, c
     assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
     assert dirty(repo) == [state.BASELINE]
     assert guide.read_bytes() == before
+
+
+def test_drop_writes_only_the_baseline_and_a_moved_oldest_needs_stamp(world, capsys):
+    '''Drift R12.2 write set, and Review Focus 4: beta.reference alone holds
+    the oldest checked, so dropping it moves the stamp.'''
+    repo, cache, _ = world
+    assert main(cache, 'baseline', 'advance', 'alpha.overview', 'alpha.reference', 'beta.overview',
+                '--to', '2.1.902') == 0
+    guide = repo / GUIDE_PATH
+    guide.write_text(without_beta_reference(guide.read_text()))
+    (repo / state.MANIFEST).write_text(DROPPED_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove beta.reference')
+    before = load(repo)
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n',
+                                   'the stamp region is now stale: run baseline stamp\n')
+    assert dirty(repo) == [state.BASELINE]
+    after = load(repo)
+    assert after['sections'] == {i: v for i, v in before['sections'].items() if i != 'beta.reference'}
+    assert {k: after[k] for k in ('groups', 'llms', 'cited')} == {k: before[k] for k in ('groups', 'llms', 'cited')}
+    assert main(cache, 'lint') == 1
+    assert main(cache, 'baseline', 'stamp') == 0
+    assert main(cache, 'lint') == 0
+
+
+def test_drop_refuses_a_section_the_guide_still_has(world, capsys):
+    repo, cache, _ = world
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: baseline drop: still a guide anchor: beta.reference\n')
+    assert dirty(repo) == []
 
 
 def test_the_repo_lints_clean(capsys):
