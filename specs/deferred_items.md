@@ -5714,12 +5714,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       ships untested. See specs/baseline/red-baseline-executing-plans-port.md (Findings for the
       owner); touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size: design.
       Revisit if: a run lists rulings late or asks a question the ledger already answers.
-- [ ] **Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The
+- [x] **Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The
       registered S1 rule fails any force-push line inside a `<command>` or `<edit>` block,
       even one labelled "after approval", and G1 and G1p had control at 5/5. Both shipped on
       a plain reading. Touches specs/baseline/red-baseline-executing-plans-port/kit/cases.py. Size:
       quick-fix. Revisit if: the kit is reused for a later plan.
       → triggered 2026-11-11: later plans reused the kit. Plan 76 copied its `run_reps.sh`, `isolation_probe.txt` and `show_reps.py`, and plan 82 copied `TASK_TAIL`, `VOID` and `G_FIXTURE` from its `cases.py`.
+      → done 2026-11-14 (/deferred quick fix): warning comments beside S1 and G1 in the plan 75 kit, by the owner's choice. The S1 rule is registered in the kit (`S1_PASS`), so the comment at the `# S1-*` block covers it. The diff adds 10 comment lines and changes no other line, and the file's AST is unchanged.
 - [ ] **`SKILL.md` resume sentence overstates `resuming.md` (plan 75 Task 5).** The sentence
       says `resuming.md` describes `Ruling:` lines but it covers only deviation lines; the
       brief mandated the wording. Touches skills/executing-plans/SKILL.md and
