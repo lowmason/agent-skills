@@ -707,6 +707,24 @@ def test_a_section_created_after_init_reaches_check_exit_zero(world, capsys):
     assert main(cache, 'lint') == 0
 
 
+def test_add_takes_several_ids_and_needs_at_least_one(world, capsys):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()) + '\n## 3. Gamma\n<!-- cc: gamma.overview -->\n\nGamma.\n')
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST.replace(
+        '[[exclusion]]', "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]"))
+    git(repo, 'commit', '-qam', 'two sections created after init')
+    assert main(cache, 'baseline', 'add', 'gamma.overview', 'alpha.extra') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    assert list(load(repo)['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                            'beta.reference', 'gamma.overview']
+    with pytest.raises(SystemExit) as stop:
+        main(cache, 'baseline', 'add')
+    assert stop.value.code == 2
+    assert 'the following arguments are required: ids' in capsys.readouterr().err
+
+
 def test_the_repo_lints_clean(capsys):
     '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
     so no changelog is cached and the release-label check is skipped.'''

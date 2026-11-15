@@ -23,6 +23,8 @@ ENV = 'Environment variables'
 EXTRA = state.parse_manifest(EXTRA_MANIFEST)
 GAMMA_MANIFEST = MANIFEST_TOML.replace('[[exclusion]]', "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]")
 GAMMA_GUIDE = guide_text() + '## 3. Gamma\n<!-- cc: gamma.overview -->\n\nGamma reads `PIPE_ENV`.\n'
+GAMMA_GROUP = "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]"
+NO_REFERENCE = MANIFEST_TOML.replace("sections = ['alpha.overview', 'alpha.reference']", "sections = ['alpha.overview']")
 
 
 def section_hash(text, sid):
@@ -343,6 +345,103 @@ def test_add_refuses_and_changes_nothing(docs_dir, ids, manifest_text, message):
     with pytest.raises(state.SetupError) as err:
         baseline.add(s, state.parse_manifest(manifest_text), with_extra(guide_text()), ids, '2.1.902', {})
     assert str(err.value) == message
+    assert s == before
+
+
+@pytest.mark.parametrize('ids, manifest_text, message', [
+    (['beta.gone', 'alpha.nowhere', 'beta.gone'], MANIFEST_TOML,
+     'baseline add: not a guide anchor: beta.gone, alpha.nowhere'),
+    (['gone.one'], MANIFEST_TOML, 'baseline add: not a guide anchor: gone.one'),
+    (['alpha.overview', 'alpha.extra', 'alpha.extra'], MANIFEST_TOML,
+     'baseline add: in no manifest.toml group: alpha.extra'),
+    (['alpha.reference'], NO_REFERENCE, 'baseline add: in no manifest.toml group: alpha.reference'),
+    (['beta.overview', 'alpha.overview', 'beta.overview'], EXTRA_MANIFEST,
+     'baseline add: already in baseline.json: beta.overview, alpha.overview'),
+])
+def test_add_names_each_failing_id_once_in_argument_order_and_stops_at_the_first_failing_check(
+        docs_dir, ids, manifest_text, message):
+    '''`gone.one` is stored but in neither the guide nor the manifest, so it
+    fails all three checks; `alpha.reference` in NO_REFERENCE fails the last
+    two. Each case's message names only the first failing check.'''
+    s = fixture_state(docs_dir)
+    s['sections']['gone.one'] = copy.deepcopy(s['sections']['beta.reference'])
+    before = copy.deepcopy(s)
+    with pytest.raises(state.SetupError) as err:
+        baseline.add(s, state.parse_manifest(manifest_text), with_extra(guide_text()), ids, '2.1.902', {})
+    assert str(err.value) == message
+    assert s == before
+
+
+def test_add_copies_the_one_stored_section_of_its_group_not_the_files_oldest(docs_dir):
+    s = fixture_state(docs_dir)
+    del s['sections']['alpha.reference']
+    s['sections']['alpha.overview']['checked'] = {'release': '2.1.905', 'date': '2026-10-02'}
+    s['sections']['alpha.overview']['audited'] = {'release': '2.1.905', 'date': '2026-10-03'}
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.906', {})
+    assert new['sections']['alpha.extra']['checked'] == {'release': '2.1.905', 'date': '2026-10-02'}
+    assert new['sections']['alpha.extra']['audited'] == {'release': '2.1.905', 'date': '2026-10-03'}
+
+
+def test_add_in_a_new_group_takes_each_oldest_in_its_own_order_across_the_whole_file(docs_dir):
+    '''The oldest checked and the oldest audited sit in different sections, and
+    neither is the first or the last stored one.'''
+    s = fixture_state(docs_dir)
+    a = s['sections']
+    a['alpha.overview']['checked'] = {'release': '2.1.901', 'date': '2026-09-01'}
+    a['alpha.reference']['checked'] = {'release': '2.1.900', 'date': '2026-09-30'}
+    a['alpha.overview']['audited'] = {'release': '2.1.901', 'date': '2026-09-10'}
+    a['alpha.reference']['audited'] = {'release': '2.1.900', 'date': '2026-09-20'}
+    for sid in ('beta.overview', 'beta.reference'):
+        a[sid]['checked'] = {'release': '2.1.905', 'date': '2026-10-05'}
+        a[sid]['audited'] = {'release': '2.1.905', 'date': '2026-10-05'}
+    new = baseline.add(s, state.parse_manifest(GAMMA_MANIFEST), GAMMA_GUIDE, ['gamma.overview'], '2.1.906', {})
+    assert new['sections']['gamma.overview']['checked'] == {'release': '2.1.900', 'date': '2026-09-30'}
+    assert new['sections']['gamma.overview']['audited'] == {'release': '2.1.901', 'date': '2026-09-10'}
+
+
+def test_add_of_two_sections_follows_the_guides_heading_order_not_the_arguments(docs_dir):
+    s = fixture_state(docs_dir)
+    manifest = state.parse_manifest(EXTRA_MANIFEST.replace('[[exclusion]]', GAMMA_GROUP))
+    text = with_extra(GAMMA_GUIDE)
+    new = baseline.add(s, manifest, text, ['gamma.overview', 'alpha.extra'], '2.1.902', {})
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                     'beta.reference', 'gamma.overview']
+    for sid in ('alpha.extra', 'gamma.overview'):
+        assert new['sections'][sid]['text_hash'] == section_hash(text, sid)
+        assert new['sections'][sid]['changed'] == '2.1.902'
+
+
+@pytest.mark.parametrize('text, manifest_text', [
+    (with_extra(GAMMA_GUIDE), EXTRA_MANIFEST),  # the guide holds gamma.overview, the manifest lacks it
+    (with_extra(guide_text()), EXTRA_MANIFEST.replace('[[exclusion]]', GAMMA_GROUP)),  # the reverse
+])
+def test_add_ignores_an_unrelated_section_that_the_guide_and_manifest_disagree_on(docs_dir, text, manifest_text):
+    '''check_ids would refuse these; add judges only the IDs it is given.'''
+    new = baseline.add(fixture_state(docs_dir), state.parse_manifest(manifest_text), text, ['alpha.extra'],
+                       '2.1.902', {})
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                     'beta.reference']
+
+
+def test_add_changed_stays_above_only_the_new_sections_own_citers(docs_dir):
+    s = fixture_state(docs_dir)
+    other = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902',
+                         {'alpha.overview': ['2.1.950'], 'beta.overview': ['2.1.903']})
+    assert other['sections']['alpha.extra']['changed'] == '2.1.902'
+    own = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902',
+                       {'alpha.extra': ['2.1.901', '2.1.950'], 'alpha.overview': ['2.1.960']})
+    assert own['sections']['alpha.extra']['changed'] == '2.1.950.1'
+
+
+def test_add_returns_a_state_that_shares_no_value_with_its_input(docs_dir):
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    new['sections']['alpha.extra']['checked']['date'] = 'x'
+    new['sections']['alpha.extra']['audited']['date'] = 'x'
+    new['sections']['alpha.overview']['checked']['date'] = 'x'
+    new['groups']['alpha']['blocks'].clear()
+    new['llms'].append('x')
     assert s == before
 
 
