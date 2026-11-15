@@ -74,9 +74,11 @@ plotting a *summary*, not raw rows. Three escapes, in order of preference:
 Wrap the chart in `mo.ui.altair_chart`. Read the selection from `chart.value`. It is a dataframe of
 the plot data, filtered by the selection.
 
-marimo raises the default cap of 5,000 rows to 20,000 rows. `mo.ui.altair_chart` sets the
-`marimo_csv` transformer for you. For a plain `alt.Chart`, you can set it with
-`alt.data_transformers.enable('marimo_csv')`. Pre-aggregate in Polars first, as above.
+marimo raises the default cap of 5,000 rows to 20,000 rows. `mo.ui.altair_chart` keeps a marimo
+transformer that you have set, and otherwise uses `marimo_arrow` (marimo 0.25.2). For a plain
+`alt.Chart`, `alt.data_transformers.enable('marimo_csv')` sets one. Selection does not work while the
+`vegafusion` transformer is on, so leave VegaFusion off for a chart whose selection you read.
+Pre-aggregate in Polars first, as above.
 
 ```python
 import marimo as mo
