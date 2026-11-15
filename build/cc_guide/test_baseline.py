@@ -11,8 +11,9 @@ import blocks
 import guide
 import lint
 import state
-from cc_fixtures import (DOCS, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, MDX_PAGE, docs_dir,  # noqa: F401
-                         fixture_snapshot, fixture_state, guide_text, isolated_home, write_tree)
+from cc_fixtures import (DOCS, EXTRA_MANIFEST, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, MDX_PAGE,  # noqa: F401
+                         docs_dir, fixture_snapshot, fixture_state, guide_text, isolated_home, with_extra,
+                         write_tree)
 
 REPO = Path(__file__).resolve().parents[2]
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
@@ -126,6 +127,20 @@ def test_init_baselines_each_groups_selected_blocks(docs_dir):
     assert s['groups']['beta']['snapshot'] == {'events': '2.1.900', 'env-vars': '2.1.900',
                                                'platform:pricing': '2.1.900'}
     assert s['llms'] == ['env-vars', 'events', 'plugins/components', 'tools']
+
+
+def test_init_gives_a_section_without_a_derived_changed_its_release(docs_dir):
+    s = baseline.init(state.parse_manifest(EXTRA_MANIFEST), with_extra(guide_text()), docs_dir,
+                      '2.1.900', '2026-09-02', FIXTURE_CHANGED)
+    assert s['sections']['alpha.extra']['changed'] == '2.1.900'
+    assert {i: v['changed'] for i, v in s['sections'].items() if i != 'alpha.extra'} == FIXTURE_CHANGED
+
+
+def test_the_history_reference_is_the_guide_at_plan_35s_commit():
+    '''R11.1: the map from heading to ID is the first guide with anchors, read at
+    the guide's present path, not OLD_GUIDE_PATH.'''
+    assert baseline.ANCHORED == ('18b4a71', 'specs/guides/claude-code-customization-guide.md')
+    assert baseline.ANCHORED[1] != baseline.OLD_GUIDE_PATH
 
 
 def test_init_leaves_a_page_the_snapshot_lacks_unbaselined(docs_dir):

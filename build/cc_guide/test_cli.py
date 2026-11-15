@@ -13,8 +13,9 @@ import cli_versions
 import notice
 import probes
 import state
-from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE, docs_dir,  # noqa: F401
-                         drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
+from cc_fixtures import (DOCS, EXTRA_MANIFEST, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE,  # noqa: F401
+                         docs_dir, drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache,
+                         with_extra, write_tree)
 from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN
 
 
@@ -241,7 +242,8 @@ def test_check_hook_renames_the_record_into_place_after_the_notice_and_its_diges
 
 def history_repo(tmp_path, monkeypatch):
     '''A repo holding R11.1's two old guides, then the anchored guide and its
-    manifest but no baseline, with cli and baseline pointed at it.'''
+    manifest but no baseline, with cli and baseline pointed at it. Its third
+    commit stands in for 18b4a71, the commit that baseline.ANCHORED names.'''
     old = '\n'.join(line for line in guide_text().split('\n') if not line.startswith('<!-- cc: '))
     repo = fixture_repo(tmp_path / 'repo', {baseline.OLD_GUIDE_PATH: old.replace('Set `ALPHA_ENV`', 'Set `OLD`')})
     july = git(repo, 'rev-parse', 'HEAD').strip()
@@ -251,7 +253,9 @@ def history_repo(tmp_path, monkeypatch):
     write_tree(repo, {GUIDE_PATH: guide_text(), state.MANIFEST: MANIFEST_TOML})
     git(repo, 'add', '-A')
     git(repo, 'commit', '-qm', 'the anchored guide and its manifest')
+    anchored = git(repo, 'rev-parse', 'HEAD').strip()
     monkeypatch.setattr(cli, 'REPO', repo)
+    monkeypatch.setattr(baseline, 'ANCHORED', (anchored, GUIDE_PATH))
     monkeypatch.setattr(baseline, 'JULY', (july, '2.1.219'))
     monkeypatch.setattr(baseline, 'REFRESH', (refresh, '2.1.288'))
     return repo
@@ -272,6 +276,40 @@ def test_init_derives_changed_and_refuses_to_overwrite_without_force(tmp_path, d
     assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE} exists; init rebuilds it from scratch'
                                        ' only with --force\n')
     assert main(cache, *argv, '--force') == 0
+
+
+def test_init_takes_a_heading_edit_and_a_section_created_after_the_bootstrap(tmp_path, docs_dir, monkeypatch):
+    '''S4: the guide at ANCHORED maps headings to IDs, so a heading edit and a
+    later section in the working tree no longer refuse; the later section
+    takes --release.'''
+    repo = history_repo(tmp_path, monkeypatch)
+    edited = guide_text().replace('### Reference ⚠\n<!-- cc: beta.reference', '### Beta reference\n<!-- cc: beta.reference')
+    write_tree(repo, {GUIDE_PATH: with_extra(edited), state.MANIFEST: EXTRA_MANIFEST})
+    assert main(tmp_path / 'cache', 'baseline', 'init', '--docs', str(docs_dir), '--release', '2.1.900',
+                '--date', '2026-09-02') == 0
+    written = load(repo)['sections']
+    assert list(written) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview', 'beta.reference']
+    assert {i: s['changed'] for i, s in written.items()} == {
+        'alpha.overview': '2.1.219', 'alpha.reference': '2.1.288', 'alpha.extra': '2.1.900',
+        'beta.overview': '2.1.219', 'beta.reference': '2.1.219'}
+
+
+@pytest.mark.parametrize('ref, path', [
+    pytest.param(None, 'no/such/guide.md', id='path-the-commit-lacks'),
+    pytest.param('0' * 40, GUIDE_PATH, id='commit-the-clone-lacks'),
+])
+def test_init_names_the_anchored_reference_a_clone_lacks(tmp_path, docs_dir, monkeypatch, capsys, ref, path):
+    '''The guide at ANCHORED is read from git, by the constant's own path: a
+    reference the clone lacks refuses, naming it, and writes nothing. The
+    working-tree guide and manifest.toml's path are never the fallback.'''
+    repo = history_repo(tmp_path, monkeypatch)
+    ref = ref or baseline.ANCHORED[0]
+    monkeypatch.setattr(baseline, 'ANCHORED', (ref, path))
+    assert main(tmp_path / 'cache', 'baseline', 'init', '--docs', str(docs_dir), '--release', '2.1.900',
+                '--date', '2026-09-02') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: R11.1 needs {ref}:{path}, which this clone lacks'
+                                       ' (a shallow clone?)\n')
+    assert dirty(repo) == []
 
 
 def test_init_without_docs_needs_the_bootstrap_snapshot_directory(tmp_path, monkeypatch, capsys):

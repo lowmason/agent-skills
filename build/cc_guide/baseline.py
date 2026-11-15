@@ -16,6 +16,10 @@ from state import FORMAT, Manifest, SetupError, Snapshot, block_namer, group_ter
 OLD_GUIDE_PATH = 'specs/claude-code-customization-guide.md'
 JULY = ('91474f6', '2.1.219')
 REFRESH = ('c33bc99', '2.1.288')
+# R11.1's map from heading to ID: plan 35's commit, the first guide with
+# anchors. Its `##` and `###` headings are identical to the refresh's. Its path
+# differs from OLD_GUIDE_PATH because 79ad04f moved the guide before 18b4a71.
+ANCHORED = ('18b4a71', 'specs/guides/claude-code-customization-guide.md')
 
 
 def next_changed(newest: str, citer_stamps) -> str:
@@ -35,7 +39,9 @@ def derive_changed(july: str, refresh: str, current: str) -> dict[str, str]:
     '''R11.1: each section's `changed`. A section whose text is the same in
     the July guide and the refresh, aligned by (parent ##, heading) and
     compared with whitespace collapsed, keeps July's release; every other
-    section takes the refresh's.'''
+    section takes the refresh's. The third input, `current`, is the guide at
+    ANCHORED, so the result keys the 38 bootstrap IDs. Refusing a section the
+    refresh lacks guards the ANCHORED constant.'''
     def by_key(text: str) -> dict:
         return {(s.parent, s.heading): ' '.join(s.text.split()) for s in sections(text)}
     old, new = by_key(july), by_key(refresh)
@@ -71,7 +77,9 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
          changed: dict[str, str]) -> dict:
     '''R2.6: the initial baseline, from a snapshot directory and never from
     live docs. A mapped page the snapshot lacks stays unbaselined, so its
-    selected blocks report as new.'''
+    selected blocks report as new. A section that `changed` lacks was created
+    after the bootstrap and takes `release`, since init baselines every
+    section's text at `release` (spec S4, designer's call 7).'''
     check_ids(manifest, guide_text)
     terms = group_terms(manifest, guide_text)
     llms = docs / 'llms.txt'
@@ -79,7 +87,7 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
                    'llms': sorted(parse_llms(read_utf8(llms))) if llms.is_file() else [], 'cited': {}}
     for s in sections(guide_text):
         state['sections'][s.id] = {'checked': {'release': release, 'date': day},
-                                   'changed': changed[s.id],
+                                   'changed': changed.get(s.id, release),
                                    'audited': {'release': release, 'date': day},
                                    'text_hash': text_hash(s.text)}
     for gid, group in manifest.groups.items():

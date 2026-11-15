@@ -419,6 +419,26 @@ MANIFEST_TOML = '\n'.join([
 ])
 
 
+# A section created after the bootstrap: the fixture guide gains it before
+# `## 2. Beta`, and the fixture manifest lists it in group alpha. The insertion
+# leaves every other section's text_hash unchanged, since the hash collapses
+# whitespace.
+EXTRA_ID = 'alpha.extra'
+
+
+def with_extra(text: str) -> str:
+    '''`text` with the extra section inserted before the `## 2. Beta` line.'''
+    marker = '## 2. Beta\n'
+    if marker not in text:
+        raise ValueError(f'with_extra needs a {marker.strip()!r} line in the guide text')
+    block = '\n'.join(['### Extra', f'<!-- cc: {EXTRA_ID} -->', '', 'Extra reads `PIPE_ENV`.', '', ''])
+    return text.replace(marker, block + marker, 1)
+
+
+EXTRA_MANIFEST = MANIFEST_TOML.replace("sections = ['alpha.overview', 'alpha.reference']",
+                                       f"sections = ['alpha.overview', 'alpha.reference', '{EXTRA_ID}']")
+
+
 def write_tree(root, files: dict) -> None:
     '''Write {relative path: text} under root.'''
     for rel, text in files.items():

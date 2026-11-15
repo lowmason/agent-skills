@@ -309,7 +309,8 @@ def run_baseline(args, cache: Path, today: date) -> int:
         if baseline_path.exists() and not args.force:
             raise SetupError(f'{BASELINE} exists; init rebuilds it from scratch only with --force')
         changed = baseline.derive_changed(git_show(baseline.JULY[0], baseline.OLD_GUIDE_PATH),
-                                          git_show(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH), guide_text)
+                                          git_show(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH),
+                                          git_show(*baseline.ANCHORED))
         docs = args.docs or snapshot_docs(cache, BOOTSTRAP_RELEASE)
         if not docs.is_dir():
             raise SetupError(f'{docs}: no snapshot directory')
