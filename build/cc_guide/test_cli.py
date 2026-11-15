@@ -95,6 +95,7 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
         assert 'it refuses when the latest fetch is at another release' in out
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
     assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
+    assert '  baseline add ID [ID ...]\n' in outs[0]
     assert '  baseline cite FILE [FILE ...]\n' in outs[0]
     assert '  baseline rehash\n' in outs[0]
     assert ('A three-part guide release label newer than the cached changelog'
@@ -652,6 +653,58 @@ def test_packets_with_nothing_to_triage_exits_zero_and_writes_nothing(world, cap
     assert main(cache, 'packets', '--triage') == 0
     assert capsys.readouterr() == ('nothing to triage: no untriaged release and no block finding\n', '')
     assert not (cache / 'packets').exists()
+
+
+def test_add_writes_only_the_new_entry_and_lint_passes_with_no_stamp(world, capsys):
+    '''Drift R12.2 write set, and Review Focus 2.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    git(repo, 'commit', '-qam', 'a section created after init')
+    before = load(repo)
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    after = load(repo)
+    assert set(after['sections']) - set(before['sections']) == {'alpha.extra'}
+    assert changed_fields(before, after) == set()
+    assert after['cited'] == before['cited']
+    assert main(cache, 'lint') == 0
+
+
+def test_add_refuses_without_a_cached_changelog_or_with_a_broken_citation(world, tmp_path, capsys):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'})
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(tmp_path / 'empty-cache', 'baseline', 'add', 'alpha.extra') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: no cached changelog: run check, or restore the 2.1.288 snapshot\n')
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 2
+    assert capsys.readouterr() == ('', (
+        'cc-guide: baseline add needs every citation to parse (R2.4); fix these first:\n'
+        'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)\n'))
+    assert (repo / state.BASELINE).read_bytes() == before
+
+
+def test_a_section_created_after_init_reaches_check_exit_zero(world, capsys):
+    '''Review Focus 3: S1's flow. The new section's `PIPE_ENV` selects one more
+    env-vars block, which check reports as new until rebaseline settles it.'''
+    repo, cache, folder = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    check_args = ('check', '--worktree', '--docs', str(folder))
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    capsys.readouterr()
+    assert main(cache, *check_args) == 1
+    assert ('  [alpha] new env-vars › Environment variables › `PIPE_ENV` (candidates: alpha.extra)'
+            in capsys.readouterr().out.splitlines())
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 0
+    assert main(cache, *check_args) == 0
+    assert main(cache, 'lint') == 0
 
 
 def test_the_repo_lints_clean(capsys):

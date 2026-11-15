@@ -7,8 +7,8 @@ from pathlib import Path
 
 from blocks import SEP, block_hash, cut_page, key_hash, key_names, page_blocks, select
 from docs import is_platform, page_file, parse_llms, version_key
-from guide import (NO_STAMP, anchor_problems, file_citation, render_stamp, sections, stamp_bounds, text_hash,
-                   with_stamp)
+from guide import (NO_STAMP, anchor_problems, audited_order, checked_order, file_citation, render_stamp, sections,
+                   stamp_bounds, text_hash, with_stamp)
 from state import FORMAT, Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot, read_utf8
 
 # R11.1: the July guide (verified at 2.1.219) and the refresh (at 2.1.288),
@@ -140,6 +140,43 @@ def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | N
         for hashes in new['cited'].values():
             if hashes.get(sid) == old:
                 hashes[sid] = current
+    return new
+
+
+def add(state: dict, manifest: Manifest, guide_text: str, ids, newest: str,
+        citer_stamps: dict[str, list[str]]) -> dict:
+    '''R7 add (D1, D4): the entry of each section created after init, once the
+    guide anchors it and a manifest.toml group lists it. `text_hash` is its
+    current text. `checked` and `audited` copy the oldest among the group's
+    stored sections, in the stamp's own orders, or among every stored section
+    when the group has none, so add claims no check or audit and never moves
+    the stamp. `changed` follows R2.4 over `citer_stamps`, each section's
+    citers' review stamps. Every ID reads `state` as it was before the run.
+    `sections` follows the guide's heading order, then the stored IDs the
+    guide lacks, which wait for `drop`. Each ID is judged on its own, so an
+    unrelated half-edited section does not refuse add.'''
+    ids = list(dict.fromkeys(ids))
+    by_id = {s.id: s for s in sections(guide_text) if s.id}
+    group_of = manifest.group_of()
+    for refusal, failed in (('not a guide anchor', lambda sid: sid not in by_id),
+                            ('in no manifest.toml group', lambda sid: sid not in group_of),
+                            ('already in baseline.json', lambda sid: sid in state['sections'])):
+        names = ', '.join(sid for sid in ids if failed(sid))
+        if names:
+            raise SetupError(f'baseline add: {refusal}: {names}')
+    stored = state['sections']
+    entries = {}
+    for sid in ids:
+        peers = [stored[p] for p in manifest.groups[group_of[sid]].sections if p in stored] or list(stored.values())
+        entries[sid] = {'checked': dict(min((p['checked'] for p in peers), key=checked_order)),
+                        'changed': next_changed(newest, citer_stamps.get(sid, [])),
+                        'audited': dict(min((p['audited'] for p in peers), key=audited_order)),
+                        'text_hash': text_hash(by_id[sid].text)}
+    new = copy.deepcopy(state)
+    merged = {**new['sections'], **entries}
+    order = [s.id for s in sections(guide_text) if s.id in merged]
+    order += [sid for sid in stored if sid not in order]
+    new['sections'] = {sid: merged[sid] for sid in order}
     return new
 
 

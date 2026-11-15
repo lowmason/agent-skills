@@ -176,14 +176,22 @@ def with_stamp(text: str, content: str) -> str:
     return '\n'.join(lines[:bounds[0] + 1] + content.split('\n') + lines[bounds[1]:])
 
 
+def checked_order(stamp: dict) -> tuple:
+    '''The order of `checked` values: by release, then date.'''
+    return version_key(stamp['release']), stamp['date']
+
+
+def audited_order(stamp: dict) -> tuple:
+    '''The order of `audited` values: by date, then release.'''
+    return stamp['date'], version_key(stamp['release'])
+
+
 def render_stamp(section_states: dict[str, dict]) -> str:
     '''R1.2's generated sentence, from baseline.json's sections: the oldest
-    `checked` (by release, then date) and the oldest `audited` (by date, then
-    release). Both dates are the day the check or audit was done.'''
-    checked = min((s['checked'] for s in section_states.values()),
-                  key=lambda c: (version_key(c['release']), c['date']))
-    audited = min((s['audited'] for s in section_states.values()),
-                  key=lambda a: (a['date'], version_key(a['release'])))
+    `checked` (checked_order) and the oldest `audited` (audited_order). Both
+    dates are the day the check or audit was done.'''
+    checked = min((s['checked'] for s in section_states.values()), key=checked_order)
+    audited = min((s['audited'] for s in section_states.values()), key=audited_order)
     return (f"> Checked against the Claude Code docs and changelog through {checked['release']} "
             f"on {checked['date']}; oldest full re-verification {audited['date']}, "
             f"at {audited['release']}.")

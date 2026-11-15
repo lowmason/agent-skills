@@ -1,6 +1,7 @@
 '''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation and R12.3's
 replay over it, and each `baseline` subcommand's effect on the state or a
 citing file (drift spec R7). The write sets on disk are test_cli.py's.'''
+import copy
 import re
 import subprocess
 from pathlib import Path
@@ -19,6 +20,13 @@ from cc_fixtures import (DOCS, EXTRA_MANIFEST, FIXTURE_CHANGED, GUIDE_IDS, MANIF
 REPO = Path(__file__).resolve().parents[2]
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 ENV = 'Environment variables'
+EXTRA = state.parse_manifest(EXTRA_MANIFEST)
+GAMMA_MANIFEST = MANIFEST_TOML.replace('[[exclusion]]', "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]")
+GAMMA_GUIDE = guide_text() + '## 3. Gamma\n<!-- cc: gamma.overview -->\n\nGamma reads `PIPE_ENV`.\n'
+
+
+def section_hash(text, sid):
+    return guide.text_hash({s.id: s for s in guide.sections(text)}[sid].text)
 
 
 def hashed(*keys):
@@ -271,6 +279,71 @@ def test_audited_never_moves_checked_backwards(docs_dir):
     with pytest.raises(state.SetupError) as err:
         baseline.audited(s, MANIFEST, 'alpha', '2.1.901', '2026-10-05')
     assert str(err.value) == '2.1.901 is older than the checked release of alpha.reference'
+
+
+def test_add_copies_the_groups_oldest_checked_and_audited_in_the_stamps_order(docs_dir):
+    '''D4 and D1: by release, alpha's oldest checked is alpha.reference's; by
+    date, its oldest audited is alpha.overview's. The other order would pick
+    the other section, and beta's older values stay out.'''
+    s = fixture_state(docs_dir)
+    a = s['sections']
+    a['alpha.overview']['checked'] = {'release': '2.1.901', 'date': '2026-09-01'}
+    a['alpha.reference']['checked'] = {'release': '2.1.900', 'date': '2026-09-30'}
+    a['alpha.overview']['audited'] = {'release': '2.1.901', 'date': '2026-09-10'}
+    a['alpha.reference']['audited'] = {'release': '2.1.900', 'date': '2026-09-20'}
+    before = copy.deepcopy(s)
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert new['sections']['alpha.extra'] == {
+        'checked': {'release': '2.1.900', 'date': '2026-09-30'}, 'changed': '2.1.902',
+        'audited': {'release': '2.1.901', 'date': '2026-09-10'},
+        'text_hash': section_hash(with_extra(guide_text()), 'alpha.extra')}
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview', 'beta.reference']
+    assert {i: v for i, v in new['sections'].items() if i != 'alpha.extra'} == before['sections']
+    assert {k: new[k] for k in ('format', 'groups', 'llms', 'cited')} == {k: before[k] for k in ('format', 'groups', 'llms', 'cited')}
+    assert s == before
+    assert guide.render_stamp(new['sections']) == guide.render_stamp(before['sections'])
+
+
+def test_add_in_a_new_group_copies_the_files_oldest_and_stays_above_a_citer(docs_dir):
+    '''Designer's calls 3 and 4: a group with no stored section copies the
+    file's oldest; a citation written by hand before add is left STALE.'''
+    s = fixture_state(docs_dir)
+    s['sections']['alpha.overview']['checked'] = {'release': '2.1.902', 'date': '2026-10-01'}
+    s['sections']['alpha.overview']['audited'] = {'release': '2.1.902', 'date': '2026-10-01'}
+    new = baseline.add(s, state.parse_manifest(GAMMA_MANIFEST), GAMMA_GUIDE, ['gamma.overview'], '2.1.902',
+                       {'gamma.overview': ['2.1.902']})
+    assert new['sections']['gamma.overview'] == {
+        'checked': {'release': '2.1.900', 'date': '2026-09-02'}, 'changed': '2.1.902.1',
+        'audited': {'release': '2.1.900', 'date': '2026-09-02'},
+        'text_hash': section_hash(GAMMA_GUIDE, 'gamma.overview')}
+    assert list(new['sections'])[-1] == 'gamma.overview'
+
+
+def test_add_keeps_an_entry_waiting_for_drop(docs_dir):
+    '''Review Focus 1: a stored ID that the guide and the manifest lack keeps
+    its values, after the guide-ordered entries.'''
+    s = fixture_state(docs_dir)
+    pending = copy.deepcopy(s['sections']['beta.reference'])
+    items = list(s['sections'].items())
+    s['sections'] = dict([items[0], ('gone.one', pending), *items[1:]])
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                     'beta.reference', 'gone.one']
+    assert new['sections']['gone.one'] == pending
+
+
+@pytest.mark.parametrize('ids, manifest_text, message', [
+    (['alpha.nowhere'], EXTRA_MANIFEST, 'baseline add: not a guide anchor: alpha.nowhere'),
+    (['alpha.extra'], MANIFEST_TOML, 'baseline add: in no manifest.toml group: alpha.extra'),
+    (['alpha.extra', 'alpha.overview'], EXTRA_MANIFEST, 'baseline add: already in baseline.json: alpha.overview'),
+])
+def test_add_refuses_and_changes_nothing(docs_dir, ids, manifest_text, message):
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    with pytest.raises(state.SetupError) as err:
+        baseline.add(s, state.parse_manifest(manifest_text), with_extra(guide_text()), ids, '2.1.902', {})
+    assert str(err.value) == message
+    assert s == before
 
 
 def latest_from(tmp_path, **edits):
