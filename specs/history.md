@@ -536,3 +536,8 @@ Closed deferred items:
 - "**The Codex guide calls the 32 KiB limit "combined", and plan 98's B0 run does not show the global file" (deferred by 98-marimo-notebook-seam): owner ruling: the guide's line stays as the docs give it.
 - "**V3 of the `verdict` pin is a miss under the Rules' plain text (plan 98 Task 3; the plan's Builder's call" (deferred by 98-marimo-notebook-seam): owner ruling: the record's V3 reading is approved, and no count changes.
 - "**Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50" (deferred by 98-marimo-notebook-seam): covered by the owner's ruling on the plan 97 item.
+
+## /deferred — 2026-11-15
+
+Closed deferred items:
+- "**history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick" (deferred by deferred-quick-fixes-2026-11-14): the draft names each ledger line whose `Ruling:` comes after a note, so no ruling is lost without a sign.
