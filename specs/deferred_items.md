@@ -6686,7 +6686,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       mutants.md, the reviewer's check 7 and the micro-tested texts, so it needs a design. Size: design. Done
       when: a spec picks a way to close the gap, its plan lands, and a task with new tests in two suites ends
       with revert evidence for both.
-- [ ] **batching.md does not say which BASE a batch that spans several dispatches passes to `mutant-run` (plan 97
+- [x] **batching.md does not say which BASE a batch that spans several dispatches passes to `mutant-run` (plan 97
       Task 7 ruling, 2026-11-14).** `skills/subagent-driven-development/references/file-handoffs.md` says the
       BASE is the commit recorded before the task's first dispatch, and spec
       `specs/completed/change-reverted-mutant.md:182` says a batch uses the batch's BASE.
@@ -6695,6 +6695,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       "the batch's BASE" as the BASE recorded before the batch's first dispatch. Size: quick-fix. Done when:
       batching.md names that BASE in one sentence, and `build/check_helper_paths.py`,
       `build/check_conformance.py` and `build/check_links.py` pass.
+      → done 2026-11-14 (/deferred quick fix): batching.md now says that the batch's BASE is the commit recorded before the batch's first dispatch, which fills `[BASE]` and goes to `review-package` and `mutant-run` in every round. `check_helper_paths.py` (29 references anchored), `check_conformance.py` (exit 0) and `check_links.py` (245 links, 0 broken) pass.
 - [ ] **Committed micro-test rep JSON files carry `credential_expires_at` (plan 97 Task 8 ruling, 2026-11-14).**
       The field is a login credential's expiry timestamp, not an identifier. Plan 97's reviewer rep JSON copies
       under `specs/baseline/red-baseline-change-reverted-mutant/` carry it. Main already commits it in 281 rep

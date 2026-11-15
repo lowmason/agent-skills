@@ -23,6 +23,11 @@ e.g. `batch-4-7-brief.md`) in this plan's workspace — the directory
 path to both the implementer and the reviewer as `[BRIEF_FILE]`, the same
 handoff **File Handoffs** gives a single-task brief.
 
+The batch's BASE is the commit you recorded before the batch's first
+dispatch: it fills `[BASE]` and goes to `review-package` and `mutant-run` in
+every round, never the parent of a later dispatch, so the revert covers the
+whole batch and not only the last dispatch's change.
+
 Open that brief with the plan's Global Constraints, copied verbatim.
 `task-brief` prepends them to every brief it writes, which is what lets
 **File Handoffs** promise the implementer its brief carries them; a brief you
