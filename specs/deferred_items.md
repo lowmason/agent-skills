@@ -6436,12 +6436,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       one fix, and the skill text or the evaluation-rule template changes to match, with the choice recorded.
 
 ## 92-writing-skills-guide-rewrite — 2026-11-12
-- [ ] The guide omits a docs fact about `@` paths in skill bodies (plan 92 completion notes). Claude Code
+- [x] The guide omits a docs fact about `@` paths in skill bodies (plan 92 completion notes). Claude Code
       attaches the files that `@` paths name in the body of a local skill, but not in a skill synced from
       claude.ai. `skills.progressive-disclosure` in `specs/guides/claude-code-customization-guide.md` does not
       say so. Until it does, `skills/writing-skills/references/discovery.md` gives only a portability reason for
       bare skill names. Size: quick-fix. Done when: a `/cc-guide` pass adds the fact, with its docs source, to
       `skills.progressive-disclosure`.
+      → done 2026-11-15 (/deferred quick fix): `skills.progressive-disclosure` now says that in a terminal or VS Code session Claude Code doesn't attach the files that `@` references name in the body of a skill synced from claude.ai, and that those references reach Claude as literal text (2.1.228+), while a cloud or Cowork session handles them as a local skill does. The `/cc-guide` skills-group verify confirmed both sentences, against skills.md:318 and skills.md:316 of the 2.1.325 docs, and the section was accepted and advanced to 2.1.325.
 - [ ] `build/cc_guide/packets.py` `files()` copies only the citing file into a `/cc-guide files` packet (plan 92
       completion notes). Drift rule R4.1 says a SKILL.md citation also covers the Markdown files that the skill
       loads on demand. So the packet for `skills/writing-skills/SKILL.md` leaves out its seven on-demand files.
@@ -6496,7 +6497,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       reason and revisit lines are rewritten to match.
 
 ## claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323 — 2026-11-12
-- [ ] `hooks/ruff-check.sh` blocks with exit 2 and ruff's output on stderr, which the guide's Stop-gate pattern
+- [x] `hooks/ruff-check.sh` blocks with exit 2 and ruff's output on stderr, which the guide's Stop-gate pattern
       (`hooks.patterns`, guide L379) says can fail open (files pass, owner ruling: hold). Exit 2 with empty stdout
       and stderr that says a file is missing (such as No such file or directory) counts as a non-blocking error.
       Ruff's own output can hold that text, for example an E902 line for a file that vanished, so the gate lets the
@@ -6506,6 +6507,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       header comment. The file stays STALE in `cli.py lint` until then. Size: quick-fix. Done when: a test feeds
       the hook ruff output that holds "No such file or directory" and sees a JSON block decision, the hook and the
       three README lines match, and `cli.py baseline cite hooks/ruff-check.sh` runs after a fresh `/cc-guide` files verify.
+      → progress 2026-11-15 (/cc-guide): the hook now prints `{"decision":"block","reason":…}` on stdout with exit 0, and exits 1 with "jq could not print the block decision" on the first stderr line when jq fails. `test_ruff_check_blocks_when_ruff_reports_a_missing_file` feeds it an E902 "No such file or directory" line and sees the JSON block. The block tests failed first against exit 2, and the hooks suite passes under both Pythons (465 passed). `README.md:185`, `hooks/README.md:39`, `hooks/README.md:149` and the header match. A fresh files verify rated 15 statements consistent and one not covered (`hooks/ruff-check.sh:13`, that `uv run` also exits 1 when the project cannot sync), so the file is held and not cited until the owner rules on that row.
+      → done 2026-11-15 (/deferred quick fix): owner ruling 2026-11-15 on the not-covered row: no action, since it states a uv fact the guide does not cover. Settled again without the hold, `cli.py baseline cite hooks/ruff-check.sh` stamped the file @2.1.325, and `cli.py lint` no longer lists it as STALE (lint and `check_conformance.py` exit 0).
 - [ ] `skills/subagent-driven-development/SKILL.md` has six lines that contradict the guide (files pass, owner
       ruling: hold for one SDD pass). :43 and :53 require spec and quality verdicts and bar telling a reviewer what
       not to flag, while the guide (`subagents.isolation`, L235) says to instruct reviewers to flag only
@@ -6528,7 +6531,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       tests in `build/test_check_conformance.py` flag `Synced`, `anthropic-skills` and `anthropic-skills:x`, the
       message and the `rule` line name both reserved forms, and `check_conformance.py` passes.
       → done 2026-11-14 (/deferred quick fix): the register's `reserved` list is now two lists. `reserved_any_case = ['synced']` matches in any capitalization, and `reserved_prefix = ['anthropic-skills']` matches the name alone or followed by a colon. The message and the `rule` line name both forms. The new tests read the real register's lists. They failed first (`Synced` and `anthropic-skills:x` were not flagged, and the message was the old one), and now pass, with 366 passed in `test_check_conformance.py`. `check_conformance.py` exits 0, and `cli.py lint` shows no new STALE line.
-- [ ] Two Part 1 steps wait for the next Claude Code release (owner ruling: wait). Anthropic edited the
+- [x] Two Part 1 steps wait for the next Claude Code release (owner ruling: wait). Anthropic edited the
       model-config page's "Setting your model" block after 2.1.323 with no new release, so the weekly
       `cc-guide-drift.yml` job reports it changed in three groups, and `baseline rebaseline` refuses to overwrite
       the 2.1.323 snapshot. The guide's `hooks.pitfalls` bullet (L388) now carries the clause from that edit (a
@@ -6542,6 +6545,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       triage after 2.1.324 or later rebaselines the block, and the L388 clause covers a plugin or its hooks that
       fail to load, puts the version marker on the go-ahead behavior, dates it from a changelog entry or keeps
       the page-only hedge, and has been checked against the model-config page text.
+      → progress 2026-11-15 (/cc-guide): the L388 half is met. The clause now covers a managed plugin or its hooks that fail to load, puts 2.1.323+ on the go-ahead behavior and keeps the page-only hedge (the changelog's 2.1.260 and 2.1.314 entries are other fixes), and the hooks-group verify confirmed it against model-config.md:164. The rebaseline half is not: the 2.1.325 triage sent the model-config blocks on to verify, and the models-group settle held `subagents.models` and `lean.model-routing` (six range rows did not parse, and one JUDGMENT (mechanism STALE) row on L432 is the owner's call). Since every model-config page copy has a changed block whose candidates include `lean.model-routing`, "Setting your model" was left out of the skills, subagents and models rebaselines. A fresh models-group verify that settles clean clears it.
+      → done 2026-11-15 (/deferred quick fix): on the owner's word, a fresh models-group verify of the same 2.1.325 triage settled clean (101 confirmed, nothing held), and `subagents.models` and `lean.model-routing` advanced to 2.1.325. "Setting your model" was then rebaselined in the models, skills and subagents groups at `--head 2.1.325`, and `cli.py check --worktree` no longer lists it. The L388 clause was verified as the progress note says.
 
 ## 93-mutant-checked-tests — 2026-11-13
 - [ ] **task-done never checks that a mutant patch is the one its run measured (plan 93 final review, Codex

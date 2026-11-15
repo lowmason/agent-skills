@@ -36,7 +36,7 @@ pip") into deterministic gates that fire every time for ~0 tokens.
 | script | event | what it does |
 |---|---|---|
 | `ruff-fix.sh` | `PostToolUse` (`Write`/`Edit`) | `uv run ruff check --fix` + `ruff format` on the edited `*.py`. Best-effort (PostToolUse can't undo the edit). |
-| `ruff-check.sh` | `Stop` | `uv run ruff check .`; exit 2 feeds unfixable lint back to Claude. Guarded by `stop_hook_active` against loops. When ruff cannot run, it exits 1 with "ruff unavailable" and does not block. |
+| `ruff-check.sh` | `Stop` | `uv run ruff check .`. A JSON block decision on stdout, with exit 0, feeds unfixable lint back to Claude. Guarded by `stop_hook_active` against loops. When ruff cannot run, it exits 1 with "ruff unavailable" and does not block. |
 | `uv-guard.sh` | `PreToolUse` (`Bash`) | Blocks `pip install`, bare `python`/`pytest`; injects the `uv …` form. Escape hatch: `no-uv-guard` in the command. |
 
 All three parse the hook JSON payload from stdin with `jq` (already on your machine).
@@ -146,7 +146,9 @@ guard's **Tests** below, which run every test in this directory.
   other than 0 or 2 that prints schema-valid JSON is decided by that JSON instead,
   except on a hook whose failure blocks (`onFailure: "block"` or that Windows case): there
   any exit other than 0 or 2 is a failure even with JSON that allows the action, so
-  return JSON decisions with exit 0. `uv-guard.sh` and `ruff-check.sh` block with exit 2;
+  return JSON decisions with exit 0. `uv-guard.sh` blocks with exit 2. `ruff-check.sh`
+  prints a JSON block decision with exit 0, because exit 2 with stderr that says a file
+  is missing is a non-blocking error, and ruff's output can say that.
   `ruff-fix.sh` never blocks. When ruff cannot run, `ruff-check.sh` exits 1, so it reports
   the failure and does not block.
 

@@ -3,8 +3,8 @@
  "sections": {
   "context.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -15,8 +15,8 @@
   },
   "mechanisms.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -27,8 +27,8 @@
   },
   "skills.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.219",
    "audited": {
@@ -39,32 +39,32 @@
   },
   "skills.locations": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703"
+   "text_hash": "sha256:df2ebadb677ff51dc92458ca523316cb01bf162ec31eabe3f6df37ca903abefb"
   },
   "skills.frontmatter": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d"
+   "text_hash": "sha256:5b70f021487d8ef2c1a6dac3c8ef9aedcd491da0f7ebceeba1ce8c9e3c72ec3b"
   },
   "skills.description": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -75,8 +75,8 @@
   },
   "skills.listing-budget": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.304.1",
    "audited": {
@@ -87,32 +87,32 @@
   },
   "skills.progressive-disclosure": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.304",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc"
+   "text_hash": "sha256:d362daa0485a8505a431cf71fe4cbd1d30f89a419d507d106e234a207785a9b8"
   },
   "skills.arguments": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:94ed1b02d365a81ac95295dbdf2c269273828bde73d0907b11b1f819760866a3"
+   "text_hash": "sha256:d9fe4378b30e21d4fb33916875a0531749ad9991dd83eaae595a0837049dd391"
   },
   "skills.iterating": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -123,20 +123,20 @@
   },
   "commands.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a"
+   "text_hash": "sha256:6de5fb46c87c7127bfde48b3c29b67c34db91a2c08dfd9968a65f0e729c8d5e0"
   },
   "subagents.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.288",
    "audited": {
@@ -147,20 +147,20 @@
   },
   "subagents.frontmatter": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82"
+   "text_hash": "sha256:882d758c386d83368b4884ca25d285fd5fe8684261d9b911af439a18ada5c55d"
   },
   "subagents.tools": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -171,20 +171,20 @@
   },
   "subagents.models": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.296",
     "date": "2026-10-13"
    },
-   "text_hash": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954"
+   "text_hash": "sha256:fde45a05e386f80aa08994d8b970b2faa124b583e346e5f4f9fc8aa009239b91"
   },
   "subagents.isolation": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -195,8 +195,8 @@
   },
   "rules.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.219",
    "audited": {
@@ -207,8 +207,8 @@
   },
   "rules.claude-md": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.288",
    "audited": {
@@ -219,8 +219,8 @@
   },
   "rules.hierarchy": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -231,8 +231,8 @@
   },
   "rules.rules-files": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -243,8 +243,8 @@
   },
   "rules.auto-memory": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.289",
    "audited": {
@@ -255,20 +255,20 @@
   },
   "rules.settings": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:11739bd03c9d79adbf566cfaa8fd8f7bca970d3f181e5579ff1d801bcd45fa0d"
+   "text_hash": "sha256:42a53480f1d487f816ff667896925405ff409ee4b8fdb1a7f038eb489e33850e"
   },
   "hooks.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.288",
    "audited": {
@@ -279,8 +279,8 @@
   },
   "hooks.events": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -291,8 +291,8 @@
   },
   "hooks.exit-codes": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -303,8 +303,8 @@
   },
   "hooks.handlers": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.288",
    "audited": {
@@ -315,8 +315,8 @@
   },
   "hooks.configuration": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -327,8 +327,8 @@
   },
   "hooks.patterns": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -339,20 +339,20 @@
   },
   "hooks.pitfalls": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970"
+   "text_hash": "sha256:91dcb124e2b4182d10438ea16ffa606aa91b0975c5e0f3c3cb2b537336f9930d"
   },
   "lean.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.219",
    "audited": {
@@ -363,32 +363,32 @@
   },
   "lean.measure": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.323",
     "date": "2026-11-12"
    },
-   "text_hash": "sha256:a4fa212755a11f365939c2981f4145bea1eb02f24806a7284d10fe5831413788"
+   "text_hash": "sha256:50109c5f0eece3b2cfda345947765febb68375de836a67437106f2d3e7571398"
   },
   "lean.session-hygiene": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.323",
     "date": "2026-11-12"
    },
-   "text_hash": "sha256:ef2e6bac3f6780e064b79aa463af96f1c0d8345335f01a3c0d8cfaa6ba83cc51"
+   "text_hash": "sha256:bf6859e66e4b453a3012e17112b8ceffb91bb124d3fb57589f86d16fe054ba4b"
   },
   "lean.caching": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -399,20 +399,20 @@
   },
   "lean.model-routing": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.296",
     "date": "2026-10-13"
    },
-   "text_hash": "sha256:e0426c3a8e3360236ed370e5a2a478a38edb5dd88e68efab64cdd2c79995e710"
+   "text_hash": "sha256:618f8a622275f7833181ad6e9bee88573bd576445dd1fd08061c7203ecf23b50"
   },
   "lean.mcp": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -423,8 +423,8 @@
   },
   "lean.ceremony": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.219",
    "audited": {
@@ -435,8 +435,8 @@
   },
   "lean.expensive-ops": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -447,8 +447,8 @@
   },
   "reading.overview": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.288",
    "audited": {
@@ -559,7 +559,7 @@
      "6b30d3b8d8af2d99": "1691eab8b8772c86",
      "6f45d5462b22641d": "a7f1f59b15c69071",
      "11f73dbb5b5d3362": "65927695d1123f41",
-     "73e205b2a5eab866": "b1d50662eb8a3e11",
+     "73e205b2a5eab866": "23b77a19618b4dfa",
      "6e1b77ca44105d26": "250d7ef153183d61",
      "1a341f9a90096a5b": "40e05099a4647cc5",
      "35e7590b8dfffcb9": "a1ca7bdc407adadb",
@@ -568,7 +568,7 @@
      "7506b03340c76706": "fffeecdfcb03ebd2",
      "aca748b469b6bbbd": "95ae33ac08a7bd41",
      "163d604bff2e9f65": "6660ee7e79a1c97a",
-     "2a369776153bae00": "e7df0ddddcf64360",
+     "2a369776153bae00": "1e536f856296dac9",
      "5b16ec7361148044": "d27fd8251f4c5348",
      "fdf915fe7699226f": "29c550a0583ccffc",
      "f19f3424769a6852": "fe5ac17ee2f5d2c5",
@@ -619,13 +619,13 @@
      "5454f64be2451181": "98cc3dec621bd1da",
      "fa67e0dd8c90ed79": "894a7ce4b944744b",
      "0a06a08ac19dab74": "ab29ead159e8cfde",
-     "a81f80b963261509": "eddb2ed422f8c8e6",
+     "a81f80b963261509": "6d9564d17189d263",
      "07b709c55bcd625b": "3a225ca135c9d19c"
     },
     "features-overview": {
      "638fa47d91045ef7": "dd7dd11beae8298c",
      "44d1cceccc2a21ff": "3eee3ad3cd79cf62",
-     "a893dd599a969ac9": "0e6a9f00a7263291",
+     "a893dd599a969ac9": "595bffa89af3221b",
      "1fc1fad9064b18f0": "85cf259e9de271d1",
      "6cc323c698e0f6b9": "07073bc2d88aba2c"
     },
@@ -678,7 +678,6 @@
      "97929704652d16e0": "6ea8d103d25125fe",
      "3e041bf15e6dd335": "92f15ec1f48f2fde",
      "18cf174fed52ecac": "7883de2208fdc0c8",
-     "a31c436a45ff4a69": "b7521546a9c8d494",
      "6161ad7b8408bee5": "2cfe9542d8f56b48"
     },
     "interactive-mode": {
@@ -729,7 +728,7 @@
      "730eccb989731f64": "4b2e73dfd65c4a2d",
      "b27f2fd74bd980ad": "42f60ecddf51928d",
      "e33cdbca0cd039d2": "2d2b13c993a65414",
-     "f126fdee488667be": "a801a0ab338158ad",
+     "f126fdee488667be": "7f65017aeb6d2276",
      "2c478490881fc7bd": "4d4ead5544179764",
      "07b44027eefb59cd": "22e77b3dabb10629"
     },
@@ -751,8 +750,8 @@
      "3a608dca75d1ccab": "8a3e20aa6ec33b18"
     },
     "skills": {
-     "0f0e89be5f778fb1": "944e6204fc8fb0d2",
-     "630216bf27503439": "75c251afa27c330b",
+     "0f0e89be5f778fb1": "c77bbb9ceec2e53a",
+     "630216bf27503439": "ceadebf286bf39e2",
      "e9bb52704ed13c55": "a8e998db8009c28c",
      "557cd79f12e6dbf4": "e69aead1ae75042b",
      "bf7a7cf6259e2e02": "5f87b90764bf8e9f",
@@ -768,14 +767,14 @@
      "e0ee3443a637d635": "bccff5072249a45b",
      "de7b06c4a15e4659": "9ccf52f031240ecf",
      "ed34a62baba2acb9": "5e18388484bba46e",
-     "6dc55a8c82214c85": "f1c8acbf2acd9837",
+     "6dc55a8c82214c85": "ba04be8d5a1d9e17",
      "f117573d5e5484ab": "c9fe5db5612318e8",
      "757bab4712a50bc6": "40b79e4ce26b1c16",
      "68b014c65f697724": "e441c42b3bbd89f0",
-     "231218af0dcfafcc": "e81401eda93adeac",
+     "231218af0dcfafcc": "d3048ba02ef61355",
      "10b2af67544611a2": "5d13603b1727d3a7",
      "1f067d5dda9bbbf5": "8d711c087ebdf2f7",
-     "37f96d03863b7ef7": "6bda7c0bec84039f",
+     "37f96d03863b7ef7": "a0cf054550e3478b",
      "1c724fd6e4c27c55": "1770ea3e1df04cc8",
      "e704028486462f5c": "36f891981a22289f",
      "ce0d6116da0bc3b1": "6f275c55ef2d0607",
@@ -786,7 +785,7 @@
      "213195ad263a8594": "450468845901538c",
      "00c85baa99e8b056": "20907250213cf53e",
      "ad149b477d8d1ac3": "63dcbf05fb24873d",
-     "2f88849bc5079931": "3377533c6ef49cc0",
+     "2f88849bc5079931": "31986334b457019a",
      "e034df80898e91d3": "61a1f2bda41741a3",
      "a22d61e72e943f26": "21796d8aa98e12ea",
      "f466eb8525fa133e": "4b9de8197c52d76e",
@@ -794,7 +793,7 @@
      "870b8fe3eda0f1c0": "b1bd1033a43db2cc",
      "cc251ad55d83875e": "15d7b0a6ec57bf6e",
      "58f26df33b199b78": "81f0844128498d53",
-     "73840098eb04033d": "ce7614c74a536fed",
+     "73840098eb04033d": "4f783b8896ec2ac6",
      "3ea0c263561cd631": "0122a3f307064c42",
      "0ae5e7e50b1c6241": "595784b398862d56",
      "51e42318625f5de0": "35e53949d9e2e5fb",
@@ -816,24 +815,24 @@
    "snapshot": {
     "context-window": "2.1.323",
     "costs": "2.1.323",
-    "mcp": "2.1.323",
-    "commands": "2.1.323",
-    "features-overview": "2.1.323",
+    "mcp": "2.1.325",
+    "commands": "2.1.325",
+    "features-overview": "2.1.325",
     "debug-your-config": "2.1.323",
     "best-practices": "2.1.323",
-    "statusline": "2.1.323",
+    "statusline": "2.1.325",
     "interactive-mode": "2.1.323",
-    "env-vars": "2.1.323",
+    "env-vars": "2.1.325",
     "memory": "2.1.323",
-    "skills": "2.1.323",
-    "monitoring-usage": "2.1.323"
+    "skills": "2.1.325",
+    "monitoring-usage": "2.1.325"
    }
   },
   "skills": {
    "blocks": {
     "skills": {
-     "0f0e89be5f778fb1": "944e6204fc8fb0d2",
-     "630216bf27503439": "75c251afa27c330b",
+     "0f0e89be5f778fb1": "c77bbb9ceec2e53a",
+     "630216bf27503439": "ceadebf286bf39e2",
      "e9bb52704ed13c55": "a8e998db8009c28c",
      "312f637d0c117f1e": "43827d8c9fd66ea4",
      "2a967edb6d6f7ac8": "388d393e8b55a6d7",
@@ -883,8 +882,8 @@
      "66f622e3554580af": "f55d2cd5d64f125b",
      "8779efd02bb8cd69": "f2ba2fdef71e00bb",
      "b1035e7c08b04090": "f40033f0e8ad51de",
-     "f8ff446203a13121": "7bdb5fb37a3a9156",
-     "64a65a7877b7fefd": "f32553b484b5444e",
+     "f8ff446203a13121": "7dfcdb3b7cbac5cf",
+     "64a65a7877b7fefd": "f2b59a7b7c5d02c1",
      "cd64d83d21299fd7": "225328930ebba705",
      "15c1d19510a6251b": "f5bd40edf4284f43",
      "7a7ba4cc6155da47": "5a7babaa7d4d392f",
@@ -934,30 +933,30 @@
      "eb7f5cbf032d6e07": "112b0979cc692b4d",
      "cc3691ec3d58d781": "9609082c1002a26b",
      "1b6effe20fc3c8ba": "00d1d28e7d6e2174",
-     "6dc55a8c82214c85": "f1c8acbf2acd9837",
-     "410eebc694a662b3": "59ee32c7bad80ff6",
+     "6dc55a8c82214c85": "ba04be8d5a1d9e17",
+     "410eebc694a662b3": "70ffe2f013f2eef6",
      "f117573d5e5484ab": "c9fe5db5612318e8",
-     "54826e7c898ddeb3": "e57e4553e3198d2d",
+     "54826e7c898ddeb3": "103ec819a0b8f291",
      "d33f9b7419bca0d5": "7bcebd30feae4a20",
      "757bab4712a50bc6": "40b79e4ce26b1c16",
      "68b014c65f697724": "e441c42b3bbd89f0",
      "f9085a0b9c1f3dce": "02132b9648ab4cdd",
-     "231218af0dcfafcc": "e81401eda93adeac",
+     "231218af0dcfafcc": "d3048ba02ef61355",
      "2e4fbb4c024a953b": "6a28395590021231",
      "26ffa3691b004d0c": "dcc27fc27624f600",
      "10b2af67544611a2": "5d13603b1727d3a7",
      "8190b6fd0a7e92db": "55090bc4786344b5",
      "e14e5a1f947b0139": "d103051ce027da30",
-     "d2a03fc8253acef2": "c1618a3bf1ee50ab",
+     "d2a03fc8253acef2": "56c9c1fbbab55e83",
      "1103a8bac34e7bf0": "da7c8124749440a1",
      "c40d9c25c86427f5": "1d42f1062c125e46",
      "7c353dd96f7fb2b5": "334f92af68127bb5",
-     "2b0b0d161560b4f7": "85a02dd6e0c1ca4a",
+     "2b0b0d161560b4f7": "f306a39e19698e98",
      "1f067d5dda9bbbf5": "8d711c087ebdf2f7",
      "c03906a590f46719": "9a0784ff81b4c6e2",
      "729f7f253c6abe8b": "467fd7a6d5ee3308",
      "913ace8c50efc01f": "3094a380e052a4f8",
-     "37f96d03863b7ef7": "6bda7c0bec84039f",
+     "37f96d03863b7ef7": "a0cf054550e3478b",
      "6e1526e4827b5935": "7f996e6e2487752e",
      "66c4eedcc68a7c5a": "bc9627d4b27b12fa",
      "c760a6a150936389": "a7a45539dd1197d9",
@@ -997,7 +996,7 @@
      "8fdee6f04419d973": "bab905ba393013a4",
      "64c11544840d1190": "f185fef99e90ebed",
      "7784987f5055202e": "9bf74bdcbaac87da",
-     "6f0a91e1e5e91f51": "25468d1fb83c4561",
+     "6f0a91e1e5e91f51": "8f974f0f34cdf609",
      "ec4a25a42e9c6561": "9756505eeed94b1d",
      "2a24043dc738f3c1": "caf1655090f90fde",
      "43fc0381132593ff": "55b6d1e4e41cbba8",
@@ -1012,8 +1011,8 @@
      "07b709c55bcd625b": "3a225ca135c9d19c"
     },
     "plugins/components": {
-     "d3651b2ebfefb84c": "45cd562d1729b1e8",
-     "ea2a3cf2e4e6188d": "aef0f0892b3a6087",
+     "d3651b2ebfefb84c": "bc34957326deff26",
+     "ea2a3cf2e4e6188d": "00a9968e101e1d6c",
      "066d07b69abf4bfd": "3f8678a1fc45f003",
      "b2bc8ac30a80d159": "1d3f2ab3c69d7020",
      "bce74e95ea80a3ef": "0bf878d0eecb9a15",
@@ -1103,14 +1102,14 @@
      "3fd1905eb0d9a5a0": "1b417f99a7422d49",
      "74586bec5cc3dca5": "0b9fafefc97fb7c8",
      "de5c42d0a60cdca7": "0fe9b6bc7a8e6855",
-     "5a88723a9fe30c41": "cee060ca7bea15f2",
+     "5a88723a9fe30c41": "bb12e46775b725b5",
      "d4566fa3f0517115": "a9a9ad92d967b67b",
      "315fa74c6c524dff": "1d031ced909c3132",
      "a68d5291f7c74aa6": "29413d61afbc0a88",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
      "afc75960b46982f0": "a70835228f726c08",
-     "effeefd8012e9034": "213a13d353cce48b",
+     "effeefd8012e9034": "8a2c5b66e0503889",
      "27fa3fcf231c3433": "29bebe5d15f4dbab",
      "6bc148a66bac171d": "f4447392583b7ab4",
      "1a2fd1400eafd0b7": "6f2a88d6a11bbd07",
@@ -1132,7 +1131,6 @@
      "c5b2c7561a43c83f": "a48d1d8b11cc2b85",
      "e7e0f32d708fd934": "3f5f5f9f7f885a5c",
      "1037a7821d0d61b9": "7646a7fd1d66408a",
-     "feb0e865f2e1523e": "93049721c3a376e0",
      "125cba8e2ba3a6d3": "8e13d07dfd20e4ce",
      "f9408c4841df917e": "f61f21ad936ecb04",
      "bfc70090a57ea8f1": "45beac568c5381bb",
@@ -1140,9 +1138,9 @@
      "aa64dc9e7a783a67": "38f79c519e203f78",
      "d489cf922816af53": "e1b3ca3161c1c391",
      "bbb6b3b0073605de": "9cbb5a1f4eb7c043",
-     "3c2aa218803b1d8f": "fe587a780faef2ca",
+     "3c2aa218803b1d8f": "9dd387be749e115d",
      "541a4afd68d5724a": "a0c5cd1321edddbe",
-     "6232b57da23fc8ee": "0b135630c1260359",
+     "6232b57da23fc8ee": "b859af86190573ed",
      "2ee36eb7c0d61f40": "a43c16211fa13760",
      "bb4446618f185060": "410de68b8a3e11da",
      "533628ec58dd90cf": "7f439c7e39badb32",
@@ -1155,7 +1153,7 @@
      "8ec1bdc99167a3b1": "993fc6324fd2c3bd",
      "4ee9bb65ad231bf8": "d388a18a425496f9",
      "01f219ae9063893b": "2cf23e2267a1f976",
-     "ddb37dd1132d61b6": "533894e9552c9af6",
+     "ddb37dd1132d61b6": "e4e9f8a1048d1881",
      "310e74d072193404": "f8c19506d65f8b35",
      "2707424be73a81fa": "a47c9b68d5e95039",
      "ef43d84c06753426": "3a8e1995bd52d04e",
@@ -1243,14 +1241,14 @@
      "50c045f8e6be7920": "0a0b1a5aba50f454",
      "91cd0b41a3668a49": "93cc344e79fa143f",
      "c7c5c12a232d4b16": "d73188e55c50e73a",
-     "f126fdee488667be": "a801a0ab338158ad"
+     "f126fdee488667be": "7f65017aeb6d2276"
     },
     "auto-mode-config": {
-     "aa57b43ae1edbe33": "5d295727b3167249",
+     "aa57b43ae1edbe33": "1dedb9fc4eb64c04",
      "32157f2dd2ab2243": "19928b1bf45916ce",
-     "0c4f3061938a57d6": "f518ca8f4204b4d4",
+     "0c4f3061938a57d6": "37b54f38310f24ab",
      "42700cc375bfb42c": "b680681296494a31",
-     "f5b746baa1580a20": "4eefdc8cdd9c44e5",
+     "f5b746baa1580a20": "ffd3c53f47af709b",
      "1d17c1c85fc550ed": "03324c843470cf90"
     },
     "model-config": {
@@ -1259,11 +1257,11 @@
      "a244c1bfa64fa1c6": "4a760e3a9e6f5347",
      "ed479d6b246eb803": "fb242d69e4de055f",
      "18412ef34667ab4d": "a177aaa31ff8af4b",
-     "0b4a243207f1187f": "2fb2fdc0299a508f",
-     "4b77914c2831235e": "3f925564b2c33f3b",
+     "0b4a243207f1187f": "f957e0d2218ffa4f",
+     "4b77914c2831235e": "df812e3bee601eeb",
      "894852664f695946": "a68e954b656e758d",
      "5066cf2d81cde0b4": "0865206720e84343",
-     "a22f38878b3db507": "d8b99bdf01737743",
+     "a22f38878b3db507": "e17af79308dfd1bf",
      "5584a79116274ebd": "8400b32adafc8f26",
      "e88f72bb1b209ba8": "dfd71a7b67879278",
      "806ec2cd5061e710": "2f62dbb84cc54807",
@@ -1274,9 +1272,10 @@
      "598417994f0798c0": "a5a42ae3e94c8368",
      "832396d261b979a7": "e69f14e59a441500",
      "8bd8da235efee3a8": "6df89ec72d74d672",
-     "712d87fcb7c01a8b": "7c1124b076b7b9ed",
+     "712d87fcb7c01a8b": "7e609d3865b382b7",
      "fa22879fa378b4d8": "5fad44b64658b915",
-     "4c80abdbfa409e44": "55bd87ac0fd6b3b1",
+     "4c80abdbfa409e44": "cbddb8b5b3f594e5",
+     "a06abcf3f30806a9": "47c4d87c5ec303cf",
      "ef6ca7661efc0d13": "724703f1df885c1e",
      "e00bd9cd5bb70bc2": "3749b3f3929340ca",
      "f20881b622c8add6": "b86a705627ad0689",
@@ -1293,7 +1292,7 @@
      "bc3ee7c75fabdc5c": "41e374054f848161",
      "3495e90af0d7a76a": "802bed7df4e7fa22",
      "cf999870ebcb7136": "fec2d90835b59d6c",
-     "7a9f846360391a09": "150e344fee5a8248",
+     "7a9f846360391a09": "ce2b4191f6fab9bb",
      "4023d62e68715ecc": "1429c2b8f5a7e5b2",
      "74822cede9bea5e9": "034ecafa0498b8b3",
      "225559d786d3821a": "913ed6f320c16f15",
@@ -1305,12 +1304,12 @@
      "8e197b18b66b5c79": "b31db759fe34d244",
      "a9ffcda01c492fa5": "f516530bdf637ae6",
      "2a1574700a27ee9d": "5145f61b071d758c",
-     "70caab31839856cb": "8b326bb7f9915451",
+     "70caab31839856cb": "7fa1e1b8121a2760",
      "b7d2c85282d683c4": "1b9453e1eff92cce",
      "3089ea2880480f23": "c345f913fdf53ce4",
      "f33e8d23248e5940": "5a373c57b21ed7db",
      "309648bc03f32f67": "cab419a7bec9f686",
-     "310b4db7e9df842d": "3e344945b528ba6a",
+     "310b4db7e9df842d": "b7ba5158beaa6399",
      "8afe2c216957527c": "4e4790118341c554",
      "f0d74ee452224e85": "eefb4ec06c899014",
      "a4fc93d0e2b84eaf": "e18e20a4e8936459",
@@ -1323,22 +1322,22 @@
     }
    },
    "snapshot": {
-    "skills": "2.1.323",
-    "commands": "2.1.323",
-    "plugins/components": "2.1.323",
+    "skills": "2.1.325",
+    "commands": "2.1.325",
+    "plugins/components": "2.1.325",
     "plugins/loading": "2.1.323",
     "claude-directory": "2.1.323",
-    "settings-reference": "2.1.323",
-    "env-vars": "2.1.323",
-    "auto-mode-config": "2.1.323",
-    "model-config": "2.1.323"
+    "settings-reference": "2.1.325",
+    "env-vars": "2.1.325",
+    "auto-mode-config": "2.1.325",
+    "model-config": "2.1.325"
    }
   },
   "subagents": {
    "blocks": {
     "sub-agents": {
      "9eae7e5a27ae8b0c": "71ee5a02939af443",
-     "1305c0ce4ab4fcae": "06a42b28e08019a2",
+     "1305c0ce4ab4fcae": "31b85b2cc6bfd9bf",
      "4e8663a7711b8ae6": "9d7a77ad340da985",
      "ec98b929bbeb73bb": "429f324b50b8d4c0",
      "fe0badeadb97b9eb": "f4a51c3279d49eb7",
@@ -1370,12 +1369,17 @@
      "cd5c23290dfab7aa": "e3d9f3180ae2981c",
      "e356ec93c6160c4a": "4495c1ccbbcd3511",
      "7937796782a279d5": "26acd89eaec41a63",
-     "854d2fe2fb9faf81": "12b5bf8b65debecd",
-     "f88e151ce563a301": "c3dcb42d106437f8",
+     "854d2fe2fb9faf81": "1b5b69ffa2bf1e49",
+     "ffc0357c9dd5005a": "96c8d663df8193da",
+     "759f147ccefe7738": "56f5a9c71b7e8785",
+     "f88e151ce563a301": "15adb2929d0745b3",
+     "90bea32f9a4b5a57": "9823b25c75f76bcb",
+     "26ea6f0fd67b8289": "017d8a1d195488c0",
+     "aadccddf463d21bc": "6e552cf1580cdcb8",
      "c216f83477706c4f": "4b7691b818e2b14b",
      "ceec158047b20a7b": "983421460dbed30d",
      "6df123bd23c9ec56": "2d6817bcf431a990",
-     "4badc13cb031c73e": "d3c8c8a7adea2ace",
+     "4badc13cb031c73e": "466e8ee60e3e67e8",
      "e851c2191fd739a0": "c47be8d4d4bed9ef",
      "8ef51f7132362a08": "3f8d4973d0db4466",
      "fba4933ee2780218": "d84b4192e646156c",
@@ -1423,7 +1427,7 @@
      "39edeb26e70767fa": "f537f4c773e29b64",
      "dae6339beb6107fd": "566d9de0ff86059a",
      "2c7e0568938d57da": "e7eeb74ee794ebcb",
-     "6cfa7a675b7a96b0": "3770b0fbe7b2d335",
+     "6cfa7a675b7a96b0": "e414a50d31396338",
      "1c927e9050c73bca": "4482411fb0a5b0b7",
      "6e955a674bf5fabd": "c08b558b6f1661ae",
      "153c8ee3c673d801": "f4e1c38fea6235d5",
@@ -1431,17 +1435,17 @@
      "bf0ff8c46476bb00": "d3f36b59e709fd05",
      "06fb3a04c9aa9798": "2f8c73b58390e723",
      "4a8fdffa0ebadf1d": "1e092f6b0ff68a9f",
-     "f3ea8b78a7143810": "e8882e734f214aa1",
+     "f3ea8b78a7143810": "7226399df38680ee",
      "d2bcfc430c3e392c": "2b75ffb42d3f0f72",
      "3895511247cc353a": "1340d04a73380734",
      "6f26886b96177566": "12edc2f0d5eb3b47",
      "f6e18920646024ed": "68d06c58d5808d11",
      "402b877f9692f447": "9cbb3da54aa2c69c",
-     "dfe2c14c607f4a1e": "4d8aed61f5b48534",
+     "dfe2c14c607f4a1e": "923a39024719b2f0",
      "f3691a1a26829bf9": "9328dc8ce8fa2a06",
-     "3eb8ff4199d2ed63": "f3fc92de7462a49e",
-     "479af9f39c0fc123": "22fb4c448cb530ac",
-     "1ad87c779c661d88": "3d0bf6904714040f",
+     "3eb8ff4199d2ed63": "0c3bd7bd1cf76857",
+     "479af9f39c0fc123": "ee897d9e1d7e4333",
+     "1ad87c779c661d88": "8aef93938a1e2c7e",
      "a3618e9f45aa1e89": "991a5b51335f588b",
      "682e262c25171f77": "f290b9738da6711d",
      "a24fc507f47afeb0": "ff7c53f7dbe91cfd",
@@ -1490,9 +1494,9 @@
      "72d69086aba46b41": "eb77be0b60026885",
      "2c85499b616a208e": "bad82e91916eb52b",
      "18412ef34667ab4d": "a177aaa31ff8af4b",
-     "4b77914c2831235e": "3f925564b2c33f3b",
+     "4b77914c2831235e": "df812e3bee601eeb",
      "894852664f695946": "a68e954b656e758d",
-     "a22f38878b3db507": "d8b99bdf01737743",
+     "a22f38878b3db507": "e17af79308dfd1bf",
      "806ec2cd5061e710": "2f62dbb84cc54807",
      "044daf45efcde2f7": "4098062ca75af7db",
      "5e2db4dafc4fbfb4": "20607b3ad7969ff1",
@@ -1500,7 +1504,7 @@
      "598417994f0798c0": "a5a42ae3e94c8368",
      "8bd8da235efee3a8": "6df89ec72d74d672",
      "fa22879fa378b4d8": "5fad44b64658b915",
-     "4c80abdbfa409e44": "55bd87ac0fd6b3b1",
+     "4c80abdbfa409e44": "cbddb8b5b3f594e5",
      "e00bd9cd5bb70bc2": "3749b3f3929340ca",
      "f20881b622c8add6": "b86a705627ad0689",
      "a5949ab99c80b21b": "89ee94976a0cc371",
@@ -1515,7 +1519,7 @@
      "bc3ee7c75fabdc5c": "41e374054f848161",
      "3495e90af0d7a76a": "802bed7df4e7fa22",
      "cf999870ebcb7136": "fec2d90835b59d6c",
-     "7a9f846360391a09": "150e344fee5a8248",
+     "7a9f846360391a09": "ce2b4191f6fab9bb",
      "4023d62e68715ecc": "1429c2b8f5a7e5b2",
      "74822cede9bea5e9": "034ecafa0498b8b3",
      "225559d786d3821a": "913ed6f320c16f15",
@@ -1530,15 +1534,15 @@
      "c0d001b171b573fa": "1f222fc9645f3e2f",
      "72c86121bdfd58da": "b3654386051b6eac",
      "b40014cd772be5a6": "c538c6673b19c7c0",
-     "70caab31839856cb": "8b326bb7f9915451",
-     "98b97b130eb48fbd": "a8b7d7ae5688588b",
+     "70caab31839856cb": "7fa1e1b8121a2760",
+     "98b97b130eb48fbd": "23280ccda92ee0a6",
      "b7d2c85282d683c4": "1b9453e1eff92cce",
      "41fb524e2d45fdbd": "96043533417d7e90",
      "721f33604eae0337": "6807b7a096b90d21",
      "1be4d3659b421d61": "f229e676167d9243",
      "f33e8d23248e5940": "5a373c57b21ed7db",
      "309648bc03f32f67": "cab419a7bec9f686",
-     "310b4db7e9df842d": "3e344945b528ba6a",
+     "310b4db7e9df842d": "b7ba5158beaa6399",
      "fb2d91c764eddaf8": "680e391addc79b2e",
      "7d841bb751045476": "fcf2281b97d97709",
      "e6855540df73f109": "1935b5dd20074e9d",
@@ -1650,7 +1654,7 @@
      "730eccb989731f64": "4b2e73dfd65c4a2d",
      "f0d25667880c456d": "81b712b8c90e0b76",
      "c7c5c12a232d4b16": "d73188e55c50e73a",
-     "f126fdee488667be": "a801a0ab338158ad"
+     "f126fdee488667be": "7f65017aeb6d2276"
     },
     "tools-reference": {
      "198456187f6f3c6b": "9398f0e29ebf5d1e",
@@ -1659,6 +1663,7 @@
      "d944e00374c15d7f": "28a3a84cf66e9712",
      "a4fd3559286e828e": "9ad4e98f2668489f",
      "b3125fb7c6ef1522": "4898be55898b6554",
+     "d3f4218dc1c87881": "cde944f6ac72ed1c",
      "d4c7cd31c671ecf4": "6506482a1f2dfbdc",
      "3d3074a633e56929": "2e51b05bc1426b4f",
      "74426d82acbfe97a": "1f8fde3b5fba2666",
@@ -1681,11 +1686,12 @@
      "e9f0ea1d21524438": "0e0d92e195b2a9e7",
      "4d2020fc3d396c50": "5a03b1bfe7e8e314",
      "15bd37f7464baa48": "a8745a971297f335",
-     "35e1d9dc0d5d472e": "326937273174ffc5",
+     "35e1d9dc0d5d472e": "4569c5a9432ca23c",
      "f7a79d6e9ef154b2": "be649a5617e9d79c",
      "8d77cd59e38ba00a": "c6634544bda9e397",
      "b970249e1d638ff4": "4f9f55569428c182",
      "04c3d5a874f5edf7": "ee6ef5ab3859ce19",
+     "3d8b50f687692823": "f4082008264ae2a3",
      "944aa548817e115b": "eed5b7a0ae725b1f",
      "8ff4f23e7b7f5429": "76de40192ae418f5",
      "2ae497bfa6f6ecc5": "4e24ef1ee5eaf8c0",
@@ -1777,14 +1783,14 @@
      "fc3f23dc59394a24": "91eb9b5107ef176e",
      "cd4e812d53c48227": "4573d6ae55b5752d",
      "c3243458a63aa3ba": "1dd7f5dc54a06af7",
-     "5a88723a9fe30c41": "cee060ca7bea15f2",
+     "5a88723a9fe30c41": "bb12e46775b725b5",
      "d4566fa3f0517115": "a9a9ad92d967b67b",
      "315fa74c6c524dff": "1d031ced909c3132",
      "a68d5291f7c74aa6": "29413d61afbc0a88",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
      "afc75960b46982f0": "a70835228f726c08",
-     "effeefd8012e9034": "213a13d353cce48b",
+     "effeefd8012e9034": "8a2c5b66e0503889",
      "27fa3fcf231c3433": "29bebe5d15f4dbab",
      "6bc148a66bac171d": "f4447392583b7ab4",
      "f706d15d86cbc2a2": "98eb22284d1beea2",
@@ -1799,7 +1805,7 @@
      "c960b10197f3152e": "bd671f378caa241a",
      "a07118b9b35b7a4f": "c52323c379aaf5d8",
      "6448fedd783cfee8": "01e46ab5034e654d",
-     "f880230cf425eaf1": "2a8293d5669145ed",
+     "f880230cf425eaf1": "b9c1d4c717bdf351",
      "de68bf6dd989c000": "15b9c3fbb87835fa",
      "e8cc12eb1bacbab7": "af96c6cabe5dd6c0",
      "d46bbc193b736734": "2299e64b50662005",
@@ -1817,7 +1823,7 @@
      "4e66eae64cd9166d": "2fa8edacfabfbde8",
      "65a7d401bd47591a": "3a169ccff1d3d6cd",
      "268937512218ba67": "4731a800c1c495de",
-     "0c32c93a42ea5056": "ff63bd1ad39ad930",
+     "0c32c93a42ea5056": "7c7d40adf3ffdd56",
      "cb16279fb76490a7": "b7b950fbbcbed2b0",
      "cfb12f09ce287433": "b122f04a67669e2f",
      "fceb1a02ef0c9159": "bb3fd61e3f2517fc",
@@ -1826,7 +1832,7 @@
      "b5928681f7d1b7a9": "edab022b434b0b32",
      "19a4759fc94c4de2": "4e39f44e0f772ccd",
      "1b74d10e9b2f3b53": "e57fa5f34190119b",
-     "bd862215ec0bee77": "daa76730bae88014",
+     "bd862215ec0bee77": "e7c52c60746adbdf",
      "1f93474b5827288b": "f8cf72e719e47550",
      "8bf780061a05f27b": "884891dd577e78c5",
      "0b1cb0c1c542900e": "76fff150fca0c6a8",
@@ -1844,8 +1850,8 @@
      "dfdaa1dbb10d0d5a": "73483b6869001a39",
      "c767bf8e77b84484": "8ed39723e86d69a1",
      "34a78186624764e0": "a212189283780982",
-     "886a8b9edd8e03ed": "a1aa61b0d000c1af",
-     "5c748837fd70452c": "5459e27173c9a911",
+     "886a8b9edd8e03ed": "dcf7d113800e5335",
+     "5c748837fd70452c": "733a11194545279f",
      "60c7bcffb494f2e1": "e358f3bc810d8827",
      "9ca1cdb14b3c5e82": "1522a18beae50b90",
      "72080f34d1de3cd2": "21d8519f14ca0658",
@@ -1857,7 +1863,6 @@
      "85c0cbe85ff40772": "c096ef4e688e1c87",
      "8b549ac51fa1d83c": "5996c7dc884e2097",
      "7646a74dc56ef1f6": "ce43e75279a6d631",
-     "feb0e865f2e1523e": "93049721c3a376e0",
      "e29a50c8784d8d37": "a6297f3c94eb8494",
      "4dea2209ddc68f36": "871ba1f244cf4805",
      "125cba8e2ba3a6d3": "8e13d07dfd20e4ce",
@@ -1867,9 +1872,9 @@
      "aa64dc9e7a783a67": "38f79c519e203f78",
      "d489cf922816af53": "e1b3ca3161c1c391",
      "bbb6b3b0073605de": "9cbb5a1f4eb7c043",
-     "3c2aa218803b1d8f": "fe587a780faef2ca",
+     "3c2aa218803b1d8f": "9dd387be749e115d",
      "541a4afd68d5724a": "a0c5cd1321edddbe",
-     "6232b57da23fc8ee": "0b135630c1260359",
+     "6232b57da23fc8ee": "b859af86190573ed",
      "2ee36eb7c0d61f40": "a43c16211fa13760",
      "bb4446618f185060": "410de68b8a3e11da",
      "533628ec58dd90cf": "7f439c7e39badb32",
@@ -1882,7 +1887,7 @@
      "b97ca6a76a9fb190": "660d478e7d4c4113",
      "645481c57226d3d2": "b70a63144fc2900a",
      "2243badebbdbe0bd": "e197735b0c16a8ec",
-     "fcfd0c9aa9671d47": "593d7e73a697a098",
+     "fcfd0c9aa9671d47": "0bfe8b59170fea0e",
      "d5579872f1f78b65": "6324ac0064eb894f",
      "b047ac0820ef6ec9": "2db156424f7c1e58",
      "b636253b67a66a64": "79122b9fe6769401",
@@ -1913,7 +1918,7 @@
     },
     "cli-reference": {
      "7b62a6ad77310b16": "1fda39df86bf022c",
-     "a27076455137878c": "42ae5edbca5e8d40",
+     "a27076455137878c": "f726525ec1c52789",
      "c9af458d940ae3b1": "9c9056ee8a566d35",
      "cd01eafb8eb18aac": "fdc4a8d6806cbbc8",
      "4e53c302a269e982": "65559c1ecf186236",
@@ -1949,16 +1954,16 @@
     }
    },
    "snapshot": {
-    "sub-agents": "2.1.323",
+    "sub-agents": "2.1.325",
     "agents": "2.1.323",
     "workflows": "2.1.323",
     "agent-teams": "2.1.323",
-    "model-config": "2.1.323",
-    "env-vars": "2.1.323",
-    "tools-reference": "2.1.323",
+    "model-config": "2.1.325",
+    "env-vars": "2.1.325",
+    "tools-reference": "2.1.325",
     "prompt-caching": "2.1.323",
-    "settings-reference": "2.1.323",
-    "cli-reference": "2.1.323"
+    "settings-reference": "2.1.325",
+    "cli-reference": "2.1.325"
    }
   },
   "rules": {
@@ -2098,8 +2103,8 @@
      "5cbac5d982b0a77d": "fed8d6ccb5301950",
      "d1ddbb130de299cc": "8b1b73e52ba3a8f5",
      "7052fdb009aa2e3d": "15598701b2ef80a3",
-     "d176246549dc3a36": "a7e485840baa75e5",
-     "642c3b70f1215b93": "c8732cec920afc4c",
+     "d176246549dc3a36": "dc923d06f5a3ffc2",
+     "642c3b70f1215b93": "f47f9c23dfee0fc3",
      "10961480dac41f3a": "535c35ba8dcc18aa",
      "dc76358e4df3ed9e": "cf53d478fde62bae",
      "fa8a72ada9157631": "f27536f5f18c704e",
@@ -2192,13 +2197,13 @@
      "131b0e5e357b28ac": "95c7667518eb2c4e",
      "7133de06a8b1d05f": "c9aa9e29441e7208",
      "d279b84ff4818f30": "a66452dcb9866eba",
-     "76f80899fe5592fb": "63099a525b47aae2",
+     "76f80899fe5592fb": "b530a6bb920aa01f",
      "544a35d7be3176ad": "50cf3e1987e09936",
      "4475f12f49b5a56c": "82bbd66c950f3ac2",
-     "f2812b0a821c16d0": "43a5a4047ba5eb08",
+     "f2812b0a821c16d0": "af83037a76165855",
      "147cb26044f27600": "381e4fa27e9eda8b",
      "ea5fdd26fcdcf212": "143ea38c05a05996",
-     "93f2e4e2f4d263f5": "53aed09c2bbb6585",
+     "93f2e4e2f4d263f5": "58228e0f2e224a83",
      "326f38667021abf4": "33a614a37040610c",
      "88429a18ad710b1e": "fcb1ff1c4e94f6f8",
      "82060067abe88382": "ee975146dacc1903",
@@ -2223,14 +2228,14 @@
      "c826cf872b7643db": "b5f8deead003507d",
      "4b6952ff4f2b2d61": "aea9e44165fd6fe6",
      "91291c76298ce728": "200ce6307c003942",
-     "5a88723a9fe30c41": "cee060ca7bea15f2",
+     "5a88723a9fe30c41": "bb12e46775b725b5",
      "d4566fa3f0517115": "a9a9ad92d967b67b",
      "315fa74c6c524dff": "1d031ced909c3132",
      "a68d5291f7c74aa6": "29413d61afbc0a88",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
      "afc75960b46982f0": "a70835228f726c08",
-     "effeefd8012e9034": "213a13d353cce48b",
+     "effeefd8012e9034": "8a2c5b66e0503889",
      "bacfce3c5431fe0d": "12a9244cf7e7cf53",
      "9864ea070c0d73b2": "c84a9f5e9344418e",
      "2925c171f20d0aa7": "9d157e61518b7f2a",
@@ -2248,7 +2253,7 @@
      "a07118b9b35b7a4f": "c52323c379aaf5d8",
      "6448fedd783cfee8": "01e46ab5034e654d",
      "227cd6f0fa15c67d": "c1159d863d896e08",
-     "f880230cf425eaf1": "2a8293d5669145ed",
+     "f880230cf425eaf1": "b9c1d4c717bdf351",
      "c4a32489569f994c": "ae50d6a88c3deab5",
      "de68bf6dd989c000": "15b9c3fbb87835fa",
      "e596b412fbf4b057": "1668f25f8c64d712",
@@ -2267,8 +2272,8 @@
      "4e66eae64cd9166d": "2fa8edacfabfbde8",
      "65a7d401bd47591a": "3a169ccff1d3d6cd",
      "268937512218ba67": "4731a800c1c495de",
-     "661a8206ab598fee": "9ef9e665e8dc8391",
-     "0c32c93a42ea5056": "ff63bd1ad39ad930",
+     "661a8206ab598fee": "f119026d8f28284b",
+     "0c32c93a42ea5056": "7c7d40adf3ffdd56",
      "cb16279fb76490a7": "b7b950fbbcbed2b0",
      "69bacc5216707cd5": "413e74d2cfa498df",
      "cfb12f09ce287433": "b122f04a67669e2f",
@@ -2279,7 +2284,7 @@
      "77cde2abea93b9de": "1440a81f2a8f30c0",
      "03a98ce2a2b3979f": "2d80360e6f733c5c",
      "880e6fb7c9278de2": "b568a4990a0a37ea",
-     "bd862215ec0bee77": "daa76730bae88014",
+     "bd862215ec0bee77": "e7c52c60746adbdf",
      "4f911516e1b1a68f": "2f7eede602c3d4ea",
      "1f93474b5827288b": "f8cf72e719e47550",
      "bef83383857800a4": "2555f2c9e2b309fa",
@@ -2329,7 +2334,7 @@
      "34a78186624764e0": "a212189283780982",
      "a8703abd86fed232": "61411d6cbd755efd",
      "8ab1db1868d2b57c": "e9c64a2604620cca",
-     "5c748837fd70452c": "5459e27173c9a911",
+     "5c748837fd70452c": "733a11194545279f",
      "81cdf7093150b66b": "9a551c54ab7c2338",
      "c0fc3bfab0251707": "ae7a65e8d02287a3",
      "987b5138cda8d604": "bc17f3843be0b6b4",
@@ -2361,7 +2366,6 @@
      "42b15e6dc7fc0d2a": "211086771bbf9be3",
      "c3760f7bca6a87dc": "0ee045c9cfbe9082",
      "7646a74dc56ef1f6": "ce43e75279a6d631",
-     "feb0e865f2e1523e": "93049721c3a376e0",
      "e29a50c8784d8d37": "a6297f3c94eb8494",
      "631171516ab8f7e7": "7ff099a441ae9f46",
      "f705035f9497a7f2": "85acc7a0e22699a7",
@@ -2427,7 +2431,7 @@
      "749602d5741eaf6c": "4a72949665ae0eab",
      "645481c57226d3d2": "b70a63144fc2900a",
      "66a8b5a8162acf09": "3c543f647db43309",
-     "fcfd0c9aa9671d47": "593d7e73a697a098",
+     "fcfd0c9aa9671d47": "0bfe8b59170fea0e",
      "d5579872f1f78b65": "6324ac0064eb894f",
      "b047ac0820ef6ec9": "2db156424f7c1e58",
      "b636253b67a66a64": "79122b9fe6769401",
@@ -2439,7 +2443,7 @@
      "879b6b3be745c206": "967aecf0d52ba148",
      "8fae84840530a5c4": "6701f0dadc2bdd85",
      "c72645b9a0ac5dae": "81099647d99d923c",
-     "ab1c5969ba120387": "8dbde8ad53d0cdc3",
+     "ab1c5969ba120387": "3a97793cd0c31399",
      "be63a8d1e43d99df": "20dccba1fcf01ae9",
      "62c8f21a148d324c": "ee91c0c436445d0b",
      "eff2f8c616cc60db": "7d1029bd54b6821e",
@@ -2447,14 +2451,14 @@
      "156c3f40ce15ffb3": "145cb915da0b0cdf",
      "5e6d60e337e81857": "3370665cbf96f9dd",
      "6b641dc260f2ed94": "0234d78033ec88fe",
-     "ea51bfcbebe8fa42": "26d47bdc68582c3a",
+     "ea51bfcbebe8fa42": "6a0a5dada151a1e9",
      "f4d8d46f299fb2b3": "8e9115bd4b3cbaeb",
      "cde04025532a649b": "df19f99b0bcadf5b",
      "89dbb560981e6909": "5475d4eb0f26687d",
      "3dcab7b7c21f7ce0": "e82cde8b2422248b",
      "6159a2c9e0862b08": "3ab77678f675334b",
      "ec25a77e8f36fcf9": "5246f5410721ab0d",
-     "5e4e2d6a6dbdaa83": "18caf725eadada90",
+     "5e4e2d6a6dbdaa83": "71664e2dec23f975",
      "aafae3258f03da15": "bb15bca48ab4f836",
      "d1225d3a7653c00b": "a856fd59b2be7550",
      "d10980bacc79127f": "c8f2d427d9b3cc97",
@@ -2466,7 +2470,7 @@
      "f9488cdcd4e79bfd": "acf43abbc9c5027d",
      "45fc0194706dbb31": "453e28faf9b62558",
      "11a5b15a17547f5c": "d95c38d1e3453648",
-     "2976535c01afa4d5": "c36d9bc99cfc45ce",
+     "2976535c01afa4d5": "81a0e6b83e8576da",
      "d5bc9bda5e65d423": "b7ec1108b6fdfee0",
      "6ccd9e69de7af9af": "cf9e618221971c1d",
      "c2871f35048a196c": "d27009d86ed2e9de",
@@ -2501,6 +2505,7 @@
     },
     "permission-modes": {
      "a3040a21aa2de0a4": "ae6b4a9e6150d39a",
+     "e7981fc3f1981d6f": "caf2662b99eb02ea",
      "85130c0bf694226d": "948ec5e1375508c0",
      "f889da04da6b6bce": "18cbe06ce9bdb709",
      "2557710dbd6daf4f": "b08b4cf6de2626a4",
@@ -2512,11 +2517,11 @@
      "64229ada58b7e128": "003c2a4f75deb54f",
      "38a3fb4cbc693cf7": "3b6f5ba5ec04a92e",
      "be2947ef923c845c": "3c306132b2a3a32e",
-     "3555b78ef2dcbd55": "3f14edd73a9e13ad",
+     "3555b78ef2dcbd55": "8d4ab48c8c7c465f",
      "451a0f4f2679cc56": "3bff7abac92e207f",
      "8d888a2b927a8efc": "25eb5ef29b3be178",
      "5cb93e983c11b30f": "ad7c5f992a9e17d0",
-     "b86f333c396cbf2b": "4486550763555680",
+     "b86f333c396cbf2b": "89e9c85bd48a9414",
      "a472de1858965acc": "7c319d6304b1b64c",
      "6ae8bd950f5d1b71": "d5238f33567bb2a0",
      "6e25fe97253fea7f": "1ed6bf2fe22f4167",
@@ -2525,7 +2530,6 @@
      "51b102df478547bb": "e6a8e368ab5f076b",
      "11dc10d56e0505fa": "68585baa13de35a5",
      "3bb014c448e81820": "b4c6f2be2ed0f5c4",
-     "e7981fc3f1981d6f": "d4090b95fa8fe9ce",
      "31ffd50ca27350cc": "3449f444858162dc",
      "5de28cd254f7e48b": "efeee88309575aeb"
     },
@@ -2572,6 +2576,7 @@
      "b83f77c860c2248c": "770bf3ec9f815286",
      "404a94fc4ad243da": "c38ac642dcfb13fb",
      "910bbc4f51ab608f": "57057b7332f9ffb5",
+     "3da98c336ccb24a8": "94547a42fdd35906",
      "3f20e090b7305ac2": "8b9fa7a24ac231ad",
      "fd01d50a3c852ae6": "9daec21333b41b9e",
      "cda1f28e790dc881": "0a74db6c7029677e",
@@ -2584,19 +2589,19 @@
      "c7c5c12a232d4b16": "d73188e55c50e73a",
      "aee9bae8c997def3": "325d9c25f9f128c8",
      "3a03a40f3397ce51": "6fb1f0acc0e442e9",
-     "f126fdee488667be": "a801a0ab338158ad",
+     "f126fdee488667be": "7f65017aeb6d2276",
      "07b44027eefb59cd": "22e77b3dabb10629"
     }
    },
    "snapshot": {
     "memory": "2.1.323",
     "settings": "2.1.323",
-    "permissions": "2.1.323",
-    "settings-reference": "2.1.323",
-    "permission-modes": "2.1.323",
+    "permissions": "2.1.325",
+    "settings-reference": "2.1.325",
+    "permission-modes": "2.1.325",
     "claude-directory": "2.1.323",
     "large-codebases": "2.1.323",
-    "env-vars": "2.1.323"
+    "env-vars": "2.1.325"
    }
   },
   "hooks": {
@@ -2639,7 +2644,7 @@
      "f30f1c3e956b2628": "69ae7e75b1c322dc",
      "732e8d0c7a84a444": "a70c2cebe9843360",
      "caf93cea32829b13": "f87618fff4063bb1",
-     "5e9b227719994676": "64e0e8fd1e18e62a",
+     "5e9b227719994676": "c17de558c73ddad3",
      "e04addb8611dcec9": "91a2eedba5f5f5d5",
      "b4600c3bee0fbcc3": "f1c7623adc3bd395",
      "f5b7b9611a84a6ba": "261d2beb501b42b5",
@@ -2697,7 +2702,7 @@
      "9176184fe0720206": "4fd9af201526b3ea",
      "48405e5932c33ee5": "2beb433135b2a701",
      "092f9d9cdd2089ce": "79a743fbbe943e9f",
-     "7b141cd0ce9e83db": "2ecb0a9c160949b7",
+     "7b141cd0ce9e83db": "6c9bfbe92e3860f0",
      "99b0f4f48c4a5b1f": "debf742fca509577",
      "7bb5fd663ba7b039": "0ba539f0e3f014c5",
      "e3304b91206eb3c4": "35160356b43c8918",
@@ -2732,9 +2737,9 @@
      "6975f4e168a546fc": "144c6be1a390b3e7",
      "cf3e57b386f369a9": "f03631cb73fca789",
      "b1e6fe252bdeaf79": "62ebbdc40784b44a",
-     "31fe89fca36acc70": "f70e9f83ac2d6982",
+     "31fe89fca36acc70": "956818643f1d953a",
      "8e168b09755f2fa9": "57be0233c4c778dd",
-     "31c19475158138db": "03c3695cb64bd545",
+     "31c19475158138db": "702f2b2813d26ab1",
      "f92f8d42a93e3a0c": "d49e3c92e74c91aa",
      "c7a9b59f7e26805a": "0bc01682765c310a",
      "e47c35ee865c121a": "f34f8a0c964fea6d",
@@ -2834,12 +2839,12 @@
      "34dc850b2b926208": "bfa9215fc10e6e83",
      "e774d85ce9578cb7": "b5b20621a09a88ce",
      "8c757209f80956a8": "c5a8a84f77c4c376",
-     "9ee32c205165a885": "84e36ff6dddbfd5c",
+     "9ee32c205165a885": "f9c2ca3f766a76b9",
      "54e74d40720ecc19": "c8819bf0f1deb3df",
      "1ad26d102001d36d": "7151d8889e4ffbbe",
-     "a9847b1377f1c89b": "5e1c3e706b331d19",
+     "a9847b1377f1c89b": "6c359b9083b03b70",
      "bfe2b42f418d3527": "0a6397d51cca5ae3",
-     "5921f081414ea082": "86f788830d3a011f",
+     "5921f081414ea082": "063b23cf27e712cc",
      "38d7c14a4ce0bb18": "9888a921fccbcaef",
      "c98247ffa9c4d9dd": "352682da3c061503",
      "1a525d594f300fcf": "174d0bdcc5e310fc",
@@ -3123,7 +3128,7 @@
      "4d00b9be0d947dc0": "a5673b8ebd6bc348",
      "8feac6a05099cb8b": "66536ae47dc16d4e",
      "a88f6ac3fb6da786": "fed9f21a39d4f760",
-     "bbfd56d1d752992f": "7ddc2c95971389a6",
+     "bbfd56d1d752992f": "3ad2480f64fa51f4",
      "8b50c9e9fc1ceec5": "6eb76ab8437cacd9",
      "7701f4fa619edcc2": "d4f1370a6659d728",
      "d33c921e56062bef": "145619f7718a35a2",
@@ -3186,7 +3191,7 @@
      "8722a2008afd0f3e": "90b3a28f3a017664",
      "e08de526ff6116ae": "e9f5c2d26f645c89",
      "cd83ac0d55fa7669": "7edc3806fa2d1f51",
-     "e4ccbb40991fcd77": "e63a7b4927f4f115",
+     "e4ccbb40991fcd77": "9df8f9cd3024febd",
      "acbedf834c6781f2": "ee49f24973582bcb",
      "282faf19292c7de4": "1f44791c8146eeb6",
      "c2dbbd14eb2d942c": "02eabee838d4b0a4",
@@ -3265,7 +3270,7 @@
      "1fc9e2ad91666dd5": "dafab0c82ca4235b",
      "1f46a9ca7a2aa74f": "b9e7ecb85508cdb4",
      "a937f79017093ae5": "c7e1810603133717",
-     "9fbf8fdbb6ffb869": "6fcf9e1f80f4d92d",
+     "9fbf8fdbb6ffb869": "6b0c9c1dceb24068",
      "deee1a1a0b018ce3": "2296bc3e04321b1f",
      "22343cf413251567": "f525e7ff35e1ea28",
      "2f2068c421a6fa2d": "e5f887579cf04928",
@@ -3310,7 +3315,7 @@
      "3fed26d67c143812": "485ac0693085b82c",
      "d0310315c8aaa531": "99808327d8a5821f",
      "6448fedd783cfee8": "01e46ab5034e654d",
-     "f880230cf425eaf1": "2a8293d5669145ed",
+     "f880230cf425eaf1": "b9c1d4c717bdf351",
      "de68bf6dd989c000": "15b9c3fbb87835fa",
      "e8cc12eb1bacbab7": "af96c6cabe5dd6c0",
      "d46bbc193b736734": "2299e64b50662005",
@@ -3327,7 +3332,7 @@
      "1a12c449a3591eaf": "86235bfcce29e94d",
      "65a7d401bd47591a": "3a169ccff1d3d6cd",
      "268937512218ba67": "4731a800c1c495de",
-     "0c32c93a42ea5056": "ff63bd1ad39ad930",
+     "0c32c93a42ea5056": "7c7d40adf3ffdd56",
      "cb16279fb76490a7": "b7b950fbbcbed2b0",
      "cfb12f09ce287433": "b122f04a67669e2f",
      "fceb1a02ef0c9159": "bb3fd61e3f2517fc",
@@ -3337,7 +3342,7 @@
      "77cde2abea93b9de": "1440a81f2a8f30c0",
      "03a98ce2a2b3979f": "2d80360e6f733c5c",
      "880e6fb7c9278de2": "b568a4990a0a37ea",
-     "bd862215ec0bee77": "daa76730bae88014",
+     "bd862215ec0bee77": "e7c52c60746adbdf",
      "bef83383857800a4": "2555f2c9e2b309fa",
      "0bbf409273546a91": "2084d9a45533f25f",
      "95395778d2b709c0": "c4c6737324d0e0a4",
@@ -3361,9 +3366,9 @@
      "f9408c4841df917e": "f61f21ad936ecb04",
      "0b615c7d805c70c8": "9d55aca621c7756a",
      "d489cf922816af53": "e1b3ca3161c1c391",
-     "3c2aa218803b1d8f": "fe587a780faef2ca",
+     "3c2aa218803b1d8f": "9dd387be749e115d",
      "541a4afd68d5724a": "a0c5cd1321edddbe",
-     "6232b57da23fc8ee": "0b135630c1260359",
+     "6232b57da23fc8ee": "b859af86190573ed",
      "2ee36eb7c0d61f40": "a43c16211fa13760",
      "bb4446618f185060": "410de68b8a3e11da",
      "2ba07d47e3b16215": "f6157336d83d041d",
@@ -3382,7 +3387,7 @@
      "66a8b5a8162acf09": "3c543f647db43309",
      "eff2f8c616cc60db": "7d1029bd54b6821e",
      "5e9fbbffd32f4301": "2725a7ec2b612102",
-     "5e4e2d6a6dbdaa83": "18caf725eadada90",
+     "5e4e2d6a6dbdaa83": "71664e2dec23f975",
      "7b18126dba90ab22": "5d52de0ecf929b5b",
      "c5c02101a92b2c26": "51307afed65a7521",
      "2ba5eb296d81108e": "d9f96ff667c4011f",
@@ -3463,14 +3468,14 @@
      "ae7d4fc131ffa7bf": "23762dcb69dd3c6d",
      "f0d25667880c456d": "81b712b8c90e0b76",
      "c7c5c12a232d4b16": "d73188e55c50e73a",
-     "f126fdee488667be": "a801a0ab338158ad"
+     "f126fdee488667be": "7f65017aeb6d2276"
     }
    },
    "snapshot": {
-    "hooks": "2.1.323",
-    "hooks-guide": "2.1.323",
-    "settings-reference": "2.1.323",
-    "env-vars": "2.1.323"
+    "hooks": "2.1.325",
+    "hooks-guide": "2.1.325",
+    "settings-reference": "2.1.325",
+    "env-vars": "2.1.325"
    }
   },
   "models": {
@@ -3543,17 +3548,18 @@
      "2c85499b616a208e": "bad82e91916eb52b",
      "66045e5a512a5ad2": "f942fbcc94259359",
      "4195b60cd5c0cfdc": "34fbd8d73cc908cf",
+     "12a5d0678da38b9f": "f38f4caf42bf5a71",
      "29fbf08c9e4508b3": "8f57bd70db93a82e",
      "4f03f441c4a8ca13": "4caa83056e90b581",
      "18412ef34667ab4d": "a177aaa31ff8af4b",
-     "0b4a243207f1187f": "2fb2fdc0299a508f",
-     "4b77914c2831235e": "3f925564b2c33f3b",
+     "0b4a243207f1187f": "f957e0d2218ffa4f",
+     "4b77914c2831235e": "df812e3bee601eeb",
      "deb8cc71be0a3390": "d6ab56c9d98da7bc",
      "894852664f695946": "a68e954b656e758d",
      "5066cf2d81cde0b4": "0865206720e84343",
-     "a22f38878b3db507": "d8b99bdf01737743",
+     "a22f38878b3db507": "e17af79308dfd1bf",
      "5584a79116274ebd": "8400b32adafc8f26",
-     "7dafe321728543c7": "d42d40ebcba39173",
+     "7dafe321728543c7": "d919cf8653246aed",
      "920aa220a33208ca": "bfb61b47e32d8cb0",
      "e88f72bb1b209ba8": "dfd71a7b67879278",
      "806ec2cd5061e710": "2f62dbb84cc54807",
@@ -3565,9 +3571,10 @@
      "832396d261b979a7": "e69f14e59a441500",
      "8bd8da235efee3a8": "6df89ec72d74d672",
      "aa4549a9e224f187": "e29d9e7cecbca6c5",
-     "712d87fcb7c01a8b": "7c1124b076b7b9ed",
+     "712d87fcb7c01a8b": "7e609d3865b382b7",
      "fa22879fa378b4d8": "5fad44b64658b915",
-     "4c80abdbfa409e44": "55bd87ac0fd6b3b1",
+     "4c80abdbfa409e44": "cbddb8b5b3f594e5",
+     "a06abcf3f30806a9": "47c4d87c5ec303cf",
      "ef6ca7661efc0d13": "724703f1df885c1e",
      "e00bd9cd5bb70bc2": "3749b3f3929340ca",
      "f20881b622c8add6": "b86a705627ad0689",
@@ -3586,7 +3593,7 @@
      "bc3ee7c75fabdc5c": "41e374054f848161",
      "3495e90af0d7a76a": "802bed7df4e7fa22",
      "cf999870ebcb7136": "fec2d90835b59d6c",
-     "7a9f846360391a09": "150e344fee5a8248",
+     "7a9f846360391a09": "ce2b4191f6fab9bb",
      "4023d62e68715ecc": "1429c2b8f5a7e5b2",
      "74822cede9bea5e9": "034ecafa0498b8b3",
      "225559d786d3821a": "913ed6f320c16f15",
@@ -3613,8 +3620,8 @@
      "72c86121bdfd58da": "b3654386051b6eac",
      "b40014cd772be5a6": "c538c6673b19c7c0",
      "431e1a82f8b44d6f": "01671fc53e5cc999",
-     "70caab31839856cb": "8b326bb7f9915451",
-     "98b97b130eb48fbd": "a8b7d7ae5688588b",
+     "70caab31839856cb": "7fa1e1b8121a2760",
+     "98b97b130eb48fbd": "23280ccda92ee0a6",
      "44fe9101fef643a4": "64399d85b9f63f6f",
      "b7d2c85282d683c4": "1b9453e1eff92cce",
      "3089ea2880480f23": "c345f913fdf53ce4",
@@ -3623,7 +3630,7 @@
      "1be4d3659b421d61": "f229e676167d9243",
      "f33e8d23248e5940": "5a373c57b21ed7db",
      "309648bc03f32f67": "cab419a7bec9f686",
-     "310b4db7e9df842d": "3e344945b528ba6a",
+     "310b4db7e9df842d": "b7ba5158beaa6399",
      "fb2d91c764eddaf8": "680e391addc79b2e",
      "7d841bb751045476": "fcf2281b97d97709",
      "e6855540df73f109": "1935b5dd20074e9d",
@@ -3685,7 +3692,7 @@
      "f0b77cff7bf54d69": "1db1c48b620b53bd"
     },
     "advisor": {
-     "cbd55ed97ed7e8db": "348fb01a27d2c312",
+     "cbd55ed97ed7e8db": "3f2a6433326104da",
      "e129b55cd59cb27f": "c0df409cf800418a",
      "36a78771e18091cd": "a195238b013e7d7a",
      "11ffc344643b5e59": "7ce40593b9744f48",
@@ -3714,7 +3721,7 @@
      "46f452e1618a744f": "0b7b3ab395227b8d",
      "5b8cb0b3a0c0142a": "63fdd315a196a214",
      "23a29dbb96a4be45": "bca5385bba78b88c",
-     "8ccc17a77f38abb5": "e01bc73bd59d2c82",
+     "8ccc17a77f38abb5": "413ddaab12d3f29b",
      "d593ee8bbb12946a": "f9f428db1cff7130",
      "868932fc71e4c5e6": "c12a58e1164af642",
      "48897137433f50a5": "5bf2aff8e6cfc156",
@@ -4100,6 +4107,7 @@
      "22f3297759709617": "27e933087d830633",
      "910bbc4f51ab608f": "57057b7332f9ffb5",
      "a956573f81f36d05": "7ea34e7007cf8f98",
+     "3da98c336ccb24a8": "94547a42fdd35906",
      "0714b8eb227395b9": "79621d1b1adb8288",
      "20b7c079138777d8": "3df79f878a0c7e21",
      "6c84ada2a6b29c45": "6105d8600566864d",
@@ -4157,7 +4165,7 @@
      "ae7d4fc131ffa7bf": "23762dcb69dd3c6d",
      "f0d25667880c456d": "81b712b8c90e0b76",
      "c7c5c12a232d4b16": "d73188e55c50e73a",
-     "f126fdee488667be": "a801a0ab338158ad",
+     "f126fdee488667be": "7f65017aeb6d2276",
      "2c478490881fc7bd": "4d4ead5544179764"
     },
     "settings-reference": {
@@ -4201,13 +4209,13 @@
      "b8f7106234b55cb8": "e5c12f75afb472e6",
      "c2b7a06dc780c8cd": "dee378c31f7bcbfc",
      "de5c42d0a60cdca7": "0fe9b6bc7a8e6855",
-     "5a88723a9fe30c41": "cee060ca7bea15f2",
+     "5a88723a9fe30c41": "bb12e46775b725b5",
      "315fa74c6c524dff": "1d031ced909c3132",
      "a68d5291f7c74aa6": "29413d61afbc0a88",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
      "afc75960b46982f0": "a70835228f726c08",
-     "effeefd8012e9034": "213a13d353cce48b",
+     "effeefd8012e9034": "8a2c5b66e0503889",
      "bacfce3c5431fe0d": "12a9244cf7e7cf53",
      "9864ea070c0d73b2": "c84a9f5e9344418e",
      "27fa3fcf231c3433": "29bebe5d15f4dbab",
@@ -4246,7 +4254,7 @@
      "1a12c449a3591eaf": "86235bfcce29e94d",
      "7e6ea8dc361a952f": "3c97606f4642b79c",
      "4e66eae64cd9166d": "2fa8edacfabfbde8",
-     "0c32c93a42ea5056": "ff63bd1ad39ad930",
+     "0c32c93a42ea5056": "7c7d40adf3ffdd56",
      "cfb12f09ce287433": "b122f04a67669e2f",
      "19a4759fc94c4de2": "4e39f44e0f772ccd",
      "03a98ce2a2b3979f": "2d80360e6f733c5c",
@@ -4267,9 +4275,9 @@
      "aa64dc9e7a783a67": "38f79c519e203f78",
      "d489cf922816af53": "e1b3ca3161c1c391",
      "bbb6b3b0073605de": "9cbb5a1f4eb7c043",
-     "3c2aa218803b1d8f": "fe587a780faef2ca",
+     "3c2aa218803b1d8f": "9dd387be749e115d",
      "541a4afd68d5724a": "a0c5cd1321edddbe",
-     "6232b57da23fc8ee": "0b135630c1260359",
+     "6232b57da23fc8ee": "b859af86190573ed",
      "2ee36eb7c0d61f40": "a43c16211fa13760",
      "bb4446618f185060": "410de68b8a3e11da",
      "f5e3d878015b174e": "805d6796ec37cd3a",
@@ -4288,7 +4296,7 @@
      "749602d5741eaf6c": "4a72949665ae0eab",
      "645481c57226d3d2": "b70a63144fc2900a",
      "66a8b5a8162acf09": "3c543f647db43309",
-     "5e4e2d6a6dbdaa83": "18caf725eadada90",
+     "5e4e2d6a6dbdaa83": "71664e2dec23f975",
      "aafae3258f03da15": "bb15bca48ab4f836",
      "445611c421e212c1": "7999546adbe9d6fd",
      "65ba5429c1bfbd4a": "b7d5eb96cf97ee3f",
@@ -4309,7 +4317,7 @@
      "b3269374b1e9068f": "290dcd6e34b31beb",
      "e5f40bd2fb7d2d37": "92d5031ad332d7a3",
      "7c44b64a6fa16708": "61287ab3eb09fe04",
-     "926773ad692fd479": "597f3ad50dbe2e0f",
+     "926773ad692fd479": "03ec823d26ff44e8",
      "496e200f1b59c204": "abd02ee2e3ec1d37",
      "56518243cf337557": "9a6762783c802910",
      "7bbadd2c2e838048": "9f057c2b05ebfd38",
@@ -4319,7 +4327,7 @@
      "2d3f70e20e320b5e": "9877a5e9b6c20362",
      "14a9b0ea1031afe5": "cbcb5b9dd248d7f0",
      "7784987f5055202e": "9bf74bdcbaac87da",
-     "6f0a91e1e5e91f51": "25468d1fb83c4561",
+     "6f0a91e1e5e91f51": "8f974f0f34cdf609",
      "e8fc01740e41d54f": "4fca1e58c4b6f9d4",
      "43fe810c71c7646b": "321ee97a111348ca",
      "a03572724afc1388": "d76ac324f548fa3f",
@@ -4328,18 +4336,18 @@
    },
    "snapshot": {
     "prompt-caching": "2.1.323",
-    "model-config": "2.1.323",
+    "model-config": "2.1.325",
     "fast-mode": "2.1.323",
-    "advisor": "2.1.323",
+    "advisor": "2.1.325",
     "platform:about-claude/pricing": "2.1.323",
     "platform:about-claude/models/overview": "2.1.323",
     "platform:about-claude/model-deprecations": "2.1.323",
     "platform:build-with-claude/prompt-caching": "2.1.323",
     "platform:models/haiku-4-5/overview": "2.1.323",
     "costs": "2.1.323",
-    "env-vars": "2.1.323",
-    "settings-reference": "2.1.323",
-    "commands": "2.1.323"
+    "env-vars": "2.1.325",
+    "settings-reference": "2.1.325",
+    "commands": "2.1.325"
    }
   }
  },
@@ -4403,12 +4411,14 @@
   "claude-apps-gateway-spend-limits",
   "claude-code-on-the-web",
   "claude-directory",
+  "claude-models-on-google-cloud-anthropic-managed",
   "claude-platform-on-aws",
   "claude-projects",
   "claude-security",
   "claude-tag",
   "cli-reference",
   "cloud-environments",
+  "code-mode",
   "code-review",
   "code-review-costs",
   "code-review-customize",
@@ -4722,10 +4732,10 @@
    "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "hooks/ruff-check.sh": {
-   "hooks.events": "sha256:427155d98e1f987e343a56474c7e0f9b0bbcf068c1e9ec6f80399350fa029c3c",
-   "hooks.exit-codes": "sha256:a25009e4a08a6e317875a6745f1cdfd1552f6e84649f417d0795aa90fec9ffca",
-   "hooks.patterns": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36",
-   "hooks.pitfalls": "sha256:62d70feb17289a8c1404f3d0934883c3d566d81abf51db062eb896d60c8cc72c"
+   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
+   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
+   "hooks.pitfalls": "sha256:91dcb124e2b4182d10438ea16ffa606aa91b0975c5e0f3c3cb2b537336f9930d"
   },
   "hooks/ruff-fix.sh": {
    "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
