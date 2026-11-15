@@ -143,27 +143,39 @@ def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | N
     return new
 
 
-def add(state: dict, manifest: Manifest, guide_text: str, ids, newest: str,
-        citer_stamps: dict[str, list[str]]) -> dict:
-    '''R7 add (D1, D4): the entry of each section created after init, once the
-    guide anchors it and a manifest.toml group lists it. `text_hash` is its
-    current text. `checked` and `audited` copy the oldest among the group's
-    stored sections, in the stamp's own orders, or among every stored section
-    when the group has none, so add claims no check or audit and never moves
-    the stamp. `changed` follows R2.4 over `citer_stamps`, each section's
-    citers' review stamps. Every ID reads `state` as it was before the run.
-    `sections` follows the guide's heading order, then the stored IDs the
-    guide lacks, which wait for `drop`. Each ID is judged on its own, so an
-    unrelated half-edited section does not refuse add.'''
+def check_add_ids(state: dict, manifest: Manifest, guide_text: str, ids) -> None:
+    '''R7 add's three ID refusals, in this order: an ID that is no guide
+    anchor, an ID in no manifest.toml group, an ID that baseline.json already
+    holds. The first check that fails raises with every ID that fails it, each
+    once, in argument order. cli.py runs it before it reads the cache or the
+    citations, so these refusals come first. Each ID is judged on its own, so
+    an unrelated half-edited section does not refuse add.'''
     ids = list(dict.fromkeys(ids))
-    by_id = {s.id: s for s in sections(guide_text) if s.id}
+    anchors = {s.id for s in sections(guide_text) if s.id}
     group_of = manifest.group_of()
-    for refusal, failed in (('not a guide anchor', lambda sid: sid not in by_id),
+    for refusal, failed in (('not a guide anchor', lambda sid: sid not in anchors),
                             ('in no manifest.toml group', lambda sid: sid not in group_of),
                             ('already in baseline.json', lambda sid: sid in state['sections'])):
         names = ', '.join(sid for sid in ids if failed(sid))
         if names:
             raise SetupError(f'baseline add: {refusal}: {names}')
+
+
+def add(state: dict, manifest: Manifest, guide_text: str, ids, newest: str,
+        citer_stamps: dict[str, list[str]]) -> dict:
+    '''R7 add (D1, D4): the entry of each section created after init, once the
+    guide anchors it and a manifest.toml group lists it, after check_add_ids's
+    refusals. `text_hash` is its current text. `checked` and `audited` copy
+    the oldest among the group's stored sections, in the stamp's own orders,
+    or among every stored section when the group has none, so add claims no
+    check or audit and never moves the stamp. `changed` follows R2.4 over
+    `citer_stamps`, each section's citers' review stamps. Every ID reads
+    `state` as it was before the run. `sections` follows the guide's heading
+    order, then the stored IDs the guide lacks, which wait for `drop`.'''
+    check_add_ids(state, manifest, guide_text, ids)
+    ids = list(dict.fromkeys(ids))
+    by_id = {s.id: s for s in sections(guide_text) if s.id}
+    group_of = manifest.group_of()
     stored = state['sections']
     entries = {}
     for sid in ids:

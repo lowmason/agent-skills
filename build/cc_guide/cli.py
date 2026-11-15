@@ -368,6 +368,7 @@ def run_baseline(args, cache: Path, today: date) -> int:
             stamps = review_stamps(tree, manifest.guide, 'a substantive accept')
         new = baseline.accept(state, guide_text, args.ids, args.substantive, newest, stamps)
     elif args.action == 'add':
+        baseline.check_add_ids(state, manifest, guide_text, args.ids)  # before the cache and the citations
         newest = newest_releases(cache)[0].label
         stamps = review_stamps(tree, manifest.guide, 'baseline add')
         new = baseline.add(state, manifest, guide_text, args.ids, newest, stamps)

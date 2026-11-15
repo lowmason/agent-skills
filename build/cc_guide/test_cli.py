@@ -765,6 +765,33 @@ def test_add_stays_above_the_highest_of_several_hand_written_citations(world):
     assert load(repo)['sections']['alpha.extra']['changed'] == '2.1.903.1'
 
 
+@pytest.mark.parametrize('ids, manifest_text, message', [
+    (['alpha.nowhere'], EXTRA_MANIFEST, 'baseline add: not a guide anchor: alpha.nowhere'),
+    (['alpha.extra'], MANIFEST_TOML, 'baseline add: in no manifest.toml group: alpha.extra'),
+    (['alpha.overview'], EXTRA_MANIFEST, 'baseline add: already in baseline.json: alpha.overview'),
+    (['alpha.extra', 'alpha.nowhere'], EXTRA_MANIFEST, 'baseline add: not a guide anchor: alpha.nowhere'),
+], ids=['not-an-anchor', 'in-no-group', 'already-stored', 'second-id-bad'])
+@pytest.mark.parametrize('empty_cache, files', [
+    (True, {}),
+    (False, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'}),
+], ids=['no-cached-changelog', 'broken-citation'])
+def test_add_refuses_an_id_before_it_reads_the_cache_or_the_citations(world, tmp_path, capsys, ids, manifest_text,
+                                                                      message, empty_cache, files):
+    '''Fix round 1, from the plan's Global Constraints: a refusal checks in the
+    table's order, so the three ID refusals come before no cached changelog
+    and before a broken citation (a deliberate deviation from Step 4).'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(manifest_text)
+    cited(repo, files)
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(tmp_path / 'empty-cache' if empty_cache else cache, 'baseline', 'add', *ids) == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {message}\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+    assert dirty(repo) == []
+
+
 def test_the_repo_lints_clean(capsys):
     '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
     so no changelog is cached and the release-label check is skipped.'''
