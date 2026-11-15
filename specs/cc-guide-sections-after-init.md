@@ -1,6 +1,7 @@
 # Guide sections created after `baseline init` — Design Spec
 
-**Status: DRAFT (2026-11-15)** — written, waiting for the owner's approval.
+**Status:** APPROVED (2026-11-15). The owner approved this file, its designer's calls included, on 2026-11-15. The
+question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it".
 
 The design came from a brainstorming session on 2026-11-15. It is the Design pick of the 2026-11-14 `/deferred`
 pass: the item "Sections created after `baseline init` (plan 38, T7-m3)" in `specs/deferred_items.md`,
