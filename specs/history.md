@@ -494,3 +494,28 @@ Differences from the design:
 - Decision D3 (spec amendment): the probe fixtures are isolated repositories, not worktrees. Source: plan, `## Decisions`.
 - Decision D4 (spec amendment): the procedure and the writer brief live in two reference files. Source: plan, `## Decisions`.
 - Deferred: 4 items. Source: specs/deferred_items.md, § 94-branch-explainer.
+
+## 98-marimo-notebook-seam — 2026-11-14
+Plan: specs/plans/completed/98-marimo-notebook-seam.md · Spec: specs/completed/marimo-notebook-seam.md (retired)
+
+Differences from the design:
+- Ruling: Task 1's brief said "no file from this repo went to OpenAI" — the implementer reworded it because Codex's skill listing carries public skills/ text from this repo; the record now says the run opened no repo file and names the public skill listing — the brief's sentence was false — nothing lost, text is public.
+- Ruling: keep VOID case 4's extension to the file_path of Read, Edit and Write and to `~`/$HOME paths — summaries scrub $HOME to `~`, so a `~` path was a path under /Users/, and a Read's file_path is the same channel the plan's "command names" guards — if wrong, one harmless rep is replaced.
+- Ruling: the rep-directory channel (finished rep dirs and stray exports under /tmp/mnb98/ stay readable) gets the reviewer's fix (move finished dirs out, sweep after rep 1, refuse to start on strays) — it is a real Channel 3 path for the block arm — no control rerun, since the arms still differ only in CLAUDE.md and no control rep read a sibling's files.
+- Ruling: the plan's "all scratch under /tmp/mnb98/" yields, while tool-enabled reps run, to the kit's isolation rule — /tmp/mnb98/ must hold only venv/ and leakcheck.sh then, so probe and pilot outputs go outside it — the runner enforces it and says so — if wrong, a probe file sits in a path the plan did not name.
+- Ruling: (owner, 2026-11-14, answered in the conversation) "A: Amend case 4 (Recommended)", to the question whether VOID case 4 may be amended so a denied command does not void a rep, with the 26 existing block reps then scored by the unchanged clauses. The parent session was archived, so the question went to the owner directly. Home: the record's `### Second amendment` under `## Rules`, and plan 98's `## Decisions` as D6 (added at plan completion). Task 3 resumes: amend, commit the amendment alone, then rescore.
+- Ruling, contradicts spec: the round-2 Scope line stays as tested — C8 allows one revision and the bar was met with it, so a reworded line would be untested text, and the wording is the owner's call — if wrong, an agent without marimo-pair whose request is silent could edit a notebook while a session is live — filed as an item for the completion gate.
+- Ruling: V3's reading (the user's quoted verdict in the facts cell is not the rep's own conclusion) stays and is disclosed in the record — under the plain text every rep that passes V1 fails V3, so V1 and V3 cannot both hold — if wrong, the pin V3 reads 1 of 5 and 0 of 5 and goes to the gate as a pin miss, and the bar does not move (D5) — filed as an item for the completion gate.
+- Ruling: (owner, 2026-11-14, answered in the conversation) "A: Fix the case, rerun (Recommended)", to the question how to proceed after the M2 stop (A: drop "Then say what you do next" from both steps cases and rerun the before and after arms with the round 2 paragraph; B: keep the case and rule a reading; C: stop and file the miss). Home: the record's Rules (a third amendment) and `## explore-data`, and plan 98's `## Decisions` as D7 (added at plan completion).
+- Ruling: the temp path echoed in the old round-2 steps-plain rep 3 (a scratchpad path under the Claude temp folder, with a session id) is scrubbed to an XXXX form in the committed copy, as Task 3's temp-name scrub was; the original stays outside the repo and the record says so — no work-repo name, so the cost if wrong is nil.
+- Ruling: (owner, 2026-11-14, answered in the conversation at the completion gate) "Add the condition (Recommended)", to the question what to do with README line 39 — the owner lifted the plan's fence for that one sentence; it now starts "During a live session,", the heading and anchor stay — commit f2bbec3 — cost if wrong: none, a one-sentence wording change that agrees with the block.
+- Deviation (Task 1): the brief's "no file from this repo went to OpenAI" was false, so the record names Codex's public skill listing and says the run opened no repo file. Source: plan, Task 1.
+- Deviation (Task 2): the runner parks finished rep directories, sweeps strays, refuses a stray start and an inside-scratch output path, and resolves paths with `cd -P`. Source: plan, Task 2.
+- Deviation (Task 2): note 7 (O1) follows C15's words, amended before any block rep. Source: plan, Task 2.
+- Deviation (Task 2): probe and pilot outputs go under `~/.cache/agent-skills/scratch/plan98/`, not `/tmp/mnb98/`. Source: plan, Task 2.
+- Deviation (Task 3): 19 of 26 block reps were VOID by case 4, so the owner amended VOID case 4 (D6) and the reps were rescored. Source: plan, Task 3.
+- Deviation (Task 3): round 2 ran (C8) and met the bar, and its Scope line narrows when the live-session rule applies. Source: plan, Task 3.
+- Deviation (Task 4): the first after arm missed M2 twice, so the owner had both steps cases lose one sentence and the arms rerun (D7). Source: plan, Task 4.
+- Deviation (Task 6): the placement pin uses three scratch repositories (top, bottom and a control). Source: plan, Task 6.
+- Deviation (Task 6): the owner lifted the fence on `## The ruff ignore` for README line 39 (f2bbec3). Source: plan, Task 6.
+- Deferred: 7 items. Source: specs/deferred_items.md, § 98-marimo-notebook-seam.

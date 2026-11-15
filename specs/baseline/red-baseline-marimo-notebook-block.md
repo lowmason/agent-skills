@@ -1,6 +1,6 @@
 # Micro-test: the marimo notebook block and explore-data's marimo branch
 
-This record holds the measurements for plan 98, which is Plan B of [the marimo notebook seam spec](../marimo-notebook-seam.md). Each section is one check, and the first is B0.
+This record holds the measurements for plan 98, which is Plan B of [the marimo notebook seam spec](../completed/marimo-notebook-seam.md). Each section is one check, and the first is B0.
 
 ## B0
 

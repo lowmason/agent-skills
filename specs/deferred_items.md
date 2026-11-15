@@ -6741,3 +6741,61 @@ review and the Plan Completion gate (2026-10-27) add the others.
       entry, plan and spec. A range that retires two plans has two of each. The shipped brief is byte-identical
       to the probed round 0, so a change needs a new probe round. Size: plan. Revisit if: an explainer of a
       range that retires two plans leaves out one plan's intent.
+
+## 98-marimo-notebook-seam — 2026-11-14
+- [ ] **The Codex guide calls the 32 KiB limit "combined", and plan 98's B0 run does not show the global file
+      counting against it (plan 98 Task 1; the plan ordered this item at the gate, 2026-11-14).**
+      `specs/guides/codex-customization-guide.md:274` says "32 KiB combined instruction limit". The B0 run
+      (`specs/baseline/red-baseline-marimo-notebook-block.md`, section `## B0`, `codex-cli 0.167.2`) loaded a
+      global file and a 49 KiB project `AGENTS.md`. The cut still fell at byte 32,768 of the project file, so
+      the global file did not reduce the project file's share. The run tested one project file and one global
+      file. The owner's rule is that the guide stays equal to the docs, so a probe-against-docs mismatch goes
+      to the owner and no run edits the guide. Size: quick-fix. Done when: the owner has recorded whether the
+      guide's line gets a note of the B0 observation, with the Codex version, or stays as the docs give it.
+- [ ] **V3 of the `verdict` pin is a miss under the Rules' plain text (plan 98 Task 3; the plan's Builder's call
+      C6 orders this item, 2026-11-14).** The record's `## Block rounds` (Conclusion, item 5) scores V3 with a
+      reading made after the reps were seen: the user's quoted verdict in the facts cell is not the rep's own
+      conclusion. By the plain text, every rep that passes V1 fails V3, so V1 and V3 cannot both hold. V3 then
+      reads at most 1 of 5 in round 1 and 0 of 5 in round 2. The pin does not decide the bar (D5). Size:
+      quick-fix. Done when: the owner has either approved the reading as the record states it, or a corrected V3
+      is written as a new amendment of the record's Rules and the existing reps are rescored by it, with the
+      new counts in the record.
+- [ ] **The block's Scope line does not cover a silent request while a session is live (plan 98 Task 3; the
+      owner kept the text and asked for this item at the completion gate, 2026-11-14).**
+      `templates/marimo-repo/notebook-block.md` lines 4 to 7 say a session is live only when the user's request
+      says so, or when marimo-pair, if available, finds one. Spec B1 part 1 says that during a session the
+      agent changes cells only through marimo-pair. In one case the two differ: the request is silent, the
+      agent has no marimo-pair and a session is running. The agent then edits the notebook file directly. No
+      case of the micro-test holds that session, so the bar could not show it. A reworded line is untested text
+      until a new round runs, and a round costs about $3.50. Size: plan. Done when: the Scope line covers that
+      case, one micro-test case holds a running session with a silent request, a new round meets Builder's call
+      C6 (E1 to E4, O1 and L1 in 5 of 5 reps), and the block and the record change in one commit.
+- [ ] **marimo's built-in `pair` command weakens plan 98's C7 premise (plan 98 Task 3, record Conclusion item 1;
+      owner item, 2026-11-14).** The fixture's marimo (0.25.2) has a `pair` command whose help restates
+      marimo-pair's rules for live sessions. `verdict` rep 4 ran `marimo pair notebook list` and saw no
+      session. Builder's call C7 says marimo-pair is not installed in the fixture. That holds for the skill and
+      not for the command. In a real repo the block's words "if it is available" may then hold through the
+      command, and the block does not name it. Size: design. Done when: the owner has recorded whether the
+      block names the `marimo pair` command, and, if it does, the block and a new tested round change together.
+- [ ] **The deny rule `Read(~/**)` does not stop every Bash read of the home folder (plan 98 Task 3, record
+      Conclusion item 2; owner item, 2026-11-14).** In round 2, `override` reps 1 and 4 ran `ls ~/.claude/skills
+      .claude 2>/dev/null` inside a compound command with a `for` loop, and the same read alone was denied. The
+      control's `override` rep 5 ran `ls ~/.marimo*`. The same `DENY` line sits in the kits of plan 93
+      (`specs/baseline/red-baseline-mutant-checked-tests/impl-kit/`) and plan 97
+      (`specs/baseline/red-baseline-change-reverted-mutant/impl-kit/`). VOID case 4 catches a rep that acts on
+      what it read, and plan 98's kit is unchanged. Size: plan. Done when: a kit change closes the gap and a
+      probe rep shows a `for`-loop `ls ~/…` denied, or the owner has recorded that the gap stays because
+      VOID case 4 catches the harm.
+- [ ] **The firmlink spelling of the scratch folder passes the inside check (plan 98 Task 2 ruling, 2026-11-14).**
+      `refuse_inside` in `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh` and `probe.sh`
+      compares path strings. The path `/System/Volumes/Data/private/tmp/mnb98/x` names the same folder as
+      `/tmp/mnb98/x` and passes. Five review rounds left it, at the cap. The record's words "lies inside" cover
+      more than the code checks. If it fires, outputs sit inside `/tmp/mnb98/` for one batch, and the runner's
+      strays sweep still moves them. Size: quick-fix. Done when: `refuse_inside` compares device and inode, with
+      a no-model test for that spelling, or the record's claim names only the spellings that the code checks.
+- [ ] **Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50
+      files under `specs/baseline/red-baseline-marimo-notebook-block/runs/` carry the field, as the 281 files in
+      the item of section `97-change-reverted-mutant` do. The field is a login credential's expiry timestamp,
+      not an identifier. Size: quick-fix. Done when: the item of section `97-change-reverted-mutant` named
+      "Committed micro-test rep JSON files carry `credential_expires_at`" is closed, and its strip or its record
+      covers these 50 files.
