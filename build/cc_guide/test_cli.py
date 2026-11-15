@@ -105,6 +105,17 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
             in ' '.join(outs[0].split()))  # the label note is for a release only
 
 
+def test_help_says_what_drop_removes_and_that_stamp_follows_it(capsys):
+    with pytest.raises(SystemExit) as stop:
+        cli.main(['--help'])
+    assert stop.value.code == 0
+    out = ' '.join(capsys.readouterr().out.split())
+    assert ('drop removes each named entry, and the ID from cited, once the guide and manifest.toml no longer have it.'
+            ' It edits no citing file, and stamp follows it.') in out
+    assert 'init --force is not the way to add or drop a section' in out
+    assert 'advance, audited and drop can move the oldest `checked` or `audited`, which the stamp names, so stamp follows them.' in out
+
+
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
     repo = fixture_repo(tmp_path / 'repo', {GUIDE_PATH: guide_text()})
     write_tree(repo, {state.MANIFEST: MANIFEST_TOML,
