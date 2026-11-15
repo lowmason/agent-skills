@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 LINTER = Path(__file__).resolve().parent / 'ste-lint.py'
-PINNED_SHA256 = 'e0235f25fdb4d085b6384f3dfc41fb649dc7020d80127095c905bc2c12c60481'
+PINNED_SHA256 = 'a9d8a76a0e5dd7f39aa4972e6fae490fd656ff218624a4a9fc9c5fcb2fcb2240'
 SYSTEM_PYTHON = Path('/usr/bin/python3')
 FENCE = '`' * 3
 
@@ -70,6 +70,20 @@ def test_skill_front_matter_keys_other_than_the_description_are_not_read_as_pros
     value = ' '.join(['word'] * 30)
     text = f'---\nname: {value}.\nlicense: x; y\ndescription: Use it.\n---\nThe job runs.\n'
     result = lint('--json', stdin=text)
+    assert json.loads(result.stdout)['violations'] == []
+
+
+def test_a_literal_star_after_a_period_does_not_end_the_sentence():
+    # 14 words, then `file.*`, then 14 words: one 29-word sentence over the 25-word cap.
+    half = ' '.join(['word'] * 14)
+    result = lint('--json', stdin=f'{half} file.* {half}.\n')
+    violations = json.loads(result.stdout)['violations']
+    assert [v['rule'] for v in violations] == ['long-sentence']
+
+
+def test_a_bold_closer_after_a_period_still_ends_the_sentence():
+    half = ' '.join(['word'] * 14)
+    result = lint('--json', stdin=f'**{half}.** {half}.\n')
     assert json.loads(result.stdout)['violations'] == []
 
 

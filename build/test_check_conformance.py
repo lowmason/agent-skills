@@ -305,7 +305,8 @@ sections = ['a.one']
 type = 'advice'
 rule = 'Fixture rule.'
 enforced_by = 'check_conformance'
-reserved = ['synced']
+reserved_any_case = ['synced']
+reserved_prefix = ['anthropic-skills']
 
 [[check]]
 id = 'known-agent-tools'
@@ -1468,19 +1469,45 @@ def test_builtin_name_shadow_flags_skill_directories_names_and_command_stems(tmp
     ]
 
 
+def reserved_names(files):
+    '''Run reserved-skill-name with the real register's parameters, which hold the
+    folder names the guide's skills.locations section reserves.'''
+    reg, _ = cc.parse_register(cc.load_register(cc.REPO))
+    check = next(c for c in reg.checks if c.id == 'reserved-skill-name')
+    return cc.check_reserved_skill_name(None, files, check.params)
+
+
+RESERVED_WHY = ('is reserved: Claude Code skips a skill folder named synced in any capitalization, '
+                'and outside a plugin loads no folder named anthropic-skills or starting with '
+                'anthropic-skills:')
+
+
 def test_reserved_skill_name_passes_ordinary_skill_directories():
-    files = ['skills/a/SKILL.md', 'skills/a/references/synced.md', 'skills/synced.md']
-    assert cc.check_reserved_skill_name(None, files, {'reserved': ['synced']}) == []
+    files = ['skills/a/SKILL.md', 'skills/a/references/synced.md', 'skills/synced.md',
+             'skills/synced-notes/SKILL.md', 'skills/anthropic-skills-x/SKILL.md',
+             'skills/my-anthropic-skills:x/SKILL.md']
+    assert reserved_names(files) == []
 
 
 def test_reserved_skill_name_flags_a_reserved_directory_once():
     files = ['skills/a/SKILL.md', 'skills/synced/x/SKILL.md', 'skills/synced/y.md',
              '.claude/skills/synced/SKILL.md']
-    assert cc.check_reserved_skill_name(None, files, {'reserved': ['synced']}) == [
-        cc.Finding('.claude/skills/synced', "directory name 'synced' is reserved for claude.ai skills "
-                                            'synced into terminal sessions'),
-        cc.Finding('skills/synced', "directory name 'synced' is reserved for claude.ai skills "
-                                    'synced into terminal sessions'),
+    assert reserved_names(files) == [
+        cc.Finding('.claude/skills/synced', f"directory name 'synced' {RESERVED_WHY}"),
+        cc.Finding('skills/synced', f"directory name 'synced' {RESERVED_WHY}"),
+    ]
+
+
+def test_reserved_skill_name_flags_synced_in_any_capitalization():
+    files = ['skills/Synced/SKILL.md', '.claude/skills/SYNCED/SKILL.md']
+    assert [f.file for f in reserved_names(files)] == ['.claude/skills/SYNCED', 'skills/Synced']
+
+
+def test_reserved_skill_name_flags_anthropic_skills_and_a_name_that_starts_with_it_and_a_colon():
+    files = ['skills/anthropic-skills/SKILL.md', 'skills/anthropic-skills:x/SKILL.md']
+    assert reserved_names(files) == [
+        cc.Finding('skills/anthropic-skills', f"directory name 'anthropic-skills' {RESERVED_WHY}"),
+        cc.Finding('skills/anthropic-skills:x', f"directory name 'anthropic-skills:x' {RESERVED_WHY}"),
     ]
 
 

@@ -83,7 +83,10 @@ Closed earlier deferred items:
 3. Keep each remaining ruling's text whole.
 4. Shorten each `Deviation` and `Decision` line to one short line, and keep its `Source:` pointer.
 5. Never edit a quoted title or its `(deferred by …)` part.
-6. Resolve and delete each warning line: `Rulings: no ledger given`, `Spec: --spec not given`.
+6. Resolve and delete each warning line: `Rulings: no ledger given`, `Spec: --spec not given`. A `Rulings: ledger line
+   <N> …` line names a ledger line whose `Ruling:` comes after a note: copy the ruling it carries into the
+   differences as a `Ruling` line (rule 2) and apply steps 1 to 3 to it, or only delete the warning when the line
+   just quotes the form.
 7. Delete a list heading whose list is now empty (`Differences from the design:`, `Closed earlier deferred items:`).
    When both lists are gone, the body after the `Plan:` line is `No differences from the design.`
 8. Create `specs/history.md` with its title line when it is absent, append the entry after one blank line, and stage

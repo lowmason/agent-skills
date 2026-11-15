@@ -519,3 +519,25 @@ Differences from the design:
 - Deviation (Task 6): the placement pin uses three scratch repositories (top, bottom and a control). Source: plan, Task 6.
 - Deviation (Task 6): the owner lifted the fence on `## The ruff ignore` for README line 39 (f2bbec3). Source: plan, Task 6.
 - Deferred: 7 items. Source: specs/deferred_items.md, § 98-marimo-notebook-seam.
+
+## /deferred — 2026-11-14
+
+Closed deferred items:
+- "The next drift review of both upstreams. Compare from the pins in NOTICE. The review of" (deferred by 52-write-with-asd-ste100): re-vendored `ste-lint.py` at danyuchn `9c351694` and moved the pins in `NOTICE` and both sources files. prithivrajmu had no new commit.
+- "**Strict S1 rule and unmeetable G1 bar (plan 75 Task 6, owner ruled ship).** The" (deferred by 75-executing-plans-port): warning comments beside S1 and G1 in the plan 75 kit. Only comment lines changed.
+- "`skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by" (deferred by 92-writing-skills-guide-rewrite): the fork paragraph states that a forked skill runs in the background by default, and when Claude Code waits for it.
+- "`build/extract_structure.py` drops a contents line that has a page number but no title (plan 92 Codex" (deferred by 92-writing-skills-guide-rewrite Step 4b review): a numbered contents line with a page and no title is kept, so `check_complete` refuses it.
+- "The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed" (deferred by claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323): the lint flags `synced` in any capitalization and `anthropic-skills` alone or before a colon.
+- "**history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol," (deferred by 93-mutant-checked-tests): `ruling_lines` reads `Ruling:` only as a line's own mark. Rulings written after a note are now dropped, which is a new backlog item.
+- "**The llm-wiki pilot fixture still names the old stats package (the owner kept it in the work-repo name" (deferred by work-repo-name-sweep follow-ups): anonymized copies of the two private pilot files sit beside the tests, so the three pilot tests run on every machine.
+- "**One made-up name stands for different real things in the public files (the work-repo name sweep," (deferred by work-repo-name-sweep follow-ups): the model repo is now `jobs-model`, and tech-debt's sibling repos are the `claims_model` family.
+- "**batching.md does not say which BASE a batch that spans several dispatches passes to `mutant-run` (plan 97" (deferred by 97-change-reverted-mutant): batching.md names the batch's BASE, the commit recorded before its first dispatch.
+- "**Committed micro-test rep JSON files carry `credential_expires_at` (plan 97 Task 8 ruling, 2026-11-14).**" (deferred by 97-change-reverted-mutant): owner ruling: the field stays in the committed rep JSON files. Kits built from now on drop it, which is a new backlog item.
+- "**The Codex guide calls the 32 KiB limit "combined", and plan 98's B0 run does not show the global file" (deferred by 98-marimo-notebook-seam): owner ruling: the guide's line stays as the docs give it.
+- "**V3 of the `verdict` pin is a miss under the Rules' plain text (plan 98 Task 3; the plan's Builder's call" (deferred by 98-marimo-notebook-seam): owner ruling: the record's V3 reading is approved, and no count changes.
+- "**Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50" (deferred by 98-marimo-notebook-seam): covered by the owner's ruling on the plan 97 item.
+
+## /deferred — 2026-11-15
+
+Closed deferred items:
+- "**history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick" (deferred by deferred-quick-fixes-2026-11-14): the draft names each ledger line whose `Ruling:` comes after a note, so no ruling is lost without a sign.

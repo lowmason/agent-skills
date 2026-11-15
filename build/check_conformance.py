@@ -848,11 +848,20 @@ def check_builtin_name_shadow(root: Path, files: list[str], params: dict) -> lis
 
 
 def check_reserved_skill_name(root: Path, files: list[str], params: dict) -> list[Finding]:
-    reserved = set(params['reserved'])
+    '''Flag a skill directory whose name Claude Code reserves: a reserved_any_case
+    name in any capitalization, or a reserved_prefix name alone or followed by a colon.'''
+    any_case, prefixes = params['reserved_any_case'], params['reserved_prefix']
+    folded = {n.casefold() for n in any_case}
+
+    def reserved(name: str) -> bool:
+        return name.casefold() in folded or any(name == p or name.startswith(f'{p}:') for p in prefixes)
+
+    why = (f'is reserved: Claude Code skips a skill folder named {" or ".join(any_case)} in any '
+           f'capitalization, and outside a plugin loads no folder named {" or ".join(prefixes)} or '
+           f'starting with {" or ".join(f"{p}:" for p in prefixes)}')
     dirs = {m.group(1): m.group(2) for f in files if (m := SKILL_DIR_RE.fullmatch(f))}
-    return [Finding(path, f'directory name {name!r} is reserved for claude.ai skills '
-                          'synced into terminal sessions')
-            for path, name in sorted(dirs.items()) if name in reserved]
+    return [Finding(path, f'directory name {name!r} {why}')
+            for path, name in sorted(dirs.items()) if reserved(name)]
 
 
 # Checks from the plan 35 audit, section 6 (#50-#52, #54, #58-#64, #67-#69).
@@ -1408,7 +1417,8 @@ CHECKS = {
     'dmi-handoff-consistency': (check_dmi_handoff_consistency, {}),
     'command-frontmatter-keys': (check_command_frontmatter_keys, {'fields': 'strings'}),
     'builtin-name-shadow': (check_builtin_name_shadow, {'builtins': 'strings'}),
-    'reserved-skill-name': (check_reserved_skill_name, {'reserved': 'strings'}),
+    'reserved-skill-name': (check_reserved_skill_name,
+                            {'reserved_any_case': 'strings', 'reserved_prefix': 'strings'}),
     'agent-name-form': (check_agent_name_form, {'allow': 'strings'}),
     'agent-name-unique': (check_agent_name_unique, {}),
     'agent-model-available': (check_agent_model_available, {'exempt': 'strings'}),

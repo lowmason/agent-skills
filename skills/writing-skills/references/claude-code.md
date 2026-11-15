@@ -38,7 +38,11 @@ Fork a skill whose value is a **verdict or artifact** you act on (`tech-debt` re
 The reason not to fork a skill that dispatches subagents: with fork mode off
 (`CLAUDE_CODE_FORK_SUBAGENT=0`), the subagents that a subagent starts in `claude -p` and the
 Agent SDK start in the background. So a forked skill can return before its own subagents report.
-Fork mode is on by default.
+Fork mode is on by default. A forked skill also runs in the background by default in an
+interactive session: the turn goes on without its result, and the fork gets the narrower tool set
+of background subagents. Claude Code waits for the result in `claude -p` and Agent SDK runs, and
+when `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` is set. So do not fork a skill whose steps need a
+tool that background subagents lack.
 
 ## The skill listing
 
