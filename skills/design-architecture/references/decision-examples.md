@@ -8,7 +8,7 @@ decision you have not weighed.
 ## NFP nowcasting (the `payroll-nowcast` family, late 2025)
 
 These five come from the `payroll-nowcast` project as it stood in late 2025, before a 2026-09 split
-turned it into `payroll-stats` and `payroll-model`. They describe that state, not the current
+turned it into `payroll-stats` and `jobs-model`. They describe that state, not the current
 repos.
 
 **1. Inference engine: NumPyro/JAX over PyMC (the flagship).** The same nowcast ran three ways

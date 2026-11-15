@@ -6655,7 +6655,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `test_distill_specs.py` names the old package nowhere, the private wiki is unchanged, the llm-wiki note
       in `build/suites.toml` no longer says the tests read a pilot wiki, and the llm-wiki suite passes with
       the same count (313 passed before the sweep).
-- [ ] **One made-up name stands for different real things in the public files (the work-repo name sweep,
+- [x] **One made-up name stands for different real things in the public files (the work-repo name sweep,
       2026-11-13).** The two sweeps reused names. `payroll-model` is the model repo in
       `skills/design-architecture/SKILL.md:38`, `skills/design-architecture/references/decision-examples.md:11`,
       `skills/design-architecture/references/example-inference-engine-adr.md:11` and `hooks/README.md:19`. It
@@ -6672,6 +6672,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       of the live files finds each remaining made-up name standing for one real thing only, and the
       design-architecture, describe-critique-methodology, tech-debt and llm-wiki suites and the commit lints
       pass.
+      → done 2026-11-14 (/deferred quick fix): the owner chose the names. The model repo is now `jobs-model` in `hooks/README.md:19`, `skills/design-architecture/SKILL.md:38`, `decision-examples.md:11`, `example-inference-engine-adr.md:11` and the second name of `SKILL.md:117` (`payroll-stats + jobs-model`, the split's repo pair). The model package keeps `payroll-model` and `payroll_model` (the first name of `SKILL.md:117` reads as a package, as at `:200`). tech-debt's trio of sibling repos is now `claims_model` / `claims-model` / `claims_model_bsts` (lines 8, 78, 151 and 218). A `git grep` found no earlier use of the new names. Outside `specs/`, each made-up name now stands for one thing only. `check_frontmatter.py` passes, and the design-architecture, describe-critique-methodology, tech-debt, llm-wiki (313 passed) and hooks suites pass.
 
 ## 97-change-reverted-mutant — 2026-11-14
 - [ ] **The revert has no evidence for a test in a second suite that one pytest call cannot run (plan 97 final

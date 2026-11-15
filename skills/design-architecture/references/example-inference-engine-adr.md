@@ -8,7 +8,7 @@ for a real ADR. It is written as a snapshot dated to when the choice was made; t
 
 The record below is dated 2025-11-03 and stays as written, because an Accepted ADR is immutable.
 The repos it names have changed since: a 2026-09 split turned `payroll-nowcast` into `payroll-stats` and
-`payroll-model` and archived `payroll_nowcast`. In a real decision log that change arrives as a
+`jobs-model` and archived `payroll_nowcast`. In a real decision log that change arrives as a
 superseding ADR, not as an edit to this one.
 
 ---
