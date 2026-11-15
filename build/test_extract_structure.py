@@ -78,6 +78,14 @@ def test_check_complete_refuses_an_untitled_entry():
         check_complete({'1': 'A', '1.1': ''})
 
 
+def test_a_contents_line_with_a_page_but_no_title_fails_check_complete():
+    # `1.1 2` is a numbered line whose title is missing: dropping it would let
+    # check_complete pass with section 1.1 gone.
+    rows = parse_toc('1 Intro 5\n1.1 2\n1.2 Next 7\n2 Part two 20\n')
+    with pytest.raises(ValueError, match=r'no title: 1\.1$'):
+        check_complete(rows)
+
+
 def test_check_complete_refuses_an_empty_parse():
     with pytest.raises(ValueError):
         check_complete({})

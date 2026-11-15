@@ -401,15 +401,18 @@ rule = 'No skill or command takes the name of a built-in command the guide names
 enforced_by = 'check_conformance'
 builtins = ['help', 'model', 'compact']
 
-# ~/.claude/skills/synced/ holds skills synced from a claude.ai account.
+# ~/.claude/skills/synced/ holds skills synced from a claude.ai account, and Claude
+# Code skips a skill folder named synced in any capitalization. Outside a plugin, a
+# folder named anthropic-skills, or starting with anthropic-skills:, does not load.
 [[check]]
 id = 'reserved-skill-name'
 kind = 'skill-bundle'
 sections = ['skills.locations']
 type = 'fact'
-rule = 'No skill directory takes a name reserved for synced claude.ai skills.'
+rule = 'No skill directory takes a reserved name: synced in any capitalization, anthropic-skills, or a name that starts with anthropic-skills:.'
 enforced_by = 'check_conformance'
-reserved = ['synced', 'anthropic-skills']
+reserved_any_case = ['synced']
+reserved_prefix = ['anthropic-skills']
 
 # Plan 35 audit section 6 checks (/deferred pass 2026-10-05), agents and commands.
 
