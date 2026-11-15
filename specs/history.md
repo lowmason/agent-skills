@@ -541,3 +541,18 @@ Closed deferred items:
 
 Closed deferred items:
 - "**history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick" (deferred by deferred-quick-fixes-2026-11-14): the draft names each ledger line whose `Ruling:` comes after a note, so no ruling is lost without a sign.
+
+## 99-cc-guide-sections-after-init — 2026-11-15
+Plan: specs/plans/completed/99-cc-guide-sections-after-init.md · Spec: specs/completed/cc-guide-sections-after-init.md (retired)
+
+Differences from the design:
+- Ruling (Task 3): Task 3's refusal order follows the Global Constraints table (anchor, group, already stored, then the broken citation), so the CLI checks the three ID refusals before it reads the cache and the citations. Plan Step 4's CLI order (cache, citations, then add) loses to the Global Constraint ("A refusal checks in the table's order"), and the spec lists the ID refusals first (specs/cc-guide-sections-after-init.md:146-149). Plan deviation: Step 4's order changes. If wrong, a mixed case (bad ID plus empty cache or broken citation) prints a different first refusal, with nothing written either way.
+- Deviation (Task 1): +5 tests, not +2: a pin of `ANCHORED` and a test of the `git_show` error. Source: plan, Task 1.
+- Deviation (Task 3): the CLI `add` checks the three ID refusals first, through the new `baseline.check_add_ids`. Source: plan, Task 3.
+- Deviation (Task 3): +37 tests, not +9. Source: plan, Task 3.
+- Deviation (Task 4): +39 tests, not +7, and two fixtures that the task does not name. Source: plan, Task 4.
+- Deviation (Task 5): +11 tests, not +3. Source: plan, Task 5.
+- Deferred: 1 item. Source: specs/deferred_items.md, § 99-cc-guide-sections-after-init.
+
+Closed earlier deferred items:
+- "Sections created after `baseline init` (plan 38, T7-m3). No R7 subcommand adds a" (deferred by 38-claude-code-drift-automation).

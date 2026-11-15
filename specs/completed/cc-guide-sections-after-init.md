@@ -1,6 +1,7 @@
 # Guide sections created after `baseline init` — Design Spec
 
-**Status:** APPROVED (2026-11-15). The owner approved this file, its designer's calls included, on 2026-11-15. The
+**Status:** COMPLETE (2026-11-15), implemented by plan 99 (`specs/plans/completed/99-cc-guide-sections-after-init.md`).
+It was APPROVED on 2026-11-15. The owner approved this file, its designer's calls included, the same day. The
 question was "Do you approve the spec, with its designer's calls?", and the owner answered "Approve it".
 
 The design came from a brainstorming session on 2026-11-15. It is the Design pick of the 2026-11-14 `/deferred`
