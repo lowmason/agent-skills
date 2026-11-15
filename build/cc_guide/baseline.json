@@ -219,8 +219,8 @@
   },
   "rules.hierarchy": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
    "changed": "2.1.323",
    "audited": {
@@ -255,15 +255,15 @@
   },
   "rules.settings": {
    "checked": {
-    "release": "2.1.323",
-    "date": "2026-11-12"
+    "release": "2.1.325",
+    "date": "2026-11-15"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.325",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:11739bd03c9d79adbf566cfaa8fd8f7bca970d3f181e5579ff1d801bcd45fa0d"
+   "text_hash": "sha256:42a53480f1d487f816ff667896925405ff409ee4b8fdb1a7f038eb489e33850e"
   },
   "hooks.overview": {
    "checked": {
@@ -2099,8 +2099,8 @@
      "5cbac5d982b0a77d": "fed8d6ccb5301950",
      "d1ddbb130de299cc": "8b1b73e52ba3a8f5",
      "7052fdb009aa2e3d": "15598701b2ef80a3",
-     "d176246549dc3a36": "a7e485840baa75e5",
-     "642c3b70f1215b93": "c8732cec920afc4c",
+     "d176246549dc3a36": "dc923d06f5a3ffc2",
+     "642c3b70f1215b93": "f47f9c23dfee0fc3",
      "10961480dac41f3a": "535c35ba8dcc18aa",
      "dc76358e4df3ed9e": "cf53d478fde62bae",
      "fa8a72ada9157631": "f27536f5f18c704e",
@@ -2193,13 +2193,13 @@
      "131b0e5e357b28ac": "95c7667518eb2c4e",
      "7133de06a8b1d05f": "c9aa9e29441e7208",
      "d279b84ff4818f30": "a66452dcb9866eba",
-     "76f80899fe5592fb": "63099a525b47aae2",
+     "76f80899fe5592fb": "b530a6bb920aa01f",
      "544a35d7be3176ad": "50cf3e1987e09936",
      "4475f12f49b5a56c": "82bbd66c950f3ac2",
-     "f2812b0a821c16d0": "43a5a4047ba5eb08",
+     "f2812b0a821c16d0": "af83037a76165855",
      "147cb26044f27600": "381e4fa27e9eda8b",
      "ea5fdd26fcdcf212": "143ea38c05a05996",
-     "93f2e4e2f4d263f5": "53aed09c2bbb6585",
+     "93f2e4e2f4d263f5": "58228e0f2e224a83",
      "326f38667021abf4": "33a614a37040610c",
      "88429a18ad710b1e": "fcb1ff1c4e94f6f8",
      "82060067abe88382": "ee975146dacc1903",
@@ -2502,6 +2502,7 @@
     },
     "permission-modes": {
      "a3040a21aa2de0a4": "ae6b4a9e6150d39a",
+     "e7981fc3f1981d6f": "caf2662b99eb02ea",
      "85130c0bf694226d": "948ec5e1375508c0",
      "f889da04da6b6bce": "18cbe06ce9bdb709",
      "2557710dbd6daf4f": "b08b4cf6de2626a4",
@@ -2513,11 +2514,11 @@
      "64229ada58b7e128": "003c2a4f75deb54f",
      "38a3fb4cbc693cf7": "3b6f5ba5ec04a92e",
      "be2947ef923c845c": "3c306132b2a3a32e",
-     "3555b78ef2dcbd55": "3f14edd73a9e13ad",
+     "3555b78ef2dcbd55": "8d4ab48c8c7c465f",
      "451a0f4f2679cc56": "3bff7abac92e207f",
      "8d888a2b927a8efc": "25eb5ef29b3be178",
      "5cb93e983c11b30f": "ad7c5f992a9e17d0",
-     "b86f333c396cbf2b": "4486550763555680",
+     "b86f333c396cbf2b": "89e9c85bd48a9414",
      "a472de1858965acc": "7c319d6304b1b64c",
      "6ae8bd950f5d1b71": "d5238f33567bb2a0",
      "6e25fe97253fea7f": "1ed6bf2fe22f4167",
@@ -2526,7 +2527,6 @@
      "51b102df478547bb": "e6a8e368ab5f076b",
      "11dc10d56e0505fa": "68585baa13de35a5",
      "3bb014c448e81820": "b4c6f2be2ed0f5c4",
-     "e7981fc3f1981d6f": "d4090b95fa8fe9ce",
      "31ffd50ca27350cc": "3449f444858162dc",
      "5de28cd254f7e48b": "efeee88309575aeb"
     },
@@ -2592,9 +2592,9 @@
    "snapshot": {
     "memory": "2.1.323",
     "settings": "2.1.323",
-    "permissions": "2.1.323",
+    "permissions": "2.1.325",
     "settings-reference": "2.1.323",
-    "permission-modes": "2.1.323",
+    "permission-modes": "2.1.325",
     "claude-directory": "2.1.323",
     "large-codebases": "2.1.323",
     "env-vars": "2.1.323"
