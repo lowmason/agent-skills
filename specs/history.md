@@ -541,3 +541,9 @@ Closed deferred items:
 
 Closed deferred items:
 - "The guide omits a docs fact about `@` paths in skill bodies (plan 92 completion notes). Claude Code" (deferred by 92-writing-skills-guide-rewrite): `skills.progressive-disclosure` says that a terminal or VS Code session does not attach the files a synced claude.ai skill's `@` references name, confirmed against the skills page.
+
+## /deferred — 2026-11-15
+
+Closed deferred items:
+- "`hooks/ruff-check.sh` blocks with exit 2 and ruff's output on stderr, which the guide's Stop-gate pattern" (deferred by claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323): the hook prints a JSON block decision with exit 0, a test feeds it ruff's E902 "No such file or directory" line, and the file is cited after a files verify (owner ruling: no action on one uv-fact row).
+- "Two Part 1 steps wait for the next Claude Code release (owner ruling: wait). Anthropic edited the" (deferred by claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323): the L388 clause covers a managed plugin or its hooks failing to load and is verified, and "Setting your model" is rebaselined in all three groups after a second models-group verify.
