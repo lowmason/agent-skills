@@ -34,6 +34,8 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
   baseline advance ID [ID ...] --to RELEASE
   baseline audited GROUP [--to RELEASE]
   baseline accept ID [ID ...] (--substantive | --editorial)
+  baseline add ID [ID ...]
+  baseline drop ID [ID ...]
   baseline stamp
   baseline cite FILE [FILE ...]
   baseline rehash
@@ -44,10 +46,19 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
       lint and check print it. accept --substantive keeps a new `changed`
       above every citer's stamp (R2.4). audited records the newest cached
       release, or the release --to names, which settle sets to the audit
-      packet's head. rehash re-derives every baselined block from its page's
-      cached snapshot under R3.2's MDX rewrite and keeps which blocks are
-      baselined: run it on a baseline.json that the parser before the
-      rewrite wrote, as when a merge brings one in. A second run changes
+      packet's head. add creates the entry of each section created after
+      init, once the guide anchors it and manifest.toml lists it in a group.
+      `changed` follows R2.4. `checked` and `audited` copy the oldest among
+      the group's sections, so add claims no check or audit and never moves
+      the stamp. It touches no blocks: check reports what the section's terms
+      select, and rebaseline settles it. drop removes each named entry, and
+      the ID from cited, once the guide and manifest.toml no longer have it.
+      It edits no citing file, and stamp follows it. init --force is not the
+      way to add or drop a section: it resets every section's checked, changed
+      and audited and empties cited. rehash re-derives every baselined block
+      from its page's cached snapshot under R3.2's MDX rewrite and keeps which
+      blocks are baselined: run it on a baseline.json that the parser before
+      the rewrite wrote, as when a merge brings one in. A second run changes
       nothing.
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
@@ -103,10 +114,10 @@ Run: uv run python build/cc_guide/cli.py <subcommand>
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance, then audited for an audited group, then stamp; then run
-lint and build/check_conformance.py. advance and audited can move the oldest
-`checked`, which the stamp names, so stamp follows them. A missing page
-needs a manifest.toml edit first: rebaseline keeps its entries. `checked`
-and `audited` record the day the check or audit was done, not the
+lint and build/check_conformance.py. advance, audited and drop can move the
+oldest `checked` or `audited`, which the stamp names, so stamp follows them. A
+missing page needs a manifest.toml edit first: rebaseline keeps its entries.
+`checked` and `audited` record the day the check or audit was done, not the
 release's date.
 '''
 import argparse
@@ -184,6 +195,8 @@ def parser() -> argparse.ArgumentParser:
     kind = acc.add_mutually_exclusive_group(required=True)
     kind.add_argument('--substantive', action='store_true')
     kind.add_argument('--editorial', action='store_true')
+    b.add_parser('add').add_argument('ids', nargs='+')
+    b.add_parser('drop').add_argument('ids', nargs='+')
     b.add_parser('stamp')
     b.add_parser('cite').add_argument('files', nargs='+')
     b.add_parser('rehash')
@@ -291,6 +304,17 @@ def hook_failure(cache: Path | None, reason: str, now: datetime | None, run: str
     return 2
 
 
+def review_stamps(tree: Source, guide: str, action: str) -> dict[str, list[str]]:
+    '''Each section's citers' review stamps, which R2.4's `changed` stays
+    above. A citation that does not parse has no stamp to stay above, so it
+    is a SetupError naming `action`.'''
+    citations, problems = read_citations(citing_files(tree, guide))
+    if problems:
+        raise SetupError(f'{action} needs every citation to parse (R2.4); fix these first:\n'
+                         + '\n'.join(problems))
+    return {sid: [c.stamp for c in cs] for sid, cs in by_section(citations).items()}
+
+
 def run_baseline(args, cache: Path, today: date) -> int:
     tree = Source(REPO)
     manifest = parse_manifest(tree.require(MANIFEST))
@@ -309,7 +333,8 @@ def run_baseline(args, cache: Path, today: date) -> int:
         if baseline_path.exists() and not args.force:
             raise SetupError(f'{BASELINE} exists; init rebuilds it from scratch only with --force')
         changed = baseline.derive_changed(git_show(baseline.JULY[0], baseline.OLD_GUIDE_PATH),
-                                          git_show(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH), guide_text)
+                                          git_show(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH),
+                                          git_show(*baseline.ANCHORED))
         docs = args.docs or snapshot_docs(cache, BOOTSTRAP_RELEASE)
         if not docs.is_dir():
             raise SetupError(f'{docs}: no snapshot directory')
@@ -344,12 +369,15 @@ def run_baseline(args, cache: Path, today: date) -> int:
         newest, stamps = None, None
         if args.substantive:
             newest = newest_releases(cache)[0].label
-            citations, problems = read_citations(citing_files(tree, manifest.guide))
-            if problems:  # a citation that does not parse has no stamp to stay above
-                raise SetupError('a substantive accept needs every citation to parse (R2.4); fix these first:\n'
-                                 + '\n'.join(problems))
-            stamps = {sid: [c.stamp for c in cs] for sid, cs in by_section(citations).items()}
+            stamps = review_stamps(tree, manifest.guide, 'a substantive accept')
         new = baseline.accept(state, guide_text, args.ids, args.substantive, newest, stamps)
+    elif args.action == 'add':
+        baseline.check_add_ids(state, manifest, guide_text, args.ids)  # before the cache and the citations
+        newest = newest_releases(cache)[0].label
+        stamps = review_stamps(tree, manifest.guide, 'baseline add')
+        new = baseline.add(state, manifest, guide_text, args.ids, newest, stamps)
+    elif args.action == 'drop':
+        new = baseline.drop(state, manifest, guide_text, args.ids)
     elif args.action == 'advance':
         labels = {r.label for r in newest_releases(cache)}
         new = baseline.advance(state, args.ids, args.to, labels, day)

@@ -3,6 +3,11 @@
 **Status: COMPLETE (2026-10-20)** — all five stages are built: plans 38, 43, 44, 49 and 58, with the
 follow-ups 45 and 51, in `specs/plans/completed/`. Retired here by plan 58, the Stage 5 plan.
 
+**Amended 2026-11-15** by `specs/completed/cc-guide-sections-after-init.md` (plan 99,
+`specs/plans/completed/99-cc-guide-sections-after-init.md`): a section created after `baseline init` enters
+`baseline.json` through `baseline add`, a removed section leaves through `baseline drop`, and the history tests
+read the guide at `18b4a71` (R1.1, R2.6, R5, R7, R11.1, R12.2, R12.3).
+
 **Earlier status: DESIGN APPROVED (2026-10-03).** The owner reviewed the merged
 spec and approved it as written, including the merge-time choices neither
 session's approvals had covered: the stage order, the `build/` test
@@ -286,7 +291,10 @@ the next line, by `<!-- cc: <id> -->`.
 - IDs are two or more dot-separated segments of `[a-z0-9-]`, with no slashes;
   they are unique, and they never change when a heading's text or ⚠ marker
   does. They contain no section numbers.
-- Each section belongs to exactly one group (R2.5).
+- Each section belongs to exactly one group (R2.5). The table records the 38
+  sections at the bootstrap. `manifest.toml` lists the live sections. A
+  section created later takes an anchor, an ID in one group, and
+  `baseline add` (R7). A removed one leaves through `baseline drop`.
 - The anchors are already in the guide. The conformance plan added them with
   exactly these IDs, in this order. Its R1.2 test
   (`test_real_guide_carries_the_drift_r11_anchors` in
@@ -426,7 +434,8 @@ snapshot in `~/.cache/agent-skills/cc-guide/2.1.288/docs/`, never from live
 docs, so a docs edit published after the stamp shows up as a change rather
 than being absorbed. A page later mapped but missing from the snapshot stays
 unbaselined, so its selected blocks report as new. Every section starts at
-`checked = audited = 2.1.288 (2026-10-03)`, with `changed` per R11.1.
+`checked = audited = 2.1.288 (2026-10-03)`, with `changed` per R11.1. A
+section created after `init` enters through `baseline add` (R7).
 
 ### R3 — Blocks (`blocks.py`)
 
@@ -588,7 +597,10 @@ An offline commit gate over the working tree (`--ref <ref>` reads a commit
 instead). Exit 0 when clean; exit 1 with one line per violation.
 - Every heading has exactly one well-formed anchor (R1.1). The manifest's
   groups, `baseline.json`'s sections and the anchors carry the same ID set,
-  each ID in exactly one group.
+  each ID in exactly one group. When the guide and the manifest have an ID
+  that `baseline.json` lacks, the message prints the `baseline add` command.
+  When only `baseline.json` has it, the message prints the `baseline drop`
+  command.
 - Each section's normalized text matches `text_hash`. A mismatch prints the
   `baseline accept` command for each outcome (R2.4).
 - The stamp region matches `baseline.json`.
@@ -736,13 +748,27 @@ triage cleared, since the triage's own commands advance it; `--verify` and
 ### R7 — `baseline`
 
 The only writer of `baseline.json`, the guide's stamp region, and citation
-stamps. Every subcommand leaves its changes uncommitted. `advance` and
-`audited` can move the oldest `checked` or `audited`, which the stamp region
+stamps. Every subcommand leaves its changes uncommitted. `advance`,
+`audited` and `drop` can move the oldest `checked` or `audited`, which the stamp region
 names, so `stamp` follows them, as R8.8 orders it; a stale region is a lint
 failure. A missing page (R6.5) clears only through a `manifest.toml` edit
 that drops or remaps it, since `rebaseline` keeps a missing page's entries
 (owner, plan 38, 2026-10-04).
-- `init`: R2.6.
+- `init`: R2.6. `init --force` is not the way to add or drop a section. It
+  resets every section's `checked`, `changed` and `audited` to the bootstrap
+  and empties `cited`.
+- `add <ids>`: create each named section's entry, for a section created after
+  `init`. The ID must be an anchor in the guide and in one `manifest.toml`
+  group, and not yet in `baseline.json`. `text_hash` is the section's text,
+  and `changed` follows R2.4. `checked` and `audited` copy the oldest of each
+  among the group's sections, in the stamp region's order, or the oldest in
+  the file when the group has none. So `add` claims no check or audit, and
+  never moves the stamp region. `advance` records a later check (owner,
+  2026-11-15). It touches no blocks: `check` reports what the section's terms
+  select as `new`, and `rebaseline` settles it.
+- `drop <ids>`: remove each named section's entry, and the ID from every file
+  in `cited`, once the guide and `manifest.toml` no longer have it. It touches
+  no blocks and no citing file.
 - `rebaseline <group> [<block keys>] [--head <release>]`: re-hash the
   group's selected blocks,
   all of them or the listed keys, from `latest/`. A listed run refuses while
@@ -1177,7 +1203,10 @@ text differs between `91474f6` and `c33bc99`, and `2.1.219` for the other 6.
 Both commits are read at the guide's path then,
 `specs/claude-code-customization-guide.md`. Sections align by (parent `##`,
 heading), never heading text alone, so the two "Frontmatter reference ⚠"
-sections stay distinct.
+sections stay distinct. The guide at `18b4a71` (plan 35, the first with
+anchors, headings identical to `c33bc99`'s) maps each aligned section to its
+ID. So a later heading edit changes nothing. `init` gives a section without a
+derived value its `--release`.
 
 R11.2 **Seed manifest.** The groups' pages and marks come from R2.5; the owner
 reviews `manifest.toml` before it is committed.
@@ -1244,8 +1273,8 @@ R12.1 **A suite in `build/cc_guide/`**, run from inside that directory:
 R12.2 **Coverage.**
 - R1: anchors, IDs, groups, and section splitting, including fenced `#`
   lines and both "Frontmatter reference ⚠" sections.
-- R2 and R7: version ordering with four components, and each `baseline`
-  subcommand's write set.
+- R2 and R7: version ordering with four components, each `baseline`
+  subcommand's write set, and `add` and `drop`.
 - R3: fences, splitting, keys, normalization, terms, selection, candidate
   sections.
 - R4 and R5: citation parsing in all three comment forms, stale computation,
@@ -1260,10 +1289,12 @@ R12.2 **Coverage.**
 
 R12.3 **Acceptance fixtures.**
 - **Replay.** Rebuild the guide at `91474f6` and `c33bc99` from git (our text,
-  at its pre-move path), derive `changed` as R11.1 does, and run against fixture citers stamped
+  at its pre-move path), map their sections to IDs through the guide at
+  `18b4a71`, derive `changed` as R11.1 does, and run against fixture citers stamped
   `@2.1.219`. A file citing `subagents.tools` and a file citing
   `hooks.patterns` must be flagged; a control citing `skills.description` must
   not. Skip with a reason when the history is unavailable (a shallow clone).
+  No history test reads the working-tree guide.
 - **Rows.** Editing one row of an `env-vars.md`-style fixture flags only the
   groups whose terms match it.
 

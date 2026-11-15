@@ -6,14 +6,20 @@ the real guide and register.
 import ast
 import json
 import os
+import re
 import subprocess
 import tomllib
+from pathlib import Path
 
 import pytest
 
 import check_conformance as cc
 
 GUIDE = 'specs/guides/claude-code-customization-guide.md'
+# Plan 35's commit, the first with anchors. It restates baseline.ANCHORED in
+# cc_guide/baseline.py: importing that here would only work after
+# check_conformance sets sys.path, so the constant is stated again.
+ANCHORED_REF = '18b4a71'
 FENCE = '`' * 3
 
 # The 38 section IDs of the drift spec's R1.1 table, in heading order
@@ -83,14 +89,46 @@ def test_repeated_anchor_id_is_a_violation_and_resolves_as_guide_py_does():
         'guide.md: anchor (a.one): line 4: anchor a.one repeats line 2']
 
 
+def anchored_guide() -> str:
+    '''The guide at ANCHORED_REF, read from git. A clone without the commit (a
+    shallow one) skips; any other git failure fails.'''
+    present = subprocess.run(['git', 'cat-file', '-e', f'{ANCHORED_REF}^{{commit}}'], cwd=cc.REPO,
+                             capture_output=True)
+    if present.returncode != 0:
+        pytest.skip(f'{ANCHORED_REF} is not in this clone (a shallow clone?)')
+    proc = subprocess.run(['git', 'show', f'{ANCHORED_REF}:{GUIDE}'], cwd=cc.REPO,
+                          capture_output=True, encoding='utf-8')
+    if proc.returncode != 0:
+        pytest.fail(f'git show {ANCHORED_REF}:{GUIDE} failed: {proc.stderr.strip()}')
+    return proc.stdout
+
+
 def test_real_guide_carries_the_drift_r11_anchors():
-    '''R1.2: 38 headings outside fences, each followed by exactly one
-    well-formed anchor, whose IDs in heading order equal drift's R1.1 table.'''
-    text = (cc.REPO / GUIDE).read_text()
+    '''R1.2: the guide at the bootstrap commit has 38 headings outside fences,
+    each followed by exactly one well-formed anchor, whose IDs in heading order
+    equal drift's R1.1 table. This pins the bootstrap record, not the working
+    tree: check_conformance.py and `cli.py lint` keep the working tree's
+    anchors covered.'''
+    text = anchored_guide()
     sections, violations = cc.guide_sections(text, GUIDE)
     assert len(sections) == 38
     assert rendered(violations) == []
     assert [s.id for s in sections] == R11_IDS
+
+
+def test_the_r12_pin_passes_with_the_working_tree_guide_edited(monkeypatch):
+    '''Spec S5: the pin reads the bootstrap record, so a heading edit and a
+    section created after init leave it passing.'''
+    guide_file = (cc.REPO / GUIDE).resolve()
+    real = Path.read_text
+
+    def edited(self, *args, **kwargs):
+        text = real(self, *args, **kwargs)
+        if self.resolve() != guide_file:
+            return text
+        return re.sub(r'(?m)^(##+ .+)$', r'\1 (edited)', text) + '\n## Added later\n<!-- cc: added.later -->\n'
+    monkeypatch.setattr(Path, 'read_text', edited)
+    test_real_guide_carries_the_drift_r11_anchors()
 
 
 # A three-section fixture guide and a register that maps it. FIXTURE_REGISTER

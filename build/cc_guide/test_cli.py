@@ -13,9 +13,11 @@ import cli_versions
 import notice
 import probes
 import state
-from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE, docs_dir,  # noqa: F401
-                         drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
-from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN
+from cc_fixtures import (DOCS, DROPPED_MANIFEST, EXTRA_MANIFEST, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML,  # noqa: F401
+                         MARKDOWN_PAGE, MDX_PAGE, NO_BETA_GUIDE, NO_BETA_MANIFEST, docs_dir, drift_repo,
+                         fixture_repo, git, guide_text, isolated_home, prime_cache, with_extra,
+                         without_beta_reference, write_tree)
+from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN, text_hash, sections as guide_sections
 
 
 @pytest.fixture
@@ -57,6 +59,28 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE}: not found in the working tree\n')
 
 
+@pytest.mark.parametrize('edit, manifest_text, line', [
+    (with_extra, EXTRA_MANIFEST, 'section alpha.extra: missing from baseline.json; add it with '
+                                 '`uv run python build/cc_guide/cli.py baseline add alpha.extra`'),
+    (without_beta_reference, DROPPED_MANIFEST, 'section beta.reference: missing from the guide and manifest.toml;'
+                                               ' drop it with `uv run python build/cc_guide/cli.py baseline drop'
+                                               ' beta.reference`'),
+], ids=['add', 'drop'])
+def test_running_the_command_lint_prints_clears_the_id_set_violation(world, capsys, edit, manifest_text, line):
+    '''Review Focus 5.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(edit(guide.read_text()))
+    (repo / state.MANIFEST).write_text(manifest_text)
+    assert main(cache, 'lint') == 1
+    assert capsys.readouterr().out == line + '\n'
+    prefix = 'uv run python build/cc_guide/cli.py '
+    command = line.split('`')[1]
+    assert command.startswith(prefix)
+    assert main(cache, *command[len(prefix):].split()) == 0
+    assert main(cache, 'lint') == 0
+
+
 @pytest.mark.usefixtures('world')  # the committed repo, with cli pointed at it
 def test_a_label_newer_than_the_cached_changelog_is_a_note_not_a_violation(tmp_path, capsys):
     '''With only the bootstrap snapshot cached, a changelog that ends before the
@@ -94,10 +118,24 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
         assert 'it refuses when the latest fetch is at another release' in out
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
     assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
+    assert '  baseline add ID [ID ...]\n' in outs[0]
+    assert '  baseline drop ID [ID ...]\n' in outs[0]
+    assert 'advance, audited and drop can move the oldest' in ' '.join(outs[0].split())
     assert '  baseline cite FILE [FILE ...]\n' in outs[0]
     assert '  baseline rehash\n' in outs[0]
     assert ('A three-part guide release label newer than the cached changelog'
             in ' '.join(outs[0].split()))  # the label note is for a release only
+
+
+def test_help_says_what_drop_removes_and_that_stamp_follows_it(capsys):
+    with pytest.raises(SystemExit) as stop:
+        cli.main(['--help'])
+    assert stop.value.code == 0
+    out = ' '.join(capsys.readouterr().out.split())
+    assert ('drop removes each named entry, and the ID from cited, once the guide and manifest.toml no longer have it.'
+            ' It edits no citing file, and stamp follows it.') in out
+    assert 'init --force is not the way to add or drop a section' in out
+    assert 'advance, audited and drop can move the oldest `checked` or `audited`, which the stamp names, so stamp follows them.' in out
 
 
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
@@ -241,7 +279,8 @@ def test_check_hook_renames_the_record_into_place_after_the_notice_and_its_diges
 
 def history_repo(tmp_path, monkeypatch):
     '''A repo holding R11.1's two old guides, then the anchored guide and its
-    manifest but no baseline, with cli and baseline pointed at it.'''
+    manifest but no baseline, with cli and baseline pointed at it. Its third
+    commit stands in for 18b4a71, the commit that baseline.ANCHORED names.'''
     old = '\n'.join(line for line in guide_text().split('\n') if not line.startswith('<!-- cc: '))
     repo = fixture_repo(tmp_path / 'repo', {baseline.OLD_GUIDE_PATH: old.replace('Set `ALPHA_ENV`', 'Set `OLD`')})
     july = git(repo, 'rev-parse', 'HEAD').strip()
@@ -251,7 +290,9 @@ def history_repo(tmp_path, monkeypatch):
     write_tree(repo, {GUIDE_PATH: guide_text(), state.MANIFEST: MANIFEST_TOML})
     git(repo, 'add', '-A')
     git(repo, 'commit', '-qm', 'the anchored guide and its manifest')
+    anchored = git(repo, 'rev-parse', 'HEAD').strip()
     monkeypatch.setattr(cli, 'REPO', repo)
+    monkeypatch.setattr(baseline, 'ANCHORED', (anchored, GUIDE_PATH))
     monkeypatch.setattr(baseline, 'JULY', (july, '2.1.219'))
     monkeypatch.setattr(baseline, 'REFRESH', (refresh, '2.1.288'))
     return repo
@@ -272,6 +313,40 @@ def test_init_derives_changed_and_refuses_to_overwrite_without_force(tmp_path, d
     assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE} exists; init rebuilds it from scratch'
                                        ' only with --force\n')
     assert main(cache, *argv, '--force') == 0
+
+
+def test_init_takes_a_heading_edit_and_a_section_created_after_the_bootstrap(tmp_path, docs_dir, monkeypatch):
+    '''S4: the guide at ANCHORED maps headings to IDs, so a heading edit and a
+    later section in the working tree no longer refuse; the later section
+    takes --release.'''
+    repo = history_repo(tmp_path, monkeypatch)
+    edited = guide_text().replace('### Reference ⚠\n<!-- cc: beta.reference', '### Beta reference\n<!-- cc: beta.reference')
+    write_tree(repo, {GUIDE_PATH: with_extra(edited), state.MANIFEST: EXTRA_MANIFEST})
+    assert main(tmp_path / 'cache', 'baseline', 'init', '--docs', str(docs_dir), '--release', '2.1.900',
+                '--date', '2026-09-02') == 0
+    written = load(repo)['sections']
+    assert list(written) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview', 'beta.reference']
+    assert {i: s['changed'] for i, s in written.items()} == {
+        'alpha.overview': '2.1.219', 'alpha.reference': '2.1.288', 'alpha.extra': '2.1.900',
+        'beta.overview': '2.1.219', 'beta.reference': '2.1.219'}
+
+
+@pytest.mark.parametrize('ref, path', [
+    pytest.param(None, 'no/such/guide.md', id='path-the-commit-lacks'),
+    pytest.param('0' * 40, GUIDE_PATH, id='commit-the-clone-lacks'),
+])
+def test_init_names_the_anchored_reference_a_clone_lacks(tmp_path, docs_dir, monkeypatch, capsys, ref, path):
+    '''The guide at ANCHORED is read from git, by the constant's own path: a
+    reference the clone lacks refuses, naming it, and writes nothing. The
+    working-tree guide and manifest.toml's path are never the fallback.'''
+    repo = history_repo(tmp_path, monkeypatch)
+    ref = ref or baseline.ANCHORED[0]
+    monkeypatch.setattr(baseline, 'ANCHORED', (ref, path))
+    assert main(tmp_path / 'cache', 'baseline', 'init', '--docs', str(docs_dir), '--release', '2.1.900',
+                '--date', '2026-09-02') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: R11.1 needs {ref}:{path}, which this clone lacks'
+                                       ' (a shallow clone?)\n')
+    assert dirty(repo) == []
 
 
 def test_init_without_docs_needs_the_bootstrap_snapshot_directory(tmp_path, monkeypatch, capsys):
@@ -614,6 +689,354 @@ def test_packets_with_nothing_to_triage_exits_zero_and_writes_nothing(world, cap
     assert main(cache, 'packets', '--triage') == 0
     assert capsys.readouterr() == ('nothing to triage: no untriaged release and no block finding\n', '')
     assert not (cache / 'packets').exists()
+
+
+def test_add_writes_only_the_new_entry_and_lint_passes_with_no_stamp(world, capsys):
+    '''Drift R12.2 write set, and Review Focus 2.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    git(repo, 'commit', '-qam', 'a section created after init')
+    before = load(repo)
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    after = load(repo)
+    assert set(after['sections']) - set(before['sections']) == {'alpha.extra'}
+    assert changed_fields(before, after) == set()
+    assert after['cited'] == before['cited']
+    assert main(cache, 'lint') == 0
+
+
+def test_add_refuses_without_a_cached_changelog_or_with_a_broken_citation(world, tmp_path, capsys):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'})
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(tmp_path / 'empty-cache', 'baseline', 'add', 'alpha.extra') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: no cached changelog: run check, or restore the 2.1.288 snapshot\n')
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 2
+    assert capsys.readouterr() == ('', (
+        'cc-guide: baseline add needs every citation to parse (R2.4); fix these first:\n'
+        'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)\n'))
+    assert (repo / state.BASELINE).read_bytes() == before
+
+
+def test_a_section_created_after_init_reaches_check_exit_zero(world, capsys):
+    '''Review Focus 3: S1's flow. The new section's `PIPE_ENV` selects one more
+    env-vars block, which check reports as new until rebaseline settles it.'''
+    repo, cache, folder = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    check_args = ('check', '--worktree', '--docs', str(folder))
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    capsys.readouterr()
+    assert main(cache, *check_args) == 1
+    assert ('  [alpha] new env-vars › Environment variables › `PIPE_ENV` (candidates: alpha.extra)'
+            in capsys.readouterr().out.splitlines())
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 0
+    assert main(cache, *check_args) == 0
+    assert main(cache, 'lint') == 0
+
+
+def test_add_takes_several_ids_and_needs_at_least_one(world, capsys):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()) + '\n## 3. Gamma\n<!-- cc: gamma.overview -->\n\nGamma.\n')
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST.replace(
+        '[[exclusion]]', "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]"))
+    git(repo, 'commit', '-qam', 'two sections created after init')
+    assert main(cache, 'baseline', 'add', 'gamma.overview', 'alpha.extra') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    assert list(load(repo)['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                            'beta.reference', 'gamma.overview']
+    with pytest.raises(SystemExit) as stop:
+        main(cache, 'baseline', 'add')
+    assert stop.value.code == 2
+    assert 'the following arguments are required: ids' in capsys.readouterr().err
+
+
+def test_add_writes_the_entry_with_the_newest_cached_release_and_the_oldest_stamps(world):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    git(repo, 'commit', '-qam', 'a section created after init')
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    entry = load(repo)['sections']['alpha.extra']
+    assert entry['changed'] == '2.1.902'
+    assert entry['checked'] == entry['audited'] == {'release': '2.1.900', 'date': '2026-09-02'}
+    extra = next(s for s in guide_sections(with_extra(guide_text())) if s.id == 'alpha.extra')
+    assert entry['text_hash'] == text_hash(extra.text)
+
+
+def test_add_keeps_changed_above_a_citation_written_by_hand_before_it(world, capsys):
+    '''`cite` refuses an ID that baseline.json lacks, so a citation to a new
+    section is written by hand; add leaves it STALE (designer's call 3).'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.extra @2.1.902\nexit 0\n'})
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert load(repo)['sections']['alpha.extra']['changed'] == '2.1.902.1'
+    capsys.readouterr()
+    assert main(cache, 'lint') == 0
+    assert capsys.readouterr() == ('', 'STALE hooks/gate.sh alpha.extra\n')
+
+
+def test_add_stays_above_the_highest_of_several_hand_written_citations(world):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.extra @2.1.901\nexit 0\n',
+                 'hooks/later.sh': '#!/bin/sh\n# cc-guide: alpha.extra @2.1.903\nexit 0\n'})
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert load(repo)['sections']['alpha.extra']['changed'] == '2.1.903.1'
+
+
+@pytest.mark.parametrize('ids, manifest_text, message', [
+    (['alpha.nowhere'], EXTRA_MANIFEST, 'baseline add: not a guide anchor: alpha.nowhere'),
+    (['alpha.extra'], MANIFEST_TOML, 'baseline add: in no manifest.toml group: alpha.extra'),
+    (['alpha.overview'], EXTRA_MANIFEST, 'baseline add: already in baseline.json: alpha.overview'),
+    (['alpha.extra', 'alpha.nowhere'], EXTRA_MANIFEST, 'baseline add: not a guide anchor: alpha.nowhere'),
+], ids=['not-an-anchor', 'in-no-group', 'already-stored', 'second-id-bad'])
+@pytest.mark.parametrize('empty_cache, files', [
+    (True, {}),
+    (False, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'}),
+], ids=['no-cached-changelog', 'broken-citation'])
+def test_add_refuses_an_id_before_it_reads_the_cache_or_the_citations(world, tmp_path, capsys, ids, manifest_text,
+                                                                      message, empty_cache, files):
+    '''Fix round 1, from the plan's Global Constraints: a refusal checks in the
+    table's order, so the three ID refusals come before no cached changelog
+    and before a broken citation (a deliberate deviation from Step 4).'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(with_extra(guide.read_text()))
+    (repo / state.MANIFEST).write_text(manifest_text)
+    cited(repo, files)
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(tmp_path / 'empty-cache' if empty_cache else cache, 'baseline', 'add', *ids) == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {message}\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+    assert dirty(repo) == []
+
+
+def test_add_leaves_the_guide_alone_even_when_its_stamp_region_is_stale(world, capsys):
+    '''Spec :166: add writes baseline.json only. A stamp region that already
+    lags baseline.json stays as it is, since `baseline stamp` regenerates it.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    stale = guide_text('> Checked against the Claude Code docs and changelog through 2.1.899 on 2026-08-01;'
+                       ' oldest full re-verification 2026-08-01, at 2.1.899.')
+    guide.write_text(with_extra(stale))
+    (repo / state.MANIFEST).write_text(EXTRA_MANIFEST)
+    git(repo, 'commit', '-qam', 'a section created after init, under a stale stamp')
+    before = guide.read_bytes()
+    assert main(cache, 'baseline', 'add', 'alpha.extra') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    assert guide.read_bytes() == before
+
+
+def test_drop_writes_only_the_baseline_and_a_moved_oldest_needs_stamp(world, capsys):
+    '''Drift R12.2 write set, and Review Focus 4: beta.reference alone holds
+    the oldest checked, so dropping it moves the stamp.'''
+    repo, cache, _ = world
+    assert main(cache, 'baseline', 'advance', 'alpha.overview', 'alpha.reference', 'beta.overview',
+                '--to', '2.1.902') == 0
+    guide = repo / GUIDE_PATH
+    guide.write_text(without_beta_reference(guide.read_text()))
+    (repo / state.MANIFEST).write_text(DROPPED_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove beta.reference')
+    before = load(repo)
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n',
+                                   'the stamp region is now stale: run baseline stamp\n')
+    assert dirty(repo) == [state.BASELINE]
+    after = load(repo)
+    assert after['sections'] == {i: v for i, v in before['sections'].items() if i != 'beta.reference'}
+    assert {k: after[k] for k in ('groups', 'llms', 'cited')} == {k: before[k] for k in ('groups', 'llms', 'cited')}
+    assert main(cache, 'lint') == 1
+    assert main(cache, 'baseline', 'stamp') == 0
+    assert main(cache, 'lint') == 0
+
+
+def test_drop_refuses_a_section_the_guide_still_has(world, capsys):
+    repo, cache, _ = world
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: baseline drop: still a guide anchor: beta.reference\n')
+    assert dirty(repo) == []
+
+
+def remove_beta_reference(repo):
+    '''Commit beta.reference's removal from the guide, and from group beta in manifest.toml.'''
+    guide = repo / GUIDE_PATH
+    guide.write_text(without_beta_reference(guide.read_text()))
+    (repo / state.MANIFEST).write_text(DROPPED_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove beta.reference')
+
+
+def test_drop_leaves_the_guide_alone_even_when_its_stamp_region_is_stale(world, capsys):
+    '''Spec :188: drop writes baseline.json only. A stamp region that already
+    lags baseline.json stays as it is, since `baseline stamp` regenerates it.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    stale = guide_text('> Checked against the Claude Code docs and changelog through 2.1.899 on 2026-08-01;'
+                       ' oldest full re-verification 2026-08-01, at 2.1.899.')
+    guide.write_text(without_beta_reference(stale))
+    (repo / state.MANIFEST).write_text(DROPPED_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove beta.reference, under a stale stamp')
+    before = guide.read_bytes()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    assert guide.read_bytes() == before
+
+
+@pytest.mark.parametrize('audited, stderr', [
+    (None, ''),
+    ({'release': '2.1.901', 'date': '2026-09-20'}, 'the stamp region is now stale: run baseline stamp\n'),
+], ids=['nothing-moves', 'oldest-audited-moves'])
+def test_drop_says_the_stamp_is_stale_when_the_oldest_audited_moves_and_not_otherwise(world, capsys, audited, stderr):
+    '''Spec :190: a dropped section can hold the oldest `audited` as well as the
+    oldest `checked`. beta.reference alone holds it in the second case.'''
+    repo, cache, _ = world
+    if audited:
+        s = load(repo)
+        for sid in ('alpha.overview', 'alpha.reference', 'beta.overview'):
+            s['sections'][sid]['audited'] = audited
+        (repo / state.BASELINE).write_text(state.dump_baseline(s))
+        git(repo, 'commit', '-qam', 'audit three sections')
+    remove_beta_reference(repo)
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', stderr)
+
+
+def test_drop_edits_no_citing_file_and_the_editor_then_fixes_each_citation(world, capsys):
+    '''Spec :187-190: drop takes the ID out of every cited map and edits no
+    citing file; lint then reports each citation, and the editor fixes it and
+    runs cite.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: beta.overview beta.reference @2.1.900\nexit 0\n',
+                 'hooks/solo.sh': '#!/bin/sh\n# cc-guide: beta.reference @2.1.900\nexit 0\n'})
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh', 'hooks/solo.sh') == 0
+    git(repo, 'commit', '-qam', 'record the citations')
+    remove_beta_reference(repo)
+    before = load(repo)
+    assert sorted(before['cited']) == ['hooks/gate.sh', 'hooks/solo.sh']
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert dirty(repo) == [state.BASELINE]
+    assert load(repo)['cited'] == {'hooks/gate.sh': {'beta.overview': before['cited']['hooks/gate.sh']['beta.overview']}}
+    capsys.readouterr()
+    assert main(cache, 'lint') == 1
+    assert capsys.readouterr() == ('hooks/gate.sh:2: cites beta.reference, which is not a guide section\n'
+                                   'hooks/solo.sh:2: cites beta.reference, which is not a guide section\n', '')
+    write_tree(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: beta.overview @2.1.900\nexit 0\n',
+                      'hooks/solo.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.900\nexit 0\n'})
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh', 'hooks/solo.sh') == 0
+    assert sorted(load(repo)['cited']) == ['hooks/gate.sh', 'hooks/solo.sh']
+    assert main(cache, 'lint') == 0
+
+
+def test_drop_reads_neither_the_cache_nor_the_citations(world, tmp_path, capsys):
+    '''Unlike add, drop needs no release and no review stamp, so an empty cache
+    and a citation that does not parse refuse nothing.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'})
+    remove_beta_reference(repo)
+    capsys.readouterr()
+    assert main(tmp_path / 'empty-cache', 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+
+
+def test_drop_takes_several_ids_and_leaves_the_groups_entry_of_a_group_that_left_the_manifest(world, capsys):
+    repo, cache, _ = world
+    (repo / GUIDE_PATH).write_text(NO_BETA_GUIDE)
+    (repo / state.MANIFEST).write_text(NO_BETA_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove group beta')
+    before = load(repo)
+    assert main(cache, 'baseline', 'drop', 'beta.reference', 'beta.overview') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    after = load(repo)
+    assert list(after['sections']) == ['alpha.overview', 'alpha.reference']
+    assert after['groups'] == before['groups']
+    assert 'beta' in after['groups'] and after['groups']['beta']['blocks']
+    assert main(cache, 'lint') == 0
+
+
+def test_a_section_removed_from_the_guide_leaves_its_blocks_deselected_until_rebaseline(world, capsys):
+    '''Spec :191-192: drop touches no group's blocks, so the next check reports
+    the block that only the dropped section's terms selected as `deselected`
+    (informational), and a full rebaseline of the group drops it.'''
+    repo, cache, folder = world
+    remove_beta_reference(repo)
+    check_args = ('check', '--worktree', '--docs', str(folder))
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    capsys.readouterr()
+    assert main(cache, 'lint') == 0
+    assert main(cache, *check_args) == 0
+    assert ('blocks: 0 changed, 0 missing, 0 new, 0 missing pages; 1 deselected (informational)'
+            in capsys.readouterr().out.splitlines())
+    assert main(cache, 'baseline', 'rebaseline', 'beta') == 0
+    capsys.readouterr()
+    assert main(cache, *check_args) == 0
+    assert ('blocks: 0 changed, 0 missing, 0 new, 0 missing pages; 0 deselected (informational)'
+            in capsys.readouterr().out.splitlines())
+    assert main(cache, 'lint') == 0
+
+
+@pytest.mark.parametrize('ids, removed, message', [
+    (['beta.reference'], True, 'baseline drop: still in a manifest.toml group: beta.reference'),
+    (['nowhere.one', 'beta.reference'], True, 'baseline drop: still in a manifest.toml group: beta.reference'),
+    (['beta.reference', 'beta.overview', 'beta.reference'], False,
+     'baseline drop: still a guide anchor: beta.reference, beta.overview'),
+    (['nowhere.one', 'nowhere.two', 'nowhere.one'], False, 'unknown section IDs: nowhere.one, nowhere.two'),
+], ids=['group-lists-it', 'group-beside-unknown', 'anchors-in-argument-order', 'unknown-once'])
+def test_drop_refuses_with_one_error_line_and_writes_nothing(world, capsys, ids, removed, message):
+    '''`removed`: the guide lost beta.reference while manifest.toml still lists it.'''
+    repo, cache, _ = world
+    if removed:
+        guide = repo / GUIDE_PATH
+        guide.write_text(without_beta_reference(guide.read_text()))
+        git(repo, 'commit', '-qam', 'remove beta.reference from the guide only')
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'drop', *ids) == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {message}\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+    assert dirty(repo) == []
+
+
+def test_drop_refuses_to_leave_baseline_json_with_no_section(world, capsys):
+    repo, cache, _ = world
+    s = load(repo)
+    s['sections'] = {'beta.reference': s['sections']['beta.reference']}
+    (repo / state.BASELINE).write_text(state.dump_baseline(s))
+    remove_beta_reference(repo)
+    before = (repo / state.BASELINE).read_bytes()
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: baseline drop: would leave baseline.json with no section\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+
+
+def test_drop_needs_at_least_one_id(world, capsys):
+    _, cache, _ = world
+    with pytest.raises(SystemExit) as stop:
+        main(cache, 'baseline', 'drop')
+    assert stop.value.code == 2
+    assert 'the following arguments are required: ids' in capsys.readouterr().err
 
 
 def test_the_repo_lints_clean(capsys):

@@ -1,6 +1,8 @@
 '''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation and R12.3's
 replay over it, and each `baseline` subcommand's effect on the state or a
 citing file (drift spec R7). The write sets on disk are test_cli.py's.'''
+import copy
+import re
 import subprocess
 from pathlib import Path
 
@@ -11,12 +13,25 @@ import blocks
 import guide
 import lint
 import state
-from cc_fixtures import (DOCS, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, MDX_PAGE, docs_dir,  # noqa: F401
-                         fixture_snapshot, fixture_state, guide_text, isolated_home, write_tree)
+from cc_fixtures import (DOCS, DROPPED_MANIFEST, EXTRA_MANIFEST, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML,  # noqa: F401
+                         MDX_PAGE, NO_BETA_GUIDE, NO_BETA_MANIFEST, docs_dir, fixture_snapshot, fixture_state,
+                         guide_text, isolated_home, with_extra, without_beta_reference, write_tree)
 
 REPO = Path(__file__).resolve().parents[2]
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 ENV = 'Environment variables'
+EXTRA = state.parse_manifest(EXTRA_MANIFEST)
+DROPPED = state.parse_manifest(DROPPED_MANIFEST)
+GAMMA_MANIFEST = MANIFEST_TOML.replace('[[exclusion]]', "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]")
+GAMMA_GUIDE = guide_text() + '## 3. Gamma\n<!-- cc: gamma.overview -->\n\nGamma reads `PIPE_ENV`.\n'
+GAMMA_GROUP = "[groups.gamma]\nsections = ['gamma.overview']\nterms = ['env-vars']\n\n[[exclusion]]"
+NO_REFERENCE = MANIFEST_TOML.replace("sections = ['alpha.overview', 'alpha.reference']", "sections = ['alpha.overview']")
+# A recorded text_hash that no section holds now, as a hash that `cite` recorded before an accept.
+OLD_HASH = 'sha256:' + 'ab' * 32
+
+
+def section_hash(text, sid):
+    return guide.text_hash({s.id: s for s in guide.sections(text)}[sid].text)
 
 
 def hashed(*keys):
@@ -61,33 +76,34 @@ def test_derive_changed_refuses_a_section_the_refresh_lacks():
     assert str(err.value) == "R11.1: section beta.reference ('### Renamed') is not in the c33bc99 guide"
 
 
-def history(ref):
-    '''The guide at ref, read where it lived before 79ad04f moved it. A clone
-    without ref (a shallow one) skips; any other git failure fails.'''
+def history(ref, path):
+    '''The guide at ref, read from git at path. The path is an argument, since
+    79ad04f moved the guide after the refresh commit and before 18b4a71.
+    A clone without ref (a shallow one) skips; any other git failure fails.'''
     present = subprocess.run(['git', 'cat-file', '-e', f'{ref}^{{commit}}'], cwd=REPO, capture_output=True)
     if present.returncode != 0:
         pytest.skip(f'{ref} is not in this clone (a shallow clone?)')
-    proc = subprocess.run(['git', 'show', f'{ref}:{baseline.OLD_GUIDE_PATH}'], cwd=REPO,
+    proc = subprocess.run(['git', 'show', f'{ref}:{path}'], cwd=REPO,
                           capture_output=True, encoding='utf-8')
     if proc.returncode != 0:
-        pytest.fail(f'git show {ref}:{baseline.OLD_GUIDE_PATH} failed: {proc.stderr.strip()}')
+        pytest.fail(f'git show {ref}:{path} failed: {proc.stderr.strip()}')
     return proc.stdout
 
 
-def test_history_skips_only_for_a_commit_this_clone_lacks(monkeypatch):
+def test_history_skips_only_for_a_commit_this_clone_lacks():
     '''A missing path at a present commit fails rather than hiding as a skip.'''
     with pytest.raises(pytest.skip.Exception):
-        history('0' * 40)
-    monkeypatch.setattr(baseline, 'OLD_GUIDE_PATH', 'no/such/guide.md')
+        history('0' * 40, baseline.OLD_GUIDE_PATH)
     with pytest.raises((pytest.skip.Exception, pytest.fail.Exception)) as err:
-        history('HEAD')
+        history('HEAD', 'no/such/guide.md')
     assert err.type is pytest.fail.Exception
     assert 'no/such/guide.md' in str(err.value)
 
 
 def test_r11_derivation_from_the_real_history():
-    changed = baseline.derive_changed(history(baseline.JULY[0]), history(baseline.REFRESH[0]),
-                                      (REPO / 'specs/guides/claude-code-customization-guide.md').read_text())
+    changed = baseline.derive_changed(history(baseline.JULY[0], baseline.OLD_GUIDE_PATH),
+                                      history(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH),
+                                      history(*baseline.ANCHORED))
     assert sorted(sid for sid, release in changed.items() if release == '2.1.219') == [
         'lean.ceremony', 'lean.overview', 'rules.auto-memory', 'rules.overview',
         'skills.description', 'skills.overview']
@@ -99,8 +115,8 @@ def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
     fixture citers stamped @2.1.219 of subagents.tools and hooks.patterns
     are stale, and a control citing skills.description is not.'''
     changed = baseline.derive_changed(
-        history(baseline.JULY[0]), history(baseline.REFRESH[0]),
-        (REPO / 'specs/guides/claude-code-customization-guide.md').read_text(encoding='utf-8'))
+        history(baseline.JULY[0], baseline.OLD_GUIDE_PATH), history(baseline.REFRESH[0], baseline.OLD_GUIDE_PATH),
+        history(*baseline.ANCHORED))
     s = {'sections': {sid: {'changed': release} for sid, release in changed.items()}, 'cited': {}}
     citations, problems = guide.read_citations({
         'agents/replay.md': '---\nname: replay\n# cc-guide: subagents.tools @2.1.219\n---\n',
@@ -109,6 +125,22 @@ def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
     assert problems == []
     assert lint.stale_citations(citations, s) == [('agents/replay.md', ['subagents.tools']),
                                                    ('hooks/replay.sh', ['hooks.patterns'])]
+
+
+def test_the_history_tests_pass_with_the_working_tree_guide_edited(monkeypatch):
+    '''G3: a heading edit and a section created after init change neither
+    history test, since neither reads the working-tree guide.'''
+    guide_file = (REPO / 'specs/guides/claude-code-customization-guide.md').resolve()
+    real = Path.read_text
+
+    def edited(self, *args, **kwargs):
+        text = real(self, *args, **kwargs)
+        if self.resolve() != guide_file:
+            return text
+        return re.sub(r'(?m)^(##+ .+)$', r'\1 (edited)', text) + '\n## Added later\n<!-- cc: added.later -->\n'
+    monkeypatch.setattr(Path, 'read_text', edited)
+    test_r11_derivation_from_the_real_history()
+    test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control()
 
 
 def test_init_baselines_each_groups_selected_blocks(docs_dir):
@@ -126,6 +158,20 @@ def test_init_baselines_each_groups_selected_blocks(docs_dir):
     assert s['groups']['beta']['snapshot'] == {'events': '2.1.900', 'env-vars': '2.1.900',
                                                'platform:pricing': '2.1.900'}
     assert s['llms'] == ['env-vars', 'events', 'plugins/components', 'tools']
+
+
+def test_init_gives_a_section_without_a_derived_changed_its_release(docs_dir):
+    s = baseline.init(state.parse_manifest(EXTRA_MANIFEST), with_extra(guide_text()), docs_dir,
+                      '2.1.900', '2026-09-02', FIXTURE_CHANGED)
+    assert s['sections']['alpha.extra']['changed'] == '2.1.900'
+    assert {i: v['changed'] for i, v in s['sections'].items() if i != 'alpha.extra'} == FIXTURE_CHANGED
+
+
+def test_the_history_reference_is_the_guide_at_plan_35s_commit():
+    '''R11.1: the map from heading to ID is the first guide with anchors, read at
+    the guide's present path, not OLD_GUIDE_PATH.'''
+    assert baseline.ANCHORED == ('18b4a71', 'specs/guides/claude-code-customization-guide.md')
+    assert baseline.ANCHORED[1] != baseline.OLD_GUIDE_PATH
 
 
 def test_init_leaves_a_page_the_snapshot_lacks_unbaselined(docs_dir):
@@ -238,6 +284,366 @@ def test_audited_never_moves_checked_backwards(docs_dir):
     with pytest.raises(state.SetupError) as err:
         baseline.audited(s, MANIFEST, 'alpha', '2.1.901', '2026-10-05')
     assert str(err.value) == '2.1.901 is older than the checked release of alpha.reference'
+
+
+def test_add_copies_the_groups_oldest_checked_and_audited_in_the_stamps_order(docs_dir):
+    '''D4 and D1: by release, alpha's oldest checked is alpha.reference's; by
+    date, its oldest audited is alpha.overview's. The other order would pick
+    the other section, and beta's older values stay out.'''
+    s = fixture_state(docs_dir)
+    a = s['sections']
+    a['alpha.overview']['checked'] = {'release': '2.1.901', 'date': '2026-09-01'}
+    a['alpha.reference']['checked'] = {'release': '2.1.900', 'date': '2026-09-30'}
+    a['alpha.overview']['audited'] = {'release': '2.1.901', 'date': '2026-09-10'}
+    a['alpha.reference']['audited'] = {'release': '2.1.900', 'date': '2026-09-20'}
+    before = copy.deepcopy(s)
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert new['sections']['alpha.extra'] == {
+        'checked': {'release': '2.1.900', 'date': '2026-09-30'}, 'changed': '2.1.902',
+        'audited': {'release': '2.1.901', 'date': '2026-09-10'},
+        'text_hash': section_hash(with_extra(guide_text()), 'alpha.extra')}
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview', 'beta.reference']
+    assert {i: v for i, v in new['sections'].items() if i != 'alpha.extra'} == before['sections']
+    assert {k: new[k] for k in ('format', 'groups', 'llms', 'cited')} == {k: before[k] for k in ('format', 'groups', 'llms', 'cited')}
+    assert s == before
+    assert guide.render_stamp(new['sections']) == guide.render_stamp(before['sections'])
+
+
+def test_add_in_a_new_group_copies_the_files_oldest_and_stays_above_a_citer(docs_dir):
+    '''Designer's calls 3 and 4: a group with no stored section copies the
+    file's oldest; a citation written by hand before add is left STALE.'''
+    s = fixture_state(docs_dir)
+    s['sections']['alpha.overview']['checked'] = {'release': '2.1.902', 'date': '2026-10-01'}
+    s['sections']['alpha.overview']['audited'] = {'release': '2.1.902', 'date': '2026-10-01'}
+    new = baseline.add(s, state.parse_manifest(GAMMA_MANIFEST), GAMMA_GUIDE, ['gamma.overview'], '2.1.902',
+                       {'gamma.overview': ['2.1.902']})
+    assert new['sections']['gamma.overview'] == {
+        'checked': {'release': '2.1.900', 'date': '2026-09-02'}, 'changed': '2.1.902.1',
+        'audited': {'release': '2.1.900', 'date': '2026-09-02'},
+        'text_hash': section_hash(GAMMA_GUIDE, 'gamma.overview')}
+    assert list(new['sections'])[-1] == 'gamma.overview'
+
+
+def test_add_keeps_an_entry_waiting_for_drop(docs_dir):
+    '''Review Focus 1: a stored ID that the guide and the manifest lack keeps
+    its values, after the guide-ordered entries.'''
+    s = fixture_state(docs_dir)
+    pending = copy.deepcopy(s['sections']['beta.reference'])
+    items = list(s['sections'].items())
+    s['sections'] = dict([items[0], ('gone.one', pending), *items[1:]])
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                     'beta.reference', 'gone.one']
+    assert new['sections']['gone.one'] == pending
+
+
+@pytest.mark.parametrize('ids, manifest_text, message', [
+    (['alpha.nowhere'], EXTRA_MANIFEST, 'baseline add: not a guide anchor: alpha.nowhere'),
+    (['alpha.extra'], MANIFEST_TOML, 'baseline add: in no manifest.toml group: alpha.extra'),
+    (['alpha.extra', 'alpha.overview'], EXTRA_MANIFEST, 'baseline add: already in baseline.json: alpha.overview'),
+])
+def test_add_refuses_and_changes_nothing(docs_dir, ids, manifest_text, message):
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    with pytest.raises(state.SetupError) as err:
+        baseline.add(s, state.parse_manifest(manifest_text), with_extra(guide_text()), ids, '2.1.902', {})
+    assert str(err.value) == message
+    assert s == before
+
+
+@pytest.mark.parametrize('ids, manifest_text, message', [
+    (['beta.gone', 'alpha.nowhere', 'beta.gone'], MANIFEST_TOML,
+     'baseline add: not a guide anchor: beta.gone, alpha.nowhere'),
+    (['gone.one'], MANIFEST_TOML, 'baseline add: not a guide anchor: gone.one'),
+    (['alpha.overview', 'alpha.extra', 'alpha.extra'], MANIFEST_TOML,
+     'baseline add: in no manifest.toml group: alpha.extra'),
+    (['alpha.reference'], NO_REFERENCE, 'baseline add: in no manifest.toml group: alpha.reference'),
+    (['beta.overview', 'alpha.overview', 'beta.overview'], EXTRA_MANIFEST,
+     'baseline add: already in baseline.json: beta.overview, alpha.overview'),
+])
+def test_add_names_each_failing_id_once_in_argument_order_and_stops_at_the_first_failing_check(
+        docs_dir, ids, manifest_text, message):
+    '''`gone.one` is stored but in neither the guide nor the manifest, so it
+    fails all three checks; `alpha.reference` in NO_REFERENCE fails the last
+    two. Each case's message names only the first failing check.'''
+    s = fixture_state(docs_dir)
+    s['sections']['gone.one'] = copy.deepcopy(s['sections']['beta.reference'])
+    before = copy.deepcopy(s)
+    with pytest.raises(state.SetupError) as err:
+        baseline.add(s, state.parse_manifest(manifest_text), with_extra(guide_text()), ids, '2.1.902', {})
+    assert str(err.value) == message
+    assert s == before
+
+
+def test_add_copies_the_one_stored_section_of_its_group_not_the_files_oldest(docs_dir):
+    s = fixture_state(docs_dir)
+    del s['sections']['alpha.reference']
+    s['sections']['alpha.overview']['checked'] = {'release': '2.1.905', 'date': '2026-10-02'}
+    s['sections']['alpha.overview']['audited'] = {'release': '2.1.905', 'date': '2026-10-03'}
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.906', {})
+    assert new['sections']['alpha.extra']['checked'] == {'release': '2.1.905', 'date': '2026-10-02'}
+    assert new['sections']['alpha.extra']['audited'] == {'release': '2.1.905', 'date': '2026-10-03'}
+
+
+def test_add_in_a_new_group_takes_each_oldest_in_its_own_order_across_the_whole_file(docs_dir):
+    '''The oldest checked and the oldest audited sit in different sections, and
+    neither is the first or the last stored one.'''
+    s = fixture_state(docs_dir)
+    a = s['sections']
+    a['alpha.overview']['checked'] = {'release': '2.1.901', 'date': '2026-09-01'}
+    a['alpha.reference']['checked'] = {'release': '2.1.900', 'date': '2026-09-30'}
+    a['alpha.overview']['audited'] = {'release': '2.1.901', 'date': '2026-09-10'}
+    a['alpha.reference']['audited'] = {'release': '2.1.900', 'date': '2026-09-20'}
+    for sid in ('beta.overview', 'beta.reference'):
+        a[sid]['checked'] = {'release': '2.1.905', 'date': '2026-10-05'}
+        a[sid]['audited'] = {'release': '2.1.905', 'date': '2026-10-05'}
+    new = baseline.add(s, state.parse_manifest(GAMMA_MANIFEST), GAMMA_GUIDE, ['gamma.overview'], '2.1.906', {})
+    assert new['sections']['gamma.overview']['checked'] == {'release': '2.1.900', 'date': '2026-09-30'}
+    assert new['sections']['gamma.overview']['audited'] == {'release': '2.1.901', 'date': '2026-09-10'}
+
+
+def test_add_of_two_sections_follows_the_guides_heading_order_not_the_arguments(docs_dir):
+    s = fixture_state(docs_dir)
+    manifest = state.parse_manifest(EXTRA_MANIFEST.replace('[[exclusion]]', GAMMA_GROUP))
+    text = with_extra(GAMMA_GUIDE)
+    new = baseline.add(s, manifest, text, ['gamma.overview', 'alpha.extra'], '2.1.902', {})
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                     'beta.reference', 'gamma.overview']
+    for sid in ('alpha.extra', 'gamma.overview'):
+        assert new['sections'][sid]['text_hash'] == section_hash(text, sid)
+        assert new['sections'][sid]['changed'] == '2.1.902'
+
+
+@pytest.mark.parametrize('text, manifest_text', [
+    (with_extra(GAMMA_GUIDE), EXTRA_MANIFEST),  # the guide holds gamma.overview, the manifest lacks it
+    (with_extra(guide_text()), EXTRA_MANIFEST.replace('[[exclusion]]', GAMMA_GROUP)),  # the reverse
+])
+def test_add_ignores_an_unrelated_section_that_the_guide_and_manifest_disagree_on(docs_dir, text, manifest_text):
+    '''check_ids would refuse these; add judges only the IDs it is given.'''
+    new = baseline.add(fixture_state(docs_dir), state.parse_manifest(manifest_text), text, ['alpha.extra'],
+                       '2.1.902', {})
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'alpha.extra', 'beta.overview',
+                                     'beta.reference']
+
+
+def test_add_changed_stays_above_only_the_new_sections_own_citers(docs_dir):
+    s = fixture_state(docs_dir)
+    other = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902',
+                         {'alpha.overview': ['2.1.950'], 'beta.overview': ['2.1.903']})
+    assert other['sections']['alpha.extra']['changed'] == '2.1.902'
+    own = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902',
+                       {'alpha.extra': ['2.1.901', '2.1.950'], 'alpha.overview': ['2.1.960']})
+    assert own['sections']['alpha.extra']['changed'] == '2.1.950.1'
+
+
+def test_add_breaks_a_checked_tie_on_the_release_by_the_date(docs_dir):
+    '''`checked` is by release, then date (spec :155). The two sections tie on
+    release, and the first holds the later date, so a key that drops the date
+    copies the first.'''
+    s = fixture_state(docs_dir)
+    s['sections']['alpha.overview']['checked'] = {'release': '2.1.900', 'date': '2026-09-30'}
+    s['sections']['alpha.reference']['checked'] = {'release': '2.1.900', 'date': '2026-09-10'}
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert new['sections']['alpha.extra']['checked'] == {'release': '2.1.900', 'date': '2026-09-10'}
+
+
+def test_add_breaks_an_audited_tie_on_the_date_by_the_release(docs_dir):
+    '''`audited` is by date, then release (spec :161). The two sections tie on
+    date, and the first holds the newer release, so a key that drops the
+    release copies the first.'''
+    s = fixture_state(docs_dir)
+    s['sections']['alpha.overview']['audited'] = {'release': '2.1.901', 'date': '2026-09-12'}
+    s['sections']['alpha.reference']['audited'] = {'release': '2.1.900', 'date': '2026-09-12'}
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    assert new['sections']['alpha.extra']['audited'] == {'release': '2.1.900', 'date': '2026-09-12'}
+
+
+def test_add_in_a_new_group_leaves_every_groups_blocks_and_snapshot_alone(docs_dir):
+    '''Spec :114: add does not touch any group's `blocks` or `snapshot`, and
+    it opens no entry for a group that baseline.json lacks.'''
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    new = baseline.add(s, state.parse_manifest(GAMMA_MANIFEST), GAMMA_GUIDE, ['gamma.overview'], '2.1.902', {})
+    assert new['groups'] == before['groups']
+    assert list(new['groups']) == ['alpha', 'beta']
+
+
+def test_add_returns_a_state_that_shares_no_value_with_its_input(docs_dir):
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    new = baseline.add(s, EXTRA, with_extra(guide_text()), ['alpha.extra'], '2.1.902', {})
+    new['sections']['alpha.extra']['checked']['date'] = 'x'
+    new['sections']['alpha.extra']['audited']['date'] = 'x'
+    new['sections']['alpha.overview']['checked']['date'] = 'x'
+    new['groups']['alpha']['blocks'].clear()
+    new['llms'].append('x')
+    assert s == before
+
+
+def test_drop_removes_the_entry_and_the_id_from_cited_only(docs_dir):
+    s = fixture_state(docs_dir)
+    h = {sid: v['text_hash'] for sid, v in s['sections'].items()}
+    s['cited'] = {'hooks/a.sh': {'beta.reference': h['beta.reference']},
+                  'hooks/b.sh': {'beta.overview': h['beta.overview'], 'beta.reference': h['beta.reference']}}
+    before = copy.deepcopy(s)
+    new = baseline.drop(s, DROPPED, without_beta_reference(guide_text()), ['beta.reference'])
+    assert new['sections'] == {i: v for i, v in before['sections'].items() if i != 'beta.reference'}
+    assert new['cited'] == {'hooks/b.sh': {'beta.overview': h['beta.overview']}}
+    assert {k: new[k] for k in ('format', 'groups', 'llms')} == {k: before[k] for k in ('format', 'groups', 'llms')}
+    assert s == before
+
+
+@pytest.mark.parametrize('guide_of, manifest, ids, message', [
+    (guide_text, DROPPED, ['beta.reference'], 'baseline drop: still a guide anchor: beta.reference'),
+    (lambda: without_beta_reference(guide_text()), MANIFEST, ['beta.reference'],
+     'baseline drop: still in a manifest.toml group: beta.reference'),
+    (guide_text, MANIFEST, ['gone.one'], 'unknown section IDs: gone.one'),
+])
+def test_drop_refuses_and_changes_nothing(docs_dir, guide_of, manifest, ids, message):
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    with pytest.raises(state.SetupError) as err:
+        baseline.drop(s, manifest, guide_of(), ids)
+    assert str(err.value) == message
+    assert s == before
+
+
+def test_drop_refuses_to_leave_no_section(docs_dir):
+    s = fixture_state(docs_dir)
+    s['sections'] = {'gone.one': s['sections']['beta.reference']}
+    with pytest.raises(state.SetupError) as err:
+        baseline.drop(s, MANIFEST, guide_text(), ['gone.one'])
+    assert str(err.value) == 'baseline drop: would leave baseline.json with no section'
+
+
+def stored_only(s, *ids):
+    '''`s` holding only these sections, each a copy of beta.reference's entry.'''
+    entry = s['sections']['beta.reference']
+    s['sections'] = {sid: copy.deepcopy(entry) for sid in ids}
+
+
+def test_drop_takes_an_id_out_of_the_one_file_that_cites_it_and_leaves_the_other_files_as_they_are(docs_dir):
+    '''Spec :187-188. Every recorded hash differs from its section's current
+    text_hash, as after an accept, so a drop that re-records a hash shows.'''
+    s = fixture_state(docs_dir)
+    s['cited'] = {'hooks/a.sh': {'beta.reference': OLD_HASH},
+                  'hooks/b.sh': {'alpha.overview': OLD_HASH, 'beta.overview': OLD_HASH},
+                  'hooks/c.sh': {'alpha.overview': OLD_HASH}}
+    new = baseline.drop(s, DROPPED, without_beta_reference(guide_text()), ['beta.reference'])
+    assert new['cited'] == {'hooks/b.sh': {'alpha.overview': OLD_HASH, 'beta.overview': OLD_HASH},
+                            'hooks/c.sh': {'alpha.overview': OLD_HASH}}
+
+
+@pytest.mark.parametrize('cited', [{}, {'hooks/a.sh': {'alpha.overview': OLD_HASH}}], ids=['no-file', 'other-ids-only'])
+def test_drop_of_an_id_no_file_cites_still_drops_the_entry_and_leaves_cited_as_it_was(docs_dir, cited):
+    s = fixture_state(docs_dir)
+    s['cited'] = copy.deepcopy(cited)
+    new = baseline.drop(s, DROPPED, without_beta_reference(guide_text()), ['beta.reference'])
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'beta.overview']
+    assert new['cited'] == cited
+
+
+def test_drop_of_several_ids_clears_each_from_sections_and_cited_in_one_run(docs_dir):
+    s = fixture_state(docs_dir)
+    s['sections'] = {sid: s['sections'][sid]  # an order that no sort restores
+                     for sid in ('alpha.reference', 'beta.overview', 'alpha.overview', 'beta.reference')}
+    s['cited'] = {'hooks/both.sh': {'beta.overview': OLD_HASH, 'beta.reference': OLD_HASH},
+                  'hooks/first.sh': {'beta.overview': OLD_HASH},
+                  'hooks/keeps.sh': {'alpha.reference': OLD_HASH, 'beta.reference': OLD_HASH},
+                  'hooks/last.sh': {'beta.reference': OLD_HASH},
+                  'hooks/other.sh': {'alpha.overview': OLD_HASH}}
+    before = copy.deepcopy(s)
+    new = baseline.drop(s, state.parse_manifest(NO_BETA_MANIFEST), NO_BETA_GUIDE, ['beta.reference', 'beta.overview'])
+    assert list(new['sections']) == ['alpha.reference', 'alpha.overview']
+    assert new['sections'] == {i: before['sections'][i] for i in ('alpha.overview', 'alpha.reference')}
+    assert new['cited'] == {'hooks/keeps.sh': {'alpha.reference': OLD_HASH},
+                            'hooks/other.sh': {'alpha.overview': OLD_HASH}}
+
+
+def test_drop_leaves_a_groups_entry_in_place_when_its_last_section_goes(docs_dir):
+    '''Spec :114, :118 and :195 (designer's call 9): manifest.toml cannot hold
+    a group with no sections, so the group has left it. drop still touches no
+    group's `blocks` or `snapshot`.'''
+    s = fixture_state(docs_dir)
+    before = copy.deepcopy(s)
+    assert before['groups']['beta']['blocks'] and before['groups']['beta']['snapshot']
+    new = baseline.drop(s, state.parse_manifest(NO_BETA_MANIFEST), NO_BETA_GUIDE, ['beta.overview', 'beta.reference'])
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference']
+    assert new['groups'] == before['groups']
+    assert list(new['groups']) == ['alpha', 'beta']
+    assert {k: new[k] for k in ('format', 'llms', 'cited')} == {k: before[k] for k in ('format', 'llms', 'cited')}
+
+
+@pytest.mark.parametrize('ids, guide_of, manifest, message', [
+    (['beta.overview', 'alpha.overview', 'beta.overview'], guide_text, MANIFEST,
+     'baseline drop: still a guide anchor: beta.overview, alpha.overview'),
+    (['beta.reference', 'alpha.reference'], lambda: without_beta_reference(guide_text()),
+     state.parse_manifest(NO_REFERENCE), 'baseline drop: still a guide anchor: alpha.reference'),
+    (['beta.reference', 'beta.overview', 'beta.reference'], lambda: NO_BETA_GUIDE, MANIFEST,
+     'baseline drop: still in a manifest.toml group: beta.reference, beta.overview'),
+    (['nowhere.two', 'beta.reference', 'nowhere.one'], lambda: NO_BETA_GUIDE, MANIFEST,
+     'baseline drop: still in a manifest.toml group: beta.reference'),
+    (['zeta.none', 'gone.one', 'alpha.none', 'zeta.none'], guide_text, MANIFEST,
+     'unknown section IDs: zeta.none, alpha.none'),
+], ids=['anchors-in-argument-order', 'anchor-beside-group-id', 'groups-in-argument-order', 'group-beside-unknown',
+        'unknown-once'])
+def test_drop_names_each_failing_id_once_in_argument_order_and_stops_at_the_first_failing_check(
+        docs_dir, ids, guide_of, manifest, message):
+    '''`gone.one` is stored but in neither the guide nor the manifest, so it
+    passes the first two checks and the third. Each case's message names only
+    the first failing check.'''
+    s = fixture_state(docs_dir)
+    s['sections']['gone.one'] = copy.deepcopy(s['sections']['beta.reference'])
+    before = copy.deepcopy(s)
+    with pytest.raises(state.SetupError) as err:
+        baseline.drop(s, manifest, guide_of(), ids)
+    assert str(err.value) == message
+    assert s == before
+
+
+@pytest.mark.parametrize('stored, ids, message', [
+    (['gone.one', 'gone.two'], ['gone.one', 'gone.two'], 'baseline drop: would leave baseline.json with no section'),
+    (['gone.one', 'gone.two'], ['gone.two', 'gone.one', 'gone.two'],
+     'baseline drop: would leave baseline.json with no section'),
+    (['gone.one'], ['gone.one', 'nowhere'], 'unknown section IDs: nowhere'),
+    (['gone.one', 'gone.two'], ['gone.one', 'gone.one'], None),
+    (['gone.one', 'gone.two'], ['gone.one'], None),
+], ids=['all-stored', 'all-stored-repeated', 'unknown-before-empty', 'a-repeated-id-leaves-one', 'one-of-two'])
+def test_drop_refuses_only_a_run_that_would_leave_no_section(docs_dir, stored, ids, message):
+    s = fixture_state(docs_dir)
+    stored_only(s, *stored)
+    before = copy.deepcopy(s)
+    if message is None:
+        assert list(baseline.drop(s, MANIFEST, guide_text(), ids)['sections']) == [i for i in stored if i not in ids]
+    else:
+        with pytest.raises(state.SetupError) as err:
+            baseline.drop(s, MANIFEST, guide_text(), ids)
+        assert str(err.value) == message
+    assert s == before
+
+
+@pytest.mark.parametrize('text, manifest_text', [
+    (without_beta_reference(GAMMA_GUIDE), DROPPED_MANIFEST),  # the guide holds gamma.overview, the manifest lacks it
+    (without_beta_reference(guide_text()), DROPPED_MANIFEST.replace('[[exclusion]]', GAMMA_GROUP)),  # the reverse
+], ids=['guide-only', 'manifest-only'])
+def test_drop_ignores_an_unrelated_section_that_the_guide_and_manifest_disagree_on(docs_dir, text, manifest_text):
+    '''check_ids would refuse these; drop judges only the IDs it is given.'''
+    new = baseline.drop(fixture_state(docs_dir), state.parse_manifest(manifest_text), text, ['beta.reference'])
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'beta.overview']
+
+
+def test_drop_returns_a_state_that_shares_no_value_with_its_input(docs_dir):
+    s = fixture_state(docs_dir)
+    s['cited'] = {'hooks/b.sh': {'beta.overview': OLD_HASH, 'beta.reference': OLD_HASH}}
+    before = copy.deepcopy(s)
+    new = baseline.drop(s, DROPPED, without_beta_reference(guide_text()), ['beta.reference'])
+    new['sections']['alpha.overview']['checked']['date'] = 'x'
+    new['sections']['beta.overview']['audited']['date'] = 'x'
+    new['cited']['hooks/b.sh']['beta.overview'] = 'x'
+    new['groups']['alpha']['blocks'].clear()
+    new['groups']['beta']['snapshot'].clear()
+    new['llms'].append('x')
+    assert s == before
 
 
 def latest_from(tmp_path, **edits):

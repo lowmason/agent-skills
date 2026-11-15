@@ -419,6 +419,50 @@ MANIFEST_TOML = '\n'.join([
 ])
 
 
+# A section created after the bootstrap: the fixture guide gains it before
+# `## 2. Beta`, and the fixture manifest lists it in group alpha. The insertion
+# leaves every other section's text_hash unchanged, since the hash collapses
+# whitespace.
+EXTRA_ID = 'alpha.extra'
+
+
+def with_extra(text: str) -> str:
+    '''`text` with the extra section inserted before the `## 2. Beta` line.'''
+    marker = '## 2. Beta\n'
+    if marker not in text:
+        raise ValueError(f'with_extra needs a {marker.strip()!r} line in the guide text')
+    block = '\n'.join(['### Extra', f'<!-- cc: {EXTRA_ID} -->', '', 'Extra reads `PIPE_ENV`.', '', ''])
+    return text.replace(marker, block + marker, 1)
+
+
+EXTRA_MANIFEST = MANIFEST_TOML.replace("sections = ['alpha.overview', 'alpha.reference']",
+                                       f"sections = ['alpha.overview', 'alpha.reference', '{EXTRA_ID}']")
+
+
+# A section removed from the guide and the manifest: `without_beta_reference`
+# takes it out of the fixture guide, and group beta keeps only beta.overview.
+# The removal leaves beta.overview's text_hash unchanged, since the hash
+# collapses whitespace.
+def without_beta_reference(text: str) -> str:
+    '''`text` without the `### Reference ⚠` section that anchors beta.reference.'''
+    section = '\n### Reference ⚠\n<!-- cc: beta.reference -->\n\n`BetaEvent` fires.\n'
+    if section not in text:
+        raise ValueError('without_beta_reference needs the beta.reference section in the guide text')
+    return text.replace(section, '\n', 1)
+
+
+DROPPED_MANIFEST = MANIFEST_TOML.replace("sections = ['beta.overview', 'beta.reference']",
+                                         "sections = ['beta.overview']")
+
+
+# Both beta sections removed: group beta has left the manifest with its last
+# section, and the guide ends before `## 2. Beta`.
+NO_BETA_MANIFEST = MANIFEST_TOML.replace(
+    "[groups.beta]\nsections = ['beta.overview', 'beta.reference']\nall = ['events']\n"
+    "terms = ['env-vars', 'platform:pricing']\n\n", '')
+NO_BETA_GUIDE = guide_text().split('## 2. Beta\n')[0]
+
+
 def write_tree(root, files: dict) -> None:
     '''Write {relative path: text} under root.'''
     for rel, text in files.items():

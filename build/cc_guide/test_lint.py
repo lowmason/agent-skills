@@ -6,8 +6,8 @@ import docs
 import guide
 import lint
 import state
-from cc_fixtures import (CHANGELOG_TEXT, FENCE, GUIDE_IDS, MANIFEST_TOML, docs_dir,  # noqa: F401
-                         fixture_state, guide_text, isolated_home)
+from cc_fixtures import (CHANGELOG_TEXT, EXTRA_MANIFEST, FENCE, GUIDE_IDS, MANIFEST_TOML, docs_dir,  # noqa: F401
+                         fixture_state, guide_text, isolated_home, with_extra)
 
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 LABELS = {r.label for r in docs.parse_changelog(CHANGELOG_TEXT)}
@@ -39,7 +39,51 @@ def test_the_three_id_sets_must_agree(docs_dir):
     manifest = state.parse_manifest(MANIFEST_TOML.replace("'beta.reference']", "'beta.reference', 'beta.extra']"))
     violations, _ = run(guide_text(), s, manifest=manifest)
     assert violations == ['section beta.extra: missing from the guide and baseline.json',
-                          'section beta.reference: missing from baseline.json']
+                          f'section beta.reference: missing from baseline.json; add it with '
+                          f'`{CLI} baseline add beta.reference`']
+
+
+def test_an_id_only_in_baseline_json_names_the_drop_command(docs_dir):
+    s = fixture_state(docs_dir)
+    s['sections']['gone.one'] = s['sections']['beta.reference']
+    violations, _ = run(guide_text(), s)
+    assert violations == [f'section gone.one: missing from the guide and manifest.toml; drop it with '
+                          f'`{CLI} baseline drop gone.one`']
+
+
+ADD = f'section alpha.extra: missing from baseline.json; add it with `{CLI} baseline add alpha.extra`'
+DROP = f'section alpha.extra: missing from the guide and manifest.toml; drop it with `{CLI} baseline drop alpha.extra`'
+
+
+@pytest.mark.parametrize('in_guide, in_manifest, in_baseline, expected', [
+    (True, True, True, []),
+    (True, True, False, [ADD]),
+    (False, False, True, [DROP]),
+    (True, False, False, ['section alpha.extra: missing from manifest.toml and baseline.json']),
+    (False, True, False, ['section alpha.extra: missing from the guide and baseline.json']),
+    (True, False, True, ['section alpha.extra: missing from manifest.toml']),
+    (False, True, True, ['section alpha.extra: missing from the guide']),
+], ids=['all-three', 'guide-and-manifest', 'baseline-only', 'guide-only', 'manifest-only', 'guide-and-baseline',
+        'manifest-and-baseline'])
+def test_each_combination_of_places_has_its_own_message(docs_dir, in_guide, in_manifest, in_baseline, expected):
+    '''Only the two combinations that one command clears name it; the other
+    four need a guide or manifest edit first, and keep their text.'''
+    s = fixture_state(docs_dir)
+    if in_baseline:
+        s['sections']['alpha.extra'] = s['sections']['beta.reference']
+    text = with_extra(guide_text()) if in_guide else guide_text()
+    manifest = state.parse_manifest(EXTRA_MANIFEST if in_manifest else MANIFEST_TOML)
+    assert lint.id_set_problems(text, manifest, s) == expected
+
+
+def test_several_ids_each_get_their_own_message_in_sorted_order(docs_dir):
+    s = fixture_state(docs_dir)
+    s['sections']['gone.one'] = s['sections']['beta.reference']
+    manifest = state.parse_manifest(EXTRA_MANIFEST.replace("'beta.overview', 'beta.reference'", "'beta.overview'"))
+    assert lint.id_set_problems(with_extra(guide_text()), manifest, s) == [
+        ADD,
+        'section beta.reference: missing from manifest.toml',
+        f'section gone.one: missing from the guide and manifest.toml; drop it with `{CLI} baseline drop gone.one`']
 
 
 def test_a_text_change_names_both_accept_commands(docs_dir):

@@ -7,8 +7,8 @@ from pathlib import Path
 
 from blocks import SEP, block_hash, cut_page, key_hash, key_names, page_blocks, select
 from docs import is_platform, page_file, parse_llms, version_key
-from guide import (NO_STAMP, anchor_problems, file_citation, render_stamp, sections, stamp_bounds, text_hash,
-                   with_stamp)
+from guide import (NO_STAMP, anchor_problems, audited_order, checked_order, file_citation, render_stamp, sections,
+                   stamp_bounds, text_hash, with_stamp)
 from state import FORMAT, Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot, read_utf8
 
 # R11.1: the July guide (verified at 2.1.219) and the refresh (at 2.1.288),
@@ -16,6 +16,10 @@ from state import FORMAT, Manifest, SetupError, Snapshot, block_namer, group_ter
 OLD_GUIDE_PATH = 'specs/claude-code-customization-guide.md'
 JULY = ('91474f6', '2.1.219')
 REFRESH = ('c33bc99', '2.1.288')
+# R11.1's map from heading to ID: plan 35's commit, the first guide with
+# anchors. Its `##` and `###` headings are identical to the refresh's. Its path
+# differs from OLD_GUIDE_PATH because 79ad04f moved the guide before 18b4a71.
+ANCHORED = ('18b4a71', 'specs/guides/claude-code-customization-guide.md')
 
 
 def next_changed(newest: str, citer_stamps) -> str:
@@ -35,7 +39,9 @@ def derive_changed(july: str, refresh: str, current: str) -> dict[str, str]:
     '''R11.1: each section's `changed`. A section whose text is the same in
     the July guide and the refresh, aligned by (parent ##, heading) and
     compared with whitespace collapsed, keeps July's release; every other
-    section takes the refresh's.'''
+    section takes the refresh's. The third input, `current`, is the guide at
+    ANCHORED, so the result keys the 38 bootstrap IDs. Refusing a section the
+    refresh lacks guards the ANCHORED constant.'''
     def by_key(text: str) -> dict:
         return {(s.parent, s.heading): ' '.join(s.text.split()) for s in sections(text)}
     old, new = by_key(july), by_key(refresh)
@@ -71,7 +77,9 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
          changed: dict[str, str]) -> dict:
     '''R2.6: the initial baseline, from a snapshot directory and never from
     live docs. A mapped page the snapshot lacks stays unbaselined, so its
-    selected blocks report as new.'''
+    selected blocks report as new. A section that `changed` lacks was created
+    after the bootstrap and takes `release`, since init baselines every
+    section's text at `release` (spec S4, designer's call 7).'''
     check_ids(manifest, guide_text)
     terms = group_terms(manifest, guide_text)
     llms = docs / 'llms.txt'
@@ -79,7 +87,7 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
                    'llms': sorted(parse_llms(read_utf8(llms))) if llms.is_file() else [], 'cited': {}}
     for s in sections(guide_text):
         state['sections'][s.id] = {'checked': {'release': release, 'date': day},
-                                   'changed': changed[s.id],
+                                   'changed': changed.get(s.id, release),
                                    'audited': {'release': release, 'date': day},
                                    'text_hash': text_hash(s.text)}
     for gid, group in manifest.groups.items():
@@ -132,6 +140,86 @@ def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | N
         for hashes in new['cited'].values():
             if hashes.get(sid) == old:
                 hashes[sid] = current
+    return new
+
+
+def check_add_ids(state: dict, manifest: Manifest, guide_text: str, ids) -> None:
+    '''R7 add's three ID refusals, in this order: an ID that is no guide
+    anchor, an ID in no manifest.toml group, an ID that baseline.json already
+    holds. The first check that fails raises with every ID that fails it, each
+    once, in argument order. cli.py runs it before it reads the cache or the
+    citations, so these refusals come first. Each ID is judged on its own, so
+    an unrelated half-edited section does not refuse add.'''
+    ids = list(dict.fromkeys(ids))
+    anchors = {s.id for s in sections(guide_text) if s.id}
+    group_of = manifest.group_of()
+    for refusal, failed in (('not a guide anchor', lambda sid: sid not in anchors),
+                            ('in no manifest.toml group', lambda sid: sid not in group_of),
+                            ('already in baseline.json', lambda sid: sid in state['sections'])):
+        names = ', '.join(sid for sid in ids if failed(sid))
+        if names:
+            raise SetupError(f'baseline add: {refusal}: {names}')
+
+
+def add(state: dict, manifest: Manifest, guide_text: str, ids, newest: str,
+        citer_stamps: dict[str, list[str]]) -> dict:
+    '''R7 add (D1, D4): the entry of each section created after init, once the
+    guide anchors it and a manifest.toml group lists it, after check_add_ids's
+    refusals. `text_hash` is its current text. `checked` and `audited` copy
+    the oldest among the group's stored sections, in the stamp's own orders,
+    or among every stored section when the group has none, so add claims no
+    check or audit and never moves the stamp. `changed` follows R2.4 over
+    `citer_stamps`, each section's citers' review stamps. Every ID reads
+    `state` as it was before the run. `sections` follows the guide's heading
+    order, then the stored IDs the guide lacks, which wait for `drop`.'''
+    check_add_ids(state, manifest, guide_text, ids)
+    ids = list(dict.fromkeys(ids))
+    by_id = {s.id: s for s in sections(guide_text) if s.id}
+    group_of = manifest.group_of()
+    stored = state['sections']
+    entries = {}
+    for sid in ids:
+        peers = [stored[p] for p in manifest.groups[group_of[sid]].sections if p in stored] or list(stored.values())
+        entries[sid] = {'checked': dict(min((p['checked'] for p in peers), key=checked_order)),
+                        'changed': next_changed(newest, citer_stamps.get(sid, [])),
+                        'audited': dict(min((p['audited'] for p in peers), key=audited_order)),
+                        'text_hash': text_hash(by_id[sid].text)}
+    new = copy.deepcopy(state)
+    merged = {**new['sections'], **entries}
+    order = [s.id for s in sections(guide_text) if s.id in merged]
+    order += [sid for sid in stored if sid not in order]
+    new['sections'] = {sid: merged[sid] for sid in order}
+    return new
+
+
+def drop(state: dict, manifest: Manifest, guide_text: str, ids) -> dict:
+    '''R7 drop (designer's calls 6 and 9): the mirror of add. It removes each
+    ID's `sections` entry and the ID from every map in `cited`, once the guide
+    no longer anchors it and no manifest.toml group lists it. A file whose map
+    empties leaves `cited`. `groups`, `llms` and `format` stay, so a group
+    that has left the manifest keeps its `groups` entry: only rehash reads one,
+    and it handles one already. It refuses in this order, and the first check
+    that fails raises with every ID that fails it, each once, in argument
+    order: an ID that is still a guide anchor, an ID still in a group, an ID
+    that baseline.json lacks (`known`), then a run that would leave `sections`
+    empty. Each ID is judged on its own, so an unrelated half-edited section
+    does not refuse drop.'''
+    ids = list(dict.fromkeys(ids))
+    anchors = {s.id for s in sections(guide_text) if s.id}
+    group_of = manifest.group_of()
+    for refusal, failed in (('still a guide anchor', lambda sid: sid in anchors),
+                            ('still in a manifest.toml group', lambda sid: sid in group_of)):
+        names = ', '.join(sid for sid in ids if failed(sid))
+        if names:
+            raise SetupError(f'baseline drop: {refusal}: {names}')
+    known(state, ids)
+    if not set(state['sections']) - set(ids):
+        raise SetupError('baseline drop: would leave baseline.json with no section')
+    new = copy.deepcopy(state)
+    for sid in ids:
+        del new['sections'][sid]
+    kept = {path: {sid: h for sid, h in by_id.items() if sid not in ids} for path, by_id in new['cited'].items()}
+    new['cited'] = {path: by_id for path, by_id in kept.items() if by_id}
     return new
 
 
