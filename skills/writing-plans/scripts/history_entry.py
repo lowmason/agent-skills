@@ -87,7 +87,7 @@ SPEC_AMENDMENT_MARK_RE = re.compile(r'\(spec amendments?\b')
 # batch (`Tasks 4-7: `, `Tasks 2, 5, 9: `) or final-review prefix. A `Ruling:` later in
 # the line, as in a note that quotes one, is not a ruling.
 LEDGER_RULING_RE = re.compile(
-    r'^\s*(?:Task\s+(?P<number>\d+):\s*|Tasks\s+\d[\d,\s-]*:\s*|(?P<final>Final(?:\s+review)?):\s*)?'
+    r'^\s*(?:Task\s+(?P<number>\d+):\s*|Tasks\s+(?P<tasks>\d[\d,\s-]*?):\s*|(?P<final>Final(?:\s+review)?):\s*)?'
     + re.escape(RULING_MARK) + r'(?P<text>.*)$'
 )
 PLAN_ID_RE = re.compile(r'(?P<id>\d+)-')
@@ -312,7 +312,8 @@ def ruling_lines(ledger_text: str) -> list[str]:
     '''One difference line per ledger ruling, in ledger order.
 
     A ruling is a line whose own mark is `Ruling:` (LEDGER_RULING_RE). A task prefix
-    labels it with the task, a final-review prefix with `final review`.
+    labels it with the task, a batch prefix with its tasks, a final-review prefix with
+    `final review`.
     '''
     found = []
     for line in ledger_text.split('\n'):
@@ -322,6 +323,8 @@ def ruling_lines(ledger_text: str) -> list[str]:
         label = ''
         if ruling.group('number'):
             label = f' (Task {ruling.group("number")})'
+        elif ruling.group('tasks'):
+            label = f' (Tasks {ruling.group("tasks").strip()})'
         elif ruling.group('final'):
             label = ' (final review)'
         found.append(f'- Ruling{label}: {ruling.group("text").strip()}')

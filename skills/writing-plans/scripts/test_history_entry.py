@@ -326,7 +326,7 @@ def test_batch_and_final_review_prefixes_mark_a_ruling(tmp_path, capsys):
     assert code == 0
     assert out.splitlines()[3:] == [
         'Differences from the design:',
-        '- Ruling: one brief for the batch — the edits match — four reviews if wrong.',
+        '- Ruling (Tasks 4-7): one brief for the batch — the edits match — four reviews if wrong.',
         '- Ruling (final review): the nit stays — it is style — none if wrong.',
     ]
 
