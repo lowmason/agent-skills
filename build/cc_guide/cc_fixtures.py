@@ -455,6 +455,14 @@ DROPPED_MANIFEST = MANIFEST_TOML.replace("sections = ['beta.overview', 'beta.ref
                                          "sections = ['beta.overview']")
 
 
+# Both beta sections removed: group beta has left the manifest with its last
+# section, and the guide ends before `## 2. Beta`.
+NO_BETA_MANIFEST = MANIFEST_TOML.replace(
+    "[groups.beta]\nsections = ['beta.overview', 'beta.reference']\nall = ['events']\n"
+    "terms = ['env-vars', 'platform:pricing']\n\n", '')
+NO_BETA_GUIDE = guide_text().split('## 2. Beta\n')[0]
+
+
 def write_tree(root, files: dict) -> None:
     '''Write {relative path: text} under root.'''
     for rel, text in files.items():

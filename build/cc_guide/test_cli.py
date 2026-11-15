@@ -14,8 +14,9 @@ import notice
 import probes
 import state
 from cc_fixtures import (DOCS, DROPPED_MANIFEST, EXTRA_MANIFEST, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML,  # noqa: F401
-                         MARKDOWN_PAGE, MDX_PAGE, docs_dir, drift_repo, fixture_repo, git, guide_text,
-                         isolated_home, prime_cache, with_extra, without_beta_reference, write_tree)
+                         MARKDOWN_PAGE, MDX_PAGE, NO_BETA_GUIDE, NO_BETA_MANIFEST, docs_dir, drift_repo,
+                         fixture_repo, git, guide_text, isolated_home, prime_cache, with_extra,
+                         without_beta_reference, write_tree)
 from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN, text_hash, sections as guide_sections
 
 
@@ -840,6 +841,169 @@ def test_drop_refuses_a_section_the_guide_still_has(world, capsys):
     assert main(cache, 'baseline', 'drop', 'beta.reference') == 2
     assert capsys.readouterr() == ('', 'cc-guide: baseline drop: still a guide anchor: beta.reference\n')
     assert dirty(repo) == []
+
+
+def remove_beta_reference(repo):
+    '''Commit beta.reference's removal from the guide, and from group beta in manifest.toml.'''
+    guide = repo / GUIDE_PATH
+    guide.write_text(without_beta_reference(guide.read_text()))
+    (repo / state.MANIFEST).write_text(DROPPED_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove beta.reference')
+
+
+def test_drop_leaves_the_guide_alone_even_when_its_stamp_region_is_stale(world, capsys):
+    '''Spec :188: drop writes baseline.json only. A stamp region that already
+    lags baseline.json stays as it is, since `baseline stamp` regenerates it.'''
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    stale = guide_text('> Checked against the Claude Code docs and changelog through 2.1.899 on 2026-08-01;'
+                       ' oldest full re-verification 2026-08-01, at 2.1.899.')
+    guide.write_text(without_beta_reference(stale))
+    (repo / state.MANIFEST).write_text(DROPPED_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove beta.reference, under a stale stamp')
+    before = guide.read_bytes()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    assert guide.read_bytes() == before
+
+
+@pytest.mark.parametrize('audited, stderr', [
+    (None, ''),
+    ({'release': '2.1.901', 'date': '2026-09-20'}, 'the stamp region is now stale: run baseline stamp\n'),
+], ids=['nothing-moves', 'oldest-audited-moves'])
+def test_drop_says_the_stamp_is_stale_when_the_oldest_audited_moves_and_not_otherwise(world, capsys, audited, stderr):
+    '''Spec :190: a dropped section can hold the oldest `audited` as well as the
+    oldest `checked`. beta.reference alone holds it in the second case.'''
+    repo, cache, _ = world
+    if audited:
+        s = load(repo)
+        for sid in ('alpha.overview', 'alpha.reference', 'beta.overview'):
+            s['sections'][sid]['audited'] = audited
+        (repo / state.BASELINE).write_text(state.dump_baseline(s))
+        git(repo, 'commit', '-qam', 'audit three sections')
+    remove_beta_reference(repo)
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', stderr)
+
+
+def test_drop_edits_no_citing_file_and_the_editor_then_fixes_each_citation(world, capsys):
+    '''Spec :187-190: drop takes the ID out of every cited map and edits no
+    citing file; lint then reports each citation, and the editor fixes it and
+    runs cite.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: beta.overview beta.reference @2.1.900\nexit 0\n',
+                 'hooks/solo.sh': '#!/bin/sh\n# cc-guide: beta.reference @2.1.900\nexit 0\n'})
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh', 'hooks/solo.sh') == 0
+    git(repo, 'commit', '-qam', 'record the citations')
+    remove_beta_reference(repo)
+    before = load(repo)
+    assert sorted(before['cited']) == ['hooks/gate.sh', 'hooks/solo.sh']
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    assert dirty(repo) == [state.BASELINE]
+    assert load(repo)['cited'] == {'hooks/gate.sh': {'beta.overview': before['cited']['hooks/gate.sh']['beta.overview']}}
+    capsys.readouterr()
+    assert main(cache, 'lint') == 1
+    assert capsys.readouterr() == ('hooks/gate.sh:2: cites beta.reference, which is not a guide section\n'
+                                   'hooks/solo.sh:2: cites beta.reference, which is not a guide section\n', '')
+    write_tree(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: beta.overview @2.1.900\nexit 0\n',
+                      'hooks/solo.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.900\nexit 0\n'})
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh', 'hooks/solo.sh') == 0
+    assert sorted(load(repo)['cited']) == ['hooks/gate.sh', 'hooks/solo.sh']
+    assert main(cache, 'lint') == 0
+
+
+def test_drop_reads_neither_the_cache_nor_the_citations(world, tmp_path, capsys):
+    '''Unlike add, drop needs no release and no review stamp, so an empty cache
+    and a citation that does not parse refuse nothing.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'})
+    remove_beta_reference(repo)
+    capsys.readouterr()
+    assert main(tmp_path / 'empty-cache', 'baseline', 'drop', 'beta.reference') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+
+
+def test_drop_takes_several_ids_and_leaves_the_groups_entry_of_a_group_that_left_the_manifest(world, capsys):
+    repo, cache, _ = world
+    (repo / GUIDE_PATH).write_text(NO_BETA_GUIDE)
+    (repo / state.MANIFEST).write_text(NO_BETA_MANIFEST)
+    git(repo, 'commit', '-qam', 'remove group beta')
+    before = load(repo)
+    assert main(cache, 'baseline', 'drop', 'beta.reference', 'beta.overview') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == [state.BASELINE]
+    after = load(repo)
+    assert list(after['sections']) == ['alpha.overview', 'alpha.reference']
+    assert after['groups'] == before['groups']
+    assert 'beta' in after['groups'] and after['groups']['beta']['blocks']
+    assert main(cache, 'lint') == 0
+
+
+def test_a_section_removed_from_the_guide_leaves_its_blocks_deselected_until_rebaseline(world, capsys):
+    '''Spec :191-192: drop touches no group's blocks, so the next check reports
+    the block that only the dropped section's terms selected as `deselected`
+    (informational), and a full rebaseline of the group drops it.'''
+    repo, cache, folder = world
+    remove_beta_reference(repo)
+    check_args = ('check', '--worktree', '--docs', str(folder))
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 0
+    capsys.readouterr()
+    assert main(cache, 'lint') == 0
+    assert main(cache, *check_args) == 0
+    assert ('blocks: 0 changed, 0 missing, 0 new, 0 missing pages; 1 deselected (informational)'
+            in capsys.readouterr().out.splitlines())
+    assert main(cache, 'baseline', 'rebaseline', 'beta') == 0
+    capsys.readouterr()
+    assert main(cache, *check_args) == 0
+    assert ('blocks: 0 changed, 0 missing, 0 new, 0 missing pages; 0 deselected (informational)'
+            in capsys.readouterr().out.splitlines())
+    assert main(cache, 'lint') == 0
+
+
+@pytest.mark.parametrize('ids, removed, message', [
+    (['beta.reference'], True, 'baseline drop: still in a manifest.toml group: beta.reference'),
+    (['nowhere.one', 'beta.reference'], True, 'baseline drop: still in a manifest.toml group: beta.reference'),
+    (['beta.reference', 'beta.overview', 'beta.reference'], False,
+     'baseline drop: still a guide anchor: beta.reference, beta.overview'),
+    (['nowhere.one', 'nowhere.two', 'nowhere.one'], False, 'unknown section IDs: nowhere.one, nowhere.two'),
+], ids=['group-lists-it', 'group-beside-unknown', 'anchors-in-argument-order', 'unknown-once'])
+def test_drop_refuses_with_one_error_line_and_writes_nothing(world, capsys, ids, removed, message):
+    '''`removed`: the guide lost beta.reference while manifest.toml still lists it.'''
+    repo, cache, _ = world
+    if removed:
+        guide = repo / GUIDE_PATH
+        guide.write_text(without_beta_reference(guide.read_text()))
+        git(repo, 'commit', '-qam', 'remove beta.reference from the guide only')
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'drop', *ids) == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {message}\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+    assert dirty(repo) == []
+
+
+def test_drop_refuses_to_leave_baseline_json_with_no_section(world, capsys):
+    repo, cache, _ = world
+    s = load(repo)
+    s['sections'] = {'beta.reference': s['sections']['beta.reference']}
+    (repo / state.BASELINE).write_text(state.dump_baseline(s))
+    remove_beta_reference(repo)
+    before = (repo / state.BASELINE).read_bytes()
+    capsys.readouterr()
+    assert main(cache, 'baseline', 'drop', 'beta.reference') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: baseline drop: would leave baseline.json with no section\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+
+
+def test_drop_needs_at_least_one_id(world, capsys):
+    _, cache, _ = world
+    with pytest.raises(SystemExit) as stop:
+        main(cache, 'baseline', 'drop')
+    assert stop.value.code == 2
+    assert 'the following arguments are required: ids' in capsys.readouterr().err
 
 
 def test_the_repo_lints_clean(capsys):
