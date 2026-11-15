@@ -280,6 +280,32 @@ def test_no_differences(tmp_path, capsys):
     ]
 
 
+def test_ruling_quoted_inside_a_ledger_note_is_not_a_ruling(tmp_path, capsys):
+    quoting = NO_RULING_LEDGER + (
+        "Task 3: note for Task 9 — executing-plans Section 2's `Ruling: (unclear)` ledger line fits here.\n"
+        'Task 4: the brief quotes "Ruling: keep it" as its example.\n'
+    )
+    plan, ledger = write_repo(tmp_path, '9-tiny', TINY_PLAN, ledger=quoting)
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    assert out.splitlines()[2:] == ['', 'No differences from the design.']
+
+
+def test_batch_and_final_review_prefixes_mark_a_ruling(tmp_path, capsys):
+    prefixed = NO_RULING_LEDGER + (
+        'Tasks 4-7: Ruling: one brief for the batch — the edits match — four reviews if wrong.\n'
+        'Final review: Ruling: the nit stays — it is style — none if wrong.\n'
+    )
+    plan, ledger = write_repo(tmp_path, '9-tiny', TINY_PLAN, ledger=prefixed)
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    assert out.splitlines()[3:] == [
+        'Differences from the design:',
+        '- Ruling: one brief for the batch — the edits match — four reviews if wrong.',
+        '- Ruling (final review): the nit stays — it is style — none if wrong.',
+    ]
+
+
 def test_header_deviation(tmp_path, capsys):
     header_note = PLAN.replace(
         '## Decisions', '> Deviation: the plan ran on main.\n\n## Decisions', 1,

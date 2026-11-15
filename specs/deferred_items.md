@@ -6555,7 +6555,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       check is recorded, task-done refuses (exit 4) a task whose patch bytes differ from the run's recorded
       sha256, a test that edits a patch after a clean run at the same HEAD sees exit 4, and the other gate tests
       still pass.
-- [ ] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
+- [x] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
       2026-11-13).** `ruling_lines` in `skills/writing-plans/scripts/history_entry.py` (about line 305) takes
       every ledger line that holds `Ruling:` anywhere (`line.partition(RULING_MARK)`). Plan 93's ledger had a
       Task 3 note that quoted "executing-plans Section 2's `Ruling: (unclear)` ledger line". The drafted history
@@ -6565,6 +6565,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       or after a `Task <N>: ` or final-review prefix), not inside a code span or a quotation; a test whose ledger
       has a note line that quotes `` `Ruling: (unclear)` `` gets no ruling line from it; and the existing
       history_entry tests pass.
+      → done 2026-11-14 (/deferred quick fix): `LEDGER_RULING_RE` takes `Ruling:` only at a line's start or after a `Task <N>: `, `Tasks <list>: ` (a batch line), `Final: ` or `Final review: ` prefix. The test whose ledger quotes `` `Ruling: (unclear)` `` and `"Ruling: keep it"` failed first, with the false line `- Ruling (Task 3): (unclear)` ledger line fits here.`. It now passes. A second test keeps the batch and `Final review:` prefixes. The writing-plans suite passes (408 passed, 4 xfailed). Over 25 archived ledgers, the stricter rule also drops 9 real rulings that were written after a note. → item: deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
 
 ## 96-marimo-notebook-seam — 2026-11-13
 - [x] **scan.sh's no-rg arm walks in-repo virtual environments in every section (plan 96 final review, Codex
@@ -6813,3 +6814,22 @@ review and the Plan Completion gate (2026-10-27) add the others.
       next micro-test. Size: quick-fix. Done when: the kit that the next micro-test copies gives each rep its own
       scratch folder, or runs the reps one after the other, and a no-model test shows that two reps cannot see
       each other's files.
+
+## deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
+- [ ] **history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick
+      fix of 2026-11-14 to the item of section `93-mutant-checked-tests`).** `ruling_lines` in
+      `skills/writing-plans/scripts/history_entry.py` now takes `Ruling:` only as a line's own mark: at its start,
+      or after a `Task <N>: `, `Tasks <list>: `, `Final: ` or `Final review: ` prefix. Before that fix it took
+      `Ruling:` anywhere in a line. The 25 archived ledgers under `~/.cache/agent-skills/scratch/` (outside the
+      repo) hold 402 lines with `Ruling:`, and the new rule takes 388. Of the 14 lines it drops, 4 only quote or
+      name the form. The other 9 (one of them copied in two ledger files) are real rulings that the writer put
+      after a note, in the ledgers of plans 66, 89, 91, 93 and 94. Examples are
+      `Task 2: review round 1 -> Important (…): … Ruling: …`, `Protocol step 4: Ruling: …` and
+      `Task 1: reopened from Task 4's evidence. Ruling: …`. The ledger is deleted after plan completion, so the
+      history entry loses such a ruling for good. The executors tell the writer to start the line with
+      `Task <N>: Ruling:`, but writers did not always do it. It would take a draft line that names each ledger
+      line that holds `Ruling:` but is not read, and one line in `skills/writing-plans/references/history.md` that
+      says what the agent does with it. Size: quick-fix. Done when: a draft over a ledger with a `Ruling:` after a
+      note names that ledger line outside the differences, a test in
+      `skills/writing-plans/scripts/test_history_entry.py` covers it, and `references/history.md` says what the
+      agent does with the line.
