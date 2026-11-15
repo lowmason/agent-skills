@@ -6863,3 +6863,29 @@ review and the Plan Completion gate (2026-10-27) add the others.
       re-vendored `scripts/ste-lint.py` at `9c351694`. Size: quick-fix. Revisit if: a compare from `9c351694`
       (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
+
+## claude/deferred-07da07 Step 4b review — 2026-11-15
+- [ ] **Two llm-wiki files keep the pilot's real short hashes and audit file name that the pilot copies
+      replaced (final code review of the 2026-11-14 `/deferred` pass, Declined to judge; the owner carried
+      it).** The 2026-11-14 quick fix for the llm-wiki pilot fixture wrote `test_pilot_digest.md` and
+      `test_pilot_source.md` with one substitution map: `abc0001` to `abc0008` for the 8 commit hashes and
+      `audit_1-1-26` for the audit file name. The same pilot's real values are still in
+      `skills/llm-wiki/scripts/test_lint_wiki.py` (lines 649 to 665: `ad8abe0`, `1d26d71`, `50e0f52`,
+      `168da46`, `audit_5-7-26`) and `skills/llm-wiki/scripts/schema-template.md` (lines 162 and 176:
+      `1d26d71`). They are in public git history already, so the change is consistency, not secrecy. It would
+      take the map's value for each (a diff of `PILOT_ENTRIES` in `test_distill_specs.py` between `74637ec`
+      and the fix commit `7370e13` gives it) in both files, with any test that reads those strings updated.
+      Size: quick-fix. Done when: no live file under `skills/llm-wiki/` holds `ad8abe0`, `1d26d71`,
+      `50e0f52`, `168da46` or `audit_5-7-26`, each uses the copies' value for it, and the llm-wiki suite
+      passes (313 passed on 2026-11-15).
+- [ ] **`check_range_end` can stop a book build on a number-only body line (final code review of the
+      2026-11-14 `/deferred` pass, Declined to judge; the owner carried it as a watch item).** Since the
+      2026-11-14 quick fix, `TOC_LINE_RE` in `build/extract_structure.py` accepts a numbered contents line
+      with a page and no title, so `check_complete` can refuse it. `check_range_end` reads page `last + 1`
+      with the same rule, so a number-only line on the first body page, such as `12 34`, now counts as a
+      contents entry and stops the run with "contents continue on page … : widen the range". That message
+      would send the person to widen a range that is already right. Both local books still parse to 686 and
+      1,062 entries and pass both checks. A fix would have `check_range_end` count only entries with a title,
+      with a case in `build/test_extract_structure.py`. Size: quick-fix. Revisit if: an
+      `extract_structure.py` run stops with "widen the range" and the entry it names on page `last + 1` has
+      no title.
