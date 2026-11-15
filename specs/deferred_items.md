@@ -6839,7 +6839,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       step a stream with the field and finds no `credential_expires_at` in the output.
 
 ## deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
-- [ ] **history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick
+- [x] **history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick
       fix of 2026-11-14 to the item of section `93-mutant-checked-tests`).** `ruling_lines` in
       `skills/writing-plans/scripts/history_entry.py` now takes `Ruling:` only as a line's own mark: at its start,
       or after a `Task <N>: `, `Tasks <list>: `, `Final: ` or `Final review: ` prefix. Before that fix it took
@@ -6856,6 +6856,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       note names that ledger line outside the differences, a test in
       `skills/writing-plans/scripts/test_history_entry.py` covers it, and `references/history.md` says what the
       agent does with the line.
+      → done 2026-11-15 (/deferred quick fix): the owner asked to close it before the PR. The differences keep the strict reading, and the draft now prints a ``Rulings: ledger line <N> holds `Ruling:` after a note and is not read: <line>`` warning for each line it skips, under the `Plan:` line. The test with a real review-note shape and a quote-only line failed first, and the writing-plans suite passes (409 passed, 4 xfailed). Finish step 6 of `references/history.md` says to copy the ruling into the differences, or to delete the warning when the line only quotes the form. Over the 25 archived ledgers, each of the 402 `Ruling:` lines is now read (388) or named (14).
 - [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
       `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-14 read
       danyuchn/asd-ste100-skill through `9c351694` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
