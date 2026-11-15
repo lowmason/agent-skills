@@ -6692,13 +6692,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       "the batch's BASE" as the BASE recorded before the batch's first dispatch. Size: quick-fix. Done when:
       batching.md names that BASE in one sentence, and `build/check_helper_paths.py`,
       `build/check_conformance.py` and `build/check_links.py` pass.
-- [ ] **Committed micro-test rep JSON files carry `credential_expires_at` (plan 97 Task 8 ruling, 2026-11-14).**
+- [x] **Committed micro-test rep JSON files carry `credential_expires_at` (plan 97 Task 8 ruling, 2026-11-14).**
       The field is a login credential's expiry timestamp, not an identifier. Plan 97's reviewer rep JSON copies
       under `specs/baseline/red-baseline-change-reverted-mutant/` carry it. Main already commits it in 281 rep
       JSON files from seven earlier baselines (`git grep -l credential_expires_at main -- specs/baseline/`).
       The ruling kept it, because a change to one plan's files would leave the 281 others. Size: quick-fix. Done
       when: the owner has either stripped the field from every committed rep JSON and made the kits' copy step
       drop it, or recorded in this item that it stays.
+      → done 2026-11-14 (/deferred quick fix): the owner ruled that the field stays in every committed rep JSON file (453 files in HEAD on 2026-11-14), because it is a timestamp and not an identifier, and git history would keep it after a strip. Kits built from now on drop it → item: deferred-2026-11-14 (no plan; /deferred pass, branch claude/deferred-07da07) — 2026-11-14
 - [ ] **The reviewer text supports two readings of "stated rule" (plan 97 Task 10, the R4 start-date finding;
       the owner left it at the completion gate, 2026-11-14).** `agents/task-reviewer.md` line 21 says the global
       constraints bind the task, and the mutant step in the same file takes stated rules from the spec
@@ -6743,7 +6744,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       range that retires two plans leaves out one plan's intent.
 
 ## 98-marimo-notebook-seam — 2026-11-14
-- [ ] **The Codex guide calls the 32 KiB limit "combined", and plan 98's B0 run does not show the global file
+- [x] **The Codex guide calls the 32 KiB limit "combined", and plan 98's B0 run does not show the global file
       counting against it (plan 98 Task 1; the plan ordered this item at the gate, 2026-11-14).**
       `specs/guides/codex-customization-guide.md:274` says "32 KiB combined instruction limit". The B0 run
       (`specs/baseline/red-baseline-marimo-notebook-block.md`, section `## B0`, `codex-cli 0.167.2`) loaded a
@@ -6752,7 +6753,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       file. The owner's rule is that the guide stays equal to the docs, so a probe-against-docs mismatch goes
       to the owner and no run edits the guide. Size: quick-fix. Done when: the owner has recorded whether the
       guide's line gets a note of the B0 observation, with the Codex version, or stays as the docs give it.
-- [ ] **V3 of the `verdict` pin is a miss under the Rules' plain text (plan 98 Task 3; the plan's Builder's call
+      → done 2026-11-14 (/deferred quick fix): the owner ruled that the guide's line stays as the docs give it. The B0 observation stays in `specs/baseline/red-baseline-marimo-notebook-block.md`, section `## B0`.
+- [x] **V3 of the `verdict` pin is a miss under the Rules' plain text (plan 98 Task 3; the plan's Builder's call
       C6 orders this item, 2026-11-14).** The record's `## Block rounds` (Conclusion, item 5) scores V3 with a
       reading made after the reps were seen: the user's quoted verdict in the facts cell is not the rep's own
       conclusion. By the plain text, every rep that passes V1 fails V3, so V1 and V3 cannot both hold. V3 then
@@ -6760,6 +6762,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       quick-fix. Done when: the owner has either approved the reading as the record states it, or a corrected V3
       is written as a new amendment of the record's Rules and the existing reps are rescored by it, with the
       new counts in the record.
+      → done 2026-11-14 (/deferred quick fix): the owner approved the V3 reading as the record states it (round 1's "V3 reading" paragraph and Conclusion item 5 of `## Block rounds`). No count changes.
 - [ ] **The block's Scope line does not cover a silent request while a session is live (plan 98 Task 3; the
       owner kept the text and asked for this item at the completion gate, 2026-11-14).**
       `templates/marimo-repo/notebook-block.md` lines 4 to 7 say a session is live only when the user's request
@@ -6793,12 +6796,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       more than the code checks. If it fires, outputs sit inside `/tmp/mnb98/` for one batch, and the runner's
       strays sweep still moves them. Size: quick-fix. Done when: `refuse_inside` compares device and inode, with
       a no-model test for that spelling, or the record's claim names only the spellings that the code checks.
-- [ ] **Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50
+- [x] **Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50
       files under `specs/baseline/red-baseline-marimo-notebook-block/runs/` carry the field, as the 281 files in
       the item of section `97-change-reverted-mutant` do. The field is a login credential's expiry timestamp,
       not an identifier. Size: quick-fix. Done when: the item of section `97-change-reverted-mutant` named
       "Committed micro-test rep JSON files carry `credential_expires_at`" is closed, and its strip or its record
       covers these 50 files.
+      → done 2026-11-14 (/deferred quick fix): the item of section `97-change-reverted-mutant` is closed, and the owner's record there covers these 50 files. The field stays in them.
 
 ## 98-marimo-notebook-seam Step 4b review — 2026-11-14
 - [ ] **Parallel micro-test reps share the scratch folder (plan 98 Step 4b review, Codex finding P2; the owner
@@ -6811,3 +6815,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       next micro-test. Size: quick-fix. Done when: the kit that the next micro-test copies gives each rep its own
       scratch folder, or runs the reps one after the other, and a no-model test shows that two reps cannot see
       each other's files.
+
+## deferred-2026-11-14 (no plan; /deferred pass, branch claude/deferred-07da07) — 2026-11-14
+- [ ] **The next micro-test kit still copies `credential_expires_at` into its rep JSON files (the owner's ruling
+      on the plan 97 item, `/deferred` pass 2026-11-14).** The owner ruled that the field stays in the 453 rep
+      JSON files committed under `specs/baseline/` by 2026-11-14, and that kits built from now on drop it. The
+      field is a login credential's expiry timestamp. Nothing drops it today. In the newest kit the step that
+      writes each rep's files is the Python summary step of
+      `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh`, which already scrubs home paths and
+      the user name (`scrub`). A committed kit is evidence for its own runs, so the change goes into the kit
+      that the next micro-test builds, beside the per-rep scratch folder of the item in section
+      `98-marimo-notebook-seam Step 4b review — 2026-11-14`. Size: quick-fix. Done when: the next micro-test
+      kit removes `credential_expires_at` from every rep JSON file it writes, and a no-model test feeds that
+      step a stream with the field and finds no `credential_expires_at` in the output.
