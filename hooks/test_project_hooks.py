@@ -14,8 +14,9 @@ the bash on this test's PATH, then with /bin/bash, macOS's bash 3.2, which
 `#!/usr/bin/env bash` reaches on launchd's PATH.
 
 A hook that exits 1 is a non-blocking error, so a crashed hook allows
-everything: allow-path tests assert the exit code, and block tests also assert
-the stderr marker, since a bash syntax error exits 2 too. Stdlib plus pytest,
+everything: allow-path tests assert the exit code. An exit-2 block test also
+asserts the stderr marker, since a bash syntax error exits 2 too, and a JSON
+block test asserts exit 0 and parses the decision on stdout. Stdlib plus pytest,
 and 3.9-compatible: the suite also runs under /usr/bin/python3.
 """
 
@@ -160,19 +161,54 @@ def test_ruff_check_passes_a_clean_tree(ruff_shim):
     assert uv_calls(ruff_shim) == ['run ruff check .']
 
 
+def block_reason(proc):
+    """The reason of the JSON block decision a Stop gate printed on stdout with exit 0."""
+    assert proc.returncode == 0, proc.stderr
+    decision = json.loads(proc.stdout)
+    assert set(decision) == {'decision', 'reason'}
+    assert decision['decision'] == 'block'
+    return decision['reason']
+
+
 def test_ruff_check_blocks_on_lint(ruff_shim):
     write_uv_stub(ruff_shim, check_status=1, check_output=LINT)
     proc = run_hook(RUFF_CHECK, stop_payload(), ruff_shim)
-    assert proc.returncode == 2, proc.stderr
-    assert proc.stderr.startswith('ruff check found issues')
+    reason = block_reason(proc)
+    assert reason.startswith('ruff check found issues')
+    assert 'F401' in reason
+    assert proc.stderr == ''
+
+
+# Exit 2 would not block on this: with empty stdout, stderr that says a file is
+# missing counts as a non-blocking error, and ruff's E902 line for a file that
+# vanished says so.
+MISSING_FILE_LINT = 'gone.py:1:1: E902 No such file or directory (os error 2)\nFound 1 error.\n'
+
+
+def test_ruff_check_blocks_when_ruff_reports_a_missing_file(ruff_shim):
+    write_uv_stub(ruff_shim, check_status=1, check_output=MISSING_FILE_LINT)
+    proc = run_hook(RUFF_CHECK, stop_payload(), ruff_shim)
+    assert 'No such file or directory' in block_reason(proc)
+
+
+def test_ruff_check_reports_a_jq_that_cannot_print_the_decision(ruff_shim):
+    write_uv_stub(ruff_shim, check_status=1, check_output=LINT)
+    jq = ruff_shim / 'jq'
+    jq.unlink()
+    jq.write_text('#!/bin/sh\nexit 3\n')
+    jq.chmod(0o755)
+    proc = run_hook(RUFF_CHECK, stop_payload(), ruff_shim)
+    assert proc.returncode == 1, proc.stderr
+    assert proc.stdout == ''
+    assert proc.stderr.splitlines()[0] == (
+        'ruff-check: jq could not print the block decision (exit 3), so lint was not fed back.')
     assert 'F401' in proc.stderr
 
 
 def test_ruff_check_confirms_an_exit_1_with_ruff_version(ruff_shim):
     write_uv_stub(ruff_shim, check_status=1, check_output=LINT)
     proc = run_hook(RUFF_CHECK, stop_payload(), ruff_shim)
-    assert proc.returncode == 2, proc.stderr
-    assert proc.stderr.startswith('ruff check found issues')
+    assert block_reason(proc).startswith('ruff check found issues')
     assert uv_calls(ruff_shim) == ['run ruff check .', 'run ruff --version']
 
 

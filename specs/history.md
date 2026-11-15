@@ -541,3 +541,4 @@ Closed deferred items:
 
 Closed deferred items:
 - "**history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick" (deferred by deferred-quick-fixes-2026-11-14): the draft names each ledger line whose `Ruling:` comes after a note, so no ruling is lost without a sign.
+- "The guide omits a docs fact about `@` paths in skill bodies (plan 92 completion notes). Claude Code" (deferred by 92-writing-skills-guide-rewrite): `skills.progressive-disclosure` says that a terminal or VS Code session does not attach the files a synced claude.ai skill's `@` references name, confirmed against the skills page.
