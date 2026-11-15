@@ -535,10 +535,11 @@ def test_drop_takes_an_id_out_of_the_one_file_that_cites_it_and_leaves_the_other
 
 
 @pytest.mark.parametrize('cited', [{}, {'hooks/a.sh': {'alpha.overview': OLD_HASH}}], ids=['no-file', 'other-ids-only'])
-def test_drop_of_an_id_no_file_cites_leaves_cited_as_it_was(docs_dir, cited):
+def test_drop_of_an_id_no_file_cites_still_drops_the_entry_and_leaves_cited_as_it_was(docs_dir, cited):
     s = fixture_state(docs_dir)
     s['cited'] = copy.deepcopy(cited)
     new = baseline.drop(s, DROPPED, without_beta_reference(guide_text()), ['beta.reference'])
+    assert list(new['sections']) == ['alpha.overview', 'alpha.reference', 'beta.overview']
     assert new['cited'] == cited
 
 
