@@ -170,6 +170,8 @@ Step 8 ran `probe.sh control` twice, after the rules commit and before any score
 
 The gate passed. The block arm repeats it in Task 3.
 
+**Known limit: parallel reps share `/tmp/mnb98/`.** Reps 2 to N of a batch run together, and they share that folder. 12 committed summaries show a rep that exported to `/tmp/mnb98/explore.html`, and reps of one batch chose the same path, for example round 2 `override` reps 3 and 5. One of those reps could read an export that another rep wrote. No clause reads an export. O1 reads the exit of the rep's own run, and E3 recomputes its numbers from the data and reads the notebook's own cells. So the shared path changes no score, but the reps were not fully separate. The kit gives no rep a scratch folder of its own. A Codex review found this limit.
+
 ## Pilot
 
 Step 9 ran `run_reps.sh control explore /tmp/mnb98/pilot 1 1`. The pilot is not scored and not committed.
