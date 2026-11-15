@@ -6514,13 +6514,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: plan. Done when: each of the six lines is corrected or recorded as a deviation in
       `build/cc_guide/conformance.toml`, through the writing-skills skill, the compaction gap is no worse, and the
       file is cited after a fresh `/cc-guide` files verify.
-- [ ] The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed
+- [x] The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed
       now, lint later). This pass added `'anthropic-skills'` to `reserved` in `build/cc_guide/conformance.toml`.
       The guide (`skills.locations`, L78) also reserves synced in any capitalization and a folder name that starts
       with `anthropic-skills:`. `check_reserved_skill_name` in `build/check_conformance.py` does neither. Its
       message and the register's `rule` line still name only synced claude.ai skills. Size: quick-fix. Done when:
       tests in `build/test_check_conformance.py` flag `Synced`, `anthropic-skills` and `anthropic-skills:x`, the
       message and the `rule` line name both reserved forms, and `check_conformance.py` passes.
+      → done 2026-11-14 (/deferred quick fix): the register's `reserved` list is now two lists. `reserved_any_case = ['synced']` matches in any capitalization, and `reserved_prefix = ['anthropic-skills']` matches the name alone or followed by a colon. The message and the `rule` line name both forms. The new tests read the real register's lists. They failed first (`Synced` and `anthropic-skills:x` were not flagged, and the message was the old one), and now pass, with 366 passed in `test_check_conformance.py`. `check_conformance.py` exits 0, and `cli.py lint` shows no new STALE line.
 - [ ] Two Part 1 steps wait for the next Claude Code release (owner ruling: wait). Anthropic edited the
       model-config page's "Setting your model" block after 2.1.323 with no new release, so the weekly
       `cc-guide-drift.yml` job reports it changed in three groups, and `baseline rebaseline` refuses to overwrite
