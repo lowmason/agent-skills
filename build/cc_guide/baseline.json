@@ -4751,8 +4751,8 @@
    "subagents.tools": "sha256:4dfb59051550cd72b54b124487fb5cf9ad1977aeef576c0c02c6cded0c661bb6"
   },
   "commands/deferred.md": {
-   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
-   "skills.frontmatter": "sha256:bcb41d311a553d2ab0fb35d18cfc81b809da043249284253dfe8fda1d8bdd11d"
+   "commands.overview": "sha256:6de5fb46c87c7127bfde48b3c29b67c34db91a2c08dfd9968a65f0e729c8d5e0",
+   "skills.frontmatter": "sha256:0552041796f1bfb07744a4b7963a8a68737ca230d383206591eef67949641b55"
   },
   "commands/fix-issue.md": {
    "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
@@ -4823,7 +4823,11 @@
    "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b"
   },
   "rules/clean-code-python.md": {
-   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66"
+   "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
+  },
+  "rules/pr-lifecycle.md": {
+   "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
+   "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
   },
   "rules/write-with-asd-ste100.md": {
    "rules.hierarchy": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099",

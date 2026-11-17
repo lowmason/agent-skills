@@ -303,9 +303,9 @@ PINS_PROMPT = ('In one message, call the Agent tool three times: (1) subagent_ty
 
 def prepare_pins(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
     '''agent-model-pins takes the production path: an auto-mode parent with
-    user settings dispatches the three pinned agents with the Agent tool, in
-    fork mode's background, with the background ceiling raised (owner, plan
-    58 decision D4). The session is persisted, since effort is read from the
+    user settings dispatches the three pinned agents with the Agent tool.
+    They start in the background, so the background ceiling is raised (owner,
+    plan 58 decision D4). The session is persisted, since effort is read from the
     subagents' transcripts (R10.4, as plan 58 amends it).'''
     (scratch / 'a.py').write_text("print('hello')\n", encoding='utf-8')
     argv = claude_args(claude, PINS_PROMPT.format(dir=scratch), turns=PINS_TURNS, sources='user', mode='auto',
