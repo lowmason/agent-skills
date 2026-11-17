@@ -4764,12 +4764,12 @@
   },
   "hooks/README.md": {
    "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
-   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
-   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.events": "sha256:4c80351758365b593d2cc0dadd66d770e43fbf7a17400d51ecb06cf5f625e2ef",
+   "hooks.exit-codes": "sha256:a73cbaa8890820119eeb79e81f3ff50f54190683df047c667dc7e43edbe5ea07",
    "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
-   "hooks.pitfalls": "sha256:1e488d23eb22c325017037ced06aaae2d7dc052e48d21dde627598836244c970",
-   "rules.settings": "sha256:11739bd03c9d79adbf566cfaa8fd8f7bca970d3f181e5579ff1d801bcd45fa0d",
-   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82"
+   "hooks.pitfalls": "sha256:91dcb124e2b4182d10438ea16ffa606aa91b0975c5e0f3c3cb2b537336f9930d",
+   "rules.settings": "sha256:90b5187d56c0d8fd3c6db9de265e56aa803600a1d000a4b9d68138eb2097d1d6",
+   "subagents.frontmatter": "sha256:aa8449f54fac046103fa842471f04994dfa2b784e127f35bff7d7d8b897a3c0d"
   },
   "hooks/dispatch-model-guard.py": {
    "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
@@ -4786,8 +4786,8 @@
    "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500"
   },
   "hooks/ruff-check.sh": {
-   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
-   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
+   "hooks.events": "sha256:4c80351758365b593d2cc0dadd66d770e43fbf7a17400d51ecb06cf5f625e2ef",
+   "hooks.exit-codes": "sha256:a73cbaa8890820119eeb79e81f3ff50f54190683df047c667dc7e43edbe5ea07",
    "hooks.patterns": "sha256:f42950c53acc6ddc5869dfce09e3033bcbc64afb4542d187ed2ff49c2bacb500",
    "hooks.pitfalls": "sha256:91dcb124e2b4182d10438ea16ffa606aa91b0975c5e0f3c3cb2b537336f9930d"
   },
