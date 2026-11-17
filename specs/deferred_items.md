@@ -6964,7 +6964,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `manifest.toml`.
 
 ## deferred-2026-11-17 (no plan; /deferred pass, branch claude/deferred-a35864) — 2026-11-17
-- [ ] **Two case tests in `build/test_check_links.py` fail on Linux (found by the 2026-11-17 `/deferred` pass in
+- [x] **Two case tests in `build/test_check_links.py` fail on Linux (found by the 2026-11-17 `/deferred` pass in
       the weekly `versions-drift` job's log).** Since at least 2026-11-02, each scheduled run reports
       `suite runs failed: build (3.13)` beside the 3.15 failures that the open item on the weekly `drift` job
       covers (section `66-package-versions — 2026-10-27`). `test_file_names_are_compared_case_sensitively` and
@@ -6977,6 +6977,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `lints.yml` stay green. It would take a case-insensitive match against the names on disk for the suffix,
       or tests that state the platform difference. Size: quick-fix. Done when: both tests pass on a
       case-sensitive file system, and the weekly job's 3.13 pass no longer lists `build` as failed.
+      → done 2026-11-17 (/deferred quick fix): the suffix now comes from `matches_ignoring_case` in `build/check_links.py`, which reads the directory listings, not `path.exists()`. A case-sensitive APFS disk image reproduced the 2 CI failures first. After the fix, `test_check_links.py` passes 14 of 14 there and on this Mac. A new test makes `exists()` case-sensitive, so a run on a Mac catches the fault too (it failed before the fix). The `build` suite passes (1,811 passed, 17 skipped). The weekly job reads `main`, so its 3.13 pass has not run this code yet.
 - [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
       `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-17 read
       danyuchn/asd-ste100-skill through `70736273` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
