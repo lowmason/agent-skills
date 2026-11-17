@@ -10,6 +10,13 @@ Standing authorization from the user; do not ask before steps 1–3.
    (`ccd_pr` `set_auto_merge`) for it. Repos have `allow_auto_merge` and
    `delete_branch_on_merge` on; if a repo lacks them, enable them with
    `gh api -X PATCH repos/<owner>/<repo> -F allow_auto_merge=true -F delete_branch_on_merge=true`.
+   Fallback: GitHub refuses auto-merge ("clean" or "unstable" status) when the base branch has
+   no required checks or reviews, so it has nothing to wait for. Then merge it yourself with
+   `gh pr merge <n> --delete-branch` and the repo's usual method (`--merge`, `--squash` or
+   `--rebase`, from its recent history), but only once every check `gh pr checks` lists has
+   passed, or right away when it lists none. Do not poll: if checks are still running at the
+   end of the turn, say so, and merge on the next turn once they pass. A failed check goes
+   to Auto-fix, not to a merge.
 2. When the PR merges, verify it: PR state is MERGED, the remote head branch is gone (delete it
    with `git push origin --delete <branch>` if GitHub did not), and whether the PR had CI checks
    (`gh pr checks`). Then report exactly `CI passed, PR merged, remote deleted` — drop the
