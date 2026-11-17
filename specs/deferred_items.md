@@ -7075,3 +7075,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `~/.cache/agent-skills/cc-guide/packets/20261117T124603-files/`. Size: plan. Done when: the owner has ruled
       on each row (a fix, a `conformance.toml` deviation, a guide addition or no action), the fixes are in, and
       `cli.py baseline cite` has stamped both files.
+
+## cc-guide-files-2.1.326-backlog (no plan; /cc-guide files pass, branch claude/modest-tesla-17e8fe) — 2026-11-17
+- [ ] Make a files packet show the verifier the Markdown that a `SKILL.md` citation covers (owner ruling
+      2026-11-17, files pass). Spec R4.1 (`specs/completed/claude-code-drift-automation-spec.md`) says a skill's
+      `SKILL.md` citation covers the Markdown files it loads on demand, in `references/` or beside it, and that
+      those files carry no citation of their own. `files()` in `build/cc_guide/packets.py` copies only the citing
+      file (`copy = 'cited_' + …`), so no verifier sees a skill's `references/`, and `baseline cite` restamps facts
+      that nobody checked. Example: `skills/executing-plans/SKILL.md` came back `subagents.frontmatter | none`,
+      because plan 75 moved its Opus dispatch to `references/final-review.md:25`. Another:
+      `skills/writing-skills/references/claude-code.md` states Claude Code facts throughout. Size: design (packet
+      size, and whether the packet copies the files or names them for the verifier). Done when: a files packet for
+      a skill holds or names each on-demand Markdown file its citation covers, a test in `build/cc_guide/` checks
+      it, and the skills whose `references/` state Claude Code facts get a fresh `/cc-guide` files verify.

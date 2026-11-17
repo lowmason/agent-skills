@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cc-guide: skills.locations commands.overview subagents.overview rules.rules-files rules.hierarchy @2.1.323
+# cc-guide: skills.locations commands.overview subagents.overview rules.rules-files rules.hierarchy @2.1.326.1
 '''Install this repository's skills, runtime-native companion assets and user-level rules.
 
 Examples:
@@ -73,10 +73,11 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
 }
 
 # Rules that install at user level, for Claude only, each with the skills that
-# it names: a user-level rule loads in every session, so a skill it points to
-# must be installed with it. Every other rule in rules/ stays project-level, as
-# README.md records. build/test_runtime_support.py checks each entry against
-# the skill names in its rule's text.
+# it names: a user-level rule loads in every session (a Cowork session skips a
+# symlinked one), so a skill it points to must be installed with it. Every other
+# rule in rules/ stays project-level, as README.md records.
+# build/test_runtime_support.py checks each entry against the skill names in its
+# rule's text.
 USER_RULES: dict[str, tuple[str, ...]] = {
   'pr-lifecycle': (
     'brainstorming',

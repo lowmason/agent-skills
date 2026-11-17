@@ -1,4 +1,4 @@
-<!-- cc-guide: skills.locations @2.1.323 -->
+<!-- cc-guide: skills.locations @2.1.325 -->
 # Installing the llm-wiki skill on a new machine
 
 This sets up the `llm-wiki` skill and a **fresh, empty wiki** on a machine that

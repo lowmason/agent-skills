@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.323
+# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.326
 """PreToolUse(Agent) guard: an agent dispatch names its model.
 
 subagent-driven-development's Model Selection says an omitted model is never a
