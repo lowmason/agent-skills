@@ -159,7 +159,7 @@ is always a commit:
 
 ```
 ### [d-01] Flat files primary; BLS API v2 demoted to utility
-kind: decision · at: release-stats specs/completed/release-stats-architecture.md §6.1 · basis: git:1d26d71
+kind: decision · at: release-stats specs/completed/release-stats-architecture.md §6.1 · basis: git:abc0002
 One- to three-sentence self-contained claim (no square brackets).
 ```
 
@@ -173,7 +173,7 @@ add secondary locations:
 ```
 - [x] [d-01] Flat files primary; BLS API v2 demoted to utility
   kind: decision · boundary: transferable
-  at: specs/completed/release-stats-architecture.md §6.1 · sha: 1d26d71
+  at: specs/completed/release-stats-architecture.md §6.1 · sha: abc0002
   excerpt: "The BLS API v2 cannot carry full-universe daily increments"
   claim: One- to three-sentence self-contained claim (no square brackets).
 ```

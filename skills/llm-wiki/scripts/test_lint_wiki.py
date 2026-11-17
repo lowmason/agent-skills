@@ -646,7 +646,7 @@ def write_spec_digest(root, name, text):
 PILOTED_DIGEST = '''---
 source: specs-harvest
 repo: release-stats
-repo_head: ad8abe0
+repo_head: abc0001
 date: 2026-07-24
 files: 5
 captures: 2
@@ -657,12 +657,12 @@ brief: reports/harvest-release-stats-2026-07-24.md
 Ground-truth entries for the capture notes in wiki/sources/x.md.
 
 [d-01] Flat files primary; BLS API v2 demoted to utility
-at: specs/completed/release-stats-architecture.md §6.1 · sha: 1d26d71
+at: specs/completed/release-stats-architecture.md §6.1 · sha: abc0002
 excerpt: "The BLS API v2 cannot carry full-universe daily increments"
 
 [g-05] LABSTAT files: space-padded headers and M13 annual rows
-at: specs/plans/completed/1-release-stats-architecture.md L2611 · sha: 50e0f52
-  (also specs/completed/audit_5-7-26.md C-2 · sha: 168da46)
+at: specs/plans/completed/1-release-stats-architecture.md L2611 · sha: abc0007
+  (also specs/completed/audit_1-1-26.md C-2 · sha: abc0004)
 excerpt: "rename(lambda c: c.strip())"
 note: dedicated fix commit
 
