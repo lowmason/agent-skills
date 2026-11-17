@@ -6857,13 +6857,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       what it read, and plan 98's kit is unchanged. Size: plan. Done when: a kit change closes the gap and a
       probe rep shows a `for`-loop `ls ~/…` denied, or the owner has recorded that the gap stays because
       VOID case 4 catches the harm.
-- [ ] **The firmlink spelling of the scratch folder passes the inside check (plan 98 Task 2 ruling, 2026-11-14).**
+- [x] **The firmlink spelling of the scratch folder passes the inside check (plan 98 Task 2 ruling, 2026-11-14).**
       `refuse_inside` in `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh` and `probe.sh`
       compares path strings. The path `/System/Volumes/Data/private/tmp/mnb98/x` names the same folder as
       `/tmp/mnb98/x` and passes. Five review rounds left it, at the cap. The record's words "lies inside" cover
       more than the code checks. If it fires, outputs sit inside `/tmp/mnb98/` for one batch, and the runner's
       strays sweep still moves them. Size: quick-fix. Done when: `refuse_inside` compares device and inode, with
       a no-model test for that spelling, or the record's claim names only the spellings that the code checks.
+      → done 2026-11-17 (/deferred quick fix): the record path. Runner item 7 of `specs/baseline/red-baseline-marimo-notebook-block.md` now names the two spellings that the check compares, `/tmp/mnb98` and `/private/tmp/mnb98`, and says that the firmlink spelling passes. A no-model run of the kit's `resolve_path` and `refuse_inside` under `/bin/bash` confirmed it: `/System/Volumes/Data/private/tmp/mnb98/x` passes, and `/tmp/mnb98/x` and `/private/tmp/mnb98/x` exit 2. The kit is unchanged.
 - [x] **Plan 98's rep JSON files carry `credential_expires_at` (found at plan 98 completion, 2026-11-14).** 50
       files under `specs/baseline/red-baseline-marimo-notebook-block/runs/` carry the field, as the 281 files in
       the item of section `97-change-reverted-mutant` do. The field is a login credential's expiry timestamp,
@@ -6916,15 +6917,17 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `skills/writing-plans/scripts/test_history_entry.py` covers it, and `references/history.md` says what the
       agent does with the line.
       → done 2026-11-15 (/deferred quick fix): the owner asked to close it before the PR. The differences keep the strict reading, and the draft now prints a ``Rulings: ledger line <N> holds `Ruling:` after a note and is not read: <line>`` warning for each line it skips, under the `Plan:` line. The test with a real review-note shape and a quote-only line failed first, and the writing-plans suite passes (409 passed, 4 xfailed). Finish step 6 of `references/history.md` says to copy the ruling into the differences, or to delete the warning when the line only quotes the form. Over the 25 archived ledgers, each of the 402 `Ruling:` lines is now read (388) or named (14).
-- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+- [x] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
       `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-14 read
       danyuchn/asd-ste100-skill through `9c351694` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
       re-vendored `scripts/ste-lint.py` at `9c351694`. Size: quick-fix. Revisit if: a compare from `9c351694`
       (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
+      → triggered 2026-11-17: a GitHub compare from `9c351694` to danyuchn's `master` shows 9 commits, all dated 2026-11-17, through `70736273`. They change `scripts/ste-lint.py`, `SKILL.md`, `README.md` and `examples/before-after.md`. prithivrajmu has no commit after `cf9787b6`.
+      → done 2026-11-17 (/deferred quick fix): the owner chose to re-vendor, and `scripts/ste-lint.py` is byte-identical to `70736273` (blob `44c62334`, mode kept 100644). The 9 commits, by an author recorded only as "t", fix six linter faults: a file that is not valid UTF-8 now exits 2, a file name such as `verify-geometry.py` is not read as a verb, and fence, blockquote, nested-list and code-span parsing is corrected. `RULES`, `_front_matter`, `_scalar_pieces` and the LICENSE are unchanged, so the two open items in section `claude/peaceful-gauss-1ce419 Step 4b review — 2026-11-12` stay as they are. The upstream SKILL.md, README and example edits change no text that our skill adapts. `test_ste_lint.py` pins the new bytes and adds two tests that failed on the `9c351694` copy (13 passed). NOTICE and both sources files move the pin and credit "t". The next review is filed → item: deferred-2026-11-17 (no plan; /deferred pass, branch claude/deferred-a35864) — 2026-11-17
 
 ## claude/deferred-07da07 Step 4b review — 2026-11-15
-- [ ] **Two llm-wiki files keep the pilot's real short hashes and audit file name that the pilot copies
+- [x] **Two llm-wiki files keep the pilot's real short hashes and audit file name that the pilot copies
       replaced (final code review of the 2026-11-14 `/deferred` pass, Declined to judge; the owner carried
       it).** The 2026-11-14 quick fix for the llm-wiki pilot fixture wrote `test_pilot_digest.md` and
       `test_pilot_source.md` with one substitution map: `abc0001` to `abc0008` for the 8 commit hashes and
@@ -6937,6 +6940,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: quick-fix. Done when: no live file under `skills/llm-wiki/` holds `ad8abe0`, `1d26d71`,
       `50e0f52`, `168da46` or `audit_5-7-26`, each uses the copies' value for it, and the llm-wiki suite
       passes (313 passed on 2026-11-15).
+      → done 2026-11-17 (/deferred quick fix): `test_lint_wiki.py` and `schema-template.md` now use the copies' values (`abc0001`, `abc0002`, `abc0004`, `abc0007` and `audit_1-1-26`), taken from the `7370e13` map. No live file under `skills/llm-wiki/` holds the five old values, and the llm-wiki suite passes (313 passed).
 - [ ] **`check_range_end` can stop a book build on a number-only body line (final code review of the
       2026-11-14 `/deferred` pass, Declined to judge; the owner carried it as a watch item).** Since the
       2026-11-14 quick fix, `TOC_LINE_RE` in `build/extract_structure.py` accepts a numbered contents line
@@ -6958,3 +6962,24 @@ review and the Plan Completion gate (2026-10-27) add the others.
       specs/completed/cc-guide-sections-after-init.md, § S2 and § Not in this spec. Size: quick-fix.
       Revisit if: a `check`, `packets` or `rehash` run misreads a `groups` entry whose group has left
       `manifest.toml`.
+
+## deferred-2026-11-17 (no plan; /deferred pass, branch claude/deferred-a35864) — 2026-11-17
+- [ ] **Two case tests in `build/test_check_links.py` fail on Linux (found by the 2026-11-17 `/deferred` pass in
+      the weekly `versions-drift` job's log).** Since at least 2026-11-02, each scheduled run reports
+      `suite runs failed: build (3.13)` beside the 3.15 failures that the open item on the weekly `drift` job
+      covers (section `66-package-versions — 2026-10-27`). `test_file_names_are_compared_case_sensitively` and
+      `test_case_check_follows_parent_steps` expect the suffix `(a name differs in case)`, and
+      `build/check_links.py` (`broken_links`, the `note` line) adds it only when `path.exists()` is true. A
+      case-insensitive macOS volume finds the wrong-case file, so the tests pass here. A Linux runner does not
+      find it, so it still reports the broken link, but without the suffix. The log of run 43818340304
+      (2026-11-16) shows 2 failed and 1,816 passed in the `build` suite under both Pythons. It was read from the
+      log and not reproduced. The commit lints run `check_links.py` but not its tests, so the hook and
+      `lints.yml` stay green. It would take a case-insensitive match against the names on disk for the suffix,
+      or tests that state the platform difference. Size: quick-fix. Done when: both tests pass on a
+      case-sensitive file system, and the weekly job's 3.13 pass no longer lists `build` as failed.
+- [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
+      `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-17 read
+      danyuchn/asd-ste100-skill through `70736273` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
+      re-vendored `scripts/ste-lint.py` at `70736273`. Size: quick-fix. Revisit if: a compare from `70736273`
+      (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
+      references/) or a LICENSE.

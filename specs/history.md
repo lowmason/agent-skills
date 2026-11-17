@@ -563,3 +563,10 @@ Differences from the design:
 
 Closed earlier deferred items:
 - "Sections created after `baseline init` (plan 38, T7-m3). No R7 subcommand adds a" (deferred by 38-claude-code-drift-automation).
+
+## /deferred — 2026-11-17
+
+Closed deferred items:
+- "**The firmlink spelling of the scratch folder passes the inside check (plan 98 Task 2 ruling, 2026-11-14).**" (deferred by 98-marimo-notebook-seam): the record's runner item 7 names the two spellings that the check compares and says that the firmlink spelling passes. The kit is unchanged.
+- "The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and" (deferred by deferred-quick-fixes-2026-11-14): re-vendored `scripts/ste-lint.py` at `70736273`, with six linter fixes by an author recorded only as "t". `RULES`, `_front_matter`, `_scalar_pieces` and the LICENSE are unchanged. NOTICE and both sources files move the pin.
+- "**Two llm-wiki files keep the pilot's real short hashes and audit file name that the pilot copies" (deferred by claude/deferred-07da07 Step 4b review): `test_lint_wiki.py` and `schema-template.md` use the pilot copies' values, and the llm-wiki suite passes.
