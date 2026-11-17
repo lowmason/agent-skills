@@ -1,4 +1,4 @@
-# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.323
+# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.326
 """Contract tests for dispatch-model-guard.py: run from hooks/, both ways.
 
 cd hooks

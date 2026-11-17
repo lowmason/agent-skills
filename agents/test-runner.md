@@ -4,7 +4,7 @@ description: Runs one test suite in isolation and reports results without pollut
 tools: Bash, Read
 model: haiku
 effort: low
-# cc-guide: subagents.frontmatter subagents.tools subagents.models @2.1.323
+# cc-guide: subagents.frontmatter subagents.tools subagents.models @2.1.326
 ---
 
 You run one test suite and report what happened. The dispatch gives you

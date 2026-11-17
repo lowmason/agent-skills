@@ -1,4 +1,4 @@
-# cc-guide: subagents.frontmatter subagents.isolation hooks.configuration @2.1.323
+# cc-guide: subagents.frontmatter subagents.isolation hooks.configuration @2.1.326
 '''`probes` and `binaries` (drift spec R10.3-R10.7). `probes` runs the
 registered probes that are due, the ones --only names, or every one with
 --force, against the binary --claude names. Each run starts in a fresh
@@ -233,7 +233,7 @@ def assess_guard(read: Read) -> Verdict:
 
 
 TOOLS_AGENTS = {'probe-with-bash': 'Read, Grep, Glob, Bash', 'probe-without-bash': 'Read, Grep, Glob'}
-TOOLS_AGENT_FILE = ('---\nname: {name}\ndescription: A drift probe agent.\ntools: {tools}\nomitClaudeMd: true\n'
+TOOLS_AGENT_FILE = ('---\nname: {name}\ndescription: A drift probe agent.\ntools: {tools}\n'
                     '---\n\nReply with the word OK and nothing else.\n')
 
 
@@ -303,9 +303,9 @@ PINS_PROMPT = ('In one message, call the Agent tool three times: (1) subagent_ty
 
 def prepare_pins(scratch: Path, claude: str, repo: Path) -> list[Invocation]:
     '''agent-model-pins takes the production path: an auto-mode parent with
-    user settings dispatches the three pinned agents with the Agent tool, in
-    fork mode's background, with the background ceiling raised (owner, plan
-    58 decision D4). The session is persisted, since effort is read from the
+    user settings dispatches the three pinned agents with the Agent tool.
+    They start in the background, so the background ceiling is raised (owner,
+    plan 58 decision D4). The session is persisted, since effort is read from the
     subagents' transcripts (R10.4, as plan 58 amends it).'''
     (scratch / 'a.py').write_text("print('hello')\n", encoding='utf-8')
     argv = claude_args(claude, PINS_PROMPT.format(dir=scratch), turns=PINS_TURNS, sources='user', mode='auto',

@@ -1,4 +1,4 @@
-<!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.323 -->
+<!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.326.1 -->
 # agent-skills
 
 This repo is my personal collection of [Agent Skills](https://agentskills.io/specification) for
@@ -177,7 +177,7 @@ fall into two groups, which install differently:
   the contract of the five read-only agents (see [Agents](#agents)). You install it once, globally,
   in `~/.claude`.
 - The **dispatch model guard** (`dispatch-model-guard.py`) is also an agent contract hook. It makes
-  every agent dispatch name its `model`, so an agent never silently inherits the session's costly
+  every agent dispatch name its `model`, so no agent but a fork silently inherits the session's costly
   model. `subagent-driven-development` relies on it. You install it once, globally, like the
   read-only guard.
 
@@ -216,12 +216,12 @@ This repo keeps rule sources in `rules/`. A path-scoped rule applies here throug
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
 | [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits (a compaction summarizes them away): single quotes, 4-space indent, Polars over pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, and named constants (G25). It cross-references the `clean-code` catalog by rule code. |
-| [`pr-lifecycle.md`](rules/pr-lifecycle.md) | every session, user-level | The steps after a PR opens. Claude turns on auto-fix and auto-merge. When GitHub refuses auto-merge, Claude merges the PR itself after its checks pass. After the merge it reports `CI passed, PR merged, remote deleted`. It cleans up the branch and the worktree itself. When the workflow has a next step, it ends with a link to a handoff brief. When the session is the last one in the workflow, it offers to archive it. |
-| [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session, user-level | The everyday writing habits of the `write-with-asd-ste100` skill, for replies and for prose files written for people. It also carries the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
+| [`pr-lifecycle.md`](rules/pr-lifecycle.md) | every session but Cowork, user-level | The steps after a PR opens. Claude turns on auto-fix and auto-merge. When GitHub refuses auto-merge, Claude merges the PR itself after its checks pass. After the merge it reports `CI passed, PR merged, remote deleted`. It cleans up the branch and the worktree itself. When the workflow has a next step, it ends with a link to a handoff brief. When the session is the last one in the workflow, it offers to archive it. |
+| [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session but Cowork, user-level | The everyday writing habits of the `write-with-asd-ste100` skill, for replies and for prose files written for people. It also carries the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
 
 Rules here ship project-level. Commit `7aa454f` made that decision when it added the Python rule. To use a path-scoped rule in another project, copy it into that repo's `.claude/rules/`. (User-level `~/.claude/rules/` also loaded in the 2.1.218 probe. See that commit's message.)
 
-`write-with-asd-ste100.md` and `pr-lifecycle.md` are the two exceptions. The first shapes every reply and every prose file, and the second applies to every PR in every repo. A rule for all work only works at user level. So `install.py` places them in `~/.claude/rules/`, for Claude Code only: Codex and Gemini get the skills without the rules. They are not linked into this repo's `.claude/rules/`, because a second copy there would load them twice in this repo.
+`write-with-asd-ste100.md` and `pr-lifecycle.md` are the two exceptions. The first shapes every reply and every prose file, and the second applies to every PR in every repo. A rule for all work only works at user level. So `install.py` places them in `~/.claude/rules/`, for Claude Code only: Codex and Gemini get the skills without the rules. A Cowork session on the desktop skips a symlinked user rule whose target lies outside its working directory, so the default symlink install does not reach Cowork. They are not linked into this repo's `.claude/rules/`, because a second copy there would load them twice in this repo.
 
 ## Installation
 
