@@ -2286,6 +2286,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       (see the Gate result in `specs/plans/completed/46-sdd-bundle.md`). Size: plan. Done
       when: the wording is settled and `p5a`, `c5a-ep` and `c5a-neg` meet their
       pre-registered bars on it, with the already-merged prompt in the kit.
+      → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
 
 ## 47-placement-lint — 2026-10-16
 - [x] Cover the second per-file `compaction-window` waiver in the placement guard (plan
@@ -5624,7 +5625,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       backlog-protocol plan, so it executes after that plan. Size: design. Done when: the owner
       approves a change to step 4, or records it as declined.
       → progress 2026-11-17 (owner ruling): approve a change to step 4. Completion prints the stats line and the plan's new items, and the full triage runs under `/deferred` or when the aged tail is non-zero. The item stays open until the change to step 4 lands.
-      → planned 2026-11-17: specs/plan-completion-triage-and-gate-revert.md
+      → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
 
 ## 73-reviewer-and-planning-contract — 2026-10-30
 - [ ] Test-only findings and the reviewer block's delete pass (plan 73 final review, Important;
@@ -5646,6 +5647,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       edit needs the `references/step-recipe.md` fallback first (spec section 4). Size: plan.
       Done when: step 1 of the Plan Completion Protocol names the final review's Declined to
       judge lines, with room in the body for it.
+      → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
 - [x] Declined review line: finishing-a-development-branch Step 4b gives Codex `[P2]` and
       `[P3]` points that become Declined lines no owner and no place to be recorded (plan 73
       final review, owner ruled defer). The skill is not one of the surfaces spec section 2
@@ -6135,6 +6137,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       whose section is in the archive only points at a file that holds that section, and the rule that keeps
       it so is in writing-plans or `archive_deferred.py`.
       → progress 2026-11-17 (owner ruling): Protocol step 2 writes a status line that names both backlog files, and a one-time fix updates the 14 old plans. `archive_deferred.py` does not edit plans.
+      → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
 
 ## 80-development-history-record — 2026-11-08
 - [ ] **A revert asked for at the gate has two rules (plan 80 final review, owner ruling at the completion gate).**
@@ -6146,7 +6149,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate, and the
       `gate-tag` case still meets its bar under `specs/baseline/red-baseline-development-history/kit/`.
       → progress 2026-11-17 (owner ruling): a revert asked for at the gate is implemented at once under Protocol step 1, and both gate paragraphs change to match.
-      → planned 2026-11-17: specs/plan-completion-triage-and-gate-revert.md
+      → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
 - [x] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
       `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
       "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and
