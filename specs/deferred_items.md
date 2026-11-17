@@ -1862,6 +1862,7 @@
       > member" can raise volume and false corrections, so a revision keeps DF7's precision
       > clauses and a cheap checkpoint; it targets P11, which alone decides this item's
       > done-when, not the other misses.
+      → planned 2026-11-17: specs/cc-guide-verifier-recall-and-covered-files.md
 - [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
@@ -2151,6 +2152,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       a correction, in at least 4 of 5 valid reps. Its P11 branch overlaps the open item "The
       audit verifier's omission recall was 3 of 7 known positives" (section
       `44-claude-code-drift-automation — 2026-10-13`); close both together when P11 is met.
+      → planned 2026-11-17: specs/cc-guide-verifier-recall-and-covered-files.md
 - [ ] The files rule has no precision fixture outside its own fixtures' domain. Plan 45's cheap
       checkpoint on 2026-10-14 turned on contested readings of the changed arm's
       `hooks/README.md` rows: r11 and r27 kept 3 and 4 `contradicts` rows on cases that are
@@ -2162,6 +2164,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `specs/completed/verifier-recall-verification-2026-10-14.md`, Result and Decision. Size:
       plan. Done when: such a fixture, its packet and a pre-registered precision key exist, and
       a scored run reports the files rule's UNSUPPORTED count on it for both arms.
+      → planned 2026-11-17: specs/cc-guide-verifier-recall-and-covered-files.md
 - [ ] The files rule must take its reference case from the component the file describes. Plan
       45's changed arm (`0b76543`, reverted in `8947e50`) told the files verifier to compare a
       statement with the guide's cases for the same job; in r09, r11 and r27 that let it apply
@@ -2175,6 +2178,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       Done when: a revised files rule carries that scope with a test in
       `build/cc_guide/test_skill_files.py`, and a scored cheap batch on the readme packet keeps
       no `contradicts` row on `hooks/README.md:89` and no changed rep above 2 UNSUPPORTED.
+      → planned 2026-11-17: specs/cc-guide-verifier-recall-and-covered-files.md
 
 ## deferred-2026-10-15 (no plan; /deferred pass, branch chore/deferred-2026-10-15) — 2026-10-15
 - [x] `build/check_frontmatter.py`'s `check_agent_file` reads a YAML-list `tools` through
@@ -6530,6 +6534,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: plan. Done when: a files packet for a SKILL.md citation holds each Markdown file that the skill loads
       on demand, and a test in `build/` checks it.
       → progress 2026-11-17 (owner ruling): the same work as the item in section `cc-guide-files-2.1.326-backlog (no plan; /cc-guide files pass, branch claude/modest-tesla-17e8fe) — 2026-11-17`. The packet copies each on-demand Markdown file. Close both together.
+      → planned 2026-11-17: specs/cc-guide-verifier-recall-and-covered-files.md
 - [x] The micro-test kit's isolation pilot never asks about user identity (plan 92, Task 4 review).
       `specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json` addresses the owner by
       surname. The pilot's six answers were all NO, because `kit/isolation_probe.txt` has no identity question.
@@ -7109,6 +7114,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       a skill holds or names each on-demand Markdown file its citation covers, a test in `build/cc_guide/` checks
       it, and the skills whose `references/` state Claude Code facts get a fresh `/cc-guide` files verify.
       → progress 2026-11-17 (owner ruling): the packet copies each on-demand Markdown file, as it copies the cited file, so settle checks quotes against fixed bytes.
+      → planned 2026-11-17: specs/cc-guide-verifier-recall-and-covered-files.md
 
 ## deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
 - [ ] **Account identity reaches the isolated micro-test runs (first found in specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json, 2026-11-12).** A rep run under `claude -p --tools "" --setting-sources ""` can know the owner's name. Plan 92's `P1a-sonnet` rep5 addressed the owner by surname, and plan 97's isolation pilot answered YES to the identity line of `isolation_probe.txt` (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). The cause is unknown, and no verdict has depended on it so far. Filed when the owner retired the item that asked for the identity line (section `92-writing-skills-guide-rewrite — 2026-11-12`). Finding the cause would take a probe that varies the login and the environment (for example `env -i` and a fresh `HOME`) and records which runs still know the name. Size: design. Revisit if: a micro-test verdict turns on whether a rep knows the user's name or email.
