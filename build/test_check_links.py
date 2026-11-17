@@ -1,4 +1,5 @@
 '''Tests for check_links.py, the relative-link commit lint.'''
+import os
 from pathlib import Path
 
 import check_links as cl
@@ -112,6 +113,41 @@ def test_file_names_are_compared_case_sensitively(tmp_path):
         "skills/a/SKILL.md:1: broken link 'References/loop.md': "
         'no file at skills/a/References/loop.md (a name differs in case)']
     assert checked == 3
+
+
+def case_sensitive_exists(path: Path) -> bool:
+    '''exists() as a case-sensitive file system answers it: every name must match a name on disk.'''
+    parent = Path(path.anchor)
+    for name in path.parts[1:]:
+        try:
+            if name not in os.listdir(parent):
+                return False
+        except OSError:
+            return False
+        parent = parent / name
+    return True
+
+
+def test_the_case_note_does_not_need_a_case_insensitive_file_system(tmp_path, monkeypatch):
+    # On Linux CI a wrong-case name does not exist, so the note cannot rest on exists().
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': '[g](Guide.md) [ok](guide.md) [m](missing.md)\n',
+        'skills/a/guide.md': 'Guide.\n',
+    })
+    monkeypatch.setattr(cl.Path, 'exists', case_sensitive_exists)
+    problems, checked = cl.broken_links(tmp_path, [Path('skills')])
+    assert problems == [
+        "skills/a/SKILL.md:1: broken link 'Guide.md': no file at skills/a/Guide.md (a name differs in case)",
+        "skills/a/SKILL.md:1: broken link 'missing.md': no file at skills/a/missing.md"]
+    assert checked == 3
+
+
+def test_a_broken_link_file_with_the_right_case_gets_no_case_note(tmp_path):
+    # os.listdir lists a dangling symlink, so matching names alone would claim a case difference.
+    write_tree(tmp_path, {'skills/a/SKILL.md': '[d](dangling.txt)\n'})
+    (tmp_path / 'skills/a/dangling.txt').symlink_to(tmp_path / 'skills/a/nowhere.txt')
+    problems, _ = cl.broken_links(tmp_path, [Path('skills')])
+    assert problems == ["skills/a/SKILL.md:1: broken link 'dangling.txt': no file at skills/a/dangling.txt"]
 
 
 def test_case_check_follows_parent_steps(tmp_path):

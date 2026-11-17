@@ -13,9 +13,10 @@ from pathlib import Path
 import pytest
 
 LINTER = Path(__file__).resolve().parent / 'ste-lint.py'
-PINNED_SHA256 = 'a9d8a76a0e5dd7f39aa4972e6fae490fd656ff218624a4a9fc9c5fcb2fcb2240'
+PINNED_SHA256 = '29a10502a61b08aa4907484e3b5f9a0e57842b81294dd6f09654d84fdfd645b0'
 SYSTEM_PYTHON = Path('/usr/bin/python3')
 FENCE = '`' * 3
+USAGE_ERROR = 2  # the exit status of argparse's parser.error()
 
 
 def lint(*args: str, stdin: str = '', python: Path = Path(sys.executable)) -> subprocess.CompletedProcess:
@@ -85,6 +86,21 @@ def test_a_bold_closer_after_a_period_still_ends_the_sentence():
     half = ' '.join(['word'] * 14)
     result = lint('--json', stdin=f'**{half}.** {half}.\n')
     assert json.loads(result.stdout)['violations'] == []
+
+
+def test_a_file_name_is_not_read_as_a_rotated_verb():
+    # "verify" inside the script name names no action, so "check" has no rival.
+    result = lint('--json', stdin='Check the cache. Then run verify-geometry.py on it.\n')
+    assert json.loads(result.stdout)['violations'] == []
+
+
+def test_a_file_that_is_not_utf8_exits_with_the_usage_error(tmp_path):
+    bad = tmp_path / 'latin1.md'
+    bad.write_bytes('Café menu.\n'.encode('latin-1'))
+    result = lint(str(bad))
+    assert result.returncode == USAGE_ERROR
+    assert f'cannot read {bad}' in result.stderr
+    assert 'Traceback' not in result.stderr
 
 
 def test_skill_front_matter_description_is_read_as_prose():
