@@ -267,6 +267,18 @@ BLOCKED_PAST_PREFIXES = [
     'env FOO=1 python x.py',
     'command python x.py',
     'ls && time python3.12 x.py',
+    # Closed by the 2026-11-17 owner ruling: a shell keyword, a prefix word given as a
+    # path, a backslash escape and the free-threaded name.
+    'if true; then python x.py; fi',
+    'for f in *; do pytest $f; done',
+    'if false; then :; else python x.py; fi',
+    'if false; then :; elif python x.py; then :; fi',
+    '/usr/bin/env python x.py',
+    '/usr/bin/time pytest -q',
+    r'\python x.py',
+    r'\env python x.py',
+    'python3.13t x.py',
+    '.venv/bin/python3.13t x.py',
 ]
 ALLOWED = [
     'uv run python x.py',
@@ -286,6 +298,11 @@ ALLOWED = [
     './tools/python-lint.sh',
     'git commit -m "python fix"',
     'python x.py  # no-uv-guard',
+    'if true; then uv run python x.py; fi',
+    'for f in *; do echo python; done',
+    '/usr/bin/env uv run pytest -q',
+    'uv run python x.py 2>&1 | tee log',
+    'ls &> /dev/null',
 ]
 
 
@@ -316,6 +333,11 @@ DOCUMENTED_GAPS = [
     'env -i python x.py',
     'time -p pytest',
     'nohup python x.py',
+    'if python x.py; then :; fi',
+    'while pytest -x; do :; done',
+    'until pytest -x; do :; done',
+    '! python x.py',
+    '"python" x.py',
     'FOO="a b" python x.py',
     '(python x.py)',
     'bash -c "python x.py"',
@@ -326,6 +348,23 @@ DOCUMENTED_GAPS = [
 def test_uv_guard_lets_the_documented_gaps_through(shim, command):
     proc = run_hook(UV_GUARD, bash_payload(command), shim)
     assert proc.returncode == 0, proc.stderr
+
+
+# hooks/README.md names this false positive: the split does not read quotes, so a
+# separator inside a quoted string starts a subcommand. no-uv-guard lets it through.
+DOCUMENTED_FALSE_POSITIVES = [
+    'echo "a; python x.py"',
+]
+
+
+@pytest.mark.parametrize('command', DOCUMENTED_FALSE_POSITIVES)
+def test_uv_guard_blocks_the_documented_false_positives(shim, command):
+    proc = run_hook(UV_GUARD, bash_payload(command), shim)
+    assert proc.returncode == 2, proc.stderr
+    assert proc.stderr.startswith('uv-guard: ')
+    escaped = run_hook(UV_GUARD, bash_payload(f'{command}  # no-uv-guard'), shim)
+    assert escaped.returncode == 0, escaped.stderr
+    assert escaped.stderr == ''
 
 
 @pytest.mark.parametrize('command, message', [
@@ -342,6 +381,38 @@ def test_uv_guard_lets_the_documented_gaps_through(shim, command):
                  id='path'),
     pytest.param('time pytest -q', "use 'time uv run pytest -q' instead of bare 'pytest'.",
                  id='time'),
+    # A shell keyword is not part of the command, so the suggestion leaves it out.
+    pytest.param('for f in *; do pytest $f; done',
+                 "use 'uv run pytest $f' instead of bare 'pytest'.", id='keyword'),
+    pytest.param('/usr/bin/env python x.py',
+                 "use '/usr/bin/env uv run python x.py' instead of bare 'python' "
+                 '(uv-managed project).',
+                 id='prefix-path'),
+    pytest.param(r'\python x.py',
+                 r"use 'uv run python x.py' instead of bare '\python' (uv-managed project).",
+                 id='backslash'),
+    pytest.param('python3.13t x.py',
+                 "use 'uv run python3.13t x.py' instead of bare 'python3.13t' "
+                 '(uv-managed project).',
+                 id='free-threaded'),
+    # The & of a redirect does not split the command.
+    pytest.param('python x.py 2>&1 | tee log',
+                 "use 'uv run python x.py 2>&1' instead of bare 'python' (uv-managed project).",
+                 id='redirect-dup-out'),
+    pytest.param('python x.py 0<&3',
+                 "use 'uv run python x.py 0<&3' instead of bare 'python' (uv-managed project).",
+                 id='redirect-dup-in'),
+    pytest.param('python x.py &> log',
+                 "use 'uv run python x.py &> log' instead of bare 'python' "
+                 '(uv-managed project).',
+                 id='redirect-both'),
+    # A separator after the command leaves no trailing space in the suggestion.
+    pytest.param('python x.py &',
+                 "use 'uv run python x.py' instead of bare 'python' (uv-managed project).",
+                 id='background'),
+    pytest.param('python x.py | tee log',
+                 "use 'uv run python x.py' instead of bare 'python' (uv-managed project).",
+                 id='pipe'),
 ])
 def test_uv_guard_suggests_the_uv_form(shim, command, message):
     proc = run_hook(UV_GUARD, bash_payload(command), shim)
