@@ -1105,6 +1105,13 @@ Changes from upstream:
     own. references/branch-explainer.md and
     references/branch-explainer-prompt.md are original works by Lowell
     Mason under the same MIT terms.
+  - finishing-a-development-branch's and using-git-worktrees' SKILL.md
+    files gained one `# cc-guide: subagents.worktrees` YAML comment as the
+    last frontmatter line on 2026-11-17. It names the section of this
+    repo's Claude Code guide on worktree isolation, which the commands
+    these skills give an isolated session rest on, so a docs change flags
+    them for review (specs/completed/claude-code-drift-automation-spec.md,
+    R4). No parsed field changed.
 
     brainstorming/
     dispatching-parallel-agents/
