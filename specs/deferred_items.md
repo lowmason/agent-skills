@@ -996,11 +996,12 @@
       lint cover the Claude Code guide only, and the register is per guide. Size: design.
       Revisit if: the owner wants the Codex or Gemini guide anchored and checked the same
       way.
-- [ ] Deviation comments at artifact sites (conformance spec Decision 9): deviations are
+- [x] Deviation comments at artifact sites (conformance spec Decision 9): deviations are
       recorded only in `build/cc_guide/conformance.toml`, not beside the artifacts they
       cover. Size: design. Revisit if: drift's R4.5 load check shows a SKILL.md frontmatter
       comment loads in all three runtimes.
       → triggered 2026-11-11: the R4.5 load check ran on 2026-10-12 and passed in all three runtimes (`specs/plans/completed/43-claude-code-drift-automation.md`, "R4.5 load check").
+      → retired 2026-11-17: the owner keeps deviations register-only (/deferred owner ruling). `conformance.toml` already lists each exception's artifacts, and a copy at each artifact would need a sync check of its own.
 - [x] The conformance rule kind misses nested rules (plan 35, latent): its glob
       `.claude/rules/*.md` (conformance spec R2.3) skips rules in subdirectories, which
       `rules.rules-files` says are discovered recursively, and git lists a symlinked
@@ -1403,6 +1404,7 @@
       (Phase 3 and Acceptance) and `~/.cache/agent-skills/handoffs/red/changes.log`.
       Size: design. Done when: each of the three arms has 5 valid reps on the
       shipped skills and a recorded verdict.
+      → progress 2026-11-17 (owner ruling): kit-owned skills folder. The kit points the skill path (or `HOME`) at a folder that holds the shipped skills, so the reviewer subagents that the skill dispatches read the text under test. The VOID rules stay as they are.
 - [x] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
       you just finished is never planned past") says "do not plan, brainstorm or
       name it", yet step 3a requires the Handoff bullets and the stamp to name the
@@ -4052,6 +4054,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `specs/plans/completed/51-claude-code-drift-automation.md`, "O3". Size: design. Done when: a
       check that fails partway leaves `latest/` as it was, a test in `build/cc_guide/test_check.py`
       pins it, and the spec's R6.3 and R6.4 state the whole-directory swap.
+      → progress 2026-11-17 (owner ruling): approve the staged swap. `live_docs` writes `latest/` into a staged folder and swaps it in at once, a test in `build/cc_guide/test_check.py` pins it, and the spec's R6.3 and R6.4 change to match.
 
 ## /deferred quick-fix pass (no plan; lowmason/agent-skills#73) — 2026-10-19
 - [x] Rule on three guide-coverage questions that the 2026-10-19 verify runs left in the
@@ -4130,12 +4133,14 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       scanner runs on the skills. See `specs/completed/agent-skills-portability-spec.md`,
       "Out of scope". Size: plan. Done when: a skill scanner runs on `skills/` from the commit
       lints or from `.github/workflows/lints.yml`, and its first findings are triaged.
+      → progress 2026-11-17 (owner ruling): plan it. The plan names the scanner, its source and its version, and the owner approves before anything is downloaded.
 - [ ] License travel for single-file agents (plan 53's spec, Out of scope).
       `agents/code-reviewer.md` and `agents/task-reviewer.md` are distilled from superpowers
       and install as single files without `LICENSE-superpowers`: the same gap R4 closes for
       skills. See `specs/completed/agent-skills-portability-spec.md`, "Out of scope", and
       `NOTICE`. Size: design. Done when: each installed superpowers-derived agent carries or
       points to the superpowers notice, and `install.py` installs that notice with it.
+      → progress 2026-11-17 (owner ruling): `install.py` installs `LICENSE-superpowers` beside the agents, and each superpowers-derived agent carries a one-line pointer to it.
 - [x] Split and rewrite writing-skills against the guide (residual rewrite from plan 53's
       "Splitting writing-skills", Out of scope). Plan 72 completed the body split, removed
       `writing-skills-late-critical-headings` and updated the body-warning test and
@@ -6112,6 +6117,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/<name>-roadmap.md`. The deferred-items heading in §5 Parking now uses `<name>-roadmap`. Size:
       design. Done when: one of the two texts changes or states the difference, and `dr-offer-yes` and
       `dr-tracks` still pass their bars under the kit.
+      → progress 2026-11-17 (owner ruling): §5 Parking states that its heading uses the roadmap file's stem, `<name>-roadmap`. The headings keep their form.
 
 ## spec-drift-finding-22 (no plan; brainstorming session for finding 22, branch claude/spec-drift-history) — 2026-11-08
 - [ ] **Retired plans point at the live backlog after their deferred section has moved to the archive (handoff trap
@@ -6128,6 +6134,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       (`skills/writing-plans/references/deferred-backlog.md`, Markers). Size: design. Done when: a retired plan
       whose section is in the archive only points at a file that holds that section, and the rule that keeps
       it so is in writing-plans or `archive_deferred.py`.
+      → progress 2026-11-17 (owner ruling): Protocol step 2 writes a status line that names both backlog files, and a one-time fix updates the 14 old plans. `archive_deferred.py` does not edit plans.
 
 ## 80-development-history-record — 2026-11-08
 - [ ] **A revert asked for at the gate has two rules (plan 80 final review, owner ruling at the completion gate).**
@@ -6326,12 +6333,13 @@ review and the Plan Completion gate (2026-10-27) add the others.
       item counts as an ordinary outcome. Size: design. Done when: §5 says what a resume does with a later
       quality when no other question is open, and what it does with a `suggested, not approved` item, and a
       case covers each path with a control run.
-- [ ] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
+- [x] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
       `skills/derive-roadmap/SKILL.md` §5. R7 says a quality found at a resume joins the question. No step of
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
       wrote it. Size: design. Done when: §5 names the step that runs the check at a resume and a clause scores
       it, or the owner drops the resume half of R7 from the spec.
       → progress 2026-11-17 (owner ruling): drop the resume half of R7, and remove its sentence from derive-roadmap §5 (`SKILL.md:201-203`). The item stays open until the §5 sentence is removed.
+      → done 2026-11-17 (/deferred quick fix): the sentence that sent a later quality found at a resume into the Ask is gone from `skills/derive-roadmap/SKILL.md` §5, as the owner ruled. §4 still asks about later qualities at the first checkpoint.
 - [x] **§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is
       recorded (plan 85 final review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §3 and §4. The
       gap is older than plan 85. A reply writes the roadmap file and the answer, and nothing in the skill makes
@@ -6517,7 +6525,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       loads on demand. So the packet for `skills/writing-skills/SKILL.md` leaves out its seven on-demand files.
       Size: plan. Done when: a files packet for a SKILL.md citation holds each Markdown file that the skill loads
       on demand, and a test in `build/` checks it.
-- [ ] The micro-test kit's isolation pilot never asks about user identity (plan 92, Task 4 review).
+      → progress 2026-11-17 (owner ruling): the same work as the item in section `cc-guide-files-2.1.326-backlog (no plan; /cc-guide files pass, branch claude/modest-tesla-17e8fe) — 2026-11-17`. The packet copies each on-demand Markdown file. Close both together.
+- [x] The micro-test kit's isolation pilot never asks about user identity (plan 92, Task 4 review).
       `specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json` addresses the owner by
       surname. The pilot's six answers were all NO, because `kit/isolation_probe.txt` has no identity question.
       So account identity reaches `claude -p --tools "" --setting-sources ""` runs. The cause is unknown, and no
@@ -6525,6 +6534,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `isolation_probe.txt` asks whether the agent knows the user's name or email, and a pilot run records the
       answer.
       → progress 2026-11-14 (plan 97): plan 97's kit copies carry the identity line (line 7), and its pilot read YES (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). Plan 92's and plan 72's kits still have no identity line, so this item stays open.
+      → retired 2026-11-17: the done-when is met. Plan 97's kit asks the identity question (`isolation_probe.txt`, line 7) and its pilot recorded the answer, YES. Committed kits stay frozen, so the plan 72 and plan 92 kits keep their probes (owner ruling). The identity leak itself is filed as a watch item → item: deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
 - [x] `skills/writing-skills/references/claude-code.md` omits that a forked skill runs in the background by
       default in interactive sessions (plan 92 final review, Declined to judge). The `background` row of
       `skills.frontmatter` in the guide says a forked skill runs in the background by default, with the narrower
@@ -6556,7 +6566,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `~/.gemini/config/skills/`, and `--model` picks the model), through the writing-skills skill. Size: plan.
       Done when: each named place gives a correct `agy` form or says `agy` is not covered, and the dependency-drift
       test passes.
-- [ ] The revisit trigger of the `commands-stay-command-files` exception in `build/cc_guide/conformance.toml` may
+- [x] The revisit trigger of the `commands-stay-command-files` exception in `build/cc_guide/conformance.toml` may
       have fired (branch review, code-reviewer Declined to judge). It reads "When the Gemini adapters can be
       generated from skills." This branch made the `agy` adapters skills, generated from `commands/*.md`, and `agy`
       loads a skill as its slash command. So if `commands/deferred.md`, `commands/fix-issue.md` and
@@ -6565,6 +6575,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       owner rules to convert the three commands to skills or to keep them, and the exception is removed or its
       reason and revisit lines are rewritten to match.
       → progress 2026-11-17 (owner ruling): keep the three commands as command files, and rewrite the exception's reason and revisit lines in `build/cc_guide/conformance.toml` to match.
+      → done 2026-11-17 (/deferred quick fix): the exception's reason now says that the owner kept the three command files and that `build/sync_runtime_assets.py` already generates an agy skill from each. Its revisit line names one signal (Claude Code stops loading `commands/*.md`, or a runtime that `install.py` targets can load neither form), and its evidence cites this ruling. `check_conformance.py` passes.
 
 ## claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323 — 2026-11-12
 - [x] `hooks/ruff-check.sh` blocks with exit 2 and ruff's output on stderr, which the guide's Stop-gate pattern
@@ -6620,7 +6631,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-15 (/deferred quick fix): on the owner's word, a fresh models-group verify of the same 2.1.325 triage settled clean (101 confirmed, nothing held), and `subagents.models` and `lean.model-routing` advanced to 2.1.325. "Setting your model" was then rebaselined in the models, skills and subagents groups at `--head 2.1.325`, and `cli.py check --worktree` no longer lists it. The L388 clause was verified as the progress note says.
 
 ## 93-mutant-checked-tests — 2026-11-13
-- [ ] **task-done never checks that a mutant patch is the one its run measured (plan 93 final review, Codex
+- [x] **task-done never checks that a mutant patch is the one its run measured (plan 93 final review, Codex
       C2 at `cfa17ca`; the owner chose a backlog item at the completion gate, 2026-11-13).** The mutant gate in
       `skills/executing-plans/scripts/task-done` (the block at lines 164-233) reads the newest
       `task-N-mutants*.log` and checks its `head:` line, its `result:` line and a `mutant K:` line for each
@@ -6638,6 +6649,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       sha256, a test that edits a patch after a clean run at the same HEAD sees exit 4, and the other gate tests
       still pass.
       → progress 2026-11-17 (owner ruling): strict check. task-done also refuses a missing patch, and the `write_run` fixture changes to write real patch files with their sha256.
+      → done 2026-11-17 (/deferred quick fix): the strict check. `task-done` refuses (exit 4) when a listed mutant that is not withdrawn has no patch, or when its patch's sha256 differs from the run's `mutant K:` line. `write_run` now writes each patch and records its real sha256. Two new tests failed first (exit 0, task recorded) and pass now. A third pins that a withdrawn patch is not read, and a mutation that drops that skip fails it. The suite passes (80 passed). The script header and the gate paragraph of `skills/executing-plans/SKILL.md` name the check.
 - [x] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
       2026-11-13).** `ruling_lines` in `skills/writing-plans/scripts/history_entry.py` (about line 305) takes
       every ledger line that holds `Ruling:` anywhere (`line.partition(RULING_MARK)`). Plan 93's ledger had a
@@ -6800,6 +6812,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `skills/subagent-driven-development/task-reviewer-prompt.md` and the regenerated `runtimes/` copies) names
       one place that stated rules come from, a micro-test shows the start-date finding gone from an R4-type
       package with no bar of the record falling, and `build/check_reviewer_block.py` passes.
+      → progress 2026-11-17 (owner ruling): stated rules come from the cited spec sentences and the brief only. The global constraints still bind the task, but they get no mutant row.
 
 ## 94-branch-explainer — 2026-11-14
 - [ ] **Notebook explainers with controls, for model changes in downstream repos (spec, Done when 6).** Step 3b
@@ -7049,13 +7062,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       for `build/cc_guide/test_probe_replay.py`. The desktop case cannot run under `claude -p`, so it stays a hand
       check. Size: plan. Done when: a registered probe that covers the first four facts has a PASS row in
       `build/cc_guide/PROBES.md` on a current binary, or the docs state each of them.
-- [ ] Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two
+- [x] Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two
       facts from it: the Code tab ignores `worktree.baseRef` for the worktree it makes, and archiving a session
       can discard the worktree's uncommitted changes and removes a kept worktree about 30 days later. No group in
       `build/cc_guide/manifest.toml` maps that page. Mapping it in the subagents group as a terms page would
       select 43 of its 291 blocks (2026-11-17), mostly computer use and SSH, so most desktop releases would make
       the group due. The options are to map it, to cut the two facts from the section, or to leave them unwatched
       as the section says now. Size: quick-fix. Done when: the owner picks one and it is applied.
+      → progress 2026-11-17 (owner ruling): leave both facts unwatched.
+      → done 2026-11-17 (/deferred quick fix): no edit was needed. The guide's worktree-isolation section already says that the drift check does not watch the desktop page (`specs/guides/claude-code-customization-guide.md:255`).
 - [ ] Rule on the held `/cc-guide files` reviews of the two worktree skills, then cite them. On 2026-11-17
       `/cc-guide files` checked `skills/finishing-a-development-branch/SKILL.md` and
       `skills/using-git-worktrees/SKILL.md` against the new `subagents.worktrees` guide section. Settle held both,
@@ -7075,6 +7090,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `~/.cache/agent-skills/cc-guide/packets/20261117T124603-files/`. Size: plan. Done when: the owner has ruled
       on each row (a fix, a `conformance.toml` deviation, a guide addition or no action), the fixes are in, and
       `cli.py baseline cite` has stamped both files.
+      → progress 2026-11-17 (owner ruling): fix the two clear contradictions, `skills/finishing-a-development-branch/SKILL.md` line 379 (what archiving a desktop session does) and `skills/using-git-worktrees/SKILL.md` line 74 (the native tool branches from local HEAD when there is no remote). No action on the two line-76 judgment calls or on the not-covered rows. Then run `baseline cite` on both files.
 
 ## cc-guide-files-2.1.326-backlog (no plan; /cc-guide files pass, branch claude/modest-tesla-17e8fe) — 2026-11-17
 - [ ] Make a files packet show the verifier the Markdown that a `SKILL.md` citation covers (owner ruling
@@ -7088,3 +7104,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       size, and whether the packet copies the files or names them for the verifier). Done when: a files packet for
       a skill holds or names each on-demand Markdown file its citation covers, a test in `build/cc_guide/` checks
       it, and the skills whose `references/` state Claude Code facts get a fresh `/cc-guide` files verify.
+      → progress 2026-11-17 (owner ruling): the packet copies each on-demand Markdown file, as it copies the cited file, so settle checks quotes against fixed bytes.
+
+## deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
+- [ ] **Account identity reaches the isolated micro-test runs (first found in specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json, 2026-11-12).** A rep run under `claude -p --tools "" --setting-sources ""` can know the owner's name. Plan 92's `P1a-sonnet` rep5 addressed the owner by surname, and plan 97's isolation pilot answered YES to the identity line of `isolation_probe.txt` (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). The cause is unknown, and no verdict has depended on it so far. Filed when the owner retired the item that asked for the identity line (section `92-writing-skills-guide-rewrite — 2026-11-12`). Finding the cause would take a probe that varies the login and the environment (for example `env -i` and a fresh `HOME`) and records which runs still know the name. Size: design. Revisit if: a micro-test verdict turns on whether a rep knows the user's name or email.

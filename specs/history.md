@@ -576,3 +576,12 @@ Closed deferred items:
 Closed deferred items:
 - "`hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61" (deferred by 61-hook-template-fixes): the guard blocks a command after `then`, `do`, `else` or `elif`, behind a prefix word given as a path, behind a backslash, and named `python3.13t`. A command after `if`/`while`/`until`/`!` and a quoted command word are named as gaps in the README and pinned in `DOCUMENTED_GAPS`.
 - "`hooks/uv-guard.sh` splits a command on `&& || ; | &` without reading quotes or redirects" (deferred by 61-hook-template-fixes): the `&` of `>&`, `<&` and `&>` no longer splits a command, and a suggestion has no trailing space. The README names the quoted-separator false positive, and `DOCUMENTED_FALSE_POSITIVES` pins it.
+
+## /deferred — 2026-11-17
+
+Closed deferred items:
+- "Decide whether the Claude Code guide covers worktree isolation (plan 60 requirement" (deferred by 60-finishing-branch-worktree-isolation): the guide's section 5 gains Worktree isolation (`subagents.worktrees`), verified at 2.1.326, and the drift check watches the worktrees docs page.
+- "**No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**" (deferred by 85-derive-roadmap-later-qualities-and-spec-refs): the sentence that sent a later quality found at a resume into the Ask is gone from derive-roadmap §5.
+- "The revisit trigger of the `commands-stay-command-files` exception in `build/cc_guide/conformance.toml` may" (deferred by claude/code-customization-guide-currency-657677 Step 4b review): the exception's reason and revisit lines now match the owner's ruling to keep the three command files.
+- "**task-done never checks that a mutant patch is the one its run measured (plan 93 final review, Codex" (deferred by 93-mutant-checked-tests): `task-done` refuses (exit 4) a missing patch, or one whose sha256 differs from the run's, for each mutant that is not withdrawn.
+- "Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two" (deferred by cc-guide-2.1.326-worktree-isolation): no edit. The guide section already says that the drift check does not watch the desktop page.
