@@ -5616,6 +5616,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       backlog-protocol plan, so it executes after that plan. Size: design. Done when: the owner
       approves a change to step 4, or records it as declined.
       → progress 2026-11-17 (owner ruling): approve a change to step 4. Completion prints the stats line and the plan's new items, and the full triage runs under `/deferred` or when the aged tail is non-zero. The item stays open until the change to step 4 lands.
+      → planned 2026-11-17: specs/plan-completion-triage-and-gate-revert.md
 
 ## 73-reviewer-and-planning-contract — 2026-10-30
 - [ ] Test-only findings and the reviewer block's delete pass (plan 73 final review, Important;
@@ -6135,6 +6136,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate, and the
       `gate-tag` case still meets its bar under `specs/baseline/red-baseline-development-history/kit/`.
       → progress 2026-11-17 (owner ruling): a revert asked for at the gate is implemented at once under Protocol step 1, and both gate paragraphs change to match.
+      → planned 2026-11-17: specs/plan-completion-triage-and-gate-revert.md
 - [x] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
       `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
       "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and
