@@ -4811,7 +4811,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       name only plans. `deferred_stats.py` already parses the Step 4b form. Size: quick-fix.
       Done when: both passages cover Step 4b's sections and a test or a run of
       `deferred_stats.py` on a Step 4b section shows the age counted. → done 2026-10-21 (/deferred quick fix)
-- [ ] Decide whether the Claude Code guide covers worktree isolation (plan 60 requirement
+- [x] Decide whether the Claude Code guide covers worktree isolation (plan 60 requirement
       R4.3, the owner's decision D9). `specs/guides/claude-code-customization-guide.md` has no
       section on these facts, which plan 60 measured on Claude Code 2.1.304. An isolated
       session refuses `git -C <main>`, `$(...)` and `cd <main> && git`. ExitWorktree `keep`
@@ -4824,6 +4824,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       citation for these facts. Size: design. Done when: the owner adds a guide section,
       verified through `/cc-guide`, or records the facts as deliberately uncovered.
       → progress 2026-11-17 (owner ruling): add a guide section on worktree isolation, verified through `/cc-guide`.
+      → done 2026-11-17 (/deferred quick fix): the guide's section 5 gains Worktree isolation (`subagents.worktrees`), verified through `/cc-guide` at 2.1.326 in `5f52c18`. `build/cc_guide/manifest.toml` maps the worktrees docs page to the subagents group, so the drift check watches the facts the docs state: the four refusal checks, the ExitWorktree actions, the `worktree.baseRef` base and its fallback, and how desktop worktree sessions load configuration. Plan 60's probes, re-run on 2.1.325 ($0.97), repeated every result. One new case differs from the docs: with a remote whose fetch fails and no `origin/HEAD`, the base still left unpushed commits out. The section lists the five facts that rest on probes only. finishing-a-development-branch and using-git-worktrees now cite the section, and their `/cc-guide files` reviews are held for the owner. A probe to watch the probe-only facts, whether to map the desktop page, and the held reviews are filed → item: cc-guide-2.1.326-worktree-isolation (no plan; /cc-guide pass and the worktree-isolation owner ruling, branch claude/keen-khorana-08c3a1) — 2026-11-17
 
 ## owner-calls-2026-10-21 (no plan; owner decisions on drift finding 7 and audit O1–O3, branch claude/owner-calls-2026-10-21) — 2026-10-21
 - [x] Write the executing-plans port spec (superpowers drift findings 11 and 13; finding 7
@@ -7027,3 +7028,45 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `70736273` to danyuchn's HEAD
       changes how a backtick after a backslash or in autolink-like text is read inside an open span, or the case
       is reported fixed upstream.
+
+## cc-guide-2.1.326-worktree-isolation (no plan; /cc-guide pass and the worktree-isolation owner ruling, branch claude/keen-khorana-08c3a1) — 2026-11-17
+- [ ] Watch the probe-backed facts of the guide's worktree-isolation section with a registered probe.
+      `specs/guides/claude-code-customization-guide.md` § 5, Worktree isolation (`subagents.worktrees`), ends with
+      five facts that rest on probes, not the docs, so the docs drift check cannot see them change: a `$(...)`
+      command is refused only when it names git; ExitWorktree keep exits a `--worktree` launch; ExitWorktree is a
+      no-op in a session started inside a worktree that plain git made; the default base leaves unpushed commits
+      out when the remote's fetch fails and `origin/HEAD` is unset, which the worktrees docs page says falls back
+      to local HEAD; and a desktop app worktree session is not isolated. The 2026-11-17 re-check (2.1.325, $0.97)
+      has its scripts, raw output and RESULTS.md in `~/.cache/agent-skills/scratch/cc-guide-worktrees-20261117/probe/`,
+      and plan 60's kit is in `~/.cache/agent-skills/scratch/plan60-micro/probe/`. A registered probe needs a
+      `[[probe]]` entry in `build/cc_guide/manifest.toml` that names the section and the two citing skills, an
+      assertion in `build/cc_guide/probe_checks.py`, a runner in `build/cc_guide/probes.py`, and a recorded stream
+      for `build/cc_guide/test_probe_replay.py`. The desktop case cannot run under `claude -p`, so it stays a hand
+      check. Size: plan. Done when: a registered probe that covers the first four facts has a PASS row in
+      `build/cc_guide/PROBES.md` on a current binary, or the docs state each of them.
+- [ ] Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two
+      facts from it: the Code tab ignores `worktree.baseRef` for the worktree it makes, and archiving a session
+      can discard the worktree's uncommitted changes and removes a kept worktree about 30 days later. No group in
+      `build/cc_guide/manifest.toml` maps that page. Mapping it in the subagents group as a terms page would
+      select 43 of its 291 blocks (2026-11-17), mostly computer use and SSH, so most desktop releases would make
+      the group due. The options are to map it, to cut the two facts from the section, or to leave them unwatched
+      as the section says now. Size: quick-fix. Done when: the owner picks one and it is applied.
+- [ ] Rule on the held `/cc-guide files` reviews of the two worktree skills, then cite them. On 2026-11-17
+      `/cc-guide files` checked `skills/finishing-a-development-branch/SKILL.md` and
+      `skills/using-git-worktrees/SKILL.md` against the new `subagents.worktrees` guide section. Settle held both,
+      so `cli.py lint` lists them as STALE until `baseline cite` stamps them. finishing: line 379 says the desktop
+      app "cleans up or reuses" a worktree it started when the session is archived, while the desktop page says
+      archiving can discard uncommitted changes, usually after asking, and removes a kept worktree about 30 days
+      later (contradicts). Not covered: the refusal text (line 132), MADE_BY `this session` (139), the
+      `git -C <WORKTREE_PATH> status` listing (375) and reuse after archiving (379). using-git-worktrees: line 74
+      says the native tool leaves HEAD's commits out when there is no remote, but the docs and both probes say it
+      then branches from local HEAD (contradicts; the routing to git stays right under plan 60's owner decision
+      F1). The verifier also rated two line-76 claims as contradicting, which read as judgment calls: that native
+      tools handle cleanup automatically, and that a git-made worktree is phantom state the harness can't manage.
+      Not covered: the submodule guard's redirect (42), calling any linked worktree an isolated workspace (48),
+      WorktreeCreate named as a tool (65), a declined approval (74) and the worktree tools missing under
+      blockWritesOutsideWorkingDirectories (74). Both are adapted superpowers skills, so each fix needs a NOTICE
+      bullet and writing-skills' micro-test. The reports are in
+      `~/.cache/agent-skills/cc-guide/packets/20261117T124603-files/`. Size: plan. Done when: the owner has ruled
+      on each row (a fix, a `conformance.toml` deviation, a guide addition or no action), the fixes are in, and
+      `cli.py baseline cite` has stamped both files.
