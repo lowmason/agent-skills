@@ -6964,7 +6964,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `manifest.toml`.
 
 ## deferred-2026-11-17 (no plan; /deferred pass, branch claude/deferred-a35864) — 2026-11-17
-- [x] **Two case tests in `build/test_check_links.py` fail on Linux (found by the 2026-11-17 `/deferred` pass in
+- [ ] **Two case tests in `build/test_check_links.py` fail on Linux (found by the 2026-11-17 `/deferred` pass in
       the weekly `versions-drift` job's log).** Since at least 2026-11-02, each scheduled run reports
       `suite runs failed: build (3.13)` beside the 3.15 failures that the open item on the weekly `drift` job
       covers (section `66-package-versions — 2026-10-27`). `test_file_names_are_compared_case_sensitively` and
@@ -6977,10 +6977,37 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `lints.yml` stay green. It would take a case-insensitive match against the names on disk for the suffix,
       or tests that state the platform difference. Size: quick-fix. Done when: both tests pass on a
       case-sensitive file system, and the weekly job's 3.13 pass no longer lists `build` as failed.
-      → done 2026-11-17 (/deferred quick fix): the suffix now comes from `matches_ignoring_case` in `build/check_links.py`, which reads the directory listings, not `path.exists()`. A case-sensitive APFS disk image reproduced the 2 CI failures first. After the fix, `test_check_links.py` passes 14 of 14 there and on this Mac. A new test makes `exists()` case-sensitive, so a run on a Mac catches the fault too (it failed before the fix). The `build` suite passes (1,811 passed, 17 skipped). The weekly job reads `main`, so its 3.13 pass has not run this code yet.
+      → progress 2026-11-17 (/deferred quick fix): fixed in `7642a19` and `f05293c`. The case suffix now comes from `differs_only_in_case` in `build/check_links.py`, which reads the directory listings, not `path.exists()`, and needs one name to differ in case. A case-sensitive APFS disk image reproduced the 2 CI failures first, and `test_check_links.py` passed 14 of 14 there at `7642a19` and passes 15 of 15 on this Mac at `f05293c`. The weekly job reads `main`, so the item stays open until its first 3.13 pass after the merge, by the owner's ruling at the branch's Step 4b review.
 - [ ] The next drift review of both STE upstreams, for `skills/write-with-asd-ste100/` and
       `rules/write-with-asd-ste100.md`. Compare from the pins in NOTICE. The review of 2026-11-17 read
       danyuchn/asd-ste100-skill through `70736273` and prithivrajmu/asd-ste100 through `cf9787b6`, and the owner
       re-vendored `scripts/ste-lint.py` at `70736273`. Size: quick-fix. Revisit if: a compare from `70736273`
       (danyuchn) or `cf9787b6` (prithivrajmu) to HEAD changes the linter, a rule-set file (SKILL.md or
       references/) or a LICENSE.
+
+## claude/deferred-a35864 Step 4b review — 2026-11-17
+- [ ] **The re-vendored ste-lint.py skips the prose after an unclosed fence in a list item (Codex [P2] at
+      `12c6bac`, carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:1977-1980` (upstream
+      danyuchn `70736273`, from commit `c304e801`) lets a fence open on a list-marker line, but the main pass does
+      not end that fence when the list item ends. CommonMark ends it at the first outdented line. Take a list item
+      that opens a fence with no closing fence, then an indented code line, a blank line and `Outside; prose.` at
+      column 0. The `9c351694` copy reports the semicolon, and this copy reports nothing (reproduced on
+      2026-11-17). The dangling-conjunction pass already tracks a fence's list container. No finding in the repo's
+      221 tracked Markdown files outside `specs/` changes through this path. The vendored copy must stay
+      byte-identical to upstream (root `CLAUDE.md`, "Provenance is load-bearing"), so the fix is upstream's: end
+      such a fence at its list item's boundary. Then re-vendor, move the pin in `NOTICE` and both sources files,
+      and add a case to `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `70736273` to
+      danyuchn's HEAD changes how the main pass ends a fence opened on a list-marker line, or the case is reported
+      fixed upstream.
+- [ ] **The re-vendored ste-lint.py reads a semicolon inside a multi-line code span as prose (Codex [P2] at
+      `12c6bac`, carried by the owner).** `skills/write-with-asd-ste100/scripts/ste-lint.py:271-276` (upstream
+      danyuchn `70736273`, from the commit of the same name) never lets a backtick after a backslash, or inside
+      text that looks like an autolink, close a code span. Inside a span that opened on an earlier line, that text
+      is code, so such a backtick does close it. Take line 1 as `See`, a backtick and `word`, and line 2 as `code;`,
+      a backslash, a backtick and ` end.`. This copy reports the semicolon as a hard finding and exits 1, and the
+      `9c351694` copy reports nothing (reproduced on 2026-11-17). No finding in the repo's 221 tracked Markdown
+      files outside `specs/` changes through this path. The fix is upstream's, for the reason in the item above:
+      take the open span into account before the filter runs. Then re-vendor, move the pin and add a case to
+      `scripts/test_ste_lint.py`. Size: quick-fix. Revisit if: a compare from `70736273` to danyuchn's HEAD
+      changes how a backtick after a backslash or in autolink-like text is read inside an open span, or the case
+      is reported fixed upstream.
