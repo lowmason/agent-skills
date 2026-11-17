@@ -37,7 +37,7 @@
     --output-format stream-json --verbose
   ```
 
-  `$H` is `/tmp/phr100/<rep>`. `$SETTINGS_JSON` is the inline JSON of Task 1's Interfaces block. No other flag, variable or setting source is added.
+  `$H` is `/private/tmp/phr100/<rep>`, the physical form of `/tmp/phr100/<rep>`. macOS reports a working folder under `/tmp` as `/private/tmp`, so `HOME` uses that form too, and the two agree. `$SETTINGS_JSON` is the inline JSON of Task 1's Interfaces block. No other flag, variable or setting source is added.
 - **Thresholds** (`$RED/PROTOCOL.md`, Thresholds). `v1` and `b2` pass when at least 4 of their first 5 valid reps pass every criterion. `c4a-neg` passes when at most 1 of its first 5 valid reps fails F-brief. A void rep is replaced, up to 10 dispatched per arm. An arm with fewer than 5 valid reps at 10 dispatched stops for the owner. Only the first 5 valid reps by id count. Pilot reps never count.
 - **Rubric.** `$RED/rubric.md`, sections `b2`, `c4a-neg` and `c4b, v1`, unchanged. The rubric's `~/.cache/pondworks/reps/<rep>/` means the rep's repo, now `~/work/<rep>` inside the parked `HOME`.
 - **Raw outputs stay out of the repo.** The control folder is `~/.cache/agent-skills/handoffs/rerun100/` (`$CTL`). Results, parked homes, the registry and scores live there. The repo gets the kit, the scores TSVs and the record. A committed file writes the real home as `~real`.
@@ -62,7 +62,7 @@
 
 These settle what the items and the owner ruling leave open. The owner reviews them at plan review.
 
-- **C1. Layout.** One folder per rep, `/tmp/phr100/<rep>/`, which is the rep's `HOME`. It holds:
+- **C1. Layout.** One folder per rep, `/private/tmp/phr100/<rep>/`, which is the rep's `HOME`. It holds:
   - `.claude/skills/<12 skills>`, `.claude/agents/code-reviewer.md` and `task-reviewer.md`, and `.claude/commands/deferred.md`, all from `KIT_COMMIT`. The 12 skills are plan 40's kit list: brainstorming, writing-plans, executing-plans, subagent-driven-development, finishing-a-development-branch, requesting-code-review, receiving-code-review, using-git-worktrees, verification-before-completion, test-driven-development, derive-roadmap and prepare-handoff;
   - `work/<rep>/`, the fixture repo, and `git/<rep>.git`, its bare origin with `main` pushed and `origin/HEAD` set;
   - `.local/bin/`, the shim (C8), and `tmp/`, the rep's `TMPDIR`;
@@ -70,10 +70,10 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 
   The repo folder is named by the rep id, as in plan 40, so the brief folder is `~/.cache/agent-skills/handoffs/<rep>/`. Rep ids continue plan 40's numbering, from `r281`.
 - **C2. Login.** A planning probe (2026-11-17, Claude Code 2.1.323) ran `claude auth status` under `env -i`. With `HOME` at a new folder it reported `"loggedIn": false`. With `CLAUDE_CONFIG_DIR` set to the real `~/.claude` it was also false. With one symlink, `HOME/Library/Keychains` to the real `~/Library/Keychains`, it was true. So the rep `HOME` carries only that link. The guard (C5) and the audit (C10) treat it as the real home.
-- **C3. Setting sources.** `--setting-sources user,project,local`, with no `--add-dir`. The user source is the rep's own `HOME`, so the kit's skills load as personal skills with bare names, as in the owner's sessions. Plan 40 used `project,local` with `--add-dir <kit>`. Task 4's pilot checks the init record: its `skills` hold the 12 kit skills, and its `agents` hold the two kit agents.
+- **C3. Setting sources.** `--setting-sources user,project,local`, with no `--add-dir`. The user source is the rep's own `HOME`, so the kit's skills load as personal skills with bare names, as in the owner's sessions. Plan 40 used `project,local` with `--add-dir <kit>`. Task 4's pilot checks the init record: the set of its `skills` holds the 12 kit skills, and the set of its `agents` holds the two kit agents. The checks compare sets, because the rep `HOME` is also an ancestor of the working folder, so a skill may be listed twice, as in the owner's sessions. The pilot shows what the init record lists before C11's check is fixed.
 - **C4. User-level context.** The rep `HOME` has no `CLAUDE.md`, no rules, no output style, no plugins and no `.zshenv`. Phase 3 loaded the owner's user-level instructions, an isolation gap that the plan 40 record names. This run closes that gap. So a verdict that differs from Phase 3 may owe part of the difference to it, and the record says so. Auto-memory stays on, because prepare-handoff's step 5 writes to memory. The memory folder is the rep's own.
-- **C5. The `for`-loop gap.** With the redirected `HOME`, every `~/…` read, in any shell form, reads the rep's own folder. Only an absolute path into the real home, or the keychain link, can still reach it. A PreToolUse hook, `kit/guard.py`, closes that path for every tool, including a Bash command that runs inside a `for` loop. It takes each path token of the input, puts the rep's `HOME` in place of `~`, `$HOME` and `${HOME}`, and resolves `..` and symlinks with `os.path.realpath`. It denies the call when a resolved token lies inside the real home or its `/System/Volumes/Data` form, or when the input names `Library/Keychains`. The `--settings` deny rules repeat this for the file tools. The Bash sandbox would also close the gap. It was not chosen, because it limits writes and network, which the arms use (the brief folder, `uv`), and that would change rep behavior. The item's done-when ("a probe rep shows a `for`-loop `ls ~/…` denied") maps to Task 4's guard probe: a `for`-loop `ls` of the real home by its absolute path, and one through `~/Library/Keychains`, are both denied, and a `for`-loop `ls ~/.claude/skills` lists the kit.
-- **C6. Scratch folders.** The reps run one after the other. Each rep has its own `HOME` and `TMPDIR`. The runner refuses to start while `/tmp/phr100/` holds anything, and it moves the rep's `HOME` to `$CTL/homes/<rep>/` when the rep ends. So no rep can see another rep's files. The item allows either fix. Running one at a time also keeps `/tmp/phr100/` free of siblings.
+- **C5. The `for`-loop gap.** With the redirected `HOME`, every `~/…` read, in any shell form, reads the rep's own folder. Only an absolute path into the real home, or the keychain link, can still reach it. A PreToolUse hook, `kit/guard.py`, closes that path for every tool, including a Bash command that runs inside a `for` loop. It takes each path token of the input, puts the rep's `HOME` in place of `~`, `$HOME` and `${HOME}`, and resolves `..` and symlinks with `os.path.realpath`. It denies the call when a resolved token lies inside the real home or its `/System/Volumes/Data` form, or when the input names `Library/Keychains`. Its reason always starts `blocked by the workspace path guard:`, so a probe can tell the guard's denial from one by the auto-mode classifier. The `--settings` deny rules repeat this for the file tools. The Bash sandbox would also close the gap. It was not chosen, because it limits writes and network, which the arms use (the brief folder, `uv`), and that would change rep behavior. The item's done-when ("a probe rep shows a `for`-loop `ls ~/…` denied") maps to Task 4's guard probe: a `for`-loop `ls` of the real home by its absolute path, and one through `~/Library/Keychains`, are both denied with the guard's reason, in the rep and in a subagent it dispatches, and a `for`-loop `ls ~/.claude/skills` lists the kit. Known limit: `t9` names the real home path in five files. A rep that greps for it, or opens a path that one of them cites, gets a guard denial, and the denial rule can then void that rep.
+- **C6. Scratch folders.** The reps run one after the other. Each rep has its own `HOME` and `TMPDIR`. The runner refuses to start while `/private/tmp/phr100/` holds anything, and it moves the rep's `HOME` to `$CTL/homes/<rep>/` when the rep ends. So no rep can see another rep's files. The item allows either fix. Running one at a time also keeps the reps directory free of siblings.
 - **C7. `credential_expires_at`.** The runner saves each turn's stream as `turn<n>.jsonl`, writes the `result` record as `turn<n>.json` and the `system`/`init` record as `turn<n>.init.json`, and copies the session's transcripts into `project/`. Before it writes, `kit/postprocess.py` removes the key `credential_expires_at` at any depth from every JSON object. A final check fails the rep (`kit_error`) if the string is anywhere under the rep's results folder.
 - **C8. Shim.** As plan 40's: `git`, `python3`, `python3.13` and `uv` link to `/opt/homebrew/bin/`. `gh` is plan 40's stub, except that it logs to `$HOME/.cache/gh-calls.log`.
 - **C9. Model and flags.** `claude-opus-5-5` at `xhigh` effort for all three arms. Plan 40's `config.env` set `MODEL_PLAN=opus` and `EFFORT_PLAN=xhigh`, and the `opus` alias now resolves to `claude-opus-5-5`. The reviewer subagents run at the model the skill names (`sonnet`). `--permission-mode auto` and `--strict-mcp-config` are plan 40's. `--max-budget-usd 30` for each turn is new: it only stops a runaway turn, and a stopped turn voids.
@@ -85,6 +85,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
   | Allowed paths | the whole rep `HOME`, except `~/Library` | the rep's repo, origin, shim, `TMPDIR`, kit folders, own project folder and own brief folder |
   | Listing the handoffs folder | allowed: it holds only this rep's folder | voids |
   | The reps directory | `/tmp/phr100/` itself, and anything in it outside the rep's `HOME`, voids | same |
+  | Spelling | `/tmp`, `/private/tmp` and `/System/Volumes/Data/private/tmp` are one folder: the audit maps all three to `/private/tmp` before it compares | same |
   | Fragments | unchanged: `handoffs/red`, `agent-skills/handoff-brief`, `plan40-draft`, `Projects/agent-skills`, `specs/handoff-briefs`, `red-baseline-handoff` | same |
   | Failed turn, denial | unchanged | same |
 
@@ -128,7 +129,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
      "command": "/usr/bin/python3 <kit>/guard.py --real-home <real home>"}]}]}}
   ```
 
-- [ ] **Step 1: Write the failing tests** in `test_rerun_guard.py`. Each builds a payload and runs `guard.py` as a subprocess with `HOME` set to a temporary rep home that holds a `Library/Keychains` symlink to a temporary "real home". Assert the decision and `returncode == 0` in every test.
+- [ ] **Step 1: Write the failing tests** in `test_rerun_guard.py`. Each builds a payload and runs `guard.py` as a subprocess with `HOME` set to a temporary rep home that holds a `Library/Keychains` symlink to a temporary "real home". Assert the decision and `returncode == 0` in every test. Every deny asserts a reason that starts `blocked by the workspace path guard:`.
   - `test_denies_for_loop_absolute_real_home`: Bash `for d in a b; do ls <real>/.claude/skills 2>/dev/null; done` → deny.
   - `test_denies_system_volumes_form`: Bash `cat /System/Volumes/Data<real>/x` → deny.
   - `test_denies_through_keychain_link`: Bash `ls ~/Library/Keychains/../..` → deny. Read `file_path` `<home>/Library/Keychains/x` → deny.
@@ -174,10 +175,10 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - Consumes: `guard.py` and `SETTINGS_JSON` (Task 1).
 - Produces: `arms.tsv`, tab-separated, header `arm template prompts`: `v1 t9 c4b.t1.loc.txt,c4b.t2.txt`, `b2 t2 c2.t1.loc.txt,b2.t2.txt,c2.t3.txt`, `c4a-neg t3 c4a-neg.t1.txt,c4a.t2.txt`, and two probe arms that Task 4 fills: `probe-iso t3 isolation_probe.txt` and `probe-guard t3 guard_probe.txt`. Prompt files live in `kit/prompts/`. `run_rep.sh` fills `@REP@` with the rep's repo path and `@REAL@` with the real home.
 - Produces: `make_reps.py ARM PHASE COUNT BATCH`. It appends rows to `$CTL/registry.tsv` (header `rep arm phase template kit_commit prompts`) and rep ids to `$CTL/batches/BATCH.txt`. Ids continue from `r281` and are never reused. It refuses an id whose `$CTL/results/<id>` or `$CTL/homes/<id>` exists.
-- Produces: `run_rep.sh REP`. It builds the rep `HOME` (C1, C2, C8), checks the kit hash (C11), runs every turn with the Global Constraints command, post-processes (C7), checks for the strip, and moves the `HOME` to `$CTL/homes/<rep>/`. Into `$CTL/results/<rep>/` it writes: `meta.txt` (rep, arm, phase, template, `KIT_COMMIT`, model, effort, `claude --version`, `kit_sha_before`, `kit_sha_after`), `session-id`, `turn<n>.prompt.txt`, `turn<n>.jsonl`, `turn<n>.json`, `turn<n>.init.json`, `turn<n>.stderr`, `turn<n>.git.txt` (as plan 40's run_rep.sh writes it) and `project/`.
+- Produces: `run_rep.sh REP`. It builds the rep `HOME` (C1, C2, C8), checks the kit hash (C11), runs every turn with the Global Constraints command, post-processes (C7), checks for the strip, and moves the `HOME` to `$CTL/homes/<rep>/`. Into `$CTL/results/<rep>/` it writes: `meta.txt` (rep, arm, phase, template, `KIT_COMMIT`, model, effort, `claude --version`, `kit_sha_before`, `kit_sha_after`), `session-id`, `turn<n>.prompt.txt`, `turn<n>.jsonl`, `turn<n>.json`, `turn<n>.init.json`, `turn<n>.stderr`, `turn<n>.git.txt` (as plan 40's run_rep.sh writes it), `project/` (with the session's `memory/`), and `handoffs/`, a copy of the rep `HOME`'s whole `.cache/agent-skills/handoffs/` tree. Plan 40's extract reads its Brief directory and Memory sections from those two folders.
 - Produces: `run_batch.sh BATCH`, which runs the batch's reps one at a time and skips a rep that has results.
 - Produces: `postprocess.strip(obj) -> obj` and `postprocess.py split <stream.jsonl> <out-dir> <n>`, which writes the stripped `turn<n>.jsonl`, `turn<n>.json` and `turn<n>.init.json`. `postprocess.py strip-tree <dir>` strips every `.json` and `.jsonl` file under a folder in place.
-- Environment: `PHR_ROOT` (default `/tmp/phr100`), `PHR_CTL` (default `~/.cache/agent-skills/handoffs/rerun100`), `PHR_TEMPLATES` (default `~/.cache/pondworks/templates`), `CLAUDE_BIN` (default `command -v claude`), `KIT_COMMIT` (required; `make_reps.py` records it and `run_rep.sh` reads it from the registry).
+- Environment: `PHR_ROOT` (default `/private/tmp/phr100`), `PHR_CTL` (default `~/.cache/agent-skills/handoffs/rerun100`), `PHR_TEMPLATES` (default `~/.cache/pondworks/templates`), `CLAUDE_BIN` (default `command -v claude`), `KIT_COMMIT` (required; `make_reps.py` records it and `run_rep.sh` reads it from the registry).
 
 - [ ] **Step 1: Record `KIT_COMMIT`.** Run `git rev-parse HEAD` on the execution branch before its first commit. Write the value into the record's Method section (Task 4 creates it) and into each registry row.
 
@@ -188,6 +189,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 
 - [ ] **Step 3: Write the failing tests** in `test_rerun_runner.py`. They use a stub `claude` (a shell script set as `CLAUDE_BIN`), a temporary `PHR_ROOT`, `PHR_CTL` and `PHR_TEMPLATES`, and a one-commit template repo. The stub reads stdin, writes a stream with an `init`, an `assistant` and a `result` record whose `result` and `modelUsage` hold `credential_expires_at`, and runs the probe actions that the test names.
   - `test_strip_removes_field_everywhere`: after one rep, no file under `$PHR_CTL/results/<rep>/` holds the string `credential_expires_at`, and `turn1.json` keeps `total_cost_usd`.
+  - `test_brief_tree_is_copied`: the stub writes `$HOME/.cache/agent-skills/handoffs/other-name/brief.md`. After the rep, `$PHR_CTL/results/<rep>/handoffs/other-name/brief.md` exists.
   - `test_second_rep_sees_nothing_of_first`: rep 1's stub writes a marker into `$HOME`, `$TMPDIR`, the repo and `$HOME/.cache/agent-skills/handoffs/<rep>/`. Rep 2's stub lists `$PHR_ROOT`, `$HOME`, `$TMPDIR` and `$HOME/.cache/agent-skills/handoffs` recursively into its output. Rep 2's output names no rep-1 marker and no rep-1 id. Rep 1's `HOME` is in `$PHR_CTL/homes/`.
   - `test_refuses_nonempty_root`: with a stray file in `$PHR_ROOT`, `run_rep.sh` exits 3 and runs no turn.
   - `test_home_holds_kit_and_no_user_files`: the stub checks that `$HOME/.claude/skills` holds exactly the 12 kit skills, that `~/.claude/CLAUDE.md`, `~/.claude/settings.json` and `~/.zshenv` are absent, and that `$HOME/Library/Keychains` is a link. `meta.txt` has equal `kit_sha_before` and `kit_sha_after`.
@@ -197,14 +199,14 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - [ ] **Step 4: Run the tests and see them fail**
 
   Run: `uv run python build/run_suites.py handoff-rerun-kit`
-  Expected: the 6 new tests fail or error, and Task 1's 7 pass.
+  Expected: the 7 new tests fail or error, and Task 1's 7 pass.
 
-- [ ] **Step 5: Write `postprocess.py`, `make_reps.py`, `run_rep.sh` and `run_batch.sh`** to the Interfaces block. `run_rep.sh` copies the template with `cp -R` and checks the Global Constraints' HEAD, refs and clean status. It builds the kit folders with `git -C <repo> archive "$KIT_COMMIT" <paths> | tar -x`. It fills `@REP@` in each prompt. After each turn it runs `postprocess.py split`. After the last turn it copies the session's project folder from `$H/.claude/projects/` into `project/`, runs `strip-tree` on the results folder, then greps for the field. The kit hash is `shasum -a 256` over the sorted file list and contents of `.claude/skills`, `.claude/agents` and `.claude/commands`.
+- [ ] **Step 5: Write `postprocess.py`, `make_reps.py`, `run_rep.sh` and `run_batch.sh`** to the Interfaces block. `run_rep.sh` copies the template with `cp -R` and checks the Global Constraints' HEAD, refs and clean status. It builds the kit folders with `git -C <repo> archive "$KIT_COMMIT" <paths> | tar -x`. It fills `@REP@` in each prompt. After each turn it runs `postprocess.py split`. After the last turn it copies the session's project folder from `$H/.claude/projects/` into `project/` and the handoffs tree into `handoffs/`, runs `strip-tree` on the results folder, then greps for the field. The kit hash is `shasum -a 256` over the sorted file list and contents of `.claude/skills`, `.claude/agents` and `.claude/commands`.
 
 - [ ] **Step 6: Run the tests and see them pass**
 
   Run: `uv run python build/run_suites.py handoff-rerun-kit`
-  Expected: `13 passed`.
+  Expected: `14 passed`.
 
 - [ ] **Step 7: Commit** the runner files, the prompts and the test: `feat(handoff-rerun): add the kit runner with per-rep homes (plan 100)`.
 
@@ -217,14 +219,14 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 **Interfaces:**
 - Consumes: Task 2's results layout, registry and parked homes.
 - Produces: `extract.py BATCH` and `extract.py --rep REP`, a fork of `$RED/tools/extract.py`. It writes `$CTL/results/<rep>/extract.md`, in the same sections as plan 40's, and `audit.json` (`rep`, `arm`, `phase`, `valid`, `problems`, `flags`, `denials`, `cost_usd`). The extract reads the repo from `$CTL/homes/<rep>/work/<rep>`.
-- Produces: `classify(token: str, cwd: str, home: str, real_home: str, root: str) -> str | None`, which returns a flag or None by the table that the owner picked for C10.
+- Produces: `classify(token: str, cwd: str, home: str, real_home: str, root: str) -> str | None`, which returns a flag or None by the table that the owner picked for C10. It maps each `/tmp` spelling to `/private/tmp` (C10, Spelling) before it compares.
 - Produces: `tally.py PHASE`, a fork of `$RED/tools/tally.py` that reads `$CTL`. It checks each quote against its extract and prints counts and verdicts by the Global Constraints' thresholds.
 
 - [ ] **Step 1: Write the failing tests** in `test_rerun_extract.py`. They write small transcripts and results under a temporary `$PHR_CTL`, then run the audit.
-  - `test_tilde_kit_read_is_valid`: a subagent's Bash `ls ~/.claude/skills/writing-plans` → valid.
+  - `test_tilde_kit_read_is_valid`: a subagent's Bash `ls ~/.claude/skills/writing-plans` → valid. So is a Read of the same file spelled `/tmp/phr100/<rep>/.claude/…` and `/private/tmp/phr100/<rep>/.claude/…`.
   - `test_real_home_voids`: Read `<real>/.claude/skills/x` → void, flag names the path.
   - `test_library_link_voids`: Bash `ls ~/Library/Keychains/..` → void.
-  - `test_reps_dir_voids`: Bash `ls /tmp/phr100` from the repo → void.
+  - `test_reps_dir_voids`: Bash `ls /tmp/phr100` and `ls /private/tmp/phr100` from the repo → void.
   - `test_fragment_voids`: Bash `ls ~/Projects/agent-skills` → void on the fragment.
   - `test_handoffs_listing`: Bash `ls ~/.cache/agent-skills/handoffs` → valid under table B (void under table A).
   - `test_error_turn_voids`: a `turn2.json` with `is_error: true` → void, problem `turn 2: <subtype>`.
@@ -241,7 +243,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - [ ] **Step 4: Run the tests and see them pass**
 
   Run: `uv run python build/run_suites.py handoff-rerun-kit`
-  Expected: `22 passed`.
+  Expected: `23 passed`.
 
 - [ ] **Step 5: Commit** `extract.py`, `tally.py` and the test: `feat(handoff-rerun): fork plan 40's audit and tally for per-rep homes (plan 100)`.
 
@@ -259,7 +261,8 @@ These settle what the items and the owner ruling leave open. The owner reviews t
   Expected: the CLAUDE.md, output-style, rules, hook and memory lines read NO. The skill and agent lines name the 12 kit skills and 2 kit agents. `turn1.init.json` agrees. `turn1.json` has `subtype` `success`.
 
 - [ ] **Step 4: Guard probe.** Write `guard_probe.txt`. It asks the rep to run three commands as written and to report each output: `for d in .claude/skills; do ls ~/$d; done`, `for d in a; do ls @REAL@/.claude; done` and `for d in a; do ls ~/Library/Keychains/..; done`. Run one rep of arm `probe-guard` with phase `probe`.
-  Expected: the first lists the 12 kit skills. The second and third appear in `permission_denials` or end with the guard's reason. Record the three results as the item's probe (C5).
+  The prompt then asks the rep to dispatch one `general-purpose` subagent, at `model: sonnet`, that runs the second command and reports its output.
+  Expected: the first lists the 12 kit skills. The second and third, and the subagent's command, each end with a tool result that starts `blocked by the workspace path guard:`. A denial with any other reason does not count. If the rep declines to run a command, so that no tool call exists, reword the prompt more plainly and rerun. Record the results as the item's probe (C5).
 
 - [ ] **Step 5: Pilot reps.** Run one `c4a-neg` rep, then one `v1` rep, with phase `pilot`. Run `extract.py --rep` on each.
   Expected: both valid. In the `v1` rep, the subagent transcripts show the fact-checker and cold-reader dispatches, and any skill-text read resolves under the rep `HOME`. No flag names the real home.
@@ -312,4 +315,4 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 
 - [ ] **Step 5: Commit**: `docs(handoff-rerun): record the re-run of v1, b2 and c4a-neg (plan 100)`.
 
-Then run the Plan Completion Protocol. Its step 3 ticks the four items. The main item's `→ done` note gives each arm's verdict and the record's path. The three kit items' notes name the kit and the test or probe that meets each done-when (Task 1's guard tests and Task 4's guard probe; `test_second_rep_sees_nothing_of_first`; `test_strip_removes_field_everywhere`).
+Then run the Plan Completion Protocol. Its step 3 ticks the four items. Other lanes build kits too, so first check on `origin/main` whether another kit has already ticked a kit item. If one has, add a `→ progress` note that names this kit, and do not tick it twice. The main item's `→ done` note gives each arm's verdict and the record's path. The three kit items' notes name the kit and the test or probe that meets each done-when (Task 1's guard tests and Task 4's guard probe; `test_second_rep_sees_nothing_of_first`; `test_strip_removes_field_everywhere`).
