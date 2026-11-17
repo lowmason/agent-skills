@@ -4627,13 +4627,13 @@
    "skills.locations": "sha256:df2ebadb677ff51dc92458ca523316cb01bf162ec31eabe3f6df37ca903abefb"
   },
   "README.md": {
-   "commands.overview": "sha256:a34c3afedff55d15256c00ddc3b443ffdbf63342f4a111880f19684df8766e2a",
+   "commands.overview": "sha256:6de5fb46c87c7127bfde48b3c29b67c34db91a2c08dfd9968a65f0e729c8d5e0",
    "hooks.configuration": "sha256:a6373effc191b63a1757770614f10a28bea4ce97019040e1587dd6ea3bd2f8ea",
-   "hooks.events": "sha256:aaa4240bc5213ddfd10ee7290cf2090600a12e20830a9fb6076aa68800b7ca2c",
-   "hooks.exit-codes": "sha256:38e2d8ba7b4541b4506d4ae87b23fe1e083aa7f15dc534b5c0b54520da2b0003",
-   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66",
-   "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703",
-   "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954",
+   "hooks.events": "sha256:4c80351758365b593d2cc0dadd66d770e43fbf7a17400d51ecb06cf5f625e2ef",
+   "hooks.exit-codes": "sha256:a73cbaa8890820119eeb79e81f3ff50f54190683df047c667dc7e43edbe5ea07",
+   "rules.rules-files": "sha256:0f321e51a40e17e961001641171b8ab2effeb3bfd966e9a7cf14a749b64d5d11",
+   "skills.locations": "sha256:df2ebadb677ff51dc92458ca523316cb01bf162ec31eabe3f6df37ca903abefb",
+   "subagents.models": "sha256:fde45a05e386f80aa08994d8b970b2faa124b583e346e5f4f9fc8aa009239b91",
    "subagents.overview": "sha256:8185e034db913a7cb5101ab26f08550e41f4eb8a053d89b6cb5736a927275b5b"
   },
   "agents/code-reviewer.md": {
