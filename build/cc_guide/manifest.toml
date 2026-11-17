@@ -56,8 +56,14 @@ terms = [
 ]
 
 [groups.subagents]
-sections = ['subagents.overview', 'subagents.frontmatter', 'subagents.tools', 'subagents.isolation']
-all = ['sub-agents']
+sections = [
+    'subagents.overview', 'subagents.frontmatter', 'subagents.tools', 'subagents.isolation',
+    'subagents.worktrees',
+]
+# worktrees backs subagents.worktrees (owner ruling on the plan 60 item, 2026-11-17). The group's
+# terms already select every block of the page, so all and terms watch the same blocks. The
+# desktop page is left unmapped: its 43 term-selected blocks are mostly computer use and SSH.
+all = ['sub-agents', 'worktrees']
 terms = [
     'agents', 'workflows', 'agent-teams', 'model-config', 'env-vars', 'tools-reference',
     'prompt-caching', 'settings-reference', 'cli-reference',

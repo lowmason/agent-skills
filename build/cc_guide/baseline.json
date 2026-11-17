@@ -102,12 +102,12 @@
     "release": "2.1.326",
     "date": "2026-11-17"
    },
-   "changed": "2.1.325",
+   "changed": "2.1.326",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:d9fe4378b30e21d4fb33916875a0531749ad9991dd83eaae595a0837049dd391"
+   "text_hash": "sha256:13efde1baa9538f828fe757144cc9b6bd5c6932b139ed45eafda5e53ebfdea87"
   },
   "skills.iterating": {
    "checked": {
@@ -150,12 +150,12 @@
     "release": "2.1.326",
     "date": "2026-11-17"
    },
-   "changed": "2.1.325",
+   "changed": "2.1.326",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:882d758c386d83368b4884ca25d285fd5fe8684261d9b911af439a18ada5c55d"
+   "text_hash": "sha256:aa8449f54fac046103fa842471f04994dfa2b784e127f35bff7d7d8b897a3c0d"
   },
   "subagents.tools": {
    "checked": {
@@ -186,12 +186,24 @@
     "release": "2.1.326",
     "date": "2026-11-17"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.326",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:262f66a626cc28af62058fe3f39eacdabd9349095cd4e6eaf538b745d7e0cc44"
+   "text_hash": "sha256:601e7d5cdc6bbb2e259eb810e1085544ba22bbca10b1db90e612779d58bf409e"
+  },
+  "subagents.worktrees": {
+   "checked": {
+    "release": "2.1.326",
+    "date": "2026-11-17"
+   },
+   "changed": "2.1.326.1",
+   "audited": {
+    "release": "2.1.288",
+    "date": "2026-10-03"
+   },
+   "text_hash": "sha256:66911364a12a0f53af7c34187325d99ee5b55f784d973266b08ec955f4090982"
   },
   "rules.overview": {
    "checked": {
@@ -222,24 +234,24 @@
     "release": "2.1.326",
     "date": "2026-11-17"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.326",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099"
+   "text_hash": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513"
   },
   "rules.rules-files": {
    "checked": {
     "release": "2.1.326",
     "date": "2026-11-17"
    },
-   "changed": "2.1.323",
+   "changed": "2.1.326",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66"
+   "text_hash": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
   },
   "rules.auto-memory": {
    "checked": {
@@ -263,7 +275,7 @@
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:76bd33e7fbf58c8a4e53ce642099cb66e00821013500134b8617c766c4f4ca01"
+   "text_hash": "sha256:90b5187d56c0d8fd3c6db9de265e56aa803600a1d000a4b9d68138eb2097d1d6"
   },
   "hooks.overview": {
    "checked": {
@@ -1953,6 +1965,43 @@
      "274b152619f35d3f": "326b2b8d784ca989",
      "b3de214bdc02b614": "b330fe1cfaad620e",
      "55491d0b12235d90": "b019233258ccd484"
+    },
+    "worktrees": {
+     "95e6d8e61b983591": "31c1b1fd9c12a901",
+     "c8b83179d9cfa382": "2a657ca997d07aa3",
+     "704c00892dfc8bdf": "f74d8933a5161680",
+     "142cc9400f0ae1b8": "ff1b7c359d18a3c9",
+     "cdd18b0363353c19": "7cf7ba166f5a5a56",
+     "e3186a23d3409fea": "f76f94cfb77abe34",
+     "92ad1b774a2f86e1": "56917a543417418d",
+     "2cfe08887c33fb95": "c281aad9436c0bcd",
+     "2eaeff935e2df5b1": "985e7273a1fc1a8f",
+     "892bffe75956d11d": "20ed98dca7833f00",
+     "d0f9fca375b73df3": "9090f550db91b327",
+     "b16c77a5e4b29d2b": "6098ce13b884cd59",
+     "875cdc62ae4d1673": "d1b42f6d48c2a0f2",
+     "592aff3c5b53b459": "8f6566f9bb1bd3ef",
+     "d740a7611982e664": "e4720062f5888d2d",
+     "cf871435c782bc36": "86d35d58c99a96e4",
+     "7fa048a51cf8f067": "432febebda23139f",
+     "f93f250603b5dded": "f88eb7ca62ea9dd6",
+     "c459ef107f21fc11": "da41217235676f34",
+     "936809a9b451188e": "4be0316733920765",
+     "7f6e48f14dbf4342": "a3e8f16e8c9b40e2",
+     "6afe2330b556c113": "1aae3b70a897983a",
+     "af8583ece41527a8": "fd1fcdcd7ed6b41d",
+     "51fe042c0feff16b": "df743055400141d7",
+     "c625fc9a24d5da9b": "556511f39a9854bd",
+     "f4ad8f2b8949ea11": "5d2a27989a55eb2b",
+     "39e32951693e6df4": "4b18e490f4f7e0cd",
+     "4f9a6c64c182f3f6": "395a284b14b65e63",
+     "33788d607acd9e43": "bf4a55fdfbbce0b1",
+     "3463d18e49216dac": "8fc9dff8899b90ce",
+     "776e24fb711415fa": "66f50cbacf502f99",
+     "0fa3cede18fe45b1": "8b442d32ec95886f",
+     "c3ab0005c5abbc4f": "6c7d27058c2ee393",
+     "c2e7be344b693b66": "c5eabb7c20db77ee",
+     "a5a978f878fcd1d3": "a18635638e197dab"
     }
    },
    "snapshot": {
@@ -1965,7 +2014,8 @@
     "tools-reference": "2.1.326",
     "prompt-caching": "2.1.326",
     "settings-reference": "2.1.325",
-    "cli-reference": "2.1.325"
+    "cli-reference": "2.1.325",
+    "worktrees": "2.1.326"
    }
   },
   "rules": {
