@@ -4586,7 +4586,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       → done 2026-11-02 (/deferred quick fix): a run's rows name each set remap in the Flags cell after `--allow-old`, never its value (`probes.inherited_remaps`; `test_an_inherited_alias_remap_is_named_in_the_row_and_its_value_is_not` in `test_probes.py`). The remaps stay out of `SCRUBBED_ENV`.
 
 ## 61-hook-template-fixes — 2026-10-21
-- [ ] `hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61
+- [x] `hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61
       final review, Minor; the owner chose to defer). Under `/bin/bash` these exit 0: a command
       after a shell keyword (`if true; then python x.py; fi`, `for f in *; do pytest $f; done`),
       a prefix word given as a path (`/usr/bin/env python x.py`, `/usr/bin/time pytest -q`), a
@@ -4600,7 +4600,8 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       design. Done when: each of the four shapes is closed in the script with a test, or is named
       in the README and pinned in `DOCUMENTED_GAPS`.
       → progress 2026-11-17 (owner ruling): close all four shapes in the script, each with a test.
-- [ ] `hooks/uv-guard.sh` splits a command on `&& || ; | &` without reading quotes or redirects
+      → done 2026-11-17 (/deferred quick fix): the guard skips `then`, `do`, `else` and `elif`, matches prefix words and the command word by their last path part with backslashes removed, and `python_re` takes `python3.13t`. Each shape has a block test and an exact-suggestion test in `hooks/test_project_hooks.py`. A command after `if`/`while`/`until`/`!` and a quoted command word (`"python" x.py`) still pass. The README names both, and `DOCUMENTED_GAPS` pins them.
+- [x] `hooks/uv-guard.sh` splits a command on `&& || ; | &` without reading quotes or redirects
       (plan 61 final review, Minor, older than plan 61; the owner chose to defer). Three
       effects: `python x.py 2>&1 | tee log` suggests `uv run python x.py 2>` (the `&` of `2>&1`
       splits it), a trailing `&` leaves a trailing space in the suggestion, and
@@ -4610,6 +4611,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       go-ahead. Size: design. Done when: a split that reads quotes and `>&` lands with tests that
       pass under bash 3.2, or the README names these three effects as limits.
       → progress 2026-11-17 (owner ruling): fix `>&` and the trailing `&` with tests under bash 3.2, and name the quoted-separator false positive as a limit in `hooks/README.md`. This rewrites the item's Done when.
+      → done 2026-11-17 (/deferred quick fix): the `&` of `>&`, `<&` and `&>` no longer splits, and each subcommand is trimmed on the right, so `python x.py 2>&1 | tee log` suggests `uv run python x.py 2>&1` and `python x.py &` leaves no trailing space (exact-suggestion tests, run under `/bin/bash` 3.2 and the PATH bash). The README names `echo "a; python x.py"` as a false positive, and `DOCUMENTED_FALSE_POSITIVES` pins it with its `no-uv-guard` escape.
 - [x] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
       `hooks/README.md` (the "Tests" section) and the second `hooks` note in `build/suites.toml`
       say the tests skip where `jq` is missing. The `ruff_shim` tests also skip where `/usr/bin`
@@ -5617,6 +5619,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       backlog-protocol plan, so it executes after that plan. Size: design. Done when: the owner
       approves a change to step 4, or records it as declined.
       → progress 2026-11-17 (owner ruling): approve a change to step 4. Completion prints the stats line and the plan's new items, and the full triage runs under `/deferred` or when the aged tail is non-zero. The item stays open until the change to step 4 lands.
+      → planned 2026-11-17: specs/plan-completion-triage-and-gate-revert.md
 
 ## 73-reviewer-and-planning-contract — 2026-10-30
 - [ ] Test-only findings and the reviewer block's delete pass (plan 73 final review, Important;
@@ -6136,6 +6139,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate, and the
       `gate-tag` case still meets its bar under `specs/baseline/red-baseline-development-history/kit/`.
       → progress 2026-11-17 (owner ruling): a revert asked for at the gate is implemented at once under Protocol step 1, and both gate paragraphs change to match.
+      → planned 2026-11-17: specs/plan-completion-triage-and-gate-revert.md
 - [x] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
       `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
       "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and

@@ -456,12 +456,15 @@ def test_companions_keep_the_dependency_closure(tmp_path, skill, required):
 USER_RULE = 'write-with-asd-ste100'
 
 
-def test_full_claude_install_places_only_the_user_rules(tmp_path):
+def test_full_claude_install_places_only_the_user_rules(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
   result = run_install(tmp_path, 'claude', skills=())
   assert result.returncode == 0, result.stdout + result.stderr
-  rule = tmp_path / '.claude/rules' / f'{USER_RULE}.md'
-  assert rule.is_symlink() and rule.resolve() == REPO / 'rules' / f'{USER_RULE}.md'
-  assert [path.name for path in (tmp_path / '.claude/rules').iterdir()] == [f'{USER_RULE}.md']
+  for name in install.USER_RULES:
+    rule = tmp_path / '.claude/rules' / f'{name}.md'
+    assert rule.is_symlink() and rule.resolve() == REPO / 'rules' / f'{name}.md'
+  placed = sorted(path.name for path in (tmp_path / '.claude/rules').iterdir())
+  assert placed == sorted(f'{name}.md' for name in install.USER_RULES)
 
 
 def test_rule_flag_installs_the_rule_and_the_skills_it_names(tmp_path):
