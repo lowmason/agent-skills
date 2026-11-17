@@ -4829,6 +4829,10 @@
    "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
    "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
   },
+  "rules/pr-lifecycle.md": {
+   "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
+   "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
+  },
   "rules/write-with-asd-ste100.md": {
    "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
    "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
