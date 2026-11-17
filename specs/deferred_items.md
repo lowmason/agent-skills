@@ -3273,6 +3273,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       description needs writing-skills' micro-test. Out-of-scope path, a quick fix: one body
       sentence at the boundary section (`SKILL.md:228-234`) pointing at the Census page.
       Size: design. Done when: the owner picks a path and it lands.
+      → progress 2026-11-17 (owner ruling): bundle path. Mirror the OCC pattern in `scripts/build.py` with `census_ind_2017`, `census_ind_2022` and a NAICS expansion, and update the file table and recipes (a plan, and the description change needs a micro-test).
 - [ ] Watch for the NAICS 2027 and SOC 2028 publications that would require a classification-codes
       rebuild (audit-3-10-26 F12, routed "watch" and never filed; found 2026-10-03). The data
       bundles NAICS 2022 and SOC 2018 only. Triggers: OMB's final NAICS 2027 notice; the Census
@@ -3311,6 +3312,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       A change to the description needs writing-skills' micro-test. Size: plan. Done when:
       the owner has picked the keepers, they are fixed, and the rest are recorded here as
       dropped.
+      → progress 2026-11-17 (owner ruling): keepers are (8), (9) and (10), all three. (8) Rewrite `references/oews.md` from a downloader build-spec into a reference with panel, vintage and series-ID anatomy. (9) Remove the research-session residue at `qcew.md:5`, `cps.md:547` and `oews.md:45`. (10) LAUS gets a selector row in `SKILL.md`, or leaves the description (a description change needs a micro-test).
 - [x] Write the backlog-protocol spec: deferrals outside this file get lost, and the file
       only grows (audit-3-10-26 B1 and B6, found 2026-10-03; re-verified 2026-10-18 — no
       commit has touched `skills/writing-plans/references/deferred-backlog.md`,
@@ -3798,6 +3800,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       wording change to measured text needs the owner's go-ahead. Size: plan. Done when: a
       pre-registered check covers obligation words and the three agent cases pass it at 4 of
       5 or more.
+      → progress 2026-11-17 (owner ruling): go ahead. Add one line to `SKILL.md`'s meaning rules and a pre-registered obligation-word check to the kit's `cases.py`, then re-run the three agent cases.
 - [ ] Three review fixes have no test that would catch a regression (final review). They are
       the `python3` call in `references/agent-mode.md`, the kept "should" in
       `references/examples.md`, and the symbolic-link check in
@@ -4596,6 +4599,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `hooks/test_project_hooks.py`. See specs/plans/completed/61-hook-template-fixes.md. Size:
       design. Done when: each of the four shapes is closed in the script with a test, or is named
       in the README and pinned in `DOCUMENTED_GAPS`.
+      → progress 2026-11-17 (owner ruling): close all four shapes in the script, each with a test.
 - [ ] `hooks/uv-guard.sh` splits a command on `&& || ; | &` without reading quotes or redirects
       (plan 61 final review, Minor, older than plan 61; the owner chose to defer). Three
       effects: `python x.py 2>&1 | tee log` suggests `uv run python x.py 2>` (the `&` of `2>&1`
@@ -4605,6 +4609,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       sentence "It splits on `&& || ; | &`", so a fix must change that sentence, with the owner's
       go-ahead. Size: design. Done when: a split that reads quotes and `>&` lands with tests that
       pass under bash 3.2, or the README names these three effects as limits.
+      → progress 2026-11-17 (owner ruling): fix `>&` and the trailing `&` with tests under bash 3.2, and name the quoted-separator false positive as a limit in `hooks/README.md`. This rewrites the item's Done when.
 - [x] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
       `hooks/README.md` (the "Tests" section) and the second `hooks` note in `build/suites.toml`
       say the tests skip where `jq` is missing. The `ruff_shim` tests also skip where `/usr/bin`
@@ -4818,6 +4823,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       `~/.cache/agent-skills/scratch/plan60-micro/probe/`. The skills carry no `# cc-guide:`
       citation for these facts. Size: design. Done when: the owner adds a guide section,
       verified through `/cc-guide`, or records the facts as deliberately uncovered.
+      → progress 2026-11-17 (owner ruling): add a guide section on worktree isolation, verified through `/cc-guide`.
 
 ## owner-calls-2026-10-21 (no plan; owner decisions on drift finding 7 and audit O1–O3, branch claude/owner-calls-2026-10-21) — 2026-10-21
 - [x] Write the executing-plans port spec (superpowers drift findings 11 and 13; finding 7
@@ -5588,7 +5594,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-07 (drift-record reconciliation): the 2026-11-05 isolated reruns fulfilled the owner's Done-when-only scope. Plan 71's C3 control remains 5/5 (specs/baseline/red-baseline-sdd-compaction.md, "Re-run with the isolated kit"); plan 70's record reports each verdict and the T7 flip. The owner settled T7 and D17 on 2026-11-06 (specs/baseline/red-baseline-brainstorming-2026-10-28.md, "Owner ruling (2026-11-06)"). Plans 57, 59, 64, 65 and 67 were outside the selected rerun scope.
 
 ## backlog-protocol-design (no plan; brainstorming, branch claude/backlog-protocol-design-aa6201) — 2026-10-29
-- [ ] Split `specs/deferred_items.md` into one file per section, to cut merge conflicts
+- [x] Split `specs/deferred_items.md` into one file per section, to cut merge conflicts
       (non-goal of `specs/backlog-protocol.md`, approved 2026-10-29). Every session appends to
       the one file's tail, and 181 commits touched it from 2026-10-01 to 2026-10-29, so it is
       the repo's largest merge-conflict surface while parallel sessions run. One file per
@@ -5598,6 +5604,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       4b, `/deferred`, `deferred_stats.py` and the backlog-protocol plan's archive and scan
       scripts. So it was kept out of that spec. Size: design. Done when: the owner approves a
       spec for the split, or records it as declined.
+      → retired 2026-11-17: the owner declined the split (/deferred owner ruling). The backlog stays one file.
 - [ ] Narrow the read-only triage at plan completion (non-goal of `specs/backlog-protocol.md`,
       approved 2026-10-29). Plan Completion Protocol step 4 (`skills/writing-plans/SKILL.md`)
       runs triage steps 1–4 whenever 20 or more items are open. So every completion reads the
@@ -5608,6 +5615,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       discipline-skill edit (micro-test it), and it touches the same file as the
       backlog-protocol plan, so it executes after that plan. Size: design. Done when: the owner
       approves a change to step 4, or records it as declined.
+      → progress 2026-11-17 (owner ruling): approve a change to step 4. Completion prints the stats line and the plan's new items, and the full triage runs under `/deferred` or when the aged tail is non-zero. The item stays open until the change to step 4 lands.
 
 ## 73-reviewer-and-planning-contract — 2026-10-30
 - [ ] Test-only findings and the reviewer block's delete pass (plan 73 final review, Important;
@@ -6053,6 +6061,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → progress 2026-11-11 (owner ruling): Provenance on bytes is confirmed as the reading of record. Echo stays
       unruled. The item stays open: its `Done when:` still needs the Echo ruling or a wording change, and the
       independent runs. See specs/baseline/red-baseline-new-project-entry.md (Plan 85: summary, Owner ruling).
+      → progress 2026-11-17 (owner ruling): no Echo. The reading of record stands: the phrase next to an order calls the order stages, and plan 78's round 2 rep5 verdict stands. The `Done when:` still needs the independent runs.
 - [ ] **A block the partner resolved can be raised again at a later resume (plan 79 final review; owner ruled
       defer).** `skills/derive-roadmap/SKILL.md` §5 (the marker, the Ask and Commit bullets). Only an amendment
       cites `plan <id>, Handoff`. A stage added at the Ask is not an amendment, so the marker re-reads that
@@ -6082,6 +6091,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       and a ready stage on another track, the ready stage is handed off and Stage 3's blocker is not
       surfaced. Size: design. Done when: the owner decides whether the question also fires for a blocked stage
       beside a ready one, and the Ask text and a case match that decision.
+      → progress 2026-11-17 (owner ruling): the Ask also fires for a blocked stage beside a ready one, as D4 was approved, and the Ask text and a case change to match.
 - [ ] **A Handoff that amends nothing is re-read at every resume (plan 79 final review; owner decision D6
       item 5).** `skills/derive-roadmap/SKILL.md` §5 marker. A Handoff whose bullets change no entry's fields
       (a trap, a deferred item) is never cited, so each resume reads it again. The owner kept the narrow
@@ -6124,6 +6134,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       found no source for "as today". The owner kept the spec's wording for plan 80. Size: design. Done when:
       protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate, and the
       `gate-tag` case still meets its bar under `specs/baseline/red-baseline-development-history/kit/`.
+      → progress 2026-11-17 (owner ruling): a revert asked for at the gate is implemented at once under Protocol step 1, and both gate paragraphs change to match.
 - [x] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
       `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
       "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and
@@ -6315,6 +6326,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
       wrote it. Size: design. Done when: §5 names the step that runs the check at a resume and a clause scores
       it, or the owner drops the resume half of R7 from the spec.
+      → progress 2026-11-17 (owner ruling): drop the resume half of R7, and remove its sentence from derive-roadmap §5 (`SKILL.md:201-203`). The item stays open until the §5 sentence is removed.
 - [x] **§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is
       recorded (plan 85 final review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §3 and §4. The
       gap is older than plan 85. A reply writes the roadmap file and the answer, and nothing in the skill makes
@@ -6485,6 +6497,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       skill and needs a micro-test against a no-guidance control (the writing-skills skill). The other writes future
       reading rules that accept an observation node the scenario supports. Size: design. Done when: the owner picks
       one fix, and the skill text or the evaluation-rule template changes to match, with the choice recorded.
+      → progress 2026-11-17 (owner ruling): change the skill. It draws an outcome-observation node only when the scenario gives a reason for missing outcomes, micro-tested against a no-guidance control.
 
 ## 92-writing-skills-guide-rewrite — 2026-11-12
 - [x] The guide omits a docs fact about `@` paths in skill bodies (plan 92 completion notes). Claude Code
@@ -6546,6 +6559,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       dependency too, so the reason's `/deferred` clause does not block the move. Size: design. Done when: the
       owner rules to convert the three commands to skills or to keep them, and the exception is removed or its
       reason and revisit lines are rewritten to match.
+      → progress 2026-11-17 (owner ruling): keep the three commands as command files, and rewrite the exception's reason and revisit lines in `build/cc_guide/conformance.toml` to match.
 
 ## claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323 — 2026-11-12
 - [x] `hooks/ruff-check.sh` blocks with exit 2 and ruff's output on stderr, which the guide's Stop-gate pattern
@@ -6617,6 +6631,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       check is recorded, task-done refuses (exit 4) a task whose patch bytes differ from the run's recorded
       sha256, a test that edits a patch after a clean run at the same HEAD sees exit 4, and the other gate tests
       still pass.
+      → progress 2026-11-17 (owner ruling): strict check. task-done also refuses a missing patch, and the `write_run` fixture changes to write real patch files with their sha256.
 - [x] **history_entry.py reads a `Ruling:` quoted inside a ledger note as a ruling (plan 93 completion protocol,
       2026-11-13).** `ruling_lines` in `skills/writing-plans/scripts/history_entry.py` (about line 305) takes
       every ledger line that holds `Ruling:` anywhere (`line.partition(RULING_MARK)`). Plan 93's ledger had a
@@ -6841,13 +6856,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       until a new round runs, and a round costs about $3.50. Size: plan. Done when: the Scope line covers that
       case, one micro-test case holds a running session with a silent request, a new round meets Builder's call
       C6 (E1 to E4, O1 and L1 in 5 of 5 reps), and the block and the record change in one commit.
-- [ ] **marimo's built-in `pair` command weakens plan 98's C7 premise (plan 98 Task 3, record Conclusion item 1;
+- [x] **marimo's built-in `pair` command weakens plan 98's C7 premise (plan 98 Task 3, record Conclusion item 1;
       owner item, 2026-11-14).** The fixture's marimo (0.25.2) has a `pair` command whose help restates
       marimo-pair's rules for live sessions. `verdict` rep 4 ran `marimo pair notebook list` and saw no
       session. Builder's call C7 says marimo-pair is not installed in the fixture. That holds for the skill and
       not for the command. In a real repo the block's words "if it is available" may then hold through the
       command, and the block does not name it. Size: design. Done when: the owner has recorded whether the
       block names the `marimo pair` command, and, if it does, the block and a new tested round change together.
+      → retired 2026-11-17: the owner ruled that the block does not name the `marimo pair` command (/deferred owner ruling). Its "if it is available" covers the marimo-pair skill only.
 - [ ] **The deny rule `Read(~/**)` does not stop every Bash read of the home folder (plan 98 Task 3, record
       Conclusion item 2; owner item, 2026-11-14).** In round 2, `override` reps 1 and 4 ran `ls ~/.claude/skills
       .claude 2>/dev/null` inside a compound command with a `for` loop, and the same read alone was denied. The
