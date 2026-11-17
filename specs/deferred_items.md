@@ -6593,6 +6593,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Size: plan. Done when: each of the six lines is corrected or recorded as a deviation in
       `build/cc_guide/conformance.toml`, through the writing-skills skill, the compaction gap is no worse, and the
       file is cited after a fresh `/cc-guide` files verify.
+      → progress 2026-11-17 (owner ruling): extend the open SDD item to eight lines. Note on :232 that a narrow reading (no suppressing a named finding) may be consistent. No SDD edit now. The 2026-11-17 files pass found both lines: :201 makes effort the last rung, after the model, while `lean.model-routing` says to raise /effort before escalating the model. :232 bars telling a reviewer not to flag a specific issue, the reviewer-scope point of :43 and :53 at another line. The Done-when now covers :201 and :232 as well as the six lines above.
 - [x] The `reserved-skill-name` lint matches an exact folder name only (files pass, owner ruling: list fixed
       now, lint later). This pass added `'anthropic-skills'` to `reserved` in `build/cc_guide/conformance.toml`.
       The guide (`skills.locations`, L78) also reserves synced in any capitalization and a folder name that starts

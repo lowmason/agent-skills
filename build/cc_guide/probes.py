@@ -233,7 +233,7 @@ def assess_guard(read: Read) -> Verdict:
 
 
 TOOLS_AGENTS = {'probe-with-bash': 'Read, Grep, Glob, Bash', 'probe-without-bash': 'Read, Grep, Glob'}
-TOOLS_AGENT_FILE = ('---\nname: {name}\ndescription: A drift probe agent.\ntools: {tools}\nomitClaudeMd: true\n'
+TOOLS_AGENT_FILE = ('---\nname: {name}\ndescription: A drift probe agent.\ntools: {tools}\n'
                     '---\n\nReply with the word OK and nothing else.\n')
 
 

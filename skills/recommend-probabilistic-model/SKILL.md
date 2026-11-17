@@ -19,7 +19,7 @@ metadata:
   sources: >
     Cites Kevin P. Murphy, Probabilistic Machine Learning (Book 1 © 2022 MIT; Book 2 © 2023
     K. P. Murphy) under CC-BY-NC-ND (summarized, not reproduced). Links pyprobml and dynamax (MIT).
-# cc-guide: lean.session-hygiene lean.model-routing @2.1.323
+# cc-guide: lean.session-hygiene lean.model-routing @2.1.325
 ---
 
 # Recommend a Probabilistic Model
@@ -80,8 +80,7 @@ Because the memo starts `bayesian-workflow` cold, this recommendation session's
 own context — data profiling, candidate weighing, §ref hunting — is dead weight
 downstream. Once `recommendation.md` is written (Step 8), recommend the user
 `/clear` and invoke `bayesian-workflow` in a fresh session against the memo:
-fitting then carries none of this consult's history and runs on its own model
-default.
+fitting then carries none of this consult's history.
 
 ## Reference map
 
