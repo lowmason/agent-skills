@@ -63,6 +63,29 @@ def case_differs(root: Path, target: Path) -> bool:
     return False
 
 
+def matches_ignoring_case(root: Path, target: Path) -> bool:
+    '''True when each name of target's path below root matches a name on disk once case is ignored.
+
+    It reads the directory listings, not exists(), so it answers the same on a case-sensitive
+    Linux file system as on a case-insensitive Mac.
+    '''
+    try:
+        parts = target.relative_to(root).parts
+    except ValueError:
+        return False
+    parent = root
+    for name in parts:
+        try:
+            names = os.listdir(parent)
+        except OSError:
+            return False
+        found = next((n for n in names if n.casefold() == name.casefold()), None)
+        if found is None:
+            return False
+        parent = parent / found
+    return True
+
+
 def broken_links(root: Path, dirs: list[Path]) -> tuple[list[str], int]:
     '''Return (one message per broken link, number of relative links checked).'''
     problems, checked = [], 0
@@ -74,7 +97,7 @@ def broken_links(root: Path, dirs: list[Path]) -> tuple[list[str], int]:
             path = Path(os.path.normpath(md.parent / unquote(re.split(r'[#?]', target, maxsplit=1)[0])))
             if path.exists() and not case_differs(root, path):
                 continue
-            note = ' (a name differs in case)' if path.exists() else ''
+            note = ' (a name differs in case)' if matches_ignoring_case(root, path) else ''
             problems.append(f'{md.relative_to(root).as_posix()}:{n}: broken link {target!r}: '
                             f'no file at {Path(os.path.relpath(path, root)).as_posix()}{note}')
     return problems, checked
