@@ -14,7 +14,8 @@ Standing authorization from the user; do not ask before steps 1–3.
    no required checks or reviews, so it has nothing to wait for. Then merge it yourself with
    `gh pr merge <n> --delete-branch` and the repo's usual method (`--merge`, `--squash` or
    `--rebase`, from its recent history), but only once every check `gh pr checks` lists has
-   passed, or right away when it lists none. Do not poll: if checks are still running at the
+   passed, or right away when the repo has no CI (no `.github/workflows/`; just after a push,
+   "no checks reported" can mean the run has not started yet). Do not poll: if checks are still running at the
    end of the turn, say so, and merge on the next turn once they pass. A failed check goes
    to Auto-fix, not to a merge.
 2. When the PR merges, verify it: PR state is MERGED, the remote head branch is gone (delete it
