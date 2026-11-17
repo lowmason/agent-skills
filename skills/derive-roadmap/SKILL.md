@@ -198,9 +198,7 @@ shipped:
   routing in it; route only after the answer. A `Consumes` is unmet when a
   Handoff or stamp shows its input missing or not built, or when the stage
   that is to produce it is unticked. Otherwise it counts as met, and the
-  receiving session checks it. A later quality that this resume finds for the
-  first time, bound for a research track's Ranked list, joins the same
-  question in §4's form.
+  receiving session checks it.
 - **Commit** the amendments, and whatever your partner approved at the Ask,
   on the current branch before the handoff, so the
   fresh session reads them. Context for a later stage that cannot be

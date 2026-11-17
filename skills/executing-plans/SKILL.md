@@ -293,8 +293,9 @@ the ledger:
 `Task <N>: complete (commits <base7>..<head7>, mutants: <caught>/<total>, tests: <command> → <result>)`
 
 The gate reads the task's newest mutant run: it is at HEAD, no mutant
-survived or is invalid, and each `Mutant K:` line in the mutants file is
-in the run or has a `Withdrawn: K` line. With `--no-mutants`, the gate is
+survived or is invalid, each `Mutant K:` line in the mutants file is
+in the run or has a `Withdrawn: K` line, and each patch that is not
+withdrawn still has the bytes the run measured. With `--no-mutants`, the gate is
 skipped and the field reads `mutants: none: <why>`.
 
 A failing run records nothing, and so does a refused gate (exit 4): the

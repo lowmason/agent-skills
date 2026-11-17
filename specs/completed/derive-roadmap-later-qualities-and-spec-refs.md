@@ -4,6 +4,11 @@
 `/deferred` Design pick. Decisions D1–D8 are the owner's, from that session. Text marked *(designer's call)* was the
 designer's choice. The owner approved this file, its designer's calls included, on 2026-11-07 ("Spec approved").
 
+**Amended 2026-11-17** by an owner ruling in a `/deferred` pass (no plan): the resume half of D4 and R7 is dropped. A
+quality found for the first time at a resume no longer goes into the resume's one question, and §5 of
+`skills/derive-roadmap/SKILL.md` no longer says it does. The suggestion at the first roadmap's approval (§4) is
+unchanged.
+
 Three follow-ups to plan 78's New-Project Entry in `skills/derive-roadmap/`. First, the one message keeps
 stage text out and records the later qualities in one fixed line. Second, a later quality joins a research track's
 Ranked list only after the owner approves it and ranks it. Third, a new-project roadmap built from a spec keeps each
@@ -62,7 +67,7 @@ The owner picked 1 on 2026-11-07.
   item. A declined quality is recorded in the stage's `Leaves out` as declined, with the date.
 - **D3.** The suggestion and the rank request go in one question.
 - **D4.** The suggestion comes at the first roadmap's approval (§4). A quality first found at a resume uses the same
-  form inside the resume's one question (§5).
+  form inside the resume's one question (§5). *(Second sentence dropped 2026-11-17: see the amendment under Status.)*
 - **D5.** The one message may hold one line of a fixed form that names the qualities with no stage words. "Check the
   project against each one, and place every one it will need" moves to the time the stages are written.
 - **D6.** A stage plan from a roadmap with a spec is held to the spec sections behind its outcomes, except what the
@@ -99,8 +104,8 @@ The owner picked 1 on 2026-11-07.
 - **R6.** On approval, the quality gets the next free O-number, a row in the Outcomes table (outcome line, track,
   the owner's rank, a cost note) and its ranked place in the list. The `Leaves out` entry then points at it by
   O-number. On a decline, the `Leaves out` entry reads `<quality>: declined, <YYYY-MM-DD>`, and no list item is made.
-- **R7.** At a resume (§5), a quality found for the first time goes into the one question in the same form as R4,
-  and R6 applies to the answer.
+- **R7.** *(Dropped 2026-11-17: see the amendment under Status.)* At a resume (§5), a quality found for the first
+  time goes into the one question in the same form as R4, and R6 applies to the answer.
 - **R8.** Once approved, the quality is an ordinary outcome: it is re-ranked, promoted, parked and audited like any
   other, with no special case in §5, the Parking rule or §6.
 - **R9.** When the session cannot ask, the provisional file lists each suggested quality at the end of the Ranked list

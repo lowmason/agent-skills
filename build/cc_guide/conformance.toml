@@ -751,9 +751,9 @@ artifacts = [
     'commands/deferred.md', 'commands/fix-issue.md', 'commands/license-audit.md',
 ]
 guide = 'New work uses skills rather than command files.'
-reason = 'The Gemini command-skill adapters are generated from commands/*.md, and /deferred is an install dependency.'
-evidence = 'Audit rows A-38 to A-40; owner gate 2026-10-04.'
-revisit = 'When the Gemini adapters can be generated from skills.'
+reason = 'The owner kept the three as command files. Claude Code loads them as commands, and build/sync_runtime_assets.py generates an agy skill from each one (runtimes/gemini/skills/), which agy loads as its slash command. Codex gets none of the three, because install.py gives it no command adapter. As skills, they would reach Codex too. The owner accepted that gap.'
+evidence = 'Audit rows A-38 to A-40; owner gate 2026-10-04; owner ruling 2026-11-17 (/deferred pass, item on the revisit trigger of this exception), confirmed the same day after the branch review found the Codex gap.'
+revisit = 'If a Codex session needs one of the three, or Claude Code stops loading commands/*.md.'
 
 [[exception]]
 id = 'guard-stdlib-only'

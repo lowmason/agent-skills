@@ -13,6 +13,7 @@ The cases adapt upstream's tests/claude-code/test-executing-plans-scripts.sh.
 The mutant gate's cases are local.
 """
 
+import hashlib
 import os
 import subprocess
 import sys
@@ -140,11 +141,19 @@ NONE_REVERT = 'revert: none: no file outside the tests and the project config ch
 def write_run(repo, name, run_head, run_base, result, numbers, revert=NONE_REVERT):
     '''Write a mutant run file in mutant-run's layout, each numbered mutant CAUGHT.
 
-    run_base=None or revert=None leaves that header line out.
+    Each numbered mutant gets a patch file in the workspace, and the run
+    records that file's sha256, as mutant-run does. run_base=None or
+    revert=None leaves that header line out.
     '''
     task, _, rest = name.removeprefix('task-').partition('-mutants')
     run_number = rest.removeprefix('-').removesuffix('.log') or '1'
-    zeros = '0' * 64
+    ws = workspace(repo)
+    ws.mkdir(parents=True, exist_ok=True)
+    sums = {}
+    for k in numbers:
+        patch = ws / f'task-{task}-mutant-{k}.patch'
+        patch.write_text(f'a demo patch {k}\n')
+        sums[k] = hashlib.sha256(patch.read_bytes()).hexdigest()
     caught = ' '.join(str(k) for k in numbers)
     lines = [
         f'mutant-run: Task {task}, run {run_number}',
@@ -155,7 +164,7 @@ def write_run(repo, name, run_head, run_base, result, numbers, revert=NONE_REVER
         f'result: {result}',
         *([revert] if revert is not None else []),
         '--- mutants ---',
-        *[f'mutant {k}: CAUGHT exit 1 sha256 {zeros} tests: t::a' for k in numbers],
+        *[f'mutant {k}: CAUGHT exit 1 sha256 {sums[k]} tests: t::a' for k in numbers],
         '--- tests ---',
         f'test t::a: caught {caught}',
         '--- output: baseline ---',
@@ -163,8 +172,6 @@ def write_run(repo, name, run_head, run_base, result, numbers, revert=NONE_REVER
     ]
     for k in numbers:
         lines += [f'--- output: mutant {k} ---', '1 failed']
-    ws = workspace(repo)
-    ws.mkdir(parents=True, exist_ok=True)
     (ws / name).write_text('\n'.join(lines) + '\n')
 
 
@@ -562,6 +569,45 @@ def test_task_done_blocks_a_withdrawn_mutant_whose_patch_is_still_live(repo):
     assert 'task-1-mutant-2.patch' in result.stderr
     assert 'Task 1 NOT recorded' in result.stderr
     assert not recorded(repo)
+
+
+def test_task_done_blocks_a_patch_edited_after_its_run(repo):
+    # A clean run at HEAD proves only the patch bytes it measured.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
+    (workspace(repo) / 'task-1-mutant-1.patch').write_text('an edited patch\n')
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'task-1-mutant-1.patch' in result.stderr
+    assert 'Task 1 NOT recorded' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_blocks_a_missing_patch(repo):
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, CLEAN, [1])
+    (workspace(repo) / 'task-1-mutant-1.patch').unlink()
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 4
+    assert 'task-1-mutant-1.patch' in result.stderr
+    assert not recorded(repo)
+
+
+def test_task_done_skips_the_patch_check_for_a_withdrawn_mutant_that_ran(repo):
+    # A withdrawn mutant's patch is renamed .patch.withdrawn, so its bytes are not read.
+    base = head(repo)
+    commit_work(repo)
+    write_mutants(repo, [1, 2], withdrawn=[2])
+    write_run(repo, 'task-1-mutants.log', head(repo), base, 'caught 2, survived 0, invalid 0', [1, 2])
+    ws = workspace(repo)
+    (ws / 'task-1-mutant-2.patch').rename(ws / 'task-1-mutant-2.patch.withdrawn')
+    result = run(TASK_DONE, 'plan.md', 1, base, '--', *OK_CMD, cwd=repo)
+    assert result.returncode == 0, result.stderr
+    assert recorded(repo)
 
 
 def test_task_done_reads_the_newest_mutant_run_by_number(repo):

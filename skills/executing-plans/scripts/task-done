@@ -33,7 +33,11 @@
 #     no "Withdrawn: K" line;
 #   - a "Withdrawn: K" line's patch, task-<N>-mutant-<K>.patch, is still in
 #     the workspace: a withdrawn patch is renamed .patch.withdrawn, so the
-#     line would excuse a mutant that may never have run.
+#     line would excuse a mutant that may never have run;
+#   - a "Mutant K:" line with no "Withdrawn: K" line has no patch
+#     task-<N>-mutant-<K>.patch, or that patch's sha256 differs from the one
+#     on the run's "mutant K:" line: a patch edited after a clean run at the
+#     same HEAD was never measured.
 # A refusal prints its reason and the run's path, and records nothing.
 # --no-mutants REASON skips the gate, for a task that is not a mutant task:
 # the line records the reason in place of the counts.
@@ -157,6 +161,17 @@ refuse() {
 }
 nl='
 '
+# The sha256 of file $1, as mutant-run computes it.
+file_sha256() {
+  local sum
+  if command -v sha256sum > /dev/null 2>&1; then
+    sum=$(sha256sum < "$1")
+  else
+    sum=$(shasum -a 256 < "$1")
+  fi
+  printf '%s\n' "${sum%% *}"
+}
+
 # Whether $1 is one whole line of $2.
 has_line() {
   case "$nl$2$nl" in
@@ -254,6 +269,28 @@ EOF3
   done <<EOF4
 $withdrawn
 EOF4
+  # A clean run proves only the patch bytes it measured. Each listed mutant
+  # that is not withdrawn must still have its patch, with the sha256 that the
+  # run recorded on its mutant K: line. A withdrawn patch is renamed, so it is
+  # not read.
+  while IFS= read -r k; do
+    [ -n "$k" ] || continue
+    has_line "$k" "$withdrawn" && continue
+    patch="$dir/task-$n-mutant-$k.patch"
+    [ -f "$patch" ] \
+      || refuse "task-$n-mutant-$k.patch is missing, so the run's mutant $k cannot be checked"
+    run_sum=$(awk -v k="$k" '
+      /^--- mutants ---$/ { m = 1; next }
+      m && /^--- / { exit }
+      m && $1 == "mutant" && $2 == k ":" {
+        for (i = 3; i < NF; i++) if ($i == "sha256") { print $(i + 1); exit }
+      }
+    ' "$mutant_run")
+    [ "$(file_sha256 "$patch")" = "$run_sum" ] \
+      || refuse "task-$n-mutant-$k.patch has changed since the run measured it (run sha256 ${run_sum:-none})"
+  done <<EOF5
+$listed
+EOF5
   mutants_field="mutants: $caught/$total"
 fi
 
