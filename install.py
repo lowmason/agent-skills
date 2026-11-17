@@ -78,6 +78,13 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
 # README.md records. build/test_runtime_support.py checks each entry against
 # the skill names in its rule's text.
 USER_RULES: dict[str, tuple[str, ...]] = {
+  'pr-lifecycle': (
+    'brainstorming',
+    'executing-plans',
+    'prepare-handoff',
+    'subagent-driven-development',
+    'writing-plans',
+  ),
   'write-with-asd-ste100': ('write-with-asd-ste100',),
 }
 

@@ -35,7 +35,7 @@ agent-skills/
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
 ├── runtimes/    # generated Codex and Antigravity (gemini runtime) adapters
 ├── hooks/       # Claude Code hooks: gates for Python/uv work repos + the read-only agent guard and the dispatch model guard (see Hooks below)
-├── rules/       # rule files: path-scoped via .claude/rules/, one user-level (see Rules below)
+├── rules/       # rule files: path-scoped via .claude/rules/, two user-level (see Rules below)
 ├── templates/   # kits a work repo copies by hand (templates/marimo-repo/), never installed
 ├── build/       # lints and commit gates, the adapter generator, the Claude Code guide's drift detector, citation checks
 ├── specs/       # design records + implementation plans (retired work under completed/)
@@ -211,16 +211,17 @@ shell parser.
 
 Rule files live in [`rules/`](rules/). They hold standing conventions that load automatically, with no skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively. A rule with a `paths:` frontmatter glob loads only when a matching file is read, written or edited. A rule without frontmatter loads at session start. (Native loading was verified against Claude Code 2.1.218.)
 
-This repo keeps rule sources in `rules/`. A path-scoped rule applies here through a committed relative symlink from `.claude/rules/`. The user-level rule applies here, as in every project, from `~/.claude/rules/`:
+This repo keeps rule sources in `rules/`. A path-scoped rule applies here through a committed relative symlink from `.claude/rules/`. The user-level rules apply here, as in every project, from `~/.claude/rules/`:
 
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
 | [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits (a compaction summarizes them away): single quotes, 4-space indent, Polars over pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, and named constants (G25). It cross-references the `clean-code` catalog by rule code. |
+| [`pr-lifecycle.md`](rules/pr-lifecycle.md) | every session, user-level | The steps after a PR opens. Claude turns on auto-fix and auto-merge, and after the merge it reports `CI passed, PR merged, remote deleted`. It cleans up the branch and the worktree itself. When the workflow has a next step, it ends with a link to a handoff brief. When the session is the last one in the workflow, it offers to archive it. |
 | [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session, user-level | The everyday writing habits of the `write-with-asd-ste100` skill, for replies and for prose files written for people. It also carries the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
 
 Rules here ship project-level. Commit `7aa454f` made that decision when it added the Python rule. To use a path-scoped rule in another project, copy it into that repo's `.claude/rules/`. (User-level `~/.claude/rules/` also loaded in the 2.1.218 probe. See that commit's message.)
 
-`write-with-asd-ste100.md` is the one exception. It shapes every reply and every prose file, and an "all output" rule only works at user level. So `install.py` places it in `~/.claude/rules/`, for Claude Code only: Codex and Gemini get the skill without the rule. It is not linked into this repo's `.claude/rules/`, because a second copy there would load it twice in this repo.
+`write-with-asd-ste100.md` and `pr-lifecycle.md` are the two exceptions. The first shapes every reply and every prose file, and the second applies to every PR in every repo. A rule for all work only works at user level. So `install.py` places them in `~/.claude/rules/`, for Claude Code only: Codex and Gemini get the skills without the rules. They are not linked into this repo's `.claude/rules/`, because a second copy there would load them twice in this repo.
 
 ## Installation
 
@@ -281,8 +282,8 @@ and commands unless you add `--companions`. A full install includes every compan
 `--no-companions`. That option leaves out all agents and commands, required ones included. The
 table is `DEPENDENCIES` in `install.py`.
 
-A full Claude install also places the user-level rules, today only
-`write-with-asd-ste100`, in `~/.claude/rules/`. `--rule NAME` installs one of
+A full Claude install also places the user-level rules, today
+`pr-lifecycle` and `write-with-asd-ste100`, in `~/.claude/rules/`. `--rule NAME` installs one of
 them with the skills that it names and their dependencies. Like `--skill`, it
 skips the runtime's other agents and commands unless you add `--companions`.
 `--no-rules` leaves the rules out of a full Claude install. Codex and Gemini
@@ -354,8 +355,8 @@ The read-only agent guard is the opposite case, and `install.py` does not instal
 
 ### Claude Code rules
 
-`write-with-asd-ste100.md` is user-level. A full `python3 install.py claude` places it.
-`python3 install.py claude --rule write-with-asd-ste100` places it with only its skill.
+`pr-lifecycle.md` and `write-with-asd-ste100.md` are user-level. A full `python3 install.py claude` places them.
+`python3 install.py claude --rule write-with-asd-ste100` places one rule with only the skills that it names.
 
 The path-scoped rules are project-level, per repo:
 
