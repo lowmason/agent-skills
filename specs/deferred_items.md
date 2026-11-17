@@ -6333,13 +6333,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       item counts as an ordinary outcome. Size: design. Done when: §5 says what a resume does with a later
       quality when no other question is open, and what it does with a `suggested, not approved` item, and a
       case covers each path with a control run.
+      → progress 2026-11-17 (owner ruling): narrow this item to its second gap. The resume half of R7 is dropped (the spec is amended), and the §5 sentence quoted above is gone, so a resume no longer adds a later quality to any question. Done when now needs only: §5 says what a resume does with a `suggested, not approved` item, and a case covers that path with a control run.
 - [x] **No step at a resume runs the later-qualities check (plan 85 final review; owner ruled defer).**
       `skills/derive-roadmap/SKILL.md` §5. R7 says a quality found at a resume joins the question. No step of
       §5 tells the resume to look for one, and no clause of any arm scores that look. This is R7 as the spec
       wrote it. Size: design. Done when: §5 names the step that runs the check at a resume and a clause scores
       it, or the owner drops the resume half of R7 from the spec.
       → progress 2026-11-17 (owner ruling): drop the resume half of R7, and remove its sentence from derive-roadmap §5 (`SKILL.md:201-203`). The item stays open until the §5 sentence is removed.
-      → done 2026-11-17 (/deferred quick fix): the sentence that sent a later quality found at a resume into the Ask is gone from `skills/derive-roadmap/SKILL.md` §5, as the owner ruled. §4 still asks about later qualities at the first checkpoint.
+      → done 2026-11-17 (/deferred quick fix): the sentence that sent a later quality found at a resume into the Ask is gone from `skills/derive-roadmap/SKILL.md` §5, as the owner ruled. §4 still asks about later qualities at the first checkpoint. The spec's Status gains an amendment note, and its D4 and R7 are marked dropped (`specs/completed/derive-roadmap-later-qualities-and-spec-refs.md`).
 - [x] **§3 and §4 of derive-roadmap never say to commit the roadmap file after the partner's answer is
       recorded (plan 85 final review; owner ruled defer).** `skills/derive-roadmap/SKILL.md` §3 and §4. The
       gap is older than plan 85. A reply writes the roadmap file and the answer, and nothing in the skill makes
@@ -6575,7 +6576,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       owner rules to convert the three commands to skills or to keep them, and the exception is removed or its
       reason and revisit lines are rewritten to match.
       → progress 2026-11-17 (owner ruling): keep the three commands as command files, and rewrite the exception's reason and revisit lines in `build/cc_guide/conformance.toml` to match.
-      → done 2026-11-17 (/deferred quick fix): the exception's reason now says that the owner kept the three command files and that `build/sync_runtime_assets.py` already generates an agy skill from each. Its revisit line names one signal (Claude Code stops loading `commands/*.md`, or a runtime that `install.py` targets can load neither form), and its evidence cites this ruling. `check_conformance.py` passes.
+      → done 2026-11-17 (/deferred quick fix): the exception's reason now says that the owner kept the three command files, that `build/sync_runtime_assets.py` generates an agy skill from each, and that Codex gets none of them, a gap the owner accepted. Its revisit line fires if a Codex session needs one of the three or Claude Code stops loading `commands/*.md`, and its evidence cites this ruling. `check_conformance.py` passes.
 
 ## claude/bold-solomon-31bcfc cc-guide upkeep after 2.1.323 — 2026-11-12
 - [x] `hooks/ruff-check.sh` blocks with exit 2 and ruff's output on stderr, which the guide's Stop-gate pattern
