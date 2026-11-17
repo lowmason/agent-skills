@@ -1,8 +1,9 @@
 # Plan-completion triage and gate reverts — Design Spec
 
-**Status:** DRAFT (2026-11-17). The design came from a brainstorming session on 2026-11-17 for two `/deferred` Design
-picks of that day. Decisions D1 and D2 are the owner's rulings from the `/deferred` pass. D3 and D4 are the owner's
-answers in the brainstorming session. Text marked *(designer's call)* was the designer's choice.
+**Status:** APPROVED (2026-11-17). The design came from a brainstorming session on 2026-11-17 for two `/deferred`
+Design picks of that day. Decisions D1 and D2 are the owner's rulings from the `/deferred` pass. D3 and D4 are the
+owner's answers in the brainstorming session. Text marked *(designer's call)* was the designer's choice. The owner
+approved this file, its designer's calls included, on 2026-11-17 ("Approve spec").
 
 This spec changes two parts of the plan-completion protocol. First, completion stops running the full backlog
 triage on every plan: it shows the stats line and the plan's own new items, and it runs the triage only when the aged
