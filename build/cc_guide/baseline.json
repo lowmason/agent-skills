@@ -4825,6 +4825,10 @@
   "rules/clean-code-python.md": {
    "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66"
   },
+  "rules/pr-lifecycle.md": {
+   "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
+   "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
+  },
   "rules/write-with-asd-ste100.md": {
    "rules.hierarchy": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099",
    "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66"
