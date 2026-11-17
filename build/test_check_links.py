@@ -142,6 +142,14 @@ def test_the_case_note_does_not_need_a_case_insensitive_file_system(tmp_path, mo
     assert checked == 3
 
 
+def test_a_broken_link_file_with_the_right_case_gets_no_case_note(tmp_path):
+    # os.listdir lists a dangling symlink, so matching names alone would claim a case difference.
+    write_tree(tmp_path, {'skills/a/SKILL.md': '[d](dangling.txt)\n'})
+    (tmp_path / 'skills/a/dangling.txt').symlink_to(tmp_path / 'skills/a/nowhere.txt')
+    problems, _ = cl.broken_links(tmp_path, [Path('skills')])
+    assert problems == ["skills/a/SKILL.md:1: broken link 'dangling.txt': no file at skills/a/dangling.txt"]
+
+
 def test_case_check_follows_parent_steps(tmp_path):
     write_tree(tmp_path, {
         'skills/a/references/loop.md': '[p](../Prompt.md) [ok](../prompt.md) [b](../../b/x.md)\n',
