@@ -4830,8 +4830,8 @@
    "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
   },
   "rules/write-with-asd-ste100.md": {
-   "rules.hierarchy": "sha256:e97ba2387deeaf425ea7e7ca4ed84066e5d81dcb3b4b049d70346e171f305099",
-   "rules.rules-files": "sha256:84cded384de0768108393fb2bbdd73f2fe27957584134306de7d160e05b5ee66"
+   "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
+   "rules.rules-files": "sha256:d06a1f3d65a9ced9bbca3f40b8ade08c74681189259191573d9b52796c2f5ac3"
   },
   "skills/bayesian-workflow/README.md": {
    "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703"
@@ -4856,7 +4856,7 @@
    "subagents.models": "sha256:b9b31363b5addceb7b7bf12113525470f216c1409160461ae1d79106a3fe5954"
   },
   "skills/executing-plans/SKILL.md": {
-   "subagents.frontmatter": "sha256:a9d56e03194f73570562c9aed1d3fe81a1c6bc15a0e58f1f1c9f144125f15e82"
+   "subagents.frontmatter": "sha256:aa8449f54fac046103fa842471f04994dfa2b784e127f35bff7d7d8b897a3c0d"
   },
   "skills/llm-wiki/INSTALL.md": {
    "skills.locations": "sha256:59489614ad6a6298fb29af1f1e8a609cec7bee59e1352acdb2d26e2ea6bc0703"

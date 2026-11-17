@@ -84,7 +84,7 @@ sections = [
 ]
 
 [kinds.claude-md]
-description = 'CLAUDE.md files: the root one always loads, build/CLAUDE.md once Claude reads or edits a file under build/.'
+description = 'CLAUDE.md files: the root one loads at launch and in most subagents (Explore, Plan and an omitClaudeMd agent skip it), build/CLAUDE.md once Claude reads or edits a file under build/.'
 globs = ['CLAUDE.md', 'build/CLAUDE.md']
 sections = [
     'rules.claude-md', 'rules.hierarchy', 'context.overview',
