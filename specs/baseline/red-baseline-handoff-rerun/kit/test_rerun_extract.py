@@ -238,7 +238,7 @@ def test_real_home_spellings_void(ctl: Ctl, form: str) -> None:
 
 @pytest.mark.parametrize('command', [
     'ls ~/Library/Keychains/../../Projects/x', 'ls ~/Library/Preferences', 'cd ~ && ls Library/Keychains',
-    'ls ~/Library/Key""chains',
+    'ls ~/Library/Key""chains', 'cd ~ && ls Library/Key""chains',
 ])
 def test_library_and_keychains_void(ctl: Ctl, command: str) -> None:
     ctl.rep(main=[('Bash', {'command': command})])
