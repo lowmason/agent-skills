@@ -290,8 +290,8 @@ finishing-a-development-branch. The gate comes first; markup is written only
 once the completed/deferred partition is final.
 
 **1. Resolve-before-defer gate.** Collect the leftovers: plan steps skipped
-or descoped during execution, plus review findings that were not fixed.
-Partition:
+or descoped during execution, review findings that were not fixed, and the
+final review's Declined to judge lines. Partition:
 - Stalled because it needed your human partner's input → ask now, as one
   batched set of questions.
 - Unblocked by an answer → implement it now (the protocol restarts after
