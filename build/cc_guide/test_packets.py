@@ -330,10 +330,31 @@ def test_an_audit_packet_holds_every_section_its_untriaged_releases_and_its_bloc
         ('2.1.902', ['beta.overview', 'beta.reference'], ['beta.overview'])]
     assert [b['ref'] for b in i['blocks']] == ['events › Events']
     assert sorted(p.name for p in out.iterdir()) == ['blocks.md', 'changelog.md', 'guide.md', 'index.json',
-                                                     'releases.md', 'sections.md']
+                                                     'listed.md', 'releases.md', 'sections.md']
     with pytest.raises(state.SetupError) as err:
         packets.audit(load(world), tmp_path / 'b', 'gamma')
     assert str(err.value) == 'unknown group gamma'
+
+
+def test_listed_bullets_name_each_bullet_holding_a_group_term():
+    changelog = '\n'.join(['<Update label="2.1.902" description="d">',
+                           '  * Changed `BETA_ENV` beside `NEW_FLAG` and `true`', '  * Fixed `BETA_ENV_X`',
+                           '</Update>', '<Update label="2.1.901" description="d">', '  * Added `ALPHA_ENV`',
+                           '</Update>'])
+    terms = {'beta.overview': {'BETA_ENV'}, 'beta.reference': {'BetaEvent'}}
+    assert packets.listed_bullets(changelog, terms, guide_text()) == [
+        {'item': '2.1.902#1', 'line': 2, 'sections': ['beta.overview'], 'lacks': ['NEW_FLAG'],
+         'text': 'Changed `BETA_ENV` beside `NEW_FLAG` and `true`'}]
+
+
+def test_an_audit_packet_lists_the_bullets_that_name_its_groups_terms(world, tmp_path):
+    out = packets.audit(load(world), tmp_path / 'a', 'alpha')
+    assert index(out)['listed'] == [{'item': '2.1.901#1', 'line': 14, 'sections': ['alpha.reference'],
+                                     'lacks': [], 'text': 'Added `ALPHA_ENV` to the alpha tools'}]
+    assert (out / 'listed.md').read_text().split('\n')[:3] == [
+        '# Listed changelog bullets', '',
+        '- 2.1.901#1 · changelog.md:14 · alpha.reference · Added `ALPHA_ENV` to the alpha tools']
+    assert 'Added `ALPHA_ENV`' in (out / 'changelog.md').read_text().split('\n')[13]
 
 
 def test_a_files_packet_per_stale_file_marks_the_sections_changed_since_its_stamp(world, tmp_path):

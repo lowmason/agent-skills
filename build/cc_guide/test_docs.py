@@ -107,6 +107,13 @@ def test_bold_labels_mark_releases_with_their_bullets():
         docs.Release('2.1.10', ['three', 'four']), docs.Release('2.1.9', ['one', 'two'])]
 
 
+def test_release_lines_give_each_bullets_line_in_both_formats():
+    text = '\n'.join(['# Changelog', '', '<Update label="2.1.10" description="x">', '  * one `A_B`', '  - two',
+                      '</Update>', '', '**2.1.9**', '', '* three', '* four'])
+    assert docs.release_lines(text) == {'2.1.10': [4, 5], '2.1.9': [10, 11]}
+    assert [len(r.bullets) for r in docs.parse_changelog(text)] == [2, 2]
+
+
 @pytest.mark.parametrize('text, message', [
     ('**2.1.9**\n* a\n**2.1.x**\n', "line 3: not a release label: '2.1.x'"),
     ('**2.1.9**\n* a\n\n**2.1.9**\n', 'line 4: release label 2.1.9 repeats line 1'),

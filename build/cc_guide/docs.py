@@ -33,17 +33,14 @@ class Release(NamedTuple):
     bullets: list[str]
 
 
-def parse_changelog(text: str) -> list[Release]:
-    '''R6.6: the changelog's releases with their `* ` and `- ` bullets,
-    newest first by version. A release is either an
-    <Update label="X" description="..."> block, or, from about 2026-10-20, a
-    bold `**X**` line that runs to the next one. Neither date is read: the
-    bold format gives none. Raises ValueError, naming the line, on an
-    unparseable label, an <Update> tag it cannot read, or a repeated label;
-    the caller names the file.'''
-    releases: list[Release] = []
+def _scan_changelog(text: str) -> list[tuple[Release, list[int]]]:
+    '''The one scan of a changelog that parse_changelog and release_lines
+    both read, so item numbers and lines agree: each release with the
+    1-based line of each of its bullets, newest first by version. Raises
+    ValueError as parse_changelog says.'''
+    scanned: list[tuple[Release, list[int]]] = []
     first: dict[str, int] = {}
-    current: Release | None = None
+    current: tuple[Release, list[int]] | None = None
     for n, line in enumerate(text.split('\n'), start=1):
         m = UPDATE_RE.match(line) or BOLD_LABEL_RE.match(line)
         if m:
@@ -55,15 +52,35 @@ def parse_changelog(text: str) -> list[Release]:
             if label in first:
                 raise ValueError(f'line {n}: release label {label} repeats line {first[label]}')
             first[label] = n
-            current = Release(label, [])
-            releases.append(current)
+            current = (Release(label, []), [])
+            scanned.append(current)
         elif line.lstrip().startswith('<Update'):
             raise ValueError(f'line {n}: unrecognized <Update> tag')
         elif line.strip() == '</Update>':
             current = None
         elif current is not None and (b := BULLET_RE.match(line)):
-            current.bullets.append(b.group(1).strip())
-    return sorted(releases, key=lambda r: version_key(r.label), reverse=True)
+            release, lines = current
+            release.bullets.append(b.group(1).strip())
+            lines.append(n)
+    return sorted(scanned, key=lambda pair: version_key(pair[0].label), reverse=True)
+
+
+def parse_changelog(text: str) -> list[Release]:
+    '''R6.6: the changelog's releases with their `* ` and `- ` bullets,
+    newest first by version. A release is either an
+    <Update label="X" description="..."> block, or, from about 2026-10-20, a
+    bold `**X**` line that runs to the next one. Neither date is read: the
+    bold format gives none. Raises ValueError, naming the line, on an
+    unparseable label, an <Update> tag it cannot read, or a repeated label;
+    the caller names the file.'''
+    return [release for release, _ in _scan_changelog(text)]
+
+
+def release_lines(text: str) -> dict[str, list[int]]:
+    '''Per release label, the 1-based changelog line of each of its bullets,
+    in parse_changelog's bullet order, so its n-th entry is the line of the
+    n-th bullet. Raises ValueError as parse_changelog does.'''
+    return {release.label: lines for release, lines in _scan_changelog(text)}
 
 
 def parse_llms(text: str) -> set[str]:
