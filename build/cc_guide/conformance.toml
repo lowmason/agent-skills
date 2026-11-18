@@ -807,7 +807,7 @@ check = 'compaction-window'
 sections = ['skills.progressive-disclosure']
 artifacts = ['skills/subagent-driven-development/SKILL.md']
 guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'The body is 19,926 characters, 226 over the register window of 19,700. The probe run kept 19,741 body characters at a 159-character header. The waiver is per check and file, so it also hides a new late heading.'
+reason = 'The body is 19,914 characters, 214 over the register window of 19,700. The probe run kept 19,741 body characters at a 159-character header. The waiver is per check and file, so it also hides a new late heading.'
 evidence = 'plan 87 live run, build/cc_guide/PROBES.md row of 2026-11-10'
 tracked_in = 'backlog item written at plan 87 completion; nothing frees room in this file yet'
 

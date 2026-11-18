@@ -211,8 +211,8 @@ finishing-a-development-branch:
 | Discarded | No handoff: the stamp went with the branch. |
 
 Even when asked to keep going, never resume the roadmap here or plan,
-brainstorm or route to the next stage (step 3a's Handoff bullets and stamp
-still name the stages they feed), and make no model-tier claim. A stage this
-session finds already merged when it starts, with the protocol not yet run,
-runs the protocol on the merged branch now.
+brainstorm or route to the next stage (the Handoff bullets and stamp of
+writing-plans' protocol step 3a still name the stages they feed), and make no
+model-tier claim. A stage merged before this session began, with the protocol
+not run, runs the protocol now on the branch it merged into.
 Any other plan ends at Complete development.
