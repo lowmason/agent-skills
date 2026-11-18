@@ -393,6 +393,13 @@ def test_lacks_leave_out_a_span_the_guide_holds_on_any_line_even_in_a_fence_or_b
     assert [e['lacks'] for e in got] == [['OTHER_ID']]
 
 
+def test_lacks_leave_out_a_stop_term_the_guide_never_holds():
+    changelog = ('<Update label="2.1.9" description="d">\n'
+                 '  * Changed `BETA_ENV`, `true`, `model` and `NEW_FLAG`\n</Update>')
+    got = packets.listed_bullets(changelog, {'beta.overview': {'BETA_ENV'}}, 'The guide holds `BETA_ENV` only.')
+    assert [e['lacks'] for e in got] == [['NEW_FLAG']]
+
+
 def test_listed_bullets_come_newest_release_first_whatever_the_file_order():
     changelog = '\n'.join(['<Update label="2.1.9" description="d">', '  * Added `AAA_FLAG`', '  * Fixed `AAA_FLAG`',
                            '</Update>', '<Update label="2.1.10" description="d">', '  * Changed `AAA_FLAG`',
