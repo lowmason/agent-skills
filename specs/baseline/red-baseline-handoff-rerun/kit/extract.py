@@ -54,9 +54,11 @@ KIT_AGENTS = ('code-reviewer', 'task-reviewer')
 BACKGROUND_STOPPED = 'Background tasks still running'
 PATH_TOKEN = re.compile(r'''(?:(?<![\w.~$}-])/|~|\$HOME|\$\{HOME\})[^\s'"`;|&<>(){}]*''')
 DOTDOT_TOKEN = re.compile(r'''[^\s'"`;|&<>(){}=]*\.\.(?:/[^\s'"`;|&<>(){}]*)?''')
-# A Library/Keychains path, however the text spells or splits the path around it. Anchored on
-# Library, unlike guard.py's, so that the bare word (a grep for it, say) names no path.
-KEYCHAINS = re.compile(r'''(?:^|[/\s'"=])library/keychains(?:/|$|[\s'";|&)])''')
+# A library path component followed anywhere later by a keychains component: Library/Keychains,
+# however the text spells or splits the path (Library//Keychains, cd Library && ls Keychains).
+# Unlike guard.py's, it needs Library, so that the bare word (a grep for it, say) names no path.
+KEYCHAINS = re.compile(r'''(?:^|[/\s'"=])library(?=/|$|[\s'";|&)]).*(?:^|[/\s'"=])keychains(?=/|$|[\s'";|&)])''',
+                       re.DOTALL)
 SHELL_QUOTES = re.compile(r'''[\\'"]''')
 GLOB_CHARS = re.compile(r'[*?\[]')
 USER_VARS = re.compile(r'\$\{?(?:USER|LOGNAME)\}?')

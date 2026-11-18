@@ -547,3 +547,21 @@ def test_glob_at_real_home_depth_with_another_top_is_valid(ctl: Ctl) -> None:
     command = 'ls /opt/' + '/'.join(parts[:-1]) + '/*/x'
     ctl.rep(main=[('Bash', {'command': command})])
     assert ctl.audit()['valid'] is True
+
+
+# --- review round 2 -------------------------------------------------------------
+
+
+def test_sibling_rep_through_the_data_spelling_voids(ctl: Ctl) -> None:
+    ctl.rep(main=[('Bash', {'command': 'ls /System/Volumes/Data/private/tmp/phr100/r282'})])
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('/private/tmp/phr100/r282 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
+
+
+@pytest.mark.parametrize('command', ['cd ~ && cd Library && ls Keychains', 'cd ~ && ls Library//Keychains'])
+def test_split_library_keychains_spellings_void(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command})])
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('Library/Keychains' in flag for flag in audit['flags']), audit['flags']
