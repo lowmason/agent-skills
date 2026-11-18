@@ -26,6 +26,7 @@ Python 3.9 with the stdlib only.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
 import posixpath
@@ -56,6 +57,7 @@ DOTDOT_TOKEN = re.compile(r'''[^\s'"`;|&<>(){}=]*\.\.(?:/[^\s'"`;|&<>(){}]*)?'''
 # A Keychains path component, however the text spells or splits the path around it (as in guard.py).
 KEYCHAINS = re.compile(r'''(?:^|[/\s'"=])keychains(?:/|$|[\s'";|&)])''')
 SHELL_QUOTES = re.compile(r'''[\\'"]''')
+GLOB_CHARS = re.compile(r'[*?\[]')
 USER_VARS = re.compile(r'\$\{?(?:USER|LOGNAME)\}?')
 FILE_KEYS = ('file_path', 'path', 'notebook_path')
 DATA_VOLUME = '/System/Volumes/Data'
@@ -114,9 +116,19 @@ def walked(path: str) -> list[str]:
     return steps or ['/']
 
 
+def glob_reaches(path: str, root: str) -> bool:
+    '''Whether a glob path's leading components can match every component of
+    root, so that the shell's expansion lands in it. Lexical: no disk read.'''
+    if not GLOB_CHARS.search(path):
+        return False
+    parts, want = path.strip('/').split('/'), root.strip('/').split('/')
+    return len(parts) >= len(want) and all(fnmatch.fnmatchcase(w, p) for w, p in zip(want, parts))
+
+
 def classify(token: str, cwd: str, home: str, real_home: str, root: str) -> str | None:
     '''The flag for one path token, or None, by C10's table B. Comparisons fold
-    case, as APFS does. The real home (any spelling) voids. The rep HOME's
+    case, as APFS does. The real home (any spelling, or a glob that matches it)
+    voids. The rep HOME's
     Library folder voids, also when the path only passes through it, since its
     Keychains link leads into the real home. The rest of the rep's HOME is
     allowed. The reps directory, outside the rep's HOME, voids.'''
@@ -128,6 +140,8 @@ def classify(token: str, cwd: str, home: str, real_home: str, root: str) -> str 
     final = steps[-1]
     if inside(final.casefold(), real_f):
         return f'path {final} (the real home)'
+    if glob_reaches(final.casefold(), real_f):
+        return f'path {final} (a glob that matches the real home)'
     if any(inside(step.casefold(), library_f) for step in steps):
         return f'path {final} (through the Library folder, which links into the real home)'
     if inside(final.casefold(), home_f):

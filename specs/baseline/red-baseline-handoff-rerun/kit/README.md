@@ -78,7 +78,7 @@ When the rep ends, the runner moves its `HOME` to `PHR_CTL/homes/<rep>/`. The au
 The audit reads the frozen VOID rules by table B of plan 100's C10:
 
 - `~` is the `HOME` the rep ran with, `PHR_ROOT/<rep>`. The whole rep `HOME` is allowed, except its `Library` folder.
-- A path into the real home voids. So does a path into, or through, the rep's `Library` folder, because `Library/Keychains` links into the real home. An input that names `Keychains` also voids.
+- A path into the real home voids, and so does a glob whose leading parts can match it, such as `/Users/*/.ssh`. So does a path into, or through, the rep's `Library` folder, because `Library/Keychains` links into the real home. An input that names `Keychains` also voids.
 - The reps directory voids, and so does anything in it outside the rep's `HOME`.
 - `/tmp`, `/private/tmp` and `/System/Volumes/Data/private/tmp` are one folder. The real home's `/System/Volumes/Data` form is the real home. The audit compares paths without case.
 - The fragments, a failed turn and the denial rule are unchanged.

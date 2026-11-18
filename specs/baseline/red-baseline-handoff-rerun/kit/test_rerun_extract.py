@@ -495,3 +495,23 @@ def test_relative_file_field_without_dots_is_one_token(ctl: Ctl) -> None:
     audit = ctl.audit()
     assert audit['valid'] is False, audit
     assert any('Library' in flag for flag in audit['flags']), audit['flags']
+
+
+@pytest.mark.parametrize('form', ['star-user', 'star-prefix', 'question'])
+def test_glob_into_the_real_home_voids(ctl: Ctl, form: str) -> None:
+    real = ctl.real
+    command = {
+        'star-user': f'ls {real.parent}/*/.ssh',
+        'star-prefix': f'ls {real.parent}/{real.name[:2]}*',
+        'question': f'cat {real.parent}/{real.name[:-1]}?/.ssh/x',
+    }[form]
+    ctl.rep(main=[('Bash', {'command': command})])
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('real home' in flag for flag in audit['flags']), audit['flags']
+
+
+@pytest.mark.parametrize('command', ['ls /*', 'ls /private/tmp/*', 'ls ~/.claude/skills/*', 'ls /opt/*/bin'])
+def test_glob_outside_the_real_home_is_valid(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command})])
+    assert ctl.audit()['valid'] is True
