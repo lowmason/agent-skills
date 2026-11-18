@@ -102,3 +102,9 @@ def test_the_files_rows_cover_the_cited_file_and_each_covered_file():
     text = (REPO / AGENT).read_text(encoding='utf-8')
     assert 'Give one row per statement in the cited file or a covered file that rests on a cited section' in text
     assert 'or a path `covered` names' in text
+
+
+def test_the_files_rule_compares_a_statement_with_the_component_it_describes():
+    lines = (REPO / AGENT).read_text(encoding='utf-8').split('\n')
+    (rule,) = [line for line in lines if 'the component the statement describes' in line]
+    assert 'is not Claude Code' in rule
