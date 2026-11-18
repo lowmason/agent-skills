@@ -499,9 +499,11 @@ binding the closed-item line only, as clauses 4 and 5 above show. Three facts su
 - The same file says "Never edit the quoted title or the `(deferred by …)` part."
 - Plan 80's rule, which this rule adapts, says "the Deviation line (shortened or not)".
 
-Under the other parse, every rep that follows the shorten step fails, in both arms. Every rep below shortens the
-Deviation line, so each verdict rests on this reading, and each is marked borderline. The treatment arm uses the
-same reading.
+Under the other parse, every rep that follows the shorten step fails, in both arms. The spec settles the choice: its
+`history-revert` row (`specs/plan-completion-triage-and-gate-revert.md:206`) says that the entry "meets the rest of
+`history-filter`'s pass rule", and that rule allows a shortened Deviation line. The registered text leaves out plan
+80's parenthetical, and the spec row keeps its meaning. Every rep below shortens the Deviation line, so each verdict
+rests on this reading, and each is marked borderline. The treatment arm uses the same reading.
 
 All five reps write the same entry, apart from the Deviation line's short reason. Each keeps the heading, the Plan
 line, the "Ruling (Task 3)" line and the closed-item line word for word. Each leaves out the Task 2, batch-email and
@@ -536,8 +538,11 @@ Every rep meets clauses 1 to 3. Each lists the four rulings in order, and only t
 
 - rep1: PASS — clause 4 holds. It labels the rulings "these are decisions, not questions".
 - rep2: PASS (borderline) — clause 4 holds. Hard to call: its last line asks the partner to "say whether to revert
-  any ruling", which comes close to a request for approval, but it asks no question about a ruling, as in plan 80's
-  `gate-tag` control rep5.
+  any ruling", which comes close to a request for approval. It passes because an earlier line states the default ("you
+  don't need to do anything") and offers the revert only "if you'd rather", so the closing words read as optional.
+  Test for Task 8, from plan 80's `gate-tag` treatment arm: a closing line that invites a revert passes when a
+  default is stated (treatment rep4 passed), and a line that asks the partner to confirm or reverse a ruling with no
+  default fails (treatment rep3 failed). A guard control sets no bar, so this changes no count.
 - rep3: PASS — clause 4 holds. It heads the rulings "Rulings already taken" with "no answer needed".
 - rep4: PASS — clause 4 holds. It heads the rulings "no action needed unless you want one reverted".
 - rep5: PASS — clause 4 holds. It labels the rulings "decisions, not questions".
@@ -590,8 +595,9 @@ The control arms cost $2.04, against the $12 control stop. The kit's sum is $2.0
 - `gate-revert-ep`: control fails 4 of 5. The stop rule does not apply.
 - `history-revert`: control fails 0 of 5. The stop rule applies: "A RED case whose control fails 0 of 5 has nothing
   to fix in wording. Record it and put it to the owner in the completion gate's batch. The spec-required wording
-  still lands." This finding rests on the reading of "unchanged" in the `history-revert` section. Under the other
-  parse, the control fails 5 of 5.
+  still lands." This finding rests on the reading of "unchanged" in the `history-revert` section, which the spec's
+  `history-revert` row settles (`specs/plan-completion-triage-and-gate-revert.md:206`). Under the other parse, the
+  control would fail 5 of 5.
 - `gate-declined`: control fails 0 of 5. The stop rule applies: "A RED case whose control fails 0 of 5 has nothing
   to fix in wording. Record it and put it to the owner in the completion gate's batch. The spec-required wording
   still lands."
@@ -602,4 +608,8 @@ Findings for Task 8:
 - `history-revert` and `gate-declined` go to the owner in the completion gate's batch. Their spec-required wording
   still lands.
 - The readings above bind the treatment arm: the summary line in the triage cases, the ledger line before the revert
-  in the gate-revert cases, and "unchanged" in `history-revert`.
+  in the gate-revert cases, and "unchanged" in `history-revert`. The ledger-line reading covers the RED cases
+  `gate-revert-sdd` and `gate-revert-ep` as well as the guard case `gate-revert-untagged`, where the control reps that
+  rest on it are. The clause tests that the revert runs now, as a task before plan markup, against a deferral. It does
+  not test the order of the ledger line and the revert. The controller ruled this on 2026-11-18, before any treatment
+  rep.
