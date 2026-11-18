@@ -7,7 +7,8 @@ A rep runs with HOME at its own folder, so `~`, `$HOME` and `${HOME}` already
 point there. This guard closes what the redirected HOME does not: an absolute
 path into the real home (also in its /System/Volumes/Data form, through `..`,
 through `~user` or `$USER`), and the rep's Library/Keychains link, which points
-into the real ~/Library. To deny it prints a PreToolUse deny decision and
+into the real ~/Library: any input that names a Keychains path component, or
+reaches the rep's own Library folder, is denied. To deny it prints a PreToolUse deny decision and
 exits 0. To allow it prints nothing and exits 0. It runs on the system Python
 3.9 with the stdlib only. A crashed hook fails open, so any internal error
 denies.
@@ -15,6 +16,8 @@ denies.
 
 from __future__ import annotations
 
+import glob
+import itertools
 import json
 import os
 import re
@@ -26,7 +29,9 @@ PATH_TOKEN = re.compile(r'''(?:(?<![\w.~$}-])/|~|\$HOME|\$\{HOME\})[^\s'"`;|&<>(
 DOTDOT_TOKEN = re.compile(r'''[^\s'"`;|&<>(){}=]*\.\.(?:/[^\s'"`;|&<>(){}]*)?''')
 FILE_KEYS = ('file_path', 'path', 'notebook_path')
 DATA_VOLUME = '/System/Volumes/Data'
-KEYCHAINS = 'library/keychains'
+# A Keychains path component, however the text spells or splits the path around it.
+KEYCHAINS = re.compile(r'''(?:^|[/\s'"=])keychains(?:/|$|[\s'";|&)])''')
+GLOB_LIMIT = 1000
 GLOB_CHARS = re.compile(r'[*?\[]')
 
 
@@ -68,34 +73,42 @@ def inside(path: str, root: str) -> bool:
 
 
 def reaches(token: str, home: str, cwd: str, real: str) -> bool:
-    '''True when a token resolves into the real home, or when it is a glob
-    whose fixed part is the real home or one of its ancestors below `/`.'''
+    '''True when a token resolves into the real home, when it is a glob whose
+    fixed part is the real home or one of its ancestors below `/`, or when one
+    of the glob's matches resolves into the real home (through the Keychains
+    link, say).'''
     if inside(resolved(token, home, cwd), real):
         return True
-    glob = GLOB_CHARS.search(token)
-    if glob is None:
+    glob_char = GLOB_CHARS.search(token)
+    if glob_char is None:
         return False
-    fixed = token[:glob.start()]
+    fixed = token[:glob_char.start()]
     fixed = fixed[:fixed.rfind('/') + 1] if '/' in fixed else ''
     base = resolved(fixed or '.', home, cwd)
-    return base != '/' and inside(real, base)
+    if base != '/' and inside(real, base):
+        return True
+    matches = glob.iglob(expanded(token, home, cwd))
+    return any(inside(os.path.realpath(m).casefold(), real) for m in itertools.islice(matches, GLOB_LIMIT))
 
 
 def denied(tool_name: str, tool_input: dict, home: str, cwd: str, real_home: str) -> str | None:
     '''The deny reason for one tool call, or None to allow it. The reason quotes
     the input as typed, never the resolved real home.'''
     real = os.path.realpath(real_home).casefold()
+    library = os.path.realpath(os.path.join(home, 'Library')).casefold()
     if tool_name == 'Glob' and tool_input.get('path'):
         cwd = expanded(str(tool_input['path']), home, cwd)  # a Glob pattern is relative to its path
     for text in scanned(tool_name, tool_input):
-        if KEYCHAINS in text.casefold():
-            return f'{PREFIX} the input names Library/Keychains, a link into the real home'
+        if KEYCHAINS.search(text.casefold()):
+            return f'{PREFIX} the input names Keychains, as in Library/Keychains, a link into the real home'
         tokens = PATH_TOKEN.findall(text) + DOTDOT_TOKEN.findall(text)
         if tool_name != 'Bash':
             tokens.append(text)
         for token in tokens:
             if reaches(token, home, cwd, real):
                 return f'{PREFIX} {token!r} reaches the real home, outside this workspace'
+            if inside(resolved(token, home, cwd), library):
+                return f'{PREFIX} {token!r} is in the Library folder, which links into the real home'
     return None
 
 

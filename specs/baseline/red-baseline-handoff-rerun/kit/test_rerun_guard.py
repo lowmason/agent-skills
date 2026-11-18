@@ -209,3 +209,29 @@ def test_denied_maps_home_forms_to_its_home_argument(homes):
     )
     assert done.returncode == 0, done.stderr
     assert json.loads(done.stdout) == [None, None, None]
+
+
+def test_split_keychains_name_denies(homes):
+    rep, real = homes
+    reason = decide('Bash', {'command': 'for d in Library; do ls ~/$d/Keychains/../..; done'}, rep, real)
+    assert_denied(reason, 'Keychains')
+    reason = decide('Bash', {'command': 'cd ~/Library && ls Keychains/../../.claude/skills'}, rep, real)
+    assert_denied(reason, 'Keychains')
+
+
+def test_casefolded_keychains_name_denies(homes):
+    rep, real = homes
+    reason = decide('Bash', {'command': 'for d in library/keychains; do ls ~/$d; done'}, rep, real)
+    assert_denied(reason, 'Keychains')
+
+
+def test_rep_library_folder_denies(homes):
+    rep, real = homes
+    reason = decide('Bash', {'command': 'cd ~/Library && ls'}, rep, real)
+    assert_denied(reason, 'Library folder')
+
+
+def test_glob_through_keychain_link_denies(homes):
+    rep, real = homes
+    reason = decide('Bash', {'command': 'ls ~/Library/*/../..'}, rep, real)
+    assert_denied(reason, 'real home')
