@@ -1,6 +1,7 @@
 '''Tests for state.py: the manifest, the baseline, PROBES.md, the repo
 source and the cache layout (drift spec R2, R6.1).'''
 import json
+import subprocess
 import tomllib
 from datetime import date
 
@@ -593,6 +594,14 @@ def test_covered_files_are_the_tracked_ones_read_where_the_source_reads(tmp_path
     assert state.covered_files(state.Source(repo, 'HEAD'), 'skills/demo/SKILL.md') == kept
     assert state.covered_files(state.Source(repo, 'HEAD~1'), 'skills/demo/SKILL.md') == [
         'skills/demo/beside.md', 'skills/demo/references/a.md', 'skills/demo/references/deep/b.md']
+
+
+def test_tracked_under_sorts_the_names_whatever_order_git_prints(tmp_path, monkeypatch):
+    printed = b'skills/demo/b.md\0skills/demo/B.md\0skills/demo/a/z.md\0skills/demo/a.md\0'
+    monkeypatch.setattr(state.subprocess, 'run', lambda args, **kw: subprocess.CompletedProcess(args, 0, printed, b''))
+    for ref in (None, 'main'):
+        assert state.Source(tmp_path, ref).tracked_under('skills/demo') == [
+            'skills/demo/B.md', 'skills/demo/a.md', 'skills/demo/a/z.md', 'skills/demo/b.md']
 
 
 def test_a_git_failure_listing_a_folder_is_a_setup_error(tmp_path):
