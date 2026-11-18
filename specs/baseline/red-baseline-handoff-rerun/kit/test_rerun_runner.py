@@ -247,6 +247,7 @@ def test_make_reps_requires_kit_commit(kit):
     done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c4a-neg', 'test', '1', 'b1'],
                           env=env, capture_output=True, text=True, check=False)
     assert done.returncode != 0
+    assert 'KIT_COMMIT is required' in done.stderr
     assert not (kit.ctl / 'registry.tsv').exists()
 
 
