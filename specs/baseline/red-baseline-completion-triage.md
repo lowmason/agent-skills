@@ -966,8 +966,10 @@ then continue to step 5." The rest of step 4 keeps its words, and only its line 
 | `gate-declined.txt` | `1616e457aac44dad15123ffc81c4ea337fce697f57e89cc17f39eae42e048292` |
 
 `diff` on each pair of first-pass and round-one prompts shows one change: the lines of the changed sentence. So the
-leak check of `## Leak check` still holds for these prompts. The re-run of plan 80's `history-filter` also reads the
-writing-plans `SKILL.md`. It ran at `T7`, and this round did not rerun it.
+leak check of `## Leak check` still holds for these prompts. Plan 80's `history-filter` re-run also reads the
+writing-plans `SKILL.md`, so it ran again at `8b44d34`, into
+`specs/baseline/red-baseline-development-history/plan101-r1/history-filter`. It passed 5 of 5. Its prompt, verdicts
+and cost are in `specs/baseline/red-baseline-development-history.md`, `### history-filter, wording round 1 re-run`.
 
 Each case ran 5 reps on Claude Code 2.1.323, with its model and budget from the table at the top of this record, into
 `specs/baseline/red-baseline-completion-triage/treatment-r1/<case>`. So there are 20 rep files. No rep was VOID: every
@@ -1104,15 +1106,21 @@ in `## Control` records. Spend: $0.153 for reps 1 to 5.
 | `history-revert` round 1, reps 1 to 5 | $0.173 |
 | `gate-declined` round 1, reps 1 to 5 | $0.153 |
 | Round 1, `show_reps.py` total over the four folders | $1.00 |
-| Kit sum, `show_reps.py` total over the control, treatment, round 1 and re-run folders | $5.28 |
+| `history-filter` re-run at `8b44d34` (`plan101-r1`), reps 1 to 5 | $0.53 |
+| Kit sum, `show_reps.py` total over the control, treatment, round 1 and all re-run folders | $5.80 |
 
-Round 1 cost $1.00. With the control arms ($2.04) and the treatment arms and re-runs ($2.23), `show_reps.py` prints
-$5.28 for the kit's sum over 110 rep files, against the $30 stop. The exact sum is $5.2758. Task 8 Step 4's command,
-which globs `specs/baseline/red-baseline-completion-triage/*/*` and the re-run folders, prints the same $5.28.
+Round 1 cost $1.53: $1.00 for the four cases in `treatment-r1/` and $0.53 for the `history-filter` re-run. With the
+control arms ($2.04) and the treatment arms and first re-runs ($2.23), `show_reps.py` prints $5.80 for the kit's sum
+over 115 rep files, against the $30 stop. The exact sum is $5.8048. `## Spend stops` defines the kit's sum as every
+rep in this record's folders and in plan 80's re-run folders, and `plan101-r1` is one of those folders. The command
+in plan 101's Task 8 Step 4 globs only `specs/baseline/red-baseline-development-history/plan101/*`, so it leaves
+`plan101-r1` out and prints $5.28 over 110 rep files. That figure is not the kit's sum.
 
 ### Bar results after round 1
 
-The four rerun cases take this round's count. The other four keep their first-pass count from `## Treatment`.
+The four rerun cases take this round's count. The other four keep their first-pass count from `## Treatment`. Plan 80's
+`gate-tag` re-run keeps its first-pass 5 of 5, because this round changed no file that it reads. Plan 80's `history-filter` re-run
+passes 5 of 5 at `T7` and again at `8b44d34`, so its bar, `treatment 5/5`, is met.
 
 | Case | Kind | Control fails | Treatment passes | Count from | Bar met |
 |---|---|---|---|---|---|
