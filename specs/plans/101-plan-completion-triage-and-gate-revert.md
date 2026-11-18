@@ -10,11 +10,12 @@ line that names both backlog files, the roadmap-stage guard wording with its rer
 its `references/deferred-backlog.md` and `references/history.md`, both executors' `references/final-review.md`, and
 the guard sentence in `skills/subagent-driven-development/SKILL.md`. One script change: `deferral_scan.py` exempts
 the new status line. A one-time fix rewrites the status line of retired plans. A new decision-only kit, copied from
-plan 80's and carrying the next-kit fixes, micro-tests every wording change except the guard, which plan 40's
-out-of-repo harness tests, as plan 46 did.
+plan 80's and carrying the next-kit fixes, micro-tests every wording change except the guard. A copy of plan 100's
+multi-turn kit tests the guard on plan 40's frozen arms, as plan 46 did in plan 40's harness (D15).
 
 **Tech Stack:** Markdown skill text, Python 3.11+ stdlib (`deferral_scan.py`, kit scripts), pytest through
-`build/run_suites.py`, the `claude -p` micro-test kit, plan 40's multi-turn harness under
+`build/run_suites.py`, the `claude -p` micro-test kit, and a copy of plan 100's multi-turn kit
+(`specs/baseline/red-baseline-handoff-rerun/kit/`) with plan 40's frozen prompts and rubric under
 `~/.cache/agent-skills/handoffs/red/`.
 
 **Spec:** `specs/plan-completion-triage-and-gate-revert.md` (APPROVED 2026-11-17; decisions D1–D4)
@@ -31,6 +32,10 @@ out-of-repo harness tests, as plan 46 did.
   which resolves to the main checkout, so it keeps the old behavior all run long. Merge only when no other execution
   runs. This plan's own completion runs under main's old step 4 and old gate rule: that is expected (spec,
   Constraints).
+- **Plan 100 first** (D15). Before Task 1, this command lists plan 100's kit, so its execution has merged:
+  `git ls-tree --name-only origin/main -- specs/baseline/red-baseline-handoff-rerun/kit/`. If it lists nothing,
+  stop and ask your human partner. Task 9 copies that kit, and D9 keeps plan 100's execution from running while
+  this plan runs.
 - **Parallel sessions.** Before Task 1, and before each of Tasks 3–7, run `git fetch origin main` and
   `git log --oneline <BASE101>..origin/main -- skills/writing-plans/ skills/subagent-driven-development/SKILL.md skills/subagent-driven-development/references/final-review.md skills/executing-plans/references/final-review.md build/cc_guide/conformance.toml`.
   If it lists a commit, stop and tell your human partner before the task starts.
@@ -64,26 +69,30 @@ out-of-repo harness tests, as plan 46 did.
 - **Leave alone.** `deferred_stats.py`, the Triage rubric, the Thresholds table, `commands/deferred.md` and
   finishing-a-development-branch (spec, Non-goals); `archive_deferred.py` (owner ruling of 2026-11-17 on the
   retired-plans item: the script does not edit plans); Protocol step 1's partition bullets; the retired spec
-  `specs/completed/development-history-record.md`; plan 80's kit files and every committed rep file; plan 40's
-  harness results, scores and earlier `changes.log` lines.
+  `specs/completed/development-history-record.md`; plan 80's kit files and every committed rep file; every file of
+  plan 40's harness (`~/.cache/agent-skills/handoffs/red/`) except `changes.log`, which gets one new line (Task 9);
+  plan 100's kit and its committed results (Task 9 copies the kit and edits only the copy).
 - **New kit** (spec, Micro-tests, as amended in Task 1). Kit `specs/baseline/red-baseline-completion-triage/kit/`,
   record `specs/baseline/red-baseline-completion-triage.md`. Every rep is a fresh
   `claude -p --model <case model> --tools "" --strict-mcp-config --setting-sources "" --no-session-persistence --output-format json --max-budget-usd <case budget>`
   under `env -i`, run by the kit's `run_reps.sh` from its own new, empty directory `/tmp/plan101-rep-XXXXXX`. Work
   files go under `/tmp/plan101-work/`. Five scored reps per case and arm. Texts are read with `git show` at a sha,
   never through `~/.claude/skills/`. Each fixture and pass rule is committed before any rep of its case runs and is
-  not edited after a rep is seen. Every verdict is read by hand from the full reply. No kit file is named
-  `test_*.py`. Run reps in a local session on the owner's computer, so they sign in with the CLI's stored login.
+  not edited after a rep is seen. Every verdict is read by hand from the full reply. No file in `kit/` is named
+  `test_*.py` (Task 9's guard kit keeps plan 100's test files and registers them as a suite). Run reps in a local
+  session on the owner's computer, so they sign in with the CLI's stored login.
 - **Bars.** RED: `treatment 5/5; control fails at least 1 of 5`. Guard and regression: `treatment 5/5`. A case
   below its bar gets one wording round. Stop rule, exact: `A RED case whose control fails 0 of 5 has nothing to fix
   in wording. Record it and put it to the owner in the completion gate's batch. The spec-required wording still
   lands.`
 - **Spend stops.** New kit: $30 for all its reps and plan 80's reruns, summed by `show_reps.py`. If the control arms
-  alone pass $12, stop and ask your human partner. Plan 40's harness (Task 9): $20, summed from `total_cost_usd` in
-  each rep's `turn<N>.json`. Past it, stop and ask.
+  alone pass $12, stop and ask your human partner. Task 9's guard kit: $20 for its pilot and its reps, summed from
+  `total_cost_usd` in each rep's `turn<N>.json`. Past it, stop and ask.
 - **Next-kit fixes** (D8). The new kit's `run_reps.sh` drops `credential_expires_at` from each rep JSON file it
   writes, and `kit_selftest.py` shows that, and that two reps get separate folders and cannot see each other's files.
-  Plan 40's harness gets a per-rep `TMPDIR`, the same scrub, and an audit test for a `for`-loop read of `~/`.
+  Task 9's guard kit is a copy of plan 100's kit, which carries all three fixes: one `HOME` per rep, run one after
+  the other, the strip of `credential_expires_at`, and the PreToolUse guard that denies a `for`-loop read of the
+  real home (D15).
 
 ## Review Focus
 
@@ -118,38 +127,32 @@ Numbered after the spec's D1–D4. The brief is the 2026-11-17 `/deferred` pass'
   Applied in: Task 1 (spec amendment), Task 2, Task 9.
 - **D9** (owner, brief, 2026-11-17): a machinery stream. It executes alone, in its own worktree, with the tooling
   pinned to main, and merges only when no other execution runs. Applied in: Global Constraints.
+- **D10** (owner, plan review, 2026-11-17): the spec's non-goal `No edit to Protocol step 1` covers the revert rule
+  only, so Task 4 adds the final review's Declined to judge lines to step 1's leftovers. Amendment A1 says so.
+  Applied in: Task 1 (spec amendment), Task 4.
+- **D11** (owner, plan review, 2026-11-17): the one-time fix rewrites every real old-form status line in
+  `specs/plans/completed/`, not only the 14 plans whose deferred section is now only in the archive. Each other old
+  line would go stale when `/deferred` archives its section. Applied in: Task 6.
+- **D12** (owner, plan review, 2026-11-17): the new status tail is exactly
+  `deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived`. It is a format
+  line that the agent copies, so it gets no micro-test. Applied in: Task 6.
+- **D13** (owner, plan review, 2026-11-17): add two cases that the spec does not list: `gate-declined` (RED, for
+  D10's wording) and `gate-revert-untagged` (guard, Review Focus 2). Amendment A3 adds them to the spec's table.
+  Applied in: Task 1 (spec amendment), Task 2, Task 8.
+- **D14** (owner, plan review, 2026-11-17): the reruns of `gate-tag` and `history-filter` build their prompts with
+  plan 80's `build_prompts.py` and `cases.py` unchanged and run through the new kit's `run_reps.sh`, whose
+  `claude -p` flags are the same. Amendment A2 says so. Applied in: Task 1 (spec amendment), Task 8.
+- **D15** (owner, plan review, 2026-11-17): "Copy plan 100's kit (Recommended)". Asked after plan 100 (PR #225)
+  merged with the `→ planned` notes on the three next-kit-fix items. Task 9 runs the guard rerun in a copy of plan
+  100's kit, with plan 40's frozen arms, prompts and rubric. Plan 40's harness stays frozen except one
+  `changes.log` line. The record that the `Read(~/**)` gap stays is dropped: plan 100 closes that item with its
+  guard. Applied in: Global Constraints, Task 9, Completion notes.
 
-## Open for plan review
+## Plan review
 
-Answer these before Task 1 runs. Each names the planner's call.
-
-1. **A scope fence (D5).** The spec's Non-goals say `No edit to Protocol step 1`. Its reason is the revert rule,
-   which step 1 already holds. D5 edits step 1's leftovers sentence for a different item. Planner's call: Task 1's
-   amendment A1 states that the non-goal covers the revert rule only. The other choice is to drop Task 4 and leave
-   that item open.
-2. **The one-time fix's scope (D7).** The ruling names the 14 old plans whose section is now only in the archive
-   (11–16, 20–23, 28, 29, 7, 8 on 2026-11-17). About 68 other retired plans carry the old status line. Each goes stale
-   when `/deferred` archives its section, so the item's `Done when:` would not stay met. Planner's call: fix every
-   real old-form status line. The other choice is the 14 only.
-3. **The status line's exact words (D7).** Planner's call:
-   `deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived`. It is a format
-   line that the agent copies, not a behavior rule, so it gets no micro-test.
-4. **Two cases that the spec does not list.** `gate-declined` (RED, for D5's wording) and `gate-revert-untagged`
-   (guard, Review Focus 2). Both cost about $0.50. Task 1's amendment A3 adds them to the spec's table.
-5. **The reruns of `gate-tag` and `history-filter` (D8).** Plan 80's runner writes `credential_expires_at` into rep
-   JSON files. Planner's call: build their prompts with plan 80's `build_prompts.py` and `cases.py` unchanged, and
-   run them through the new kit's `run_reps.sh`, whose `claude -p` flags are the same. Amendment A2 says so.
-6. **The `Read(~/**)` gap (D8).** It is a gap in the deny rule of the tool-using kits (plans 93, 97, 98). The new
-   kit runs with no tools, so no rep can run Bash. Plan 40's harness has no deny rule. Its audit voids any rep whose
-   Bash command names a path under `~/.claude` or another protected root, `for` loops included. Planner's call:
-   Task 9 adds an audit test that proves the void, and the record states that the void closes the gap in that
-   harness. The item's `Done when:` then needs your record that the gap stays because the void catches it. The
-   other choice is a deny hook in plan 40's harness, which changes its runs against every earlier kit.
-7. **Plan 40's harness changes (D6, D8).** Task 9 edits frozen harness files (`make_reps.py`, `run_rep.sh`,
-   `extract.py`, `rubric.md`, `PROTOCOL.md`, new prompts and a new `scrub_json.py`). Each edit gets a
-   `changes.log` line and a fresh `FREEZE.sha256` before the first batch, as the harness's PROTOCOL requires. A new
-   arm, `c5a-merged`, tests the already-merged sentence. Its control runs on a kit built from `BASE101`, for
-   reading only. The owner launches each batch from a plain terminal.
+Resolved on 2026-11-17. The owner accepted the planner's call on all seven open items ("accept all"). Plan 100 then
+merged with a different design for the same three next-kit-fix items, so items 6 and 7 were asked again, and the
+owner chose to copy plan 100's kit. D10–D15 record the answers.
 
 ---
 
@@ -248,7 +251,7 @@ git commit -m "docs(specs): amend the completion-triage spec for plan 101's fold
 - Produces: `cases.CASES` with keys `triage-narrow`, `triage-aged`, `gate-revert-sdd`, `gate-revert-ep`,
   `gate-revert-untagged`, `history-revert`, `gate-tag-ep`, `gate-declined`; `scrub_json.scrub(text: str) -> str`;
   the record's `## Base`, `## Control` sections. Task 8 runs the treatment arms with this kit, and runs plan 80's
-  reruns through its `run_reps.sh`. Task 9 copies `scrub_json.py` into plan 40's harness.
+  reruns through its `run_reps.sh`.
 
 - [ ] **Step 1: Copy plan 80's kit**
 
@@ -524,11 +527,11 @@ git commit -m "feat(executors): do a revert asked for at the gate now and ledger
 - Test: `skills/writing-plans/scripts/test_deferral_scan.py:110-115`
 - Modify: `skills/writing-plans/SKILL.md:310` (step 2's status line)
 - Modify: `skills/writing-plans/references/deferred-backlog.md:277-279` (Markers: the exempt forms)
-- Modify: the status line of each retired plan in the scope that Open for plan review item 2 settles
+- Modify: the status line of every retired plan under `specs/plans/completed/` that carries the old form (D11)
 
 **Interfaces:**
 - Produces: the status tail `deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once
-  archived`, exact (Open for plan review item 3). `STATUS_HEADER` accepts it and the old tail
+  archived`, exact (D12). `STATUS_HEADER` accepts it and the old tail
   `deferred items in specs/deferred_items.md` and `nothing deferred`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -587,14 +590,13 @@ git commit -m "feat(writing-plans): the plan status line names both backlog file
 
 Select each file under `specs/plans/completed/` whose first 6 lines hold a line matching
 `^\*\*Status: COMPLETE \(\d{4}-\d{2}-\d{2}\)\*\* — .*deferred items in specs/deferred_items\.md\s*$` (a real date,
-never a placeholder). Under the 14-plans answer, keep only the files whose plan section heading is in
-`specs/completed/deferred_items.md` and not in `specs/deferred_items.md`. In each selected file, replace that one
-line's tail with the new tail. Do it with a one-off Python snippet; ship no script.
+never a placeholder). Fix every selected file (D11). In each one, replace that one line's tail with the new tail.
+Do it with a one-off Python snippet; ship no script.
 
 Check: `git diff -U0 -- specs/plans/completed/ | grep -c '^+\*\*Status: COMPLETE (2[0-9-]*)\*\*.*once archived$'`
 equals the number of files changed (`git diff --name-only -- specs/plans/completed/ | wc -l`), and
 `git diff -U0 -- specs/plans/completed/ | grep '^[-+]' | grep -v '^[-+][-+]' | grep -vc 'Status: COMPLETE'` prints
-`0` (no other line changed). Expected count: 14 or about 82, by item 2's answer.
+`0` (no other line changed). Expected count: 72 at `275edc1`, plus each plan retired with the old line since then.
 
 - [ ] **Step 8: Run the lints and commit the fix**
 
@@ -615,9 +617,9 @@ git commit -m "chore(specs): point retired plans at both backlog files"
 - Modify (if the body length changes): `build/cc_guide/conformance.toml:810`
 
 **Interfaces:**
-- Produces: the guard text that Task 9's kit `k-101` carries. The new sentence fixes the item's reading (b): the
-  branch is the one the stage merged into, and the session, not the stage, is what starts. The executing-plans
-  parenthesis fixes reading (a): it names writing-plans' protocol.
+- Produces: the guard text that Task 9's treatment reps carry (`KIT_COMMIT` `T8`). The new sentence fixes the
+  item's reading (b): the branch is the one the stage merged into, and the session, not the stage, is what starts.
+  The executing-plans parenthesis fixes reading (a): it names writing-plans' protocol.
 
 - [ ] **Step 1: Write the failing check**
 
@@ -663,7 +665,7 @@ Run: `git rev-parse --short HEAD`. Note it as `T7`.
 
 **Interfaces:**
 - Consumes: Task 2's kit; the texts at `T7`.
-- Produces: `T8`, the last text commit before Task 9's kit build (`T7` unless a wording round commits).
+- Produces: `T8`, the last text commit before Task 9's reps (`T7` unless a wording round commits).
 
 - [ ] **Step 1: Run and read the treatment arms**
 
@@ -701,128 +703,163 @@ git add specs/baseline/
 git commit -m "test(specs): run the completion-triage treatment arms and plan 80's reruns"
 ```
 
-### Task 9: The guard rerun in plan 40's harness
+### Task 9: The guard rerun in a copy of plan 100's kit
 
-This task is run by the controller and the owner, not an implementer subagent. `$CTL` is
-`~/.cache/agent-skills/handoffs/red`, `$PW` is `~/.cache/pondworks`, `$MAIN` is `/Users/lowell/Projects/agent-skills`.
-Plan 46's Task 4 (`specs/plans/completed/46-sdd-bundle.md`) is the pattern: follow it where this task is silent.
+The controller runs this task. An implementer subagent may take Steps 2 and 3. `$RED` is plan 40's frozen harness,
+`~/.cache/agent-skills/handoffs/red`: read it, and append only to its `changes.log`. `GK` is
+`specs/baseline/red-baseline-completion-triage/guard-kit`. `$CTL` is `~/.cache/agent-skills/handoffs/guard101`.
+Plan 46's Task 4 (`specs/plans/completed/46-sdd-bundle.md`) is the pattern for the arms and the scoring. Plan 100's
+Tasks 2–5 (`specs/plans/100-prepare-handoff-rerun.md`, or its retired path) are the pattern for the kit. Follow them
+where this task is silent (D15).
 
-**Files** (outside the repository, not committed; the record cites them):
-- Create: `$CTL/prompts/c5a-merged.t1.txt`, `$CTL/prompts/c5a-merged.t2.txt`, `$CTL/tools/scrub_json.py`
-- Modify: `$CTL/tools/make_reps.py` (`ARMS`, `apply_extra`), `$CTL/tools/run_rep.sh`, `$CTL/tools/extract.py`
-  (`allowed_paths`), `$CTL/tools/test_tools.py`, `$CTL/rubric.md`, `$CTL/PROTOCOL.md`, `$CTL/FREEZE.sha256`,
-  `$CTL/changes.log`
-- Modify (in the repository): `specs/baseline/red-baseline-completion-triage.md` (`## Roadmap-stage guard`)
+**Files:**
+- Create: `GK/`, a copy of `specs/baseline/red-baseline-handoff-rerun/kit/` at `BASE101`
+- Modify: `GK/run_rep.sh`, `GK/make_reps.py`, `GK/arms.tsv`, `GK/tally.py`, `GK/test_rerun_runner.py`, `GK/prompts/`
+- Create: `GK/prompts/c5a-merged.t1.txt`, `GK/prompts/c5a-merged.t2.txt`, `GK/rubric-c5a-merged.md`
+- Modify: `build/suites.toml` (one `[[suite]]` table, `completion-triage-guard-kit`)
+- Create: `specs/baseline/red-baseline-completion-triage/scores/<arm>.tsv`
+- Modify: `specs/baseline/red-baseline-completion-triage.md` (`## Roadmap-stage guard`)
+- Modify (outside the repository): `$RED/changes.log` (one line)
 
 **Interfaces:**
-- Consumes: `T8`; `BASE101`; Task 2's `scrub_json.py`.
+- Consumes: plan 100's kit at `BASE101`: `run_rep.sh REP`, `run_batch.sh BATCH`, `make_reps.py ARM PHASE COUNT BATCH`
+  with `KIT_COMMIT` in the environment, `extract.py BATCH` and `extract.py --rep REP`, `tally.py PHASE`, `arms.tsv`,
+  and the variables `PHR_ROOT`, `PHR_CTL`, `PHR_TEMPLATES` and `CLAUDE_BIN` (plan 100, Tasks 2 and 3 Interfaces).
+  Where the kit differs from plan 100's text, the kit is right. `BASE101`; `T8`.
 - Produces: the verdicts that close the guard item's `Done when:`.
 
-- [ ] **Step 1: Write the failing harness tests**
+- [ ] **Step 1: Copy the kit and register its suite**
 
-In `$CTL/tools/test_tools.py`, add:
-- `test_for_loop_home_read_is_flagged`: `flags('for d in ~/.claude/skills/*; do ls "$d"; done')` is not empty
-  (the `Read(~/**)` gap: the audit voids such a rep).
-- `test_rep_tmpdir_is_allowed_and_another_reps_is_not`: `flags(f'ls {PW}/tmp/r001')` is empty and
-  `flags(f'ls {PW}/tmp/r002')` is not.
-- `test_scrub_drops_credential_field`: `scrub_json.scrub` on a JSON object with `credential_expires_at` at the top
-  and nested returns JSON with neither, and the other keys unchanged.
-
-Run: `cd $CTL/tools && uv run --python 3.13 --with pytest python -m pytest -q`. Expected: the second and third FAIL;
-the first passes (it proves the existing void, item 6 of Open for plan review).
-
-- [ ] **Step 2: Make them pass**
-
-Copy Task 2's `scrub_json.py` to `$CTL/tools/`. In `extract.py`, add `PW / 'tmp' / rep` to `allowed_paths`. In
-`run_rep.sh`, create `$PW/tmp/$rep`, pass `TMPDIR=$PW/tmp/$rep` in the `env` of each `claude` call, and run
-`python3 "$CTL/tools/scrub_json.py" "$out/turn$n.json"` after each turn. Rerun Step 1's command. Expected: all pass.
-
-- [ ] **Step 3: Add the `c5a-merged` arm**
-
-- `make_reps.py`: `'c5a-merged': ('t4', 'exec', ['c5a-merged.t1.txt', 'c5a-merged.t2.txt'], 'merged')`.
-  `apply_extra('merged', …)` in the rep's repo: `git checkout main`, `git merge --no-ff feat/s2a-csv-export` with the
-  message `Merge branch 'feat/s2a-csv-export'`, `git branch -d feat/s2a-csv-export`, `git push origin main`. The
-  plan stays in `specs/plans/`, unretired, and the roadmap's S2a box stays unticked. The ledger stays where t4 has it.
-- `c5a-merged.t1.txt`: `We executed specs/plans/4-pondwatch-v2-s2a.md with subagent-driven-development. Both tasks
-  were done and the final whole-branch review was resolved before its branch was merged into main yesterday (the
-  ledger is .sdd/4-pondwatch-v2-s2a/progress.md). Let's plan S2b next.`
-- `c5a-merged.t2.txt`: `Go ahead.`
-- `rubric.md`, new section `` `c5a-merged` — a stage already merged, on t4 + merged ``: F-handoff and F-stamp as for
-  `c5a-pos`; **F-branch:** PASS if, at the end, `main` holds the protocol's commits (the plan's markup and
-  retirement, and the roadmap stamp); FAIL if they are only on another branch, or if the rep recreates
-  `feat/s2a-csv-export` for them; **F-resume:** PASS if the last final message recommends resuming the roadmap (a
-  `/clear` or fresh session, then derive-roadmap, or "resume the roadmap", on the roadmap file); FAIL otherwise;
-  **F-next** as for `c5a-pos`, read under the owner's ruling of 2026-10-15 ("a routing remark beside a correct
-  resume handoff is not naming the next work").
-- `PROTOCOL.md`: an Arms row for `c5a-merged` (t4 + merged, plan 101, the already-merged sentence); add it to the
-  GREEN positive arms in Thresholds (at least 4 of 5 valid reps pass every criterion). Its control, on `k-101c`, is
-  recorded only.
-
-- [ ] **Step 4: Freeze and log before any rep**
-
-Regenerate `FREEZE.sha256` over its current file list plus the new prompt files and `tools/scrub_json.py`. Append
-one `changes.log` line: the date; plan 101's changes (the arm, its prompts, rubric section and Thresholds entry; the
-per-rep `TMPDIR`; the scrub; the audit tests); why (plan 101's guard rerun and the next-kit fixes, D6 and D8); and
-the freeze id (`shasum -a 256 FREEZE.sha256`) before and after.
-
-- [ ] **Step 5: Build the kits**
-
-`build_kit.sh` reads `$MAIN/.claude/worktrees/plan-40-handoff-briefs`. For each kit, recreate that path as a
-detached worktree at the kit's commit, build, then remove it:
+Run: `git ls-tree --name-only <BASE101> -- specs/baseline/red-baseline-handoff-rerun/kit/`. Expected: plan 100's kit
+files (the Global Constraints' precondition). Then:
 
 ```bash
-git -C /Users/lowell/Projects/agent-skills worktree add --detach .claude/worktrees/plan-40-handoff-briefs <BASE101>
-~/.cache/agent-skills/handoffs/red/tools/build_kit.sh k-101c <BASE101>
-git -C /Users/lowell/Projects/agent-skills worktree remove .claude/worktrees/plan-40-handoff-briefs
+mkdir -p specs/baseline/red-baseline-completion-triage/guard-kit
+git archive <BASE101> specs/baseline/red-baseline-handoff-rerun/kit/ | tar -x --strip-components=4 -C specs/baseline/red-baseline-completion-triage/guard-kit/
 ```
 
-Then the same three commands with `<T8>` and `k-101`. Expected: `kit k-101c from <BASE101>: 12 skills` and
-`kit k-101 from <T8>: 12 skills`. If the session refuses a git command on the main checkout, give the owner the
-commands to run.
+In `build/suites.toml`, add a copy of the `handoff-rerun-kit` table with the name `completion-triage-guard-kit` and
+the directory `GK`. If a copied test names plan 100's kit path, point it at `GK` and change nothing else.
 
-- [ ] **Step 6: Register the reps**
+Run: `uv run python build/run_suites.py completion-triage-guard-kit` and `uv run python build/run_suites.py --check`.
+Expected: the same pass count as `handoff-rerun-kit`, and the check passes.
 
 ```bash
-~/.cache/agent-skills/handoffs/red/tools/make_reps.py c5a-merged plan101c k-101c 5 plan101
-~/.cache/agent-skills/handoffs/red/tools/make_reps.py p5a plan101 k-101 5 plan101
-~/.cache/agent-skills/handoffs/red/tools/make_reps.py c5a-ep plan101 k-101 5 plan101
-~/.cache/agent-skills/handoffs/red/tools/make_reps.py c5a-neg plan101 k-101 5 plan101
-~/.cache/agent-skills/handoffs/red/tools/make_reps.py c5a-merged plan101 k-101 5 plan101
+git add specs/baseline/red-baseline-completion-triage/guard-kit/ build/suites.toml
+git commit -m "chore(specs): copy plan 100's kit as plan 101's guard kit"
 ```
 
-Expected: 25 new rows in `$CTL/registry.tsv`. Check one `c5a-merged` rep repo: `git -C $PW/reps/<rep> log --oneline -3`
-shows the merge commit on `main`, and `git -C $PW/reps/<rep> branch` lists only `main`.
+- [ ] **Step 2: Write the failing tests**
 
-- [ ] **Step 7: The owner launches the batch (stop here)**
+In `GK/test_rerun_runner.py`:
+- `test_merged_extra_starts_on_merged_main`: a template repo has `main` and `feat/s2a-csv-export` one commit ahead,
+  with HEAD on the feature branch, as `t4` has. In a rep of an arm whose `extra` is `merged`, the stub's first turn
+  records `git log --format=%s -1` as `Merge branch 'feat/s2a-csv-export'`,
+  `git branch --format='%(refname:short)'` as `main` only, and `git rev-parse main origin/main` as one sha twice.
+- `test_unknown_extra_refuses`: for an arm whose `extra` is `other`, `run_rep.sh` exits 3 and runs no turn.
+- `test_ids_start_at_r501`: the first row that `make_reps.py` writes into an empty `$PHR_CTL` has the id `r501`.
+- `test_env_holds_no_session_variables` (change the copied test): the stub's environment holds
+  `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000` and no other name that starts `CLAUDE`, except
+  `CLAUDE_CODE_DISABLE_ADVISOR_TOOL`.
 
-`run_rep.sh` refuses to run while `CLAUDECODE` is set. The owner runs this from a plain terminal:
+Run: `uv run python build/run_suites.py completion-triage-guard-kit`. Expected: these four fail, the rest pass.
+
+- [ ] **Step 3: Change the copy**
+
+Make these changes and no others:
+1. Defaults: `PHR_ROOT` is `/private/tmp/phr101` and `PHR_CTL` is `~/.cache/agent-skills/handoffs/guard101`.
+2. `make_reps.py`: the first id is `r501`, so no id repeats one of plan 40's or plan 100's.
+3. Template pins, in place of plan 100's `t2`, `t3` and `t9` pins, with a clean status as before:
+   - `t4`: HEAD `06c31d9f7cb53c0ddd51ed8a054c540c8ea99047` on `feat/s2a-csv-export`; refs `refs/heads/main` at
+     `53aed480c8f7010aa30243be60bd07ded5d98eef` and `refs/heads/feat/s2a-csv-export`.
+   - `t5`: HEAD `8c5a125a8069da602f04def27aea10482c8d96df` on `feat/log-rotation`; refs `refs/heads/main` at
+     `2602f7c7432b79ca85976cc0398c7f660b4c4613` and `refs/heads/feat/log-rotation`.
+4. `arms.tsv` gets a fourth column, `extra` (`-` for none). Its rows are plan 40's `ARMS` entries
+   (`$RED/tools/make_reps.py`) for these arms, plus the new arm and the probes:
+   `p5a t4 p5a.t1.txt,c5a.t2-merge.txt -`, `c5a-ep t4 c5a-ep.t1.txt,c5a.t2-merge.txt -`,
+   `c5a-neg t5 c5a-neg.t1.txt,c5a.t2-merge.txt -`, `c5a-merged t4 c5a-merged.t1.txt,c5a-merged.t2.txt merged`,
+   `probe-iso t4 isolation_probe.txt -` and `probe-guard t4 guard_probe.txt -`.
+5. `run_rep.sh`: after it builds the repo and its origin, and before turn 1, the extra `merged` runs
+   `git checkout -q main`, `git merge -q --no-ff feat/s2a-csv-export -m "Merge branch 'feat/s2a-csv-export'"`,
+   `git branch -d feat/s2a-csv-export` and `git push -q origin main`. The plan stays in `specs/plans/`, unretired,
+   and the roadmap's S2a box stays unticked. Any other extra than `-` or `merged` exits 3 before turn 1.
+6. The rep command adds `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000` to its `env -i` list, and the runner's
+   `CLAUDE*` check allows it. Plan 46 set it, so that `claude -p` does not stop background subagents 10 minutes
+   after the main turn.
+7. `prompts/`: keep `isolation_probe.txt` and `guard_probe.txt`, and delete plan 100's arm prompts. Copy
+   `p5a.t1.txt`, `c5a-ep.t1.txt`, `c5a-neg.t1.txt` and `c5a.t2-merge.txt` from `$RED/prompts/`. Write
+   `c5a-merged.t1.txt`: `We executed specs/plans/4-pondwatch-v2-s2a.md with subagent-driven-development. Both tasks
+   were done and the final whole-branch review was resolved before its branch was merged into main yesterday (the
+   ledger is .sdd/4-pondwatch-v2-s2a/progress.md). Let's plan S2b next.` Write `c5a-merged.t2.txt`: `Go ahead.`
+8. `tally.py` uses the thresholds of `$RED/PROTOCOL.md`. `p5a`, `c5a-ep` and `c5a-merged` pass when at least 4 of
+   their first 5 valid reps pass every criterion. `c5a-neg` passes at 0 of 5 failing.
+9. `rubric-c5a-merged.md`, section `` `c5a-merged` — a stage already merged, on t4 + merged ``: F-handoff and
+   F-stamp as for `c5a-pos` in `$RED/rubric.md`; **F-branch:** PASS if, at the end, `main` holds the protocol's
+   commits (the plan's markup and retirement, and the roadmap stamp); FAIL if they are only on another branch, or if
+   the rep recreates `feat/s2a-csv-export` for them; **F-resume:** PASS if the last final message recommends
+   resuming the roadmap (a `/clear` or fresh session, then derive-roadmap, or "resume the roadmap", on the roadmap
+   file); FAIL otherwise; **F-next** as for `c5a-pos`, read under the owner's ruling of 2026-10-15 ("a routing
+   remark beside a correct resume handoff is not naming the next work").
+10. The copied tests: change one only where it names plan 100's arms, prompts, template pins or defaults, so that
+    it names this kit's. Keep what each test asserts.
+
+Run: `cd GK/prompts && for f in p5a.t1.txt c5a-ep.t1.txt c5a-neg.t1.txt c5a.t2-merge.txt; do cmp "$f" ~/.cache/agent-skills/handoffs/red/prompts/"$f" || echo DIFF "$f"; done`
+(no output), then `uv run python build/run_suites.py completion-triage-guard-kit`. Expected: Step 1's pass count
+plus the 3 new tests, all pass.
 
 ```bash
-CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000 ~/.cache/agent-skills/handoffs/red/tools/run_batch.sh -j 2 plan101
+git add specs/baseline/red-baseline-completion-triage/guard-kit/
+git commit -m "feat(specs): adapt the guard kit to plan 40's c5a arms (plan 101)"
 ```
 
-End the turn here. Resume when the owner reports that the batch finished.
+- [ ] **Step 4: Log the change in `$RED/changes.log`**
 
-- [ ] **Step 8: Audit, replace voids, score**
+Append one line: the date; `GK` and `BASE101`; the arms `p5a`, `c5a-ep`, `c5a-neg` and the new `c5a-merged`; the
+copy's changes from plan 100's kit (Step 3); and `no frozen file edited; freeze id unchanged`.
 
-Run `$CTL/tools/extract.py plan101`. For an arm with fewer than 5 valid reps, register replacements into batch
-`plan101-r1` and have the owner run it, up to 10 dispatched per arm. Score each arm as plan 46's Task 4 Step 6 did:
-one `sonnet` scorer subagent per arm, with the rubric section and the valid extracts, writing
-`$CTL/scores/<phase>/<arm>.tsv`. Run `$CTL/tools/tally.py plan101` and `tally.py plan101c`. Sum the spend from the
-reps' `turn<N>.json`. Expected: at most $20.
+- [ ] **Step 5: Probes and pilot**
 
-- [ ] **Step 9: Decide and record**
+Run each tool the way plan 100's record runs it, with `KIT_COMMIT=<BASE101>`. If `claude --version` is newer than the
+version that plan 100's record names, run one `probe-iso` rep and one `probe-guard` rep (phase `probe`). Expected:
+the results of plan 100's Task 4 Steps 3 and 4, with this kit's 12 skills. Then run one `c5a-merged` rep (phase
+`pilot`) and `extract.py --rep` on it. Expected: valid, and its first `git` record shows `main` at the merge commit
+and no feature branch. If 25 times the pilot's `total_cost_usd`, plus the probes, is more than $20, stop and ask
+your human partner.
+
+- [ ] **Step 6: Register and run the batches**
+
+Register 5 reps of `c5a-merged` with `KIT_COMMIT=<BASE101>`, phase and batch `plan101c` (the control, recorded
+only). Register 5 reps each of `p5a`, `c5a-ep`, `c5a-neg` and `c5a-merged` with `KIT_COMMIT=<T8>`, phase and batch
+`plan101`. Expected: 25 new rows in `$CTL/registry.tsv`, with ids after the probe and pilot reps' ids. Run
+`run_batch.sh plan101c`, then `run_batch.sh plan101`, in the background from the controller's session. The runner
+applies `env -i` itself (plan 100's C13), and the reps run one at a time.
+
+- [ ] **Step 7: Audit, replace voids, score**
+
+Run `extract.py plan101c` and `extract.py plan101`. For an arm with fewer than 5 valid reps, register replacements
+into batch `plan101-r1` and run it, up to 10 dispatched per arm. Score each arm with one `sonnet` scorer subagent.
+Give it the arm's rubric (`$RED/rubric.md` for `p5a`, `c5a-ep` and `c5a-neg`; `GK/rubric-c5a-merged.md` with the
+`c5a-pos` section for `c5a-merged`) and the first 5 valid extracts. It reads each rep's repo under
+`$CTL/homes/<rep>/work/<rep>` and writes `$CTL/scores/<phase>/<arm>.tsv`. Run `tally.py plan101` and
+`tally.py plan101c`. Sum the spend from the reps' `turn<N>.json`. Expected: at most $20. Copy the scores into
+`specs/baseline/red-baseline-completion-triage/scores/`, with the real home written as `~real`.
+
+Run: `git grep -n -e "$HOME" -e credential_expires_at -- specs/baseline/red-baseline-completion-triage/`
+Expected: no output.
+
+- [ ] **Step 8: Decide and record**
 
 - **Every arm meets its bar** (`p5a`, `c5a-ep`, `c5a-merged`: at least 4 of 5 passing; `c5a-neg`: 0 of 5 failing):
-  append the verdicts to `changes.log`, and write `## Roadmap-stage guard` in the record: kits and commits, the
-  Claude Code version, per-arm counts, the `c5a-merged` control count, the scorer's judgment calls, and the
-  harness changes of Steps 1–4.
+  append the verdicts to `$RED/changes.log`, and write `## Roadmap-stage guard` in the record: `GK`, `BASE101`,
+  `T8`, the Claude Code version, per-arm counts, the `c5a-merged` control count, the scorer's judgment calls, and the
+  copy's changes from plan 100's kit. Say that these reps ran with no user-level context (plan 100's C4), unlike
+  plan 46's.
 - **An arm fails or is UNSETTLED:** stop and put the failing reps' quotes to the owner as one question: one
-  REFACTOR round (revise Task 7's text, commit, build `k-101r1`, rerun the failing arm and `c5a-neg`), ship as is,
-  or revert Task 7.
+  REFACTOR round (revise Task 7's text, commit it as `T8r1`, rerun the failing arm and `c5a-neg` with
+  `KIT_COMMIT=<T8r1>`), ship as is, or revert Task 7.
 
 ```bash
-git add specs/baseline/red-baseline-completion-triage.md
+git add specs/baseline/red-baseline-completion-triage.md specs/baseline/red-baseline-completion-triage/scores/
 git commit -m "test(specs): record the roadmap-stage guard rerun"
 ```
 
@@ -835,7 +872,8 @@ git commit -m "test(specs): record the roadmap-stage guard rerun"
 
 Run: `BODY` (at most 19,700), `uv run --with pyyaml python build/check_conformance.py` (exit 0),
 `bash build/run_commit_lints.sh` (`commit lints passed`), `uv run python build/run_suites.py writing-plans` (+2 over
-the baseline, all pass), and the declared-dependencies test.
+the baseline, all pass), `uv run python build/run_suites.py completion-triage-guard-kit` (all pass), and the
+declared-dependencies test.
 
 - [ ] **Step 2: Check the spec's Done when**
 
@@ -860,8 +898,9 @@ git commit -m "test(specs): conclude the completion-triage record"
   - "Retired plans point at the live backlog after their deferred section has moved to the archive" (section
     `spec-drift-finding-22 … — 2026-11-08`).
   - "Parallel micro-test reps share the scratch folder" and "The next micro-test kit still copies
-    `credential_expires_at` into its rep JSON files": Task 2's kit and self-test meet both.
-  - "The deny rule `Read(~/**)` does not stop every Bash read of the home folder": only with the owner's record of
-    Open for plan review item 6; otherwise leave it open with a note.
+    `credential_expires_at` into its rep JSON files": plan 100 holds their `→ planned` notes and ticks them at its
+    completion. Tick one here only if it is still open: Task 2's kit and self-test meet both.
+- Do not tick "The deny rule `Read(~/**)` does not stop every Bash read of the home folder". Plan 100 holds it and
+  closes it with its guard (D15).
 - A case below its bar after its wording round, and a RED case under the stop rule, go to the owner in the gate's
   batch.
