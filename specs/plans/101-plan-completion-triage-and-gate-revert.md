@@ -28,14 +28,14 @@ multi-turn kit tests the guard on plan 40's frozen arms, as plan 46 did in plan 
   runs on `FLAT <file>`, which is `tr -s ' \n' ' ' < <file>`.
 - **A machinery stream runs alone.** This plan edits writing-plans and both executors, which drive every execution.
   Before Task 1, `mcp__ccd_session_mgmt__list_sessions` (or the owner) shows no other plan execution running in
-  agent-skills. Execute in a worktree of your own. Call controller tooling through `~/.claude/skills/<skill>/scripts/…`,
-  which resolves to the main checkout, so it keeps the old behavior all run long. Merge only when no other execution
-  runs. This plan's own completion runs under main's old step 4 and old gate rule: that is expected (spec,
-  Constraints).
-- **Plan 100 first** (D15). Before Task 1, this command lists plan 100's kit, so its execution has merged:
+  agent-skills, except plan 100's (D16). Execute in a worktree of your own. Call controller tooling through
+  `~/.claude/skills/<skill>/scripts/…`, which resolves to the main checkout, so it keeps the old behavior all run
+  long. Merge only when no other execution runs. This plan's own completion runs under main's old step 4 and old
+  gate rule: that is expected (spec, Constraints).
+- **Plan 100 before Task 9** (D15, D16). Tasks 1–8 may run while plan 100's execution runs. Before Task 9, this
+  command lists plan 100's kit, so its execution has merged:
   `git ls-tree --name-only origin/main -- specs/baseline/red-baseline-handoff-rerun/kit/`. If it lists nothing,
-  stop and ask your human partner. Task 9 copies that kit, and D9 keeps plan 100's execution from running while
-  this plan runs.
+  stop and ask your human partner. Task 9 Step 1 merges that kit into this branch and copies it.
 - **Parallel sessions.** Before Task 1, and before each of Tasks 3–7, run `git fetch origin main` and
   `git log --oneline <BASE101>..origin/main -- skills/writing-plans/ skills/subagent-driven-development/SKILL.md skills/subagent-driven-development/references/final-review.md skills/executing-plans/references/final-review.md build/cc_guide/conformance.toml`.
   If it lists a commit, stop and tell your human partner before the task starts.
@@ -126,7 +126,7 @@ Numbered after the spec's D1–D4. The brief is the 2026-11-17 `/deferred` pass'
   the `Read(~/**)` Bash-read gap, a per-rep scratch folder, and no `credential_expires_at` in rep JSON files.
   Applied in: Task 1 (spec amendment), Task 2, Task 9.
 - **D9** (owner, brief, 2026-11-17): a machinery stream. It executes alone, in its own worktree, with the tooling
-  pinned to main, and merges only when no other execution runs. Applied in: Global Constraints.
+  pinned to main, and merges only when no other execution runs. Applied in: Global Constraints. D16 amends it.
 - **D10** (owner, plan review, 2026-11-17): the spec's non-goal `No edit to Protocol step 1` covers the revert rule
   only, so Task 4 adds the final review's Declined to judge lines to step 1's leftovers. Amendment A1 says so.
   Applied in: Task 1 (spec amendment), Task 4.
@@ -147,12 +147,18 @@ Numbered after the spec's D1–D4. The brief is the 2026-11-17 `/deferred` pass'
   100's kit, with plan 40's frozen arms, prompts and rubric. Plan 40's harness stays frozen except one
   `changes.log` line. The record that the `Read(~/**)` gap stays is dropped: plan 100 closes that item with its
   guard. Applied in: Global Constraints, Task 9, Completion notes.
+- **D16** (owner, plan review, 2026-11-18): "Yes, amend D9". Tasks 1–8 may run while plan 100's execution runs.
+  Task 9 starts only after plan 100's execution has merged, and its Step 1 first merges `origin/main` into this
+  branch. No other execution may overlap this plan, and D9's merge rule stands. The control and treatment reps keep
+  `BASE101` and `T8`. Neither holds Step 1's merge, so they differ only by this plan's edits. Applied in: Global
+  Constraints, Task 9.
 
 ## Plan review
 
 Resolved on 2026-11-17. The owner accepted the planner's call on all seven open items ("accept all"). Plan 100 then
 merged with a different design for the same three next-kit-fix items, so items 6 and 7 were asked again, and the
-owner chose to copy plan 100's kit. D10–D15 record the answers.
+owner chose to copy plan 100's kit. D10–D15 record the answers. On 2026-11-18 the owner let Tasks 1–8 run while
+plan 100's execution runs (D16).
 
 ---
 
@@ -708,12 +714,13 @@ git commit -m "test(specs): run the completion-triage treatment arms and plan 80
 The controller runs this task. An implementer subagent may take Steps 2 and 3. `$RED` is plan 40's frozen harness,
 `~/.cache/agent-skills/handoffs/red`: read it, and append only to its `changes.log`. `GK` is
 `specs/baseline/red-baseline-completion-triage/guard-kit`. `$CTL` is `~/.cache/agent-skills/handoffs/guard101`.
+`KIT100` is the `origin/main` commit that Step 1 merges into this branch. It holds plan 100's kit (D16).
 Plan 46's Task 4 (`specs/plans/completed/46-sdd-bundle.md`) is the pattern for the arms and the scoring. Plan 100's
 Tasks 2–5 (`specs/plans/100-prepare-handoff-rerun.md`, or its retired path) are the pattern for the kit. Follow them
 where this task is silent (D15).
 
 **Files:**
-- Create: `GK/`, a copy of `specs/baseline/red-baseline-handoff-rerun/kit/` at `BASE101`
+- Create: `GK/`, a copy of `specs/baseline/red-baseline-handoff-rerun/kit/` at `KIT100`
 - Modify: `GK/run_rep.sh`, `GK/make_reps.py`, `GK/arms.tsv`, `GK/tally.py`, `GK/test_rerun_runner.py`, `GK/prompts/`
 - Create: `GK/prompts/c5a-merged.t1.txt`, `GK/prompts/c5a-merged.t2.txt`, `GK/rubric-c5a-merged.md`
 - Modify: `build/suites.toml` (one `[[suite]]` table, `completion-triage-guard-kit`)
@@ -722,20 +729,27 @@ where this task is silent (D15).
 - Modify (outside the repository): `$RED/changes.log` (one line)
 
 **Interfaces:**
-- Consumes: plan 100's kit at `BASE101`: `run_rep.sh REP`, `run_batch.sh BATCH`, `make_reps.py ARM PHASE COUNT BATCH`
+- Consumes: plan 100's kit at `KIT100`: `run_rep.sh REP`, `run_batch.sh BATCH`, `make_reps.py ARM PHASE COUNT BATCH`
   with `KIT_COMMIT` in the environment, `extract.py BATCH` and `extract.py --rep REP`, `tally.py PHASE`, `arms.tsv`,
   and the variables `PHR_ROOT`, `PHR_CTL`, `PHR_TEMPLATES` and `CLAUDE_BIN` (plan 100, Tasks 2 and 3 Interfaces).
-  Where the kit differs from plan 100's text, the kit is right. `BASE101`; `T8`.
+  Where the kit differs from plan 100's text, the kit is right. `BASE101`; `T8`; `KIT100`.
 - Produces: the verdicts that close the guard item's `Done when:`.
 
-- [ ] **Step 1: Copy the kit and register its suite**
+- [ ] **Step 1: Merge `main`, copy the kit and register its suite**
 
-Run: `git ls-tree --name-only <BASE101> -- specs/baseline/red-baseline-handoff-rerun/kit/`. Expected: plan 100's kit
-files (the Global Constraints' precondition). Then:
+Run the Global Constraints' plan 100 check and their Parallel-sessions check. Then run `git fetch origin main`,
+record `git rev-parse origin/main` as `KIT100`, and run
+`git merge --no-ff <KIT100> -m "chore: merge main for plan 100's kit (plan 101, D16)"`. If the merge stops on a
+conflict, stop and ask your human partner. Run the Commit gate's lints on the result. From here on, Task 9's review
+diff starts at the merge commit, and the final review's diff starts at `KIT100`, so plan 100's changes stay out of
+both.
+
+Run: `git ls-tree --name-only <KIT100> -- specs/baseline/red-baseline-handoff-rerun/kit/`. Expected: plan 100's kit
+files. Then:
 
 ```bash
 mkdir -p specs/baseline/red-baseline-completion-triage/guard-kit
-git archive <BASE101> specs/baseline/red-baseline-handoff-rerun/kit/ | tar -x --strip-components=4 -C specs/baseline/red-baseline-completion-triage/guard-kit/
+git archive <KIT100> specs/baseline/red-baseline-handoff-rerun/kit/ | tar -x --strip-components=4 -C specs/baseline/red-baseline-completion-triage/guard-kit/
 ```
 
 In `build/suites.toml`, add a copy of the `handoff-rerun-kit` table with the name `completion-triage-guard-kit` and
@@ -814,8 +828,8 @@ git commit -m "feat(specs): adapt the guard kit to plan 40's c5a arms (plan 101)
 
 - [ ] **Step 4: Log the change in `$RED/changes.log`**
 
-Append one line: the date; `GK` and `BASE101`; the arms `p5a`, `c5a-ep`, `c5a-neg` and the new `c5a-merged`; the
-copy's changes from plan 100's kit (Step 3); and `no frozen file edited; freeze id unchanged`.
+Append one line: the date; `GK`, `KIT100` and `BASE101`; the arms `p5a`, `c5a-ep`, `c5a-neg` and the new
+`c5a-merged`; the copy's changes from plan 100's kit (Step 3); and `no frozen file edited; freeze id unchanged`.
 
 - [ ] **Step 5: Probes and pilot**
 
@@ -850,10 +864,10 @@ Expected: no output.
 - [ ] **Step 8: Decide and record**
 
 - **Every arm meets its bar** (`p5a`, `c5a-ep`, `c5a-merged`: at least 4 of 5 passing; `c5a-neg`: 0 of 5 failing):
-  append the verdicts to `$RED/changes.log`, and write `## Roadmap-stage guard` in the record: `GK`, `BASE101`,
-  `T8`, the Claude Code version, per-arm counts, the `c5a-merged` control count, the scorer's judgment calls, and the
-  copy's changes from plan 100's kit. Say that these reps ran with no user-level context (plan 100's C4), unlike
-  plan 46's.
+  append the verdicts to `$RED/changes.log`, and write `## Roadmap-stage guard` in the record: `GK`, `KIT100`,
+  `BASE101`, `T8`, the Claude Code version, per-arm counts, the `c5a-merged` control count, the scorer's judgment
+  calls, and the copy's changes from plan 100's kit. Say that these reps ran with no user-level context (plan 100's
+  C4), unlike plan 46's.
 - **An arm fails or is UNSETTLED:** stop and put the failing reps' quotes to the owner as one question: one
   REFACTOR round (revise Task 7's text, commit it as `T8r1`, rerun the failing arm and `c5a-neg` with
   `KIT_COMMIT=<T8r1>`), ship as is, or revert Task 7.
