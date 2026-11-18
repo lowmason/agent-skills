@@ -487,3 +487,11 @@ def test_tally_pilot_phase_is_not_counted(ctl: Ctl) -> None:
     score(ctl, 'pilot', 'v1', [(names[0], 'F-restate', 'PASS')])
     done = tally(ctl, 'pilot')
     assert 'pilot (not counted)' in done.stdout, done.stdout
+
+
+def test_relative_file_field_without_dots_is_one_token(ctl: Ctl) -> None:
+    out = ctl.rep()
+    Ctl.transcript(out / 'project' / 'sid-1.jsonl', [('Read', {'file_path': 'Library/Preferences/x.plist'})], HOME_RUN)
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('Library' in flag for flag in audit['flags']), audit['flags']
