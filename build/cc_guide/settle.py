@@ -63,7 +63,7 @@ from packets import BLOCKS, GUIDE, INDEX, REPORT, SETTLED, section_lines
 from quotes import QuoteFiles
 from report_grammar import (CHANGELOG_REF_RE, DOC_REF_RE, FILE_REF_RE, FILES_QUOTES, LINE_REF_RE, LIST_ITEM_RE,
                             TRIAGE_QUOTES, VERIFY_QUOTES, given, none_line, report_lines, split_row, unquote)
-from state import SetupError, Source, default_cache, read_utf8
+from state import SetupError, Source, covered_files, default_cache, read_utf8
 
 # The checkout this file sits in, as cli.py's REPO: the one whose files `baseline cite` stamps.
 REPO = Path(__file__).resolve().parents[2]
@@ -604,10 +604,32 @@ def same_file(p: Packet, repo: Path) -> bool:
     return copy.is_file() and text is not None and unstamped(text) == unstamped(read_utf8(copy))
 
 
+def covered_changes(p: Packet, repo: Path) -> list[str]:
+    '''The covered files that moved since the packet was built (spec B4),
+    as sorted repo paths: one whose text in the checkout at repo differs from
+    the packet's copy or is gone, and one that the skill has gained or lost.
+    A packet made before covered files, with no `covered` key, has none, so
+    an older packet is never held for it. A git failure, or a covered file
+    that is not UTF-8, is a SetupError, as it is for `same_file`.'''
+    held = p.index.get('covered')
+    if held is None:
+        return []
+    source = Source(repo)
+    now = covered_files(source, p.index['file'])
+    moved = set(held) ^ set(now)
+    for name in set(held) & set(now):
+        copy = p.folder / held[name]
+        if not copy.is_file() or source.read(name) != read_utf8(copy):
+            moved.add(name)
+    return sorted(moved)
+
+
 def settle_files(p: Packet, hold: tuple[str, ...], repo: Path) -> Settled:
     index = p.index
     files = QuoteFiles(p.folder)
     path = index['file']
+    covered = index.get('covered') or {}
+    fixable = f'{path} or the covered file its row names' if covered else path
     fixes, owner, unverified = [], [], []
     consistent = 0
     answered: set[str] = set()
@@ -630,7 +652,8 @@ def settle_files(p: Packet, hold: tuple[str, ...], repo: Path) -> Settled:
         row = split_row(line, 5, FILES_QUOTES, fits)
         ref = FILE_REF_RE.fullmatch(row[0]) if row else None
         verdict = row[4].strip().lower() if row else ''
-        if ref is None or ref.group(1) != path or verdict not in FILES_VERDICTS or row[2] not in index['sections']:
+        if (ref is None or ref.group(1) not in (path, *covered) or verdict not in FILES_VERDICTS
+                or row[2] not in index['sections']):
             unverified.append(f'unparseable: {line}')
             discarded = True
             continue
@@ -647,13 +670,15 @@ def settle_files(p: Packet, hold: tuple[str, ...], repo: Path) -> Settled:
         else:
             owner.append(f'{row[0]} ({row[2]}, not covered; a coverage gap?): {row[1]}')
     left = [sid for sid in index['sections'] if sid not in answered]
+    moved = covered_changes(p, repo)
     reasons = (['a discarded or unparseable row might have changed it'] if discarded else []) + (
         ['a cited section was left out'] if left else []) + (['held by --hold'] if hold else []) + (
-        [] if same_file(p, repo) else ['the file changed after its packet was built'])
+        [] if same_file(p, repo) else ['the file changed after its packet was built']) + (
+        [f"covered files changed after its packet was built: {', '.join(moved)}"] if moved else [])
     out = [f'cc-guide settle: files {path}, {p.folder}',
            f'report: {consistent} consistent, {len(fixes)} contradiction(s), {len(owner)} not covered, '
            f'{len(unverified)} unverified']
-    out += [f'contradictions, to fix in {path} in the working tree:'] + [f'  {f}' for f in fixes]
+    out += [f'contradictions, to fix in {fixable} in the working tree:'] + [f'  {f}' for f in fixes]
     out += ["owner's call, never applied:"] + [f'  {o}' for o in owner]
     out += ['unverified, discarded:'] + [f'  {u}' for u in unverified]
     if left:
@@ -663,7 +688,7 @@ def settle_files(p: Packet, hold: tuple[str, ...], repo: Path) -> Settled:
         out.append(f"held, not cited: {path}: {'; '.join(reasons)}")
     else:
         steps.insert(0, command(p, 'baseline', 'cite', path))
-    out.append(f'then, in this order (R8.8), once every contradiction is fixed in {path}, unless '
+    out.append(f'then, in this order (R8.8), once every contradiction is fixed in {fixable}, unless '
                'build/cc_guide/conformance.toml records it as a deviation, which stays as it is; for one you leave '
                f'for the owner, settle again with --hold {path}, which skips its cite:')
     out += [f'  {s}' for s in steps]

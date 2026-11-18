@@ -15,7 +15,7 @@ import report_grammar
 import settle
 import state
 from cc_fixtures import (DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_dir, fixture_repo,  # noqa: F401
-                         fixture_state, guide_text, isolated_home, prime_cache, write_tree)
+                         fixture_state, git, guide_text, isolated_home, prime_cache, write_tree)
 from lint import CLI
 
 NOW = datetime(2026, 10, 4, 12, 0, tzinfo=timezone.utc)
@@ -1222,6 +1222,66 @@ def test_a_file_whose_citation_stamp_alone_changed_is_still_cited(world, tmp_pat
     gate.write_text(gate.read_text().replace('@2.1.899', '@2.1.901'))
     result = settled(out, CONSISTENT)
     assert f'  {CLI} baseline cite hooks/gate.sh' in result.lines
+    assert not any(line.startswith('held') for line in result.lines)
+
+
+# ---- files: covered files (spec B4, B6) ---------------------------------------
+
+def skill_md(name):
+    return f'---\nname: {name}\ndescription: Use when a fixture needs it.\n# cc-guide: alpha.overview @2.1.900\n---\n'
+
+
+def skill_packet(world, tmp_path):
+    '''Commits the demo skill into the world's repo, with each file that
+    its citation covers (beside.md, references/a.md and references/deep/b.md)
+    and two it does not (README.md, scripts/notes.md), and returns its files
+    packet.'''
+    write_tree(world[0], {
+        'skills/demo/SKILL.md': skill_md('demo'), 'skills/demo/beside.md': 'beside\n',
+        'skills/demo/references/a.md': 'a\n', 'skills/demo/references/deep/b.md': 'b\n',
+        'skills/demo/README.md': 'readme\n', 'skills/demo/scripts/notes.md': 'notes\n'})
+    git(world[0], 'add', '-A')
+    git(world[0], 'commit', '-qm', 'skill')
+    return packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md'])[0]
+
+
+SKILL_OK = ('skills/demo/SKILL.md:5 | a body | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent',)
+
+
+def test_settle_accepts_a_row_on_a_covered_file_and_discards_one_on_another_file(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    result = settled(out, *SKILL_OK,
+                     'skills/demo/references/a.md:1 | uses ALPHA_TOOL | alpha.overview | "Alpha uses `ALPHA_TOOL`" | contradicts',
+                     'skills/demo/other.md:1 | x | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent')
+    assert 'contradictions, to fix in skills/demo/SKILL.md or the covered file its row names in the working tree:' in result.lines
+    assert '  skills/demo/references/a.md:1 (alpha.overview): uses ALPHA_TOOL (guide: "Alpha uses `ALPHA_TOOL`")' in result.lines
+    assert any(line.startswith('  unparseable: skills/demo/other.md:1') for line in result.lines)
+
+
+@pytest.mark.parametrize('move, path', [('change', 'skills/demo/references/a.md'), ('add', 'skills/demo/new.md'),
+                                        ('remove', 'skills/demo/beside.md')])
+def test_a_covered_file_that_moved_holds_the_citing_file(world, tmp_path, move, path):
+    out = skill_packet(world, tmp_path)
+    repo = world[0]
+    if move == 'remove':
+        git(repo, 'rm', '-q', path)
+    else:
+        write_tree(repo, {path: 'moved\n'})
+        git(repo, 'add', path)
+    result = settled(out, *SKILL_OK)
+    assert (f'held, not cited: skills/demo/SKILL.md: covered files changed after its packet was built: {path}'
+            in result.lines)
+    assert not any(' baseline cite ' in line for line in result.lines)
+
+
+def test_a_files_packet_without_covered_settles_as_before(world, tmp_path):
+    '''Guard: passes at RED, and must still pass at GREEN.'''
+    out = skill_packet(world, tmp_path)
+    i = json.loads((out / packets.INDEX).read_text())
+    del i['covered']
+    (out / packets.INDEX).write_text(json.dumps(i))
+    result = settled(out, *SKILL_OK)
+    assert f'  {CLI} baseline cite skills/demo/SKILL.md' in result.lines
     assert not any(line.startswith('held') for line in result.lines)
 
 
