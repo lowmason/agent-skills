@@ -38,6 +38,8 @@
   ```
 
   `$H` is `/private/tmp/phr100/<rep>`, the physical form of `/tmp/phr100/<rep>`. macOS reports a working folder under `/tmp` as `/private/tmp`, so `HOME` uses that form too, and the two agree. `$SETTINGS_JSON` is the inline JSON of Task 1's Interfaces block. No other flag, variable or setting source is added.
+
+  > Deviation (execution, 2026-11-18, execution brief default 2): the `env -i` list also sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2400000` (40 minutes). In print mode, Claude Code stops background subagents 10 minutes after the main turn ends, and that voided plan 45's gate reps. Without the variable, a stopped fact-checker or cold reader could score as a FAIL, not a VOID (Review Focus 3). The runner's allow-list of `CLAUDE*` names (C13) and `test_env_holds_no_session_variables` (Task 2) admit this one name too. Task 3's audit voids a rep whose `turn<n>.stderr` holds `Background tasks still running`. That void is a harness check in C11's family, not a change to the frozen VOID rules (D1). The kit's `README.md` repeats this note.
 - **Thresholds** (`$RED/PROTOCOL.md`, Thresholds). `v1` and `b2` pass when at least 4 of their first 5 valid reps pass every criterion. `c4a-neg` passes when at most 1 of its first 5 valid reps fails F-brief. A void rep is replaced, up to 10 dispatched per arm. An arm with fewer than 5 valid reps at 10 dispatched stops for the owner. Only the first 5 valid reps by id count. Pilot reps never count.
 - **Rubric.** `$RED/rubric.md`, sections `b2`, `c4a-neg` and `c4b, v1`, unchanged. The rubric's `~/.cache/pondworks/reps/<rep>/` means the rep's repo, now `~/work/<rep>` inside the parked `HOME`.
 - **Raw outputs stay out of the repo.** The control folder is `~/.cache/agent-skills/handoffs/rerun100/` (`$CTL`). Results, parked homes, the registry and scores live there. The repo gets the kit, the scores TSVs and the record. A committed file writes the real home as `~real`.
@@ -103,6 +105,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 | `specs/baseline/red-baseline-handoff-rerun/kit/guard.py`, `test_rerun_guard.py` | new: the PreToolUse guard and its tests | 1 |
 | `build/suites.toml` | one `[[suite]]` table, `handoff-rerun-kit` | 1 |
 | `specs/baseline/red-baseline-handoff-rerun/kit/run_rep.sh`, `run_batch.sh`, `make_reps.py`, `postprocess.py`, `arms.tsv`, `prompts/`, `test_rerun_runner.py` | new: the runner, the registry tool, the strip step and their tests | 2 |
+| `specs/baseline/red-baseline-handoff-rerun/kit/README.md` | new (deviation, execution 2026-11-18): how to run the kit, `KIT_COMMIT`, and every execution deviation, so that a reader of the kit alone finds them | 2 |
 | `specs/baseline/red-baseline-handoff-rerun/kit/extract.py`, `tally.py`, `test_rerun_extract.py` | new: plan 40's audit and tally, forked for the new layout | 3 |
 | `specs/baseline/red-baseline-handoff-rerun/kit/prompts/isolation_probe.txt`, `guard_probe.txt` | new: probe prompts | 4 |
 | `specs/baseline/red-baseline-handoff-rerun/scores/` | new: the scores TSVs | 5 |
@@ -182,6 +185,8 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - Environment: `PHR_ROOT` (default `/private/tmp/phr100`), `PHR_CTL` (default `~/.cache/agent-skills/handoffs/rerun100`), `PHR_TEMPLATES` (default `~/.cache/pondworks/templates`), `CLAUDE_BIN` (default `command -v claude`), `KIT_COMMIT` (required; `make_reps.py` records it and `run_rep.sh` reads it from the registry).
 
 - [ ] **Step 1: Record `KIT_COMMIT`.** Run `git rev-parse HEAD` on the execution branch before its first commit. Write the value into the record's Method section (Task 4 creates it) and into each registry row.
+
+  > Deviation (execution, 2026-11-18, execution brief default 1): `KIT_COMMIT` is `92f6a379d4bb77ba53adb360f8171ebd9c295ce8`, the branch base, recorded right after the branch was cut and before Task 1. Task 1 commits first, so "before its first commit" could not be met at this step. The base is the commit that the Kit commit constraint names. `git diff --stat 275edc1 92f6a37 -- skills/ agents/ commands/` is empty, so the kit text equals the text at plan 100's merge. The kit's `README.md` repeats this note.
 
 - [ ] **Step 2: Copy the prompts.** Copy the seven files of C12 from `$RED/prompts/` into `kit/prompts/`. Then:
 
