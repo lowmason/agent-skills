@@ -372,9 +372,10 @@ or `nothing deferred`. Always: the summary keeps the trend legible.
 
 When `aged >45d:` is above 0, also run steps 1–4 of the **Triage rubric** in
 `references/deferred-backlog.md`, which are read-only, and present the
-proposal in this completion batch. Otherwise the full triage waits for
-`/deferred`, which alone executes a disposition. The triage never blocks
-completion — the aged tail is gated at finishing-a-development-branch.
+proposal in this completion batch, then continue to step 5. Otherwise the
+full triage waits for `/deferred`, which alone executes a disposition. The
+triage never blocks completion — the aged tail is gated at
+finishing-a-development-branch.
 
 **5. Retire.** First, run
 `uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> [<spec>]` and
