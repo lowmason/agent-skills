@@ -61,6 +61,7 @@ Execution:
 
 - **D1** (owner, brief, 2026-11-17): plan 100 closes the three next-kit items. This kit still carries the three fixes, each with its test (spec Part D, D2), and this plan writes no note on those items. It reuses plan 100's kit code if that code is on `main` at execution, and builds its own otherwise. Spec Part D, D2's option "or the owner records that the gap stays" moves to plan 100. Applied in: Task 6, Planner's call PC2, Completion.
 - **D2** (owner, brief, 2026-11-17): one cost ceiling, approved before the pilot. After the pilot the plan estimates again, and it stops for the owner only when the new estimate exceeds the approved ceiling. Applied in: Task 8.
+- **D3** (owner, plan review, 2026-11-18): "Approve as written", to "Approve plan 102 as written, PC2 included?". The plan stands as written: Planner's calls PC1 to PC14, PC2's isolation route (the real `HOME`, no Bash, a read fence) in place of plan 100's per-rep `HOME`, and the owner question's written default (B rows reported, not gated). Applied in: the whole plan.
 
 ---
 
@@ -98,7 +99,7 @@ Execution:
 - **PC13. The record** goes to `specs/baseline/red-baseline-cc-guide-verifier-recall.md`, with the kit beside it (`CLAUDE.md` Conventions), not to plan 45's DF11 path.
 - **PC14. Contract wording.** Tasks 2 and 5 give the exact A3, B3 and C1 text. The arm is that text.
 
-**Owner question (does not block the plan).** A changed arm that writes a B row for every listed item meets P11 and P8 by volume. Spec D5 reports B rows per rep and does not gate them. Should gate A add a B-row ceiling, for example changed-arm B rows at most twice the control's median? The default keeps the spec: reported, not gated.
+**Owner question (settled by D3: the default).** A changed arm that writes a B row for every listed item meets P11 and P8 by volume. Spec D5 reports B rows per rep and does not gate them. Should gate A add a B-row ceiling, for example changed-arm B rows at most twice the control's median? The default keeps the spec: reported, not gated.
 
 ### Cost (the owner approves a ceiling at Task 8)
 
@@ -733,7 +734,7 @@ git commit -m "test(cc-guide): add the verifier-recall kit's fixtures and grader
 
 - [ ] **Step 3: Freeze.** Copy the arms to `$K/arms/control.md` and `$K/arms/changed.md` (Pre-registration). Write `$K/FREEZE.sha256` over the kit files, the arms, `fixtures.sha256`, the precision key, the binary and this plan's Pre-registration section.
 
-- [ ] **Step 4: Owner gate: the ceiling** (D2). Tell the owner the Cost table and its expected range, the proposed $130 ceiling and the caps. Wait for an approved number. Write it to `$K/ceiling.txt` and log it in `## Decisions` as `D3`.
+- [ ] **Step 4: Owner gate: the ceiling** (D2). Tell the owner the Cost table and its expected range, the proposed $130 ceiling and the caps. Wait for an approved number. Write it to `$K/ceiling.txt` and log it in `## Decisions` under the next free D number.
 
 - [ ] **Step 5: Probe.** Write `probe.txt`, which asks the main session for three things, each reported as one line:
   1. run, with the Bash tool, one `for`-loop `ls ~/…` command (spec Part D, D2's construction), whose exact text the probe file holds;
