@@ -33,22 +33,25 @@ def homes(tmp_path: Path) -> tuple[Path, Path]:
     return rep, real
 
 
-def run_guard(stdin: str, rep: Path, real: Path) -> subprocess.CompletedProcess:
+def run_guard(stdin: str, rep: Path, real: Path, args: list[str] | None = None,
+              extra_env: dict | None = None) -> subprocess.CompletedProcess:
+    argv = ['--real-home', str(real)] if args is None else args
     done = subprocess.run(
-        ['/usr/bin/python3', str(GUARD), '--real-home', str(real)],
+        ['/usr/bin/python3', str(GUARD), *argv],
         input=stdin, capture_output=True, text=True,
-        env={'HOME': str(rep), 'PATH': '/usr/bin:/bin'}, check=False,
+        env={'HOME': str(rep), 'PATH': '/usr/bin:/bin', **(extra_env or {})}, check=False,
     )
     assert done.returncode == 0, done.stderr
     return done
 
 
-def decide(tool: str, tool_input: dict, rep: Path, real: Path, cwd: Path | None = None) -> str | None:
+def decide(tool: str, tool_input: dict, rep: Path, real: Path, cwd: Path | None = None,
+           extra_env: dict | None = None) -> str | None:
     payload = {
         'hook_event_name': 'PreToolUse', 'tool_name': tool, 'tool_input': tool_input,
         'cwd': str(cwd or rep / 'work' / 'r281'),
     }
-    done = run_guard(json.dumps(payload), rep, real)
+    done = run_guard(json.dumps(payload), rep, real, extra_env=extra_env)
     if not done.stdout.strip():
         return None
     out = json.loads(done.stdout)['hookSpecificOutput']
@@ -106,4 +109,68 @@ def test_malformed_payload_denies(homes):
     done = run_guard('not json', rep, real)
     out = json.loads(done.stdout)['hookSpecificOutput']
     assert out['permissionDecision'] == 'deny'
+    assert out['permissionDecisionReason'].startswith(INTERNAL)
+
+
+# --- shapes beyond the plan's seven tests (mutant step) ---
+
+
+def test_home_forms_climbing_out_deny(homes):
+    rep, real = homes
+    for form in ('~', '$HOME', '${HOME}'):
+        reason = decide('Bash', {'command': f'ls {form}/../real/.claude'}, rep, real)
+        assert_denied(reason, 'real home')
+    assert decide('Bash', {'command': 'ls $HOME/.claude/skills ${HOME}/work'}, rep, real) is None
+
+
+def test_heredoc_body_is_content(homes):
+    rep, real = homes
+    assert decide('Bash', {'command': f'cat > notes.md <<EOF\nsee {real}/x\nEOF'}, rep, real) is None
+    reason = decide('Bash', {'command': f'cat {real}/x <<EOF\nhi\nEOF'}, rep, real)
+    assert_denied(reason, 'real home')
+
+
+def test_denies_each_path_field(homes):
+    rep, real = homes
+    assert_denied(decide('Grep', {'pattern': 'x', 'path': str(real)}, rep, real), 'real home')
+    assert_denied(decide('NotebookEdit', {'notebook_path': f'{real}/n.ipynb'}, rep, real), 'real home')
+    assert_denied(decide('Glob', {'pattern': f'{real}/**/*.md'}, rep, real), 'real home')
+    assert_denied(decide('Glob', {'pattern': '**/*.md', 'path': str(real.parent)}, rep, real), 'real home')
+    assert decide('Glob', {'pattern': '**/*.md', 'path': str(rep)}, rep, real) is None
+    assert decide('Glob', {'pattern': '**/*.md'}, rep, real) is None
+
+
+def test_grep_pattern_is_not_a_path(homes):
+    rep, real = homes
+    assert decide('Grep', {'pattern': str(real), 'path': str(rep)}, rep, real) is None
+
+
+def test_relative_file_path_resolves_against_cwd(homes):
+    rep, real = homes
+    assert_denied(decide('Read', {'file_path': 'notes.md'}, rep, real, cwd=real), 'real home')
+    assert decide('Read', {'file_path': 'notes.md'}, rep, real) is None
+
+
+def test_case_and_variable_forms_deny(homes):
+    rep, real = homes
+    assert_denied(decide('Bash', {'command': f'ls {str(real).upper()}'}, rep, real), 'real home')
+    reason = decide('Bash', {'command': f'ls {real.parent}/$WHO/.claude'}, rep, real, extra_env={'WHO': 'real'})
+    assert_denied(reason, 'real home')
+
+
+def test_glob_above_real_home_denies(homes):
+    rep, real = homes
+    assert_denied(decide('Bash', {'command': f'ls {real.parent}/*/.claude'}, rep, real), 'real home')
+    assert decide('Bash', {'command': 'ls docs/**/*.md ~/.claude/skills/*'}, rep, real) is None
+    assert decide('Bash', {'command': 'ls /*'}, rep, real) is None
+
+
+def test_internal_errors_deny(homes):
+    rep, real = homes
+    payload = json.dumps({'tool_name': 'Bash', 'tool_input': {'command': 'ls'}, 'cwd': str(rep)})
+    for args in ([], ['--real-home'], ['--other', str(real)]):
+        out = json.loads(run_guard(payload, rep, real, args=args).stdout)['hookSpecificOutput']
+        assert out['permissionDecisionReason'].startswith(INTERNAL)
+    bad = json.dumps({'tool_name': 'Read', 'tool_input': ['x'], 'cwd': str(rep)})
+    out = json.loads(run_guard(bad, rep, real).stdout)['hookSpecificOutput']
     assert out['permissionDecisionReason'].startswith(INTERNAL)
