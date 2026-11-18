@@ -964,6 +964,16 @@ def test_a_b_row_answers_a_listed_item_only_on_its_line_and_only_when_it_parses(
         assert not result.clean
 
 
+def test_a_b_row_answers_a_listed_item_whatever_release_it_names(world, tmp_path):
+    '''The line alone is the key: a row on the item's line with the head release, an older release or an unrelated
+    label as its version answers the item.'''
+    out = audit_packet(world, tmp_path)
+    for version in ('2.1.902', '2.1.900', '9.9'):
+        result = settled(out, *REVIEWED, f'B | {version} | adds ALPHA_ENV | changelog.md:14')
+        assert 'listed items: 1 answered by a B row, 0 answered none, 0 unanswered' in result.lines, version
+        assert f'  {CLI} baseline audited alpha --to 2.1.902' in result.lines and result.clean, version
+
+
 def test_a_listed_item_answered_twice_counts_once(world, tmp_path):
     out = audit_packet(world, tmp_path)
     b = 'B | 2.1.901 | adds ALPHA_ENV | changelog.md:14'
