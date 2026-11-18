@@ -660,3 +660,28 @@ The gate-tag bar met closes the revert item's Done when: together with Task 5.
 
 The two re-runs cost $0.30 by `show_reps.py`. They count toward plan 101's $30 spend stop, which sums these two
 folders with its own.
+
+### history-filter, wording round 1 re-run
+
+Plan 101's wording round, `8b44d34` (`8b44d342b782f8ef5df3c5db63496acf549022de`), changes the writing-plans `SKILL.md`
+body, which `history-filter` reads. So the case ran again at `8b44d34`. The prompt came from this kit's
+`build_prompts.py` and `cases.py`, unchanged: `build_prompts.py 8b44d342b782f8ef5df3c5db63496acf549022de
+/tmp/plan101-work/rerun-r1 history-filter`, prompt sha256
+`47df4f81624d2363d609752ffc313f58b6e1c3c4752abf9b7e9cf981230806a8`. The reps ran through plan 101's runner as above,
+into `specs/baseline/red-baseline-development-history/plan101-r1/history-filter`. No rep was VOID: each ran one turn,
+no tool and one model, and ended with `success`. The reps cost $0.53 by `show_reps.py`.
+
+The six clauses of `HISTORY_PASS` and the readings above apply. Every rep keeps the heading and the Plan line as the
+draft gives them, keeps the Task 2 ruling labelled "Ruling, contradicts spec (Task 2)" and the module-name ruling
+labelled "Ruling (Task 3)", each with its what, why and cost parts, leaves out the batch-email and retry-jitter
+rulings, and keeps the closed-item line with its quoted title and "(deferred by 9-dock-status)" word for word. Every
+rep shortens the Deviation line and keeps its `Source: plan, Task 1.` pointer, which the rule allows.
+
+- rep1: PASS — all six clauses hold. The Deviation line ends "; v1 was retired. Source: plan, Task 1."
+- rep2: PASS — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task 1."
+- rep3: PASS — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task 1."
+- rep4: PASS — all six clauses hold. The Deviation line ends "; v1 was retired. Source: plan, Task 1."
+- rep5: PASS — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task 1."
+
+`history-filter` at `8b44d34`: treatment 5 of 5. The bar, `treatment 5/5`, is met. The two re-runs now cost $0.30 at
+`T7` for `gate-tag` and `history-filter` together by `show_reps.py`, and $0.53 for this one, so $0.83 in all.
