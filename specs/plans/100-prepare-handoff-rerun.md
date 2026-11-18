@@ -57,6 +57,7 @@
 ## Decisions
 
 - **D1** (owner, brief, 2026-11-17): use a kit-owned skills folder. The kit points the skill path (or `HOME`) at a folder that holds the shipped skills, so the reviewer subagents that the skill dispatches read the text under test. The VOID rules stay as they are. Applied in: Builder's calls C1 and C10, Tasks 2 and 3.
+- **D2** (owner, plan review, 2026-11-17): "Approve with table B". The plan stands as written, Builder's calls C1–C14 included, and the audit uses table B, not table A. Applied in: Builder's call C10, Task 3.
 
 ## Builder's calls
 
@@ -77,7 +78,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - **C7. `credential_expires_at`.** The runner saves each turn's stream as `turn<n>.jsonl`, writes the `result` record as `turn<n>.json` and the `system`/`init` record as `turn<n>.init.json`, and copies the session's transcripts into `project/`. Before it writes, `kit/postprocess.py` removes the key `credential_expires_at` at any depth from every JSON object. A final check fails the rep (`kit_error`) if the string is anywhere under the rep's results folder.
 - **C8. Shim.** As plan 40's: `git`, `python3`, `python3.13` and `uv` link to `/opt/homebrew/bin/`. `gh` is plan 40's stub, except that it logs to `$HOME/.cache/gh-calls.log`.
 - **C9. Model and flags.** `claude-opus-5-5` at `xhigh` effort for all three arms. Plan 40's `config.env` set `MODEL_PLAN=opus` and `EFFORT_PLAN=xhigh`, and the `opus` alias now resolves to `claude-opus-5-5`. The reviewer subagents run at the model the skill names (`sonnet`). `--permission-mode auto` and `--strict-mcp-config` are plan 40's. `--max-budget-usd 30` for each turn is new: it only stops a runaway turn, and a stopped turn voids.
-- **C10. Audit translation.** The frozen Audit section of `$RED/PROTOCOL.md`, with the Addendum's skill-path exception, protected paths under the real home. Each rep now has its own `HOME`. The audit (`kit/extract.py`) reads it this way (table B, the default; the owner chooses B or A at plan review):
+- **C10. Audit translation.** The frozen Audit section of `$RED/PROTOCOL.md`, with the Addendum's skill-path exception, protected paths under the real home. Each rep now has its own `HOME`. The audit (`kit/extract.py`) reads it this way (table B, which the owner chose at plan review, D2):
 
   | Frozen rule | Table B (default) | Table A (literal) |
   |---|---|---|
