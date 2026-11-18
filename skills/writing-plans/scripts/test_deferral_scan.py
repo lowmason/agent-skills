@@ -152,6 +152,14 @@ def test_text_after_an_older_status_header_is_read(tail):
     assert unmarked(line) == [Candidate(1, line)]
 
 
+def test_status_header_archive_clause_is_exact():
+    # Only the archive file named in the protocol follows `, or`; other words there are read.
+    line = ('**Status: COMPLETE (2026-01-01)** — executed via x; '
+            'deferred items in specs/deferred_items.md, '
+            'or the retry path is deferred to a future plan')
+    assert unmarked(line) == [Candidate(1, line)]
+
+
 @pytest.mark.parametrize('tail', [
     'deferred items in specs/deferred_items.md',
     'deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived',
