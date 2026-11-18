@@ -1405,6 +1405,7 @@
       Size: design. Done when: each of the three arms has 5 valid reps on the
       shipped skills and a recorded verdict.
       → progress 2026-11-17 (owner ruling): kit-owned skills folder. The kit points the skill path (or `HOME`) at a folder that holds the shipped skills, so the reviewer subagents that the skill dispatches read the text under test. The VOID rules stay as they are.
+      → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
 - [x] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
       you just finished is never planned past") says "do not plan, brainstorm or
       name it", yet step 3a requires the Handoff bullets and the stamp to name the
@@ -6896,6 +6897,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       what it read, and plan 98's kit is unchanged. Size: plan. Done when: a kit change closes the gap and a
       probe rep shows a `for`-loop `ls ~/…` denied, or the owner has recorded that the gap stays because
       VOID case 4 catches the harm.
+      → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
 - [x] **The firmlink spelling of the scratch folder passes the inside check (plan 98 Task 2 ruling, 2026-11-14).**
       `refuse_inside` in `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh` and `probe.sh`
       compares path strings. The path `/System/Volumes/Data/private/tmp/mnb98/x` names the same folder as
@@ -6923,6 +6925,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       next micro-test. Size: quick-fix. Done when: the kit that the next micro-test copies gives each rep its own
       scratch folder, or runs the reps one after the other, and a no-model test shows that two reps cannot see
       each other's files.
+      → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
 
 ## deferred-2026-11-14 (no plan; /deferred pass, branch claude/deferred-07da07) — 2026-11-14
 - [ ] **The next micro-test kit still copies `credential_expires_at` into its rep JSON files (the owner's ruling
@@ -6936,6 +6939,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `98-marimo-notebook-seam Step 4b review — 2026-11-14`. Size: quick-fix. Done when: the next micro-test
       kit removes `credential_expires_at` from every rep JSON file it writes, and a no-model test feeds that
       step a stream with the field and finds no `credential_expires_at` in the output.
+      → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
 
 ## deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
 - [x] **history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick
