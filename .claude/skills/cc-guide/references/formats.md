@@ -48,7 +48,7 @@ Verify and audit, parts A, B and C, and a none line for each section with no che
     section | none
     item | none
 
-Files, one row per statement that rests on a cited section, and a none line for each cited section no statement rests on:
+Files, one row per statement in the cited file or a covered file that rests on a cited section, and a none line for each cited section no statement rests on:
 
     file:line | statement | section | "verbatim guide quote" | consistent / contradicts / not covered
     section | none

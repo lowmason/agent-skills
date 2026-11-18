@@ -96,3 +96,9 @@ def test_the_listed_none_row_is_one_of_the_report_formats():
 def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form):
     for path in (AGENT, FORMATS):
         assert form in (REPO / path).read_text(encoding='utf-8'), f'{path} lacks {form!r}'
+
+
+def test_the_files_rows_cover_the_cited_file_and_each_covered_file():
+    text = (REPO / AGENT).read_text(encoding='utf-8')
+    assert 'Give one row per statement in the cited file or a covered file that rests on a cited section' in text
+    assert 'or a path `covered` names' in text
