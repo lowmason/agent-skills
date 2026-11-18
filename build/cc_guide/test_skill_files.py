@@ -64,6 +64,13 @@ def test_the_verifier_writes_a_none_line_exactly_and_no_other_line_with_a_pipe()
     assert '`<section> | none`' in rule and 'Put `|` in no other line.' in rule
 
 
+def test_the_verifier_answers_every_listed_item_in_an_audit():
+    lines = (REPO / AGENT).read_text(encoding='utf-8').split('\n')
+    (rule,) = [line for line in lines if 'Answer every listed item' in line]
+    assert '`<item> | none`' in rule and 'holds its sections' in rule
+    assert 'with its release as the version' in rule
+
+
 @pytest.mark.parametrize('form', report_grammar.FORMATS)
 def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form):
     for path in (AGENT, FORMATS):

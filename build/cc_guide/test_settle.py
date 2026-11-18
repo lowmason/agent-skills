@@ -887,13 +887,61 @@ def test_an_audit_ends_with_audited_unless_a_section_is_held(world, tmp_path):
     latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
     out = packets.audit(load(world), tmp_path / 'a', 'alpha')
     result = settled(out, 'L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -',
-                     'alpha.reference | none')
+                     'alpha.reference | none', '2.1.901#1 | none')
     assert result.lines[0] == f'cc-guide settle: audit alpha, {out}'
     assert [line for line in result.lines if 'baseline' in line][:2] == [
         f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
         f'  {CLI} baseline audited alpha --to 2.1.902']
     held = settled(out, 'L14 | Alpha uses ALPHA_TOOL | PARTIAL | tools.md:5 | "absent" | Partly.')
     assert not any('audited' in line for line in held.lines if line.startswith('  '))
+
+
+REVIEWED = ('L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -', 'alpha.reference | none')
+
+
+def audit_packet(world, tmp_path):
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    return packets.audit(load(world), tmp_path / 'a', 'alpha')
+
+
+def test_an_audit_answers_each_listed_item_by_a_b_row_on_its_line_or_its_none_line(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    by_b = settled(out, *REVIEWED, 'B | 2.1.901 | adds ALPHA_ENV | changelog.md:14')
+    assert 'listed items: 1 answered by a B row, 0 answered none, 0 unanswered' in by_b.lines
+    assert f'  {CLI} baseline audited alpha --to 2.1.902' in by_b.lines and by_b.clean
+    by_none = settled(out, *REVIEWED, '2.1.901#1 | none')
+    assert 'listed items: 0 answered by a B row, 1 answered none, 0 unanswered' in by_none.lines and by_none.clean
+
+
+def test_an_unanswered_listed_item_holds_its_sections(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    # The last case pins A5: the B row's form does not change, so an item ID in its version field does not parse.
+    for extra in ((), ('B | 2.1.902 | other | changelog.md:9',), ('2.1.901#1 | not relevant',),
+                  ('B | 2.1.901#1 | adds ALPHA_ENV | changelog.md:14',)):
+        result = settled(out, *REVIEWED, *extra)
+        assert 'listed items: 0 answered by a B row, 0 answered none, 1 unanswered' in result.lines
+        assert 'unanswered listed items, so their sections are held: 2.1.901#1' in result.lines
+        assert 'held, neither advanced nor audited: alpha.reference' in result.lines
+        assert not any('audited' in line for line in result.lines if line.startswith('  ')) and not result.clean
+
+
+def test_a_none_line_for_an_unlisted_item_holds_every_section(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    result = settled(out, *REVIEWED, 'B | 2.1.901 | adds ALPHA_ENV | changelog.md:14', '2.1.999#4 | none')
+    assert 'listed items: 1 answered by a B row, 0 answered none, 0 unanswered' in result.lines
+    assert '  unparseable: 2.1.999#4 | none' in result.lines
+    assert 'held, neither advanced nor audited: alpha.overview alpha.reference' in result.lines
+
+
+def test_an_audit_packet_without_listed_settles_as_before(world, tmp_path):
+    '''Guard: passes at RED, and must still pass at GREEN.'''
+    out = audit_packet(world, tmp_path)
+    i = json.loads((out / packets.INDEX).read_text())
+    del i['listed']
+    (out / packets.INDEX).write_text(json.dumps(i))
+    result = settled(out, *REVIEWED)
+    assert not any(line.startswith('listed items') for line in result.lines)
+    assert f'  {CLI} baseline audited alpha --to 2.1.902' in result.lines and result.clean
 
 
 def test_every_rebaseline_settle_prints_names_its_packets_head(world, tmp_path):

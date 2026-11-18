@@ -36,7 +36,11 @@ refuses it once a later fetch has moved latest/.
   holds nothing: the run neither reviews nor advances that section, and its
   triage may have advanced it already. A row whose guide line is in no
   section, past the guide's last line included, holds every section in the
-  packet. A hold keeps `accept`, for the text the run changed.
+  packet. A hold keeps `accept`, for the text the run changed. An audit
+  also answers each item its packet lists: a B row on the item's changelog
+  line, or its `<item> | none` line. An item with neither holds its sections
+  and leaves the audit unclean, and a none line for an ID the packet does not
+  list is unparseable and holds every section.
 
 report_grammar.py states how a report's lines split into rows, and which
 lines are no rows. Settle also drops, without listing it, a well-formed
@@ -409,6 +413,19 @@ def review_fits(rest: list[str]) -> bool:
     return review_verdict(rest[0]) in VERIFY_VERDICTS and (not given(rest[1]) or bool(DOC_REF_RE.fullmatch(rest[1])))
 
 
+def listed_report(listed: list[dict], by_row: set[str], by_none: set[str]) -> tuple[list[str], list[dict]]:
+    '''What settle prints for an audit's listed items, and the items no B row
+    or none line answered. An item both answers counts once, as a B row's.'''
+    unanswered = [e for e in listed if e['item'] not in by_row | by_none]
+    if not listed:
+        return [], unanswered
+    lines = [f'listed items: {len(by_row)} answered by a B row, {len(by_none - by_row)} answered none, '
+             f'{len(unanswered)} unanswered']
+    if unanswered:
+        lines.append('unanswered listed items, so their sections are held: ' + ' '.join(e['item'] for e in unanswered))
+    return lines, unanswered
+
+
 def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     '''verify and audit: R8.5's A/B/C report under R8.8's discard rule.'''
     index = p.index
@@ -431,6 +448,10 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     confirmed = 0
     held = set(index.get('held', [])) | set(hold)
     answered: set[str] = set()
+    listed = index.get('listed', [])  # an audit packet's changelog bullets that name its group's terms
+    listed_ids = {e['item'] for e in listed}
+    by_row: set[str] = set()
+    by_none: set[str] = set()
     whole_held = False
 
     def hold_inside(sid: str) -> None:
@@ -449,11 +470,19 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
                 unverified.append(f'unparseable: {line}')
             else:
                 changelog.append(' | '.join(row[1:]))
+                n = int(row[3].rpartition(':')[2])
+                by_row.update(e['item'] for e in listed if e['line'] == n)
             continue
         if first == 'C':
             omission = given(split_row(line, 2)[1])
             if omission:
                 owner.append(f'omission: {omission}')
+            else:
+                unverified.append(f'unparseable: {line}')
+            continue
+        if first in listed_ids:  # `<item> | none`: the bullet changes no claim in the packet's sections
+            if none_line(line):
+                by_none.add(first)
             else:
                 unverified.append(f'unparseable: {line}')
             continue
@@ -508,6 +537,10 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
         held |= set(scope)
     left = [sid for sid in scope if sid not in answered]
     held |= set(left)
+    listed_out, unanswered = listed_report(listed, by_row, by_none)
+    for e in unanswered:
+        for sid in e['sections']:
+            hold_inside(sid)
     fixed = list(dict.fromkeys(sid for sid, _ in corrections))
     resolved = {sid for sid in [*scope, *cleared] if sid not in held}
     ready = [b for b in index['blocks'] if set(b['candidates']) <= resolved]
@@ -523,6 +556,7 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     out += ["owner's call, never applied:"] + [f'  {o}' for o in owner]
     out += ['unverified, discarded:'] + [f'  {u}' for u in unverified]
     out += ['changelog items (B):'] + [f'  {c}' for c in changelog]
+    out += listed_out
     if left:
         out.append(f"{LEFT_OUT}, so held: {' '.join(left)}")
     shown = [sid for sid in scope if sid in held]
@@ -548,7 +582,7 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     out.append('a correction that resolves a conformance gap removes its [[exception]] from '
                'build/cc_guide/conformance.toml in the same change; lint\'s STALE lines then name the citing files '
                'of each section whose `changed` moved')
-    return Settled(out, not unverified and not left, None)
+    return Settled(out, not unverified and not left and not unanswered, None)
 
 
 # ---- files (R8.7, R8.8) -----------------------------------------------------
