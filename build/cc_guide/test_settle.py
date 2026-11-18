@@ -1414,6 +1414,29 @@ def test_the_files_that_moved_are_named_sorted_and_the_ones_that_did_not_are_not
         'skills/demo/aaa.md, skills/demo/beside.md, skills/demo/references/a.md']
 
 
+def test_a_skill_that_gained_its_first_covered_file_is_held(world, tmp_path):
+    '''The packet's `covered` is empty, and the checkout now covers a file.'''
+    write_tree(world[0], {'skills/demo/SKILL.md': skill_md('demo')})
+    git(world[0], 'add', '-A')
+    git(world[0], 'commit', '-qm', 'solo')
+    (out,) = packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md'])
+    assert json.loads((out / packets.INDEX).read_text())['covered'] == {}
+    write_tree(world[0], {'skills/demo/references/first.md': 'first\n'})
+    git(world[0], 'add', '-A')
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == ['held, not cited: skills/demo/SKILL.md: covered files changed after its packet '
+                                  'was built: skills/demo/references/first.md']
+
+
+def test_a_skill_that_lost_every_covered_file_is_held_naming_each(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    git(world[0], 'rm', '-q', '-r', 'skills/demo/references', 'skills/demo/beside.md')
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == [
+        'held, not cited: skills/demo/SKILL.md: covered files changed after its packet was built: '
+        'skills/demo/beside.md, skills/demo/references/a.md, skills/demo/references/deep/b.md']
+
+
 def test_a_covered_file_gone_from_disk_but_still_in_the_index_holds_the_citing_file(world, tmp_path):
     out = skill_packet(world, tmp_path)
     (world[0] / 'skills/demo/references/deep/b.md').unlink()
