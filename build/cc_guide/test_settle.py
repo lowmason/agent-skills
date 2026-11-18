@@ -944,6 +944,86 @@ def test_an_audit_packet_without_listed_settles_as_before(world, tmp_path):
     assert f'  {CLI} baseline audited alpha --to 2.1.902' in result.lines and result.clean
 
 
+def edit_index(out, **changes):
+    i = json.loads((out / packets.INDEX).read_text())
+    (out / packets.INDEX).write_text(json.dumps(i | changes))
+
+
+def listed_item(item, line, *sections):
+    return {'item': item, 'line': line, 'sections': list(sections), 'lacks': [], 'text': 'adds a name'}
+
+
+def test_a_b_row_answers_a_listed_item_only_on_its_line_and_only_when_it_parses(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    for row in ('B | 2.1.901 | adds ALPHA_ENV | changelog.md:13', 'B | 2.1.901 | adds ALPHA_ENV | changelog.md:15',
+                'B | 2.1.901 | adds ALPHA_ENV | changelog.md:140', 'B | 2.1.901 | adds ALPHA_ENV | -',
+                'B | 2.1.901 | adds ALPHA_ENV | tools.md:14', 'B | v2 | adds ALPHA_ENV | changelog.md:14',
+                'B | 2.1.901 | - | changelog.md:14'):
+        result = settled(out, *REVIEWED, row)
+        assert 'listed items: 0 answered by a B row, 0 answered none, 1 unanswered' in result.lines, row
+        assert not result.clean
+
+
+def test_a_listed_item_answered_twice_counts_once(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    b = 'B | 2.1.901 | adds ALPHA_ENV | changelog.md:14'
+    both = settled(out, *REVIEWED, b, b, '2.1.901#1 | none')
+    assert 'listed items: 1 answered by a B row, 0 answered none, 0 unanswered' in both.lines and both.clean
+    none = settled(out, *REVIEWED, '2.1.901#1 | none', '2.1.901#1 | None')
+    assert 'listed items: 0 answered by a B row, 1 answered none, 0 unanswered' in none.lines and none.clean
+    assert not any(line.startswith(('unanswered', 'held')) for line in both.lines + none.lines)
+
+
+def test_a_prose_line_for_a_listed_item_is_listed_and_holds_only_its_sections(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    result = settled(out, *REVIEWED, '2.1.901#1 | not relevant')
+    assert '  unparseable: 2.1.901#1 | not relevant' in result.lines
+    assert 'held, neither advanced nor audited: alpha.reference' in result.lines
+
+
+def test_settle_counts_and_names_each_listed_item_in_listed_order(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    edit_index(out, listed=[listed_item('2.1.903#1', 9, 'alpha.overview'),
+                            listed_item('2.1.902#2', 14, 'alpha.reference'),
+                            listed_item('2.1.901#1', 21, 'alpha.overview', 'alpha.reference'),
+                            listed_item('2.1.900#3', 30, 'alpha.overview')])
+    result = settled(out, *REVIEWED, 'B | 2.1.903 | adds a name | changelog.md:9', '2.1.902#2 | none')
+    start = result.lines.index('changelog items (B):')
+    assert result.lines[start:start + 5] == [
+        'changelog items (B):', '  2.1.903 | adds a name | changelog.md:9',
+        'listed items: 1 answered by a B row, 1 answered none, 2 unanswered',
+        'unanswered listed items, so their sections are held: 2.1.901#1 2.1.900#3',
+        'held, neither advanced nor audited: alpha.overview alpha.reference']
+    assert not result.clean
+
+
+def test_an_unanswered_item_holds_only_its_sections_in_the_packets_scope(world, tmp_path):
+    out = audit_packet(world, tmp_path)
+    edit_index(out, sections=['alpha.reference'], cleared=['alpha.overview'],
+               listed=[listed_item('2.1.901#1', 14, 'alpha.overview', 'beta.overview', 'alpha.reference')])
+    partly = settled(out, 'alpha.reference | none')
+    assert 'held, neither advanced nor audited: alpha.reference' in partly.lines and not partly.clean
+    edit_index(out, listed=[listed_item('2.1.901#1', 14, 'alpha.overview', 'beta.overview')])
+    wholly = settled(out, 'alpha.reference | none')
+    assert 'listed items: 0 answered by a B row, 0 answered none, 1 unanswered' in wholly.lines
+    assert 'unanswered listed items, so their sections are held: 2.1.901#1' in wholly.lines
+    assert not any(line.startswith('held') for line in wholly.lines) and not wholly.clean
+    assert f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902" in wholly.lines
+
+
+def test_a_verify_packet_and_an_audit_packet_with_no_listed_item_print_no_listed_lines(world, tmp_path):
+    '''Guard: passes before the task, and must keep passing.'''
+    verify = review(world, tmp_path)
+    assert 'listed' not in json.loads((verify / packets.INDEX).read_text())
+    shown = settled(verify, *REVIEWED)
+    assert not any(line.startswith(('listed', 'unanswered')) for line in shown.lines) and shown.clean
+    out = audit_packet(world, tmp_path)
+    edit_index(out, listed=[])
+    empty = settled(out, *REVIEWED)
+    assert not any(line.startswith(('listed', 'unanswered')) for line in empty.lines) and empty.clean
+    assert f'  {CLI} baseline audited alpha --to 2.1.902' in empty.lines
+
+
 def test_every_rebaseline_settle_prints_names_its_packets_head(world, tmp_path):
     '''Plan 49's decision D2: a check after a packet was built can refetch
     latest/, so each rebaseline settle prints, from a triage, a verify or an
