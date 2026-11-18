@@ -28,10 +28,10 @@ multi-turn kit tests the guard on plan 40's frozen arms, as plan 46 did in plan 
   runs on `FLAT <file>`, which is `tr -s ' \n' ' ' < <file>`.
 - **A machinery stream runs alone.** This plan edits writing-plans and both executors, which drive every execution.
   Before Task 1, `mcp__ccd_session_mgmt__list_sessions` (or the owner) shows no other plan execution running in
-  agent-skills, except plan 100's (D16). Execute in a worktree of your own. Call controller tooling through
-  `~/.claude/skills/<skill>/scripts/…`, which resolves to the main checkout, so it keeps the old behavior all run
-  long. Merge only when no other execution runs. This plan's own completion runs under main's old step 4 and old
-  gate rule: that is expected (spec, Constraints).
+  agent-skills, except plan 100's and plan 102's (D16, D17). Execute in a worktree of your own. Call controller
+  tooling through `~/.claude/skills/<skill>/scripts/…`, which resolves to the main checkout, so it keeps the old
+  behavior all run long. Merge only when no other execution runs. This plan's own completion runs under main's old
+  step 4 and old gate rule: that is expected (spec, Constraints).
 - **Plan 100 before Task 9** (D15, D16). Tasks 1–8 may run while plan 100's execution runs. Before Task 9, this
   command lists plan 100's kit, so its execution has merged:
   `git ls-tree --name-only origin/main -- specs/baseline/red-baseline-handoff-rerun/kit/`. If it lists nothing,
@@ -151,14 +151,18 @@ Numbered after the spec's D1–D4. The brief is the 2026-11-17 `/deferred` pass'
   Task 9 starts only after plan 100's execution has merged, and its Step 1 first merges `origin/main` into this
   branch. No other execution may overlap this plan, and D9's merge rule stands. The control and treatment reps keep
   `BASE101` and `T8`. Neither holds Step 1's merge, so they differ only by this plan's edits. Applied in: Global
-  Constraints, Task 9.
+  Constraints, Task 9. D17 amends it.
+- **D17** (owner, plan review, 2026-11-18): "Yes, extend D16". Plan 102's execution, a domain stream that edits no
+  execution machinery, may also run alongside this plan, at any task. D9's merge rule stands, so this plan merges
+  only when neither plan 100 nor plan 102 is still executing. `build/suites.toml` is the one file that both plans
+  edit, and each adds its own table. Applied in: Global Constraints.
 
 ## Plan review
 
 Resolved on 2026-11-17. The owner accepted the planner's call on all seven open items ("accept all"). Plan 100 then
 merged with a different design for the same three next-kit-fix items, so items 6 and 7 were asked again, and the
 owner chose to copy plan 100's kit. D10–D15 record the answers. On 2026-11-18 the owner let Tasks 1–8 run while
-plan 100's execution runs (D16).
+plan 100's execution runs (D16), then let plan 102's execution run alongside this plan too (D17).
 
 ---
 
