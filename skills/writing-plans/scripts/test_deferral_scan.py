@@ -141,6 +141,28 @@ def test_text_after_status_header_is_read():
     assert unmarked(line) == [Candidate(1, line)]
 
 
+@pytest.mark.parametrize('tail', [
+    'deferred items in specs/deferred_items.md',
+    'nothing deferred',
+], ids=['old-tail', 'nothing-deferred'])
+def test_text_after_an_older_status_header_is_read(tail):
+    # Each tail is anchored at the line end, not only the new one.
+    line = ('**Status: COMPLETE (2026-01-01)** — executed via x; ' + tail
+            + '; the retry path is deferred to a future plan')
+    assert unmarked(line) == [Candidate(1, line)]
+
+
+@pytest.mark.parametrize('tail', [
+    'deferred items in specs/deferred_items.md',
+    'deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived',
+    'nothing deferred',
+], ids=['old-tail', 'new-tail', 'nothing-deferred'])
+def test_status_header_exempts_only_its_own_line(tail):
+    # The same words on a line that is not the status header are read.
+    line = 'The retry path is deferred to a future plan; ' + tail
+    assert unmarked(line) == [Candidate(1, line)]
+
+
 def test_skipped_line_is_exempt():
     assert unmarked('> Skipped: needs a DSN → deferred') == []
     assert unmarked('> Skipped: needs a DSN → deferred (same successor item)') == []
