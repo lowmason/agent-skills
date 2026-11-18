@@ -13,7 +13,8 @@ This kit reruns three arms of plan 40's prepare-handoff baseline: `v1`, `b2` and
 - `templates.tsv` gives the expected `HEAD` of each fixture template.
 - `prompts/` holds byte-identical copies of plan 40's prompt files.
 - `shim/gh` is the stand-in GitHub CLI that each rep gets.
-- `test_rerun_guard.py` and `test_rerun_runner.py` are the tests. They run as suite `handoff-rerun-kit`.
+- `extract.py` audits each rep and writes its extract. `tally.py` checks the scores and prints the verdicts.
+- `test_rerun_guard.py`, `test_rerun_runner.py` and `test_rerun_extract.py` are the tests. They run as suite `handoff-rerun-kit`.
 
 ## How to run it
 
@@ -69,6 +70,29 @@ The runner writes `PHR_CTL/results/<rep>/`:
 No JSON or JSONL file in the results folder holds `credential_expires_at`. A final check fails the rep (exit 4) if the string is anywhere in that folder.
 
 When the rep ends, the runner moves its `HOME` to `PHR_CTL/homes/<rep>/`. The audit reads the repo from `PHR_CTL/homes/<rep>/work/<rep>`.
+
+## The audit and the tally
+
+`extract.py BATCH` or `extract.py --rep REP` audits each rep and writes `PHR_CTL/results/<rep>/extract.md` and `audit.json`. The extract has the same sections as plan 40's. `tally.py PHASE` checks each score's quote against its extract and prints the counts and verdicts. Both are forks of plan 40's `tools/` files.
+
+The audit reads the frozen VOID rules by table B of plan 100's C10:
+
+- `~` is the `HOME` the rep ran with, `PHR_ROOT/<rep>`. The whole rep `HOME` is allowed, except its `Library` folder.
+- A path into the real home voids. So does a path into, or through, the rep's `Library` folder, because `Library/Keychains` links into the real home. An input that names `Keychains` also voids.
+- The reps directory voids, and so does anything in it outside the rep's `HOME`.
+- `/tmp`, `/private/tmp` and `/System/Volumes/Data/private/tmp` are one folder. The real home's `/System/Volumes/Data` form is the real home. The audit compares paths without case.
+- The fragments, a failed turn and the denial rule are unchanged.
+
+The audit resolves `..` in the text of each path. It never reads the paths, because the rep's `HOME` is parked by then. The real home is the audit's own `HOME`.
+
+These harness checks also void a rep (C11 and the wait ceiling below):
+
+- `kit_sha_before` and `kit_sha_after` in `meta.txt` are missing or differ.
+- `meta.txt` has a `kit_error=` line or a `turn <n> exited <status>` line.
+- `turn1.init.json` is missing. Or an init record's `skills` lack one of the 12 kit skills, or its `agents` lack `code-reviewer` or `task-reviewer`. The check compares sets. Extra names, such as Claude Code's built-in skills and agents, do not void, and a name listed twice counts once. A later turn's init record is checked when it exists. Task 4's pilot shows the real init record. If it lists extra names that look user-level, the controller decides then.
+- A `turn<n>.stderr` holds `Background tasks still running`.
+
+`tally.py` reads `PHR_CTL/scores/PHASE/<arm>.tsv`. `v1` and `b2` pass when at least 4 of their first 5 valid reps pass every criterion. `c4a-neg` passes when at most 1 of its first 5 valid reps fails. A rep whose `audit.json` phase is `pilot` never counts.
 
 ## Deviations
 
