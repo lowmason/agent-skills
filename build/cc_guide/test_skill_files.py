@@ -78,6 +78,15 @@ def test_the_skill_and_its_formats_reference_describe_listed_md():
     assert '`listed.md`' in packets and '`listed`' in packets
 
 
+def test_formats_states_the_hold_settle_prints_for_a_moved_covered_file():
+    '''The Holds bullet names the reason line that settle prints (pinned in
+    test_settle.py) and says a files row may name a covered file.'''
+    formats = (REPO / FORMATS).read_text(encoding='utf-8').split('\n')
+    (holds,) = [line for line in formats if line.startswith('- **Holds.**')]
+    assert '`covered files changed after its packet was built`' in holds
+    assert 'a row may name a covered file' in holds
+
+
 def test_the_listed_none_row_is_one_of_the_report_formats():
     assert report_grammar.LISTED_NONE_ROW == 'item | none'
     assert report_grammar.LISTED_NONE_ROW in report_grammar.FORMATS
