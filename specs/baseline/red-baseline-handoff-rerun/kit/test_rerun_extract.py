@@ -515,3 +515,28 @@ def test_glob_into_the_real_home_voids(ctl: Ctl, form: str) -> None:
 def test_glob_outside_the_real_home_is_valid(ctl: Ctl, command: str) -> None:
     ctl.rep(main=[('Bash', {'command': command})])
     assert ctl.audit()['valid'] is True
+
+
+# --- review round 1 -------------------------------------------------------------
+
+
+def test_glob_relative_path_from_a_subfolder_is_valid(ctl: Ctl) -> None:
+    out = ctl.rep()
+    Ctl.transcript(out / 'project' / 'sid-1.jsonl', [('Glob', {'pattern': '*.md', 'path': '../..'})],
+                   f'{REPO_RUN}/specs')
+    audit = ctl.audit()
+    assert audit['valid'] is True, audit
+
+
+@pytest.mark.parametrize('command', ['grep -rn keychains .', 'grep -rn "Keychains" docs/', 'ls keychains/'])
+def test_keychains_word_without_library_is_valid(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command})])
+    assert ctl.audit()['valid'] is True
+
+
+def test_record_without_cwd_resolves_from_the_repo(ctl: Ctl) -> None:
+    out = ctl.rep()
+    Ctl.transcript(out / 'project' / 'sid-1.jsonl', [('Bash', {'command': 'ls ../../..'})], None)
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('/private/tmp/phr100 (the reps directory)' in flag for flag in audit['flags']), audit['flags']

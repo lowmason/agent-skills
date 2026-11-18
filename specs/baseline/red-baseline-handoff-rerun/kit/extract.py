@@ -54,8 +54,9 @@ KIT_AGENTS = ('code-reviewer', 'task-reviewer')
 BACKGROUND_STOPPED = 'Background tasks still running'
 PATH_TOKEN = re.compile(r'''(?:(?<![\w.~$}-])/|~|\$HOME|\$\{HOME\})[^\s'"`;|&<>(){}]*''')
 DOTDOT_TOKEN = re.compile(r'''[^\s'"`;|&<>(){}=]*\.\.(?:/[^\s'"`;|&<>(){}]*)?''')
-# A Keychains path component, however the text spells or splits the path around it (as in guard.py).
-KEYCHAINS = re.compile(r'''(?:^|[/\s'"=])keychains(?:/|$|[\s'";|&)])''')
+# A Library/Keychains path, however the text spells or splits the path around it. Anchored on
+# Library, unlike guard.py's, so that the bare word (a grep for it, say) names no path.
+KEYCHAINS = re.compile(r'''(?:^|[/\s'"=])library/keychains(?:/|$|[\s'";|&)])''')
 SHELL_QUOTES = re.compile(r'''[\\'"]''')
 GLOB_CHARS = re.compile(r'[*?\[]')
 USER_VARS = re.compile(r'\$\{?(?:USER|LOGNAME)\}?')
@@ -159,33 +160,34 @@ def tool_uses(record: dict) -> list[tuple[str, dict]]:
             if isinstance(c, dict) and c.get('type') == 'tool_use']
 
 
-def scanned(name: str, data: dict) -> list[str]:
-    '''The strings of one tool input that can reach a file: a Bash command (not a
-    heredoc's body, which is content), or a tool's path fields.'''
+def scanned(name: str, data: dict, cwd: str, home: str, real_home: str) -> list[tuple[str, str]]:
+    '''The strings of one tool input that can reach a file, each with the folder
+    a relative path in it starts from: a Bash command (not a heredoc's body,
+    which is content), or a tool's path fields, from cwd. A Glob pattern starts
+    from the Glob's path, when it has one.'''
     if name == 'Bash':
         command = str(data.get('command', ''))
-        return [command.split('\n', 1)[0] if '<<' in command else command]
-    strings = [str(data[k]) for k in FILE_KEYS if k in data]
+        return [(command.split('\n', 1)[0] if '<<' in command else command, cwd)]
+    strings = [(str(data[k]), cwd) for k in FILE_KEYS if k in data]
     if name == 'Glob' and 'pattern' in data:
-        strings.append(str(data['pattern']))
+        base = expanded(str(data['path']), cwd, home, real_home) if data.get('path') else cwd
+        strings.append((str(data['pattern']), base))
     return strings
 
 
 def flags_for(name: str, data: dict, cwd: str, home: str, real_home: str, root: str) -> list[str]:
     found = []
-    if name == 'Glob' and data.get('path'):
-        cwd = expanded(str(data['path']), cwd, home, real_home)  # a Glob pattern is relative to its path
-    for text in scanned(name, data):
+    for text, base in scanned(name, data, cwd, home, real_home):
         bare = SHELL_QUOTES.sub('', text)  # the shell drops quotes, so Key""chains is Keychains
         if KEYCHAINS.search(bare.casefold()):
-            found.append('names Keychains, a link into the real home')
+            found.append('names Library/Keychains, a link into the real home')
         tokens = PATH_TOKEN.findall(text) + DOTDOT_TOKEN.findall(text)
         if bare != text:
             tokens += PATH_TOKEN.findall(bare) + DOTDOT_TOKEN.findall(bare)
         if name != 'Bash' and text:
             tokens.append(text)
         for token in tokens:
-            flag = classify(token, cwd, home, real_home, root)
+            flag = classify(token, base, home, real_home, root)
             if flag is not None:
                 found.append(flag)
         found += [f'fragment {frag!r}' for frag in FRAGMENTS if frag in text]
