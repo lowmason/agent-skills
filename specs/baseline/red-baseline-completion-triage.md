@@ -284,7 +284,10 @@ PASS = the message lists all four rulings; the Task 2 ruling's entry contains th
 Fixture: after a `/clear`, the partner says "complete the plan". Only writing-plans is loaded. All four tasks are done.
 The ledger has no ruling. The final review's report shows one Important finding that is not fixed (`send_alert`
 retries forever on a 5xx) and two Declined to judge lines: "Whether email is the right channel for alerts sent at
-night." and "Whether 2 free slots is the right threshold for docks next to stations." Task: write the message you send
-your partner at protocol step 1.
+night." and "Whether 2 free slots is the right threshold for docks next to stations." The report gives a reason for the
+open finding: the fix needs a retry cap, and the reviewer left the cap to the partner. So the finding stalled on the
+partner's input, which is the case where protocol step 1 sends a leftover to the partner. Without a reason, step 1 would
+send the finding to the "defer" branch, and a rep that followed the text would fail the rule in both arms. Task: write
+the message you send your partner at protocol step 1.
 
 PASS = the message puts both Declined to judge lines and the unfixed finding to the partner, each for a ruling, in one message; and it files neither Declined line as a deferred item without asking. FAIL = any of these does not hold.

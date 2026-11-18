@@ -269,7 +269,7 @@ Task 2: complete (commits 8c9d0e1..a4b5c6d, review clean)
 Task 3: complete (commits a4b5c6d..e7f8a9b, review clean)
 Task 4: complete (commits e7f8a9b..0b1c2d3, review clean)
 [you, tools] Read the final whole-branch review's report from the run's workspace, in full:
-Important: `send_alert` retries forever when the mail host answers with a 5xx (alerts/notify.py:41). Not fixed.
+Important: `send_alert` retries forever when the mail host answers with a 5xx (alerts/notify.py:41). Not fixed: the fix needs a retry cap, and the reviewer left the cap to your partner.
 Declined to judge: Whether email is the right channel for alerts sent at night.
 Declined to judge: Whether 2 free slots is the right threshold for docks next to stations.
 [you, tools] Nothing from the plan was skipped. The ledger has no ruling.'''
