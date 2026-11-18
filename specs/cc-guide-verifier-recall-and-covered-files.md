@@ -1,8 +1,8 @@
 # cc-guide verifier recall and covered files — Design Spec
 
-**Status:** DRAFT, for the owner's review. The design came from a brainstorming session on 2026-11-17 for lane D1
-of that day's `/deferred` triage. D1 is the owner's ruling from that pass. D2 and D4 are the owner's answers in the
-brainstorming session. Text marked *(designer's call)* is the designer's choice.
+**Status:** APPROVED 2026-11-17 by the owner ("Approve spec"). The design came from a brainstorming session on
+2026-11-17 for lane D1 of that day's `/deferred` triage. D1 is the owner's ruling from that pass. D2 and D4 are the
+owner's answers in the brainstorming session. Text marked *(designer's call)* is the designer's choice.
 
 This spec changes two kinds of `/cc-guide` packet and what the `cc-guide-verifier` agent answers from them. An
 audit packet gets a numbered list of the changelog bullets that name the group's terms, and the verifier must answer
