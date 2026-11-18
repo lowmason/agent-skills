@@ -174,3 +174,12 @@ def test_internal_errors_deny(homes):
     bad = json.dumps({'tool_name': 'Read', 'tool_input': ['x'], 'cwd': str(rep)})
     out = json.loads(run_guard(bad, rep, real).stdout)['hookSpecificOutput']
     assert out['permissionDecisionReason'].startswith(INTERNAL)
+
+
+def test_symlink_and_sibling_resolve(homes):
+    rep, real = homes
+    (rep / 'work' / 'door').symlink_to(real)
+    (real.parent / 'real2').mkdir()
+    assert_denied(decide('Bash', {'command': 'ls ../door/.claude'}, rep, real), 'real home')
+    assert_denied(decide('Read', {'file_path': f'{rep}/work/door/x'}, rep, real), 'real home')
+    assert decide('Bash', {'command': f'ls {real.parent}/real2/x'}, rep, real) is None
