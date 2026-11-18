@@ -30,6 +30,7 @@ These environment variables control the kit:
 | `PHR_CTL` | `~/.cache/agent-skills/handoffs/rerun100` | The control folder: registry, batches, results and parked homes. |
 | `PHR_TEMPLATES` | `~/.cache/pondworks/templates` | Plan 40's fixture templates, used read-only. |
 | `PHR_TEMPLATE_HEADS` | `templates.tsv` in the kit | A file of `template<TAB>head` rows. The tests point it at their own template. |
+| `PHR_PROMPTS` | `prompts/` in the kit | The folder of prompt files. The tests point it at their own prompts. |
 | `PHR_KIT_REPO` | the git checkout that holds the kit | The repo that `git archive KIT_COMMIT` reads. |
 | `CLAUDE_BIN` | `command -v claude` | The claude binary. The tests set a stub. |
 | `KIT_COMMIT` | none, required by `make_reps.py` | The commit whose skills fill each rep's `HOME`. `run_rep.sh` reads it from the registry. |
@@ -46,7 +47,9 @@ The rep's `HOME` is `PHR_ROOT/<rep>`. It holds:
 - `tmp/`, the rep's `TMPDIR`.
 - `Library/Keychains`, a link to the real `~/Library/Keychains`. Claude Code needs it to keep the login.
 
-The rep's `HOME` has no `CLAUDE.md`, no `settings.json`, no rules and no `.zshenv`. It also has no `.gitconfig`.
+The rep's `HOME` has no `CLAUDE.md`, no `settings.json`, no rules and no `.zshenv`.
+
+It has a minimal `.gitconfig` that sets only `user.name` (`Pondworks Rep`) and `user.email` (`rep@pondworks.invalid`). Nothing else comes from any real git config. Plan 40's reps committed with the owner's global identity. A rep with no identity gets git's guessed identity and its warnings, and that could change what the rep does. The controller ruled for this file.
 
 Before the first turn, the runner checks the template's `HEAD`, its refs and its status. It also checks that the hash of the rep's kit folders equals the hash of `KIT_COMMIT`'s copy. The hash is `shasum -a 256` over the sorted file list and the contents of `.claude/skills`, `.claude/agents` and `.claude/commands`.
 

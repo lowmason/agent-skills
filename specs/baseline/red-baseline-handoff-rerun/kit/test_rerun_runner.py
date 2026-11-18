@@ -469,3 +469,65 @@ def test_split_picks_records(tmp_path):
     assert len(lines) == 5
     assert lines[2] == 'not json'
     assert FIELD not in '\n'.join(lines)
+
+
+# Tests added in review fix round 1 (plan 100, Task 2).
+
+OLD_KIT_COMMIT = 'd778c3e58a5684abf0c6048a12b45718756f4c9e'
+DENY = ['Read(//Users/**)', 'Edit(//Users/**)', 'Write(//Users/**)',
+        'Read(~/Library/**)', 'Edit(~/Library/**)', 'Write(~/Library/**)']
+
+
+def test_settings_deny_rules_are_the_plans_six(kit):
+    rep, = kit.make_reps()
+    run_ok(kit, rep)
+    args = (kit.stub_dir / 'args.1').read_text().splitlines()
+    settings = json.loads(args[args.index('--settings') + 1])
+    assert settings['permissions']['deny'] == DENY
+
+
+def test_prompt_fills_real_home(kit):
+    prompts = kit.tmp / 'prompts'
+    prompts.mkdir()
+    (prompts / 'c4a-neg.t1.txt').write_text('real @REAL@/.claude rep @REP@\n')
+    (prompts / 'c4a.t2.txt').write_text('second @REAL@\n')
+    env = kit.env()
+    env['PHR_PROMPTS'] = str(prompts)
+    rep, = kit.make_reps()
+    done = subprocess.run(['/bin/bash', str(RUN_REP), rep], env=env, cwd=kit.tmp,
+                          capture_output=True, text=True, check=False, timeout=300)
+    assert done.returncode == 0, done.stdout + done.stderr
+    out = kit.ctl / 'results' / rep
+    real = os.path.realpath(kit.real)
+    repdir = os.path.realpath(kit.root / rep) + f'/work/{rep}'
+    assert (out / 'turn1.prompt.txt').read_text() == f'real {real}/.claude rep {repdir}\n'
+    assert (out / 'turn2.prompt.txt').read_text() == f'second {real}\n'
+
+
+def test_kit_comes_from_the_registry_commit(kit):
+    env = kit.env()
+    env['KIT_COMMIT'] = OLD_KIT_COMMIT
+    done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c4a-neg', 'test', '1', 'b1'],
+                          env=env, capture_output=True, text=True, check=False)
+    assert done.returncode == 0, done.stderr
+    rep = (kit.ctl / 'batches' / 'b1.txt').read_text().split()[0]
+    out = run_ok(kit, rep)  # kit.env() keeps KIT_COMMIT at the newer commit
+    want = subprocess.run(['git', '-C', str(KIT), 'show', f'{OLD_KIT_COMMIT}:skills/prepare-handoff/SKILL.md'],
+                          capture_output=True, text=True, check=True).stdout
+    home = kit.ctl / 'homes' / rep
+    assert (home / '.claude' / 'skills' / 'prepare-handoff' / 'SKILL.md').read_text() == want
+    meta = meta_of(out)
+    assert meta['kit_commit'] == OLD_KIT_COMMIT
+    assert meta['kit_sha_before'] == meta['kit_sha_after']
+
+
+def test_rep_git_identity_is_the_placeholder(kit):
+    report = kit.tmp / 'git-id.txt'
+    kit.actions(f'{{ git config user.name; git config user.email; git config --global --list; }} > \'{report}\' 2>&1\n')
+    rep, = kit.make_reps()
+    run_ok(kit, rep)
+    lines = report.read_text().splitlines()
+    assert lines[:2] == ['Pondworks Rep', 'rep@pondworks.invalid']
+    assert sorted(lines[2:]) == ['user.email=rep@pondworks.invalid', 'user.name=Pondworks Rep']
+    assert (kit.ctl / 'homes' / rep / '.gitconfig').read_text() == \
+        '[user]\n\tname = Pondworks Rep\n\temail = rep@pondworks.invalid\n'

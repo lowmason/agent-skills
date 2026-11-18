@@ -17,6 +17,7 @@ REAL=$(cd "$HOME" && pwd -P)
 CTL=${PHR_CTL:-$HOME/.cache/agent-skills/handoffs/rerun100}
 TEMPLATES=${PHR_TEMPLATES:-$HOME/.cache/pondworks/templates}
 HEADS=${PHR_TEMPLATE_HEADS:-$KIT_DIR/templates.tsv}
+PROMPTS=${PHR_PROMPTS:-$KIT_DIR/prompts}
 ROOT_IN=${PHR_ROOT:-/private/tmp/phr100}
 CLAUDE_BIN=${CLAUDE_BIN:-$(command -v claude || true)}
 USER=${USER:-$(id -un)}
@@ -73,7 +74,7 @@ ROOT=$(cd "$ROOT_IN" && pwd -P)
 
 IFS=',' read -r -a turns <<<"$prompts"
 for p in "${turns[@]}"; do
-  [ -f "$KIT_DIR/prompts/$p" ] || die 2 "no prompt $KIT_DIR/prompts/$p"
+  [ -f "$PROMPTS/$p" ] || die 2 "no prompt $PROMPTS/$p"
 done
 
 # The fixture template: the expected HEAD, only refs/heads/main, a clean status.
@@ -109,6 +110,8 @@ done
 repdir=$H/work/$rep
 mkdir -p "$H/.claude" "$H/work" "$H/git" "$H/.local/bin" "$H/tmp" "$H/Library"
 ln -s "$REAL/Library/Keychains" "$H/Library/Keychains"
+# Controller ruling: a placeholder git identity, nothing else from any real git config.
+printf '[user]\n\tname = Pondworks Rep\n\temail = rep@pondworks.invalid\n' > "$H/.gitconfig"
 # shellcheck disable=SC2086
 git -C "$SOURCE" archive "$kit_commit" $KIT_PATHS | tar -x -C "$H/.claude"
 cp -R "$tpl" "$repdir"
@@ -142,7 +145,7 @@ n=0
 for p in "${turns[@]}"; do
   n=$((n + 1))
   if [ "$n" -eq 1 ]; then sess=--session-id; else sess=--resume; fi
-  sed -e "s|@REP@|$repdir|g" -e "s|@REAL@|$REAL|g" "$KIT_DIR/prompts/$p" > "$out/turn$n.prompt.txt"
+  sed -e "s|@REP@|$repdir|g" -e "s|@REAL@|$REAL|g" "$PROMPTS/$p" > "$out/turn$n.prompt.txt"
   set +e
   ( cd "$repdir" && env -i "${rep_env[@]}" \
       "$CLAUDE_BIN" -p "$sess" "$sid" \
