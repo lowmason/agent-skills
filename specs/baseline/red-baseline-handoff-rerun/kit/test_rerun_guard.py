@@ -183,3 +183,29 @@ def test_symlink_and_sibling_resolve(homes):
     assert_denied(decide('Bash', {'command': 'ls ../door/.claude'}, rep, real), 'real home')
     assert_denied(decide('Read', {'file_path': f'{rep}/work/door/x'}, rep, real), 'real home')
     assert decide('Bash', {'command': f'ls {real.parent}/real2/x'}, rep, real) is None
+
+
+def test_real_home_argument_resolves(homes):
+    rep, real = homes
+    alias = real.parent / 'alias'
+    alias.symlink_to(real)
+    payload = json.dumps({'tool_name': 'Bash', 'tool_input': {'command': f'ls {real}/.claude'}, 'cwd': str(rep)})
+    out = json.loads(run_guard(payload, rep, real, args=['--real-home', str(alias)]).stdout)['hookSpecificOutput']
+    assert_denied(out['permissionDecisionReason'], 'real home')
+
+
+def test_denied_maps_home_forms_to_its_home_argument(homes):
+    '''An in-process caller (such as an audit) may run with HOME at the real
+    home: denied must map ~, $HOME and ${HOME} to its home argument, not HOME.'''
+    rep, real = homes
+    code = (
+        'import json, sys; sys.path.insert(0, sys.argv[1]); import guard; '
+        'print(json.dumps([guard.denied("Bash", {"command": c}, sys.argv[2], sys.argv[2], sys.argv[3]) '
+        'for c in ("ls ~/.claude/skills", "ls $HOME/work", "ls ${HOME}/work")]))'
+    )
+    done = subprocess.run(
+        ['/usr/bin/python3', '-I', '-c', code, str(GUARD.parent), str(rep), str(real)],
+        capture_output=True, text=True, env={'HOME': str(real), 'PATH': '/usr/bin:/bin'}, check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    assert json.loads(done.stdout) == [None, None, None]
