@@ -611,7 +611,10 @@ def covered_files(source: Source, path: str) -> list[str]:
     '''The tracked Markdown files a skill's citation covers (spec B1): when
     path is a skill's own SKILL.md, each tracked .md file in its folder or
     below it, except path itself, any README.md and anything with a scripts
-    folder below the skill folder. Sorted. Any other path covers none.'''
+    folder below the skill folder. A file the source cannot read is no
+    covered file: the working tree's index still lists one removed with
+    plain `rm`, which the citation scan skips. Sorted. Any other path covers
+    none.'''
     if not SKILL_MD_RE.fullmatch(path):
         return []
     folder = path.rpartition('/')[0]
@@ -619,5 +622,6 @@ def covered_files(source: Source, path: str) -> list[str]:
     for name in source.tracked_under(folder):
         *folders, base = name.removeprefix(folder + '/').split('/')
         if name != path and base.endswith('.md') and base != 'README.md' and 'scripts' not in folders:
-            covered.append(name)
+            if source.read(name) is not None:
+                covered.append(name)
     return covered

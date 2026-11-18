@@ -532,6 +532,32 @@ def test_a_skill_with_many_covered_files_still_gets_one_packet_holding_all_of_th
     assert all((out[0] / copy).is_file() for copy in covered.values())
 
 
+def test_a_files_packet_leaves_out_a_covered_file_removed_from_disk(world, tmp_path):
+    with_skill(world)
+    (world[0] / 'skills/demo/beside.md').unlink()  # plain rm: the index still lists it
+    (out,) = packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md'])
+    assert index(out)['covered'] == {'skills/demo/references/a.md': 'covered/references/a.md',
+                                     'skills/demo/references/deep/b.md': 'covered/references/deep/b.md'}
+    assert sorted(str(p.relative_to(out)) for p in (out / 'covered').rglob('*.md')) == [
+        'covered/references/a.md', 'covered/references/deep/b.md']
+
+
+def test_a_covered_file_removed_from_one_skill_stops_no_other_skills_packet(world, tmp_path):
+    with_skill(world)
+    with_skill(world, '.claude/skills/local')
+    (world[0] / 'skills/demo/beside.md').unlink()
+    both = ['skills/demo/SKILL.md', '.claude/skills/local/SKILL.md']
+    for n, targets in enumerate((both, both[::-1])):  # the skill with the removed file first, then last
+        out = packets.files(load(world), tmp_path / f'f{n}', targets)
+        by_file = {index(folder)['file']: index(folder)['covered'] for folder in out}
+        assert sorted(by_file) == sorted(both)
+        assert sorted(by_file['skills/demo/SKILL.md']) == ['skills/demo/references/a.md',
+                                                         'skills/demo/references/deep/b.md']
+        assert sorted(by_file['.claude/skills/local/SKILL.md']) == [
+            '.claude/skills/local/beside.md', '.claude/skills/local/references/a.md',
+            '.claude/skills/local/references/deep/b.md']
+
+
 def test_a_files_packet_copies_the_covered_files_of_the_source_it_reads(world, tmp_path):
     with_skill(world)
     write_tree(world[0], {'skills/demo/beside.md': 'edited\n', 'skills/demo/untracked.md': 'u\n',

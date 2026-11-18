@@ -1,6 +1,7 @@
 '''Tests for state.py: the manifest, the baseline, PROBES.md, the repo
 source and the cache layout (drift spec R2, R6.1).'''
 import json
+import shutil
 import subprocess
 import tomllib
 from datetime import date
@@ -602,6 +603,36 @@ def test_tracked_under_sorts_the_names_whatever_order_git_prints(tmp_path, monke
     for ref in (None, 'main'):
         assert state.Source(tmp_path, ref).tracked_under('skills/demo') == [
             'skills/demo/B.md', 'skills/demo/a.md', 'skills/demo/a/z.md', 'skills/demo/b.md']
+
+
+def test_a_covered_file_removed_from_disk_is_not_covered_in_the_working_tree(tmp_path):
+    '''git ls-files reads the index, so a file removed with plain rm, its deletion not staged, is still
+    listed. The citation scan (git grep) skips such a file, and a covered file is one the source can read.'''
+    repo = fixture_repo(tmp_path / 'repo', SKILL_TREE)
+    (repo / 'skills/demo/beside.md').unlink()
+    assert state.Source(repo).tracked_under('skills/demo/references') == [
+        'skills/demo/references/README.md', 'skills/demo/references/a.md', 'skills/demo/references/deep/b.md',
+        'skills/demo/references/scripts/x.md']
+    assert 'skills/demo/beside.md' in state.Source(repo).tracked_under('skills/demo')
+    assert state.covered_files(state.Source(repo), 'skills/demo/SKILL.md') == [
+        'skills/demo/references/a.md', 'skills/demo/references/deep/b.md']
+    assert state.covered_files(state.Source(repo, 'HEAD'), 'skills/demo/SKILL.md') == [
+        'skills/demo/beside.md', 'skills/demo/references/a.md', 'skills/demo/references/deep/b.md']
+    shutil.rmtree(repo / 'skills/demo/references')
+    assert state.covered_files(state.Source(repo), 'skills/demo/SKILL.md') == []
+    assert state.covered_files(state.Source(repo, 'HEAD'), 'skills/demo/SKILL.md') == [
+        'skills/demo/beside.md', 'skills/demo/references/a.md', 'skills/demo/references/deep/b.md']
+    git(repo, 'add', '-A')  # staging the deletions changes nothing the source can read
+    assert state.covered_files(state.Source(repo), 'skills/demo/SKILL.md') == []
+
+
+def test_a_staged_covered_file_removed_from_disk_is_not_covered(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', SKILL_TREE)
+    write_tree(repo, {'skills/demo/new.md': 'n\n'})
+    git(repo, 'add', 'skills/demo/new.md')
+    assert 'skills/demo/new.md' in state.covered_files(state.Source(repo), 'skills/demo/SKILL.md')
+    (repo / 'skills/demo/new.md').unlink()
+    assert 'skills/demo/new.md' not in state.covered_files(state.Source(repo), 'skills/demo/SKILL.md')
 
 
 def test_a_git_failure_listing_a_folder_is_a_setup_error(tmp_path):
