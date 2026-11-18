@@ -6,8 +6,9 @@ found, when a closed item leaves the file, and when the aged tail blocks a
 branch finish.
 
 Five callers use this file:
-- **writing-plans** § Plan Completion Protocol — writes items (schema below)
-  and runs the read-only triage at completion.
+- **writing-plans** § Plan Completion Protocol — writes items (schema below),
+  shows the stats line and the plan's new items at completion, and runs the
+  read-only triage only when the aged tail is above 0.
 - **finishing-a-development-branch** § Step 1b — runs the aged-tail gate;
   § Step 4b — writes items (schema below) for the review findings the
   partner carries.

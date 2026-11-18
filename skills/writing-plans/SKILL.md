@@ -360,28 +360,21 @@ below; amending later stages' entries is derive-roadmap's job, at the resume.
 These edits land with the protocol's other commits. Context for a later stage
 that cannot be committed goes to prepare-handoff.
 
-**4. Backlog triage.** Report backlog health, then bring the triage to your
-human partner rather than waiting to be asked for it. Run from the repo root:
+**4. Backlog report.** Run from the repo root:
 
 ```bash
 uv run <this-skill-dir>/scripts/deferred_stats.py
 ```
 
-Surface its summary line — open count, closure rate, aged tail — in the
-completion report. Always, even when this plan deferred nothing: the summary is
-how the trend stays legible.
+Put its summary line (open count, closure rate, aged tail) in the completion
+report, and under it the items step 3 appended for this plan, one line each,
+or `nothing deferred`. Always: the summary keeps the trend legible.
 
-Then, when the backlog has **20 or more open items or any aged tail**, run
-steps 1–4 of the **Triage rubric** in `references/deferred-backlog.md` and
-present the grouped, sorted proposal as part of this completion batch. Those
-four steps are read-only — no file is edited by presenting them.
-
-Executing a disposition is your human partner's call and runs under
-`/deferred`; this step's job is that the proposal exists without anyone having
-to remember to ask for it. Present it, note that `/deferred` acts on a
-selection, and continue to step 5 either way. The triage never blocks
-completion — the aged tail is gated later, at
-finishing-a-development-branch.
+When `aged >45d:` is above 0, also run steps 1–4 of the **Triage rubric** in
+`references/deferred-backlog.md`, which are read-only, and present the
+proposal in this completion batch. Otherwise the full triage waits for
+`/deferred`, which alone executes a disposition. The triage never blocks
+completion — the aged tail is gated at finishing-a-development-branch.
 
 **5. Retire.** First, run
 `uv run <this-skill-dir>/scripts/deferral_scan.py scan <plan> [<spec>]` and
