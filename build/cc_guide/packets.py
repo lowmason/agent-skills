@@ -24,7 +24,7 @@ from docs import CHANGELOG, Release, page_file, parse_changelog, release_lines, 
 from guide import STOP_TERMS, TERM_MAX, TERM_MIN, code_spans, read_citations, sections
 from lint import stale_citations
 from state import (BASELINE, MANIFEST, Manifest, SetupError, Source, baselined_text, citing_files, copy_to_snapshot,
-                   group_terms, latest_docs, parse_baseline, parse_manifest, read_fetch, snapshot_text)
+                   covered_files, group_terms, latest_docs, parse_baseline, parse_manifest, read_fetch, snapshot_text)
 
 INDEX = 'index.json'
 REPORT = 'report.md'
@@ -34,6 +34,7 @@ BLOCKS = 'blocks.md'
 RELEASES = 'releases.md'
 LISTED = 'listed.md'
 SECTIONS = 'sections.md'
+COVERED = 'covered'
 BLOCK_KINDS = ('changed', 'missing', 'new')
 RANGE = 20  # the untriaged releases one triage packet takes, when more are untriaged
 BACKTICK_RUN_RE = re.compile(r'`+')
@@ -113,6 +114,7 @@ def new_dir(out: Path, repo: Path) -> Path:
 def write_packet(world: World, out: Path, index: dict, files: dict[str, str | list[str]]) -> Path:
     new_dir(out, world.source.repo)
     for name, body in files.items():
+        (out / name).parent.mkdir(parents=True, exist_ok=True)
         (out / name).write_text(body if isinstance(body, str) else '\n'.join(body) + '\n', encoding='utf-8')
     (out / INDEX).write_text(json.dumps(index, indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
     return out
@@ -428,10 +430,13 @@ def files(world: World, out: Path, paths: list[str]) -> list[Path]:
                        *fenced(texts[sid])] for sid in c.ids}
         lines, section_md = section_list(world, list(c.ids), marks)
         copy = 'cited_' + path.rsplit('/', 1)[-1]
+        folder = path.rpartition('/')[0] + '/'
+        covered = {name: f'{COVERED}/{name.removeprefix(folder)}' for name in covered_files(world.source, path)}
         index = header(world, 'files') | {
             'file': path, 'copy': copy, 'stamp': c.stamp, 'sections': list(c.ids), 'lines': lines,
-            'changed': changed, 'quotes': {'guide': [GUIDE]},
+            'changed': changed, 'quotes': {'guide': [GUIDE]}, 'covered': covered,
         }
-        made.append(write_packet(world, out / path.replace('/', '__'), index,
-                                 {GUIDE: world.guide, SECTIONS: section_md, copy: world.source.require(path)}))
+        contents = {GUIDE: world.guide, SECTIONS: section_md, copy: world.source.require(path)}
+        contents |= {held: world.source.require(name) for name, held in covered.items()}
+        made.append(write_packet(world, out / path.replace('/', '__'), index, contents))
     return made

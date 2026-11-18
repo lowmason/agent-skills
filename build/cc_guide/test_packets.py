@@ -470,6 +470,87 @@ def test_files_takes_named_citing_files_and_refuses_any_the_lint_never_reads(wor
     assert str(err.value) == 'not a citing file the lint reads: specs/x.md'
 
 
+def commit_tree(world, files):
+    write_tree(world[0], files)
+    git(world[0], 'add', '-A')
+    git(world[0], 'commit', '-qm', 'tree')
+
+
+def skill_md(name):
+    return f'---\nname: {name}\ndescription: Use when a fixture needs it.\n# cc-guide: alpha.overview @2.1.900\n---\n'
+
+
+def with_skill(world, folder='skills/demo'):
+    commit_tree(world, {f'{folder}/SKILL.md': skill_md(folder), f'{folder}/beside.md': f'{folder} beside\n',
+                        f'{folder}/references/a.md': f'{folder} a\n', f'{folder}/references/deep/b.md': f'{folder} b\n',
+                        f'{folder}/README.md': 'readme\n', f'{folder}/scripts/notes.md': 'notes\n'})
+
+
+def test_a_files_packet_for_a_skill_copies_each_covered_file(world, tmp_path):
+    with_skill(world)
+    out = packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md', 'hooks/gate.sh'])
+    skill, gate = (index(folder) for folder in out)
+    assert skill['covered'] == {'skills/demo/beside.md': 'covered/beside.md',
+                                'skills/demo/references/a.md': 'covered/references/a.md',
+                                'skills/demo/references/deep/b.md': 'covered/references/deep/b.md'}
+    assert sorted(str(p.relative_to(out[0])) for p in (out[0] / 'covered').rglob('*.md')) == sorted(
+        skill['covered'].values())
+    for repo_path, copy in skill['covered'].items():
+        assert (out[0] / copy).read_text() == (world[0] / repo_path).read_text()
+    assert gate['covered'] == {} and not (out[1] / 'covered').exists()
+
+
+def test_each_skill_in_one_run_gets_only_its_own_covered_files(world, tmp_path):
+    with_skill(world)
+    with_skill(world, '.claude/skills/local')
+    out = packets.files(load(world), tmp_path / 'f', ['.claude/skills/local/SKILL.md', 'skills/demo/SKILL.md'])
+    local, demo = (index(folder) for folder in out)
+    assert local['covered'] == {'.claude/skills/local/beside.md': 'covered/beside.md',
+                                '.claude/skills/local/references/a.md': 'covered/references/a.md',
+                                '.claude/skills/local/references/deep/b.md': 'covered/references/deep/b.md'}
+    assert demo['covered'] == {'skills/demo/beside.md': 'covered/beside.md',
+                               'skills/demo/references/a.md': 'covered/references/a.md',
+                               'skills/demo/references/deep/b.md': 'covered/references/deep/b.md'}
+    assert (out[0] / 'covered/beside.md').read_text() == '.claude/skills/local beside\n'
+    assert (out[1] / 'covered/beside.md').read_text() == 'skills/demo beside\n'
+
+
+def test_a_skill_with_nothing_covered_gets_no_covered_folder(world, tmp_path):
+    commit_tree(world, {'skills/bare/SKILL.md': skill_md('bare'), 'skills/bare/README.md': 'r\n',
+                        'skills/bare/scripts/n.md': 'n\n', 'skills/bare/data.txt': 'd\n'})
+    (out,) = packets.files(load(world), tmp_path / 'f', ['skills/bare/SKILL.md'])
+    assert index(out)['covered'] == {} and not (out / 'covered').exists()
+
+
+def test_a_files_packet_copies_the_covered_files_of_the_source_it_reads(world, tmp_path):
+    with_skill(world)
+    write_tree(world[0], {'skills/demo/beside.md': 'edited\n', 'skills/demo/untracked.md': 'u\n',
+                          'skills/demo/staged.md': 's\n'})
+    git(world[0], 'add', 'skills/demo/staged.md')
+    (now,) = packets.files(load(world), tmp_path / 'w', ['skills/demo/SKILL.md'])
+    assert sorted(index(now)['covered']) == ['skills/demo/beside.md', 'skills/demo/references/a.md',
+                                            'skills/demo/references/deep/b.md', 'skills/demo/staged.md']
+    assert (now / 'covered/beside.md').read_text() == 'edited\n'
+    committed = packets.load(state.Source(world[0], 'main'), world[1], NOW)
+    (then,) = packets.files(committed, tmp_path / 'r', ['skills/demo/SKILL.md'])
+    assert sorted(index(then)['covered']) == ['skills/demo/beside.md', 'skills/demo/references/a.md',
+                                             'skills/demo/references/deep/b.md']
+    assert (then / 'covered/beside.md').read_text() == 'skills/demo beside\n'
+    assert not (then / 'covered/untracked.md').exists() and not (now / 'covered/untracked.md').exists()
+
+
+def test_a_files_packet_keeps_the_names_of_covered_files_with_odd_characters(world, tmp_path):
+    commit_tree(world, {'skills/odd name/SKILL.md': skill_md('odd'), 'skills/odd name/r\u00e9f/\u00e9 notes.md': 'a\n',
+                        'skills/odd name/a[1]*.md': 'b\n', "skills/odd name/q'uote.md": 'c\n"'})
+    for ref in (None, 'main'):
+        world_here = packets.load(state.Source(world[0], ref), world[1], NOW)
+        (out,) = packets.files(world_here, tmp_path / f'f-{ref}', ['skills/odd name/SKILL.md'])
+        assert index(out)['covered'] == {
+            "skills/odd name/a[1]*.md": 'covered/a[1]*.md', "skills/odd name/q'uote.md": "covered/q'uote.md",
+            'skills/odd name/r\u00e9f/\u00e9 notes.md': 'covered/r\u00e9f/\u00e9 notes.md'}
+        assert (out / 'covered/r\u00e9f/\u00e9 notes.md').read_text() == 'a\n'
+
+
 def test_a_files_packet_marks_a_section_whose_text_changed_since_the_file_was_cited(world, docs_dir, tmp_path):
     # fresh.md's stamp is not behind beta.overview's changed release, so only
     # the hash that `baseline cite` recorded shows that the text moved under it.

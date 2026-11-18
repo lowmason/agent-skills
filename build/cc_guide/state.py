@@ -23,6 +23,8 @@ FORMAT = 3
 UNCITED = ('specs', 'runtimes', 'review')
 # guide.CITE_SHAPED_RE, spelled for `git grep -E`.
 CITE_SHAPED_ERE = '^[[:blank:]]*(#|<!--)[[:blank:]]*cc-guide:'
+# A skill's own SKILL.md, the only path whose citation covers files (spec B1).
+SKILL_MD_RE = re.compile(r'(?:\.claude/)?skills/[^/]+/SKILL\.md')
 MARKS = ('all', 'terms')
 SOURCE_KEYS = ('docs_base', 'llms', 'changelog', 'platform_base')
 CADENCE_KEYS = ('changelog_days', 'probe_days', 'audit_days')
@@ -97,15 +99,39 @@ class Source:
         if proc.returncode != 0:
             raise SetupError(f"git grep in {self.label}: {proc.stderr.decode('utf-8', 'replace').strip()}")
         prefix = '' if self.ref is None else f'{self.ref}:'
-        names = []
-        for raw in filter(None, proc.stdout.split(b'\0')):
-            try:
-                name = raw.decode('utf-8')
-            except UnicodeDecodeError:
-                shown = raw.decode('utf-8', 'backslashreplace').removeprefix(prefix)
-                raise SetupError(f'git grep in {self.label}: a tracked file name is not UTF-8 text: {shown}') from None
-            names.append(name.removeprefix(prefix))
-        return names
+        return tracked_names(proc.stdout, f'git grep in {self.label}', prefix)
+
+    def tracked_under(self, folder: str) -> list[str]:
+        '''The tracked files under the folder, as sorted repo paths, read
+        where this source reads: the index for the working tree, the commit's
+        tree for a ref (PC7), so an untracked file is never listed. The folder
+        is a literal path, never a glob. A git failure, or a file name that is
+        not UTF-8, is a SetupError.'''
+        spec = f':(literal){folder}'
+        if self.ref is None:
+            args, where = ['git', 'ls-files', '-z', '--', spec], 'git ls-files in the working tree'
+        else:
+            args = ['git', 'ls-tree', '-r', '-z', '--name-only', self.ref, '--', spec]
+            where = f'git ls-tree in {self.ref}'
+        proc = subprocess.run(args, cwd=self.repo, capture_output=True)
+        if proc.returncode != 0:
+            raise SetupError(f"{where}: {proc.stderr.decode('utf-8', 'replace').strip()}")
+        return sorted(tracked_names(proc.stdout, where))
+
+
+def tracked_names(output: bytes, where: str, prefix: str = '') -> list[str]:
+    '''The NUL-separated names in a git command's output, without the prefix
+    each carries. A name that is not UTF-8 is a SetupError that names the
+    command's `where` and shows the name escaped.'''
+    names = []
+    for raw in filter(None, output.split(b'\0')):
+        try:
+            name = raw.decode('utf-8')
+        except UnicodeDecodeError:
+            shown = raw.decode('utf-8', 'backslashreplace').removeprefix(prefix)
+            raise SetupError(f'{where}: a tracked file name is not UTF-8 text: {shown}') from None
+        names.append(name.removeprefix(prefix))
+    return names
 
 
 class Group(NamedTuple):
@@ -579,3 +605,19 @@ def citing_files(source: Source, guide_path: str) -> dict[str, str]:
     outside R4.2's excluded trees and the guide that hold a citation-shaped
     line. A tracked symlink is git's link text, so it is never read twice.'''
     return {path: source.require(path) for path in source.grep(CITE_SHAPED_ERE, (*UNCITED, guide_path))}
+
+
+def covered_files(source: Source, path: str) -> list[str]:
+    '''The tracked Markdown files a skill's citation covers (spec B1): when
+    path is a skill's own SKILL.md, each tracked .md file in its folder or
+    below it, except path itself, any README.md and anything with a scripts
+    folder below the skill folder. Sorted. Any other path covers none.'''
+    if not SKILL_MD_RE.fullmatch(path):
+        return []
+    folder = path.rpartition('/')[0]
+    covered = []
+    for name in source.tracked_under(folder):
+        *folders, base = name.removeprefix(folder + '/').split('/')
+        if name != path and base.endswith('.md') and base != 'README.md' and 'scripts' not in folders:
+            covered.append(name)
+    return covered

@@ -483,6 +483,148 @@ def test_a_tracked_name_that_is_not_utf8_is_a_setup_error(tmp_path):
     assert str(err.value) == r'git grep in main: a tracked file name is not UTF-8 text: bad\xff.txt'
 
 
+SKILL_TREE = {'skills/demo/SKILL.md': 'a\n', 'skills/demo/beside.md': 'b\n', 'skills/demo/references/a.md': 'c\n',
+              'skills/demo/references/deep/b.md': 'd\n', 'skills/demo/README.md': 'e\n',
+              'skills/demo/references/README.md': 'f\n', 'skills/demo/scripts/notes.md': 'g\n',
+              'skills/demo/references/scripts/x.md': 'h\n', 'skills/demo/data.txt': 'i\n',
+              '.claude/skills/local/SKILL.md': 'j\n', '.claude/skills/local/ref.md': 'k\n',
+              'runtimes/gemini/skills/demo/SKILL.md': 'l\n', 'runtimes/gemini/skills/demo/x.md': 'm\n'}
+
+
+def test_covered_files_are_a_skills_on_demand_markdown(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', SKILL_TREE)
+    source = state.Source(repo)
+    assert state.covered_files(source, 'skills/demo/SKILL.md') == [
+        'skills/demo/beside.md', 'skills/demo/references/a.md', 'skills/demo/references/deep/b.md']
+    assert state.covered_files(source, '.claude/skills/local/SKILL.md') == ['.claude/skills/local/ref.md']
+    assert state.covered_files(source, 'runtimes/gemini/skills/demo/SKILL.md') == []
+    assert state.covered_files(source, 'skills/demo/beside.md') == []
+    write_tree(repo, {'skills/demo/new.md': 'n\n'})
+    git(repo, 'add', 'skills/demo/new.md')
+    assert 'skills/demo/new.md' in state.covered_files(source, 'skills/demo/SKILL.md')
+    assert 'skills/demo/new.md' not in state.covered_files(state.Source(repo, 'HEAD'), 'skills/demo/SKILL.md')
+
+
+# Each of these is a file that a looser reading of "a skill's own SKILL.md"
+# would take for one: a deeper SKILL.md, a longer name, a nested prefix, a
+# folder level too few. Each has a tracked sibling that the looser reading
+# would cover.
+NOT_A_SKILL_MD = ['skills/demo/references/SKILL.md', 'skills/demo/SKILL.mdx', 'skills/demo/SKILL.md.bak',
+                  'skills/demo/skill.md', 'x/skills/demo/SKILL.md', 'skills/SKILL.md', '.claude/skills/SKILL.md',
+                  '.claude/x/skills/demo/SKILL.md', 'claude/skills/demo/SKILL.md', 'x/.claude/skills/demo/SKILL.md']
+
+
+def test_only_a_skills_own_skill_md_covers_files(tmp_path):
+    files = {path: 'a\n' for path in NOT_A_SKILL_MD}
+    files |= {path.rsplit('/', 1)[0] + '/other.md': 'b\n' for path in NOT_A_SKILL_MD}
+    repo = fixture_repo(tmp_path / 'repo', files | {'skills/demo/SKILL.md': 'c\n'})
+    for ref in (None, 'main'):
+        for path in NOT_A_SKILL_MD:
+            assert state.covered_files(state.Source(repo, ref), path) == [], path
+
+
+NAMES_TREE = {
+    'skills/demo/SKILL.md': 'a\n',
+    # a deeper SKILL.md is not the path itself, and NOTREADME.md is not README.md
+    'skills/demo/references/SKILL.md': 'b\n', 'skills/demo/references/NOTREADME.md': 'c\n',
+    # a name that only holds `scripts` is no scripts folder
+    'skills/demo/scripts.md': 'd\n', 'skills/demo/my-scripts/a.md': 'e\n', 'skills/demo/scripts-notes/b.md': 'f\n',
+    # README.md at depth, and a scripts folder at depth
+    'skills/demo/README.md': 'g\n', 'skills/demo/references/deep/README.md': 'h\n',
+    'skills/demo/scripts/deep/c.md': 'i\n', 'skills/demo/references/a/scripts/b/c.md': 'j\n',
+    # a name that only starts with `.md` is no Markdown file
+    'skills/demo/a.mdx': 'k\n', 'skills/demo/b.md.txt': 'l\n', 'skills/demo/c.markdown': 'm\n',
+    'skills/demo/noext': 'n\n',
+    # near neighbors of the skill folder
+    'skills/demo-two/SKILL.md': 'o\n', 'skills/demo-two/x.md': 'p\n', 'skills/demo.md': 'q\n',
+    'skills/other/y.md': 'r\n', '.claude/skills/demo/z.md': 's\n',
+    # a skill folder that is itself named scripts: only a scripts folder below it counts
+    'skills/scripts/SKILL.md': 't\n', 'skills/scripts/a.md': 'u\n', 'skills/scripts/references/b.md': 'v\n',
+    'skills/scripts/scripts/c.md': 'w\n',
+}
+
+
+def test_a_skill_covers_every_markdown_file_but_the_three_the_rule_names(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', NAMES_TREE)
+    for ref in (None, 'main'):
+        source = state.Source(repo, ref)
+        assert state.covered_files(source, 'skills/demo/SKILL.md') == [
+            'skills/demo/my-scripts/a.md', 'skills/demo/references/NOTREADME.md', 'skills/demo/references/SKILL.md',
+            'skills/demo/scripts-notes/b.md', 'skills/demo/scripts.md']
+        assert state.covered_files(source, 'skills/scripts/SKILL.md') == [
+            'skills/scripts/a.md', 'skills/scripts/references/b.md']
+
+
+def test_tracked_under_lists_every_tracked_file_in_one_folder_sorted(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', NAMES_TREE)
+    expected = sorted(path for path in NAMES_TREE if path.startswith('skills/demo/'))
+    assert len(expected) == 14
+    for ref in (None, 'main'):
+        source = state.Source(repo, ref)
+        assert source.tracked_under('skills/demo') == expected
+        assert source.tracked_under('skills/none') == []
+
+
+# Folder names that a shell, a glob, a quote or a line split would mangle.
+ODD_FOLDERS = ['sp ace', '\u00e9', 'a*', 'a[b]', "q'uote", '#hash', 'new\nline', 'a?c', 'back\\slash']
+
+
+def test_a_skill_folder_with_odd_characters_is_read_literally(tmp_path):
+    files = {'skills/ab/q.md': 'a\n', 'skills/aXb/s.md': 'b\n', 'skills/a/t.md': 'c\n', 'skills/abc/u.md': 'd\n'}
+    for folder in ODD_FOLDERS:
+        files |= {f'skills/{folder}/SKILL.md': 'e\n', f'skills/{folder}/x.md': 'f\n',
+                  f'skills/{folder}/references/y z.md': 'g\n'}
+    repo = fixture_repo(tmp_path / 'repo', files)
+    for ref in (None, 'main'):
+        source = state.Source(repo, ref)
+        for folder in ODD_FOLDERS:
+            assert state.covered_files(source, f'skills/{folder}/SKILL.md') == [
+                f'skills/{folder}/references/y z.md', f'skills/{folder}/x.md'], folder
+
+
+def test_covered_files_are_the_tracked_ones_read_where_the_source_reads(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', SKILL_TREE)
+    write_tree(repo, {'skills/demo/untracked.md': 'u\n'})  # never added
+    git(repo, 'rm', '-q', 'skills/demo/beside.md')
+    git(repo, 'rm', '-q', '--cached', 'skills/demo/references/a.md')  # still on disk, no longer tracked
+    git(repo, 'commit', '-qm', 'drop two')
+    kept = ['skills/demo/references/deep/b.md']
+    assert state.covered_files(state.Source(repo), 'skills/demo/SKILL.md') == kept
+    assert state.covered_files(state.Source(repo, 'HEAD'), 'skills/demo/SKILL.md') == kept
+    assert state.covered_files(state.Source(repo, 'HEAD~1'), 'skills/demo/SKILL.md') == [
+        'skills/demo/beside.md', 'skills/demo/references/a.md', 'skills/demo/references/deep/b.md']
+
+
+def test_a_git_failure_listing_a_folder_is_a_setup_error(tmp_path):
+    (tmp_path / 'plain').mkdir()
+    with pytest.raises(state.SetupError) as err:
+        state.Source(tmp_path / 'plain').tracked_under('skills/demo')
+    where, sep, reason = str(err.value).partition(': ')  # git's own text, which varies by version, follows
+    assert (where, sep) == ('git ls-files in the working tree', ': ')
+    assert reason
+    repo = fixture_repo(tmp_path / 'repo', SKILL_TREE)
+    source = state.Source(repo, 'main')
+    git(repo, 'update-ref', '-d', 'refs/heads/main')
+    with pytest.raises(state.SetupError) as err:
+        source.tracked_under('skills/demo')
+    where, sep, reason = str(err.value).partition(': ')
+    assert (where, sep) == ('git ls-tree in main', ': ')
+    assert reason
+    with pytest.raises(state.SetupError):
+        state.covered_files(source, 'skills/demo/SKILL.md')
+
+
+@pytest.mark.parametrize('ref, where', [(None, 'git ls-files in the working tree'), ('main', 'git ls-tree in main')])
+def test_a_tracked_name_that_is_not_utf8_is_a_setup_error_in_a_folder_listing(tmp_path, ref, where):
+    repo = fixture_repo(tmp_path / 'repo', SKILL_TREE)
+    blob = git(repo, 'rev-parse', 'HEAD:skills/demo/beside.md').strip()
+    git(repo, 'update-index', '--add', '--cacheinfo', f'100644,{blob},skills/demo/bad\udcff.md')
+    git(repo, 'commit', '-qm', 'a name that is not UTF-8')
+    with pytest.raises(state.SetupError) as err:
+        state.Source(repo, ref).tracked_under('skills/demo')
+    assert str(err.value) == rf'{where}: a tracked file name is not UTF-8 text: skills/demo/bad\xff.md'
+
+
 def test_a_snapshot_names_each_baselined_block_and_gives_its_text(docs_dir):
     '''A packet shows a missing block's baselined text, read from the page's
     snapshot by key hash with the lookup that names it (R2.3).'''
