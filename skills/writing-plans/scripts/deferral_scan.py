@@ -35,12 +35,13 @@ The scan reads prose only:
   blanking only adds candidates. An underscore between two letters or digits
   is part of the word (`is_deferred`).
 - Two forms of the Plan Completion Protocol are exempt. Its status header
-  (`deferred items in specs/deferred_items.md` or `nothing deferred`) is exempt
-  as a whole line. Its `> Skipped: <why> → deferred` note, which the protocol
-  always files as an item, is exempt from the line start through the first
-  `→ deferred`, plus an optional parenthetical, final period and closing bold
-  marker (`> **Skipped: … → deferred (reason).**`). Any text after that is read,
-  so a second deferral on the same line is still found.
+  (`deferred items in specs/deferred_items.md`, with or without `, or
+  specs/completed/deferred_items.md once archived`, or `nothing deferred`) is
+  exempt as a whole line. Its `> Skipped: <why> → deferred` note, which the
+  protocol always files as an item, is exempt from the line start through the
+  first `→ deferred`, plus an optional parenthetical, final period and closing
+  bold marker (`> **Skipped: … → deferred (reason).**`). Any text after that is
+  read, so a second deferral on the same line is still found.
 - A passive deferral whose subject is a negation is a statement that nothing
   was put off, so it is not a candidate. The subject is `nothing`, `none` or
   `no` and up to three more words, right before the verb, and it must open its
@@ -220,7 +221,9 @@ PHRASES = (
 MARKER = re.compile(r'→\s*(?:item|dropped):')
 STATUS_HEADER = re.compile(
     r'^\*\*Status: COMPLETE \([^)]*\)\*\* — .*'
-    r'(?:deferred items in specs/deferred_items\.md|nothing deferred)\s*$'
+    r'(?:deferred items in specs/deferred_items\.md'
+    r'(?:, or specs/completed/deferred_items\.md once archived)?'
+    r'|nothing deferred)\s*$'
 )
 # The exempt part of a Skipped note; the rest of its line is read as prose.
 SKIPPED_NOTE = re.compile(

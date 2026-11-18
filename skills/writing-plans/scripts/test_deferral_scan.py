@@ -111,8 +111,34 @@ def test_protocol_status_header_is_exempt():
     filed = ('**Status: COMPLETE (2026-01-01)** — executed via x; '
              'deferred items in specs/deferred_items.md')
     nothing = '**Status: COMPLETE (2026-01-01)** — executed via x; nothing deferred'
+    both = ('**Status: COMPLETE (2026-01-01)** — executed via x; '
+            'deferred items in specs/deferred_items.md, '
+            'or specs/completed/deferred_items.md once archived')
     assert unmarked(filed) == []
     assert unmarked(nothing) == []
+    assert unmarked(both) == []
+
+
+@pytest.mark.parametrize('tail', [
+    'deferred items in specs/deferred_items.md',
+    'deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived',
+    'nothing deferred',
+], ids=['old-tail', 'new-tail', 'nothing-deferred'])
+def test_status_header_exempts_a_deferral_phrase_before_its_tail(tail):
+    # The status header is exempt as a whole line. Phrases of the scan match none of
+    # the three tails, so only a phrase earlier on the line shows the exemption.
+    line = ('**Status: COMPLETE (2026-01-01)** — executed via x; '
+            'the retry path is deferred to a future plan; ' + tail)
+    assert unmarked(line) == []
+
+
+def test_text_after_status_header_is_read():
+    # Only the status line is exempt: a deferral after it on the same line is still read.
+    line = ('**Status: COMPLETE (2026-01-01)** — executed via x; '
+            'deferred items in specs/deferred_items.md, '
+            'or specs/completed/deferred_items.md once archived'
+            '; the retry path is deferred to a future plan')
+    assert unmarked(line) == [Candidate(1, line)]
 
 
 def test_skipped_line_is_exempt():

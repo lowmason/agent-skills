@@ -307,7 +307,7 @@ answers. The partition is final only once every ask is resolved.
 step that deviated from the plan, add a one-line `> Deviation: …` note.
 Annotate skipped steps with `> Skipped: <why> → deferred`. Add a status
 header at the top of the plan:
-`**Status: COMPLETE (YYYY-MM-DD)** — executed via <skill>; deferred items in specs/deferred_items.md`
+`**Status: COMPLETE (YYYY-MM-DD)** — executed via <skill>; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived`
 — or, when the gate deferred nothing:
 `**Status: COMPLETE (YYYY-MM-DD)** — executed via <skill>; nothing deferred`
 Markup happens once, after the gate resolves — per-task progress tracking
