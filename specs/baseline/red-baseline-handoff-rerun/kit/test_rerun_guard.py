@@ -235,3 +235,9 @@ def test_glob_through_keychain_link_denies(homes):
     rep, real = homes
     reason = decide('Bash', {'command': 'ls ~/Library/*/../..'}, rep, real)
     assert_denied(reason, 'real home')
+
+
+def test_glob_inside_a_name_above_real_home_denies(homes):
+    rep, real = homes
+    reason = decide('Bash', {'command': f'ls {real.parent}/re*/nothing'}, rep, real)
+    assert_denied(reason, 'real home')
