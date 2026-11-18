@@ -522,6 +522,16 @@ def test_a_skill_with_nothing_covered_gets_no_covered_folder(world, tmp_path):
     assert index(out)['covered'] == {} and not (out / 'covered').exists()
 
 
+def test_a_skill_with_many_covered_files_still_gets_one_packet_holding_all_of_them(world, tmp_path):
+    with_skill(world)
+    commit_tree(world, {f'skills/demo/references/more/n{n:02d}.md': f'{n}\n' for n in range(40)})
+    out = packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md'])
+    assert len(out) == 1
+    covered = index(out[0])['covered']
+    assert len(covered) == 43
+    assert all((out[0] / copy).is_file() for copy in covered.values())
+
+
 def test_a_files_packet_copies_the_covered_files_of_the_source_it_reads(world, tmp_path):
     with_skill(world)
     write_tree(world[0], {'skills/demo/beside.md': 'edited\n', 'skills/demo/untracked.md': 'u\n',
