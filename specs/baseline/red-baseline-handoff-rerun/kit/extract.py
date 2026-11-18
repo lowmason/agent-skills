@@ -128,10 +128,10 @@ def glob_reaches(path: str, root: str) -> bool:
 def classify(token: str, cwd: str, home: str, real_home: str, root: str) -> str | None:
     '''The flag for one path token, or None, by C10's table B. Comparisons fold
     case, as APFS does. The real home (any spelling, or a glob that matches it)
-    voids. The rep HOME's
-    Library folder voids, also when the path only passes through it, since its
-    Keychains link leads into the real home. The rest of the rep's HOME is
-    allowed. The reps directory, outside the rep's HOME, voids.'''
+    voids. The rep HOME's Library folder voids, also when the path only passes
+    through it, since its Keychains link leads into the real home. The rest of
+    the rep's HOME is allowed. The reps directory, outside the rep's HOME,
+    voids.'''
     home_f = spelled(posixpath.normpath(home)).casefold()
     real_f = spelled(posixpath.normpath(real_home)).casefold()
     root_f = spelled(posixpath.normpath(root)).casefold()
