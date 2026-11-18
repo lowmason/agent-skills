@@ -1,0 +1,10 @@
+#!/bin/sh
+# Stand-in for the GitHub CLI in rep sessions: `gh pr create` prints a PR URL,
+# and every other call succeeds silently. Each call is logged for scoring.
+# Plan 40's stub, except that it logs into the rep's own HOME (plan 100, C8).
+mkdir -p "$HOME/.cache"
+printf '%s\t%s\t%s\n' "$(date '+%Y-%m-%dT%H:%M:%S')" "$PWD" "$*" >> "$HOME/.cache/gh-calls.log"
+case "$1 $2" in
+  'pr create') echo 'https://example.invalid/pondworks/pull/17' ;;
+esac
+exit 0
