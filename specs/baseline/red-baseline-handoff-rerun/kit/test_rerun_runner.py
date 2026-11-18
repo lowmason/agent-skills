@@ -486,6 +486,16 @@ def test_settings_deny_rules_are_the_plans_six(kit):
     assert settings['permissions']['deny'] == DENY
 
 
+def test_settings_turn_off_claude_ai_skill_sync(kit):
+    # Plan 100 D4: the account's claude.ai skills must not reach a rep.
+    rep, = kit.make_reps()
+    run_ok(kit, rep)
+    args = (kit.stub_dir / 'args.1').read_text().splitlines()
+    settings = json.loads(args[args.index('--settings') + 1])
+    assert settings['syncClaudeAiSkills'] is False
+    assert sorted(settings) == ['hooks', 'permissions', 'syncClaudeAiSkills']
+
+
 def test_prompt_fills_real_home(kit):
     prompts = kit.tmp / 'prompts'
     prompts.mkdir()

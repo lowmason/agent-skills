@@ -100,6 +100,8 @@ These harness checks also void a rep (C11 and the wait ceiling below):
 
 **The wait ceiling.** The `env -i` list of each rep turn also sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2400000` (40 minutes). In print mode, Claude Code stops background subagents 10 minutes after the main turn ends. That voided plan 45's gate reps. Without the variable, a stopped fact-checker or cold reader could score as a FAIL, not a VOID. The runner admits only two `CLAUDE*` names: `CLAUDE_CODE_DISABLE_ADVISOR_TOOL` and `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`. It refuses any other. Task 3's audit voids a rep whose `turn<n>.stderr` holds `Background tasks still running`. That void is a harness check, not a change to the frozen VOID rules.
 
+**Claude.ai skill sync off.** The `--settings` JSON of each rep turn also sets `"syncClaudeAiSkills": false` (plan 100, owner decision D4). Without it, Claude Code downloads the skills enabled on the claude.ai account into the rep's `~/.claude/skills/synced/` during a turn. That changed the kit hash of probe rep r282, so the audit voided it. The download also lands at an unpredictable time, so a rep could see other skills in a later turn. With the setting, each rep sees only the 12 kit skills and Claude Code's built-in skills.
+
 **Template heads as data.** The expected template `HEAD`s live in `templates.tsv`, not in the runner's code. The tests set `PHR_TEMPLATE_HEADS` to their own file.
 
 ## The guard's known limits

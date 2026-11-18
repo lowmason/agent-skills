@@ -131,7 +131,10 @@ kit_before=$(kit_hash "$H/.claude")
 SETTINGS_JSON='{"permissions": {"deny": ["Read(//Users/**)", "Edit(//Users/**)", "Write(//Users/**)", '
 SETTINGS_JSON+='"Read(~/Library/**)", "Edit(~/Library/**)", "Write(~/Library/**)"]}, '
 SETTINGS_JSON+='"hooks": {"PreToolUse": [{"matcher": "*", "hooks": [{"type": "command", '
-SETTINGS_JSON+='"command": "/usr/bin/python3 '"$KIT_DIR"'/guard.py --real-home '"$REAL"'"}]}]}}'
+SETTINGS_JSON+='"command": "/usr/bin/python3 '"$KIT_DIR"'/guard.py --real-home '"$REAL"'"}]}]}, '
+# Plan 100 D4 (owner, 2026-11-18): Claude Code downloads the account's claude.ai skills
+# into ~/.claude/skills/synced mid-run, which changes the kit hash and the skills a rep sees.
+SETTINGS_JSON+='"syncClaudeAiSkills": false}'
 
 mkdir -p "$out"
 sid=$(uuidgen | tr 'A-Z' 'a-z')
