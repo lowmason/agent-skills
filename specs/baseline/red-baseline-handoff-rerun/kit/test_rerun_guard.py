@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -241,3 +242,45 @@ def test_glob_inside_a_name_above_real_home_denies(homes):
     rep, real = homes
     reason = decide('Bash', {'command': f'ls {real.parent}/re*/nothing'}, rep, real)
     assert_denied(reason, 'real home')
+
+
+def test_quoted_or_escaped_keychains_name_denies(homes):
+    rep, real = homes
+    reason = decide('Bash', {'command': 'cd ~ && cd Library && cd Key""chains && cat ../../.claude/x'}, rep, real)
+    assert_denied(reason, 'Keychains')
+    reason = decide('Bash', {'command': 'cat ~/Library/Key\\chains/../../.claude/x'}, rep, real)
+    assert_denied(reason, 'Keychains')
+
+
+def call_denied(rep: Path, real: Path, setup: str, command: str) -> str | None:
+    '''Run denied in-process under /usr/bin/python3 after a setup line that
+    shrinks a limit, so a limit test stays fast.'''
+    code = (
+        'import json, sys, time; sys.path.insert(0, sys.argv[1]); import guard; ' + setup + '; '
+        'print(json.dumps(guard.denied("Bash", {"command": sys.argv[4]}, sys.argv[2], sys.argv[2], sys.argv[3])))'
+    )
+    done = subprocess.run(
+        ['/usr/bin/python3', '-I', '-c', code, str(GUARD.parent), str(rep), str(real), command],
+        capture_output=True, text=True, env={'HOME': str(rep), 'PATH': '/usr/bin:/bin'}, check=False,
+    )
+    assert done.returncode == 0, done.stderr
+    return json.loads(done.stdout)
+
+
+def test_glob_over_the_match_cap_denies(homes):
+    rep, real = homes
+    many = rep / 'many'
+    many.mkdir()
+    for n in range(5):
+        (many / f'f{n}').write_text('')
+    assert call_denied(rep, real, 'guard.GLOB_LIMIT = 5', 'ls ~/many/*') is None
+    assert_denied(call_denied(rep, real, 'guard.GLOB_LIMIT = 4', 'ls ~/many/*'), 'too many matches')
+
+
+def test_glob_past_the_deadline_denies(homes):
+    rep, real = homes
+    slow = 'guard.GLOB_SECONDS = 0.2; guard.glob.iglob = lambda p: (time.sleep(2), iter([]))[1]'
+    started = time.monotonic()
+    assert_denied(call_denied(rep, real, slow, 'ls ~/work/*'), 'took too long')
+    assert time.monotonic() - started < 1.5
+    assert call_denied(rep, real, 'guard.GLOB_SECONDS = 0.2', 'ls ~/work/*') is None

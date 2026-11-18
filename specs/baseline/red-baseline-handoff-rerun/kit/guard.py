@@ -22,6 +22,8 @@ import json
 import os
 import re
 import sys
+import threading
+import time
 
 PREFIX = 'blocked by the workspace path guard:'
 # Copied from $RED/tools/extract.py (PATH_TOKEN, DOTDOT_TOKEN); keep in step by hand.
@@ -31,7 +33,9 @@ FILE_KEYS = ('file_path', 'path', 'notebook_path')
 DATA_VOLUME = '/System/Volumes/Data'
 # A Keychains path component, however the text spells or splits the path around it.
 KEYCHAINS = re.compile(r'''(?:^|[/\s'"=])keychains(?:/|$|[\s'";|&)])''')
-GLOB_LIMIT = 1000
+GLOB_LIMIT = 1000  # more matches than this deny
+GLOB_SECONDS = 2.0  # glob expansion past this deadline, per call, denies
+SHELL_QUOTES = re.compile(r'''[\\'"]''')
 GLOB_CHARS = re.compile(r'[*?\[]')
 
 
@@ -72,41 +76,77 @@ def inside(path: str, root: str) -> bool:
     return path == root or path.startswith(root.rstrip('/') + '/')
 
 
-def reaches(token: str, home: str, cwd: str, real: str) -> bool:
-    '''True when a token resolves into the real home, when it is a glob whose
-    fixed part is the real home or one of its ancestors below `/`, or when one
-    of the glob's matches resolves into the real home (through the Keychains
-    link, say).'''
+def expansion(pattern: str, real: str) -> str:
+    '''Expand a glob and say whether a match resolves into the real home:
+    'real', 'many' (past GLOB_LIMIT matches) or 'none'.'''
+    matches = itertools.islice(glob.iglob(pattern), GLOB_LIMIT + 1)
+    for count, match in enumerate(matches, 1):
+        if count > GLOB_LIMIT:
+            return 'many'
+        if inside(os.path.realpath(match).casefold(), real):
+            return 'real'
+    return 'none'
+
+
+def expanded_within(pattern: str, real: str, deadline: float) -> str:
+    '''expansion, run in a daemon thread so a slow walk cannot outlast the
+    deadline: 'slow' when it does.'''
+    result = ['slow']
+
+    def run() -> None:
+        result[0] = expansion(pattern, real)
+
+    worker = threading.Thread(target=run, daemon=True)
+    worker.start()
+    worker.join(max(0.0, deadline - time.monotonic()))
+    return 'slow' if worker.is_alive() else result[0]
+
+
+def reaches(token: str, home: str, cwd: str, real: str, deadline: float) -> str | None:
+    '''Why a token reaches the real home, or None. It does when it resolves
+    there, when it is a glob whose fixed part is the real home or one of its
+    ancestors below `/`, or when a glob match resolves there (through the
+    Keychains link, say). A glob with too many matches, or one that outlasts the
+    deadline, cannot be checked, so it counts as reaching.'''
     if inside(resolved(token, home, cwd), real):
-        return True
+        return 'reaches the real home, outside this workspace'
     glob_char = GLOB_CHARS.search(token)
     if glob_char is None:
-        return False
+        return None
     fixed = token[:glob_char.start()]
     fixed = fixed[:fixed.rfind('/') + 1] if '/' in fixed else ''
     base = resolved(fixed or '.', home, cwd)
     if base != '/' and inside(real, base):
-        return True
-    matches = glob.iglob(expanded(token, home, cwd))
-    return any(inside(os.path.realpath(m).casefold(), real) for m in itertools.islice(matches, GLOB_LIMIT))
+        return 'reaches the real home, outside this workspace'
+    found = expanded_within(expanded(token, home, cwd), real, deadline)
+    return {
+        'real': 'reaches the real home, outside this workspace',
+        'many': f'has too many matches to check (over {GLOB_LIMIT})',
+        'slow': f'took too long to expand (over {GLOB_SECONDS:g} s)',
+    }.get(found)
 
 
 def denied(tool_name: str, tool_input: dict, home: str, cwd: str, real_home: str) -> str | None:
     '''The deny reason for one tool call, or None to allow it. The reason quotes
     the input as typed, never the resolved real home.'''
+    deadline = time.monotonic() + GLOB_SECONDS
     real = os.path.realpath(real_home).casefold()
     library = os.path.realpath(os.path.join(home, 'Library')).casefold()
     if tool_name == 'Glob' and tool_input.get('path'):
         cwd = expanded(str(tool_input['path']), home, cwd)  # a Glob pattern is relative to its path
     for text in scanned(tool_name, tool_input):
-        if KEYCHAINS.search(text.casefold()):
+        bare = SHELL_QUOTES.sub('', text)  # the shell drops quotes and backslashes, so Key""chains is Keychains
+        if KEYCHAINS.search(bare.casefold()):
             return f'{PREFIX} the input names Keychains, as in Library/Keychains, a link into the real home'
         tokens = PATH_TOKEN.findall(text) + DOTDOT_TOKEN.findall(text)
+        if bare != text:
+            tokens += PATH_TOKEN.findall(bare) + DOTDOT_TOKEN.findall(bare)
         if tool_name != 'Bash':
             tokens.append(text)
         for token in tokens:
-            if reaches(token, home, cwd, real):
-                return f'{PREFIX} {token!r} reaches the real home, outside this workspace'
+            why = reaches(token, home, cwd, real, deadline)
+            if why is not None:
+                return f'{PREFIX} {token!r} {why}'
             if inside(resolved(token, home, cwd), library):
                 return f'{PREFIX} {token!r} is in the Library folder, which links into the real home'
     return None
