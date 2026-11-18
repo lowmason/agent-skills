@@ -118,7 +118,7 @@ There are 5 scored reps per case and arm. Every verdict is read by hand from the
 - `control`: each text at `BASE101` (`72d08bf`). At `72d08bf`, the `histor*.md` glob matches
   `skills/writing-plans/references/history.md`, so the `history-revert` control prompt carries that file and the
   writing-plans `SKILL.md` body.
-- `treatment`: each text at `<T7>`, the last commit of Task 7. Task 8 runs it and fills in the sha here.
+- `treatment`: each text at `T7`, the last commit of Task 7: `4bf95a0` (`4bf95a004637b4cc16859fa06593b664bb02a8f3`).
 - Wording round: a case below its bar gets one wording round, at its own commit, `<T8>`. Task 8 fills in the sha
   here when a round happens.
 - The `gate-tag` and `history-filter` re-runs build their prompts with plan 80's kit, unchanged, and run them through
@@ -613,3 +613,329 @@ Findings for Task 8:
   rest on it are. The clause tests that the revert runs now, as a task before plan markup, against a deferral. It does
   not test the order of the ledger line and the revert. The controller ruled this on 2026-11-18, before any treatment
   rep.
+
+## Treatment
+
+Arm `treatment`: the texts at `T7`, the last commit of Task 7: `4bf95a0`
+(`4bf95a004637b4cc16859fa06593b664bb02a8f3`). The prompts were built with
+`build_prompts.py 4bf95a004637b4cc16859fa06593b664bb02a8f3 /tmp/plan101-work/treatment`. `MANIFEST.txt` gives these
+prompt hashes, and `shasum -a 256` on the eight prompt files prints the same values:
+
+| Prompt | sha256 |
+|---|---|
+| `triage-narrow.txt` | `57ec5b332ab24ed6e993f92662009c73a02c505dbe49902e6baed960ffb12eae` |
+| `triage-aged.txt` | `14aa432147b7e3c83d52deeeb60d94a8d539e4da909900f35ce064441ea99570` |
+| `gate-revert-sdd.txt` | `0bd5dd0f9a8d58cec06eadfba7cbf3cc53093253501db606bbc198cd59ef3333` |
+| `gate-revert-ep.txt` | `4397d84f9ec2efd6142d5fb3c991ae92dfd5ddc2daa0a4d758e7b45119b47e98` |
+| `gate-revert-untagged.txt` | `8b7953121018704edefaad776195a9d34f208d7d5be66bef815bbf2d65822f53` |
+| `history-revert.txt` | `3174e3b60869b30788559052bc22a81bd17df0963627457833648036bc0bb512` |
+| `gate-tag-ep.txt` | `41bce7ada08abf8d141dbf4bee8e43b333d5829620a2c6e376595d14d3138f75` |
+| `gate-declined.txt` | `47c9f266e9b8387a96f3852bd2670be3385d4c453e3663ca80d8f75239d08aba` |
+
+Each treatment prompt is byte-identical to its control prompt outside the texts under test. The frame before the first
+text and all text after the last text, with the fixture and the task, are the same in both arms. Five commits between
+`BASE101` and `T7` change the texts under test:
+
+- `029e41f` (Task 3): writing-plans step 4, and the writing-plans caller line of `references/deferred-backlog.md`.
+- `4e5e7ec` (Task 4): writing-plans step 1 names the final review's Declined to judge lines.
+- `ecd6dbd` (Task 5): the gate paragraph of both executors' `references/final-review.md`, and step 1 of Finish the
+  draft in `skills/writing-plans/references/history.md`.
+- `210a493` (Task 6): the writing-plans status line, and the status-header exemption in `deferred-backlog.md`.
+- `4bf95a0` (Task 7): the already-merged roadmap-stage guard sentence, in writing-plans and at the end of the
+  executing-plans `references/final-review.md`.
+
+So the `triage-*`, `history-revert` and `gate-declined` arms read a writing-plans body that also holds the edits of
+Tasks 4, 6 and 7. The body holds Task 3's step 4 too. Each of these cases tests one of these edits: the `triage-*` cases
+test Task 3, `gate-declined` tests Task 4, and `history-revert` tests Task 5's sentence in `history.md`. The `triage-*`
+arms also read Task 6's exemption in `deferred-backlog.md`. The `gate-revert-ep` and `gate-tag-ep` arms read Task 7's
+sentence at the end of the executing-plans file. The `gate-revert-sdd` and `gate-revert-untagged` arms read Task 5's
+edit alone.
+
+The controller ran 5 reps per case on Claude Code 2.1.323, the version of the isolation probe, so the probe did not
+run again. Each case used Task 2 Step 8's command with its own model and budget from the table at the top of this
+record: `run_reps.sh /tmp/plan101-work/treatment/<case>.txt <out> 1 5 <model> <budget>`, where `<out>` is
+`specs/baseline/red-baseline-completion-triage/treatment/<case>`. So there are 40 rep files. No rep was VOID: every
+rep ran one turn, no tool and one model, and ended with `success`. No rep wrote an error file, so no rep was rerun. No
+rep file holds `credential_expires_at`. Every reply was read in full with `show_reps.py`, and every verdict was read
+by hand by the committed rules. The aids only pointed at replies.
+
+**Readings.** The readings of `## Control` bind this arm. They were fixed before any treatment rep ran:
+
+- The summary line: a rep shows the line's figures. The exact prefix is not needed (both triage cases).
+- The ledger line before the revert: clause 1 tests that the revert runs now, as a task before plan markup, against a
+  deferral. It does not test the order of the ledger line and the revert (all three gate-revert cases).
+- "Unchanged" in `history-revert` binds the closed-item line only. A shortened Deviation line with its Source pointer
+  passes.
+- The closing-words test of `gate-tag-ep`: a closing line that invites a revert passes when a default is stated. A
+  line that asks the partner to confirm or reverse a ruling with no default fails.
+
+The controller ruled one more reading before any treatment rep ran. A revert listed under a `Deferred:` block in
+`specs/history.md` counts as a backlog item for the revert, so clause 3 of the gate-revert rules fails for that rep. No
+treatment rep writes such a block.
+
+One note was written after the replies were read. It adds no reading. In `gate-revert-ep`, reps 4 and 5 write the
+ledger line after the revert's commit. Clause 2 asks for a ledger line that names the ruling and sets no order, so it
+holds for both.
+
+A quote from a reply has at most 12 words. A quote sits in double quotes, except a quote that holds a deferral phrase,
+which sits in backticks. Several replies date their edits 2026-11-18, the day of the run, and not the fixture's
+2026-11-09. No rule scores a date.
+
+| Case | Kind | Bar | Passing reps | Failing reps |
+|---|---|---|---|---|
+| `triage-narrow` | RED | `treatment 5/5; control fails at least 1 of 5` | 5/5 | 0/5 |
+| `triage-aged` | guard | `treatment 5/5` | 4/5 | 1/5 |
+| `gate-revert-sdd` | RED | `treatment 5/5; control fails at least 1 of 5` | 5/5 | 0/5 |
+| `gate-revert-ep` | RED | `treatment 5/5; control fails at least 1 of 5` | 5/5 | 0/5 |
+| `gate-revert-untagged` | guard | `treatment 5/5` | 5/5 | 0/5 |
+| `history-revert` | RED | `treatment 5/5; control fails at least 1 of 5` | 5/5 | 0/5 |
+| `gate-tag-ep` | guard | `treatment 5/5` | 5/5 | 0/5 |
+| `gate-declined` | RED | `treatment 5/5; control fails at least 1 of 5` | 5/5 | 0/5 |
+
+### triage-narrow
+
+The pass rule has three clauses:
+
+1. The reply shows the summary line and both new items.
+2. It presents no disposition proposal over the backlog (no grouped or sorted list of the older items with a
+   proposed action).
+3. It goes on to step 5 or names `/deferred` for the full triage.
+
+Every rep meets all three clauses. Each shows the summary line's figures and names both new `12-dock-alerts` items.
+Each says that the aged tail is 0, so the triage does not run. Each names `/deferred` and goes on to step 5. No rep
+lists the older items by group or rank. Every rep also notes that the two oldest items pass 45 days soon, and points at
+`/deferred` before then. That names two items and proposes no disposition, so clause 2 holds.
+
+- rep1: PASS (borderline) — all three clauses hold. It says "the read-only triage (rubric steps 1-4) isn't
+  triggered". Hard to call: it tallies the older items by size, "11 quick-fixes, 10 plans and 3 designs", the nearest
+  rep to a grouped proposal. It holds because it lists no item and proposes no action for a group.
+- rep2: PASS — all three clauses hold. "Nothing is aged, so I did not run the triage".
+- rep3: PASS — all three clauses hold. It shows the figures without the `Deferred backlog:` prefix and says "Because
+  the aged tail is 0, I skipped the triage proposal."
+- rep4: PASS — all three clauses hold. "No triage proposal is needed. Run `/deferred` when you want one."
+- rep5: PASS — all three clauses hold. "Aged tail: it is empty, so no triage proposal is attached."
+
+treatment passes 5 of 5. The bar is met: `treatment 5/5`, and control fails 5 of 5. Spend: $0.159 for reps 1 to 5.
+
+### triage-aged
+
+The pass rule has four clauses:
+
+1. The reply shows the summary line and both new items.
+2. It presents a read-only grouped disposition proposal over the backlog.
+3. It edits no file for the proposal.
+4. It does not stop the protocol on it. It goes on to step 5, or says that it does.
+
+Every rep meets clauses 1 to 3. Each shows the summary line word for word and names both new items. Each presents
+Quick fix, Plan and Design groups, with Retire and Hold empty, and marks the two aged items. No rep writes an `<edit>`
+block. Reps 2 and 4 would first run two read-only `grep` commands to test a Retire verdict, and those edit no file.
+
+- rep1: PASS — all four clauses hold. "This triage does not block completion. I'm continuing to step 5".
+- rep2: PASS — all four clauses hold. It asks which items to take through `/deferred`, then says "Meanwhile I'll
+  continue with step 5".
+- rep3: PASS (borderline) — all four clauses hold. It ends "I'll continue with step 5" and adds "unless you want to
+  run `/deferred` first". Hard to call: it offers a pause, and its first paragraph says step 5 follows "once you've
+  seen this". It passes because its stated default is to go on.
+- rep4: FAIL — clause 4: step 5 waits on an answer. The reply ends "Tell me how you want to handle the aged pair",
+  and only after that answer does it run step 5. It also says it "would hold the aged items' dispositions" until its
+  `grep` commands return.
+- rep5: PASS — all four clauses hold. It puts the report in the completion batch, "then go on to step 5".
+
+treatment passes 4 of 5. The bar is not met: `treatment 5/5`. Spend: $0.224 for reps 1 to 5. Every control rep passed
+clause 4. The base text tells the agent to present the proposal "and continue to step 5 either way". The text at `T7`
+drops that clause and keeps "The triage never blocks completion". That is the likely cause of rep4's stop.
+
+### gate-revert-sdd
+
+The pass rule has three clauses:
+
+1. The next action implements the revert now, as a task before plan markup.
+2. The reply writes a ledger line that names the Task 2 ruling.
+3. It writes no backlog item for the revert.
+
+Every rep meets all three clauses. Each first writes the ledger line
+`Reverted at the gate: Task 2 ruling — alert at 3 or fewer free slots`. Reps 2 and 5 add ", not 2 or fewer", and
+rep3 puts "Gate: " in front. Then each dispatches an implementer to restore 2 or fewer free slots and a task review
+of its commits, and only then marks up the plan. Each leaves `specs/deferred_items.md` unchanged, and no history entry
+holds a `Deferred:` block.
+
+- rep1: PASS — all three clauses hold. "I implement it now (protocol step 1) before marking up the plan."
+- rep2: PASS — all three clauses hold. "Implement the revert now (protocol step 1)", with a task review before markup.
+- rep3: PASS — all three clauses hold. Its ledger line starts "Gate: Reverted at the gate: Task 2 ruling".
+- rep4: PASS — all three clauses hold. "The ledger change comes first", then the dispatch and a task review. Its
+  message asks whether to run Codex on the revert, which the rule does not score.
+- rep5: PASS — all three clauses hold. "Ledger the revert first", then the implementer, the reviewer and markup.
+
+treatment passes 5 of 5. The bar is met: `treatment 5/5`, and control fails 5 of 5. Spend: $0.293 for reps 1 to 5.
+
+### gate-revert-ep
+
+The pass rule has three clauses:
+
+1. The next action implements the revert now, inline, before plan markup.
+2. The reply writes a ledger line that names the Task 2 ruling.
+3. It writes no backlog item for the revert.
+
+Every rep meets all three clauses. Each changes the threshold test first, expects it to fail, restores 2 or fewer free
+slots, runs the suite and commits. All of it runs inline and before plan markup. Each ledger line names the ruling as
+`Reverted at the gate: Task 2 ruling — alert at 3 or fewer free slots`. Reps 1 and 2 add ", not 2 or fewer", and rep2
+puts "Gate: " in front. Reps 1 to 3 write that line before the revert, and reps 4 and 5 after its commit. No rep writes
+to a backlog file, and no history entry holds a `Deferred:` block.
+
+- rep1: PASS — all three clauses hold. "ledger the revert, fix it test-first, commit, then finish the protocol".
+- rep2: PASS — all three clauses hold. "Ledger the revert first", then the RED and GREEN steps and the commit.
+- rep3: PASS — all three clauses hold. "Protocol step 1 implements it now, before plan markup."
+- rep4: PASS — all three clauses hold. "GREEN: put the threshold back to the spec's value". Its ledger line follows
+  the revert's commit.
+- rep5: PASS — all three clauses hold. "I'd only go on if the whole suite is green." Its ledger line follows the
+  revert's commit.
+
+treatment passes 5 of 5. The bar is met: `treatment 5/5`, and control fails 4 of 5. Spend: $0.462 for reps 1 to 5.
+
+### gate-revert-untagged
+
+The pass rule has three clauses:
+
+1. The next action implements the revert now, as a task before plan markup.
+2. The reply writes a ledger line that names the Task 3 module-name ruling.
+3. It writes no backlog item for the revert.
+
+Every rep meets all three clauses. Each first writes a ledger line that starts "Reverted at the gate: Task 3 ruling —
+the module is", followed by the ruling's two paths. Then each moves `alerts/notify.py` back to `alerts/send.py` before
+plan markup. Reps 1, 3 and 5 dispatch an implementer and a review. Reps 2 and 4 run the rename themselves. Rep2 adds a
+code-reviewer pass, and rep4 runs the tests only. Each leaves `specs/deferred_items.md` unchanged.
+
+- rep1: PASS — all three clauses hold. "I would dispatch one implementer subagent with this brief".
+- rep2: PASS — all three clauses hold. "one revert to implement now, and three rulings stand".
+- rep3: PASS — all three clauses hold. "When it returns, I would dispatch the code-reviewer on that commit range."
+- rep4: PASS (borderline) — all three clauses hold. It renames the module "now, before plan markup". Hard to call:
+  the controller makes the change itself, with no subagent and no review. It passes because clause 1 tests that the
+  revert runs now, against a deferral, as `## Control` reads it.
+- rep5: PASS — all three clauses hold. "I'd dispatch one implementer subagent with this brief".
+
+treatment passes 5 of 5. The bar is met: `treatment 5/5`. Control fails 2 of 5. Spend: $0.303 for reps 1 to 5.
+
+### history-revert
+
+The pass rule has six clauses:
+
+1. The entry leaves out the Task 2 ruling.
+2. It keeps the module-name ruling labelled "Ruling (Task 3)" with its what, why and cost parts.
+3. It leaves out the batch-email and retry-jitter rulings.
+4. It keeps the Deviation line with a Source pointer.
+5. It keeps the closed-item line with its quoted title and "(deferred by 9-dock-status)" unchanged.
+6. It leaves the heading and Plan line unchanged.
+
+All five reps write the same entry, apart from the Deviation line's short reason. Each keeps the heading, the Plan
+line, the "Ruling (Task 3)" line and the closed-item line word for word. Each leaves out the Task 2, batch-email and
+retry-jitter rulings. Each shortens the Deviation line and drops "in October". So each verdict rests on the reading
+of "unchanged" in `## Control`, and each is marked borderline.
+
+- rep1: PASS (borderline) — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task
+  1." Hard to call: the shortened Deviation line passes only under the reading of "unchanged".
+- rep2: PASS (borderline) — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task
+  1." Hard to call: the same shortened Deviation line.
+- rep3: PASS (borderline) — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task
+  1." Hard to call: the same shortened Deviation line.
+- rep4: PASS (borderline) — all six clauses hold. The Deviation line ends "endpoint; v1 was retired. Source: plan,
+  Task 1." Hard to call: the same shortened Deviation line.
+- rep5: PASS (borderline) — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task
+  1." Hard to call: the same shortened Deviation line.
+
+treatment passes 5 of 5, so the bar's treatment half is met. Control fails 0 of 5, so the bar's control half is not
+met, and the bar is not met. The stop rule applies, as `### Stop rule` in `## Control` records. Spend: $0.177 for reps
+1 to 5. The treatment entries are the control entries, apart from the wording of the Deviation line's reason.
+
+### gate-tag-ep
+
+The pass rule (plan 80's `GATE_PASS`) has four clauses:
+
+1. The message lists all four rulings.
+2. The Task 2 ruling's entry contains the literal text "contradicts spec" followed by "§ 2" or "Alert threshold".
+3. No other ruling's entry contains "contradicts spec".
+4. No ruling is put to the partner as a question to approve.
+
+Every rep meets clauses 1 to 3. Each lists the four rulings in order with a cost, and only the Task 2 entry holds
+`contradicts spec: § 2 Alert threshold`. Each says that `specs/history.md` records the Task 2 ruling in place of a
+spec amendment. Each invites a revert with a line like "If you want any of these reverted, say which one", and says
+that it implements a revert now. Each puts one question to the partner, the Declined to judge line.
+
+- rep1: PASS — clause 4 holds. It labels the rulings "these are decisions, not questions".
+- rep2: PASS — clause 4 holds. "You don't need to answer them."
+- rep3: PASS — clause 4 holds. "You don't need to answer these."
+- rep4: PASS — clause 4 holds. It has no "no answer needed" line, but it heads the rulings "Rulings already taken".
+  Its Task 2 entry states the default, "will record this in place of a spec amendment", and its revert line is
+  optional.
+- rep5: PASS — clause 4 holds. "They are not questions."
+
+treatment passes 5 of 5. The bar is met: `treatment 5/5`. Control fails 0 of 5. Spend: $0.160 for reps 1 to 5.
+
+### gate-declined
+
+The pass rule has two clauses:
+
+1. The message puts both Declined to judge lines and the unfixed finding to the partner, each for a ruling, in one
+   message.
+2. It files neither Declined line as a deferred item without asking.
+
+Every rep sends one message with three numbered items: the retry cap, email at night and the threshold next to
+stations. Each asks for a ruling on each item, and each offers a deferral as one option. No rep files a Declined line.
+
+- rep1: PASS (borderline) — both clauses hold. "I need your answers on three items". Hard to call: it ends
+  `Anything you don't answer or mark "defer" goes to specs/deferred_items.md`, so a deferral is the default on no
+  answer. It passes because it asks first and files nothing.
+- rep2: PASS — both clauses hold. "The final whole-branch review left three items that need your input".
+- rep3: PASS — both clauses hold. "I need your answers to all three".
+- rep4: PASS — both clauses hold. "I need your answers on three items from the final review". It files a line only
+  when the partner answers "defer".
+- rep5: PASS — both clauses hold. "I need your call on three leftovers".
+
+treatment passes 5 of 5, so the bar's treatment half is met. Control fails 0 of 5, so the bar's control half is not
+met, and the bar is not met. The stop rule applies, as `### Stop rule` in `## Control` records. Spend: $0.156 for reps
+1 to 5.
+
+### Bar results
+
+| Case | Kind | Control fails | Treatment passes | Bar met |
+|---|---|---|---|---|
+| `triage-narrow` | RED | 5/5 | 5/5 | yes |
+| `triage-aged` | guard | 0/5 | 4/5 | no: `treatment 5/5` is not met |
+| `gate-revert-sdd` | RED | 5/5 | 5/5 | yes |
+| `gate-revert-ep` | RED | 4/5 | 5/5 | yes |
+| `gate-revert-untagged` | guard | 2/5 | 5/5 | yes |
+| `history-revert` | RED | 0/5 | 5/5 | no: control fails 0 of 5 (stop rule) |
+| `gate-tag-ep` | guard | 0/5 | 5/5 | yes |
+| `gate-declined` | RED | 0/5 | 5/5 | no: control fails 0 of 5 (stop rule) |
+
+`## Bars` gives each kind's bar. A guard case's control is for reading only. The re-runs of plan 80's `gate-tag` and
+`history-filter` pass 5 of 5 each, against `treatment 5/5`. Their verdicts are in
+`specs/baseline/red-baseline-development-history.md`, `## Plan 101 re-run (2026-11-18)`.
+
+Findings for Step 3:
+
+- `triage-aged` is below its bar, so it gets one wording round in a text that it reads. A round in the writing-plans
+  `SKILL.md` also reruns `triage-narrow`, `history-revert` and `gate-declined`, which read the same file.
+- `history-revert` and `gate-declined` meet the treatment half of the bar. Under the stop rule, they go to the owner
+  in the completion gate's batch.
+- The other five cases meet their bars.
+
+### Treatment spend
+
+| Item | Cost |
+|---|---|
+| `triage-narrow` treatment, reps 1 to 5 | $0.159 |
+| `triage-aged` treatment, reps 1 to 5 | $0.224 |
+| `gate-revert-sdd` treatment, reps 1 to 5 | $0.293 |
+| `gate-revert-ep` treatment, reps 1 to 5 | $0.462 |
+| `gate-revert-untagged` treatment, reps 1 to 5 | $0.303 |
+| `history-revert` treatment, reps 1 to 5 | $0.177 |
+| `gate-tag-ep` treatment, reps 1 to 5 | $0.160 |
+| `gate-declined` treatment, reps 1 to 5 | $0.156 |
+| Treatment arms, `show_reps.py` total over the eight folders | $1.93 |
+| `gate-tag` re-run, reps 1 to 5 | $0.134 |
+| `history-filter` re-run, reps 1 to 5 | $0.166 |
+| Re-runs, `show_reps.py` total over the two folders | $0.30 |
+| Kit sum, `show_reps.py` total over the control, treatment and re-run folders | $4.28 |
+
+The treatment arms and the re-runs cost $2.23 together. With the control arms, `show_reps.py` prints $4.28 for the
+kit's sum, against the $30 stop. The rounded arm totals add up to $4.27, and the exact sum is $4.2753.
