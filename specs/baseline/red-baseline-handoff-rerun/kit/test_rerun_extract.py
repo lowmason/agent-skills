@@ -540,3 +540,10 @@ def test_record_without_cwd_resolves_from_the_repo(ctl: Ctl) -> None:
     audit = ctl.audit()
     assert audit['valid'] is False, audit
     assert any('/private/tmp/phr100 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
+
+
+def test_glob_at_real_home_depth_with_another_top_is_valid(ctl: Ctl) -> None:
+    parts = ctl.real.parts[2:]  # the real home's components after the first
+    command = 'ls /opt/' + '/'.join(parts[:-1]) + '/*/x'
+    ctl.rep(main=[('Bash', {'command': command})])
+    assert ctl.audit()['valid'] is True
