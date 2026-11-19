@@ -11,13 +11,11 @@ This kit runs plan 102's micro-test of the cc-guide verifier contract. It runs p
 
 ## Files
 
-| File | What it does |
-|---|---|
-| `common.py` | The paths, caps, timeouts, settings, prompts and packet table. |
-| `build.py` | Adds reps to `$K/plan.json` and their ids to batch files. |
-| `run.py` | Runs one batch, one rep at a time. |
-| `postprocess.py` | Removes the key `credential_expires_at` from saved `.json` and `.jsonl` files. |
-| `test_vr_runner.py` | No-model tests with a stub `claude`. |
+- `common.py` holds the paths, caps, timeouts, settings, prompts and packet table.
+- `build.py` adds reps to `$K/plan.json` and their ids to batch files.
+- `run.py` runs one batch, one rep at a time.
+- `postprocess.py` removes the key `credential_expires_at` from saved `.json` and `.jsonl` files.
+- `test_vr_runner.py` holds the no-model tests, which use a stub `claude`.
 
 Plan 100's kit was not on `origin/main` (`1deb0ec`) when Task 6 ran. So `postprocess.py` is written to Task 6's Interfaces block, not copied from plan 100's kit. Task 7 adds `fixtures.py` and `grade.py`. Task 8 adds `probe.txt` and `vr-probe.md`.
 
@@ -47,17 +45,17 @@ Exit 0 on success, 1 on a refusal, 2 on a usage error.
 
 ## run.py
 
-`run.py <batch>` runs the reps of `$K/batches/<batch>.txt` in order. For each rep that has no results folder, it:
+`run.py <batch>` runs the reps of `$K/batches/<batch>.txt` in order. It skips each rep that already has a results folder. For every other rep, it does these steps:
 
-1. refuses (exit 3) while `R` holds anything;
-2. refuses (exit 4) when the held binary's sha256 differs from the one in `$K/binary.txt`;
-3. holds the rep and every later rep of the batch (exit 5) when the spend so far plus the rep's cap exceeds the ceiling. The spend counts each rep that has a results folder, at its `total_cost_usd`, or at its cap when it left no result. At equality the rep runs;
-4. builds the rep folder (below). A missing arm file, packet copy, docs copy or `probe.txt` refuses (exit 2) and leaves `R` empty;
-5. runs `command(rid)` in `R/<rid>/work/` with the prompt on stdin, and stops it at the rep's timeout;
-6. moves the session's files from `$HOME/.claude/projects/` to `$K/results/<rid>/project/<slug>/`. It finds them by the first init record's `session_id`;
-7. writes `result.json`, the stream's last `result` record;
-8. strips `credential_expires_at` from every `.json` and `.jsonl` file under `$K/results/<rid>/`. If the string is still in any file there, the rep is void (V6);
-9. writes `status.json` and moves `R/<rid>/` to `$K/homes/<rid>/`.
+1. It refuses (exit 3) while `R` holds anything.
+2. It refuses (exit 4) when the held binary's sha256 differs from the one in `$K/binary.txt`.
+3. It holds the rep and every later rep of the batch (exit 5) when the spend so far plus the rep's cap exceeds the ceiling. The spend counts each rep that has a results folder, at its `total_cost_usd`, or at its cap when it left no result. At equality the rep runs.
+4. It builds the rep folder (below). A missing arm file, packet copy, docs copy or `probe.txt` refuses (exit 2) and leaves `R` empty.
+5. It runs `command(rid)` in `R/<rid>/work/` with the prompt on stdin, and stops it at the rep's timeout.
+6. It moves the session's files from `$HOME/.claude/projects/` to `$K/results/<rid>/project/<slug>/`. It finds them by the first init record's `session_id`.
+7. It writes `result.json`, the stream's last `result` record.
+8. It strips `credential_expires_at` from every `.json` and `.jsonl` file under `$K/results/<rid>/`. If the string is still in any file there, the rep is void (V6).
+9. It writes `status.json` and moves `R/<rid>/` to `$K/homes/<rid>/`.
 
 Steps 6 to 9 run even when the rep fails or times out.
 
