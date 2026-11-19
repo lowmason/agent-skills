@@ -43,11 +43,15 @@ opening a follow-up PR.
      feature branch, and prune.
    - **A worktree the desktop app made** (`get_session` with `self` shows a `worktreePath`):
      switch the main checkout to the default branch, fast-forward it, and prune. Do not remove the
-     worktree or delete its branch: removing the session's own worktree moves the session onto the
-     main checkout, and git refuses to delete a branch that a worktree has checked out. The app
-     handles the worktree when the session is archived (step 4). Archiving can discard
-     uncommitted changes in it, usually after asking, and a kept worktree is removed about 30
-     days later. Report the worktree's path and its branch, which can outlive the archive.
+     worktree: removing the session's own worktree moves the session onto the main checkout. Free
+     its branch instead. Run `gh pr view <n> --json headRefOid`, then
+     `git rev-list --count <headRefOid>..<branch>`, after `git fetch origin pull/<n>/head` if that
+     commit is missing here. If it prints 0, run `git switch --detach` in the worktree, then
+     `git branch -D <branch>`. If it prints more, or either command fails, stop and report the
+     output, and run no other form of either command. The app handles the worktree when the
+     session is archived (step 4). Archiving can discard uncommitted changes in it, usually after
+     asking, and a kept worktree is removed about 30 days later. Report the worktree's path, and
+     the branch if it is still there.
    - **Any other worktree**, such as one from `claude --worktree`, or one whose making this
      conversation no longer shows: switch the main checkout to the default branch, fast-forward
      it, and prune. Do not remove the worktree or delete its branch. Give the user
