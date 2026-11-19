@@ -1373,3 +1373,66 @@ The adapted kit is in `GK/`. Its README lists each change under `## Plan 101 cha
 | Total | $14.3846 |
 
 The plan's stop is $20. The cost comes from each rep's `turn<N>.json`. Scorers are not in this sum.
+
+## Conclusion
+
+This section checks the spec's `## Done when` (`specs/plan-completion-triage-and-gate-revert.md`) against the branch after
+Task 9. Plan 101 is a plan of text edits, so "met" below means that a commit or a record section holds the content.
+
+### Gates, 2026-11-19
+
+| Gate | Result |
+|---|---|
+| `BODY` of `skills/writing-plans/SKILL.md` | 19,435 characters, at most 19,700 |
+| `BODY` of `skills/subagent-driven-development/SKILL.md` | 19,914, at most 19,926 (the waiver in `conformance.toml`) |
+| `uv run --with pyyaml python build/check_conformance.py` | exit 0 |
+| `bash build/run_commit_lints.sh` | `commit lints passed` |
+| `uv run python build/run_suites.py writing-plans` | 420 passed, 4 xfailed (409 passed at `BASE101`) |
+| `uv run python build/run_suites.py completion-triage-guard-kit` | 301 passed |
+| The declared-dependencies test | 2 passed |
+
+### Done when
+
+| Item | Status | Where |
+|---|---|---|
+| 1. Step 4 of the Plan Completion Protocol has the content in Design, Step 4 | Met | `029e41f` (`skills/writing-plans/SKILL.md`). The wording round `8b44d34` settled its last words. |
+| 2. The callers line in `references/deferred-backlog.md` names the aged-tail condition | Met | `029e41f`: "read-only triage only when the aged tail is above 0". |
+| 3. Both gate paragraphs carry the same revert sentence, and neither says that a revert makes a deferred item | Met | `ecd6dbd` (both executors' `references/final-review.md`). |
+| 4. History "Finish the draft" step 1 names a ruling that a `Reverted at the gate:` ledger line names | Met | `ecd6dbd` (`references/history.md`, step 1). |
+| 5. Every case in Micro-tests meets its bar, or goes to the owner | Two cases go to the owner (below). The other six meet their bars. | `### Bar results after round 1`, and `## Plan 101 re-run (2026-11-18)` in `specs/baseline/red-baseline-development-history.md`. |
+| 6. `check_conformance.py` exits 0, the body is at most 19,700 characters, and the commit lints pass | Met | The gate table above. |
+| 7. Protocol step 3 ticks both items with `→ done <YYYY-MM-DD> (plan <id>)` | Not done yet | The Plan Completion Protocol does it at plan completion. |
+
+### Verdicts against the bars
+
+| Case | Kind | Control fails | Treatment passes | Bar met |
+|---|---|---|---|---|
+| `triage-narrow` | RED | 5/5 | 5/5 | yes, after round 1 |
+| `triage-aged` | guard | 0/5 | 5/5 | yes, after round 1 |
+| `gate-revert-sdd` | RED | 5/5 | 5/5 | yes |
+| `gate-revert-ep` | RED | 4/5 | 5/5 | yes |
+| `gate-revert-untagged` | guard | 2/5 | 5/5 | yes |
+| `history-revert` | RED | 0/5 | 5/5 | no: control fails 0 of 5 (stop rule) |
+| `gate-tag-ep` | guard | 0/5 | 5/5 | yes |
+| `gate-declined` | RED | 0/5 | 5/5 | no: control fails 0 of 5 (stop rule) |
+| Plan 80's `gate-tag` re-run | guard | | 5/5 | yes |
+| Plan 80's `history-filter` re-run | guard | | 5/5 at `T7` and at `8b44d34` | yes |
+
+The roadmap-stage guard (Task 9, `## Roadmap-stage guard`) on the shipped text `T8`:
+
+| Arm | Verdict |
+|---|---|
+| `p5a` | PASS (0 of 5 reps failing) |
+| `c5a-neg` | PASS (0 of 5 reps failing) |
+| `c5a-merged` | PASS under the reading the owner ruled on 2026-11-19 (1 of 5 reps failing). It fails 5 of 5 under the literal reading. |
+| `c5a-ep` | FAIL (5 of 5 reps failing, and 5 of 5 at the base text). No rep reached the executing-plans text. |
+
+### What goes to the owner
+
+- `history-revert` and `gate-declined` meet the treatment half of their bars but not the control half. Under the stop rule,
+  they go to the owner at the completion gate, as `### Bar results after round 1` says.
+- The guard item ("Settle the wording and the test gap of the reworded roadmap-stage guard") is not closed. Its `Done when:`
+  needs `p5a`, `c5a-ep` and `c5a-neg` to meet their bars on the shipped wording, and `c5a-ep` does not. The record shows
+  that its miss is the same at the base text, and that its reps did not load `executing-plans`, so Task 7's wording for
+  that skill has no behavioral test. A later run that exercises `executing-plans` is the open work.
+- The reading of `c5a-merged`'s F-resume and F-next is settled by the owner (2026-11-19). It is not raised again.
