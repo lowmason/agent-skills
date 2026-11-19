@@ -55,14 +55,15 @@ def scanned(tool_name: str, tool_input: dict) -> list[str]:
 def expanded(token: str, home: str, cwd: str) -> str:
     '''The absolute path a token names, as the rep's shell would see it: HOME
     forms become the rep's HOME, other variables and ~user expand from the
-    guard's environment, the Data-volume prefix drops, and a relative token
+    guard's environment, the Data-volume prefix drops in any case, and a relative token
     joins cwd.'''
     for form in ('${HOME}', '$HOME', '~'):
         if token == form or token.startswith(form + '/'):
             token = home + token[len(form):]
             break
     token = os.path.expanduser(os.path.expandvars(token))
-    if token == DATA_VOLUME or token.startswith(DATA_VOLUME + '/'):
+    folded = token.casefold()  # APFS folds case, so /system/volumes/data is the same folder
+    if folded == DATA_VOLUME.casefold() or folded.startswith(DATA_VOLUME.casefold() + '/'):
         token = token[len(DATA_VOLUME):] or '/'
     return token if os.path.isabs(token) else os.path.join(cwd, token)
 

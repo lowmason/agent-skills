@@ -72,8 +72,9 @@ CAP = 800
 
 def spelled(path: str) -> str:
     '''One spelling for one folder (C10, Spelling): the Data-volume prefix drops,
-    and /tmp becomes /private/tmp.'''
-    if path == DATA_VOLUME or path.startswith(DATA_VOLUME + '/'):
+    and /tmp becomes /private/tmp. The prefix matches in any case, as APFS does.'''
+    folded = path.casefold()
+    if folded == DATA_VOLUME.casefold() or folded.startswith(DATA_VOLUME.casefold() + '/'):
         path = path[len(DATA_VOLUME):] or '/'
     if path == '/tmp' or path.startswith('/tmp/'):
         path = '/private' + path

@@ -236,6 +236,21 @@ def test_real_home_spellings_void(ctl: Ctl, form: str) -> None:
     assert any('real home' in flag for flag in audit['flags']), audit['flags']
 
 
+@pytest.mark.parametrize('prefix', ['/system/volumes/data', '/SYSTEM/Volumes/dAtA'])
+def test_real_home_through_data_volume_in_any_case_voids(ctl: Ctl, prefix: str) -> None:
+    ctl.rep(main=[('Bash', {'command': f'ls {prefix}{ctl.real}/.ssh'})])
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('real home' in flag for flag in audit['flags']), audit['flags']
+
+
+def test_own_home_through_lowercase_data_volume_is_valid(ctl: Ctl) -> None:
+    ctl.rep(main=[('Bash', {'command': f'ls /system/volumes/data{HOME_RUN}/.claude/skills'}),
+                  ('Read', {'file_path': f'/system/volumes/data{REPO_RUN}/README.md'})])
+    audit = ctl.audit()
+    assert audit['valid'] is True, audit
+
+
 @pytest.mark.parametrize('command', [
     'ls ~/Library/Keychains/../../Projects/x', 'ls ~/Library/Preferences', 'cd ~ && ls Library/Keychains',
     'ls ~/Library/Key""chains', 'cd ~ && ls Library/Key""chains',

@@ -80,6 +80,22 @@ def test_denies_system_volumes_form(homes):
     assert_denied(reason, 'real home')
 
 
+@pytest.mark.parametrize('prefix', ['/system/volumes/data', '/SYSTEM/Volumes/dAtA'])
+def test_denies_data_volume_form_in_any_case(homes, prefix):
+    rep, real = homes
+    reason = decide('Bash', {'command': f'cat {prefix}{real}/x'}, rep, real)
+    assert_denied(reason, 'real home')
+    reason = decide('Read', {'file_path': f'{prefix}{real}/x'}, rep, real)
+    assert_denied(reason, 'real home')
+
+
+def test_allows_own_home_through_lowercase_data_volume(homes):
+    rep, real = homes
+    assert decide('Bash', {'command': f'ls /system/volumes/data{rep}/work/r281'}, rep, real) is None
+    assert decide('Read', {'file_path': f'/system/volumes/data{rep}/.claude/skills/prepare-handoff/SKILL.md'},
+                  rep, real) is None
+
+
 def test_denies_through_keychain_link(homes):
     rep, real = homes
     reason = decide('Bash', {'command': 'ls ~/Library/Keychains/../..'}, rep, real)
