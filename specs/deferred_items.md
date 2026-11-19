@@ -7151,3 +7151,15 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `guard.py` and `extract.py`, because they read the command's words, not what a program does. The kit README
       lists the limit. Size: design. Revisit if: a rep transcript shows a script that walks from an ancestor of the
       real home.
+
+## pr-lifecycle-worktree-and-push (no plan; owner rulings at G1, branch claude/pr-lifecycle-worktree-push-b9e9e5) — 2026-11-19
+- [ ] **Free a desktop-app worktree's branch before the archive (F2 option b; owner ruling 2026-11-19: adopt it
+      after one live check, and report only until then).** Step 3 of `rules/pr-lifecycle.md` leaves a worktree
+      that the desktop app made, and its branch, for the archive. An archive leaves the branch behind: the pooled
+      folder ends on a detached HEAD (seen after four archives, 2026-10-31 and 2026-11-02), so merged branches
+      pile up. Option b: once the branch holds no commit that the merged PR's `headRefOid` lacks, run
+      `git switch --detach` in the worktree, then `git branch -D <branch>`. (An ancestry check against
+      `origin/<default>` fails after a squash or rebase merge, Codex review 2026-11-19.) The worktree then looks as the pool
+      leaves it. Nobody has tested how the app's own branch tracking takes it. Size: quick-fix after the check.
+      Done when: one app session runs option b, its archive succeeds, `git worktree list` and `get_session` show
+      no fault, and step 3 and the `README.md` rules row describe option b.
