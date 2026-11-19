@@ -1479,7 +1479,7 @@ def test_stop_refuses_until_every_sheet_has_its_verdicts(kit, capfd):
     assert 'r004' in capfd.readouterr().err
     with (common.k_dir() / 'RESULTS.md').open('a') as f:
         f.write('r004 void\n')  # a rep that never ran is void, and needs no sheet
-    assert grade.main(['stop', 'gateA1']) == 1  # but it needs a valid spare (owner's ruling)
+    assert grade.main(['stop', 'gateA1']) == 1  # but it needs a valid spare
     assert capfd.readouterr().err == 'grade.py: refused: gateA1: these void reps have no valid spare yet: r004\n'
     verdict_reps([('r005', 'changed', True, 'yes', 'yes', 'none', 0, 'spare', 'r004')])
     assert grade.main(['stop', 'gateA1']) == 0
