@@ -464,9 +464,9 @@ def stub_sheet(rid: str, packet: str, **measures) -> None:
     '''A sheet and its measures file, as grade.py writes them, for stop and unblind.'''
     k = common.k_dir()
     write(k / 'sheets' / f'{rid}.txt', f'== {rid} {packet}\n')
-    write_json(k / 'sheets' / f'{rid}.json', {'rid': rid, 'packet': packet, 'volume': 4, 'b_rows': 3,
-                                              'b_unparseable': 0, 'listed': None, 'cost': 1.0, 'seconds': 10.0}
-               | measures)
+    write_json(k / 'sheets' / f'{rid}.json', {'rid': rid, 'packet': packet, 'void': [], 'pending': [], 'volume': 4,
+                                              'b_rows': 3, 'b_unparseable': 0, 'listed': None, 'cost': 1.0,
+                                              'seconds': 10.0} | measures)
 
 
 def verdict_reps(reps: list[tuple], batch: str = 'gateA1', extra: str = '') -> None:
@@ -836,6 +836,66 @@ def test_only_the_verifier_transcripts_lines_are_counted(kit):
         f.write(b'[1]\n')
     assert grade.main(['b']) == 0
     assert check_line(sheet('r001'), 'V6') == 'V6: ok'
+
+
+VALID_AUDIT = ['valid', 'P11 yes', 'P8 yes', 'hits none', 'unsupported 0']
+
+
+def hand_verdicts(*lines: str) -> None:
+    path = common.k_dir() / 'RESULTS.md'
+    write(path, (path.read_text() if path.exists() else '') + ''.join(f'{line}\n' for line in lines))
+
+
+@pytest.mark.parametrize('check', ['V1', 'V2', 'V4', 'V5', 'V6', 'V7', 'V8'])
+@pytest.mark.parametrize('kind', ['void', 'pending'])
+def test_a_valid_verdict_on_a_sheet_with_a_void_or_pending_check_is_refused(kit, capfd, check, kind):
+    plan(('r001', 'audit', 'control'), batch='gateA1')
+    stub_sheet('r001', 'audit', **{kind: [check]})
+    hand_verdicts(*(f'r001 {v}' for v in VALID_AUDIT))
+    for argv in (['stop', 'gateA1'], ['unblind', 'A']):
+        assert grade.main(argv) == 1
+        out, err = capfd.readouterr()
+        assert out == '' and err == ('grade.py: refused: these reps are not ready: r001 (a valid verdict, but its '
+                                     'sheet has a void or pending check)\n')
+
+
+def test_a_v3_line_does_not_block_and_a_void_verdict_needs_no_clean_sheet(kit, capsys):
+    plan(('r001', 'audit', 'control'), ('r002', 'audit', 'changed'), batch='gateA1')
+    stub_sheet('r001', 'audit', void=['V3'])  # V3 stays a hand check
+    stub_sheet('r002', 'audit')  # an ok sheet that the reader voids by hand
+    hand_verdicts(*(f'r001 {v}' for v in VALID_AUDIT), 'r002 void')
+    assert run_unblind(capsys, 'A')[-1] == 'result: UNSETTLED (too few valid reps: control 1 of 5, changed 0 of 5)'
+
+
+def test_a_valid_verdict_needs_the_sheets_measures_file(kit, capfd):
+    plan(('r001', 'audit', 'control'), batch='gateA1')
+    stub_sheet('r001', 'audit')
+    (common.k_dir() / 'sheets' / 'r001.json').unlink()
+    hand_verdicts(*(f'r001 {v}' for v in VALID_AUDIT))
+    assert grade.main(['unblind', 'A']) == 1
+    assert capfd.readouterr().err == 'grade.py: refused: these reps are not ready: r001 (no sheet)\n'
+
+
+def test_stop_and_unblind_refuse_a_valid_verdict_on_a_graded_void_or_pending_sheet(kit, capfd):
+    plan(('r001', 'audit', 'control'), ('r002', 'audit', 'changed'), batch='gateA1')
+    rep_files('r001', 'audit', 'control', None)  # no report: the sheet shows void: V6
+    rep_files('r002', 'audit', 'changed', AUDIT_REPORT)  # graded before pilot.json: pending: V7, V8
+    assert grade.main(['gateA1']) == 0
+    assert check_line(sheet('r001'), 'void') == 'void: V6'
+    assert check_line(sheet('r002'), 'pending') == 'pending: V7, V8'
+    capfd.readouterr()
+    hand_verdicts(*(f'{rid} {v}' for rid in ('r001', 'r002') for v in VALID_AUDIT))
+    want = ('grade.py: refused: these reps are not ready: r001 (a valid verdict, but its sheet has a void or pending '
+            'check); r002 (a valid verdict, but its sheet has a void or pending check)\n')
+    for argv in (['stop', 'gateA1'], ['unblind', 'A']):
+        assert grade.main(argv) == 1
+        assert capfd.readouterr() == ('', want)
+    pilot_json(effort='xhigh', version='2.1.327', advisor=True)
+    assert grade.main(['gateA1']) == 0  # the controller regrades once the pilot record exists
+    capfd.readouterr()
+    assert grade.main(['unblind', 'A']) == 1
+    assert capfd.readouterr().err == ('grade.py: refused: these reps are not ready: r001 (a valid verdict, but its '
+                                      'sheet has a void or pending check)\n')
 
 # --- the plan's values ----------------------------------------------------------------------------------------
 
@@ -1570,6 +1630,7 @@ def test_no_output_names_an_arm_in_any_path(kit, capfd):
                                      ('r003', 'readme', 'changed', README_REPORT),
                                      ('r004', 'precision', 'control', PRECISION_REPORT)):
         rep_files(rid, packet, arm, report)
+    pilot_json(effort='xhigh', version='2.1.327', advisor=True)  # so r001's sheet has no pending check
     assert grade.main(['gateA1']) == 0
     assert grade.main(['stop', 'gateA1']) == 1  # no verdicts yet
     write(common.k_dir() / 'RESULTS.md', 'r001 valid\nr001 P11 yes\nr001 P8 yes\nr001 hits none\n'

@@ -188,7 +188,7 @@ A void rep needs only `void`. `hits` takes the labels P1 to P14, except P8 and P
 
 ### stop and unblind
 
-`stop` and `unblind` refuse until each rep they read has a sheet and its verdicts. A void rep needs no sheet. The refusal names rep ids only.
+`stop` and `unblind` refuse until each rep they read has a sheet, its measures file `$K/sheets/<rid>.json` and its verdicts. A rep with a `void` verdict needs none of them. A `valid` verdict is also refused while the sheet lists V1, V2 or V4 to V8 as void or pending, because a check the grader decides overrules the hand. A sheet graded before `$K/pilot.json` existed (`pending: V7, V8`) is refused until it is graded again. V3 stays a hand check, so a V3 line never blocks. A `void` verdict on a clean sheet is allowed. The refusal names rep ids only.
 
 `stop <batch>` reads a batch of counted and spare audit reps, and counts valid reps only. It refuses (exit 1) while either arm has fewer than 2 valid reps (the owner's ruling). That is exactly when a void rep has no valid spare. The refusal names those void reps in id order, and nothing else, so it shows nothing the sheets do not. A spare counts for the void rep it `replaces`, and for any rep that rep replaced. Add a spare with `build.py spare <rid>`. After 2 spares for a packet and arm, an arm that is still short means the result is UNSETTLED, for the owner (plan:171), and `stop` keeps refusing. With 2 valid reps in each arm, these rules apply in this order:
 

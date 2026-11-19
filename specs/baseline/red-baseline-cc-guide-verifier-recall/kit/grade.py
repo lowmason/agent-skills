@@ -95,6 +95,7 @@ REACH_MIN = 2
 RETENTION = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P9', 'P13', 'P14')
 SECONDARY = ('P7', 'P10', 'P12')
 HIT_LABELS = tuple(f'P{n}' for n in range(1, 15) if n not in (8, 11))
+BLOCKING = ('V1', 'V2', 'V4', 'V5', 'V6', 'V7', 'V8')  # a void or pending one refuses a valid verdict (not V3)
 REQUIRED = {'audit': ('P11', 'P8', 'hits', 'unsupported'), 'readme': ('readme89', 'unsupported'),
             'precision': ('reach', 'keymiss', 'unsupported')}
 VERDICT_RE = re.compile(r'(?:[-*] +)?(r\d{3,})\b(.*)')
@@ -799,21 +800,27 @@ def read_verdicts() -> dict[str, dict]:
 
 def require_complete(reps: list[dict], verdicts: dict[str, dict]) -> None:
     '''Refuse, naming rep ids only, until every rep has its verdicts and a
-    sheet; a void rep needs no sheet.'''
+    sheet with its measures file; a void rep needs neither. A valid verdict
+    also needs a sheet whose V1, V2 and V4 to V8 are neither void nor
+    pending: a check the grader decides overrules the hand. V3 stays a hand
+    check, so its line never blocks.'''
     problems = []
     for rep in sorted(reps, key=lambda r: r['rid']):
         rid, mine = rep['rid'], verdicts.get(rep['rid'], {})
-        has_sheet = (common.k_dir() / 'sheets' / f'{rid}.txt').is_file()
+        sheets = common.k_dir() / 'sheets'
+        measures = read_json(sheets / f'{rid}.json') if (sheets / f'{rid}.txt').is_file() else None
         if mine.get('validity') == 'void':
             continue
-        if not has_sheet:
+        if measures is None or not all(isinstance(measures.get(k), list) for k in ('void', 'pending')):
             problems.append(f'{rid} (no sheet)')
             continue
         missing = [key for key in ('validity', *REQUIRED[rep['packet']]) if key not in mine]
         if missing:
             problems.append(f"{rid} ({', '.join(missing)})")
+        elif set(measures['void'] + measures['pending']) & set(BLOCKING):
+            problems.append(f'{rid} (a valid verdict, but its sheet has a void or pending check)')
     if problems:
-        raise Refusal('these reps lack a sheet or verdicts in RESULTS.md: ' + '; '.join(problems))
+        raise Refusal('these reps are not ready: ' + '; '.join(problems))
 
 
 def valid_by_arm(reps: list[dict], verdicts: dict[str, dict]) -> dict[str, list[dict]]:
