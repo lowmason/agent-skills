@@ -41,6 +41,12 @@ notes = [
 ]
 
 [[suite]]
+name = 'cc-guide-verifier-recall-kit'
+dir = 'specs/baseline/red-baseline-cc-guide-verifier-recall/kit'
+with = ['pytest']
+notes = ['Plan 102 micro-test kit: no-model tests with a stub claude. The fixture tests skip without the cache masters.']
+
+[[suite]]
 name = 'cc_guide'
 dir = 'build/cc_guide'
 with = ['pytest']
@@ -51,6 +57,12 @@ name = 'classification-codes'
 dir = 'skills/classification-codes/scripts'
 with = ['pytest', 'polars']
 notes = ['Build tests (fixtures are in-memory frames, so no workbook reader is needed).']
+
+[[suite]]
+name = 'completion-triage-guard-kit'
+dir = 'specs/baseline/red-baseline-completion-triage/guard-kit'
+with = ['pytest']
+notes = ['Plan 101 guard kit, a copy of plan 100 kit adapted to plan 40 c5a arms: guard, runner (stub claude, no model) and audit tests. bash and git required.']
 
 [[suite]]
 name = 'describe-critique-methodology'

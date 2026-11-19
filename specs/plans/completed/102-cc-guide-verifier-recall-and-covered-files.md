@@ -1,5 +1,7 @@
 # cc-guide Verifier Recall and Covered Files Implementation Plan
 
+**Status: COMPLETE (2026-11-19)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** An audit packet lists the changelog bullets that name its group's terms and the verifier must answer each one. A files packet for a skill copies the Markdown files its citation covers. The files rule compares a statement with the component it describes. A micro-test gates the audit change and the files change separately.
@@ -62,6 +64,10 @@ Execution:
 - **D1** (owner, brief, 2026-11-17): plan 100 closes the three next-kit items. This kit still carries the three fixes, each with its test (spec Part D, D2), and this plan writes no note on those items. It reuses plan 100's kit code if that code is on `main` at execution, and builds its own otherwise. Spec Part D, D2's option "or the owner records that the gap stays" moves to plan 100. Applied in: Task 6, Planner's call PC2, Completion.
 - **D2** (owner, brief, 2026-11-17): one cost ceiling, approved before the pilot. After the pilot the plan estimates again, and it stops for the owner only when the new estimate exceeds the approved ceiling. Applied in: Task 8.
 - **D3** (owner, plan review, 2026-11-18): "Approve as written", to "Approve plan 102 as written, PC2 included?". The plan stands as written: Planner's calls PC1 to PC14, PC2's isolation route (the real `HOME`, no Bash, a read fence) in place of plan 100's per-rep `HOME`, and the owner question's written default (B rows reported, not gated). Applied in: the whole plan.
+- **D4** (owner, Task 8 gate, 2026-11-19): "$130", to "What total spending ceiling do you approve?". It is the ceiling in `$K/ceiling.txt`. Applied in: Task 8 Step 4, `run.py`.
+- **D5** (owner, Task 8 gate, 2026-11-19): "Check and remove", to the question of how the run handles reps that join the peer-session list (Channel 7). The probe gets a line that asks which tools the rep can call, and the controller checks the init record for cross-session tools such as `ListAgents` and `SendMessage`. If the probe lists any, they join the deny list in `--settings` (a change to PC2) and the kit is frozen again before the pilot. The grader voids a rep whose records hold a peer origin. No controller session messages a rep session while reps run. Applied in: Task 8 Steps 5 and 6, Task 7's grader.
+- **D6** (owner, Task 8 gate, 2026-11-19): "2.1.325 in place", to the question of which Claude Code binary every rep runs. Step 1's copy cannot run, because macOS kills a copy of the Desktop app's binary (exit 137). `binary.txt` names the binary where it is, and `run.py` checks its sha256 before every rep. Applied in: Task 8 Step 1.
+- **D7** (owner, Task 11 gate, 2026-11-19): "Skip them via conftest", to the question of how the kit suite ends after gate A failed and Part A was reverted. The reverts broke 16 kit tests (a defect of this plan, which expected every check to pass after a revert): 12 fixture tests, because the audit fixture builder calls the reverted `packets.listed_bullets` (Task 1), and 4 grader tests, because settle no longer prints the `listed items:` line from `settle.listed_report` (Task 2). A new `kit/conftest.py`, outside the 12 frozen kit files, skips the 16 tests with a reason. Each group skips while its own function is absent and runs again when its commit is restored. Applied in: Task 11.
 
 ---
 
@@ -192,7 +198,7 @@ This plan adopts plan 45's Pre-registration (`specs/plans/completed/45-claude-co
 - Produces: `audit()` writes `listed.md` and adds `'listed': <entries>` to `index.json`, from `world.docs.changelog`, `world.terms[group]` and `world.guide`. `releases.md` does not change (A7).
 - Placement: `LISTED` goes on the line after `RELEASES`, and the two functions go after `release_items`. Task 3's `COVERED` goes after `SECTIONS`, so one unchanged line separates them.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 In `test_docs.py`:
 
@@ -230,24 +236,26 @@ def test_an_audit_packet_lists_the_bullets_that_name_its_groups_terms(world, tmp
 
 In `test_an_audit_packet_holds_every_section_its_untriaged_releases_and_its_blocks`, add `'listed.md'` to the expected file list.
 
-- [ ] **Step 2: Run them and confirm RED.**
+- [x] **Step 2: Run them and confirm RED.**
 
 Run: `uv run python build/run_suites.py cc_guide -- -k "release_lines or listed_bullets or audit_packet"`
 Expected: 4 FAIL: `AttributeError` on `release_lines` and on `listed_bullets`, `KeyError: 'listed'`, and the file-list mismatch.
 
-- [ ] **Step 3: Implement `release_lines`, `listed_bullets`, `listed_lines` and the `audit()` change** to the Interfaces block. Refactor `parse_changelog`'s loop into one private scan that both public functions read.
+- [x] **Step 3: Implement `release_lines`, `listed_bullets`, `listed_lines` and the `audit()` change** to the Interfaces block. Refactor `parse_changelog`'s loop into one private scan that both public functions read.
 
-- [ ] **Step 4: Run the suite and confirm GREEN.**
+- [x] **Step 4: Run the suite and confirm GREEN.**
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: all pass, `+3` against the count recorded before Task 1.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 git add build/cc_guide/docs.py build/cc_guide/packets.py build/cc_guide/test_docs.py build/cc_guide/test_packets.py
 git commit -m "feat(cc-guide): list the changelog bullets that name an audit group's terms (plan 102)"
 ```
+
+> Deviation: the task made three commits, not one (a745566, c0e2569, 3690bad). Gate A's FAIL reverted all three as 3b0ee55.
 
 ### Task 2: Settle answers every listed item; the audit contract (A3–A6)
 
@@ -270,7 +278,7 @@ git commit -m "feat(cc-guide): list the changelog bullets that name an audit gro
   - a none line for an ID that is not listed stays as today: unparseable, and it holds every section in the packet;
   - verify packets carry no `listed`, so nothing changes there.
 
-- [ ] **Step 1: Write the failing tests** in `test_settle.py`, after `test_an_audit_ends_with_audited_unless_a_section_is_held`. Each builds the alpha audit packet as that test does, with `REVIEWED = ('L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -', 'alpha.reference | none')`.
+- [x] **Step 1: Write the failing tests** in `test_settle.py`, after `test_an_audit_ends_with_audited_unless_a_section_is_held`. Each builds the alpha audit packet as that test does, with `REVIEWED = ('L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -', 'alpha.reference | none')`.
 
 ```python
 def test_an_audit_answers_each_listed_item_by_a_b_row_on_its_line_or_its_none_line(world, tmp_path):
@@ -325,26 +333,26 @@ def test_the_verifier_answers_every_listed_item_in_an_audit():
     assert 'with its release as the version' in rule
 ```
 
-- [ ] **Step 2: Run them and confirm RED.**
+- [x] **Step 2: Run them and confirm RED.**
 
 Run: `uv run python build/run_suites.py cc_guide -- -k "listed or unlisted or skill_files"`
 Expected: FAIL for the three settle tests (no `listed items` line), for the new skill-file test (`ValueError` from the empty unpack), and for the new `'item | none'` case of `test_the_skill_and_the_verifier_state_the_report_formats_settle_parses` (the agent lacks it). The guard passes.
 
-- [ ] **Step 3: Add `LISTED_NONE_ROW` and the settle rule** to the Interfaces block.
+- [x] **Step 3: Add `LISTED_NONE_ROW` and the settle rule** to the Interfaces block.
 
-- [ ] **Step 4: Edit the verifier contract.** In `### verify and audit`, add `    item | none` as the last line of the format block. After the bullet `- B, one row per changelog item that changes a claim in scope.` add this bullet, exactly:
+- [x] **Step 4: Edit the verifier contract.** In `### verify and audit`, add `    item | none` as the last line of the format block. After the bullet `- B, one row per changelog item that changes a claim in scope.` add this bullet, exactly:
 
 ```markdown
 - In an audit, `listed.md` lists each changelog bullet that names one of the group's terms, as `<release>#<n>` with its `changelog.md` line, the sections whose terms it names, and any names it holds that the guide lacks. Answer every listed item: give it a B row, with its release as the version and its `changelog.md` line, when the bullet changes a claim in a section of this packet, and otherwise the line `<item> | none`. A listed item with neither holds its sections, as if unreviewed.
 ```
 
-- [ ] **Step 5: Edit the skill text** (A6).
+- [x] **Step 5: Edit the skill text** (A6).
   - `formats.md`, Packets: leave the table alone, since Task 3 edits the files row beside the audit row. After the paragraph that begins "`packets --verify <ids> --from <triage>`", add a paragraph: "An audit packet also holds `listed.md`: each changelog bullet that names one of the group's terms, numbered `<release>#<n>` as triage numbers it, with its `changelog.md` line, the sections it names, the names it holds that the guide lacks, and its text. `index.json` names the same items as `listed`."
   - `formats.md`, Reports: add `    item | none` to the verify-and-audit format block. Change its lead sentence to end "…and a none line for each section with no checkable claim; in an audit, a B row on its line or `<item> | none` for each item in `listed.md`:".
   - `formats.md`, `## What settle does with a report`: add a last bullet, after Bookkeeping (Task 4 edits the Holds bullet): "- **Listed items (audit).** An item in `listed.md` that neither a B row on its line nor its `<item> | none` line answers holds the sections it names. Settle prints how many items a B row answered, how many were answered none and which are unanswered, and an unanswered item makes the exit 1. A `<item> | none` line for an ID that `listed.md` does not hold is unparseable and holds every section in the packet."
   - `SKILL.md`, `## audit [<group>]`: after "It costs about \$2.50–5.30." add "Its `listed.md` lists each changelog bullet that names one of the group's terms, about 300 to 400 per group on the changelog of 2026-11-17, and the verifier answers each one with a B row or `<item> | none`. That adds about 20,000 input tokens and as many short answers."
 
-- [ ] **Step 6: Run the term gate** on the agent file:
+- [x] **Step 6: Run the term gate** on the agent file:
 
 ```bash
 git diff -U0 dc8e020 HEAD -- .claude/agents/cc-guide-verifier.md | /usr/bin/grep '^+[^+]' | /usr/bin/grep -iE 'deniedModels|availableModels|effortLevel|effort|opus|sonnet|haiku|fable|1288|1702|2\.1\.28[03]|matcher|newline|uv-guard|README\.md:89|permission'
@@ -352,7 +360,7 @@ git diff -U0 dc8e020 HEAD -- .claude/agents/cc-guide-verifier.md | /usr/bin/grep
 
 Expected: no output, exit 1. Run it again after Task 5 against the same base.
 
-- [ ] **Step 7: Run the checks and confirm GREEN.**
+- [x] **Step 7: Run the checks and confirm GREEN.**
 
 ```bash
 uv run python build/run_suites.py cc_guide
@@ -362,12 +370,14 @@ uv run --with pyyaml python build/check_conformance.py
 
 Expected: the suite passes, `+6` against Task 1's count: 4 settle tests, 1 skill-file test, and 1 new case of the parametrized format test. Lint prints the same lines as before Task 1. Conformance passes.
 
-- [ ] **Step 8: Commit.**
+- [x] **Step 8: Commit.**
 
 ```bash
 git add build/cc_guide/report_grammar.py build/cc_guide/settle.py build/cc_guide/test_settle.py build/cc_guide/test_skill_files.py .claude/agents/cc-guide-verifier.md .claude/skills/cc-guide/SKILL.md .claude/skills/cc-guide/references/formats.md
 git commit -m "feat(cc-guide): answer every listed changelog bullet in an audit (plan 102)"
 ```
+
+> Deviation: three commits (97c3028, 2670468, 965ab3d), reverted by 7d4fc08 after gate A's FAIL. The implementer added the input `'2.1.901#1 | none'` to an existing test, which the plan did not foresee. The ledger rules it no loosening.
 
 ### Task 3: Covered files in a files packet (B1, B2)
 
@@ -382,7 +392,7 @@ git commit -m "feat(cc-guide): answer every listed changelog bullet in an audit 
 - Produces: `state.covered_files(source: Source, path: str) -> list[str]`. A `path` that fully matches `(?:\.claude/)?skills/[^/]+/SKILL\.md` covers each tracked `.md` file under its folder, except `path` itself, any file named `README.md`, and any file with a `scripts` folder in its path below the skill folder. The list is sorted. Any other path covers `[]`.
 - Produces: `packets.COVERED = 'covered'`. `files()` writes each covered file to `covered/<path within the skill folder>` and adds `'covered': {<repo path>: 'covered/<path within the skill folder>'}` to `index.json`. A file that covers nothing gets `{}`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 In `test_state.py`, with `fixture_repo` and `git` from `cc_fixtures`:
 
@@ -426,23 +436,25 @@ def test_a_files_packet_for_a_skill_copies_each_covered_file(world, tmp_path):
     assert gate['covered'] == {} and not (out[1] / 'covered').exists()
 ```
 
-- [ ] **Step 2: Run them and confirm RED.**
+- [x] **Step 2: Run them and confirm RED.**
 
 Run: `uv run python build/run_suites.py cc_guide -- -k "covered"`
 Expected: 2 FAIL, an `AttributeError` on `covered_files` and a `KeyError: 'covered'`.
 
-- [ ] **Step 3: Implement `tracked_under`, `covered_files`, `COVERED`, the `files()` change and nested writes in `write_packet`.**
+- [x] **Step 3: Implement `tracked_under`, `covered_files`, `COVERED`, the `files()` change and nested writes in `write_packet`.**
 
-- [ ] **Step 4: Edit `formats.md`'s files row.** Files: add `` `covered/<path within the skill folder>` (a copy of each Markdown file a skill's `SKILL.md` citation covers: each tracked `.md` file in the skill folder or below it, except `SKILL.md`, any `README.md` and anything under `scripts/`) ``. Index: add `covered` (repo path to copy; `{}` for a file that is no skill's `SKILL.md`).
+- [x] **Step 4: Edit `formats.md`'s files row.** Files: add `` `covered/<path within the skill folder>` (a copy of each Markdown file a skill's `SKILL.md` citation covers: each tracked `.md` file in the skill folder or below it, except `SKILL.md`, any `README.md` and anything under `scripts/`) ``. Index: add `covered` (repo path to copy; `{}` for a file that is no skill's `SKILL.md`).
 
-- [ ] **Step 5: Run the suite and confirm GREEN.** Run: `uv run python build/run_suites.py cc_guide`. Expected: all pass, `+2` against Task 2's count.
+- [x] **Step 5: Run the suite and confirm GREEN.** Run: `uv run python build/run_suites.py cc_guide`. Expected: all pass, `+2` against Task 2's count.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add build/cc_guide/state.py build/cc_guide/packets.py build/cc_guide/test_state.py build/cc_guide/test_packets.py .claude/skills/cc-guide/references/formats.md
 git commit -m "feat(cc-guide): copy the files a skill's citation covers into its files packet (plan 102)"
 ```
+
+> Deviation: four commits, not one. Fix round 1 (1e3abf0) skips a covered file that was removed with plain `rm` and is still in the index.
 
 ### Task 4: Settle reads rows on covered files (B4, B6)
 
@@ -460,7 +472,7 @@ git commit -m "feat(cc-guide): copy the files a skill's citation covers into its
   - `covered_changes` adds the hold reason `covered files changed after its packet was built: <paths, joined by ', '>`;
   - `baseline cite` still names only `index['file']`.
 
-- [ ] **Step 1: Write the failing tests** in `test_settle.py`, after `test_a_file_whose_citation_stamp_alone_changed_is_still_cited`. A helper `skill_packet(world, tmp_path)` commits the demo skill of Task 3's packet test into the world's repo and returns its files packet. `SKILL_OK = ('skills/demo/SKILL.md:5 | a body | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent',)`.
+- [x] **Step 1: Write the failing tests** in `test_settle.py`, after `test_a_file_whose_citation_stamp_alone_changed_is_still_cited`. A helper `skill_packet(world, tmp_path)` commits the demo skill of Task 3's packet test into the world's repo and returns its files packet. `SKILL_OK = ('skills/demo/SKILL.md:5 | a body | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent',)`.
 
 ```python
 def test_settle_accepts_a_row_on_a_covered_file_and_discards_one_on_another_file(world, tmp_path):
@@ -500,23 +512,25 @@ def test_a_files_packet_without_covered_settles_as_before(world, tmp_path):
     assert not any(line.startswith('held') for line in result.lines)
 ```
 
-- [ ] **Step 2: Run them and confirm RED.**
+- [x] **Step 2: Run them and confirm RED.**
 
 Run: `uv run python build/run_suites.py cc_guide -- -k "covered"`
 Expected: the first test and the three parametrized cases FAIL (the covered-file row is unparseable, and no hold line appears). The guard and Task 3's tests pass.
 
-- [ ] **Step 3: Implement `covered_changes` and the `settle_files` change** to the Interfaces block.
+- [x] **Step 3: Implement `covered_changes` and the `settle_files` change** to the Interfaces block.
 
-- [ ] **Step 4: Edit `formats.md`'s Holds bullet.** After "…no longer matches the packet's copy, which the verifier read (`the file changed after its packet was built`)." add: "For a skill, a row may name a covered file, and the file is also held when a covered file differs from its copy or the skill has gained or lost one since the packet was built (`covered files changed after its packet was built`)."
+- [x] **Step 4: Edit `formats.md`'s Holds bullet.** After "…no longer matches the packet's copy, which the verifier read (`the file changed after its packet was built`)." add: "For a skill, a row may name a covered file, and the file is also held when a covered file differs from its copy or the skill has gained or lost one since the packet was built (`covered files changed after its packet was built`)."
 
-- [ ] **Step 5: Run the suite and confirm GREEN.** Run: `uv run python build/run_suites.py cc_guide`. Expected: all pass, `+5` against Task 3's count.
+- [x] **Step 5: Run the suite and confirm GREEN.** Run: `uv run python build/run_suites.py cc_guide`. Expected: all pass, `+5` against Task 3's count.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add build/cc_guide/settle.py build/cc_guide/test_settle.py .claude/skills/cc-guide/references/formats.md
 git commit -m "feat(cc-guide): settle rows on covered files and hold a skill whose covered files moved (plan 102)"
 ```
+
+> Deviation: four commits (f43edbf, 4cbfabb, c970965, 5d1d072). Fix round 1 (5d1d072) moved the Holds-bullet test so that each revert unit applies cleanly.
 
 ### Task 5: The files contract, covered files and component scope (B3, B5, C1, C2)
 
@@ -527,7 +541,7 @@ git commit -m "feat(cc-guide): settle rows on covered files and hold a skill who
 
 This task makes two commits, so that C1 can revert alone (spec D6).
 
-- [ ] **Step 1: Write the failing B3 test** at the end of `test_skill_files.py`:
+- [x] **Step 1: Write the failing B3 test** at the end of `test_skill_files.py`:
 
 ```python
 def test_the_files_rows_cover_the_cited_file_and_each_covered_file():
@@ -538,7 +552,7 @@ def test_the_files_rows_cover_the_cited_file_and_each_covered_file():
 
 Run: `uv run python build/run_suites.py cc_guide -- -k covered_file`. Expected: FAIL on the first assertion.
 
-- [ ] **Step 2: Replace the `### files` section's text above its format block** with this, exactly:
+- [x] **Step 2: Replace the `### files` section's text above its format block** with this, exactly:
 
 ```markdown
 The cited file's copy is the file `index.json` names as `copy`; its line numbers are the file's. When the cited file is a skill's `SKILL.md`, `index.json` also names `covered`: each Markdown file the skill loads on demand, by its repo path, with the packet copy that holds it; a copy's line numbers are its file's. `sections.md` holds the sections the citation names, each marked when it changed after the file's stamp. Give one row per statement in the cited file or a covered file that rests on a cited section, and a none line for each cited section that no statement in those files rests on:
@@ -550,19 +564,19 @@ Replace the sentence after the format block that begins "`file` is the path" wit
 `file` is the path `index.json` names as `file`, or a path `covered` names, as in `hooks/README.md:56`. A not-covered row may leave its quote `-`. A cited section with no row and no none line holds the file, as if unreviewed.
 ```
 
-- [ ] **Step 3: Edit the skill text** (B5).
+- [x] **Step 3: Edit the skill text** (B5).
   - `SKILL.md`, Ground rules: replace "Edit only the guide in verify and audit, and only the reviewed file in files." with "Edit only the guide in verify and audit, and in files only the reviewed file or a file its packet's `covered` names."
   - `SKILL.md`, `## files [<paths>]` step 2: replace "fix each contradiction it lists, in that file only" with "fix each contradiction it lists, in the file its row names: the reviewed file or one its packet's `covered` names".
   - `formats.md`, Reports: replace "Files, one row per statement that rests on a cited section" with "Files, one row per statement in the cited file or a covered file that rests on a cited section".
 
-- [ ] **Step 4: Run the checks, the term gate (Task 2 Step 6) and commit.** Expected: the suite passes, `+1` against Task 4's count. Lint and conformance are as in Task 2 Step 7, and the term gate prints nothing.
+- [x] **Step 4: Run the checks, the term gate (Task 2 Step 6) and commit.** Expected: the suite passes, `+1` against Task 4's count. Lint and conformance are as in Task 2 Step 7, and the term gate prints nothing.
 
 ```bash
 git add .claude/agents/cc-guide-verifier.md .claude/skills/cc-guide/SKILL.md .claude/skills/cc-guide/references/formats.md build/cc_guide/test_skill_files.py
 git commit -m "feat(cc-guide): have the files verifier review a skill's covered files (plan 102)"
 ```
 
-- [ ] **Step 5: Write the failing C2 test:**
+- [x] **Step 5: Write the failing C2 test:**
 
 ```python
 def test_the_files_rule_compares_a_statement_with_the_component_it_describes():
@@ -573,25 +587,29 @@ def test_the_files_rule_compares_a_statement_with_the_component_it_describes():
 
 Run: `uv run python build/run_suites.py cc_guide -- -k component`. Expected: FAIL (`ValueError` from the empty unpack).
 
-- [ ] **Step 6: Add C1** as the last paragraph of `### files`, exactly:
+- [x] **Step 6: Add C1** as the last paragraph of `### files`, exactly:
 
 ```markdown
 Compare each statement with what the guide says about the component the statement describes. A repo's own script, hook or agent is not Claude Code: a guide fact about how Claude Code behaves contradicts a statement only when the statement describes that behaviour.
 ```
 
-- [ ] **Step 7: Run the checks and the term gate, then commit.** Expected: the suite passes, `+1` against Step 4's count. The term gate prints nothing. Record this commit's SHA as `ARM_COMMIT` in the SDD ledger.
+- [x] **Step 7: Run the checks and the term gate, then commit.** Expected: the suite passes, `+1` against Step 4's count. The term gate prints nothing. Record this commit's SHA as `ARM_COMMIT` in the SDD ledger.
 
 ```bash
 git add .claude/agents/cc-guide-verifier.md build/cc_guide/test_skill_files.py
 git commit -m "feat(cc-guide): scope the files rule to the component a statement describes (plan 102)"
 ```
 
-- [ ] **Step 8: Prove that each revert unit reverts cleanly.** With a clean working tree, run each of these, then `git revert --abort` after each one:
+> Deviation: three commits, not two (ac0552f, d827dd4, e86c273). The third (e86c273) names the key that a covered-file row uses and joined the B3 revert unit. ARM_COMMIT moved to e86c273.
+
+- [x] **Step 8: Prove that each revert unit reverts cleanly.** With a clean working tree, run each of these, then `git revert --abort` after each one:
   - `git revert --no-commit <Task 2 commit> <Task 1 commit>` (Part A);
   - `git revert --no-commit <Task 5 second commit>` (C1 alone);
   - `git revert --no-commit <Task 5 second commit> <Task 5 first commit>` (B3 and C1).
 
   Expected: no conflict in any of them. A conflict is a plan defect: move the text so that an unchanged line separates the units, amend the commit before any kit work, and log the deviation.
+
+> Deviation: each dry run reverts every commit of a unit, newest first. Part A is six commits and Part B's code is eight.
 
 ### Task 6: The kit's runner and its no-model tests
 
@@ -621,11 +639,11 @@ git commit -m "feat(cc-guide): scope the files rule to the component a statement
 - Produces: `command(rid) -> tuple[list[str], dict[str, str]]`, the argv and environment. Argv: `<held binary> -p --permission-mode auto --settings <SETTINGS> --max-budget-usd <cap> --output-format stream-json --verbose`. Environment, which is all of it (`env -i`): `HOME`, `USER`, `LOGNAME`, `SHELL=/bin/zsh`, `LANG`, `PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`, `TMPDIR=R/<rid>/tmp`, `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=<BG_CEILING_MS>` and `DISABLE_AUTOUPDATER=1`. There is no `--model` (PC10) and no `--setting-sources`. The working folder is `R/<rid>/work`.
 - Produces: `postprocess.strip(obj) -> obj` (removes the key `credential_expires_at` at any depth) and `postprocess.py strip-tree <dir>` (strips every `.json` and `.jsonl` file under the folder in place).
 
-- [ ] **Step 1: Confirm the control pin.** Read `START` and the empty diff from the ledger (Before Task 1). If either is missing, stop and record them first.
+- [x] **Step 1: Confirm the control pin.** Read `START` and the empty diff from the ledger (Before Task 1). If either is missing, stop and record them first.
 
-- [ ] **Step 2: Reuse or write `postprocess.py`** (D1). If `git cat-file -e origin/main:specs/baseline/red-baseline-handoff-rerun/kit/postprocess.py` succeeds, copy that file into this kit byte for byte and record its blob SHA in the kit `README.md`. Otherwise, write it to the Interfaces block. The tests are the same either way.
+- [x] **Step 2: Reuse or write `postprocess.py`** (D1). If `git cat-file -e origin/main:specs/baseline/red-baseline-handoff-rerun/kit/postprocess.py` succeeds, copy that file into this kit byte for byte and record its blob SHA in the kit `README.md`. Otherwise, write it to the Interfaces block. The tests are the same either way.
 
-- [ ] **Step 3: Write the failing tests** in `test_vr_runner.py`. Each sets `HOME` to a temporary folder (so `k_dir()` is temporary), points `R` at a temporary folder through a module attribute, and writes a stub `claude`. The stub is a Python script that records its argv, environment and working folder, writes a marker file into its working folder and `TMPDIR`, lists `R` recursively into its stream, and prints an init record and a `result` record (with a nested `credential_expires_at` and `total_cost_usd`). It also writes a fake session file under `$HOME/.claude/projects/<slug>/`.
+- [x] **Step 3: Write the failing tests** in `test_vr_runner.py`. Each sets `HOME` to a temporary folder (so `k_dir()` is temporary), points `R` at a temporary folder through a module attribute, and writes a stub `claude`. The stub is a Python script that records its argv, environment and working folder, writes a marker file into its working folder and `TMPDIR`, lists `R` recursively into its stream, and prints an init record and a `result` record (with a nested `credential_expires_at` and `total_cost_usd`). It also writes a fake session file under `$HOME/.claude/projects/<slug>/`.
   - `test_two_reps_see_nothing_of_each_other`: two reps run in one batch. Rep 2's listing names no rep-1 marker and no `r001`, and `r001` is under `$K/homes/`. (next-kit item, scratch folders)
   - `test_the_runner_refuses_a_nonempty_rep_root`: with a stray file in `R`, `run.py` exits 3 and starts no stub.
   - `test_rep_files_hold_no_credential_expires_at`: after a rep, no file under `$K/results/<rid>/` holds the string, and `result.json` keeps `total_cost_usd`. (next-kit item, strip)
@@ -635,7 +653,7 @@ git commit -m "feat(cc-guide): scope the files rule to the component a statement
   - `test_an_audit_reps_index_names_its_own_docs_copy_in_both_arms`: for an audit rep of each arm, `docs` and `quotes.docs` name `R/<rid>/work/docs`, and the two arms' `index.json` differ only in `listed`.
   - `test_build_orders_each_pair_at_random_and_batches_name_no_arm`, and `test_build_refuses_a_third_spare`.
 
-- [ ] **Step 4: Register the suite.** Add to `build/suites.toml`, before the `cc_guide` table (name order):
+- [x] **Step 4: Register the suite.** Add to `build/suites.toml`, before the `cc_guide` table (name order):
 
 ```toml
 [[suite]]
@@ -647,16 +665,18 @@ notes = ['Plan 102 micro-test kit: no-model tests with a stub claude. The fixtur
 
 Run: `uv run python build/run_suites.py cc-guide-verifier-recall-kit`. Expected: every test FAILs on its import (`common`, `build` or `run` missing). `uv run python build/run_suites.py --check` passes.
 
-- [ ] **Step 5: Write `common.py`, `build.py`, `run.py` and the kit `README.md`** to the Interfaces block. The README names the kit's purpose, `$K`, `R`, the commands in order, and plan 102 as the source of every rule.
+- [x] **Step 5: Write `common.py`, `build.py`, `run.py` and the kit `README.md`** to the Interfaces block. The README names the kit's purpose, `$K`, `R`, the commands in order, and plan 102 as the source of every rule.
 
-- [ ] **Step 6: Run the kit suite and confirm GREEN.** Expected: all pass, `+9`.
+- [x] **Step 6: Run the kit suite and confirm GREEN.** Expected: all pass, `+9`.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 git add specs/baseline/red-baseline-cc-guide-verifier-recall/kit build/suites.toml
 git commit -m "test(cc-guide): add the verifier-recall kit's runner and its no-model tests (plan 102)"
 ```
+
+> Deviation: three commits (ac49780, 2bf9d39, 7ac62e6). Fix round 1 made `build.py batch` append to an existing batch and accept upper-case names, because Tasks 9 and 10 call it twice with one name.
 
 ### Task 7: Fixtures, the precision key and the grader
 
@@ -682,7 +702,7 @@ git commit -m "test(cc-guide): add the verifier-recall kit's runner and its no-m
 - Produces: `grade.py unblind <gate>` (`F` or `A`), which refuses until every sheet of that gate's batches has its verdicts in `$K/RESULTS.md`. It then joins `$K/plan.json` and prints that gate's tables of the Pre-registration.
 - The report is taken as plan 45's V6 takes it: a finished Agent result that is no launch notice, else the main session's handback.
 
-- [ ] **Step 1: Build the precision packet.** On the execution worktree, whose HEAD holds Part B's code, record `FIXTURE_COMMIT=$(git rev-parse HEAD)` in the ledger. A files packet needs a latest fetch but not fresh docs. Run `cli.py check --worktree` only when `~/.cache/agent-skills/cc-guide/latest/fetch.json` is absent, since a refetch makes another session's `rebaseline --head` refuse. Then:
+- [x] **Step 1: Build the precision packet.** On the execution worktree, whose HEAD holds Part B's code, record `FIXTURE_COMMIT=$(git rev-parse HEAD)` in the ledger. A files packet needs a latest fetch but not fresh docs. Run `cli.py check --worktree` only when `~/.cache/agent-skills/cc-guide/latest/fetch.json` is absent, since a refetch makes another session's `rebaseline --head` refuse. Then:
 
 ```bash
 uv run python build/cc_guide/cli.py packets --files skills/writing-skills/SKILL.md --out ~/.cache/agent-skills/scratch/vr102/masters/precision
@@ -690,9 +710,9 @@ uv run python build/cc_guide/cli.py packets --files skills/writing-skills/SKILL.
 
 Expected: one packet folder, `skills__writing-skills__SKILL.md/`, whose `index.json` `covered` names 7 files. Record the `head` and `cache` from its index in `$K/changes.log`.
 
-- [ ] **Step 2: Build the precision key** before any rep (spec D4). The controller reads each statement, in `cited_SKILL.md` and in each covered copy, that rests on one of the 8 cited sections. It lists those that truly contradict their section in the packet's `guide.md`, in `$K/precision-key.tsv` (columns `file:line`, section, guide line, why in own words). Then it dispatches one fresh read-only subagent (`general-purpose`, `model: opus`). The subagent gets the packet folder and plan 45's SUPPORTED definition with this plan's files clause, and nothing else. It builds its own list. The controller resolves each difference against the guide text and logs both lists and each resolution in `$K/changes.log`. An empty key is a valid key.
+- [x] **Step 2: Build the precision key** before any rep (spec D4). The controller reads each statement, in `cited_SKILL.md` and in each covered copy, that rests on one of the 8 cited sections. It lists those that truly contradict their section in the packet's `guide.md`, in `$K/precision-key.tsv` (columns `file:line`, section, guide line, why in own words). Then it dispatches one fresh read-only subagent (`general-purpose`, `model: opus`). The subagent gets the packet folder and plan 45's SUPPORTED definition with this plan's files clause, and nothing else. It builds its own list. The controller resolves each difference against the guide text and logs both lists and each resolution in `$K/changes.log`. An empty key is a valid key.
 
-- [ ] **Step 3: Write the failing tests.** Every test feeds hand-written data. No test reads a docs file, except where marked.
+- [x] **Step 3: Write the failing tests.** Every test feeds hand-written data. No test reads a docs file, except where marked.
   - `test_vr_fixtures.py`:
     - `test_the_changed_audit_copy_lists_p11_and_p8` (skips with a reason when the audit master is absent): after `fixtures.py build`, `audit-changed/index.json` `listed` has items with lines 1288 and 1702, and `audit-control/` has no `listed`;
     - `test_a_fixture_build_never_writes_under_a_master`: on fake masters, every master file's mtime and hash are unchanged after a build.
@@ -711,16 +731,18 @@ Expected: one packet folder, `skills__writing-skills__SKILL.md/`, whose `index.j
 
 Run: `uv run python build/run_suites.py cc-guide-verifier-recall-kit`. Expected: the new tests FAIL on import. The master-reading test may skip in CI.
 
-- [ ] **Step 4: Write `fixtures.py` and `grade.py`** to the Interfaces block.
+- [x] **Step 4: Write `fixtures.py` and `grade.py`** to the Interfaces block.
 
-- [ ] **Step 5: Run the kit suite and confirm GREEN** (`+13`). Then run `fixtures.py build` against the real masters and the precision packet. Expected: it prints a listed count near 206 (do not pin it; brief trap 2), and `test_the_changed_audit_copy_lists_p11_and_p8` passes locally.
+- [x] **Step 5: Run the kit suite and confirm GREEN** (`+13`). Then run `fixtures.py build` against the real masters and the precision packet. Expected: it prints a listed count near 206 (do not pin it; brief trap 2), and `test_the_changed_audit_copy_lists_p11_and_p8` passes locally.
 
-- [ ] **Step 6: Commit** the kit code only. The key and fixtures stay in `$K`.
+- [x] **Step 6: Commit** the kit code only. The key and fixtures stay in `$K`.
 
 ```bash
 git add specs/baseline/red-baseline-cc-guide-verifier-recall/kit
 git commit -m "test(cc-guide): add the verifier-recall kit's fixtures and grader (plan 102)"
 ```
+
+> Deviation: two fix rounds followed the first commit (7d24006 to a1b8c4f). The grader later gained V9 (D5) and its report-source rules (2f90590, 8046aca, d169d02) in Task 8.
 
 ### Task 8: Freeze, the ceiling, the probe and the pilot (paid)
 
@@ -728,15 +750,17 @@ git commit -m "test(cc-guide): add the verifier-recall kit's fixtures and grader
 - Create: `specs/baseline/red-baseline-cc-guide-verifier-recall/kit/probe.txt`, `vr-probe.md`
 - Create: `specs/baseline/red-baseline-cc-guide-verifier-recall.md` (the record: Method, Probe, Pilot)
 
-- [ ] **Step 1: Hold the binary** (spec D8, brief trap 3). Copy the newest version that `uv run python build/cc_guide/cli.py binaries` lists to `$K/bin/claude-<version>`, outside `~/.local/share/claude/versions/`. Write its path, version and `shasum -a 256` to `$K/binary.txt`. Every rep runs this copy, and `run.py` checks the hash.
+- [x] **Step 1: Hold the binary** (spec D8, brief trap 3). Copy the newest version that `uv run python build/cc_guide/cli.py binaries` lists to `$K/bin/claude-<version>`, outside `~/.local/share/claude/versions/`. Write its path, version and `shasum -a 256` to `$K/binary.txt`. Every rep runs this copy, and `run.py` checks the hash.
 
-- [ ] **Step 2: Find the production comparison.** Find the newest `agent-*.meta.json` under `~/.claude/projects/` whose agent type is `cc-guide-verifier`, from a `/cc-guide` run. Record its path in `$K/changes.log`, with its version, its model and effort, whether it had an advisor attachment, and its attachment types. If its version differs from the held binary's, record that too.
+> Deviation (D6): the held binary is 2.1.325 run in place, because macOS kills a copy of it (exit 137). `run.py` checks its sha256 before every rep.
 
-- [ ] **Step 3: Freeze.** Copy the arms to `$K/arms/control.md` and `$K/arms/changed.md` (Pre-registration). Write `$K/FREEZE.sha256` over the kit files, the arms, `fixtures.sha256`, the precision key, the binary and this plan's Pre-registration section.
+- [x] **Step 2: Find the production comparison.** Find the newest `agent-*.meta.json` under `~/.claude/projects/` whose agent type is `cc-guide-verifier`, from a `/cc-guide` run. Record its path in `$K/changes.log`, with its version, its model and effort, whether it had an advisor attachment, and its attachment types. If its version differs from the held binary's, record that too.
 
-- [ ] **Step 4: Owner gate: the ceiling** (D2). Tell the owner the Cost table and its expected range, the proposed $130 ceiling and the caps. Wait for an approved number. Write it to `$K/ceiling.txt` and log it in `## Decisions` under the next free D number.
+- [x] **Step 3: Freeze.** Copy the arms to `$K/arms/control.md` and `$K/arms/changed.md` (Pre-registration). Write `$K/FREEZE.sha256` over the kit files, the arms, `fixtures.sha256`, the precision key, the binary and this plan's Pre-registration section.
 
-- [ ] **Step 5: Probe.** Write `probe.txt`, which asks the main session for three things, each reported as one line:
+- [x] **Step 4: Owner gate: the ceiling** (D2). Tell the owner the Cost table and its expected range, the proposed $130 ceiling and the caps. Wait for an approved number. Write it to `$K/ceiling.txt` and log it in `## Decisions` under the next free D number.
+
+- [x] **Step 5: Probe.** Write `probe.txt`, which asks the main session for three things, each reported as one line:
   1. run, with the Bash tool, one `for`-loop `ls ~/…` command (spec Part D, D2's construction), whose exact text the probe file holds;
   2. Read `$K/canary.txt`, which holds a random token that `build.py probe` writes, by its absolute path;
   3. dispatch the agent `vr-probe`, which the probe rep's `.claude/agents/` holds. Write `vr-probe.md` with tools Read, Grep and Glob and `model: sonnet`; its body asks it to read the canary, read one file in `work/docs/`, and name its tools.
@@ -744,12 +768,16 @@ git commit -m "test(cc-guide): add the verifier-recall kit's fixtures and grader
   Run it with `run.py probe`, in the background. Its stream is saved to `$K/results/<rid>/`, and the record carries only the counts.
   Expected: the Bash call's result is a permission denial, or no Bash call exists because the tool is refused. Both canary reads are refused. The token appears in no stream or transcript. The docs read returns. `vr-probe` names Read, Grep and Glob. No hook error appears in the stream. Any other outcome stops the run for the owner.
 
-- [ ] **Step 6: Pilot** (PC8). Run `run.py pilot` (one changed-arm audit rep), then `grade.py pilot`. Compare it with Step 2's production verifier: system-prompt parts by index, model, effort, version, advisor, attachment types, request shape (background or not) and entrypoint (`sdk-cli` against `cli` is known). Read its whole injected context by hand (V3). Log the three rulings the Pre-registration allows.
+> Deviation (D5): the probe's tool list showed four cross-session tools, so `SETTINGS` denies them (a change to PC2) and V9 voids a rep with a peer origin that is no hand-back. The kit was frozen again (freeze 2).
+
+- [x] **Step 6: Pilot** (PC8). Run `run.py pilot` (one changed-arm audit rep), then `grade.py pilot`. Compare it with Step 2's production verifier: system-prompt parts by index, model, effort, version, advisor, attachment types, request shape (background or not) and entrypoint (`sdk-cli` against `cli` is known). Read its whole injected context by hand (V3). Log the three rulings the Pre-registration allows.
   Expected: valid under V1 to V8 as ruled; the report arrived before the timeout; the verifier made only Read, Grep and Glob calls; no hook error appears in the stream (a crashed hook fails open). Record its listed-item counts, duration and cost, and apply the Pilot check. P11 and P8 are not scored.
 
-- [ ] **Step 7: Estimate again** (D2). Re-estimate the run from the pilot's cost, scaled for the control arm by plan 45's control-to-changed ratio. When the new expected total exceeds the approved ceiling, stop and ask the owner. Otherwise continue, and log the estimate.
+> Deviation: the pilot showed that the grader took the completion notice for the report. d169d02 skips it, the kit was frozen again (freeze 3) and the pilot was graded again offline.
 
-- [ ] **Step 8: Write the record's Method, Probe and Pilot sections, and commit.** Method: `START`, `ARM_COMMIT`, `FIXTURE_COMMIT`, the binary's version and hash, the command (Task 6's Interfaces), PC2 and PC9 to PC11, the freeze hash and the ceiling. Probe and Pilot: outcomes as counts and labels.
+- [x] **Step 7: Estimate again** (D2). Re-estimate the run from the pilot's cost, scaled for the control arm by plan 45's control-to-changed ratio. When the new expected total exceeds the approved ceiling, stop and ask the owner. Otherwise continue, and log the estimate.
+
+- [x] **Step 8: Write the record's Method, Probe and Pilot sections, and commit.** Method: `START`, `ARM_COMMIT`, `FIXTURE_COMMIT`, the binary's version and hash, the command (Task 6's Interfaces), PC2 and PC9 to PC11, the freeze hash and the ceiling. Probe and Pilot: outcomes as counts and labels.
 
 ```bash
 git add specs/baseline/red-baseline-cc-guide-verifier-recall/kit/probe.txt specs/baseline/red-baseline-cc-guide-verifier-recall/kit/vr-probe.md specs/baseline/red-baseline-cc-guide-verifier-recall.md
@@ -758,16 +786,18 @@ git commit -m "test(cc-guide): record the verifier-recall probe and pilot (plan 
 
 ### Task 9: Gate F (paid)
 
-- [ ] **Step 1: Build and run the batch.** `build.py batch gateF readme 3` and `build.py batch gateF precision 3`, then `run.py gateF` (in the background) and `grade.py gateF`. Replace each void rep with `build.py spare <rid>` and run the spares.
-- [ ] **Step 2: Rate.** Read every sheet and enter each verdict in `$K/RESULTS.md` (Scoring). Then run `grade.py unblind F`.
-- [ ] **Step 3: Decide** under the Decision rules. On FAIL, give the owner the counts and ask: revert C1 alone and rerun gate F as a new round within the ceiling (`$K/arms/changed-b.md`, new rep ids), or revert both B3 and C1. Log the ruling in `## Decisions`.
-- [ ] **Step 4: Write the record's gate F result,** as counts per arm with sheet pointers, and commit it: `test(cc-guide): record gate F of the verifier-recall micro-test (plan 102)`.
+- [x] **Step 1: Build and run the batch.** `build.py batch gateF readme 3` and `build.py batch gateF precision 3`, then `run.py gateF` (in the background) and `grade.py gateF`. Replace each void rep with `build.py spare <rid>` and run the spares.
+- [x] **Step 2: Rate.** Read every sheet and enter each verdict in `$K/RESULTS.md` (Scoring). Then run `grade.py unblind F`.
+- [x] **Step 3: Decide** under the Decision rules. On FAIL, give the owner the counts and ask: revert C1 alone and rerun gate F as a new round within the ceiling (`$K/arms/changed-b.md`, new rep ids), or revert both B3 and C1. Log the ruling in `## Decisions`.
+- [x] **Step 4: Write the record's gate F result,** as counts per arm with sheet pointers, and commit it: `test(cc-guide): record gate F of the verifier-recall micro-test (plan 102)`.
 
 ### Task 10: Gate A (paid)
 
-- [ ] **Step 1: First wave.** `build.py batch gateA1 audit 2`, `run.py gateA1` (in the background), `grade.py gateA1`. Rate the sheets, then run `grade.py stop gateA1`, which names no arm. On a stop, run `grade.py unblind A`, report to the owner and skip Step 2.
-- [ ] **Step 2: Second wave.** Build pairs and spares to reach 5 valid reps per arm (`build.py batch gateA2 audit 3`, plus spares), then run, grade and rate. Run `grade.py unblind A` only once every gate A sheet has its verdicts.
-- [ ] **Step 3: Decide** under the Decision rules, and write the record's gate A result: a clause-by-clause table as plan 45's record has, with the reported measures. Commit: `test(cc-guide): record gate A of the verifier-recall micro-test (plan 102)`.
+- [x] **Step 1: First wave.** `build.py batch gateA1 audit 2`, `run.py gateA1` (in the background), `grade.py gateA1`. Rate the sheets, then run `grade.py stop gateA1`, which names no arm. On a stop, run `grade.py unblind A`, report to the owner and skip Step 2.
+- [x] **Step 2: Second wave.** Build pairs and spares to reach 5 valid reps per arm (`build.py batch gateA2 audit 3`, plus spares), then run, grade and rate. Run `grade.py unblind A` only once every gate A sheet has its verdicts.
+- [x] **Step 3: Decide** under the Decision rules, and write the record's gate A result: a clause-by-clause table as plan 45's record has, with the reported measures. Commit: `test(cc-guide): record gate A of the verifier-recall micro-test (plan 102)`.
+
+> Deviation: gate A's ratings were not blind, because settle's `listed items:` line shows each rep's arm. The record says so (2d714af). The FAIL does not rest on a hand rating.
 
 ### Task 11: Land or revert, and the record's close
 
@@ -775,15 +805,21 @@ git commit -m "test(cc-guide): record the verifier-recall probe and pilot (plan 
 - Modify: `specs/baseline/red-baseline-cc-guide-verifier-recall.md` (Decision, Disposition)
 - Modify, by gate: the files of Tasks 1, 2 and 5; `.claude/skills/cc-guide/SKILL.md` (audit cost)
 
-- [ ] **Step 1: Apply the gates.**
+- [x] **Step 1: Apply the gates.**
   - Gate A PASS: Part A stays. In `SKILL.md`'s audit section, replace "about \$2.50–5.30" with the range of the valid changed audit reps' costs, rounded out to the nearest $0.10.
   - Gate A FAIL: `git revert` Task 2's commit, then Task 1's, in one session. Gate A UNSETTLED: the owner rules.
   - Gate F PASS: Task 5's two commits stay.
   - Gate F FAIL: apply the owner's Task 9 ruling, reverting Task 5's second commit, or both.
   - Part B's code (Tasks 3 and 4) stays in every case (spec E2).
-- [ ] **Step 2: Run every check.** Run the `cc_guide` and kit suites, `cli.py lint` (the same lines as before Task 1), `check_conformance.py` and `build/run_commit_lints.sh`. Expected: all pass. Report each count as a delta.
-- [ ] **Step 3: Write the record's Decision and Disposition.** Disposition names, for each backlog item, the clause that closes it or keeps it open (Completion, below). It names E3's files pass as the next step.
-- [ ] **Step 4: Commit:** `docs(cc-guide): record the verifier-recall decision and disposition (plan 102)`.
+
+> Deviation: gate A's FAIL reverts Part A's six commits (7d4fc08 for Task 2's three, 3b0ee55 for Task 1's three), not two. The `SKILL.md` cost edit belongs to the PASS branch and was not made.
+- [x] **Step 2: Run every check.** Run the `cc_guide` and kit suites, `cli.py lint` (the same lines as before Task 1), `check_conformance.py` and `build/run_commit_lints.sh`. Expected: all pass. Report each count as a delta.
+
+> Deviation (D7): the revert broke 16 kit tests that the plan did not foresee. `kit/conftest.py` skips them while Part A's functions are absent (6dd1fda, refined in 111f63c).
+- [x] **Step 3: Write the record's Decision and Disposition.** Disposition names, for each backlog item, the clause that closes it or keeps it open (Completion, below). It names E3's files pass as the next step.
+- [x] **Step 4: Commit:** `docs(cc-guide): record the verifier-recall decision and disposition (plan 102)`.
+
+> Deviation: Task 11 made more than one commit. The record's Decision and Disposition (27c84e7) were followed by fixes after review (e76a1e9, 111f63c, 5962596) and by the final review's fix (2d714af).
 
 ---
 

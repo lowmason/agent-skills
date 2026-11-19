@@ -298,6 +298,24 @@ def test_ruling_quoted_inside_a_ledger_note_is_not_a_ruling(tmp_path, capsys):
     ]
 
 
+def test_reverted_at_gate_line_is_not_a_ruling(tmp_path, capsys):
+    # The form the executors write when a partner reverts a ruling at the gate. Its `ruling` is
+    # lower-case with no colon, so the script reads it as a plain note: no `Ruling` line, no warning.
+    ruling = 'Task 2: Ruling: alert at 3 or fewer free slots — refill is slow — one extra alert a day if wrong.'
+    reverted = 'Reverted at the gate: Task 2 ruling — alert at 3 or fewer free slots'
+    plan, ledger = write_repo(
+        tmp_path, '9-tiny', TINY_PLAN, ledger=NO_RULING_LEDGER + f'{ruling}\n{reverted}\n',
+    )
+    code, out, _ = run_draft(capsys, plan, '--ledger', str(ledger), '--date', DATE)
+    assert code == 0
+    lines = out.splitlines()
+    assert [line for line in lines if line.startswith('- Ruling')] == [
+        '- Ruling (Task 2): alert at 3 or fewer free slots — refill is slow — one extra alert a day if wrong.',
+    ]
+    assert not [line for line in lines if 'Reverted at the gate' in line]
+    assert not [line for line in lines if line.startswith('Rulings: ledger line')]
+
+
 def test_a_ruling_after_a_note_is_named_outside_the_differences(tmp_path, capsys):
     # A real shape from the archived ledgers: the ruling follows a review note on the same line.
     after_note = ('Task 2: review round 1 -> Important (plan-mandated code): parse crashes on a single row. '

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Status: COMPLETE (2026-09-04)** — executed via executing-plans; one item deferred in specs/deferred_items.md
+**Status: COMPLETE (2026-09-04)** — executed via executing-plans; one item deferred in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
 
 **Goal:** Close the seven remaining deferred items against `skills/llm-wiki/scripts/distill_sessions.py` — one ordering defect that silently renumbers turns, one three-site duplication, and five test-coverage gaps.
 

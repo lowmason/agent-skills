@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task (or executing-plans if subagent dispatch is unavailable). Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Status: COMPLETE (2026-07-05)** — executed via subagent-driven-development (Tasks 1–4) with a controller-inline fallback for Task 5 and the final-review fix (Agent dispatch was intermittently classifier-blocked); deferred items in specs/deferred_items.md.
+**Status: COMPLETE (2026-07-05)** — executed via subagent-driven-development (Tasks 1–4) with a controller-inline fallback for Task 5 and the final-review fix (Agent dispatch was intermittently classifier-blocked); deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived.
 
 > **Execution deviations (all deliverables landed; these are method/plan-bug notes):**
 > - **Task 1** — plan's `build_ranking` assumed an `az.compare` `warning` column that ArviZ 1.2.0 dropped; implementer added `_has_warning` reading `diag_diff`/`diag_elpd` (the real fix — the plan code would have silently reported no warnings). Discovered `to_netcdf()` needs `--with h5netcdf --with h5py` (added to all documented commands).

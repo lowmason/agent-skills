@@ -40,8 +40,11 @@ review's Declined to judge lines, each for your human partner to rule on,
 into the same batch, so your human partner gets at most one round-trip.
 A tagged ruling is still a decision taken, not a question: the plan's entry
 in `specs/history.md` records it in place of a spec amendment, so ask your
-partner nothing about it. Your partner may still ask to revert it, which
-makes it a deferred item. One kind of ruling is not a decision taken: a
+partner nothing about it. If your partner asks to revert a ruling, tagged or
+not, the revert is a follow-up task, and protocol step 1 implements it now.
+Ledger it as `Reverted at the gate: <task> ruling — <its first words>`, so that
+a restarted gate shows that ruling as reverted and asks nothing about it, and
+the history entry leaves it out. One kind of ruling is not a decision taken: a
 `Ruling: (unclear) …` line. It is a question in the same batch, stalled on
 your partner's input (writing-plans' protocol step 1). If your partner
 overrules it, the change is a follow-up task, and protocol step 1 implements

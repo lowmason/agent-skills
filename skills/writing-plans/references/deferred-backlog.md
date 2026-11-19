@@ -6,8 +6,9 @@ found, when a closed item leaves the file, and when the aged tail blocks a
 branch finish.
 
 Five callers use this file:
-- **writing-plans** § Plan Completion Protocol — writes items (schema below)
-  and runs the read-only triage at completion.
+- **writing-plans** § Plan Completion Protocol — writes items (schema below),
+  shows the stats line and the plan's new items at completion, and runs the
+  read-only triage only when the aged tail is above 0.
 - **finishing-a-development-branch** § Step 1b — runs the aged-tail gate;
   § Step 4b — writes items (schema below) for the review findings the
   partner carries.
@@ -276,7 +277,8 @@ append the item and add `→ item:`, add `→ dropped:` as above, or ask. The sc
 skips fenced code blocks and inline code spans, so write note forms, marker
 forms and quoted deferral phrases in backticks. It exempts two forms of the
 Plan Completion Protocol: its status header (`deferred items in
-specs/deferred_items.md` and `nothing deferred`) and its
+specs/deferred_items.md`, with or without
+`, or specs/completed/deferred_items.md once archived`, and `nothing deferred`) and its
 `> Skipped: <why> → deferred` lines, which step 3 always files as items.
 
 **The commit lint.** `build/run_commit_lints.sh` runs

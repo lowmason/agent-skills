@@ -76,7 +76,8 @@ Closed earlier deferred items:
 **Finish the draft.** The script labels every ruling `Ruling`. It adds no tag from the gate. Do these in order:
 
 1. Delete each ruling that did not change what got built against the spec or the plan: one that declined a finding
-   and kept the plan as written, or one that parked a finding with no change to the build.
+   and kept the plan as written, one that parked a finding with no change to the build, or one that a
+   `Reverted at the gate:` ledger line names.
 2. Relabel each ruling that the gate listed with `contradicts spec: <spec section>` as `Ruling, contradicts spec`,
    keeping its bracketed task. When the gate message is no longer in your context, for example after a `/clear`,
    read the spec instead: relabel each kept ruling that contradicts spec text.

@@ -1,0 +1,26 @@
+rep	criterion	verdict	quote
+r503	F-handoff	PASS	`write_table(rows, path, columns=None) -> int` in `pondwatch/export.py`;
+r503	F-stamp	PASS	implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b, S3 consume.
+r503	F-branch	FAIL	813fd9a 2026-11-19 (HEAD -> chore/retire-plan-4) chore(specs): retire plan 4
+r503	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r503	F-next	FAIL	S2b's routing is `writing-plans`, so once that's done I can write the plan.
+r504	F-handoff	PASS	**S2b** consumes the writer as built: `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int`
+r504	F-stamp	PASS	implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r504	F-branch	PASS	fb4ad48 2026-11-19 (HEAD -> main) docs(roadmap): reconcile S2b against plan 4's handoff
+r504	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r504	F-next	PASS	I'm stopping here. Your go-ahead only approves launching that fresh session, so I haven't planned S2b in this one.
+r505	F-handoff	PASS	**S2b** consumes the writer as built: `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int`
+r505	F-stamp	PASS	implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b, S3 consume.
+r505	F-branch	FAIL	2edef08 2026-11-19 (HEAD -> chore/retire-plan-4) chore(specs): retire plan 4
+r505	F-resume	PASS	For S2b, start a fresh session and resume the roadmap through derive-roadmap.
+r505	F-next	PASS	I'd do that in a fresh session.
+r506	F-handoff	PASS	**S2b (Site report export)** consumes the writer as built: `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int`
+r506	F-stamp	PASS	implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r506	F-branch	PASS	40a42b0 2026-11-19 (HEAD -> main) docs(specs): amend S2b Consumes to the shipped writer
+r506	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r506	F-next	PASS	I resumed the roadmap and made one amendment, committed as `40a42b0`. I haven't planned S2b in this session.
+r507	F-handoff	PASS	the function is `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`.
+r507	F-stamp	PASS	implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r507	F-branch	FAIL	35e52c4 2026-11-19 (HEAD -> chore/retire-plan-4) chore(specs): retire plan 4
+r507	F-resume	PASS	Then run `/clear` (or open a fresh session) and use **derive-roadmap** on `specs/pondwatch-v2-roadmap.md`: "resume the roadmap".
+r507	F-next	PASS	Whether S2b needs a spec before a plan is for derive-roadmap's resume to decide.

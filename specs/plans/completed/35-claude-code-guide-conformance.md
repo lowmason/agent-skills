@@ -1,6 +1,6 @@
 # Claude Code Guide Conformance Implementation Plan
 
-**Status: COMPLETE (2026-10-04)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+**Status: COMPLETE (2026-10-04)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
 
 The deviation notes' commit hashes (281da10, c6ae014, 85ff48a, c6b7313, b601eed) name commits on `feat/cc-guide-conformance`, which was squash-merged into `main` as 18b4a71; they are not on `main`.
 

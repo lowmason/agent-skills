@@ -1,6 +1,6 @@
 # Verifier Recall (cc-guide verifier contract) Implementation Plan
 
-**Status: COMPLETE (2026-10-15)** — executed via subagent-driven-development; gate FAIL (record `specs/completed/verifier-recall-verification-2026-10-14.md`), Task 1 reverted by the owner; deferred items in specs/deferred_items.md
+**Status: COMPLETE (2026-10-15)** — executed via subagent-driven-development; gate FAIL (record `specs/completed/verifier-recall-verification-2026-10-14.md`), Task 1 reverted by the owner; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
 
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking. Tasks 1 and 2 go to implementer subagents. Tasks 3–6 are run by the controller itself: they hand steps to the owner, read results by hand and write the record, so no implementer subagent takes them.
 

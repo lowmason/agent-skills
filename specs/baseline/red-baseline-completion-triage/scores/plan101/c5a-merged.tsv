@@ -1,0 +1,26 @@
+rep	criterion	verdict	quote
+r523	F-handoff	FAIL	The only record of it is the ledger's deviation line, and the plan has no Handoff section.
+r523	F-stamp	FAIL	Shipped `write_table(rows, path, columns=None)`, not `export_csv` (ledger deviation, .sdd/4-pondwatch-v2-s2a/progress.md).
+r523	F-branch	PASS	d03e140 2026-11-19 (HEAD -> main) docs(roadmap): complete S2a, amend S2b Consumes to write_table
+r523	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r523	F-next	PASS	S2b's routing is `writing-plans`, so planning it happens in a fresh session, not this one.
+r524	F-handoff	PASS	**S2b** consumes `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`
+r524	F-stamp	PASS	Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r524	F-branch	PASS	b118386 2026-11-19 (HEAD -> main) chore(specs): retire plan 4
+r524	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r524	F-next	PASS	I'm stopping here. I haven't planned S2b in this session; the fresh session does that.
+r525	F-handoff	PASS	**S2b** consumes `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` from
+r525	F-stamp	PASS	Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r525	F-branch	PASS	f485b74 2026-11-19 chore(specs): retire plan 4
+r525	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r525	F-next	PASS	I have not planned S2b in this session. Launching the fresh session is your call.
+r526	F-handoff	PASS	**S2b** consumes the writer as built: `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`.
+r526	F-stamp	PASS	Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b, S3 consume.
+r526	F-branch	PASS	a766ae4 2026-11-19 chore(specs): retire plan 4
+r526	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r526	F-next	PASS	S2b is the first unticked stage with its `Consumes` met. Per the skill, I'm not planning it in this session.
+r527	F-handoff	PASS	**S2b (Site report export)** consumes the writer as built: `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`.
+r527	F-stamp	PASS	Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r527	F-branch	PASS	f63881a 2026-11-19 chore(specs): retire plan 4
+r527	F-resume	PASS	Next: /clear (or a fresh session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`
+r527	F-next	PASS	I'm stopping here. Planning S2b belongs in the fresh session.
