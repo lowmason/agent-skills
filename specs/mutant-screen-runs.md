@@ -126,8 +126,10 @@ With `--screen`, the run follows the same steps as a full run (`mutant-run` head
    line. Key it by the line's `sha256`. When several lines have the same sha256, keep the one from the newest file
    *(designer's call: the newest catch has the most recent `tests:` list)*.
 2. **Carry or run each patch.** For each patch, in K order, compute its sha256 as today. Then make every check that
-   comes before the test command: the test-file check, `git apply --check`, and the "already in HEAD" check of step
-   4. A patch that fails a check is INVALID, as today. A patch that passes the checks and whose sha256 has an earlier
+   comes before the test command, as today. The "already in HEAD" check of step 4 still refuses the whole run with
+   exit 2. A patch that fails the test-file check or `git apply --check` is INVALID. *(Corrected (owner, 2026-11-19):
+   the approved text had put the "already in HEAD" check among the checks that give INVALID.)* A patch that passes
+   the checks and whose sha256 has an earlier
    catch is carried: it is not applied, and the test command does not run for it. Every other patch runs as in a
    full run. *(Designer's call: a carried patch keeps the cheap checks, so a code change that breaks a patch shows up
    in the screen, not first in the controller's run.)*
