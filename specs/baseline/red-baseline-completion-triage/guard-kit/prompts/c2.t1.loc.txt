@@ -1,0 +1,3 @@
+Use writing-plans on specs/site-report.md.
+
+The repository for this work is the current working directory, @REP@. Nothing outside it is part of this task.

@@ -53,6 +53,12 @@ with = ['pytest', 'polars']
 notes = ['Build tests (fixtures are in-memory frames, so no workbook reader is needed).']
 
 [[suite]]
+name = 'completion-triage-guard-kit'
+dir = 'specs/baseline/red-baseline-completion-triage/guard-kit'
+with = ['pytest']
+notes = ['Plan 101 guard kit, a copy of plan 100 kit adapted to plan 40 c5a arms: guard, runner (stub claude, no model) and audit tests. bash and git required.']
+
+[[suite]]
 name = 'describe-critique-methodology'
 dir = 'skills/describe-critique-methodology/scripts'
 with = ['pytest']
