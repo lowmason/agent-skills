@@ -12,6 +12,7 @@
 # Plan 101 next-kit fix (D8): after each rep, scrub_json.py drops `credential_expires_at` from the
 # rep's JSON file, so the CLI's login-expiry field never reaches a committed file. kit_selftest.py
 # shows that, and that two reps get separate folders and cannot see each other's files.
+# The runner exits 3, after every rep has run, when a rep file in the batch still holds the key.
 # Usage: run_reps.sh <prompt-file> <out-dir> <first-rep> <last-rep> <model> [<budget>]
 # <budget> is the per-rep --max-budget-usd cap, 0.50 when omitted.
 # The first rep runs alone and writes the prompt cache; the others then run together.
@@ -59,3 +60,16 @@ while [ "$i" -le "$LAST" ]; do
   i=$((i + 1))
 done
 wait
+# The scrub's job is that no rep file keeps the key. A rep file that still holds it, because the
+# scrub could not read or write the file, makes the batch exit 3 and names the file. LC_ALL=C makes
+# grep read a file that is not valid UTF-8 as bytes: under a UTF-8 locale it would skip the line.
+leaked=0
+i="$FIRST"
+while [ "$i" -le "$LAST" ]; do
+  if [ -f "$OUT/rep$i.json" ] && LC_ALL=C grep -aq credential_expires_at "$OUT/rep$i.json"; then
+    echo "rep$i: $OUT/rep$i.json still holds credential_expires_at"
+    leaked=1
+  fi
+  i=$((i + 1))
+done
+[ "$leaked" -eq 0 ] || exit 3

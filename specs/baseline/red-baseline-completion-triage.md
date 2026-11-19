@@ -75,15 +75,24 @@ Kit: `specs/baseline/red-baseline-completion-triage/kit/`. Four files are copies
   `python3 scrub_json.py <file>` rewrites the file in place.
 - `run_reps.sh` sets `KIT` to its own folder, as an absolute path, before any `cd`. After each rep's subshell it
   saves the rep's exit status, runs `python3 "$KIT/scrub_json.py" "$OUT/rep<N>.json"`, and then prints
-  `rep<N> exit=<status>`. The scrub never changes the exit line.
+  `rep<N> exit=<status>`. The scrub never changes the exit line. After every rep has run, the runner reads each rep
+  file of the batch for `credential_expires_at`, as bytes (`LC_ALL=C grep -a`), and exits 3 with a line that names a
+  file that still holds it. A scrub that cannot read or write a file leaves the key in place, and the final review
+  found that the batch then exited 0 (commit after `8dd1f78`).
 - `kit_selftest.py` is the no-model self-test, run as `uv run python <kit>/kit_selftest.py`. It writes a stub
   `claude` that ignores its arguments, writes `marker-<its pid>` into its working directory, and prints one JSON object
   with `credential_expires_at` at the top level and inside `usage`. It puts the stub first on a PATH built from scratch,
-  so the real CLI can never run. It runs `run_reps.sh` for reps 1 and 2 and checks three things. Neither rep file holds
+  so the real CLI can never run. It runs `run_reps.sh` for reps 1 and 2 and checks three things, then a fourth with a
+  second stub. Neither rep file holds
   `credential_expires_at`, and both still parse with `type`, `result` and `total_cost_usd`. Each rep lists exactly one
   name, a `marker-` file, and the two markers differ, so each rep sees only its own folder. The two working directories
   differ, and both sit under `/tmp/plan101-rep-` or `/private/tmp/plan101-rep-`. The test removes the two folders by
-  their exact paths when it ends.
+  their exact paths when it ends. The fourth check runs rep 3 with a stub that prints bytes that are not UTF-8 and hold
+  the key, so `scrub_json.py` cannot read the file. It asserts that `run_reps.sh` exits 3 and names rep 3. Run against
+  the runner before the final-review fix, it stopped with `run_reps.sh should exit 3 for a rep file that still holds
+  credential_expires_at, got 0`. A first version of the fix used `grep -q`, and the check still failed: under the
+  inherited UTF-8 locale, `grep` skips a line that is not valid UTF-8, even with `-a`. Setting `LC_ALL=C` for that one
+  call fixed it.
 
 The self-test went RED first. Run against the copied runner, before `scrub_json.py` existed, it stopped with
 `AssertionError: rep1.json still holds credential_expires_at`. After the fix it printed `kit self-test passed`. Two
@@ -1399,7 +1408,7 @@ Task 9. Plan 101 is a plan of text edits, so "met" below means that a commit or 
 | 2. The callers line in `references/deferred-backlog.md` names the aged-tail condition | Met | `029e41f`: "read-only triage only when the aged tail is above 0". |
 | 3. Both gate paragraphs carry the same revert sentence, and neither says that a revert makes a deferred item | Met | `ecd6dbd` (both executors' `references/final-review.md`). |
 | 4. History "Finish the draft" step 1 names a ruling that a `Reverted at the gate:` ledger line names | Met | `ecd6dbd` (`references/history.md`, step 1). |
-| 5. Every case in Micro-tests meets its bar, or goes to the owner | Two cases go to the owner (below). The other six meet their bars. | `### Bar results after round 1`, and `## Plan 101 re-run (2026-11-18)` in `specs/baseline/red-baseline-development-history.md`. |
+| 5. Every case in Micro-tests meets its bar, or goes to the owner | Two cases go to the owner (below). The other eight meet their bars. | `### Bar results after round 1`, and `## Plan 101 re-run (2026-11-18)` in `specs/baseline/red-baseline-development-history.md`. |
 | 6. `check_conformance.py` exits 0, the body is at most 19,700 characters, and the commit lints pass | Met | The gate table above. |
 | 7. Protocol step 3 ticks both items with `→ done <YYYY-MM-DD> (plan <id>)` | Not done yet | The Plan Completion Protocol does it at plan completion. |
 

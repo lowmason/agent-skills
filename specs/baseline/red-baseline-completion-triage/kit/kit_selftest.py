@@ -12,6 +12,9 @@ run_reps.sh for reps 1 and 2 on a one-line prompt and checks three things:
   2. each rep lists exactly one name, a `marker-` file, and the two markers differ, so each rep
      sees only its own folder;
   3. the two working directories differ and both sit under /tmp/plan101-rep-.
+A second stub prints bytes that are not UTF-8 and hold the key, so scrub_json.py cannot read the
+file. The test runs rep 3 with it and checks a fourth thing:
+  4. run_reps.sh exits 3, and names the rep that still holds `credential_expires_at`.
 The test imports no other kit file. It reaches the runner by its own path and nothing else.
 '''
 import json
@@ -44,6 +47,14 @@ print(json.dumps({
 }))
 '''
 
+BAD_STUB = '''#!/usr/bin/env python3
+import os
+import sys
+
+sys.stderr.write(os.getcwd())
+sys.stdout.buffer.write(b'\\xff {"credential_expires_at": 1790000000}\\n')
+'''
+
 
 def check(condition: bool, message: str) -> None:
     if not condition:
@@ -71,6 +82,31 @@ def check_rep(name: str, text: str, data: dict) -> None:
 def split_result(data: dict) -> tuple[str, list[str]]:
     lines = str(data['result']).split('\n')
     return lines[0], lines[1:]
+
+
+def check_unreadable_rep(root: Path, prompt: Path) -> None:
+    '''A rep file that scrub_json.py cannot read keeps the key: the runner must exit 3 and name it.'''
+    bad_dir = root / 'badbin'
+    bad_dir.mkdir()
+    bad = bad_dir / 'claude'
+    bad.write_text(BAD_STUB)
+    bad.chmod(0o755)
+    search_path = stub_path(bad_dir)
+    check(shutil.which('claude', path=search_path) == str(bad), 'the bad stub is not the first claude on PATH')
+    out = root / 'out-bad'
+    run = subprocess.run(
+        ['bash', str(RUNNER), str(prompt), str(out), '3', '3', 'stub-model', '0.01'],
+        capture_output=True, text=True, timeout=RUN_TIMEOUT_SECONDS,
+        env={**os.environ, 'PATH': search_path},
+    )
+    try:
+        check(KEY in (out / 'rep3.json').read_text(errors='replace'), 'rep3.json lost the key: the scrub should not have read it')
+        check(run.returncode == 3, f'run_reps.sh should exit 3 for a rep file that still holds {KEY}, got {run.returncode}: {run.stdout}{run.stderr}')
+        check('rep3' in run.stdout and KEY in run.stdout, f'the runner should name rep3 and {KEY}: {run.stdout}')
+    finally:
+        cwd = (out / 'rep3.err').read_text() if (out / 'rep3.err').exists() else ''
+        if cwd.startswith(REP_PREFIXES) and Path(cwd).is_dir():
+            shutil.rmtree(cwd)
 
 
 def main() -> None:
@@ -113,6 +149,7 @@ def main() -> None:
             for cwd in work_dirs:
                 if cwd.startswith(REP_PREFIXES) and Path(cwd).is_dir():
                     shutil.rmtree(cwd)
+        check_unreadable_rep(root, prompt)
     print('kit self-test passed')
 
 
