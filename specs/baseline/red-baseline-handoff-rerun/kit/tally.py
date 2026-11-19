@@ -9,11 +9,15 @@ A fork of plan 40's $RED/tools/tally.py that reads $PHR_CTL (default
 each scored rep's results/<rep>/audit.json and extract.md. Exits 1, listing the
 lines, when a PASS, FAIL or VOID line's quote is empty or not found in its
 rep's extract (whitespace runs compared as one space): rescore those.
-Otherwise prints, per arm, the valid reps counted, the failures per criterion,
-and the verdict by the plan's Thresholds: `v1` and `b2` pass when at least 4
-of their first 5 valid reps pass every criterion, `c4a-neg` when at most 1 of
-its first 5 valid reps fails F-brief. Only the first 5 valid reps by id count,
-and a pilot rep never counts. Runs on the system Python 3.9.
+The reps an arm counts come from the audits, not the score file: the first 5
+by id whose audit is valid, has that arm and has PHASE as its phase, less any
+rep the score file marks VOID. So a probe or pilot rep never counts in another
+phase. Exits 1, naming the gap, when a counted rep has no rows, or has no row
+for a criterion that the arm's other rows use. Otherwise prints, per arm, the
+valid reps counted, the failures per criterion, and the verdict by the plan's
+Thresholds: `v1` and `b2` pass when at least 4 of their first 5 valid reps
+pass every criterion, `c4a-neg` when at most 1 of its first 5 valid reps fails
+F-brief. Runs on the system Python 3.9.
 '''
 
 from __future__ import annotations
@@ -52,10 +56,28 @@ def bad_quotes(rows: list[dict], extracts: dict[str, str]) -> list[str]:
     return bad
 
 
-def counted_reps(rows: list[dict], valid: dict[str, bool]) -> list[str]:
+def rep_id(rep: str) -> int:
+    return int(rep[1:])
+
+
+def counted_reps(rows: list[dict], expected: list[str]) -> list[str]:
+    '''The first COUNTED of the arm's valid reps (from the audits), less the
+    reps the score file marks VOID.'''
     void = {r['rep'] for r in rows if r['criterion'] == 'VOID'}
-    reps = sorted({r['rep'] for r in rows} - void, key=lambda rep: int(rep[1:]))
-    return [rep for rep in reps if valid.get(rep, False)][:COUNTED]
+    return [rep for rep in sorted(expected, key=rep_id) if rep not in void][:COUNTED]
+
+
+def gaps(arm: str, rows: list[dict], reps: list[str]) -> list[str]:
+    '''A line for each counted rep with no rows, or with no row for a
+    criterion that the arm's other rows use.'''
+    criteria = {r['criterion'] for r in rows} - {'VOID'}
+    out = []
+    for rep in reps:
+        has = {r['criterion'] for r in rows if r['rep'] == rep}
+        if not has:
+            out.append(f'{arm} {rep}: no rows')
+        out += [f'{arm} {rep}: no row for {c}' for c in sorted(criteria - has) if has]
+    return out
 
 
 def failures(rows: list[dict], reps: list[str]) -> dict[str, set[str]]:
@@ -90,18 +112,26 @@ def main() -> int:
         return 2
     table = {f.stem: read_scores(f) for f in files}
     reps = {r['rep'] for rows in table.values() for r in rows}
-    extracts, valid = {}, {}
+    extracts = {}
     for rep in reps:
         out = CTL / 'results' / rep
         extracts[rep] = squash((out / 'extract.md').read_text()) if (out / 'extract.md').exists() else ''
-        audit = json.loads((out / 'audit.json').read_text()) if (out / 'audit.json').exists() else {}
-        valid[rep] = bool(audit.get('valid')) and audit.get('phase') != 'pilot'  # pilot reps never count
+    expected: dict[str, list[str]] = {}  # arm -> its valid reps of this phase, by the audits
+    for path in sorted((CTL / 'results').glob('*/audit.json')):
+        audit = json.loads(path.read_text())
+        if audit.get('valid') is True and audit.get('phase') == phase:
+            expected.setdefault(str(audit.get('arm')), []).append(path.parent.name)
     bad = [line for rows in table.values() for line in bad_quotes(rows, extracts)]
     if bad:
         print('\n'.join(bad))
         return 1
+    counts = {arm: counted_reps(rows, expected.get(arm, [])) for arm, rows in table.items()}
+    missing = [line for arm, rows in table.items() for line in gaps(arm, rows, counts[arm])]
+    if missing:
+        print('\n'.join(missing))
+        return 1
     for arm, rows in table.items():
-        counted = counted_reps(rows, valid)
+        counted = counts[arm]
         fails = failures(rows, counted)
         detail = ' '.join(f'{c}:{len(rs)}' for c, rs in sorted(fails.items())) or '-'
         print(f'{arm:10} counted {",".join(counted) or "-":30} fails {detail:40} {verdict(phase, arm, rows, counted)}')

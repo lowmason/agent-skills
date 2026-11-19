@@ -504,6 +504,48 @@ def test_tally_pilot_phase_is_not_counted(ctl: Ctl) -> None:
     assert 'pilot (not counted)' in done.stdout, done.stdout
 
 
+def test_tally_counts_the_first_five_valid_reps_from_the_audits(ctl: Ctl) -> None:
+    names = reps(ctl, 'v1', range(281, 287))
+    score(ctl, 'rerun100', 'v1', [(r, 'F-restate', 'PASS') for r in names[1:]])  # r281 has no rows
+    done = tally(ctl, 'rerun100')
+    assert done.returncode == 1, done.stdout
+    assert 'v1 r281: no rows' in done.stdout, done.stdout
+    assert 'PASS' not in done.stdout and 'FAIL' not in done.stdout, done.stdout
+
+
+def test_tally_refuses_a_counted_rep_missing_a_criterion(ctl: Ctl) -> None:
+    names = reps(ctl, 'v1', range(281, 286))
+    rows = [(r, c, 'PASS') for r in names for c in ('F-restate', 'V1-ids')]
+    rows = [row for row in rows if row[:2] != ('r283', 'V1-ids')]
+    score(ctl, 'rerun100', 'v1', rows)
+    done = tally(ctl, 'rerun100')
+    assert done.returncode == 1, done.stdout
+    assert 'v1 r283: no row for V1-ids' in done.stdout, done.stdout
+    assert 'PASS (' not in done.stdout, done.stdout
+
+
+def test_tally_counts_each_arm_from_its_own_audits(ctl: Ctl) -> None:
+    v1 = reps(ctl, 'v1', range(281, 286))
+    b2 = reps(ctl, 'b2', range(286, 291))
+    score(ctl, 'rerun100', 'v1', [(r, 'F-restate', 'PASS') for r in v1])
+    score(ctl, 'rerun100', 'b2', [(r, 'B2-out', 'FAIL') for r in b2])
+    done = tally(ctl, 'rerun100')
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert 'counted r286,r287,r288,r289,r290 ' in done.stdout and 'FAIL (5 of 5 failing)' in done.stdout, done.stdout
+    assert 'counted r281,r282,r283,r284,r285 ' in done.stdout and 'PASS (0 of 5 failing)' in done.stdout, done.stdout
+
+
+def test_tally_counts_no_probe_rep(ctl: Ctl) -> None:
+    names = reps(ctl, 'v1', range(281, 286))
+    probe = reps(ctl, 'v1', range(276, 277), phase='probe')
+    rows = [(r, 'F-restate', 'PASS') for r in names] + [(probe[0], 'F-restate', 'FAIL')]
+    score(ctl, 'rerun100', 'v1', rows)
+    done = tally(ctl, 'rerun100')
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert 'counted r281,r282,r283,r284,r285 ' in done.stdout, done.stdout
+    assert 'PASS (0 of 5 failing)' in done.stdout, done.stdout
+
+
 def test_relative_file_field_without_dots_is_one_token(ctl: Ctl) -> None:
     out = ctl.rep()
     Ctl.transcript(out / 'project' / 'sid-1.jsonl', [('Read', {'file_path': 'Library/Preferences/x.plist'})], HOME_RUN)
