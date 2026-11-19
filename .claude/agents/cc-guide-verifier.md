@@ -50,12 +50,10 @@ A block with no row, and a release with no coverage line, go to verify as UNSURE
     B | version | one line | changelog.md:line
     C | omission
     section | none
-    item | none
 
 - A, one row per claim. `doc:line` names a page file in the `docs` directory, such as `hooks.md:426`, or `changelog.md` in the packet; a doc quote comes from one of those, never from `guide.md`. Proposed wording only for STALE, WRONG and PARTIAL, `-` otherwise. NOT FOUND and JUDGMENT may leave `doc:line` and the quote `-`.
 - Every section in `sections.md` gets at least one A row, or `<section> | none` when it holds no checkable claim. A section with neither is held, as if unreviewed.
 - B, one row per changelog item that changes a claim in scope.
-- In an audit, `listed.md` lists each changelog bullet that names one of the group's terms, as `<release>#<n>` with its `changelog.md` line, the sections whose terms it names, and any names it holds that the guide lacks. Answer every listed item: give it a B row, with its release as the version and its `changelog.md` line, when the bullet changes a claim in a section of this packet, and otherwise the line `<item> | none`. A listed item with neither holds its sections, as if unreviewed.
 - C, at most four rows: omissions that would change the guide's existing advice.
 
 ### files

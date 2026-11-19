@@ -36,8 +36,7 @@ CHANGELOG_ROW = 'B | version | one line | changelog.md:line'
 OMISSION_ROW = 'C | omission'
 FILES_ROW = 'file:line | statement | section | "verbatim guide quote" | consistent / contradicts / not covered'
 NONE_ROW = 'section | none'
-LISTED_NONE_ROW = 'item | none'
-FORMATS = (TRIAGE_ROW, COVERAGE_ROW, VERIFY_ROW, CHANGELOG_ROW, OMISSION_ROW, FILES_ROW, NONE_ROW, LISTED_NONE_ROW)
+FORMATS = (TRIAGE_ROW, COVERAGE_ROW, VERIFY_ROW, CHANGELOG_ROW, OMISSION_ROW, FILES_ROW, NONE_ROW)
 # Each row's quote fields, by index: only these may hold `|` and `"`.
 TRIAGE_QUOTES = (4, 5)
 VERIFY_QUOTES = (4,)

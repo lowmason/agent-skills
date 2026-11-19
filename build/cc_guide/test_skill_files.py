@@ -73,25 +73,6 @@ def test_the_verifier_writes_a_none_line_exactly_and_no_other_line_with_a_pipe()
     assert '`<section> | none`' in rule and 'Put `|` in no other line.' in rule
 
 
-def test_the_verifier_answers_every_listed_item_in_an_audit():
-    lines = (REPO / AGENT).read_text(encoding='utf-8').split('\n')
-    (rule,) = [line for line in lines if 'Answer every listed item' in line]
-    assert '`<item> | none`' in rule and 'holds its sections' in rule
-    assert 'with its release as the version' in rule
-
-
-def test_the_skill_and_its_formats_reference_describe_listed_md():
-    audit = (REPO / SKILL).read_text(encoding='utf-8').split('## audit [<group>]')[1].split('\n## ')[0]
-    assert '`listed.md`' in audit and '`<item> | none`' in audit
-    packets = (REPO / FORMATS).read_text(encoding='utf-8').split('## Packets')[1].split('\n## ')[0]
-    assert '`listed.md`' in packets and '`listed`' in packets
-
-
-def test_the_listed_none_row_is_one_of_the_report_formats():
-    assert report_grammar.LISTED_NONE_ROW == 'item | none'
-    assert report_grammar.LISTED_NONE_ROW in report_grammar.FORMATS
-
-
 @pytest.mark.parametrize('form', report_grammar.FORMATS)
 def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form):
     for path in (AGENT, FORMATS):
