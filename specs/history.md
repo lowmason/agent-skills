@@ -585,3 +585,33 @@ Closed deferred items:
 - "The revisit trigger of the `commands-stay-command-files` exception in `build/cc_guide/conformance.toml` may" (deferred by claude/code-customization-guide-currency-657677 Step 4b review): the exception's reason and revisit lines now match the owner's ruling to keep the three command files, and the reason names the gap that Codex gets none of them.
 - "**task-done never checks that a mutant patch is the one its run measured (plan 93 final review, Codex" (deferred by 93-mutant-checked-tests): `task-done` refuses (exit 4) a missing patch, or one whose sha256 differs from the run's, for each mutant that is not withdrawn.
 - "Decide whether the drift check watches the desktop docs page. The worktree-isolation section takes two" (deferred by cc-guide-2.1.326-worktree-isolation): no edit. The guide section already says that the drift check does not watch the desktop page.
+
+## 100-prepare-handoff-rerun — 2026-11-18
+Plan: specs/plans/completed/100-prepare-handoff-rerun.md · Spec: none
+
+Differences from the design:
+- Ruling: (controller, 2026-11-18, brief default 2, plan Deviation note under Rep command) test_env_holds_no_session_variables's allow-list widens to CLAUDE_CODE_DISABLE_ADVISOR_TOOL and CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS; run_rep.sh refuses any other CLAUDE* name. Task 3 adds one test beyond the plan for the "Background tasks still running" void (+1 over 23).
+- Ruling: (Task 1 re-review A, partial) obfuscated routes to the keychain link (`Keychain?` glob after a `cd`, `cd ~/Libr*`, bare `cd Library` then relative paths) stay out of the guard; quote/backslash stripping before the name check is in — the reps are not adversarial and C5 already names the guard's limits; a `Library` name rule would deny ordinary text (commit messages) and a guard denial can void a rep; Task 3's audit flags any tool input or result that reaches the real home — if wrong, a rep that reaches the real home by such a route is voided by the audit, not denied live.
+- Ruling: (Task 2 concern 1) the rep HOME gets a minimal `$H/.gitconfig` with a neutral identity only (`[user] name = Pondworks Rep`, `email = rep@pondworks.invalid`) — Plan 40's reps committed with the owner's global identity, and a rep with none gets git's guessed identity and warnings that can change behavior; C4 lists no .gitconfig; no other git setting is copied; Plan Deviation note required — if wrong, rep commits carry a made-up author, which no rubric criterion reads. Goes to the Task 2 fix round with any review findings.
+- Ruling: (Task 4, owner D4) syncClaudeAiSkills false added to the rep --settings JSON after probe r282's kit hash changed from a mid-run claude.ai skill download; commit 1563e98, suite 133 passed.
+- Ruling: (final review) the Task 1 decline of lower-case `/system/volumes/data` forms is reversed and fixed in guard.py and extract.py — its premise, the audit backstop, was false (the audit normalized case-sensitively too) — if wrong, nothing: the fix only denies more.
+- Ruling: (owner D5, 2026-11-18) c4a-neg rep r289 is VOID under the frozen reps-directory rule: its fact-checker's `find / -path '*writing-plans*' -name SKILL.md` listed 10 names under ~real/.cache/pondworks/ (read none); guard and audit missed it. One replacement c4a-neg rep runs (kit at 8a734a0; its only guard change since the batches, f7f8ab6, touches Data-volume spellings no rep used).
+- Ruling: (owner asked for the controller's recommendation, completion gate) ancestor-rooted walks (`find /`, `ls -R /`, `grep -r /`, mdfind, locate, rooted at / or /Users) are fixed now: the guard denies them and the audit flags them — r289 showed them in practice and plan 101 copies the kit — if wrong, a legitimate whole-disk search is denied, which no fixture needs. Obfuscated Keychains routes are deferred as a backlog item.
+- Ruling: (owner, completion gate) fix now: the audit collects permission denials from every transcript (subagents included), and run_rep.sh:177's `find | head -n 1` SIGPIPE risk under pipefail is removed.
+- Deviation: the `env -i` list also sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2400000`, and a rep whose stderr shows stopped background tasks voids. Source: plan, Rep command.
+- Deviation: the rep `--settings` JSON sets `"syncClaudeAiSkills": false` (owner D4). Source: plan, Rep command.
+- Deviation: each rep `HOME` holds a placeholder git identity (`Pondworks Rep`). Source: plan, C1.
+- Deviation: `mktemp` and literal `/tmp` paths are shared on macOS, so only one-at-a-time runs keep reps apart. Source: plan, C6.
+- Deviation (Task 2): `KIT_COMMIT` is the branch base, `92f6a37`. Source: plan, Task 2.
+- Deviation (Task 3): final-review and gate fixes changed `guard.py`, `extract.py` and `tally.py` after the batches, with no verdict changed. Source: plan, Task 3.
+- Deviation (Task 4): the isolation probe ran twice, before and after D4. Source: plan, Task 4.
+- Deviation (Task 4): the guard probe prompt was reworded after r282 declined its subagent step. Source: plan, Task 4.
+- Deviation (Task 5): the owner voided r289 (D5), and replacement rep r302 counts. Source: plan, Task 5.
+- Deviation (Task 5): the `git grep` check also hits the kit's own code. Source: plan, Task 5.
+- Deferred: 3 items. Source: specs/deferred_items.md, § 100-prepare-handoff-rerun.
+
+Closed earlier deferred items:
+- "Re-run `v1`, `b2` and `c4a-neg` on the shipped prepare-handoff text. GREEN" (deferred by 40-handoff-briefs).
+- "**The deny rule `Read(~/**)` does not stop every Bash read of the home folder (plan 98 Task 3, record" (deferred by 98-marimo-notebook-seam).
+- "**Parallel micro-test reps share the scratch folder (plan 98 Step 4b review, Codex finding P2; the owner" (deferred by 98-marimo-notebook-seam Step 4b review).
+- "**The next micro-test kit still copies `credential_expires_at` into its rep JSON files (the owner's ruling" (deferred by deferred-2026-11-14).

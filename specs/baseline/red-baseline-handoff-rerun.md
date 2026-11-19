@@ -1,6 +1,6 @@
 # RED baseline re-run: prepare-handoff on the shipped text (plan 100)
 
-This record holds plan 100's re-run of three arms of plan 40's prepare-handoff baseline: `v1`, `b2` and `c4a-neg`. Plan 40's record is `specs/completed/red-baseline-handoff-briefs-2026-10-10.md`. The plan is `specs/plans/100-prepare-handoff-rerun.md`. The kit is [red-baseline-handoff-rerun/kit/](red-baseline-handoff-rerun/kit/), and its `README.md` lists every execution deviation.
+This record holds plan 100's re-run of three arms of plan 40's prepare-handoff baseline: `v1`, `b2` and `c4a-neg`. Plan 40's record is `specs/completed/red-baseline-handoff-briefs-2026-10-10.md`. The plan is `specs/plans/completed/100-prepare-handoff-rerun.md`. The kit is [red-baseline-handoff-rerun/kit/](red-baseline-handoff-rerun/kit/), and its `README.md` lists every execution deviation.
 
 ## Method
 
