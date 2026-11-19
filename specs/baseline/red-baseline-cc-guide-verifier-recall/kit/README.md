@@ -199,7 +199,7 @@ A void rep needs only `void`. `hits` takes the labels P1 to P14, except P8 and P
 `unblind A` reads every counted and spare audit rep. `unblind F` reads every counted and spare readme and precision rep. Each prints its reps with their arms, a table row for each clause (`clause | arm | requirement | observed | met`), the reported measures and a `result:` line. The pilot and the probe are in no gate.
 
 - **Gate A** with 5 valid reps in each arm: PASS when the changed arm meets P11 and P8 in at least 4, the control meets P11 in at most 1, and DF7 and DF8 hold. FAIL otherwise.
-- **Gate A** with fewer than 5 valid reps in an arm: UNSETTLED when the control meets P11 in 2. FAIL when the changed arm misses P11 or P8 in 2. UNSETTLED, for too few valid reps, otherwise.
+- **Gate A** with fewer than 5 valid reps in an arm: UNSETTLED when the control meets P11 in 2. FAIL when each arm has at least 2 valid reps and the changed arm misses P11 or P8 in 2. UNSETTLED, for too few valid reps, otherwise (plan:171).
 - **Gate F** with 3 valid reps in each packet and arm: PASS when no changed readme rep keeps a row on `hooks/README.md:89`, no changed readme or precision rep has more than 2 UNSUPPORTED rows, and the changed arm names a covered file in at least 2 precision reps. FAIL otherwise. The precision counts show for both arms.
 - **Gate F** with fewer valid reps: UNSETTLED.
 

@@ -926,7 +926,10 @@ def unblind_a(reps: list[dict], verdicts: dict[str, dict], measures: dict[str, d
         result = 'PASS' if not [line for line in gated if line.endswith('| not met')] else 'FAIL'
     elif c11 >= STOP_COUNT:
         result = f'UNSETTLED (first wave: the control meets P11 in {STOP_COUNT} valid reps)'
-    elif n[changed_arm] - x11 >= STOP_COUNT or n[changed_arm] - x8 >= STOP_COUNT:
+    elif min(n[control_arm], n[changed_arm]) >= STOP_COUNT and (n[changed_arm] - x11 >= STOP_COUNT
+                                                                or n[changed_arm] - x8 >= STOP_COUNT):
+        # The first-wave FAIL holds only in the state `stop` accepts: each arm
+        # has STOP_COUNT valid reps. Short of that it is UNSETTLED (plan:171).
         result = f'FAIL (first wave: the changed arm misses P11 or P8 in {STOP_COUNT} valid reps)'
     else:
         result = f"UNSETTLED (too few valid reps: {', '.join(short)})"

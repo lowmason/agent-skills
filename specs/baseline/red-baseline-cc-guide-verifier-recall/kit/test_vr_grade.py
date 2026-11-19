@@ -923,6 +923,43 @@ def test_a_rep_that_fails_prints_its_error_type_not_its_message(kit, capfd):
     assert err == 'grade.py: r001: not graded (Error)\n' and 'r002: sheets/r002.txt' in out
     assert no_arm_named(out + err)
 
+
+def test_unblind_a_short_after_the_spares_is_unsettled_not_fail(kit, capfd):
+    '''The reproduction: the control is down to 1 valid rep after two void
+    spares, and the changed arm misses P11 in its 2 (plan:171).'''
+    verdict_reps([('r001', 'control', True, 'yes', 'yes'), ('r002', 'control', False, '', ''),
+                  ('r003', 'changed', True, 'no', 'yes'), ('r004', 'changed', True, 'no', 'yes'),
+                  ('r005', 'control', False, '', '', 'none', 0, 'spare', 'r002'),
+                  ('r006', 'control', False, '', '', 'none', 0, 'spare', 'r005')])
+    assert grade.main(['stop', 'gateA1']) == 1
+    assert capfd.readouterr().err == ('grade.py: refused: gateA1: these void reps have no valid spare yet: '
+                                      'r002, r005, r006\n')
+    assert grade.main(['unblind', 'A']) == 0
+    out, err = capfd.readouterr()
+    assert err == '' and out.splitlines()[-1] == 'result: UNSETTLED (too few valid reps: control 1 of 5, changed 2 of 5)'
+
+
+Y, N = ('yes', 'yes', 'none', 0), ('no', 'yes', 'none', 0)  # P11 met; P11 missed
+NO_P8 = ('yes', 'no', 'none', 0)
+
+
+@pytest.mark.parametrize('control, changed, want', [
+    ([Y, None], [N, N], 'UNSETTLED (too few valid reps: control 1 of 5, changed 2 of 5)'),
+    ([Y, None], [NO_P8, NO_P8], 'UNSETTLED (too few valid reps: control 1 of 5, changed 2 of 5)'),
+    ([Y, Y], [N, None], 'UNSETTLED (first wave: the control meets P11 in 2 valid reps)'),
+    ([Y, Y, None], [N, N], 'UNSETTLED (first wave: the control meets P11 in 2 valid reps)'),
+    ([N, N], [N, N], 'FAIL (first wave: the changed arm misses P11 or P8 in 2 valid reps)'),
+    ([N, N], [NO_P8, NO_P8], 'FAIL (first wave: the changed arm misses P11 or P8 in 2 valid reps)'),
+    ([N, N], [N, None], 'UNSETTLED (too few valid reps: control 2 of 5, changed 1 of 5)'),
+    ([Y, N, N, N, None], [N, N, None, None, None],
+     'FAIL (first wave: the changed arm misses P11 or P8 in 2 valid reps)'),
+    ([Y, N, N, N, None], [Y, Y, None, None, None], 'UNSETTLED (too few valid reps: control 4 of 5, changed 2 of 5)'),
+])
+def test_unblind_a_applies_the_first_wave_fail_only_with_two_valid_reps_in_each_arm(kit, capsys, control, changed,
+                                                                                      want):
+    gate_a(control, changed)
+    assert run_unblind(capsys, 'A')[-1] == f'result: {want}'
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
