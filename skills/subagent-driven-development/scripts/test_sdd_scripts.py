@@ -1322,6 +1322,75 @@ def test_mutant_run_writes_a_new_file_for_each_run(calc):
     assert mutant_lines(calc, 'task-1-mutants-2.log')[0] == 'mutant-run: Task 1, run 2'
 
 
+# ── mutant-run --screen ──────────────────────────────────────────────────
+
+def no_screen_file(repo):
+    return not list(run_file(repo, '').glob('task-1-screen*.log'))
+
+
+def test_mutant_run_screen_writes_a_screen_file(calc):
+    p1 = make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert lines[0] == 'mutant-run: Task 1, screen 1'
+    assert lines[5:8] == [
+        'result: caught 1, survived 0, invalid 0',
+        'screen: carried 0 of 1 from earlier runs',
+        'revert: none: no file outside the tests and the project config changed',
+    ]
+    assert mutant_line(lines, 1).startswith(f'mutant 1: CAUGHT exit 1 sha256 {patch_sha(p1)} tests: ')
+    assert no_mutant_run_file(calc)
+    out = result.stdout.splitlines()
+    assert out[:2] == ['result: caught 1, survived 0, invalid 0', 'screen: carried 0 of 1 from earlier runs']
+    assert out[-1] == 'run: ' + str(run_file(calc, 'task-1-screen.log'))
+
+
+def test_mutant_run_numbers_screens_and_full_runs_apart(calc):
+    make_mutant(calc, 1, *A)
+    for flags in ([], ['--screen'], ['--screen'], []):
+        result = run(MUTANT_RUN, *flags, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+        assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_lines(calc, 'task-1-mutants.log')[0] == 'mutant-run: Task 1, run 1'
+    assert mutant_lines(calc, 'task-1-screen.log')[0] == 'mutant-run: Task 1, screen 1'
+    assert mutant_lines(calc, 'task-1-screen-2.log')[0] == 'mutant-run: Task 1, screen 2'
+    assert mutant_lines(calc, 'task-1-mutants-2.log')[0] == 'mutant-run: Task 1, run 2'
+
+
+def test_mutant_run_full_run_runs_every_patch_beside_a_screen(calc):
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    result = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc)
+    assert lines[0] == 'mutant-run: Task 1, run 1'
+    assert mutant_line(lines, 1).startswith('mutant 1: CAUGHT exit 1 ')
+    assert '--- output: mutant 1 ---' in lines
+    assert not any(x.startswith('screen:') or ' carried: ' in x for x in lines)
+
+
+def test_mutant_run_screen_stops_on_a_failing_baseline(calc):
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', 'sh', '-c', 'exit 1', cwd=calc, env=PY_ENV)
+    assert result.returncode == 3
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert lines[0] == 'mutant-run: Task 1, screen 1'
+    assert lines[5] == 'result: baseline failed, exit 1'
+    assert lines[6] == '--- output: baseline ---'
+    assert not any(x.startswith('screen:') for x in lines)
+
+
+def test_mutant_run_screen_stops_when_a_mutant_is_already_in_head(calc):
+    p1 = make_mutant(calc, 1, *A)
+    git('apply', p1, cwd=calc)
+    git('commit', '-qam', 'a mutant reaches a commit', cwd=calc)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 2
+    assert 'task-1-mutant-1.patch' in result.stderr
+    assert no_screen_file(calc)
+
+
 def start_slow_mutant_run(repo):
     '''Start mutant-run on SLOW in a session of its own, so killpg reaches every process it starts.'''
     return subprocess.Popen(
@@ -1454,11 +1523,12 @@ def test_mutant_run_keeps_dotted_task_ids_apart(calc):
 @pytest.mark.parametrize('argv', [
     [], ['plan.md'], ['plan.md', 1], ['plan.md', 1, '--'], ['plan.md', 1, 'x', 'true'],
     ['plan.md', 1, '--', 'true'], ['plan.md', 1, 'HEAD', '--'], ['plan.md', 1, 'HEAD', 'x', 'true'],
+    ['--screen'], ['--screen', 'plan.md', 1, 'HEAD', '--'], ['plan.md', 1, 'HEAD', '--screen', 'true'],
 ])
 def test_mutant_run_rejects_bad_arguments(committed, argv):
     result = run(MUTANT_RUN, *argv, cwd=committed, env=PY_ENV)
     assert result.returncode == 2
-    assert 'usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]' in result.stderr
+    assert 'usage: mutant-run [--screen] PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]' in result.stderr
 
 
 @pytest.mark.parametrize('task', ['../x', 'a/b', 'x', '.1', '1.', ''])
@@ -1487,7 +1557,7 @@ def test_mutant_run_requires_a_base(calc):
     make_mutant(calc, 1, *A)
     result = run(MUTANT_RUN, 'plan.md', 1, '--', *PYTEST, cwd=calc, env=PY_ENV)
     assert result.returncode == 2
-    assert 'usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]' in result.stderr
+    assert 'usage: mutant-run [--screen] PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]' in result.stderr
     assert no_mutant_run_file(calc)
 
 

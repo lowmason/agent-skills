@@ -160,7 +160,7 @@
 # "AssertionError: " that pytest takes off it. A skip reason is the <skipped>
 # message.
 #
-# Usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
+# Usage: mutant-run [--screen] PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
 #   TASK_NUMBER is a task ID in task-brief's grammar, as test-run takes it.
 #   BASE is the task's base commit, as task-done takes it: any name git
 #   resolves to a commit, a short sha included.
@@ -175,12 +175,53 @@
 #   failing baseline; 143, 130 or 129 after TERM, INT or HUP, once the applied
 #   patch is reversed. sdd-repo's and sdd-workspace's exit 2 pass through.
 #
+# --screen, a first argument that selects the screen mode. It counts only as
+# the first argument, and the arguments after it are checked as without it, so
+# a --screen anywhere else is an ordinary argument. A call without --screen
+# does what the text above says, with the same file names, numbering, header,
+# stdout and exit status.
+#   A screen follows the steps above, and its run file has a name of its own:
+# task-<N>-screen.log for a task's first screen, task-<N>-screen-<K>.log for
+# screen K = 2, 3 and so on (the smallest K whose file does not exist). Screens
+# and the runs above number on their own, and a screen never takes a
+# task-<N>-mutants name. The file has the run file's format, with these
+# changes:
+#   mutant-run: Task <N>, screen <K>
+#   command: <the command, rendered the way a person would type it>
+#   head: <the full sha of HEAD>
+#   base: <the full sha of BASE>
+#   tree: clean
+#   result: caught <c>, survived <s>, invalid <i>
+#   screen: carried <m> of <total> from earlier runs
+#   note: reversed <patch file name>, left applied by a killed run
+#   revert: <one of the forms above>
+#   mutant <K>: CAUGHT exit - sha256 <hex> carried: <file name of the earlier run> tests: <that line's tests>
+# <total> is the number of patches in the run, and the result line counts each
+# carried mutant as caught. A carried mutant's line is the one shown. The
+# tests section joins this run's catches and the carried catches, in K order.
+# An output section exists only for a mutant whose command ran. A failing
+# baseline writes the header through the note line, with "result: baseline
+# failed, exit <n>", no screen line and no revert line, then "--- output:
+# baseline ---" and its output only, and exits 3.
+#   stdout: the result line, the screen line, each mutant line, the revert
+# line, then "run: <absolute path of the screen file>" last. The exit status
+# is the one above, with a carried mutant counted as caught. The check for a
+# patch that is already in HEAD refuses the whole screen with exit 2, before
+# the baseline.
+#
 # Callers: the SDD implementer and controller, and executing-plans' inline
 # executor. executing-plans' task-done reads the run file and never runs it.
 set -euo pipefail
 
+# --screen counts only as the first argument.
+screen=false
+if [ "${1:-}" = '--screen' ]; then
+  screen=true
+  shift
+fi
+
 if [ $# -lt 5 ] || [ "$4" != "--" ]; then
-  echo "usage: mutant-run PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
+  echo "usage: mutant-run [--screen] PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]" >&2
   exit 2
 fi
 
@@ -653,13 +694,16 @@ rm -f "$base_out.xml"
 base_rc=$run_rc
 check_tree 'after the baseline'
 
-# The smallest K whose file does not exist.
+# The smallest K whose file does not exist, in the series of this call: the
+# screens' or the runs'.
 next_run_file() {
+  local series=mutants
+  [ "$screen" = false ] || series=screen
   run_k=1
-  run_file="$dir/task-${n}-mutants.log"
+  run_file="$dir/task-${n}-${series}.log"
   while [ -e "$run_file" ]; do
     run_k=$((run_k + 1))
-    run_file="$dir/task-${n}-mutants-${run_k}.log"
+    run_file="$dir/task-${n}-${series}-${run_k}.log"
   done
 }
 
@@ -669,13 +713,21 @@ cat_lines() {
   [ -z "$(tail -c 1 "$1")" ] || echo
 }
 
+# screen_line is set only once the patches have run, in a call with --screen,
+# so a failing baseline writes no screen line.
+screen_line=
 write_header() {
-  printf 'mutant-run: Task %s, run %s\n' "$n" "$run_k"
+  if [ "$screen" = true ]; then
+    printf 'mutant-run: Task %s, screen %s\n' "$n" "$run_k"
+  else
+    printf 'mutant-run: Task %s, run %s\n' "$n" "$run_k"
+  fi
   printf 'command: %s\n' "$cmd"
   printf 'head: %s\n' "$head_sha"
   printf 'base: %s\n' "$base_sha"
   printf 'tree: clean\n'
   printf '%s\n' "$result"
+  [ -z "$screen_line" ] || printf '%s\n' "$screen_line"
   [ -z "$note" ] || printf '%s\n' "$note"
 }
 
@@ -703,6 +755,11 @@ else
 fi
 
 # 6. Each patch.
+total=0
+for k in $ks; do
+  total=$((total + 1))
+done
+carried=0
 caught=0
 survived=0
 invalid=0
@@ -834,6 +891,7 @@ fi
 
 # 8. Write the run file.
 result="result: caught $caught, survived $survived, invalid $invalid"
+[ "$screen" = false ] || screen_line="screen: carried $carried of $total from earlier runs"
 next_run_file
 {
   write_header
@@ -867,7 +925,9 @@ next_run_file
 } > "$run_file"
 rm -f "$base_out" ${ran_outs[@]+"${ran_outs[@]}"} ${revert_out:+"$revert_out"}
 
-printf '%s\n' "$result" "${mutant_lines[@]}" "$revert"
+printf '%s\n' "$result"
+[ -z "$screen_line" ] || printf '%s\n' "$screen_line"
+printf '%s\n' "${mutant_lines[@]}" "$revert"
 echo "run: $run_file"
 
 # 9. Exit.
