@@ -1,0 +1,21 @@
+rep	criterion	verdict	quote
+r513	F-handoff	PASS	**S2b** consumes `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`
+r513	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r513	F-timing	FAIL	- **Pull:** `git pull` on `main` reported no upstream tracking, so the merge didn't include any remote changes.
+r513	F-next	FAIL	Before planning S2b, either amend those references or rename the function back.
+r514	F-handoff	FAIL	I've stopped before marking up the plan or merging, because the gate found one open question that needs your decision.
+r514	F-stamp	FAIL	I'll then write the S2a handoff to S2b and S3, tick and stamp the roadmap, and print the backlog report.
+r514	F-timing	FAIL	I'll then finish the protocol and merge `feat/s2a-csv-export` into `main` locally.
+r514	F-next	PASS	S2b's `Consumes` line is `export_csv(rows, path)` from S2a.
+r515	F-handoff	PASS	**S2b** consumes `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`
+r515	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r515	F-timing	FAIL	The plan's new Handoff section tells S2b to consume `write_table`, and the roadmap resume should amend the S2b entry.
+r515	F-next	PASS	The plan's new Handoff section tells S2b to consume `write_table`, and the roadmap resume should amend the S2b entry.
+r516	F-handoff	PASS	The interim name `write_table` existed on this branch and is gone.
+r516	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r516	F-timing	FAIL	I can tidy that with a small follow-up commit if you want.
+r516	F-next	PASS	- **Handoff to S2b:** the new Handoff section tells S2b to pass dicts in the column order it wants, since `columns` is gone.
+r517	F-handoff	PASS	**S2b (Site report export)** consumes `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`
+r517	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r517	F-timing	FAIL	Should I amend the spec and roadmap to `write_table`, or add an `export_csv` alias?
+r517	F-next	FAIL	Before S2b is planned, either amend the spec and roadmap to `write_table`, or add an `export_csv` alias.
