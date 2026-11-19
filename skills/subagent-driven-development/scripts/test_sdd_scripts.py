@@ -1391,6 +1391,50 @@ def test_mutant_run_screen_stops_when_a_mutant_is_already_in_head(calc):
     assert no_screen_file(calc)
 
 
+def test_mutant_run_screen_totals_every_patch_whether_or_not_it_caught(calc):
+    make_mutant(calc, 1, *A)
+    make_mutant(calc, 2, *S)
+    make_mutant(calc, 3, *X)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 1, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert lines[5:7] == [
+        'result: caught 1, survived 1, invalid 1',
+        'screen: carried 0 of 3 from earlier runs',
+    ]
+    assert result.stdout.splitlines()[:2] == lines[5:7]
+
+
+def test_mutant_run_screen_file_keeps_the_run_files_header_and_sections(calc):
+    make_mutant(calc, 1, *A)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    sha = head_sha(calc)
+    assert lines[1].startswith('command: ')
+    assert lines[2:5] == [f'head: {sha}', f'base: {sha}', 'tree: clean']
+    assert lines[8] == '--- mutants ---'
+    sections = [x for x in lines if x.startswith('--- ')]
+    assert sections == ['--- mutants ---', '--- tests ---', '--- output: baseline ---', '--- output: mutant 1 ---']
+    assert 'test test_calc::test_add_small: caught 1' in lines
+
+
+def test_mutant_run_reads_a_screen_flag_only_as_its_first_argument(calc):
+    make_mutant(calc, 1, *A)
+    seen = run_file(calc, 'seen.txt')
+    cmd = ['sh', '-c', 'echo "$2" >> "$1"; exec "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable, str(seen), '--screen']
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    assert mutant_lines(calc, 'task-1-mutants.log')[0] == 'mutant-run: Task 1, run 1'
+    screen = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert screen.returncode == 0, screen.stdout + screen.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert lines[0] == 'mutant-run: Task 1, screen 1'
+    assert lines[1].endswith(' --screen')
+    # The baseline and mutant 1 run once in each call, and each gets the flag.
+    assert seen.read_text().split() == ['--screen'] * 4
+
+
 def start_slow_mutant_run(repo):
     '''Start mutant-run on SLOW in a session of its own, so killpg reaches every process it starts.'''
     return subprocess.Popen(
@@ -1438,6 +1482,22 @@ def test_mutant_run_recovers_a_patch_a_killed_run_left_applied(calc):
     assert 'note: reversed task-1-mutant-1.patch, left applied by a killed run' in mutant_lines(calc)
     assert (calc / 'calc.py').read_text() == CALC
     assert not run_file(calc, 'mutant-active').exists()
+
+
+def test_mutant_run_screen_header_keeps_the_note_between_the_screen_line_and_revert(calc):
+    make_mutant(calc, 1, *A)
+    proc = start_slow_mutant_run(calc)
+    wait_for_the_applied_mutant(calc, proc)
+    os.killpg(proc.pid, signal.SIGKILL)
+    proc.wait(timeout=KILL_WAIT_SECONDS)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_lines(calc, 'task-1-screen.log')[5:9] == [
+        'result: caught 1, survived 0, invalid 0',
+        'screen: carried 0 of 1 from earlier runs',
+        'note: reversed task-1-mutant-1.patch, left applied by a killed run',
+        'revert: none: no file outside the tests and the project config changed',
+    ]
 
 
 def process_group_is_gone(pgid):
@@ -1801,6 +1861,21 @@ def test_mutant_run_lists_each_test_on_the_revert(changed):
     assert tree_is_head(repo)
     assert (repo / 'newmod.py').exists()
     assert not run_file(repo, 'mutant-active').exists()
+
+
+def test_mutant_run_screen_runs_the_revert_as_a_run_does(changed):
+    repo, base = changed
+    make_mutant(repo, 1, *H, path='half.py')
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, base, '--', *PYTEST_ALL, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo, 'task-1-screen.log')
+    revert_line = 'revert: ran, exit 1, failed 1, not loaded 1, skipped 1, passed 6'
+    assert lines[7] == revert_line
+    assert 'path: half.py' in run_section(lines, 'revert')
+    assert 'passed test_half::test_half_zero' in run_section(lines, 'revert')
+    assert '--- output: revert ---' in lines
+    assert result.stdout.splitlines()[-2] == revert_line
+    assert tree_is_head(repo)
 
 
 def test_mutant_run_keeps_test_and_config_files_at_head(calc):
