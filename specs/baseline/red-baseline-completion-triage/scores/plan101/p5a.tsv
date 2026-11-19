@@ -1,0 +1,21 @@
+rep	criterion	verdict	quote
+r508	F-handoff	PASS	**S2b** (consumes `export_csv(rows, path)`): the function is `write_table(rows, path, columns=None)` in `pondwatch/export.py`
+r508	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r508	F-timing	PASS	Next: `/clear` (or a fresh session), then resume the roadmap: derive-roadmap on `specs/pondwatch-v2-roadmap.md`.
+r508	F-next	PASS	I did not plan S2b. Once a stage is merged, the skill says to stop and hand off, even when asked to keep going.
+r509	F-handoff	PASS	**S2b** (consumes S2a's writer): call `write_table(rows, path, columns=None)` from `pondwatch.export`, not the roadmap's `export_csv(rows, path)`; that name does not exist.
+r509	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r509	F-timing	PASS	Next: `/clear` (or a fresh session), then resume the roadmap with derive-roadmap on `specs/pondwatch-v2-roadmap.md`. That gets S2b routed to writing-plans tonight.
+r509	F-next	PASS	Stage S2a is merged into `main` locally, but I did not plan S2b.
+r510	F-handoff	PASS	**S2b** consumes `write_table(rows, path, columns=None)` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`; `export_csv` does not exist.
+r510	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r510	F-timing	PASS	So the next step is a fresh session (or `/clear`), then resume the roadmap with derive-roadmap on `specs/pondwatch-v2-roadmap.md`.
+r510	F-next	PASS	I did not plan S2b. The skill I'm running for this roadmap says never to plan past a roadmap stage, even when asked to keep going.
+r511	F-handoff	PASS	**S2b (Site report export)** consumes the writer as built: `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`.
+r511	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r511	F-timing	PASS	run `/clear` or open a fresh session, then resume the roadmap with derive-roadmap on `specs/pondwatch-v2-roadmap.md`. That is how S2b gets started tonight.
+r511	F-next	PASS	I did not plan S2b, because the skills I'm running forbid planning past a roadmap stage in the session that finished it.
+r512	F-handoff	PASS	**S2b** consumes `write_table(rows, path, columns=None)` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`; the `export_csv` name never shipped.
+r512	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b, S3 consume.
+r512	F-timing	PASS	2. Resume the roadmap with derive-roadmap on `specs/pondwatch-v2-roadmap.md`.
+r512	F-next	PASS	S2a is complete and merged into `main`, but I did not start planning S2b.

@@ -2297,6 +2297,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       when: the wording is settled and `p5a`, `c5a-ep` and `c5a-neg` meet their
       pre-registered bars on it, with the already-merged prompt in the kit.
       → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
+      → progress 2026-11-19 (plan 101): parts (a) and (b) are reworded (4bf95a0 and 8b44d34), and the guard kit has a `c5a-merged` arm that starts from a stage merged before the session began. On the shipped text `p5a` and `c5a-neg` pass, `c5a-merged` passes (4 of 5, under the owner's reading of 2026-11-19) and `c5a-ep` fails 5 of 5, as it also does on the base text. No `c5a-ep` rep loaded `executing-plans`, so that skill's wording has no behavioral test. Open: a `c5a-ep` rerun that reaches `executing-plans`. See `specs/baseline/red-baseline-completion-triage.md`, `## Roadmap-stage guard`.
 
 ## 47-placement-lint — 2026-10-16
 - [x] Cover the second per-file `compaction-window` waiver in the placement guard (plan
@@ -5624,7 +5625,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       scripts. So it was kept out of that spec. Size: design. Done when: the owner approves a
       spec for the split, or records it as declined.
       → retired 2026-11-17: the owner declined the split (/deferred owner ruling). The backlog stays one file.
-- [ ] Narrow the read-only triage at plan completion (non-goal of `specs/backlog-protocol.md`,
+- [x] Narrow the read-only triage at plan completion (non-goal of `specs/backlog-protocol.md`,
       approved 2026-10-29). Plan Completion Protocol step 4 (`skills/writing-plans/SKILL.md`)
       runs triage steps 1–4 whenever 20 or more items are open. So every completion reads the
       whole backlog (about 36k tokens of open-item text on 2026-10-29) and hands the owner a
@@ -5636,6 +5637,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       approves a change to step 4, or records it as declined.
       → progress 2026-11-17 (owner ruling): approve a change to step 4. Completion prints the stats line and the plan's new items, and the full triage runs under `/deferred` or when the aged tail is non-zero. The item stays open until the change to step 4 lands.
       → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
+      → done 2026-11-19 (plan 101): Protocol step 4 is now a backlog report: the stats line and the plan's new items, with the triage only when the aged tail is above 0 and otherwise under `/deferred`. Commits 029e41f and 8b44d34; the record is `specs/baseline/red-baseline-completion-triage.md`.
 
 ## 73-reviewer-and-planning-contract — 2026-10-30
 - [ ] Test-only findings and the reviewer block's delete pass (plan 73 final review, Important;
@@ -5649,7 +5651,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: a micro-test case with a test-only defect (a test that asserts nothing) shows
       both reviewers still report it, and the sentence is reworded in all four copies if they
       do not.
-- [ ] Declined review line: writing-plans' completion gate does not name Declined to judge
+- [x] Declined review line: writing-plans' completion gate does not name Declined to judge
       lines as leftovers (plan 73 final review, owner ruled defer).
       `skills/writing-plans/SKILL.md:288-289` lists skipped steps and unfixed findings only;
       both executors already send the final review's Declined lines to the partner, and spec
@@ -5658,6 +5660,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: step 1 of the Plan Completion Protocol names the final review's Declined to
       judge lines, with room in the body for it.
       → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
+      → done 2026-11-19 (plan 101): Protocol step 1 names the final review's Declined to judge lines (4e5e7ec). The writing-plans body is 19,435 characters, at most the plan's 19,700.
 - [x] Declined review line: finishing-a-development-branch Step 4b gives Codex `[P2]` and
       `[P3]` points that become Declined lines no owner and no place to be recorded (plan 73
       final review, owner ruled defer). The skill is not one of the surfaces spec section 2
@@ -6132,7 +6135,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → progress 2026-11-17 (owner ruling): §5 Parking states that its heading uses the roadmap file's stem, `<name>-roadmap`. The headings keep their form.
 
 ## spec-drift-finding-22 (no plan; brainstorming session for finding 22, branch claude/spec-drift-history) — 2026-11-08
-- [ ] **Retired plans point at the live backlog after their deferred section has moved to the archive (handoff trap
+- [x] **Retired plans point at the live backlog after their deferred section has moved to the archive (handoff trap
       T1, first found in the 2026-11-08 handoff brief for finding 22).** Protocol step 2 writes the fixed status
       line `deferred items in specs/deferred_items.md` (`skills/writing-plans/SKILL.md`). When a section's last
       item closes, `skills/writing-plans/scripts/archive_deferred.py` moves the whole section to
@@ -6148,9 +6151,10 @@ review and the Plan Completion gate (2026-10-27) add the others.
       it so is in writing-plans or `archive_deferred.py`.
       → progress 2026-11-17 (owner ruling): Protocol step 2 writes a status line that names both backlog files, and a one-time fix updates the 14 old plans. `archive_deferred.py` does not edit plans.
       → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
+      → done 2026-11-19 (plan 101): Protocol step 2 writes a status line that names both backlog files (210a493). A one-time fix rewrote 83 retired plans' status lines (89b1ff9 and 81865b7), so every retired plan whose section is in the archive points at a file that holds it.
 
 ## 80-development-history-record — 2026-11-08
-- [ ] **A revert asked for at the gate has two rules (plan 80 final review, owner ruling at the completion gate).**
+- [x] **A revert asked for at the gate has two rules (plan 80 final review, owner ruling at the completion gate).**
       The spec says a reverted `contradicts spec` ruling "makes it a deferred item as today"
       (`specs/completed/development-history-record.md`, Contradicting rulings at the gate), and both executors'
       `references/final-review.md` gate paragraphs now say the same. But writing-plans protocol step 1
@@ -6160,6 +6164,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `gate-tag` case still meets its bar under `specs/baseline/red-baseline-development-history/kit/`.
       → progress 2026-11-17 (owner ruling): a revert asked for at the gate is implemented at once under Protocol step 1, and both gate paragraphs change to match.
       → planned 2026-11-17: specs/plans/101-plan-completion-triage-and-gate-revert.md
+      → done 2026-11-19 (plan 101): Protocol step 1 and both gate paragraphs give one rule for a revert asked for at the gate (ecd6dbd). The `gate-tag` re-run passed 5 of 5 at 4bf95a0 and at 8b44d34, and `gate-tag-ep` passed 5 of 5.
 - [x] **Finish step 2 has no source for the gate's tags after a `/clear` (plan 80 final review).** In
       `skills/writing-plans/references/history.md`, `## Plan entries`, Finish the draft step 2 relabels each ruling
       "that the gate listed with `contradicts spec: <spec section>`". When the context clears between the gate and
@@ -7174,3 +7179,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
 - [ ] The working-tree `Source.read` in `build/cc_guide/state.py` follows a tracked symlink to its target, while a ref source reads the link text (`git cat-file blob`). A `/cc-guide files` packet therefore copies the target's text for a tracked symlink under a skill folder, and `citing_files` does the same for a citing file, although its docstring says a tracked symlink is git's link text. Codex found it in plan 102's final review (2026-11-19, `[P1]`, `state.py:622-626`). The behavior predates plan 102. The repo tracks one symlink (`.claude/rules/clean-code-python.md`), outside every skill folder, so no packet meets it today. A symlink that points outside the repo would put that file's text into a verifier packet. Size: design. Done when: the owner has ruled whether a tracked symlink is read as its link text or as its target, and a `Source` test pins that choice for both the working tree and a ref.
 - [ ] The plan 102 micro-test kit has two defects that Codex found in plan 102's final review (2026-11-19, both `[P2]`). In `kit/run.py:235-238`, `stop_group` sends SIGKILL only while the parent still runs after the grace period, so a child in the process group that ignores SIGTERM outlives its parent, and the next rep can start while it runs. In `kit/grade.py:535-536`, V6 reads `stream.jsonl` through `probe_checks.parse_stream`, which skips a line that is no JSON object, so a stream with a plain-text line can still count as valid. No result depended on either: all 26 reps exited 0 within their timeouts, and no stream holds a non-JSON line. Both files are frozen, and a new round freezes the kit again. Size: quick-fix. Done when: `stop_group` sends SIGKILL to the process group after the parent exits, and V6 marks a stream with a non-JSON line invalid, each with a no-model test, before any new gate A or gate F round runs.
 - [ ] Gate A's sheets and reports show each rep's arm, so its hand ratings cannot be blind. Settle's `listed items:` line (0 unanswered in the changed arm, about 200 in the control) and the report's `none` rows differ by arm, and the kit `README.md` line 209 says that no sheet names an arm. The final review of plan 102 found it (2026-11-19), and `specs/baseline/red-baseline-cc-guide-verifier-recall.md` (Gate A) states the effect. The README is a frozen kit file, so the fix needs a new freeze. Size: plan. Done when: the sheets and the reports that a controller can open hide the listed-item counts and the `none` rows, the README says what the sheets show, and a no-model test shows that no sheet line differs by arm, before any new gate A round runs.
+
+## 101-plan-completion-triage-and-gate-revert — 2026-11-19
+- [ ] **Triage rubric step 4 says to stop and wait, while Protocol step 4 says to go on to step 5 (plan 101 final review, Codex finding P2).** `skills/writing-plans/SKILL.md` step 4 runs steps 1 to 4 of the Triage rubric when the aged tail is above 0, presents the proposal in the completion batch, and goes on to step 5. Step 4 of the Triage rubric in `skills/writing-plans/references/deferred-backlog.md` ends "Then stop and wait for the user's selection." An agent that follows the referenced step to its end can halt the completion. The base text has the same structure. The `triage-aged` case reads both files and passed 5 of 5 at the shipped text, so its reps resolve it. Plan 101's spec said to leave the rubric alone, and a change to that file voids the case's evidence. Size: quick-fix. Done when: the rubric's step 4 says what to do at plan completion (present the proposal in the completion batch and go on to step 5), and `triage-aged` and `triage-narrow` still pass 5 of 5 under `specs/baseline/red-baseline-completion-triage/kit/`.
+- [ ] **Plan 100's kit stamps the owner's git identity into rep-repo reflogs (plan 101 Task 9).** `specs/baseline/red-baseline-handoff-rerun/kit/run_rep.sh` sets the identity with `-c user.*` options on its git calls. `git remote set-head` ignores those options and reads the identity that the account database gives, so the `origin/HEAD` and `origin/main` reflogs of every rep repo hold the owner's real name and a derived email, and a rep can read them with `git reflog`. The kit's README says that no real identity reaches the rep. Plan 101's guard kit (`specs/baseline/red-baseline-completion-triage/guard-kit/`) fixes this with `GIT_AUTHOR_*` and `GIT_COMMITTER_*` variables. Plan 100's committed files are unchanged, and its parked reps are outside the repository. Size: quick-fix. Done when: plan 100's runner, or the next kit copy of it, sets the identity through those variables, and the README states the limit for the reps that already ran.

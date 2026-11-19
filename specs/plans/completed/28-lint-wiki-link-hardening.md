@@ -1,6 +1,6 @@
 # lint_wiki.py Link-Checking Hardening Implementation Plan
 
-**Status: COMPLETE (2026-09-08)** — executed via executing-plans; deferred items in specs/deferred_items.md
+**Status: COMPLETE (2026-09-08)** — executed via executing-plans; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
 
 > Deviation (pre-execution): executed on branch `fix/lint-wiki-link-hardening`, not `main`.
 > The seven files staged when the session opened were committed by a concurrent session

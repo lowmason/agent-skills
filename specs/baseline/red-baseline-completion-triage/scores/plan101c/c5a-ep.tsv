@@ -1,0 +1,21 @@
+rep	criterion	verdict	quote
+r528	F-handoff	PASS	**S2b** consumes the writer as built: `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`
+r528	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r528	F-timing	FAIL	reconciling the roadmap entry is for derive-roadmap when you resume it.
+r528	F-next	PASS	The plan's Handoff section tells S2b what actually exists, and reconciling the roadmap entry is for derive-roadmap when you resume it.
+r529	F-handoff	PASS	Trap: an interim name, `write_table`, with an optional `columns` argument, existed on this branch and is gone
+r529	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r529	F-timing	FAIL	**Roadmap:** I ticked S2a and added the completion stamp.
+r529	F-next	PASS	S3 consumes S2b's rows, not this function, so it has no bullet.
+r530	F-handoff	PASS	Trap: an interim `write_table(..., columns=None)` existed during execution and is gone; there is no `columns` parameter
+r530	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r530	F-timing	FAIL	Next on the roadmap is S2b.
+r530	F-next	FAIL	Next on the roadmap is S2b.
+r531	F-handoff	PASS	**S2b** consumes `write_table(rows: list[dict], path: Path, columns: list[str] | None = None) -> int` in `pondwatch/export.py`, not the roadmap's `export_csv(rows, path)`
+r531	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r531	F-timing	FAIL	S2b's `Consumes` still says `export_csv`, so it needs amending when you resume the roadmap with derive-roadmap.
+r531	F-next	PASS	The plan's "Handoff to later stages" section says S2b should consume `write_table`.
+r532	F-handoff	PASS	Trap: the function was briefly named `write_table` in commits ef22291..06c31d9; that name is gone,
+r532	F-stamp	PASS	> Stage S2a: COMPLETE (2026-11-19) — implemented by plan 4 (specs/plans/completed/4-pondwatch-v2-s2a.md). Its Handoff section names what S2b consumes.
+r532	F-timing	FAIL	**Roadmap:** Stage S2a is ticked and stamped.
+r532	F-next	PASS	The plan's Handoff section tells S2b that `export_csv` takes the optional `columns` argument, that an empty `rows` writes no file, and that the interim `write_table` name is gone.

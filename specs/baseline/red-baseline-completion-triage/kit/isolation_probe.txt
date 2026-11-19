@@ -1,0 +1,6 @@
+This is a context diagnostic, not a task. Report only what is literally present in your context before this message. Do not use any special formatting or boxes. Answer the five numbered lines, each with YES or NO and, if YES, a short verbatim quote of at most 12 words.
+1. Text loaded from a CLAUDE.md file (quote its first heading).
+2. An instruction naming an output style, such as Explanatory or Learning, or Insight boxes (quote the style name).
+3. A rule headed "Plain technical English" or "AWS Guidance" (quote the heading).
+4. Additional context injected by a SessionStart hook (quote its first words).
+5. Any auto-memory content or a MEMORY.md index (quote its first line).

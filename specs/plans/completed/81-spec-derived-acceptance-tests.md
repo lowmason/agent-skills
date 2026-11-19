@@ -1,6 +1,6 @@
 # Acceptance-tests probe Implementation Plan
 
-**Status: COMPLETE (2026-11-09)** — executed via executing-plans; deferred items in specs/deferred_items.md
+**Status: COMPLETE (2026-11-09)** — executed via executing-plans; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
 
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 

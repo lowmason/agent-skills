@@ -171,12 +171,15 @@ then fold the final review's Declined to judge lines, each for your human
 partner to rule on, into the same batch, so your human partner gets at most
 one round-trip. A tagged ruling is still a decision taken, not a question:
 the plan's entry in `specs/history.md` records it in place of a spec
-amendment, so ask your partner nothing about it. Your partner may still ask
-to revert it, which makes it a deferred item. One kind of ruling is not a
-decision taken: a `Ruling: (unclear) …` line. It is a question in the same
-batch, stalled on your partner's input (writing-plans' protocol step 1). If
-your partner overrules it, the change is a follow-up task, and protocol step
-1 implements it now. Findings the fix pass left unfixed feed the gate.
+amendment, so ask your partner nothing about it. If your partner asks to
+revert a ruling, tagged or not, the revert is a follow-up task, and protocol
+step 1 implements it now. Ledger it as `Reverted at the gate: <task> ruling —
+<its first words>`, so that a restarted gate shows that ruling as reverted and
+asks nothing about it, and the history entry leaves it out. One kind of ruling
+is not a decision taken: a `Ruling: (unclear) …` line. It is a question in the
+same batch, stalled on your partner's input (writing-plans' protocol step 1).
+If your partner overrules it, the change is a follow-up task, and protocol
+step 1 implements it now. Findings the fix pass left unfixed feed the gate.
 
 When the protocol has finished, delete this plan's workspace — the
 directory `sdd-workspace` printed at setup; if you lost it, re-run the
@@ -208,8 +211,8 @@ finishing-a-development-branch:
 | Discarded | No handoff: the stamp went with the branch. |
 
 Even when asked to keep going, never resume the roadmap here or plan,
-brainstorm or route to the next stage (step 3a's Handoff bullets and stamp
-still name the stages they feed), and make no model-tier claim. A stage this
-session finds already merged when it starts, with the protocol not yet run,
-runs the protocol on the merged branch now.
+brainstorm or route to the next stage (the Handoff bullets and stamp of
+writing-plans' protocol step 3a still name the stages they feed), and make no
+model-tier claim. A stage merged before this session began, with the protocol
+not run, runs the protocol now on the branch it merged into.
 Any other plan ends at Complete development.

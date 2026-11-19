@@ -1,6 +1,6 @@
 # Model-lifecycle Stage 1: track score mode and predictive evaluation — Implementation Plan
 
-**Status: COMPLETE (2026-10-22)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md (section 65-model-lifecycle)
+**Status: COMPLETE (2026-10-22)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived (section 65-model-lifecycle)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 

@@ -583,3 +583,105 @@ cost $0.0136 to $0.0148 each). With the probe, the run cost $0.18.
 **What this run shows, and what it does not.** It is a non-regression check. The fixture keeps the gate message in
 view, with the tag on the Task 2 ruling, so the new fallback sentence never applies. No case puts a draft in front of
 an agent after a `/clear`, so the fallback itself is untested.
+
+## Plan 101 re-run (2026-11-18)
+
+Plan 101 (`specs/plans/completed/101-plan-completion-triage-and-gate-revert.md`) changes texts that both cases read: the gate
+paragraph of `skills/subagent-driven-development/references/final-review.md`, the writing-plans `SKILL.md` body and
+`skills/writing-plans/references/history.md`. Its Task 8 re-ran both cases as regression cases at `T7`, the last text
+commit of its Task 7: `4bf95a0` (`4bf95a004637b4cc16859fa06593b664bb02a8f3`). Its own record is
+`specs/baseline/red-baseline-completion-triage.md`.
+
+**Build.** This kit's `build_prompts.py` and `cases.py` built the prompts, unchanged:
+`build_prompts.py 4bf95a004637b4cc16859fa06593b664bb02a8f3 /tmp/plan101-work/rerun gate-tag history-filter`.
+`MANIFEST.txt` gives model `claude-opus-5-5`, budget 1.00 and these prompt hashes:
+
+- `gate-tag.txt`: sha256 `d51b89173833062f0ff900e82daf220bc7821ef77d17ec3073b4cf7702900911`. It carries the whole of
+  `final-review.md` at `4bf95a0`.
+- `history-filter.txt`: sha256 `d81637dc680d0f7f60348170b23f7fc99fb5723a8749ee42c806042e3c08920e`. It carries the
+  writing-plans `SKILL.md` body and `references/history.md`, the one file that the `histor*.md` glob matches at
+  `4bf95a0`.
+
+**Runner.** The reps ran through plan 101's runner, `specs/baseline/red-baseline-completion-triage/kit/run_reps.sh`,
+not this kit's. That runner is a copy of this kit's runner with plan 101's next-kit fixes (decision D8). After each
+rep, its `scrub_json.py` drops every `credential_expires_at` key from the rep's JSON file, so the CLI's login-expiry
+field never reaches a committed file. Plan 101's `kit_selftest.py` shows that, and shows that each rep runs in its own
+new, empty folder and cannot see another rep's files. The `claude -p` flags and the `env -i` frame are this kit's. For
+each case: `run_reps.sh /tmp/plan101-work/rerun/<case>.txt <out> 1 5 claude-opus-5-5 1.00`, with plan 101's runner,
+where `<out>` is `specs/baseline/red-baseline-development-history/plan101/<case>`.
+
+The reps ran on Claude Code 2.1.323. Plan 101's record holds the isolation probe for that version, with all five
+lines `NO`. No rep was VOID: each ran one turn, no tool and one model, and ended with `success`. No rep wrote an error
+file, and no rep file holds `credential_expires_at`. Every reply was read in full, and every verdict was read by hand
+by this kit's `GATE_PASS` and `HISTORY_PASS`, with the readings in `## Treatment`: letter case, clause 4 of
+`gate-tag` with its added reading, and extra lines in `history-filter`. Plan 101 runs both cases as regression cases,
+so the bar is `treatment 5/5`. This kit's control already fails 5 of 5 in both cases.
+
+### gate-tag at `4bf95a0`
+
+Every rep meets clauses 1, 2 and 3: the four rulings in order with a cost, and `contradicts spec: § 2 Alert
+threshold` on the Task 2 entry only. Each says that the history entry records the Task 2 ruling in place of a spec
+amendment. Each invites a revert and says that it does the revert now. Each verdict below is on clause 4.
+
+- rep1: PASS — the rulings are "decisions, not questions". "If you want any ruling reverted, say so" is an
+  invitation. Its one question is the Declined to judge line.
+- rep2: PASS — "These are decisions, not questions." Its revert line is an invitation, and its one question is the
+  Declined to judge line.
+- rep3: PASS — the rulings are "shown for visibility, not questions". Its one question is the Declined to judge
+  line.
+- rep4: PASS — of the rulings it says "I'm not asking about them." Its one question is the Declined to judge line.
+- rep5: PASS — it puts the Declined to judge question first, and of the rulings it says "not asking about them".
+
+Passes: 5 of 5, the bar (`treatment 5/5`). Spend: $0.134 for reps 1 to 5.
+
+### history-filter at `4bf95a0`
+
+The six clauses are as in the control section. Every rep meets all six.
+
+- rep1: PASS — the Deviation line reads "v2 endpoint, as v1 was retired." and keeps its Source pointer.
+- rep2: PASS — the Deviation line reads "v2 endpoint, since v1 was retired." and keeps its Source pointer.
+- rep3: PASS — the same entry as rep2, byte for byte.
+- rep4: PASS — the same entry as rep2, byte for byte.
+- rep5: PASS — the same entry as rep2, byte for byte.
+
+In every rep the Task 2 ruling is labelled `Ruling, contradicts spec (Task 2)` and the module-name ruling
+`Ruling (Task 3)`, each copied whole with its what, why and cost parts. The batch-email and retry-jitter rulings are
+gone. Each Deviation line keeps `Source: plan, Task 1.` The closed-item line, the heading and the Plan line are as the
+draft printed them. No rep adds a title line or a line that the rule does not name.
+
+Passes: 5 of 5, the bar (`treatment 5/5`). Spend: $0.166 for reps 1 to 5.
+
+| Case | Re-run at `4bf95a0` | Bar met |
+|---|---|---|
+| `gate-tag` | 5/5 | yes |
+| `history-filter` | 5/5 | yes |
+
+The gate-tag bar met closes the revert item's Done when: together with Task 5.
+
+The two re-runs cost $0.30 by `show_reps.py`. They count toward plan 101's $30 spend stop, which sums these two
+folders with its own.
+
+### history-filter, wording round 1 re-run
+
+Plan 101's wording round, `8b44d34` (`8b44d342b782f8ef5df3c5db63496acf549022de`), changes the writing-plans `SKILL.md`
+body, which `history-filter` reads. So the case ran again at `8b44d34`. The prompt came from this kit's
+`build_prompts.py` and `cases.py`, unchanged: `build_prompts.py 8b44d342b782f8ef5df3c5db63496acf549022de
+/tmp/plan101-work/rerun-r1 history-filter`, prompt sha256
+`47df4f81624d2363d609752ffc313f58b6e1c3c4752abf9b7e9cf981230806a8`. The reps ran through plan 101's runner as above,
+into `specs/baseline/red-baseline-development-history/plan101-r1/history-filter`. No rep was VOID: each ran one turn,
+no tool and one model, and ended with `success`. The reps cost $0.53 by `show_reps.py`.
+
+The six clauses of `HISTORY_PASS` and the readings above apply. Every rep keeps the heading and the Plan line as the
+draft gives them, keeps the Task 2 ruling labelled "Ruling, contradicts spec (Task 2)" and the module-name ruling
+labelled "Ruling (Task 3)", each with its what, why and cost parts, leaves out the batch-email and retry-jitter
+rulings, and keeps the closed-item line with its quoted title and "(deferred by 9-dock-status)" word for word. Every
+rep shortens the Deviation line and keeps its `Source: plan, Task 1.` pointer, which the rule allows.
+
+- rep1: PASS — all six clauses hold. The Deviation line ends "; v1 was retired. Source: plan, Task 1."
+- rep2: PASS — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task 1."
+- rep3: PASS — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task 1."
+- rep4: PASS — all six clauses hold. The Deviation line ends "; v1 was retired. Source: plan, Task 1."
+- rep5: PASS — all six clauses hold. The Deviation line ends "since v1 was retired. Source: plan, Task 1."
+
+`history-filter` at `8b44d34`: treatment 5 of 5. The bar, `treatment 5/5`, is met. The two re-runs now cost $0.30 at
+`T7` for `gate-tag` and `history-filter` together by `show_reps.py`, and $0.53 for this one, so $0.83 in all.

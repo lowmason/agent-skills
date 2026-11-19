@@ -1,0 +1,6 @@
+rep	criterion	verdict	quote
+r518	F-fire	PASS	the plan has no `Roadmap:` line, so there was no stage handoff or stamp.
+r519	F-fire	PASS	nothing was deferred, and the backlog has 0 open items.
+r520	F-fire	PASS	the plan has no `Roadmap:` line, so I wrote no roadmap handoff.
+r521	F-fire	PASS	The plan was not a roadmap stage, so no handoff section was needed.
+r522	F-fire	PASS	`feat/log-rotation` is already merged into local `main`, so I did nothing new.

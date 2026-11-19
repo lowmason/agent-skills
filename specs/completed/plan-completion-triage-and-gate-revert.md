@@ -1,6 +1,6 @@
 # Plan-completion triage and gate reverts — Design Spec
 
-**Status:** APPROVED (2026-11-17). The design came from a brainstorming session on 2026-11-17 for two `/deferred`
+**Status:** COMPLETE (2026-11-19), implemented by plan 101 (`specs/plans/completed/101-plan-completion-triage-and-gate-revert.md`). It was APPROVED on 2026-11-17. The design came from a brainstorming session on 2026-11-17 for two `/deferred`
 Design picks of that day. Decisions D1 and D2 are the owner's rulings from the `/deferred` pass. D3 and D4 are the
 owner's answers in the brainstorming session. Text marked *(designer's call)* was the designer's choice. The owner
 approved this file, its designer's calls included, on 2026-11-17 ("Approve spec").
@@ -48,11 +48,13 @@ task under Protocol step 1, in place of a backlog item.
 
 - No change to `deferred_stats.py`, the Triage rubric, `/deferred`, finishing Step 1b or the Thresholds values. The
   volume line (`At or above the 20-item volume threshold.`) stays as the stats print it.
-- No edit to Protocol step 1. Its `Unblocked by an answer → implement it now` already holds the rule (D2). The gate
-  paragraphs send the revert there, as they already do for an overruled `(unclear)` ruling.
+- No edit to Protocol step 1 for the revert. Its `Unblocked by an answer → implement it now` already holds the rule
+  (D2). The gate paragraphs send the revert there, as they already do for an overruled `(unclear)` ruling. Plan 101
+  adds the final review's Declined to judge lines to step 1's leftovers, for the item that the next bullet names
+  (owner, plan 101, 2026-11-17).
 - No `references/step-recipe.md` fallback. The rewrite of step 4 frees about 360 characters of the window. The item
   that needs room for Declined to judge lines in step 1 stays its own item → item: 73-reviewer-and-planning-contract —
-  2026-10-30.
+  2026-10-30. Plan 101 folds it in after the step 4 shrink (owner, plan 101, 2026-11-17).
 - No edit to the retired spec `specs/completed/development-history-record.md`. Retired specs are history. This spec
   replaces its `as today` line for every later plan.
 - No script prints the plan's new items. Step 3 has just appended them, so the agent has them. *(designer's call)*
@@ -184,9 +186,12 @@ skill requires. The repo's kits set the pattern (`specs/baseline/red-baseline-ba
 
 **Kit.** A new kit, `specs/baseline/red-baseline-completion-triage/kit/`, with its record
 `specs/baseline/red-baseline-completion-triage.md`. Its `run_reps.sh`, `isolation_probe.txt`, `show_reps.py` and
-`build_prompts.py` are copies of plan 80's kit, with only the plan number and temp prefix changed. Its `cases.py` is
-new. The re-runs of `gate-tag` and `history-filter` use plan 80's kit unchanged, and append a section to
-`specs/baseline/red-baseline-development-history.md`, as the `/deferred` pass of 2026-11-12 did.
+`build_prompts.py` are copies of plan 80's kit, with the plan number and temp prefix changed and the next-kit fixes
+added: `run_reps.sh` drops `credential_expires_at` from each rep JSON file, and a no-model self-test shows that each
+rep has its own scratch folder (owner, plan 101, 2026-11-17). Its `cases.py` is new. The re-runs of `gate-tag` and
+`history-filter` build their prompts with plan 80's kit unchanged and run them through this kit's `run_reps.sh` (owner,
+plan 101, 2026-11-17), and append a section to `specs/baseline/red-baseline-development-history.md`, as the
+`/deferred` pass of 2026-11-12 did.
 
 **Arms.** `control` reads each text at the plan's base commit. `treatment` reads each text after the edit tasks. Both
 arms use the same frame, fixture and task. Only the sha differs. Fixtures use a domain that is not this repository.
@@ -200,6 +205,8 @@ The gate and history cases can reuse plan 80's bike-share fixture.
 | `gate-revert-ep` | RED | `skills/executing-plans/references/final-review.md` | The same, in an executing-plans run. | The same, with the revert done inline. |
 | `history-revert` | RED | writing-plans `SKILL.md` body, `references/histor*.md` | Protocol step 5 after a `/clear`. The gate message is not in context. The ledger holds the Task 2 ruling and a `Reverted at the gate:` line for it. The draft lists the Task 2 ruling. | The entry leaves out the Task 2 ruling, and meets the rest of `history-filter`'s pass rule. |
 | `gate-tag-ep` | guard | `skills/executing-plans/references/final-review.md` | Plan 80's `gate-tag` fixture, recast as an executing-plans run. | Plan 80's `gate-tag` pass rule. |
+| `gate-revert-untagged` | guard | `skills/subagent-driven-development/references/final-review.md` | As `gate-revert-sdd`, but the partner reverts the Task 3 module-name ruling, which the gate did not tag (owner, plan 101, 2026-11-17). | As `gate-revert-sdd`, for the Task 3 ruling. |
+| `gate-declined` | RED | writing-plans `SKILL.md` body | Protocol step 1, run from writing-plans alone after a `/clear`. The final review left one finding unfixed and two Declined to judge lines (owner, plan 101, 2026-11-17). | The gate message puts both Declined to judge lines and the unfixed finding to the partner, in one batch. |
 | `gate-tag` (re-run) | regression | plan 80's kit | Plan 80's fixture, unchanged. | Plan 80's pass rule. |
 | `history-filter` (re-run) | regression | plan 80's kit | Plan 80's fixture, unchanged. | Plan 80's pass rule. |
 

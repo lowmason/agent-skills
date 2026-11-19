@@ -1,6 +1,6 @@
 # Reviewer and planning contract Implementation Plan
 
-**Status: COMPLETE (2026-10-30)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+**Status: COMPLETE (2026-10-30)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
 
 > Deviation: every commit trailer reads `Co-Authored-By: Claude Sonnet 5.5`, not Opus 5.5. The Global Constraints define the trailer as the session's, and this session's is Sonnet 5.5. The execution branch is `claude/reviewer-contract-plan-exec-e8ee26`; the launch message named `claude/reviewer-contract-plan-485f32`, whose plan branch was merged in at `1f2776c`.
 
