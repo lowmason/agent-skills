@@ -106,7 +106,7 @@ These harness checks also void a rep (C11 and the wait ceiling below):
 
 **Fixes after the batches.** The batches ran with the kit at commit 1563e98. The final-review fixes landed afterward: f7f8ab6 matches the `/System/Volumes/Data` prefix in any case, and 10c0e31 makes the tally take each arm's reps from the audits and refuse a gap in the rows. They change no recorded verdict. No rep used any Data-volume spelling, every counted rep has a full row set, and no probe rep sits in a score file. The fixed tally prints the same counted reps and verdicts.
 
-The completion-gate fixes came next. 48c6eeb makes the runner find the session transcript without a pipe to `head`, which could kill it with SIGPIPE (exit 141). f5173d4 makes the guard deny a search rooted at a folder that holds the real home. db54f5d makes the audit void that search and list the denials from every transcript. These fixes also change no recorded verdict. A read-only rerun of the new audit rules over reps r281 to r302 gave these results:
+The completion-gate fixes came next. 48c6eeb makes the runner find the session transcript without a pipe to `head`, which could kill it with SIGPIPE (exit 141). f5173d4 makes the guard deny a search rooted at a folder that holds the real home. db54f5d makes the audit void that search and list the denials from every transcript. 8341ec1 closes four gaps in the search parser that a scoped review found: a `#` read as a comment, a search after a reserved word such as `do`, a substitution inside double quotes, and the `2` of `2>/dev/null` read as the root. These fixes also change no recorded verdict. A read-only rerun of the new audit rules over reps r281 to r302, before and after 8341ec1, gave these results:
 
 - Only r289 gains the new flag, for its subagent's `find /`. r289 is already void by owner decision D5. No counted rep gains a flag, and probes r282 and r283 gain none.
 - The denials are the seven that the record's Denials paragraph names: r289 1, r292 1, r293 2, r294 2 and r300 1. Probes r282 and r283 keep their 2 and 3 guard denials. No other rep has a denial.
@@ -121,6 +121,7 @@ The guard (`guard.py`) checks each path token of a tool input. It cannot see eve
 - It can miss an obscured route to the keychain link, for example a `Keychain?` glob after a `cd`.
 - It denies a glob with more than 1000 matches, and a glob walk that takes more than 2 seconds.
 - A single guard call takes about 3 seconds in the worst case.
+- It checks only the first line of a Bash command that holds `<<` anywhere, because a heredoc's body is content. So a search or a real-home path on a later line of such a command passes. The audit applies the same rule.
 - It finds a search by its command words: `find`, `ls -R`, `grep -r`, `rg`, `fd`, `du`, `tree`, `mdfind` and `locate`, also after `cd`, `sudo`, `env`, `xargs` or `sh -c`. It misses a walk that another program makes, such as `python3 -c` with `os.walk('/')`.
 - It cannot see a relative name after a `cd` above the real home. An example is `cd /Users && cat <name>/...`: the second token has no leading `/` or `~` and no `..`.
 - Reps stay apart only because they run one at a time. macOS `mktemp` ignores `TMPDIR` and writes under `/var/folders`. Reps also write literal `/tmp` paths. Both are shared between reps and with the owner's sessions.
