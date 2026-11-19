@@ -429,6 +429,76 @@ def test_registry_row_may_carry_the_extra_column(ctl: Ctl) -> None:
     assert '# r503 — c5a-neg (guard101; template t5, kit' in (ctl.ctl / 'results' / 'r503' / 'extract.md').read_text()
 
 
+def git_in(repo: Path, *args: str) -> str:
+    git = ['git', '-c', 'user.name=t', '-c', 'user.email=t@example.invalid', '-c', 'commit.gpgsign=false', '-C', str(repo)]
+    return subprocess.run([*git, *args], capture_output=True, text=True, check=True).stdout.strip()
+
+
+def t4_like_repo(ctl: Ctl, rep: str, merged: bool) -> dict[str, str]:
+    '''A parked repo like a t4 rep's: main, and a feature branch one commit ahead. When merged, the harness merges it
+    into main before turn 1 and deletes it. The rep then makes one commit. Returns the shas at the start.'''
+    repo = ctl.ctl / 'homes' / rep / 'work' / rep
+    repo.mkdir(parents=True)
+    git_in(repo, 'init', '-q', '-b', 'main')
+    (repo / 'a.txt').write_text('a\n')
+    git_in(repo, 'add', '-A')
+    git_in(repo, 'commit', '-q', '-m', 'init')
+    shas = {'init': git_in(repo, 'rev-parse', 'HEAD')}
+    git_in(repo, 'checkout', '-q', '-b', 'feat/s2a-csv-export')
+    (repo / 'export.py').write_text('x = 1\n')
+    git_in(repo, 'add', '-A')
+    git_in(repo, 'commit', '-q', '-m', 'feat: csv export')
+    shas['feature'] = git_in(repo, 'rev-parse', 'HEAD')
+    if merged:
+        git_in(repo, 'checkout', '-q', 'main')
+        git_in(repo, 'merge', '-q', '--no-ff', 'feat/s2a-csv-export', '-m', "Merge branch 'feat/s2a-csv-export'")
+        git_in(repo, 'branch', '-q', '-d', 'feat/s2a-csv-export')
+        shas['merge'] = git_in(repo, 'rev-parse', 'HEAD')
+    git_in(repo, 'commit', '-q', '--allow-empty', '-m', 'rep made this commit')
+    return shas
+
+
+def section(text: str, title: str) -> str:
+    '''The text under a `### title` heading, up to the next heading.'''
+    body = text.split(f'### {title}\n', 1)[1]
+    return body.split('\n### ', 1)[0].split('\n## ', 1)[0]
+
+
+def test_start_refs_in_meta_keep_the_harness_merge_out_of_new_commits(ctl: Ctl) -> None:
+    out = ctl.rep(arm='p5a')
+    shas = t4_like_repo(ctl, REP, merged=True)
+    heads = ctl.tmp / 'heads.tsv'
+    heads.write_text(f'template\thead\trefs\nt4\t{shas["feature"]}\t'
+                     f'refs/heads/feat/s2a-csv-export={shas["feature"]},refs/heads/main={shas["init"]}\n')
+    ctl.extra_env = {'PHR_TEMPLATE_HEADS': str(heads)}
+    with (out / 'meta.txt').open('a') as f:
+        f.write(f'start_refs=main={shas["merge"]}\n')
+    ctl.audit()
+    text = (out / 'extract.md').read_text()
+    new = section(text, 'New commits')
+    assert 'rep made this commit' in new
+    assert "Merge branch 'feat/s2a-csv-export'" not in new
+    assert 'feat: csv export' not in new
+    assert f'### main: changes since {shas["merge"]}\n' in text
+
+
+def test_missing_start_refs_fall_back_to_the_templates_refs_pin(ctl: Ctl) -> None:
+    out = ctl.rep(arm='p5a')
+    shas = t4_like_repo(ctl, REP, merged=False)
+    heads = ctl.tmp / 'heads.tsv'
+    heads.write_text(f'template\thead\trefs\nt4\t{shas["feature"]}\t'
+                     f'refs/heads/feat/s2a-csv-export={shas["feature"]},refs/heads/main={shas["init"]}\n')
+    ctl.extra_env = {'PHR_TEMPLATE_HEADS': str(heads)}
+    assert 'start_refs' not in (out / 'meta.txt').read_text()
+    ctl.audit()
+    text = (out / 'extract.md').read_text()
+    new = section(text, 'New commits')
+    assert 'rep made this commit' in new
+    assert 'feat: csv export' not in new and 'init' not in new
+    assert f'### main: changes since {shas["init"]}\n' in text
+    assert f'### feat/s2a-csv-export: changes since {shas["feature"]}\n' in text
+
+
 def test_batch_mode_audits_each_rep(ctl: Ctl) -> None:
     ctl.rep()
     ctl.rep('r502', main=[('Bash', {'command': 'ls /tmp/phr101'})])

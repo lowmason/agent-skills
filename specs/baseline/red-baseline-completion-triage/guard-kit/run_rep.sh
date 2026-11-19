@@ -160,12 +160,18 @@ SETTINGS_JSON+='"command": "/usr/bin/python3 '"$KIT_DIR"'/guard.py --real-home '
 # into ~/.claude/skills/synced mid-run, which changes the kit hash and the skills a rep sees.
 SETTINGS_JSON+='"syncClaudeAiSkills": false}'
 
+# Plan 101: the rep's real start state, after the extra and before turn 1. The audit starts "New commits"
+# and each branch diff from these refs, so a commit that this runner made (the merge) is never a rep commit.
+start_refs=$(git -C "$repdir" for-each-ref --format='%(refname:short)=%(objectname)' refs/heads | tr '\n' ',')
+start_refs=${start_refs%,}
+
 mkdir -p "$out"
 sid=$(uuidgen | tr 'A-Z' 'a-z')
 printf '%s\n' "$sid" > "$out/session-id"
 {
   printf 'rep=%s\narm=%s\nphase=%s\ntemplate=%s\nkit_commit=%s\n' "$rep" "$arm" "$phase" "$template" "$kit_commit"
   printf 'model=%s\neffort=%s\nclaude=%s\nkit_sha_before=%s\n' "$MODEL" "$EFFORT" "$("$CLAUDE_BIN" --version)" "$kit_before"
+  printf 'start_refs=%s\n' "$start_refs"
 } > "$out/meta.txt"
 
 n=0

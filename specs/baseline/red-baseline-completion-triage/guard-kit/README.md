@@ -61,7 +61,7 @@ Before the first turn, the runner checks the template's `HEAD`, its refs and its
 
 The runner writes `PHR_CTL/results/<rep>/`:
 
-- `meta.txt` has one `key=value` line for each of `rep`, `arm`, `phase`, `template`, `kit_commit`, `model`, `effort`, `claude`, `kit_sha_before` and `kit_sha_after`. A turn that exits non-zero adds the line `turn <n> exited <status>; later turns not run`. A failed strip check adds a `kit_error=` line.
+- `meta.txt` has one `key=value` line for each of `rep`, `arm`, `phase`, `template`, `kit_commit`, `model`, `effort`, `claude`, `kit_sha_before`, `start_refs` and `kit_sha_after`. `start_refs` lists each local branch of the rep's repo as `<branch>=<sha>`, joined by commas, as it stood before turn 1 and after the extra ran. The audit starts its "New commits" and branch diffs from these refs. A turn that exits non-zero adds the line `turn <n> exited <status>; later turns not run`. A failed strip check adds a `kit_error=` line.
 - `session-id` holds the session's id.
 - `turn<n>.prompt.txt` is the prompt, with `@REP@` and `@REAL@` filled in.
 - `turn<n>.jsonl` is the turn's stream. `turn<n>.json` is its `result` record. `turn<n>.init.json` is its `system`/`init` record.
@@ -112,6 +112,7 @@ Plan 101 runs four arms with this kit: `p5a`, `c5a-ep`, `c5a-neg` and a new arm,
 7. **Prompts.** `prompts/` keeps the two probe prompts. It holds copies of plan 40's `p5a.t1.txt`, `c5a-ep.t1.txt`, `c5a-neg.t1.txt` and `c5a.t2-merge.txt`, and the new `c5a-merged.t1.txt` and `c5a-merged.t2.txt`. Plan 100's arm prompts are gone.
 8. **Tally.** `p5a`, `c5a-ep` and `c5a-merged` pass at 4 of their first 5 valid reps. `c5a-neg` passes only at 0 of 5 failing.
 9. **Rubric.** `rubric-c5a-merged.md` scores `c5a-merged`: F-handoff, F-stamp, F-branch, F-resume and F-next.
+10. **Start refs.** `run_rep.sh` writes `start_refs` into `meta.txt` before turn 1. `extract.py` reads it, so a `c5a-merged` rep starts from `main=<merge sha>` and the runner's own merge never shows as a rep commit. A rep whose `meta.txt` has no `start_refs` falls back to the template's `refs` pin, or to `main=<head>` when the row has no pin.
 
 The tests follow the same changes: arms `c5a-neg`, `p5a` and `c5a-ep`, templates `t4` and `t5`, ids from `r501`, and the `guard101` phase name.
 

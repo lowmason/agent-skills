@@ -498,9 +498,14 @@ def repo_section(repdir: Path, start: str) -> list[str]:
 
 
 def template_start(template: str) -> str:
-    '''The repo section's start refs: main at the template's expected HEAD.'''
+    '''The repo section's start refs for a rep whose meta.txt has no start_refs: the template's refs pin
+    (templates.tsv's third column) with short branch names, or main at the template's expected HEAD when
+    the row has no pin.'''
     rows = [line.split('\t') for line in HEADS.read_text().splitlines()[1:] if line.strip()] if HEADS.is_file() else []
-    head = next((row[1] for row in rows if len(row) > 1 and row[0] == template), '')
+    row = next((r for r in rows if len(r) > 1 and r[0] == template), [])
+    if len(row) > 2 and row[2].strip():
+        return ','.join(pair.removeprefix('refs/heads/') for pair in row[2].strip().split(','))
+    head = row[1] if row else ''
     return f'main={head}' if head else ''
 
 
@@ -559,7 +564,7 @@ def build(rep: str) -> dict:
         parts += [f'- {line}\n' for line in transcript_lines(transcript, prompt_texts)]
     parts.append('\n')
     if repdir.is_dir():
-        parts += repo_section(repdir, template_start(template))
+        parts += repo_section(repdir, meta(out)[0].get('start_refs') or template_start(template))
     for root, label in ((out / 'handoffs', 'Brief directory'), (out / 'project' / 'memory', 'Memory')):
         if root.is_dir():
             for f in sorted(p for p in root.rglob('*') if p.is_file()):

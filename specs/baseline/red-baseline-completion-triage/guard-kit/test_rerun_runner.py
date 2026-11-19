@@ -661,3 +661,34 @@ def test_template_refs_pin_refuses_a_moved_main(kit):
     assert done.returncode == 2, done.stdout + done.stderr
     assert kit.turns() == []
     assert not (kit.ctl / 'results' / rep).exists()
+
+
+# Follow-up tests (Task 9): the start refs that meta.txt records for the audit.
+
+
+def template_start_refs(template: Path) -> str:
+    refs = subprocess.run(['git', '-C', str(template), 'for-each-ref', '--format=%(refname:short)=%(objectname)',
+                           'refs/heads'], capture_output=True, text=True, check=True).stdout.split()
+    return ','.join(refs)
+
+
+def test_meta_records_both_t4_refs_as_the_start_refs(kit):
+    make_t4(kit)
+    rep, = kit.make_reps(arm='p5a')
+    meta = meta_of(run_ok(kit, rep))
+    want = template_start_refs(kit.templates / 't4')
+    assert want.count(',') == 1 and want.startswith(f'{FEATURE}=') and ',main=' in want
+    assert meta['start_refs'] == want
+
+
+def test_meta_records_the_merged_main_as_the_only_start_ref(kit):
+    make_t4(kit)
+    rep, = kit.make_reps(arm='c5a-merged')
+    meta = meta_of(run_ok(kit, rep))
+    repo = kit.ctl / 'homes' / rep / 'work' / rep
+    merge = subprocess.run(['git', '-C', str(repo), 'rev-parse', 'main'], capture_output=True, text=True,
+                           check=True).stdout.strip()
+    subject = subprocess.run(['git', '-C', str(repo), 'log', '-1', '--format=%s', merge], capture_output=True,
+                             text=True, check=True).stdout.strip()
+    assert subject == f"Merge branch '{FEATURE}'"
+    assert meta['start_refs'] == f'main={merge}'
