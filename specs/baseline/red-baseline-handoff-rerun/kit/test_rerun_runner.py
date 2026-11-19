@@ -541,3 +541,20 @@ def test_rep_git_identity_is_the_placeholder(kit):
     assert sorted(lines[2:]) == ['user.email=rep@pondworks.invalid', 'user.name=Pondworks Rep']
     assert (kit.ctl / 'homes' / rep / '.gitconfig').read_text() == \
         '[user]\n\tname = Pondworks Rep\n\temail = rep@pondworks.invalid\n'
+
+
+def test_many_transcript_matches_do_not_kill_the_runner(kit):
+    '''Before the fix, `find | head -n 1` under pipefail died with SIGPIPE (141)
+    when find wrote more than a pipe buffer after head had exited. Enough
+    matching transcripts make that certain.'''
+    kit.actions(
+        'if [ ! -d "$HOME/.claude/projects/z0000" ]; then\n'
+        '  i=0; while [ $i -lt 1500 ]; do\n'
+        '    d="$HOME/.claude/projects/z$(printf %04d $i)-$(printf %060d 0)"; mkdir -p "$d"\n'
+        '    printf \'{"type":"user"}\\n\' > "$d/$sid.jsonl"; i=$((i + 1)); done\n'
+        '  mkdir -p "$HOME/.claude/projects/z0000"\n'
+        'fi\n')
+    rep, = kit.make_reps()
+    out = run_ok(kit, rep)
+    sid = (out / 'session-id').read_text().strip()
+    assert (out / 'project' / f'{sid}.jsonl').is_file()

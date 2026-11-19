@@ -174,7 +174,8 @@ for p in "${turns[@]}"; do
 done
 
 if [ -d "$H/.claude/projects" ]; then
-  transcript=$(find "$H/.claude/projects" -maxdepth 2 -name "$sid.jsonl" | head -n 1)
+  # -print -quit, not `| head -n 1`: under pipefail, head's early exit kills find with SIGPIPE (141).
+  transcript=$(find "$H/.claude/projects" -maxdepth 2 -name "$sid.jsonl" -print -quit)
   if [ -n "$transcript" ]; then cp -R "$(dirname "$transcript")" "$out/project"; fi
 fi
 if [ -d "$H/.cache/agent-skills/handoffs" ]; then
