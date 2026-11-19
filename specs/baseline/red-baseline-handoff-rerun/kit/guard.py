@@ -45,7 +45,8 @@ GLOB_CHARS = re.compile(r'[*?\[]')
 # Searches. A shell word made only of these characters ends a simple command or redirects.
 OPERATOR = re.compile(r'[();<>|&]+')
 ASSIGNMENT = re.compile(r'[A-Za-z_]\w*=', re.DOTALL)
-WRAPPERS = {'sudo', 'command', 'builtin', 'exec', 'time', 'nice', 'nohup', 'env', 'xargs', 'timeout'}
+WRAPPERS = {'sudo', 'command', 'builtin', 'exec', 'time', 'nice', 'nohup', 'env', 'xargs', 'timeout',
+            'do', 'then', 'else', 'elif', 'if', 'while', 'until', '{', '!'}  # reserved words lead a command too
 WRAPPER_ARG = re.compile(r'-.*|[\d.]+[smhd]?')
 SHELLS = {'sh', 'bash', 'zsh', 'dash', 'ksh'}
 INDEXED = {'mdfind', 'locate', 'glocate', 'plocate', 'mlocate'}  # they search the whole disk's index
@@ -160,20 +161,27 @@ def simple_commands(command: str) -> list[list[str]]:
     '''The words of each simple command in a shell line, as the shell splits
     them. Leading assignments and wrappers (sudo, env, xargs ...) drop, and so
     does each redirection's target. The string of `sh -c` splits in turn, and a
-    backtick or `$(` starts a new command.'''
+    backtick or `$(` starts a new command, and its body splits in turn, also
+    inside double quotes. A `#` is no comment here: the newline before a later
+    line becomes `;`, so a comment would hide that line.'''
+    commands: list[list[str]] = []
+    for body in substitutions(command):
+        commands += simple_commands(body)
     text = command.replace('\n', ';').replace('`', ';')
     try:
         lexer = shlex.shlex(text, posix=True, punctuation_chars=True)
         lexer.whitespace_split = True
+        lexer.commenters = ''
         tokens = list(lexer)
     except ValueError:  # an unclosed quote: split on the operators and spaces only
         tokens = re.sub(r'([();<>|&]+)', r' \1 ', text).split()
-    commands: list[list[str]] = []
     words: list[str] = []
     target = False
     for token in tokens + [';']:
         if OPERATOR.fullmatch(token):
             if ('<' in token or '>' in token) and '(' not in token:
+                if words and words[-1].isdigit():
+                    words.pop()  # the 2 of 2>/dev/null is a file descriptor, not an argument
                 target = True  # the next word is a file to read or write
                 continue
             commands += command_words(words)
@@ -183,6 +191,37 @@ def simple_commands(command: str) -> list[list[str]]:
         else:
             words.append(token)
     return commands
+
+
+def substitutions(command: str) -> list[str]:
+    '''The bodies of the command substitutions, `$(...)` and backticks, that
+    the shell runs: outside single quotes, inside double quotes too.'''
+    bodies, quote, i = [], '', 0
+    while i < len(command):
+        char = command[i]
+        if char == '\\' and quote != "'":
+            i += 2
+            continue
+        if quote == "'":
+            quote = '' if char == "'" else quote
+        elif char == "'" and not quote:
+            quote = "'"
+        elif char == '"':
+            quote = '' if quote else '"'
+        elif char == '`':
+            end = command.find('`', i + 1)
+            end = len(command) if end < 0 else end
+            bodies.append(command[i + 1:end])
+            i = end
+        elif command.startswith('$(', i):
+            depth, j = 1, i + 2
+            while j < len(command) and depth:
+                depth += {'(': 1, ')': -1}.get(command[j], 0)
+                j += 1
+            bodies.append(command[i + 2:j - 1 if not depth else j])
+            i = j - 1
+        i += 1
+    return bodies
 
 
 def command_words(words: list[str]) -> list[list[str]]:

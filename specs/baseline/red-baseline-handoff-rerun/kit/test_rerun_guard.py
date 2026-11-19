@@ -385,3 +385,45 @@ def test_tool_search_inside_the_rep_allowed(homes, tool, tool_input):
     rep, real = homes
     tool_input = {k: v.replace('@REP@', str(rep)) for k, v in tool_input.items()}
     assert decide(tool, tool_input, rep, real) is None
+
+
+# --- gate fix round 2: comments, reserved words, quoted substitutions, fd numbers ---
+
+
+@pytest.mark.parametrize('command', [
+    '# look\nfind / -name SKILL.md',
+    'echo a#b; find / -name x',
+    'git log --format=%H#%s; find / -name x',
+    'for n in a b; do find / -name SKILL.md; done',
+    'if true; then grep -r x @PARENT@; fi',
+    'if false; then :; else find / -name x; fi',
+    'while true; do ls -R /; done',
+    '{ find / -name x; }',
+    '! find / -name x',
+    'cat "$(find / -name SKILL.md | head -1)"',
+    'x="$(find / -name y)"',
+    'cat "`find / -name SKILL.md`"',
+    'cd / && rg --files 2>/dev/null | grep SKILL',
+    'cd / && ls -R 2>/dev/null',
+    'cd @PARENT@ && grep -rl writing-plans 2>/dev/null',
+    'cd / && tree 2>/dev/null',
+])
+def test_round2_search_forms_deny(homes, command):
+    rep, real = homes
+    command = command.replace('@PARENT@', str(real.parent))
+    assert_denied(decide('Bash', {'command': command}, rep, real), WALK)
+
+
+@pytest.mark.parametrize('command', [
+    '# find / is slow\nls -la',
+    'git log --format=%H#%s -3',
+    'for f in *.md; do grep -n TODO "$f"; done',
+    'if [ -d src ]; then rg foo src; fi',
+    'grep -rn foo src 2>/dev/null',
+    'du -sh * 2>/dev/null',
+    "echo '$(find / -name x)'",
+    "echo '`find / -name x`'",
+])
+def test_round2_harmless_forms_allowed(homes, command):
+    rep, real = homes
+    assert decide('Bash', {'command': command}, rep, real) is None

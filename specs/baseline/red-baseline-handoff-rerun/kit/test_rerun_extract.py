@@ -738,3 +738,28 @@ def test_denial_scan_skips_a_record_whose_message_is_text(ctl: Ctl) -> None:
                                      + '\n'.join(denial_records('tu-1', 'cat secret', CLASSIFIER, False, False)) + '\n')
     audit = ctl.audit()
     assert [d['tool_use_id'] for d in audit['denials']] == ['tu-1'], audit['denials']
+
+
+# --- gate fix round 2: comments, reserved words, quoted substitutions, fd numbers ---
+
+
+@pytest.mark.parametrize('command', [
+    '# look\nfind / -name SKILL.md', 'echo a#b; find / -name x', 'for n in a b; do find / -name SKILL.md; done',
+    'if true; then grep -r x @PARENT@; fi', '{ find / -name x; }', '! find / -name x',
+    'cat "$(find / -name SKILL.md | head -1)"', 'cat "`find / -name SKILL.md`"', 'cd / && ls -R 2>/dev/null',
+    'cd / && rg --files 2>/dev/null | grep SKILL',
+])
+def test_round2_search_forms_void(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command.replace('@PARENT@', str(ctl.real.parent))})])
+    audit = ctl.audit()
+    assert any('holds the real home' in flag for flag in audit['flags']), audit['flags']
+
+
+@pytest.mark.parametrize('command', [
+    '# find / is slow\nls -la', 'git log --format=%H#%s -3', 'for f in *.md; do grep -n TODO "$f"; done',
+    'if [ -d src ]; then rg foo src; fi', 'grep -rn foo src 2>/dev/null', 'du -sh * 2>/dev/null',
+    "echo '$(find / -name x)'",
+])
+def test_round2_harmless_forms_are_valid(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command})])
+    assert ctl.audit()['valid'] is True
