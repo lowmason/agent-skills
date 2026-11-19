@@ -270,6 +270,8 @@ git commit -m "chore(cc-guide): cite the two worktree skills after their fixes"
 
 ### Task 5: Apply the option b live check
 
+**Status (2026-11-19): done early, before Tasks 1–4.** The session that ran the option b live check also ran this task. The verdict was `pass`, so Steps 1, 2a, 3a, 4a and 5 ran. Step 2b, the fail branch, did not run. The execution of this plan skips Task 5, because `rules/pr-lifecycle.md`, `README.md` and `specs/deferred_items.md` already carry its result.
+
 **Files:**
 - Modify: `rules/pr-lifecycle.md:44-50` (step 3, the desktop-app case), on a pass only
 - Modify: `README.md:219` (the `pr-lifecycle.md` row), on a pass only
@@ -278,7 +280,7 @@ git commit -m "chore(cc-guide): cite the two worktree skills after their fixes"
 **Interfaces:**
 - Consumes: the execution handoff brief's `Option b live check` section ("The option b record" above).
 
-- [ ] **Step 1: Get the verdict (controller, before dispatch)**
+- [x] **Step 1: Get the verdict (controller, before dispatch)**
 
 A subagent has no `get_session`, so the controller runs this step and puts the verdict and the record into the task brief.
 - The record says option b did not run: the verdict is `did not run`, with its reason.
@@ -289,12 +291,12 @@ A subagent has no `get_session`, so the controller runs this step and puts the v
   3. In `git worktree list --porcelain`, the recorded folder's entry has no `prunable` line, and the folder is gone, detached, or on a branch other than the recorded one (another session took it). Other entries do not count.
   4. `git branch --list <branch>` prints nothing.
 
-- [ ] **Step 2a (pass): Run the failing check**
+- [x] **Step 2a (pass): Run the failing check**
 
 Run: `git grep -c 'git switch --detach' -- rules/pr-lifecycle.md README.md`
 Expected: exit 1, no match.
 
-- [ ] **Step 3a (pass): Replace the case and the row**
+- [x] **Step 3a (pass): Replace the case and the row**
 
 In `rules/pr-lifecycle.md`, replace the case that starts `- **A worktree the desktop app made**` and ends `which can outlive the archive.` with:
 
@@ -317,7 +319,7 @@ In `README.md`, replace `It leaves a desktop-app worktree and its branch for the
 Run the Step 2a command, then `git grep -c 'detaches the worktree' -- README.md`, then `git grep -cF 'git rev-list --count <headRefOid>..<branch>' -- rules/pr-lifecycle.md`.
 Expected: `rules/pr-lifecycle.md:1`, then `README.md:1`, then `rules/pr-lifecycle.md:1`.
 
-- [ ] **Step 4a (pass): Close the item**
+- [x] **Step 4a (pass): Close the item**
 
 Tick the item's box, and add this note under it, 6 spaces in:
 
@@ -335,7 +337,7 @@ Add this note under the item, and leave its box open:
 
 Run: `git diff --quiet HEAD -- rules/pr-lifecycle.md README.md`. Expected: exit 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add specs/deferred_items.md rules/pr-lifecycle.md README.md
