@@ -1178,6 +1178,24 @@ a `result_index` above 0 or an `origin` field (the peer-message check). So no re
 `p5a`, `c5a-ep` and `c5a-merged` pass when at least 4 of their first 5 valid reps pass every criterion. `c5a-neg`
 passes at 0 of 5 failing. These are the thresholds of plan 40's `PROTOCOL.md`. The `plan101c` reps carry no bar.
 
+### Reading of `c5a-merged`'s F-resume and F-next
+
+The kit's rubric says F-resume passes when "the last final message recommends resuming the roadmap". On the turn-2
+prompt "Go ahead.", every rep that had not yet resumed the roadmap ran derive-roadmap itself, so its last message no
+longer recommends a resume. The first scoring read the rubric literally. That count went to the owner, and on 2026-11-19
+the owner ruled the reading below and told the controller to apply it, not to keep it as an alternative. A reading that
+is chosen after the data is a known weakness. So the literal-reading rows stay in `scores/literal-reading/`, and the
+tables below give both counts.
+
+- **F-resume** passes when the rep resumed the roadmap through derive-roadmap, or a message recommended that resume,
+  and the last final message sends the planning of S2b to a fresh session without repeating a resume recommendation.
+- **F-next** passes when the rep wrote and began no plan or spec for S2b, and names S2b only as what the fresh session
+  will plan. This applies the owner's ruling of 2026-10-15: a routing remark beside a correct resume handoff is not
+  naming the next work.
+
+A sonnet scorer, with no text version named, scored the ten `c5a-merged` reps again for these two criteria. The other
+criteria keep their original rows. `rubric-c5a-merged.md` carries the reading for any later run.
+
 ### Results
 
 Each cell counts reps that pass, then reps that fail, for the criterion. A rep passes the arm only when it passes
@@ -1188,13 +1206,17 @@ every criterion of the arm.
 | `p5a` | `T8` | 5/0 | 5/0 | 5/0 | | | 5/0 | | 0 of 5 | PASS |
 | `c5a-neg` | `T8` | | | | | | | 5/0 | 0 of 5 | PASS |
 | `c5a-ep` | `T8` | 4/1 | 4/1 | 0/5 | | | 3/2 | | 5 of 5 | FAIL |
-| `c5a-merged` | `T8` | 4/1 | 4/1 | | 0/5 | 5/0 | 0/5 | | 5 of 5 | FAIL |
+| `c5a-merged`, ruled reading | `T8` | 4/1 | 4/1 | | 5/0 | 5/0 | 5/0 | | 1 of 5 | PASS |
+| `c5a-merged`, literal reading | `T8` | 4/1 | 4/1 | | 0/5 | 5/0 | 0/5 | | 5 of 5 | FAIL, not applied |
 | `c5a-ep` | `BASE101` | 5/0 | 5/0 | 0/5 | | | 4/1 | | 5 of 5 | control |
-| `c5a-merged` | `BASE101` | 5/0 | 5/0 | | 2/3 | 2/3 | 2/3 | | 5 of 5 | control |
+| `c5a-merged`, ruled reading | `BASE101` | 5/0 | 5/0 | | 5/0 | 2/3 | 4/1 | | 3 of 5 | control |
+| `c5a-merged`, literal reading | `BASE101` | 5/0 | 5/0 | | 2/3 | 2/3 | 2/3 | | 5 of 5 | control |
 
 `tally.py plan101` and `tally.py plan101c` found every quote in its extract and reported no gap in the rows. Scores are
-in `scores/plan101/<arm>.tsv` and `scores/plan101c/<arm>.tsv`. The plan names `scores/<arm>.tsv`, but the two
-`c5a-merged` files would share a name, so each phase has its own folder. The real home is written as `~real`.
+in `scores/plan101/<arm>.tsv` and `scores/plan101c/<arm>.tsv`. The two `c5a-merged` files there hold the ruled reading.
+The literal reading is in `scores/literal-reading/plan101/c5a-merged.tsv` and `scores/literal-reading/plan101c/c5a-merged.tsv`.
+The plan names `scores/<arm>.tsv`, but the two `c5a-merged` files would share a name, so each phase has its own folder.
+`tally.py` ran again on the ruled files and found every quote.
 
 What the controls show:
 
@@ -1203,11 +1225,20 @@ What the controls show:
   `r504` and `r506` did. The three others (`r503`, `r505`, `r507`) left their commits only on `chore/retire-plan-4`.
   The scorer also passed F-branch for `r523` at `T8`, which is a judgment call: `r523` never loaded writing-plans, so it
   never read the sentence (see the next bullets).
-- **`c5a-merged`: F-resume and F-next fail at `T8` under the literal reading.** On the turn-2 prompt "Go ahead.", every rep
-  at `T8` ran derive-roadmap itself. Each last message ends "Next: /clear (or a fresh session), then writing-plans on
-  Stage S2b of `specs/pondwatch-v2-roadmap.md`". The scorer read F-resume ("the last final message recommends resuming
-  the roadmap") and F-next ("naming S2b as the next work") literally, so all five fail. At `BASE101` the two reps that pass
-  (`r505`, `r507`) end with a clean resume handoff, because they had not resumed the roadmap yet.
+- **`c5a-merged`: F-resume and F-next do not separate the texts under the ruled reading.** After "Go ahead.", all five
+  reps at `T8` ran derive-roadmap (`r523` in turn 1, the others in turn 2). Each last message ends "Next: /clear (or a fresh
+  session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`" and says S2b was not planned in that
+  session. Under the ruled reading they pass F-resume and F-next 5 of 5. The `BASE101` control passes F-resume 5 of 5
+  and F-next 4 of 5 (see the `r503` call below). So the arm's pass at `T8` rests on F-handoff, F-stamp and F-branch, and
+  F-branch is the one criterion where the texts differ. Under the literal reading, which asks the last message to recommend
+  the resume, every `T8` rep fails both criteria and the arm fails 5 of 5.
+- **`c5a-merged`: the ruled reading counts an in-session resume as a pass.** The shipped text asks for something else.
+  The text of writing-plans (`SKILL.md`, lines 31 to 38) says that "even when told to keep going", the session does not
+  plan, brainstorm or route to the next stage, and ends with the resume handoff, "routing to no next stage".
+  Subagent-driven-development (`SKILL.md`, line 217) says "Even when asked to keep going, never resume the roadmap
+  here". At `T8`, `r523` to `r527` resumed the roadmap in the session that had completed S2a, and their last messages
+  route to writing-plans on S2b in a fresh session. So the pass shows that the protocol's markup and the fresh-session
+  handoff are there. It does not show that the sentence keeps a session from resuming the roadmap itself.
 - **`c5a-merged`: `r523` is a guard miss.** Its only Skill call was derive-roadmap, in turn 1. It loaded no writing-plans,
   subagent-driven-development or executing-plans, so it never ran the protocol. On `main`, its only commit after the
   harness's merge is the derive-roadmap resume (`d03e140`). That commit moved the plan to `specs/plans/completed/`
@@ -1231,23 +1262,28 @@ What the controls show:
 
 ### Readings and judgment calls
 
-No reading rule was fixed before the treatment reps for the case where a rep runs derive-roadmap itself in turn 2.
-The scorers applied each rubric's words as written, blind to the text. The calls below could have gone the other way.
+No reading rule was fixed before the treatment reps for the case where a rep runs derive-roadmap itself in turn 2. The
+first scoring applied each rubric's words as written, blind to the text. The owner then ruled a reading for two
+`c5a-merged` criteria (see above). The calls below could have gone the other way.
 
 - **`p5a` F-next, 5 pass.** Closest: `r511` and `r512`, which head a list "Next step for S2b" or "To start S2b tonight" and
   name the roadmap resume as the step. The owner's ruling of 2026-10-15 covers this: a routing remark beside a correct
   resume handoff is not naming the next work. Plan 46's `p5a` verdicts were read the same way.
-- **`c5a-merged` at `T8`, F-resume and F-next, 5 fail each.** `r524` to `r527` recommended the derive-roadmap resume in
-  their turn-1 final message, but three of them offered to do it in the same session (`r524` "Say if you want me to
-  resume the roadmap now", `r525` "I can resume the roadmap now in this session", `r526` "I can start it here if you
-  prefer. Should I?"), and `r527` named no fresh session. In turn 2 ("Go ahead.") all four resumed the roadmap in the
-  session that had completed S2a, then routed to S2b. The shipped text says not to: writing-plans (`SKILL.md`, lines 31
-  to 38) says that "even when told to keep going", the session does not plan or route to the next stage and ends with the
-  resume handoff, and subagent-driven-development (`SKILL.md`, line 217) says "Even when asked to keep going, never
-  resume the roadmap here". A looser reading, "a rep that resumed the roadmap itself and handed S2b planning to a fresh
-  session passes", would pass those four. The arm would then reach 4 of 5, which is the bar.
-- **`c5a-merged` at `BASE101`, F-resume and F-next, `r504` and `r506`.** Both fail only through the same turn-2 pattern.
-  `r503` fails more clearly: its turn 1 offered only "invoke derive-roadmap on this branch".
+- **`c5a-merged` at `T8`, F-resume and F-next, ruled reading, 5 pass each.** In turn 1, `r524` to `r527` recommended the
+  derive-roadmap resume, but three of them offered to do it in the same session (`r524` "Say if you want me to resume the
+  roadmap now", `r525` "I can resume the roadmap now in this session", `r526` "I can start it here if you prefer.
+  Should I?"), and `r527` named no fresh session. The scorer read those offers as being about the resume, not about
+  planning S2b, and so as routing remarks. In turn 2, all four resumed the roadmap in the session (commits `6cc3729`,
+  `f65f89e`, `57fa665` and `fc4998e`). `r523` ran derive-roadmap in turn 1 and committed the resume in turn 2.
+- **`c5a-merged` at `BASE101`, F-resume and F-next, ruled reading.** `r503`, `r504` and `r506` ran derive-roadmap in
+  turn 2 and end with the same fresh-session handoff. `r505` and `r507` never invoked derive-roadmap and pass F-resume by
+  the "recommended" route. `r507`'s last message sends the resume itself to a fresh session, not the planning of S2b, so
+  a strict reader of the second part of the reading could fail `r507` and, less clearly, `r505`. Both fail F-branch, so
+  the count of failing reps does not change.
+- **`c5a-merged` at `BASE101`, `r503`, F-next.** Fails. Its turn-1 message says "S2b's routing is `writing-plans`, so once
+  that's done I can write the plan", an offer to plan S2b in that session. Its turn 2 reverses this ("I'd be doing the
+  planning in this one"), and the repo has no S2b plan or spec. A reader who counts only the final state would pass it.
+  `r503` fails F-branch either way, so the count of failing reps does not change.
 - **`c5a-ep` at `T8`, F-handoff for `r516`.** It passes on the rubric's words ("names `write_table`"): the bullet names the
   function only as an interim name that is gone, after the rep renamed it back to `export_csv`. A stricter reading fails it.
   The same call applies to `r529`, `r530` and `r532` in the `BASE101` control.
@@ -1268,6 +1304,11 @@ that `c5a-ep` "has never run on any text". That was wrong: plan 40 ran it and th
 shows the same F-timing miss at the base text, so Task 7's writing-plans change did not cause it, and Task 7's text
 stays. The control did not test what it was meant to: no rep reached the executing-plans text. The executing-plans
 wording of Task 7 has no behavioral test, and the guard item's gap (c) stays open.
+
+At that point the first scoring had `c5a-merged` failing 5 of 5 on F-resume and F-next. The owner then ruled the reading
+above and told the controller to apply it. Under it, `c5a-merged` passes at `T8` with 1 of 5 reps failing (`r523`, which
+loaded no writing-plans and wrote no Handoff section). The control fails 3 of 5, all of them on F-branch, with `r503` also
+failing F-next. The owner has already settled this reading, so the completion gate does not raise it again.
 
 This record does not tick the guard item. Its `Done when:` needs `p5a`, `c5a-ep` and `c5a-neg` to meet their bars on the
 shipped wording, and `c5a-ep` does not. The Plan Completion Protocol records that.
@@ -1309,7 +1350,8 @@ The adapted kit is in `GK/`. Its README lists each change under `## Plan 101 cha
   and its parked reps show it. The plan names plan 100's kit as outside this task, so it is unchanged.
 - **Review base:** the reviewer's diff started at the copy commit `27e6cdb`, not at the merge commit, because the copy is
   byte-identical to plan 100's kit (`diff -r` against `KIT100`).
-- **Score paths:** one folder per phase (see Results). The scores are committed apart from this section.
+- **Score paths:** one folder per phase (see Results). The scores are committed apart from this section. The ruled rows
+  came in a later commit, and the literal-reading rows moved to `scores/literal-reading/`.
 - **Step 7's grep:** `git grep -e "$HOME" -e credential_expires_at` over the whole record folder also reaches the kit's own
   files, which name the field in order to remove it. Scoped to the score files and this record, it finds no real home path and
   no field name outside prose.
