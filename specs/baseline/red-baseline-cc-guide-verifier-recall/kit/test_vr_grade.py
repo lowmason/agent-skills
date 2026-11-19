@@ -906,6 +906,23 @@ def test_stop_and_unblind_refuse_a_valid_verdict_on_a_graded_void_or_pending_she
     assert capfd.readouterr().err == ('grade.py: refused: these reps are not ready: r001 (a valid verdict, but its '
                                       'sheet has a void or pending check)\n')
 
+
+def test_a_rep_that_fails_prints_its_error_type_not_its_message(kit, capfd):
+    '''A copy of the audit fixture that cannot be read fails the rep with a
+    message that holds the fixture's path, which names an arm.'''
+    plan(('r001', 'audit', 'control'), ('r002', 'readme', 'changed'))
+    rep_files('r001', 'audit', 'control', AUDIT_REPORT)
+    rep_files('r002', 'readme', 'changed', README_REPORT)
+    index = common.k_dir() / 'fixtures' / 'audit-changed' / 'index.json'
+    index.chmod(0)
+    try:
+        assert grade.main(['b']) == 1
+    finally:
+        index.chmod(0o644)
+    out, err = capfd.readouterr()
+    assert err == 'grade.py: r001: not graded (Error)\n' and 'r002: sheets/r002.txt' in out
+    assert no_arm_named(out + err)
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
@@ -1433,11 +1450,13 @@ def test_stop_refuses_until_every_sheet_has_its_verdicts(kit, capfd):
 
 
 def test_stop_refuses_a_files_batch_and_an_unknown_batch(kit, capfd):
-    files_reps([('r001', 'readme', 'control', True, ['readme89 no', 'unsupported 0'])])
+    files_reps([(rid, 'readme', arm, True, ['readme89 no', 'unsupported 0'])
+                for rid, arm in (('r001', 'control'), ('r002', 'changed'), ('r003', 'control'), ('r004', 'changed'))])
     assert grade.main(['stop', 'gateF']) == 1
     assert grade.main(['stop', 'nosuch']) == 1
     out, err = capfd.readouterr()
-    assert out == '' and no_arm_named(err)
+    assert out == '' and err == ('grade.py: refused: gateF: stop reads a gate A batch, of counted and spare audit '
+                                 'reps only\ngrade.py: refused: no batch nosuch; run build.py first\n')
 
 
 @pytest.mark.parametrize('line, why', [
