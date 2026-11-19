@@ -157,7 +157,7 @@ A files sheet also lists these items:
 - **V3:** a marker in an attachment or a system record of the verifier. The first part of a prompt snapshot (the contract) is not screened.
 - **V4:** an `instructions` attachment, or a `session_context` that holds `gitStatus`.
 - **V5:** a prompt snapshot whose first part is not the body of the arm file, that is, the text after the frontmatter, stripped. No snapshot is also void.
-- **V6:** a stream that does not parse, no result record, a result that is an error, a budget stop, a failed or killed subagent, no `status.json`, an interruption, a timeout, a null or non-zero exit, `strip_ok` false, `credential_expires_at` anywhere in `$K/results/<rid>/`, or no report.
+- **V6:** a stream that does not parse, a line of a verifier transcript that does not parse (not strict UTF-8, not JSON, or JSON that is no object; a blank line does not count), no result record, a result that is an error, a budget stop, a failed or killed subagent, no `status.json`, an interruption, a timeout, a null or non-zero exit, `strip_ok` false, `credential_expires_at` anywhere in `$K/results/<rid>/`, or no report.
 - **V7:** a verifier record whose model is not `claude-sonnet-5-5`, or whose effort or version differs from `pilot.json`. For the pilot rep, the check needs one effort and one version and shows both.
 - **V8:** the advisor attachments of the verifier differ from the production comparison in `pilot.json`.
 

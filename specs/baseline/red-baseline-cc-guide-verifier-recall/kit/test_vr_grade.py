@@ -782,6 +782,61 @@ def test_stop_reads_a_spare_chain_and_refuses_a_batch_too_small_for_the_first_wa
     out, err = capfd.readouterr()
     assert (out, err) == ('', 'grade.py: refused: gateA2: too few valid reps for the first-wave rules\n')
 
+
+def transcript_of(rid: str, name: str = 'agent-a0.jsonl') -> Path:
+    return next((common.k_dir() / 'results' / rid / 'project').rglob(name))
+
+
+@pytest.mark.parametrize('shape, want', [
+    ('cut', 'V6: void: 1 transcript line(s) do not parse'),
+    ('utf8', 'V6: void: 1 transcript line(s) do not parse'),
+    ('array', 'V6: void: 1 transcript line(s) do not parse'),
+    ('string', 'V6: void: 1 transcript line(s) do not parse'),
+    ('null', 'V6: void: 1 transcript line(s) do not parse'),
+    ('two', 'V6: void: 2 transcript line(s) do not parse'),
+    ('blank', 'V6: ok'),
+])
+def test_a_verifier_transcript_line_that_does_not_parse_voids_the_rep(kit, shape, want):
+    extra = (vassistant(use('t5', 'Read', file_path='/etc/hosts')), tool_result('t5', 'hosts'))
+    plan(('r001', 'readme', 'changed'))
+    rep_files('r001', 'readme', 'changed', README_REPORT,
+              transcripts=[verifier('r001', 'changed', README_REPORT, extra=extra)])
+    path = transcript_of('r001')
+    lines = path.read_bytes().split(b'\n')
+    i = next(n for n, line in enumerate(lines) if b'/etc/hosts' in line and b'"assistant"' in line)
+    match shape:
+        case 'cut':  # the reproduction: the outside Read was dropped silently, so V2 read ok
+            lines[i] = lines[i][:lines[i].rindex(b'}')]
+        case 'utf8':
+            lines[i] = lines[i].replace(b'/etc/hosts', b'/etc/ho\xffsts')
+        case 'array' | 'string' | 'null':
+            lines.insert(i + 1, {'array': b'[1, 2]', 'string': b'"text"', 'null': b'null'}[shape])
+        case 'two':
+            lines[i] = lines[i][:lines[i].rindex(b'}')]
+            lines.insert(i + 1, b'{not json')
+        case 'blank':
+            lines[i + 1:i + 1] = [b'', b'   ', b'\r']
+    path.write_bytes(b'\n'.join(lines))
+    assert grade.main(['b']) == 0
+    text = sheet('r001')
+    assert check_line(text, 'V6') == want
+    assert 'V6' in check_line(text, 'void') or want == 'V6: ok'
+
+
+def test_only_the_verifier_transcripts_lines_are_counted(kit):
+    other = [vassistant(use('x1', 'Read', file_path='/tmp/x'), model='claude-haiku-4-5')]
+    plan(('r001', 'readme', 'changed'))
+    rep_files('r001', 'readme', 'changed', README_REPORT,
+              transcripts=[verifier('r001', 'changed', README_REPORT), other])
+    write_json(transcript_of('r001', 'agent-a1.meta.json'), {'agentType': 'Explore'})
+    with transcript_of('r001', 'agent-a1.jsonl').open('ab') as f:
+        f.write(b'{not json\n')
+    main = next((common.k_dir() / 'results' / 'r001' / 'project').glob(f'*/{SID}.jsonl'))
+    with main.open('ab') as f:
+        f.write(b'[1]\n')
+    assert grade.main(['b']) == 0
+    assert check_line(sheet('r001'), 'V6') == 'V6: ok'
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 

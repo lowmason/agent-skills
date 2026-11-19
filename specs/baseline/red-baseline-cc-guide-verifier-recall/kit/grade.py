@@ -316,10 +316,12 @@ def check_v5(records: list[dict], body: str) -> Check:
 
 
 def check_v6(events: list[dict] | None, result: dict | None, status: dict | None, folder: Path,
-             report: str | None) -> Check:
-    '''V6: the run failed or no report arrived, or the rep's files still hold
-    credential_expires_at.'''
+             report: str | None, bad_lines: int = 0) -> Check:
+    '''V6: the run failed or no report arrived, a verifier transcript line
+    does not parse, or the rep's files still hold credential_expires_at.'''
     reasons = [] if events is not None else ['the stream does not parse']
+    if bad_lines:
+        reasons.append(f'{bad_lines} transcript line(s) do not parse')
     results = [e for e in events or [] if e.get('type') == 'result']
     if result is not None and result not in results:
         results.append(result)
@@ -431,6 +433,7 @@ class Evidence(NamedTuple):
     agents: list[tuple[str, list[dict]]]  # each subagent transcript, with its agent type
     served: list[dict] | None  # probes.read_transcripts' model and effort for the verifier
     inside: tuple[str, ...]  # the rep's own session tool-results folder, which V2 counts as inside
+    bad_lines: int  # the verifier transcripts' lines that do not parse (V6)
 
 
 def results_dir(rid: str) -> Path:
@@ -444,12 +447,27 @@ def read_json(path: Path) -> dict | None:
     return obj if isinstance(obj, dict) else None
 
 
-def load_jsonl(path: Path) -> list[dict]:
-    '''A transcript's records. It splits at newlines only: Claude Code leaves
-    U+2028, U+2029 and U+0085 raw inside JSON strings, and splitlines() would
-    cut a record there and drop it.'''
-    lines = path.read_text(encoding='utf-8', errors='replace').split('\n')
-    return [obj for obj in map(postprocess.parsed, lines) if isinstance(obj, dict)]
+def load_jsonl(path: Path) -> tuple[list[dict], int]:
+    '''A transcript's records, and the count of its lines that do not parse:
+    not strict UTF-8, not JSON, or JSON that is no object. A blank line is
+    not counted. It splits at newlines only: Claude Code leaves U+2028,
+    U+2029 and U+0085 raw inside JSON strings, and splitlines() would cut a
+    record there.'''
+    records, bad = [], 0
+    for raw in path.read_bytes().split(b'\n'):
+        try:
+            text = raw.decode('utf-8')
+        except UnicodeDecodeError:
+            bad += 1
+            continue
+        if not text.strip():
+            continue
+        obj = postprocess.parsed(text)
+        if isinstance(obj, dict):
+            records.append(obj)
+        else:
+            bad += 1
+    return records, bad
 
 
 def evidence(rid: str) -> Evidence:
@@ -460,19 +478,22 @@ def evidence(rid: str) -> Evidence:
     if not (isinstance(session, str) and run.SESSION_RE.fullmatch(session)):
         session = None
     project = folder / 'project'
-    main, agents, served = [], [], None
+    main, agents, served, bad = [], [], None, 0
     if session:
         for path in sorted(project.glob(f'*/{session}.jsonl')):
-            main += load_jsonl(path)
+            main += load_jsonl(path)[0]
         for meta in sorted(project.glob(f'*/{session}/subagents/agent-*.meta.json')):
             lines = meta.with_name(meta.name.removesuffix('.meta.json') + '.jsonl')
-            agents.append((str((read_json(meta) or {}).get('agentType')), load_jsonl(lines) if lines.is_file() else []))
+            kind = str((read_json(meta) or {}).get('agentType'))
+            recs, n = load_jsonl(lines) if lines.is_file() else ([], 0)
+            agents.append((kind, recs))
+            bad += n if kind == VERIFIER else 0
         try:
             served = probes.read_transcripts(project, session).get(VERIFIER) or None
-        except (ValueError, OSError):
+        except Exception:  # a line that is no JSON object, which V6 counts; V7 then reads the records
             served = None
     return Evidence(events, read_json(folder / 'result.json'), read_json(folder / 'status.json'), main, agents,
-                    served, own_tool_results(project, session))
+                    served, own_tool_results(project, session), bad)
 
 
 def read_bodies() -> dict[str, str]:
@@ -656,7 +677,7 @@ def rep_sheet(rep: dict, bodies: dict[str, str]) -> tuple[list[str], dict]:
     v2, refused = check_v2(records, str(common.R / rid / 'work'), ev.inside)
     checks = {'V1': check_v1(ev.events or [], verifiers, prompt, extra), 'V2': v2, 'V3': check_v3(records),
               'V4': check_v4(records), 'V5': check_v5(records, body),
-              'V6': check_v6(ev.events, ev.result, ev.status, results_dir(rid), report),
+              'V6': check_v6(ev.events, ev.result, ev.status, results_dir(rid), report, ev.bad_lines),
               'V7': check_v7(records, pilot, rep['role'] == 'pilot', ev.served), 'V8': check_v8(records, pilot)}
     void = [name for name, c in checks.items() if c.status == 'void']
     pending = [name for name, c in checks.items() if c.status == 'pending']
