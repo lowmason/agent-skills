@@ -4829,7 +4829,8 @@
   },
   "rules/pr-lifecycle.md": {
    "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
-   "rules.rules-files": "sha256:0f321e51a40e17e961001641171b8ab2effeb3bfd966e9a7cf14a749b64d5d11"
+   "rules.rules-files": "sha256:0f321e51a40e17e961001641171b8ab2effeb3bfd966e9a7cf14a749b64d5d11",
+   "subagents.worktrees": "sha256:66911364a12a0f53af7c34187325d99ee5b55f784d973266b08ec955f4090982"
   },
   "rules/write-with-asd-ste100.md": {
    "rules.hierarchy": "sha256:9b8f05a8891c270995d2f77dc8edceacbbe6909c8e9600349831f10683daf513",
