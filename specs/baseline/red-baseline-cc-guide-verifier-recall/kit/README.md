@@ -190,7 +190,7 @@ A void rep needs only `void`. `hits` takes the labels P1 to P14, except P8 and P
 
 `stop` and `unblind` refuse until each rep they read has a sheet and its verdicts. A void rep needs no sheet. The refusal names rep ids only.
 
-`stop <batch>` reads a batch of counted and spare audit reps, and counts valid reps only. These rules apply in this order:
+`stop <batch>` reads a batch of counted and spare audit reps, and counts valid reps only. It refuses (exit 1) while either arm has fewer than 2 valid reps (the owner's ruling). That is exactly when a void rep has no valid spare. The refusal names those void reps in id order, and nothing else, so it shows nothing the sheets do not. A spare counts for the void rep it `replaces`, and for any rep that rep replaced. Add a spare with `build.py spare <rid>`. After 2 spares for a packet and arm, an arm that is still short means the result is UNSETTLED, for the owner (plan:171), and `stop` keeps refusing. With 2 valid reps in each arm, these rules apply in this order:
 
 1. `stop: UNSETTLED` when the control meets P11 in 2 valid reps. This rule wins when both stop rules hold.
 2. `stop: FAIL` when the changed arm misses P11, or misses P8, in 2 valid reps.

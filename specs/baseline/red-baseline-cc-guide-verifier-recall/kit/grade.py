@@ -796,6 +796,22 @@ def valid_by_arm(reps: list[dict], verdicts: dict[str, dict]) -> dict[str, list[
             for arm in common.ARMS}
 
 
+def unspared(reps: list[dict], verdicts: dict[str, dict]) -> list[str]:
+    '''The void reps that no valid spare replaces, directly or through a
+    spare that is itself void, in id order.'''
+    spares: dict[str, list[str]] = {}
+    for r in reps:
+        if r.get('replaces'):
+            spares.setdefault(r['replaces'], []).append(r['rid'])
+
+    def spared(rid: str, seen: frozenset) -> bool:
+        return any(verdicts[s]['validity'] == 'valid' or (s not in seen and spared(s, seen | {s}))
+                   for s in spares.get(rid, []))
+
+    return sorted(r['rid'] for r in reps if verdicts[r['rid']]['validity'] == 'void'
+                  and not spared(r['rid'], frozenset({r['rid']})))
+
+
 def stop(batch: str) -> str:
     '''Gate A's first-wave stop rules, over the batch's valid reps.'''
     plan, rids = load_plan(), batch_rids(batch)
@@ -805,6 +821,13 @@ def stop(batch: str) -> str:
     verdicts = read_verdicts()
     require_complete(reps, verdicts)
     control, changed = valid_by_arm(reps, verdicts).values()
+    if min(len(control), len(changed)) < STOP_COUNT:
+        # The first-wave rules need STOP_COUNT valid reps on each side. This
+        # holds exactly when a void rep has no valid spare, so naming those
+        # reps, in id order, shows nothing the sheets do not.
+        named = unspared(reps, verdicts)
+        raise Refusal(f"{batch}: these void reps have no valid spare yet: {', '.join(named)}" if named
+                      else f'{batch}: too few valid reps for the first-wave rules')
     if sum(v['P11'] for v in control) >= STOP_COUNT:
         return 'stop: UNSETTLED'
     if sum(not v['P11'] for v in changed) >= STOP_COUNT or sum(not v['P8'] for v in changed) >= STOP_COUNT:

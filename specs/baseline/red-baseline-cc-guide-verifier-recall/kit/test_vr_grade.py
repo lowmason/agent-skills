@@ -171,13 +171,15 @@ def kit(sandbox):
 
 
 def plan(*reps: tuple, batch: str = 'b') -> None:
-    '''Add reps to plan.json and the batch file: (rid, packet, arm) or (rid, packet, arm, role).'''
+    '''Add reps to plan.json and the batch file: (rid, packet, arm), (rid, packet, arm, role) or
+    (rid, packet, arm, role, replaces).'''
     k = common.k_dir()
     path = k / 'plan.json'
     data = json.loads(path.read_text()) if path.exists() else {'reps': []}
-    for rid, packet, arm, *role in reps:
+    for rid, packet, arm, *more in reps:
         data['reps'].append({'rid': rid, 'batch': batch, 'packet': packet, 'arm': arm,
-                             'role': role[0] if role else 'counted'})
+                             'role': more[0] if more else 'counted'}
+                            | ({'replaces': more[1]} if len(more) > 1 else {}))
     write_json(path, data)
     (k / 'batches').mkdir(parents=True, exist_ok=True)
     with (k / 'batches' / f'{batch}.txt').open('a') as f:
@@ -468,13 +470,14 @@ def stub_sheet(rid: str, packet: str, **measures) -> None:
 
 
 def verdict_reps(reps: list[tuple], batch: str = 'gateA1', extra: str = '') -> None:
-    '''Audit reps (rid, arm, valid, P11, P8[, hits[, unsupported[, role]]]) with sheets and RESULTS.md lines.'''
+    '''Audit reps (rid, arm, valid, P11, P8[, hits[, unsupported[, role[, replaces]]]]) with sheets and
+    RESULTS.md lines.'''
     lines = ['# Plan 102 hand verdicts', '']
     for rid, arm, valid, p11, p8, *rest in reps:
         hits = rest[0] if len(rest) > 0 else 'none'
         unsupported = rest[1] if len(rest) > 1 else 0
         role = rest[2] if len(rest) > 2 else 'counted'
-        plan((rid, 'audit', arm, role), batch=batch)
+        plan((rid, 'audit', arm, role, *rest[3:4]), batch=batch)
         stub_sheet(rid, 'audit')
         if valid:
             lines += [f'{rid} valid', f'{rid} P11 {p11}', f'{rid} P8 {p8}', f'{rid} hits {hits}',
@@ -725,6 +728,41 @@ def test_a_sheet_exempts_the_reps_own_session_tool_results_only(kit, where, ok):
     text = one_rep(packet='readme', report=README_REPORT,
                    transcripts=[verifier('r001', 'changed', README_REPORT, extra=extra)])
     assert check_line(text, 'V2') == ('V2: ok' if ok else f'V2: void: Read {path}')
+
+
+@pytest.mark.parametrize('reps, named', [
+    ([('r001', 'control', True, 'yes', 'yes'), ('r002', 'control', False, '', ''),
+      ('r003', 'changed', True, 'yes', 'yes'), ('r004', 'changed', True, 'yes', 'yes')], 'r002'),
+    ([('r001', 'control', True, 'no', 'yes'), ('r002', 'control', True, 'no', 'yes'),
+      ('r003', 'changed', True, 'no', 'yes'), ('r004', 'changed', False, '', '')], 'r004'),
+    ([('r001', 'changed', True, 'no', 'no'), ('r002', 'control', False, '', ''),
+      ('r003', 'control', True, 'yes', 'yes'), ('r004', 'changed', False, '', '')], 'r002, r004'),
+    ([('r001', 'control', False, '', ''), ('r002', 'control', False, '', ''),
+      ('r003', 'changed', True, 'yes', 'yes'), ('r004', 'changed', True, 'yes', 'yes'),
+      ('r005', 'control', True, 'yes', 'yes', 'none', 0, 'spare', 'r001')], 'r002'),
+    ([('r001', 'control', True, 'yes', 'yes'), ('r002', 'control', False, '', ''),
+      ('r003', 'changed', False, '', ''), ('r004', 'changed', True, 'yes', 'yes'),
+      ('r005', 'control', False, '', '', 'none', 0, 'spare', 'r002')], 'r002, r003, r005'),
+])
+def test_stop_refuses_while_a_side_is_short_and_names_void_reps_without_a_valid_spare(kit, capfd, reps, named):
+    verdict_reps(reps)
+    assert grade.main(['stop', 'gateA1']) == 1
+    out, err = capfd.readouterr()
+    assert (out, err) == ('', f'grade.py: refused: gateA1: these void reps have no valid spare yet: {named}\n')
+
+
+def test_stop_reads_a_spare_chain_and_refuses_a_batch_too_small_for_the_first_wave(kit, capfd):
+    verdict_reps([('r001', 'control', True, 'yes', 'yes'), ('r002', 'control', False, '', ''),
+                  ('r003', 'changed', True, 'yes', 'yes'), ('r004', 'changed', True, 'yes', 'yes'),
+                  ('r005', 'control', False, '', '', 'none', 0, 'spare', 'r002'),
+                  ('r006', 'control', True, 'no', 'yes', 'none', 0, 'spare', 'r005')])
+    assert grade.main(['stop', 'gateA1']) == 0
+    assert capfd.readouterr().out == 'continue\n'
+    verdict_reps([('r007', 'control', True, 'yes', 'yes'), ('r008', 'changed', True, 'yes', 'yes'),
+                  ('r009', 'changed', True, 'yes', 'yes')], batch='gateA2')
+    assert grade.main(['stop', 'gateA2']) == 1
+    out, err = capfd.readouterr()
+    assert (out, err) == ('', 'grade.py: refused: gateA2: too few valid reps for the first-wave rules\n')
 
 # --- the plan's values ----------------------------------------------------------------------------------------
 
@@ -1219,12 +1257,8 @@ def test_stop_truth_table(kit, capsys, c11, x11, x8):
 
 @pytest.mark.parametrize('reps, want', [
     ([('r001', 'control', True, 'yes', 'yes'), ('r002', 'control', False, '', ''),
-      ('r003', 'changed', True, 'yes', 'yes'), ('r004', 'changed', True, 'yes', 'yes')], 'continue'),
-    ([('r001', 'control', True, 'yes', 'yes'), ('r002', 'control', False, '', ''),
       ('r003', 'changed', True, 'yes', 'yes'), ('r004', 'changed', True, 'yes', 'yes'),
       ('r005', 'control', True, 'yes', 'no', 'none', 0, 'spare')], 'stop: UNSETTLED'),
-    ([('r001', 'control', True, 'no', 'yes'), ('r002', 'control', True, 'no', 'yes'),
-      ('r003', 'changed', True, 'no', 'yes'), ('r004', 'changed', False, '', '')], 'continue'),
     ([('r001', 'control', True, 'no', 'yes'), ('r002', 'control', True, 'no', 'yes'),
       ('r003', 'changed', True, 'no', 'no'), ('r004', 'changed', False, '', ''),
       ('r005', 'changed', True, 'no', 'yes', 'none', 0, 'spare')], 'stop: FAIL'),
@@ -1237,17 +1271,21 @@ def test_stop_counts_valid_reps_only(kit, capsys, reps, want):
 
 
 def test_stop_refuses_until_every_sheet_has_its_verdicts(kit, capfd):
-    verdict_reps([('r001', 'control', True, 'yes', 'yes'), ('r002', 'changed', True, 'yes', 'yes')])
+    verdict_reps([('r001', 'control', True, 'yes', 'yes'), ('r002', 'changed', True, 'yes', 'yes'),
+                  ('r003', 'control', True, 'no', 'yes')])
     (common.k_dir() / 'sheets' / 'r002.txt').unlink()
     assert grade.main(['stop', 'gateA1']) == 1
     out, err = capfd.readouterr()
     assert out == '' and 'r002' in err and 'r001' not in err
     stub_sheet('r002', 'audit')
-    plan(('r003', 'audit', 'changed'), batch='gateA1')  # held at the ceiling: no sheet and no verdict yet
+    plan(('r004', 'audit', 'changed'), batch='gateA1')  # held at the ceiling: no sheet and no verdict yet
     assert grade.main(['stop', 'gateA1']) == 1
-    assert 'r003' in capfd.readouterr().err
+    assert 'r004' in capfd.readouterr().err
     with (common.k_dir() / 'RESULTS.md').open('a') as f:
-        f.write('r003 void\n')  # a rep that never ran is void, and needs no sheet
+        f.write('r004 void\n')  # a rep that never ran is void, and needs no sheet
+    assert grade.main(['stop', 'gateA1']) == 1  # but it needs a valid spare (owner's ruling)
+    assert capfd.readouterr().err == 'grade.py: refused: gateA1: these void reps have no valid spare yet: r004\n'
+    verdict_reps([('r005', 'changed', True, 'yes', 'yes', 'none', 0, 'spare', 'r004')])
     assert grade.main(['stop', 'gateA1']) == 0
     assert capfd.readouterr().out == 'continue\n'
 
@@ -1278,12 +1316,15 @@ def test_a_malformed_or_repeated_verdict_is_refused(kit, capfd, line, why):
 
 
 def test_verdict_lines_may_carry_a_list_marker_and_prose_is_skipped(kit, capsys):
-    plan(('r001', 'audit', 'control'), ('r002', 'audit', 'changed'), batch='gateA1')
-    stub_sheet('r001', 'audit')
-    stub_sheet('r002', 'audit')
+    plan(('r001', 'audit', 'control'), ('r002', 'audit', 'changed'), ('r003', 'audit', 'control'),
+         ('r004', 'audit', 'changed'), ('r005', 'audit', 'changed', 'spare', 'r002'), batch='gateA1')
+    for rid in ('r001', 'r002', 'r003', 'r004', 'r005'):
+        stub_sheet(rid, 'audit')
+    plain = [f'{rid} {v}' for rid in ('r003', 'r004', 'r005')
+             for v in ('valid', 'P11 no' if rid == 'r003' else 'P11 yes', 'P8 yes', 'hits none', 'unsupported 0')]
     write(common.k_dir() / 'RESULTS.md', '\n'.join([
         '# Hand verdicts', 'Some prose about rep reading.', '- r001 valid', '- r001 P11 yes', '* r001 P8 no',
-        'r001 hits P1 P14', 'r001 unsupported 2', 'r002 void', '']))
+        'r001 hits P1 P14', 'r001 unsupported 2', 'r002 void', *plain, '']))
     assert run_stop(capsys) == 'continue\n'
 
 
