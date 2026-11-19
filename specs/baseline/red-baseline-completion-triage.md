@@ -1181,8 +1181,8 @@ passes at 0 of 5 failing. These are the thresholds of plan 40's `PROTOCOL.md`. T
 ### Reading of `c5a-merged`'s F-resume and F-next
 
 The kit's rubric says F-resume passes when "the last final message recommends resuming the roadmap". On the turn-2
-prompt "Go ahead.", every rep that had not yet resumed the roadmap ran derive-roadmap itself, so its last message no
-longer recommends a resume. The first scoring read the rubric literally. That count went to the owner, and on 2026-11-19
+prompt "Go ahead.", every rep that resumed the roadmap itself (all five at `T8`, three of five at `BASE101`) ended on a
+message that no longer recommends a resume. The first scoring read the rubric literally. That count went to the owner, and on 2026-11-19
 the owner ruled the reading below and told the controller to apply it, not to keep it as an alternative. A reading that
 is chosen after the data is a known weakness. So the literal-reading rows stay in `scores/literal-reading/`, and the
 tables below give both counts.
@@ -1229,8 +1229,9 @@ What the controls show:
   reps at `T8` ran derive-roadmap (`r523` in turn 1, the others in turn 2). Each last message ends "Next: /clear (or a fresh
   session), then writing-plans on Stage S2b of `specs/pondwatch-v2-roadmap.md`" and says S2b was not planned in that
   session. Under the ruled reading they pass F-resume and F-next 5 of 5. The `BASE101` control passes F-resume 5 of 5
-  and F-next 4 of 5 (see the `r503` call below). So the arm's pass at `T8` rests on F-handoff, F-stamp and F-branch, and
-  F-branch is the one criterion where the texts differ. Under the literal reading, which asks the last message to recommend
+  and F-next 4 of 5 (see the `r503` call below). So the arm's pass at `T8` rests on F-handoff, F-stamp and F-branch. F-branch is the
+  only criterion where the texts differ by more than one rep (5 of 5 against 2 of 5). F-handoff, F-stamp and F-next differ
+  by one rep each, which is inside the noise of 5 reps. Under the literal reading, which asks the last message to recommend
   the resume, every `T8` rep fails both criteria and the arm fails 5 of 5.
 - **`c5a-merged`: the ruled reading counts an in-session resume as a pass.** The shipped text asks for something else.
   The text of writing-plans (`SKILL.md`, lines 31 to 38) says that "even when told to keep going", the session does not
