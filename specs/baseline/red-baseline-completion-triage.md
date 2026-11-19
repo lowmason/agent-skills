@@ -1135,3 +1135,177 @@ passes 5 of 5 at `T7` and again at `8b44d34`, so its bar, `treatment 5/5`, is me
 
 No case is below its treatment bar after this round. Two RED cases, `history-revert` and `gate-declined`, miss the
 control half of their bar. Under the stop rule, they go to the owner in the completion gate's batch.
+
+## Roadmap-stage guard
+
+This section records plan 101's Task 9: a re-run of plan 40's roadmap-stage arms on the text that Task 7 shipped. The
+guard is the sentence in writing-plans, subagent-driven-development and executing-plans: "A stage merged before this
+session began, with the protocol not run, runs the protocol now on the branch it merged into." Plan 46's gate covered
+only `p5a` and `c5a-neg` on the older sentence.
+
+### Setup
+
+- **Kit.** `GK` is `specs/baseline/red-baseline-completion-triage/guard-kit/`. It is a copy of plan 100's kit at
+  `KIT100`, adapted for the c5a arms. `KIT100` is `008d0623a7d89c7747efb518f041a714314b7c91`, merged into this branch as
+  `010bd78`. The kit text is the one at `27e4d3b`, after the copy commit `27e6cdb` and five commits of changes.
+- **Texts.** `BASE101` is `72d08bf0e6b6cb0e4f40ec4e0e36a5dcbb0a6a29`, the text before this plan. `T8` is
+  `8b44d342b782f8ef5df3c5db63496acf549022de`, the text with Task 7's guard sentence and Task 8's wording round. Each
+  rep's home holds the 12 kit skills, 2 agents and 1 command from one of these commits.
+- **Claude Code.** Version 2.1.323, the version of plan 100's record. So the probes of Step 5 did not run.
+- **Model.** `claude-sonnet-5-5` at `medium` effort. This is plan 40's `exec` class (`MODEL_EXEC=sonnet`,
+  `EFFORT_EXEC=medium`), the class that plan 40 and plan 46 gave to these arms. Plan 100's kit sets `claude-opus-5-5` at
+  `xhigh` for its own three arms. At that setting its reps cost $3 to $6 each, which would pass the plan's $20 stop.
+- **Context.** Each rep ran in its own home with no user-level context (plan 100's C4): no `CLAUDE.md`, rules, output
+  style, plugins, memory or hooks other than the kit's path guard. Plan 46's reps ran in plan 40's harness with the
+  owner's real home. So the counts here do not compare directly with plan 46's.
+- **Reps.** Ids `r501` to `r532`, all through `GK/run_rep.sh` under `env -i`, one at a time.
+
+| Reps | Arm | Text | Phase | Purpose |
+|---|---|---|---|---|
+| `r501`, `r502` | `c5a-merged` | `BASE101` | `pilot` | Step 5. `r501` is void: the kit hash changed (see Deviations). `r502` is valid. |
+| `r503` to `r507` | `c5a-merged` | `BASE101` | `plan101c` | Control, recorded only. |
+| `r508` to `r512` | `p5a` | `T8` | `plan101` | Counted. |
+| `r513` to `r517` | `c5a-ep` | `T8` | `plan101` | Counted. |
+| `r518` to `r522` | `c5a-neg` | `T8` | `plan101` | Counted. |
+| `r523` to `r527` | `c5a-merged` | `T8` | `plan101` | Counted. |
+| `r528` to `r532` | `c5a-ep` | `BASE101` | `plan101c` | Control, added at the owner's word (Step 8). |
+
+All 30 reps of `r503` to `r532` were valid by `extract.py`. No rep had a denial or a changed kit hash. No turn file has
+a `result_index` above 0 or an `origin` field (the peer-message check). So no replacement batch ran.
+
+### Bars
+
+`p5a`, `c5a-ep` and `c5a-merged` pass when at least 4 of their first 5 valid reps pass every criterion. `c5a-neg`
+passes at 0 of 5 failing. These are the thresholds of plan 40's `PROTOCOL.md`. The `plan101c` reps carry no bar.
+
+### Results
+
+Each cell counts reps that pass, then reps that fail, for the criterion. A rep passes the arm only when it passes
+every criterion of the arm.
+
+| Arm | Text | F-handoff | F-stamp | F-timing | F-resume | F-branch | F-next | F-fire | Reps failing | Verdict |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `p5a` | `T8` | 5/0 | 5/0 | 5/0 | | | 5/0 | | 0 of 5 | PASS |
+| `c5a-neg` | `T8` | | | | | | | 5/0 | 0 of 5 | PASS |
+| `c5a-ep` | `T8` | 4/1 | 4/1 | 0/5 | | | 3/2 | | 5 of 5 | FAIL |
+| `c5a-merged` | `T8` | 4/1 | 4/1 | | 0/5 | 5/0 | 0/5 | | 5 of 5 | FAIL |
+| `c5a-ep` | `BASE101` | 5/0 | 5/0 | 0/5 | | | 4/1 | | 5 of 5 | control |
+| `c5a-merged` | `BASE101` | 5/0 | 5/0 | | 2/3 | 2/3 | 2/3 | | 5 of 5 | control |
+
+`tally.py plan101` and `tally.py plan101c` found every quote in its extract and reported no gap in the rows. Scores are
+in `scores/plan101/<arm>.tsv` and `scores/plan101c/<arm>.tsv`. The plan names `scores/<arm>.tsv`, but the two
+`c5a-merged` files would share a name, so each phase has its own folder. The real home is written as `~real`.
+
+What the controls show:
+
+- **`c5a-merged`: the new sentence moves the protocol onto `main`.** F-branch passes 5 of 5 at `T8` and 2 of 5 at
+  `BASE101`. At the base text, the three failing reps (`r503`, `r505`, `r507`) left their commits only on
+  `chore/retire-plan-4`.
+- **`c5a-merged`: F-resume and F-next fail at `T8` under the literal reading.** On the turn-2 prompt "Go ahead.", every rep
+  at `T8` ran derive-roadmap itself. Each last message ends "Next: /clear (or a fresh session), then writing-plans on
+  Stage S2b of `specs/pondwatch-v2-roadmap.md`". The scorer read F-resume ("the last final message recommends resuming
+  the roadmap") and F-next ("naming S2b as the next work") literally, so all five fail. At `BASE101` the two reps that pass
+  (`r505`, `r507`) end with a clean resume handoff, because they had not resumed the roadmap yet.
+- **`c5a-merged`: F-handoff and F-stamp fail for `r523`.** It ticked the S2a box and stamped it, but wrote no Handoff
+  section. The stamp cites the ledger's deviation line instead.
+- **`c5a-ep`: F-timing fails 5 of 5 at both texts.** At `BASE101` and at `T8`, no rep's message after the merge
+  recommends resuming the roadmap. So this miss is not an effect of Task 7. The executing-plans text has never made a
+  rep recommend the resume, and `c5a-ep` had not run on any text before this task.
+- **`c5a-ep`: small differences between the texts are inside the noise of 5 reps.** F-handoff and F-stamp are 4 of 5 at
+  `T8` and 5 of 5 at `BASE101`. The one failing rep is `r514`, which stopped to ask which function name to ship and
+  changed nothing. Nothing in Task 7's sentence touches that choice. F-next is 3 of 5 against 4 of 5.
+
+### Readings and judgment calls
+
+No reading rule was fixed before the treatment reps for the case where a rep runs derive-roadmap itself in turn 2.
+The scorers applied each rubric's words as written, blind to the text. The calls below could have gone the other way.
+
+- **`p5a` F-next, 5 pass.** Closest: `r511` and `r512`, which head a list "Next step for S2b" or "To start S2b tonight" and
+  name the roadmap resume as the step. The owner's ruling of 2026-10-15 covers this: a routing remark beside a correct
+  resume handoff is not naming the next work. Plan 46's `p5a` verdicts were read the same way.
+- **`c5a-merged` at `T8`, F-resume and F-next, 5 fail each.** `r524` to `r527` gave a correct derive-roadmap resume
+  recommendation in their turn-1 final message, then did the resume in turn 2. A looser reading, "a rep that resumed the
+  roadmap itself and handed S2b planning to a fresh session passes", would pass those four. The arm would then reach 4 of 5,
+  which is the bar. It was not applied, because a reading chosen after the data needs the owner's ruling.
+- **`c5a-merged` at `BASE101`, F-resume and F-next, `r504` and `r506`.** Both fail only through the same turn-2 pattern.
+  `r503` fails more clearly: its turn 1 offered only "invoke derive-roadmap on this branch".
+- **`c5a-ep` at `T8`, F-handoff for `r516`.** It passes on the rubric's words ("names `write_table`"): the bullet names the
+  function only as an interim name that is gone, after the rep renamed it back to `export_csv`. A stricter reading fails it.
+  The same call applies to `r529`, `r530` and `r532` in the `BASE101` control.
+- **`c5a-ep` F-timing.** `r515` at `T8` says "the roadmap resume should amend the S2b entry", and `r531` at `BASE101`
+  says a `Consumes` line "needs amending when you resume the roadmap with derive-roadmap". Each presumes the resume and
+  never recommends it, so both fail. `r531` is the closest to a pass.
+- **`c5a-ep` F-next.** `r513` and `r517` at `T8` say "Before planning S2b, ..." as a precondition, which the scorer read as
+  naming S2b as the next work. A reader who sees only a precondition on a consumer would pass both.
+- **`c5a-neg`, `r522`.** It went past the others: it found that `logs.append` is never wired into `cli.py`, added an item to
+  `specs/deferred_items.md`, and offered to do the wiring. That is a follow-up on the plan's own feature, not roadmap
+  text, so F-fire passes. A reader who takes F-fire as "any forward-looking handoff" could fail it.
+
+### Decision at Step 8
+
+Two arms missed their bars at `T8`, so Step 8 stopped and put the quotes to the owner as one question. On 2026-11-19 the
+owner chose to diagnose `c5a-ep` at the base text, then ship. The control above is that diagnosis. It shows the
+`c5a-ep` F-timing miss at the base text too, so Task 7's text stays. Every verdict above stands as scored. The
+looser-reading count for `c5a-merged` is recorded and not applied.
+
+This record does not tick the guard item. Its `Done when:` needs `p5a`, `c5a-ep` and `c5a-neg` to meet their bars on the
+shipped wording, and `c5a-ep` does not. The Plan Completion Protocol records that.
+
+### Changes from plan 100's kit
+
+The adapted kit is in `GK/`. Its README lists each change under `## Plan 101 changes`. In short:
+
+1. Defaults: `PHR_ROOT` is `/private/tmp/phr101` and `PHR_CTL` is `~/.cache/agent-skills/handoffs/guard101`. Rep ids start at
+   `r501`.
+2. Template pins: `templates.tsv` pins `t4` and `t5` by `HEAD` and by an exact `refs` list. The runner accepts a template
+   whose refs equal that list.
+3. `arms.tsv` has an `extra` column, and the registry has a seventh column for it. The `merged` extra merges
+   `feat/s2a-csv-export` into `main` with a no-fast-forward merge, deletes the branch and pushes `main`, before turn 1. Any
+   other extra exits 3 before a home is built.
+4. Model `claude-sonnet-5-5`, effort `medium`, wait ceiling `3600000` (60 minutes, set by the owner's brief, not plan 100's
+   `2400000`).
+5. The runner sets the git identity of every call it makes through `GIT_AUTHOR_*` and `GIT_COMMITTER_*`.
+6. `meta.txt` records `start_refs`, the rep's branches after the extra and before turn 1. The audit starts from them.
+7. `PYTHONDONTWRITEBYTECODE=1` in the rep's environment.
+8. `tally.py` thresholds from `PROTOCOL.md`. `prompts/` holds plan 40's four c5a prompts, byte for byte, and the two new
+   `c5a-merged` prompts. `rubric-c5a-merged.md` holds the new arm's criteria.
+
+### Deviations from the plan's text
+
+- **Kit differs from Step 3's text** (brief Default 1): the kit had three arms columns and no `extra`, pinned only a `HEAD`,
+  and refused any template with a ref besides `main`. Items 2 and 3 above fit the kit as merged.
+- **Model and effort** (item 4): the plan is silent and says "no others". Plan 40's class and plan 46's pattern (D15) give
+  `sonnet` at `medium`.
+- **Wait ceiling** (brief Default 2): `3600000`, as the plan's Step 3 says, in the kit and in the copied test.
+- **Test count:** the suite grew from 288 to 301 tests, not by the plan's 3. The plan's 3 and 10 more: two refs-pin tests
+  that the controller asked for, one extract test for the seventh column, four for `start_refs`, one for the identity and
+  two for the bytecode.
+- **Three review rounds changed the copy after Step 3.** (a) `extract.py` took its start refs from the template's head
+  column, which is the feature tip for `t4` and `t5` and would list the harness's own merge as the rep's commit.
+  (b) The runner's git calls stamped the real name and email into the rep repo's reflogs. `git remote set-head` ignores
+  `user.*` config, so the identity now comes from the environment. (c) Pilot `r501` ran a writing-plans script, and Python
+  wrote `__pycache__` into the rep's kit folder, which changed the kit hash and voided the rep. Plan 100's kit shares (b),
+  and its parked reps show it. The plan names plan 100's kit as outside this task, so it is unchanged.
+- **Review base:** the reviewer's diff started at the copy commit `27e6cdb`, not at the merge commit, because the copy is
+  byte-identical to plan 100's kit (`diff -r` against `KIT100`).
+- **Score paths:** one folder per phase (see Results). The scores are committed apart from this section.
+- **Step 7's grep:** `git grep -e "$HOME" -e credential_expires_at` over the whole record folder also reaches the kit's own
+  files, which name the field in order to remove it. Scoped to the score files and this record, it finds no real home path and
+  no field name outside prose.
+- **Registration:** the 20 `plan101` reps went into one batch file in two runs (`p5a` and `c5a-ep`, then `c5a-neg` and
+  `c5a-merged`), so spend could be summed between them. The `c5a-ep` control was added at the owner's word.
+
+### Spend
+
+| Reps | Cost |
+|---|---|
+| Pilots `r501`, `r502` | $0.8102 |
+| `c5a-merged` control `r503` to `r507` | $2.0764 |
+| `p5a` `r508` to `r512` | $2.5875 |
+| `c5a-ep` `r513` to `r517` | $2.2086 |
+| `c5a-neg` `r518` to `r522` | $2.5636 |
+| `c5a-merged` `r523` to `r527` | $2.0229 |
+| `c5a-ep` control `r528` to `r532` | $2.1154 |
+| Total | $14.3846 |
+
+The plan's stop is $20. The cost comes from each rep's `turn<N>.json`. Scorers are not in this sum.
