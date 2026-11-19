@@ -8,7 +8,7 @@ This kit reruns three arms of plan 40's prepare-handoff baseline: `v1`, `b2` and
 - `run_batch.sh BATCH` runs the reps of one batch, one at a time.
 - `make_reps.py ARM PHASE COUNT BATCH` registers new reps.
 - `postprocess.py` splits each turn's stream and removes `credential_expires_at`.
-- `guard.py` is the PreToolUse hook that denies any tool input that reaches the real home.
+- `guard.py` is the PreToolUse hook that denies any tool input that reaches the real home. It also denies a recursive or whole-disk search rooted at a folder that holds the real home.
 - `arms.tsv` gives each arm's template and prompt files, in turn order.
 - `templates.tsv` gives the expected `HEAD` of each fixture template.
 - `prompts/` holds byte-identical copies of plan 40's prompt files.
@@ -81,7 +81,9 @@ The audit reads the frozen VOID rules by table B of plan 100's C10:
 - A path into the real home voids, and so does a glob whose leading parts can match it, such as `/Users/*/.ssh`. So does a path into, or through, the rep's `Library` folder, because `Library/Keychains` links into the real home. An input that names a `Library` path part and, later, a `Keychains` part also voids, even with no `~` before it. Examples are `Library//Keychains` and `cd Library && ls Keychains`. The bare word `keychains`, in a grep say, names no path and does not void.
 - The reps directory voids, and so does anything in it outside the rep's `HOME`.
 - `/tmp`, `/private/tmp` and `/System/Volumes/Data/private/tmp` are one folder. The real home's `/System/Volumes/Data` form is the real home. The audit compares paths without case.
+- A recursive or whole-disk search rooted at a folder that holds the real home voids, by the guard's rule (see below). An example is `find / -name SKILL.md`.
 - The fragments, a failed turn and the denial rule are unchanged.
+- `audit.json`'s `denials` list every denied tool call of the rep. The audit reads every transcript: the session's, each subagent's and each turn's stream. A denial is a tool result that starts with `Permission for this action was denied` (the auto-mode classifier) or holds `blocked by the workspace path guard:`. The audit pairs it with its tool call and keeps one entry for each `tool_use_id`. Each entry names its transcript and says whether a subagent made the call. The scorer voids a rep whose failure traces to a denial.
 
 The audit resolves `..` in the text of each path. It never reads the paths, because the rep's `HOME` is parked by then. The real home is the audit's own `HOME`.
 
@@ -104,6 +106,11 @@ These harness checks also void a rep (C11 and the wait ceiling below):
 
 **Fixes after the batches.** The batches ran with the kit at commit 1563e98. The final-review fixes landed afterward: f7f8ab6 matches the `/System/Volumes/Data` prefix in any case, and 10c0e31 makes the tally take each arm's reps from the audits and refuse a gap in the rows. They change no recorded verdict. No rep used any Data-volume spelling, every counted rep has a full row set, and no probe rep sits in a score file. The fixed tally prints the same counted reps and verdicts.
 
+The completion-gate fixes came next. 48c6eeb makes the runner find the session transcript without a pipe to `head`, which could kill it with SIGPIPE (exit 141). f5173d4 makes the guard deny a search rooted at a folder that holds the real home. db54f5d makes the audit void that search and list the denials from every transcript. These fixes also change no recorded verdict. A read-only rerun of the new audit rules over reps r281 to r302 gave these results:
+
+- Only r289 gains the new flag, for its subagent's `find /`. r289 is already void by owner decision D5. No counted rep gains a flag, and probes r282 and r283 gain none.
+- The denials are the seven that the record's Denials paragraph names: r289 1, r292 1, r293 2, r294 2 and r300 1. Probes r282 and r283 keep their 2 and 3 guard denials. No other rep has a denial.
+
 **Template heads as data.** The expected template `HEAD`s live in `templates.tsv`, not in the runner's code. The tests set `PHR_TEMPLATE_HEADS` to their own file.
 
 ## The guard's known limits
@@ -114,8 +121,8 @@ The guard (`guard.py`) checks each path token of a tool input. It cannot see eve
 - It can miss an obscured route to the keychain link, for example a `Keychain?` glob after a `cd`.
 - It denies a glob with more than 1000 matches, and a glob walk that takes more than 2 seconds.
 - A single guard call takes about 3 seconds in the worst case.
-- It allows a token that names an ancestor of the real home, such as `/` or `/Users`. So `find / -name x`, `find /Users ...` and `grep -r x /Users` pass, and their output can list paths in the real home.
+- It finds a search by its command words: `find`, `ls -R`, `grep -r`, `rg`, `fd`, `du`, `tree`, `mdfind` and `locate`, also after `cd`, `sudo`, `env`, `xargs` or `sh -c`. It misses a walk that another program makes, such as `python3 -c` with `os.walk('/')`.
 - It cannot see a relative name after a `cd` above the real home. An example is `cd /Users && cat <name>/...`: the second token has no leading `/` or `~` and no `..`.
 - Reps stay apart only because they run one at a time. macOS `mktemp` ignores `TMPDIR` and writes under `/var/folders`. Reps also write literal `/tmp` paths. Both are shared between reps and with the owner's sessions.
 
-The audit (`extract.py`, Task 3) is the backstop, but it shares the guard's two path limits above. It reads the tool inputs of every tool call of the rep, never the tool results. It voids a rep whose input names a path in the real home. It does not scan results, because fixture `t9` names the real home path in five files, so a result scan would void reps that only read the fixture. It also does not see a permission denial inside a subagent: `audit.json`'s `denials` come from each turn's top-level `turn<n>.json`.
+The audit (`extract.py`, Task 3) is the backstop, but it shares the guard's limits on paths built at run time, on relative names after a `cd` and on walks by other programs. It reads the tool inputs of every tool call of the rep, never the tool results. It voids a rep whose input names a path in the real home. It does not scan results, because fixture `t9` names the real home path in five files, so a result scan would void reps that only read the fixture.
