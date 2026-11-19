@@ -115,7 +115,7 @@ It builds in `$K/fixtures.part/` and renames that folder only when every copy is
 
 ### grade.py
 
-1. `grade.py <batch>` writes a sheet for each rep of the batch that has results. It prints one line for each rep: its sheet, its void checks and its pending checks. `grade.py pilot` and `grade.py probe` grade the two reserved batches.
+1. `grade.py <batch>` writes a sheet for each rep of the batch that has results. It prints one line for each rep: its sheet, its void checks and its pending checks. `grade.py pilot` and `grade.py probe` grade the two reserved batches. It reads both arm files before it grades any rep. If one is missing or unreadable, it refuses the whole batch (exit 1) with `an arm file is missing or unreadable`, and it writes no sheet.
 2. `grade.py stop <batch>` applies the first-wave stop rules of gate A. It prints exactly one line: `continue`, `stop: UNSETTLED` or `stop: FAIL`.
 3. `grade.py unblind A` or `grade.py unblind F` prints the tables of that gate, with the arm of each rep from `$K/plan.json`.
 

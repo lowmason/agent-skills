@@ -576,18 +576,36 @@ def test_the_readme_window_takes_overlapping_ranges_and_reach_takes_kept_rows_on
     assert section(precision, 'kept contradicts rows:') == ['none']
 
 
-def test_an_unreadable_arm_file_prints_its_type_not_its_path(kit, capfd):
-    plan(('r001', 'readme', 'control'))
+ARM_REFUSAL = 'grade.py: refused: an arm file is missing or unreadable\n'
+
+
+def assert_nothing_graded() -> None:
+    k = common.k_dir()
+    assert not [p for p in (k / 'sheets', k / 'reports', k / 'settle') if p.exists() and any(p.iterdir())]
+
+
+@pytest.mark.parametrize('arm', ['control', 'changed'])
+def test_an_unreadable_arm_file_refuses_the_whole_batch(kit, capfd, arm):
+    plan(('r001', 'readme', 'control'), ('r002', 'readme', 'changed'))
     rep_files('r001', 'readme', 'control', README_REPORT)
-    arm = common.k_dir() / 'arms' / 'control.md'
-    arm.chmod(0)
+    rep_files('r002', 'readme', 'changed', README_REPORT)
+    path = common.k_dir() / 'arms' / f'{arm}.md'
+    path.chmod(0)
     try:
         assert grade.main(['b']) == 1
     finally:
-        arm.chmod(0o644)
-    out, err = capfd.readouterr()
-    assert err == 'grade.py: r001: not graded (PermissionError)\n'
-    assert no_arm_named(out + err)
+        path.chmod(0o644)
+    assert capfd.readouterr() == ('', ARM_REFUSAL)
+    assert_nothing_graded()
+
+
+def test_an_arm_file_that_is_not_utf8_refuses_the_whole_batch(kit, capfd):
+    plan(('r001', 'readme', 'control'))
+    rep_files('r001', 'readme', 'control', README_REPORT)
+    (common.k_dir() / 'arms' / 'changed.md').write_bytes(b'---\nname: x\n---\n\xff\xfe body\n')
+    assert grade.main(['b']) == 1
+    assert capfd.readouterr() == ('', ARM_REFUSAL)
+    assert_nothing_graded()
 
 
 def test_rows_whose_claim_or_statement_holds_a_pipe_read_as_settle_reads_them(kit):
@@ -1202,15 +1220,15 @@ def test_a_rep_without_results_gets_no_sheet_and_an_unknown_batch_is_refused(kit
     assert grade.main([]) == 2 and grade.main(['unblind', 'B']) == 2
 
 
-def test_a_missing_arm_file_fails_the_rep_and_names_only_its_id(kit, capfd):
+@pytest.mark.parametrize('arm', ['control', 'changed'])
+def test_a_missing_arm_file_refuses_the_whole_batch(kit, capfd, arm):
     plan(('r001', 'readme', 'control'), ('r002', 'readme', 'changed'))
     rep_files('r001', 'readme', 'control', README_REPORT)
     rep_files('r002', 'readme', 'changed', README_REPORT)
-    (common.k_dir() / 'arms' / 'control.md').unlink()
+    (common.k_dir() / 'arms' / f'{arm}.md').unlink()
     assert grade.main(['b']) == 1
-    out, err = capfd.readouterr()
-    assert 'r001' in err and no_arm_named(out + err)
-    assert (common.k_dir() / 'sheets' / 'r002.txt').exists()
+    assert capfd.readouterr() == ('', ARM_REFUSAL)  # no rep id, no arm, and no rep line on stdout
+    assert_nothing_graded()
 
 
 def test_the_probe_gets_a_short_sheet(kit):
@@ -1507,8 +1525,9 @@ def test_no_output_names_an_arm_in_any_path(kit, capfd):
     write(common.k_dir() / 'RESULTS.md', 'r001 P11 perhaps\n')
     assert grade.main(['stop', 'gateA1']) == 1
     (common.k_dir() / 'fixtures' / 'audit-changed').rename(common.k_dir() / 'moved-away')
+    assert grade.main(['gateA1']) == 1  # the audit reps fail by id; the files reps are graded
     (common.k_dir() / 'arms' / 'changed.md').unlink()
-    assert grade.main(['gateA1']) == 1
+    assert grade.main(['gateA1']) == 1  # a missing arm file refuses the whole batch
     assert grade.main(['nosuch']) == 2
     assert grade.main(['stop']) == 2
     out, err = capfd.readouterr()

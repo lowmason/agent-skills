@@ -475,11 +475,15 @@ def evidence(rid: str) -> Evidence:
                     served, own_tool_results(project, session))
 
 
-def read_arm(rep: dict) -> str:
-    path = common.k_dir() / 'arms' / f"{rep['arm']}.md"
-    if not path.is_file():
-        raise GradeError(f"{rep['rid']}: its arm file is missing")
-    return path.read_text(encoding='utf-8')
+def read_bodies() -> dict[str, str]:
+    '''Every arm file's body, read before any rep is graded, so a missing or
+    unreadable arm file refuses the whole batch and grades no rep. The
+    refusal names no arm and no rep.'''
+    try:
+        return {arm: arm_body((common.k_dir() / 'arms' / f'{arm}.md').read_text(encoding='utf-8'))
+                for arm in common.ARMS}
+    except (OSError, UnicodeDecodeError):
+        raise Refusal('an arm file is missing or unreadable') from None
 
 
 def money(cost) -> str:
@@ -637,14 +641,14 @@ def files_lines(found_rows: list[Row], p: settle.Packet, packet: str) -> list[st
 # --- sheets ---------------------------------------------------------------------------------------------------
 
 
-def rep_sheet(rep: dict) -> tuple[list[str], dict]:
+def rep_sheet(rep: dict, bodies: dict[str, str]) -> tuple[list[str], dict]:
     '''A counted, spare or pilot rep's sheet and its measures.'''
     rid, packet = rep['rid'], rep['packet']
     ev = evidence(rid)
     records = [r for kind, recs in ev.agents if kind == VERIFIER for r in recs]
     verifiers = sum(1 for kind, _ in ev.agents if kind == VERIFIER)
     pilot = read_json(common.k_dir() / 'pilot.json')
-    body = arm_body(read_arm(rep))
+    body = bodies[rep['arm']]
     mode = common.PACKETS[packet]['mode']
     prompt = common.DISPATCH.format(mode=mode, packet=common.R / rid / 'work' / 'packet')
     extra = tuple(map(str, (pilot or {}).get('agent_params') or ()))
@@ -709,8 +713,8 @@ def probe_sheet(rep: dict) -> tuple[list[str], dict]:
     return out, {'rid': rid, 'packet': rep['packet'], 'role': rep['role'], 'void': [], 'pending': []}
 
 
-def write_sheet(rep: dict) -> dict:
-    lines, measures = probe_sheet(rep) if rep['packet'] == common.PROBE else rep_sheet(rep)
+def write_sheet(rep: dict, bodies: dict[str, str]) -> dict:
+    lines, measures = probe_sheet(rep) if rep['packet'] == common.PROBE else rep_sheet(rep, bodies)
     sheets = common.k_dir() / 'sheets'
     sheets.mkdir(parents=True, exist_ok=True)
     (sheets / f"{rep['rid']}.txt").write_text('\n'.join(lines) + '\n', encoding='utf-8')
@@ -968,6 +972,7 @@ def grade_batch(batch: str) -> int:
     except Refusal as refusal:
         print(f'grade.py: {refusal}', file=sys.stderr)
         return 2
+    bodies = read_bodies()  # a Refusal here grades no rep (main prints it, exit 1)
     code = 0
     for rid in rids:
         rep = plan.get(rid)
@@ -978,7 +983,7 @@ def grade_batch(batch: str) -> int:
             print(f'{rid}: no results yet')
         else:
             try:
-                measures = write_sheet(rep)
+                measures = write_sheet(rep, bodies)
             except GradeError as error:
                 print(f'grade.py: {error}', file=sys.stderr)
                 code = 1
