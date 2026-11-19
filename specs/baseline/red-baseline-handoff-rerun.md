@@ -9,7 +9,7 @@ This record holds plan 100's re-run of three arms of plan 40's prepare-handoff b
 - **Command.** Each rep turn runs the plan's Rep command, launched by the controller through `env -i` (C13), from the rep's repo, with stdin from the turn's prompt file. The plan's two Deviation notes on that command apply:
   - the `env -i` list also sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2400000`;
   - the `--settings` JSON also sets `"syncClaudeAiSkills": false` (owner decision D4).
-- **Builder's calls.** C1 to C13 of the plan apply as written. The audit uses table B of C10 (owner decision D2).
+- **Builder's calls.** C1 to C13 of the plan apply with the plan's Deviation notes. The audit uses table B of C10 (owner decision D2).
 - **Differences from Phase 3.**
   - User-level context (C4): the rep `HOME` has no `CLAUDE.md`, rules, output style, plugins, memory or hooks other than the kit's path guard. Phase 3 reps ran with the owner's real `HOME` and its user-level context.
   - Model and CLI (C9): `claude-opus-5-5` at `xhigh` effort, on Claude Code 2.1.323.
@@ -17,6 +17,8 @@ This record holds plan 100's re-run of three arms of plan 40's prepare-handoff b
   - Skill text: the kit holds `KIT_COMMIT`'s text for all 12 skills, so every rep and every subagent it dispatches reads the shipped text.
   - `~/.cache/agent-skills/cc-guide` is empty in each rep `HOME`. Fixture `t9`'s drift spec cites that folder.
   - Claude.ai account skills (D4): the account's synced skills are off. Each rep sees the 12 kit skills and Claude Code's built-in skills only.
+  - Git identity: each rep's `.gitconfig` sets a placeholder identity, `Pondworks Rep <rep@pondworks.invalid>`. Phase 3 reps committed with the owner's global identity.
+- **Scratch files.** The reps ran one at a time. macOS `mktemp` ignores `TMPDIR`, so a rep's `mktemp` folder is outside its `HOME`. r292, r293, r294 and r296 created `mktemp` folders. r292 and r296 also wrote literal `/tmp` paths. No other rep read those paths.
 
 ## Probes
 
@@ -61,7 +63,7 @@ Evidence, one line per failure (rep: criterion: paraphrase):
 - r287: F-brief: with nothing held, the rep loaded prepare-handoff, wrote a brief under its handoffs folder and told the user to paste it into a new session.
 - r289: F-brief: the same, and its final message gives launch commands for three runtimes.
 
-**Voids.** None of 15. The audit listed one guard denial, in `b2` rep r292: a Bash call that installed a pre-commit hook into the rep's repo from a scratch folder. The rep passed both criteria without the hook, so no failure traces to the denial.
+**Voids.** None of 15. The audit listed one permission denial, by the auto-mode classifier (Undermining Oversight), not by the path guard. It was in `b2` rep r292: a Bash call that installed a pre-commit hook into the rep's repo from a scratch folder. The rep passed both criteria without the hook, so no failure traces to the denial.
 
 **Cost.** `v1` $23.47, `b2` $32.82, `c4a-neg` $10.60, probes and pilots $8.60. The total is $75.49.
 

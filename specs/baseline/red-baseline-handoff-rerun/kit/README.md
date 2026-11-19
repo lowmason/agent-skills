@@ -45,7 +45,7 @@ The rep's `HOME` is `PHR_ROOT/<rep>`. It holds:
 - `.claude/skills/` with the 12 kit skills, `.claude/agents/` with `code-reviewer.md` and `task-reviewer.md`, and `.claude/commands/deferred.md`. All come from `git archive KIT_COMMIT`.
 - `work/<rep>/`, a copy of the arm's template. Its origin is the bare repo `git/<rep>.git`, with `main` pushed and `origin/HEAD` set.
 - `.local/bin/` with the `gh` stub and links to `/opt/homebrew/bin` for `git`, `python3`, `python3.13` and `uv`. The stub logs each call to `~/.cache/gh-calls.log` in the rep's `HOME`.
-- `tmp/`, the rep's `TMPDIR`.
+- `tmp/`, the rep's `TMPDIR`. It does not keep all scratch files apart, because macOS `mktemp` ignores `TMPDIR` (see the guard's known limits).
 - `Library/Keychains`, a link to the real `~/Library/Keychains`. Claude Code needs it to keep the login.
 
 The rep's `HOME` has no `CLAUDE.md`, no `settings.json`, no rules and no `.zshenv`.
@@ -92,7 +92,7 @@ These harness checks also void a rep (C11 and the wait ceiling below):
 - `turn1.init.json` is missing. Or an init record's `skills` lack one of the 12 kit skills, or its `agents` lack `code-reviewer` or `task-reviewer`. The check compares sets. Extra names, such as Claude Code's built-in skills and agents, do not void, and a name listed twice counts once. A later turn's init record is checked when it exists. Task 4's pilot shows the real init record. If it lists extra names that look user-level, the controller decides then.
 - A `turn<n>.stderr` holds `Background tasks still running`.
 
-`tally.py` reads `PHR_CTL/scores/PHASE/<arm>.tsv`. `v1` and `b2` pass when at least 4 of their first 5 valid reps pass every criterion. `c4a-neg` passes when at most 1 of its first 5 valid reps fails. A rep whose `audit.json` phase is `pilot` never counts.
+`tally.py` reads `PHR_CTL/scores/PHASE/<arm>.tsv`. `v1` and `b2` pass when at least 4 of their first 5 valid reps pass every criterion. `c4a-neg` passes when at most 1 of its first 5 valid reps fails. The tally takes an arm's reps from the audits, not the score file: the first 5 by id whose `audit.json` is valid, names that arm and has `PHASE` as its phase, less any rep the score file marks VOID. So a probe or pilot rep never counts in another phase. The tally exits 1 and names the gap when a counted rep has no rows, or has no row for a criterion that the arm's other rows use.
 
 ## Deviations
 
@@ -101,6 +101,8 @@ These harness checks also void a rep (C11 and the wait ceiling below):
 **The wait ceiling.** The `env -i` list of each rep turn also sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2400000` (40 minutes). In print mode, Claude Code stops background subagents 10 minutes after the main turn ends. That voided plan 45's gate reps. Without the variable, a stopped fact-checker or cold reader could score as a FAIL, not a VOID. The runner admits only two `CLAUDE*` names: `CLAUDE_CODE_DISABLE_ADVISOR_TOOL` and `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`. It refuses any other. Task 3's audit voids a rep whose `turn<n>.stderr` holds `Background tasks still running`. That void is a harness check, not a change to the frozen VOID rules.
 
 **Claude.ai skill sync off.** The `--settings` JSON of each rep turn also sets `"syncClaudeAiSkills": false` (plan 100, owner decision D4). Without it, Claude Code downloads the skills enabled on the claude.ai account into the rep's `~/.claude/skills/synced/` during a turn. That changed the kit hash of probe rep r282, so the audit voided it. The download also lands at an unpredictable time, so a rep could see other skills in a later turn. With the setting, each rep sees only the 12 kit skills and Claude Code's built-in skills.
+
+**Fixes after the batches.** The batches ran with the kit at commit 1563e98. The final-review fixes landed afterward: f7f8ab6 matches the `/System/Volumes/Data` prefix in any case, and 10c0e31 makes the tally take each arm's reps from the audits and refuse a gap in the rows. They change no recorded verdict. No rep used any Data-volume spelling, every counted rep has a full row set, and no probe rep sits in a score file. The fixed tally prints the same counted reps and verdicts.
 
 **Template heads as data.** The expected template `HEAD`s live in `templates.tsv`, not in the runner's code. The tests set `PHR_TEMPLATE_HEADS` to their own file.
 
@@ -112,5 +114,8 @@ The guard (`guard.py`) checks each path token of a tool input. It cannot see eve
 - It can miss an obscured route to the keychain link, for example a `Keychain?` glob after a `cd`.
 - It denies a glob with more than 1000 matches, and a glob walk that takes more than 2 seconds.
 - A single guard call takes about 3 seconds in the worst case.
+- It allows a token that names an ancestor of the real home, such as `/` or `/Users`. So `find / -name x`, `find /Users ...` and `grep -r x /Users` pass, and their output can list paths in the real home.
+- It cannot see a relative name after a `cd` above the real home. An example is `cd /Users && cat <name>/...`: the second token has no leading `/` or `~` and no `..`.
+- Reps stay apart only because they run one at a time. macOS `mktemp` ignores `TMPDIR` and writes under `/var/folders`. Reps also write literal `/tmp` paths. Both are shared between reps and with the owner's sessions.
 
-The audit (`extract.py`, Task 3) is the backstop. It reads every tool call of the rep and voids a rep that reached the real home.
+The audit (`extract.py`, Task 3) is the backstop, but it shares the guard's two path limits above. It reads the tool inputs of every tool call of the rep, never the tool results. It voids a rep whose input names a path in the real home. It does not scan results, because fixture `t9` names the real home path in five files, so a result scan would void reps that only read the fixture. It also does not see a permission denial inside a subagent: `audit.json`'s `denials` come from each turn's top-level `turn<n>.json`.
