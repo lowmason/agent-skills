@@ -7166,7 +7166,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       real home.
 
 ## pr-lifecycle-worktree-and-push (no plan; owner rulings at G1, branch claude/pr-lifecycle-worktree-push-b9e9e5) — 2026-11-19
-- [ ] **Free a desktop-app worktree's branch before the archive (F2 option b; owner ruling 2026-11-19: adopt it
+- [x] **Free a desktop-app worktree's branch before the archive (F2 option b; owner ruling 2026-11-19: adopt it
       after one live check, and report only until then).** Step 3 of `rules/pr-lifecycle.md` leaves a worktree
       that the desktop app made, and its branch, for the archive. An archive leaves the branch behind: the pooled
       folder ends on a detached HEAD (seen after four archives, 2026-10-31 and 2026-11-02), so merged branches
@@ -7177,6 +7177,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       Done when: one app session runs option b, its archive succeeds, `git worktree list` and `get_session` show
       no fault, and step 3 and the `README.md` rules row describe option b.
       → planned 2026-11-19: specs/plans/103-worktree-skills-cc-guide-fixes.md
+      → done 2026-11-19 (plan 103 Task 5): the planning session's live check passed, and step 3 and the `README.md` rules row describe option b. finishing-a-development-branch's local-merge and discard flows (Options 1 and 4 under MADE_BY `launcher`) still keep the branch, since they are not the post-PR cleanup.
 
 ## 102-cc-guide-verifier-recall-and-covered-files — 2026-11-19
 - [ ] The working-tree `Source.read` in `build/cc_guide/state.py` follows a tracked symlink to its target, while a ref source reads the link text (`git cat-file blob`). A `/cc-guide files` packet therefore copies the target's text for a tracked symlink under a skill folder, and `citing_files` does the same for a citing file, although its docstring says a tracked symlink is git's link text. Codex found it in plan 102's final review (2026-11-19, `[P1]`, `state.py:622-626`). The behavior predates plan 102. The repo tracks one symlink (`.claude/rules/clean-code-python.md`), outside every skill folder, so no packet meets it today. A symlink that points outside the repo would put that file's text into a verifier packet. Size: design. Done when: the owner has ruled whether a tracked symlink is read as its link text or as its target, and a `Source` test pins that choice for both the working tree and a ref.
