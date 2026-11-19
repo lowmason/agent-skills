@@ -1,1 +1,0 @@
-We just finished designing specs/site-alert-email.md. It's approved and committed, and everything we decided is in it.

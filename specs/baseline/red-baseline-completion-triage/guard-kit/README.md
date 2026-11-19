@@ -2,6 +2,8 @@
 
 This kit reruns three arms of plan 40's prepare-handoff baseline: `v1`, `b2` and `c4a-neg`. Plan 100 (`specs/plans/100-prepare-handoff-rerun.md`, retired later to `specs/plans/completed/`) builds it. Each rep runs `claude -p` in its own `HOME`. That `HOME` holds the shipped skills from one commit, `KIT_COMMIT`.
 
+Plan 101 copies this kit to `specs/baseline/red-baseline-completion-triage/guard-kit/` and adapts it to four arms of plan 40's baseline. See "Plan 101 changes" below. This text keeps plan 100's history, and the plan 101 section says where it differs.
+
 ## Files
 
 - `run_rep.sh REP` runs one registered rep.
@@ -9,28 +11,29 @@ This kit reruns three arms of plan 40's prepare-handoff baseline: `v1`, `b2` and
 - `make_reps.py ARM PHASE COUNT BATCH` registers new reps.
 - `postprocess.py` splits each turn's stream and removes `credential_expires_at`.
 - `guard.py` is the PreToolUse hook that denies any tool input that reaches the real home. It also denies a recursive or whole-disk search rooted at a folder that holds the real home.
-- `arms.tsv` gives each arm's template and prompt files, in turn order.
-- `templates.tsv` gives the expected `HEAD` of each fixture template.
-- `prompts/` holds byte-identical copies of plan 40's prompt files.
+- `arms.tsv` gives each arm's template, its prompt files in turn order and its extra step (`-` for none).
+- `templates.tsv` gives the expected `HEAD` and the pinned refs of each fixture template.
+- `prompts/` holds byte-identical copies of plan 40's prompt files, and the two `c5a-merged` prompts.
+- `rubric-c5a-merged.md` is the scoring section for the `c5a-merged` arm.
 - `shim/gh` is the stand-in GitHub CLI that each rep gets.
 - `extract.py` audits each rep and writes its extract. `tally.py` checks the scores and prints the verdicts.
-- `test_rerun_guard.py`, `test_rerun_runner.py` and `test_rerun_extract.py` are the tests. They run as suite `handoff-rerun-kit`.
+- `test_rerun_guard.py`, `test_rerun_runner.py` and `test_rerun_extract.py` are the tests. They run as suite `completion-triage-guard-kit`.
 
 ## How to run it
 
-1. Register the reps: `KIT_COMMIT=<sha> /usr/bin/python3 make_reps.py c4a-neg rerun100 5 rerun100-c4a-neg`.
-2. Run the batch: `run_batch.sh rerun100-c4a-neg`.
+1. Register the reps: `KIT_COMMIT=<sha> /usr/bin/python3 make_reps.py c5a-neg guard101 5 guard101-c5a-neg`.
+2. Run the batch: `run_batch.sh guard101-c5a-neg`.
 
-The controller launches the runner through `env -i` (plan 100, C13). The runner refuses to start a rep while `PHR_ROOT` holds anything (exit 3). A rep id never runs twice.
+The controller launches the runner through `env -i` (plan 100, C13). The runner refuses to start a rep while `PHR_ROOT` holds anything (exit 3). Exit 3 also means that the rep's registry row names an extra that the runner does not know. A rep id never runs twice.
 
 These environment variables control the kit:
 
 | Variable | Default | Use |
 |---|---|---|
-| `PHR_ROOT` | `/private/tmp/phr100` | The folder that holds the running rep's `HOME`. |
-| `PHR_CTL` | `~/.cache/agent-skills/handoffs/rerun100` | The control folder: registry, batches, results and parked homes. |
+| `PHR_ROOT` | `/private/tmp/phr101` | The folder that holds the running rep's `HOME`. |
+| `PHR_CTL` | `~/.cache/agent-skills/handoffs/guard101` | The control folder: registry, batches, results and parked homes. |
 | `PHR_TEMPLATES` | `~/.cache/pondworks/templates` | Plan 40's fixture templates, used read-only. |
-| `PHR_TEMPLATE_HEADS` | `templates.tsv` in the kit | A file of `template<TAB>head` rows. The tests point it at their own template. |
+| `PHR_TEMPLATE_HEADS` | `templates.tsv` in the kit | A file of `template<TAB>head<TAB>refs` rows. The tests point it at their own template. |
 | `PHR_PROMPTS` | `prompts/` in the kit | The folder of prompt files. The tests point it at their own prompts. |
 | `PHR_KIT_REPO` | the git checkout that holds the kit | The repo that `git archive KIT_COMMIT` reads. |
 | `CLAUDE_BIN` | `command -v claude` | The claude binary. The tests set a stub. |
@@ -94,13 +97,29 @@ These harness checks also void a rep (C11 and the wait ceiling below):
 - `turn1.init.json` is missing. Or an init record's `skills` lack one of the 12 kit skills, or its `agents` lack `code-reviewer` or `task-reviewer`. The check compares sets. Extra names, such as Claude Code's built-in skills and agents, do not void, and a name listed twice counts once. A later turn's init record is checked when it exists. Task 4's pilot shows the real init record. If it lists extra names that look user-level, the controller decides then.
 - A `turn<n>.stderr` holds `Background tasks still running`.
 
-`tally.py` reads `PHR_CTL/scores/PHASE/<arm>.tsv`. `v1` and `b2` pass when at least 4 of their first 5 valid reps pass every criterion. `c4a-neg` passes when at most 1 of its first 5 valid reps fails. The tally takes an arm's reps from the audits, not the score file: the first 5 by id whose `audit.json` is valid, names that arm and has `PHASE` as its phase, less any rep the score file marks VOID. So a probe or pilot rep never counts in another phase. The tally exits 1 and names the gap when a counted rep has no rows, or has no row for a criterion that the other counted reps' rows use. A probe or pilot row adds no criterion.
+`tally.py` reads `PHR_CTL/scores/PHASE/<arm>.tsv`. `p5a`, `c5a-ep` and `c5a-merged` pass when at least 4 of their first 5 valid reps pass every criterion. `c5a-neg` passes only when 0 of its first 5 valid reps fail. The tally takes an arm's reps from the audits, not the score file: the first 5 by id whose `audit.json` is valid, names that arm and has `PHASE` as its phase, less any rep the score file marks VOID. So a probe or pilot rep never counts in another phase. The tally exits 1 and names the gap when a counted rep has no rows, or has no row for a criterion that the other counted reps' rows use. A probe or pilot row adds no criterion.
+
+## Plan 101 changes
+
+Plan 101 runs four arms with this kit: `p5a`, `c5a-ep`, `c5a-neg` and a new arm, `c5a-merged`. Plan 40's `PROTOCOL.md` fixes their thresholds. The kit differs from plan 100's in these ways:
+
+1. **Defaults.** `PHR_ROOT` is `/private/tmp/phr101`. `PHR_CTL` is `~/.cache/agent-skills/handoffs/guard101`. The `mktemp` scratch name `phr100-kit.XXXXXX` in `run_rep.sh` is unchanged.
+2. **Ids.** `make_reps.py` starts at `r501`, so no id repeats one of plan 40's or plan 100's.
+3. **Template pins.** `templates.tsv` has a third column, `refs`. It holds the exact output of `git for-each-ref --format='%(refname)=%(objectname)'` on the template, in refname order, joined by commas. `run_rep.sh` checks that `HEAD` equals the `head` column, that the refs equal this pin and that the status is clean. A row with no `refs` column means only `refs/heads/main` at the head. The rows are `t4` (`main` and `feat/s2a-csv-export`, `HEAD` on the feature branch) and `t5` (`main` and `feat/log-rotation`, `HEAD` on the feature branch).
+4. **Extra column.** `arms.tsv` has a fourth column, `extra` (`-` for none). The registry has a seventh column, `extra`. `make_reps.py` copies it from `arms.tsv`, and `run_rep.sh` reads it. An empty or missing field means `-`. `extract.py` reads the first six registry columns and `tally.py` does not read the registry, so both work on six-column and seven-column rows.
+5. **The `merged` extra.** After the rep's repo and its origin exist, `run_rep.sh` merges `feat/s2a-csv-export` into `main` with `--no-ff`, deletes the feature branch and pushes `main`. The merge uses the placeholder identity. The plan stays in `specs/plans/` and the roadmap's S2a box stays unticked. Any other extra makes `run_rep.sh` exit 3 before turn 1, before it builds a `HOME`.
+6. **Model, effort and wait ceiling.** `run_rep.sh` runs `claude-sonnet-5-5` at effort `medium`, plan 40's `exec` class. The wait ceiling is `3600000` (60 minutes). The `CLAUDE*` allow-list is unchanged.
+7. **Prompts.** `prompts/` keeps the two probe prompts. It holds copies of plan 40's `p5a.t1.txt`, `c5a-ep.t1.txt`, `c5a-neg.t1.txt` and `c5a.t2-merge.txt`, and the new `c5a-merged.t1.txt` and `c5a-merged.t2.txt`. Plan 100's arm prompts are gone.
+8. **Tally.** `p5a`, `c5a-ep` and `c5a-merged` pass at 4 of their first 5 valid reps. `c5a-neg` passes only at 0 of 5 failing.
+9. **Rubric.** `rubric-c5a-merged.md` scores `c5a-merged`: F-handoff, F-stamp, F-branch, F-resume and F-next.
+
+The tests follow the same changes: arms `c5a-neg`, `p5a` and `c5a-ep`, templates `t4` and `t5`, ids from `r501`, and the `guard101` phase name.
 
 ## Deviations
 
 **KIT_COMMIT.** `KIT_COMMIT` is `92f6a379d4bb77ba53adb360f8171ebd9c295ce8`, the base of the execution branch. The plan asked for the branch's `HEAD` before its first commit. The value was recorded right after the branch was cut, before Task 1. Task 1 committed first, so that step could not come first. The base is the commit that the plan's Kit commit constraint names. `git diff --stat 275edc1 92f6a37 -- skills/ agents/ commands/` is empty, so the kit text equals the text at plan 100's merge.
 
-**The wait ceiling.** The `env -i` list of each rep turn also sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2400000` (40 minutes). In print mode, Claude Code stops background subagents 10 minutes after the main turn ends. That voided plan 45's gate reps. Without the variable, a stopped fact-checker or cold reader could score as a FAIL, not a VOID. The runner admits only two `CLAUDE*` names: `CLAUDE_CODE_DISABLE_ADVISOR_TOOL` and `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`. It refuses any other. Task 3's audit voids a rep whose `turn<n>.stderr` holds `Background tasks still running`. That void is a harness check, not a change to the frozen VOID rules.
+**The wait ceiling.** The `env -i` list of each rep turn also sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000` (60 minutes). In print mode, Claude Code stops background subagents 10 minutes after the main turn ends. That voided plan 45's gate reps. Without the variable, a stopped fact-checker or cold reader could score as a FAIL, not a VOID. The runner admits only two `CLAUDE*` names: `CLAUDE_CODE_DISABLE_ADVISOR_TOOL` and `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS`. It refuses any other. Task 3's audit voids a rep whose `turn<n>.stderr` holds `Background tasks still running`. That void is a harness check, not a change to the frozen VOID rules.
 
 **Claude.ai skill sync off.** The `--settings` JSON of each rep turn also sets `"syncClaudeAiSkills": false` (plan 100, owner decision D4). Without it, Claude Code downloads the skills enabled on the claude.ai account into the rep's `~/.claude/skills/synced/` during a turn. That changed the kit hash of probe rep r282, so the audit voided it. The download also lands at an unpredictable time, so a rep could see other skills in a later turn. With the setting, each rep sees only the 12 kit skills and Claude Code's built-in skills.
 

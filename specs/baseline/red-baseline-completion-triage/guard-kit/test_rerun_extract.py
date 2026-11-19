@@ -1,9 +1,9 @@
-'''Tests for the kit audit and tally: extract.py and tally.py (plan 100, Task 3).
+'''Tests for the kit audit and tally: extract.py and tally.py (plan 100, Task 3; adapted for plan 101, Task 9).
 
 Each test writes a small results folder under a temporary PHR_CTL: a registry
 row, meta.txt, turn records, init records and transcripts. It then runs
 extract.py (or tally.py) on the system Python, with HOME set to a temporary
-"real home". PHR_ROOT is /tmp/phr100, as in a real run: the audit only reads it
+"real home". PHR_ROOT is /tmp/phr101, as in a real run: the audit only reads it
 as a string, and a test checks that it writes nothing there.
 '''
 
@@ -20,9 +20,9 @@ KIT = Path(__file__).resolve().parent
 EXTRACT = KIT / 'extract.py'
 TALLY = KIT / 'tally.py'
 PY = '/usr/bin/python3'
-ROOT = '/tmp/phr100'
-REP = 'r281'
-HOME_RUN = f'/private/tmp/phr100/{REP}'
+ROOT = '/tmp/phr101'
+REP = 'r501'
+HOME_RUN = f'/private/tmp/phr101/{REP}'
 REPO_RUN = f'{HOME_RUN}/work/{REP}'
 KIT_COMMIT = '92f6a379d4bb77ba53adb360f8171ebd9c295ce8'
 KIT_SKILLS = [
@@ -33,9 +33,9 @@ KIT_SKILLS = [
 ]
 KIT_AGENTS = ['code-reviewer', 'task-reviewer']
 ARMS = {
-    'c4a-neg': ('t3', 'c4a-neg.t1.txt,c4a.t2.txt'),
-    'v1': ('t9', 'c4b.t1.loc.txt,c4b.t2.txt'),
-    'b2': ('t2', 'c2.t1.loc.txt,b2.t2.txt,c2.t3.txt'),
+    'c5a-neg': ('t5', 'c5a-neg.t1.txt,c5a.t2-merge.txt'),
+    'p5a': ('t4', 'p5a.t1.txt,c5a.t2-merge.txt'),
+    'c5a-ep': ('t4', 'c5a-ep.t1.txt,c5a.t2-merge.txt'),
 }
 
 
@@ -55,7 +55,7 @@ class Ctl:
         return {'HOME': str(self.real), 'PATH': '/usr/bin:/bin:/opt/homebrew/bin', 'PHR_CTL': str(self.ctl),
                 'PHR_ROOT': ROOT, **self.extra_env}
 
-    def rep(self, rep: str = REP, arm: str = 'c4a-neg', phase: str = 'rerun100',
+    def rep(self, rep: str = REP, arm: str = 'c5a-neg', phase: str = 'guard101',
             main: list[tuple[str, dict]] | None = None, sub: list[tuple[str, dict]] | None = None) -> Path:
         '''Register one rep and write a clean, valid results folder for it.'''
         template, prompts = ARMS[arm]
@@ -66,7 +66,7 @@ class Ctl:
         turns = len(prompts.split(','))
         (out / 'meta.txt').write_text(
             f'rep={rep}\narm={arm}\nphase={phase}\ntemplate={template}\nkit_commit={KIT_COMMIT}\n'
-            f'model=claude-opus-5-5\neffort=xhigh\nclaude=9.9.9 (stub)\nkit_sha_before={"a" * 64}\n'
+            f'model=claude-sonnet-5-5\neffort=medium\nclaude=9.9.9 (stub)\nkit_sha_before={"a" * 64}\n'
             f'kit_sha_after={"a" * 64}\n')
         (out / 'session-id').write_text('sid-1\n')
         for n in range(1, turns + 1):
@@ -78,7 +78,7 @@ class Ctl:
             (out / f'turn{n}.git.txt').write_text('## branch\nmain\n')
         project = out / 'project'
         (project / 'sid-1' / 'subagents').mkdir(parents=True)
-        repo = f'/private/tmp/phr100/{rep}/work/{rep}'
+        repo = f'/private/tmp/phr101/{rep}/work/{rep}'
         self.transcript(project / 'sid-1.jsonl', main or [('Bash', {'command': 'git status'})], repo)
         self.transcript(project / 'sid-1' / 'subagents' / 'agent-a1.jsonl',
                         sub or [('Read', {'file_path': f'{repo}/README.md'})], repo)
@@ -123,8 +123,8 @@ def ctl(tmp_path: Path) -> Ctl:
 
 
 def test_tilde_kit_read_is_valid(ctl: Ctl) -> None:
-    ctl.rep(main=[('Read', {'file_path': f'/tmp/phr100/{REP}/.claude/skills/writing-plans/SKILL.md'}),
-                  ('Read', {'file_path': f'/private/tmp/phr100/{REP}/.claude/skills/writing-plans/SKILL.md'})],
+    ctl.rep(main=[('Read', {'file_path': f'/tmp/phr101/{REP}/.claude/skills/writing-plans/SKILL.md'}),
+                  ('Read', {'file_path': f'/private/tmp/phr101/{REP}/.claude/skills/writing-plans/SKILL.md'})],
             sub=[('Bash', {'command': 'ls ~/.claude/skills/writing-plans'})])
     audit = ctl.audit()
     assert audit['valid'] is True, audit
@@ -147,12 +147,12 @@ def test_library_link_voids(ctl: Ctl) -> None:
 
 
 def test_reps_dir_voids(ctl: Ctl) -> None:
-    ctl.rep(main=[('Bash', {'command': 'ls /tmp/phr100'})])
-    ctl.rep('r282', main=[('Bash', {'command': 'ls /private/tmp/phr100'})])
-    for rep in (REP, 'r282'):
+    ctl.rep(main=[('Bash', {'command': 'ls /tmp/phr101'})])
+    ctl.rep('r502', main=[('Bash', {'command': 'ls /private/tmp/phr101'})])
+    for rep in (REP, 'r502'):
         audit = ctl.audit(rep)
         assert audit['valid'] is False, rep
-        assert any('/private/tmp/phr100' in flag for flag in audit['flags']), audit['flags']
+        assert any('/private/tmp/phr101' in flag for flag in audit['flags']), audit['flags']
 
 
 def test_fragment_voids(ctl: Ctl) -> None:
@@ -210,7 +210,7 @@ def test_background_tasks_stopped_voids(ctl: Ctl) -> None:
 
 @pytest.mark.parametrize('command', [
     'ls $HOME/.claude/skills', 'ls ${HOME}/.claude/skills', 'cat ~/.claude/agents/code-reviewer.md',
-    f'ls /System/Volumes/Data/private/tmp/phr100/{REP}/.claude/skills',
+    f'ls /System/Volumes/Data/private/tmp/phr101/{REP}/.claude/skills',
     'ls /tmp/scratch-1 /private/tmp/other', f'ls {HOME_RUN}/tmp/x',
     'cat <<EOF > notes.md\n/Users/someone/Projects/agent-skills is named here\nEOF',
 ])
@@ -268,7 +268,7 @@ def test_library_escape_through_link_is_flagged_as_library(ctl: Ctl) -> None:
     assert any('through the Library folder' in flag for flag in audit['flags']), audit['flags']
 
 
-@pytest.mark.parametrize('command', ['ls /tmp/phr100/r282', 'ls ../../..', 'ls /tmp/phr100/'])
+@pytest.mark.parametrize('command', ['ls /tmp/phr101/r502', 'ls ../../..', 'ls /tmp/phr101/'])
 def test_reps_dir_shapes_void(ctl: Ctl, command: str) -> None:
     ctl.rep(main=[('Bash', {'command': command})])
     audit = ctl.audit()
@@ -281,7 +281,7 @@ def test_record_cwd_decides_a_relative_path(ctl: Ctl) -> None:
     Ctl.transcript(out / 'project' / 'sid-1.jsonl', [('Bash', {'command': 'ls ..'})], HOME_RUN)
     audit = ctl.audit()
     assert audit['valid'] is False, audit
-    assert any('/private/tmp/phr100 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
+    assert any('/private/tmp/phr101 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
 
 
 def test_record_without_cwd_uses_the_repo(ctl: Ctl) -> None:
@@ -299,7 +299,7 @@ def test_glob_pattern_is_relative_to_its_path(ctl: Ctl) -> None:
 
 
 def test_relative_file_field_is_one_token(ctl: Ctl) -> None:
-    ctl.rep(main=[('Read', {'file_path': '../../../r282/x'})])
+    ctl.rep(main=[('Read', {'file_path': '../../../r502/x'})])
     audit = ctl.audit()
     assert audit['valid'] is False, audit
 
@@ -312,12 +312,12 @@ def test_subagent_fragment_voids(ctl: Ctl) -> None:
 
 
 def test_missing_and_failed_turns_void(ctl: Ctl) -> None:
-    out = ctl.rep(arm='b2')
-    (out / 'turn3.json').unlink()
-    ctl.result(REP, 2, {'subtype': 'error_during_execution', 'is_error': False})
+    out = ctl.rep(arm='c5a-ep')
+    (out / 'turn2.json').unlink()
+    ctl.result(REP, 1, {'subtype': 'error_during_execution', 'is_error': False})
     audit = ctl.audit()
-    assert 'turn 3: no output' in audit['problems'], audit['problems']
-    assert 'turn 2: error_during_execution' in audit['problems'], audit['problems']
+    assert 'turn 2: no output' in audit['problems'], audit['problems']
+    assert 'turn 1: error_during_execution' in audit['problems'], audit['problems']
 
 
 @pytest.mark.parametrize('edit', ['no-after', 'empty-before', 'kit-error', 'exited'])
@@ -396,15 +396,15 @@ def test_audit_record_and_extract_sections(ctl: Ctl) -> None:
                           check=True).stdout.strip()
     subprocess.run([*git, 'commit', '-q', '--allow-empty', '-m', 'rep made this commit'], check=True)
     heads = ctl.tmp / 'heads.tsv'
-    heads.write_text(f'template\thead\nt3\t{head}\n')
+    heads.write_text(f'template\thead\nt5\t{head}\n')
     ctl.extra_env = {'PHR_TEMPLATE_HEADS': str(heads)}
     audit = ctl.audit()
     assert sorted(audit) == sorted(['rep', 'arm', 'phase', 'valid', 'problems', 'flags', 'denials', 'cost_usd'])
-    assert (audit['rep'], audit['arm'], audit['phase']) == (REP, 'c4a-neg', 'rerun100')
+    assert (audit['rep'], audit['arm'], audit['phase']) == (REP, 'c5a-neg', 'guard101')
     assert audit['cost_usd'] == 1.75
     assert audit['denials'] == [{'tool_name': 'Bash', 'transcript': 'turn1.json', 'subagent': False}]
     text = (out / 'extract.md').read_text()
-    for part in (f'# {REP} — c4a-neg (rerun100; template t3, kit {KIT_COMMIT})', '## Audit', '- verdict: valid',
+    for part in (f'# {REP} — c5a-neg (guard101; template t5, kit {KIT_COMMIT})', '## Audit', '- verdict: valid',
                  '## Turn 1', '### Final message\n\nfinal one', '## Tool calls, in order', '- Skill: prepare-handoff',
                  '--- turn 1 prompt ---', '## Repo at the end', '### New commits\n', 'rep made this commit',
                  f'### main: changes since {head}', '### Untracked: untracked.md',
@@ -412,23 +412,40 @@ def test_audit_record_and_extract_sections(ctl: Ctl) -> None:
         assert part in text, part
 
 
+def test_registry_row_may_carry_the_extra_column(ctl: Ctl) -> None:
+    # Plan 101: make_reps.py writes a seventh column, extra. The audit must read it and a six-column row alike.
+    ctl.rep()
+    ctl.rep('r502')
+    ctl.rep('r503')
+    registry = ctl.ctl / 'registry.tsv'
+    lines = registry.read_text().splitlines()
+    lines[0] += '\textra'
+    lines[2] += '\t-'
+    lines[3] += '\tmerged'
+    registry.write_text('\n'.join(lines) + '\n')
+    for rep in (REP, 'r502', 'r503'):
+        audit = ctl.audit(rep)
+        assert (audit['rep'], audit['arm'], audit['phase'], audit['valid']) == (rep, 'c5a-neg', 'guard101', True)
+    assert '# r503 — c5a-neg (guard101; template t5, kit' in (ctl.ctl / 'results' / 'r503' / 'extract.md').read_text()
+
+
 def test_batch_mode_audits_each_rep(ctl: Ctl) -> None:
     ctl.rep()
-    ctl.rep('r282', main=[('Bash', {'command': 'ls /tmp/phr100'})])
+    ctl.rep('r502', main=[('Bash', {'command': 'ls /tmp/phr101'})])
     (ctl.ctl / 'batches').mkdir()
-    (ctl.ctl / 'batches' / 'b.txt').write_text(f'{REP}\nr282\nr283\n')
+    (ctl.ctl / 'batches' / 'b.txt').write_text(f'{REP}\nr502\nr503\n')
     done = ctl.extract('b')
     assert done.returncode == 0, done.stderr
-    assert f'{REP} c4a-neg: valid' in done.stdout
-    assert 'r282 c4a-neg: VOID' in done.stdout
-    assert 'r283: no results yet' in done.stdout
+    assert f'{REP} c5a-neg: valid' in done.stdout
+    assert 'r502 c5a-neg: VOID' in done.stdout
+    assert 'r503: no results yet' in done.stdout
 
 
 def test_audit_writes_nothing_under_the_reps_root(ctl: Ctl) -> None:
-    before = sorted(os.listdir('/private/tmp/phr100')) if os.path.isdir('/private/tmp/phr100') else None
-    ctl.rep(main=[('Bash', {'command': 'ls /tmp/phr100'})])
+    before = sorted(os.listdir('/private/tmp/phr101')) if os.path.isdir('/private/tmp/phr101') else None
+    ctl.rep(main=[('Bash', {'command': 'ls /tmp/phr101'})])
     ctl.audit()
-    after = sorted(os.listdir('/private/tmp/phr100')) if os.path.isdir('/private/tmp/phr100') else None
+    after = sorted(os.listdir('/private/tmp/phr101')) if os.path.isdir('/private/tmp/phr101') else None
     assert before == after
 
 
@@ -447,7 +464,7 @@ def tally(ctl: Ctl, phase: str) -> subprocess.CompletedProcess:
     return subprocess.run([PY, str(TALLY), phase], env=ctl.env(), capture_output=True, text=True, check=False)
 
 
-def reps(ctl: Ctl, arm: str, ids: range, phase: str = 'rerun100') -> list[str]:
+def reps(ctl: Ctl, arm: str, ids: range, phase: str = 'guard101') -> list[str]:
     names = [f'r{n}' for n in ids]
     for rep in names:
         ctl.rep(rep, arm=arm, phase=phase)
@@ -457,93 +474,93 @@ def reps(ctl: Ctl, arm: str, ids: range, phase: str = 'rerun100') -> list[str]:
 
 @pytest.mark.parametrize('failing, verdict', [(1, 'PASS (1 of 5 failing)'), (2, 'FAIL (2 of 5 failing)')])
 def test_tally_positive_arm(ctl: Ctl, failing: int, verdict: str) -> None:
-    names = reps(ctl, 'v1', range(281, 287))
+    names = reps(ctl, 'p5a', range(501, 507))
     rows = [(r, 'F-restate', 'FAIL' if i < failing else 'PASS') for i, r in enumerate(names[:5])]
     rows += [(names[5], 'F-restate', 'FAIL')]  # the sixth valid rep never counts
-    score(ctl, 'rerun100', 'v1', rows)
-    done = tally(ctl, 'rerun100')
+    score(ctl, 'guard101', 'p5a', rows)
+    done = tally(ctl, 'guard101')
     assert done.returncode == 0, done.stdout + done.stderr
     assert verdict in done.stdout, done.stdout
-    assert 'r281,r282,r283,r284,r285 ' in done.stdout
+    assert 'r501,r502,r503,r504,r505 ' in done.stdout
 
 
-@pytest.mark.parametrize('failing, verdict', [(1, 'PASS (1 of 5 failing)'), (2, 'FAIL (2 of 5 failing)')])
+@pytest.mark.parametrize('failing, verdict', [(0, 'PASS (0 of 5 failing)'), (1, 'FAIL (1 of 5 failing)')])
 def test_tally_negative_arm(ctl: Ctl, failing: int, verdict: str) -> None:
-    names = reps(ctl, 'c4a-neg', range(281, 286))
-    score(ctl, 'rerun100', 'c4a-neg', [(r, 'F-brief', 'FAIL' if i < failing else 'PASS') for i, r in enumerate(names)])
-    done = tally(ctl, 'rerun100')
+    names = reps(ctl, 'c5a-neg', range(501, 506))
+    score(ctl, 'guard101', 'c5a-neg', [(r, 'F-brief', 'FAIL' if i < failing else 'PASS') for i, r in enumerate(names)])
+    done = tally(ctl, 'guard101')
     assert verdict in done.stdout, done.stdout
 
 
 def test_tally_skips_void_and_pilot_reps(ctl: Ctl) -> None:
-    names = reps(ctl, 'b2', range(281, 286))
-    pilot = reps(ctl, 'b2', range(286, 287), phase='pilot')
-    ctl.rep('r287', arm='b2', main=[('Bash', {'command': 'ls /tmp/phr100'})])
-    ctl.audit('r287')
+    names = reps(ctl, 'c5a-ep', range(501, 506))
+    pilot = reps(ctl, 'c5a-ep', range(506, 507), phase='pilot')
+    ctl.rep('r507', arm='c5a-ep', main=[('Bash', {'command': 'ls /tmp/phr101'})])
+    ctl.audit('r507')
     rows = [(r, 'B2-out', 'PASS') for r in names[:4]] + [(names[4], 'VOID', 'VOID')]
-    rows += [(pilot[0], 'B2-out', 'PASS'), ('r287', 'B2-out', 'PASS')]
-    score(ctl, 'rerun100', 'b2', rows)
-    done = tally(ctl, 'rerun100')
+    rows += [(pilot[0], 'B2-out', 'PASS'), ('r507', 'B2-out', 'PASS')]
+    score(ctl, 'guard101', 'c5a-ep', rows)
+    done = tally(ctl, 'guard101')
     assert 'UNSETTLED (4 of 5 valid)' in done.stdout, done.stdout
-    assert 'counted r281,r282,r283,r284 ' in done.stdout, done.stdout
+    assert 'counted r501,r502,r503,r504 ' in done.stdout, done.stdout
 
 
 def test_tally_rejects_a_missing_quote(ctl: Ctl) -> None:
-    names = reps(ctl, 'c4a-neg', range(281, 282))
-    folder = ctl.ctl / 'scores' / 'rerun100'
+    names = reps(ctl, 'c5a-neg', range(501, 502))
+    folder = ctl.ctl / 'scores' / 'guard101'
     folder.mkdir(parents=True)
-    (folder / 'c4a-neg.tsv').write_text(f'rep\tcriterion\tverdict\tquote\n{names[0]}\tF-brief\tPASS\tnot in it\n')
-    done = tally(ctl, 'rerun100')
+    (folder / 'c5a-neg.tsv').write_text(f'rep\tcriterion\tverdict\tquote\n{names[0]}\tF-brief\tPASS\tnot in it\n')
+    done = tally(ctl, 'guard101')
     assert done.returncode == 1
     assert f'{names[0]} F-brief PASS: quote not found' in done.stdout
 
 
 def test_tally_pilot_phase_is_not_counted(ctl: Ctl) -> None:
-    names = reps(ctl, 'v1', range(281, 282), phase='pilot')
-    score(ctl, 'pilot', 'v1', [(names[0], 'F-restate', 'PASS')])
+    names = reps(ctl, 'p5a', range(501, 502), phase='pilot')
+    score(ctl, 'pilot', 'p5a', [(names[0], 'F-restate', 'PASS')])
     done = tally(ctl, 'pilot')
     assert 'pilot (not counted)' in done.stdout, done.stdout
 
 
 def test_tally_counts_the_first_five_valid_reps_from_the_audits(ctl: Ctl) -> None:
-    names = reps(ctl, 'v1', range(281, 287))
-    score(ctl, 'rerun100', 'v1', [(r, 'F-restate', 'PASS') for r in names[1:]])  # r281 has no rows
-    done = tally(ctl, 'rerun100')
+    names = reps(ctl, 'p5a', range(501, 507))
+    score(ctl, 'guard101', 'p5a', [(r, 'F-restate', 'PASS') for r in names[1:]])  # r501 has no rows
+    done = tally(ctl, 'guard101')
     assert done.returncode == 1, done.stdout
-    assert 'v1 r281: no rows' in done.stdout, done.stdout
+    assert 'p5a r501: no rows' in done.stdout, done.stdout
     assert 'PASS' not in done.stdout and 'FAIL' not in done.stdout, done.stdout
 
 
 def test_tally_refuses_a_counted_rep_missing_a_criterion(ctl: Ctl) -> None:
-    names = reps(ctl, 'v1', range(281, 286))
+    names = reps(ctl, 'p5a', range(501, 506))
     rows = [(r, c, 'PASS') for r in names for c in ('F-restate', 'V1-ids')]
-    rows = [row for row in rows if row[:2] != ('r283', 'V1-ids')]
-    score(ctl, 'rerun100', 'v1', rows)
-    done = tally(ctl, 'rerun100')
+    rows = [row for row in rows if row[:2] != ('r503', 'V1-ids')]
+    score(ctl, 'guard101', 'p5a', rows)
+    done = tally(ctl, 'guard101')
     assert done.returncode == 1, done.stdout
-    assert 'v1 r283: no row for V1-ids' in done.stdout, done.stdout
+    assert 'p5a r503: no row for V1-ids' in done.stdout, done.stdout
     assert 'PASS (' not in done.stdout, done.stdout
 
 
 def test_tally_counts_each_arm_from_its_own_audits(ctl: Ctl) -> None:
-    v1 = reps(ctl, 'v1', range(281, 286))
-    b2 = reps(ctl, 'b2', range(286, 291))
-    score(ctl, 'rerun100', 'v1', [(r, 'F-restate', 'PASS') for r in v1])
-    score(ctl, 'rerun100', 'b2', [(r, 'B2-out', 'FAIL') for r in b2])
-    done = tally(ctl, 'rerun100')
+    first = reps(ctl, 'p5a', range(501, 506))
+    second = reps(ctl, 'c5a-ep', range(506, 511))
+    score(ctl, 'guard101', 'p5a', [(r, 'F-restate', 'PASS') for r in first])
+    score(ctl, 'guard101', 'c5a-ep', [(r, 'B2-out', 'FAIL') for r in second])
+    done = tally(ctl, 'guard101')
     assert done.returncode == 0, done.stdout + done.stderr
-    assert 'counted r286,r287,r288,r289,r290 ' in done.stdout and 'FAIL (5 of 5 failing)' in done.stdout, done.stdout
-    assert 'counted r281,r282,r283,r284,r285 ' in done.stdout and 'PASS (0 of 5 failing)' in done.stdout, done.stdout
+    assert 'counted r506,r507,r508,r509,r510 ' in done.stdout and 'FAIL (5 of 5 failing)' in done.stdout, done.stdout
+    assert 'counted r501,r502,r503,r504,r505 ' in done.stdout and 'PASS (0 of 5 failing)' in done.stdout, done.stdout
 
 
 def test_tally_counts_no_probe_rep(ctl: Ctl) -> None:
-    names = reps(ctl, 'v1', range(281, 286))
-    probe = reps(ctl, 'v1', range(276, 277), phase='probe')
+    names = reps(ctl, 'p5a', range(501, 506))
+    probe = reps(ctl, 'p5a', range(496, 497), phase='probe')
     rows = [(r, 'F-restate', 'PASS') for r in names] + [(probe[0], 'F-restate', 'FAIL')]
-    score(ctl, 'rerun100', 'v1', rows)
-    done = tally(ctl, 'rerun100')
+    score(ctl, 'guard101', 'p5a', rows)
+    done = tally(ctl, 'guard101')
     assert done.returncode == 0, done.stdout + done.stderr
-    assert 'counted r281,r282,r283,r284,r285 ' in done.stdout, done.stdout
+    assert 'counted r501,r502,r503,r504,r505 ' in done.stdout, done.stdout
     assert 'PASS (0 of 5 failing)' in done.stdout, done.stdout
 
 
@@ -597,7 +614,7 @@ def test_record_without_cwd_resolves_from_the_repo(ctl: Ctl) -> None:
     Ctl.transcript(out / 'project' / 'sid-1.jsonl', [('Bash', {'command': 'ls ../../..'})], None)
     audit = ctl.audit()
     assert audit['valid'] is False, audit
-    assert any('/private/tmp/phr100 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
+    assert any('/private/tmp/phr101 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
 
 
 def test_glob_at_real_home_depth_with_another_top_is_valid(ctl: Ctl) -> None:
@@ -611,10 +628,10 @@ def test_glob_at_real_home_depth_with_another_top_is_valid(ctl: Ctl) -> None:
 
 
 def test_sibling_rep_through_the_data_spelling_voids(ctl: Ctl) -> None:
-    ctl.rep(main=[('Bash', {'command': 'ls /System/Volumes/Data/private/tmp/phr100/r282'})])
+    ctl.rep(main=[('Bash', {'command': 'ls /System/Volumes/Data/private/tmp/phr101/r502'})])
     audit = ctl.audit()
     assert audit['valid'] is False, audit
-    assert any('/private/tmp/phr100/r282 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
+    assert any('/private/tmp/phr101/r502 (the reps directory)' in flag for flag in audit['flags']), audit['flags']
 
 
 @pytest.mark.parametrize('command', ['cd ~ && cd Library && ls Keychains', 'cd ~ && ls Library//Keychains'])
@@ -651,7 +668,7 @@ def test_indexed_search_flag_names_the_index(ctl: Ctl, command: str) -> None:
 
 @pytest.mark.parametrize('command', [
     'ls /', 'ls @PARENT@', 'cd /; rm -rf "$T"', 'find . -name x', f'find {REPO_RUN}/specs -name x',
-    'grep -rn "/" src', 'cd /private/tmp/phr100/r281/.claude/skills; grep -rniE x .',
+    'grep -rn "/" src', 'cd /private/tmp/phr101/r501/.claude/skills; grep -rniE x .',
 ])
 def test_harmless_listing_and_search_is_valid(ctl: Ctl, command: str) -> None:
     ctl.rep(main=[('Bash', {'command': command.replace('@PARENT@', str(ctl.real.parent))})])
@@ -813,12 +830,12 @@ def test_a_classifier_denial_needs_the_error_flag(ctl: Ctl) -> None:
 
 
 def test_tally_criteria_come_from_the_counted_reps(ctl: Ctl) -> None:
-    names = reps(ctl, 'v1', range(281, 286))
-    probe = reps(ctl, 'v1', range(276, 277), phase='probe')
+    names = reps(ctl, 'p5a', range(501, 506))
+    probe = reps(ctl, 'p5a', range(496, 497), phase='probe')
     rows = [(r, 'F-restate', 'PASS') for r in names] + [(probe[0], 'F-restate', 'PASS'),
                                                           (probe[0], 'X-probe-only', 'FAIL')]
-    score(ctl, 'rerun100', 'v1', rows)
-    done = tally(ctl, 'rerun100')
+    score(ctl, 'guard101', 'p5a', rows)
+    done = tally(ctl, 'guard101')
     assert done.returncode == 0, done.stdout + done.stderr
     assert 'no row for X-probe-only' not in done.stdout, done.stdout
     assert 'PASS (0 of 5 failing)' in done.stdout, done.stdout

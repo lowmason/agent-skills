@@ -1,3 +1,0 @@
-Can you provide a prompt for the handoff to planning claude-code-drift-automation.md as plan 38? Note the following: 1. pull the advance command forward into Stage 1; 2. Rewrite CLAUDE.md so it has fewer lines; 3. add check_conformance.py to Stage 1's validation gates. I'll approve the exact spec wording for these at plan review.
-
-The repository for this work is the current working directory, @REP@. Nothing outside it is part of this task.

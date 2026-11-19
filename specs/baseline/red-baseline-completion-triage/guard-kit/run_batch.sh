@@ -7,7 +7,7 @@
 set -euo pipefail
 
 KIT_DIR=$(cd "$(dirname "$0")" && pwd -P)
-CTL=${PHR_CTL:-$HOME/.cache/agent-skills/handoffs/rerun100}
+CTL=${PHR_CTL:-$HOME/.cache/agent-skills/handoffs/guard101}
 batch=${1:?usage: run_batch.sh BATCH}
 list=$CTL/batches/$batch.txt
 [ -f "$list" ] || { echo "run_batch.sh: no $list" >&2; exit 2; }

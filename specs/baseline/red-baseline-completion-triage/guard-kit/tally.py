@@ -1,10 +1,10 @@
 #!/usr/bin/python3
-'''Check scores against extracts, then report each arm's verdict (plan 100).
+'''Check scores against extracts, then report each arm's verdict (plan 100 kit, adapted for plan 101).
 
 Usage: tally.py PHASE
 
 A fork of plan 40's $RED/tools/tally.py that reads $PHR_CTL (default
-~/.cache/agent-skills/handoffs/rerun100). It reads scores/PHASE/<arm>.tsv
+~/.cache/agent-skills/handoffs/guard101). It reads scores/PHASE/<arm>.tsv
 (columns: rep, criterion, verdict, quote; verdict PASS, FAIL, NA or VOID) and
 each scored rep's results/<rep>/audit.json and extract.md. Exits 1, listing the
 lines, when a PASS, FAIL or VOID line's quote is empty or not found in its
@@ -14,10 +14,10 @@ by id whose audit is valid, has that arm and has PHASE as its phase, less any
 rep the score file marks VOID. So a probe or pilot rep never counts in another
 phase. Exits 1, naming the gap, when a counted rep has no rows, or has no row
 for a criterion that the arm's other rows use. Otherwise prints, per arm, the
-valid reps counted, the failures per criterion, and the verdict by the plan's
-Thresholds: `v1` and `b2` pass when at least 4 of their first 5 valid reps
-pass every criterion, `c4a-neg` when at most 1 of its first 5 valid reps fails
-F-brief. Runs on the system Python 3.9.
+valid reps counted, the failures per criterion, and the verdict by the
+Thresholds of plan 40's PROTOCOL.md: `p5a`, `c5a-ep` and `c5a-merged` pass when
+at least 4 of their first 5 valid reps pass every criterion, `c5a-neg` only at
+0 of its first 5 valid reps failing. Runs on the system Python 3.9.
 '''
 
 from __future__ import annotations
@@ -29,9 +29,9 @@ import re
 import sys
 from pathlib import Path
 
-CTL = Path(os.environ.get('PHR_CTL') or Path.home() / '.cache/agent-skills/handoffs/rerun100')
-POSITIVE = ('v1', 'b2')
-NEGATIVE = {'c4a-neg': 1}  # most failing reps a negative arm allows
+CTL = Path(os.environ.get('PHR_CTL') or Path.home() / '.cache/agent-skills/handoffs/guard101')
+POSITIVE = ('p5a', 'c5a-ep', 'c5a-merged')
+NEGATIVE = {'c5a-neg': 0}  # most failing reps a negative arm allows
 COUNTED = 5
 PASS_AT = 4
 

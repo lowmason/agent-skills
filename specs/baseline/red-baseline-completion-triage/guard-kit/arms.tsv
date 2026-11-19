@@ -1,6 +1,7 @@
-arm	template	prompts
-v1	t9	c4b.t1.loc.txt,c4b.t2.txt
-b2	t2	c2.t1.loc.txt,b2.t2.txt,c2.t3.txt
-c4a-neg	t3	c4a-neg.t1.txt,c4a.t2.txt
-probe-iso	t3	isolation_probe.txt
-probe-guard	t3	guard_probe.txt
+arm	template	prompts	extra
+p5a	t4	p5a.t1.txt,c5a.t2-merge.txt	-
+c5a-ep	t4	c5a-ep.t1.txt,c5a.t2-merge.txt	-
+c5a-neg	t5	c5a-neg.t1.txt,c5a.t2-merge.txt	-
+c5a-merged	t4	c5a-merged.t1.txt,c5a-merged.t2.txt	merged
+probe-iso	t4	isolation_probe.txt	-
+probe-guard	t4	guard_probe.txt	-

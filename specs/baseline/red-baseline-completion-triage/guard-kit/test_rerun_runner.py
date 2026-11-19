@@ -1,4 +1,5 @@
-'''Tests for the kit runner: make_reps.py, run_rep.sh and postprocess.py (plan 100, Task 2).
+'''Tests for the kit runner: make_reps.py, run_rep.sh and postprocess.py (plan 100, Task 2;
+adapted for plan 101, Task 9).
 
 No test runs the real claude. Each test builds a stub claude (a bash script
 set as CLAUDE_BIN), a temporary PHR_ROOT, PHR_CTL and PHR_TEMPLATES, a
@@ -11,7 +12,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -51,7 +51,7 @@ printf '{"type":"system","subtype":"init","session_id":"%s","skills":["prepare-h
 printf '{"type":"assistant","message":{"content":[{"type":"text","text":"ok"}]}}\n'
 printf '{"type":"result","subtype":"success","is_error":false,"result":"done","session_id":"%s",' "$sid"
 printf '"total_cost_usd":0.25,"credential_expires_at":1790000000,'
-printf '"modelUsage":{"claude-opus-5-5":{"costUSD":0.25,"credential_expires_at":1790000000}}}\n'
+printf '"modelUsage":{"claude-sonnet-5-5":{"costUSD":0.25,"credential_expires_at":1790000000}}}\n'
 '''
 
 
@@ -71,7 +71,7 @@ class Kit:
         self.stub = self.stub_dir / 'claude'
         self.stub.write_text(STUB.replace('@LOG@', str(self.log)).replace('@DIR@', str(self.stub_dir)))
         self.stub.chmod(0o755)
-        template = self.templates / 't3'
+        template = self.templates / 't5'
         template.mkdir(parents=True)
         subprocess.run([*GIT, 'init', '-q', '-b', 'main', str(template)], check=True)
         (template / 'README.md').write_text('fixture\n')
@@ -80,7 +80,7 @@ class Kit:
         head = subprocess.run(['git', '-C', str(template), 'rev-parse', 'HEAD'],
                               capture_output=True, text=True, check=True).stdout.strip()
         self.heads = tmp / 'heads.tsv'
-        self.heads.write_text(f'template\thead\nt3\t{head}\n')
+        self.heads.write_text(f'template\thead\nt5\t{head}\n')
 
     def env(self) -> dict:
         user = os.environ.get('USER') or 'tester'
@@ -94,7 +94,7 @@ class Kit:
     def actions(self, text: str) -> None:
         (self.stub_dir / 'actions.sh').write_text(text)
 
-    def make_reps(self, arm: str = 'c4a-neg', count: int = 1, batch: str = 'b1') -> list[str]:
+    def make_reps(self, arm: str = 'c5a-neg', count: int = 1, batch: str = 'b1') -> list[str]:
         done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), arm, 'test', str(count), batch],
                               env=self.env(), capture_output=True, text=True, check=False)
         assert done.returncode == 0, done.stderr
@@ -194,6 +194,7 @@ def test_env_holds_no_session_variables(kit):
     env = dict(line.split('=', 1) for line in envfile.read_text().splitlines() if '=' in line)
     allowed = {'CLAUDE_CODE_DISABLE_ADVISOR_TOOL', 'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'}
     assert {name for name in env if name.startswith('CLAUDE')} <= allowed
+    assert env['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'] == '3600000'  # 60 minutes
     home = os.path.realpath(kit.root / rep)
     assert env['HOME'] == home
     assert env['TMPDIR'] == home + '/tmp'
@@ -220,23 +221,23 @@ def meta_of(out: Path) -> dict:
     return dict(line.split('=', 1) for line in (out / 'meta.txt').read_text().splitlines() if '=' in line)
 
 
-def test_make_reps_ids_start_at_r281_and_continue(kit):
-    assert kit.make_reps(count=2, batch='a') == ['r281', 'r282']
-    assert kit.make_reps(arm='v1', count=1, batch='b') == ['r283']
+def test_make_reps_ids_start_at_r501_and_continue(kit):
+    assert kit.make_reps(count=2, batch='a') == ['r501', 'r502']
+    assert kit.make_reps(arm='c5a-merged', count=1, batch='b') == ['r503']
     rows = (kit.ctl / 'registry.tsv').read_text().splitlines()
-    assert rows[0] == 'rep\tarm\tphase\ttemplate\tkit_commit\tprompts'
-    assert rows[1] == f'r281\tc4a-neg\ttest\tt3\t{KIT_COMMIT}\tc4a-neg.t1.txt,c4a.t2.txt'
-    assert rows[3] == f'r283\tv1\ttest\tt9\t{KIT_COMMIT}\tc4b.t1.loc.txt,c4b.t2.txt'
-    assert (kit.ctl / 'batches' / 'a.txt').read_text() == 'r281\nr282\n'
+    assert rows[0] == 'rep\tarm\tphase\ttemplate\tkit_commit\tprompts\textra'
+    assert rows[1] == f'r501\tc5a-neg\ttest\tt5\t{KIT_COMMIT}\tc5a-neg.t1.txt,c5a.t2-merge.txt\t-'
+    assert rows[3] == f'r503\tc5a-merged\ttest\tt4\t{KIT_COMMIT}\tc5a-merged.t1.txt,c5a-merged.t2.txt\tmerged'
+    assert (kit.ctl / 'batches' / 'a.txt').read_text() == 'r501\nr502\n'
 
 
 @pytest.mark.parametrize('folder', ['results', 'homes'])
 def test_make_reps_refuses_taken_id(kit, folder):
-    (kit.ctl / folder / 'r281').mkdir(parents=True)
-    done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c4a-neg', 'test', '1', 'b1'],
+    (kit.ctl / folder / 'r501').mkdir(parents=True)
+    done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c5a-neg', 'test', '1', 'b1'],
                           env=kit.env(), capture_output=True, text=True, check=False)
     assert done.returncode != 0
-    assert 'r281' in done.stderr
+    assert 'r501' in done.stderr
     assert not (kit.ctl / 'batches' / 'b1.txt').exists()
     assert (kit.ctl / 'registry.tsv').read_text().splitlines()[1:] == []
 
@@ -244,7 +245,7 @@ def test_make_reps_refuses_taken_id(kit, folder):
 def test_make_reps_requires_kit_commit(kit):
     env = kit.env()
     del env['KIT_COMMIT']
-    done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c4a-neg', 'test', '1', 'b1'],
+    done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c5a-neg', 'test', '1', 'b1'],
                           env=env, capture_output=True, text=True, check=False)
     assert done.returncode != 0
     assert 'KIT_COMMIT is required' in done.stderr
@@ -263,21 +264,28 @@ def test_rep_command_flags_and_prompt(kit):
     assert 'Read(~/Library/**)' in settings['permissions']['deny']
     del args[args.index('--settings'):args.index('--settings') + 2]
     assert args == ['-p', '--session-id', sid, '--setting-sources', 'user,project,local', '--strict-mcp-config',
-                    '--model', 'claude-opus-5-5', '--effort', 'xhigh', '--permission-mode', 'auto',
+                    '--model', 'claude-sonnet-5-5', '--effort', 'medium', '--permission-mode', 'auto',
                     '--max-budget-usd', '30', '--output-format', 'stream-json', '--verbose']
     prompt = (out / 'turn1.prompt.txt').read_text()
     assert (kit.stub_dir / 'stdin.1').read_text() == prompt
     assert (kit.stub_dir / 'stdin.2').read_text() == (out / 'turn2.prompt.txt').read_text()
-    assert prompt == (KIT / 'prompts' / 'c4a-neg.t1.txt').read_text()
+    assert prompt == (KIT / 'prompts' / 'c5a-neg.t1.txt').read_text()
 
 
 def test_prompt_fills_rep_path(kit):
-    shutil.copytree(kit.templates / 't3', kit.templates / 't9', symlinks=True)
-    head = kit.heads.read_text().splitlines()[1].split('\t')[1]
-    kit.heads.write_text(kit.heads.read_text() + f't9\t{head}\n')
-    rep, = kit.make_reps(arm='v1')
-    out = run_ok(kit, rep)
-    source = (KIT / 'prompts' / 'c4b.t1.loc.txt').read_text()
+    # No prompt file of this kit holds @REP@, so the test brings its own prompts folder.
+    prompts = kit.tmp / 'prompts'
+    prompts.mkdir()
+    (prompts / 'c5a-neg.t1.txt').write_text('the plan is at @REP@/specs/plans/4-log-rotation.md\n')
+    (prompts / 'c5a.t2-merge.txt').write_text('Merge it locally (option 1).\n')
+    env = kit.env()
+    env['PHR_PROMPTS'] = str(prompts)
+    rep, = kit.make_reps()
+    done = subprocess.run(['/bin/bash', str(RUN_REP), rep], env=env, cwd=kit.tmp,
+                          capture_output=True, text=True, check=False, timeout=300)
+    assert done.returncode == 0, done.stdout + done.stderr
+    out = kit.ctl / 'results' / rep
+    source = (prompts / 'c5a-neg.t1.txt').read_text()
     repdir = os.path.realpath(kit.root / rep) + f'/work/{rep}'
     assert '@REP@' in source
     assert (out / 'turn1.prompt.txt').read_text() == source.replace('@REP@', repdir)
@@ -289,12 +297,12 @@ def test_results_layout(kit):
     out = run_ok(kit, rep)
     meta = meta_of(out)
     assert meta['rep'] == rep
-    assert meta['arm'] == 'c4a-neg'
+    assert meta['arm'] == 'c5a-neg'
     assert meta['phase'] == 'test'
-    assert meta['template'] == 't3'
+    assert meta['template'] == 't5'
     assert meta['kit_commit'] == KIT_COMMIT
-    assert meta['model'] == 'claude-opus-5-5'
-    assert meta['effort'] == 'xhigh'
+    assert meta['model'] == 'claude-sonnet-5-5'
+    assert meta['effort'] == 'medium'
     assert meta['claude'] == '9.9.9 (stub)'
     for n in (1, 2):
         assert json.loads((out / f'turn{n}.init.json').read_text())['subtype'] == 'init'
@@ -380,9 +388,9 @@ def test_unstripped_field_fails_the_rep(kit):
 
 @pytest.mark.parametrize('spoil', ['head', 'ref', 'dirty', 'untracked'])
 def test_refuses_bad_template(kit, spoil):
-    template = kit.templates / 't3'
+    template = kit.templates / 't5'
     if spoil == 'head':
-        kit.heads.write_text('template\thead\nt3\t' + '0' * 40 + '\n')
+        kit.heads.write_text('template\thead\nt5\t' + '0' * 40 + '\n')
     elif spoil == 'ref':
         subprocess.run(['git', '-C', str(template), 'branch', 'extra'], check=True)
     elif spoil == 'dirty':
@@ -499,8 +507,8 @@ def test_settings_turn_off_claude_ai_skill_sync(kit):
 def test_prompt_fills_real_home(kit):
     prompts = kit.tmp / 'prompts'
     prompts.mkdir()
-    (prompts / 'c4a-neg.t1.txt').write_text('real @REAL@/.claude rep @REP@\n')
-    (prompts / 'c4a.t2.txt').write_text('second @REAL@\n')
+    (prompts / 'c5a-neg.t1.txt').write_text('real @REAL@/.claude rep @REP@\n')
+    (prompts / 'c5a.t2-merge.txt').write_text('second @REAL@\n')
     env = kit.env()
     env['PHR_PROMPTS'] = str(prompts)
     rep, = kit.make_reps()
@@ -517,7 +525,7 @@ def test_prompt_fills_real_home(kit):
 def test_kit_comes_from_the_registry_commit(kit):
     env = kit.env()
     env['KIT_COMMIT'] = OLD_KIT_COMMIT
-    done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c4a-neg', 'test', '1', 'b1'],
+    done = subprocess.run(['/usr/bin/python3', str(MAKE_REPS), 'c5a-neg', 'test', '1', 'b1'],
                           env=env, capture_output=True, text=True, check=False)
     assert done.returncode == 0, done.stderr
     rep = (kit.ctl / 'batches' / 'b1.txt').read_text().split()[0]
@@ -558,3 +566,98 @@ def test_many_transcript_matches_do_not_kill_the_runner(kit):
     out = run_ok(kit, rep)
     sid = (out / 'session-id').read_text().strip()
     assert (out / 'project' / f'{sid}.jsonl').is_file()
+
+
+# Plan 101 tests (Task 9): the merged extra, the registry's extra column, the first id and the template pins.
+
+FEATURE = 'feat/s2a-csv-export'
+
+
+def make_t4(kit: Kit) -> tuple[str, str]:
+    '''A template named t4: main and FEATURE one commit ahead, HEAD on FEATURE. Pins it in the heads file.'''
+    template = kit.templates / 't4'
+    template.mkdir(parents=True)
+    subprocess.run([*GIT, 'init', '-q', '-b', 'main', str(template)], check=True)
+    (template / 'README.md').write_text('fixture\n')
+    subprocess.run([*GIT, '-C', str(template), 'add', '-A'], check=True)
+    subprocess.run([*GIT, '-C', str(template), 'commit', '-q', '-m', 'init'], check=True)
+    subprocess.run([*GIT, '-C', str(template), 'checkout', '-q', '-b', FEATURE], check=True)
+    (template / 'export.py').write_text('def write_table(rows, path, columns=None): ...\n')
+    subprocess.run([*GIT, '-C', str(template), 'add', '-A'], check=True)
+    subprocess.run([*GIT, '-C', str(template), 'commit', '-q', '-m', 'feat: csv export'], check=True)
+    head = subprocess.run(['git', '-C', str(template), 'rev-parse', 'HEAD'],
+                          capture_output=True, text=True, check=True).stdout.strip()
+    refs = subprocess.run(['git', '-C', str(template), 'for-each-ref', '--format=%(refname)=%(objectname)'],
+                          capture_output=True, text=True, check=True).stdout.split()
+    pin = ','.join(refs)
+    kit.heads.write_text(kit.heads.read_text() + f't4\t{head}\t{pin}\n')
+    return head, pin
+
+
+def test_merged_extra_starts_on_merged_main(kit):
+    make_t4(kit)
+    report = kit.tmp / 'merged.txt'
+    kit.actions(
+        'if [ "$n" = 1 ]; then\n'
+        '  { git log --format=%s -1\n'
+        "    git branch --format='%(refname:short)'\n"
+        '    git rev-parse main origin/main\n'
+        '    git --git-dir="$HOME/git/$(basename "$HOME").git" rev-parse main\n'
+        "    git log -1 --format='%an|%ae|%cn|%ce'\n"
+        f"  }} > '{report}' 2>&1\n"
+        'fi\n')
+    rep, = kit.make_reps(arm='c5a-merged')
+    run_ok(kit, rep)
+    lines = report.read_text().splitlines()
+    assert lines[0] == f"Merge branch '{FEATURE}'"
+    assert lines[1] == 'main'
+    assert len(lines[2]) == 40 and lines[2] == lines[3] == lines[4]  # main, origin/main, the bare repo's main
+    assert lines[5] == 'Pondworks Rep|rep@pondworks.invalid|Pondworks Rep|rep@pondworks.invalid'
+    assert len(lines) == 6, lines
+
+
+def test_unknown_extra_refuses(kit):
+    kit.ctl.mkdir(parents=True)
+    (kit.ctl / 'registry.tsv').write_text(
+        'rep\tarm\tphase\ttemplate\tkit_commit\tprompts\textra\n'
+        f'r501\tc5a-neg\ttest\tt5\t{KIT_COMMIT}\tc5a-neg.t1.txt,c5a.t2-merge.txt\tother\n')
+    done = kit.run_rep('r501')
+    assert done.returncode == 3, done.stdout + done.stderr
+    assert 'other' in done.stderr
+    assert kit.turns() == []
+    assert not (kit.ctl / 'results' / 'r501').exists()
+    assert not kit.root.exists() or list(kit.root.iterdir()) == []
+
+
+def test_ids_start_at_r501(kit):
+    assert kit.ctl.exists() is False
+    rep, = kit.make_reps()
+    assert rep == 'r501'
+    assert (kit.ctl / 'registry.tsv').read_text().splitlines()[1].split('\t')[0] == 'r501'
+
+
+def test_template_refs_pin_refuses_an_unpinned_ref(kit):
+    template = kit.templates / 't5'
+    subprocess.run(['git', '-C', str(template), 'branch', 'extra'], check=True)
+    head, = [row.split('\t')[1] for row in kit.heads.read_text().splitlines()[1:]]
+    main_only = f'refs/heads/main={head}'
+    kit.heads.write_text(f'template\thead\trefs\nt5\t{head}\t{main_only}\n')
+    rep, = kit.make_reps()
+    done = kit.run_rep(rep)
+    assert done.returncode == 2, done.stdout + done.stderr
+    assert kit.turns() == []
+    assert not (kit.ctl / 'results' / rep).exists()
+    # The same template runs once its pin lists the extra ref.
+    kit.heads.write_text(f'template\thead\trefs\nt5\t{head}\trefs/heads/extra={head},{main_only}\n')
+    run_ok(kit, rep)
+    assert len(kit.turns()) == 2
+
+
+def test_template_refs_pin_refuses_a_moved_main(kit):
+    head, = [row.split('\t')[1] for row in kit.heads.read_text().splitlines()[1:]]
+    kit.heads.write_text(f'template\thead\trefs\nt5\t{head}\trefs/heads/main={"0" * 40}\n')
+    rep, = kit.make_reps()
+    done = kit.run_rep(rep)
+    assert done.returncode == 2, done.stdout + done.stderr
+    assert kit.turns() == []
+    assert not (kit.ctl / 'results' / rep).exists()

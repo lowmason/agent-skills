@@ -27,7 +27,7 @@ def homes(tmp_path: Path) -> tuple[Path, Path]:
     rep = tmp_path / 'rep'
     (rep / 'Library').mkdir(parents=True)
     (rep / 'Library' / 'Keychains').symlink_to(real / 'Library' / 'Keychains')
-    (rep / 'work' / 'r281').mkdir(parents=True)
+    (rep / 'work' / 'r501').mkdir(parents=True)
     skill = rep / '.claude' / 'skills' / 'prepare-handoff' / 'SKILL.md'
     skill.parent.mkdir(parents=True)
     skill.write_text('kit copy\n')
@@ -50,7 +50,7 @@ def decide(tool: str, tool_input: dict, rep: Path, real: Path, cwd: Path | None 
            extra_env: dict | None = None) -> str | None:
     payload = {
         'hook_event_name': 'PreToolUse', 'tool_name': tool, 'tool_input': tool_input,
-        'cwd': str(cwd or rep / 'work' / 'r281'),
+        'cwd': str(cwd or rep / 'work' / 'r501'),
     }
     done = run_guard(json.dumps(payload), rep, real, extra_env=extra_env)
     if not done.stdout.strip():
@@ -91,7 +91,7 @@ def test_denies_data_volume_form_in_any_case(homes, prefix):
 
 def test_allows_own_home_through_lowercase_data_volume(homes):
     rep, real = homes
-    assert decide('Bash', {'command': f'ls /system/volumes/data{rep}/work/r281'}, rep, real) is None
+    assert decide('Bash', {'command': f'ls /system/volumes/data{rep}/work/r501'}, rep, real) is None
     assert decide('Read', {'file_path': f'/system/volumes/data{rep}/.claude/skills/prepare-handoff/SKILL.md'},
                   rep, real) is None
 
@@ -118,7 +118,7 @@ def test_allows_tilde_kit_read(homes):
 
 def test_allows_repo_relative(homes):
     rep, real = homes
-    assert decide('Bash', {'command': 'git status && ls ../'}, rep, real, cwd=rep / 'work' / 'r281') is None
+    assert decide('Bash', {'command': 'git status && ls ../'}, rep, real, cwd=rep / 'work' / 'r501') is None
 
 
 def test_malformed_payload_denies(homes):

@@ -40,8 +40,8 @@ from guard import DATA_ANCESTORS, INDEXED, glob_base, search_roots, simple_comma
 
 KIT = Path(__file__).resolve().parent
 REAL = os.path.realpath(os.environ.get('HOME') or str(Path.home()))
-CTL = Path(os.environ.get('PHR_CTL') or Path(REAL) / '.cache/agent-skills/handoffs/rerun100')
-ROOT = os.path.realpath(os.environ.get('PHR_ROOT') or '/private/tmp/phr100')
+CTL = Path(os.environ.get('PHR_CTL') or Path(REAL) / '.cache/agent-skills/handoffs/guard101')
+ROOT = os.path.realpath(os.environ.get('PHR_ROOT') or '/private/tmp/phr101')
 HEADS = Path(os.environ.get('PHR_TEMPLATE_HEADS') or KIT / 'templates.tsv')
 FRAGMENTS = (
     'handoffs/red', 'agent-skills/handoff-brief', 'plan40-draft', 'Projects/agent-skills',

@@ -1,0 +1,1 @@
+We're executing specs/plans/4-log-rotation.md with subagent-driven-development. Its task is done (the ledger is .sdd/4-log-rotation/progress.md) and the final whole-branch review is resolved. Complete the plan, then finish the branch: merge it locally into main.

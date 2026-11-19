@@ -1,0 +1,1 @@
+We're executing specs/plans/4-pondwatch-v2-s2a.md with executing-plans. Both tasks are done and the whole-plan review is resolved. Complete the plan, then finish the branch: merge it locally into main.
