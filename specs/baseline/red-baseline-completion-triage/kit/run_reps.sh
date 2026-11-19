@@ -61,14 +61,19 @@ while [ "$i" -le "$LAST" ]; do
 done
 wait
 # The scrub's job is that no rep file keeps the key. A rep file that still holds it, because the
-# scrub could not read or write the file, makes the batch exit 3 and names the file. LC_ALL=C makes
+# scrub could not read or write the file, makes the batch exit 3 and names the file. So does a file
+# that grep cannot scan (its status is 2 or more: a file is clean only on status 1). LC_ALL=C makes
 # grep read a file that is not valid UTF-8 as bytes: under a UTF-8 locale it would skip the line.
 leaked=0
 i="$FIRST"
 while [ "$i" -le "$LAST" ]; do
-  if [ -f "$OUT/rep$i.json" ] && LC_ALL=C grep -aq credential_expires_at "$OUT/rep$i.json"; then
-    echo "rep$i: $OUT/rep$i.json still holds credential_expires_at"
-    leaked=1
+  if [ -f "$OUT/rep$i.json" ]; then
+    LC_ALL=C grep -aq credential_expires_at "$OUT/rep$i.json"
+    case $? in
+      0) echo "rep$i: $OUT/rep$i.json still holds credential_expires_at"; leaked=1 ;;
+      1) ;;
+      *) echo "rep$i: could not scan $OUT/rep$i.json for credential_expires_at"; leaked=1 ;;
+    esac
   fi
   i=$((i + 1))
 done

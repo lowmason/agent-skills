@@ -299,7 +299,7 @@ with `ensure_ascii=False`. When `text` does not parse, it returns `text` with ea
 folder as an absolute path before any `cd`, write `claude`'s stdout to `$OUT/rep$1.json` as now, and then, after the
 rep's subshell, run `python3 "$KIT/scrub_json.py" "$OUT/rep$1.json"`.
 
-> Deviation: the final review added a fourth check to `kit_selftest.py` and a final check to `run_reps.sh`. The runner now exits 3 when a rep file still holds `credential_expires_at` after the scrub (commit `2e9bd4f`).
+> Deviation: the final review and the finish review added a fourth and a fifth check to `kit_selftest.py` and a final check to `run_reps.sh`. The runner now exits 3 when a rep file still holds `credential_expires_at` after the scrub, or cannot be scanned (commit `2e9bd4f` and the commit after it).
 
 - [x] **Step 4: Run the self-test**
 

@@ -15,6 +15,9 @@ run_reps.sh for reps 1 and 2 on a one-line prompt and checks three things:
 A second stub prints bytes that are not UTF-8 and hold the key, so scrub_json.py cannot read the
 file. The test runs rep 3 with it and checks a fourth thing:
   4. run_reps.sh exits 3, and names the rep that still holds `credential_expires_at`.
+A third stub writes the key, then makes its own output file write-only, so neither scrub_json.py
+nor grep can read it. The test runs rep 4 with it and checks a fifth thing:
+  5. run_reps.sh exits 3 and names the rep, since a file that cannot be scanned is not clean.
 The test imports no other kit file. It reaches the runner by its own path and nothing else.
 '''
 import json
@@ -53,6 +56,16 @@ import sys
 
 sys.stderr.write(os.getcwd())
 sys.stdout.buffer.write(b'\\xff {"credential_expires_at": 1790000000}\\n')
+'''
+
+UNREADABLE_STUB = '''#!/usr/bin/env python3
+import os
+import sys
+
+sys.stderr.write(os.getcwd())
+sys.stdout.write('{"credential_expires_at": 1790000000}\\n')
+sys.stdout.flush()
+os.fchmod(1, 0o200)
 '''
 
 
@@ -109,6 +122,32 @@ def check_unreadable_rep(root: Path, prompt: Path) -> None:
             shutil.rmtree(cwd)
 
 
+def check_unscannable_rep(root: Path, prompt: Path) -> None:
+    '''A rep file that nothing can read is not clean: the runner must exit 3 and name it.'''
+    bin_dir = root / 'unreadable-bin'
+    bin_dir.mkdir()
+    stub = bin_dir / 'claude'
+    stub.write_text(UNREADABLE_STUB)
+    stub.chmod(0o755)
+    search_path = stub_path(bin_dir)
+    check(shutil.which('claude', path=search_path) == str(stub), 'the unreadable stub is not the first claude on PATH')
+    out = root / 'out-unreadable'
+    run = subprocess.run(
+        ['bash', str(RUNNER), str(prompt), str(out), '4', '4', 'stub-model', '0.01'],
+        capture_output=True, text=True, timeout=RUN_TIMEOUT_SECONDS,
+        env={**os.environ, 'PATH': search_path},
+    )
+    try:
+        mode = (out / 'rep4.json').stat().st_mode & 0o777
+        check(mode == 0o200, f'rep4.json should be write-only, mode is {oct(mode)}')
+        check(run.returncode == 3, f'run_reps.sh should exit 3 for a rep file it cannot scan, got {run.returncode}: {run.stdout}{run.stderr}')
+        check('rep4' in run.stdout, f'the runner should name rep4: {run.stdout}')
+    finally:
+        cwd = (out / 'rep4.err').read_text() if (out / 'rep4.err').exists() else ''
+        if cwd.startswith(REP_PREFIXES) and Path(cwd).is_dir():
+            shutil.rmtree(cwd)
+
+
 def main() -> None:
     with tempfile.TemporaryDirectory(prefix='plan101-selftest-') as tmp:
         root = Path(tmp)
@@ -150,6 +189,7 @@ def main() -> None:
                 if cwd.startswith(REP_PREFIXES) and Path(cwd).is_dir():
                     shutil.rmtree(cwd)
         check_unreadable_rep(root, prompt)
+        check_unscannable_rep(root, prompt)
     print('kit self-test passed')
 
 

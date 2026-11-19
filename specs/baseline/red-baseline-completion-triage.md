@@ -77,13 +77,14 @@ Kit: `specs/baseline/red-baseline-completion-triage/kit/`. Four files are copies
   saves the rep's exit status, runs `python3 "$KIT/scrub_json.py" "$OUT/rep<N>.json"`, and then prints
   `rep<N> exit=<status>`. The scrub never changes the exit line. After every rep has run, the runner reads each rep
   file of the batch for `credential_expires_at`, as bytes (`LC_ALL=C grep -a`), and exits 3 with a line that names a
-  file that still holds it. A scrub that cannot read or write a file leaves the key in place, and the final review
-  found that the batch then exited 0 (commit after `8dd1f78`).
+  file that still holds it, or that `grep` cannot scan (a file is clean only on `grep` status 1). A scrub that cannot
+  read or write a file leaves the key in place, and the final review found that the batch then exited 0 (commits after
+  `8dd1f78`). Codex found the second case, an unreadable file, in the finish review.
 - `kit_selftest.py` is the no-model self-test, run as `uv run python <kit>/kit_selftest.py`. It writes a stub
   `claude` that ignores its arguments, writes `marker-<its pid>` into its working directory, and prints one JSON object
   with `credential_expires_at` at the top level and inside `usage`. It puts the stub first on a PATH built from scratch,
-  so the real CLI can never run. It runs `run_reps.sh` for reps 1 and 2 and checks three things, then a fourth with a
-  second stub. Neither rep file holds
+  so the real CLI can never run. It runs `run_reps.sh` for reps 1 and 2 and checks three things, then a fourth and a fifth with
+  two more stubs. Neither rep file holds
   `credential_expires_at`, and both still parse with `type`, `result` and `total_cost_usd`. Each rep lists exactly one
   name, a `marker-` file, and the two markers differ, so each rep sees only its own folder. The two working directories
   differ, and both sit under `/tmp/plan101-rep-` or `/private/tmp/plan101-rep-`. The test removes the two folders by
@@ -92,7 +93,9 @@ Kit: `specs/baseline/red-baseline-completion-triage/kit/`. Four files are copies
   the runner before the final-review fix, it stopped with `run_reps.sh should exit 3 for a rep file that still holds
   credential_expires_at, got 0`. A first version of the fix used `grep -q`, and the check still failed: under the
   inherited UTF-8 locale, `grep` skips a line that is not valid UTF-8, even with `-a`. Setting `LC_ALL=C` for that one
-  call fixed it.
+  call fixed it. The fifth check runs rep 4 with a stub that writes the key and then makes its own output file write-only,
+  so neither the scrub nor `grep` can read it. It asserts the same exit 3. Before the second fix it stopped with `run_reps.sh
+  should exit 3 for a rep file it cannot scan, got 0`.
 
 The self-test went RED first. Run against the copied runner, before `scrub_json.py` existed, it stopped with
 `AssertionError: rep1.json still holds credential_expires_at`. After the fix it printed `kit self-test passed`. Two

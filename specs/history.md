@@ -630,7 +630,7 @@ Differences from the design:
 - Ruling: Completion gate Stop rule — "Record as non-discriminating" for history-revert and gate-declined: keep the wording and the record states that the control already passed; nothing else changes (owner, 2026-11-19) — if wrong, the two cases stay RED-kind with no discriminating control.
 - Ruling: Completion gate Guard item — "Progress note only": the roadmap-stage guard item stays open with a dated progress note that says what is untested (executing-plans wording, c5a-ep); no follow-up session (owner, 2026-11-19) — if wrong, the executing-plans wording stays untested until someone picks the item up.
 - Ruling: Completion gate Old step 4 — "Stats line and new items only": the completion report prints the backlog summary line and this plan's new items; no full triage proposal (owner, 2026-11-19) — if wrong, the 154-item triage waits for /deferred.
-- Deviation (Task 2): the runner exits 3 when a rep file keeps `credential_expires_at` after the scrub, and the self-test has a fourth check. Source: plan, Task 2.
+- Deviation (Task 2): the runner exits 3 when a rep file keeps `credential_expires_at` after the scrub or cannot be scanned, and the self-test has a fourth and a fifth check. Source: plan, Task 2.
 - Deviation (Task 6): `test_protocol_status_header_is_exempt` passes before the change, so a second test pins the exemption. Source: plan, Task 6.
 - Deviation (Task 6): the suite grew by 10 tests, 11 over the baseline with Task 5's. Source: plan, Task 6.
 - Deviation (Task 6): the selector rewrote 72 status lines, and 11 more (the ten variant plans and plan 100) were rewritten by hand after the final review. Source: plan, Task 6.
