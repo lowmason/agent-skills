@@ -319,6 +319,9 @@ def test_no_fixture_output_names_an_arm(tmp_path, capfd):
     gone = masters_in(tmp_path / 'gone')
     gone['readme'] = tmp_path / 'absent'
     assert fixtures.main_with(['build'], gone, MANIFEST) == 1
+    no_log = masters_in(tmp_path / 'nolog')
+    (no_log['audit'] / 'changelog.md').unlink()  # the copy's read fails with a path that names an arm
+    assert fixtures.main_with(['build'], no_log, MANIFEST) == 2
     out, err = capfd.readouterr()
     assert out.strip() and err.strip()
     assert no_arm_named(out + err), out + err

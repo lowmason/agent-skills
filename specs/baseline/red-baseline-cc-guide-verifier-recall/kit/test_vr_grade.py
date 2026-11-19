@@ -512,6 +512,80 @@ def run_unblind(capsys, gate: str) -> list[str]:
     return out.splitlines()
 
 
+
+# --- input shapes the rules cover (mutant step 2) -------------------------------------------------------------
+
+
+def test_v2_follows_a_symlink_out_of_and_into_the_folder(tmp_path):
+    root = tmp_path / 'R' / 'r001' / 'work'
+    (root / 'packet').mkdir(parents=True)
+    (tmp_path / 'elsewhere').mkdir()
+    (root / 'link').symlink_to(tmp_path / 'elsewhere')
+    (tmp_path / 'alias').symlink_to(root)
+    assert grade.outside('link/x.md', str(root)) is True
+    assert grade.outside(str(tmp_path / 'alias' / 'packet' / 'x.md'), str(root)) is False
+    assert grade.outside(str(root / 'packet' / 'x.md'), str(root)) is False
+
+
+B_REPORT = '\n'.join([
+    'L5 | deniedModels limits the picker | STALE | settings.md:1 | "a quote the docs lack" | Name deniedModels.',
+    'B | 2.1.200 | max | changelog.md:224',
+    'B | bad-label | x | changelog.md:1288',
+    'B | 2.1.180 | other | changelog.md:77',
+    'B | 2.1.170 | other | changelog.md:1703',
+    '',
+])
+
+
+def test_the_audit_sheet_lists_b_rows_on_224_and_every_row_naming_denied_models(kit):
+    text = one_rep(report=B_REPORT)
+    assert section(text, 'B rows on changelog.md:1288, :1702 or :224:') == [
+        '[B kept] B | 2.1.200 | max | changelog.md:224', '[B unparseable] B | bad-label | x | changelog.md:1288']
+    assert section(text, 'rows naming deniedModels:') == [
+        '[A L5 models.routing STALE quote not found] L5 | deniedModels limits the picker | STALE | settings.md:1 '
+        '| "a quote the docs lack" | Name deniedModels.']
+    assert section(text, 'kept corrections and C rows (P1 to P14 candidates):') == ['none']
+    assert check_line(text, 'B rows') == 'B rows: 3 kept, 1 unparseable'
+
+
+WINDOW_REPORT = '\n'.join([
+    'hooks/README.md:80-86 | starts before | hooks.events | "A hook\'s exit code 2 blocks the call." | consistent',
+    'hooks/README.md:84 | just before | hooks.events | "A hook\'s exit code 2 blocks the call." | consistent',
+    'hooks/README.md:93-99 | ends after | hooks.events | "A hook\'s exit code 2 blocks the call." | consistent',
+    'hooks/README.md:94 | just after | hooks.events | "A hook\'s exit code 2 blocks the call." | consistent',
+    'hooks/README.md:70-100 | spans it | hooks.events | "A hook\'s exit code 2 blocks the call." | consistent',
+    '',
+])
+REACH_REPORT = '\n'.join([
+    'skills/x/references/b.md:2 | lost | skills.description | "no such guide text" | contradicts',
+    'skills/x/SKILL.md:5 | fine | skills.description | "Write the description in third person." | consistent',
+    '',
+])
+
+
+def test_the_readme_window_takes_overlapping_ranges_and_reach_takes_kept_rows_only(kit):
+    readme = one_rep(packet='readme', report=WINDOW_REPORT)
+    assert [line.split(' | ')[0] for line in section(readme, 'rows on hooks/README.md lines 85 to 93:')] == [
+        '[F consistent kept] hooks/README.md:80-86', '[F consistent kept] hooks/README.md:93-99',
+        '[F consistent kept] hooks/README.md:70-100']
+    precision = one_rep(rid='r002', packet='precision', report=REACH_REPORT)
+    assert check_line(precision, 'a kept row names a covered file') == 'a kept row names a covered file: no'
+    assert section(precision, 'kept contradicts rows:') == ['none']
+
+
+def test_an_unreadable_arm_file_prints_its_type_not_its_path(kit, capfd):
+    plan(('r001', 'readme', 'control'))
+    rep_files('r001', 'readme', 'control', README_REPORT)
+    arm = common.k_dir() / 'arms' / 'control.md'
+    arm.chmod(0)
+    try:
+        assert grade.main(['b']) == 1
+    finally:
+        arm.chmod(0o644)
+    out, err = capfd.readouterr()
+    assert err == 'grade.py: r001: not graded (PermissionError)\n'
+    assert no_arm_named(out + err)
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
@@ -1278,3 +1352,6 @@ def test_the_entry_point_prints_no_traceback_and_no_arm_path(kit, tmp_path, sand
                               text=True)
         assert proc.returncode in (1, 2), (args, proc.stdout, proc.stderr)
         assert 'Traceback' not in proc.stderr and no_arm_named(proc.stdout + proc.stderr), proc.stderr
+        if args[0] != 'b':
+            assert proc.stderr == 'grade.py: failed (KeyError)\n'
+
