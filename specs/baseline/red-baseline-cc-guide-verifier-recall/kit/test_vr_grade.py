@@ -613,6 +613,22 @@ def test_only_the_verifier_transcript_feeds_v1_to_v8(kit):
     text = sheet('r001')
     assert [check_line(text, f'V{n}') for n in range(1, 9)] == [f'V{n}: ok' for n in range(1, 9)]
 
+
+def test_a_transcript_record_holding_a_line_separator_is_read_whole(kit):
+    '''Claude Code writes U+2028 and U+2029 raw inside JSON strings, so a
+    transcript splits into records at newlines only.'''
+    extra = (vassistant({'type': 'text', 'text': 'a quote\u2028with a line separator'},
+                        use('t5', 'Read', file_path='/opt/y.md')), tool_result('t5', 'one\u2029two\x85three'))
+    plan(('r001', 'readme', 'changed'))
+    rep_files('r001', 'readme', 'changed', README_REPORT,
+              transcripts=[verifier('r001', 'changed', README_REPORT, extra=extra)])
+    path = next((common.k_dir() / 'results' / 'r001' / 'project').rglob('agent-a0.jsonl'))
+    recs = verifier('r001', 'changed', README_REPORT, extra=extra)
+    write(path, ''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in recs))
+    assert '\u2028' in path.read_text(encoding='utf-8')
+    assert grade.main(['b']) == 0
+    assert check_line(sheet('r001'), 'V2') == 'V2: void: Read /opt/y.md'
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
@@ -795,6 +811,8 @@ GOOD_STATUS = {'exit': 0, 'timed_out': False, 'interrupted': False, 'seconds': 5
     ('budget refused', 'a budget stop'),
     ('failed', 'a subagent failed or was killed'),
     ('killed', 'a subagent failed or was killed'),
+    ('failed true', 'a subagent failed or was killed'),
+    ('budget true', 'a budget stop'),
     ('timeout', 'timed out'),
     ('interrupted', 'interrupted'),
     ('exit null', 'no exit code'),
@@ -825,6 +843,10 @@ def test_v6_input_shapes(tmp_path, case, want):
             result = events[-1] = result_record(subagent_stats={'failed': 0, 'killed': {}, 'refused': {'budget': 1}})
         case 'failed':
             result = events[-1] = result_record(subagent_stats={'failed': 1, 'killed': {}, 'refused': {}})
+        case 'failed true':
+            result = events[-1] = result_record(subagent_stats={'failed': True, 'killed': {}, 'refused': {}})
+        case 'budget true':
+            result = events[-1] = result_record(subagent_stats={'failed': 0, 'killed': {}, 'refused': {'budget': True}})
         case 'killed':
             result = events[-1] = result_record(subagent_stats={'failed': 0, 'killed': {'system': 1}, 'refused': {}})
         case 'timeout':

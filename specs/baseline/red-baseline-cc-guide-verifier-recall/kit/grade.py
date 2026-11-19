@@ -338,7 +338,8 @@ def check_v6(events: list[dict] | None, result: dict | None, status: dict | None
 
 
 def count_of(value) -> int:
-    return value if isinstance(value, int) and not isinstance(value, bool) else 0
+    '''A subagent_stats count; `true` counts as one, since it says the thing happened.'''
+    return int(value) if isinstance(value, int) else 0
 
 
 def check_v7(records: list[dict], pilot: dict | None, is_pilot: bool, served: list[dict] | None = None) -> Check:
@@ -424,7 +425,10 @@ def read_json(path: Path) -> dict | None:
 
 
 def load_jsonl(path: Path) -> list[dict]:
-    lines = path.read_text(encoding='utf-8', errors='replace').splitlines()
+    '''A transcript's records. It splits at newlines only: Claude Code leaves
+    U+2028, U+2029 and U+0085 raw inside JSON strings, and splitlines() would
+    cut a record there and drop it.'''
+    lines = path.read_text(encoding='utf-8', errors='replace').split('\n')
     return [obj for obj in map(postprocess.parsed, lines) if isinstance(obj, dict)]
 
 
