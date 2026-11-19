@@ -42,3 +42,44 @@ A background hand-back from the rep's own verifier arrives as a record whose ori
 - **Pilot check.** It does not trigger. Of 206 listed items, 15 were answered by a B row, 191 were answered none and 0 were left unanswered. The report has 18 kept B rows and none that settle lists as unparseable. P11 and P8 are not scored on the pilot (PC8).
 - **A grader defect, found and fixed.** The first grade read 0 of 206 listed items answered. The grader had taken the harness's completion notice, "This agent's report was delivered to you as a message …", for the report. A foreground dispatch whose verifier hands back returns that notice. The grader now skips it, as it skips the launch notice that a background dispatch returns. The pilot was graded again offline from its saved files, so no rep was repeated.
 - **Estimate again (D2).** The pilot cost $3.64, below the plan's $4 to $8. The expected total is now about $50 to $66 before spares, against $45 to $105 at planning. With every spare, the worst expected total is about $104. Both stay under the $130 ceiling. Spent so far: $4.79.
+
+## Gate F (files): PASS
+
+Twelve reps ran as one batch, six readme and six precision, three of each in each arm. Every rep finished with exit 0 in 232 to 419 seconds. The batch cost $14.76. No rep was void, so no spare ran. The ratings were entered by hand from the sheets before `grade.py unblind F`. The sheets stay in the private cache (`$K/sheets/`), and no docs text is committed here.
+
+**Ratings.**
+- **Readme reps.** Every kept `contradicts` row is on `hooks/README.md` line 97 or 99. These lines state a general rule about exit codes, and the guide qualifies that rule with `onFailure: "block"`. I rated each row SUPPORTED. No kept `contradicts` row covers line 89. Each rep that read line 89 kept a `not covered` row on it.
+- **Precision reps.** The rows on `SKILL.md` lines 122 and 124 and on `references/discovery.md` line 13 are on the precision key, so they are SUPPORTED. Two reps (r011, changed arm, and r014, changed arm) each kept one more `contradicts` row, on `references/claude-code.md` line 29. The covered file lists four providers where `haiku` stays Haiku 4.5. The guide names a fifth. An omission from a list leaves the statement true for the four it names, so I rated both rows UNSUPPORTED. If the rating were the other way, the changed arm would show two key misses and no UNSUPPORTED rows. The gate result would not change.
+
+| Rep | Packet | Arm | Cost | readme89 | reach | unsupported | key miss |
+|---|---|---|---|---|---|---|---|
+| r005 | readme | changed | $1.04 | no | - | 0 | - |
+| r006 | readme | control | $1.15 | no | - | 0 | - |
+| r007 | readme | control | $1.06 | no | - | 0 | - |
+| r008 | readme | changed | $1.07 | no | - | 0 | - |
+| r009 | readme | control | $1.17 | no | - | 0 | - |
+| r010 | readme | changed | $1.01 | no | - | 0 | - |
+| r011 | precision | changed | $1.53 | - | yes | 1 | 0 |
+| r012 | precision | control | $1.36 | - | yes | 0 | 0 |
+| r013 | precision | control | $1.10 | - | no | 0 | 0 |
+| r014 | precision | changed | $1.43 | - | yes | 1 | 0 |
+| r015 | precision | changed | $1.40 | - | yes | 0 | 0 |
+| r016 | precision | control | $1.44 | - | yes | 0 | 0 |
+
+**Clauses of the Pre-registration.**
+
+| Clause | Changed arm | Control arm | Met |
+|---|---|---|---|
+| No valid readme rep keeps a `contradicts` row on `hooks/README.md:89` | 0 of 3 | 0 of 3 (reported) | yes |
+| No readme rep has more than 2 UNSUPPORTED rows | total 0, at most 0 | total 0 (reported) | yes |
+| No precision rep has more than 2 UNSUPPORTED rows | total 2, at most 1 | total 0 (reported) | yes |
+| A covered file is named in at least 2 of 3 valid precision reps | 3 of 3 | 2 of 3 (reported) | yes |
+| Key misses (reported) | 0 | 0 | - |
+| Contradiction rows kept, median and total (DF21, reported) | readme 2 and 5, precision 4 and 11 | readme 1 and 4, precision 2 and 7 | - |
+
+**Result: PASS.** Task 5's two commits stay.
+
+**What the result does not show.**
+- The control arm also kept no row on line 89 (0 of 3). The fixture did not separate the arms on that clause, so the clause was met without the control ever failing it.
+- The control arm named a covered file in 2 of 3 precision reps, because the packet holds the covered files for both arms. The reach clause therefore separates the arms by one rep.
+- The changed arm kept more `contradicts` rows than the control in both packets, and its two UNSUPPORTED rows came from the covered file. The precision cost of covered files is small here (at most 1 for each rep), but it is not zero.
