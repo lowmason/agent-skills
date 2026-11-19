@@ -41,6 +41,12 @@ notes = [
 ]
 
 [[suite]]
+name = 'cc-guide-verifier-recall-kit'
+dir = 'specs/baseline/red-baseline-cc-guide-verifier-recall/kit'
+with = ['pytest']
+notes = ['Plan 102 micro-test kit: no-model tests with a stub claude. The fixture tests skip without the cache masters.']
+
+[[suite]]
 name = 'cc_guide'
 dir = 'build/cc_guide'
 with = ['pytest']
