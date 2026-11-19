@@ -132,7 +132,7 @@ Exit 0 on success. Exit 1 on a refusal, or when a rep cannot be graded. Exit 2 o
 - The `void` and `pending` summary lines, the cost (`total_cost_usd` of `result.json`) and the duration (`seconds` of `status.json`).
 - The report source, `reports/<rid>.md`, and the settle lines for that report.
 
-The report is a finished Agent result that is not a launch notice. If there is no such result, the report is the last `SubagentHandback` message of the verifier. The last text of the verifier is never the report.
+The report is a finished Agent result that does not start with a launch notice or a completion notice. If there is no such result, the report is the last `SubagentHandback` message of the verifier. The last text of the verifier is never the report.
 
 Settle runs on a copy of the packet in `$K/settle/<rid>/packet/`, with the report as `report.md`. Each audit rep of either arm settles against a copy of `audit-changed/` (DF15). In that copy, `docs` and `quotes.docs` name `$K/fixtures/docs`. The sheet shows `<packet copy>` in place of the folder. It leaves out the closing commands of settle and the `held, not cited:` line of a files packet.
 

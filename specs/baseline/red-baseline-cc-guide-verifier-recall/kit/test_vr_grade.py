@@ -24,6 +24,11 @@ SID = '0a1b2c3d-0000-4000-8000-000000000001'
 BODY = {'control': 'Arm one contract body.', 'changed': 'Arm two contract body, with listed items.'}
 ROOT = '/private/tmp/vrtest/r001/work'  # a V2 root under /private/tmp, as a real rep's is
 LAUNCH = 'Async agent launched successfully.\nagentId: a1 (internal ID)'
+# A background dispatch's finished Agent result in the held binary, in the pilot rep r004's real shape: it points at
+# the hand-back and holds no report.
+COMPLETION = ('  This agent\'s report was delivered to you as a message from "a1" (its SubagentHandback call). Read it '
+              'there; it is not repeated here.\n  \nagentId: a1\n<usage>subagent_tokens: 270599\ntool_uses: 64\n'
+              'duration_ms: 663846</usage>')
 DOC_LINE = 'Set `deniedModels` in managed settings to block a model.'
 ALLOW_LINE = 'The `availableModels` list limits the picker.'
 
@@ -1216,6 +1221,44 @@ def test_the_report_is_a_finished_agent_result_or_else_the_handback():
     assert grade.report_of(events, last_text) is None  # never the verifier's own last text, nor result.result
 
 
+def test_the_report_skips_the_completion_notice_for_the_handback():
+    '''The completion notice, with its leading spaces and its usage tail or
+    without them, is no report: the verifier's hand-back is.'''
+    records = verifier('r001', 'changed', 'handback report')
+    assert grade.report_of(stream('r001', 'audit', agent_text=COMPLETION), records) == 'handback report'
+    assert grade.report_of(stream('r001', 'audit', agent_text=COMPLETION.lstrip()), records) == 'handback report'
+
+
+def test_a_completion_notice_with_no_handback_leaves_no_report():
+    events = stream('r001', 'audit', agent_text=COMPLETION)
+    assert grade.report_of(events, verifier('r001', 'changed', None)) is None
+
+
+def test_a_notice_counts_only_at_the_start_of_the_result():
+    '''A notice is known by its start, after any leading white space. A
+    finished result that opens with other text is the report, even when a
+    notice's words come later in it.'''
+    records = verifier('r001', 'changed', 'handback report')
+    assert grade.report_of(stream('r001', 'audit', agent_text='\n\t ' + COMPLETION), records) == 'handback report'
+    for text in ('finished report', 'A finished report.\n' + COMPLETION, 'A finished report.\n' + LAUNCH):
+        assert grade.report_of(stream('r001', 'audit', agent_text=text), records) == text
+
+
+def test_the_report_skips_each_notice_an_error_and_a_blank_result():
+    records = verifier('r001', 'changed', 'handback report')
+    for text in (COMPLETION, LAUNCH, '  ' + LAUNCH, ' \n', ''):
+        assert grade.report_of(stream('r001', 'audit', agent_text=text), records) == 'handback report', repr(text)
+    error = stream('r001', 'audit')
+    error[2] = tool_result('toolu_main1', 'agent failed', error=True)
+    assert grade.report_of(error, records) == 'handback report'
+
+
+def test_the_last_handback_is_the_report_after_a_completion_notice():
+    two = verifier('r001', 'changed', 'first handback') + [
+        vassistant(use('toolu_v10', 'SubagentHandback', message='second handback'))]
+    assert grade.report_of(stream('r001', 'audit', agent_text=COMPLETION), two) == 'second handback'
+
+
 # --- V7 and V8 ------------------------------------------------------------------------------------------------
 
 
@@ -1515,6 +1558,24 @@ def test_a_void_rep_still_gets_a_sheet(kit):
     assert check_line(text, 'report') == 'report: none'
     assert section(text, 'settle:') == ['no report, so nothing to settle']
     assert 'B rows on changelog.md:1288, :1702 or :224:' not in text
+
+
+def test_a_sheet_takes_the_handback_when_the_agent_result_is_the_completion_notice(kit):
+    text = one_rep(events=stream('r001', 'audit', agent_text=COMPLETION))
+    assert (common.k_dir() / 'reports' / 'r001.md').read_text(encoding='utf-8') == AUDIT_REPORT
+    assert check_line(text, 'report') == 'report: reports/r001.md'
+    assert check_line(text, 'V6') == 'V6: ok'
+    assert 'no report' not in text
+    assert check_line(text, 'listed items') == 'listed items: 2 answered by a B row, 1 answered none, 1 unanswered'
+    assert no_arm_named(text)
+
+
+def test_a_sheet_has_no_report_when_the_completion_notice_has_no_handback(kit):
+    text = one_rep(report=None, events=stream('r001', 'audit', agent_text=COMPLETION))
+    assert check_line(text, 'V6') == 'V6: void: no report: neither a finished Agent result nor a handback'
+    assert check_line(text, 'report') == 'report: none'
+    assert not (common.k_dir() / 'reports' / 'r001.md').exists()
+    assert no_arm_named(text)
 
 
 def test_a_sheet_logs_refused_calls_and_main_session_hits(kit):

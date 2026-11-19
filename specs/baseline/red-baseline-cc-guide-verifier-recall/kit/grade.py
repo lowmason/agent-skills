@@ -26,8 +26,9 @@ counts and the B-row counts. A files sheet lists every kept contradicts row
 $K/precision-key.tsv), whether a kept row names a covered file, and every
 row on hooks/README.md lines 85 to 93. $K/sheets/<rid>.json holds the
 sheet's measures for unblind. The report is a finished Agent result that is
-no launch notice, else the verifier's last SubagentHandback; never the
-verifier's own last text. It is saved as $K/reports/<rid>.md.
+no launch or completion notice (each known by its start), else the
+verifier's last SubagentHandback; never the verifier's own last text. It is
+saved as $K/reports/<rid>.md.
 
 $K/RESULTS.md holds the hand verdicts, one a line: `<rid> valid` or `<rid>
 void`; for a valid audit rep `<rid> P11 yes|no`, `<rid> P8 yes|no`, `<rid>
@@ -72,6 +73,9 @@ ADVISOR_MODEL = 'claude-opus-5-5'
 AGENT_KEYS = frozenset({'description', 'subagent_type', 'prompt', 'model'})
 AGENT_MODEL = 'sonnet'
 LAUNCH_NOTICE = 'Async agent launched'  # a background Agent call's result, not the report
+# a background Agent call's finished result in the held binary: it points at the hand-back and holds no report
+COMPLETION_NOTICE = "This agent's report was delivered to you as a message from"
+NOTICES = (LAUNCH_NOTICE, COMPLETION_NOTICE)  # each known by its start, after any leading white space
 HANDBACK = 'SubagentHandback'
 # V2: the fenced tools, and the two names of /private/tmp
 FENCED_TOOLS = ('Read', 'Grep', 'Glob')
@@ -463,12 +467,13 @@ def check_v9(events: list[dict], transcripts: list[dict], agent_ids: frozenset[s
 
 def report_of(events: list[dict] | None, records: list[dict]) -> str | None:
     '''The verifier's report: the main session's finished Agent result that is
-    no launch notice and no error, else the verifier's last handback.'''
+    no notice (a launch or a completion notice, known by its start after any
+    leading white space) and no error, else the verifier's last handback.'''
     events = events or []
     for uid, kind in probe_checks.dispatches(events).items():
         text = probe_checks.tool_result_text(events, uid) if kind == VERIFIER else None
         if (text and text.strip() and not any(probe_checks.tool_result_errors(events, [uid]))
-                and not text.lstrip().startswith(LAUNCH_NOTICE)):
+                and not text.lstrip().startswith(NOTICES)):
             return text
     handbacks = [(u.get('input') or {}).get('message') for u in tool_uses(records) if u.get('name') == HANDBACK]
     last = handbacks[-1] if handbacks else None
