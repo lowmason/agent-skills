@@ -107,27 +107,6 @@ def test_bold_labels_mark_releases_with_their_bullets():
         docs.Release('2.1.10', ['three', 'four']), docs.Release('2.1.9', ['one', 'two'])]
 
 
-def test_release_lines_give_each_bullets_line_in_both_formats():
-    text = '\n'.join(['# Changelog', '', '<Update label="2.1.10" description="x">', '  * one `A_B`', '  - two',
-                      '</Update>', '', '**2.1.9**', '', '* three', '* four'])
-    assert docs.release_lines(text) == {'2.1.10': [4, 5], '2.1.9': [10, 11]}
-    assert [len(r.bullets) for r in docs.parse_changelog(text)] == [2, 2]
-
-
-def test_release_lines_count_nested_bullets_and_skip_bullets_outside_a_release():
-    text = '\n'.join(['* before', '<Update label="2.1.9" description="x">', '  **Added**', '  * one',
-                      '  <Expandable title="1">', '    - two', '  </Expandable>', '</Update>', '  * after'])
-    assert docs.release_lines(text) == {'2.1.9': [4, 6]}
-    assert docs.parse_changelog(text)[0].bullets == ['one', 'two']
-
-
-def test_release_lines_raise_as_parse_changelog_does():
-    text = '<Update label="2.1.9" description="d">\n</Update>\n<Update label="2.1.9" description="d">\n</Update>\n'
-    with pytest.raises(ValueError) as err:
-        docs.release_lines(text)
-    assert str(err.value) == 'line 3: release label 2.1.9 repeats line 1'
-
-
 @pytest.mark.parametrize('text, message', [
     ('**2.1.9**\n* a\n**2.1.x**\n', "line 3: not a release label: '2.1.x'"),
     ('**2.1.9**\n* a\n\n**2.1.9**\n', 'line 4: release label 2.1.9 repeats line 1'),

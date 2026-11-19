@@ -11,8 +11,8 @@ import cli
 import packets
 import settle
 import state
-from cc_fixtures import (CHANGELOG_TEXT, DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_dir,  # noqa: F401
-                         fixture_repo, fixture_state, git, guide_text, isolated_home, prime_cache, write_tree)
+from cc_fixtures import (DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_dir, fixture_repo,  # noqa: F401
+                         fixture_state, git, guide_text, isolated_home, prime_cache, write_tree)
 
 NOW = datetime(2026, 10, 4, 12, 0, tzinfo=timezone.utc)
 ALL = ['alpha.overview', 'alpha.reference', 'beta.overview', 'beta.reference']
@@ -330,120 +330,10 @@ def test_an_audit_packet_holds_every_section_its_untriaged_releases_and_its_bloc
         ('2.1.902', ['beta.overview', 'beta.reference'], ['beta.overview'])]
     assert [b['ref'] for b in i['blocks']] == ['events › Events']
     assert sorted(p.name for p in out.iterdir()) == ['blocks.md', 'changelog.md', 'guide.md', 'index.json',
-                                                     'listed.md', 'releases.md', 'sections.md']
+                                                     'releases.md', 'sections.md']
     with pytest.raises(state.SetupError) as err:
         packets.audit(load(world), tmp_path / 'b', 'gamma')
     assert str(err.value) == 'unknown group gamma'
-
-
-def test_listed_bullets_name_each_bullet_holding_a_group_term():
-    changelog = '\n'.join(['<Update label="2.1.902" description="d">',
-                           '  * Changed `BETA_ENV` beside `NEW_FLAG` and `true`', '  * Fixed `BETA_ENV_X`',
-                           '</Update>', '<Update label="2.1.901" description="d">', '  * Added `ALPHA_ENV`',
-                           '</Update>'])
-    terms = {'beta.overview': {'BETA_ENV'}, 'beta.reference': {'BetaEvent'}}
-    assert packets.listed_bullets(changelog, terms, guide_text()) == [
-        {'item': '2.1.902#1', 'line': 2, 'sections': ['beta.overview'], 'lacks': ['NEW_FLAG'],
-         'text': 'Changed `BETA_ENV` beside `NEW_FLAG` and `true`'}]
-
-
-def test_an_audit_packet_lists_the_bullets_that_name_its_groups_terms(world, tmp_path):
-    out = packets.audit(load(world), tmp_path / 'a', 'alpha')
-    assert index(out)['listed'] == [{'item': '2.1.901#1', 'line': 14, 'sections': ['alpha.reference'],
-                                     'lacks': [], 'text': 'Added `ALPHA_ENV` to the alpha tools'}]
-    assert (out / 'listed.md').read_text().split('\n')[:3] == [
-        '# Listed changelog bullets', '',
-        '- 2.1.901#1 · changelog.md:14 · alpha.reference · Added `ALPHA_ENV` to the alpha tools']
-    assert 'Added `ALPHA_ENV`' in (out / 'changelog.md').read_text().split('\n')[13]
-
-
-def test_a_listed_bullet_numbers_its_place_among_its_releases_bullets_in_either_format():
-    changelog = '\n'.join(['**2.1.9**', '', '* Fixed a crash', '* Changed `NEW_FLAG`', '', '**2.1.10**', '',
-                           '- Added `NEW_FLAG`'])
-    got = packets.listed_bullets(changelog, {'s.one': {'NEW_FLAG'}}, guide_text())
-    assert [(e['item'], e['line'], e['text']) for e in got] == [
-        ('2.1.10#1', 8, 'Added `NEW_FLAG`'), ('2.1.9#2', 4, 'Changed `NEW_FLAG`')]
-    update = '\n'.join(['<Update label="2.1.9" description="d">', '  * Fixed a crash', '  * Changed `NEW_FLAG`',
-                        '</Update>'])
-    assert [(e['item'], e['line']) for e in packets.listed_bullets(update, {'s.one': {'NEW_FLAG'}}, guide_text())] == [
-        ('2.1.9#2', 3)]
-
-
-def test_a_bullet_naming_terms_of_several_sections_lists_each_in_the_terms_order():
-    changelog = '<Update label="2.1.9" description="d">\n  * Added `AAA_FLAG` and `ZED_FLAG`\n</Update>'
-    terms = {'z.last': {'ZED_FLAG', 'OTHER_FLAG'}, 'a.first': {'AAA_FLAG'}, 'm.none': {'MID_FLAG'}}
-    assert [e['sections'] for e in packets.listed_bullets(changelog, terms, guide_text())] == [['z.last', 'a.first']]
-    same = {'one.term': {'AAA_FLAG'}, 'two.term': {'AAA_FLAG'}}
-    assert [e['sections'] for e in packets.listed_bullets(changelog, same, guide_text())] == [['one.term', 'two.term']]
-
-
-def test_lacks_keep_each_span_the_guide_lacks_within_the_length_limits_once_in_bullet_order():
-    spans = ['ZED_FLAG', 'ab', 'abc', 'x' * 60, 'y' * 61, 'AAA_FLAG', 'ZED_FLAG', 'true', 'BETA_ENV']
-    changelog = ('<Update label="2.1.9" description="d">\n  * Changed ' + ' '.join(f'`{s}`' for s in spans)
-                 + '\n</Update>')
-    got = packets.listed_bullets(changelog, {'beta.overview': {'BETA_ENV'}}, guide_text())
-    assert [e['lacks'] for e in got] == [['ZED_FLAG', 'abc', 'x' * 60, 'AAA_FLAG']]
-
-
-def test_lacks_leave_out_a_span_the_guide_holds_on_any_line_even_in_a_fence_or_before_a_section():
-    guide = '\n'.join(['Preface `PREFACE_ID` and `BETA_ENV`.', '```', '`FENCED_ID`', '```', '## 1. A'])
-    changelog = ('<Update label="2.1.9" description="d">\n'
-                 '  * Changed `BETA_ENV`, `PREFACE_ID`, `FENCED_ID` and `OTHER_ID`\n</Update>')
-    got = packets.listed_bullets(changelog, {'beta.overview': {'BETA_ENV'}}, guide)
-    assert [e['lacks'] for e in got] == [['OTHER_ID']]
-
-
-def test_lacks_leave_out_a_stop_term_the_guide_never_holds():
-    changelog = ('<Update label="2.1.9" description="d">\n'
-                 '  * Changed `BETA_ENV`, `true`, `model` and `NEW_FLAG`\n</Update>')
-    got = packets.listed_bullets(changelog, {'beta.overview': {'BETA_ENV'}}, 'The guide holds `BETA_ENV` only.')
-    assert [e['lacks'] for e in got] == [['NEW_FLAG']]
-
-
-def test_listed_bullets_come_newest_release_first_whatever_the_file_order():
-    changelog = '\n'.join(['<Update label="2.1.9" description="d">', '  * Added `AAA_FLAG`', '  * Fixed `AAA_FLAG`',
-                           '</Update>', '<Update label="2.1.10" description="d">', '  * Changed `AAA_FLAG`',
-                           '</Update>'])
-    got = packets.listed_bullets(changelog, {'a.one': {'AAA_FLAG'}}, guide_text())
-    assert [e['item'] for e in got] == ['2.1.10#1', '2.1.9#1', '2.1.9#2']
-
-
-def test_listed_lines_join_sections_and_lacks_and_say_none_without_entries():
-    entry = {'item': '2.1.9#2', 'line': 7, 'sections': ['a.one', 'a.two'], 'lacks': ['X_FLAG', 'Y_FLAG'],
-             'text': 'Added `X_FLAG`'}
-    assert packets.listed_lines([entry]) == [
-        '# Listed changelog bullets', '',
-        '- 2.1.9#2 · changelog.md:7 · a.one, a.two · names the guide lacks: X_FLAG, Y_FLAG · Added `X_FLAG`']
-    assert packets.listed_lines([]) == ['# Listed changelog bullets', '', 'None.']
-
-
-def test_an_audit_packet_lists_a_bullet_of_a_release_the_group_has_already_checked(world, tmp_path):
-    marked = CHANGELOG_TEXT.replace('First fixture release', 'Changed `ALPHA_ENV`')
-    latest(world, {'changelog.md': marked})
-    out = packets.audit(load(world), tmp_path / 'a', 'alpha')
-    assert [(e['item'], e['line']) for e in index(out)['listed']] == [('2.1.901#1', 14), ('2.1.900#1', 18)]
-    assert [r['label'] for r in index(out)['releases']] == ['2.1.901', '2.1.902']
-    assert 'Changed `ALPHA_ENV`' in (out / 'changelog.md').read_text().split('\n')[17]
-
-
-def test_an_audit_packet_with_no_listed_bullet_says_none(world, tmp_path):
-    latest(world, {'changelog.md': CHANGELOG_TEXT.replace('Added `ALPHA_ENV` to', 'Added')})
-    out = packets.audit(load(world), tmp_path / 'a', 'alpha')
-    assert index(out)['listed'] == []
-    assert (out / 'listed.md').read_text() == '# Listed changelog bullets\n\nNone.\n'
-
-
-def test_an_audit_packet_leaves_releases_md_as_it_was(world, tmp_path):
-    out = packets.audit(load(world), tmp_path / 'a', 'alpha')
-    assert (out / 'releases.md').read_text().split('\n') == [
-        '# Untriaged releases', '',
-        '## 2.1.901', '',
-        'Untriaged for 2 section(s); term hits, as hints only: alpha.reference.', '',
-        '- 2.1.901#1 · hints: alpha.reference · Added `ALPHA_ENV` to the alpha tools', '',
-        '## 2.1.902', '',
-        'Untriaged for 2 section(s); term hits, as hints only: none.', '',
-        '- 2.1.902#1 · hints: none · Changed how `BETA_ENV` is read',
-        '- 2.1.902#2 · hints: none · Fixed a crash in the fixture tool', '', '']
 
 
 def test_a_files_packet_per_stale_file_marks_the_sections_changed_since_its_stamp(world, tmp_path):

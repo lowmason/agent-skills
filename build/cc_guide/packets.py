@@ -20,8 +20,8 @@ from typing import NamedTuple
 
 from blocks import page_blocks
 from check import Docs, Finding, compare, offline_docs, release_notes, releases_of, untriaged
-from docs import CHANGELOG, Release, page_file, parse_changelog, release_lines, version_key
-from guide import STOP_TERMS, TERM_MAX, TERM_MIN, code_spans, read_citations, sections
+from docs import CHANGELOG, Release, page_file, version_key
+from guide import read_citations, sections
 from lint import stale_citations
 from state import (BASELINE, MANIFEST, Manifest, SetupError, Source, baselined_text, citing_files, copy_to_snapshot,
                    covered_files, group_terms, latest_docs, parse_baseline, parse_manifest, read_fetch, snapshot_text)
@@ -32,7 +32,6 @@ SETTLED = 'settled.json'
 GUIDE = 'guide.md'
 BLOCKS = 'blocks.md'
 RELEASES = 'releases.md'
-LISTED = 'listed.md'
 SECTIONS = 'sections.md'
 COVERED = 'covered'
 BLOCK_KINDS = ('changed', 'missing', 'new')
@@ -198,38 +197,6 @@ def release_items(world: World, labels: list[str], pending: dict[str, list[str]]
     return entries, lines + ([] if labels else ['None.', ''])
 
 
-def listed_bullets(changelog: str, terms: dict[str, set[str]], guide: str) -> list[dict]:
-    '''Every bullet of any release in the changelog text that holds a code
-    span equal to a term of any section in `terms` (a group's section ->
-    terms). Newest release first, bullets in changelog order. `item` numbers
-    the bullet within its release as triage does, `line` is its line in the
-    changelog, `sections` are the sections whose terms it names, in `terms`'
-    order, and `lacks` are its code spans of TERM_MIN to TERM_MAX characters,
-    outside STOP_TERMS, that are no code span of any line of the guide.'''
-    known = {span for line in guide.split('\n') for span in code_spans(line)}
-    lines = release_lines(changelog)
-    found = []
-    for release in parse_changelog(changelog):
-        for n, (text, line) in enumerate(zip(release.bullets, lines[release.label], strict=True), start=1):
-            spans = code_spans(text)
-            named = [sid for sid, held in terms.items() if not held.isdisjoint(spans)]
-            if named:
-                lacks = [s for s in dict.fromkeys(spans)
-                         if TERM_MIN <= len(s) <= TERM_MAX and s not in STOP_TERMS and s not in known]
-                found.append({'item': f'{release.label}#{n}', 'line': line, 'sections': named, 'lacks': lacks,
-                              'text': text})
-    return found
-
-
-def listed_lines(entries: list[dict]) -> list[str]:
-    '''listed.md: one line per listed bullet.'''
-    lines = ['# Listed changelog bullets', '']
-    for e in entries:
-        lacks = f" · names the guide lacks: {', '.join(e['lacks'])}" if e['lacks'] else ''
-        lines.append(f"- {e['item']} · {CHANGELOG}:{e['line']} · {', '.join(e['sections'])}{lacks} · {e['text']}")
-    return lines + ([] if entries else ['None.'])
-
-
 def triage(world: World, out: Path, through: str | None, size: int = RANGE) -> Path | None:
     '''R8.4 step 1's packet: the guide, each changed, missing or new block,
     and every bullet of each untriaged release. With `through`, only the
@@ -366,8 +333,8 @@ def verify(world: World, out: Path, ids: list[str], settled: Path | None) -> lis
 def audit(world: World, out: Path, group: str) -> Path:
     '''R8.6's packet: every section of the group, all its pages copied to the
     head release's snapshot, every bullet of each release untriaged for its
-    sections, the changelog with its listed bullets, and the group's block
-    findings. --out is checked before the snapshot is written.'''
+    sections, the changelog, and the group's block findings. --out is
+    checked before the snapshot is written.'''
     if group not in world.manifest.groups:
         raise SetupError(f'unknown group {group}')
     sids = world.manifest.groups[group].sections
@@ -378,15 +345,13 @@ def audit(world: World, out: Path, group: str) -> Path:
     rel_entries, rel_lines = release_items(world, labels, pending)
     entries, block_lines = block_items(world, [f for f in world.findings if f.group == group and f.kind in BLOCK_KINDS])
     lines, section_md = section_list(world, sids, {})
-    listed = listed_bullets(world.docs.changelog, world.terms[group], world.guide)
     index = header(world, 'audit') | {
         'group': group, 'sections': sids, 'lines': lines, 'docs': str(docs), 'releases': rel_entries,
-        'listed': listed, 'held': [sid for sid in sids if sid in page_holds(world)],
+        'held': [sid for sid in sids if sid in page_holds(world)],
         'quotes': {'guide': [GUIDE], 'changelog': [CHANGELOG], 'docs': [str(docs)]}, 'blocks': entries,
     }
     return write_packet(world, out, index, {GUIDE: world.guide, SECTIONS: section_md, BLOCKS: block_lines,
-                                            RELEASES: rel_lines, LISTED: listed_lines(listed),
-                                            CHANGELOG: world.docs.changelog})
+                                            RELEASES: rel_lines, CHANGELOG: world.docs.changelog})
 
 
 def change_mark(stamp: str, changed_release: str, changed: bool) -> str:
