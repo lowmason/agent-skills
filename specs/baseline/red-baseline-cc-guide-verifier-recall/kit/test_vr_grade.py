@@ -735,13 +735,16 @@ def test_v2_screens_grep_and_glob_against_the_own_tool_results_folder():
 
 
 
-@pytest.mark.parametrize('where, ok', [('own', True), ('other session', False), ('other slug', False)])
+@pytest.mark.parametrize('where, ok', [('own', True), ('other session', False), ('other slug', False),
+                                       ('own subagents', False), ('own transcript', False)])
 def test_a_sheet_exempts_the_reps_own_session_tool_results_only(kit, where, ok):
     projects = Path(os.environ['HOME']) / '.claude' / 'projects'
     slug = '-private-tmp-vr102-r001-work'  # where rep_files puts the session's own transcript
-    folder = {'own': projects / slug / SID, 'other session': projects / slug / OTHER_SID,
-              'other slug': projects / '-private-tmp-vr102-r009-work' / SID}[where]
-    path = folder / 'tool-results' / 'toolu_big.txt'
+    path = {'own': projects / slug / SID / 'tool-results' / 'toolu_big.txt',
+            'other session': projects / slug / OTHER_SID / 'tool-results' / 'toolu_big.txt',
+            'other slug': projects / '-private-tmp-vr102-r009-work' / SID / 'tool-results' / 'toolu_big.txt',
+            'own subagents': projects / slug / SID / 'subagents' / 'agent-a0.jsonl',
+            'own transcript': projects / slug / f'{SID}.jsonl'}[where]
     for each in (slug + '/' + SID, slug + '/' + OTHER_SID, '-private-tmp-vr102-r009-work/' + SID):
         write(projects / each / 'tool-results' / 'toolu_big.txt', 'saved grep output\n')  # all three on disk
     extra = (vassistant(use('t5', 'Read', file_path=str(path))), tool_result('t5', 'saved grep output'))
