@@ -1392,7 +1392,7 @@
       → done 2026-10-08 (/deferred quick fix)
 
 ## 40-handoff-briefs — 2026-10-11
-- [ ] Re-run `v1`, `b2` and `c4a-neg` on the shipped prepare-handoff text. GREEN
+- [x] Re-run `v1`, `b2` and `c4a-neg` on the shipped prepare-handoff text. GREEN
       Phase 3 ended with `v1` and `b2` UNSETTLED at 3 valid reps each (10
       dispatched), and `c4a-neg` was last scored before the description was
       widened and then anchored. 34 of 70 Phase 3 reps voided because the
@@ -1406,6 +1406,7 @@
       shipped skills and a recorded verdict.
       → progress 2026-11-17 (owner ruling): kit-owned skills folder. The kit points the skill path (or `HOME`) at a folder that holds the shipped skills, so the reviewer subagents that the skill dispatches read the text under test. The VOID rules stay as they are.
       → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
+      → done 2026-11-18 (plan 100): each arm has 5 valid reps on the shipped skills and a verdict: `v1` PASS (1 of 5 failing), `b2` PASS (0 of 5), `c4a-neg` PASS (1 of 5, after the owner voided r289, D5). The `v1` and `c4a-neg` passes depend on scorer readings that the owner accepted at the completion gate. Record: `specs/baseline/red-baseline-handoff-rerun.md`.
 - [x] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
       you just finished is never planned past") says "do not plan, brainstorm or
       name it", yet step 3a requires the Handoff bullets and the stamp to name the
@@ -6898,7 +6899,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       command, and the block does not name it. Size: design. Done when: the owner has recorded whether the
       block names the `marimo pair` command, and, if it does, the block and a new tested round change together.
       → retired 2026-11-17: the owner ruled that the block does not name the `marimo pair` command (/deferred owner ruling). Its "if it is available" covers the marimo-pair skill only.
-- [ ] **The deny rule `Read(~/**)` does not stop every Bash read of the home folder (plan 98 Task 3, record
+- [x] **The deny rule `Read(~/**)` does not stop every Bash read of the home folder (plan 98 Task 3, record
       Conclusion item 2; owner item, 2026-11-14).** In round 2, `override` reps 1 and 4 ran `ls ~/.claude/skills
       .claude 2>/dev/null` inside a compound command with a `for` loop, and the same read alone was denied. The
       control's `override` rep 5 ran `ls ~/.marimo*`. The same `DENY` line sits in the kits of plan 93
@@ -6908,6 +6909,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       probe rep shows a `for`-loop `ls ~/…` denied, or the owner has recorded that the gap stays because
       VOID case 4 catches the harm.
       → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
+      → done 2026-11-18 (plan 100): the kit `specs/baseline/red-baseline-handoff-rerun/kit/` gives each rep its own `HOME`, so a `for`-loop `ls ~/…` reads the rep's kit copy, and its PreToolUse guard denies a path that reaches the real home in any shell form. Pinned by `test_rerun_guard.py`, and guard probe r283 shows `for d in a; do ls @REAL@/.claude; done` denied for the rep and its subagent.
 - [x] **The firmlink spelling of the scratch folder passes the inside check (plan 98 Task 2 ruling, 2026-11-14).**
       `refuse_inside` in `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh` and `probe.sh`
       compares path strings. The path `/System/Volumes/Data/private/tmp/mnb98/x` names the same folder as
@@ -6925,7 +6927,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       → done 2026-11-14 (/deferred quick fix): the item of section `97-change-reverted-mutant` is closed, and the owner's record there covers these 50 files. The field stays in them.
 
 ## 98-marimo-notebook-seam Step 4b review — 2026-11-14
-- [ ] **Parallel micro-test reps share the scratch folder (plan 98 Step 4b review, Codex finding P2; the owner
+- [x] **Parallel micro-test reps share the scratch folder (plan 98 Step 4b review, Codex finding P2; the owner
       asked for this item, 2026-11-14).** `specs/baseline/red-baseline-marimo-notebook-block/kit/run_reps.sh`
       (lines 384 to 389) runs reps 2 to N together, and they share `/tmp/mnb98/`. 12 committed summaries show a
       rep exporting to `/tmp/mnb98/explore.html`, and reps of one batch used the same path, so a rep could read
@@ -6936,9 +6938,10 @@ review and the Plan Completion gate (2026-10-27) add the others.
       scratch folder, or runs the reps one after the other, and a no-model test shows that two reps cannot see
       each other's files.
       → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
+      → done 2026-11-18 (plan 100): the kit `specs/baseline/red-baseline-handoff-rerun/kit/` runs the reps one after the other: `run_rep.sh` refuses to start while `/private/tmp/phr100/` holds anything, and it parks each rep's `HOME` when the rep ends. Pinned by `test_second_rep_sees_nothing_of_first`. The rep's own `TMPDIR` does not isolate `mktemp` or literal `/tmp` paths on macOS, so the one-at-a-time branch is what meets this item (kit README, known limits).
 
 ## deferred-2026-11-14 (no plan; /deferred pass, branch claude/deferred-07da07) — 2026-11-14
-- [ ] **The next micro-test kit still copies `credential_expires_at` into its rep JSON files (the owner's ruling
+- [x] **The next micro-test kit still copies `credential_expires_at` into its rep JSON files (the owner's ruling
       on the plan 97 item, `/deferred` pass 2026-11-14).** The owner ruled that the field stays in the 453 rep
       JSON files committed under `specs/baseline/` by 2026-11-14, and that kits built from now on drop it. The
       field is a login credential's expiry timestamp. Nothing drops it today. In the newest kit the step that
@@ -6950,6 +6953,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       kit removes `credential_expires_at` from every rep JSON file it writes, and a no-model test feeds that
       step a stream with the field and finds no `credential_expires_at` in the output.
       → planned 2026-11-17: specs/plans/100-prepare-handoff-rerun.md
+      → done 2026-11-18 (plan 100): the kit `specs/baseline/red-baseline-handoff-rerun/kit/` strips the field from every JSON and JSONL file in the results folder (`postprocess.py`), and a final check fails the rep if the string remains. Pinned by `test_strip_removes_field_everywhere`.
 
 ## deferred-quick-fixes-2026-11-14 (no plan; /deferred quick fixes, branch claude/deferred-quick-fixes-3a035d) — 2026-11-14
 - [x] **history_entry.py drops a ledger ruling that comes after a note, with no sign (found by the /deferred quick
@@ -7128,6 +7132,43 @@ review and the Plan Completion gate (2026-10-27) add the others.
 
 ## deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
 - [ ] **Account identity reaches the isolated micro-test runs (first found in specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json, 2026-11-12).** A rep run under `claude -p --tools "" --setting-sources ""` can know the owner's name. Plan 92's `P1a-sonnet` rep5 addressed the owner by surname, and plan 97's isolation pilot answered YES to the identity line of `isolation_probe.txt` (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). The cause is unknown, and no verdict has depended on it so far. Filed when the owner retired the item that asked for the identity line (section `92-writing-skills-guide-rewrite — 2026-11-12`). Finding the cause would take a probe that varies the login and the environment (for example `env -i` and a fresh `HOME`) and records which runs still know the name. Size: design. Revisit if: a micro-test verdict turns on whether a rep knows the user's name or email.
+
+## peer-session-inbound-probe (no plan; owner request, branch claude/peer-session-inbound-probe) — 2026-11-18
+- [x] **Test whether a message sent to a busy no-tools `claude -p` rep reaches it.** On 2026-11-18, while plan 101's control arms ran, `ListAgents` in a coordinating Desktop session listed a kit rep, `plan101-rep-m4rvf8-f0`, as a peer session. The rep ran under `env -i`, so `env -i` does not keep a rep off the peer list, and any session on the machine can address a running rep by name. The outbound half is closed for kits that pass `--tools ""` with `--strict-mcp-config`, such as plan 97's review kit (`specs/baseline/red-baseline-change-reverted-mutant/review-kit/run_reps.sh`): the rep has no `ListAgents` or `SendMessage`. The inbound half is not tested. A cross-session message reaches a session at its next tool round, and a no-tools rep has none, but the message could also arrive as an extra turn. Until the test runs, no controller or coordinator may message or subscribe to a session whose name carries a running kit's rep prefix. The test: start one probe rep with the review kit's flags and a prompt that keeps it busy for about 30 seconds and tells it to quote, word for word, any message from another session that it sees. Find its name with `ListAgents`, send it a unique marker with `SendMessage`, and search its JSON result for the marker. A `num_turns` above 1 also shows an extra turn. The kit passes `--no-session-persistence`, so the JSON result is the only record. A missing marker proves nothing unless the rep would have quoted it, so first run a positive control: the same probe with one tool (for example `--tools Read`) and a prompt that makes it call that tool, so the message can arrive at a tool round. If the control rep does not quote its marker, the test is inconclusive. Run the probe only while no kit runs, so the marker cannot reach a live rep. Size: quick-fix. Done when: the control and the probe have run and this item's tick note says whether each marker arrived, quoting the field that shows it. If it arrived, the tick note also carries `→ item:` for the kit fix.
+      → done 2026-11-18 (owner request): both markers arrived, on CLI 2.1.323, one run per arm. Control (`--tools Read`): the rep quoted its marker after its third read, and its JSON shows `origin` null and `result_index` 0, so a message to a rep that has tools leaves no trace in the result fields. Probe (the kit's `--tools ""` flags): the rep finished its essay, then took the marker as an extra turn. Its JSON `result` is the reply to the marker, not the essay, with `result_index` 1 and `origin.kind` "peer". `num_turns` stayed 1, so this item's `num_turns` test was wrong. The scored answer is lost, and `origin` also holds the sender's session title, session id and socket path. None of the 2,913 rep JSONs on main and none of plan 101's reps shows a peer turn. The no-kit check missed one kit: plan 100's pilot reps ran from 17:13, through the probe at 17:23, and `ListAgents` never listed them, because its runner gives each rep its own `HOME`. Both markers went by name to the probe's own reps, so neither could reach a plan 100 rep. → item: peer-session-inbound-probe (no plan; owner request, branch claude/peer-session-inbound-probe) — 2026-11-18
+- [ ] **Void a no-tools rep that took a peer message (next-kit fix).** A message sent to a busy `claude -p` rep with `--tools ""` arrives as an extra turn after its answer. The rep's JSON `result` then holds its reply to the message, not the answer the kit scores. Committed kits stay frozen, so this is a fix for the next kit. Its tally voids a rep whose JSON has `result_index` above 0 or an `origin` that is not null. Its scrub step drops `origin`, which holds the sender's session title, session id and socket path. This is the same class of leak as `credential_expires_at`, which plan 101's `kit/scrub_json.py` already drops. Size: quick-fix. Done when: the next kit built after 2026-11-18 voids such a rep and drops `origin`, and its self-test covers both.
+- [ ] **Detect or block a peer message to a rep that has tools.** A message sent to a busy `claude -p` rep that has tools arrives at its next tool round, inside the turn. The JSON result fields show nothing: `origin` is null and `result_index` is 0. Only the rep's own text can show it. Kits whose reps have tools, such as plan 97's `impl-kit` and plan 100's `kit/run_rep.sh`, are guarded today only by the rule that nobody messages a running kit's reps. There are two ways to close it. One reads the injected turn from `--output-format stream-json` output or the session transcript, which plan 100's runner keeps. The other finds a setting that keeps a rep off the peer list. `claude --help` for 2.1.323 lists none. A rep run with its own `HOME`, as plan 100's runner does, did not appear in `ListAgents` while it ran (one observation, 2026-11-18), so such a rep may be out of reach by name. The same fact means `ListAgents` cannot show whether such a kit is running. Size: design. Done when: a kit whose reps have tools either voids a rep that took a peer message, shown by a test with a real delivery, or runs its reps where no peer can reach them, shown by a probe.
+
+## 100-prepare-handoff-rerun — 2026-11-18
+- [ ] **The handoff-rerun path guard misses obfuscated routes to the Keychains link (plan 100 Task 1 re-review;
+      owner deferred it at the completion gate, 2026-11-18).** `specs/baseline/red-baseline-handoff-rerun/kit/guard.py`
+      denies a token that names `Library/Keychains` or resolves into the rep's `~/Library`. It allows a `Keychain?`
+      glob after a `cd`, `cd ~/Libr*`, and a bare `cd Library` followed by relative paths. `extract.py` misses the
+      same forms. No rep in plan 100 used one. Plan 101 copies this kit. Size: plan. Revisit if: a rep transcript in
+      any kit that copies this guard reaches `~/Library` or `Keychains` by one of these forms.
+- [ ] **The handoff-rerun guard and audit check a heredoc command on its first line only (plan 100 completion-gate
+      review, 2026-11-18).** A Bash command that holds `<<` anywhere is checked on its first line only, by the
+      plan's `denied()` contract (`guard.py`, `extract.py`). So a search or a real-home path on a later line passes
+      both. Up to 40 of plan 100's 607 recorded Bash calls hold `<<`, and none walked or named the real home on a
+      later line. The kit README lists the limit. Size: plan. Revisit if: a rep transcript shows a later heredoc
+      line that names the real home or runs a search rooted at an ancestor of it.
+- [ ] **The handoff-rerun guard and audit cannot see a walk made by another program (plan 100 completion gate,
+      2026-11-18).** `python3 -c` with `os.walk('/')`, or any script that walks the disk, passes both
+      `guard.py` and `extract.py`, because they read the command's words, not what a program does. The kit README
+      lists the limit. Size: design. Revisit if: a rep transcript shows a script that walks from an ancestor of the
+      real home.
+
+## pr-lifecycle-worktree-and-push (no plan; owner rulings at G1, branch claude/pr-lifecycle-worktree-push-b9e9e5) — 2026-11-19
+- [ ] **Free a desktop-app worktree's branch before the archive (F2 option b; owner ruling 2026-11-19: adopt it
+      after one live check, and report only until then).** Step 3 of `rules/pr-lifecycle.md` leaves a worktree
+      that the desktop app made, and its branch, for the archive. An archive leaves the branch behind: the pooled
+      folder ends on a detached HEAD (seen after four archives, 2026-10-31 and 2026-11-02), so merged branches
+      pile up. Option b: once the branch holds no commit that the merged PR's `headRefOid` lacks, run
+      `git switch --detach` in the worktree, then `git branch -D <branch>`. (An ancestry check against
+      `origin/<default>` fails after a squash or rebase merge, Codex review 2026-11-19.) The worktree then looks as the pool
+      leaves it. Nobody has tested how the app's own branch tracking takes it. Size: quick-fix after the check.
+      Done when: one app session runs option b, its archive succeeds, `git worktree list` and `get_session` show
+      no fault, and step 3 and the `README.md` rules row describe option b.
 
 ## 102-cc-guide-verifier-recall-and-covered-files — 2026-11-19
 - [ ] The working-tree `Source.read` in `build/cc_guide/state.py` follows a tracked symlink to its target, while a ref source reads the link text (`git cat-file blob`). A `/cc-guide files` packet therefore copies the target's text for a tracked symlink under a skill folder, and `citing_files` does the same for a citing file, although its docstring says a tracked symlink is git's link text. Codex found it in plan 102's final review (2026-11-19, `[P1]`, `state.py:622-626`). The behavior predates plan 102. The repo tracks one symlink (`.claude/rules/clean-code-python.md`), outside every skill folder, so no packet meets it today. A symlink that points outside the repo would put that file's text into a verifier packet. Size: design. Done when: the owner has ruled whether a tracked symlink is read as its link text or as its target, and a `Source` test pins that choice for both the working tree and a ref.

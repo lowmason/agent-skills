@@ -98,6 +98,12 @@ with = ['pytest', 'polars', 'fastexcel']
 notes = ['Build tests; the per-vintage workbook tests read the committed sources/.']
 
 [[suite]]
+name = 'handoff-rerun-kit'
+dir = 'specs/baseline/red-baseline-handoff-rerun/kit'
+with = ['pytest']
+notes = ['Plan 100 kit: guard, runner (stub claude, no model) and audit tests. bash and git required.']
+
+[[suite]]
 name = 'hooks'
 dir = 'hooks'
 with = ['pytest']
