@@ -625,6 +625,9 @@ def test_unknown_extra_refuses(kit):
     assert done.returncode == 3, done.stdout + done.stderr
     assert 'other' in done.stderr
     assert kit.turns() == []
+    # The refusal comes before any HOME is built. A HOME built first would be parked in homes/r501
+    # by the cleanup trap, and that burned id would block a rerun.
+    assert not (kit.ctl / 'homes' / 'r501').exists()
     assert not (kit.ctl / 'results' / 'r501').exists()
     assert not kit.root.exists() or list(kit.root.iterdir()) == []
 
@@ -692,3 +695,27 @@ def test_meta_records_the_merged_main_as_the_only_start_ref(kit):
                              text=True, check=True).stdout.strip()
     assert subject == f"Merge branch '{FEATURE}'"
     assert meta['start_refs'] == f'main={merge}'
+
+
+SENTINEL_NAME = 'Sentinel Owner Zq'
+SENTINEL_EMAIL = 'sentinel.owner.zq@example.invalid'
+
+
+def test_no_real_git_identity_reaches_a_rep_repo(kit):
+    # The runner runs with the real HOME, so every git call that writes a reflog entry (the base setup's
+    # push, fetch and remote set-head, and the merged extra's checkout and push) would stamp the owner's identity.
+    (kit.real / '.gitconfig').write_text(f'[user]\n\tname = {SENTINEL_NAME}\n\temail = {SENTINEL_EMAIL}\n')
+    make_t4(kit)
+    plain, = kit.make_reps(arm='c5a-neg', batch='plain')
+    merged, = kit.make_reps(arm='c5a-merged', batch='merged')
+    run_ok(kit, plain)
+    run_ok(kit, merged)
+    holding = []
+    for rep in (plain, merged):
+        home = kit.ctl / 'homes' / rep
+        files = [p for folder in (home / 'work' / rep / '.git', home / 'git' / f'{rep}.git')
+                 for p in folder.rglob('*') if p.is_file()]
+        assert any(p.name == 'HEAD' for p in files)
+        holding += [str(p.relative_to(kit.ctl / 'homes')) for p in files
+                    if SENTINEL_NAME.encode() in p.read_bytes() or SENTINEL_EMAIL.encode() in p.read_bytes()]
+    assert holding == []
