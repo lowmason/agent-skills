@@ -40,10 +40,11 @@
 - **D1** (owner, brief, 2026-11-19): the planning session's own cleanup, after this plan's PR merges, is the live check of option b. `rules/pr-lifecycle.md` step 3 runs as written, except in case 3 (a worktree the desktop app made). There the session asks the owner first (Gate A). On a yes it checks its branch against the merged PR's `headRefOid`, runs `git switch --detach` in its worktree, then `git branch -D <branch>`, and records what it ran and saw in the execution handoff brief. Applied in: the section "The option b record" below.
 - **D2** (owner, brief, 2026-11-19): the plan's last task reads that record and checks the archive. If the planning session is not archived yet, it stops and asks, and records no failure. On a pass it rewrites step 3 case 3 and the `README.md` rules row for option b, and closes the option b item. On a failure, or if option b did not run, it adds a `→ progress` note to that item and leaves step 3 as it is. Applied in: Task 5.
 - **D3** (owner, brief, 2026-11-19): on a pass, only the rule changes. The skill's local-merge and discard flows keep the branch under MADE_BY `launcher` (`skills/finishing-a-development-branch/SKILL.md` lines 343, 379 and 390), since they are not the post-PR cleanup. The option b item's closing note says so. No extra micro-test. Applied in: Task 5 Step 4a.
+- **D4** (owner, plan review, 2026-11-19): approve every default in "Open for plan review", items 1–7, as proposed. Applied in: Global Constraints (Micro-tests, Next-kit fixes), Tasks 1–5.
 
 ## Open for plan review
 
-Each item carries the default this plan uses.
+Resolved at plan review on 2026-11-19: the owner approved each default as proposed (D4). Each item carries the default this plan uses.
 
 1. **Line 379's archive wording** (brief Q1). Default: rewrite only the archive claim, in the line's own voice ("Tell your partner …"). Use the facts of `rules/pr-lifecycle.md` lines 47–50, add that the branch can outlive the archive, keep "reuse", and drop "(step 4)". The exact text is in Task 3 Step 2.
 2. **Step 6's single `launcher` case** (brief Q2). Default: do not split it into "the desktop app made it" and "another launcher made it". Line 379 already says "Anywhere else, your partner can run `git worktree remove`".
