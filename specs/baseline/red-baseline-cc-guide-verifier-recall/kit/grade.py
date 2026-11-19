@@ -69,6 +69,7 @@ HANDBACK = 'SubagentHandback'
 FENCED_TOOLS = ('Read', 'Grep', 'Glob')
 PRIVATE_TMP = '/private/tmp'
 TMP_ALIASES = ('/tmp', '/System/Volumes/Data/private/tmp')
+TOOL_RESULTS = 'tool-results'  # the rep's own session folder that V2 counts as inside (plan 45's ruling 6)
 # the sheet
 AUDIT_FIXTURE = 'audit-changed'  # every audit rep settles against it, of either arm (DF15)
 DISCARDS = ('unparseable: ', 'quote not found, discarded: ', 'no proposed wording, discarded: ')
@@ -191,12 +192,14 @@ def resolve(path: str, root: str) -> str:
     return real
 
 
-def outside(path: str, root: str) -> bool:
-    '''Whether a tool path falls outside the rep's work folder.'''
+def outside(path: str, root: str, inside: tuple[str, ...] = ()) -> bool:
+    '''Whether a tool path falls outside the rep's work folder and outside
+    each folder of `inside`. Both sides are resolved first, so a `..` that
+    leaves a folder leaves it.'''
     if not path:
         return False
-    p, r = resolve(path, root), resolve(root, root)
-    return p != r and not p.startswith(r + '/')
+    p = resolve(path, root)
+    return not any(p == f or p.startswith(f + '/') for f in (resolve(folder, root) for folder in (root, *inside)))
 
 
 def paths_used(use: dict) -> list[str]:
@@ -221,10 +224,11 @@ def listed_tokens(text: str) -> list[str]:
     return [t for t in tokens if t.startswith(('/', '~', '..')) or '/../' in t]
 
 
-def check_v2(records: list[dict], root: str) -> tuple[Check, list[str]]:
+def check_v2(records: list[dict], root: str, inside: tuple[str, ...] = ()) -> tuple[Check, list[str]]:
     '''V2: each verifier Read, Grep or Glob that named a path outside the work
     folder and returned, or whose result listed one; and, logged only, each
-    such call the fence refused.'''
+    such call the fence refused. `inside` holds the rep's own session
+    tool-results folder (plan 45's ruling 6), which counts as inside.'''
     results = tool_results(records)
     void, refused = [], []
     for use in tool_uses(records):
@@ -233,11 +237,24 @@ def check_v2(records: list[dict], root: str) -> tuple[Check, list[str]]:
             continue
         text, error = results.get(use.get('id', ''), ('', False))
         for path in paths_used(use):
-            if outside(path, root):
+            if outside(path, root, inside):
                 (refused if error else void).append(f'{name} {path}')
         if name != 'Read' and not error:
-            void += [f'{name} result lists {t}' for t in listed_tokens(text) if outside(t, root)]
+            void += [f'{name} result lists {t}' for t in listed_tokens(text) if outside(t, root, inside)]
     return found(void), refused
+
+
+def own_tool_results(project: Path, session: str | None) -> tuple[str, ...]:
+    '''The rep's own session tool-results folder, as the rep saw it:
+    $HOME/.claude/projects/<slug>/<session>/tool-results, for each slug whose
+    folder in the rep's results holds <session>.jsonl, the session's own
+    transcript. Another session, another slug, or another folder of the
+    session (subagents/, the transcript itself) is not in it.'''
+    if not session:
+        return ()
+    projects = Path(os.environ['HOME']) / '.claude' / 'projects'
+    slugs = sorted({p.parent.name for p in project.glob(f'*/{session}.jsonl')})
+    return tuple(str(projects / slug / session / TOOL_RESULTS) for slug in slugs)
 
 
 def injected_hits(records: list[dict]) -> list[str]:
@@ -413,6 +430,7 @@ class Evidence(NamedTuple):
     main: list[dict]  # the main session's transcript
     agents: list[tuple[str, list[dict]]]  # each subagent transcript, with its agent type
     served: list[dict] | None  # probes.read_transcripts' model and effort for the verifier
+    inside: tuple[str, ...]  # the rep's own session tool-results folder, which V2 counts as inside
 
 
 def results_dir(rid: str) -> Path:
@@ -454,7 +472,7 @@ def evidence(rid: str) -> Evidence:
         except (ValueError, OSError):
             served = None
     return Evidence(events, read_json(folder / 'result.json'), read_json(folder / 'status.json'), main, agents,
-                    served)
+                    served, own_tool_results(project, session))
 
 
 def read_arm(rep: dict) -> str:
@@ -631,7 +649,7 @@ def rep_sheet(rep: dict) -> tuple[list[str], dict]:
     prompt = common.DISPATCH.format(mode=mode, packet=common.R / rid / 'work' / 'packet')
     extra = tuple(map(str, (pilot or {}).get('agent_params') or ()))
     report = report_of(ev.events, records)
-    v2, refused = check_v2(records, str(common.R / rid / 'work'))
+    v2, refused = check_v2(records, str(common.R / rid / 'work'), ev.inside)
     checks = {'V1': check_v1(ev.events or [], verifiers, prompt, extra), 'V2': v2, 'V3': check_v3(records),
               'V4': check_v4(records), 'V5': check_v5(records, body),
               'V6': check_v6(ev.events, ev.result, ev.status, results_dir(rid), report),

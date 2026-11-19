@@ -679,6 +679,53 @@ def test_v2_reads_a_listed_path_at_the_start_of_a_result_line_only():
     void, refused = grade.check_v2(records, ROOT)
     assert (void.status, void.detail, refused) == ('ok', '', [])
 
+
+PROJECTS = '/Users/someone/.claude/projects'
+SLUG = '-private-tmp-vrtest-r001-work'
+OWN = f'{PROJECTS}/{SLUG}/{SID}/tool-results'  # the rep's own session's tool-results folder (plan 45's ruling 6)
+OTHER_SID = '0a1b2c3d-0000-4000-8000-000000000002'
+
+
+@pytest.mark.parametrize('path, void', [
+    (f'{OWN}/toolu_01.txt', False),
+    (OWN, False),
+    (f'{OWN}/sub/toolu_02.txt', False),
+    (f'{OWN}/../subagents/agent-a0.jsonl', True),
+    (f'{PROJECTS}/{SLUG}/{OTHER_SID}/tool-results/toolu_01.txt', True),
+    (f'{PROJECTS}/{SLUG}/{SID}/subagents/agent-a0.jsonl', True),
+    (f'{PROJECTS}/{SLUG}/{SID}.jsonl', True),
+    (f'{PROJECTS}/-private-tmp-vrtest-r002-work/{SID}/tool-results/toolu_01.txt', True),
+    (f'{OWN}-old/toolu_01.txt', True),
+])
+def test_v2_treats_the_reps_own_tool_results_folder_as_inside(path, void):
+    records = [vassistant(use('t1', 'Read', file_path=path)), tool_result('t1', 'text')]
+    got, refused = grade.check_v2(records, ROOT, (OWN,))
+    assert (got.status, got.detail, refused) == (('void', f'Read {path}') if void else ('ok', '')) + ([],)
+    assert grade.check_v2(records, ROOT)[0].status == 'void'  # no exemption unless given
+
+
+def test_v2_screens_grep_and_glob_against_the_own_tool_results_folder():
+    records = [vassistant(use('g1', 'Grep', pattern='x', path=OWN), use('g2', 'Glob', pattern=f'{OWN}/*.txt'),
+                          use('g3', 'Grep', pattern='y', path=f'{ROOT}/packet')),
+               tool_result('g1', f'{OWN}/toolu_01.txt'), tool_result('g2', f'{OWN}/toolu_01.txt'),
+               tool_result('g3', f'{OWN}/toolu_01.txt\n{PROJECTS}/{SLUG}/{OTHER_SID}/tool-results/t.txt')]
+    got, _ = grade.check_v2(records, ROOT, (OWN,))
+    assert got.detail == f'Grep result lists {PROJECTS}/{SLUG}/{OTHER_SID}/tool-results/t.txt'
+
+
+
+@pytest.mark.parametrize('where, ok', [('own', True), ('other session', False), ('other slug', False)])
+def test_a_sheet_exempts_the_reps_own_session_tool_results_only(kit, where, ok):
+    projects = Path(os.environ['HOME']) / '.claude' / 'projects'
+    slug = '-private-tmp-vr102-r001-work'  # where rep_files puts the session's own transcript
+    folder = {'own': projects / slug / SID, 'other session': projects / slug / OTHER_SID,
+              'other slug': projects / '-private-tmp-vr102-r009-work' / SID}[where]
+    path = folder / 'tool-results' / 'toolu_big.txt'
+    extra = (vassistant(use('t5', 'Read', file_path=str(path))), tool_result('t5', 'saved grep output'))
+    text = one_rep(packet='readme', report=README_REPORT,
+                   transcripts=[verifier('r001', 'changed', README_REPORT, extra=extra)])
+    assert check_line(text, 'V2') == ('V2: ok' if ok else f'V2: void: Read {path}')
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
