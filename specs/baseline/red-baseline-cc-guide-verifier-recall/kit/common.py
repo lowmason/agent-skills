@@ -35,9 +35,17 @@ MAX_SPARES = 2  # per packet and arm (PC9)
 # V3's markers: a hit in the verifier's injected context is traced by hand.
 MARKERS = ('deniedModels', 'availableModels', 'effortLevel', 'README.md:89')
 
-# PC2's --settings: no session in a rep has a usable Bash tool, no Read under
-# the home folder, and Read, Grep and Glob stay inside the working folder.
-SETTINGS = json.dumps({'permissions': {'deny': ['Bash', 'Read(~/**)'], 'blockReadsOutsideWorkingDirectories': True}})
+# D5: the tools that reach another session. The probe's init record listed
+# them, and a name-only deny rule takes a tool off a session's list. Denying
+# them stops a rep calling out, but not another session messaging the rep:
+# grade.py's V9 voids a rep whose records hold a peer origin.
+CROSS_SESSION_TOOLS = ('ListAgents', 'SendMessage', 'PushNotification', 'RemoteTrigger')
+
+# PC2's --settings, as D5 amends it: no session in a rep has a usable Bash
+# tool or a cross-session tool, no Read under the home folder, and Read, Grep
+# and Glob stay inside the working folder.
+SETTINGS = json.dumps({'permissions': {'deny': ['Bash', 'Read(~/**)', *CROSS_SESSION_TOOLS],
+                                       'blockReadsOutsideWorkingDirectories': True}})
 
 # .claude/skills/cc-guide/SKILL.md, "Dispatch, save, settle" step 1's prompt, verbatim.
 DISPATCH = ('Mode: {mode}. Packet: {packet}. Read its index.json first, then follow your contract '

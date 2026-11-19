@@ -68,6 +68,8 @@ The prompt is `common.MAIN`, which holds the dispatch of the cc-guide skill's st
 
 `command(rid)` gives this argv: `<held binary> -p --permission-mode auto --settings <SETTINGS> --max-budget-usd <cap> --output-format stream-json --verbose`. It has no `--model` (PC10) and no `--setting-sources`. The environment is built from scratch and holds only `HOME`, `USER`, `LOGNAME`, `SHELL`, `LANG`, `PATH`, `TMPDIR`, `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS` and `DISABLE_AUTOUPDATER` (PC11).
 
+`SETTINGS` is PC2's, as D5 amends it. Its `permissions.deny` list holds `Bash`, `Read(~/**)` and the four tools of `common.CROSS_SESSION_TOOLS`: `ListAgents`, `SendMessage`, `PushNotification` and `RemoteTrigger`. It also sets `blockReadsOutsideWorkingDirectories`. A name-only deny rule takes a tool off the session's tool list, so the init record of a rep lists neither `Bash` nor any of the four. The deny list stops a rep reaching another session. It does not close the inbound half, because another session can still message a rep. Two things close that half: V9 (the grader voids a rep whose records hold a peer origin), and the rule that no controller session messages a rep session while reps run.
+
 | Packet kind | Cap (`--max-budget-usd`) | Timeout |
 |---|---|---|
 | audit | $10 | 60 minutes |

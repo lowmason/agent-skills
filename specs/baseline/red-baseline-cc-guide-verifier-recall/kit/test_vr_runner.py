@@ -348,6 +348,18 @@ def test_the_rep_command_denies_bash_and_fences_reads(kit):
     assert int(env['CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS']) > common.TIMEOUTS['audit'] * 1000
 
 
+@pytest.mark.parametrize('tool', ['ListAgents', 'SendMessage', 'PushNotification', 'RemoteTrigger'])
+def test_the_rep_command_denies_each_cross_session_tool(kit, tool):
+    '''D5: the probe's init record listed these four, and a name-only deny
+    rule removes a tool from a session's list. Every CROSS_SESSION_TOOLS name
+    is in the deny list of the argv a rep runs with.'''
+    plan(('r001', 'audit', 'control'))
+    argv, _ = run.command('r001')
+    deny = json.loads(argv[argv.index('--settings') + 1])['permissions']['deny']
+    assert tool in common.CROSS_SESSION_TOOLS and tool in deny
+    assert set(common.CROSS_SESSION_TOOLS) <= set(deny)
+
+
 def test_no_controller_variable_reaches_a_rep(kit, tmp_path, sandbox, monkeypatch):
     monkeypatch.setenv('CLAUDECODE', '1')
     monkeypatch.setenv('CLAUDE_CODE_ENTRYPOINT', 'cli')
@@ -472,8 +484,10 @@ def test_the_constants_hold_the_plans_values():
     assert common.BG_CEILING_MS == 4_200_000
     assert common.MAX_SPARES == 2
     assert common.MARKERS == ('deniedModels', 'availableModels', 'effortLevel', 'README.md:89')
-    assert json.loads(common.SETTINGS) == {
-        'permissions': {'deny': ['Bash', 'Read(~/**)'], 'blockReadsOutsideWorkingDirectories': True}}
+    assert json.loads(common.SETTINGS) == {  # PC2, as D5 amends it
+        'permissions': {'deny': ['Bash', 'Read(~/**)', 'ListAgents', 'SendMessage', 'PushNotification',
+                                 'RemoteTrigger'], 'blockReadsOutsideWorkingDirectories': True}}
+    assert common.CROSS_SESSION_TOOLS == ('ListAgents', 'SendMessage', 'PushNotification', 'RemoteTrigger')
     assert {p: (v['mode'], v['reps']) for p, v in common.PACKETS.items()} == {
         'audit': ('audit', 5), 'readme': ('files', 3), 'precision': ('files', 3)}
     assert common.PACKETS['audit']['master'] == 'cc-guide/packets/20261013T113847-audit'
