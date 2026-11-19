@@ -47,7 +47,7 @@ Each item carries the default this plan uses.
 
 1. **Line 379's archive wording** (brief Q1). Default: rewrite only the archive claim, in the line's own voice ("Tell your partner …"). Use the facts of `rules/pr-lifecycle.md` lines 47–50, add that the branch can outlive the archive, keep "reuse", and drop "(step 4)". The exact text is in Task 3 Step 2.
 2. **Step 6's single `launcher` case** (brief Q2). Default: do not split it into "the desktop app made it" and "another launcher made it". Line 379 already says "Anywhere else, your partner can run `git worktree remove`".
-3. **What counts as a pass** (brief Q3). Default: all four conditions in Task 5 Step 1. After the archive, a missing `worktreePath` is expected.
+3. **What counts as a pass** (brief Q3). Default: all four conditions in Task 5 Step 1. After the archive, a missing `worktreePath` is expected. One change from the brief: its "`git worktree list` marks nothing `prunable`" becomes "the recorded folder's entry is not `prunable`". This repository has several worktrees, and a stale one would fail the check for a reason that has nothing to do with option b.
 4. **A partial failure** (brief Q4). Default: if `git switch --detach` succeeds and `git branch -D` fails, the planning session stops and reports both outputs. It leaves the worktree detached and runs no other form of either command. Task 5 reads that as a failure.
 5. **Which fixes get a micro-test.** The item asks for writing-skills' micro-test on each fix. Default: three cases. Two non-regression cases cover line 74 (`noremote`, `remote-nohead`), since its new fact could pull an agent off the F1 route. One factual case covers line 379 (`archive-relay`), and it ships whatever the control scores (plan 60's D6). Cheaper: line 74's two cases only, by plan 76's D1 rule (test only a fix that can change what an agent chooses).
 6. **Line 74 keeps the F1 route for a repository with no remote.** Default: yes. The failed check prints the same error with no remote and with a remote that lacks `origin/HEAD`. In the second case the probe saw unpushed commits left out (`specs/guides/claude-code-customization-guide.md` line 262). The new text says so.
@@ -105,13 +105,17 @@ Run: `uv run python build/run_suites.py worktree-skills-fix-kit`, then `uv run p
 
 - [ ] **Step 5: Write the cases into the record, then commit before any rep runs**
 
-Each rep's prompt asks it to list, in order, each command (`RUN:`), each tool call (`TOOL:` name and arguments) and each thing it says to its partner (`SAY:`), and to stop where it would wait for the partner. Build each fixture's git output from a real scratch repository, outside every repository, and paste it in.
+Each rep's prompt asks it to list, in order, each command (`RUN:`), each tool call (`TOOL:` name and arguments) and each thing it says to its partner (`SAY:`), and to stop where it would wait for the partner. A rep has no tools, so the fixture states the output of every command the skill has it run before the scored call. Build that output from a real scratch repository, outside every repository, and paste it in.
 
 | Case | Skill | Fixture | PASS | FAIL | Bar |
 |---|---|---|---|---|---|
-| `noremote` | using-git-worktrees | A normal checkout at `/work/atlas`, three local commits on `main`. The partner said yes to a worktree. `EnterWorktree` is available. The base check printed git's `unknown revision` error, and `git remote` prints nothing. | `git worktree add` on a new branch from HEAD, then `EnterWorktree` with `path` | `EnterWorktree` with `name`, and no `git worktree add` | non-regression |
+| `noremote` | using-git-worktrees | A normal checkout at `/work/atlas`, three local commits on `main`. The partner said yes to a worktree on branch `feat/rate-limit`, and declared no worktree directory. `EnterWorktree` is available. The base check printed git's `unknown revision` error, and `git remote` prints nothing. `ls -d .worktrees` prints `.worktrees`, and `git check-ignore -q .worktrees/` exits 0. | `git worktree add` on a new branch from HEAD, then `EnterWorktree` with `path` | `EnterWorktree` with `name`, and no `git worktree add` | non-regression |
 | `remote-nohead` | using-git-worktrees | As `noremote`, but `git remote -v` lists `origin`, `git fetch origin` failed, and the cached `origin/main` is two commits behind HEAD. | as `noremote` | as `noremote` | non-regression |
-| `archive-relay` | finishing-a-development-branch | Step 2 recorded MADE_BY `launcher` and MAIN_GIT `allowed`. The desktop app started the session in the worktree. Option 1's merge and tests passed in MAIN_ROOT. The run is at Step 6, and the partner says they will archive this session next. | tells the partner that archiving can discard uncommitted changes in the worktree, and that the branch can outlive the archive | says the archive cleans up or removes the worktree or deletes the branch, or leaves out either fact | factual |
+| `archive-relay` | finishing-a-development-branch | Step 2 recorded MADE_BY `launcher` and MAIN_GIT `allowed`. The desktop app started the session in the worktree. Option 1's merge and tests passed in MAIN_ROOT. The worktree holds an untracked `notes.md` (`git status --porcelain` there prints `?? notes.md`). The run is at Step 6, and the partner says they will archive this session next. | tells the partner that archiving can discard uncommitted changes in the worktree, and that the branch can outlive the archive | says that archiving removes the worktree at once or deletes the branch, or leaves out either fact | factual |
+
+Grading rules:
+- Where an answer branches with IF lines, grade the branch that matches the stated facts.
+- An answer with neither the PASS call nor the FAIL call, such as one that stops to ask first, counts as a FAIL in both arms.
 
 Bars:
 - **Non-regression:** the treatment passes at least the control's count minus one. A miss stops the task for an owner ruling.
@@ -126,7 +130,7 @@ git commit -m "test(baseline): add the worktree skills fix kit and its cases"
 
 - [ ] **Step 6: Pilot**
 
-Run `probe.sh` with `isolation_probe.txt` on the installed binary, then one control rep per case. Read each rep in full. Expected: the probe reports no leak, and each rep answers in the `RUN:`/`TOOL:`/`SAY:` form.
+Run `probe.sh` with `isolation_probe.txt` on the installed binary, then one control rep per case. Read each rep in full. Expected: the probe's lines 1 to 6 read NO, and each rep answers in the `RUN:`/`TOOL:`/`SAY:` form. Line 7, the user's identity, may read YES. That is the open item "Account identity reaches the isolated micro-test runs", and it does not block: no case depends on who the user is, and the identity scrub runs on every rep (plan 97's controller ruling, 2026-11-13). Any other YES stops the task.
 
 - [ ] **Step 7: Run the control arms**
 
@@ -281,7 +285,7 @@ A subagent has no `get_session`, so the controller runs this step and puts the v
 - Otherwise, the verdict is `pass` only if all four hold, else `fail`, naming each condition that failed:
   1. The record shows both option b commands with exit status 0.
   2. `get_session` shows `isArchived` true.
-  3. `git worktree list` marks nothing `prunable`. The recorded folder is gone, on a detached HEAD, or checked out by another session.
+  3. In `git worktree list --porcelain`, the recorded folder's entry has no `prunable` line, and the folder is gone, detached, or on a branch other than the recorded one (another session took it). Other entries do not count.
   4. `git branch --list <branch>` prints nothing.
 
 - [ ] **Step 2a (pass): Run the failing check**
@@ -309,8 +313,8 @@ In `rules/pr-lifecycle.md`, replace the case that starts `- **A worktree the des
 
 In `README.md`, replace `It leaves a desktop-app worktree and its branch for the app's archive, and reports them.` with `In a desktop-app worktree, it detaches the worktree and deletes the branch once the merged PR holds all its commits, and leaves the worktree for the app's archive.`
 
-Run the Step 2a command, then `git grep -c 'detaches the worktree' -- README.md`, then `git grep -c 'merge-base --is-ancestor' -- rules/pr-lifecycle.md`.
-Expected: `rules/pr-lifecycle.md:1`, then `README.md:1`, then exit 1.
+Run the Step 2a command, then `git grep -c 'detaches the worktree' -- README.md`, then `git grep -cF 'git rev-list --count <headRefOid>..<branch>' -- rules/pr-lifecycle.md`.
+Expected: `rules/pr-lifecycle.md:1`, then `README.md:1`, then `rules/pr-lifecycle.md:1`.
 
 - [ ] **Step 4a (pass): Close the item**
 
