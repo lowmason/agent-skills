@@ -83,3 +83,55 @@ Twelve reps ran as one batch, six readme and six precision, three of each in eac
 - The control arm also kept no row on line 89 (0 of 3). The fixture did not separate the arms on that clause, so the clause was met without the control ever failing it.
 - The control arm named a covered file in 2 of 3 precision reps, because the packet holds the covered files for both arms. The reach clause therefore separates the arms by one rep.
 - The changed arm kept more `contradicts` rows than the control in both packets, and its two UNSUPPORTED rows came from the covered file. The precision cost of covered files is small here (at most 1 for each rep), but it is not zero.
+
+## Gate A (audit): FAIL
+
+Ten reps ran in two waves of the audit packet, five in each arm. The first wave was 2 pairs (r017 to r020). `grade.py stop gateA1` printed `continue`, so the second wave ran 3 more pairs (r021 to r026). Every rep finished with exit 0 in 578 to 841 seconds. No rep was void and none was pending, so no spare ran. The ten reps cost $34.28 (control $15.86, changed $18.42). The ratings were entered by hand from the sheets before `grade.py unblind A`. The sheets stay in the private cache (`$K/sheets/`), and no docs text is committed here.
+
+**Ratings.**
+- **Kept corrections.** I checked every kept A row against the docs at the fixture commit. All of them are SUPPORTED, so each rep has 0 UNSUPPORTED rows. The rows that repeat across reps are the retirement scope of Haiku 4.5 (L211), the Explore model under Fable and the reach of `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` (L218), the one-hour helper requests (L405), `/compact` under Safe now (L410), the effort-change cache caveat and the saved-per-model level (L426), `ANTHROPIC_DEFAULT_MODEL` in the precedence list (L429) and the direction of the tokenizer comparison (L441).
+- **P11 and P8.** P11 is a B row on `changelog.md:1288`, or a SUPPORTED C row that names `deniedModels` as blocking a model that `availableModels` permits. P8 is a B row on `changelog.md:1702`. Both lines of each sheet are mechanical. The C rows on `deniedModels` (`model-config.md:361-364`) gave P11 to r021, r023 and r025. In r018, r019 and r025 the B row gave it as well.
+- **Borderline rulings.** Each is in the ledger with its cost if wrong. A row stays SUPPORTED when (1) its main correction holds and a subordinate clause leaves out an exception (the Explore exception to FORCE alone, the `CLAUDE_CODE_EFFORT_LEVEL` exception for `max`, the HIPAA and `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` exclusions); (2) its scope comes from the guide line it corrects (the subscription scope of L405); (3) its figures follow from the docs' 30% and the price rows (7.7x against 10x at L441); (4) it gives the real URL of `llms.txt` (L485). A row that says the `sonnet` alias is Sonnet 4.5 or 4.6 on the partner platforms counts as P10, wherever the verifier filed it. If every one of these rulings were the other way, a rep would read 1 or 2 UNSUPPORTED rows. Neither failed clause below depends on any of them.
+
+| Rep | Wave | Arm | Cost | P11 | P8 | Unsupported | Listed items: B row, none, unanswered |
+|---|---|---|---|---|---|---|---|
+| r017 | 1 | control | $3.19 | no | no | 0 | 0, 0, 206 |
+| r018 | 1 | changed | $4.20 | yes | no | 0 | 14, 192, 0 |
+| r019 | 1 | changed | $3.30 | yes | yes | 0 | 15, 191, 0 |
+| r020 | 1 | control | $3.07 | no | yes | 0 | 4, 0, 202 |
+| r021 | 2 | changed | $3.14 | yes | yes | 0 | 10, 196, 0 |
+| r022 | 2 | control | $3.18 | no | no | 0 | 3, 0, 203 |
+| r023 | 2 | changed | $4.07 | yes | no | 0 | 2, 204, 0 |
+| r024 | 2 | control | $3.42 | no | no | 0 | 2, 0, 204 |
+| r025 | 2 | changed | $3.71 | yes | no | 0 | 4, 202, 0 |
+| r026 | 2 | control | $3.00 | no | no | 0 | 0, 0, 206 |
+
+**Clauses of the Pre-registration.** The control column for P8, DF7 and the DF8 labels is the baseline of the clause. Plan 45's DF8 allows the changed arm to keep one fewer than the control.
+
+| Clause | Changed arm | Control arm | Met |
+|---|---|---|---|
+| P11: changed in at least 4 of 5 valid reps | 5 of 5 | - | yes |
+| P8: changed in at least 4 of 5 valid reps | 2 of 5 | 1 of 5 (reported) | **no** |
+| P11: control in at most 1 of 5 valid reps | - | 0 of 5 | yes |
+| DF7: changed UNSUPPORTED total at most control's + 3 | 0 | 0 (reported) | yes |
+| DF7: no changed rep above 2 | at most 0 | - | yes |
+| DF8 P1 (Haiku 4.5 retirement scope, L211) | 1 | 2 | yes |
+| DF8 P2 (Explore under Fable, L218) | 5 | 5 | yes |
+| DF8 P3 (reach of FORCE, L218) | 5 | 5 | yes |
+| DF8 P4 (one-hour helper requests, L405) | 5 | 5 | yes |
+| DF8 P5 (`/compact` rebuilds, L410) | 4 | 4 | yes |
+| DF8 P6 (effort-change cache caveat, L426) | 5 | 4 | yes |
+| DF8 P9 (`ANTHROPIC_DEFAULT_MODEL` in the precedence list, L429) | 5 | 4 | yes |
+| DF8 P13 (tokenizer comparison direction, L441) | 1 | 4 | **no** |
+| DF8 P14 (`CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL`) | 1 | 2 | yes |
+| P7, P10, P12 (reported) | 4, 1, 0 of 5 | 0, 3, 0 of 5 | - |
+| Corrections kept (DF21, reported) | median 7, total 37 | median 7, total 37 | - |
+
+**Result: FAIL.** Two clauses are not met: P8 (2 of 5, where 4 are needed) and the DF8 retention of P13 (1 against 4). The rule is "FAIL otherwise", and there is no rerun without the owner's word.
+
+**What the result does and does not show.**
+- **P11 separates the arms cleanly.** The changed arm met it in 5 of 5 valid reps and the control in 0 of 5. The change lifted the recall of the `deniedModels` omission, which is the case it was built for. The result does not take that back.
+- **The listed-item answers separate the arms too.** The changed arm left 0 of 206 listed items unanswered in all 5 reps. The control left 202 to 206 unanswered in all 5 reps. Both arms kept B rows (changed 4 to 18, control 0 to 8). This is the mechanism the change added, and it works.
+- **P8 does not separate the arms.** The changed arm kept a B row on `changelog.md:1702` in 2 of 5 reps (r019, r021) and the control in 1 of 5 (r020). In the other three changed reps (r018, r023, r025) the verifier answered that listed item with none. The mechanism does not make the verifier keep this B row.
+- **P13 is a loss.** The changed arm kept a correction on L441 in 1 of 5 reps (r023), and the control in 4 of 5. The sheets do not say why. The record does not claim a cause.
+- **Gate scope.** P8 and P13 are single items in a 206-item packet. The gate counts them as clauses, so two misses give FAIL even though the changed arm kept every other label at least as often as the control and met P11 in every rep. A new round with a changed arm is a different test and needs the owner's word.
