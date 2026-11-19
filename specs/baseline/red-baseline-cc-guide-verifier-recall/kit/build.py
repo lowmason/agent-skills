@@ -9,8 +9,12 @@ Python 3.13 (Task 6; plan 45's DF15 for the blinding):
 Rep ids run r001, r002 and on, across every command, and are never reused.
 Each pair's two arms take a random order from `secrets`, so neither a rep id
 nor a batch file names an arm. $K/batches/<name>.txt lists a batch's rep ids,
-one a line, in run order. A spare joins its void rep's batch file, the probe
-joins probe.txt and the pilot pilot.txt, so `run.py <batch>` runs it next.
+one a line, in run order. A second `batch` call with the same name appends to
+that batch, so gate F's two files packets share one batch (plan 102 Task 9).
+A name may mix upper and lower case, but one that differs from an existing
+batch only in case is refused, since the macOS disk takes both as one file.
+A spare joins its void rep's batch file, the probe joins probe.txt and the
+pilot pilot.txt, so `run.py <batch>` runs it next.
 plan.json is the one file here that names an arm. Nothing this script prints
 names one; a refusal of a third spare says only that the packet and arm have
 had their two.
@@ -24,7 +28,7 @@ from pathlib import Path
 
 import common
 
-NAME_RE = re.compile(r'[a-z0-9][a-z0-9-]{0,39}')
+NAME_RE = re.compile(r'[A-Za-z0-9][A-Za-z0-9-]{0,39}')
 PROBE_BATCH, PILOT_BATCH = 'probe', 'pilot'
 USAGE = 'usage: build.py batch <name> <packet> <pairs> | spare <rid> | probe | pilot'
 
@@ -64,10 +68,13 @@ def rep(rid: str, batch: str, packet: str, arm: str, role: str) -> dict:
 
 
 def add_batch(name: str, packet: str, pairs: int) -> None:
-    if not NAME_RE.fullmatch(name) or name in (PROBE_BATCH, PILOT_BATCH):
-        raise Refusal(f'{name}: not a batch name (lower-case letters, digits and hyphens; not probe or pilot)')
-    if (common.k_dir() / 'batches' / f'{name}.txt').exists():
-        raise Refusal(f'batch {name}: exists; a batch name is used once')
+    if not NAME_RE.fullmatch(name) or name.lower() in (PROBE_BATCH, PILOT_BATCH):
+        raise Refusal(f'{name}: not a batch name (letters, digits and hyphens, and not probe or pilot)')
+    batches = common.k_dir() / 'batches'
+    known = [p.stem for p in batches.glob('*.txt')] if batches.is_dir() else []
+    clash = [stem for stem in known if stem.lower() == name.lower() and stem != name]
+    if clash:
+        raise Refusal(f'batch {name}: differs from batch {clash[0]} only in case, which the disk does not tell apart')
     if packet not in common.PACKETS:
         raise Refusal(f"{packet}: not a packet ({', '.join(common.PACKETS)})")
     plan = load_plan()

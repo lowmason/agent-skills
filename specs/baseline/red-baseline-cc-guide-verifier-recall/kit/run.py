@@ -15,7 +15,8 @@ already has $K/results/<rid>/. For every other rep, in order, it:
      report.md or settled.json, and for an audit rep the docs copy as docs/,
      with the copy's index.json `docs` and `quotes.docs` naming it. The probe
      rep gets the control arm's file, the kit's vr-probe.md and the docs copy.
-     A missing source refuses (exit 2) and leaves R empty;
+     A missing source, or a copy that fails, refuses (exit 2) with a message
+     that names no path, and leaves R empty;
   5. runs command(rid) in R/<rid>/work with the prompt on stdin (common.MAIN,
      or probe.txt with {canary} filled in), stopping it at the rep's timeout,
      and writes stream.jsonl and stderr.txt to $K/results/<rid>/;
@@ -24,9 +25,13 @@ already has $K/results/<rid>/. For every other rep, in order, it:
   7. writes result.json, the stream's last `result` record;
   8. runs postprocess's strip-tree on $K/results/<rid>/, then fails the rep
      (V6) when the string credential_expires_at remains in any file there;
-  9. writes status.json (exit, timed_out, seconds, strip_ok) and moves
-     R/<rid> to $K/homes/<rid>.
+  9. writes status.json (exit, timed_out, interrupted, seconds, strip_ok) and
+     moves R/<rid> to $K/homes/<rid>.
 Steps 6 to 9 run even when the run fails, so R is empty for the next rep.
+When the runner itself stops while a rep runs (Ctrl-C, or SIGTERM, which it
+turns into SystemExit so cleanup runs), it first stops the rep's process
+group, then runs steps 6 to 9 and records the rep as interrupted. Such a rep
+leaves no result, so it counts at its cap.
 
 Each printed line names a rep id, a status or a cost, never an arm (DF15).
 Exit 0 when the batch is done, 2 on a usage or setup error.'''
@@ -197,8 +202,10 @@ def build_folder(rid: str, rep: dict) -> Path:
             index['docs'] = str(work / 'docs')
             index['quotes']['docs'] = [str(work / 'docs')]
             index_path.write_text(json.dumps(index, indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
-    except BaseException:
+    except BaseException as error:
         shutil.rmtree(common.R / rid, ignore_errors=True)
+        if isinstance(error, Exception):  # an OSError names a path, which may name an arm
+            raise Stop(EXIT_SETUP, f'{rid}: its rep folder could not be built; nothing ran') from None
         raise
     return work
 
@@ -215,6 +222,9 @@ def launch(argv: list[str], env: dict[str, str], work: Path, text: str, timeout:
         except subprocess.TimeoutExpired:
             stop_group(proc)
             return None, True
+        except BaseException:  # Ctrl-C, SystemExit from SIGTERM: the paid rep must not run on
+            stop_group(proc)
+            raise
 
 
 def stop_group(proc: subprocess.Popen) -> None:
@@ -281,7 +291,9 @@ def finish(rid: str, results: Path, outcome: dict) -> str:
     homes = common.k_dir() / 'homes'
     homes.mkdir(parents=True, exist_ok=True)
     shutil.move(common.R / rid, homes / rid)
-    if outcome['timed_out']:
+    if outcome['interrupted']:
+        state = 'interrupted'
+    elif outcome['timed_out']:
         state = 'timeout'
     elif result is None:
         state = f"exit {outcome['exit']}, no result"
@@ -292,28 +304,31 @@ def finish(rid: str, results: Path, outcome: dict) -> str:
     return f"{rid}: {state}, cost {money}, {outcome['seconds']:.0f} s" + ('' if strip_ok else ', void (V6)')
 
 
-def run_rep(rid: str, rep: dict) -> str:
-    '''Steps 4 to 9 for one rep. Nothing under results/<rid>/ exists until
-    the folder is built, so a setup error leaves the rep to run again.'''
+def run_rep(rid: str, rep: dict) -> None:
+    '''Steps 4 to 9 for one rep, and its status line. Nothing under
+    results/<rid>/ exists until the folder is built, so a setup error leaves
+    the rep to run again.'''
     _, timeout = limits(rid)
     text = prompt(rid, rep)
     argv, env = command(rid)
     work = build_folder(rid, rep)
     results = common.k_dir() / 'results' / rid
     results.mkdir(parents=True)
-    outcome = {'exit': None, 'timed_out': False, 'seconds': 0.0}
+    outcome = {'exit': None, 'timed_out': False, 'interrupted': False, 'seconds': 0.0}
     started = time.monotonic()
     try:
         outcome['exit'], outcome['timed_out'] = launch(argv, env, work, text, timeout, results)
+    except BaseException:
+        outcome['interrupted'] = True
+        raise
     finally:
         outcome['seconds'] = round(time.monotonic() - started, 1)
-        line = finish(rid, results, outcome)
-    return line
+        print(finish(rid, results, outcome), flush=True)
 
 
 def run_batch(batch: str) -> None:
     path = common.k_dir() / 'batches' / f'{batch}.txt'
-    if not re.fullmatch(r'[a-z0-9][a-z0-9-]*', batch) or not path.exists():
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]*', batch) or not path.exists():
         raise Stop(EXIT_SETUP, f'no batch {batch}; run build.py first')
     rids = [line.strip() for line in path.read_text(encoding='utf-8').splitlines() if line.strip()]
     results = common.k_dir() / 'results'
@@ -332,18 +347,28 @@ def run_batch(batch: str) -> None:
                 if not (results / later).exists():
                     print(f'{later}: held, after {rid}')
             raise Stop(EXIT_HELD, 'held at the ceiling; raising it is the owner\'s call')
-        print(run_rep(rid, rep), flush=True)
+        run_rep(rid, rep)
+
+
+def exit_on_sigterm(signum, frame) -> None:
+    '''SIGTERM's default ends the process at once, so no finally block would
+    stop the rep's group or clear R. Raising SystemExit lets them run.'''
+    raise SystemExit(128 + signum)
 
 
 def main(argv: list[str]) -> int:
     if len(argv) != 1:
         print('usage: run.py <batch>', file=sys.stderr)
         return EXIT_SETUP
+    previous = signal.signal(signal.SIGTERM, exit_on_sigterm)
     try:
         run_batch(argv[0])
     except Stop as stop:
         print(f'run.py: {stop}', file=sys.stderr)
         return stop.code
+    finally:
+        if previous is not None:
+            signal.signal(signal.SIGTERM, previous)
     return 0
 
 

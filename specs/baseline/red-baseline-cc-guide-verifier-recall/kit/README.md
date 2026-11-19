@@ -27,15 +27,16 @@ Run each command from any folder, as `uv run python <kit>/<script>`. Do not star
 2. Task 8 Step 1 holds the binary and writes `$K/binary.txt`. Task 8 Step 3 writes the arms to `$K/arms/control.md` and `$K/arms/changed.md`. Task 8 Step 4 writes the approved ceiling to `$K/ceiling.txt`.
 3. `build.py probe`, then `run.py probe`. The probe is an uncounted rep. `build.py probe` writes a new random token to `$K/canary.txt`.
 4. `build.py pilot`, then `run.py pilot`. The pilot is one uncounted changed-arm audit rep (PC8).
-5. Gate F: `build.py batch <name> readme 3` and `build.py batch <name> precision 3`, then `run.py <name>` for each batch.
-6. Gate A, first wave: `build.py batch <name> audit 2`, then `run.py <name>`, then `grade.py stop <name>` (Task 7). Second wave, if the stop rules say continue: `build.py batch <name> audit 3`, then `run.py <name>`.
+5. Gate F is one batch, `gateF`, built by two `batch` calls: `build.py batch gateF readme 3`, then `build.py batch gateF precision 3`. Then run `run.py gateF`.
+6. Gate A, first wave: `build.py batch gateA1 audit 2`, then `run.py gateA1`, then `grade.py stop gateA1` (Task 7). Second wave, if the stop rules say continue: `build.py batch gateA2 audit 3`, then `run.py gateA2`.
 7. For each void rep: `build.py spare <rid>`, then `run.py <batch of that rep>`.
 
 `build.py` prints each new rep id and its batch. `run.py` skips a rep that already has `$K/results/<rid>/`, so you can run a batch again after a spare joins it.
 
 ## build.py
 
-- `batch <name> <packet> <pairs>` adds `<pairs>` (control, changed) pairs of one packet. Each pair's two arms take a random order from `secrets.randbelow` (DF15). A batch name is used once.
+- `batch <name> <packet> <pairs>` adds `<pairs>` (control, changed) pairs of one packet. Each pair's two arms take a random order from `secrets.randbelow` (DF15). A second call with the same name appends to that batch, so one batch can hold two packets.
+- A batch name holds letters, digits and hyphens, in upper or lower case. `probe` and `pilot` are reserved in any case. A name that differs from an existing batch only in case is refused, because the macOS disk takes `gateF.txt` and `gatef.txt` as one file.
 - `spare <rid>` adds one rep with the packet and arm of void rep `<rid>`, and appends it to that rep's batch file. A packet and arm get at most 2 spares. The refusal of a third names no arm.
 - `probe` adds the probe rep to `$K/batches/probe.txt`. `pilot` adds the pilot to `$K/batches/pilot.txt`.
 
@@ -50,7 +51,7 @@ Exit 0 on success, 1 on a refusal, 2 on a usage error.
 1. It refuses (exit 3) while `R` holds anything.
 2. It refuses (exit 4) when the held binary's sha256 differs from the one in `$K/binary.txt`.
 3. It holds the rep and every later rep of the batch (exit 5) when the spend so far plus the rep's cap exceeds the ceiling. The spend counts each rep that has a results folder, at its `total_cost_usd`, or at its cap when it left no result. At equality the rep runs.
-4. It builds the rep folder (below). A missing arm file, packet copy, docs copy or `probe.txt` refuses (exit 2) and leaves `R` empty.
+4. It builds the rep folder (below). A missing arm file, packet copy, docs copy or `probe.txt` refuses (exit 2) and leaves `R` empty. A copy that fails also refuses (exit 2), and its message names no path.
 5. It runs `command(rid)` in `R/<rid>/work/` with the prompt on stdin, and stops it at the rep's timeout.
 6. It moves the session's files from `$HOME/.claude/projects/` to `$K/results/<rid>/project/<slug>/`. It finds them by the first init record's `session_id`.
 7. It writes `result.json`, the stream's last `result` record.
@@ -58,6 +59,8 @@ Exit 0 on success, 1 on a refusal, 2 on a usage error.
 9. It writes `status.json` and moves `R/<rid>/` to `$K/homes/<rid>/`.
 
 Steps 6 to 9 run even when the rep fails or times out.
+
+When the runner itself stops while a rep runs, it stops the rep first. This covers Ctrl-C and SIGTERM, which the runner turns into a normal exit. It stops the rep's whole process group, then runs steps 6 to 9 and records the rep as interrupted. An interrupted rep leaves no result, so it counts at its cap, and it needs a spare. No later rep of the batch starts.
 
 The rep folder holds the arm's file as `.claude/agents/cc-guide-verifier.md` and the packet copy as `packet/`, without `report.md` or `settled.json`. An audit rep also gets the docs copy as `docs/`, and its `index.json` `docs` and `quotes.docs` name `R/<rid>/work/docs`. The probe rep gets the control arm's file, the kit's `vr-probe.md` as `.claude/agents/vr-probe.md` and the docs copy, but no packet.
 
@@ -77,7 +80,7 @@ The prompt is `common.MAIN`, which holds the dispatch of the cc-guide skill's st
 
 - `$K/binary.txt` (Task 8 Step 1) has three lines: `path: <absolute path of the held copy>`, `version: <its --version output>` and `sha256: <its sha256>`.
 - `$K/ceiling.txt` (Task 8 Step 4) holds one number, the ceiling in USD, such as `130`.
-- `$K/results/<rid>/status.json` holds `exit` (null after a timeout), `timed_out`, `seconds` and `strip_ok`. A `strip_ok` of false makes the rep void under V6.
+- `$K/results/<rid>/status.json` holds `exit` (null after a timeout or an interruption), `timed_out`, `interrupted`, `seconds` and `strip_ok`. A `strip_ok` of false makes the rep void under V6.
 
 ## Blind reading
 

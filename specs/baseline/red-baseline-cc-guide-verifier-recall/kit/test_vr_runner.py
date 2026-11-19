@@ -11,6 +11,8 @@ import hashlib
 import json
 import os
 import re
+import signal
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -78,6 +80,8 @@ calls.mkdir(parents=True, exist_ok=True)
 (calls / (rid + '.json')).write_text(json.dumps(
     {'argv': sys.argv, 'env': exec_env(), 'runtime_keys': sorted(os.environ), 'cwd': os.getcwd(), 'stdin': stdin,
      'pid': os.getpid(), 'child': child}))
+if mine.get('silent'):
+    sys.exit(mine.get('exit', 1))
 token = secrets.token_hex(8)
 for folder in (cwd, pathlib.Path(os.environ['TMPDIR'])):
     (folder / ('marker-' + token + '.txt')).write_text(token)
@@ -243,6 +247,45 @@ def gone(pid: int, wait: float = 5.0) -> bool:
             return True
         time.sleep(0.05)
     return False
+
+
+def wait_for(path: Path, limit: float = 15.0) -> bool:
+    '''Whether path exists within limit seconds.'''
+    end = time.monotonic() + limit
+    while time.monotonic() < end:
+        if path.exists():
+            return True
+        time.sleep(0.05)
+    return False
+
+
+# Runs run.main in a child process, with common.R and common.KIT set as in the
+# fixture. It refuses (exit 97) unless HOME and R lie under pytest's folder.
+DRIVER = '''import os, sys
+from pathlib import Path
+base, kit, root, kitfiles, batch = sys.argv[1:6]
+if not os.environ['HOME'].startswith(base) or not root.startswith(base):
+    sys.exit(97)
+sys.path.insert(0, kit)
+import common, run
+common.R = Path(root)
+common.KIT = Path(kitfiles)
+sys.exit(run.main([batch]))
+'''
+
+
+def start_runner(tmp_path: Path, sandbox: Path, batch: str = 'b') -> subprocess.Popen:
+    '''run.py's entry point in a child process, with this test's HOME, R and KIT.'''
+    assert_sandboxed(sandbox)
+    driver = write(tmp_path / 'driver.py', DRIVER)
+    argv = [sys.executable, str(driver), str(sandbox), str(Path(__file__).resolve().parent), str(common.R),
+            str(common.KIT), batch]
+    return subprocess.Popen(argv, env=dict(os.environ), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+
+def no_arm_named(text: str) -> bool:
+    lowered = text.lower()
+    return not any(w in lowered for w in ARM_WORDS) and 'arms/' not in lowered
 
 
 def scripted(monkeypatch, values: list[int]) -> list[int]:
@@ -411,6 +454,7 @@ def test_no_output_line_names_an_arm(kit, tmp_path, sandbox, monkeypatch, capfd)
     out, err = capfd.readouterr()
     lines = (out + err).splitlines()
     assert any('r011' in line for line in lines) and any('held' in line for line in lines)
+    assert any('r011' in line and 'missing' in line for line in lines)  # the cause is named, not the path
     assert not [line for line in lines if any(w in line.lower() for w in ARM_WORDS)]
     exempt = {kit / 'arms', kit / 'homes', kit / 'plan.json', kit / 'fixtures'}
     written = [p for p in kit.rglob('*') if not any(p == e or p.is_relative_to(e) for e in exempt)]
@@ -631,21 +675,22 @@ def test_a_rep_gets_the_main_prompt_on_stdin_in_its_work_folder(kit, tmp_path, s
 
 
 def test_build_rep_ids_run_from_r001_and_are_never_reused(kit, monkeypatch, capsys):
-    scripted(monkeypatch, [0, 0])
+    scripted(monkeypatch, [0, 0, 0])
     assert build.main(['batch', 'a', 'readme', '1']) == 0  # r001, r002
     assert build.main(['spare', 'r001']) == 0  # r003
     assert build.main(['pilot']) == 0  # r004
     assert build.main(['probe']) == 0  # r005
     assert build.main(['batch', 'b', 'audit', '1']) == 0  # r006, r007
-    assert build.main(['batch', 'a', 'audit', '1']) == 1  # a batch name is used once
+    assert build.main(['batch', 'a', 'audit', '1']) == 0  # r008, r009: the name's batch grows
     reps = json.loads((kit / 'plan.json').read_text())['reps']
-    assert [r['rid'] for r in reps] == ['r001', 'r002', 'r003', 'r004', 'r005', 'r006', 'r007']
+    assert [r['rid'] for r in reps] == ['r001', 'r002', 'r003', 'r004', 'r005', 'r006', 'r007', 'r008', 'r009']
     assert reps[3] == {'rid': 'r004', 'batch': 'pilot', 'packet': 'audit', 'arm': 'changed', 'role': 'pilot'}
     assert reps[4] == {'rid': 'r005', 'batch': 'probe', 'packet': 'probe', 'arm': 'control', 'role': 'probe'}
     batches = {p.stem: p.read_text().splitlines() for p in (kit / 'batches').glob('*.txt')}
-    assert batches == {'a': ['r001', 'r002', 'r003'], 'pilot': ['r004'], 'probe': ['r005'], 'b': ['r006', 'r007']}
+    assert batches == {'a': ['r001', 'r002', 'r003', 'r008', 'r009'], 'pilot': ['r004'], 'probe': ['r005'],
+                       'b': ['r006', 'r007']}
     out = capsys.readouterr().out
-    assert all(f'r00{i}' in out for i in range(1, 8))
+    assert all(f'r00{i}' in out for i in range(1, 10))
 
 
 def test_a_spare_takes_the_void_reps_packet_and_arm(kit, monkeypatch):
@@ -661,3 +706,150 @@ def test_a_spare_takes_the_void_reps_packet_and_arm(kit, monkeypatch):
                                  'role': 'spare', 'replaces': 'r002'}
     assert build.main(['pilot']) == 0  # r007
     assert build.main(['spare', 'r007']) == 1  # an uncounted rep has no spare
+
+
+# --- fix round 1 -------------------------------------------------------------------------------------------
+
+
+def test_two_batch_calls_with_one_name_append_to_one_batch(kit, monkeypatch):
+    scripted(monkeypatch, [0, 1, 1])
+    assert build.main(['batch', 'gateF', 'readme', '1']) == 0  # r001, r002
+    assert build.main(['spare', 'r002']) == 0  # r003 joins gateF
+    assert build.main(['batch', 'gateF', 'precision', '2']) == 0  # r004 to r007
+    reps = json.loads((kit / 'plan.json').read_text())['reps']
+    assert [r['rid'] for r in reps] == [f'r{i:03d}' for i in range(1, 8)]
+    assert [(r['packet'], r['arm']) for r in reps] == [
+        ('readme', 'control'), ('readme', 'changed'), ('readme', 'changed'), ('precision', 'changed'),
+        ('precision', 'control'), ('precision', 'changed'), ('precision', 'control')]
+    assert {r['batch'] for r in reps} == {'gateF'}
+    assert [p.name for p in (kit / 'batches').iterdir()] == ['gateF.txt']
+    assert (kit / 'batches' / 'gateF.txt').read_text().splitlines() == [r['rid'] for r in reps]
+
+
+def test_batch_names_take_mixed_case_but_not_a_case_only_variant(kit, monkeypatch, capfd):
+    scripted(monkeypatch, [0, 0])
+    assert build.main(['batch', 'gateA1', 'audit', '1']) == 0
+    before = (kit / 'plan.json').read_bytes()
+    capfd.readouterr()
+    for name in ('gatea1', 'GATEA1', 'Probe', 'PILOT', 'probe', 'pilot', 'gate_A1'):
+        assert build.main(['batch', name, 'audit', '1']) == 1, name
+    out, err = capfd.readouterr()
+    assert no_arm_named(out + err)
+    assert (kit / 'plan.json').read_bytes() == before
+    assert [p.name for p in (kit / 'batches').iterdir()] == ['gateA1.txt']
+    assert build.main(['batch', 'gateA2', 'audit', '1']) == 0
+
+
+def test_a_mixed_case_batch_runs_its_combined_reps_in_order(kit, tmp_path, sandbox, monkeypatch, capsys):
+    scripted(monkeypatch, [1, 0])
+    assert build.main(['batch', 'gateF', 'readme', '1']) == 0
+    assert build.main(['batch', 'gateF', 'precision', '1']) == 0
+    capsys.readouterr()
+    assert run_batch(sandbox, 'gateF') == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert [line.split(':')[0] for line in lines] == ['r001', 'r002', 'r003', 'r004']
+    assert set(calls(tmp_path)) == {'r001', 'r002', 'r003', 'r004'}
+
+
+def test_an_interrupted_runner_stops_the_rep_and_its_group(kit, tmp_path, sandbox, monkeypatch):
+    '''Ctrl-C while a rep runs: the rep's whole process group is stopped before
+    the runner moves R/<rid> to homes/, so R is empty and no rep runs on. The
+    rep is recorded as interrupted (status.json exit null, timed_out false,
+    interrupted true), leaves no result, and so counts at its cap.'''
+    configure(tmp_path, 'r001', sleep=30)
+    plan(('r001', 'readme', 'control'), ('r002', 'readme', 'changed'))
+
+    def interrupted(self, input=None, timeout=None):
+        self.stdin.write(input)
+        self.stdin.close()
+        assert wait_for(tmp_path / 'calls' / 'r001.json')
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(run.subprocess.Popen, 'communicate', interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        run_batch(sandbox)
+    stopped = calls(tmp_path)['r001']
+    assert gone(stopped['pid']) and gone(stopped['child'])
+    assert not any(common.R.iterdir())
+    assert set(calls(tmp_path)) == {'r001'}
+    assert status('r001') | {'seconds': 0} == {'exit': None, 'timed_out': False, 'interrupted': True,
+                                               'seconds': 0, 'strip_ok': True}
+    assert not (kit / 'results' / 'r001' / 'result.json').exists()
+    assert run.spent() == common.CAPS['files']
+
+
+def test_a_sigterm_to_the_runner_stops_the_rep(kit, tmp_path, sandbox):
+    configure(tmp_path, 'r001', sleep=30)
+    plan(('r001', 'readme', 'control'), ('r002', 'readme', 'changed'))
+    runner = start_runner(tmp_path, sandbox)
+    try:
+        assert wait_for(tmp_path / 'calls' / 'r001.json')
+        runner.send_signal(signal.SIGTERM)
+        out, err = runner.communicate(timeout=30)
+    finally:
+        if runner.poll() is None:
+            runner.kill()
+    assert runner.returncode == 128 + signal.SIGTERM
+    stopped = calls(tmp_path)['r001']
+    assert gone(stopped['pid']) and gone(stopped['child'])
+    assert not any(common.R.iterdir())
+    assert set(calls(tmp_path)) == {'r001'}
+    assert status('r001')['interrupted'] is True
+    assert no_arm_named(out + err)
+
+
+def test_a_rep_that_ends_before_its_init_record(kit, tmp_path, sandbox):
+    projects = Path(os.environ['HOME']) / '.claude' / 'projects'
+    kept = write(projects / '-elsewhere' / 'other.jsonl', '{}\n')
+    configure(tmp_path, 'r001', silent=True, exit=1)
+    plan(('r001', 'readme', 'control'), ('r002', 'readme', 'changed'))
+    assert run_batch(sandbox) == 0
+    assert status('r001')['exit'] == 1 and status('r002')['exit'] == 0
+    assert set(calls(tmp_path)) == {'r001', 'r002'}
+    assert not any(common.R.iterdir()) and (kit / 'homes' / 'r001').is_dir()
+    assert kept.is_file() and not (kit / 'results' / 'r001' / 'project').exists()
+
+
+def test_a_rep_that_exits_with_an_init_record_but_no_result(kit, tmp_path, sandbox, capsys):
+    configure(tmp_path, 'r001', no_result=True, exit=2, session='abc-5')
+    plan(('r001', 'readme', 'control'))
+    assert run_batch(sandbox) == 0
+    assert status('r001')['exit'] == 2
+    assert not (kit / 'results' / 'r001' / 'result.json').exists()
+    assert list((kit / 'results' / 'r001' / 'project').glob('*/abc-5.jsonl'))
+    assert capsys.readouterr().out.startswith('r001: exit 2, no result')
+
+
+def test_a_session_id_outside_the_pattern_moves_nothing(kit, tmp_path, sandbox):
+    configure(tmp_path, 'r001', session='bad id')
+    plan(('r001', 'readme', 'control'))
+    assert run_batch(sandbox) == 0
+    projects = Path(os.environ['HOME']) / '.claude' / 'projects'
+    assert list(projects.glob('*/bad id.jsonl')) and list(projects.glob('*/bad id/subagents/*'))
+    assert not (kit / 'results' / 'r001' / 'project').exists()
+    assert status('r001')['exit'] == 0 and (kit / 'results' / 'r001' / 'result.json').is_file()
+
+
+def test_a_copy_error_refuses_without_naming_an_arm(kit, tmp_path, sandbox, monkeypatch, capfd):
+    def failing(src, dst, *args, **kwargs):
+        raise OSError(f'cannot copy {src}')
+
+    monkeypatch.setattr(run.shutil, 'copy2', failing)  # the arm file is the first thing copied
+    plan(('r001', 'readme', 'control'))
+    assert run_batch(sandbox) == 2
+    out, err = capfd.readouterr()
+    assert 'r001' in err and no_arm_named(out + err)
+    assert not common.R.exists() or not any(common.R.iterdir())
+    assert not (kit / 'results' / 'r001').exists() and not (kit / 'homes' / 'r001').exists()
+    assert calls(tmp_path) == {}
+
+
+def test_a_copy_error_in_the_entry_point_prints_no_arm(kit, tmp_path, sandbox):
+    (kit / 'fixtures' / 'audit-changed' / 'gone.md').symlink_to(tmp_path / 'nowhere.md')  # a dangling link
+    plan(('r001', 'audit', 'changed'))
+    runner = start_runner(tmp_path, sandbox)
+    out, err = runner.communicate(timeout=60)
+    assert runner.returncode == 2
+    assert 'r001' in err and 'Traceback' not in err and no_arm_named(out + err)
+    assert not common.R.exists() or not any(common.R.iterdir())
+    assert not (kit / 'results' / 'r001').exists() and calls(tmp_path) == {}
