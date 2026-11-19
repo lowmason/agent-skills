@@ -300,3 +300,87 @@ def test_glob_past_the_deadline_denies(homes):
     assert_denied(call_denied(rep, real, slow, 'ls ~/work/*'), 'took too long')
     assert time.monotonic() - started < 1.5
     assert call_denied(rep, real, 'guard.GLOB_SECONDS = 0.2', 'ls ~/work/*') is None
+
+
+# --- completion gate: searches rooted at an ancestor of the real home -----------
+
+R289 = ("cd /private/tmp/phr100/r289/work/r289; uv run --no-project --python 3.13 --with pytest python -m pytest -q "
+        "2>&1 | tail -3; find / -path '*writing-plans*' -name 'SKILL.md' 2>/dev/null | head")
+WALK = 'a folder that holds the real home'
+
+
+@pytest.mark.parametrize('command', [
+    R289,
+    'find @PARENT@ -name SKILL.md',
+    'find -L / -maxdepth 4 -name x',
+    'ls -R /',
+    'ls -laR @PARENT@',
+    'grep -rn writing-plans /',
+    'grep -R -l x @PARENT@ src',
+    'rg writing-plans /',
+    'rg --files / | grep SKILL',
+    'du -sh /*',
+    'tree -L 3 /',
+    'find /System/Volumes/Data -name x',
+    'find /system/volumes/data -name x',
+    'find /System/Volumes -name x',
+    'cd / && find . -name SKILL.md',
+    'cd @PARENT@; grep -r x',
+    "bash -lc 'find / -name x'",
+    'echo $(find / -name x)',
+    'sudo find / -name x',
+    'mdfind writing-plans',
+    'mdfind -onlyin . x',
+    'locate SKILL.md',
+    '/usr/bin/locate -i skill.md',
+])
+def test_search_rooted_at_an_ancestor_denies(homes, command):
+    rep, real = homes
+    command = command.replace('@PARENT@', str(real.parent))
+    assert_denied(decide('Bash', {'command': command}, rep, real), WALK)
+
+
+@pytest.mark.parametrize('command', [
+    'ls /',
+    'ls -la @PARENT@',
+    'cd /; rm -rf "$T"',
+    'find . -name x',
+    'find @REP@/work -name x',
+    'grep -rn "/" src',
+    'grep -n x /etc/hosts',
+    'rg --files .',
+    'ls -R ~/.claude/skills',
+    'du -sh ~/work',
+    'echo locate the file',
+])
+def test_harmless_listing_and_search_allowed(homes, command):
+    rep, real = homes
+    command = command.replace('@PARENT@', str(real.parent)).replace('@REP@', str(rep))
+    assert decide('Bash', {'command': command}, rep, real) is None
+
+
+@pytest.mark.parametrize('tool, tool_input', [
+    ('Glob', {'pattern': '**/SKILL.md', 'path': '/'}),
+    ('Glob', {'pattern': '**/SKILL.md', 'path': '@PARENT@'}),
+    ('Glob', {'pattern': '/**/writing-plans/SKILL.md'}),
+    ('Grep', {'pattern': 'x', 'path': '/'}),
+    ('Grep', {'pattern': 'x', 'path': '/System/Volumes/Data'}),
+    ('Grep', {'pattern': 'x', 'path': '@PARENT@'}),
+])
+def test_tool_search_rooted_at_an_ancestor_denies(homes, tool, tool_input):
+    rep, real = homes
+    tool_input = {k: v.replace('@PARENT@', str(real.parent)) for k, v in tool_input.items()}
+    assert_denied(decide(tool, tool_input, rep, real), WALK)
+
+
+@pytest.mark.parametrize('tool, tool_input', [
+    ('Glob', {'pattern': '*', 'path': '/'}),
+    ('Glob', {'pattern': '**/*.py'}),
+    ('Glob', {'pattern': '**/SKILL.md', 'path': '@REP@/.claude'}),
+    ('Grep', {'pattern': 'x'}),
+    ('Grep', {'pattern': 'x', 'path': '@REP@/work'}),
+])
+def test_tool_search_inside_the_rep_allowed(homes, tool, tool_input):
+    rep, real = homes
+    tool_input = {k: v.replace('@REP@', str(rep)) for k, v in tool_input.items()}
+    assert decide(tool, tool_input, rep, real) is None
