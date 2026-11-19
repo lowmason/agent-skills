@@ -1198,19 +1198,33 @@ in `scores/plan101/<arm>.tsv` and `scores/plan101c/<arm>.tsv`. The plan names `s
 
 What the controls show:
 
-- **`c5a-merged`: the new sentence moves the protocol onto `main`.** F-branch passes 5 of 5 at `T8` and 2 of 5 at
-  `BASE101`. At the base text, the three failing reps (`r503`, `r505`, `r507`) left their commits only on
-  `chore/retire-plan-4`.
+- **`c5a-merged`: the new sentence moves the protocol onto `main`.** At `T8`, the four reps that loaded writing-plans
+  (`r524` to `r527`) all put the protocol's commits on `main`. At `BASE101`, all five reps loaded writing-plans and only
+  `r504` and `r506` did. The three others (`r503`, `r505`, `r507`) left their commits only on `chore/retire-plan-4`.
+  The scorer also passed F-branch for `r523` at `T8`, which is a judgment call: `r523` never loaded writing-plans, so it
+  never read the sentence (see the next bullets).
 - **`c5a-merged`: F-resume and F-next fail at `T8` under the literal reading.** On the turn-2 prompt "Go ahead.", every rep
   at `T8` ran derive-roadmap itself. Each last message ends "Next: /clear (or a fresh session), then writing-plans on
   Stage S2b of `specs/pondwatch-v2-roadmap.md`". The scorer read F-resume ("the last final message recommends resuming
   the roadmap") and F-next ("naming S2b as the next work") literally, so all five fail. At `BASE101` the two reps that pass
   (`r505`, `r507`) end with a clean resume handoff, because they had not resumed the roadmap yet.
-- **`c5a-merged`: F-handoff and F-stamp fail for `r523`.** It ticked the S2a box and stamped it, but wrote no Handoff
-  section. The stamp cites the ledger's deviation line instead.
-- **`c5a-ep`: F-timing fails 5 of 5 at both texts.** At `BASE101` and at `T8`, no rep's message after the merge
-  recommends resuming the roadmap. So this miss is not an effect of Task 7. The executing-plans text has never made a
-  rep recommend the resume, and `c5a-ep` had not run on any text before this task.
+- **`c5a-merged`: `r523` is a guard miss.** Its only Skill call was derive-roadmap, in turn 1. It loaded no writing-plans,
+  subagent-driven-development or executing-plans, so it never ran the protocol. On `main`, its only commit after the
+  harness's merge is the derive-roadmap resume (`d03e140`). That commit moved the plan to `specs/plans/completed/`
+  with no change to its content, and it ticked the S2a box and stamped it. The stamp cites the ledger's deviation line.
+  The plan has no status header, no ticks and no Handoff section. So F-handoff and F-stamp fail.
+- **`c5a-ep`: F-timing fails 5 of 5 at both texts, and no rep reached the executing-plans text.** At `BASE101` and at
+  `T8`, no rep's message after the merge recommends resuming the roadmap. None of the ten reps loaded `executing-plans`
+  or read a file under it, although the skill sits in each rep's home and in its init record. Each rep loaded
+  writing-plans, and seven of them also loaded finishing-a-development-branch. The prompt says "Complete the plan", and
+  writing-plans' description quotes that phrase. So this kit's `c5a-ep` reps tested writing-plans' path. The miss at
+  `BASE101` shows that Task 7's writing-plans change did not cause it. These reps say nothing about Task 7's
+  executing-plans wording, which stays without a behavioral test.
+- **`c5a-ep` ran before, in plan 40, and passed.** Phase `green2` (`r092`, `r093`, `r094`, `r096`, `r122`) passed F-timing
+  in all five reps. Phase `refactor1-c5a-ep` passed it in `r159` and `r161` and failed it in `r127`. The owner settled the
+  arm PASS on 2026-10-11. Every one of those reps loaded `executing-plans`. They ran in plan 40's harness with the
+  owner's real home and its user-level context, which this kit's reps do not have. That difference is one candidate for
+  why these reps chose writing-plans.
 - **`c5a-ep`: small differences between the texts are inside the noise of 5 reps.** F-handoff and F-stamp are 4 of 5 at
   `T8` and 5 of 5 at `BASE101`. The one failing rep is `r514`, which stopped to ask which function name to ship and
   changed nothing. Nothing in Task 7's sentence touches that choice. F-next is 3 of 5 against 4 of 5.
@@ -1223,10 +1237,15 @@ The scorers applied each rubric's words as written, blind to the text. The calls
 - **`p5a` F-next, 5 pass.** Closest: `r511` and `r512`, which head a list "Next step for S2b" or "To start S2b tonight" and
   name the roadmap resume as the step. The owner's ruling of 2026-10-15 covers this: a routing remark beside a correct
   resume handoff is not naming the next work. Plan 46's `p5a` verdicts were read the same way.
-- **`c5a-merged` at `T8`, F-resume and F-next, 5 fail each.** `r524` to `r527` gave a correct derive-roadmap resume
-  recommendation in their turn-1 final message, then did the resume in turn 2. A looser reading, "a rep that resumed the
-  roadmap itself and handed S2b planning to a fresh session passes", would pass those four. The arm would then reach 4 of 5,
-  which is the bar. It was not applied, because a reading chosen after the data needs the owner's ruling.
+- **`c5a-merged` at `T8`, F-resume and F-next, 5 fail each.** `r524` to `r527` recommended the derive-roadmap resume in
+  their turn-1 final message, but three of them offered to do it in the same session (`r524` "Say if you want me to
+  resume the roadmap now", `r525` "I can resume the roadmap now in this session", `r526` "I can start it here if you
+  prefer. Should I?"), and `r527` named no fresh session. In turn 2 ("Go ahead.") all four resumed the roadmap in the
+  session that had completed S2a, then routed to S2b. The shipped text says not to: writing-plans (`SKILL.md`, lines 31
+  to 38) says that "even when told to keep going", the session does not plan or route to the next stage and ends with the
+  resume handoff, and subagent-driven-development (`SKILL.md`, line 217) says "Even when asked to keep going, never
+  resume the roadmap here". A looser reading, "a rep that resumed the roadmap itself and handed S2b planning to a fresh
+  session passes", would pass those four. The arm would then reach 4 of 5, which is the bar.
 - **`c5a-merged` at `BASE101`, F-resume and F-next, `r504` and `r506`.** Both fail only through the same turn-2 pattern.
   `r503` fails more clearly: its turn 1 offered only "invoke derive-roadmap on this branch".
 - **`c5a-ep` at `T8`, F-handoff for `r516`.** It passes on the rubric's words ("names `write_table`"): the bullet names the
@@ -1243,10 +1262,12 @@ The scorers applied each rubric's words as written, blind to the text. The calls
 
 ### Decision at Step 8
 
-Two arms missed their bars at `T8`, so Step 8 stopped and put the quotes to the owner as one question. On 2026-11-19 the
-owner chose to diagnose `c5a-ep` at the base text, then ship. The control above is that diagnosis. It shows the
-`c5a-ep` F-timing miss at the base text too, so Task 7's text stays. Every verdict above stands as scored. The
-looser-reading count for `c5a-merged` is recorded and not applied.
+Two arms missed their bars at `T8`, so Step 8 stopped and put the quotes to the owner as one question. The question said
+that `c5a-ep` "has never run on any text". That was wrong: plan 40 ran it and the owner settled it PASS (see the
+`c5a-ep` bullets above). On 2026-11-19 the owner chose to diagnose `c5a-ep` at the base text, then ship. The control
+shows the same F-timing miss at the base text, so Task 7's writing-plans change did not cause it, and Task 7's text
+stays. The control did not test what it was meant to: no rep reached the executing-plans text. The executing-plans
+wording of Task 7 has no behavioral test, and the guard item's gap (c) stays open.
 
 This record does not tick the guard item. Its `Done when:` needs `p5a`, `c5a-ep` and `c5a-neg` to meet their bars on the
 shipped wording, and `c5a-ep` does not. The Plan Completion Protocol records that.
