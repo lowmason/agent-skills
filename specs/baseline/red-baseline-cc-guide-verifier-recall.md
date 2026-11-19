@@ -135,3 +135,27 @@ Ten reps ran in two waves of the audit packet, five in each arm. The first wave 
 - **P8 does not separate the arms.** The changed arm kept a B row on `changelog.md:1702` in 2 of 5 reps (r019, r021) and the control in 1 of 5 (r020). In the other three changed reps (r018, r023, r025) the verifier answered that listed item with none. The mechanism does not make the verifier keep this B row.
 - **P13 is a loss.** The changed arm kept a correction on L441 in 1 of 5 reps (r023), and the control in 4 of 5. The sheets do not say why. The record does not claim a cause.
 - **Gate scope.** P8 and P13 are single items in a 206-item packet. The gate counts them as clauses, so two misses give FAIL even though the changed arm kept every other label at least as often as the control and met P11 in every rep. A new round with a changed arm is a different test and needs the owner's word.
+
+## Decision
+
+- **Gate F passed.** Task 5's commits stay (`ac0552f`, `e86c273` and `d827dd4`: B3 with B5, and C1 with C2).
+- **Gate A failed, so Part A reverts whole** (spec E1). Task 2 came out first, as commit `7d4fc08` (it reverts `97c3028`, `2670468` and `965ab3d`). Task 1 followed as commit `3b0ee55` (it reverts `3690bad`, `c0e2569` and `a745566`). The audit text in `SKILL.md` ("about $2.50 to $5.30") does not change, because only a gate A pass edits it. For the record, the valid changed audit reps cost $3.14 to $4.20, which would round out to $3.10 to $4.20.
+- **Part B's code stays** (spec E2): Tasks 3 and 4, with their tests.
+- **A plan defect, and the owner's ruling (D7).** The plan expected every check to pass after a revert. The kit's audit fixture builder calls `packets.listed_bullets`, which is Part A's code, so 16 kit tests failed once Part A was reverted. The owner chose a new `kit/conftest.py` that skips those 16 tests with a reason while that function is absent. The file is not one of the 12 frozen kit files. The tests run again when the two revert commits are reverted.
+- **Checks after the revert** (each count as a change from just before it):
+  - `cc_guide` suite: 908 passed, down from 938. The 30 missing tests are Part A's.
+  - Kit suite: 325 passed and 16 skipped, against 341 passed. The 16 skips are the D7 tests.
+  - `cli.py lint`: the same three STALE lines as before the revert. `check_conformance.py` and `sync_runtime_assets.py --check` report nothing. `build/run_commit_lints.sh` passed on each commit of this task.
+
+## Disposition
+
+| Item | Clause that closes it | State |
+|---|---|---|
+| I3: the audit verifier writes no B row for the changelog entries behind P11 | Gate A passes | **Stays open.** Gate A failed. `→ progress` note: the changed arm answered every listed item (0 of 206 unanswered in 5 of 5 reps, against 202 to 206 unanswered in 5 of 5 control reps), and it missed P8 (2 of 5) and P13 retention (1 against 4). |
+| I4: the audit verifier's omission recall was 3 of 7 known positives | The changed arm meets P11 in at least 4 of 5 valid reps | **Stays open, and the owner rules at the completion gate.** The clause is met (5 of 5, against 0 of 5 for the control). The change that met it is reverted, and the item's own done-when asks for a change in the repo that lets an audit report `deniedModels`. |
+| I5: the files rule has no precision fixture | Gate F's precision counts are reported for both arms | **Closes.** Changed arm: 2 UNSUPPORTED rows in total, at most 1 in a rep. Control arm: 0. |
+| I6: the files rule must take its reference case from the component the file describes | C1 landed with its C2 test, and gate F's readme clause is met | **Closes.** C1 (`d827dd4`) landed with its test. No valid readme rep kept a `contradicts` row on line 89 (0 of 3 in each arm). |
+| I1 and I2: the files pass of the covered files | E3's fresh `/cc-guide files` pass | **Stay open** with a `→ progress` note. Part B and its tests landed. E3's pass, run in its own session, closes both. |
+| The three next-kit items | Plan 100 (D1) | No note from this plan. |
+
+**Next step.** After the plan merges, run E3's `/cc-guide files` pass on each citing skill whose covered files state Claude Code facts. It runs in its own session and alone, under the machinery rule. Gate A needs a decision of its own: a new round with a different changed arm needs the owner's word, and so does closing I4. The kit and its freezes stay in the cache for that round.
