@@ -316,6 +316,7 @@ WALK = 'a folder that holds the real home'
     'ls -R /',
     'ls -laR @PARENT@',
     'grep -rn writing-plans /',
+    'grep -rn x 2>/dev/null /',
     'grep -R -l x @PARENT@ src',
     'rg writing-plans /',
     'rg --files / | grep SKILL',

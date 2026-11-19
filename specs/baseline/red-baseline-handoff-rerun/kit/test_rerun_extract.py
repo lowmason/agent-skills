@@ -642,6 +642,13 @@ def test_search_rooted_at_an_ancestor_voids(ctl: Ctl, command: str) -> None:
     assert any('holds the real home' in flag for flag in audit['flags']), audit['flags']
 
 
+@pytest.mark.parametrize('command', ['mdfind writing-plans', 'locate SKILL.md'])
+def test_indexed_search_flag_names_the_index(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command})])
+    flags = ctl.audit()['flags']
+    assert any('its index covers the whole disk' in flag for flag in flags), flags
+
+
 @pytest.mark.parametrize('command', [
     'ls /', 'ls @PARENT@', 'cd /; rm -rf "$T"', 'find . -name x', f'find {REPO_RUN}/specs -name x',
     'grep -rn "/" src', 'cd /private/tmp/phr100/r281/.claude/skills; grep -rniE x .',
