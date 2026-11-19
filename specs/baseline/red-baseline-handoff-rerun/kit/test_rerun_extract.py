@@ -401,7 +401,8 @@ def test_audit_record_and_extract_sections(ctl: Ctl) -> None:
     audit = ctl.audit()
     assert sorted(audit) == sorted(['rep', 'arm', 'phase', 'valid', 'problems', 'flags', 'denials', 'cost_usd'])
     assert (audit['rep'], audit['arm'], audit['phase']) == (REP, 'c4a-neg', 'rerun100')
-    assert audit['cost_usd'] == 1.75 and audit['denials'] == [{'tool_name': 'Bash'}]
+    assert audit['cost_usd'] == 1.75
+    assert audit['denials'] == [{'tool_name': 'Bash', 'transcript': 'turn1.json', 'subagent': False}]
     text = (out / 'extract.md').read_text()
     for part in (f'# {REP} — c4a-neg (rerun100; template t3, kit {KIT_COMMIT})', '## Audit', '- verdict: valid',
                  '## Turn 1', '### Final message\n\nfinal one', '## Tool calls, in order', '- Skill: prepare-handoff',
@@ -622,3 +623,111 @@ def test_split_library_keychains_spellings_void(ctl: Ctl, command: str) -> None:
     audit = ctl.audit()
     assert audit['valid'] is False, audit
     assert any('Library/Keychains' in flag for flag in audit['flags']), audit['flags']
+
+
+# --- completion gate: ancestor-rooted searches and every denial ------------------
+
+R289 = ("cd /private/tmp/phr100/r289/work/r289; uv run --no-project --python 3.13 --with pytest python -m pytest -q "
+        "2>&1 | tail -3; find / -path '*writing-plans*' -name 'SKILL.md' 2>/dev/null | head")
+
+
+@pytest.mark.parametrize('command', [
+    R289, 'ls -R /', 'grep -rn x @PARENT@', 'rg --files /', 'du -sh /System/Volumes/Data/*', 'tree /',
+    'cd / && find . -name x', 'mdfind writing-plans', 'locate SKILL.md', "sh -c 'find @PARENT@ -name x'",
+])
+def test_search_rooted_at_an_ancestor_voids(ctl: Ctl, command: str) -> None:
+    ctl.rep(sub=[('Bash', {'command': command.replace('@PARENT@', str(ctl.real.parent))})])
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('holds the real home' in flag for flag in audit['flags']), audit['flags']
+
+
+@pytest.mark.parametrize('command', [
+    'ls /', 'ls @PARENT@', 'cd /; rm -rf "$T"', 'find . -name x', f'find {REPO_RUN}/specs -name x',
+    'grep -rn "/" src', 'cd /private/tmp/phr100/r281/.claude/skills; grep -rniE x .',
+])
+def test_harmless_listing_and_search_is_valid(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command.replace('@PARENT@', str(ctl.real.parent))})])
+    audit = ctl.audit()
+    assert audit['valid'] is True, audit
+
+
+@pytest.mark.parametrize('name, data', [
+    ('Glob', {'pattern': '**/SKILL.md', 'path': '/'}),
+    ('Glob', {'pattern': '/**/SKILL.md'}),
+    ('Grep', {'pattern': 'x', 'path': '/'}),
+    ('Grep', {'pattern': 'x', 'path': '@PARENT@'}),
+])
+def test_tool_search_rooted_at_an_ancestor_voids(ctl: Ctl, name: str, data: dict) -> None:
+    data = {k: v.replace('@PARENT@', str(ctl.real.parent)) for k, v in data.items()}
+    ctl.rep(main=[(name, data)])
+    audit = ctl.audit()
+    assert audit['valid'] is False, audit
+    assert any('holds the real home' in flag for flag in audit['flags']), audit['flags']
+
+
+@pytest.mark.parametrize('name, data', [
+    ('Glob', {'pattern': '*', 'path': '/'}), ('Glob', {'pattern': '**/*.py'}), ('Grep', {'pattern': 'x'}),
+    ('Grep', {'pattern': 'x', 'path': f'{REPO_RUN}/specs'}),
+])
+def test_tool_search_inside_the_rep_is_valid(ctl: Ctl, name: str, data: dict) -> None:
+    ctl.rep(main=[(name, data)])
+    assert ctl.audit()['valid'] is True
+
+
+CLASSIFIER = ('Permission for this action was denied by the Claude Code auto mode classifier. '
+              'Reason: [Unauthorized Access]. If you have other tasks ...')
+GUARDED = "PreToolUse:Bash hook error: blocked by the workspace path guard: '/x' reaches the real home"
+
+
+def denial_records(use_id: str, command: str, text: str, sidechain: bool, as_list: bool) -> list[str]:
+    '''A tool_use and its denied tool_result, as transcript lines.'''
+    content = [{'type': 'text', 'text': text}] if as_list else text
+    use = {'type': 'assistant', 'isSidechain': sidechain, 'message': {'content': [
+        {'type': 'tool_use', 'id': use_id, 'name': 'Bash', 'input': {'command': command}}]}}
+    result = {'type': 'user', 'isSidechain': sidechain, 'message': {'content': [
+        {'type': 'tool_result', 'tool_use_id': use_id, 'content': content, 'is_error': True}]}}
+    return [json.dumps(use), json.dumps(result)]
+
+
+def test_denials_come_from_every_transcript_once(ctl: Ctl) -> None:
+    out = ctl.rep()
+    main = denial_records('tu-main', 'cat secret', CLASSIFIER, False, False)
+    sub = denial_records('tu-sub', 'ls /x', GUARDED, True, True)
+    allowed = denial_records('tu-ok', 'git status', 'On branch main', False, False)
+    with (out / 'project' / 'sid-1.jsonl').open('a') as f:
+        f.write('\n'.join(main + allowed) + '\n')
+    with (out / 'project' / 'sid-1' / 'subagents' / 'agent-a1.jsonl').open('a') as f:
+        f.write('\n'.join(sub) + '\n')
+    # The turn's stream-json repeats both, as the real runs do.
+    (out / 'turn1.jsonl').write_text('\n'.join(main + sub) + '\n')
+    audit = ctl.audit()
+    by_id = {d['tool_use_id']: d for d in audit['denials']}
+    assert sorted(by_id) == ['tu-main', 'tu-sub'], audit['denials']
+    assert len(audit['denials']) == 2, audit['denials']
+    assert by_id['tu-main'] == {'tool_name': 'Bash', 'tool_use_id': 'tu-main', 'tool_input': {'command': 'cat secret'},
+                                'transcript': 'project/sid-1.jsonl', 'subagent': False}
+    assert by_id['tu-sub']['transcript'] == 'project/sid-1/subagents/agent-a1.jsonl'
+    assert by_id['tu-sub']['subagent'] is True
+    assert by_id['tu-sub']['tool_input'] == {'command': 'ls /x'}
+    text = (out / 'extract.md').read_text()
+    assert 'tu-main' in text and 'tu-sub' in text
+
+
+def test_result_record_denial_merges_with_its_transcript_copy(ctl: Ctl) -> None:
+    out = ctl.rep()
+    with (out / 'project' / 'sid-1.jsonl').open('a') as f:
+        f.write('\n'.join(denial_records('tu-1', 'cat secret', CLASSIFIER, False, False)) + '\n')
+    ctl.result(REP, 1, {'subtype': 'success', 'is_error': False, 'result': 'r', 'total_cost_usd': 0.5,
+                        'permission_denials': [{'tool_name': 'Bash', 'tool_use_id': 'tu-1',
+                                                'tool_input': {'command': 'cat secret'}}]})
+    audit = ctl.audit()
+    assert [d['tool_use_id'] for d in audit['denials']] == ['tu-1'], audit['denials']
+
+
+def test_denial_scan_skips_a_record_whose_message_is_text(ctl: Ctl) -> None:
+    out = ctl.rep()
+    (out / 'turn1.jsonl').write_text(json.dumps({'type': 'system', 'subtype': 'notice', 'message': 'plain text'}) + '\n'
+                                     + '\n'.join(denial_records('tu-1', 'cat secret', CLASSIFIER, False, False)) + '\n')
+    audit = ctl.audit()
+    assert [d['tool_use_id'] for d in audit['denials']] == ['tu-1'], audit['denials']

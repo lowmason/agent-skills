@@ -11,10 +11,11 @@ plan 100's C10 table B) when a turn is missing, exited non-zero or reports an
 error; when any tool input, in its own transcript or a subagent's, names a path
 in the real home, in the rep HOME's Library folder (the Keychains link), or in
 the reps directory outside the rep's HOME, or names Keychains or a
-contamination fragment; or when a harness check fails (C11: the kit hash, the
+contamination fragment; when a tool input is a recursive or whole-disk search
+rooted at a folder that holds the real home (guard.py's rule); or when a harness check fails (C11: the kit hash, the
 init record's skills and agents, a kit_error, background tasks stopped at exit).
-Permission denials are listed for the scorer, who voids a rep whose failure
-traces to one.
+Permission denials, from every transcript of the rep (subagents included),
+are listed for the scorer, who voids a rep whose failure traces to one.
 
 Paths in the transcripts are the run-time ones: `~` is the HOME the rep ran
 with, $PHR_ROOT/<rep>, not its parked copy. The real home is this process's
@@ -34,6 +35,8 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+from guard import DATA_ANCESTORS, INDEXED, glob_base, search_roots, simple_commands
 
 KIT = Path(__file__).resolve().parent
 REAL = os.path.realpath(os.environ.get('HOME') or str(Path.home()))
@@ -65,6 +68,9 @@ USER_VARS = re.compile(r'\$\{?(?:USER|LOGNAME)\}?')
 FILE_KEYS = ('file_path', 'path', 'notebook_path')
 DATA_VOLUME = '/System/Volumes/Data'
 CAP = 800
+# A tool result that reports a denial: the auto mode classifier's, or the kit guard's.
+CLASSIFIER_DENIAL = 'Permission for this action was denied'
+GUARD_DENIAL = 'blocked by the workspace path guard:'
 
 
 # --- audit -------------------------------------------------------------------
@@ -155,6 +161,51 @@ def classify(token: str, cwd: str, home: str, real_home: str, root: str) -> str 
     return None
 
 
+def holders(real_home: str) -> set[str]:
+    '''The case-folded folders that hold the real home, in their one spelling.'''
+    parts = spelled(posixpath.normpath(real_home)).casefold().strip('/').split('/')
+    return {'/', *DATA_ANCESTORS} | {'/' + '/'.join(parts[:n]) for n in range(1, len(parts))}
+
+
+def ancestor_walks(name: str, data: dict, cwd: str, home: str, real_home: str) -> list[str]:
+    '''The flags for a search rooted at a folder that holds the real home, as
+    guard.py denies it: a recursive or indexed shell search (a `cd` earlier in
+    the line moves its start), a Glob with `**`, or a Grep. Lexical: no disk
+    read.'''
+    held = holders(real_home)
+    why = 'searches a folder that holds the real home'
+
+    def where(token: str, base: str) -> str:
+        return walked(expanded(token, base, home, real_home))[-1]
+
+    found = []
+    if name == 'Bash':
+        command = str(data.get('command', ''))
+        for words in simple_commands(command.split('\n', 1)[0] if '<<' in command else command):
+            program = posixpath.basename(words[0])
+            if program in ('cd', 'pushd'):
+                cwd = where(next((w for w in words[1:] if not w.startswith('-')), '~'), cwd)
+                continue
+            roots = search_roots(words)
+            if roots is None:
+                continue
+            if program in INDEXED:
+                found.append(f'search {program} ({why}: its index covers the whole disk)')
+            else:
+                found += [f'search {program} {root} ({why})' for root in roots or ['.']
+                          if where(glob_base(root), cwd).casefold() in held]
+    elif name in ('Glob', 'Grep'):
+        base = str(data.get('path') or '.')
+        pattern = str(data.get('pattern', ''))
+        if name == 'Glob':
+            if '**' not in pattern:
+                return []
+            base = glob_base(pattern if pattern.startswith('/') else posixpath.join(base, pattern))
+        if where(base, cwd).casefold() in held:
+            found.append(f'search {name} at {base} ({why})')
+    return found
+
+
 def tool_uses(record: dict) -> list[tuple[str, dict]]:
     content = (record.get('message') or {}).get('content')
     if not isinstance(content, list):
@@ -179,7 +230,7 @@ def scanned(name: str, data: dict, cwd: str, home: str, real_home: str) -> list[
 
 
 def flags_for(name: str, data: dict, cwd: str, home: str, real_home: str, root: str) -> list[str]:
-    found = []
+    found = ancestor_walks(name, data, cwd, home, real_home)
     for text, base in scanned(name, data, cwd, home, real_home):
         bare = SHELL_QUOTES.sub('', text)  # the shell drops quotes, so Key""chains is Keychains
         if KEYCHAINS.search(bare.casefold()):
@@ -212,6 +263,74 @@ def audit_transcripts(transcripts: list[Path], repo: str, home: str, real_home: 
                 flags.update(f'{transcript.name}: {name}: {flag}'
                              for flag in flags_for(name, data, cwd, home, real_home, root))
     return sorted(flags)
+
+
+def result_text(content) -> str:
+    '''A tool_result's text: a string, or the text parts of a list.'''
+    if isinstance(content, list):
+        return '\n'.join(str(c.get('text', '')) for c in content if isinstance(c, dict))
+    return str(content or '')
+
+
+def is_denial(text: str) -> bool:
+    return text.lstrip().startswith(CLASSIFIER_DENIAL) or GUARD_DENIAL in text
+
+
+def records(transcript: Path) -> list[dict]:
+    found = []
+    for line in transcript.read_text(errors='replace').splitlines():
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(record, dict):
+            found.append(record)
+    return found
+
+
+def collect_denials(out: Path, turns: int) -> list[dict]:
+    '''Every denied tool call of the rep, once each by tool_use_id: a tool_result
+    that reports a classifier or guard denial, in any transcript (the session's,
+    its subagents', each turn's stream), paired with its tool_use, and each
+    turn record's permission_denials. Each entry names the first transcript
+    that holds it, and says whether a subagent made the call. The session
+    transcripts come first, since they keep each subagent apart.'''
+    project = out / 'project'
+    transcripts = (sorted(project.rglob('*.jsonl')) if project.is_dir() else []) + sorted(out.glob('turn*.jsonl'))
+    uses: dict[str, tuple[str, dict]] = {}
+    hits: dict[str, dict] = {}
+    for transcript in transcripts:
+        label = str(transcript.relative_to(out))
+        in_subagent = 'subagents' in transcript.relative_to(out).parts
+        for record in records(transcript):
+            message = record.get('message')
+            content = message.get('content') if isinstance(message, dict) else None
+            for c in content if isinstance(content, list) else []:
+                if not isinstance(c, dict):
+                    continue
+                if c.get('type') == 'tool_use' and c.get('id'):
+                    uses.setdefault(c['id'], (c.get('name', ''), c.get('input') or {}))
+                if c.get('type') != 'tool_result' or not is_denial(result_text(c.get('content'))):
+                    continue
+                subagent = bool(in_subagent or record.get('isSidechain') or record.get('parent_tool_use_id'))
+                hit = hits.setdefault(c.get('tool_use_id', ''), {'transcript': label, 'subagent': False})
+                hit['subagent'] = hit['subagent'] or subagent
+    denials = []
+    for use_id, hit in hits.items():
+        name, data = uses.get(use_id, ('', {}))
+        denials.append({'tool_name': name, 'tool_use_id': use_id, 'tool_input': data, **hit})
+    for n in range(1, turns + 1):
+        try:
+            listed = json.loads((out / f'turn{n}.json').read_text()).get('permission_denials') or []
+        except (OSError, json.JSONDecodeError, AttributeError):
+            continue
+        for denial in listed:
+            if not isinstance(denial, dict) or denial.get('tool_use_id') in hits:
+                continue
+            denials.append({**denial, 'transcript': f'turn{n}.json', 'subagent': False})
+            if denial.get('tool_use_id'):
+                hits[denial['tool_use_id']] = {}
+    return denials
 
 
 def turn_problems(out: Path, turns: int) -> list[str]:
@@ -397,13 +516,12 @@ def build(rep: str) -> dict:
     if not transcripts:
         problems.append('no transcript copied')
     flags = audit_transcripts(transcripts, repo, home, REAL, ROOT)
-    denials, cost = [], 0.0
+    denials, cost = collect_denials(out, len(turns)), 0.0
     for n in range(1, len(turns) + 1):
         try:
             data = json.loads((out / f'turn{n}.json').read_text())
         except (OSError, json.JSONDecodeError):
             continue
-        denials += data.get('permission_denials') or []
         cost += data.get('total_cost_usd') or 0.0
     audit = {'rep': rep, 'arm': arm, 'phase': phase, 'valid': not problems and not flags,
              'problems': problems, 'flags': flags, 'denials': denials, 'cost_usd': round(cost, 4)}
