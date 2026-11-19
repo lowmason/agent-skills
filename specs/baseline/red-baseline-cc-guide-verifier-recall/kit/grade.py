@@ -73,7 +73,8 @@ ADVISOR_MODEL = 'claude-opus-5-5'
 AGENT_KEYS = frozenset({'description', 'subagent_type', 'prompt', 'model'})
 AGENT_MODEL = 'sonnet'
 LAUNCH_NOTICE = 'Async agent launched'  # a background Agent call's result, not the report
-# a background Agent call's finished result in the held binary: it points at the hand-back and holds no report
+# a foreground Agent call's finished result in the held binary when the verifier hands back: it points at the
+# hand-back and holds no report
 COMPLETION_NOTICE = "This agent's report was delivered to you as a message from"
 NOTICES = (LAUNCH_NOTICE, COMPLETION_NOTICE)  # each known by its start, after any leading white space
 HANDBACK = 'SubagentHandback'

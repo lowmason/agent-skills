@@ -24,8 +24,8 @@ SID = '0a1b2c3d-0000-4000-8000-000000000001'
 BODY = {'control': 'Arm one contract body.', 'changed': 'Arm two contract body, with listed items.'}
 ROOT = '/private/tmp/vrtest/r001/work'  # a V2 root under /private/tmp, as a real rep's is
 LAUNCH = 'Async agent launched successfully.\nagentId: a1 (internal ID)'
-# A background dispatch's finished Agent result in the held binary, in the pilot rep r004's real shape: it points at
-# the hand-back and holds no report.
+# A foreground dispatch's finished Agent result in the held binary when the verifier hands back, in the pilot rep
+# r004's real shape: it points at the hand-back and holds no report. A background dispatch gets LAUNCH instead.
 COMPLETION = ('  This agent\'s report was delivered to you as a message from "a1" (its SubagentHandback call). Read it '
               'there; it is not repeated here.\n  \nagentId: a1\n<usage>subagent_tokens: 270599\ntool_uses: 64\n'
               'duration_ms: 663846</usage>')
