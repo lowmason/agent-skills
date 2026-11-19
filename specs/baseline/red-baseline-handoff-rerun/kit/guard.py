@@ -45,9 +45,19 @@ GLOB_CHARS = re.compile(r'[*?\[]')
 # Searches. A shell word made only of these characters ends a simple command or redirects.
 OPERATOR = re.compile(r'[();<>|&]+')
 ASSIGNMENT = re.compile(r'[A-Za-z_]\w*=', re.DOTALL)
-WRAPPERS = {'sudo', 'command', 'builtin', 'exec', 'time', 'nice', 'nohup', 'env', 'xargs', 'timeout',
+WRAPPERS = {'sudo', 'command', 'builtin', 'exec', 'time', 'nice', 'nohup', 'env', 'xargs', 'timeout', 'stdbuf',
             'do', 'then', 'else', 'elif', 'if', 'while', 'until', '{', '!'}  # reserved words lead a command too
-WRAPPER_ARG = re.compile(r'-.*|[\d.]+[smhd]?')
+# A wrapper's options that take the next word as their value, so that word is no command.
+WRAPPER_VALUES = {
+    'env': {'-u', '-C', '-S', '--unset', '--chdir', '--split-string'},
+    'sudo': {'-u', '-g', '-C', '-D', '-h', '-p', '-U', '-r', '-t', '-T', '--user', '--group', '--close-from',
+             '--chdir', '--host', '--prompt', '--other-user', '--role', '--type', '--command-timeout'},
+    'timeout': {'-s', '-k', '--signal', '--kill-after'},
+    'nice': {'-n', '--adjustment'},
+    'xargs': {'-I', '-L', '-n', '-P', '-s', '-d', '-E', '-a', '--max-args', '--max-lines', '--max-procs',
+              '--delimiter', '--arg-file'},
+    'stdbuf': {'-i', '-o', '-e'},
+}
 SHELLS = {'sh', 'bash', 'zsh', 'dash', 'ksh'}
 INDEXED = {'mdfind', 'locate', 'glocate', 'plocate', 'mlocate'}  # they search the whole disk's index
 FIND_OPTIONS = {'-H', '-L', '-P', '-E', '-X', '-s', '-x', '-d', '-O0', '-O1', '-O2', '-O3'}
@@ -226,21 +236,30 @@ def substitutions(command: str) -> list[str]:
 
 def command_words(words: list[str]) -> list[list[str]]:
     '''One simple command's words, assignments and wrappers dropped, with the
-    commands of a `sh -c` string after it.'''
-    i = 0
+    commands of a `sh -c` or `env -S` string after it.'''
+    i, split = 0, []
     while i < len(words):
         if ASSIGNMENT.match(words[i]):
             i += 1
         elif posixpath.basename(words[i]) in WRAPPERS:
-            i += 1
-            while i < len(words) and WRAPPER_ARG.fullmatch(words[i]):
-                i += 1
+            name, i = posixpath.basename(words[i]), i + 1
+            values = WRAPPER_VALUES.get(name, set())
+            while i < len(words) and words[i].startswith('-') and words[i] != '-':
+                option, i = words[i], i + 1
+                if option == '--':
+                    break
+                if option in values and i < len(words):
+                    if name == 'env' and option in ('-S', '--split-string'):
+                        split += simple_commands(words[i])  # env -S runs its string as a command line
+                    i += 1
+            if name == 'timeout' and i < len(words):
+                i += 1  # the duration
         else:
             break
     words = words[i:]
+    found = ([words] if words else []) + split
     if not words:
-        return []
-    found = [words]
+        return found
     if posixpath.basename(words[0]) in SHELLS:
         for at, word in enumerate(words[1:-1], 1):
             if re.fullmatch(r'-[A-Za-z]*c[A-Za-z]*', word):

@@ -71,6 +71,7 @@ CAP = 800
 # A tool result that reports a denial: the auto mode classifier's, or the kit guard's.
 CLASSIFIER_DENIAL = 'Permission for this action was denied'
 GUARD_DENIAL = 'blocked by the workspace path guard:'
+HOOK_DENIAL = re.compile(r'PreToolUse:\w+ hook error: ' + re.escape(GUARD_DENIAL))
 
 
 # --- audit -------------------------------------------------------------------
@@ -272,8 +273,15 @@ def result_text(content) -> str:
     return str(content or '')
 
 
-def is_denial(text: str) -> bool:
-    return text.lstrip().startswith(CLASSIFIER_DENIAL) or GUARD_DENIAL in text
+def is_denial(result: dict) -> bool:
+    '''Whether a tool_result reports a denial, in the form the transcripts
+    show: an error result that starts with the classifier's sentence, or with
+    the hook error that carries the guard's reason. A result that only quotes
+    the words, a grep of guard.py say, is no denial.'''
+    if result.get('is_error') is not True:
+        return False
+    text = result_text(result.get('content')).lstrip()
+    return text.startswith(CLASSIFIER_DENIAL) or HOOK_DENIAL.match(text) is not None
 
 
 def records(transcript: Path) -> list[dict]:
@@ -310,7 +318,7 @@ def collect_denials(out: Path, turns: int) -> list[dict]:
                     continue
                 if c.get('type') == 'tool_use' and c.get('id'):
                     uses.setdefault(c['id'], (c.get('name', ''), c.get('input') or {}))
-                if c.get('type') != 'tool_result' or not is_denial(result_text(c.get('content'))):
+                if c.get('type') != 'tool_result' or not is_denial(c):
                     continue
                 subagent = bool(in_subagent or record.get('isSidechain') or record.get('parent_tool_use_id'))
                 hit = hits.setdefault(c.get('tool_use_id', ''), {'transcript': label, 'subagent': False})

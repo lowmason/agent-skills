@@ -427,3 +427,32 @@ def test_round2_search_forms_deny(homes, command):
 def test_round2_harmless_forms_allowed(homes, command):
     rep, real = homes
     assert decide('Bash', {'command': command}, rep, real) is None
+
+
+# --- fix round 3: wrapper options that take a value ---------------------------------
+
+
+@pytest.mark.parametrize('command', [
+    'env -u UNUSED find / -name x',
+    'env -C /tmp find / -name x',
+    "env -S 'find / -name x'",
+    'sudo -u root find / -name x',
+    'timeout -s KILL 5 find / -name x',
+    'timeout -k 2 5 ls -R /',
+    'nice -n 5 find / -name x',
+    'echo x | xargs -n 1 find / -name',
+    'xargs -I {} find / -name {}',
+    'stdbuf -o L find / -name x',
+])
+def test_wrapper_option_values_are_skipped(homes, command):
+    rep, real = homes
+    assert_denied(decide('Bash', {'command': command}, rep, real), WALK)
+
+
+@pytest.mark.parametrize('command', [
+    'env FOO=1 ls', 'timeout 5 pytest -q', 'sudo -n true', 'timeout 5 ls /', 'nice -n 5 make',
+    'env -u FOO ls -la', 'xargs -n 1 echo',
+])
+def test_wrapped_harmless_commands_allowed(homes, command):
+    rep, real = homes
+    assert decide('Bash', {'command': command}, rep, real) is None

@@ -69,8 +69,8 @@ def counted_reps(rows: list[dict], expected: list[str]) -> list[str]:
 
 def gaps(arm: str, rows: list[dict], reps: list[str]) -> list[str]:
     '''A line for each counted rep with no rows, or with no row for a
-    criterion that the arm's other rows use.'''
-    criteria = {r['criterion'] for r in rows} - {'VOID'}
+    criterion that the other counted reps' rows use.'''
+    criteria = {r['criterion'] for r in rows if r['rep'] in reps} - {'VOID'}
     out = []
     for rep in reps:
         has = {r['criterion'] for r in rows if r['rep'] == rep}

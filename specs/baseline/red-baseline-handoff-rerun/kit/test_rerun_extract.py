@@ -763,3 +763,62 @@ def test_round2_search_forms_void(ctl: Ctl, command: str) -> None:
 def test_round2_harmless_forms_are_valid(ctl: Ctl, command: str) -> None:
     ctl.rep(main=[('Bash', {'command': command})])
     assert ctl.audit()['valid'] is True
+
+
+# --- fix round 3: wrapper values, the denial shape, the tally's criteria -------------
+
+
+@pytest.mark.parametrize('command', [
+    'env -u UNUSED find / -name x', 'sudo -u root find / -name x', 'timeout -s KILL 5 find / -name x',
+    'echo x | xargs -n 1 find / -name',
+])
+def test_wrapper_option_values_void(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command})])
+    flags = ctl.audit()['flags']
+    assert any('holds the real home' in flag for flag in flags), flags
+
+
+@pytest.mark.parametrize('command', ['env FOO=1 ls', 'timeout 5 pytest -q', 'sudo -n true'])
+def test_wrapped_harmless_commands_are_valid(ctl: Ctl, command: str) -> None:
+    ctl.rep(main=[('Bash', {'command': command})])
+    assert ctl.audit()['valid'] is True
+
+
+def result_line(use_id: str, text: str, is_error: bool) -> str:
+    return json.dumps({'type': 'user', 'message': {'content': [
+        {'type': 'tool_result', 'tool_use_id': use_id, 'content': text, 'is_error': is_error}]}})
+
+
+def test_a_result_quoting_the_guard_phrase_is_no_denial(ctl: Ctl) -> None:
+    out = ctl.rep()
+    quoted = "guard.py:30:PREFIX = 'blocked by the workspace path guard:'"
+    lines = denial_records('tu-real', 'ls /x', GUARDED, False, False) + [
+        result_line('tu-grep', quoted, False),
+        result_line('tu-err', 'grep: x: No such file. ' + quoted, True),
+        result_line('tu-cls', 'Note: Permission for this action was denied earlier', False),
+    ]
+    with (out / 'project' / 'sid-1.jsonl').open('a') as f:
+        f.write('\n'.join(lines) + '\n')
+    ids = [d['tool_use_id'] for d in ctl.audit()['denials']]
+    assert ids == ['tu-real'], ids
+
+
+def test_a_classifier_denial_needs_the_error_flag(ctl: Ctl) -> None:
+    out = ctl.rep()
+    lines = [result_line('tu-ok', CLASSIFIER, False), result_line('tu-den', CLASSIFIER, True)]
+    with (out / 'project' / 'sid-1.jsonl').open('a') as f:
+        f.write('\n'.join(lines) + '\n')
+    ids = [d['tool_use_id'] for d in ctl.audit()['denials']]
+    assert ids == ['tu-den'], ids
+
+
+def test_tally_criteria_come_from_the_counted_reps(ctl: Ctl) -> None:
+    names = reps(ctl, 'v1', range(281, 286))
+    probe = reps(ctl, 'v1', range(276, 277), phase='probe')
+    rows = [(r, 'F-restate', 'PASS') for r in names] + [(probe[0], 'F-restate', 'PASS'),
+                                                          (probe[0], 'X-probe-only', 'FAIL')]
+    score(ctl, 'rerun100', 'v1', rows)
+    done = tally(ctl, 'rerun100')
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert 'no row for X-probe-only' not in done.stdout, done.stdout
+    assert 'PASS (0 of 5 failing)' in done.stdout, done.stdout
