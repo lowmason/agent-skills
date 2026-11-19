@@ -1,6 +1,6 @@
 # cc-guide verifier recall and covered files — Design Spec
 
-**Status:** APPROVED 2026-11-17 by the owner ("Approve spec"). The design came from a brainstorming session on
+**Status: COMPLETE (2026-11-19)** — implemented by plan 102 (`specs/plans/completed/102-cc-guide-verifier-recall-and-covered-files.md`) and retired here. Parts B and C landed. Part A failed gate A and was reverted whole (E1). It was APPROVED 2026-11-17 by the owner ("Approve spec"). The design came from a brainstorming session on
 2026-11-17 for lane D1 of that day's `/deferred` triage. D1 is the owner's ruling from that pass. D2 and D4 are the
 owner's answers in the brainstorming session. Text marked *(designer's call)* is the designer's choice.
 

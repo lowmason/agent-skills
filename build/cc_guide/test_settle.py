@@ -15,7 +15,7 @@ import report_grammar
 import settle
 import state
 from cc_fixtures import (DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_dir, fixture_repo,  # noqa: F401
-                         fixture_state, guide_text, isolated_home, prime_cache, write_tree)
+                         fixture_state, git, guide_text, isolated_home, prime_cache, write_tree)
 from lint import CLI
 
 NOW = datetime(2026, 10, 4, 12, 0, tzinfo=timezone.utc)
@@ -1085,6 +1085,257 @@ def test_a_file_whose_citation_stamp_alone_changed_is_still_cited(world, tmp_pat
     result = settled(out, CONSISTENT)
     assert f'  {CLI} baseline cite hooks/gate.sh' in result.lines
     assert not any(line.startswith('held') for line in result.lines)
+
+
+# ---- files: covered files (spec B4, B6) ---------------------------------------
+
+def skill_md(name):
+    return f'---\nname: {name}\ndescription: Use when a fixture needs it.\n# cc-guide: alpha.overview @2.1.900\n---\n'
+
+
+def skill_packet(world, tmp_path):
+    '''Commits the demo skill into the world's repo, with each file that
+    its citation covers (beside.md, references/a.md and references/deep/b.md)
+    and two it does not (README.md, scripts/notes.md), and returns its files
+    packet.'''
+    write_tree(world[0], {
+        'skills/demo/SKILL.md': skill_md('demo'), 'skills/demo/beside.md': 'skills/demo beside\n',
+        'skills/demo/references/a.md': 'skills/demo a\n', 'skills/demo/references/deep/b.md': 'skills/demo b\n',
+        'skills/demo/README.md': 'readme\n', 'skills/demo/scripts/notes.md': 'notes\n'})
+    git(world[0], 'add', '-A')
+    git(world[0], 'commit', '-qm', 'skill')
+    return packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md'])[0]
+
+
+SKILL_OK = ('skills/demo/SKILL.md:5 | a body | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent',)
+
+
+def test_settle_accepts_a_row_on_a_covered_file_and_discards_one_on_another_file(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    result = settled(out, *SKILL_OK,
+                     'skills/demo/references/a.md:1 | uses ALPHA_TOOL | alpha.overview | "Alpha uses `ALPHA_TOOL`" | contradicts',
+                     'skills/demo/other.md:1 | x | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent')
+    assert 'contradictions, to fix in skills/demo/SKILL.md or the covered file its row names in the working tree:' in result.lines
+    assert '  skills/demo/references/a.md:1 (alpha.overview): uses ALPHA_TOOL (guide: "Alpha uses `ALPHA_TOOL`")' in result.lines
+    assert any(line.startswith('  unparseable: skills/demo/other.md:1') for line in result.lines)
+
+
+@pytest.mark.parametrize('move, path', [('change', 'skills/demo/references/a.md'), ('add', 'skills/demo/new.md'),
+                                        ('remove', 'skills/demo/beside.md')])
+def test_a_covered_file_that_moved_holds_the_citing_file(world, tmp_path, move, path):
+    out = skill_packet(world, tmp_path)
+    repo = world[0]
+    if move == 'remove':
+        git(repo, 'rm', '-q', path)
+    else:
+        write_tree(repo, {path: 'moved\n'})
+        git(repo, 'add', path)
+    result = settled(out, *SKILL_OK)
+    assert (f'held, not cited: skills/demo/SKILL.md: covered files changed after its packet was built: {path}'
+            in result.lines)
+    assert not any(' baseline cite ' in line for line in result.lines)
+
+
+def test_a_files_packet_without_covered_settles_as_before(world, tmp_path):
+    '''Guard: passes at RED, and must still pass at GREEN.'''
+    out = skill_packet(world, tmp_path)
+    i = json.loads((out / packets.INDEX).read_text())
+    del i['covered']
+    (out / packets.INDEX).write_text(json.dumps(i))
+    result = settled(out, *SKILL_OK)
+    assert f'  {CLI} baseline cite skills/demo/SKILL.md' in result.lines
+    assert not any(line.startswith('held') for line in result.lines)
+
+
+# ---- files: covered files, the shapes each rule covers (spec B4) --------------
+
+COVERED_ROW = 'skills/demo/references/a.md:1 | a | alpha.overview | "Alpha uses `ALPHA_TOOL`" | {}'
+CLOSING = ('then, in this order (R8.8), once every contradiction is fixed in {}, unless build/cc_guide/conformance.toml '
+           'records it as a deviation, which stays as it is; for one you leave for the owner, settle again with '
+           '--hold skills/demo/SKILL.md, which skips its cite:')
+
+
+def held_lines(result):
+    return [line for line in result.lines if line.startswith('held')]
+
+
+def test_a_row_names_the_citing_file_a_covered_file_or_neither_and_each_is_counted(world, tmp_path):
+    '''The rule's three shapes in one report: the citing file and a covered
+    file parse, whatever their verdict, and count toward the report line.'''
+    out = skill_packet(world, tmp_path)
+    result = settled(out, COVERED_ROW.format('consistent'),
+                     'skills/demo/SKILL.md:5 | b | alpha.overview | "Alpha uses `ALPHA_TOOL`" | contradicts',
+                     'skills/demo/references/deep/b.md:1 | c | alpha.overview | - | not covered',
+                     'skills/demo/beside.md:1 | d | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent')
+    assert result.lines[1] == 'report: 2 consistent, 1 contradiction(s), 1 not covered, 0 unverified'
+    assert '  skills/demo/SKILL.md:5 (alpha.overview): b (guide: "Alpha uses `ALPHA_TOOL`")' in result.lines
+    assert ('  skills/demo/references/deep/b.md:1 (alpha.overview, not covered; a coverage gap?): c'
+            in result.lines)
+    assert held_lines(result) == [] and result.clean
+
+
+@pytest.mark.parametrize('name', [
+    'skills/demo/references/a.md.bak',  # a covered file's name with a suffix
+    'skills/demo/references/a.m',  # a prefix of a covered file's name
+    'skills/demo/references',  # the folder that holds one
+    'skills/demo/references/b.md',  # a file beside a covered one
+    'skills/demo/README.md',  # in the skill folder, but its citation does not cover it
+    'skills/demo/scripts/notes.md',  # likewise
+    'skills/other/references/a.md',  # another skill's file of the same name
+    'skills/demo/SKILL.md.bak',  # the citing file's name with a suffix
+])
+def test_a_row_on_a_file_that_is_neither_the_citing_file_nor_covered_is_unparseable(world, tmp_path, name):
+    '''Guard: passes at RED. A prefix, a suffix and a neighbor of a covered
+    name never match.'''
+    out = skill_packet(world, tmp_path)
+    row = f'{name}:1 | x | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent'
+    result = settled(out, *SKILL_OK, row)
+    assert f'  unparseable: {row}' in result.lines
+    assert held_lines(result) == [
+        'held, not cited: skills/demo/SKILL.md: a discarded or unparseable row might have changed it']
+
+
+@pytest.mark.parametrize('shape', ['absent', 'empty'])
+def test_a_packet_with_no_covered_files_names_only_the_citing_file(world, tmp_path, shape):
+    '''Review focus 1: with `covered` absent (a packet made before covered
+    files) or empty (a skill with none), both phrases read as they always
+    did, and a row on another file is unparseable. Absent passes at RED.'''
+    if shape == 'absent':
+        out = skill_packet(world, tmp_path)
+        i = json.loads((out / packets.INDEX).read_text())
+        del i['covered']
+        (out / packets.INDEX).write_text(json.dumps(i))
+    else:
+        write_tree(world[0], {'skills/demo/SKILL.md': skill_md('demo')})
+        git(world[0], 'add', '-A')
+        git(world[0], 'commit', '-qm', 'solo')
+        (out,) = packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md'])
+        assert json.loads((out / packets.INDEX).read_text())['covered'] == {}
+    row = COVERED_ROW.format('contradicts')
+    result = settled(out, *SKILL_OK, row)
+    assert 'contradictions, to fix in skills/demo/SKILL.md in the working tree:' in result.lines
+    assert CLOSING.format('skills/demo/SKILL.md') in result.lines
+    assert f'  unparseable: {row}' in result.lines
+    assert not any('covered file' in line for line in result.lines)
+
+
+def test_a_skill_packet_with_covered_files_names_the_covered_file_in_both_phrases(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    result = settled(out, *SKILL_OK)
+    assert 'contradictions, to fix in skills/demo/SKILL.md or the covered file its row names in the working tree:' \
+        in result.lines
+    assert CLOSING.format('skills/demo/SKILL.md or the covered file its row names') in result.lines
+
+
+def test_a_clean_skill_report_cites_only_the_citing_file(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    result = settled(out, COVERED_ROW.format('consistent'),
+                     'skills/demo/references/deep/b.md:1 | c | alpha.overview | "Alpha uses `ALPHA_TOOL`" | consistent')
+    assert [line for line in result.lines if line.startswith('  ' + CLI)] == [
+        f'  {CLI} baseline cite skills/demo/SKILL.md', f'  {CLI} lint']
+    assert not any('covered/' in line or 'references/' in line for line in result.lines if ' cite ' in line)
+
+
+def test_a_row_on_a_covered_file_alone_answers_its_section(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    result = settled(out, COVERED_ROW.format('consistent'))
+    assert not any(line.startswith('left out') for line in result.lines)
+    assert held_lines(result) == [] and result.clean
+
+
+def test_a_covered_rows_quote_is_guide_text_and_a_quote_from_the_covered_file_is_discarded(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    row = 'skills/demo/references/a.md:1 | a | alpha.overview | "skills/demo a" | contradicts'  # the file's own text
+    result = settled(out, *SKILL_OK, row)
+    assert f'  quote not found, discarded: {row}' in result.lines
+    assert held_lines(result) == [
+        'held, not cited: skills/demo/SKILL.md: a discarded or unparseable row might have changed it']
+
+
+def test_a_skill_whose_covered_files_did_not_move_is_cited(world, tmp_path):
+    '''Guard: passes at RED. A file that is untracked, or that its citation
+    does not cover, or that is rewritten with the same text, moves nothing.'''
+    out = skill_packet(world, tmp_path)
+    write_tree(world[0], {'skills/demo/README.md': 'edited\n', 'skills/demo/scripts/notes.md': 'edited\n',
+                          'skills/demo/untracked.md': 'u\n', 'hooks/gate.sh': CITER + '# edited\n',
+                          'skills/demo/beside.md': 'skills/demo beside\n'})
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == []
+    assert f'  {CLI} baseline cite skills/demo/SKILL.md' in result.lines
+
+
+def test_the_files_that_moved_are_named_sorted_and_the_ones_that_did_not_are_not(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    repo = world[0]
+    write_tree(repo, {'skills/demo/references/a.md': 'moved\n', 'skills/demo/aaa.md': 'new\n'})
+    git(repo, 'add', '-A')
+    git(repo, 'rm', '-q', 'skills/demo/beside.md')
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == [
+        'held, not cited: skills/demo/SKILL.md: covered files changed after its packet was built: '
+        'skills/demo/aaa.md, skills/demo/beside.md, skills/demo/references/a.md']
+
+
+def test_a_skill_that_gained_its_first_covered_file_is_held(world, tmp_path):
+    '''The packet's `covered` is empty, and the checkout now covers a file.'''
+    write_tree(world[0], {'skills/demo/SKILL.md': skill_md('demo')})
+    git(world[0], 'add', '-A')
+    git(world[0], 'commit', '-qm', 'solo')
+    (out,) = packets.files(load(world), tmp_path / 'f', ['skills/demo/SKILL.md'])
+    assert json.loads((out / packets.INDEX).read_text())['covered'] == {}
+    write_tree(world[0], {'skills/demo/references/first.md': 'first\n'})
+    git(world[0], 'add', '-A')
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == ['held, not cited: skills/demo/SKILL.md: covered files changed after its packet '
+                                  'was built: skills/demo/references/first.md']
+
+
+def test_a_skill_that_lost_every_covered_file_is_held_naming_each(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    git(world[0], 'rm', '-q', '-r', 'skills/demo/references', 'skills/demo/beside.md')
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == [
+        'held, not cited: skills/demo/SKILL.md: covered files changed after its packet was built: '
+        'skills/demo/beside.md, skills/demo/references/a.md, skills/demo/references/deep/b.md']
+
+
+def test_a_covered_file_gone_from_disk_but_still_in_the_index_holds_the_citing_file(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    (world[0] / 'skills/demo/references/deep/b.md').unlink()
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == ['held, not cited: skills/demo/SKILL.md: covered files changed after its packet '
+                                  'was built: skills/demo/references/deep/b.md']
+
+
+def test_a_covered_copy_gone_from_its_packet_holds_the_citing_file(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    (out / 'covered/beside.md').unlink()
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == ['held, not cited: skills/demo/SKILL.md: covered files changed after its packet '
+                                  'was built: skills/demo/beside.md']
+
+
+def test_the_citing_file_and_a_covered_file_both_moving_give_both_reasons_in_order(world, tmp_path):
+    out = skill_packet(world, tmp_path)
+    skill = world[0] / 'skills/demo/SKILL.md'
+    skill.write_text(skill.read_text() + 'a new line\n')
+    (world[0] / 'skills/demo/beside.md').write_text('moved\n')
+    result = settled(out, *SKILL_OK)
+    assert held_lines(result) == [
+        'held, not cited: skills/demo/SKILL.md: the file changed after its packet was built; covered files '
+        'changed after its packet was built: skills/demo/beside.md']
+
+
+def test_a_covered_file_that_is_not_utf8_stops_settle_with_its_name(world, tmp_path, capsys, monkeypatch):
+    out = skill_packet(world, tmp_path)
+    (world[0] / 'skills/demo/beside.md').write_bytes(b'\xff\xfe')
+    (out / packets.REPORT).write_text('\n'.join(SKILL_OK) + '\n')
+    with pytest.raises(state.SetupError) as err:
+        settle.settle(out)
+    assert 'skills/demo/beside.md' in str(err.value) and 'not UTF-8' in str(err.value)
+    monkeypatch.setattr(cli, 'REPO', world[0])
+    assert cli.main(['settle', str(out)]) == 2
+    assert capsys.readouterr().err == f'cc-guide: {err.value}\n'
 
 
 # ---- the CLI -----------------------------------------------------------------

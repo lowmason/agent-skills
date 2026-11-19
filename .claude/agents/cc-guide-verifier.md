@@ -58,9 +58,13 @@ A block with no row, and a release with no coverage line, go to verify as UNSURE
 
 ### files
 
-The cited file's copy is the file `index.json` names as `copy`; its line numbers are the file's. `sections.md` holds the sections it cites, each marked when it changed after the file's stamp. Give one row per statement in the file that rests on a cited section, and a none line for each cited section no statement rests on:
+The cited file's copy is the file `index.json` names as `copy`; its line numbers are the file's. When the cited file is a skill's `SKILL.md`, `index.json` also names `covered`: each Markdown file the skill loads on demand, by its repo path, with the packet copy that holds it; a copy's line numbers are its file's. `sections.md` holds the sections the citation names, each marked when it changed after the file's stamp. Give one row per statement in the cited file or a covered file that rests on a cited section, and a none line for each cited section that no statement in those files rests on:
 
     file:line | statement | section | "verbatim guide quote" | consistent / contradicts / not covered
     section | none
 
-`file` is the path `index.json` names as `file`, as in `hooks/README.md:56`. A not-covered row may leave its quote `-`. A cited section with no row and no none line holds the file, as if unreviewed.
+In a row, name a covered file by the path that `covered` holds as a key (its repo path, never its copy's path).
+
+`file` is the path `index.json` names as `file`, or a path `covered` names, as in `hooks/README.md:56`. A not-covered row may leave its quote `-`. A cited section with no row and no none line holds the file, as if unreviewed.
+
+Compare each statement with what the guide says about the component the statement describes. A repo's own script, hook or agent is not Claude Code: a guide fact about how Claude Code behaves contradicts a statement only when the statement describes that behaviour.
