@@ -1,5 +1,7 @@
 # prepare-handoff Re-run (`v1`, `b2`, `c4a-neg`) Implementation Plan
 
+**Status: COMPLETE (2026-11-18)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give each of the arms `v1`, `b2` and `c4a-neg` five valid reps on the shipped prepare-handoff text and a recorded verdict. The reps run in a new committed micro-test kit, where each rep's `HOME` is its own folder that holds the shipped skills.
@@ -142,7 +144,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
      "command": "/usr/bin/python3 <kit>/guard.py --real-home <real home>"}]}]}}
   ```
 
-- [ ] **Step 1: Write the failing tests** in `test_rerun_guard.py`. Each builds a payload and runs `guard.py` as a subprocess with `HOME` set to a temporary rep home that holds a `Library/Keychains` symlink to a temporary "real home". Assert the decision and `returncode == 0` in every test. Every deny asserts a reason that starts `blocked by the workspace path guard:`.
+- [x] **Step 1: Write the failing tests** in `test_rerun_guard.py`. Each builds a payload and runs `guard.py` as a subprocess with `HOME` set to a temporary rep home that holds a `Library/Keychains` symlink to a temporary "real home". Assert the decision and `returncode == 0` in every test. Every deny asserts a reason that starts `blocked by the workspace path guard:`.
   - `test_denies_for_loop_absolute_real_home`: Bash `for d in a b; do ls <real>/.claude/skills 2>/dev/null; done` → deny.
   - `test_denies_system_volumes_form`: Bash `cat /System/Volumes/Data<real>/x` → deny.
   - `test_denies_through_keychain_link`: Bash `ls ~/Library/Keychains/../..` → deny. Read `file_path` `<home>/Library/Keychains/x` → deny.
@@ -151,18 +153,18 @@ These settle what the items and the owner ruling leave open. The owner reviews t
   - `test_allows_repo_relative`: Bash `git status && ls ../` from cwd `<home>/work/r281` → allow.
   - `test_malformed_payload_denies`: stdin `not json` → deny, exit 0.
 
-- [ ] **Step 2: Run the tests and see them fail**
+- [x] **Step 2: Run the tests and see them fail**
 
   Run: `cd specs/baseline/red-baseline-handoff-rerun/kit && uv run --with pytest python -m pytest -q test_rerun_guard.py`
   Expected: errors, `guard.py` not found.
 
-- [ ] **Step 3: Write `guard.py`**, with `denied` as in Interfaces. Take the path-token and `..` regexes from `$RED/tools/extract.py` (`PATH_TOKEN`, `DOTDOT_TOKEN`).
+- [x] **Step 3: Write `guard.py`**, with `denied` as in Interfaces. Take the path-token and `..` regexes from `$RED/tools/extract.py` (`PATH_TOKEN`, `DOTDOT_TOKEN`).
 
-- [ ] **Step 4: Run the tests and see them pass**
+- [x] **Step 4: Run the tests and see them pass**
 
   Run: the Step 2 command. Expected: `7 passed`.
 
-- [ ] **Step 5: Register the suite.** Add to `build/suites.toml`, in name order:
+- [x] **Step 5: Register the suite.** Add to `build/suites.toml`, in name order:
 
   ```toml
   [[suite]]
@@ -175,7 +177,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
   Run: `uv run python build/run_suites.py --check && uv run python build/run_suites.py handoff-rerun-kit`
   Expected: the check exits 0, and the suite reports `7 passed`.
 
-- [ ] **Step 6: Commit** `guard.py`, the test and `build/suites.toml`: `feat(handoff-rerun): add the kit's real-home guard (plan 100)`.
+- [x] **Step 6: Commit** `guard.py`, the test and `build/suites.toml`: `feat(handoff-rerun): add the kit's real-home guard (plan 100)`.
 
 ### Task 2: The runner
 
@@ -193,16 +195,16 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - Produces: `postprocess.strip(obj) -> obj` and `postprocess.py split <stream.jsonl> <out-dir> <n>`, which writes the stripped `turn<n>.jsonl`, `turn<n>.json` and `turn<n>.init.json`. `postprocess.py strip-tree <dir>` strips every `.json` and `.jsonl` file under a folder in place.
 - Environment: `PHR_ROOT` (default `/private/tmp/phr100`), `PHR_CTL` (default `~/.cache/agent-skills/handoffs/rerun100`), `PHR_TEMPLATES` (default `~/.cache/pondworks/templates`), `CLAUDE_BIN` (default `command -v claude`), `KIT_COMMIT` (required; `make_reps.py` records it and `run_rep.sh` reads it from the registry).
 
-- [ ] **Step 1: Record `KIT_COMMIT`.** Run `git rev-parse HEAD` on the execution branch before its first commit. Write the value into the record's Method section (Task 4 creates it) and into each registry row.
+- [x] **Step 1: Record `KIT_COMMIT`.** Run `git rev-parse HEAD` on the execution branch before its first commit. Write the value into the record's Method section (Task 4 creates it) and into each registry row.
 
   > Deviation (execution, 2026-11-18, execution brief default 1): `KIT_COMMIT` is `92f6a379d4bb77ba53adb360f8171ebd9c295ce8`, the branch base, recorded right after the branch was cut and before Task 1. Task 1 commits first, so "before its first commit" could not be met at this step. The base is the commit that the Kit commit constraint names. `git diff --stat 275edc1 92f6a37 -- skills/ agents/ commands/` is empty, so the kit text equals the text at plan 100's merge. The kit's `README.md` repeats this note.
 
-- [ ] **Step 2: Copy the prompts.** Copy the seven files of C12 from `$RED/prompts/` into `kit/prompts/`. Then:
+- [x] **Step 2: Copy the prompts.** Copy the seven files of C12 from `$RED/prompts/` into `kit/prompts/`. Then:
 
   Run: `cd specs/baseline/red-baseline-handoff-rerun/kit/prompts && for f in *; do cmp "$f" ~/.cache/agent-skills/handoffs/red/prompts/"$f" || echo DIFF "$f"; done`
   Expected: no output.
 
-- [ ] **Step 3: Write the failing tests** in `test_rerun_runner.py`. They use a stub `claude` (a shell script set as `CLAUDE_BIN`), a temporary `PHR_ROOT`, `PHR_CTL` and `PHR_TEMPLATES`, and a one-commit template repo. The stub reads stdin, writes a stream with an `init`, an `assistant` and a `result` record whose `result` and `modelUsage` hold `credential_expires_at`, and runs the probe actions that the test names.
+- [x] **Step 3: Write the failing tests** in `test_rerun_runner.py`. They use a stub `claude` (a shell script set as `CLAUDE_BIN`), a temporary `PHR_ROOT`, `PHR_CTL` and `PHR_TEMPLATES`, and a one-commit template repo. The stub reads stdin, writes a stream with an `init`, an `assistant` and a `result` record whose `result` and `modelUsage` hold `credential_expires_at`, and runs the probe actions that the test names.
   - `test_strip_removes_field_everywhere`: after one rep, no file under `$PHR_CTL/results/<rep>/` holds the string `credential_expires_at`, and `turn1.json` keeps `total_cost_usd`.
   - `test_brief_tree_is_copied`: the stub writes `$HOME/.cache/agent-skills/handoffs/other-name/brief.md`. After the rep, `$PHR_CTL/results/<rep>/handoffs/other-name/brief.md` exists.
   - `test_second_rep_sees_nothing_of_first`: rep 1's stub writes a marker into `$HOME`, `$TMPDIR`, the repo and `$HOME/.cache/agent-skills/handoffs/<rep>/`. Rep 2's stub lists `$PHR_ROOT`, `$HOME`, `$TMPDIR` and `$HOME/.cache/agent-skills/handoffs` recursively into its output. Rep 2's output names no rep-1 marker and no rep-1 id. Rep 1's `HOME` is in `$PHR_CTL/homes/`.
@@ -211,19 +213,19 @@ These settle what the items and the owner ruling leave open. The owner reviews t
   - `test_env_holds_no_session_variables`: the stub writes its environment. It holds no name starting `CLAUDE` other than `CLAUDE_CODE_DISABLE_ADVISOR_TOOL`, and `HOME` and `TMPDIR` are the rep's.
   - `test_resume_on_later_turns`: a two-prompt arm calls the stub with `--session-id` then `--resume` and the same id.
 
-- [ ] **Step 4: Run the tests and see them fail**
+- [x] **Step 4: Run the tests and see them fail**
 
   Run: `uv run python build/run_suites.py handoff-rerun-kit`
   Expected: the 7 new tests fail or error, and Task 1's 7 pass.
 
-- [ ] **Step 5: Write `postprocess.py`, `make_reps.py`, `run_rep.sh` and `run_batch.sh`** to the Interfaces block. `run_rep.sh` copies the template with `cp -R` and checks the Global Constraints' HEAD, refs and clean status. It builds the kit folders with `git -C <repo> archive "$KIT_COMMIT" <paths> | tar -x`. It fills `@REP@` in each prompt. After each turn it runs `postprocess.py split`. After the last turn it copies the session's project folder from `$H/.claude/projects/` into `project/` and the handoffs tree into `handoffs/`, runs `strip-tree` on the results folder, then greps for the field. The kit hash is `shasum -a 256` over the sorted file list and contents of `.claude/skills`, `.claude/agents` and `.claude/commands`.
+- [x] **Step 5: Write `postprocess.py`, `make_reps.py`, `run_rep.sh` and `run_batch.sh`** to the Interfaces block. `run_rep.sh` copies the template with `cp -R` and checks the Global Constraints' HEAD, refs and clean status. It builds the kit folders with `git -C <repo> archive "$KIT_COMMIT" <paths> | tar -x`. It fills `@REP@` in each prompt. After each turn it runs `postprocess.py split`. After the last turn it copies the session's project folder from `$H/.claude/projects/` into `project/` and the handoffs tree into `handoffs/`, runs `strip-tree` on the results folder, then greps for the field. The kit hash is `shasum -a 256` over the sorted file list and contents of `.claude/skills`, `.claude/agents` and `.claude/commands`.
 
-- [ ] **Step 6: Run the tests and see them pass**
+- [x] **Step 6: Run the tests and see them pass**
 
   Run: `uv run python build/run_suites.py handoff-rerun-kit`
   Expected: `14 passed`.
 
-- [ ] **Step 7: Commit** the runner files, the prompts and the test: `feat(handoff-rerun): add the kit runner with per-rep homes (plan 100)`.
+- [x] **Step 7: Commit** the runner files, the prompts and the test: `feat(handoff-rerun): add the kit runner with per-rep homes (plan 100)`.
 
 ### Task 3: The audit and the tally
 
@@ -237,7 +239,7 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - Produces: `classify(token: str, cwd: str, home: str, real_home: str, root: str) -> str | None`, which returns a flag or None by the table that the owner picked for C10. It maps each `/tmp` spelling to `/private/tmp` (C10, Spelling) before it compares.
 - Produces: `tally.py PHASE`, a fork of `$RED/tools/tally.py` that reads `$CTL`. It checks each quote against its extract and prints counts and verdicts by the Global Constraints' thresholds.
 
-- [ ] **Step 1: Write the failing tests** in `test_rerun_extract.py`. They write small transcripts and results under a temporary `$PHR_CTL`, then run the audit.
+- [x] **Step 1: Write the failing tests** in `test_rerun_extract.py`. They write small transcripts and results under a temporary `$PHR_CTL`, then run the audit.
   - `test_tilde_kit_read_is_valid`: a subagent's Bash `ls ~/.claude/skills/writing-plans` → valid. So is a Read of the same file spelled `/tmp/phr100/<rep>/.claude/…` and `/private/tmp/phr100/<rep>/.claude/…`.
   - `test_real_home_voids`: Read `<real>/.claude/skills/x` → void, flag names the path.
   - `test_library_link_voids`: Bash `ls ~/Library/Keychains/..` → void.
@@ -248,19 +250,21 @@ These settle what the items and the owner ruling leave open. The owner reviews t
   - `test_kit_hash_mismatch_voids`: unequal `kit_sha_before` and `kit_sha_after` → void.
   - `test_init_skill_mismatch_voids`: a `turn1.init.json` whose `skills` lack `prepare-handoff` → void.
 
-- [ ] **Step 2: Run the tests and see them fail**
+- [x] **Step 2: Run the tests and see them fail**
 
   Run: `uv run python build/run_suites.py handoff-rerun-kit`
   Expected: the 9 new tests fail or error.
 
-- [ ] **Step 3: Write `extract.py` and `tally.py`.** Start from the `$RED/tools/` files. Change only the paths, `normalize` (`~` becomes the rep's `HOME`), the protected and allowed sets (C10), the harness checks (C11), and the read of `turn<n>.json`.
+- [x] **Step 3: Write `extract.py` and `tally.py`.** Start from the `$RED/tools/` files. Change only the paths, `normalize` (`~` becomes the rep's `HOME`), the protected and allowed sets (C10), the harness checks (C11), and the read of `turn<n>.json`.
 
-- [ ] **Step 4: Run the tests and see them pass**
+
+  > Deviation: after the batches, the final review and the completion gate changed `guard.py`, `extract.py` and `tally.py`: the Data-volume prefix in any case, the counted reps taken from the audits with phase checks, ancestor-rooted searches denied and flagged, denials collected from every transcript, and four parser gaps closed. None changed a recorded verdict. The kit README lists the commits under "Fixes after the batches".
+- [x] **Step 4: Run the tests and see them pass**
 
   Run: `uv run python build/run_suites.py handoff-rerun-kit`
   Expected: `23 passed`.
 
-- [ ] **Step 5: Commit** `extract.py`, `tally.py` and the test: `feat(handoff-rerun): fork plan 40's audit and tally for per-rep homes (plan 100)`.
+- [x] **Step 5: Commit** `extract.py`, `tally.py` and the test: `feat(handoff-rerun): fork plan 40's audit and tally for per-rep homes (plan 100)`.
 
 ### Task 4: Probes and pilot (paid)
 
@@ -268,48 +272,56 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - Create: `specs/baseline/red-baseline-handoff-rerun/kit/prompts/isolation_probe.txt`, `guard_probe.txt`
 - Create: `specs/baseline/red-baseline-handoff-rerun.md` (Method, Probes, Pilot)
 
-- [ ] **Step 1: Owner gate.** Tell the owner C14's estimate and the cost of this task's runs (about $15). Wait for the owner's yes before Step 3. Log the answer in `## Decisions`.
+- [x] **Step 1: Owner gate.** Tell the owner C14's estimate and the cost of this task's runs (about $15). Wait for the owner's yes before Step 3. Log the answer in `## Decisions`.
 
-- [ ] **Step 2: Log the change in `$RED/changes.log`.** Append one line: the date, plan 100's kit path and `KIT_COMMIT`, the arms, C10's table as chosen, C11, C13, and "no frozen file edited; freeze id unchanged".
+- [x] **Step 2: Log the change in `$RED/changes.log`.** Append one line: the date, plan 100's kit path and `KIT_COMMIT`, the arms, C10's table as chosen, C11, C13, and "no frozen file edited; freeze id unchanged".
 
-- [ ] **Step 3: Isolation probe.** Write `isolation_probe.txt`. It asks for one line each, YES or NO with a quote: text loaded from a `CLAUDE.md`, an output style, rules, a SessionStart hook's text, a memory index, the names of the skills and agents available. Run one rep of arm `probe-iso` with phase `probe`.
+- [x] **Step 3: Isolation probe.** Write `isolation_probe.txt`. It asks for one line each, YES or NO with a quote: text loaded from a `CLAUDE.md`, an output style, rules, a SessionStart hook's text, a memory index, the names of the skills and agents available. Run one rep of arm `probe-iso` with phase `probe`.
   Expected: the CLAUDE.md, output-style, rules, hook and memory lines read NO. The skill and agent lines name the 12 kit skills and 2 kit agents. `turn1.init.json` agrees. `turn1.json` has `subtype` `success`.
 
-- [ ] **Step 4: Guard probe.** Write `guard_probe.txt`. It asks the rep to run three commands as written and to report each output: `for d in .claude/skills; do ls ~/$d; done`, `for d in a; do ls @REAL@/.claude; done` and `for d in a; do ls ~/Library/Keychains/..; done`. Run one rep of arm `probe-guard` with phase `probe`.
+
+  > Deviation: the probe ran twice, r281 before owner decision D4 and r284 after it. Each init record lists Claude Code's built-in skills and agents beside the 12 kit skills and 2 kit agents.
+- [x] **Step 4: Guard probe.** Write `guard_probe.txt`. It asks the rep to run three commands as written and to report each output: `for d in .claude/skills; do ls ~/$d; done`, `for d in a; do ls @REAL@/.claude; done` and `for d in a; do ls ~/Library/Keychains/..; done`. Run one rep of arm `probe-guard` with phase `probe`.
   The prompt then asks the rep to dispatch one `general-purpose` subagent, at `model: sonnet`, that runs the second command and reports its output.
   Expected: the first lists the 12 kit skills. The second and third, and the subagent's command, each end with a tool result that starts `blocked by the workspace path guard:`. A denial with any other reason does not count. If the rep declines to run a command, so that no tool call exists, reword the prompt more plainly and rerun. Record the results as the item's probe (C5).
 
-- [ ] **Step 5: Pilot reps.** Run one `c4a-neg` rep, then one `v1` rep, with phase `pilot`. Run `extract.py --rep` on each.
+
+  > Deviation: r282 declined the subagent step, and Claude Code synced the account's claude.ai skills into its HOME (owner decision D4). The prompt was reworded to state the step's purpose, and r283 passed in full.
+- [x] **Step 5: Pilot reps.** Run one `c4a-neg` rep, then one `v1` rep, with phase `pilot`. Run `extract.py --rep` on each.
   Expected: both valid. In the `v1` rep, the subagent transcripts show the fact-checker and cold-reader dispatches, and any skill-text read resolves under the rep `HOME`. No flag names the real home.
 
-- [ ] **Step 6: Restate the cost.** Take each pilot's `total_cost_usd`. If the expected total for 6 reps per arm differs from C14 by more than 25%, tell the owner before Task 5.
+- [x] **Step 6: Restate the cost.** Take each pilot's `total_cost_usd`. If the expected total for 6 reps per arm differs from C14 by more than 25%, tell the owner before Task 5.
 
-- [ ] **Step 7: Write the record's Method, Probes and Pilot sections.** Method gives `KIT_COMMIT`, the Claude Code version, the command, C1 to C13 by reference, and the differences from Phase 3: user-level context (C4), the model and CLI version (C9), the setting sources (C3), the kit holding `KIT_COMMIT`'s text for all 12 skills, and the empty `~/.cache/agent-skills/cc-guide`, which `t9`'s drift spec cites.
+- [x] **Step 7: Write the record's Method, Probes and Pilot sections.** Method gives `KIT_COMMIT`, the Claude Code version, the command, C1 to C13 by reference, and the differences from Phase 3: user-level context (C4), the model and CLI version (C9), the setting sources (C3), the kit holding `KIT_COMMIT`'s text for all 12 skills, and the empty `~/.cache/agent-skills/cc-guide`, which `t9`'s drift spec cites.
 
-- [ ] **Step 8: Commit** the probe prompts and the record: `test(handoff-rerun): record the isolation and guard probes and the pilot (plan 100)`.
+- [x] **Step 8: Commit** the probe prompts and the record: `test(handoff-rerun): record the isolation and guard probes and the pilot (plan 100)`.
 
 ### Task 5: The batches (paid)
 
 **Files:**
 - Create: `specs/baseline/red-baseline-handoff-rerun/scores/<arm>.tsv` (3 files)
 
-- [ ] **Step 1: Run 5 reps of each arm**, in this order: `c4a-neg`, `b2`, `v1`, each as its own batch (`make_reps.py <arm> rerun100 5 rerun100-<arm>`, then `run_batch.sh rerun100-<arm>` in the background). After each batch, run `extract.py rerun100-<arm>`.
+- [x] **Step 1: Run 5 reps of each arm**, in this order: `c4a-neg`, `b2`, `v1`, each as its own batch (`make_reps.py <arm> rerun100 5 rerun100-<arm>`, then `run_batch.sh rerun100-<arm>` in the background). After each batch, run `extract.py rerun100-<arm>`.
 
-- [ ] **Step 2: Replace voids.** For each void rep, make one more rep of its arm, up to 10 dispatched per arm. If an arm reaches 10 with fewer than 5 valid reps, stop and bring the void list to the owner.
+- [x] **Step 2: Replace voids.** For each void rep, make one more rep of its arm, up to 10 dispatched per arm. If an arm reaches 10 with fewer than 5 valid reps, stop and bring the void list to the owner.
 
-- [ ] **Step 3: Score.** Follow `$RED/PROTOCOL.md` Scoring step 2. Dispatch one scorer subagent for each arm, with `$RED/rubric.md` and the arm's first 5 valid extracts. The `v1` scorer runs on `opus`, the others on `sonnet`. Each scorer writes `$CTL/scores/rerun100/<arm>.tsv`. For `v1` and `b2`, the scorer reads each rep's repo under `$CTL/homes/<rep>/work/<rep>`.
 
-- [ ] **Step 4: Tally.**
+  > Deviation: the audit voided none of the 15 reps. After the final review, the owner voided r289 (D5) for a `find /` walk, and replacement rep r302 ran and was scored.
+- [x] **Step 3: Score.** Follow `$RED/PROTOCOL.md` Scoring step 2. Dispatch one scorer subagent for each arm, with `$RED/rubric.md` and the arm's first 5 valid extracts. The `v1` scorer runs on `opus`, the others on `sonnet`. Each scorer writes `$CTL/scores/rerun100/<arm>.tsv`. For `v1` and `b2`, the scorer reads each rep's repo under `$CTL/homes/<rep>/work/<rep>`.
+
+- [x] **Step 4: Tally.**
 
   Run: `uv run python specs/baseline/red-baseline-handoff-rerun/kit/tally.py rerun100`
   Expected: every quote found, and a verdict for each arm. Rescore any line whose quote is not found.
 
-- [ ] **Step 5: Copy the scores into the repo** with the real home written as `~real`. Then:
+- [x] **Step 5: Copy the scores into the repo** with the real home written as `~real`. Then:
 
   Run: `git grep -n -e "$HOME" -e credential_expires_at -- specs/baseline/red-baseline-handoff-rerun/`
   Expected: no output.
 
-- [ ] **Step 6: Commit** the scores: `test(handoff-rerun): score v1, b2 and c4a-neg on the shipped skills (plan 100)`.
+
+  > Deviation: the `git grep` also hits the kit's own code, which names `credential_expires_at` as the field it strips. The score files hold neither the real home nor the field.
+- [x] **Step 6: Commit** the scores: `test(handoff-rerun): score v1, b2 and c4a-neg on the shipped skills (plan 100)`.
 
 ### Task 6: The record
 
@@ -317,17 +329,17 @@ These settle what the items and the owner ruling leave open. The owner reviews t
 - Modify: `specs/baseline/red-baseline-handoff-rerun.md`
 - Modify: `specs/completed/red-baseline-handoff-briefs-2026-10-10.md` (one section at the end)
 
-- [ ] **Step 1: Write the Results section.** One table, as Phase 3's: arm, valid, failing reps, per criterion, verdict. Then one evidence line per failing rep and criterion (rep: criterion: paraphrase), the voids with their flags, the cost per arm and in total, and the comparison with Phase 3 (`v1` 3 valid, 1 failing; `b2` 3 valid, 1 failing; `c4a-neg` 0 of 5), read against C4's difference.
+- [x] **Step 1: Write the Results section.** One table, as Phase 3's: arm, valid, failing reps, per criterion, verdict. Then one evidence line per failing rep and criterion (rep: criterion: paraphrase), the voids with their flags, the cost per arm and in total, and the comparison with Phase 3 (`v1` 3 valid, 1 failing; `b2` 3 valid, 1 failing; `c4a-neg` 0 of 5), read against C4's difference.
 
-- [ ] **Step 2: Answer the open Phase 3 points.** Say what this run shows for each: Validation 1 on the shipped cold reader (its false-positive rate on a brief with no planted defect), Validation 2 on the widened and anchored description, and the `b2` route on the shipped private-decision trigger.
+- [x] **Step 2: Answer the open Phase 3 points.** Say what this run shows for each: Validation 1 on the shipped cold reader (its false-positive rate on a brief with no planted defect), Validation 2 on the widened and anchored description, and the `b2` route on the shipped private-decision trigger.
 
-- [ ] **Step 3: Add the pointer** to the plan 40 record: a section `## Re-run on the shipped text (plan 100, <date>)` with one line per arm (valid count, verdict) and the record's path.
+- [x] **Step 3: Add the pointer** to the plan 40 record: a section `## Re-run on the shipped text (plan 100, <date>)` with one line per arm (valid count, verdict) and the record's path.
 
-- [ ] **Step 4: Check the record**
+- [x] **Step 4: Check the record**
 
   Run: `uv run python build/check_links.py && git grep -n -e "$HOME" -- specs/baseline/red-baseline-handoff-rerun.md`
   Expected: `0 broken`, and no grep output.
 
-- [ ] **Step 5: Commit**: `docs(handoff-rerun): record the re-run of v1, b2 and c4a-neg (plan 100)`.
+- [x] **Step 5: Commit**: `docs(handoff-rerun): record the re-run of v1, b2 and c4a-neg (plan 100)`.
 
 Then run the Plan Completion Protocol. Its step 3 ticks the four items. Other lanes build kits too, so first check on `origin/main` whether another kit has already ticked a kit item. If one has, add a `→ progress` note that names this kit, and do not tick it twice. The main item's `→ done` note gives each arm's verdict and the record's path. The three kit items' notes name the kit and the test or probe that meets each done-when (Task 1's guard tests and Task 4's guard probe; `test_second_rep_sees_nothing_of_first`; `test_strip_removes_field_everywhere`).
