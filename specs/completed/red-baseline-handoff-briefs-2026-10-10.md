@@ -189,3 +189,11 @@ The owner fixed this rule at the 2026-10-11 `/deferred` pass, before any rep of 
 - Everything else the frozen audit voids still voids: any other path in the checkout (`specs/`, `build/`, this record), the reps directory, the shared handoffs directory and the user-level settings file.
 - Only fresh reps count. Phase 3's 34 voids read the old text; they stay void and are not re-scored.
 - Before the first rep and after the last, record the main checkout's branch and the tree hash of `skills/` at HEAD (`git -C ~/Projects/agent-skills rev-parse HEAD:skills`). If the branch is not `main`, or the hash changed, or `git -C ~/Projects/agent-skills diff --quiet HEAD -- skills/` fails, the reps run in between are void. The rule keys on `skills/`, not on HEAD, so that a sibling's commit elsewhere does not void a batch.
+
+## Re-run on the shipped text (plan 100, 2026-11-18)
+
+- `v1`: 5 valid, PASS (1 of 5 failing). The PASS depends on a V1-sort reading that the record discloses.
+- `b2`: 5 valid, PASS (0 of 5 failing).
+- `c4a-neg`: 5 valid, FAIL (2 of 5 failing F-brief).
+
+The record is [red-baseline-handoff-rerun.md](../baseline/red-baseline-handoff-rerun.md).

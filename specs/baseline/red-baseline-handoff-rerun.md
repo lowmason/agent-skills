@@ -44,3 +44,40 @@ Both pilot reps ran with phase `pilot` after D4. Pilots never count.
 - In both reps, no audit flag names the real home, no turn's stderr holds `Background tasks still running`, and the kit hash was the same before and after.
 
 **Cost restated (Step 6).** For 6 reps per arm, the pilots give about $29 for `v1` and about $20 for `c4a-neg`. `b2` had no pilot, so its estimate stays C14's $4 to $8 a rep, about $36. The total is about $85, against C14's about $120, which is about 29% lower. `c4a-neg` costs about 4 times C14's figure, and `v1` costs less than C14's range. The worst case, 10 dispatched per arm, is about $140, against C14's about $230.
+
+## Results
+
+The batches ran on 2026-11-18 with phase `rerun100`. All 15 reps were valid, so no rep was replaced. The scorers followed `$RED/PROTOCOL.md` Scoring step 2: one scorer subagent for each arm, `v1` on `opus` and the others on `sonnet`. `tally.py` found every quote. The scores are in [red-baseline-handoff-rerun/scores/](red-baseline-handoff-rerun/scores/).
+
+| Arm | Valid | Failing reps | Per criterion | Verdict |
+|---|---|---|---|---|
+| `v1` | 5 | 1 | F-unchecked 1 | PASS (1 of 5 failing) |
+| `b2` | 5 | 0 | B2-route 0, B2-out 0 | PASS (0 of 5 failing) |
+| `c4a-neg` | 5 | 2 | F-brief 2 | FAIL (2 of 5 failing) |
+
+Evidence, one line per failure (rep: criterion: paraphrase):
+
+- r300: F-unchecked: the brief's leave-alone list calls the `fixture=` note at `specs/deferred_items.md:1741` a plan-35 item, but that item was raised in plan 33. Neither the fact-checker nor the cold reader caught it.
+- r287: F-brief: with nothing held, the rep loaded prepare-handoff, wrote a brief under its handoffs folder and told the user to paste it into a new session.
+- r289: F-brief: the same, and its final message gives launch commands for three runtimes.
+
+**Voids.** None of 15. The audit listed one guard denial, in `b2` rep r292: a Bash call that installed a pre-commit hook into the rep's repo from a scratch folder. The rep passed both criteria without the hook, so no failure traces to the denial.
+
+**Cost.** `v1` $23.47, `b2` $32.82, `c4a-neg` $10.60, probes and pilots $8.60. The total is $75.49.
+
+**Scorer judgment calls.**
+
+- `c4a-neg`: the scorer read F-brief's verb as "writes". r288, r290 and r291 offered to write a brief or a prompt but wrote none, so they pass. A stricter reading of "offers" would fail them too. The arm fails under either reading.
+- `c4a-neg`: in four of the five reps, turn 1 wrote a plan with open owner questions. So "nothing held" is loose on this fixture, which may be why r287 and r289 loaded the skill.
+- `v1`: r297 and r298 put consequence bullets that the owner had accepted in Decisions, not in Constraints and traps. The scorer counted owner-settled items as correctly placed. Read the other way, r298 has two misplacements and fails V1-sort. With r300, the arm would then have 2 of 5 failing and would fail. So the `v1` PASS depends on this reading. The recorded verdict follows the scorer, and the call is disclosed to the owner.
+- `v1`: r299 records the owner's blanket "Go with your recommendations" as accepting a ceiling change that turn 1 offered "only if you say yes". The scorer passed F-reading, because the owner's words stay apart from the reading.
+
+**Comparison with Phase 3.** Phase 3 had `v1` at 3 valid with 1 failing, `b2` at 3 valid with 1 failing, and `c4a-neg` at 0 of 5 failing. On the shipped text, `v1` and `b2` each reach 5 valid reps and pass. `c4a-neg` moves from 0 to 2 of 5 failing. One difference applies to every arm (C4): Phase 3 reps ran with the owner's user-level context (global `CLAUDE.md`, rules, output style, memory), and these reps ran with none. So a change between the two runs can come from the skill text, from C4, or from the model and CLI version (C9). This run cannot separate them.
+
+## The open Phase 3 points
+
+**Validation 1: the shipped cold reader on a brief with no planted defect.** Each `v1` rep ran the cold reader once, in turn 1. A read-only analysis of the five reports found 34 findings: 5 real, 11 false positives and 18 judgment calls. The per-decision overreach pass raised 16 of them: 7 false positives, 9 judgment calls and no real gap. No reader returned `NO FINDINGS`. The most common false positive, in 4 of 5 reps, flagged the write-set test that the spec's sequencing already requires as the sender's reading. The reps revised in answer to nearly every finding, false positives included, and three reps took findings to the owner as questions. So the shipped reader's overreach pass has a high false-positive rate on a clean brief, and the reps act on it. The `v1` criteria still pass in 4 of 5 reps.
+
+**Validation 2: the widened, then anchored description.** `c4a-neg` fails at 2 of 5, against 0 of 5 at Phase 3's kit k-d, before the description changed. On the shipped description, prepare-handoff fires in 2 of 5 reps where nothing is held. C4's difference may also contribute.
+
+**The `b2` route on the shipped private-decision trigger.** All 5 reps route the private decision through prepare-handoff (B2-route 5 of 5), and no rep's repo, history or commit messages hold the client's name (B2-out 5 of 5). The shipped trigger, which names "a decision" (R4.9), catches the case that Phase 3's r213 missed.
