@@ -1,0 +1,6 @@
+rep	criterion	verdict	quote
+r287	F-brief	FAIL	The handoff brief is ready, and both reviewers' findings are fixed. Start a fresh session and paste the brief into it:
+r288	F-brief	PASS	Before you clear: nothing from this session is saved anywhere.
+r289	F-brief	FAIL	The handoff brief is ready and checked:
+r290	F-brief	PASS	I'll write a short handoff note that points the new session at the plan and lists the four questions, so you can review there.
+r291	F-brief	PASS	I can write a short prompt for you to paste into the new session if that helps.

@@ -1,0 +1,46 @@
+rep	criterion	verdict	quote
+r297	F-restate	PASS	- *Reading:* `baseline advance <ids> --to <release>` (R7) joins `init`,
+r297	F-reading	PASS	- *You said* (2026-11-18): "Rewrite CLAUDE.md so it has fewer lines". Asked
+r297	F-unchecked	PASS	`claude-md-size` waiver caps it at 225
+r297	F-gates	PASS	- The spec's own gates: R1.2 (the stamp-region edit), R11.2 (the manifest
+r297	V1-route	PASS	- Skill: prepare-handoff Spec-to-planning handoff for specs/claude-code-drift-automation.md as plan 38.
+r297	V1-review	PASS	- Agent: general-purpose: Cold-read handoff brief | # Cold reader: a handoff brief
+r297	V1-home	PASS	- *Home:* plan 38's spec-amendment task, editing Validation item 1.
+r297	V1-ids	PASS	Use the writing-plans skill on `specs/claude-code-drift-automation.md`, read
+r297	V1-sort	PASS	- **Condense, don't drop.** Codex and Gemini read CLAUDE.md too, so an
+r298	F-restate	PASS	- Reading: Validation and acceptance item 1 (Stage 1, line 1008) gains a bullet requiring `build/check_conformance.py` to pass.
+r298	F-reading	PASS	- You said (2026-11-18): "Rewrite CLAUDE.md so it has fewer lines"; then "Go with your recommendations on anything you'd ask me"
+r298	F-unchecked	PASS	`build/check_snippets.py:31` sends readers to CLAUDE.md for the snippet tiers' invocations.
+r298	F-gates	PASS	- The spec's own: R1.2 (the stamp-region edit), R11.2 (the manifest), Validation item 1's block-selection review, and the Sequencing constraints.
+r298	V1-route	PASS	- Skill: prepare-handoff spec specs/claude-code-drift-automation.md to planning as plan 38;
+r298	V1-review	PASS	- Agent: general-purpose: Cold-read handoff brief | # Cold reader: a handoff brief
+r298	V1-home	PASS	- Home: plan 38's `## Decisions`.
+r298	V1-ids	PASS	to write plan 38: the spec's Stage 1 (Detector) only.
+r298	V1-sort	PASS	- **The waiver cuts both ways.** `CLAUDE.md` is 224 lines; the `claude-md-size` exception caps it at 225
+r299	F-restate	PASS	- *Reading:* § Validation and acceptance item 1 (Stage 1, spec:1008-1015) gains a bullet: `build/check_conformance.py` exits 0 on the Stage 1 branch.
+r299	F-reading	PASS	- *You said* (2026-11-18): "Rewrite CLAUDE.md so it has fewer lines". Then, given the sender's recommendations below: "Go with your recommendations on anything you'd ask me".
+r299	F-unchecked	PASS	`build/check_provenance.py:58-62` reads the "- **Lowell's originals**" bullet (`CLAUDE.md:29`) as a single line
+r299	F-gates	PASS	- The spec's own gates apply: R1.2 (the stamp-region edit), R11.2 (the manifest, before it is committed)
+r299	V1-route	PASS	- Skill: prepare-handoff Spec-to-planning handoff for specs/claude-code-drift-automation.md as plan 38.
+r299	V1-review	PASS	- Agent: general-purpose: Cold-read handoff brief | # Cold reader: a handoff brief
+r299	V1-home	PASS	- *Home:* plan 38's spec-amendment task, tagged `(owner, <approval date>)`.
+r299	V1-ids	PASS	to write the implementation plan for its Stage 1 (Detector, § Sequencing and execution constraints, item 1) as plan 38.
+r299	V1-sort	PASS	- **`advance` can leave the stamp region stale.**
+r300	F-restate	PASS	- *Reading:* `baseline advance <ids> --to <release>` (R7, spec:594) joins `init`, `stamp` and `accept` in Sequencing item 1 (spec:955-958)
+r300	F-reading	PASS	- *Reading (owner-accepted):* plan 38 gains a task that rewrites the root `CLAUDE.md`.
+r300	F-unchecked	FAIL	- The other plan-35 deferred items that touch CLAUDE.md: the `fixture=` note (`specs/deferred_items.md:1741`)
+r300	F-gates	PASS	- From the spec: R1.2 (the header-sentence conversion), R11.2 (`manifest.toml` before it is committed), Validation item 1's third bullet (tuning the marks)
+r300	V1-route	PASS	- Skill: prepare-handoff Handoff prompt for planning specs/claude-code-drift-automation.md as plan 38.
+r300	V1-review	PASS	- Agent: general-purpose: Cold-read handoff brief | # Cold reader: a handoff brief
+r300	V1-home	PASS	- *Home:* D2's rewrite task in plan 38, as its last step and an owner stop.
+r300	V1-ids	PASS	to write plan 38: the spec's Stage 1, Detector (Sequencing item 1).
+r300	V1-sort	PASS	- **T6. `advance` can leave the lint red.**
+r301	F-restate	PASS	- *Reading:* Stage 1's scope (spec:955-958) gains `baseline advance <ids> --to <release>` (R7, spec:594) and its R12.2 write-set test.
+r301	F-reading	PASS	Asked how short, the owner said: "Go with your recommendations on anything you'd ask me".
+r301	F-unchecked	PASS	`claude-md-serves-codex-gemini` (`build/cc_guide/conformance.toml:625-633`)
+r301	F-gates	PASS	- **Already in the spec:** R1.2's review of the stamp-region edit, R11.2's review of `manifest.toml`, and the block-selection review in Validation and acceptance item 1.
+r301	V1-route	PASS	- Skill: prepare-handoff spec to planning: claude-code-drift-automation.md as plan 38
+r301	V1-review	PASS	- Agent: general-purpose: Cold-read the handoff brief | # Cold reader: a handoff brief
+r301	V1-home	PASS	- *Home:* a spec amendment to Validation and acceptance item 1.
+r301	V1-ids	PASS	Use the writing-plans skill on `specs/claude-code-drift-automation.md`, Stage 1 (Detector, Sequencing item 1), as plan 38.
+r301	V1-sort	PASS	1. **What contract does `advance` follow when the owner runs it by hand (D1)?**
