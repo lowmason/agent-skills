@@ -1419,6 +1419,17 @@ def test_mutant_run_screen_file_keeps_the_run_files_header_and_sections(calc):
     assert 'test test_calc::test_add_small: caught 1' in lines
 
 
+def test_mutant_run_screen_writes_an_output_section_only_for_a_mutant_that_ran(calc):
+    make_mutant(calc, 1, *A)
+    p2 = make_mutant(calc, 2, '== 3', '== 4', path='test_calc.py')
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 1, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert mutant_line(lines, 2) == f'mutant 2: INVALID exit - sha256 {patch_sha(p2)} reason: touches a test file: test_calc.py'
+    assert '--- output: mutant 1 ---' in lines
+    assert '--- output: mutant 2 ---' not in lines
+
+
 def test_mutant_run_reads_a_screen_flag_only_as_its_first_argument(calc):
     make_mutant(calc, 1, *A)
     seen = run_file(calc, 'seen.txt')
