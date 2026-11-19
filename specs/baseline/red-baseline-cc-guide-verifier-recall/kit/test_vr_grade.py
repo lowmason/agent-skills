@@ -742,6 +742,8 @@ def test_a_sheet_exempts_the_reps_own_session_tool_results_only(kit, where, ok):
     folder = {'own': projects / slug / SID, 'other session': projects / slug / OTHER_SID,
               'other slug': projects / '-private-tmp-vr102-r009-work' / SID}[where]
     path = folder / 'tool-results' / 'toolu_big.txt'
+    for each in (slug + '/' + SID, slug + '/' + OTHER_SID, '-private-tmp-vr102-r009-work/' + SID):
+        write(projects / each / 'tool-results' / 'toolu_big.txt', 'saved grep output\n')  # all three on disk
     extra = (vassistant(use('t5', 'Read', file_path=str(path))), tool_result('t5', 'saved grep output'))
     text = one_rep(packet='readme', report=README_REPORT,
                    transcripts=[verifier('r001', 'changed', README_REPORT, extra=extra)])
@@ -761,6 +763,10 @@ def test_a_sheet_exempts_the_reps_own_session_tool_results_only(kit, where, ok):
     ([('r001', 'control', True, 'yes', 'yes'), ('r002', 'control', False, '', ''),
       ('r003', 'changed', False, '', ''), ('r004', 'changed', True, 'yes', 'yes'),
       ('r005', 'control', False, '', '', 'none', 0, 'spare', 'r002')], 'r002, r003, r005'),
+    ([('r001', 'control', False, '', ''), ('r002', 'control', False, '', ''),
+      ('r003', 'changed', True, 'yes', 'yes'), ('r004', 'changed', True, 'yes', 'yes'),
+      ('r005', 'control', False, '', '', 'none', 0, 'spare', 'r002'),
+      ('r006', 'control', True, 'yes', 'yes', 'none', 0, 'spare', 'r005')], 'r001'),
 ])
 def test_stop_refuses_while_a_side_is_short_and_names_void_reps_without_a_valid_spare(kit, capfd, reps, named):
     verdict_reps(reps)
