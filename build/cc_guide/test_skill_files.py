@@ -51,6 +51,15 @@ def test_the_verifier_reports_a_todo_reach_with_its_usual_verdict():
     assert 'usual verdict' in rule and 'JUDGMENT' not in rule
 
 
+def test_formats_states_the_hold_settle_prints_for_a_moved_covered_file():
+    '''The Holds bullet names the reason line that settle prints (pinned in
+    test_settle.py) and says a files row may name a covered file.'''
+    formats = (REPO / FORMATS).read_text(encoding='utf-8').split('\n')
+    (holds,) = [line for line in formats if line.startswith('- **Holds.**')]
+    assert '`covered files changed after its packet was built`' in holds
+    assert 'a row may name a covered file' in holds
+
+
 def test_the_verifier_writes_a_none_line_exactly_and_no_other_line_with_a_pipe():
     '''Settle never reads prose as none, so a sentence-form none line or a
     `<section> | note` line (2026-10-20: agents/debugger.md and
@@ -68,3 +77,24 @@ def test_the_verifier_writes_a_none_line_exactly_and_no_other_line_with_a_pipe()
 def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form):
     for path in (AGENT, FORMATS):
         assert form in (REPO / path).read_text(encoding='utf-8'), f'{path} lacks {form!r}'
+
+
+def test_a_files_row_names_a_covered_file_by_its_repo_path_never_its_copys():
+    '''`covered` in index.json maps each repo path to a copy path, and settle
+    accepts only the repo path. A verifier that wrote the copy path would have
+    every covered-file row discarded as unparseable and the file held, so the
+    contract says that the key is the name.'''
+    text = (REPO / AGENT).read_text(encoding='utf-8')
+    assert text.count("as a key (its repo path, never its copy's path)") == 1
+
+
+def test_the_files_rows_cover_the_cited_file_and_each_covered_file():
+    text = (REPO / AGENT).read_text(encoding='utf-8')
+    assert 'Give one row per statement in the cited file or a covered file that rests on a cited section' in text
+    assert 'or a path `covered` names' in text
+
+
+def test_the_files_rule_compares_a_statement_with_the_component_it_describes():
+    lines = (REPO / AGENT).read_text(encoding='utf-8').split('\n')
+    (rule,) = [line for line in lines if 'the component the statement describes' in line]
+    assert 'is not Claude Code' in rule

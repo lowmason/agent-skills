@@ -1865,6 +1865,7 @@
       > clauses and a cheap checkpoint; it targets P11, which alone decides this item's
       > done-when, not the other misses.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
+      → progress 2026-11-19 (plan 102): the changed arm met P11 in 5 of 5 valid reps against 0 of 5 (3 by the mechanical B-row line, 2 by C rows rated by hand), but gate A failed and Part A is reverted, so an audit at HEAD still misses `deniedModels`. Kept open by the owner's word. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate A and Disposition.
 - [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
@@ -2155,7 +2156,8 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       audit verifier's omission recall was 3 of 7 known positives" (section
       `44-claude-code-drift-automation — 2026-10-13`); close both together when P11 is met.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
-- [ ] The files rule has no precision fixture outside its own fixtures' domain. Plan 45's cheap
+      → progress 2026-11-19 (plan 102): gate A failed (P8 in 2 of 5 changed reps, where 4 are needed; P13 retention 1 against the control's 4), so Part A was reverted whole. The changed arm answered every listed item (0 of 206 unanswered in 5 of 5 reps, against 202 to 206 in the control) and met P11 in 5 of 5. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate A. A new round needs the owner's word.
+- [x] The files rule has no precision fixture outside its own fixtures' domain. Plan 45's cheap
       checkpoint on 2026-10-14 turned on contested readings of the changed arm's
       `hooks/README.md` rows: r11 and r27 kept 3 and 4 `contradicts` rows on cases that are
       hypothetical for that file or that the quoted passage does not give, rated UNSUPPORTED
@@ -2167,7 +2169,8 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       plan. Done when: such a fixture, its packet and a pre-registered precision key exist, and
       a scored run reports the files rule's UNSUPPORTED count on it for both arms.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
-- [ ] The files rule must take its reference case from the component the file describes. Plan
+      → done 2026-11-19 (plan 102): gate F reported the precision counts for both arms. Changed arm: 2 UNSUPPORTED rows in total, at most 1 in a rep. Control arm: 0. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate F.
+- [x] The files rule must take its reference case from the component the file describes. Plan
       45's changed arm (`0b76543`, reverted in `8947e50`) told the files verifier to compare a
       statement with the guide's cases for the same job; in r09, r11 and r27 that let it apply
       Claude Code's permission-matcher command splitting to the repo's own `hooks/uv-guard.sh`
@@ -2181,6 +2184,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `build/cc_guide/test_skill_files.py`, and a scored cheap batch on the readme packet keeps
       no `contradicts` row on `hooks/README.md:89` and no changed rep above 2 UNSUPPORTED.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
+      → done 2026-11-19 (plan 102): C1 landed with its C2 test (d827dd4), and gate F's readme clause is met: no valid readme rep kept a `contradicts` row on `hooks/README.md:89` (0 of 3 in each arm). Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md, Gate F.
 
 ## deferred-2026-10-15 (no plan; /deferred pass, branch chore/deferred-2026-10-15) — 2026-10-15
 - [x] `build/check_frontmatter.py`'s `check_agent_file` reads a YAML-list `tools` through
@@ -6542,6 +6546,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       on demand, and a test in `build/` checks it.
       → progress 2026-11-17 (owner ruling): the same work as the item in section `cc-guide-files-2.1.326-backlog (no plan; /cc-guide files pass, branch claude/modest-tesla-17e8fe) — 2026-11-17`. The packet copies each on-demand Markdown file. Close both together.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
+      → progress 2026-11-19 (plan 102): Part B and its tests landed, so a files packet copies the Markdown files that a skill's citation covers, and settle reads rows on them and holds a skill whose covered files moved. E3's fresh `/cc-guide files` pass, run in its own session after the merge, closes this item and the one on the files packet. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md.
 - [x] The micro-test kit's isolation pilot never asks about user identity (plan 92, Task 4 review).
       `specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json` addresses the owner by
       surname. The pilot's six answers were all NO, because `kit/isolation_probe.txt` has no identity question.
@@ -7128,6 +7133,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       it, and the skills whose `references/` state Claude Code facts get a fresh `/cc-guide` files verify.
       → progress 2026-11-17 (owner ruling): the packet copies each on-demand Markdown file, as it copies the cited file, so settle checks quotes against fixed bytes.
       → planned 2026-11-18: specs/plans/102-cc-guide-verifier-recall-and-covered-files.md
+      → progress 2026-11-19 (plan 102): Part B and its tests landed, so a files packet copies the Markdown files that a skill's citation covers, and settle reads rows on them and holds a skill whose covered files moved. E3's fresh `/cc-guide files` pass, run in its own session after the merge, closes this item and the one on `packets.py` `files()`. Record: specs/baseline/red-baseline-cc-guide-verifier-recall.md.
 
 ## deferred-2026-11-17-parallel (no plan; /deferred pass, branch claude/parallel-work-organization-6159c1) — 2026-11-17
 - [ ] **Account identity reaches the isolated micro-test runs (first found in specs/baseline/red-baseline-writing-skills-guide/new/P1a-sonnet/rep5.json, 2026-11-12).** A rep run under `claude -p --tools "" --setting-sources ""` can know the owner's name. Plan 92's `P1a-sonnet` rep5 addressed the owner by surname, and plan 97's isolation pilot answered YES to the identity line of `isolation_probe.txt` (`specs/baseline/red-baseline-change-reverted-mutant.md`, Isolation probe). The cause is unknown, and no verdict has depended on it so far. Filed when the owner retired the item that asked for the identity line (section `92-writing-skills-guide-rewrite — 2026-11-12`). Finding the cause would take a probe that varies the login and the environment (for example `env -i` and a fresh `HOME`) and records which runs still know the name. Size: design. Revisit if: a micro-test verdict turns on whether a rep knows the user's name or email.
@@ -7168,6 +7174,11 @@ review and the Plan Completion gate (2026-10-27) add the others.
       leaves it. Nobody has tested how the app's own branch tracking takes it. Size: quick-fix after the check.
       Done when: one app session runs option b, its archive succeeds, `git worktree list` and `get_session` show
       no fault, and step 3 and the `README.md` rules row describe option b.
+
+## 102-cc-guide-verifier-recall-and-covered-files — 2026-11-19
+- [ ] The working-tree `Source.read` in `build/cc_guide/state.py` follows a tracked symlink to its target, while a ref source reads the link text (`git cat-file blob`). A `/cc-guide files` packet therefore copies the target's text for a tracked symlink under a skill folder, and `citing_files` does the same for a citing file, although its docstring says a tracked symlink is git's link text. Codex found it in plan 102's final review (2026-11-19, `[P1]`, `state.py:622-626`). The behavior predates plan 102. The repo tracks one symlink (`.claude/rules/clean-code-python.md`), outside every skill folder, so no packet meets it today. A symlink that points outside the repo would put that file's text into a verifier packet. Size: design. Done when: the owner has ruled whether a tracked symlink is read as its link text or as its target, and a `Source` test pins that choice for both the working tree and a ref.
+- [ ] The plan 102 micro-test kit has two defects that Codex found in plan 102's final review (2026-11-19, both `[P2]`). In `kit/run.py:235-238`, `stop_group` sends SIGKILL only while the parent still runs after the grace period, so a child in the process group that ignores SIGTERM outlives its parent, and the next rep can start while it runs. In `kit/grade.py:535-536`, V6 reads `stream.jsonl` through `probe_checks.parse_stream`, which skips a line that is no JSON object, so a stream with a plain-text line can still count as valid. No result depended on either: all 26 reps exited 0 within their timeouts, and no stream holds a non-JSON line. Both files are frozen, and a new round freezes the kit again. Size: quick-fix. Done when: `stop_group` sends SIGKILL to the process group after the parent exits, and V6 marks a stream with a non-JSON line invalid, each with a no-model test, before any new gate A or gate F round runs.
+- [ ] Gate A's sheets and reports show each rep's arm, so its hand ratings cannot be blind. Settle's `listed items:` line (0 unanswered in the changed arm, about 200 in the control) and the report's `none` rows differ by arm, and the kit `README.md` line 209 says that no sheet names an arm. The final review of plan 102 found it (2026-11-19), and `specs/baseline/red-baseline-cc-guide-verifier-recall.md` (Gate A) states the effect. The README is a frozen kit file, so the fix needs a new freeze. Size: plan. Done when: the sheets and the reports that a controller can open hide the listed-item counts and the `none` rows, the README says what the sheets show, and a no-model test shows that no sheet line differs by arm, before any new gate A round runs.
 
 ## 101-plan-completion-triage-and-gate-revert — 2026-11-19
 - [ ] **Triage rubric step 4 says to stop and wait, while Protocol step 4 says to go on to step 5 (plan 101 final review, Codex finding P2).** `skills/writing-plans/SKILL.md` step 4 runs steps 1 to 4 of the Triage rubric when the aged tail is above 0, presents the proposal in the completion batch, and goes on to step 5. Step 4 of the Triage rubric in `skills/writing-plans/references/deferred-backlog.md` ends "Then stop and wait for the user's selection." An agent that follows the referenced step to its end can halt the completion. The base text has the same structure. The `triage-aged` case reads both files and passed 5 of 5 at the shipped text, so its reps resolve it. Plan 101's spec said to leave the rubric alone, and a change to that file voids the case's evidence. Size: quick-fix. Done when: the rubric's step 4 says what to do at plan completion (present the proposal in the completion batch and go on to step 5), and `triage-aged` and `triage-narrow` still pass 5 of 5 under `specs/baseline/red-baseline-completion-triage/kit/`.
