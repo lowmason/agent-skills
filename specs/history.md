@@ -615,3 +615,42 @@ Closed earlier deferred items:
 - "**The deny rule `Read(~/**)` does not stop every Bash read of the home folder (plan 98 Task 3, record" (deferred by 98-marimo-notebook-seam).
 - "**Parallel micro-test reps share the scratch folder (plan 98 Step 4b review, Codex finding P2; the owner" (deferred by 98-marimo-notebook-seam Step 4b review).
 - "**The next micro-test kit still copies `credential_expires_at` into its rep JSON files (the owner's ruling" (deferred by deferred-2026-11-14).
+
+## 101-plan-completion-triage-and-gate-revert — 2026-11-19
+Plan: specs/plans/completed/101-plan-completion-triage-and-gate-revert.md · Spec: specs/completed/plan-completion-triage-and-gate-revert.md (retired)
+
+Differences from the design:
+- Ruling: plan-test vacuity — Task 6 Step 2 expects `test_protocol_status_header_is_exempt` to FAIL on the new form before the change, but it passes vacuously (none of its three lines holds a deferral phrase, so `unmarked(...) == []` holds even if STATUS_HEADER matched nothing). Decided: keep the plan's test as the plan wrote it (extended with the new line, both old assertions kept) and add `test_status_header_exempts_a_deferral_phrase_before_its_tail` (old-tail, new-tail, nothing-deferred), which fails RED on new-tail; recorded as a `Strengthened:` line — the spec-side rule (D12: STATUS_HEADER accepts the new tail) needs a test that can fail — the plan's test alone would let a regressed STATUS_HEADER through the lint.
+- Ruling (Task 9): fix it now, test first, as a second commit — the audit's start state is `start_refs=` written to meta.txt by run_rep.sh after the extra runs, with a fallback to the templates.tsv refs pin — plan 40's extract listed every branch as a start ref, so this restores that behavior; not in Step 3's list, so a Deviation — if wrong, the audit's `New commits` and `changes since` sections mislead the scorer on c5a-merged and p5a. Implementer resumed with the design.
+- Ruling (Task 9): keep C11 as it is and set PYTHONDONTWRITEBYTECODE=1 in the rep's env -i list (bytecode is not skill text; the rule's purpose, detecting a rep that edits the kit, stays) — if wrong, a rep that sets the variable itself could mask a write; the rep's own bash tool inherits the variable, so a script's bytecode is the only thing it hides — Deviation (g).
+- Ruling: Task 9 Step 8 — diagnose c5a-ep at the base text, then ship as is (owner, 2026-11-19, answer to the one question) — Task 7's text stays; 5 c5a-ep reps at KIT_COMMIT = BASE101 (72d08bf0e6b6cb0e4f40ec4e0e36a5dcbb0a6a29), phase and batch plan101c (control, recorded only), about $2.30 (total near $15 of the $20 stop); all verdicts recorded as scored, the looser-reading count for c5a-merged noted but not applied; the guard item stays open with the evidence; if the control shows Task 7 made c5a-ep worse, stop and ask again — if wrong, the record carries a control that does not answer whether c5a-ep's miss predates Task 7.
+- Ruling: Task 9 c5a-merged reading of F-resume and F-next — accept the looser reading and apply it, keep the literal-reading rows beside it (owner, 2026-11-19, mid-turn message) — if wrong, the arm's pass rests on a reading chosen after the data; the record gives both counts and says so.
+- Ruling (final review): Task 6 Step 7 variant plans, amends the earlier selector ruling: apply the same clause to the ten variant plans (8, 17, 19, 26, 38, 52, 64, 65, 67, 68) in 81865b7, inserted after the first mention of specs/deferred_items.md in each status line; D11 says "every real old-form status line", the owner's 2026-11-17 ruling names plans 8 and 17, and the edit is the same uniform clause — if wrong, eleven completed-plan status lines carry a clause the owner did not want.
+- Ruling: Final review Declined-to-judge (plan 101's own status line) — plan 101 retires under main's old step 2, so its status line gets the new tail by hand at retirement, and Step 7's selector is rerun at merge time over any plan retired on main since (plan 102 if it retires first) — if wrong, plan 101 or plan 102 retires with the old line.
+- Ruling: Completion gate Stop rule — "Record as non-discriminating" for history-revert and gate-declined: keep the wording and the record states that the control already passed; nothing else changes (owner, 2026-11-19) — if wrong, the two cases stay RED-kind with no discriminating control.
+- Ruling: Completion gate Guard item — "Progress note only": the roadmap-stage guard item stays open with a dated progress note that says what is untested (executing-plans wording, c5a-ep); no follow-up session (owner, 2026-11-19) — if wrong, the executing-plans wording stays untested until someone picks the item up.
+- Ruling: Completion gate Old step 4 — "Stats line and new items only": the completion report prints the backlog summary line and this plan's new items; no full triage proposal (owner, 2026-11-19) — if wrong, the 154-item triage waits for /deferred.
+- Deviation (Task 2): the runner exits 3 when a rep file keeps `credential_expires_at` after the scrub, and the self-test has a fourth check. Source: plan, Task 2.
+- Deviation (Task 6): `test_protocol_status_header_is_exempt` passes before the change, so a second test pins the exemption. Source: plan, Task 6.
+- Deviation (Task 6): the suite grew by 10 tests, 11 over the baseline with Task 5's. Source: plan, Task 6.
+- Deviation (Task 6): the selector rewrote 72 status lines, and 11 more (the ten variant plans and plan 100) were rewritten by hand after the final review. Source: plan, Task 6.
+- Deviation (Task 8): the first-pass results were committed before the wording round, and the glob omits `plan101-r1`, so the record gives the true kit sum. Source: plan, Task 8.
+- Deviation (Task 9): the kit copy adds a `refs` column, an `extra` column, `start_refs`, the git identity through `GIT_*` variables and a bytecode setting, and its reps run `claude-sonnet-5-5` at `medium` effort. Source: plan, Task 9.
+- Deviation (Task 9): the guard-kit suite has 301 tests, 13 more than the copy's 288. Source: plan, Task 9.
+- Deviation (Task 9): the probes did not run, because the Claude Code version equals plan 100's record. Pilot `r501` is void and `r502` is valid. Source: plan, Task 9.
+- Deviation (Task 9): control reps ran at `BASE101` for `c5a-merged` and, at the owner's word, for `c5a-ep`. Source: plan, Task 9.
+- Deviation (Task 9): scores sit in one folder for each phase, and the owner ruled a reading of `c5a-merged`'s F-resume and F-next after the data, so the literal rows stay beside it. Source: plan, Task 9.
+- Deviation (Task 9): `c5a-ep` fails its bar, so the guard item stays open. Source: plan, Task 9.
+- Deviation (Task 10): the writing-plans suite is 420 passed and 4 xfailed, 11 over the baseline, not +2. Source: plan, Task 10.
+- Decision D5 (spec amendment): the final review's Declined to judge lines go into Protocol step 1, in this plan. Source: plan, `## Decisions`.
+- Decision D8 (spec amendment): every kit of this plan carries the three next-kit fixes. Source: plan, `## Decisions`.
+- Decision D10 (spec amendment): the non-goal "No edit to Protocol step 1" covers the revert rule only. Source: plan, `## Decisions`.
+- Decision D13 (spec amendment): two cases are added, `gate-declined` and `gate-revert-untagged`. Source: plan, `## Decisions`.
+- Decision D14 (spec amendment): the `gate-tag` and `history-filter` reruns use plan 80's prompts through the new runner. Source: plan, `## Decisions`.
+- Deferred: 2 items. Source: specs/deferred_items.md, § 101-plan-completion-triage-and-gate-revert.
+
+Closed earlier deferred items:
+- "Narrow the read-only triage at plan completion (non-goal of `specs/backlog-protocol.md`," (deferred by backlog-protocol-design).
+- "Declined review line: writing-plans' completion gate does not name Declined to judge" (deferred by 73-reviewer-and-planning-contract).
+- "**Retired plans point at the live backlog after their deferred section has moved to the archive (handoff trap" (deferred by spec-drift-finding-22).
+- "**A revert asked for at the gate has two rules (plan 80 final review, owner ruling at the completion gate).**" (deferred by 80-development-history-record).

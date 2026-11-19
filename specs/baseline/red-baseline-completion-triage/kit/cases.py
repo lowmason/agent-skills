@@ -1,6 +1,6 @@
 '''Frozen inputs for plan 101's micro-tests of the completion-triage and gate-revert wording.
 
-Eight cases, as specs/plans/101-plan-completion-triage-and-gate-revert.md Task 2 defines them. Each
+Eight cases, as specs/plans/completed/101-plan-completion-triage-and-gate-revert.md Task 2 defines them. Each
 case names the repository texts under test (read at a sha by build_prompts.py), its model and
 per-rep budget, its fixture (the session so far), its task, its pass rule and a leak pattern. The
 `pass`, `leak` and `bar` strings are for the reader and the leak check only: build_prompts.py

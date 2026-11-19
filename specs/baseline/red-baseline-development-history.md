@@ -586,7 +586,7 @@ an agent after a `/clear`, so the fallback itself is untested.
 
 ## Plan 101 re-run (2026-11-18)
 
-Plan 101 (`specs/plans/101-plan-completion-triage-and-gate-revert.md`) changes texts that both cases read: the gate
+Plan 101 (`specs/plans/completed/101-plan-completion-triage-and-gate-revert.md`) changes texts that both cases read: the gate
 paragraph of `skills/subagent-driven-development/references/final-review.md`, the writing-plans `SKILL.md` body and
 `skills/writing-plans/references/history.md`. Its Task 8 re-ran both cases as regression cases at `T7`, the last text
 commit of its Task 7: `4bf95a0` (`4bf95a004637b4cc16859fa06593b664bb02a8f3`). Its own record is

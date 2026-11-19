@@ -1,6 +1,6 @@
 # Plan 101 micro-tests: completion triage and gate revert
 
-This record holds the micro-tests for plan 101 (`specs/plans/101-plan-completion-triage-and-gate-revert.md`). A
+This record holds the micro-tests for plan 101 (`specs/plans/completed/101-plan-completion-triage-and-gate-revert.md`). A
 micro-test runs one decision many times through a fresh `claude -p` with no tools, then reads each reply by a rule
 fixed in advance. One run is a rep. Plan 101 changes the wording of five texts, and each change gets cases:
 
@@ -48,7 +48,7 @@ from: `72d08bf` (`72d08bf0e6b6cb0e4f40ec4e0e36a5dcbb0a6a29`).
 Task 1's spec amendment sits after it, at `e36ceff`. One check ran when this record was written:
 `git diff --stat 72d08bf HEAD -- skills commands` printed nothing. So no skill or command text changed between
 `BASE101` and the commit that registers this kit. The one file that changed is the spec,
-`specs/plan-completion-triage-and-gate-revert.md`.
+`specs/completed/plan-completion-triage-and-gate-revert.md`.
 
 ## Kit
 
@@ -510,7 +510,7 @@ binding the closed-item line only, as clauses 4 and 5 above show. Three facts su
 - Plan 80's rule, which this rule adapts, says "the Deviation line (shortened or not)".
 
 Under the other parse, every rep that follows the shorten step fails, in both arms. The spec settles the choice: its
-`history-revert` row (`specs/plan-completion-triage-and-gate-revert.md:206`) says that the entry "meets the rest of
+`history-revert` row (`specs/completed/plan-completion-triage-and-gate-revert.md:206`) says that the entry "meets the rest of
 `history-filter`'s pass rule", and that rule allows a shortened Deviation line. The registered text leaves out plan
 80's parenthetical, and the spec row keeps its meaning. Every rep below shortens the Deviation line, so each verdict
 rests on this reading, and each is marked borderline. The treatment arm uses the same reading.
@@ -606,7 +606,7 @@ The control arms cost $2.04, against the $12 control stop. The kit's sum is $2.0
 - `history-revert`: control fails 0 of 5. The stop rule applies: "A RED case whose control fails 0 of 5 has nothing
   to fix in wording. Record it and put it to the owner in the completion gate's batch. The spec-required wording
   still lands." This finding rests on the reading of "unchanged" in the `history-revert` section, which the spec's
-  `history-revert` row settles (`specs/plan-completion-triage-and-gate-revert.md:206`). Under the other parse, the
+  `history-revert` row settles (`specs/completed/plan-completion-triage-and-gate-revert.md:206`). Under the other parse, the
   control would fail 5 of 5.
 - `gate-declined`: control fails 0 of 5. The stop rule applies: "A RED case whose control fails 0 of 5 has nothing
   to fix in wording. Record it and put it to the owner in the completion gate's batch. The spec-required wording
@@ -1385,7 +1385,7 @@ The plan's stop is $20. The cost comes from each rep's `turn<N>.json`. Scorers a
 
 ## Conclusion
 
-This section checks the spec's `## Done when` (`specs/plan-completion-triage-and-gate-revert.md`) against the branch after
+This section checks the spec's `## Done when` (`specs/completed/plan-completion-triage-and-gate-revert.md`) against the branch after
 Task 9. Plan 101 is a plan of text edits, so "met" below means that a commit or a record section holds the content.
 
 ### Gates, 2026-11-19

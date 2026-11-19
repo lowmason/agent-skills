@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Status: COMPLETE (2026-11-19)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
+
 **Goal:** Narrow Plan Completion Protocol step 4 to a backlog report, give a revert asked for at the gate one rule,
 and fold in four fixes to the same protocol text: the final review's Declined to judge lines in step 1, a status
 line that names both backlog files, the roadmap-stage guard wording with its reruns, and the three next-kit fixes.
@@ -18,7 +20,7 @@ multi-turn kit tests the guard on plan 40's frozen arms, as plan 46 did in plan 
 (`specs/baseline/red-baseline-handoff-rerun/kit/`) with plan 40's frozen prompts and rubric under
 `~/.cache/agent-skills/handoffs/red/`.
 
-**Spec:** `specs/plan-completion-triage-and-gate-revert.md` (APPROVED 2026-11-17; decisions D1–D4)
+**Spec:** `specs/completed/plan-completion-triage-and-gate-revert.md` (APPROVED 2026-11-17; decisions D1–D4)
 
 ## Global Constraints
 
@@ -174,13 +176,13 @@ plan 100's execution runs (D16), then let plan 102's execution run alongside thi
 **Interfaces:**
 - Produces: the amended spec that Tasks 2, 4 and 8 follow. The status line stays `APPROVED (2026-11-17)`.
 
-- [ ] **Step 1: Record the base and run the parallel-session check**
+- [x] **Step 1: Record the base and run the parallel-session check**
 
 Run: `git rev-parse --short HEAD`. Note it as `BASE101`. Run the Global Constraints' `git log` check. Expected: no
 commit listed. Run `uv run python build/run_suites.py writing-plans` and note its pytest summary as the test-count
 baseline.
 
-- [ ] **Step 2: Apply A1 (Non-goals)**
+- [x] **Step 2: Apply A1 (Non-goals)**
 
 Replace:
 
@@ -201,7 +203,7 @@ with:
 In the next bullet, after its marker `→ item: 73-reviewer-and-planning-contract — 2026-10-30.`, add the sentence
 `Plan 101 folds it in after the step 4 shrink (owner, plan 101, 2026-11-17).` Rewrap at the file's width.
 
-- [ ] **Step 3: Apply A2 (Micro-tests, Kit)**
+- [x] **Step 3: Apply A2 (Micro-tests, Kit)**
 
 Replace:
 
@@ -232,7 +234,7 @@ through this kit's `run_reps.sh` (owner, plan 101, 2026-11-17),
 
 Rewrap the paragraph at the file's width.
 
-- [ ] **Step 4: Apply A3 (Micro-tests table)**
+- [x] **Step 4: Apply A3 (Micro-tests table)**
 
 After the `gate-tag-ep` row, add:
 
@@ -241,7 +243,7 @@ After the `gate-tag-ep` row, add:
 | `gate-declined` | RED | writing-plans `SKILL.md` body | Protocol step 1, run from writing-plans alone after a `/clear`. The final review left one finding unfixed and two Declined to judge lines (owner, plan 101, 2026-11-17). | The gate message puts both Declined to judge lines and the unfixed finding to the partner, in one batch. |
 ```
 
-- [ ] **Step 5: Check and commit**
+- [x] **Step 5: Check and commit**
 
 Run: `git diff --stat` (one file) and `bash build/run_commit_lints.sh`. Expected: `commit lints passed`.
 
@@ -263,14 +265,14 @@ git commit -m "docs(specs): amend the completion-triage spec for plan 101's fold
   the record's `## Base`, `## Control` sections. Task 8 runs the treatment arms with this kit, and runs plan 80's
   reruns through its `run_reps.sh`.
 
-- [ ] **Step 1: Copy plan 80's kit**
+- [x] **Step 1: Copy plan 80's kit**
 
 Copy `run_reps.sh`, `isolation_probe.txt`, `show_reps.py` and `build_prompts.py` from
 `specs/baseline/red-baseline-development-history/kit/`. Change the plan number in comments and docstrings (80 → 101),
 the temp prefix (`/tmp/plan80-rep-` → `/tmp/plan101-rep-`), and `show_reps.py`'s `AIDS` to flag `/deferred`,
 `Reverted at the gate`, `Declined`, `deferred item` and `\?`. `isolation_probe.txt` stays unchanged.
 
-- [ ] **Step 2: Write the failing self-test**
+- [x] **Step 2: Write the failing self-test**
 
 `kit_selftest.py` (stdlib, run as `uv run python <kit>/kit_selftest.py`, prints `kit self-test passed` or raises).
 It writes a stub `claude` (a `#!/usr/bin/env python3` script) into a temporary directory and runs `run_reps.sh`
@@ -288,7 +290,7 @@ test runs `run_reps.sh` on a one-line prompt for reps 1 and 2 into a temporary o
 Run: `uv run python specs/baseline/red-baseline-completion-triage/kit/kit_selftest.py`.
 Expected: FAIL on the `credential_expires_at` assertion (the copied runner does not scrub yet).
 
-- [ ] **Step 3: Implement `scrub(text: str) -> str` in `scrub_json.py`, and call it from `run_reps.sh`**
+- [x] **Step 3: Implement `scrub(text: str) -> str` in `scrub_json.py`, and call it from `run_reps.sh`**
 
 `scrub` parses `text` as JSON and drops every `credential_expires_at` key at any depth. It returns the JSON dumped
 with `ensure_ascii=False`. When `text` does not parse, it returns `text` with each line that contains
@@ -297,11 +299,13 @@ with `ensure_ascii=False`. When `text` does not parse, it returns `text` with ea
 folder as an absolute path before any `cd`, write `claude`'s stdout to `$OUT/rep$1.json` as now, and then, after the
 rep's subshell, run `python3 "$KIT/scrub_json.py" "$OUT/rep$1.json"`.
 
-- [ ] **Step 4: Run the self-test**
+> Deviation: the final review added a fourth check to `kit_selftest.py` and a final check to `run_reps.sh`. The runner now exits 3 when a rep file still holds `credential_expires_at` after the scrub (commit `2e9bd4f`).
+
+- [x] **Step 4: Run the self-test**
 
 Run: Step 2's command. Expected: `kit self-test passed`.
 
-- [ ] **Step 5: Write `cases.py`**
+- [x] **Step 5: Write `cases.py`**
 
 Same shape as plan 80's (`case(texts, fixture, task, pass_rule, leak, bar)`, `VOID`, constants). Models:
 `claude-sonnet-5-5`, budget `0.75`, for the two triage cases; `claude-opus-5-5`, budget `1.00`, for the rest.
@@ -325,7 +329,7 @@ the final-review retry-jitter ruling. The task line for a case whose reply acts 
 Bars: `BAR` (RED) for `triage-narrow`, `gate-revert-sdd`, `gate-revert-ep`, `history-revert`, `gate-declined`;
 `'treatment 5/5'` (guard) for `triage-aged`, `gate-revert-untagged`, `gate-tag-ep`.
 
-- [ ] **Step 6: Write the record, run the leak check, commit the registration**
+- [x] **Step 6: Write the record, run the leak check, commit the registration**
 
 Record sections, in order: `## Base` (`BASE101`), `## Kit` (what was copied and what changed, including the
 next-kit fixes), `## Arms` (control at `BASE101`; treatment at `T7`, Task 7's commit; a wording round at its own
@@ -342,13 +346,13 @@ git add specs/baseline/red-baseline-completion-triage specs/baseline/red-baselin
 git commit -m "test(specs): register the completion-triage micro-tests with the next-kit fixes"
 ```
 
-- [ ] **Step 7: Run the isolation probe**
+- [x] **Step 7: Run the isolation probe**
 
 Run: `bash specs/baseline/red-baseline-completion-triage/kit/run_reps.sh specs/baseline/red-baseline-completion-triage/kit/isolation_probe.txt /tmp/plan101-work/probe 1 1 claude-opus-5-5`.
 Expected: all five lines `NO`. Record the Claude Code version and the result in `## Isolation probe`. Any `YES`:
 stop and ask your human partner.
 
-- [ ] **Step 8: Run and read the control arms**
+- [x] **Step 8: Run and read the control arms**
 
 Run: `uv run python specs/baseline/red-baseline-completion-triage/kit/build_prompts.py <BASE101> /tmp/plan101-work/control`,
 then for each case
@@ -357,7 +361,7 @@ Rerun VOID reps with the next free number. Read each reply in full with `show_re
 line per scored rep (`rep<N>: PASS|FAIL — <reason>`), the fail count per case, the spend. Apply the stop rule to each
 RED case whose control fails 0 of 5.
 
-- [ ] **Step 9: Commit the control arms**
+- [x] **Step 9: Commit the control arms**
 
 ```bash
 git add specs/baseline/red-baseline-completion-triage specs/baseline/red-baseline-completion-triage.md
@@ -373,12 +377,12 @@ git commit -m "test(specs): run the completion-triage control arms"
 **Interfaces:**
 - Produces: step 4 under the heading `**4. Backlog report.**`. Task 8's triage arms read it at `T8`.
 
-- [ ] **Step 1: Write the failing check**
+- [x] **Step 1: Write the failing check**
 
 Run: `grep -c '4. Backlog report' skills/writing-plans/SKILL.md; FLAT skills/writing-plans/references/deferred-backlog.md | grep -c 'triage only when the aged tail is above 0'`.
 Expected: `0` and `0`.
 
-- [ ] **Step 2: Replace step 4**
+- [x] **Step 2: Replace step 4**
 
 Replace the whole of step 4, from `**4. Backlog triage.**` up to the blank line before `**5. Retire.**`, with the
 spec's draft (spec, Design, Step 4):
@@ -404,7 +408,7 @@ completion — the aged tail is gated at finishing-a-development-branch.
 Add nothing more to `SKILL.md`. The spec's designer's call (each listed item gives its first words and its `Size:`)
 describes what the agent writes in its report, and `triage-narrow`'s pass rule reads that report.
 
-- [ ] **Step 3: Replace the callers line**
+- [x] **Step 3: Replace the callers line**
 
 In `references/deferred-backlog.md`, replace:
 
@@ -421,12 +425,12 @@ with:
   read-only triage only when the aged tail is above 0.
 ```
 
-- [ ] **Step 4: Run the checks**
+- [x] **Step 4: Run the checks**
 
 Run: Step 1's command. Expected: `1` and `1`. Run `BODY`. Expected: about 19,330, and at most 19,700. Run
 `git grep -n 'Backlog triage' -- skills/ commands/ agents/`. Expected: no hit. Run the commit gate.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/writing-plans/SKILL.md skills/writing-plans/references/deferred-backlog.md
@@ -441,22 +445,22 @@ git commit -m "feat(writing-plans): narrow the completion triage to a backlog re
 **Interfaces:**
 - Produces: the step 1 wording that Task 8's `gate-declined` arm reads at `T8`.
 
-- [ ] **Step 1: Write the failing check**
+- [x] **Step 1: Write the failing check**
 
 Run: `FLAT skills/writing-plans/SKILL.md | grep -c "the final review's Declined to judge lines"`. Expected: `0`.
 
-- [ ] **Step 2: Edit step 1**
+- [x] **Step 2: Edit step 1**
 
 Replace `Collect the leftovers: plan steps skipped or descoped during execution, plus review findings that were not
 fixed.` with `Collect the leftovers: plan steps skipped or descoped during execution, review findings that were not
 fixed, and the final review's Declined to judge lines.` Rewrap the paragraph at its width. Leave the partition
 bullets unchanged: a Declined to judge line needs the partner's ruling, so the first bullet already asks.
 
-- [ ] **Step 3: Run the checks**
+- [x] **Step 3: Run the checks**
 
 Run: Step 1's command. Expected: `1`. Run `BODY`. Expected: at most 19,700. Run the commit gate.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/writing-plans/SKILL.md
@@ -475,7 +479,7 @@ git commit -m "feat(writing-plans): name Declined to judge lines among the gate'
 - Produces: the ledger form `Reverted at the gate: <task> ruling — <its first words>`, which both gate paragraphs
   write and history "Finish the draft" step 1 reads. Task 8's gate and history arms read these files at `T8`.
 
-- [ ] **Step 1: Pin the ledger form against `history_entry.py`**
+- [x] **Step 1: Pin the ledger form against `history_entry.py`**
 
 Add `test_reverted_at_gate_line_is_not_a_ruling` to `test_history_entry.py`, built like
 `test_ruling_quoted_inside_a_ledger_note_is_not_a_ruling` (`write_repo`, `run_draft`, `TINY_PLAN`, `DATE`). Its ledger
@@ -487,14 +491,14 @@ output has exactly one line that starts with `- Ruling` (the Task 2 ruling), and
 Run: `uv run python build/run_suites.py writing-plans -- -k reverted_at_gate`. Expected: PASS (it pins the form the
 spec chose, so it passes before any edit). If it fails, stop: the form needs a change that the spec did not make.
 
-- [ ] **Step 2: Write the failing check**
+- [x] **Step 2: Write the failing check**
 
 Run, for each of `skills/subagent-driven-development/references/final-review.md` and
 `skills/executing-plans/references/final-review.md`: `FLAT <file> | grep -c 'which makes it a deferred item'`; then
 `FLAT skills/writing-plans/references/history.md | grep -c 'that a .Reverted at the gate:. ledger line names'`.
 Expected: `1`, `1`, `0`.
 
-- [ ] **Step 3: Edit both gate paragraphs**
+- [x] **Step 3: Edit both gate paragraphs**
 
 In each file, replace `Your partner may still ask to revert it, which makes it a deferred item.` with the sentence
 below, identical in both files. Rewrap each paragraph at its own width. Change nothing else.
@@ -507,7 +511,7 @@ gate shows that ruling as reverted and asks nothing about it, and the history
 entry leaves it out.
 ```
 
-- [ ] **Step 4: Edit history "Finish the draft" step 1**
+- [x] **Step 4: Edit history "Finish the draft" step 1**
 
 Replace its two lines with the spec's draft (spec, Design, History "Finish the draft" step 1):
 
@@ -517,13 +521,13 @@ Replace its two lines with the spec's draft (spec, Design, History "Finish the d
    `Reverted at the gate:` ledger line names.
 ```
 
-- [ ] **Step 5: Run the checks**
+- [x] **Step 5: Run the checks**
 
 Run: Step 2's commands. Expected: `0`, `0`, `1`. Run: `diff <(tr -s ' \n' ' ' < skills/subagent-driven-development/references/final-review.md | grep -o 'If your partner asks to revert.*leaves it out\.') <(tr -s ' \n' ' ' < skills/executing-plans/references/final-review.md | grep -o 'If your partner asks to revert.*leaves it out\.')`.
 Expected: no output (one identical sentence). Run `uv run python build/run_suites.py writing-plans` (+1 over the
 baseline, all pass), `uv run python build/check_reviewer_block.py`, and the commit gate.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/subagent-driven-development/references/final-review.md skills/executing-plans/references/final-review.md skills/writing-plans/references/history.md skills/writing-plans/scripts/test_history_entry.py
@@ -544,7 +548,7 @@ git commit -m "feat(executors): do a revert asked for at the gate now and ledger
   archived`, exact (D12). `STATUS_HEADER` accepts it and the old tail
   `deferred items in specs/deferred_items.md` and `nothing deferred`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `test_deferral_scan.py`, extend `test_protocol_status_header_is_exempt` with a third line, the new form:
 `'**Status: COMPLETE (2026-01-01)** — executed via x; deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived'`,
@@ -552,24 +556,28 @@ and assert `unmarked(<it>) == []`. Keep the two existing assertions. Add
 `test_text_after_status_header_is_read`: the new form followed by `; the retry path is deferred to a future plan`
 on the same line gives exactly one `Candidate` for line 1.
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run python build/run_suites.py writing-plans -- -k "status_header"`.
 Expected: `test_protocol_status_header_is_exempt` FAILS on the new form.
 `test_text_after_status_header_is_read` passes before and after the change (the regex is anchored at the line end):
 it is a guard, so confirm it by reading its assertion, not its RED.
 
-- [ ] **Step 3: Widen `STATUS_HEADER`**
+> Deviation: `test_protocol_status_header_is_exempt` passes before the change, because none of its lines holds a deferral phrase. It stays as written, and `test_status_header_exempts_a_deferral_phrase_before_its_tail` pins the exemption.
+
+- [x] **Step 3: Widen `STATUS_HEADER`**
 
 Make the tail `deferred items in specs/deferred_items\.md(?:, or specs/completed/deferred_items\.md once archived)?`
 or `nothing deferred`, still anchored at `\s*$`. Update the docstring's exempt-forms sentence to name the new form.
 
-- [ ] **Step 4: Run the suite**
+- [x] **Step 4: Run the suite**
 
 Run: `uv run python build/run_suites.py writing-plans`. Expected: +1 test over the baseline (+2 with Task 5's), all
 pass.
 
-- [ ] **Step 5: Edit the template and the reference**
+> Deviation: the suite grew by 10 tests in this task, 11 over the 409 baseline with Task 5's, not by the plan's count.
+
+- [x] **Step 5: Edit the template and the reference**
 
 In `SKILL.md` step 2, replace the status line's tail `deferred items in specs/deferred_items.md` with the new tail
 (the `nothing deferred` line stays). In `deferred-backlog.md`'s Markers paragraph, replace:
@@ -587,7 +595,7 @@ its status header (`deferred items in specs/deferred_items.md`, with or without
 
 Run `BODY`. Expected: at most 19,700.
 
-- [ ] **Step 6: Commit the rule**
+- [x] **Step 6: Commit the rule**
 
 Run the commit gate, then:
 
@@ -596,7 +604,7 @@ git add skills/writing-plans/scripts/deferral_scan.py skills/writing-plans/scrip
 git commit -m "feat(writing-plans): the plan status line names both backlog files"
 ```
 
-- [ ] **Step 7: The one-time fix**
+- [x] **Step 7: The one-time fix**
 
 Select each file under `specs/plans/completed/` whose first 6 lines hold a line matching
 `^\*\*Status: COMPLETE \(\d{4}-\d{2}-\d{2}\)\*\* — .*deferred items in specs/deferred_items\.md\s*$` (a real date,
@@ -608,7 +616,9 @@ equals the number of files changed (`git diff --name-only -- specs/plans/complet
 `git diff -U0 -- specs/plans/completed/ | grep '^[-+]' | grep -v '^[-+][-+]' | grep -vc 'Status: COMPLETE'` prints
 `0` (no other line changed). Expected count: 72 at `275edc1`, plus each plan retired with the old line since then.
 
-- [ ] **Step 8: Run the lints and commit the fix**
+> Deviation: the plan's selector rewrote 72 files (`89b1ff9`). The ten variant plans (8, 17, 19, 26, 38, 52, 64, 65, 67 and 68) and plan 100, which merged in after the fix, got the same clause by hand after the final review (`81865b7`), as D11 asks.
+
+- [x] **Step 8: Run the lints and commit the fix**
 
 Run: `uv run skills/writing-plans/scripts/deferral_scan.py lint --baseline build/deferral_baseline.txt` (exit 0)
 and `uv run python build/check_links.py`.
@@ -631,12 +641,12 @@ git commit -m "chore(specs): point retired plans at both backlog files"
   item's reading (b): the branch is the one the stage merged into, and the session, not the stage, is what starts.
   The executing-plans parenthesis fixes reading (a): it names writing-plans' protocol.
 
-- [ ] **Step 1: Write the failing check**
+- [x] **Step 1: Write the failing check**
 
 Run: `git grep -c 'runs the protocol on the merged branch now' -- skills/; FLAT skills/executing-plans/references/final-review.md | grep -c "of writing-plans' protocol step 3a"`.
 Expected: three files with `1`; and `0`.
 
-- [ ] **Step 2: Edit the three sentences**
+- [x] **Step 2: Edit the three sentences**
 
 In all three files, replace `A stage this session finds already merged when it starts, with the protocol not yet
 run, runs the protocol on the merged branch now.` with:
@@ -650,14 +660,14 @@ In `executing-plans/references/final-review.md`, also replace `(step 3a's Handof
 stages they feed)` with `(the Handoff bullets and stamp of writing-plans' protocol step 3a still name the stages
 they feed)`. Rewrap each paragraph at its width.
 
-- [ ] **Step 3: Run the checks**
+- [x] **Step 3: Run the checks**
 
 Run: Step 1's command. Expected: no hit; and `1`. Run `BODY`. Expected: at most 19,700. Measure the
 subagent-driven-development body with `BODY`'s command on its path. Expected: at most 19,926. If it changed, update
 the waiver's `reason` figures (`The body is <n> characters, <n − 19,700> over …`). Run the commit gate, the
 declared-dependencies test included.
 
-- [ ] **Step 4: Commit and record `T7`**
+- [x] **Step 4: Commit and record `T7`**
 
 ```bash
 git add skills/writing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/executing-plans/references/final-review.md build/cc_guide/conformance.toml
@@ -677,7 +687,7 @@ Run: `git rev-parse --short HEAD`. Note it as `T7`.
 - Consumes: Task 2's kit; the texts at `T7`.
 - Produces: `T8`, the last text commit before Task 9's reps (`T7` unless a wording round commits).
 
-- [ ] **Step 1: Run and read the treatment arms**
+- [x] **Step 1: Run and read the treatment arms**
 
 First compare `claude --version` with the version in the record's `## Isolation probe`. If it is newer, rerun Task 2
 Step 7's probe and record it before any treatment rep.
@@ -687,7 +697,7 @@ then `run_reps.sh` for each case into `specs/baseline/red-baseline-completion-tr
 Step 8. Read every reply. Write `## Treatment` in the record as `## Control` is written. The record states that the
 `triage-*`, `history-revert` and `gate-declined` arms read a body that also holds Tasks 4, 6 and 7's edits.
 
-- [ ] **Step 2: Rerun `gate-tag` and `history-filter`**
+- [x] **Step 2: Rerun `gate-tag` and `history-filter`**
 
 Run: `uv run python specs/baseline/red-baseline-development-history/kit/build_prompts.py <T7> /tmp/plan101-work/rerun gate-tag history-filter`,
 then for each case
@@ -696,14 +706,14 @@ Read each reply against plan 80's pass rule. Append `## Plan 101 re-run (<date>)
 `specs/baseline/red-baseline-development-history.md`: the sha, the runner used and why (D8), one verdict line per
 rep, the count. The `gate-tag` bar met closes the revert item's `Done when:` together with Task 5.
 
-- [ ] **Step 3: Wording rounds**
+- [x] **Step 3: Wording rounds**
 
 For each case below its bar: one wording round inside the text that the case tests, within the spec's content.
 Commit it (`fix(<skill>): <case> wording round`), rerun that case's treatment arm and every other case that reads
 the same file, into a `treatment-r1/` folder, and record both. Run `BODY` after any `SKILL.md` round. A case still
 below its bar goes to the owner at the completion gate. Note the last text commit as `T8`.
 
-- [ ] **Step 4: Check the spend and commit**
+- [x] **Step 4: Check the spend and commit**
 
 Run: `uv run python specs/baseline/red-baseline-completion-triage/kit/show_reps.py specs/baseline/red-baseline-completion-triage/*/* specs/baseline/red-baseline-development-history/plan101/*`.
 Expected: total at most $30.
@@ -712,6 +722,8 @@ Expected: total at most $30.
 git add specs/baseline/
 git commit -m "test(specs): run the completion-triage treatment arms and plan 80's reruns"
 ```
+
+> Deviation: the first-pass results were committed before the wording round, so the commits run in a different order from Steps 3 and 4. The glob omits `plan101-r1`, and the record gives the true kit sum ($5.80 over 115 rep files).
 
 ### Task 9: The guard rerun in a copy of plan 100's kit
 
@@ -739,7 +751,7 @@ where this task is silent (D15).
   Where the kit differs from plan 100's text, the kit is right. `BASE101`; `T8`; `KIT100`.
 - Produces: the verdicts that close the guard item's `Done when:`.
 
-- [ ] **Step 1: Merge `main`, copy the kit and register its suite**
+- [x] **Step 1: Merge `main`, copy the kit and register its suite**
 
 Run the Global Constraints' plan 100 check and their Parallel-sessions check. Then run `git fetch origin main`,
 record `git rev-parse origin/main` as `KIT100`, and run
@@ -767,7 +779,7 @@ git add specs/baseline/red-baseline-completion-triage/guard-kit/ build/suites.to
 git commit -m "chore(specs): copy plan 100's kit as plan 101's guard kit"
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 In `GK/test_rerun_runner.py`:
 - `test_merged_extra_starts_on_merged_main`: a template repo has `main` and `feat/s2a-csv-export` one commit ahead,
@@ -782,7 +794,9 @@ In `GK/test_rerun_runner.py`:
 
 Run: `uv run python build/run_suites.py completion-triage-guard-kit`. Expected: these four fail, the rest pass.
 
-- [ ] **Step 3: Change the copy**
+> Deviation: one test more than the plan names, `test_template_refs_pin_refuses_an_unpinned_ref`. Later fixes added more, so the guard-kit suite has 301 tests.
+
+- [x] **Step 3: Change the copy**
 
 Make these changes and no others:
 1. Defaults: `PHR_ROOT` is `/private/tmp/phr101` and `PHR_CTL` is `~/.cache/agent-skills/handoffs/guard101`.
@@ -830,12 +844,14 @@ git add specs/baseline/red-baseline-completion-triage/guard-kit/
 git commit -m "feat(specs): adapt the guard kit to plan 40's c5a arms (plan 101)"
 ```
 
-- [ ] **Step 4: Log the change in `$RED/changes.log`**
+> Deviation: the kit as merged differs from this step's text. The copy adds a `refs` column to `templates.tsv`, an `extra` column to `arms.tsv` and to the registry, `start_refs` in `meta.txt`, the git identity through `GIT_*` variables, and `PYTHONDONTWRITEBYTECODE=1`. Its reps run `claude-sonnet-5-5` at `medium` effort, plan 40's exec class.
+
+- [x] **Step 4: Log the change in `$RED/changes.log`**
 
 Append one line: the date; `GK`, `KIT100` and `BASE101`; the arms `p5a`, `c5a-ep`, `c5a-neg` and the new
 `c5a-merged`; the copy's changes from plan 100's kit (Step 3); and `no frozen file edited; freeze id unchanged`.
 
-- [ ] **Step 5: Probes and pilot**
+- [x] **Step 5: Probes and pilot**
 
 Run each tool the way plan 100's record runs it, with `KIT_COMMIT=<BASE101>`. If `claude --version` is newer than the
 version that plan 100's record names, run one `probe-iso` rep and one `probe-guard` rep (phase `probe`). Expected:
@@ -844,7 +860,9 @@ the results of plan 100's Task 4 Steps 3 and 4, with this kit's 12 skills. Then 
 and no feature branch. If 25 times the pilot's `total_cost_usd`, plus the probes, is more than $20, stop and ask
 your human partner.
 
-- [ ] **Step 6: Register and run the batches**
+> Deviation: the probes did not run, because Claude Code 2.1.323 is the version of plan 100's record. The pilot ran twice: `r501` is void, since a `__pycache__` folder changed the kit hash, and `r502` is valid.
+
+- [x] **Step 6: Register and run the batches**
 
 Register 5 reps of `c5a-merged` with `KIT_COMMIT=<BASE101>`, phase and batch `plan101c` (the control, recorded
 only). Register 5 reps each of `p5a`, `c5a-ep`, `c5a-neg` and `c5a-merged` with `KIT_COMMIT=<T8>`, phase and batch
@@ -852,7 +870,9 @@ only). Register 5 reps each of `p5a`, `c5a-ep`, `c5a-neg` and `c5a-merged` with 
 `run_batch.sh plan101c`, then `run_batch.sh plan101`, in the background from the controller's session. The runner
 applies `env -i` itself (plan 100's C13), and the reps run one at a time.
 
-- [ ] **Step 7: Audit, replace voids, score**
+> Deviation: the 20 treatment reps ran in two batches. The control reps ran at `BASE101`: `c5a-merged` (`r503` to `r507`) and, at the owner's word, `c5a-ep` (`r528` to `r532`).
+
+- [x] **Step 7: Audit, replace voids, score**
 
 Run `extract.py plan101c` and `extract.py plan101`. For an arm with fewer than 5 valid reps, register replacements
 into batch `plan101-r1` and run it, up to 10 dispatched per arm. Score each arm with one `sonnet` scorer subagent.
@@ -865,7 +885,9 @@ Give it the arm's rubric (`$RED/rubric.md` for `p5a`, `c5a-ep` and `c5a-neg`; `G
 Run: `git grep -n -e "$HOME" -e credential_expires_at -- specs/baseline/red-baseline-completion-triage/`
 Expected: no output.
 
-- [ ] **Step 8: Decide and record**
+> Deviation: scores sit in one folder for each phase, because the two `c5a-merged` files would share a name. The leak grep is scoped to the scores and the record. After the data, the owner ruled a reading of `c5a-merged`'s F-resume and F-next. A blind scorer scored them again, and the literal-reading rows stay in `scores/literal-reading/`.
+
+- [x] **Step 8: Decide and record**
 
 - **Every arm meets its bar** (`p5a`, `c5a-ep`, `c5a-merged`: at least 4 of 5 passing; `c5a-neg`: 0 of 5 failing):
   append the verdicts to `$RED/changes.log`, and write `## Roadmap-stage guard` in the record: `GK`, `KIT100`,
@@ -881,24 +903,28 @@ git add specs/baseline/red-baseline-completion-triage.md specs/baseline/red-base
 git commit -m "test(specs): record the roadmap-stage guard rerun"
 ```
 
+> Deviation: `c5a-ep` and `c5a-merged` missed their bars at the first scoring. The owner chose a `c5a-ep` control at the base text, then to ship the text as is. `c5a-ep` still fails its bar, so the guard item stays open.
+
 ### Task 10: Final checks
 
 **Files:**
 - Modify: `specs/baseline/red-baseline-completion-triage.md` (`## Conclusion`)
 
-- [ ] **Step 1: Run every gate**
+- [x] **Step 1: Run every gate**
 
 Run: `BODY` (at most 19,700), `uv run --with pyyaml python build/check_conformance.py` (exit 0),
 `bash build/run_commit_lints.sh` (`commit lints passed`), `uv run python build/run_suites.py writing-plans` (+2 over
 the baseline, all pass), `uv run python build/run_suites.py completion-triage-guard-kit` (all pass), and the
 declared-dependencies test.
 
-- [ ] **Step 2: Check the spec's Done when**
+> Deviation: the writing-plans suite reports 420 passed and 4 xfailed, which is 11 over the baseline, not +2.
+
+- [x] **Step 2: Check the spec's Done when**
 
 For each of the spec's items 1–6, name the commit or record section that meets it, in the record's
 `## Conclusion`, with each case's verdict against its bar and any case that goes to the owner.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add specs/baseline/red-baseline-completion-triage.md

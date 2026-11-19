@@ -1,6 +1,6 @@
 # Plan-completion triage and gate reverts — Design Spec
 
-**Status:** APPROVED (2026-11-17). The design came from a brainstorming session on 2026-11-17 for two `/deferred`
+**Status:** COMPLETE (2026-11-19), implemented by plan 101 (`specs/plans/completed/101-plan-completion-triage-and-gate-revert.md`). It was APPROVED on 2026-11-17. The design came from a brainstorming session on 2026-11-17 for two `/deferred`
 Design picks of that day. Decisions D1 and D2 are the owner's rulings from the `/deferred` pass. D3 and D4 are the
 owner's answers in the brainstorming session. Text marked *(designer's call)* was the designer's choice. The owner
 approved this file, its designer's calls included, on 2026-11-17 ("Approve spec").
