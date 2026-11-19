@@ -8,7 +8,8 @@ V8 and DF15, as plan 102's Pre-registration amends them):
 A sheet, $K/sheets/<rid>.txt, names no arm. It holds the VOID checks V1 to
 V8 (each `ok`, `void` with its reasons, `pending` until $K/pilot.json gives
 the value the check needs, or for V3 `hits` to trace by hand), the calls
-the read fence refused, the main session's V3 hits, the cost and duration,
+the read fence refused (V2 counts the rep's own session tool-results folder
+as inside), the main session's V3 hits, the cost and duration,
 and settle's lines for the rep's report. Settle runs on a copy of the
 packet in $K/settle/<rid>/packet/ with the report as report.md. Every audit
 rep, of either arm, settles against the copy of $K/fixtures/audit-changed/
@@ -33,9 +34,14 @@ unsupported <n>`; for a valid readme rep `<rid> readme89 yes|no` and `<rid>
 unsupported <n>`; for a valid precision rep `<rid> reach yes|no`, `<rid>
 keymiss <n>` and `<rid> unsupported <n>`. A line that starts with a rep id
 must be one of these; every other line is skipped. `stop` and `unblind`
-refuse, naming rep ids only, until each rep has its verdicts and a sheet (a
-void rep needs no sheet). Nothing but unblind's tables names an arm, and no
-command prints a count per arm before it.
+refuse, naming rep ids only, until each rep has its verdicts, a sheet and
+its measures file (a void rep needs none), and while a valid verdict sits on
+a sheet whose V1, V2 or V4 to V8 is void or pending. `stop` also refuses
+while either arm has fewer than 2 valid reps, naming the void reps that no
+valid spare replaces. `grade.py <batch>` reads both arm files first and
+refuses the whole batch, naming nothing, when one is missing or unreadable.
+Nothing but unblind's tables names an arm, and no command prints a count
+per arm before it.
 
 Exit 0 on success, 1 on a refusal or a rep that could not be graded, 2 on a
 usage error or a failure. A failure prints its exception's type, never its
