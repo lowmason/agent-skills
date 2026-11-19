@@ -35,10 +35,14 @@ KIT_PATHS='skills/brainstorming skills/writing-plans skills/executing-plans
   agents/code-reviewer.md agents/task-reviewer.md commands/deferred.md'
 SHIM_LINKS='git python3 python3.13 uv'
 FIELD=credential_expires_at
-# The runner runs with the real HOME, so every git call that writes the rep's repo carries the placeholder
-# identity too. Otherwise the owner's name and email land in the rep's reflogs (git log -g, .git/logs/).
-G=(git -c user.name='Pondworks Rep' -c user.email='rep@pondworks.invalid' -c commit.gpgsign=false
-  -c core.hooksPath=/dev/null)
+# The runner runs with the real HOME, so a git call that writes the rep's repo would stamp the owner's identity
+# into the rep's reflogs (git log -g, .git/logs/). Git reads these variables when it writes a reflog entry or a
+# commit. `-c user.name` is not enough: `git remote set-head` ignores user.* config and writes the account's
+# passwd name and a host-derived email. The rep's own command runs under `env -i` with an explicit list below,
+# so none of these reach the rep.
+export GIT_AUTHOR_NAME='Pondworks Rep' GIT_AUTHOR_EMAIL='rep@pondworks.invalid'
+export GIT_COMMITTER_NAME='Pondworks Rep' GIT_COMMITTER_EMAIL='rep@pondworks.invalid'
+G=(git -c commit.gpgsign=false -c core.hooksPath=/dev/null)
 
 die() { echo "run_rep.sh: $2" >&2; exit "$1"; }
 
@@ -138,7 +142,7 @@ cp -R "$tpl" "$repdir"
 "${G[@]}" -C "$repdir" remote set-head origin main
 # Plan 101 extra `merged`: the stage's branch is already merged into main and pushed, as on a
 # repo where the branch merged the day before. Nothing else is touched: the plan stays in specs/plans/
-# and the roadmap's box stays unticked. G carries the placeholder identity, so no real one reaches the rep's repo.
+# and the roadmap's box stays unticked. The GIT_* identity above applies, so no real one reaches the rep's repo.
 if [ "$extra" = merged ]; then
   "${G[@]}" -C "$repdir" checkout -q main
   "${G[@]}" -C "$repdir" merge -q --no-ff feat/s2a-csv-export -m "Merge branch 'feat/s2a-csv-export'"
