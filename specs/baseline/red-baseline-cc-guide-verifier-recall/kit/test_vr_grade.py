@@ -629,6 +629,45 @@ def test_a_transcript_record_holding_a_line_separator_is_read_whole(kit):
     assert grade.main(['b']) == 0
     assert check_line(sheet('r001'), 'V2') == 'V2: void: Read /opt/y.md'
 
+
+def test_the_report_skips_a_blank_result_and_another_subagents_result():
+    records = verifier('r001', 'control', 'handback report')
+    blank = stream('r001', 'readme', agent_text=' \n')
+    assert grade.report_of(blank, records) == 'handback report'
+    other = stream('r001', 'readme', [agent_call('r001', 'readme', subagent_type='Explore')], agent_text='explore text')
+    assert grade.report_of(other, records) == 'handback report'
+
+
+def test_usage_errors_print_the_usage_line_and_an_unplanned_rep_fails(kit, capfd):
+    assert grade.USAGE == 'usage: grade.py <batch> | stop <batch> | unblind A|F'
+    for argv in (['stop'], ['unblind'], ['unblind', 'B'], ['stop', 'b', 'x'], []):
+        assert grade.main(argv) == 2
+        assert capfd.readouterr().err == grade.USAGE + '\n'
+    plan(('r001', 'readme', 'control'))
+    with (common.k_dir() / 'batches' / 'b.txt').open('a') as f:
+        f.write('r009\n')
+    rep_files('r001', 'readme', 'control', README_REPORT)
+    assert grade.main(['b']) == 1
+    out, err = capfd.readouterr()
+    assert err == 'grade.py: r009: not in plan.json\n' and 'r001: sheets/r001.txt' in out
+
+
+def test_unblind_a_leaves_a_void_reps_measures_out(kit, capsys):
+    gate_a(PASS_CONTROL + [None], PASS_CHANGED)
+    stub_sheet('r006', 'audit', volume=50, b_rows=99)  # a void rep that ran and got a sheet
+    lines = run_unblind(capsys, 'A')
+    assert 'r006 control void' in lines
+    assert not [line for line in lines if line.startswith('r006 control:')]
+    assert 'corrections (DF21) | control | median 4, total 20' in lines
+    assert lines[-1] == 'result: PASS'
+
+
+def test_unblind_refuses_a_gate_with_no_reps(kit, capfd):
+    files_reps([('r001', 'readme', 'control', True, ['readme89 no', 'unsupported 0'])])
+    assert grade.main(['unblind', 'A']) == 1
+    out, err = capfd.readouterr()
+    assert (out, err) == ('', 'grade.py: refused: gate A has no reps yet\n')
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
@@ -1099,6 +1138,9 @@ def test_the_probe_gets_a_short_sheet(kit):
     write(common.k_dir() / 'results' / 'r001' / 'stderr.txt', 'tok123\n')
     assert grade.main(['probe']) == 0
     assert 'canary token seen in: stderr.txt' in sheet('r001')
+    write(common.k_dir() / 'results' / 'r001' / 'project' / 'x' / 'agent-a9.jsonl', '{"t": "tok123"}\n')
+    assert grade.main(['probe']) == 0
+    assert 'canary token seen in: project/x/agent-a9.jsonl, stderr.txt' in sheet('r001')
 
 
 # --- stop -----------------------------------------------------------------------------------------------------
@@ -1166,6 +1208,7 @@ def test_stop_refuses_a_files_batch_and_an_unknown_batch(kit, capfd):
     ('r001 hits P1 P99', 'line 3'),
     ('r001 unsupported many', 'line 3'),
     ('r001: valid', 'line 3'),
+    ('r001 hits P1 P1', 'line 3'),
     ('r001 P11 yes', 'twice'),
 ])
 def test_a_malformed_or_repeated_verdict_is_refused(kit, capfd, line, why):
