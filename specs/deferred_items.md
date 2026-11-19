@@ -7157,6 +7157,18 @@ review and the Plan Completion gate (2026-10-27) add the others.
       lists the limit. Size: design. Revisit if: a rep transcript shows a script that walks from an ancestor of the
       real home.
 
+## pr-lifecycle-worktree-and-push (no plan; owner rulings at G1, branch claude/pr-lifecycle-worktree-push-b9e9e5) — 2026-11-19
+- [ ] **Free a desktop-app worktree's branch before the archive (F2 option b; owner ruling 2026-11-19: adopt it
+      after one live check, and report only until then).** Step 3 of `rules/pr-lifecycle.md` leaves a worktree
+      that the desktop app made, and its branch, for the archive. An archive leaves the branch behind: the pooled
+      folder ends on a detached HEAD (seen after four archives, 2026-10-31 and 2026-11-02), so merged branches
+      pile up. Option b: once the branch holds no commit that the merged PR's `headRefOid` lacks, run
+      `git switch --detach` in the worktree, then `git branch -D <branch>`. (An ancestry check against
+      `origin/<default>` fails after a squash or rebase merge, Codex review 2026-11-19.) The worktree then looks as the pool
+      leaves it. Nobody has tested how the app's own branch tracking takes it. Size: quick-fix after the check.
+      Done when: one app session runs option b, its archive succeeds, `git worktree list` and `get_session` show
+      no fault, and step 3 and the `README.md` rules row describe option b.
+
 ## 101-plan-completion-triage-and-gate-revert — 2026-11-19
 - [ ] **Triage rubric step 4 says to stop and wait, while Protocol step 4 says to go on to step 5 (plan 101 final review, Codex finding P2).** `skills/writing-plans/SKILL.md` step 4 runs steps 1 to 4 of the Triage rubric when the aged tail is above 0, presents the proposal in the completion batch, and goes on to step 5. Step 4 of the Triage rubric in `skills/writing-plans/references/deferred-backlog.md` ends "Then stop and wait for the user's selection." An agent that follows the referenced step to its end can halt the completion. The base text has the same structure. The `triage-aged` case reads both files and passed 5 of 5 at the shipped text, so its reps resolve it. Plan 101's spec said to leave the rubric alone, and a change to that file voids the case's evidence. Size: quick-fix. Done when: the rubric's step 4 says what to do at plan completion (present the proposal in the completion batch and go on to step 5), and `triage-aged` and `triage-narrow` still pass 5 of 5 under `specs/baseline/red-baseline-completion-triage/kit/`.
 - [ ] **Plan 100's kit stamps the owner's git identity into rep-repo reflogs (plan 101 Task 9).** `specs/baseline/red-baseline-handoff-rerun/kit/run_rep.sh` sets the identity with `-c user.*` options on its git calls. `git remote set-head` ignores those options and reads the identity that the account database gives, so the `origin/HEAD` and `origin/main` reflogs of every rep repo hold the owner's real name and a derived email, and a rep can read them with `git reflog`. The kit's README says that no real identity reaches the rep. Plan 101's guard kit (`specs/baseline/red-baseline-completion-triage/guard-kit/`) fixes this with `GIT_AUTHOR_*` and `GIT_COMMITTER_*` variables. Plan 100's committed files are unchanged, and its parked reps are outside the repository. Size: quick-fix. Done when: plan 100's runner, or the next kit copy of it, sets the identity through those variables, and the README states the limit for the reps that already ran.
