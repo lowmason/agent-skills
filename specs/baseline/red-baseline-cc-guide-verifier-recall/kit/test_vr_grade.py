@@ -855,7 +855,7 @@ def hand_verdicts(*lines: str) -> None:
     write(path, (path.read_text() if path.exists() else '') + ''.join(f'{line}\n' for line in lines))
 
 
-@pytest.mark.parametrize('check', ['V1', 'V2', 'V4', 'V5', 'V6', 'V7', 'V8'])
+@pytest.mark.parametrize('check', ['V1', 'V2', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9'])
 @pytest.mark.parametrize('kind', ['void', 'pending'])
 def test_a_valid_verdict_on_a_sheet_with_a_void_or_pending_check_is_refused(kit, capfd, check, kind):
     plan(('r001', 'audit', 'control'), batch='gateA1')
@@ -1292,6 +1292,177 @@ def test_v1_reads_the_pilots_agent_parameter_ruling(kit):
     pilot_json(effort='xhigh', version='2.1.327', advisor=True, agent_params=['run_in_background'])
     assert grade.main(['b']) == 0
     assert check_line(sheet('r001'), 'V1') == 'V1: ok'
+
+
+# --- V9 (D5: a peer session) ----------------------------------------------------------------------------------
+
+FOREIGN = {'kind': 'peer', 'name': 'another-session', 'fromSession': 'Another session',
+           'from': '/private/tmp/vrtest-messaging/other.sock', 'body': 'a message from another session'}
+TASK_NOTE = {'kind': 'task-notification', 'producer': 'session-task', 'runId': 'run-1'}
+NOT_HANDBACK = "V9: void: 1 peer-origin record(s) that are not the verifier's hand-back"
+
+
+def handback(agent='a0', **changes) -> dict:
+    '''A subagent's background hand-back, in the shape the probe rep's stream
+    and main transcript held it.'''
+    return {'kind': 'peer', 'from': agent, 'senderTaskId': agent, 'name': 'cc-guide-verifier',
+            'body': 'the report', 'handback': True, 'handbackReportText': 'the report'} | changes
+
+
+def user_with(origin) -> dict:
+    return {'type': 'user', 'origin': origin, 'message': {'role': 'user', 'content': 'a message'}}
+
+
+def init_record(tools=('Agent', 'Read', 'Grep', 'Glob')) -> dict:
+    return {'type': 'system', 'subtype': 'init', 'session_id': SID, 'tools': list(tools)}
+
+
+def v9_sheet(*, events=(), main=(), extra=(), init=None, files=()) -> str:
+    '''Grade r001 (audit, changed, after the pilot) and return its sheet. The
+    stream gets `events` after its first result and `init` in place of its
+    init record; the main transcript gets `main`, the verifier transcript
+    `extra`. `files` are paths under the session's project folder to create
+    (a trailing / makes a folder).'''
+    plan(('r001', 'audit', 'changed'), batch='gateA1')
+    stream_events = stream('r001', 'audit', results=[result_record(result_index=0), *events])
+    if init is not None:
+        stream_events[0] = init
+    res = rep_files('r001', 'audit', 'changed', AUDIT_REPORT, events=stream_events,
+                    main=[att('skill_listing', content='none'), *main],
+                    transcripts=[verifier('r001', 'changed', AUDIT_REPORT, extra=tuple(extra))])
+    slug = res / 'project' / '-private-tmp-vr102-r001-work'
+    for name in files:
+        if name.endswith('/'):
+            (slug / name).mkdir(parents=True)
+        else:
+            write(slug / name, '{}\n')
+    pilot_json(effort='xhigh', version='2.1.327', advisor=True)
+    assert grade.main(['gateA1']) == 0
+    return sheet('r001')
+
+
+def test_v9_passes_the_probe_reps_real_shapes(kit):
+    '''The probe rep's shapes, synthetic: the init record lists no
+    cross-session tool and comes again each turn; the verifier's background
+    hand-back reaches the stream as a result at result_index 1 and the main
+    transcript as a user record; a task-notification result at result_index 2
+    with an empty result ends the run; a classifier context holds a null
+    `origin`.'''
+    null_origin = {'type': 'user', 'serverClassifierContext': {'context': {'git_state': {'visibility': {
+        'origin': None}}}}}
+    text = v9_sheet(events=[init_record(), result_record(result_index=1, result='the report', origin=handback()),
+                            init_record(), result_record(result_index=2, result='', origin=TASK_NOTE)],
+                    main=[user_with(handback()), user_with(TASK_NOTE), null_origin], extra=[null_origin])
+    assert check_line(text, 'V9') == 'V9: ok'
+    assert [line.split(':')[0] for line in text.splitlines()[1:10]] == [f'V{n}' for n in range(1, 10)]
+    assert check_line(text, 'void') == 'void: none'
+
+
+def test_v9_passes_a_task_notification_result_at_result_index_2(kit):
+    text = v9_sheet(events=[result_record(result_index=2, result='', origin=TASK_NOTE)])
+    assert check_line(text, 'V9') == 'V9: ok'
+
+
+@pytest.mark.parametrize('where', ['stream result', 'stream user', 'stream deep', 'main', 'verifier'])
+def test_v9_voids_a_foreign_peer_message_in_any_record_the_grader_reads(kit, where):
+    deep = {'type': 'user', 'message': {'role': 'user', 'content': [{'type': 'text', 'text': 'x',
+                                                                     'meta': {'origin': FOREIGN}}]}}
+    place = {'stream result': {'events': [result_record(result_index=1, origin=FOREIGN)]},
+             'stream user': {'events': [user_with(FOREIGN)]}, 'stream deep': {'events': [deep]},
+             'main': {'main': [user_with(FOREIGN)]}, 'verifier': {'extra': [user_with(FOREIGN)]}}[where]
+    text = v9_sheet(**place)
+    assert check_line(text, 'V9') == NOT_HANDBACK
+    assert check_line(text, 'void') == 'void: V9'
+
+
+@pytest.mark.parametrize('origin, files', [
+    (handback('a7'), ()),
+    (handback(handback=False), ()),
+    (handback(handback=1), ()),
+    ({key: value for key, value in handback().items() if key != 'handback'}, ()),
+    (handback() | {'from': 'a1'}, (f'{SID}/subagents/agent-a1.jsonl',)),
+    (handback(''), (f'{SID}/subagents/agent-.jsonl',)),
+    (handback(['a0']), ()),
+    (handback('a5'), (f'{SID}/subagents/agent-a5.jsonl/',)),
+    (handback('b0'), (f'{OTHER_SID}/subagents/agent-b0.jsonl',)),
+], ids=['no transcript file', 'handback false', 'handback 1', 'no handback key', 'senderTaskId is not from',
+        'empty senderTaskId', 'senderTaskId not a string', 'a folder, not a file', "another session's transcript"])
+def test_v9_exempts_only_the_verifiers_own_handback(kit, origin, files):
+    '''The hand-back: handback is True, senderTaskId is a non-empty string
+    equal to from, and agent-<senderTaskId>.jsonl is a file in the rep's own
+    session's subagents/ folder. Fail any one, and the peer origin voids.'''
+    text = v9_sheet(events=[result_record(result_index=1, origin=origin)], files=files)
+    assert check_line(text, 'V9') == NOT_HANDBACK
+
+
+def test_v9_counts_records_not_origins_and_reads_only_origin_objects(kit):
+    twice = user_with(FOREIGN) | {'message': {'role': 'user', 'content': [{'type': 'text', 'text': 'x',
+                                                                           'origin': FOREIGN}]}}
+    no_signal = {'type': 'user', 'source': {'kind': 'peer'}, 'origin': 'peer', 'message': {'content': 'x'}}
+    text = v9_sheet(events=[twice, result_record(result_index=1, origin=FOREIGN), no_signal])
+    assert check_line(text, 'V9') == "V9: void: 2 peer-origin record(s) that are not the verifier's hand-back"
+
+
+@pytest.mark.parametrize('tool', ['ListAgents', 'SendMessage', 'PushNotification', 'RemoteTrigger'])
+def test_v9_voids_a_cross_session_tool_in_the_init_record(kit, tool):
+    text = v9_sheet(init=init_record(('Agent', 'Read', tool, 'Glob')))
+    assert check_line(text, 'V9') == f'V9: void: cross-session tool in the init record: {tool}'
+    assert check_line(text, 'void') == 'void: V9'
+
+
+def test_v9_names_each_cross_session_tool_of_a_later_init_record_in_order(kit):
+    later = init_record(('RemoteTrigger', 'Agent', 'SendMessage', 'PushNotification', 'ListAgents'))
+    text = v9_sheet(events=[later, result_record(result_index=1)])
+    assert check_line(text, 'V9') == ('V9: void: cross-session tool in the init record: ListAgents, SendMessage, '
+                                      'PushNotification, RemoteTrigger')
+
+
+@pytest.mark.parametrize('init', [
+    {'type': 'system', 'subtype': 'init', 'session_id': SID},
+    init_record(('Agent', 'Read', 'mcp__srv__SendMessage', 'SendMessages', 'listagents')),
+], ids=['no tools', 'names that only resemble one'])
+def test_v9_passes_an_init_record_without_a_cross_session_tool(kit, init):
+    assert check_line(v9_sheet(init=init), 'V9') == 'V9: ok'
+
+
+def test_v9_gives_both_reasons_and_prints_no_origin_content(kit, capfd):
+    loud = {'kind': 'peer', 'name': 'changed', 'fromSession': 'the control session',
+            'from': '/private/tmp/arms/changed.md.sock', 'body': 'control and changed: arms/control.md'}
+    text = v9_sheet(init=init_record(('Agent', 'SendMessage')), events=[result_record(result_index=1, origin=loud)],
+                    main=[user_with(loud)], extra=[user_with(loud)])
+    assert check_line(text, 'V9') == ("V9: void: 3 peer-origin record(s) that are not the verifier's hand-back; "
+                                      'cross-session tool in the init record: SendMessage')
+    out, err = capfd.readouterr()
+    assert no_arm_named(text + out + err), text + out + err
+
+
+@pytest.mark.parametrize('stream_text, v6', [
+    ('', 'V6: void: no report: neither a finished Agent result nor a handback'),
+    ('{not json\n', 'V6: void: the stream does not parse; no report: neither a finished Agent result nor a handback'),
+], ids=['no init record', 'a stream that does not parse'])
+def test_v9_passes_a_stream_it_cannot_read_and_other_checks_void_the_rep(kit, stream_text, v6):
+    '''With no init record there is no session, so no transcript is read:
+    V1 and V6 void the rep, and V9 has nothing to screen.'''
+    plan(('r001', 'audit', 'changed'), batch='gateA1')
+    res = rep_files('r001', 'audit', 'changed', AUDIT_REPORT)
+    path = res / 'stream.jsonl'
+    path.write_text(stream_text or ''.join(json.dumps(e) + '\n' for e in stream('r001', 'audit')[1:]))
+    pilot_json(effort='xhigh', version='2.1.327', advisor=True)
+    assert grade.main(['gateA1']) == 0
+    text = sheet('r001')
+    assert check_line(text, 'V9') == 'V9: ok'
+    assert check_line(text, 'V6') == v6
+    assert check_line(text, 'void') == 'void: V1, V5, V6, V7, V8'
+
+
+def test_a_valid_verdict_on_a_graded_v9_void_sheet_is_refused(kit, capfd):
+    assert check_line(v9_sheet(events=[user_with(FOREIGN)]), 'void') == 'void: V9'
+    capfd.readouterr()
+    hand_verdicts(*(f'r001 {v}' for v in VALID_AUDIT))
+    for argv in (['stop', 'gateA1'], ['unblind', 'A']):
+        assert grade.main(argv) == 1
+        assert capfd.readouterr() == ('', 'grade.py: refused: these reps are not ready: r001 (a valid verdict, but '
+                                          'its sheet has a void or pending check)\n')
 
 
 # --- sheets ---------------------------------------------------------------------------------------------------

@@ -127,7 +127,7 @@ Exit 0 on success. Exit 1 on a refusal, or when a rep cannot be graded. Exit 2 o
 
 `$K/sheets/<rid>.txt` names no arm. It holds these lines, in this order:
 
-- The VOID checks V1 to V8. Each check is `ok`, `void` with its reasons, or `pending` until `$K/pilot.json` gives the value that the check needs. V3 shows `hits` when a marker of `common.MARKERS` is in the injected context of the verifier. Trace each hit by hand.
+- The VOID checks V1 to V9. Each check is `ok`, `void` with its reasons, or `pending` until `$K/pilot.json` gives the value that the check needs. V3 shows `hits` when a marker of `common.MARKERS` is in the injected context of the verifier. Trace each hit by hand.
 - The calls that the read fence refused (V2 logs them, but they do not make a rep void), and the V3 hits in the main session (recorded only).
 - The `void` and `pending` summary lines, the cost (`total_cost_usd` of `result.json`) and the duration (`seconds` of `status.json`).
 - The report source, `reports/<rid>.md`, and the settle lines for that report.
@@ -152,7 +152,7 @@ A files sheet also lists these items:
 
 `$K/sheets/<rid>.json` holds the measures that `unblind` reports: the void and pending checks, cost, seconds, the correction or contradiction count (DF21), the B-row counts and the listed-item line.
 
-### V1 to V8 as the grader reads them
+### V1 to V9 as the grader reads them
 
 - **V1:** the stream has exactly one main-session Agent call and no other main-session tool call (a server tool, such as the advisor, does not count). The call names `cc-guide-verifier` and passes the exact dispatch of `common.DISPATCH`. It passes no parameter other than `description`, `subagent_type`, `prompt` and `model`, and `model` is `sonnet`. The session holds exactly one verifier transcript.
 - **V2:** a Read, Grep or Glob of the verifier that names a path outside `R/<rid>/work/` and returned, or a Grep or Glob result that lists such a path. A path is resolved with `~` expanded, a relative path taken from the work folder, symlinks followed, and `/tmp` and `/System/Volumes/Data/private/tmp` read as `/private/tmp`. There is no exemption for the docs. One folder outside `work/` counts as inside: the rep's own session tool-results folder, `$HOME/.claude/projects/<slug>/<session>/tool-results/`, where `<session>` is the session id of the stream's init event and `<slug>` is a folder of the rep's results that holds `<session>.jsonl` (plan 45's ruling 6). A rep that reads back its own saved Grep output reads no answer. The match is exact and comes after the path is resolved, so a `..` out of that folder, another session's folder, another folder of the same session (such as `subagents/`), the session's own `.jsonl` and a `tool-results` folder under another slug are all still outside.
@@ -162,6 +162,7 @@ A files sheet also lists these items:
 - **V6:** a stream that does not parse, a line of a verifier transcript that does not parse (not strict UTF-8, not JSON, or JSON that is no object; a blank line does not count), no result record, a result that is an error, a budget stop, a failed or killed subagent, no `status.json`, an interruption, a timeout, a null or non-zero exit, `strip_ok` false, `credential_expires_at` anywhere in `$K/results/<rid>/`, or no report.
 - **V7:** a verifier record whose model is not `claude-sonnet-5-5`, or whose effort or version differs from `pilot.json`. For the pilot rep, the check needs one effort and one version and shows both.
 - **V8:** the advisor attachments of the verifier differ from the production comparison in `pilot.json`.
+- **V9** (D5): a peer origin, or a cross-session tool. The grader screens every record of the stream, the main session's transcript and the verifier transcripts, at any depth, for an `origin` object whose `kind` is `peer`. The rep is void when such an origin is not the hand-back of the rep's own subagent. A hand-back has `handback` `true`, `senderTaskId` is a non-empty string equal to `from`, and `agent-<senderTaskId>.jsonl` is a file in the `subagents/` folder of the rep's own session. The rep is also void when an init record of the stream lists a tool of `common.CROSS_SESSION_TOOLS`. A `task-notification` origin and a `result_index` are no signal. The line gives `<n> peer-origin record(s) that are not the verifier's hand-back` and `cross-session tool in the init record: <names>`, and never the content of an origin. A stream with no init record has no session, so V9 has nothing to screen, and V1 and V6 void the rep.
 
 ### $K/pilot.json
 
@@ -190,7 +191,7 @@ A void rep needs only `void`. `hits` takes the labels P1 to P14, except P8 and P
 
 ### stop and unblind
 
-`stop` and `unblind` refuse until each rep they read has a sheet, its measures file `$K/sheets/<rid>.json` and its verdicts. A rep with a `void` verdict needs none of them. A `valid` verdict is also refused while the sheet lists V1, V2 or V4 to V8 as void or pending, because a check the grader decides overrules the hand. A sheet graded before `$K/pilot.json` existed (`pending: V7, V8`) is refused until it is graded again. V3 stays a hand check, so a V3 line never blocks. A `void` verdict on a clean sheet is allowed. The refusal names rep ids only.
+`stop` and `unblind` refuse until each rep they read has a sheet, its measures file `$K/sheets/<rid>.json` and its verdicts. A rep with a `void` verdict needs none of them. A `valid` verdict is also refused while the sheet lists V1, V2 or V4 to V9 as void or pending, because a check the grader decides overrules the hand. A sheet graded before `$K/pilot.json` existed (`pending: V7, V8`) is refused until it is graded again. V3 stays a hand check, so a V3 line never blocks. A `void` verdict on a clean sheet is allowed. The refusal names rep ids only.
 
 `stop <batch>` reads a batch of counted and spare audit reps, and counts valid reps only. It refuses (exit 1) while either arm has fewer than 2 valid reps. That is exactly when a void rep has no valid spare. The refusal names those void reps in id order, and nothing else, so it shows nothing the sheets do not. A spare counts for the void rep it `replaces`, and for any rep that rep replaced. Add a spare with `build.py spare <rid>`. After 2 spares for a packet and arm, an arm that is still short means the result is UNSETTLED, for the owner (plan:171), and `stop` keeps refusing. With 2 valid reps in each arm, these rules apply in this order:
 

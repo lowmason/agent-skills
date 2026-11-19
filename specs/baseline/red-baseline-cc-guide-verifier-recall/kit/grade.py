@@ -1,16 +1,18 @@
 '''Grade plan 102's reps blind, under Python 3.13 (Task 7; plan 45's V1 to
-V8 and DF15, as plan 102's Pre-registration amends them):
+V8 and DF15, as plan 102's Pre-registration amends them, and D5's V9):
 
     grade.py <batch>        a sheet for each rep of the batch that has results
     grade.py stop <batch>   gate A's first-wave stop: continue, stop: UNSETTLED or stop: FAIL
     grade.py unblind A|F    the gate's tables, once every sheet of the gate has its verdicts
 
 A sheet, $K/sheets/<rid>.txt, names no arm. It holds the VOID checks V1 to
-V8 (each `ok`, `void` with its reasons, `pending` until $K/pilot.json gives
+V9 (each `ok`, `void` with its reasons, `pending` until $K/pilot.json gives
 the value the check needs, or for V3 `hits` to trace by hand), the calls
 the read fence refused (V2 counts the rep's own session tool-results folder
-as inside), the main session's V3 hits, the cost and duration,
-and settle's lines for the rep's report. Settle runs on a copy of the
+as inside; V9 voids a peer origin that is not the rep's own subagent's
+hand-back, and a cross-session tool in an init record), the main session's
+V3 hits, the cost and duration, and settle's lines for the rep's report.
+Settle runs on a copy of the
 packet in $K/settle/<rid>/packet/ with the report as report.md. Every audit
 rep, of either arm, settles against the copy of $K/fixtures/audit-changed/
 (DF15), whose `docs` and `quotes.docs` name $K/fixtures/docs, since the
@@ -36,7 +38,7 @@ keymiss <n>` and `<rid> unsupported <n>`. A line that starts with a rep id
 must be one of these; every other line is skipped. `stop` and `unblind`
 refuse, naming rep ids only, until each rep has its verdicts, a sheet and
 its measures file (a void rep needs none), and while a valid verdict sits on
-a sheet whose V1, V2 or V4 to V8 is void or pending. `stop` also refuses
+a sheet whose V1, V2 or V4 to V9 is void or pending. `stop` also refuses
 while either arm has fewer than 2 valid reps, naming the void reps that no
 valid spare replaces. `grade.py <batch>` reads both arm files first and
 refuses the whole batch, naming nothing, when one is missing or unreadable.
@@ -76,6 +78,9 @@ FENCED_TOOLS = ('Read', 'Grep', 'Glob')
 PRIVATE_TMP = '/private/tmp'
 TMP_ALIASES = ('/tmp', '/System/Volumes/Data/private/tmp')
 TOOL_RESULTS = 'tool-results'  # the rep's own session folder that V2 counts as inside (plan 45's ruling 6)
+# V9 (D5): a message from another session arrives as a record with a peer origin
+ORIGIN = 'origin'
+PEER = 'peer'
 # the sheet
 AUDIT_FIXTURE = 'audit-changed'  # every audit rep settles against it, of either arm (DF15)
 DISCARDS = ('unparseable: ', 'quote not found, discarded: ', 'no proposed wording, discarded: ')
@@ -101,7 +106,7 @@ REACH_MIN = 2
 RETENTION = ('P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P9', 'P13', 'P14')
 SECONDARY = ('P7', 'P10', 'P12')
 HIT_LABELS = tuple(f'P{n}' for n in range(1, 15) if n not in (8, 11))
-BLOCKING = ('V1', 'V2', 'V4', 'V5', 'V6', 'V7', 'V8')  # a void or pending one refuses a valid verdict (not V3)
+BLOCKING = ('V1', 'V2', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9')  # a void or pending one refuses a valid verdict (not V3)
 REQUIRED = {'audit': ('P11', 'P8', 'hits', 'unsupported'), 'readme': ('readme89', 'unsupported'),
             'precision': ('reach', 'keymiss', 'unsupported')}
 VERDICT_RE = re.compile(r'(?:[-*] +)?(r\d{3,})\b(.*)')
@@ -158,7 +163,7 @@ def main_calls(events: list[dict]) -> list[dict]:
             for b in content(e) if b.get('type') == 'tool_use']
 
 
-# --- V1 to V8 -------------------------------------------------------------------------------------------------
+# --- V1 to V9 -------------------------------------------------------------------------------------------------
 
 
 def check_v1(events: list[dict], verifiers: int, prompt: str, extra: tuple[str, ...] = ()) -> Check:
@@ -415,6 +420,47 @@ def check_v8(records: list[dict], pilot: dict | None) -> Check:
     return Check('ok')
 
 
+def origins(record: dict) -> list:
+    '''Every value of an `origin` key in a record, at any depth.'''
+    found, stack = [], [record]
+    while stack:
+        obj = stack.pop()
+        if isinstance(obj, dict):
+            if ORIGIN in obj:
+                found.append(obj[ORIGIN])
+            stack.extend(obj.values())
+        elif isinstance(obj, list):
+            stack.extend(obj)
+    return found
+
+
+def is_handback(origin: dict, agent_ids: frozenset[str]) -> bool:
+    '''The rep's own subagent handing back: `handback` is True, `senderTaskId`
+    is a non-empty string equal to `from`, and the session's subagents/
+    folder holds agent-<senderTaskId>.jsonl.'''
+    sender = origin.get('senderTaskId')
+    return (origin.get('handback') is True and isinstance(sender, str) and sender != ''
+            and sender == origin.get('from') and sender in agent_ids)
+
+
+def check_v9(events: list[dict], transcripts: list[dict], agent_ids: frozenset[str]) -> Check:
+    '''V9 (D5): a record of the stream or of the transcripts the grader reads
+    holds a peer origin that is not the hand-back, or an init record lists a
+    cross-session tool. A task-notification origin and result_index are no
+    signal. The reasons give counts and tool names only, never an origin's
+    content.'''
+    peers = sum(1 for record in events + transcripts
+                if any(isinstance(o, dict) and o.get('kind') == PEER and not is_handback(o, agent_ids)
+                       for o in origins(record)))
+    listed = {tool for e in events if probe_checks.is_init(e) and isinstance(e.get('tools'), list)
+              for tool in e['tools'] if isinstance(tool, str)}
+    tools = [tool for tool in common.CROSS_SESSION_TOOLS if tool in listed]
+    reasons = [f"{peers} peer-origin record(s) that are not the verifier's hand-back"] if peers else []
+    if tools:
+        reasons.append(f"cross-session tool in the init record: {', '.join(tools)}")
+    return found(reasons)
+
+
 def report_of(events: list[dict] | None, records: list[dict]) -> str | None:
     '''The verifier's report: the main session's finished Agent result that is
     no launch notice and no error, else the verifier's last handback.'''
@@ -441,6 +487,7 @@ class Evidence(NamedTuple):
     served: list[dict] | None  # probes.read_transcripts' model and effort for the verifier
     inside: tuple[str, ...]  # the rep's own session tool-results folder, which V2 counts as inside
     bad_lines: int  # the verifier transcripts' lines that do not parse (V6)
+    agent_ids: frozenset[str]  # the id of each agent-<id>.jsonl file of the session's subagents/ (V9's hand-back)
 
 
 def results_dir(rid: str) -> Path:
@@ -485,8 +532,10 @@ def evidence(rid: str) -> Evidence:
     if not (isinstance(session, str) and run.SESSION_RE.fullmatch(session)):
         session = None
     project = folder / 'project'
-    main, agents, served, bad = [], [], None, 0
+    main, agents, served, bad, agent_ids = [], [], None, 0, frozenset()
     if session:
+        agent_ids = frozenset(p.name.removeprefix('agent-').removesuffix('.jsonl')
+                              for p in project.glob(f'*/{session}/subagents/agent-*.jsonl') if p.is_file())
         for path in sorted(project.glob(f'*/{session}.jsonl')):
             main += load_jsonl(path)[0]
         for meta in sorted(project.glob(f'*/{session}/subagents/agent-*.meta.json')):
@@ -500,7 +549,7 @@ def evidence(rid: str) -> Evidence:
         except Exception:  # a line that is no JSON object, which V6 counts; V7 then reads the records
             served = None
     return Evidence(events, read_json(folder / 'result.json'), read_json(folder / 'status.json'), main, agents,
-                    served, own_tool_results(project, session), bad)
+                    served, own_tool_results(project, session), bad, agent_ids)
 
 
 def read_bodies() -> dict[str, str]:
@@ -685,7 +734,8 @@ def rep_sheet(rep: dict, bodies: dict[str, str]) -> tuple[list[str], dict]:
     checks = {'V1': check_v1(ev.events or [], verifiers, prompt, extra), 'V2': v2, 'V3': check_v3(records),
               'V4': check_v4(records), 'V5': check_v5(records, body),
               'V6': check_v6(ev.events, ev.result, ev.status, results_dir(rid), report, ev.bad_lines),
-              'V7': check_v7(records, pilot, rep['role'] == 'pilot', ev.served), 'V8': check_v8(records, pilot)}
+              'V7': check_v7(records, pilot, rep['role'] == 'pilot', ev.served), 'V8': check_v8(records, pilot),
+              'V9': check_v9(ev.events or [], ev.main + records, ev.agent_ids)}
     void = [name for name, c in checks.items() if c.status == 'void']
     pending = [name for name, c in checks.items() if c.status == 'pending']
     cost, seconds = (ev.result or {}).get('total_cost_usd'), (ev.status or {}).get('seconds')
@@ -807,7 +857,7 @@ def read_verdicts() -> dict[str, dict]:
 def require_complete(reps: list[dict], verdicts: dict[str, dict]) -> None:
     '''Refuse, naming rep ids only, until every rep has its verdicts and a
     sheet with its measures file; a void rep needs neither. A valid verdict
-    also needs a sheet whose V1, V2 and V4 to V8 are neither void nor
+    also needs a sheet whose V1, V2 and V4 to V9 are neither void nor
     pending: a check the grader decides overrules the hand. V3 stays a hand
     check, so its line never blocks.'''
     problems = []
