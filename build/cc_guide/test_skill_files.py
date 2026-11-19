@@ -98,6 +98,15 @@ def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form)
         assert form in (REPO / path).read_text(encoding='utf-8'), f'{path} lacks {form!r}'
 
 
+def test_a_files_row_names_a_covered_file_by_its_repo_path_never_its_copys():
+    '''`covered` in index.json maps each repo path to a copy path, and settle
+    accepts only the repo path. A verifier that wrote the copy path would have
+    every covered-file row discarded as unparseable and the file held, so the
+    contract says that the key is the name.'''
+    text = (REPO / AGENT).read_text(encoding='utf-8')
+    assert text.count("as a key (its repo path, never its copy's path)") == 1
+
+
 def test_the_files_rows_cover_the_cited_file_and_each_covered_file():
     text = (REPO / AGENT).read_text(encoding='utf-8')
     assert 'Give one row per statement in the cited file or a covered file that rests on a cited section' in text

@@ -65,6 +65,8 @@ The cited file's copy is the file `index.json` names as `copy`; its line numbers
     file:line | statement | section | "verbatim guide quote" | consistent / contradicts / not covered
     section | none
 
+In a row, name a covered file by the path that `covered` holds as a key (its repo path, never its copy's path).
+
 `file` is the path `index.json` names as `file`, or a path `covered` names, as in `hooks/README.md:56`. A not-covered row may leave its quote `-`. A cited section with no row and no none line holds the file, as if unreviewed.
 
 Compare each statement with what the guide says about the component the statement describes. A repo's own script, hook or agent is not Claude Code: a guide fact about how Claude Code behaves contradicts a statement only when the statement describes that behaviour.
