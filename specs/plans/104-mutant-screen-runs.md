@@ -126,6 +126,8 @@ None from the brief: the spec holds every owner decision, and the owner picked a
 - **D11** (planner default; owner approved it as written at plan review, 2026-11-19): the inline agent's final-review fix pass learns the trailer from one sentence in executing-plans' `SKILL.md`, because `references/final-review.md` is a reviewer surface that does not change. No fixture reaches that fix pass, so the record lists that sentence as untested wording. Applied in: Task 7.
 - **D12** (planner default; owner approved it as written at plan review, 2026-11-19): Design 4's fallback becomes a deferred watch item beside the spec's re-measure item (Design 6). This plan's own reviewers read no screen file, so the fallback cannot fire inside it. Applied in: Task 9.
 - **D13** (planner default; owner approved it as written at plan review, 2026-11-19): the fixtures, their domains and their seeded states, as Task 3 pins them. Applied in: Task 3.
+- **D14** (owner, gate, 2026-11-19): the owner orders the three machinery streams as plan 104, then plan 103's execution, then the E3 `/cc-guide files` pass. The owner's answer was "104 → 103 → E3 (Recommended)", to the question "Run in this order: plan 104 now and alone, then plan 103's execution, then the E3 `/cc-guide files` pass?". Applied in: Owner gate.
+- **D15** (owner, handoff, 2026-11-19): execute plan 104 with subagent-driven-development; the owner's answer was "Subagent." Applied in: Execution handoff.
 
 ## Backlog items this plan touches
 
