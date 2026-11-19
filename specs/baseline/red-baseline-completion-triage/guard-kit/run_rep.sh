@@ -115,10 +115,13 @@ kit_ref=$(kit_hash "$scratch")
 # Plan 100 Deviation (execution brief default 2), raised by plan 101: the env -i list below also sets
 # CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000 (60 minutes), so print mode does not stop
 # background subagents 10 minutes after a turn ends. No other CLAUDE* name may reach the rep.
+# Plan 101: PYTHONDONTWRITEBYTECODE=1 stops a kit script that the rep runs (a writing-plans script, say)
+# from writing __pycache__ into the kit folder, which would change the kit hash and void the rep (C11).
 H=$ROOT/$rep
 rep_env=(HOME="$H" USER="$USER" LOGNAME="$LOGNAME" SHELL=/bin/zsh LANG="${LANG-}"
   TMPDIR="$H/tmp" PATH="$H/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-  CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1 CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000)
+  CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1 CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000
+  PYTHONDONTWRITEBYTECODE=1)
 for kv in "${rep_env[@]}"; do
   name=${kv%%=*}
   case $name in

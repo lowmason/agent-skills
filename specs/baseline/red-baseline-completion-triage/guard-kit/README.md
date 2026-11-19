@@ -55,6 +55,8 @@ The rep's `HOME` has no `CLAUDE.md`, no `settings.json`, no rules and no `.zshen
 
 It has a minimal `.gitconfig` that sets only `user.name` (`Pondworks Rep`) and `user.email` (`rep@pondworks.invalid`). Nothing else comes from any real git config. Plan 40's reps committed with the owner's global identity. A rep with no identity gets git's guessed identity and its warnings, and that could change what the rep does. The controller ruled for this file.
 
+The rep command runs under `env -i` with an explicit list. That list sets `PYTHONDONTWRITEBYTECODE=1`: a kit script that a rep runs, such as a writing-plans script, would otherwise write `__pycache__` into the kit folder, change the kit hash and void the rep.
+
 Before the first turn, the runner checks the template's `HEAD`, its refs and its status. It also checks that the hash of the rep's kit folders equals the hash of `KIT_COMMIT`'s copy. The hash is `shasum -a 256` over the sorted file list and the contents of `.claude/skills`, `.claude/agents` and `.claude/commands`.
 
 ## Results layout
@@ -113,6 +115,7 @@ Plan 101 runs four arms with this kit: `p5a`, `c5a-ep`, `c5a-neg` and a new arm,
 8. **Tally.** `p5a`, `c5a-ep` and `c5a-merged` pass at 4 of their first 5 valid reps. `c5a-neg` passes only at 0 of 5 failing.
 9. **Rubric.** `rubric-c5a-merged.md` scores `c5a-merged`: F-handoff, F-stamp, F-branch, F-resume and F-next.
 10. **Start refs.** `run_rep.sh` writes `start_refs` into `meta.txt` before turn 1. `extract.py` reads it, so a `c5a-merged` rep starts from `main=<merge sha>` and the runner's own merge never shows as a rep commit. A rep whose `meta.txt` has no `start_refs` falls back to the template's `refs` pin, or to `main=<head>` when the row has no pin.
+11. **No bytecode.** The rep command's `env -i` list sets `PYTHONDONTWRITEBYTECODE=1`. Skill scripts that a rep runs (the completion protocol runs writing-plans scripts) write bytecode into the kit folder, which would change the kit hash, and C11 would void every such rep. The kit hash is unchanged: any change under the kit's skills, agents and commands still voids a rep.
 
 The tests follow the same changes: arms `c5a-neg`, `p5a` and `c5a-ep`, templates `t4` and `t5`, ids from `r501`, and the `guard101` phase name.
 

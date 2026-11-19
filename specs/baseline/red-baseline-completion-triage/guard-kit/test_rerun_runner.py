@@ -746,3 +746,39 @@ def test_no_real_git_identity_reaches_a_rep_repo(kit):
         outside += [(path, what) for path, who, what in entries if who not in ALLOWED_IDENTITIES]
     assert holding == []
     assert outside == [], 'reflog entries by an identity outside the allow list'
+
+
+# Follow-up tests (Task 9, pilot finding): a kit script that a rep runs must not leave bytecode in the kit folder.
+
+REP_PYTHON = Path('/opt/homebrew/bin/python3')  # what `python3` is on the rep's PATH (a link in $HOME/.local/bin)
+
+
+def run_kit_script_import(kit: Kit, keep_bytecode: bool) -> tuple[Path, dict, dict]:
+    '''Run one rep whose stub imports a kit module with the rep's own python3, as the completion protocol does
+    when it runs a writing-plans script. Returns the results folder, the parked home's meta and the stub's env.'''
+    if not REP_PYTHON.exists():
+        pytest.skip(f'{REP_PYTHON} is the rep PATH python3; it is not on this machine')
+    envfile = kit.tmp / 'env-bytecode.txt'
+    unset = 'env -u PYTHONDONTWRITEBYTECODE ' if keep_bytecode else ''
+    kit.actions(
+        f"env > '{envfile}'\n"
+        f"( cd \"$HOME/.claude/skills/writing-plans/scripts\" && {unset}python3 -c 'import entry_check' )\n")
+    rep, = kit.make_reps()
+    out = run_ok(kit, rep)
+    env = dict(line.split('=', 1) for line in envfile.read_text().splitlines() if '=' in line)
+    return kit.ctl / 'homes' / rep, meta_of(out), env
+
+
+def test_rep_python_writes_no_bytecode_into_the_kit(kit):
+    home, meta, env = run_kit_script_import(kit, keep_bytecode=False)
+    assert list((home / '.claude').rglob('__pycache__')) == []
+    assert meta['kit_sha_before'] == meta['kit_sha_after']
+    assert env['PYTHONDONTWRITEBYTECODE'] == '1'
+
+
+def test_bytecode_in_the_kit_changes_the_kit_hash(kit):
+    # The control: with the variable unset for the import, the same script writes bytecode and C11's hash differs.
+    # This shows that the test above can fail, and that the kit hash still catches a change under the kit.
+    home, meta, _ = run_kit_script_import(kit, keep_bytecode=True)
+    assert [p.name for p in (home / '.claude').rglob('__pycache__')] == ['__pycache__']
+    assert meta['kit_sha_before'] != meta['kit_sha_after']
