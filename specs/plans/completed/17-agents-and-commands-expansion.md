@@ -1,7 +1,7 @@
 # Five Agents + Two Commands Implementation Plan
 
 **Status: COMPLETE (2026-07-25)** — executed via subagent-driven-development;
-deferred items in specs/deferred_items.md
+deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived
 
 > Execution notes: all 12 tasks approved by per-task review; final
 > whole-branch review (opus) verdict "With fixes" — both gate-approved

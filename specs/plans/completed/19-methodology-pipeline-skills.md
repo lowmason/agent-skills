@@ -1,7 +1,7 @@
 # derive-roadmap Implementation Plan (plan #2 of 2 for methodology-pipeline-skills)
 
 > **Status: COMPLETE (2026-07-30)** — executed via subagent-driven-development;
-> deferred items in specs/deferred_items.md.
+> deferred items in specs/deferred_items.md, or specs/completed/deferred_items.md once archived.
 >
 > Branch `feat/derive-roadmap`, cut from `main` by the controller (Task 0)
 > rather than by Task 1's implementer. 9 commits total, `7321354`..`659be53`
