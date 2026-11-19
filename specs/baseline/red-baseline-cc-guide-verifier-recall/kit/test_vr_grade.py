@@ -586,6 +586,33 @@ def test_an_unreadable_arm_file_prints_its_type_not_its_path(kit, capfd):
     assert err == 'grade.py: r001: not graded (PermissionError)\n'
     assert no_arm_named(out + err)
 
+
+def test_rows_whose_claim_or_statement_holds_a_pipe_read_as_settle_reads_them(kit):
+    audit = 'L5 | the list | limits models | PARTIAL | settings.md:1 | "Set `deniedModels` in managed settings to ' \
+            'block a model." | Add the deny list.\n'
+    text = one_rep(report=audit)
+    assert [line.split('] ')[0] for line in section(text, 'kept corrections and C rows (P1 to P14 candidates):')] == [
+        '[A L5 models.routing PARTIAL kept']
+    files = 'skills/x/SKILL.md:13 | second | person | skills.description | "Write the description in third ' \
+            'person." | contradicts\n'
+    text = one_rep(rid='r002', packet='precision', report=files)
+    assert [line.split('] ')[0] for line in section(text, 'kept contradicts rows:')] == [
+        '[F skills/x/SKILL.md:13 skills.description, contradicts, on key']
+
+
+def test_only_the_verifier_transcript_feeds_v1_to_v8(kit):
+    other = [vassistant(use('x1', 'Read', file_path='/etc/hosts'), model='claude-haiku-4-5'), tool_result('x1', 'h'),
+             att('nested_memory', content='deniedModels')]
+    plan(('r001', 'readme', 'changed'))
+    rep_files('r001', 'readme', 'changed', README_REPORT,
+              transcripts=[verifier('r001', 'changed', README_REPORT), other])
+    meta = next((common.k_dir() / 'results' / 'r001' / 'project').rglob('agent-a1.meta.json'))
+    write_json(meta, {'agentType': 'Explore'})
+    pilot_json(effort='xhigh', version='2.1.327', advisor=True)
+    assert grade.main(['b']) == 0
+    text = sheet('r001')
+    assert [check_line(text, f'V{n}') for n in range(1, 9)] == [f'V{n}: ok' for n in range(1, 9)]
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
