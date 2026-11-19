@@ -214,8 +214,10 @@ def paths_used(use: dict) -> list[str]:
 
 def listed_tokens(text: str) -> list[str]:
     '''The paths a Grep or Glob result lists that could leave the folder: each
-    line, up to its first colon, that starts with /, ~ or .., or holds /../.'''
-    tokens = (line.split(':', 1)[0].strip() for line in text.splitlines())
+    line, up to its first colon, that starts with /, ~ or .., or holds /../.
+    Lines end at newlines only: a matched line's own text may hold a form
+    feed, U+2028 or U+0085, and none of those starts a listed path.'''
+    tokens = (line.split(':', 1)[0].strip() for line in text.split('\n'))
     return [t for t in tokens if t.startswith(('/', '~', '..')) or '/../' in t]
 
 

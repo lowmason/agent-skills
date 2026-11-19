@@ -668,6 +668,17 @@ def test_unblind_refuses_a_gate_with_no_reps(kit, capfd):
     out, err = capfd.readouterr()
     assert (out, err) == ('', 'grade.py: refused: gate A has no reps yet\n')
 
+
+def test_v2_reads_a_listed_path_at_the_start_of_a_result_line_only():
+    '''Grep content lines hold raw file text; a form feed, U+2028 or U+0085
+    in a matched line does not start a new listed path.'''
+    text = (f'{ROOT}/packet/guide.md:5:see\x0c/etc/x\n{ROOT}/packet/guide.md:9:and\u2028/etc/y\n'
+            f'{ROOT}/packet/guide.md:12:also\x85~/z\x0b../w')
+    records = [vassistant(use('g1', 'Grep', pattern='see', path=f'{ROOT}/packet', output_mode='content')),
+               tool_result('g1', text)]
+    void, refused = grade.check_v2(records, ROOT)
+    assert (void.status, void.detail, refused) == ('ok', '', [])
+
 # --- the plan's values ----------------------------------------------------------------------------------------
 
 
