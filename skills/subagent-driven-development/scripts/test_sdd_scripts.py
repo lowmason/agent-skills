@@ -1636,6 +1636,63 @@ def test_mutant_run_screen_keeps_a_carried_test_id_with_spaces_whole(calc):
     assert run_section(lines, 'tests') == [f'test {x}: caught 1' for x in SPACED_IDS]
 
 
+# pytest writes a string parameter into its ID as it is: here an unmatched '[' and '(' ...
+TEST_ODD = '''import pytest
+
+from calc import add
+
+
+@pytest.mark.parametrize('s', ['[', '('])
+def test_x(s):
+    assert add(len(s), 1) == 2
+
+
+def test_y():
+    assert add(2, 3) == 5
+'''
+ODD_IDS = ['test_odd::test_x[[]', 'test_odd::test_x[(]', 'test_odd::test_y']
+# ... and a '::' after a space, and a '] ' whose next text has a space before its '::'.
+TEST_COLONS = '''import pytest
+
+from calc import add
+
+
+@pytest.mark.parametrize('s', ['a std::vector', 'a] b c::d'])
+def test_x(s):
+    assert add(len(s), 1) == len(s) + 1
+
+
+def test_y():
+    assert add(2, 3) == 5
+'''
+COLON_IDS = ['test_colons::test_x[a std::vector]', 'test_colons::test_x[a] b c::d]', 'test_colons::test_y']
+
+
+def check_carried_ids(repo, name, source, ids):
+    '''Commit test file name, catch mutant A with it, and check that a screen carries the catch with each of ids whole.'''
+    (repo / name).write_text(source)
+    git('add', name, cwd=repo)
+    git('commit', '-qm', name, cwd=repo)
+    p1 = make_mutant(repo, 1, *A)
+    cmd = [*PYTEST[:-1], name]
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(repo), '--', *cmd, cwd=repo, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    assert run_section(mutant_lines(repo), 'tests') == [f'test {x}: caught 1' for x in ids]
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(repo), '--', *cmd, cwd=repo, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(repo, 'task-1-screen.log')
+    assert mutant_line(lines, 1) == carried(1, p1, 'task-1-mutants.log') + ' '.join(ids)
+    assert run_section(lines, 'tests') == [f'test {x}: caught 1' for x in ids]
+
+
+def test_mutant_run_screen_splits_carried_ids_after_an_unmatched_bracket(calc):
+    check_carried_ids(calc, 'test_odd.py', TEST_ODD, ODD_IDS)
+
+
+def test_mutant_run_screen_keeps_double_colons_in_a_carried_ids_brackets(calc):
+    check_carried_ids(calc, 'test_colons.py', TEST_COLONS, COLON_IDS)
+
+
 def test_mutant_run_screen_carries_the_newest_catch(calc):
     p1 = make_mutant(calc, 1, *A)
     for flags in (['--screen'], [], ['--screen']):

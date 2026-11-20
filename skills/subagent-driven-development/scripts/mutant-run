@@ -224,9 +224,12 @@
 #   In step 6, a patch that passes the test-file check and `git apply
 # --check`, and whose sha256 has an earlier catch, is carried: the script
 # writes no marker, applies nothing and runs no command for it. Its line names
-# that file and its tests, and those tests join the tests section, split at
-# each space outside [...], so a parametrized ID keeps the spaces in its
-# brackets. Every other patch runs as in step 6. The baseline and the revert
+# that file and its tests, and those tests join the tests section. The tests
+# split at a space that ends an ID: any space in an ID with no "[", and in a
+# parametrized ID only a space after a "]" whose next text starts like an ID
+# (no space or bracket, then "::"). So a parameter keeps its spaces and its
+# brackets, matched or not; one that holds "] " and then such a start splits
+# there. Every other patch runs as in step 6. The baseline and the revert
 # always run.
 #
 # Callers: the SDD implementer and controller, and executing-plans' inline
@@ -834,25 +837,36 @@ earlier_catch() {
 }
 
 # Print the test IDs of the tests field on stdin, one to a line. The field
-# joins them with spaces, and a parametrized ID can hold spaces inside its
-# brackets, so the field splits only at a space outside every [...].
+# joins them with spaces. pytest writes a parameter's text into the ID of a
+# parametrized test as it is, spaces and brackets included, and that ID ends
+# with "]". So a space ends an ID that holds no "[". In an ID that holds one,
+# a space ends it only after a "]", and only when the text after the space
+# starts like an ID: characters with no space and no bracket, then "::".
+# Bracket depth is not counted, so an unmatched "[" or "]" in a parameter
+# never joins two IDs. The text cannot settle a parameter that holds "] "
+# and then such a start: it splits there.
 split_ids() {
-  awk '{
-    depth = 0
-    id = ""
-    for (i = 1; i <= length($0); i++) {
-      c = substr($0, i, 1)
-      if (c == "[") depth++
-      else if (c == "]" && depth > 0) depth--
-      if (c == " " && depth == 0) {
-        if (id != "") print id
-        id = ""
-      } else {
-        id = id c
-      }
+  awk '
+    function starts_an_id(s,    j, head) {
+      j = index(s, "::")
+      if (j == 0) return 0
+      head = substr(s, 1, j - 1)
+      return index(head, " ") == 0 && index(head, "[") == 0 && index(head, "]") == 0
     }
-    if (id != "") print id
-  }'
+    {
+      id = ""
+      for (i = 1; i <= length($0); i++) {
+        c = substr($0, i, 1)
+        if (c == " " && (index(id, "[") == 0 || (substr(id, length(id), 1) == "]" && starts_an_id(substr($0, i + 1))))) {
+          if (id != "") print id
+          id = ""
+        } else {
+          id = id c
+        }
+      }
+      if (id != "") print id
+    }
+  '
 }
 
 catches=
