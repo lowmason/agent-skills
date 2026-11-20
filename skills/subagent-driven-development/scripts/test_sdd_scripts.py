@@ -1540,6 +1540,25 @@ def test_mutant_run_screen_runs_a_patch_caught_under_another_command(calc):
     assert mutant_line(lines, 1).startswith('mutant 1: SURVIVED exit 0 ')
 
 
+def test_mutant_run_screen_runs_a_patch_caught_only_under_a_longer_command(calc):
+    # W's only catch is under a command that starts with the screen's command.
+    p1 = make_mutant(calc, 1, *W)
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, '-k', 'neg', cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    # The witness: a run on PYTEST that catches A alone, while W is withdrawn.
+    withdrawn = p1.rename(p1.with_name('task-1-mutant-1.patch.withdrawn'))
+    p2 = make_mutant(calc, 2, *A)
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    withdrawn.rename(p1)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert mutant_line(lines, 1).startswith(f'mutant 1: CAUGHT exit 1 sha256 {patch_sha(p1)} tests: ')
+    assert mutant_line(lines, 2).startswith(carried(2, p2, 'task-1-mutants-2.log'))
+    assert 'screen: carried 1 of 2 from earlier runs' in lines
+
+
 def test_mutant_run_screen_runs_survivors_and_invalid_mutants_again(calc):
     make_mutant(calc, 1, *S)
     make_mutant(calc, 2, *X)
@@ -1586,6 +1605,35 @@ def test_mutant_run_screen_counts_carried_mutants_and_joins_their_tests(calc):
     assert '--- output: mutant 2 ---' in lines
     assert '--- output: mutant 1 ---' not in lines
     assert result.stdout.splitlines()[1] == 'screen: carried 1 of 2 from earlier runs'
+
+
+# Parametrized IDs that hold spaces inside their brackets, a comma and a nested bracket among them.
+TEST_SPACED = '''import pytest
+
+from calc import add
+
+
+@pytest.mark.parametrize('pair', [(1, 2), (2, 2)], ids=['one two', 'a[b] c, d'])
+def test_x(pair):
+    assert add(*pair) == sum(pair)
+'''
+SPACED_IDS = ['test_spaced::test_x[one two]', 'test_spaced::test_x[a[b] c, d]']
+
+
+def test_mutant_run_screen_keeps_a_carried_test_id_with_spaces_whole(calc):
+    (calc / 'test_spaced.py').write_text(TEST_SPACED)
+    git('add', 'test_spaced.py', cwd=calc)
+    git('commit', '-qm', 'spaced ids', cwd=calc)
+    p1 = make_mutant(calc, 1, *A)
+    cmd = [*PYTEST[:-1], 'test_spaced.py']
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    assert run_section(mutant_lines(calc), 'tests') == [f'test {x}: caught 1' for x in SPACED_IDS]
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert mutant_line(lines, 1) == carried(1, p1, 'task-1-mutants.log') + ' '.join(SPACED_IDS)
+    assert run_section(lines, 'tests') == [f'test {x}: caught 1' for x in SPACED_IDS]
 
 
 def test_mutant_run_screen_carries_the_newest_catch(calc):

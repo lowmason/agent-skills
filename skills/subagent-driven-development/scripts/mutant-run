@@ -224,8 +224,10 @@
 #   In step 6, a patch that passes the test-file check and `git apply
 # --check`, and whose sha256 has an earlier catch, is carried: the script
 # writes no marker, applies nothing and runs no command for it. Its line names
-# that file and its tests, and those tests join the tests section. Every other
-# patch runs as in step 6. The baseline and the revert always run.
+# that file and its tests, and those tests join the tests section, split at
+# each space outside [...], so a parametrized ID keeps the spaces in its
+# brackets. Every other patch runs as in step 6. The baseline and the revert
+# always run.
 #
 # Callers: the SDD implementer and controller, and executing-plans' inline
 # executor. executing-plans' task-done reads the run file and never runs it.
@@ -831,6 +833,28 @@ earlier_catch() {
   '
 }
 
+# Print the test IDs of the tests field on stdin, one to a line. The field
+# joins them with spaces, and a parametrized ID can hold spaces inside its
+# brackets, so the field splits only at a space outside every [...].
+split_ids() {
+  awk '{
+    depth = 0
+    id = ""
+    for (i = 1; i <= length($0); i++) {
+      c = substr($0, i, 1)
+      if (c == "[") depth++
+      else if (c == "]" && depth > 0) depth--
+      if (c == " " && depth == 0) {
+        if (id != "") print id
+        id = ""
+      } else {
+        id = id c
+      }
+    }
+    if (id != "") print id
+  }'
+}
+
 catches=
 [ "$screen" = false ] || catches=$(earlier_catches)
 
@@ -877,7 +901,7 @@ EOF
       verdict='CAUGHT'
       carried=$((carried + 1))
       detail=" carried: ${catch%% *} tests: ${catch#* }"
-      ids=$(printf '%s' "${catch#* }" | tr ' ' '\n')
+      ids=$(printf '%s\n' "${catch#* }" | split_ids)
       while IFS= read -r id; do
         pairs="$pairs$id"$'\t'"$k"$'\n'
       done <<EOF
