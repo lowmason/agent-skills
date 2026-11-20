@@ -1357,6 +1357,17 @@ def test_mutant_run_numbers_screens_and_full_runs_apart(calc):
     assert mutant_lines(calc, 'task-1-mutants-2.log')[0] == 'mutant-run: Task 1, run 2'
 
 
+def test_mutant_run_numbers_a_third_screen(calc):
+    make_mutant(calc, 1, *A)
+    for _ in range(3):
+        result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+        assert result.returncode == 0, result.stdout + result.stderr
+    assert mutant_lines(calc, 'task-1-screen.log')[0] == 'mutant-run: Task 1, screen 1'
+    assert mutant_lines(calc, 'task-1-screen-2.log')[0] == 'mutant-run: Task 1, screen 2'
+    assert mutant_lines(calc, 'task-1-screen-3.log')[0] == 'mutant-run: Task 1, screen 3'
+    assert no_mutant_run_file(calc)
+
+
 def test_mutant_run_full_run_runs_every_patch_beside_a_screen(calc):
     make_mutant(calc, 1, *A)
     result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
