@@ -208,6 +208,24 @@
 # is the one above, with a carried mutant counted as caught. The check for a
 # patch that is already in HEAD refuses the whole screen with exit 2, before
 # the baseline.
+#   Before the patches, a screen reads this task's earlier run files in the
+# workspace: task-<N>-mutants.log, task-<N>-mutants-<K>.log,
+# task-<N>-screen.log and task-<N>-screen-<K>.log, K a whole number with no
+# leading zero. It skips any other name, and each file whose command is not
+# this call's: the text from line 2 up to the line before the first "head: "
+# line, less "command: ", so a command that spans lines is compared whole.
+# From each file it reads the mutants section only, the first section after
+# the header, so a file with none, such as a failing baseline's, gives
+# nothing. A line there counts when it starts "mutant <K>: CAUGHT " and has no
+# carried field. Its key is its sha256, and its tests follow "tests: ". For
+# each sha256 the newest file with a catch wins: a task-<N>-mutants file
+# outranks a screen, and a higher number outranks a lower one in the same
+# series.
+#   In step 6, a patch that passes the test-file check and `git apply
+# --check`, and whose sha256 has an earlier catch, is carried: the script
+# writes no marker, applies nothing and runs no command for it. Its line names
+# that file and its tests, and those tests join the tests section. Every other
+# patch runs as in step 6. The baseline and the revert always run.
 #
 # Callers: the SDD implementer and controller, and executing-plans' inline
 # executor. executing-plans' task-done reads the run file and never runs it.
@@ -754,6 +772,68 @@ else
   limit=$((10 * base_secs + 60))
 fi
 
+# Print the names of this task's earlier run files, one to a line, lowest rank
+# first: the screens, then the task-<N>-mutants files, each in number order.
+# The file with no number is number 1. A name whose number is not a whole
+# number with no leading zero is skipped.
+earlier_run_files() {
+  local series f k ks
+  for series in screen mutants; do
+    [ ! -f "$dir/task-$n-$series.log" ] || printf '%s\n' "task-$n-$series.log"
+    ks=
+    for f in "$dir/task-$n-$series-"*.log; do
+      [ -f "$f" ] || continue
+      k=${f#"$dir/task-$n-$series-"}
+      k=${k%.log}
+      case "$k" in
+        '' | 0* | *[!0-9]*) continue ;;
+      esac
+      ks="$ks $k"
+    done
+    # Each K is digits only, so splitting the list into words is safe.
+    for k in $(printf '%s\n' $ks | sort -n); do
+      printf '%s\n' "task-$n-$series-$k.log"
+    done
+  done
+}
+
+# Print the catches that a screen carries, one to a line, as "<sha256> <file
+# name> <tests>": each CAUGHT line with no carried field in the mutants
+# section of an earlier run file whose command is this call's. The files come
+# lowest rank first, so a later line for a sha256 outranks an earlier one.
+earlier_catches() {
+  local name
+  for name in $(earlier_run_files); do
+    # The command runs from line 2 up to the line before the first head: line,
+    # so a command that spans lines is compared whole.
+    [ "$(awk 'NR > 1 && /^head: / { exit } NR > 1 { print }' "$dir/$name")" = "command: $cmd" ] || continue
+    # The mutants section is the first section after the header, so a line of
+    # its shape in an output section, a failing baseline's included, never
+    # counts.
+    awk -v name="$name" '
+      NR > 1 && !h && /^head: / { h = 1; next }
+      h && !m && /^--- / { if ($0 != "--- mutants ---") exit; m = 1; next }
+      m && /^--- / { exit }
+      m && /^mutant [0-9]+: CAUGHT / && !/ carried: / {
+        print $7 " " name " " substr($0, index($0, " tests: ") + 8)
+      }
+    ' "$dir/$name"
+  done
+}
+
+# Print the newest earlier catch of sha256 $1 as "<file name> <tests>", or
+# nothing.
+earlier_catch() {
+  [ -n "$catches" ] || return 0
+  printf '%s\n' "$catches" | awk -v sha="$1" '
+    $1 == sha { c = substr($0, length(sha) + 2) }
+    END { if (c != "") print c }
+  '
+}
+
+catches=
+[ "$screen" = false ] || catches=$(earlier_catches)
+
 # 6. Each patch.
 total=0
 for k in $ks; do
@@ -771,6 +851,7 @@ for k in $ks; do
   name="task-$n-mutant-$k.patch"
   patch="$dir/$name"
   sha=$(file_sha256 "$patch")
+  catch=$(earlier_catch "$sha")
   status='-'
   verdict='INVALID'
   detail=''
@@ -790,6 +871,18 @@ EOF
       detail=" reason: touches a test file: $touched"
     elif ! git -C "$top" apply --check --whitespace=nowarn "$patch" > /dev/null 2>&1; then
       detail=' reason: does not apply'
+    elif [ -n "$catch" ]; then
+      # Carried: an earlier run caught these bytes under this command, so
+      # nothing is applied and the command does not run.
+      verdict='CAUGHT'
+      carried=$((carried + 1))
+      detail=" carried: ${catch%% *} tests: ${catch#* }"
+      ids=$(printf '%s' "${catch#* }" | tr ' ' '\n')
+      while IFS= read -r id; do
+        pairs="$pairs$id"$'\t'"$k"$'\n'
+      done <<EOF
+$ids
+EOF
     else
       write_marker "$name" "$patch"
       if ! git -C "$top" apply --whitespace=nowarn "$patch"; then
