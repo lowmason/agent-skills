@@ -224,13 +224,13 @@
 #   In step 6, a patch that passes the test-file check and `git apply
 # --check`, and whose sha256 has an earlier catch, is carried: the script
 # writes no marker, applies nothing and runs no command for it. Its line names
-# that file and its tests, and those tests join the tests section. The tests
-# split at a space that ends an ID: any space in an ID with no "[", and in a
-# parametrized ID only a space after a "]" whose next text starts like an ID
-# (no space or bracket, then "::"). So a parameter keeps its spaces and its
-# brackets, matched or not; one that holds "] " and then such a start splits
-# there. Every other patch runs as in step 6. The baseline and the revert
-# always run.
+# that file and gives that line's tests field as it is. The tests it adds to
+# the tests section come from that file's own tests section, one ID to a line:
+# each "test <id>: caught <K> ..." line whose numbers hold the earlier line's
+# mutant number, the ID running to the last ": caught ". That section counts
+# only where it follows the file's mutants section. A carried mutant whose
+# file has no such line adds no test and still counts as caught. Every other
+# patch runs as in step 6. The baseline and the revert always run.
 #
 # Callers: the SDD implementer and controller, and executing-plans' inline
 # executor. executing-plans' task-done reads the run file and never runs it.
@@ -803,9 +803,10 @@ earlier_run_files() {
 }
 
 # Print the catches that a screen carries, one to a line, as "<sha256> <file
-# name> <tests>": each CAUGHT line with no carried field in the mutants
-# section of an earlier run file whose command is this call's. The files come
-# lowest rank first, so a later line for a sha256 outranks an earlier one.
+# name> <K> <tests>": each CAUGHT line with no carried field in the mutants
+# section of an earlier run file whose command is this call's, with that
+# line's mutant number and tests field. The files come lowest rank first, so
+# a later line for a sha256 outranks an earlier one.
 earlier_catches() {
   local name
   for name in $(earlier_run_files); do
@@ -820,13 +821,15 @@ earlier_catches() {
       h && !m && /^--- / { if ($0 != "--- mutants ---") exit; m = 1; next }
       m && /^--- / { exit }
       m && /^mutant [0-9]+: CAUGHT / && !/ carried: / {
-        print $7 " " name " " substr($0, index($0, " tests: ") + 8)
+        k = $2
+        sub(/:$/, "", k)
+        print $7 " " name " " k " " substr($0, index($0, " tests: ") + 8)
       }
     ' "$dir/$name"
   done
 }
 
-# Print the newest earlier catch of sha256 $1 as "<file name> <tests>", or
+# Print the newest earlier catch of sha256 $1 as "<file name> <K> <tests>", or
 # nothing.
 earlier_catch() {
   [ -n "$catches" ] || return 0
@@ -836,37 +839,32 @@ earlier_catch() {
   '
 }
 
-# Print the test IDs of the tests field on stdin, one to a line. The field
-# joins them with spaces. pytest writes a parameter's text into the ID of a
-# parametrized test as it is, spaces and brackets included, and that ID ends
-# with "]". So a space ends an ID that holds no "[". In an ID that holds one,
-# a space ends it only after a "]", and only when the text after the space
-# starts like an ID: characters with no space and no bracket, then "::".
-# Bracket depth is not counted, so an unmatched "[" or "]" in a parameter
-# never joins two IDs. The text cannot settle a parameter that holds "] "
-# and then such a start: it splits there.
-split_ids() {
-  awk '
-    function starts_an_id(s,    j, head) {
-      j = index(s, "::")
-      if (j == 0) return 0
-      head = substr(s, 1, j - 1)
-      return index(head, " ") == 0 && index(head, "[") == 0 && index(head, "]") == 0
+# Print the IDs of the tests that caught mutant $2 in run file $1, one to a
+# line, from that file's tests section: each "test <id>: caught <K> ..." line
+# whose numbers hold $2 as a whole number. A line holds one ID, which runs to
+# the last ": caught ", so an ID is whole whatever its text holds. The tests
+# section counts only where it follows the mutants section, the first section
+# after the header, so a line of its shape in an output section never counts.
+carried_ids() {
+  awk -v k="$2" '
+    NR > 1 && !h && /^head: / { h = 1; next }
+    h && /^--- / {
+      s++
+      if (s == 1 && $0 == "--- mutants ---") next
+      if (s == 2 && $0 == "--- tests ---") { t = 1; next }
+      exit
     }
-    {
-      id = ""
-      for (i = 1; i <= length($0); i++) {
-        c = substr($0, i, 1)
-        if (c == " " && (index(id, "[") == 0 || (substr(id, length(id), 1) == "]" && starts_an_id(substr($0, i + 1))))) {
-          if (id != "") print id
-          id = ""
-        } else {
-          id = id c
-        }
+    t && /^test / {
+      line = substr($0, 6)
+      j = 0
+      while ((i = index(substr(line, j + 1), ": caught ")) > 0) j += i
+      if (j == 0) next
+      n = split(substr(line, j + 9), ks, " ")
+      for (x = 1; x <= n; x++) {
+        if (ks[x] == k) { print substr(line, 1, j - 1); break }
       }
-      if (id != "") print id
     }
-  '
+  ' "$1"
 }
 
 catches=
@@ -911,12 +909,18 @@ EOF
       detail=' reason: does not apply'
     elif [ -n "$catch" ]; then
       # Carried: an earlier run caught these bytes under this command, so
-      # nothing is applied and the command does not run.
+      # nothing is applied and the command does not run. catch is "<file
+      # name> <K there> <tests>".
+      from=${catch%% *}
+      catch=${catch#* }
       verdict='CAUGHT'
       carried=$((carried + 1))
-      detail=" carried: ${catch%% *} tests: ${catch#* }"
-      ids=$(printf '%s\n' "${catch#* }" | split_ids)
+      detail=" carried: $from tests: ${catch#* }"
+      # The pairs come from that file's tests section, one ID to a line. With
+      # no line there, the mutant adds no pair and still counts as caught.
+      ids=$(carried_ids "$dir/$from" "${catch%% *}")
       while IFS= read -r id; do
+        [ -n "$id" ] || continue
         pairs="$pairs$id"$'\t'"$k"$'\n'
       done <<EOF
 $ids

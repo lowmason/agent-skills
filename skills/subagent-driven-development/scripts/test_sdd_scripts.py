@@ -1693,6 +1693,93 @@ def test_mutant_run_screen_keeps_double_colons_in_a_carried_ids_brackets(calc):
     check_carried_ids(calc, 'test_colons.py', TEST_COLONS, COLON_IDS)
 
 
+def one_param_tests(param):
+    '''A test file with test_x parametrized on param alone, then test_y; mutant A fails both.'''
+    return f'''import pytest
+
+from calc import add
+
+
+@pytest.mark.parametrize('s', [{param!r}])
+def test_x(s):
+    assert add(len(s), 1) == len(s) + 1
+
+
+def test_y():
+    assert add(2, 3) == 5
+'''
+
+
+# Balanced brackets that hold "] " and then "name::", and an ID that holds ": caught ".
+ATTRIBUTE = '[[nodiscard]] std::string f();'
+INDEX = 'arr[0] std::size_t'
+CAUGHT_IN_ID = 'a: caught 1'
+
+
+def test_mutant_run_screen_keeps_a_carried_id_whose_brackets_hold_an_attribute(calc):
+    ids = [f'test_attribute::test_x[{ATTRIBUTE}]', 'test_attribute::test_y']
+    check_carried_ids(calc, 'test_attribute.py', one_param_tests(ATTRIBUTE), ids)
+
+
+def test_mutant_run_screen_keeps_a_carried_id_whose_brackets_hold_an_index_then_a_name(calc):
+    ids = [f'test_index::test_x[{INDEX}]', 'test_index::test_y']
+    check_carried_ids(calc, 'test_index.py', one_param_tests(INDEX), ids)
+
+
+def test_mutant_run_screen_keeps_a_carried_id_that_holds_caught_whole(calc):
+    ids = [f'test_caught_id::test_x[{CAUGHT_IN_ID}]', 'test_caught_id::test_y']
+    check_carried_ids(calc, 'test_caught_id.py', one_param_tests(CAUGHT_IN_ID), ids)
+
+
+def test_mutant_run_screen_takes_carried_tests_by_the_earlier_mutant_number(calc):
+    p1 = make_mutant(calc, 1, *W)
+    p2 = make_mutant(calc, 2, *M)
+    p11 = make_mutant(calc, 11, *A)
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    assert run_section(mutant_lines(calc), 'tests') == [
+        'test test_calc::test_neg: caught 1',
+        'test test_calc::test_add_small: caught 2 11',
+        'test test_calc::test_add_large: caught 2 11',
+    ]
+    # W alone, now mutant 2: its earlier line is mutant 1's, and 1 is not 11.
+    p11.unlink()
+    p2.write_bytes(p1.read_bytes())
+    p1.unlink()
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert mutant_line(lines, 2) == carried(2, p2, 'task-1-mutants.log') + 'test_calc::test_neg'
+    assert run_section(lines, 'tests') == ['test test_calc::test_neg: caught 2']
+
+
+def test_mutant_run_screen_adds_no_tests_for_a_catch_its_run_file_lists_no_test_for(calc):
+    p1 = make_mutant(calc, 1, *A)
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    # A newer run file that holds the catch, and no tests section.
+    fake_run_file(calc, 'task-1-mutants-2.log', 'task-1-mutants.log', f'mutant 1: CAUGHT exit 1 sha256 {patch_sha(p1)} tests: t::x')
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert mutant_line(lines, 1) == carried(1, p1, 'task-1-mutants-2.log') + 't::x'
+    assert 'result: caught 1, survived 0, invalid 0' in lines
+    assert run_section(lines, 'tests') == []
+
+
+def test_mutant_run_screen_reads_carried_tests_from_the_tests_section_only(calc):
+    p1 = make_mutant(calc, 1, *A)
+    cmd = ['sh', '-c', 'echo "--- tests ---"; echo "test fake::id: caught 1"; "$0" -m pytest -q -p no:cacheprovider test_calc.py', sys.executable]
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    assert 'test fake::id: caught 1' in mutant_lines(calc)
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert mutant_line(lines, 1).startswith(carried(1, p1, 'task-1-mutants.log'))
+    assert run_section(lines, 'tests') == ['test test_calc::test_add_small: caught 1', 'test test_calc::test_add_large: caught 1']
+
+
 def test_mutant_run_screen_carries_the_newest_catch(calc):
     p1 = make_mutant(calc, 1, *A)
     for flags in (['--screen'], [], ['--screen']):
