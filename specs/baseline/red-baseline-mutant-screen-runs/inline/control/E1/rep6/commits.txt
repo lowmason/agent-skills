@@ -1,0 +1,10 @@
+69915b38bac7154e3b0368d5c2739b04e7f45b1b
+
+Cover the age boundaries and the senior rule
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+14a68d0ea3333d240ea6595f488810099984fcae
+
+Add ticket prices
+

@@ -1,0 +1,10 @@
+d31a13c80d19d132634eb8754b326bad340b1054
+
+Test ticket price boundaries and the senior rule
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+b7c8a34fca4d8f5ea4cfd1268d46932d72f563c8
+
+Add ticket prices
+

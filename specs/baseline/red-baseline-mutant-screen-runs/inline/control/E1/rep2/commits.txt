@@ -1,0 +1,10 @@
+519b37e1ceed9c87af23b96fd9bb4cd5b2ee245f
+
+Test ticket price age boundaries and seniors
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+4a1972f54bedb18a7369a7d011ca972949a082dc
+
+Add ticket prices
+

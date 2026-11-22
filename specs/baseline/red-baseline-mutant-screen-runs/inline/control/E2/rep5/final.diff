@@ -1,0 +1,28 @@
+diff --git a/bills.py b/bills.py
+new file mode 100644
+index 0000000..eb4c96b
+--- /dev/null
++++ b/bills.py
+@@ -0,0 +1,3 @@
++def split(total_cents: int, people: int) -> list[int]:
++    share, left_over = divmod(total_cents, people)
++    return [share + 1 if person < left_over else share for person in range(people)]
+diff --git a/tests/test_bills.py b/tests/test_bills.py
+new file mode 100644
+index 0000000..2cf35da
+--- /dev/null
++++ b/tests/test_bills.py
+@@ -0,0 +1,13 @@
++from bills import split
++
++
++def test_an_even_bill_splits_equally():
++    assert split(900, 3) == [300, 300, 300]
++
++
++def test_the_first_person_pays_the_cent_left_over():
++    assert split(1000, 3) == [334, 333, 333]
++
++
++def test_each_cent_left_over_goes_to_a_different_person():
++    assert split(1100, 3) == [367, 367, 366]

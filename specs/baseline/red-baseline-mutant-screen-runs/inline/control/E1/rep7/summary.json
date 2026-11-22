@@ -1,0 +1,419 @@
+{
+  "fixture": "E1",
+  "rep": 7,
+  "role": "inline",
+  "arm": "control",
+  "model": "opus",
+  "cap": "4",
+  "rep_dir": "/private/tmp/msr104/rep7",
+  "skill_root": "/private/tmp/msr104-skill/inline",
+  "venv": "/private/tmp/msr104-venv",
+  "base": "7590d6d4315eb133efc2ed4d1273b445e08ee71c",
+  "start": "16a7fabadccf3b3313150e1f083a31c119eab35d",
+  "stream": "<REAL-HOME>/.cache/agent-skills/scratch/plan104/inline/control/E1/rep7.jsonl",
+  "prompt_sha256": "9621ecf010bc589b2d492e3c30ef9622db0a5bb086038e8e9e7c8ea69cf77b52",
+  "claude_exit": 0,
+  "wall_seconds": 57,
+  "init": {
+    "cwd": "/private/tmp/msr104/rep7/repo",
+    "tools": [
+      "Bash",
+      "Edit",
+      "Read",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-opus-5-5",
+    "permissionMode": "default",
+    "slash_commands": [],
+    "skills": [],
+    "agents": [
+      "claude",
+      "Explore",
+      "general-purpose",
+      "Plan",
+      "statusline-setup"
+    ],
+    "plugins": [
+      {
+        "name": "cc-plugin-agents-md",
+        "path": "builtin",
+        "source": "cc-plugin-agents-md@builtin"
+      },
+      {
+        "name": "cc-plugin-telemetry",
+        "path": "builtin",
+        "source": "cc-plugin-telemetry@builtin"
+      },
+      {
+        "name": "cc-plugin-privacy",
+        "path": "builtin",
+        "source": "cc-plugin-privacy@builtin"
+      },
+      {
+        "name": "cc-plugin-plugin-authoring",
+        "path": "builtin",
+        "source": "cc-plugin-plugin-authoring@builtin"
+      }
+    ],
+    "output_style": "default",
+    "claude_code_version": "2.1.323"
+  },
+  "records": 37,
+  "init_records": 1,
+  "result_records": 1,
+  "bad_stream_lines": [],
+  "result": {
+    "subtype": "success",
+    "is_error": false,
+    "num_turns": 10,
+    "duration_ms": 56338,
+    "total_cost_usd": 0.31397339999999996,
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 20,
+        "outputTokens": 4588,
+        "cacheReadInputTokens": 188187,
+        "cacheCreationInputTokens": 23062,
+        "webSearchRequests": 0,
+        "costUSD": 0.31397339999999996,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 684,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 23062,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "iterations": [],
+    "permission_denials": []
+  },
+  "final_message": "Task 1 is done and recorded in the ledger: `Task 1: complete (commits 7590d6d..82a54d7, mutants: 9/9, tests: \u2026 \u2192 8 passed)`. It passed on the first `task-done` run.\n\n**New tests.** The plan's two tests only checked age 5 and age 30. They never checked the senior rule or either age cutoff. I added six tests for ages 0, 11, 12, 64, 65 and 80, and they passed against the existing code. They are in a separate commit, `82a54d7`, and the two plan tests are unchanged.\n\n**Mutant run.** I wrote 9 deliberately wrong versions of `tickets.py`, and the tests caught all of them. They cover:\n- the wrong full price;\n- off-by-one errors at the 12 and 65 cutoffs, both in the comparison and in the constants;\n- dropping the child discount or the senior discount;\n- charging full price where the discount applies;\n- leaving age 0 out of the child discount.\n\nEvery test the task added fails on the version of the code from before the task, because `tickets.py` doesn't exist there and the test file can't load.\n\nThe full list of mutants and which test covers which age is in `.sdd/plan/task-1-mutants.md`, and the run log is `.sdd/plan/task-1-mutants.log`.\n\nAs instructed, I stopped here and did not start the final review.",
+  "tool_calls": [
+    {
+      "id": "toolu_015p5dwdwbwCfViXLFw2EomK",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; grep -n \"\" /private/tmp/msr104-skill/inline/executing-plans/SKILL.md | sed -n '1,400p'",
+        "description": "Read the skill file"
+      }
+    },
+    {
+      "id": "toolu_01RsrKLr39gtYePQS1RiaBq5",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; cat /private/tmp/msr104-skill/inline/subagent-driven-development/references/mutants.md; echo ----; cat .sdd/plan/task-1-brief.md; echo ----; cat .sdd/plan/progress.md; git log --oneline; git status --short",
+        "description": "Read mutants reference, brief, ledger"
+      }
+    },
+    {
+      "id": "toolu_01EJ1UiZEd2DRjTq3QcF13xG",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; head -20 plan.md; ls; grep -rn \"\" tickets.py tests/test_tickets.py; ls .sdd/plan",
+        "description": "Find spec and show code"
+      }
+    },
+    {
+      "id": "toolu_01PzjyrggW8w8ei8Jg7jLXf5",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; grep -n \"\" specs/tickets.md; echo ---; cat .sdd/plan/task-1-spec.md",
+        "description": "Read spec and spec excerpts"
+      }
+    },
+    {
+      "id": "toolu_01LBw1aDtFim8jPyXur3kQ9X",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; cat >> tests/test_tickets.py <<'EOF'\n\n\ndef test_a_newborn_pays_half_price():\n    assert price(0) == 10\n\n\ndef test_a_visitor_aged_11_pays_half_price():\n    assert price(11) == 10\n\n\ndef test_a_visitor_aged_12_pays_full_price():\n    assert price(12) == 20\n\n\ndef test_a_visitor_aged_64_pays_full_price():\n    assert price(64) == 20\n\n\ndef test_a_visitor_aged_65_pays_half_price():\n    assert price(65) == 10\n\n\ndef test_a_visitor_over_65_pays_half_price():\n    assert price(80) == 10\nEOF\n/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_tickets.py 2>&1 | tail -3",
+        "description": "Add shape tests and run them"
+      }
+    },
+    {
+      "id": "toolu_011pRAoQmipFPiTwZh4PH7Sm",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; W=.sdd/plan\ngit add tests/test_tickets.py && git commit -qm \"Cover ticket price age boundaries\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\"\nmk(){ k=$1; shift; sed -i '' \"$@\" tickets.py; git diff -- tickets.py > $W/task-1-mutant-$k.patch; wc -c < $W/task-1-mutant-$k.patch; git checkout -- tickets.py; }\nmk 1 's/^FULL_PRICE = 20/FULL_PRICE = 24/'\nmk 2 's/age < CHILD_UNDER/age <= CHILD_UNDER/'\nmk 3 's/^CHILD_UNDER = 12/CHILD_UNDER = 11/'\nmk 4 's/age >= SENIOR_FROM/age > SENIOR_FROM/'\nmk 5 's/^SENIOR_FROM = 65/SENIOR_FROM = 64/'\nmk 6 's/age < CHILD_UNDER or age >= SENIOR_FROM/age < CHILD_UNDER/'\nmk 7 's/age < CHILD_UNDER or age >= SENIOR_FROM/age >= SENIOR_FROM/'\nmk 8 's|FULL_PRICE // 2|FULL_PRICE|'\nmk 9 's/^CHILD_UNDER = 12/CHILD_UNDER = 1/'\ngit status --short",
+        "description": "Commit tests and write mutant patches"
+      }
+    },
+    {
+      "id": "toolu_01KpJgcC3KarXuy3mbPpQuCh",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; W=.sdd/plan\nsed -i '' 's/if age < CHILD_UNDER/if 0 < age < CHILD_UNDER/' tickets.py; git diff -- tickets.py > $W/task-1-mutant-9.patch; cat $W/task-1-mutant-9.patch; git checkout -- tickets.py\ncat > $W/task-1-mutants.md <<'EOF'\n# Task 1 mutants\n\n## Inputs\n\n| Rule | Shape | Test |\n|---|---|---|\n| specs/tickets.md:7 | an adult between the bands | test_an_adult_pays_full_price |\n| specs/tickets.md:7 | lowest full-price age, 12 | test_a_visitor_aged_12_pays_full_price |\n| specs/tickets.md:7 | highest full-price age, 64 | test_a_visitor_aged_64_pays_full_price |\n| specs/tickets.md:9 | a typical child | test_a_child_pays_half_price |\n| specs/tickets.md:9 | age 0, the start of the range | test_a_newborn_pays_half_price |\n| specs/tickets.md:9 | boundary below 12, age 11 | test_a_visitor_aged_11_pays_half_price |\n| specs/tickets.md:9 | boundary at 12 (not under) | test_a_visitor_aged_12_pays_full_price |\n| specs/tickets.md:11 | boundary at 65 (\"aged 65\") | test_a_visitor_aged_65_pays_half_price |\n| specs/tickets.md:11 | well over 65 (\"or over\") | test_a_visitor_over_65_pays_half_price |\n| specs/tickets.md:11 | boundary below 65, age 64 | test_a_visitor_aged_64_pays_full_price |\n\n## Mutants\n\nMutant 1: specs/tickets.md:7, test_an_adult_pays_full_price \u2014 full price is 24, not 20 \u2014 task-1-mutant-1.patch\nMutant 2: specs/tickets.md:9, test_a_visitor_aged_12_pays_full_price \u2014 child test is `age <= 12` \u2014 task-1-mutant-2.patch\nMutant 3: specs/tickets.md:9, test_a_visitor_aged_11_pays_half_price \u2014 child cutoff is 11 \u2014 task-1-mutant-3.patch\nMutant 4: specs/tickets.md:11, test_a_visitor_aged_65_pays_half_price \u2014 senior test is `age > 65` \u2014 task-1-mutant-4.patch\nMutant 5: specs/tickets.md:11, test_a_visitor_aged_64_pays_full_price \u2014 senior cutoff is 64 \u2014 task-1-mutant-5.patch\nMutant 6: specs/tickets.md:11, test_a_visitor_over_65_pays_half_price \u2014 senior discount dropped \u2014 task-1-mutant-6.patch\nMutant 7: specs/tickets.md:9, test_a_child_pays_half_price \u2014 child discount dropped \u2014 task-1-mutant-7.patch\nMutant 8: specs/tickets.md:9, specs/tickets.md:11, test_a_child_pays_half_price \u2014 discount band charges full price \u2014 task-1-mutant-8.patch\nMutant 9: specs/tickets.md:9, test_a_newborn_pays_half_price \u2014 age 0 excluded from the child band (`0 < age < 12`) \u2014 task-1-mutant-9.patch\nEOF\ngit status --short",
+        "description": "Write mutant 9 and the mutants file"
+      }
+    },
+    {
+      "id": "toolu_01QFSVxq2VSdcBYtFuNTtXDy",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; /private/tmp/msr104-skill/inline/subagent-driven-development/scripts/mutant-run /private/tmp/msr104/rep7/repo/plan.md 1 7590d6d4315eb133efc2ed4d1273b445e08ee71c -- /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_tickets.py; echo exit=$?",
+        "description": "Run the mutant script for Task 1",
+        "timeout": 300000
+      },
+      "result_lines": [
+        "result: caught 9, survived 0, invalid 0",
+        "revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0",
+        "run: /private/tmp/msr104/rep7/repo/.sdd/plan/task-1-mutants.log"
+      ],
+      "result_is_error": false
+    },
+    {
+      "id": "toolu_01PBhdcb26vB8x3K48ePzyeh",
+      "name": "Bash",
+      "input": {
+        "command": "cd /private/tmp/msr104/rep7/repo; /private/tmp/msr104-skill/inline/executing-plans/scripts/task-done /private/tmp/msr104/rep7/repo/plan.md 1 7590d6d4315eb133efc2ed4d1273b445e08ee71c -- /private/tmp/msr104-venv/bin/python -m pytest -q; echo exit=$?; tail -2 .sdd/plan/progress.md",
+        "description": "Complete Task 1 and record it in the ledger",
+        "timeout": 300000
+      }
+    }
+  ],
+  "commits": [
+    {
+      "sha": "16a7fabadccf3b3313150e1f083a31c119eab35d",
+      "subject": "Add ticket prices",
+      "message": "Add ticket prices\n\n",
+      "trailers": [],
+      "paths": [
+        "tests/test_tickets.py",
+        "tickets.py"
+      ],
+      "seeded": true
+    },
+    {
+      "sha": "82a54d762c14b594adbe525e3311416f9a16aab6",
+      "subject": "Cover ticket price age boundaries",
+      "message": "Cover ticket price age boundaries\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n",
+      "trailers": [],
+      "paths": [
+        "tests/test_tickets.py"
+      ],
+      "seeded": false
+    }
+  ],
+  "status_porcelain": [],
+  "copied": [
+    "progress.md",
+    "task-1-brief.md",
+    "task-1-mutant-1.patch",
+    "task-1-mutant-2.patch",
+    "task-1-mutant-3.patch",
+    "task-1-mutant-4.patch",
+    "task-1-mutant-5.patch",
+    "task-1-mutant-6.patch",
+    "task-1-mutant-7.patch",
+    "task-1-mutant-8.patch",
+    "task-1-mutant-9.patch",
+    "task-1-mutants.log",
+    "task-1-mutants.md",
+    "task-1-revert.patch",
+    "task-1-spec.md",
+    "task-1-tests.log"
+  ],
+  "workspace": [
+    {
+      "name": "progress.md",
+      "sha256": "43594aa7dd1242c651a273e21dd2c12065d621b44cbb90577d63cb5ed9d09e55",
+      "mtime_ns": 1795328836019424071,
+      "seeded": true
+    },
+    {
+      "name": "task-1-brief.md",
+      "sha256": "b1bd33ae2f5898355b40c172c240b44189073e1110a3b1b311c7c55892e39cad",
+      "mtime_ns": 1795328784862141596,
+      "seeded": true
+    },
+    {
+      "name": "task-1-mutant-1.patch",
+      "sha256": "d2be5e9b016892b73439d37cb9476c8e00797fc7cfa70bf35f6d278a3a29b6e7",
+      "mtime_ns": 1795328810833764337,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-2.patch",
+      "sha256": "216edc008cd2477b4074c67b7ed55f37fef00c67dfe87b7d6f326d55f87026e5",
+      "mtime_ns": 1795328810854222766,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-3.patch",
+      "sha256": "0e4f79bcf785fc23f6a675b5f2f257143c7aca40b86b618a140b6264c106848e",
+      "mtime_ns": 1795328810874647152,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-4.patch",
+      "sha256": "95d888484ed4e655574426060a90166cbcf5c2f424cb92d3a5eaffb7717840b1",
+      "mtime_ns": 1795328810894671497,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-5.patch",
+      "sha256": "01dcdcc343bf06a61cd2b7705565db4efaf609dc3c59d0a52f285f130f8597fc",
+      "mtime_ns": 1795328810915135217,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-6.patch",
+      "sha256": "3957c840469c196641022463abb8c0e3aa88f24b2bbefe1952ea7b0df60f08d7",
+      "mtime_ns": 1795328810934978812,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-7.patch",
+      "sha256": "7b4e72284ab55375326f7b56f1f27e5c84fa920277175b8e55d325b86e2cf671",
+      "mtime_ns": 1795328810954532531,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-8.patch",
+      "sha256": "3e16bd48a28eb11241ff7482fb00d7b668c2808d246ac89d004d5f8d21eef615",
+      "mtime_ns": 1795328810974266417,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutant-9.patch",
+      "sha256": "f029a678173dfed5b75939ce8474001876c5d134d3fcb46981477539473fb9a7",
+      "mtime_ns": 1795328824859110977,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutants.log",
+      "sha256": "03696640161c737e38edfba337864aa3ef9d22df26674b0938da5c5b60755444",
+      "mtime_ns": 1795328831424869111,
+      "seeded": false
+    },
+    {
+      "name": "task-1-mutants.md",
+      "sha256": "6cc98062aa6ffccb12e19e212eb505e396082ff2a0d8554d044f3e6caec99662",
+      "mtime_ns": 1795328824871829275,
+      "seeded": false
+    },
+    {
+      "name": "task-1-revert.patch",
+      "sha256": "2c7d920c9aa2e9422d7e2073e243c98f754132f9c2a3b89f5eca4b6eae1180bc",
+      "mtime_ns": 1795328831160781759,
+      "seeded": false
+    },
+    {
+      "name": "task-1-spec.md",
+      "sha256": "1028d9fdfcca312f239dc495a254df34c0e4afceafcec9d2f2d960949036e986",
+      "mtime_ns": 1795328784864110847,
+      "seeded": true
+    },
+    {
+      "name": "task-1-tests.log",
+      "sha256": "17ac80a813986ebfb6c3ffab2828a54f62e73ce508402af18980ada8ae8197b8",
+      "mtime_ns": 1795328835911721887,
+      "seeded": false
+    }
+  ],
+  "run_files": [
+    {
+      "first_line": "mutant-run: Task 1, run 1",
+      "header": {
+        "command": "/private/tmp/msr104-venv/bin/python -m pytest -q tests/test_tickets.py",
+        "head": "82a54d762c14b594adbe525e3311416f9a16aab6",
+        "base": "7590d6d4315eb133efc2ed4d1273b445e08ee71c",
+        "tree": "clean",
+        "result": "caught 9, survived 0, invalid 0",
+        "revert": "ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0"
+      },
+      "mutants": [
+        {
+          "k": 1,
+          "verdict": "CAUGHT",
+          "sha256": "d2be5e9b016892b73439d37cb9476c8e00797fc7cfa70bf35f6d278a3a29b6e7",
+          "carried": null,
+          "line": "mutant 1: CAUGHT exit 1 sha256 d2be5e9b016892b73439d37cb9476c8e00797fc7cfa70bf35f6d278a3a29b6e7 tests: tests.test_tickets::test_a_child_pays_half_price tests.test_tickets::test_an_adult_pays_full_price tests.test_tickets::test_a_newborn_pays_half_price tests.test_tickets::test_a_visitor_aged_11_pays_half_price tests.test_tickets::test_a_visitor_aged_12_pays_full_price tests.test_tickets::test_a_visitor_aged_64_pays_full_price tests.test_tickets::test_a_visitor_aged_65_pays_half_price tests.test_tickets::test_a_visitor_over_65_pays_half_price"
+        },
+        {
+          "k": 2,
+          "verdict": "CAUGHT",
+          "sha256": "216edc008cd2477b4074c67b7ed55f37fef00c67dfe87b7d6f326d55f87026e5",
+          "carried": null,
+          "line": "mutant 2: CAUGHT exit 1 sha256 216edc008cd2477b4074c67b7ed55f37fef00c67dfe87b7d6f326d55f87026e5 tests: tests.test_tickets::test_a_visitor_aged_12_pays_full_price"
+        },
+        {
+          "k": 3,
+          "verdict": "CAUGHT",
+          "sha256": "0e4f79bcf785fc23f6a675b5f2f257143c7aca40b86b618a140b6264c106848e",
+          "carried": null,
+          "line": "mutant 3: CAUGHT exit 1 sha256 0e4f79bcf785fc23f6a675b5f2f257143c7aca40b86b618a140b6264c106848e tests: tests.test_tickets::test_a_visitor_aged_11_pays_half_price"
+        },
+        {
+          "k": 4,
+          "verdict": "CAUGHT",
+          "sha256": "95d888484ed4e655574426060a90166cbcf5c2f424cb92d3a5eaffb7717840b1",
+          "carried": null,
+          "line": "mutant 4: CAUGHT exit 1 sha256 95d888484ed4e655574426060a90166cbcf5c2f424cb92d3a5eaffb7717840b1 tests: tests.test_tickets::test_a_visitor_aged_65_pays_half_price"
+        },
+        {
+          "k": 5,
+          "verdict": "CAUGHT",
+          "sha256": "01dcdcc343bf06a61cd2b7705565db4efaf609dc3c59d0a52f285f130f8597fc",
+          "carried": null,
+          "line": "mutant 5: CAUGHT exit 1 sha256 01dcdcc343bf06a61cd2b7705565db4efaf609dc3c59d0a52f285f130f8597fc tests: tests.test_tickets::test_a_visitor_aged_64_pays_full_price"
+        },
+        {
+          "k": 6,
+          "verdict": "CAUGHT",
+          "sha256": "3957c840469c196641022463abb8c0e3aa88f24b2bbefe1952ea7b0df60f08d7",
+          "carried": null,
+          "line": "mutant 6: CAUGHT exit 1 sha256 3957c840469c196641022463abb8c0e3aa88f24b2bbefe1952ea7b0df60f08d7 tests: tests.test_tickets::test_a_visitor_aged_65_pays_half_price tests.test_tickets::test_a_visitor_over_65_pays_half_price"
+        },
+        {
+          "k": 7,
+          "verdict": "CAUGHT",
+          "sha256": "7b4e72284ab55375326f7b56f1f27e5c84fa920277175b8e55d325b86e2cf671",
+          "carried": null,
+          "line": "mutant 7: CAUGHT exit 1 sha256 7b4e72284ab55375326f7b56f1f27e5c84fa920277175b8e55d325b86e2cf671 tests: tests.test_tickets::test_a_child_pays_half_price tests.test_tickets::test_a_newborn_pays_half_price tests.test_tickets::test_a_visitor_aged_11_pays_half_price"
+        },
+        {
+          "k": 8,
+          "verdict": "CAUGHT",
+          "sha256": "3e16bd48a28eb11241ff7482fb00d7b668c2808d246ac89d004d5f8d21eef615",
+          "carried": null,
+          "line": "mutant 8: CAUGHT exit 1 sha256 3e16bd48a28eb11241ff7482fb00d7b668c2808d246ac89d004d5f8d21eef615 tests: tests.test_tickets::test_a_child_pays_half_price tests.test_tickets::test_a_newborn_pays_half_price tests.test_tickets::test_a_visitor_aged_11_pays_half_price tests.test_tickets::test_a_visitor_aged_65_pays_half_price tests.test_tickets::test_a_visitor_over_65_pays_half_price"
+        },
+        {
+          "k": 9,
+          "verdict": "CAUGHT",
+          "sha256": "f029a678173dfed5b75939ce8474001876c5d134d3fcb46981477539473fb9a7",
+          "carried": null,
+          "line": "mutant 9: CAUGHT exit 1 sha256 f029a678173dfed5b75939ce8474001876c5d134d3fcb46981477539473fb9a7 tests: tests.test_tickets::test_a_newborn_pays_half_price"
+        }
+      ],
+      "name": "task-1-mutants.log",
+      "mtime_ns": 1795328831424869111,
+      "seeded": false,
+      "tests_at_head": [
+        "test_a_child_pays_half_price",
+        "test_a_newborn_pays_half_price",
+        "test_a_visitor_aged_11_pays_half_price",
+        "test_a_visitor_aged_12_pays_full_price",
+        "test_a_visitor_aged_64_pays_full_price",
+        "test_a_visitor_aged_65_pays_half_price",
+        "test_a_visitor_over_65_pays_half_price",
+        "test_an_adult_pays_full_price"
+      ]
+    }
+  ],
+  "final_tests": [
+    "test_a_child_pays_half_price",
+    "test_a_newborn_pays_half_price",
+    "test_a_visitor_aged_11_pays_half_price",
+    "test_a_visitor_aged_12_pays_full_price",
+    "test_a_visitor_aged_64_pays_full_price",
+    "test_a_visitor_aged_65_pays_half_price",
+    "test_a_visitor_over_65_pays_half_price",
+    "test_an_adult_pays_full_price"
+  ],
+  "skill_copy_changed": [],
+  "stderr_tail": []
+}

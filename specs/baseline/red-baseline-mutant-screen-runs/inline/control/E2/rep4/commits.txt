@@ -1,0 +1,10 @@
+8cc238c7c81884bc8319a280655dc059f8e8d907
+
+Test a split with several cents left over
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+81c1b36894fe57f1da44e66e022fbe57d206fd9e
+
+Add bill splits
+
