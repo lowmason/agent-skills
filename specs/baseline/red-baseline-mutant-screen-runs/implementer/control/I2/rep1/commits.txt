@@ -1,0 +1,14 @@
+0099761069f09dfb9a726ea2545a909897bfc5fe
+
+Count 2000 grams as medium
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+f6e4cc95075135d890d8c2b3aaf4382771918578
+
+Test a small parcel at its upper edge
+
+4a60015e2e899cf6fe4838658185b2b815d5ca6d
+
+Add the parcel bands
+

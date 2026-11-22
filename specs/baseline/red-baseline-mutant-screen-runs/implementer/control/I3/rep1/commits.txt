@@ -1,0 +1,10 @@
+56b7f46e8355716b4f037869c0f8f734e9d5fd97
+
+Test the exact and just-under $100 boundaries
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+f5c98d3fcc7cee95483484f72453546678fc9ba6
+
+Give double points from 100 dollars
+

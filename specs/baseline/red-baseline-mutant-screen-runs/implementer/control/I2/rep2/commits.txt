@@ -1,0 +1,20 @@
+891d7a615f9b35aa5dfbee18911b32cb2c5b87a2
+
+Fix the medium band's upper edge
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+d929a6bb79ed635f4d2b4b02432585de18aecbad
+
+Fix the medium band's upper edge
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+3e7a731a8b7caad29157ab418d0560c550f26b9c
+
+Test a small parcel at its upper edge
+
+da21e6df5f5a4a5c188f55d6fe3bb0a532ded04c
+
+Add the parcel bands
+

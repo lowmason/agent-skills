@@ -1,0 +1,105 @@
+mutant-run: Task 1, run 1
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_loyalty.py
+head: aff509011a1d6bb7d0a424d231c10ec6978aaae9
+base: 2f8ec9e2b0ca0539a98370f3b831105047a70205
+tree: clean
+result: caught 2, survived 0, invalid 1
+revert: ran, exit 1, failed 1, not loaded 0, skipped 0, passed 2
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 7b1fb990fd22dc593e4c0e2aef4b5c68e450f22fba77f9cece0c5be95a868448 tests: tests.test_loyalty::test_double_points_from_100_dollars tests.test_loyalty::test_exactly_100_dollars_earns_double_points
+mutant 2: CAUGHT exit 1 sha256 109bacafba9e4e85532bfeb57fb09c351b31e9b4c92018cee1464974165b6e9e tests: tests.test_loyalty::test_exactly_100_dollars_earns_double_points
+mutant 3: INVALID exit 2 sha256 63b773eaf8a60ffc386199acb62f86b2c4c66d38c6237fb83c53b57ae76feff9 reason: exit status 2
+--- tests ---
+test tests.test_loyalty::test_double_points_from_100_dollars: caught 1
+test tests.test_loyalty::test_exactly_100_dollars_earns_double_points: caught 1 2
+--- revert ---
+path: loyalty.py
+sha256: 109bacafba9e4e85532bfeb57fb09c351b31e9b4c92018cee1464974165b6e9e
+passed tests.test_loyalty::test_double_points_from_100_dollars
+failed tests.test_loyalty::test_exactly_100_dollars_earns_double_points: AssertionError: assert 100 == 200
+passed tests.test_loyalty::test_just_under_100_dollars_earns_single_points
+--- output: baseline ---
+...                                                                      [100%]
+3 passed in 0.00s
+--- output: mutant 1 ---
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+_____________________ test_double_points_from_100_dollars ______________________
+
+    def test_double_points_from_100_dollars():
+>       assert points(15000) == 300
+E       assert 150 == 300
+E        +  where 150 = points(15000)
+
+tests/test_loyalty.py:5: AssertionError
+_________________ test_exactly_100_dollars_earns_double_points _________________
+
+    def test_exactly_100_dollars_earns_double_points():
+>       assert points(10000) == 200
+E       assert 100 == 200
+E        +  where 100 = points(10000)
+
+tests/test_loyalty.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_double_points_from_100_dollars - assert 15...
+FAILED tests/test_loyalty.py::test_exactly_100_dollars_earns_double_points - ...
+2 failed, 1 passed in 0.01s
+--- output: mutant 2 ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_exactly_100_dollars_earns_double_points _________________
+
+    def test_exactly_100_dollars_earns_double_points():
+>       assert points(10000) == 200
+E       assert 100 == 200
+E        +  where 100 = points(10000)
+
+tests/test_loyalty.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_exactly_100_dollars_earns_double_points - ...
+1 failed, 2 passed in 0.01s
+--- output: mutant 3 ---
+
+==================================== ERRORS ====================================
+____________________ ERROR collecting tests/test_loyalty.py ____________________
+../../../msr104-venv/lib/python3.13/site-packages/_pytest/python.py:528: in importtestmodule
+    mod = import_path(
+../../../msr104-venv/lib/python3.13/site-packages/_pytest/pathlib.py:640: in import_path
+    importlib.import_module(module_name)
+<REAL-HOME>/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1404: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1369: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1340: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+../../../msr104-venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+tests/test_loyalty.py:1: in <module>
+    from loyalty import points
+E     File "/private/tmp/msr104/rep3/repo/loyalty.py", line 7
+E       if cents >= DOUBLE + 100_FROM_CENTS:
+E                               ^
+E   SyntaxError: invalid decimal literal
+=========================== short test summary info ============================
+ERROR tests/test_loyalty.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.05s
+--- output: revert ---
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_exactly_100_dollars_earns_double_points _________________
+
+    def test_exactly_100_dollars_earns_double_points():
+>       assert points(10000) == 200
+E       assert 100 == 200
+E        +  where 100 = points(10000)
+
+tests/test_loyalty.py:9: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_loyalty.py::test_exactly_100_dollars_earns_double_points - ...
+1 failed, 2 passed in 0.01s

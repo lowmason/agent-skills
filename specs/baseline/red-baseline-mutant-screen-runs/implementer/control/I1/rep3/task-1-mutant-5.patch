@@ -1,0 +1,11 @@
+diff --git a/parking.py b/parking.py
+index 67ca322..cfee1a2 100644
+--- a/parking.py
++++ b/parking.py
+@@ -1,5 +1,5 @@
+ FREE_MINUTES = 30
+-PRICE_PER_HOUR = 2
++PRICE_PER_HOUR = 3
+ 
+ 
+ def fee(minutes: int) -> int:

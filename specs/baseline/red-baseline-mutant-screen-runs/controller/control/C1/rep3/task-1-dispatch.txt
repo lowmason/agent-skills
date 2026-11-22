@@ -1,0 +1,2 @@
+/private/tmp/msr104/rep3/repo/.sdd/plan/task-1-tests.log
+/private/tmp/msr104/rep3/repo/.sdd/plan/task-1-mutants.log

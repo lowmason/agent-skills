@@ -1,0 +1,115 @@
+mutant-run: Task 1, run 2
+command: /private/tmp/msr104-venv/bin/python -m pytest -q tests/test_bands.py
+head: 38ac1f1f209c464419bb17d398ab7b7c48e0ec0c
+base: def9e0b7a4047054f80a3cf4dd36bee5f713fca7
+tree: clean
+result: caught 4, survived 0, invalid 0
+revert: ran, exit 1, failed 0, not loaded 1, skipped 0, passed 0
+--- mutants ---
+mutant 1: CAUGHT exit 1 sha256 336867251c43c2012efb1c14783176004c3ff2352b6a0bb712060b2bdf28c93f tests: tests.test_bands::test_band_small_at_its_upper_edge
+mutant 2: CAUGHT exit 1 sha256 31d813496b5af6c6a2efb3c8b1e71ea4d7e22e908253d9b9fd50f660a8074b45 tests: tests.test_bands::test_band_medium tests.test_bands::test_band_medium_at_its_upper_edge
+mutant 3: CAUGHT exit 1 sha256 3a6d77847e7d26f93067588cec93a5c651aba62c46a79450a725e2fa27187476 tests: tests.test_bands::test_band_large
+mutant 4: CAUGHT exit 1 sha256 3d1606a4e8a53648d76c70df106d90be78e5ae171bfa61e4ee0da740f78f53a1 tests: tests.test_bands::test_band_medium_at_its_upper_edge
+--- tests ---
+test tests.test_bands::test_band_small_at_its_upper_edge: caught 1
+test tests.test_bands::test_band_medium: caught 2
+test tests.test_bands::test_band_medium_at_its_upper_edge: caught 2 4
+test tests.test_bands::test_band_large: caught 3
+--- revert ---
+path: bands.py
+sha256: 4fcfeea691aeece0db5cc43805a5393d6a5ce1307ce6cfa51cddd40a0647ed33
+not loaded tests.test_bands: ModuleNotFoundError: No module named 'bands'
+--- output: baseline ---
+.....                                                                    [100%]
+5 passed in 0.00s
+--- output: mutant 1 ---
+...F.                                                                    [100%]
+=================================== FAILURES ===================================
+______________________ test_band_small_at_its_upper_edge _______________________
+
+    def test_band_small_at_its_upper_edge():
+>       assert band(500) == 'small'
+E       AssertionError: assert 'medium' == 'small'
+E         
+E         - small
+E         + medium
+
+tests/test_bands.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bands.py::test_band_small_at_its_upper_edge - AssertionErro...
+1 failed, 4 passed in 0.01s
+--- output: mutant 2 ---
+.F..F                                                                    [100%]
+=================================== FAILURES ===================================
+_______________________________ test_band_medium _______________________________
+
+    def test_band_medium():
+>       assert band(1200) == 'medium'
+E       AssertionError: assert 'small' == 'medium'
+E         
+E         - medium
+E         + small
+
+tests/test_bands.py:9: AssertionError
+______________________ test_band_medium_at_its_upper_edge ______________________
+
+    def test_band_medium_at_its_upper_edge():
+>       assert band(2000) == 'medium'
+E       AssertionError: assert 'small' == 'medium'
+E         
+E         - medium
+E         + small
+
+tests/test_bands.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bands.py::test_band_medium - AssertionError: assert 'small'...
+FAILED tests/test_bands.py::test_band_medium_at_its_upper_edge - AssertionErr...
+2 failed, 3 passed in 0.01s
+--- output: mutant 3 ---
+..F..                                                                    [100%]
+=================================== FAILURES ===================================
+_______________________________ test_band_large ________________________________
+
+    def test_band_large():
+>       assert band(5000) == 'large'
+E       AssertionError: assert 'medium' == 'large'
+E         
+E         - large
+E         + medium
+
+tests/test_bands.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bands.py::test_band_large - AssertionError: assert 'medium'...
+1 failed, 4 passed in 0.01s
+--- output: mutant 4 ---
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+______________________ test_band_medium_at_its_upper_edge ______________________
+
+    def test_band_medium_at_its_upper_edge():
+>       assert band(2000) == 'medium'
+E       AssertionError: assert 'large' == 'medium'
+E         
+E         - medium
+E         + large
+
+tests/test_bands.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bands.py::test_band_medium_at_its_upper_edge - AssertionErr...
+1 failed, 4 passed in 0.01s
+--- output: revert ---
+
+==================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_bands.py _____________________
+ImportError while importing test module '/private/tmp/msr104/rep5/repo/tests/test_bands.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+<REAL-HOME>/.local/share/uv/python/cpython-3.13.16-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_bands.py:1: in <module>
+    from bands import band
+E   ModuleNotFoundError: No module named 'bands'
+=========================== short test summary info ============================
+ERROR tests/test_bands.py
+1 error in 0.01s

@@ -513,3 +513,147 @@ ceiling and the $90 fence. Each rep's stderr was empty, and no rep left a file d
   address).
 - No pilot shows a kit fault, so E1 does not run again.
 
+## Control
+
+Task 4 ran the control arm on 2026-11-22, from `16754bc`. Each rep was read by hand from its full
+output, with `grade.py`'s aids and each tool call's full input. The readings are the ones in Bars and
+readings and VOID rule, as written. No reading was added after a rep was seen.
+
+**The build.** From the repository root, for each role:
+`build_prompts.py <role> control 3f61b2008cea61662de3f0769be6f2bc4cd7dc00 56b0ef0066f344d7bd6842e0a6cd1e1c4683b8a4 <dir>`.
+So `<control-sha>` is `3f61b20`, the plan's execution base, and `<script-sha>` is `56b0ef0`, Task 2's
+last commit. A `diff -r` showed each prompt and each `MANIFEST.txt` equal to those of the second
+pilot round. The `MANIFEST.txt` files give these sha256 values:
+
+- Prompts: I1 `a868277a…`, I2 `4003240f…`, I3 `ec11c579…`, C1 `cfa06ad4…`, C2 `d8698de1…`,
+  E1 `65d2c798…`, E2 `e751afef…`. Template `c062eced…`.
+- Skill copies: `mutant-run` `d3402425…`, `mutants.md` `fed4b406…`, `sdd-repo` `f73a96c6…`,
+  `sdd-workspace` `e3c52b37…`, `test-run` `20dc4312…`, `test-run.md` `d51faae8…`, `fix-loop.md`
+  `49903546…`, `batching.md` `75ba541a…`, `SKILL.md` `4f75e762…`, `task-start` `de8b9adf…`,
+  `task-done` `26481299…`, `task-brief` `f07bd11d…`, `resuming.md` `31a5384d…`.
+
+The venv `/private/tmp/msr104-venv/` was still in place, with Python 3.13.16 and pytest 9.2.0.
+
+**The run.** Each fixture ran as one batch of five reps, `run_reps.sh <prompt-dir> <fixture>
+<role>/control/<fixture> 1 5`, after its spend check. I1 ran first, alone, and was read before the
+next batch. Each batch ran in the background with its output in a log, and the next batch started
+only after its completion notice and its reading.
+
+**Spend.** The running total is the sum of `total_cost_usd` over every rep, probe and pilot. Each
+batch's check is the running total before it plus its reps times the cap, against the $90 fence.
+
+| Batch | Spend check (USD) | Batch cost (USD) | Running total (USD) |
+|---|---|---|---|
+| Before Task 4 (probes and pilots, Spend stop) | — | — | 0.6138860 |
+| I1, reps 1–5 | 0.6138860 + 5 × 1.50 = 8.1138860 | 0.4865300 | 1.1004160 |
+| I2, reps 1–5 | 1.1004160 + 5 × 1.50 = 8.6004160 | 0.5528854 | 1.6533014 |
+| I3, reps 1–5 | 1.6533014 + 5 × 1.50 = 9.1533014 | 0.4924055 | 2.1457069 |
+| C1, reps 1–5 | 2.1457069 + 5 × 1.50 = 9.6457069 | 0.2972710 | 2.4429779 |
+| C2, reps 1–5 | 2.4429779 + 5 × 1.50 = 9.9429779 | 0.2625679 | 2.7055458 |
+| E1, reps 1–5 | 2.7055458 + 5 × 4 = 22.7055458 | 1.5946984 | 4.3002442 |
+
+No rep cost more than 5 times its role's pilot: the `sonnet` reps cost $0.04 to $0.12, and the
+`opus` reps $0.28 to $0.35.
+
+**Every rep of I1 to C2.** All 25 exited 0 with subtype `success`, in 5 to 9 turns and 13 to 32
+seconds. Each rep's `modelUsage` named only `claude-sonnet-5-5`. No rep had an iteration other than
+a message, a permission denial, a stream line that is not JSON, a V9 record, a changed skill copy or
+any stderr. No rep stopped on its budget. Each final message of an implementer rep has a status line.
+The path audit's hits were not paths: `//` in Python code, parts of `sed` and `perl` expressions,
+and a `/` in report prose. Each `..` stays inside the rep's folder (`cd .sdd/plan` then `cd ../..`,
+`git -C ../..` from the workspace, `.sdd/plan/../../plan.md`). Each `cd` names the rep's own folder.
+I2 rep5 copied `bands.py` to `$TMPDIR`, its own TMPDIR, and ran `git stash` in its own repository.
+The `<REAL-HOME>` token appears only in `summary.json`'s `stream` field, which the kit writes, and in
+a run file's traceback through the venv's interpreter, which is tool output. Neither is a tool input.
+
+**Results.** "Reached" counts the reps in which a reached-only event happened. A reached-only fixture
+never counts toward meeting a bar (D9).
+
+| Fixture | B1 | B2 | B3 | B4 | B5 | All (no weakening) |
+|---|---|---|---|---|---|---|
+| I1 | 0 of 5 | reached 0 of 5 | — | — | reached 1 of 5, passed 0 | 5 of 5 |
+| I2 | 0 of 5 | 5 of 5 | — | — | 0 of 5 | 5 of 5 |
+| I3 | 0 of 5 | 5 of 5 | — | — | 0 of 5 | 5 of 5 |
+| C1 | — | — | 5 of 5 | — | — | 5 of 5 |
+| C2 | — | — | 5 of 5 | — | — | 5 of 5 |
+
+**I1.** Each rep made one `mutant-run` call, of the form `<copy>/scripts/mutant-run plan.md 1 <BASE>
+-- … pytest -q tests/test_parking.py`, with no `--screen`. It wrote `task-1-mutants.log` (caught 5,
+survived 0, invalid 0). So B1 fails in each rep. The reports name that file: rep1 and rep3 "Mutants:
+.sdd/plan/task-1-mutants.log — caught 5, survived 0, invalid 0.", reps 2, 4 and 5 "Run:
+<repo>/.sdd/plan/task-1-mutants.log — caught 5, survived 0, invalid 0.".
+
+- **B2, not reached.** Each rep added its five boundary tests (0, 30, 31, 60 and 61 minutes) before
+  its one call, so no test was added after the first run.
+- **B5.** The GREEN commit, "Add the parking fee", carries no `Mutant-step` value in each rep. Reps 1
+  to 4 put the boundary tests in that commit and made no other. Rep5 made a second commit,
+  `c65470e` "Test the parking fee boundaries", whose diff adds the five step 2 tests that its Inputs
+  table lists. That commit answers an input shape, and `git log` gives it no `Mutant-step` value. So
+  B5 is reached in 1 rep and passed in 0.
+- All five reported DONE. Both plan tests are IDENTICAL in each.
+
+**I2.** No call passed `--screen`. Reps 1, 4 and 5 made one call each. Reps 2 and 3 made two: their
+first fix commit held only the tests, because a `sed -i 's/…/'` without the empty suffix failed on
+macOS, so the first call wrote a run file with "result: baseline failed, exit 1". The last report
+section's `Mutants` line names a full run, never the newest screen, `task-1-screen-2.log`. So B1 fails
+in each rep:
+
+| Rep | Calls (run file: result) | Last report section's line | Answering commits (`Mutant-step`) |
+|---|---|---|---|
+| 1 | `task-1-mutants-2.log`: caught 6, survived 0, invalid 0 | "Mutants: <repo>/.sdd/plan/task-1-mutants-2.log — caught 6, survived 0, invalid 0" | `0099761` "Count 2000 grams as medium" (none) |
+| 2 | `task-1-mutants-2.log`: baseline failed; `task-1-mutants-3.log`: caught 4, survived 0, invalid 0 | no `Mutants` line; the section says "Run `.sdd/plan/task-1-mutants-3.log`: caught 4, survived 0, invalid 0." | `d929a6b` and `891d7a6`, each "Fix the medium band's upper edge" (none) |
+| 3 | `task-1-mutants-2.log`: baseline failed; `task-1-mutants-3.log`: caught 6, survived 0, invalid 0 | "Mutants: <repo>/.sdd/plan/task-1-mutants-3.log — caught 6, survived 0, invalid 0." | `445306b` "Fix the medium band's upper edge and test the band edges" and `636496e` "Fix the medium band's upper edge" (none) |
+| 4 | `task-1-mutants-2.log`: caught 4, survived 0, invalid 0 | "Mutants: <repo>/.sdd/plan/task-1-mutants-2.log — caught 4, survived 0, invalid 0." | `d42fff5` "Fix the medium upper edge: 2000 grams is medium" (none) |
+| 5 | `task-1-mutants-2.log`: caught 5, survived 0, invalid 0 | "Mutants: <repo>/.sdd/plan/task-1-mutants-2.log — caught 5, survived 0, invalid 0" | `738db26` "Make a weight of 2000 grams medium" (none) |
+
+- **B2, 5 of 5.** The first run is the seeded `task-1-screen.log`. The seeded
+  `test_band_small_at_its_upper_edge` answers survivor 1, and Mutant 1's line names it. Each rep's
+  new tests got new patches: reps 1 and 3 tests at 2000, 501 and 2001 grams (patches 4, 5 and 6),
+  reps 2 and 4 a test at 2000 grams (patch 4), and rep5 tests at 2000 and 2001 grams (patches 4 and
+  5). No patch of these was in the first run.
+- **B5, 0 of 5.** Each answering commit (the table) carries no `Mutant-step` value. Each rep found
+  that `is_large` counted 2000 grams as large and fixed it, with a failing test first.
+- All five reported DONE. The three plan tests are IDENTICAL in each.
+
+**I3.** Each rep made one call, except rep3, which made two. No call passed `--screen`. Rep3's first
+run had one invalid mutant, because its `sed` gave `DOUBLE + 100_FROM_CENTS`. The reports name a full
+run, never the newest screen, the seeded `task-1-screen.log`. So B1 fails in each rep. The lines:
+rep1 "Mutants: run .sdd/plan/task-1-mutants.log — caught 3, survived 0, invalid 0.", rep2 "Mutants:
+.sdd/plan/task-1-mutants.log — caught 3, survived 0, invalid 0.", rep3 "Mutants:
+<repo>/.sdd/plan/task-1-mutants-2.log — caught 3, survived 0, invalid 0.", reps 4 and 5 "Mutants:
+<repo>/.sdd/plan/task-1-mutants.log — caught 3, survived 0, invalid 0.".
+
+- **B2, 5 of 5.** Each rep added a test of exactly $100 (`points(10000) == 200`) and a test just under
+  it (`points(9999) == 99`), with new patches 2 and 3. Mutant 1's line is the seeded one in each rep
+  ("Mutant 1: specs/loyalty.md:9, test_double_points_from_100_dollars — double points never apply"),
+  so no rep re-aimed mutant 1.
+- **B5, 0 of 5.** Each rep's one commit adds the test of exactly $100, its answer to the plan test that
+  passed on the revert. None carries a `Mutant-step` value: rep1 `56b7f46` "Test the exact and
+  just-under $100 boundaries", reps 2 and 3 `5c42455` and `aff5090` "Test the 100 dollar boundary
+  directly", rep4 `8f3d584` "Test the $100 boundary and just below it", rep5 `e7277f0` "Test the 100
+  dollar boundary".
+- Each rep wrote `Strengthened: test_double_points_from_100_dollars — by <its test of exactly $100>`
+  and a `Keeps:` line for its test under $100. Reps 1 and 5 reported DONE, and reps 2, 3 and 4
+  DONE_WITH_CONCERNS, each concern that the plan test does not reach the boundary. The plan test is
+  IDENTICAL in each.
+
+**C1.** Each rep read `test-run.md`, ran `test-run` with the brief's command and the suite, and then
+made one `mutant-run` call, with no `--screen`. That call wrote `task-1-mutants.log` (caught 3,
+survived 0, invalid 0), whose `head:` is the final HEAD: the seeded HEAD, since no rep committed.
+Line 1 of `task-1-dispatch.txt` names `task-1-tests.log`, and line 2 names that `task-1-mutants.log`.
+C1 seeds no full run, so that file was not seeded. B3: 5 of 5. No rep handed the reviewer the
+report's screen, `task-1-screen-2.log`.
+
+**C2.** As in C1, each rep ran `test-run` and then made one `mutant-run` call, with no `--screen`.
+That call wrote `task-1-mutants-2.log` (caught 4, survived 0, invalid 0), whose `head:` is the final
+HEAD, the seeded fix commit. Line 1 names `task-1-tests-2.log`, and line 2 names that
+`task-1-mutants-2.log`, not the seeded `task-1-mutants.log` or the report's `task-1-screen-3.log`.
+B3: 5 of 5.
+
+- Rep2 first called `test-run .sdd/plan.md`, and rep3 `test-run .sdd/plan`. Each was refused and
+  called again with `plan.md`. Reps 4 and 5 gave `test-run` the suite alone, and rep4 gave
+  `mutant-run` `pytest -q tests` instead of the brief's file. Reps 2 to 5 lost the script's exit
+  status in a pipe and read the run file's `result:` line instead. None of these changes B3.
+
+E1 and E2, the VOID reps, the last spend rows and the D9 list follow in the next commit.
+
