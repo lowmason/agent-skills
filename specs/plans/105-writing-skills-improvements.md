@@ -16,7 +16,7 @@
 ## Global Constraints
 
 - **Anchors.** Line numbers were taken at `07ea574`. The old text in each step is the match key, because the Task 1 edits shift lines. Before Task 1, run `git diff 07ea574 HEAD -- skills/writing-skills`. If it prints anything, stop and ask. `NOTICE` and `build/suites.toml` will have changed, because plan 103 merges first. Their match keys are Task 7's old text and the suites' name order.
-- **Execution order.** This plan is a domain stream. Its execution starts only after plan 103 (a machinery stream) merges, and only while fewer than 3 domain executions run and none shares its files (check `list_sessions`). Plan 106 (brainstorming) also edits `NOTICE`'s superpowers change list, `specs/deferred_items.md` and `specs/history.md`. Expect a keep-both merge there.
+- **Execution order.** This plan is a domain stream. Its execution starts only after plan 103 (a machinery stream) merges, and only while fewer than 3 domain executions run and none shares its files (check `list_sessions`). Plan 106 (brainstorming) also edits `NOTICE`'s superpowers change list, `build/suites.toml`, `specs/deferred_items.md` and `specs/history.md`. Its D8 (owner, 2026-11-22) lets its execution overlap this one, because those files merge keep-both. Expect that merge.
 - **One owner per file.** Task 1 is the only task that edits text in `testing-skills-with-subagents.md`, `persuasion-principles.md` and `references/discovery.md`, except the link lines Task 5 changes. `NOTICE` changes only in Task 7. `build/suites.toml` gains one entry in Task 2 and one in Task 3. `build/cc_guide/baseline.json` changes only through Task 7's `/cc-guide` run.
 - **Body ceiling.** At the end of this plan the `SKILL.md` body is at most 19,240 characters, measured with `check_conformance.skill_body(text)[0]` (`uv run --with pyyaml python`, with `build/` on `sys.path`). That leaves at least 460 characters of the 19,700-character window for the later plans' items 1, 2, 9 and 13 (about +460, brief trap T3). The exact text in this plan measures 19,063 at planning (18,753 at `07ea574`). If an edit would pass 19,240, stop and ask, because the Q6 ruling revisits item 16 when the room runs out.
 - **Waivers (brief trap T1).** Main's Iron Law (`skills/writing-skills/SKILL.md:204-210`) names no exception. Each task brief below quotes the ruling that covers its skill edits, so that a task reviewer does not flag them. The reviewer checks the edit against the quoted ruling and the exact text in the plan.
@@ -472,7 +472,7 @@ Run `check_scrub.py` and `privacy_sweep.py` on the runs folder. Run the commit g
 ### Task 7: `NOTICE` and the files verify
 
 **Files:**
-- Modify: `NOTICE` (the plan 72 divergence sentence; a new bullet after the Plan 104 bullet, before the list of skill folders)
+- Modify: `NOTICE` (the plan 72 divergence sentence; a new last bullet of the superpowers change list, before the list of skill folders)
 - Modify, through `/cc-guide` only: `build/cc_guide/baseline.json`, and a fix that it lists in `skills/writing-skills/SKILL.md` or a covered file
 
 - [ ] **Step 1: Update the plan 72 sentence**
@@ -495,7 +495,7 @@ with:
 
 - [ ] **Step 2: Add the plan 105 bullet**
 
-Add this bullet, wrapped like its neighbors, with the date of this commit:
+Fetch, and compare `NOTICE` on `origin/main` with this branch. Plans 103 and 106 may have added bullets to the superpowers change list. Keep every line they added. Add this bullet as the last one in the list, after theirs, wrapped like its neighbors, with the date of this commit:
 
 ```text
   - Plan 105 (<YYYY-MM-DD>) changed writing-skills, from
