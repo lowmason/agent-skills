@@ -1753,6 +1753,63 @@ def test_mutant_run_screen_takes_carried_tests_by_the_earlier_mutant_number(calc
     assert run_section(lines, 'tests') == ['test test_calc::test_neg: caught 2']
 
 
+# Four tests that A (a - b), M (a * b) and D (a + a) fail in overlapping sets: M fails zero, small and twin.
+TEST_SHARED = '''from calc import add
+
+
+def test_add_zero():
+    assert add(3, 0) == 3
+
+
+def test_add_small():
+    assert add(1, 2) == 3
+
+
+def test_add_twin():
+    assert add(3, 3) == 6
+
+
+def test_add_two_twos():
+    assert add(2, 2) == 4
+'''
+D = ('return a + b', 'return a + a')  # wrong when a != b
+
+
+def test_mutant_run_screen_finds_the_earlier_number_anywhere_in_a_tests_line(calc):
+    (calc / 'test_shared.py').write_text(TEST_SHARED)
+    git('add', 'test_shared.py', cwd=calc)
+    git('commit', '-qm', 'shared catches', cwd=calc)
+    p1 = make_mutant(calc, 1, *A)
+    p2 = make_mutant(calc, 2, *M)
+    p3 = make_mutant(calc, 3, *D)
+    cmd = [*PYTEST[:-1], 'test_shared.py']
+    full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert full.returncode == 0, full.stdout + full.stderr
+    # Mutant 2 sits in the middle, last, nowhere and first.
+    assert run_section(mutant_lines(calc), 'tests') == [
+        'test test_shared::test_add_small: caught 1 2 3',
+        'test test_shared::test_add_twin: caught 1 2',
+        'test test_shared::test_add_two_twos: caught 1',
+        'test test_shared::test_add_zero: caught 2 3',
+    ]
+    # M alone, now mutant 5, a number that no earlier tests line holds.
+    p5 = run_file(calc, 'task-1-mutant-5.patch')
+    p5.write_bytes(p2.read_bytes())
+    for p in (p1, p2, p3):
+        p.unlink()
+    result = run(MUTANT_RUN, '--screen', 'plan.md', 1, head_sha(calc), '--', *cmd, cwd=calc, env=PY_ENV)
+    assert result.returncode == 0, result.stdout + result.stderr
+    lines = mutant_lines(calc, 'task-1-screen.log')
+    assert mutant_line(lines, 5) == carried(5, p5, 'task-1-mutants.log') + (
+        'test_shared::test_add_zero test_shared::test_add_small test_shared::test_add_twin'
+    )
+    assert run_section(lines, 'tests') == [
+        'test test_shared::test_add_small: caught 5',
+        'test test_shared::test_add_twin: caught 5',
+        'test test_shared::test_add_zero: caught 5',
+    ]
+
+
 def test_mutant_run_screen_adds_no_tests_for_a_catch_its_run_file_lists_no_test_for(calc):
     p1 = make_mutant(calc, 1, *A)
     full = run(MUTANT_RUN, 'plan.md', 1, head_sha(calc), '--', *PYTEST, cwd=calc, env=PY_ENV)
