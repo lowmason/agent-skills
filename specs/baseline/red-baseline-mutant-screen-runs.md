@@ -1125,7 +1125,8 @@ because no control rep saw `--screen`. The treatment arm is the first arm whose 
 
 - **B2's wording: the drop misses on I3.** I2 met B2 (5 of 5), and I3 missed it (3 of 5), against
   the control's 5 of 5 on each. Under the other reading of rep5 (Readings that could go two ways), I3
-  is 4 of 5 and the drop holds. The treatment reps made screens, so each caught mutant was carried. No
+  is 4 of 5 and the drop holds. In each screen, a caught mutant whose patch kept its bytes was carried;
+  rep5 wrote mutant 1's patch again, so its last screen carried none. No
   rep made the re-aim that reading rule 7 names, and neither miss came from a carried catch. The two
   misses are a new test with no mutant at all (rep2) and a caught mutant's patch written again with
   other bytes whose line still names only the plan test (rep5). The miss answers the B2 sentence that
@@ -1399,13 +1400,19 @@ E2 passed 5 of 5, and B2 was not reached on I1.
 The restored sentences stay. They are the round 1 text for step 7, and B2 is met on each fixture that
 forces it.
 
-**The wording sentences in round 1.** Each sentence of round 0's table has the same verdict in round
-1, kept, with these counts:
+**The wording sentences in round 1.** Each kept sentence of round 0's table keeps its verdict in round
+1, with these counts:
 
 - the implementer prompt's step 5 sentence: B1 on I1 4 of 5, I2 5 of 5 and I3 5 of 5. Every call of
   every implementer rep passed `--screen` first. The one miss is a rep that made no call.
 - `mutants.md` step 5's two bullets and `SKILL.md`'s order: B3 10 of 10, and B4 10 of 10.
+- `mutants.md` step 8, "give its path and the counts": 14 of 15 (round 0: 15 of 15). I1 rep1 made no
+  run, so its report names none. It is the same rep as the B1 miss.
 - the trailer sentences: B5 15 of 15 on the forced fixtures, and every reached commit.
+
+Round 0's row for the sentence that Task 5 dropped (D9) was "missed" on I3, so it is not a kept
+sentence. Round 1 restores its step 7 half, through the two new sentences below. Its step 6 half stays
+dropped, because B2 was met on I2 and E2 in every arm.
 
 Two sentences are new in round 1, and only I3's event exercises them:
 
@@ -1439,4 +1446,14 @@ went from 3 of 5 in round 0 to 5 of 5 in round 1. Round 1 is the last round that
 ends with no bar missed, so the scope fence of D3 does not apply. The one new miss is I1 rep1's B1. It
 lowers I1 from round 0's 5 of 5 to 4 of 5, which still meets the bar. That rep read no file of the
 skill copy, so the revision did not reach it.
+
+**Corrections after the Task 8 review (controller, 2026-11-22).** The two reviews re-derived every
+count in rounds 0 and 1 from the rep folders and found two sentences that said more than the reps
+show. Both are corrected in place. In round 0's "The three provisional drops", B2's bullet said that
+each caught mutant was carried. It now says that a caught mutant whose patch kept its bytes was
+carried, and that rep5 wrote mutant 1's patch again, so its last screen carried none. In this
+section, the lead-in of "The wording sentences in round 1" said that every sentence of round 0's table
+kept its verdict. It now covers the kept sentences only, adds step 8's count (14 of 15), and says that
+the dropped sentence's step 7 half is restored and its step 6 half stays dropped. No rep count, bar
+result or verdict changed.
 
